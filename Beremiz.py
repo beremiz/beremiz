@@ -27,7 +27,7 @@ import wx
 from time import localtime
 from datetime import datetime
 
-import sys, os
+import os, re, platform, sys, time, traceback, getopt, commands
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
@@ -38,8 +38,7 @@ from PLCControler import PLCControler
 from networkedit import networkedit
 from nodelist import NodeList
 from nodemanager import NodeManager
-
-import os, re, platform, sys, time, traceback, getopt
+import config_utils, gen_cfile
 
 __version__ = "$Revision$"
 
@@ -69,6 +68,29 @@ if len(args) > 1:
 elif len(args) == 1:
     projectOpen = args[0]
 CWD = sys.path[0]
+
+re_texts = {}
+re_texts["letter"] = "[A-Za-z]"
+re_texts["digit"] = "[0-9]"
+LOCATED_MODEL = re.compile("__LOCATED_VAR\(([A-Z]*),([_A-Za-z0-9]*)\)")
+
+
+class LogPseudoFile:
+    """ Base class for file like objects to facilitate StdOut for the Shell."""
+    def __init__(self, output = None):
+        self.output = output
+
+    def writelines(self, l):
+        map(self.write, l)
+
+    def write(self, s):
+        self.output.SetValue(self.output.GetValue() + s) 
+
+    def flush(self):
+        self.output.SetValue("")
+    
+    def isatty(self):
+        return false
 
 [wxID_BEREMIZ, wxID_BEREMIZLOGCONSOLE, wxID_BEREMIZEDITPLCBUTTON,
  wxID_BEREMIZBUILDBUTTON, wxID_BEREMIZSIMULATEBUTTON,
@@ -154,7 +176,7 @@ class Beremiz(wx.Frame):
         parent.AppendSeparator()
         parent.Append(help='', id=wxID_BEREMIZRUNMENUITEMS5,
               kind=wx.ITEM_NORMAL, text=u'Save Log')
-        self.Bind(wx.EVT_MENU, self.OnEditPLCMenu,
+        self.Bind(wx.EVT_MENU, self.OnBuildMenu,
               id=wxID_BEREMIZRUNMENUITEMS0)
         self.Bind(wx.EVT_MENU, self.OnSimulateMenu,
               id=wxID_BEREMIZRUNMENUITEMS2)
@@ -271,7 +293,7 @@ class Beremiz(wx.Frame):
         
         self.LogConsole = wx.TextCtrl(id=wxID_BEREMIZLOGCONSOLE, value='',
               name='LogConsole', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(400, 200), style=wxTE_MULTILINE)
+              size=wx.Size(0, 0), style=wxTE_MULTILINE)
         
         self.EditPLCButton = wx.Button(id=wxID_BEREMIZEDITPLCBUTTON, label='Edit\nPLC',
               name='EditPLCButton', parent=self, pos=wx.Point(0, 0),
@@ -299,8 +321,9 @@ class Beremiz(wx.Frame):
         
         self.BusList = wx.ListBox(choices=[], id=wxID_BEREMIZBUSLIST,
               name='BusList', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(-1, -1), style=0)
-        self.BusList.Bind(wx.EVT_LEFT_DCLICK, self.OnBusListDClick)
+              size=wx.Size(-1, -1), style=wxLB_SINGLE|wxLB_NEEDED_SB)
+        self.BusList.Bind(wx.EVT_LISTBOX_DCLICK, self.OnBusListDClick,
+              id=wxID_BEREMIZBUSLIST)
         
         self.AddBusButton = wx.Button(id=wxID_BEREMIZADDBUSBUTTON, label='Add',
               name='AddBusButton', parent=self, pos=wx.Point(0, 0),
@@ -324,6 +347,8 @@ class Beremiz(wx.Frame):
         self.PLCManager = None
         self.PLCEditor = None
         self.BusManagers = {}
+        
+        self.Log = LogPseudoFile(self.LogConsole)
         
         self.RefreshButtons()
         self.RefreshMainMenu()
@@ -498,6 +523,10 @@ class Beremiz(wx.Frame):
         self.DeleteBus()
         event.Skip()
 
+    def OnBuildMenu(self, event):
+        self.BuildAutom()
+        event.Skip()
+
     def OnSimulateMenu(self, event):
         event.Skip()
     
@@ -518,6 +547,7 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnBuildButton(self, event):
+        self.BuildAutom()
         event.Skip()
     
     def OnSimulateButton(self, event):
@@ -535,7 +565,7 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnBusListDClick(self, event):
-        selected = self.BusList.GetSelection()
+        selected = event.GetSelection()
         busidlist = self.BusManagers.keys()
         busidlist.sort()
         bus_infos = self.BusManagers[busidlist[selected]]
@@ -602,6 +632,48 @@ class Beremiz(wx.Frame):
             self.PLCEditor.RefreshToolBar()
             self.PLCEditor.Show()
 
+    def BuildAutom(self):
+        if self.PLCManager:
+            self.TargetDir = os.path.join(self.CurrentProjectPath, "build")
+            if not os.path.exists(self.TargetDir):
+                os.mkdir(self.TargetDir)
+            self.Log.flush()
+            sys.stdout = self.Log
+            try:
+                print "Building ST Program..."
+                plc_file = os.path.join(self.TargetDir, "plc.st")
+                result = self.PLCManager.GenerateProgram(plc_file)
+                if not result:
+                    raise Exception
+                print "Compiling ST Program in to C Program..."
+                status, result = commands.getstatusoutput("../matiec/iec2cc %s -I ../matiec/lib %s"%(plc_file, self.TargetDir))
+                if status:
+                    print result
+                    raise Exception
+                print "Extracting Located Variables..."
+                location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
+                locations = []
+                lines = [line.strip() for line in location_file.readlines()]
+                for line in lines:
+                    result = LOCATED_MODEL.match(line)
+                    if result:
+                        locations.append(result.groups())
+                print "Generating Network Configurations..."
+                for bus_id, bus_infos in self.BusManagers.items():
+                    if bus_infos["Type"] == "CanFestival":
+                        master = config_utils.GenerateConciseDCF(locations, bus_id, bus_infos["NodeList"])
+                        result = gen_cfile.GenerateFile("%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"])), master)
+                        if result:
+                            raise Exception
+                print "Generating Makefiles..."
+                
+                print "Compiling Project..."
+                
+                print "\nBuild Project completed"
+            except Exception, message:
+                pass
+            sys.stdout = sys.__stdout__
+                
 #-------------------------------------------------------------------------------
 #                             Add Bus Dialog
 #-------------------------------------------------------------------------------
