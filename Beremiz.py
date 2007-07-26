@@ -439,26 +439,33 @@ class Beremiz(wx.Frame):
         if dialog.ShowModal() == wxID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
-            if os.path.isdir(projectpath):
+            try:
+                if os.path.isdir(projectpath):
+                    raise Exception
                 self.BusManagers = {}
                 configpath = os.path.join(projectpath, ".project")
-                if os.path.isfile(configpath):
-                    file = open(configpath, "r")
-                    for bus_id, bus_type, bus_name in [line.strip().split(" ") for line in file.readlines() if line.strip() != ""]:
-                        if bus_type == "CanFestival":
-                            id = int(bus_id, 16)
-                            manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
-                            nodelist = NodeList(manager)
-                            result = nodelist.LoadProject(projectpath, bus_name)
-                            if not result:
-                                self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "NodeList" : nodelist, "Editor" : None}
-                            else:
-                                message = wxMessageDialog(self, result, "Error", wxOK|wxICON_ERROR)
-                                message.ShowModal()
-                                message.Destroy()
-                        else:
-                            self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type}
+                if not os.path.isfile(configpath):
+                    raise
+                file = open(configpath, "r")
+                lines = [line.strip() for line in file.readlines() if line.strip() != ""]
+                if line[0] != "Beremiz":
                     file.close()
+                    raise Exception
+                for bus_id, bus_type, bus_name in [line.split(" ") for line in lines]:
+                    id = int(bus_id, 16)
+                    if bus_type == "CanFestival":
+                        manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
+                        nodelist = NodeList(manager)
+                        result = nodelist.LoadProject(projectpath, bus_name)
+                        if not result:
+                            self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "NodeList" : nodelist, "Editor" : None}
+                        else:
+                            message = wxMessageDialog(self, result, "Error", wxOK|wxICON_ERROR)
+                            message.ShowModal()
+                            message.Destroy()
+                    else:
+                        self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type}
+                file.close()
                 self.PLCManager = PLCControler()
                 plc_file = os.path.join(projectpath, "plc.xml")
                 if os.path.isfile(plc_file):
@@ -478,6 +485,10 @@ class Beremiz(wx.Frame):
                 self.RefreshBusList()
                 self.RefreshButtons()
                 self.RefreshMainMenu()
+            except Exception:
+                message = wxMessageDialog(self, "\"%s\" folder is not a valid Beremiz project"%projectpath, "Error", wxOK|wxICON_ERROR)
+                message.ShowModal()
+                message.Destroy()
         event.Skip()
     
     def OnCloseProjectMenu(self, event):
