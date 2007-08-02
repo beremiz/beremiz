@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of Beremiz, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+#This file is part of Beremiz, a Integrated Development Environment for
+#programming IEC 61131-3 automates supporting plcopen standard and CanFestival. 
 #
-#Copyright (C): Edouard TISSERANT and Laurent BESSARD
+#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
 #See COPYING file for copyrights details.
 #
@@ -16,7 +16,7 @@
 #This library is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#Lesser General Public License for more details.
+#General Public License for more details.
 #
 #You should have received a copy of the GNU General Public
 #License along with this library; if not, write to the Free Software
@@ -440,18 +440,18 @@ class Beremiz(wx.Frame):
             projectpath = dialog.GetPath()
             dialog.Destroy()
             try:
-                if os.path.isdir(projectpath):
+                if not os.path.isdir(projectpath):
                     raise Exception
                 self.BusManagers = {}
                 configpath = os.path.join(projectpath, ".project")
                 if not os.path.isfile(configpath):
-                    raise
+                    raise Exception
                 file = open(configpath, "r")
                 lines = [line.strip() for line in file.readlines() if line.strip() != ""]
-                if line[0] != "Beremiz":
+                if lines[0] != "Beremiz":
                     file.close()
                     raise Exception
-                for bus_id, bus_type, bus_name in [line.split(" ") for line in lines]:
+                for bus_id, bus_type, bus_name in [line.split(" ") for line in lines[1:]]:
                     id = int(bus_id, 16)
                     if bus_type == "CanFestival":
                         manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
@@ -506,6 +506,7 @@ class Beremiz(wx.Frame):
         file.close()
         configpath = os.path.join(self.CurrentProjectPath, ".project")
         file = open(configpath, "w")
+        file.write("Beremiz\n")
         busidlist = self.BusManagers.keys()
         busidlist.sort()
         for id in busidlist:
