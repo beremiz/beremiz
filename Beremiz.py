@@ -92,129 +92,114 @@ class LogPseudoFile:
     def isatty(self):
         return false
 
-[wxID_BEREMIZ, wxID_BEREMIZLOGCONSOLE, wxID_BEREMIZEDITPLCBUTTON,
- wxID_BEREMIZBUILDBUTTON, wxID_BEREMIZSIMULATEBUTTON,
- wxID_BEREMIZRUNBUTTON, wxID_BEREMIZBUSLIST,
- wxID_BEREMIZADDBUSBUTTON, wxID_BEREMIZDELETEBUSBUTTON,
+[ID_BEREMIZ, ID_BEREMIZLOGCONSOLE, ID_BEREMIZEDITPLCBUTTON,
+ ID_BEREMIZBUILDBUTTON, ID_BEREMIZSIMULATEBUTTON,
+ ID_BEREMIZRUNBUTTON, ID_BEREMIZBUSLIST,
+ ID_BEREMIZADDBUSBUTTON, ID_BEREMIZDELETEBUSBUTTON,
 ] = [wx.NewId() for _init_ctrls in range(9)]
 
-[wxID_BEREMIZFILEMENUITEMS0, wxID_BEREMIZFILEMENUITEMS1, 
- wxID_BEREMIZFILEMENUITEMS2, wxID_BEREMIZFILEMENUITEMS3, 
- wxID_BEREMIZFILEMENUITEMS5, wxID_BEREMIZFILEMENUITEMS7, 
+[ID_BEREMIZFILEMENUITEMS0, ID_BEREMIZFILEMENUITEMS1, 
+ ID_BEREMIZFILEMENUITEMS2, ID_BEREMIZFILEMENUITEMS3, 
+ ID_BEREMIZFILEMENUITEMS5, ID_BEREMIZFILEMENUITEMS7, 
 ] = [wx.NewId() for _init_coll_FileMenu_Items in range(6)]
 
-[wxID_BEREMIZEDITMENUITEMS0, wxID_BEREMIZEDITMENUITEMS2, 
- wxID_BEREMIZEDITMENUITEMS3, 
+[ID_BEREMIZEDITMENUITEMS0, ID_BEREMIZEDITMENUITEMS2, 
+ ID_BEREMIZEDITMENUITEMS3, 
 ] = [wx.NewId() for _init_coll_EditMenu_Items in range(3)]
 
-[wxID_BEREMIZRUNMENUITEMS0, wxID_BEREMIZRUNMENUITEMS2, 
- wxID_BEREMIZRUNMENUITEMS3, wxID_BEREMIZRUNMENUITEMS5, 
+[ID_BEREMIZRUNMENUITEMS0, ID_BEREMIZRUNMENUITEMS2, 
+ ID_BEREMIZRUNMENUITEMS3, ID_BEREMIZRUNMENUITEMS5, 
 ] = [wx.NewId() for _init_coll_EditMenu_Items in range(4)]
 
-[wxID_BEREMIZHELPMENUITEMS0, wxID_BEREMIZHELPMENUITEMS1, 
+[ID_BEREMIZHELPMENUITEMS0, ID_BEREMIZHELPMENUITEMS1, 
 ] = [wx.NewId() for _init_coll_HelpMenu_Items in range(2)]
 
 class Beremiz(wx.Frame):
     
     def _init_coll_FileMenu_Items(self, parent):
-        # generated method, don't edit
-
-        parent.Append(help='', id=wxID_BEREMIZFILEMENUITEMS0,
+        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS0,
               kind=wx.ITEM_NORMAL, text=u'New\tCTRL+N')
-        parent.Append(help='', id=wxID_BEREMIZFILEMENUITEMS1,
+        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS1,
               kind=wx.ITEM_NORMAL, text=u'Open\tCTRL+O')
-        parent.Append(help='', id=wxID_BEREMIZFILEMENUITEMS2,
+        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS2,
               kind=wx.ITEM_NORMAL, text=u'Save\tCTRL+S')
-        parent.Append(help='', id=wxID_BEREMIZFILEMENUITEMS3,
+        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS3,
               kind=wx.ITEM_NORMAL, text=u'Close Project')
         parent.AppendSeparator()
-        parent.Append(help='', id=wxID_BEREMIZFILEMENUITEMS5,
+        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS5,
               kind=wx.ITEM_NORMAL, text=u'Properties')
         parent.AppendSeparator()
-        parent.Append(help='', id=wxID_BEREMIZFILEMENUITEMS7,
+        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS7,
               kind=wx.ITEM_NORMAL, text=u'Quit\tCTRL+Q')
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu,
-              id=wxID_BEREMIZFILEMENUITEMS0)
+              id=ID_BEREMIZFILEMENUITEMS0)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu,
-              id=wxID_BEREMIZFILEMENUITEMS1)
+              id=ID_BEREMIZFILEMENUITEMS1)
         self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu,
-              id=wxID_BEREMIZFILEMENUITEMS2)
+              id=ID_BEREMIZFILEMENUITEMS2)
         self.Bind(wx.EVT_MENU, self.OnCloseProjectMenu,
-              id=wxID_BEREMIZFILEMENUITEMS3)
+              id=ID_BEREMIZFILEMENUITEMS3)
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu,
-              id=wxID_BEREMIZFILEMENUITEMS5)
+              id=ID_BEREMIZFILEMENUITEMS5)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu,
-              id=wxID_BEREMIZFILEMENUITEMS7)
+              id=ID_BEREMIZFILEMENUITEMS7)
         
     def _init_coll_EditMenu_Items(self, parent):
-        # generated method, don't edit
-
-        parent.Append(help='', id=wxID_BEREMIZEDITMENUITEMS0,
+        parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS0,
               kind=wx.ITEM_NORMAL, text=u'Edit PLC\tCTRL+R')
         parent.AppendSeparator()
-        parent.Append(help='', id=wxID_BEREMIZEDITMENUITEMS2,
+        parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS2,
               kind=wx.ITEM_NORMAL, text=u'Add Bus')
-        parent.Append(help='', id=wxID_BEREMIZEDITMENUITEMS3,
+        parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS3,
               kind=wx.ITEM_NORMAL, text=u'Delete Bus')
         self.Bind(wx.EVT_MENU, self.OnEditPLCMenu,
-              id=wxID_BEREMIZEDITMENUITEMS0)
+              id=ID_BEREMIZEDITMENUITEMS0)
         self.Bind(wx.EVT_MENU, self.OnAddBusMenu,
-              id=wxID_BEREMIZEDITMENUITEMS2)
+              id=ID_BEREMIZEDITMENUITEMS2)
         self.Bind(wx.EVT_MENU, self.OnDeleteBusMenu,
-              id=wxID_BEREMIZEDITMENUITEMS3)
+              id=ID_BEREMIZEDITMENUITEMS3)
     
     def _init_coll_RunMenu_Items(self, parent):
-        # generated method, don't edit
-
-        parent.Append(help='', id=wxID_BEREMIZRUNMENUITEMS0,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS0,
               kind=wx.ITEM_NORMAL, text=u'Build\tCTRL+R')
         parent.AppendSeparator()
-        parent.Append(help='', id=wxID_BEREMIZRUNMENUITEMS2,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS2,
               kind=wx.ITEM_NORMAL, text=u'Simulate')
-        parent.Append(help='', id=wxID_BEREMIZRUNMENUITEMS3,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS3,
               kind=wx.ITEM_NORMAL, text=u'Run')
         parent.AppendSeparator()
-        parent.Append(help='', id=wxID_BEREMIZRUNMENUITEMS5,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS5,
               kind=wx.ITEM_NORMAL, text=u'Save Log')
         self.Bind(wx.EVT_MENU, self.OnBuildMenu,
-              id=wxID_BEREMIZRUNMENUITEMS0)
+              id=ID_BEREMIZRUNMENUITEMS0)
         self.Bind(wx.EVT_MENU, self.OnSimulateMenu,
-              id=wxID_BEREMIZRUNMENUITEMS2)
+              id=ID_BEREMIZRUNMENUITEMS2)
         self.Bind(wx.EVT_MENU, self.OnRunMenu,
-              id=wxID_BEREMIZRUNMENUITEMS3)
+              id=ID_BEREMIZRUNMENUITEMS3)
         self.Bind(wx.EVT_MENU, self.OnSaveLogMenu,
-              id=wxID_BEREMIZRUNMENUITEMS5)
+              id=ID_BEREMIZRUNMENUITEMS5)
     
     def _init_coll_HelpMenu_Items(self, parent):
-        # generated method, don't edit
-
-        parent.Append(help='', id=wxID_BEREMIZHELPMENUITEMS0,
+        parent.Append(help='', id=ID_BEREMIZHELPMENUITEMS0,
               kind=wx.ITEM_NORMAL, text=u'Beremiz\tF1')
-        parent.Append(help='', id=wxID_BEREMIZHELPMENUITEMS1,
+        parent.Append(help='', id=ID_BEREMIZHELPMENUITEMS1,
               kind=wx.ITEM_NORMAL, text=u'About')
         self.Bind(wx.EVT_MENU, self.OnBeremizMenu,
-              id=wxID_BEREMIZHELPMENUITEMS0)
+              id=ID_BEREMIZHELPMENUITEMS0)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu,
-              id=wxID_BEREMIZHELPMENUITEMS1)
+              id=ID_BEREMIZHELPMENUITEMS1)
     
     def _init_coll_menuBar1_Menus(self, parent):
-        # generated method, don't edit
-
         parent.Append(menu=self.FileMenu, title=u'File')
         parent.Append(menu=self.EditMenu, title=u'Edit')
         parent.Append(menu=self.RunMenu, title=u'Run')
         parent.Append(menu=self.HelpMenu, title=u'Help')
     
     def _init_utils(self):
-        # generated method, don't edit
         self.menuBar1 = wx.MenuBar()
-
         self.FileMenu = wx.Menu(title=u'')
-
         self.EditMenu = wx.Menu(title=u'')
-        
         self.RunMenu = wx.Menu(title=u'')
-        
         self.HelpMenu = wx.Menu(title=u'')
         
         self._init_coll_menuBar1_Menus(self.menuBar1)
@@ -224,54 +209,38 @@ class Beremiz(wx.Frame):
         self._init_coll_HelpMenu_Items(self.HelpMenu)
     
     def _init_coll_MainGridSizer_Items(self, parent):
-        # generated method, don't edit
-
-        parent.AddSizer(self.ControlPanelSizer, 0, border=0, flag=wxGROW)
-        parent.AddWindow(self.LogConsole, 0, border=0, flag=wxGROW)
+        parent.AddSizer(self.ControlPanelSizer, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.LogConsole, 0, border=0, flag=wx.GROW)
         
     def _init_coll_MainGridSizer_Growables(self, parent):
-        # generated method, don't edit
-
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(1)
     
     def _init_coll_ControlPanelSizer_Items(self, parent):
-        # generated method, don't edit
-        
         parent.AddSizer(self.ControlButtonSizer, 0, border=0, flag=0)
-        parent.AddWindow(self.BusList, 0, border=0, flag=wxGROW)
+        parent.AddWindow(self.BusList, 0, border=0, flag=wx.GROW)
         parent.AddSizer(self.BusButtonSizer, 0, border=0, flag=0)
         
         
     def _init_coll_ControlPanelSizer_Growables(self, parent):
-        # generated method, don't edit
-
         parent.AddGrowableCol(1)
         parent.AddGrowableRow(0)
     
     def _init_coll_ControlButtonSizer_Items(self, parent):
-        # generated method, don't edit
-
         parent.AddWindow(self.EditPLCButton, 0, border=0, flag=0)
         parent.AddWindow(self.BuildButton, 0, border=0, flag=0)
         parent.AddWindow(self.SimulateButton, 0, border=0, flag=0)
         parent.AddWindow(self.RunButton, 0, border=0, flag=0)
 
     def _init_coll_BusButtonSizer_Items(self, parent):
-        # generated method, don't edit
-
         parent.AddWindow(self.AddBusButton, 0, border=0, flag=0)
         parent.AddWindow(self.DeleteBusButton, 0, border=0, flag=0)
         
     def _init_sizers(self):
-        # generated method, don't edit
         self.MainGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
-        
         self.ControlPanelSizer = wx.FlexGridSizer(cols=3, hgap=2, rows=1, vgap=2)
-        
         self.ControlButtonSizer = wx.GridSizer(cols=2, hgap=2, rows=2, vgap=2)
-        
-        self.BusButtonSizer = wx.BoxSizer(wxVERTICAL)
+        self.BusButtonSizer = wx.BoxSizer(wx.VERTICAL)
         
         self._init_coll_MainGridSizer_Growables(self.MainGridSizer)
         self._init_coll_MainGridSizer_Items(self.MainGridSizer)
@@ -283,59 +252,58 @@ class Beremiz(wx.Frame):
         self.SetSizer(self.MainGridSizer)
     
     def _init_ctrls(self, prnt):
-        # generated method, don't edit
-        wx.Frame.__init__(self, id=wxID_BEREMIZ, name=u'Beremiz',
+        wx.Frame.__init__(self, id=ID_BEREMIZ, name=u'Beremiz',
               parent=prnt, pos=wx.Point(0, 0), size=wx.Size(600, 300),
               style=wx.DEFAULT_FRAME_STYLE, title=u'Beremiz')
         self._init_utils()
         self.SetClientSize(wx.Size(600, 300))
         self.SetMenuBar(self.menuBar1)
         
-        self.LogConsole = wx.TextCtrl(id=wxID_BEREMIZLOGCONSOLE, value='',
+        self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
               name='LogConsole', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wxTE_MULTILINE)
+              size=wx.Size(0, 0), style=wx.TE_MULTILINE)
         
-        self.EditPLCButton = wx.Button(id=wxID_BEREMIZEDITPLCBUTTON, label='Edit\nPLC',
+        self.EditPLCButton = wx.Button(id=ID_BEREMIZEDITPLCBUTTON, label='Edit\nPLC',
               name='EditPLCButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(48, 48), style=0)
         self.EditPLCButton.Bind(wx.EVT_BUTTON, self.OnEditPLCButton,
-              id=wxID_BEREMIZEDITPLCBUTTON)
+              id=ID_BEREMIZEDITPLCBUTTON)
         
-        self.BuildButton = wx.Button(id=wxID_BEREMIZBUILDBUTTON, label='Build',
+        self.BuildButton = wx.Button(id=ID_BEREMIZBUILDBUTTON, label='Build',
               name='BuildButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(48, 48), style=0)
         self.BuildButton.Bind(wx.EVT_BUTTON, self.OnBuildButton,
-              id=wxID_BEREMIZBUILDBUTTON)
+              id=ID_BEREMIZBUILDBUTTON)
         
-        self.SimulateButton = wx.Button(id=wxID_BEREMIZSIMULATEBUTTON, label='Simul',
+        self.SimulateButton = wx.Button(id=ID_BEREMIZSIMULATEBUTTON, label='Simul',
               name='SimulateButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(48, 48), style=0)
         self.EditPLCButton.Bind(wx.EVT_BUTTON, self.OnSimulateButton,
-              id=wxID_BEREMIZSIMULATEBUTTON)
+              id=ID_BEREMIZSIMULATEBUTTON)
         
-        self.RunButton = wx.Button(id=wxID_BEREMIZRUNBUTTON, label='Run',
+        self.RunButton = wx.Button(id=ID_BEREMIZRUNBUTTON, label='Run',
               name='RunButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(48, 48), style=0)
         self.RunButton.Bind(wx.EVT_BUTTON, self.OnRunButton,
-              id=wxID_BEREMIZRUNBUTTON)
+              id=ID_BEREMIZRUNBUTTON)
         
-        self.BusList = wx.ListBox(choices=[], id=wxID_BEREMIZBUSLIST,
+        self.BusList = wx.ListBox(choices=[], id=ID_BEREMIZBUSLIST,
               name='BusList', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(-1, -1), style=wxLB_SINGLE|wxLB_NEEDED_SB)
+              size=wx.Size(-1, -1), style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
         self.BusList.Bind(wx.EVT_LISTBOX_DCLICK, self.OnBusListDClick,
-              id=wxID_BEREMIZBUSLIST)
+              id=ID_BEREMIZBUSLIST)
         
-        self.AddBusButton = wx.Button(id=wxID_BEREMIZADDBUSBUTTON, label='Add',
+        self.AddBusButton = wx.Button(id=ID_BEREMIZADDBUSBUTTON, label='Add',
               name='AddBusButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(48, 48), style=0)
         self.AddBusButton.Bind(wx.EVT_BUTTON, self.OnAddBusButton,
-              id=wxID_BEREMIZADDBUSBUTTON)
+              id=ID_BEREMIZADDBUSBUTTON)
         
-        self.DeleteBusButton = wx.Button(id=wxID_BEREMIZDELETEBUSBUTTON, label='Delete',
+        self.DeleteBusButton = wx.Button(id=ID_BEREMIZDELETEBUSBUTTON, label='Delete',
               name='DeleteBusButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(48, 48), style=0)
         self.DeleteBusButton.Bind(wx.EVT_BUTTON, self.OnDeleteBusButton,
-              id=wxID_BEREMIZDELETEBUSBUTTON)
+              id=ID_BEREMIZDELETEBUSBUTTON)
         
         self._init_sizers()
     
@@ -389,23 +357,23 @@ class Beremiz(wx.Frame):
             if self.CurrentProjectPath == "":
                 self.menuBar1.EnableTop(1, False)
                 self.menuBar1.EnableTop(2, False)
-                self.FileMenu.Enable(wxID_BEREMIZFILEMENUITEMS2, False)
-                self.FileMenu.Enable(wxID_BEREMIZFILEMENUITEMS3, False)
-                self.FileMenu.Enable(wxID_BEREMIZFILEMENUITEMS5, False)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, False)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, False)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, False)
             else:
                 self.menuBar1.EnableTop(1, True)
                 self.menuBar1.EnableTop(2, True)
-                self.FileMenu.Enable(wxID_BEREMIZFILEMENUITEMS2, True)
-                self.FileMenu.Enable(wxID_BEREMIZFILEMENUITEMS3, True)
-                self.FileMenu.Enable(wxID_BEREMIZFILEMENUITEMS5, True)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, True)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, True)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, True)
 
     def OnNewProjectMenu(self, event):
         if self.CurrentProjectPath != "":
             defaultpath = self.CurrentProjectPath
         else:
             defaultpath = os.getcwd()
-        dialog = wxDirDialog(self , "Choose a project", defaultpath, wxDD_NEW_DIR_BUTTON)
-        if dialog.ShowModal() == wxID_OK:
+        dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
+        if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
             if os.path.isdir(projectpath) and len(os.listdir(projectpath)) == 0:
@@ -413,7 +381,7 @@ class Beremiz(wx.Frame):
                 self.PLCManager = PLCControler()
                 plc_file = os.path.join(projectpath, "plc.xml")
                 dialog = ProjectDialog(self)
-                if dialog.ShowModal() == wxID_OK:
+                if dialog.ShowModal() == wx.ID_OK:
                     values = dialog.GetValues()
                     projectname = values.pop("projectName")
                     values["creationDateTime"] = datetime(*localtime()[:6])
@@ -425,7 +393,7 @@ class Beremiz(wx.Frame):
                 self.RefreshButtons()
                 self.RefreshMainMenu()
             else:
-                message = wxMessageDialog(self, "Folder choosen isn't empty. You can't use it for a new project!", "ERROR", wxOK|wxICON_ERROR)
+                message = wx.MessageDialog(self, "Folder choosen isn't empty. You can't use it for a new project!", "ERROR", wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         event.Skip()
@@ -435,8 +403,8 @@ class Beremiz(wx.Frame):
             defaultpath = self.CurrentProjectPath
         else:
             defaultpath = os.getcwd()
-        dialog = wxDirDialog(self , "Choose a project", defaultpath, wxDD_NEW_DIR_BUTTON)
-        if dialog.ShowModal() == wxID_OK:
+        dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
+        if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
             try:
@@ -460,7 +428,7 @@ class Beremiz(wx.Frame):
                         if not result:
                             self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "NodeList" : nodelist, "Editor" : None}
                         else:
-                            message = wxMessageDialog(self, result, "Error", wxOK|wxICON_ERROR)
+                            message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
                             message.ShowModal()
                             message.Destroy()
                     else:
@@ -473,7 +441,7 @@ class Beremiz(wx.Frame):
                     self.CurrentProjectPath = projectpath
                 else:
                     dialog = ProjectDialog(self)
-                    if dialog.ShowModal() == wxID_OK:
+                    if dialog.ShowModal() == wx.ID_OK:
                         values = dialog.GetValues()
                         projectname = values.pop("projectName")
                         values["creationDateTime"] = datetime(*localtime()[:6])
@@ -486,7 +454,7 @@ class Beremiz(wx.Frame):
                 self.RefreshButtons()
                 self.RefreshMainMenu()
             except Exception:
-                message = wxMessageDialog(self, "\"%s\" folder is not a valid Beremiz project"%projectpath, "Error", wxOK|wxICON_ERROR)
+                message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project"%projectpath, "Error", wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         event.Skip()
@@ -595,7 +563,7 @@ class Beremiz(wx.Frame):
     
     def AddBus(self):
         dialog = AddBusDialog(self)
-        if dialog.ShowModal() == wxID_OK:
+        if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             if values["busID"].startswith("0x"):
                 bus_id = int(values["busID"], 16)
@@ -609,13 +577,13 @@ class Beremiz(wx.Frame):
                     if not result:
                         self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"], "NodeList" : nodelist, "Editor" : None}
                     else:
-                        message = wxMessageDialog(self, result, "Error", wxOK|wxICON_ERROR)
+                        message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                 else:
                     self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"]}
             else:
-                message = wxMessageDialog(self, "The bus ID \"0x%2.2X\" is already used!"%bus_id, "Error", wxOK|wxICON_ERROR)
+                message = wx.MessageDialog(self, "The bus ID \"0x%2.2X\" is already used!"%bus_id, "Error", wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
             self.RefreshBusList()
@@ -625,8 +593,8 @@ class Beremiz(wx.Frame):
         busidlist = self.BusManagers.keys()
         busidlist.sort()
         list = ["0x%2.2X\t%s\t%s"%(id, self.BusManagers[id]["Type"], self.BusManagers[id]["Name"]) for id in busidlist]
-        dialog = wxSingleChoiceDialog(self, "Select Bus to delete:", "Bus Delete", list, wxOK|wxCANCEL)
-        if dialog.ShowModal() == wxID_OK:
+        dialog = wx.SingleChoiceDialog(self, "Select Bus to delete:", "Bus Delete", list, wx.OK|wx.CANCEL)
+        if dialog.ShowModal() == wx.ID_OK:
             selected = dialog.GetSelection()
             editor = self.BusManagers[busidlist[selected]]["Editor"]
             if editor:
@@ -690,74 +658,84 @@ class Beremiz(wx.Frame):
 #                             Add Bus Dialog
 #-------------------------------------------------------------------------------
 
-[wxID_ADDBUSDIALOG, wxID_ADDBUSDIALOGMAINPANEL, 
- wxID_ADDBUSDIALOGBUSID, wxID_ADDBUSDIALOGBUSNAME, 
- wxID_ADDBUSDIALOGBUSTYPE, wxID_ADDBUSDIALOGSTATICTEXT1,
- wxID_ADDBUSDIALOGSTATICTEXT2, wxID_ADDBUSDIALOGSTATICTEXT3,
-] = [wx.NewId() for _init_ctrls in range(8)]
+[ID_ADDBUSDIALOG, ID_ADDBUSDIALOGBUSID, 
+ ID_ADDBUSDIALOGBUSNAME, ID_ADDBUSDIALOGBUSTYPE, 
+ ID_ADDBUSDIALOGSTATICTEXT1, ID_ADDBUSDIALOGSTATICTEXT2, 
+ ID_ADDBUSDIALOGSTATICTEXT3,
+] = [wx.NewId() for _init_ctrls in range(7)]
 
 class AddBusDialog(wx.Dialog):
     def _init_coll_flexGridSizer1_Items(self, parent):
-        # generated method, don't edit
-
-        parent.AddWindow(self.MainPanel, 0, border=0, flag=0)
-
+        parent.AddSizer(self.MainSizer, 0, border=20, flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+        parent.AddSizer(self.ButtonSizer, 0, border=20, flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        
+    def _init_coll_flexGridSizer1_Growables(self, parent):
+        parent.AddGrowableCol(0)
+        parent.AddGrowableRow(0)
+    
+    def _init_coll_MainSizer_Items(self, parent):
+        parent.AddWindow(self.staticText1, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.BusId, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.staticText2, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.BusType, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.staticText3, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.BusName, 0, border=0, flag=wx.GROW)
+        
+    def _init_coll_MainSizer_Growables(self, parent):
+        parent.AddGrowableCol(1)
+        
     def _init_sizers(self):
-        # generated method, don't edit
-        self.flexGridSizer1 = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
+        self.flexGridSizer1 = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
+        self.MainSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=3, vgap=15)
 
         self._init_coll_flexGridSizer1_Items(self.flexGridSizer1)
+        self._init_coll_flexGridSizer1_Growables(self.flexGridSizer1)
+        self._init_coll_MainSizer_Items(self.MainSizer)
+        self._init_coll_MainSizer_Growables(self.MainSizer)
 
         self.SetSizer(self.flexGridSizer1)
 
     def _init_ctrls(self, prnt):
-        # generated method, don't edit
-        wx.Dialog.__init__(self, id=wxID_ADDBUSDIALOG,
+        wx.Dialog.__init__(self, id=ID_ADDBUSDIALOG,
               name='PouDialog', parent=prnt, pos=wx.Point(376, 183),
               size=wx.Size(300, 200), style=wx.DEFAULT_DIALOG_STYLE,
               title='Create a new POU')
         self.SetClientSize(wx.Size(300, 200))
 
-        self.MainPanel = wx.Panel(id=wxID_ADDBUSDIALOGMAINPANEL,
-              name='MainPanel', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(300, 200), style=wx.TAB_TRAVERSAL)
-        self.MainPanel.SetAutoLayout(True)
+        self.staticText1 = wx.StaticText(id=ID_ADDBUSDIALOGSTATICTEXT1,
+              label='Bus ID:', name='staticText1', parent=self,
+              pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
 
-        self.staticText1 = wx.StaticText(id=wxID_ADDBUSDIALOGSTATICTEXT1,
-              label='Bus ID:', name='staticText1', parent=self.MainPanel,
-              pos=wx.Point(24, 24), size=wx.Size(95, 17), style=0)
+        self.BusId = wx.TextCtrl(id=ID_ADDBUSDIALOGBUSID,
+              name='BusId', parent=self, pos=wx.Point(0, 0), 
+              size=wx.Size(0, 24), style=0)
 
-        self.BusId = wx.TextCtrl(id=wxID_ADDBUSDIALOGBUSID,
-              name='BusId', parent=self.MainPanel, pos=wx.Point(104, 24), 
-              size=wx.Size(150, 24), style=0)
+        self.staticText2 = wx.StaticText(id=ID_ADDBUSDIALOGSTATICTEXT2,
+              label='Bus Type:', name='staticText2', parent=self,
+              pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
 
-        self.staticText2 = wx.StaticText(id=wxID_ADDBUSDIALOGSTATICTEXT2,
-              label='Bus Type:', name='staticText2', parent=self.MainPanel,
-              pos=wx.Point(24, 64), size=wx.Size(95, 17), style=0)
-
-        self.BusType = wx.Choice(id=wxID_ADDBUSDIALOGBUSTYPE,
-              name='BusType', parent=self.MainPanel, pos=wx.Point(104, 64),
-              size=wx.Size(150, 24), style=0)
+        self.BusType = wx.Choice(id=ID_ADDBUSDIALOGBUSTYPE,
+              name='BusType', parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=0)
         
-        self.staticText3 = wx.StaticText(id=wxID_ADDBUSDIALOGSTATICTEXT3,
-              label='Bus Name:', name='staticText3', parent=self.MainPanel,
-              pos=wx.Point(24, 104), size=wx.Size(95, 17), style=0)
+        self.staticText3 = wx.StaticText(id=ID_ADDBUSDIALOGSTATICTEXT3,
+              label='Bus Name:', name='staticText3', parent=self,
+              pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
 
-        self.BusName = wx.TextCtrl(id=wxID_ADDBUSDIALOGBUSNAME,
-              name='BusName', parent=self.MainPanel, pos=wx.Point(104, 104),
-              size=wx.Size(150, 24), style=0)
+        self.BusName = wx.TextCtrl(id=ID_ADDBUSDIALOGBUSNAME,
+              name='BusName', parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=0)
+        
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.ButtonSizer.GetAffirmativeButton().GetId())
         
         self._init_sizers()
 
     def __init__(self, parent):
         self._init_ctrls(parent)
-        self.ButtonSizer = self.CreateButtonSizer(wxOK|wxCANCEL|wxCENTRE)
-        self.flexGridSizer1.Add(self.ButtonSizer, 1, wxALIGN_RIGHT)
         
         for option in ["CanFestival","SVGUI"]:
             self.BusType.Append(option)
-        
-        EVT_BUTTON(self, self.ButtonSizer.GetAffirmativeButton().GetId(), self.OnOK)
     
     def OnOK(self, event):
         error = []
@@ -783,7 +761,7 @@ class AddBusDialog(wx.Dialog):
         elif bus_id.startswith("0x"):
             try:
                 bus_id = int(bus_id, 16)
-                self.EndModal(wxID_OK)
+                self.EndModal(wx.ID_OK)
             except:
                 message = wxMessageDialog(self, "Bus ID must be a decimal or hexadecimal number!", "Error", wxOK|wxICON_ERROR)
                 message.ShowModal()
@@ -791,7 +769,7 @@ class AddBusDialog(wx.Dialog):
         elif not bus_id.startswith("-"):
             try:
                 bus_id = int(bus_id)
-                self.EndModal(wxID_OK)
+                self.EndModal(wx.ID_OK)
             except:
                 message = wxMessageDialog(self, "Bus ID must be a decimal or hexadecimal number!", "Error", wxOK|wxICON_ERROR)
                 message.ShowModal()
