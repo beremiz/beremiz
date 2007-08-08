@@ -22,8 +22,8 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from wxPython.wx import *
 import wx
+
 from time import localtime
 from datetime import datetime
 
@@ -857,7 +857,7 @@ def format_namespace(d, indent='    '):
 
 ignored_exceptions = [] # a problem with a line in a module is only reported once per session
 
-def wxAddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
+def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
     
     def handle_exception(e_type, e_value, e_traceback):
         traceback.print_exception(e_type, e_value, e_traceback) # this is very helpful when there's an exception in the rest of this func
@@ -899,11 +899,11 @@ def wxAddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
     sys.excepthook = handle_exception
 
 if __name__ == '__main__':
-    app = wxPySimpleApp()
-    wxInitAllImageHandlers()
+    app = wx.PySimpleApp()
+    wx.InitAllImageHandlers()
     
     # Install a exception handle for bug reports
-    wxAddExceptHook(os.getcwd(),__version__)
+    AddExceptHook(os.getcwd(),__version__)
     
     frame = Beremiz(None)
 
