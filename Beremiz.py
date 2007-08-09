@@ -318,6 +318,9 @@ class Beremiz(wx.Frame):
         
         self.Log = LogPseudoFile(self.LogConsole)
         
+        if projectOpen:
+            self.OpenProject(projectOpen)
+            
         self.RefreshButtons()
         self.RefreshMainMenu()
         
@@ -398,6 +401,58 @@ class Beremiz(wx.Frame):
                 message.Destroy()
         event.Skip()
     
+    def OpenProject(self, projectpath):
+        try:
+            if not os.path.isdir(projectpath):
+                raise Exception
+            self.BusManagers = {}
+            configpath = os.path.join(projectpath, ".project")
+            if not os.path.isfile(configpath):
+                raise Exception
+            file = open(configpath, "r")
+            lines = [line.strip() for line in file.readlines() if line.strip() != ""]
+            if lines[0] != "Beremiz":
+                file.close()
+                raise Exception
+            for bus_id, bus_type, bus_name in [line.split(" ") for line in lines[1:]]:
+                id = int(bus_id, 16)
+                if bus_type == "CanFestival":
+                    manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
+                    nodelist = NodeList(manager)
+                    result = nodelist.LoadProject(projectpath, bus_name)
+                    if not result:
+                        self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "NodeList" : nodelist, "Editor" : None}
+                    else:
+                        message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
+                        message.ShowModal()
+                        message.Destroy()
+                else:
+                    self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type}
+            file.close()
+            self.PLCManager = PLCControler()
+            plc_file = os.path.join(projectpath, "plc.xml")
+            if os.path.isfile(plc_file):
+                self.PLCManager.OpenXMLFile(plc_file)
+                self.CurrentProjectPath = projectpath
+            else:
+                dialog = ProjectDialog(self)
+                if dialog.ShowModal() == wx.ID_OK:
+                    values = dialog.GetValues()
+                    projectname = values.pop("projectName")
+                    values["creationDateTime"] = datetime(*localtime()[:6])
+                    self.PLCManager.CreateNewProject(projectname)
+                    self.PLCManager.SetProjectProperties(values)
+                    self.PLCManager.SaveXMLFile(plc_file)
+                    self.CurrentProjectPath = projectpath
+                dialog.Destroy()
+            self.RefreshBusList()
+            self.RefreshButtons()
+            self.RefreshMainMenu()
+        except Exception:
+            message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project"%projectpath, "Error", wx.OK|wx.ICON_ERROR)
+            message.ShowModal()
+            message.Destroy()
+    
     def OnOpenProjectMenu(self, event):
         if self.CurrentProjectPath != "":
             defaultpath = self.CurrentProjectPath
@@ -405,58 +460,8 @@ class Beremiz(wx.Frame):
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
-            projectpath = dialog.GetPath()
+            self.OpenProject(dialog.GetPath())
             dialog.Destroy()
-            try:
-                if not os.path.isdir(projectpath):
-                    raise Exception
-                self.BusManagers = {}
-                configpath = os.path.join(projectpath, ".project")
-                if not os.path.isfile(configpath):
-                    raise Exception
-                file = open(configpath, "r")
-                lines = [line.strip() for line in file.readlines() if line.strip() != ""]
-                if lines[0] != "Beremiz":
-                    file.close()
-                    raise Exception
-                for bus_id, bus_type, bus_name in [line.split(" ") for line in lines[1:]]:
-                    id = int(bus_id, 16)
-                    if bus_type == "CanFestival":
-                        manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
-                        nodelist = NodeList(manager)
-                        result = nodelist.LoadProject(projectpath, bus_name)
-                        if not result:
-                            self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "NodeList" : nodelist, "Editor" : None}
-                        else:
-                            message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
-                            message.ShowModal()
-                            message.Destroy()
-                    else:
-                        self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type}
-                file.close()
-                self.PLCManager = PLCControler()
-                plc_file = os.path.join(projectpath, "plc.xml")
-                if os.path.isfile(plc_file):
-                    self.PLCManager.OpenXMLFile(plc_file)
-                    self.CurrentProjectPath = projectpath
-                else:
-                    dialog = ProjectDialog(self)
-                    if dialog.ShowModal() == wx.ID_OK:
-                        values = dialog.GetValues()
-                        projectname = values.pop("projectName")
-                        values["creationDateTime"] = datetime(*localtime()[:6])
-                        self.PLCManager.CreateNewProject(projectname)
-                        self.PLCManager.SetProjectProperties(values)
-                        self.PLCManager.SaveXMLFile(plc_file)
-                        self.CurrentProjectPath = projectpath
-                    dialog.Destroy()
-                self.RefreshBusList()
-                self.RefreshButtons()
-                self.RefreshMainMenu()
-            except Exception:
-                message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project"%projectpath, "Error", wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
         event.Skip()
     
     def OnCloseProjectMenu(self, event):
