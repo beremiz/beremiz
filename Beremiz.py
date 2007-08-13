@@ -32,6 +32,9 @@ base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
 
+iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
+ieclib_path = os.path.join(base_folder, "matiec", "lib")
+
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from PLCControler import PLCControler
 
@@ -78,13 +81,32 @@ LOCATED_MODEL = re.compile("__LOCATED_VAR\(([A-Z]*),([_A-Za-z0-9]*)\)")
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output = None):
+        self.red_white = wx.TextAttr("RED", "WHITE")
+        self.red_yellow = wx.TextAttr("RED", "YELLOW")
+        self.black_white = wx.TextAttr("BLACK", "WHITE")
+        self.default_style = None
         self.output = output
 
     def writelines(self, l):
         map(self.write, l)
 
     def write(self, s):
-        self.output.SetValue(self.output.GetValue() + s) 
+        if self.default_style != self.black_white: 
+            self.output.SetDefaultStyle(self.black_white)
+            self.default_style = self.black_white
+        self.output.AppendText(s) 
+
+    def write_warning(self, s):
+        if self.default_style != self.red_white: 
+            self.output.SetDefaultStyle(self.red_white)
+            self.default_style = self.red_white
+        self.output.AppendText(s) 
+
+    def write_error(self, s):
+        if self.default_style != self.red_yellow: 
+            self.output.SetDefaultStyle(self.red_yellow)
+            self.default_style = self.red_yellow
+        self.output.AppendText(s) 
 
     def flush(self):
         self.output.SetValue("")
@@ -261,7 +283,7 @@ class Beremiz(wx.Frame):
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
               name='LogConsole', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TE_MULTILINE)
+              size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         
         self.EditPLCButton = wx.Button(id=ID_BEREMIZEDITPLCBUTTON, label='Edit\nPLC',
               name='EditPLCButton', parent=self, pos=wx.Point(0, 0),
@@ -617,25 +639,59 @@ class Beremiz(wx.Frame):
             self.PLCEditor.RefreshToolBar()
             self.PLCEditor.Show()
 
+    def LogCommand(self, Command, sz_limit = 100):
+
+        import os, popen2, fcntl, select, signal
+        
+        child = popen2.Popen3(Command, 1) # capture stdout and stderr from command
+        child.tochild.close()             # don't need to talk to child
+        outfile = child.fromchild 
+        outfd = outfile.fileno()
+        errfile = child.childerr
+        errfd = errfile.fileno()
+        outdata = errdata = ''
+        outeof = erreof = 0
+        outlen = errlen = 0
+        while 1:
+            ready = select.select([outfd,errfd],[],[]) # wait for input
+            if outfd in ready[0]:
+                outchunk = outfile.readline()
+                if outchunk == '': outeof = 1
+                outdata += outchunk
+                outlen += 1
+                self.Log.write(outchunk)
+            if errfd in ready[0]:
+                errchunk = errfile.readline()
+                if errchunk == '': erreof = 1
+                errdata += errchunk
+                errlen += 1
+                self.Log.write_warning(errchunk)
+            if outeof and erreof : break
+            if errlen > sz_limit or outlen > sz_limit : 
+                os.kill(child.pid, signal.SIGTERM)
+                self.Log.write_error("Output size reached limit -- killed\n")
+                break
+        err = child.wait()
+        return (err, outdata, errdata)
+
     def BuildAutom(self):
         if self.PLCManager:
             self.TargetDir = os.path.join(self.CurrentProjectPath, "build")
             if not os.path.exists(self.TargetDir):
                 os.mkdir(self.TargetDir)
             self.Log.flush()
-            sys.stdout = self.Log
+            #sys.stdout = self.Log
             try:
-                print "Building ST Program..."
+                self.Log.write("Building ST Program...\n")
                 plc_file = os.path.join(self.TargetDir, "plc.st")
                 result = self.PLCManager.GenerateProgram(plc_file)
                 if not result:
-                    raise Exception
-                print "Compiling ST Program in to C Program..."
-                status, result = commands.getstatusoutput("../matiec/iec2cc %s -I ../matiec/lib %s"%(plc_file, self.TargetDir))
+                    raise Exception, "ST/IL/SFC code generator returned %d"%result
+                self.Log.write("Compiling ST Program in to C Program...\n")
+                status, result, err_result = self.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
                 if status:
-                    print result
-                    raise Exception
-                print "Extracting Located Variables..."
+                    raise Exception, "IEC2C compiler returned %d"%status
+                self.Log.write("Extracting Located Variables...\n")
                 location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
                 locations = []
                 lines = [line.strip() for line in location_file.readlines()]
@@ -643,21 +699,23 @@ class Beremiz(wx.Frame):
                     result = LOCATED_MODEL.match(line)
                     if result:
                         locations.append(result.groups())
-                print "Generating Network Configurations..."
+                self.Log.write("Generating Network Configurations...\n")
                 for bus_id, bus_infos in self.BusManagers.items():
                     if bus_infos["Type"] == "CanFestival":
                         master = config_utils.GenerateConciseDCF(locations, bus_id, bus_infos["NodeList"])
                         result = gen_cfile.GenerateFile("%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"])), master)
                         if result:
                             raise Exception
-                print "Generating Makefiles..."
+                self.Log.write("Generating Makefiles...\n")
                 
-                print "Compiling Project..."
+                self.Log.write("Compiling Project...\n")
                 
-                print "\nBuild Project completed"
+                self.Log.write("\nBuild Project completed\n")
             except Exception, message:
+                self.Log.write_error("\nBuild Failed\n")
+                self.Log.write(str(message))
                 pass
-            sys.stdout = sys.__stdout__
+            #sys.stdout = sys.__stdout__
                 
 #-------------------------------------------------------------------------------
 #                             Add Bus Dialog
