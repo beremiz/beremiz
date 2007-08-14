@@ -408,10 +408,9 @@ class Beremiz(wx.Frame):
                 dialog = ProjectDialog(self)
                 if dialog.ShowModal() == wx.ID_OK:
                     values = dialog.GetValues()
-                    projectname = values.pop("projectName")
                     values["creationDateTime"] = datetime(*localtime()[:6])
-                    self.PLCManager.CreateNewProject(projectname)
-                    self.PLCManager.SetProjectProperties(values)
+                    self.PLCManager.CreateNewProject(values.pop("projectName"))
+                    self.PLCManager.SetProjectProperties(properties=values)
                     self.PLCManager.SaveXMLFile(plc_file)
                     self.CurrentProjectPath = projectpath
                 dialog.Destroy()
