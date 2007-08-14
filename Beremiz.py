@@ -36,6 +36,8 @@ iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
+from TextViewer import *
+from plcopen.structures import IEC_KEYWORDS
 from PLCControler import PLCControler
 
 from networkedit import networkedit
@@ -681,15 +683,21 @@ class Beremiz(wx.Frame):
             self.Log.flush()
             #sys.stdout = self.Log
             try:
-                self.Log.write("Building ST Program...\n")
+                self.Log.write("Generating IEC-61131 code...\n")
                 plc_file = os.path.join(self.TargetDir, "plc.st")
                 result = self.PLCManager.GenerateProgram(plc_file)
                 if not result:
-                    raise Exception, "ST/IL/SFC code generator returned %d"%result
+                    raise Exception, "Error : ST/IL/SFC code generator returned %d"%result
                 self.Log.write("Compiling ST Program in to C Program...\n")
                 status, result, err_result = self.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
                 if status:
-                    raise Exception, "IEC2C compiler returned %d"%status
+                    new_dialog = wx.Frame(None)
+                    ST_viewer = TextViewer(new_dialog, None, None)
+                    #ST_viewer.Enable(False)
+                    ST_viewer.SetKeywords(IEC_KEYWORDS)
+                    ST_viewer.SetText(file(plc_file).read())
+                    new_dialog.Show()
+                    raise Exception, "Error : IEC to C compiler returned %d"%status
                 self.Log.write("Extracting Located Variables...\n")
                 location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
                 locations = []
