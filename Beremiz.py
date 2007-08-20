@@ -36,14 +36,11 @@ iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
-from TextViewer import *
-from plcopen.structures import IEC_KEYWORDS
+from TextViewer import TextViewer
+from plcopen.structures import IEC_KEYWORDS, AddPlugin
 from PLCControler import PLCControler
 
-from networkedit import networkedit
-from nodelist import NodeList
-from nodemanager import NodeManager
-import config_utils, gen_cfile
+import plugins
 
 __version__ = "$Revision$"
 
@@ -334,6 +331,15 @@ class Beremiz(wx.Frame):
     def __init__(self, parent):
         self._init_ctrls(parent)
         
+        for name in plugins.__all__:
+            module = getattr(plugins, name)
+            if len(module.BlockList) > 0:
+                function = module.GetBlockGenerationFunction(self)
+                blocklist = module.BlockList
+                for blocktype in blocklist["list"]:
+                    blocktype["generate"] = function
+                AddPlugin(module.BlockList)
+        
         self.CurrentProjectPath = ""
         
         self.PLCManager = None
@@ -439,18 +445,18 @@ class Beremiz(wx.Frame):
                 raise Exception
             for bus_id, bus_type, bus_name in [line.split(" ") for line in lines[1:]]:
                 id = int(bus_id, 16)
-                if bus_type == "CanFestival":
-                    manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
-                    nodelist = NodeList(manager)
-                    result = nodelist.LoadProject(projectpath, bus_name)
+                controller = getattr(plugins, bus_type).controller
+                if controller != None:
+                    manager = controller()
+                    result = manager.LoadProject(projectpath, bus_name)
                     if not result:
-                        self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "NodeList" : nodelist, "Editor" : None}
+                        self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "Manager" : manager, "Editor" : None}
                     else:
                         message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                 else:
-                    self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type}
+                    self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "Manager" : None, "Editor" : None}
             file.close()
             self.PLCManager = PLCControler()
             plc_file = os.path.join(projectpath, "plc.xml")
@@ -471,8 +477,8 @@ class Beremiz(wx.Frame):
             self.RefreshBusList()
             self.RefreshButtons()
             self.RefreshMainMenu()
-        except Exception:
-            message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project"%projectpath, "Error", wx.OK|wx.ICON_ERROR)
+        except Exception, message:
+            message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project\n%s"%(projectpath,message), "Error", wx.OK|wx.ICON_ERROR)
             message.ShowModal()
             message.Destroy()
     
@@ -508,7 +514,7 @@ class Beremiz(wx.Frame):
         for id in busidlist:
             bus_infos = self.BusManagers[id]
             file.write("0x%2.2X %s %s\n"%(id, bus_infos["Type"], bus_infos["Name"]))
-            bus_infos["NodeList"].SaveProject(bus_infos["Name"])
+            bus_infos["Manager"].SaveProject(bus_infos["Name"])
         file.close()
         event.Skip()
     
@@ -577,12 +583,13 @@ class Beremiz(wx.Frame):
         busidlist = self.BusManagers.keys()
         busidlist.sort()
         bus_infos = self.BusManagers[busidlist[selected]]
-        if bus_infos["Type"] == "CanFestival":
+        view = getattr(plugins, bus_infos["Type"]).view
+        if view != None:
             if bus_infos["Editor"] == None:
-                netedit = networkedit(self, bus_infos["NodeList"])
-                netedit.SetBusId(busidlist[selected])
-                netedit.Show()
-                bus_infos["Editor"] = netedit
+                editor = view(self, bus_infos["Manager"])
+                editor.SetBusId(busidlist[selected])
+                editor.Show()
+                bus_infos["Editor"] = editor
         event.Skip()
     
     def CloseEditor(self, bus_id):
@@ -598,18 +605,18 @@ class Beremiz(wx.Frame):
             else:
                 bus_id = int(values["busID"])
             if self.BusManagers.get(bus_id, None) == None:
-                if values["busType"] == "CanFestival":
-                    manager = NodeManager(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
-                    nodelist = NodeList(manager)
-                    result = nodelist.LoadProject(self.CurrentProjectPath, values["busName"])
+                controller = getattr(plugins, values["busType"]).controller
+                if controller != None:
+                    manager = controller()
+                    result = manager.LoadProject(self.CurrentProjectPath, values["busName"])
                     if not result:
-                        self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"], "NodeList" : nodelist, "Editor" : None}
+                        self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"], "Manager" : manager, "Editor" : None}
                     else:
                         message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                 else:
-                    self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"]}
+                    self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"], "Manager" : None, "Editor" : None}
             else:
                 message = wx.MessageDialog(self, "The bus ID \"0x%2.2X\" is already used!"%bus_id, "Error", wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
@@ -708,11 +715,11 @@ class Beremiz(wx.Frame):
                         locations.append(result.groups())
                 self.Log.write("Generating Network Configurations...\n")
                 for bus_id, bus_infos in self.BusManagers.items():
-                    if bus_infos["Type"] == "CanFestival":
-                        master = config_utils.GenerateConciseDCF(locations, bus_id, bus_infos["NodeList"])
-                        result = gen_cfile.GenerateFile("%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"])), master)
+                    if bus_infos["Manager"]:
+                        filepath = "%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"]))
+                        result = bus_infos["Manager"].GenerateBus(filepath, bus_id, locations)
                         if result:
-                            raise Exception
+                            raise Exception, "Bus with id \"0x%2.2X\" can't be generated!"%bus_id
                 self.Log.write("Generating Makefiles...\n")
                 
                 self.Log.write("Compiling Project...\n")
@@ -804,7 +811,7 @@ class AddBusDialog(wx.Dialog):
     def __init__(self, parent):
         self._init_ctrls(parent)
         
-        for option in ["CanFestival","SVGUI"]:
+        for option in [""] + plugins.__all__:
             self.BusType.Append(option)
     
     def OnOK(self, event):
