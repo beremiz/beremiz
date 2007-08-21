@@ -31,13 +31,14 @@ import os, re, platform, sys, time, traceback, getopt, commands
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
+sys.path.append(os.path.join(base_folder, "wxsvg", "svgui", "defeditor"))
 
 iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
-from plcopen.structures import IEC_KEYWORDS, AddPlugin
+from plcopen.structures import IEC_KEYWORDS#, AddPlugin
 from PLCControler import PLCControler
 
 import plugins
@@ -333,12 +334,8 @@ class Beremiz(wx.Frame):
         
         for name in plugins.__all__:
             module = getattr(plugins, name)
-            if len(module.BlockList) > 0:
-                function = module.GetBlockGenerationFunction(self)
-                blocklist = module.BlockList
-                for blocktype in blocklist["list"]:
-                    blocktype["generate"] = function
-                AddPlugin(module.BlockList)
+            
+			#AddPlugin(module.GetBlockGenerationFunction(self))
         
         self.CurrentProjectPath = ""
         
@@ -664,15 +661,15 @@ class Beremiz(wx.Frame):
             ready = select.select([outfd,errfd],[],[]) # wait for input
             if outfd in ready[0]:
                 outchunk = outfile.readline()
-                if outchunk == '': outeof = 1
+                if outchunk == '': outeof = 1 
+                else : outlen += 1
                 outdata += outchunk
-                outlen += 1
                 self.Log.write(outchunk)
             if errfd in ready[0]:
                 errchunk = errfile.readline()
-                if errchunk == '': erreof = 1
+                if errchunk == '': erreof = 1 
+                else : errlen += 1
                 errdata += errchunk
-                errlen += 1
                 self.Log.write_warning(errchunk)
             if outeof and erreof : break
             if errlen > sz_limit or outlen > sz_limit : 
@@ -705,6 +702,9 @@ class Beremiz(wx.Frame):
                     ST_viewer.SetText(file(plc_file).read())
                     new_dialog.Show()
                     raise Exception, "Error : IEC to C compiler returned %d"%status
+                C_files = result.splitlines()
+                C_files.remove("POUS.c")
+                C_files = map(lambda filename:os.path.join(self.TargetDir, filename), C_files)
                 self.Log.write("Extracting Located Variables...\n")
                 location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
                 locations = []
@@ -715,12 +715,15 @@ class Beremiz(wx.Frame):
                         locations.append(result.groups())
                 self.Log.write("Generating Network Configurations...\n")
                 for bus_id, bus_infos in self.BusManagers.items():
-                    if bus_infos["Manager"]:
-                        filepath = "%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"]))
-                        result = bus_infos["Manager"].GenerateBus(filepath, bus_id, locations)
+                   if bus_infos["Manager"]:
+                        c_filename = "%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"]))
+                        result = bus_infos["Manager"].GenerateBus(c_filename, locations)
                         if result:
-                            raise Exception, "Bus with id \"0x%2.2X\" can't be generated!"%bus_id
+                            raise Exception
+                        else:
+                            C_files.append(c_filename)
                 self.Log.write("Generating Makefiles...\n")
+                self.Log.write(str(C_files))
                 
                 self.Log.write("Compiling Project...\n")
                 
