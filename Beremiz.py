@@ -22,6 +22,8 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+__version__ = "$Revision$"
+
 import wx
 
 from time import localtime
@@ -40,43 +42,6 @@ from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS#, AddPlugin
 from PLCControler import PLCControler
-
-import plugins
-
-__version__ = "$Revision$"
-
-def create(parent):
-    return Beremiz(parent)
-
-def usage():
-    print "\nUsage of Beremiz.py :"
-    print "\n   %s [Projectpath]\n"%sys.argv[0]
-
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
-except getopt.GetoptError:
-    # print help information and exit:
-    usage()
-    sys.exit(2)
-
-for o, a in opts:
-    if o in ("-h", "--help"):
-        usage()
-        sys.exit()
-
-projectOpen = None
-if len(args) > 1:
-    usage()
-    sys.exit()
-elif len(args) == 1:
-    projectOpen = args[0]
-CWD = sys.path[0]
-
-re_texts = {}
-re_texts["letter"] = "[A-Za-z]"
-re_texts["digit"] = "[0-9]"
-LOCATED_MODEL = re.compile("__LOCATED_VAR\(([A-Z]*),([_A-Za-z0-9]*)\)")
-
 
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
@@ -328,8 +293,8 @@ class Beremiz(wx.Frame):
               id=ID_BEREMIZDELETEBUSBUTTON)
         
         self._init_sizers()
-    
-    def __init__(self, parent):
+
+    def __init__(self, parent, projectOpen):
         self._init_ctrls(parent)
         
         for name in plugins.__all__:
@@ -680,6 +645,8 @@ class Beremiz(wx.Frame):
         return (err, outdata, errdata)
 
     def BuildAutom(self):
+        LOCATED_MODEL = re.compile("__LOCATED_VAR\(([A-Z]*),([_A-Za-z0-9]*)\)")
+
         if self.PLCManager:
             self.TargetDir = os.path.join(self.CurrentProjectPath, "build")
             if not os.path.exists(self.TargetDir):
@@ -710,7 +677,7 @@ class Beremiz(wx.Frame):
                 locations = []
                 lines = [line.strip() for line in location_file.readlines()]
                 for line in lines:
-                    result = LOCATED_MODEL.match(line)
+                    result = self.LOCATED_MODEL.match(line)
                     if result:
                         locations.append(result.groups())
                 self.Log.write("Generating Network Configurations...\n")
@@ -979,13 +946,37 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
     sys.excepthook = handle_exception
 
 if __name__ == '__main__':
+    def usage():
+        print "\nUsage of Beremiz.py :"
+        print "\n   %s [Projectpath]\n"%sys.argv[0]
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+    except getopt.GetoptError:
+        # print help information and exit:
+        usage()
+        sys.exit(2)
+    
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit()
+    
+    if len(args) > 1:
+        usage()
+        sys.exit()
+    elif len(args) == 1:
+        projectOpen = args[0]
+    else:
+        projectOpen = None
+    
     app = wx.PySimpleApp()
     wx.InitAllImageHandlers()
     
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),__version__)
     
-    frame = Beremiz(None)
+    frame = Beremiz(None, projectOpen)
 
     frame.Show()
     app.MainLoop()

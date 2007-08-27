@@ -2,20 +2,20 @@ import os
 from DEFControler import DEFControler
 from defeditor import EditorFrame
 
-class _EditorFramePlugg(EditorFrame):
+class _EditorFramePlug(EditorFrame):
     def OnClose(self, event):
-        self.OnPluggClose()
+        self.OnPlugClose()
         event.Skip()
 
-class BusController(DEFControler):
+class _DEFControlerPlug(DEFControler):
 
-    ViewClass = _EditorFramePlugg
+    ViewClass = _EditorFramePlug
     
     def __init__(self, buspath):
         filepath = os.path.join(buspath, "gui.def")
         if os.path.isfile(filepath):
             self.OpenXMLFile(filepath)
-        else
+        else:
             self.CreateRootElement()
             self.SetFilePath(filepath)
 
@@ -31,7 +31,10 @@ TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" 
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", "REAL" : "D", "LREAL" : "L",
     "STRING" : "B", "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L", "WSTRING" : "W"}
 
-class PluginController:
+class RootClass:
+    
+    ChildsType = _DEFControlerPlug
+    
     def BlockTypesFactory(self):
         def generate_svgui_block(generator, block, body, link):
             controller = generator.GetController()
@@ -39,7 +42,7 @@ class PluginController:
             type = block.getTypeName()
             block_infos = GetBlockType(type)
             bus_id, name = [word for word in name.split("_") if word != ""]
-            block_id = self.PluginBuses[bus_id].GetElementIdFromName(name)
+            block_id = self.PlugChilds[bus_id].GetElementIdFromName(name)
             if block_id == None:
                 raise ValueError, "No corresponding block found"
             if not generator.ComputedBlocks.get(name, False):

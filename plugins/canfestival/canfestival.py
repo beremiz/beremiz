@@ -4,12 +4,14 @@ from nodemanager import NodeManager
 import config_utils, gen_cfile
 from networkedit import networkedit
 
-class _NetworkEditPlugg(networkedit):
+class _NetworkEdit(networkedit):
+    " Overload some of CanFestival Network Editor methods "
     def OnCloseFrame(self, event):
-        self.OnPluggClose()
+        " Do reset _NodeListPlug.View when closed"
+        self._onclose()
         event.Skip()
 
-class BusController(NodeList):
+class _NodeListPlug(NodeList):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalNode">
@@ -20,17 +22,29 @@ class BusController(NodeList):
     </xsd:schema>
     """
 
-    ViewClass = _NetworkEditPlugg
-    
     def __init__(self, buspath):
         manager = NodeManager()
         NodeList.__init__(self, manager)
         self.LoadProject(buspath)
 
-    def TestModified(self):
+    _View = None
+    def _OpenView(self):
+        if not self._View:
+            def _onclose():
+                self.View = None
+            self._View = _NetworkEdit()
+            self._View._onclose = _onclose
+        return self.View
+    PluginMethods = [("NetworkEdit",_OpenView)]
+
+    def OnPlugClose(self):
+        if self._View:
+            self._View.Close()
+
+    def PlugTestModified(self):
         return self.HasChanged()
         
-    def ReqSave(self):
+    def PlugRequestSave(self):
         self.SaveProject()
         return True
 
@@ -43,14 +57,14 @@ class BusController(NodeList):
         res = gen_cfile.GenerateFile(filepath, master)
         if not res:
              s = str(self.BaseParams.BusId)+"_IN(){}\n"
-             s += "CanOpen(str(\""+self.CanFestivalNode.CAN_Device)+"\")"
+             s += "CanOpen(\""+self.CanFestivalNode.CAN_Device+"\")"
              f = file(filepath, 'a')
              f.write(s)
         else:
              pass # error
         return {"headers":["master.h"],"sources":["master.c"]}
     
-class PluginController:
+class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalInstance">
@@ -61,6 +75,8 @@ class PluginController:
     </xsd:schema>
     """
 
+    PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
+
     def Generate_C(self, filepath, locations):
         """
         return C code for network dictionnary
@@ -69,7 +85,7 @@ class PluginController:
         res = gen_cfile.GenerateFile(filepath, master)
         if not res:
              s = str(self.BaseParams.BusId)+"_IN(){}\n"
-             s += "CanOpen(str(\""+self.CanFestivalNode.CAN_Device)+"\")"
+             s += "CanOpen(str(\""+self.CanFestivalNode.CAN_Device+"\")"
              f = file(filepath, 'a')
              f.write(s)
         else:
