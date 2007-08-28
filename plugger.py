@@ -238,12 +238,12 @@ class PlugTemplate:
                 if os.path.isdir(_self.PlugPath(PlugName)) and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
                     #Load the plugin.xml file into parameters members
                     _self.LoadXMLParams()
+                    # Check that IEC_Channel is not already in use.
+                    self.FindNewIEC_Channel(self.BaseParams.getIEC_Channel())
                     # Call the plugin real __init__
                     PlugClass.__init__(_self)
                     #Load and init all the childs
                     _self.LoadChilds()
-                    # Check that IEC_Channel is not already in use.
-                    self.FindNewIEC_Channel(self.BaseParams.getIEC_Channel())
                 else:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
                     # Set plugin name

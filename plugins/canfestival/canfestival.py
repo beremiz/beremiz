@@ -48,21 +48,22 @@ class _NodeListPlug(NodeList):
         self.SaveProject()
         return True
 
-    def Generate_C(self, dirpath, locations):
+    def PlugGenerate_C(self, buildpath, current_location, locations):
         """
-        return C code for network dictionnary
+        Generate C code
+        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param locations: List of complete variables locations \
+            [(IEC_loc, IEC_Direction IEC_Type, Name)]\
+            ex: [((0,0,4,5),'I','X','__IX_0_0_4_5'),...]
         """
-        filepath = os.path.join(dirpath, "master.c")
-        master = config_utils.GenerateConciseDCF(locations, self)
-        res = gen_cfile.GenerateFile(filepath, master)
-        if not res:
-             s = str(self.BaseParams.BusId)+"_IN(){}\n"
-             s += "CanOpen(\""+self.CanFestivalNode.CAN_Device+"\")"
-             f = file(filepath, 'a')
-             f.write(s)
-        else:
-             pass # error
-        return {"headers":["master.h"],"sources":["master.c"]}
+        prefix = "_".join(map(lambda x:str(x), current_location))
+        Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
+        master = config_utils.GenerateConciseDCF(locations, current_location, self)
+        res = gen_cfile.GenerateFile(Gen_OD_path, master)
+        if res :
+            raise Exception, res
+        
+        return [(Gen_OD_path,CanFestival_OD_CFLAGS)],""
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -77,12 +78,18 @@ class RootClass:
 
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
 
-    def Generate_C(self, filepath, locations):
+    def PlugGenerate_C(self, buildpath, current_location, locations):
         """
-        return C code for network dictionnary
+        Generate C code
+        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param locations: List of complete variables locations \
+            [(IEC_loc, IEC_Direction IEC_Type, Name)]\
+            ex: [((0,0,4,5),'I','X','__IX_0_0_4_5'),...]
         """
+        prefix = "_".join(map(lambda x:str(x), current_location))
+        Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
         master = config_utils.GenerateConciseDCF(locations, self)
-        res = gen_cfile.GenerateFile(filepath, master)
+        res = gen_cfile.GenerateFile(Gen_OD_path, master)
         if not res:
              s = str(self.BaseParams.BusId)+"_IN(){}\n"
              s += "CanOpen(str(\""+self.CanFestivalNode.CAN_Device+"\")"
@@ -90,4 +97,7 @@ class RootClass:
              f.write(s)
         else:
              pass # error
+         
+        return [],""
+
 
