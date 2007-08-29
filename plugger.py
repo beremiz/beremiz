@@ -93,24 +93,26 @@ class PlugTemplate:
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [(IEC_loc, IEC_Direction IEC_Type, Name)]\
-            ex: [((0,0,4,5),'I','X','__IX_0_0_4_5'),...]
+            ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
         """
         return [],""
     
     def _Generate_C(self, buildpath, current_location, locations):
         # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS
-        PlugCFilesAndCFLAGS, PlugLDFLAGS = self._Generate_C(buildpath, current_location, locations)
+        PlugCFilesAndCFLAGS, PlugLDFLAGS = self.PlugGenerate_C(buildpath, current_location, locations)
         # recurse through all childs, and stack their results
         for PlugChild in self.IterChilds():
+            # Compute chile IEC location
+            new_location = current_location + (self.BaseParams.getIEC_Channel())
             # Get childs [(Cfiles, CFLAGS)], LDFLAGS
             CFilesAndCFLAGS, LDFLAGS = \
                 PlugChild._Generate_C(
                     #keep the same path
                     buildpath,
                     # but update location (add curent IEC channel at the end)
-                    current_location + (self.BaseParams.getIEC_Channel()),
+                    new_location,
                     # filter locations that start with current IEC location
-                    [ (l,d,t,n) for l,d,t,n in locations if l[0:len(current_location)] == current_location ])
+                    [ (l,d,t,n) for l,d,t,n in locations if l[0:len(new_location)] == new_location ])
             # stack the result
             PlugCFilesAndCFLAGS += CFilesAndCFLAGS
             PlugLDFLAGS += LDFLAGS
@@ -290,7 +292,6 @@ class PlugTemplate:
                 except Exception, e:
                     print e
 
-
 class PluginsRoot(PlugTemplate):
 
     # For root object, available Childs Types are modules of the plugin packages.
@@ -374,5 +375,5 @@ class PluginsRoot(PlugTemplate):
         
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
-        
     
+       
