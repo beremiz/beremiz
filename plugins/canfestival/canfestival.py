@@ -22,10 +22,10 @@ class _NodeListPlug(NodeList):
     </xsd:schema>
     """
 
-    def __init__(self, buspath):
+    def __init__(self):
         manager = NodeManager()
         NodeList.__init__(self, manager)
-        self.LoadProject(buspath)
+        self.LoadProject(self.PlugPath())
 
     _View = None
     def _OpenView(self):
@@ -44,7 +44,7 @@ class _NodeListPlug(NodeList):
     def PlugTestModified(self):
         return self.HasChanged()
         
-    def PlugRequestSave(self):
+    def OnPlugSave(self):
         self.SaveProject()
         return True
 
@@ -77,7 +77,7 @@ class RootClass:
     """
 
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
-
+    
     def PlugGenerate_C(self, buildpath, current_location, locations):
         """
         Generate C code

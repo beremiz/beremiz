@@ -28,6 +28,7 @@ import wx
 
 from time import localtime
 from datetime import datetime
+import types
 
 import os, re, platform, sys, time, traceback, getopt, commands
 base_folder = os.path.split(sys.path[0])[0]
@@ -41,7 +42,7 @@ ieclib_path = os.path.join(base_folder, "matiec", "lib")
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS#, AddPlugin
-from PLCControler import PLCControler
+from plugger import PluginsRoot
 
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
@@ -79,11 +80,157 @@ class LogPseudoFile:
     def isatty(self):
         return false
 
-[ID_BEREMIZ, ID_BEREMIZLOGCONSOLE, ID_BEREMIZEDITPLCBUTTON,
- ID_BEREMIZBUILDBUTTON, ID_BEREMIZSIMULATEBUTTON,
- ID_BEREMIZRUNBUTTON, ID_BEREMIZBUSLIST,
- ID_BEREMIZADDBUSBUTTON, ID_BEREMIZDELETEBUSBUTTON,
-] = [wx.NewId() for _init_ctrls in range(9)]
+class AttributesTable(wx.grid.PyGridTableBase):
+    
+    """
+    A custom wxGrid Table using user supplied data
+    """
+    def __init__(self, parent, data, colnames):
+        # The base class must be initialized *first*
+        wx.grid.PyGridTableBase.__init__(self)
+        self.data = data
+        self.colnames = colnames
+        self.Parent = parent
+        # XXX
+        # we need to store the row length and collength to
+        # see if the table has changed size
+        self._rows = self.GetNumberRows()
+        self._cols = self.GetNumberCols()
+    
+    def GetNumberCols(self):
+        return len(self.colnames)
+        
+    def GetNumberRows(self):
+        return len(self.data)
+
+    def GetColLabelValue(self, col):
+        if col < len(self.colnames):
+            return self.colnames[col]
+
+    def GetRowLabelValues(self, row):
+        return row
+
+    def GetValue(self, row, col):
+        if row < self.GetNumberRows():
+            name = str(self.data[row].get(self.GetColLabelValue(col), ""))
+            return name
+    
+    def GetValueByName(self, row, colname):
+        return self.data[row].get(colname)
+
+    def SetValue(self, row, col, value):
+        if col < len(self.colnames):
+            self.data[row][self.GetColLabelValue(col)] = value
+        
+    def ResetView(self, grid):
+        """
+        (wxGrid) -> Reset the grid view.   Call this to
+        update the grid if rows and columns have been added or deleted
+        """
+        grid.BeginBatch()
+        for current, new, delmsg, addmsg in [
+            (self._rows, self.GetNumberRows(), wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED),
+            (self._cols, self.GetNumberCols(), wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED),
+        ]:
+            if new < current:
+                msg = wx.grid.GridTableMessage(self,delmsg,new,current-new)
+                grid.ProcessTableMessage(msg)
+            elif new > current:
+                msg = wx.grid.GridTableMessage(self,addmsg,new-current)
+                grid.ProcessTableMessage(msg)
+                self.UpdateValues(grid)
+        grid.EndBatch()
+
+        self._rows = self.GetNumberRows()
+        self._cols = self.GetNumberCols()
+        # update the column rendering scheme
+        self._updateColAttrs(grid)
+
+        # update the scrollbars and the displayed part of the grid
+        grid.AdjustScrollbars()
+        grid.ForceRefresh()
+
+    def UpdateValues(self, grid):
+        """Update all displayed values"""
+        # This sends an event to the grid table to update all of the values
+        msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        grid.ProcessTableMessage(msg)
+
+    def _updateColAttrs(self, grid):
+        """
+        wxGrid -> update the column attributes to add the
+        appropriate renderer given the column name.
+
+        Otherwise default to the default renderer.
+        """
+        
+        for row in range(self.GetNumberRows()):
+            for col in range(self.GetNumberCols()):
+                editor = None
+                renderer = None
+                align = wx.ALIGN_LEFT
+                colname = self.GetColLabelValue(col)
+                grid.SetReadOnly(row, col, False)
+                
+                if colname == "Value":
+                    colSize = 100
+                    value_type = self.data[row]["Type"]
+                    if isinstance(value_type, types.ListType):
+                        editor = wx.grid.GridCellChoiceEditor()
+                        editor.SetParameters(",".join(value_type))
+                    elif value_type == "boolean":
+                        editor = wx.grid.GridCellChoiceEditor()
+                        editor.SetParameters("True,False")
+                    elif value_type in ["unsignedLong","long","integer"]:
+                        editor = wx.grid.GridCellNumberEditor()
+                        align = wx.ALIGN_RIGHT
+                    elif value_type == "decimal":
+                        editor = wx.grid.GridCellFloatEditor()
+                        align = wx.ALIGN_RIGHT
+                    else:
+                        editor = wx.grid.GridCellTextEditor()
+                else:
+                    colSize = 120
+                    grid.SetReadOnly(row, col, True)
+                
+                attr = wx.grid.GridCellAttr()
+                attr.SetAlignment(align, wx.ALIGN_CENTRE)
+                grid.SetColAttr(col, attr)
+                grid.SetColSize(col, colSize)
+                                    
+                grid.SetCellEditor(row, col, editor)
+                grid.SetCellRenderer(row, col, renderer)
+                
+                grid.SetCellBackgroundColour(row, col, wx.WHITE)
+    
+    def SetData(self, data):
+        self.data = data
+    
+    def GetData(self):
+        return self.data
+    
+    def AppendRow(self, row_content):
+        self.data.append(row_content)
+
+    def RemoveRow(self, row_index):
+        self.data.pop(row_index)
+
+    def GetRow(self, row_index):
+        return self.data[row_index]
+
+    def Empty(self):
+        self.data = []
+
+[ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
+ ID_BEREMIZSECONDSPLITTER, ID_BEREMIZLEFTPANEL, 
+ ID_BEREMIZPARAMSPANEL, ID_BEREMIZLOGCONSOLE, 
+ ID_BEREMIZPLUGINTREE, ID_BEREMIZPLUGINCHILDS, 
+ ID_BEREMIZADDBUTTON, ID_BEREMIZDELETEBUTTON,
+ ID_BEREMIZPARAMSSTATICBOX, ID_BEREMIZPARAMSENABLE, 
+ ID_BEREMIZPARAMSTARGETTYPE, ID_BEREMIZPARAMSIECCHANNEL, 
+ ID_BEREMIZPARAMSSTATICTEXT1, ID_BEREMIZPARAMSSTATICTEXT2, 
+ ID_BEREMIZPARAMSATTRIBUTESGRID,
+] = [wx.NewId() for _init_ctrls in range(17)]
 
 [ID_BEREMIZFILEMENUITEMS0, ID_BEREMIZFILEMENUITEMS1, 
  ID_BEREMIZFILEMENUITEMS2, ID_BEREMIZFILEMENUITEMS3, 
@@ -136,14 +283,14 @@ class Beremiz(wx.Frame):
               kind=wx.ITEM_NORMAL, text=u'Edit PLC\tCTRL+R')
         parent.AppendSeparator()
         parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS2,
-              kind=wx.ITEM_NORMAL, text=u'Add Bus')
+              kind=wx.ITEM_NORMAL, text=u'Add Plugin')
         parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS3,
-              kind=wx.ITEM_NORMAL, text=u'Delete Bus')
+              kind=wx.ITEM_NORMAL, text=u'Delete Plugin')
         self.Bind(wx.EVT_MENU, self.OnEditPLCMenu,
               id=ID_BEREMIZEDITMENUITEMS0)
-        self.Bind(wx.EVT_MENU, self.OnAddBusMenu,
+        self.Bind(wx.EVT_MENU, self.OnAddMenu,
               id=ID_BEREMIZEDITMENUITEMS2)
-        self.Bind(wx.EVT_MENU, self.OnDeleteBusMenu,
+        self.Bind(wx.EVT_MENU, self.OnDeleteMenu,
               id=ID_BEREMIZEDITMENUITEMS3)
     
     def _init_coll_RunMenu_Items(self, parent):
@@ -195,263 +342,407 @@ class Beremiz(wx.Frame):
         self._init_coll_RunMenu_Items(self.RunMenu)
         self._init_coll_HelpMenu_Items(self.HelpMenu)
     
-    def _init_coll_MainGridSizer_Items(self, parent):
-        parent.AddSizer(self.ControlPanelSizer, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.LogConsole, 0, border=0, flag=wx.GROW)
+    def _init_coll_LeftGridSizer_Items(self, parent):
+        parent.AddWindow(self.PluginTree, 0, border=0, flag=wx.GROW)
+        parent.AddSizer(self.ButtonGridSizer, 0, border=0, flag=wx.GROW)
         
-    def _init_coll_MainGridSizer_Growables(self, parent):
+    def _init_coll_LeftGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
-        parent.AddGrowableRow(1)
-    
-    def _init_coll_ControlPanelSizer_Items(self, parent):
-        parent.AddSizer(self.ControlButtonSizer, 0, border=0, flag=0)
-        parent.AddWindow(self.BusList, 0, border=0, flag=wx.GROW)
-        parent.AddSizer(self.BusButtonSizer, 0, border=0, flag=0)
-        
-        
-    def _init_coll_ControlPanelSizer_Growables(self, parent):
-        parent.AddGrowableCol(1)
         parent.AddGrowableRow(0)
     
-    def _init_coll_ControlButtonSizer_Items(self, parent):
-        parent.AddWindow(self.EditPLCButton, 0, border=0, flag=0)
-        parent.AddWindow(self.BuildButton, 0, border=0, flag=0)
-        parent.AddWindow(self.SimulateButton, 0, border=0, flag=0)
-        parent.AddWindow(self.RunButton, 0, border=0, flag=0)
-
-    def _init_coll_BusButtonSizer_Items(self, parent):
-        parent.AddWindow(self.AddBusButton, 0, border=0, flag=0)
-        parent.AddWindow(self.DeleteBusButton, 0, border=0, flag=0)
+    def _init_coll_ButtonGridSizer_Items(self, parent):
+        parent.AddWindow(self.PluginChilds, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.AddButton, 0, border=0, flag=0)
+        parent.AddWindow(self.DeleteButton, 0, border=0, flag=0)
+        
+    def _init_coll_ButtonGridSizer_Growables(self, parent):
+        parent.AddGrowableCol(0)
+        parent.AddGrowableRow(0)
+    
+    def _init_coll_ParamsPanelMainSizer_Items(self, parent):
+        parent.AddSizer(self.ParamsPanelChildSizer, 1, border=10, flag=wx.GROW|wx.ALL)
+        parent.AddSizer(self.ParamsPanelPluginSizer, 1, border=10, flag=wx.GROW|wx.ALL)
+        parent.AddWindow(self.AttributesGrid, 2, border=10, flag=wx.GROW|wx.TOP|wx.RIGHT|wx.BOTTOM)
+        
+    def _init_coll_ParamsPanelChildSizer_Items(self, parent):
+        parent.AddWindow(self.ParamsEnable, 0, border=5, flag=wx.GROW|wx.BOTTOM)
+        parent.AddWindow(self.ParamsStaticText1, 0, border=5, flag=wx.GROW|wx.BOTTOM)
+        parent.AddWindow(self.ParamsIECChannel, 0, border=0, flag=wx.GROW)
+    
+    def _init_coll_ParamsPanelPluginSizer_Items(self, parent):
+        parent.AddWindow(self.ParamsStaticText2, 0, border=5, flag=wx.GROW|wx.BOTTOM)
+        parent.AddWindow(self.ParamsTargetType, 0, border=0, flag=wx.GROW)
         
     def _init_sizers(self):
-        self.MainGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
-        self.ControlPanelSizer = wx.FlexGridSizer(cols=3, hgap=2, rows=1, vgap=2)
-        self.ControlButtonSizer = wx.GridSizer(cols=2, hgap=2, rows=2, vgap=2)
-        self.BusButtonSizer = wx.BoxSizer(wx.VERTICAL)
+        self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
+        self.ButtonGridSizer = wx.FlexGridSizer(cols=3, hgap=2, rows=1, vgap=2)
+        self.ParamsPanelMainSizer = wx.StaticBoxSizer(self.ParamsStaticBox, wx.HORIZONTAL)
+        self.ParamsPanelChildSizer = wx.BoxSizer(wx.VERTICAL)
+        self.ParamsPanelPluginSizer = wx.BoxSizer(wx.VERTICAL)
         
-        self._init_coll_MainGridSizer_Growables(self.MainGridSizer)
-        self._init_coll_MainGridSizer_Items(self.MainGridSizer)
-        self._init_coll_ControlPanelSizer_Growables(self.ControlPanelSizer)
-        self._init_coll_ControlPanelSizer_Items(self.ControlPanelSizer)
-        self._init_coll_ControlButtonSizer_Items(self.ControlButtonSizer)
-        self._init_coll_BusButtonSizer_Items(self.BusButtonSizer)
+        self._init_coll_LeftGridSizer_Growables(self.LeftGridSizer)
+        self._init_coll_LeftGridSizer_Items(self.LeftGridSizer)
+        self._init_coll_ButtonGridSizer_Growables(self.ButtonGridSizer)
+        self._init_coll_ButtonGridSizer_Items(self.ButtonGridSizer)
+        self._init_coll_ParamsPanelMainSizer_Items(self.ParamsPanelMainSizer)
+        self._init_coll_ParamsPanelChildSizer_Items(self.ParamsPanelChildSizer)
+        self._init_coll_ParamsPanelPluginSizer_Items(self.ParamsPanelPluginSizer)
         
-        self.SetSizer(self.MainGridSizer)
+        self.LeftPanel.SetSizer(self.LeftGridSizer)
+        self.ParamsPanel.SetSizer(self.ParamsPanelMainSizer)
     
     def _init_ctrls(self, prnt):
         wx.Frame.__init__(self, id=ID_BEREMIZ, name=u'Beremiz',
-              parent=prnt, pos=wx.Point(0, 0), size=wx.Size(600, 300),
+              parent=prnt, pos=wx.Point(0, 0), size=wx.Size(1000, 600),
               style=wx.DEFAULT_FRAME_STYLE, title=u'Beremiz')
         self._init_utils()
-        self.SetClientSize(wx.Size(600, 300))
+        self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.menuBar1)
         
+        self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
+              name='MainSplitter', parent=self, point=wx.Point(0, 0),
+              size=wx.Size(0, 0), style=wx.SP_3D)
+        self.MainSplitter.SetNeedUpdating(True)
+        self.MainSplitter.SetMinimumPaneSize(1)
+        
+        self.LeftPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
+              name='LeftPanel', parent=self.MainSplitter, pos=wx.Point(0, 0),
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        
+        self.PluginTree = wx.TreeCtrl(id=ID_BEREMIZPLUGINTREE,
+              name='PluginTree', parent=self.LeftPanel, pos=wx.Point(0, 0),
+              size=wx.Size(-1, -1), style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER)
+        self.PluginTree.Bind(wx.EVT_RIGHT_UP, self.OnPluginTreeRightUp)
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnPluginTreeItemSelected,
+              id=ID_BEREMIZPLUGINTREE)
+        
+        self.PluginChilds = wx.Choice(id=ID_BEREMIZPLUGINCHILDS,
+              name='PluginChilds', parent=self.LeftPanel, pos=wx.Point(0, 0),
+              size=wx.Size(-1, -1), style=0)
+        
+        self.AddButton = wx.Button(id=ID_BEREMIZADDBUTTON, label='Add',
+              name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
+              size=wx.Size(48, 30), style=0)
+        self.AddButton.Bind(wx.EVT_BUTTON, self.OnAddButton,
+              id=ID_BEREMIZADDBUTTON)
+        
+        self.DeleteButton = wx.Button(id=ID_BEREMIZDELETEBUTTON, label='Delete',
+              name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
+              size=wx.Size(64, 30), style=0)
+        self.DeleteButton.Bind(wx.EVT_BUTTON, self.OnDeleteButton,
+              id=ID_BEREMIZDELETEBUTTON)
+        
+        self.SecondSplitter = wx.SplitterWindow(id=ID_BEREMIZSECONDSPLITTER,
+              name='SecondSplitter', parent=self.MainSplitter, point=wx.Point(0, 0),
+              size=wx.Size(0, 0), style=wx.SP_3D)
+        self.SecondSplitter.SetNeedUpdating(True)
+        self.SecondSplitter.SetMinimumPaneSize(1)
+        
+        self.MainSplitter.SplitVertically(self.LeftPanel, self.SecondSplitter,
+              300)
+        
+        self.ParamsPanel = wx.Panel(id=ID_BEREMIZPARAMSPANEL, 
+              name='ParamsPanel', parent=self.SecondSplitter, pos=wx.Point(0, 0),
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        
+        self.ParamsStaticBox = wx.StaticBox(id=ID_BEREMIZPARAMSSTATICBOX,
+              label='', name='staticBox1', parent=self.ParamsPanel,
+              pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
+        
+        self.ParamsEnable = wx.CheckBox(id=ID_BEREMIZPARAMSENABLE,
+              label='Plugin enabled', name='ParamsEnable', parent=self.ParamsPanel,
+              pos=wx.Point(0, 0), size=wx.Size(0, 24), style=0)
+        self.Bind(wx.EVT_CHECKBOX, self.OnParamsEnableChanged, id=ID_BEREMIZPARAMSENABLE)
+        
+        self.ParamsStaticText1 = wx.StaticText(id=ID_BEREMIZPARAMSSTATICTEXT1,
+              label='IEC Channel:', name='ParamsStaticText1', parent=self.ParamsPanel,
+              pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
+        
+        self.ParamsIECChannel = wx.SpinCtrl(id=ID_BEREMIZPARAMSIECCHANNEL,
+              name='ParamsIECChannel', parent=self.ParamsPanel, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=wx.SP_ARROW_KEYS, min=0)
+        self.Bind(wx.EVT_SPINCTRL, self.OnParamsIECChannelChanged, id=ID_BEREMIZPARAMSIECCHANNEL)
+
+        self.ParamsStaticText2 = wx.StaticText(id=ID_BEREMIZPARAMSSTATICTEXT2,
+              label='Target Type:', name='ParamsStaticText2', parent=self.ParamsPanel,
+              pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
+
+        self.ParamsTargetType = wx.Choice(id=ID_BEREMIZPARAMSTARGETTYPE, 
+              name='TargetType', choices=[""], parent=self.ParamsPanel, 
+              pos=wx.Point(0, 0), size=wx.Size(0, 24), style=wx.LB_SINGLE)
+        self.Bind(wx.EVT_CHOICE, self.OnParamsTargetTypeChanged, id=ID_BEREMIZPARAMSTARGETTYPE)
+
+        self.AttributesGrid = wx.grid.Grid(id=ID_BEREMIZPARAMSATTRIBUTESGRID,
+              name='AttributesGrid', parent=self.ParamsPanel, pos=wx.Point(0, 0), 
+              size=wx.Size(0, 150), style=wx.VSCROLL)
+        self.AttributesGrid.SetFont(wx.Font(12, 77, wx.NORMAL, wx.NORMAL, False,
+              'Sans'))
+        self.AttributesGrid.SetLabelFont(wx.Font(10, 77, wx.NORMAL, wx.NORMAL,
+              False, 'Sans'))
+        self.AttributesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnAttributesGridCellChange)
+
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
-              name='LogConsole', parent=self, pos=wx.Point(0, 0),
+              name='LogConsole', parent=self.SecondSplitter, pos=wx.Point(0, 0),
               size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         
-        self.EditPLCButton = wx.Button(id=ID_BEREMIZEDITPLCBUTTON, label='Edit\nPLC',
-              name='EditPLCButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(48, 48), style=0)
-        self.EditPLCButton.Bind(wx.EVT_BUTTON, self.OnEditPLCButton,
-              id=ID_BEREMIZEDITPLCBUTTON)
-        
-        self.BuildButton = wx.Button(id=ID_BEREMIZBUILDBUTTON, label='Build',
-              name='BuildButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(48, 48), style=0)
-        self.BuildButton.Bind(wx.EVT_BUTTON, self.OnBuildButton,
-              id=ID_BEREMIZBUILDBUTTON)
-        
-        self.SimulateButton = wx.Button(id=ID_BEREMIZSIMULATEBUTTON, label='Simul',
-              name='SimulateButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(48, 48), style=0)
-        self.EditPLCButton.Bind(wx.EVT_BUTTON, self.OnSimulateButton,
-              id=ID_BEREMIZSIMULATEBUTTON)
-        
-        self.RunButton = wx.Button(id=ID_BEREMIZRUNBUTTON, label='Run',
-              name='RunButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(48, 48), style=0)
-        self.RunButton.Bind(wx.EVT_BUTTON, self.OnRunButton,
-              id=ID_BEREMIZRUNBUTTON)
-        
-        self.BusList = wx.ListBox(choices=[], id=ID_BEREMIZBUSLIST,
-              name='BusList', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(-1, -1), style=wx.LB_SINGLE|wx.LB_NEEDED_SB)
-        self.BusList.Bind(wx.EVT_LISTBOX_DCLICK, self.OnBusListDClick,
-              id=ID_BEREMIZBUSLIST)
-        
-        self.AddBusButton = wx.Button(id=ID_BEREMIZADDBUSBUTTON, label='Add',
-              name='AddBusButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(48, 48), style=0)
-        self.AddBusButton.Bind(wx.EVT_BUTTON, self.OnAddBusButton,
-              id=ID_BEREMIZADDBUSBUTTON)
-        
-        self.DeleteBusButton = wx.Button(id=ID_BEREMIZDELETEBUSBUTTON, label='Delete',
-              name='DeleteBusButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(48, 48), style=0)
-        self.DeleteBusButton.Bind(wx.EVT_BUTTON, self.OnDeleteBusButton,
-              id=ID_BEREMIZDELETEBUSBUTTON)
+        self.SecondSplitter.SplitHorizontally(self.ParamsPanel, self.LogConsole,
+              -250)
         
         self._init_sizers()
 
     def __init__(self, parent, projectOpen):
         self._init_ctrls(parent)
         
-        for name in plugins.__all__:
-            module = getattr(plugins, name)
-            
-			#AddPlugin(module.GetBlockGenerationFunction(self))
-        
-        self.CurrentProjectPath = ""
-        
-        self.PLCManager = None
-        self.PLCEditor = None
-        self.BusManagers = {}
-        
         self.Log = LogPseudoFile(self.LogConsole)
         
+        self.PluginRoot = PluginsRoot()
+        for value in self.PluginRoot.GetTargetTypes():
+            self.ParamsTargetType.Append(value)
+        
+        self.Table = AttributesTable(self, [], ["Attribute", "Value"])
+        self.AttributesGrid.SetTable(self.Table)
+        self.AttributesGrid.SetRowLabelSize(0)
+        
         if projectOpen:
-            self.OpenProject(projectOpen)
-            
+            self.PluginRoot.LoadProject(projectOpen)
+            self.RefreshPluginTree()
+        
+        self.PLCEditor = None
+        
+        self.RefreshPluginParams()
         self.RefreshButtons()
         self.RefreshMainMenu()
         
     def RefreshButtons(self):
-        if self.CurrentProjectPath == "":
-            self.LogConsole.Enable(False)
-            self.EditPLCButton.Enable(False)
-            self.BuildButton.Enable(False)
-            self.SimulateButton.Enable(False)
-            self.RunButton.Enable(False)
-            self.BusList.Enable(False)
-            self.AddBusButton.Enable(False)
-            self.DeleteBusButton.Enable(False)
+        if self.PluginRoot.HasProjectOpened():
+            self.PluginChilds.Enable(True)
+            self.AddButton.Enable(True)
+            self.DeleteButton.Enable(True)
         else:
-            self.LogConsole.Enable(True)
-            self.EditPLCButton.Enable(True)
-            self.BuildButton.Enable(True)
-            self.SimulateButton.Enable(True)
-            self.RunButton.Enable(True)
-            self.BusList.Enable(True)
-            self.AddBusButton.Enable(True)
-            self.DeleteBusButton.Enable(True)
-
-    def RefreshBusList(self):
-        selected = self.BusList.GetStringSelection()
-        self.BusList.Clear()
-        busidlist = self.BusManagers.keys()
-        busidlist.sort()
-        for id in busidlist:
-            bus_infos = self.BusManagers[id]
-            self.BusList.Append("0x%2.2X\t%s\t%s"%(id, bus_infos["Type"], bus_infos["Name"]))
-        if selected != "":
-            self.BusList.SetStringSelection(selected)
-
+            self.PluginChilds.Enable(False)
+            self.AddButton.Enable(False)
+            self.DeleteButton.Enable(False)
+        
     def RefreshMainMenu(self):
         if self.menuBar1:
-            if self.CurrentProjectPath == "":
-                self.menuBar1.EnableTop(1, False)
-                self.menuBar1.EnableTop(2, False)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, False)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, False)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, False)
-            else:
+            if self.PluginRoot.HasProjectOpened():
                 self.menuBar1.EnableTop(1, True)
                 self.menuBar1.EnableTop(2, True)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, True)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, True)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, True)
+            else:
+                self.menuBar1.EnableTop(1, False)
+                self.menuBar1.EnableTop(2, False)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, False)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, False)
+                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, False)
 
-    def OnNewProjectMenu(self, event):
-        if self.CurrentProjectPath != "":
-            defaultpath = self.CurrentProjectPath
+    def RefreshPluginTree(self):
+        infos = self.PluginRoot.GetPlugInfos()
+        root = self.PluginTree.GetRootItem()
+        self.GenerateTreeBranch(root, infos)
+        self.PluginTree.Expand(self.PluginTree.GetRootItem())
+        self.RefreshPluginParams()
+
+    def GenerateTreeBranch(self, root, infos):
+        to_delete = []
+        if root.IsOk():
+            self.PluginTree.SetItemText(root, infos["name"])
         else:
+            root = self.PluginTree.AddRoot(infos["name"])
+        self.PluginTree.SetPyData(root, infos["type"])
+        item, root_cookie = self.PluginTree.GetFirstChild(root)
+        if len(infos["values"]) > 0:
+            for values in infos["values"]:
+                if not item.IsOk():
+                    item = self.PluginTree.AppendItem(root, "")
+                    item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+                self.GenerateTreeBranch(item, values)
+                item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+        while item.IsOk():
+            to_delete.append(item)
+            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+        for item in to_delete:
+            self.PluginTree.Delete(item)
+
+    def GetSelectedPlugin(self):
+        selected = self.PluginTree.GetSelection()
+        if not selected.IsOk():
+            return None
+        if selected == self.PluginTree.GetRootItem():
+            return self.PluginRoot
+        else:
+            name = self.PluginTree.GetItemText(selected)
+            item = self.PluginTree.GetItemParent(selected)
+            while item.IsOk() and item != self.PluginTree.GetRootItem():
+                name = "%s.%s"%(self.PluginTree.GetItemText(item), name)
+                item = self.PluginTree.GetItemParent(item)
+            return self.PluginRoot.GetChildByName(name)
+
+    def OnPluginTreeItemSelected(self, event):
+        wx.CallAfter(self.RefreshPluginParams)
+        event.Skip()
+    
+    def _GetAddPluginFunction(self, name):
+        def OnPluginMenu(event):
+            self.AddPlugin(name)
+            event.Skip()
+        return OnPluginMenu
+    
+    def OnPluginTreeRightUp(self, event):
+        plugin = self.GetSelectedPlugin()
+        if plugin:
+            main_menu = wx.Menu(title='')
+            if len(plugin.PlugChildsTypes) > 0:
+                plugin_menu = wx.Menu(title='')
+                for name, XSDClass in self.GetSelectedPlugin().PlugChildsTypes:
+                    new_id = wx.NewId()
+                    plugin_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=name)
+                    self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name), id=new_id)
+                main_menu.AppendMenu(-1, "Add", plugin_menu, '')
+            new_id = wx.NewId()
+            main_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text="Delete")
+            self.Bind(wx.EVT_MENU, self.OnDeleteButton, id=new_id)
+            rect = self.PluginTree.GetBoundingRect(self.PluginTree.GetSelection())
+            self.PluginTree.PopupMenuXY(main_menu, rect.x + rect.width, rect.y)
+        event.Skip()
+    
+    def RefreshPluginParams(self):
+        plugin = self.GetSelectedPlugin()
+        if not plugin:
+            # Refresh ParamsPanel
+            self.ParamsPanel.Hide()
+            
+            # Refresh PluginChilds
+            self.PluginChilds.Clear()
+            self.PluginChilds.Enable(False)
+            self.AddButton.Enable(False)
+            self.DeleteButton.Enable(False)
+        else:
+            # Refresh ParamsPanel
+            self.ParamsPanel.Show()
+            self.ParamsStaticBox.SetLabel(plugin.BaseParams.getName())
+            if plugin == self.PluginRoot:
+                self.ParamsPanelMainSizer.Hide(self.ParamsPanelChildSizer)
+                self.ParamsPanelMainSizer.Show(self.ParamsPanelPluginSizer)
+                self.ParamsTargetType.SetStringSelection(self.PluginRoot.GetTargetType())
+            else:
+                self.ParamsPanelMainSizer.Show(self.ParamsPanelChildSizer)
+                self.ParamsPanelMainSizer.Hide(self.ParamsPanelPluginSizer)
+                self.ParamsEnable.SetValue(plugin.BaseParams.getEnabled())
+                self.ParamsEnable.Enable(True)
+                self.ParamsStaticText1.Enable(True)
+                self.ParamsIECChannel.SetValue(plugin.BaseParams.getIEC_Channel())
+                self.ParamsIECChannel.Enable(True)
+            self.ParamsPanelMainSizer.Layout()
+            self.RefreshAttributesGrid()
+            
+            # Refresh PluginChilds
+            self.PluginChilds.Clear()
+            if len(plugin.PlugChildsTypes) > 0:
+                self.PluginChilds.Append("")
+                for name, XSDClass in plugin.PlugChildsTypes:
+                    self.PluginChilds.Append(name)
+                self.PluginChilds.Enable(True)
+                self.AddButton.Enable(True)
+            else:
+                self.PluginChilds.Enable(False)
+                self.AddButton.Enable(False)
+            self.DeleteButton.Enable(True)
+    
+    def RefreshAttributesGrid(self):
+        plugin = self.GetSelectedPlugin()
+        if not plugin:
+            self.Table.Empty()
+        else:
+            if plugin == self.PluginRoot:
+                attr_infos = self.PluginRoot.GetTargetAttributes()
+            else:
+                attr_infos = plugin.GetPlugParamsAttributes()
+            data = []
+            for infos in attr_infos:
+                data.append({"Attribute" : infos["name"], "Value" : infos["value"],
+                    "Type" : infos["type"]})
+            self.Table.SetData(data)
+        self.Table.ResetView(self.AttributesGrid)
+    
+    def OnParamsEnableChanged(self, event):
+        plugin = self.GetSelectedPlugin()
+        if plugin and plugin != self.PluginRoot:
+            plugin.BaseParams.setEnabled(event.Checked())
+        event.Skip()
+    
+    def OnParamsIECChannelChanged(self, event):
+        plugin = self.GetSelectedPlugin()
+        if plugin and plugin != self.PluginRoot:
+            plugin.BaseParams.setIEC_Channel(self.ParamsIECChannel.GetValue())
+        event.Skip()
+    
+    def OnParamsTargetTypeChanged(self, event):
+        plugin = self.GetSelectedPlugin()
+        if plugin and plugin == self.PluginRoot:
+            self.PluginRoot.ChangeTargetType(self.ParamsTargetType.GetStringSelection())
+            self.RefreshAttributesGrid()
+        event.Skip()
+    
+    def OnAttributesGridCellChange(self, event):
+        row = event.GetRow()
+        plugin = self.GetSelectedPlugin()
+        if plugin:
+            name = self.Table.GetValueByName(row, "Attribute")
+            value = self.Table.GetValueByName(row, "Value")
+            if plugin == self.PluginRoot:
+                self.PluginRoot.SetTargetAttribute(name, value)
+            else:
+                plugin.SetPlugParamsAttribute(name, value)
+        event.Skip()
+    
+    def OnNewProjectMenu(self, event):
+        defaultpath = self.PluginRoot.GetProjectPath()
+        if defaultpath == "":
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
             if os.path.isdir(projectpath) and len(os.listdir(projectpath)) == 0:
-                os.mkdir(os.path.join(projectpath, "eds"))
-                self.PLCManager = PLCControler()
-                plc_file = os.path.join(projectpath, "plc.xml")
                 dialog = ProjectDialog(self)
                 if dialog.ShowModal() == wx.ID_OK:
                     values = dialog.GetValues()
                     values["creationDateTime"] = datetime(*localtime()[:6])
-                    self.PLCManager.CreateNewProject(values.pop("projectName"))
-                    self.PLCManager.SetProjectProperties(properties=values)
-                    self.PLCManager.SaveXMLFile(plc_file)
-                    self.CurrentProjectPath = projectpath
+                    self.PluginRoot.NewProject(projectpath, values)
+                    self.RefreshPluginTree()
+                    self.RefreshButtons()
+                    self.RefreshMainMenu()
                 dialog.Destroy()
-                self.RefreshButtons()
-                self.RefreshMainMenu()
             else:
                 message = wx.MessageDialog(self, "Folder choosen isn't empty. You can't use it for a new project!", "ERROR", wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         event.Skip()
     
-    def OpenProject(self, projectpath):
-        try:
-            if not os.path.isdir(projectpath):
-                raise Exception
-            self.BusManagers = {}
-            configpath = os.path.join(projectpath, ".project")
-            if not os.path.isfile(configpath):
-                raise Exception
-            file = open(configpath, "r")
-            lines = [line.strip() for line in file.readlines() if line.strip() != ""]
-            if lines[0] != "Beremiz":
-                file.close()
-                raise Exception
-            for bus_id, bus_type, bus_name in [line.split(" ") for line in lines[1:]]:
-                id = int(bus_id, 16)
-                controller = getattr(plugins, bus_type).controller
-                if controller != None:
-                    manager = controller()
-                    result = manager.LoadProject(projectpath, bus_name)
-                    if not result:
-                        self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "Manager" : manager, "Editor" : None}
-                    else:
-                        message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
-                        message.ShowModal()
-                        message.Destroy()
-                else:
-                    self.BusManagers[id] = {"Name" : bus_name, "Type" : bus_type, "Manager" : None, "Editor" : None}
-            file.close()
-            self.PLCManager = PLCControler()
-            plc_file = os.path.join(projectpath, "plc.xml")
-            if os.path.isfile(plc_file):
-                self.PLCManager.OpenXMLFile(plc_file)
-                self.CurrentProjectPath = projectpath
-            else:
-                dialog = ProjectDialog(self)
-                if dialog.ShowModal() == wx.ID_OK:
-                    values = dialog.GetValues()
-                    projectname = values.pop("projectName")
-                    values["creationDateTime"] = datetime(*localtime()[:6])
-                    self.PLCManager.CreateNewProject(projectname)
-                    self.PLCManager.SetProjectProperties(values)
-                    self.PLCManager.SaveXMLFile(plc_file)
-                    self.CurrentProjectPath = projectpath
-                dialog.Destroy()
-            self.RefreshBusList()
-            self.RefreshButtons()
-            self.RefreshMainMenu()
-        except Exception, message:
-            message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project\n%s"%(projectpath,message), "Error", wx.OK|wx.ICON_ERROR)
-            message.ShowModal()
-            message.Destroy()
-    
     def OnOpenProjectMenu(self, event):
-        if self.CurrentProjectPath != "":
-            defaultpath = self.CurrentProjectPath
-        else:
+        defaultpath = self.PluginRoot.GetProjectPath()
+        if defaultpath == "":
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
-            self.OpenProject(dialog.GetPath())
+            projectpath = dialog.GetPath()
+            if os.path.isdir(projectpath):
+                result = self.PluginRoot.LoadProject(projectpath)
+                if not result:
+                    self.RefreshPluginTree()
+                    self.RefreshButtons()
+                    self.RefreshMainMenu()
+                else:
+                    message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
+                    message.ShowModal()
+                    message.Destroy()
+            else:
+                message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project\n"%projectpath, "Error", wx.OK|wx.ICON_ERROR)
+                message.ShowModal()
+                message.Destroy()
             dialog.Destroy()
         event.Skip()
     
@@ -463,21 +754,8 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnSaveProjectMenu(self, event):
-        self.PLCManager.SaveXMLFile()
-        cpjfilepath = os.path.join(self.CurrentProjectPath, "nodelist.cpj")
-        file = open(cpjfilepath, "w")
-        file.write("")
-        file.close()
-        configpath = os.path.join(self.CurrentProjectPath, ".project")
-        file = open(configpath, "w")
-        file.write("Beremiz\n")
-        busidlist = self.BusManagers.keys()
-        busidlist.sort()
-        for id in busidlist:
-            bus_infos = self.BusManagers[id]
-            file.write("0x%2.2X %s %s\n"%(id, bus_infos["Type"], bus_infos["Name"]))
-            bus_infos["Manager"].SaveProject(bus_infos["Name"])
-        file.close()
+        if self.PluginRoot.HasProjectOpened():
+            self.PluginRoot.SaveProject()
         event.Skip()
     
     def OnPropertiesMenu(self, event):
@@ -491,12 +769,12 @@ class Beremiz(wx.Frame):
         self.EditPLC()
         event.Skip()
     
-    def OnAddBusMenu(self, event):
-        self.AddBus()
+    def OnAddMenu(self, event):
+        self.AddPlugin()
         event.Skip()
     
-    def OnDeleteBusMenu(self, event):
-        self.DeleteBus()
+    def OnDeleteMenu(self, event):
+        self.DeletePlugin()
         event.Skip()
 
     def OnBuildMenu(self, event):
@@ -517,92 +795,36 @@ class Beremiz(wx.Frame):
     
     def OnAboutMenu(self, event):
         event.Skip()
-
-    def OnEditPLCButton(self, event):
-        self.EditPLC()
+    
+    def OnAddButton(self, event):
+        PluginType = self.PluginChilds.GetStringSelection()
+        if PluginType != "":
+            self.AddPlugin(PluginType)
         event.Skip()
     
-    def OnBuildButton(self, event):
-        self.BuildAutom()
-        event.Skip()
-    
-    def OnSimulateButton(self, event):
-        event.Skip()
-        
-    def OnRunButton(self, event):
-        event.Skip()
-    
-    def OnAddBusButton(self, event):
-        self.AddBus()
-        event.Skip()
-    
-    def OnDeleteBusButton(self, event):
-        self.DeleteBus()
-        event.Skip()
-    
-    def OnBusListDClick(self, event):
-        selected = event.GetSelection()
-        busidlist = self.BusManagers.keys()
-        busidlist.sort()
-        bus_infos = self.BusManagers[busidlist[selected]]
-        view = getattr(plugins, bus_infos["Type"]).view
-        if view != None:
-            if bus_infos["Editor"] == None:
-                editor = view(self, bus_infos["Manager"])
-                editor.SetBusId(busidlist[selected])
-                editor.Show()
-                bus_infos["Editor"] = editor
+    def OnDeleteButton(self, event):
+        self.DeletePlugin()
         event.Skip()
     
     def CloseEditor(self, bus_id):
         if self.BusManagers.get(bus_id, None) != None:
             self.BusManagers[bus_id]["Editor"] = None
     
-    def AddBus(self):
-        dialog = AddBusDialog(self)
+    def AddPlugin(self, PluginType):
+        dialog = wx.TextEntryDialog(self, "Please enter a name for plugin:", "Add Plugin", "", wx.OK|wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
-            values = dialog.GetValues()
-            if values["busID"].startswith("0x"):
-                bus_id = int(values["busID"], 16)
-            else:
-                bus_id = int(values["busID"])
-            if self.BusManagers.get(bus_id, None) == None:
-                controller = getattr(plugins, values["busType"]).controller
-                if controller != None:
-                    manager = controller()
-                    result = manager.LoadProject(self.CurrentProjectPath, values["busName"])
-                    if not result:
-                        self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"], "Manager" : manager, "Editor" : None}
-                    else:
-                        message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
-                        message.ShowModal()
-                        message.Destroy()
-                else:
-                    self.BusManagers[bus_id] = {"Name" : values["busName"], "Type" : values["busType"], "Manager" : None, "Editor" : None}
-            else:
-                message = wx.MessageDialog(self, "The bus ID \"0x%2.2X\" is already used!"%bus_id, "Error", wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-            self.RefreshBusList()
+            PluginName = dialog.GetValue()
+            plugin = self.GetSelectedPlugin()
+            plugin.PlugAddChild(PluginName, PluginType)
+            self.RefreshPluginTree()
         dialog.Destroy()
     
-    def DeleteBus(self):
-        busidlist = self.BusManagers.keys()
-        busidlist.sort()
-        list = ["0x%2.2X\t%s\t%s"%(id, self.BusManagers[id]["Type"], self.BusManagers[id]["Name"]) for id in busidlist]
-        dialog = wx.SingleChoiceDialog(self, "Select Bus to delete:", "Bus Delete", list, wx.OK|wx.CANCEL)
-        if dialog.ShowModal() == wx.ID_OK:
-            selected = dialog.GetSelection()
-            editor = self.BusManagers[busidlist[selected]]["Editor"]
-            if editor:
-                editor.Close()
-            self.BusManagers.pop(busidlist[selected])
-            self.RefreshBusList()
-        dialog.Destroy()
+    def DeletePlugin(self):
+        pass
     
     def EditPLC(self):
         if not self.PLCEditor:
-            self.PLCEditor = PLCOpenEditor(self, self.PLCManager)
+            self.PLCEditor = PLCOpenEditor(self, self.PluginRoot.PLCManager)
             self.PLCEditor.RefreshProjectTree()
             self.PLCEditor.RefreshFileMenu()
             self.PLCEditor.RefreshEditMenu()
@@ -646,13 +868,12 @@ class Beremiz(wx.Frame):
 
     def BuildAutom(self):
         LOCATED_MODEL = re.compile("__LOCATED_VAR\(([A-Z]*),([_A-Za-z0-9]*)\)")
-
+        
         if self.PLCManager:
             self.TargetDir = os.path.join(self.CurrentProjectPath, "build")
             if not os.path.exists(self.TargetDir):
                 os.mkdir(self.TargetDir)
             self.Log.flush()
-            #sys.stdout = self.Log
             try:
                 self.Log.write("Generating IEC-61131 code...\n")
                 plc_file = os.path.join(self.TargetDir, "plc.st")
@@ -677,7 +898,7 @@ class Beremiz(wx.Frame):
                 locations = []
                 lines = [line.strip() for line in location_file.readlines()]
                 for line in lines:
-                    result = self.LOCATED_MODEL.match(line)
+                    result = LOCATED_MODEL.match(line)
                     if result:
                         locations.append(result.groups())
                 self.Log.write("Generating Network Configurations...\n")
@@ -699,7 +920,6 @@ class Beremiz(wx.Frame):
                 self.Log.write_error("\nBuild Failed\n")
                 self.Log.write(str(message))
                 pass
-            #sys.stdout = sys.__stdout__
                 
 #-------------------------------------------------------------------------------
 #                             Add Bus Dialog

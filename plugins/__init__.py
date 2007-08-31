@@ -1,5 +1,4 @@
 from os import listdir, path
-from __templates import PlugTemplate
 
 _base_path = path.split(__file__)[0]
 
