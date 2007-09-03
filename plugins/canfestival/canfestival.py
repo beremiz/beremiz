@@ -28,7 +28,7 @@ class _NodeListPlug(NodeList):
         self.LoadProject(self.PlugPath())
 
     _View = None
-    def _OpenView(self):
+    def _OpenView(self, logger):
         if not self._View:
             def _onclose():
                 self.View = None
@@ -48,7 +48,7 @@ class _NodeListPlug(NodeList):
         self.SaveProject()
         return True
 
-    def PlugGenerate_C(self, buildpath, current_location, locations):
+    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
         """
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)

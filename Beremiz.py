@@ -866,61 +866,6 @@ class Beremiz(wx.Frame):
         err = child.wait()
         return (err, outdata, errdata)
 
-    def BuildAutom(self):
-        LOCATED_MODEL = re.compile("__LOCATED_VAR\(([A-Z]*),([_A-Za-z0-9]*)\)")
-        
-        if self.PLCManager:
-            self.TargetDir = os.path.join(self.CurrentProjectPath, "build")
-            if not os.path.exists(self.TargetDir):
-                os.mkdir(self.TargetDir)
-            self.Log.flush()
-            try:
-                self.Log.write("Generating IEC-61131 code...\n")
-                plc_file = os.path.join(self.TargetDir, "plc.st")
-                result = self.PLCManager.GenerateProgram(plc_file)
-                if not result:
-                    raise Exception, "Error : ST/IL/SFC code generator returned %d"%result
-                self.Log.write("Compiling ST Program in to C Program...\n")
-                status, result, err_result = self.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
-                if status:
-                    new_dialog = wx.Frame(None)
-                    ST_viewer = TextViewer(new_dialog, None, None)
-                    #ST_viewer.Enable(False)
-                    ST_viewer.SetKeywords(IEC_KEYWORDS)
-                    ST_viewer.SetText(file(plc_file).read())
-                    new_dialog.Show()
-                    raise Exception, "Error : IEC to C compiler returned %d"%status
-                C_files = result.splitlines()
-                C_files.remove("POUS.c")
-                C_files = map(lambda filename:os.path.join(self.TargetDir, filename), C_files)
-                self.Log.write("Extracting Located Variables...\n")
-                location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
-                locations = []
-                lines = [line.strip() for line in location_file.readlines()]
-                for line in lines:
-                    result = LOCATED_MODEL.match(line)
-                    if result:
-                        locations.append(result.groups())
-                self.Log.write("Generating Network Configurations...\n")
-                for bus_id, bus_infos in self.BusManagers.items():
-                   if bus_infos["Manager"]:
-                        c_filename = "%s.c"%os.path.join(self.TargetDir, gen_cfile.FormatName(bus_infos["Name"]))
-                        result = bus_infos["Manager"].GenerateBus(c_filename, locations)
-                        if result:
-                            raise Exception
-                        else:
-                            C_files.append(c_filename)
-                self.Log.write("Generating Makefiles...\n")
-                self.Log.write(str(C_files))
-                
-                self.Log.write("Compiling Project...\n")
-                
-                self.Log.write("\nBuild Project completed\n")
-            except Exception, message:
-                self.Log.write_error("\nBuild Failed\n")
-                self.Log.write(str(message))
-                pass
-                
 #-------------------------------------------------------------------------------
 #                             Add Bus Dialog
 #-------------------------------------------------------------------------------

@@ -117,22 +117,24 @@ class PlugTemplate:
         shutil.copytree(src_PlugPath, self.PlugPath)
         return True
 
-    def PlugGenerate_C(self, buildpath, current_location, locations):
+    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
         """
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [(IEC_loc, IEC_Direction, IEC_Type, Name)]\
             ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
+        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
+        logger.write_warning(".".join(map(lambda x:str(x), current_location)) + " -> Nothing yo do")
         return [],""
     
-    def _Generate_C(self, buildpath, current_location, locations):
+    def _Generate_C(self, buildpath, current_location, locations, logger):
         # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS
-        PlugCFilesAndCFLAGS, PlugLDFLAGS = self.PlugGenerate_C(buildpath, current_location, locations)
+        PlugCFilesAndCFLAGS, PlugLDFLAGS = self.PlugGenerate_C(buildpath, current_location, locations, logger)
         # recurse through all childs, and stack their results
         for PlugChild in self.IterChilds():
-            # Compute chile IEC location
+            # Compute child's IEC location
             new_location = current_location + (self.BaseParams.getIEC_Channel())
             # Get childs [(Cfiles, CFLAGS)], LDFLAGS
             CFilesAndCFLAGS, LDFLAGS = \
@@ -142,7 +144,9 @@ class PlugTemplate:
                     # but update location (add curent IEC channel at the end)
                     new_location,
                     # filter locations that start with current IEC location
-                    [ (l,d,t,n) for l,d,t,n in locations if l[0:len(new_location)] == new_location ])
+                    [ (l,d,t,n) for l,d,t,n in locations if l[0:len(new_location)] == new_location ],
+                    #propagete logger
+                    logger)
             # stack the result
             PlugCFilesAndCFLAGS += CFilesAndCFLAGS
             PlugLDFLAGS += LDFLAGS
@@ -519,3 +523,89 @@ class PluginsRoot(PlugTemplate):
     
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
+
+    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
+        """
+        Generate C code
+        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param locations: List of complete variables locations \
+            [(IEC_loc, IEC_Direction, IEC_Type, Name)]\
+            ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
+        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
+        """
+        return [(C_file_name, "") for C_file_name in self.PLCGeneratedCFiles ] , ""
+        
+    def _Generate_SoftPLC(self, buildpath, logger):
+
+        LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWD]))?,(?P<LOC>[,0-9]*)\)")
+        
+        if self.PLCManager:
+            logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
+            plc_file = os.path.join(self.TargetDir, "plc.st")
+            result = self.PLCManager.GenerateProgram(plc_file)
+            if not result:
+                logger.write_error("Error : ST/IL/SFC code generator returned %d"%result)
+                return False
+            logger.write("Compiling ST Program in to C Program...\n")
+            status, result, err_result = self.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
+            if status:
+                new_dialog = wx.Frame(None)
+                ST_viewer = TextViewer(new_dialog, None, None)
+                #ST_viewer.Enable(False)
+                ST_viewer.SetKeywords(IEC_KEYWORDS)
+                ST_viewer.SetText(file(plc_file).read())
+                new_dialog.Show()
+                raise Exception, "Error : IEC to C compiler returned %d"%status
+            C_files = result.splitlines()
+            C_files.remove("POUS.c")
+            C_files = map(lambda filename:os.path.join(self.TargetDir, filename), C_files)
+            logger.write("Extracting Located Variables...\n")
+            location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
+            locations = []
+            lines = [line.strip() for line in location_file.readlines()]
+            for line in lines:
+                result = LOCATED_MODEL.match(line)
+                if result:
+                    resdict = result.groupdict()
+                    # rewrite location as a tuple of integers
+                    resdict['LOC'] = tuple(map(int,resdict['LOC'].split(',')))
+                    if not resdict['SIZE']:
+                        resdict['SIZE'] = 'X'
+                    locations.append(resdict)
+        self.PLCGeneratedCFiles = C_files
+        self.PLCGeneratedLocatedVars = locations
+        return True
+
+    def _build(self, logger):
+        buildpath = os.path.join(self.ProjectPath, "build")
+        if not os.path.exists(buildpath):
+            os.mkdir(buildpath)
+        
+        logger.write("Start build in %s" % buildpath)
+        
+        if not self._Generate_SoftPLC(buildpath, logger):
+            logger.write("SoftPLC code generation failed !")
+            return
+    
+        logger.write("SoftPLC code generation successfull")
+        
+        try:
+            CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
+                buildpath, 
+                (), 
+                self.PLCGeneratedLocatedVars,
+                logger)
+        except Exception, msg:
+            logger.write_error("Plugins code generation Failed !")
+            logger.write_error(str(msg))
+            return
+
+        logger.write_error("Plugins code generation successfull")
+        
+        for CFile, CFLAG in CFilesAndCFLAGS:
+            print CFile,CFLAG
+        
+        LDFLAGS
+
+    PluginMethods = [("Build",_build), ("Clean",None), ("Run",None), ("EditPLC",None), ("Simulate",None)]
+    
