@@ -1,4 +1,7 @@
-import os
+import os, sys
+base_folder = os.path.split(sys.path[0])[0]
+sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
+
 from nodelist import NodeList
 from nodemanager import NodeManager
 import config_utils, gen_cfile

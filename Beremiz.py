@@ -26,22 +26,10 @@ __version__ = "$Revision$"
 
 import wx
 
-from time import localtime
-from datetime import datetime
 import types
 
 import os, re, platform, sys, time, traceback, getopt, commands
-base_folder = os.path.split(sys.path[0])[0]
-sys.path.append(os.path.join(base_folder, "plcopeneditor"))
-sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
-sys.path.append(os.path.join(base_folder, "wxsvg", "svgui", "defeditor"))
 
-iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
-ieclib_path = os.path.join(base_folder, "matiec", "lib")
-
-from PLCOpenEditor import PLCOpenEditor, ProjectDialog
-from TextViewer import TextViewer
-from plcopen.structures import IEC_KEYWORDS#, AddPlugin
 from plugger import PluginsRoot
 
 class LogPseudoFile:
@@ -79,6 +67,41 @@ class LogPseudoFile:
     
     def isatty(self):
         return false
+
+    def LogCommand(self, Command, sz_limit = 100):
+
+        import os, popen2, fcntl, select, signal
+        
+        child = popen2.Popen3(Command, 1) # capture stdout and stderr from command
+        child.tochild.close()             # don't need to talk to child
+        outfile = child.fromchild 
+        outfd = outfile.fileno()
+        errfile = child.childerr
+        errfd = errfile.fileno()
+        outdata = errdata = ''
+        outeof = erreof = 0
+        outlen = errlen = 0
+        while 1:
+            ready = select.select([outfd,errfd],[],[]) # wait for input
+            if outfd in ready[0]:
+                outchunk = outfile.readline()
+                if outchunk == '': outeof = 1 
+                else : outlen += 1
+                outdata += outchunk
+                self.write(outchunk)
+            if errfd in ready[0]:
+                errchunk = errfile.readline()
+                if errchunk == '': erreof = 1 
+                else : errlen += 1
+                errdata += errchunk
+                self.write_warning(errchunk)
+            if outeof and erreof : break
+            if errlen > sz_limit or outlen > sz_limit : 
+                os.kill(child.pid, signal.SIGTERM)
+                self.write_error("Output size reached limit -- killed\n")
+                break
+        err = child.wait()
+        return (err, outdata, errdata)
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZSECONDSPLITTER, ID_BEREMIZLEFTPANEL, 
@@ -299,13 +322,11 @@ class Beremiz(wx.Frame):
         
         self.Log = LogPseudoFile(self.LogConsole)
         
-        self.PluginRoot = PluginsRoot()
+        self.PluginRoot = PluginsRoot(self)
         
         if projectOpen:
             self.PluginRoot.LoadProject(projectOpen)
             self.RefreshPluginTree()
-        
-        self.PLCEditor = None
         
         self.RefreshPluginParams()
         self.RefreshButtons()
@@ -588,123 +609,6 @@ class Beremiz(wx.Frame):
                     textctrl.SetValue(str(element_infos["value"]))
             first = False
     
-    def UpdateAttributesTreeParts(self, tree, new_tree):
-        tree_leafs = [(element_infos["name"], element_infos["type"]) for element_infos in tree["children"]]
-        new_tree_leafs = [(element_infos["name"], element_infos["type"]) for element_infos in new_tree["children"]]
-        if tree_leafs != new_tree_leafs:
-            tree["children"] = new_tree["children"]
-            for child in tree["children"]:
-                self.PrepareAttributesTree(child)
-        else:
-            for idx, new_element_infos in enumerate(new_tree["children"]):
-                tree["children"][idx]["value"] = new_element_infos["value"]
-                if len(new_element_infos["children"]) > 0:
-                    self.UpdateAttributesTreeParts(tree["children"][idx], new_element_infos)
-    
-    def PrepareAttributesTree(self, tree):
-        if len(tree["children"]) > 0:
-            tree["open"] = False
-            for child in tree["children"]:
-                self.PrepareAttributesTree(child)
-    
-    def GenerateTable(self, data, tree, path, indent):
-        if path:
-            tree_path = "%s.%s"%(path, tree["name"])
-            infos = {"Attribute" : "   " * indent + tree["name"], "Value" : tree["value"], "Type" : tree["type"], "Open" : "", "Path" : tree_path}
-            data.append(infos)
-            indent += 1
-        else:
-            tree_path = tree["name"]
-        if len(tree["children"]) > 0:
-            if tree["open"] or not path:
-                if path:
-                    infos["Open"] = "v"
-                for child in tree["children"]:
-                    self.GenerateTable(data, child, tree_path, indent)
-            elif path:
-                infos["Open"] = ">"
-    
-    def RefreshAttributesGrid(self):
-        plugin = self.GetSelectedPlugin()
-        if not plugin:
-            self.AttributesTree = []
-            self.Table.Empty()
-        else:
-            new_params = plugin.GetParamsAttributes()
-            for idx, child in enumerate(new_params):
-                if len(self.AttributesTree) > idx:
-                    if self.AttributesTree[idx]["name"] == child["name"]:
-                        self.UpdateAttributesTreeParts(self.AttributesTree[idx], child)
-                    else:
-                        self.AttributesTree[idx] = child
-                        self.PrepareAttributesTree(child)
-                else:
-                    self.AttributesTree.append(child)
-                    self.PrepareAttributesTree(child)
-            while len(self.AttributesTree) > len(new_params):
-                self.AttributesTree.pop(-1)
-            data = []
-            for child in self.AttributesTree:
-                self.GenerateTable(data, child, None, 0)
-            self.Table.SetData(data)
-        self.Table.ResetView(self.AttributesGrid)
-    
-    def OpenClose(self, tree, path):
-        parts = path.split(".", 1)
-        for child in tree["children"]:
-            if child["name"] == parts[0]:
-                if len(parts) > 1:
-                    return self.OpenClose(child, parts[1])
-                elif len(child["children"]) > 0:
-                    child["open"] = not child["open"]
-                    return True
-        return False
-    
-    def OpenCloseAttribute(self):
-        if self.AttributesGrid.GetGridCursorCol() == 0:
-            row = self.AttributesGrid.GetGridCursorRow()
-            path = self.Table.GetValueByName(row, "Path")
-            parts = path.split(".", 1)
-            for child in self.AttributesTree:
-                if child["name"] == parts[0] and len(parts) > 1:
-                    result = self.OpenClose(child, parts[1])
-                    if result:
-                        self.RefreshAttributesGrid()
-    
-    def OnParamsEnableChanged(self, event):
-        plugin = self.GetSelectedPlugin()
-        if plugin and plugin != self.PluginRoot:
-            plugin.BaseParams.setEnabled(event.Checked())
-        event.Skip()
-    
-    def OnParamsIECChannelChanged(self, event):
-        plugin = self.GetSelectedPlugin()
-        if plugin and plugin != self.PluginRoot:
-            plugin.BaseParams.setIEC_Channel(self.ParamsIECChannel.GetValue())
-        event.Skip()
-    
-    def OnParamsTargetTypeChanged(self, event):
-        plugin = self.GetSelectedPlugin()
-        if plugin and plugin == self.PluginRoot:
-            self.PluginRoot.ChangeTargetType(self.ParamsTargetType.GetStringSelection())
-            self.RefreshAttributesGrid()
-        event.Skip()
-    
-    def OnAttributesGridCellChange(self, event):
-        row = event.GetRow()
-        plugin = self.GetSelectedPlugin()
-        if plugin:
-            path = self.Table.GetValueByName(row, "Path")
-            value = self.Table.GetValueByName(row, "Value")
-            plugin.SetParamsAttribute(path, value)
-            print plugin.GetParamsAttributes(path)
-            self.RefreshAttributesGrid()
-        event.Skip()
-    
-    def OnAttributesGridCellLeftClick(self, event):
-        wx.CallAfter(self.OpenCloseAttribute)
-        event.Skip()
-    
     def OnNewProjectMenu(self, event):
         defaultpath = self.PluginRoot.GetProjectPath()
         if defaultpath == "":
@@ -713,25 +617,20 @@ class Beremiz(wx.Frame):
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
-            if os.path.isdir(projectpath) and len(os.listdir(projectpath)) == 0:
-                dialog = ProjectDialog(self)
-                if dialog.ShowModal() == wx.ID_OK:
-                    values = dialog.GetValues()
-                    values["creationDateTime"] = datetime(*localtime()[:6])
-                    self.PluginRoot.NewProject(projectpath, values)
-                    self.RefreshPluginTree()
-                    self.RefreshButtons()
-                    self.RefreshMainMenu()
-                dialog.Destroy()
+            res = self.PluginRoot.NewProject(projectpath)
+            if not res :
+                self.RefreshPluginTree()
+                self.RefreshButtons()
+                self.RefreshMainMenu()
             else:
-                message = wx.MessageDialog(self, "Folder choosen isn't empty. You can't use it for a new project!", "ERROR", wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, res, "ERROR", wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         event.Skip()
     
     def OnOpenProjectMenu(self, event):
         defaultpath = self.PluginRoot.GetProjectPath()
-        if defaultpath == "":
+        if not defaultpath:
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
@@ -785,7 +684,7 @@ class Beremiz(wx.Frame):
         event.Skip()
 
     def OnBuildMenu(self, event):
-        self.BuildAutom()
+        #self.BuildAutom()
         event.Skip()
 
     def OnSimulateMenu(self, event):
@@ -828,50 +727,6 @@ class Beremiz(wx.Frame):
     
     def DeletePlugin(self):
         pass
-    
-    def EditPLC(self):
-        if not self.PLCEditor:
-            self.PLCEditor = PLCOpenEditor(self, self.PluginRoot.PLCManager)
-            self.PLCEditor.RefreshProjectTree()
-            self.PLCEditor.RefreshFileMenu()
-            self.PLCEditor.RefreshEditMenu()
-            self.PLCEditor.RefreshToolBar()
-            self.PLCEditor.Show()
-
-    def LogCommand(self, Command, sz_limit = 100):
-
-        import os, popen2, fcntl, select, signal
-        
-        child = popen2.Popen3(Command, 1) # capture stdout and stderr from command
-        child.tochild.close()             # don't need to talk to child
-        outfile = child.fromchild 
-        outfd = outfile.fileno()
-        errfile = child.childerr
-        errfd = errfile.fileno()
-        outdata = errdata = ''
-        outeof = erreof = 0
-        outlen = errlen = 0
-        while 1:
-            ready = select.select([outfd,errfd],[],[]) # wait for input
-            if outfd in ready[0]:
-                outchunk = outfile.readline()
-                if outchunk == '': outeof = 1 
-                else : outlen += 1
-                outdata += outchunk
-                self.Log.write(outchunk)
-            if errfd in ready[0]:
-                errchunk = errfile.readline()
-                if errchunk == '': erreof = 1 
-                else : errlen += 1
-                errdata += errchunk
-                self.Log.write_warning(errchunk)
-            if outeof and erreof : break
-            if errlen > sz_limit or outlen > sz_limit : 
-                os.kill(child.pid, signal.SIGTERM)
-                self.Log.write_error("Output size reached limit -- killed\n")
-                break
-        err = child.wait()
-        return (err, outdata, errdata)
 
 #-------------------------------------------------------------------------------
 #                             Add Bus Dialog

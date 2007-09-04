@@ -1,4 +1,7 @@
-import os
+import os, sys
+base_folder = os.path.split(sys.path[0])[0]
+sys.path.append(os.path.join(base_folder, "wxsvg", "defeditor"))
+
 from DEFControler import DEFControler
 from defeditor import EditorFrame
 

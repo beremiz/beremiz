@@ -2,14 +2,17 @@
 Base definitions for beremiz plugins
 """
 
-import os
+import os,sys
 import plugins
 import types
 import shutil
 from xml.dom import minidom
-from xmlclass import GenerateClassesFromXSDstring
 
-from PLCControler import PLCControler
+#Quick hack to be able to find Beremiz IEC tools. Should be config params.
+base_folder = os.path.split(sys.path[0])[0]
+sys.path.append(os.path.join(base_folder, "plcopeneditor"))
+
+from xmlclass import GenerateClassesFromXSDstring
 
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -66,6 +69,7 @@ class PlugTemplate:
         return False
         
     def OnPlugSave(self):
+        #Default, do nothing and return success
         return True
 
     def GetParamsAttributes(self, path = None):
@@ -98,17 +102,15 @@ class PlugTemplate:
             os.mkdir(plugpath)
 
         # generate XML for base XML parameters controller of the plugin
-        basexmlfilepath = self.PluginBaseXmlFilePath()
-        if basexmlfilepath:
-            BaseXMLFile = open(basexmlfilepath,'w')
+        if self.MandatoryParams:
+            BaseXMLFile = open(self.PluginBaseXmlFilePath(),'w')
             BaseXMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
             BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0))
             BaseXMLFile.close()
         
         # generate XML for XML parameters controller of the plugin
-        xmlfilepath = self.PluginXmlFilePath()
-        if xmlfilepath:
-            XMLFile = open(xmlfilepath,'w')
+        if self.PlugParams:
+            XMLFile = open(self.PluginXmlFilePath(),'w')
             XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
             XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0))
             XMLFile.close()
@@ -292,8 +294,14 @@ class PlugTemplate:
                 if os.path.isdir(_self.PlugPath(PlugName)) and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
                     #Load the plugin.xml file into parameters members
                     _self.LoadXMLParams(PlugName)
+                    # Basic check. Better to fail immediately.
+                    if (_self.BaseParams.getName() != PlugName):
+                        raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(PlugName, _self.BaseParams.getName())
+
+                    # Now, self.PlugPath() should be OK
+                    
                     # Check that IEC_Channel is not already in use.
-                    self.FindNewIEC_Channel(self.BaseParams.getIEC_Channel())
+                    _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel())
                     # Call the plugin real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
@@ -319,31 +327,21 @@ class PlugTemplate:
         return newPluginOpj
             
 
-    def LoadXMLParams(self, PlugName = None, test = True):
+    def LoadXMLParams(self, PlugName = None):
         # Get the base xml tree
-        basexmlfilepath = self.PluginBaseXmlFilePath(PlugName)
-        if basexmlfilepath:
-            basexmlfile = open(basexmlfilepath, 'r')
+        if self.MandatoryParams:
+            basexmlfile = open(self.PluginBaseXmlFilePath(PlugName), 'r')
             basetree = minidom.parse(basexmlfile)
             self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
             basexmlfile.close()
         
         # Get the xml tree
-        xmlfilepath = self.PluginXmlFilePath(PlugName)
-        if xmlfilepath:
-            xmlfile = open(xmlfilepath, 'r')
+        if self.PlugParams:
+            xmlfile = open(self.PluginXmlFilePath(PlugName), 'r')
             tree = minidom.parse(xmlfile)
             self.PlugParams[1].loadXMLTree(tree.childNodes[0])
             xmlfile.close()
         
-        if test:
-            # Basic check. Better to fail immediately.
-            if not PlugName:
-                PlugName = os.path.split(self.PlugPath())[1].split(NameTypeSeparator)[0]
-            if (self.BaseParams.getName() != PlugName):
-                raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(PlugName, self.BaseParams.getName())
-            # Now, self.PlugPath() should be OK
-
     def LoadChilds(self):
         # Iterate over all PlugName@PlugType in plugin directory, and try to open them
         for PlugDir in os.listdir(self.PlugPath()):
@@ -359,7 +357,38 @@ def _GetClassFunction(name):
         return getattr(__import__("plugins." + name), name).RootClass
     return GetRootClass
 
+
+####################################################################################
+####################################################################################
+####################################################################################
+###################################   ROOT    ######################################
+####################################################################################
+####################################################################################
+####################################################################################
+
+iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
+ieclib_path = os.path.join(base_folder, "matiec", "lib")
+
+# import for project creation timestamping
+from time import localtime
+from datetime import datetime
+# import necessary stuff from PLCOpenEditor
+from PLCControler import PLCControler
+from PLCOpenEditor import PLCOpenEditor, ProjectDialog
+from TextViewer import TextViewer
+from plcopen.structures import IEC_KEYWORDS
+
 class PluginsRoot(PlugTemplate):
+    """
+    This class define Root object of the plugin tree. 
+    It is responsible of :
+    - Managing project directory
+    - Building project
+    - Handling PLCOpenEditor controler and view
+    - Loading user plugins and instanciante them as childs
+    - ...
+    
+    """
 
     # For root object, available Childs Types are modules of the plugin packages.
     PlugChildsTypes = [(name, _GetClassFunction(name)) for name in plugins.__all__]
@@ -418,26 +447,43 @@ class PluginsRoot(PlugTemplate):
     </xsd:schema>
     """
 
-    def __init__(self):
-        PlugTemplate.__init__(self)
+    def __init__(self, frame):
+
+        self.MandatoryParams = None
+        self.AppFrame = frame
+        
+        """
+        This method are not called here... but in NewProject and OpenProject
+        self._AddParamsMembers()
+        self.PluggedChilds = {}
+        """
+
         # self is the parent
         self.PlugParent = None
         # Keep track of the plugin type name
         self.PlugType = "Beremiz"
         
-        self.ProjectPath = ""
+        # After __init__ root plugin is not valid
+        self.ProjectPath = None
         self.PLCManager = None
+        self.PLCEditor = None
     
     def HasProjectOpened(self):
         """
         Return if a project is actually opened
         """
-        return self.ProjectPath != ""
+        return self.ProjectPath != None
     
     def GetProjectPath(self):
         return self.ProjectPath
     
-    def NewProject(self, ProjectPath, PLCParams):
+    def GetPlugInfos(self):
+        childs = []
+        for child in self.IterChilds():
+            childs.append(child.GetPlugInfos())
+        return {"name" : os.path.split(self.ProjectPath)[1], "type" : None, "values" : childs}
+    
+    def NewProject(self, ProjectPath):
         """
         Create a new project in an empty folder
         @param ProjectPath: path of the folder where project have to be created
@@ -446,6 +492,16 @@ class PluginsRoot(PlugTemplate):
         # Verify that choosen folder is empty
         if not os.path.isdir(ProjectPath) or len(os.listdir(ProjectPath)) > 0:
             return "Folder choosen isn't empty. You can't use it for a new project!"
+        
+        dialog = ProjectDialog(self.AppFrame)
+        if dialog.ShowModal() == wx.ID_OK:
+            values = dialog.GetValues()
+            values["creationDateTime"] = datetime(*localtime()[:6])
+            dialog.Destroy()
+        else:
+            dialog.Destroy()
+            return "Project not created"
+        
         # Create Controler for PLCOpen program
         self.PLCManager = PLCControler()
         self.PLCManager.CreateNewProject(PLCParams.pop("projectName"))
@@ -453,11 +509,8 @@ class PluginsRoot(PlugTemplate):
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
-        # No IEC channel, name, etc...
-        self.MandatoryParams = []
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
-        self.BaseParams.setName(os.path.split(ProjectPath)[1])
         return None
         
     def LoadProject(self, ProjectPath):
@@ -478,19 +531,16 @@ class PluginsRoot(PlugTemplate):
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
-        # No IEC channel, name, etc...
-        self.MandatoryParams = None
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
         # If dir have already be made, and file exist
         if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
             #Load the plugin.xml file into parameters members
-            result = self.LoadXMLParams(test = False)
+            result = self.LoadXMLParams()
             if result:
                 return result
             #Load and init all the childs
             self.LoadChilds()
-        self.BaseParams.setName(os.path.split(ProjectPath)[1])
         return None
     
     def SaveProject(self):
@@ -500,9 +550,6 @@ class PluginsRoot(PlugTemplate):
     
     def PlugPath(self, PlugName=None):
         return self.ProjectPath
-    
-    def PluginBaseXmlFilePath(self, PlugName=None):
-        return None
     
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
@@ -517,61 +564,93 @@ class PluginsRoot(PlugTemplate):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
         return [(C_file_name, "") for C_file_name in self.PLCGeneratedCFiles ] , ""
-        
-    def _Generate_SoftPLC(self, buildpath, logger):
+    
+    def _getBuildPath(self):
+        return os.path.join(self.ProjectPath, "build")
+    
+    def _getIECcodepath(self):
+        # define name for IEC code file
+        return os.path.join(self._getBuildPath(), "plc.st")
+    
+    def _Generate_SoftPLC(self, logger):
+        """
+        Generate SoftPLC ST/IL/SFC code out of PLCOpenEditor controller, and compile it with IEC2CC
+        @param buildpath: path where files should be created
+        @param logger: the log pseudo file
+        """
 
+        logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
+        buildpath = self._getBuildPath()
+        # define name for IEC code file
+        plc_file = self._getIECcodepath()
+        # ask PLCOpenEditor controller to write ST/IL/SFC code file
+        result = self.PLCManager.GenerateProgram(plc_file)
+        if not result:
+            # Failed !
+            logger.write_error("Error : ST/IL/SFC code generator returned %d"%result)
+            return False
+        logger.write("Compiling ST Program in to C Program...\n")
+        # Now compile IEC code into many C files
+        # files are listed to stdout, and errors to stderr. 
+        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
+        if status:
+            # Failed !
+            logger.write_error("Error : IEC to C compiler returned %d"%status)
+            return False
+        # Now extract C files of stdout
+        C_files = result.splitlines()
+        # remove those that are not to be compiled because included by others
+        C_files.remove("POUS.c")
+        C_files.remove("LOCATED_VARIABLES.h")
+        # transform those base names to full names with path
+        C_files = map(lambda filename:os.path.join(self.TargetDir, filename), C_files)
+        logger.write("Extracting Located Variables...\n")
+        # IEC2CC compiler generate a list of located variables : LOCATED_VARIABLES.h
+        location_file = open(os.path.join(buildpath,"LOCATED_VARIABLES.h"))
+        locations = []
+        # each line of LOCATED_VARIABLES.h declares a located variable
+        lines = [line.strip() for line in location_file.readlines()]
+        # This regular expression parses the lines genereated by IEC2CC
         LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWD]))?,(?P<LOC>[,0-9]*)\)")
-        
-        if self.PLCManager:
-            logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
-            plc_file = os.path.join(self.TargetDir, "plc.st")
-            result = self.PLCManager.GenerateProgram(plc_file)
-            if not result:
-                logger.write_error("Error : ST/IL/SFC code generator returned %d"%result)
-                return False
-            logger.write("Compiling ST Program in to C Program...\n")
-            status, result, err_result = self.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
-            if status:
-                new_dialog = wx.Frame(None)
-                ST_viewer = TextViewer(new_dialog, None, None)
-                #ST_viewer.Enable(False)
-                ST_viewer.SetKeywords(IEC_KEYWORDS)
-                ST_viewer.SetText(file(plc_file).read())
-                new_dialog.Show()
-                raise Exception, "Error : IEC to C compiler returned %d"%status
-            C_files = result.splitlines()
-            C_files.remove("POUS.c")
-            C_files = map(lambda filename:os.path.join(self.TargetDir, filename), C_files)
-            logger.write("Extracting Located Variables...\n")
-            location_file = open(os.path.join(self.TargetDir,"LOCATED_VARIABLES.h"))
-            locations = []
-            lines = [line.strip() for line in location_file.readlines()]
-            for line in lines:
-                result = LOCATED_MODEL.match(line)
-                if result:
-                    resdict = result.groupdict()
-                    # rewrite location as a tuple of integers
-                    resdict['LOC'] = tuple(map(int,resdict['LOC'].split(',')))
-                    if not resdict['SIZE']:
-                        resdict['SIZE'] = 'X'
-                    locations.append(resdict)
+        for line in lines:
+            # If line match RE, 
+            result = LOCATED_MODEL.match(line)
+            if result:
+                # Get the resulting dict
+                resdict = result.groupdict()
+                # rewrite string for variadic location as a tuple of integers
+                resdict['LOC'] = tuple(map(int,resdict['LOC'].split(',')))
+                # set located size to 'X' if not given 
+                if not resdict['SIZE']:
+                    resdict['SIZE'] = 'X'
+                # finally store into located variable list
+                locations.append(resdict)
+        # Keep track of generated C files for later use by self.PlugGenerate_C
         self.PLCGeneratedCFiles = C_files
+        # Keep track of generated located variables for later use by self._Generate_C
         self.PLCGeneratedLocatedVars = locations
         return True
 
     def _build(self, logger):
-        buildpath = os.path.join(self.ProjectPath, "build")
+        """
+        Method called by user to (re)build SoftPLC and plugin tree
+        """
+        buildpath = self._getBuildPath()
+
+        # Eventually create build dir
         if not os.path.exists(buildpath):
             os.mkdir(buildpath)
         
         logger.write("Start build in %s" % buildpath)
         
-        if not self._Generate_SoftPLC(buildpath, logger):
-            logger.write("SoftPLC code generation failed !")
-            return
-    
+        # Generate SoftPLC code
+        if not self._Generate_SoftPLC(logger):
+            logger.write_error("SoftPLC code generation failed !")
+            return False
+
         logger.write("SoftPLC code generation successfull")
         
+        # Generate C code and compilation params from plugin hierarchy
         try:
             CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
                 buildpath, 
@@ -581,14 +660,39 @@ class PluginsRoot(PlugTemplate):
         except Exception, msg:
             logger.write_error("Plugins code generation Failed !")
             logger.write_error(str(msg))
-            return
+            return False
 
         logger.write_error("Plugins code generation successfull")
-        
+
+        # Compile the resulting code into object files.
         for CFile, CFLAG in CFilesAndCFLAGS:
             print CFile,CFLAG
         
-        LDFLAGS
+        # Link object files into something that can be executed on target
+        print LDFLAGS
 
-    PluginMethods = [("Build",_build), ("Clean",None), ("Run",None), ("EditPLC",None), ("Simulate",None)]
+    def _showIECcode(self, logger):
+        plc_file = self._getIECcodepath()
+        new_dialog = wx.Frame(None)
+        ST_viewer = TextViewer(new_dialog, None, None)
+        #ST_viewer.Enable(False)
+        ST_viewer.SetKeywords(IEC_KEYWORDS)
+        try:
+            text = file(plc_file).read()
+        except:
+            text = '(* No IEC code have been generated at that time ! *)'
+        ST_viewer.SetText(text)
+            
+        new_dialog.Show()
+
+    def _EditPLC(self, logger):
+        if not self.PLCEditor:
+            self.PLCEditor = PLCOpenEditor(self, self.PLCManager)
+            self.PLCEditor.RefreshProjectTree()
+            self.PLCEditor.RefreshFileMenu()
+            self.PLCEditor.RefreshEditMenu()
+            self.PLCEditor.RefreshToolBar()
+            self.PLCEditor.Show()
+
+    PluginMethods = [("Build",_build), ("Clean",None), ("Run",None), ("EditPLC",None), ("Show IEC code",_showIECcode)]
     
