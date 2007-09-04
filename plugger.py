@@ -36,7 +36,7 @@ class PlugTemplate:
 
     def _AddParamsMembers(self):
         Classes = GenerateClassesFromXSDstring(self.XSD)[0]
-        self.PlugParams = []
+        self.PlugParams = None
         Classes = [(name, XSDclass) for name, XSDclass in Classes.items() if XSDclass.IsBaseClass]
         if len(Classes) == 1:
             name, XSDclass = Classes[0]
@@ -68,15 +68,27 @@ class PlugTemplate:
     def OnPlugSave(self):
         return True
 
-    def GetPlugParamsAttributes(self):
-        return self.PlugParams[1].getElementAttributes()
-    
-    def SetPlugParamsAttribute(self, name, value):
-        attr = getattr(self.PlugParams[1], name, None)
-        if isinstance(attr, types.ClassType):
-            attr.SetValue(value)
+    def GetParamsAttributes(self, path = None):
+        if path:
+            parts = path.split(".", 1)
+            if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
+                return self.MandatoryParams[1].getElementInfos(parts[0], parts[1])
+            elif self.PlugParams and parts[0] == self.PlugParams[0]:
+                return self.PlugParams[1].getElementInfos(parts[0], parts[1])
         else:
-            setattr(self.PlugParams[1], name, value)
+            params = []
+            if self.MandatoryParams:
+                params.append(self.MandatoryParams[1].getElementInfos(self.MandatoryParams[0]))
+            if self.PlugParams:
+                params.append(self.PlugParams[1].getElementInfos(self.PlugParams[0]))
+            return params
+        
+    def SetParamsAttribute(self, path, value):
+        parts = path.split(".", 1)
+        if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
+            self.MandatoryParams[1].setElementValue(parts[1], value)
+        elif self.PlugParams and parts[0] == self.PlugParams[0]:
+            self.PlugParams[1].setElementValue(parts[1], value)
 
     def PlugRequestSave(self):
         # If plugin do not have corresponding directory
@@ -424,35 +436,6 @@ class PluginsRoot(PlugTemplate):
     
     def GetProjectPath(self):
         return self.ProjectPath
-    
-    def GetTargetTypes(self):
-        return self.BeremizRoot.TargetType.getChoices().keys()
-    
-    def ChangeTargetType(self, target_type):
-        self.BeremizRoot.TargetType.addContent(target_type)
-        
-    def GetTargetAttributes(self):
-        content = self.BeremizRoot.TargetType.getContent()
-        if content:
-            return content["value"].getElementAttributes()
-        else:
-            return []
-        
-    def SetTargetAttribute(self, name, value):
-        content = self.BeremizRoot.TargetType.getContent()
-        if content:
-            attr = getattr(content["value"], name, None)
-            if isinstance(attr, types.ClassType):
-                attr.SetValue(value)
-            else:
-                setattr(content["value"], name, value)
-    
-    def GetTargetType(self):
-        content = self.BeremizRoot.TargetType.getContent()
-        if content:
-            return content["name"]
-        else:
-            return ""
     
     def NewProject(self, ProjectPath, PLCParams):
         """

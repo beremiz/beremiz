@@ -80,147 +80,6 @@ class LogPseudoFile:
     def isatty(self):
         return false
 
-class AttributesTable(wx.grid.PyGridTableBase):
-    
-    """
-    A custom wxGrid Table using user supplied data
-    """
-    def __init__(self, parent, data, colnames):
-        # The base class must be initialized *first*
-        wx.grid.PyGridTableBase.__init__(self)
-        self.data = data
-        self.colnames = colnames
-        self.Parent = parent
-        # XXX
-        # we need to store the row length and collength to
-        # see if the table has changed size
-        self._rows = self.GetNumberRows()
-        self._cols = self.GetNumberCols()
-    
-    def GetNumberCols(self):
-        return len(self.colnames)
-        
-    def GetNumberRows(self):
-        return len(self.data)
-
-    def GetColLabelValue(self, col):
-        if col < len(self.colnames):
-            return self.colnames[col]
-
-    def GetRowLabelValues(self, row):
-        return row
-
-    def GetValue(self, row, col):
-        if row < self.GetNumberRows():
-            name = str(self.data[row].get(self.GetColLabelValue(col), ""))
-            return name
-    
-    def GetValueByName(self, row, colname):
-        return self.data[row].get(colname)
-
-    def SetValue(self, row, col, value):
-        if col < len(self.colnames):
-            self.data[row][self.GetColLabelValue(col)] = value
-        
-    def ResetView(self, grid):
-        """
-        (wxGrid) -> Reset the grid view.   Call this to
-        update the grid if rows and columns have been added or deleted
-        """
-        grid.BeginBatch()
-        for current, new, delmsg, addmsg in [
-            (self._rows, self.GetNumberRows(), wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED),
-            (self._cols, self.GetNumberCols(), wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED),
-        ]:
-            if new < current:
-                msg = wx.grid.GridTableMessage(self,delmsg,new,current-new)
-                grid.ProcessTableMessage(msg)
-            elif new > current:
-                msg = wx.grid.GridTableMessage(self,addmsg,new-current)
-                grid.ProcessTableMessage(msg)
-                self.UpdateValues(grid)
-        grid.EndBatch()
-
-        self._rows = self.GetNumberRows()
-        self._cols = self.GetNumberCols()
-        # update the column rendering scheme
-        self._updateColAttrs(grid)
-
-        # update the scrollbars and the displayed part of the grid
-        grid.AdjustScrollbars()
-        grid.ForceRefresh()
-
-    def UpdateValues(self, grid):
-        """Update all displayed values"""
-        # This sends an event to the grid table to update all of the values
-        msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-        grid.ProcessTableMessage(msg)
-
-    def _updateColAttrs(self, grid):
-        """
-        wxGrid -> update the column attributes to add the
-        appropriate renderer given the column name.
-
-        Otherwise default to the default renderer.
-        """
-        
-        for row in range(self.GetNumberRows()):
-            for col in range(self.GetNumberCols()):
-                editor = None
-                renderer = None
-                align = wx.ALIGN_LEFT
-                colname = self.GetColLabelValue(col)
-                grid.SetReadOnly(row, col, False)
-                
-                if colname == "Value":
-                    colSize = 100
-                    value_type = self.data[row]["Type"]
-                    if isinstance(value_type, types.ListType):
-                        editor = wx.grid.GridCellChoiceEditor()
-                        editor.SetParameters(",".join(value_type))
-                    elif value_type == "boolean":
-                        editor = wx.grid.GridCellChoiceEditor()
-                        editor.SetParameters("True,False")
-                    elif value_type in ["unsignedLong","long","integer"]:
-                        editor = wx.grid.GridCellNumberEditor()
-                        align = wx.ALIGN_RIGHT
-                    elif value_type == "decimal":
-                        editor = wx.grid.GridCellFloatEditor()
-                        align = wx.ALIGN_RIGHT
-                    else:
-                        editor = wx.grid.GridCellTextEditor()
-                else:
-                    colSize = 120
-                    grid.SetReadOnly(row, col, True)
-                
-                attr = wx.grid.GridCellAttr()
-                attr.SetAlignment(align, wx.ALIGN_CENTRE)
-                grid.SetColAttr(col, attr)
-                grid.SetColSize(col, colSize)
-                                    
-                grid.SetCellEditor(row, col, editor)
-                grid.SetCellRenderer(row, col, renderer)
-                
-                grid.SetCellBackgroundColour(row, col, wx.WHITE)
-    
-    def SetData(self, data):
-        self.data = data
-    
-    def GetData(self):
-        return self.data
-    
-    def AppendRow(self, row_content):
-        self.data.append(row_content)
-
-    def RemoveRow(self, row_index):
-        self.data.pop(row_index)
-
-    def GetRow(self, row_index):
-        return self.data[row_index]
-
-    def Empty(self):
-        self.data = []
-
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZSECONDSPLITTER, ID_BEREMIZLEFTPANEL, 
  ID_BEREMIZPARAMSPANEL, ID_BEREMIZLOGCONSOLE, 
@@ -358,35 +217,16 @@ class Beremiz(wx.Frame):
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(0)
-    
-    def _init_coll_ParamsPanelMainSizer_Items(self, parent):
-        parent.AddSizer(self.ParamsPanelChildSizer, 1, border=10, flag=wx.GROW|wx.ALL)
-        parent.AddSizer(self.ParamsPanelPluginSizer, 1, border=10, flag=wx.GROW|wx.ALL)
-        parent.AddWindow(self.AttributesGrid, 2, border=10, flag=wx.GROW|wx.TOP|wx.RIGHT|wx.BOTTOM)
-        
-    def _init_coll_ParamsPanelChildSizer_Items(self, parent):
-        parent.AddWindow(self.ParamsEnable, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-        parent.AddWindow(self.ParamsStaticText1, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-        parent.AddWindow(self.ParamsIECChannel, 0, border=0, flag=wx.GROW)
-    
-    def _init_coll_ParamsPanelPluginSizer_Items(self, parent):
-        parent.AddWindow(self.ParamsStaticText2, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-        parent.AddWindow(self.ParamsTargetType, 0, border=0, flag=wx.GROW)
         
     def _init_sizers(self):
         self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.ButtonGridSizer = wx.FlexGridSizer(cols=3, hgap=2, rows=1, vgap=2)
-        self.ParamsPanelMainSizer = wx.StaticBoxSizer(self.ParamsStaticBox, wx.HORIZONTAL)
-        self.ParamsPanelChildSizer = wx.BoxSizer(wx.VERTICAL)
-        self.ParamsPanelPluginSizer = wx.BoxSizer(wx.VERTICAL)
+        self.ParamsPanelMainSizer = wx.BoxSizer(wx.VERTICAL)
         
         self._init_coll_LeftGridSizer_Growables(self.LeftGridSizer)
         self._init_coll_LeftGridSizer_Items(self.LeftGridSizer)
         self._init_coll_ButtonGridSizer_Growables(self.ButtonGridSizer)
         self._init_coll_ButtonGridSizer_Items(self.ButtonGridSizer)
-        self._init_coll_ParamsPanelMainSizer_Items(self.ParamsPanelMainSizer)
-        self._init_coll_ParamsPanelChildSizer_Items(self.ParamsPanelChildSizer)
-        self._init_coll_ParamsPanelPluginSizer_Items(self.ParamsPanelPluginSizer)
         
         self.LeftPanel.SetSizer(self.LeftGridSizer)
         self.ParamsPanel.SetSizer(self.ParamsPanelMainSizer)
@@ -441,46 +281,10 @@ class Beremiz(wx.Frame):
         self.MainSplitter.SplitVertically(self.LeftPanel, self.SecondSplitter,
               300)
         
-        self.ParamsPanel = wx.Panel(id=ID_BEREMIZPARAMSPANEL, 
+        self.ParamsPanel = wx.ScrolledWindow(id=ID_BEREMIZPARAMSPANEL, 
               name='ParamsPanel', parent=self.SecondSplitter, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL|wx.VSCROLL)
         
-        self.ParamsStaticBox = wx.StaticBox(id=ID_BEREMIZPARAMSSTATICBOX,
-              label='', name='staticBox1', parent=self.ParamsPanel,
-              pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
-        
-        self.ParamsEnable = wx.CheckBox(id=ID_BEREMIZPARAMSENABLE,
-              label='Plugin enabled', name='ParamsEnable', parent=self.ParamsPanel,
-              pos=wx.Point(0, 0), size=wx.Size(0, 24), style=0)
-        self.Bind(wx.EVT_CHECKBOX, self.OnParamsEnableChanged, id=ID_BEREMIZPARAMSENABLE)
-        
-        self.ParamsStaticText1 = wx.StaticText(id=ID_BEREMIZPARAMSSTATICTEXT1,
-              label='IEC Channel:', name='ParamsStaticText1', parent=self.ParamsPanel,
-              pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
-        
-        self.ParamsIECChannel = wx.SpinCtrl(id=ID_BEREMIZPARAMSIECCHANNEL,
-              name='ParamsIECChannel', parent=self.ParamsPanel, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.SP_ARROW_KEYS, min=0)
-        self.Bind(wx.EVT_SPINCTRL, self.OnParamsIECChannelChanged, id=ID_BEREMIZPARAMSIECCHANNEL)
-
-        self.ParamsStaticText2 = wx.StaticText(id=ID_BEREMIZPARAMSSTATICTEXT2,
-              label='Target Type:', name='ParamsStaticText2', parent=self.ParamsPanel,
-              pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
-
-        self.ParamsTargetType = wx.Choice(id=ID_BEREMIZPARAMSTARGETTYPE, 
-              name='TargetType', choices=[""], parent=self.ParamsPanel, 
-              pos=wx.Point(0, 0), size=wx.Size(0, 24), style=wx.LB_SINGLE)
-        self.Bind(wx.EVT_CHOICE, self.OnParamsTargetTypeChanged, id=ID_BEREMIZPARAMSTARGETTYPE)
-
-        self.AttributesGrid = wx.grid.Grid(id=ID_BEREMIZPARAMSATTRIBUTESGRID,
-              name='AttributesGrid', parent=self.ParamsPanel, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 150), style=wx.VSCROLL)
-        self.AttributesGrid.SetFont(wx.Font(12, 77, wx.NORMAL, wx.NORMAL, False,
-              'Sans'))
-        self.AttributesGrid.SetLabelFont(wx.Font(10, 77, wx.NORMAL, wx.NORMAL,
-              False, 'Sans'))
-        self.AttributesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnAttributesGridCellChange)
-
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
               name='LogConsole', parent=self.SecondSplitter, pos=wx.Point(0, 0),
               size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
@@ -496,12 +300,6 @@ class Beremiz(wx.Frame):
         self.Log = LogPseudoFile(self.LogConsole)
         
         self.PluginRoot = PluginsRoot()
-        for value in self.PluginRoot.GetTargetTypes():
-            self.ParamsTargetType.Append(value)
-        
-        self.Table = AttributesTable(self, [], ["Attribute", "Value"])
-        self.AttributesGrid.SetTable(self.Table)
-        self.AttributesGrid.SetRowLabelSize(0)
         
         if projectOpen:
             self.PluginRoot.LoadProject(projectOpen)
@@ -622,21 +420,9 @@ class Beremiz(wx.Frame):
         else:
             # Refresh ParamsPanel
             self.ParamsPanel.Show()
-            self.ParamsStaticBox.SetLabel(plugin.BaseParams.getName())
-            if plugin == self.PluginRoot:
-                self.ParamsPanelMainSizer.Hide(self.ParamsPanelChildSizer)
-                self.ParamsPanelMainSizer.Show(self.ParamsPanelPluginSizer)
-                self.ParamsTargetType.SetStringSelection(self.PluginRoot.GetTargetType())
-            else:
-                self.ParamsPanelMainSizer.Show(self.ParamsPanelChildSizer)
-                self.ParamsPanelMainSizer.Hide(self.ParamsPanelPluginSizer)
-                self.ParamsEnable.SetValue(plugin.BaseParams.getEnabled())
-                self.ParamsEnable.Enable(True)
-                self.ParamsStaticText1.Enable(True)
-                self.ParamsIECChannel.SetValue(plugin.BaseParams.getIEC_Channel())
-                self.ParamsIECChannel.Enable(True)
+            infos = plugin.GetParamsAttributes()
+            self.RefreshSizerElement(self.ParamsPanelMainSizer, infos, None)
             self.ParamsPanelMainSizer.Layout()
-            self.RefreshAttributesGrid()
             
             # Refresh PluginChilds
             self.PluginChilds.Clear()
@@ -651,21 +437,239 @@ class Beremiz(wx.Frame):
                 self.AddButton.Enable(False)
             self.DeleteButton.Enable(True)
     
+    def GetChoiceCallBackFunction(self, choicectrl, path):
+        def OnChoiceChanged(event):
+            plugin = self.GetSelectedPlugin()
+            if plugin:
+                plugin.SetParamsAttribute(path, choicectrl.GetStringSelection())
+            event.Skip()
+        return OnChoiceChanged
+    
+    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, path):
+        def OnChoiceContentChanged(event):
+            plugin = self.GetSelectedPlugin()
+            if plugin:
+                plugin.SetParamsAttribute(path, choicectrl.GetStringSelection())
+                infos = self.PluginRoot.GetParamsAttributes(path)
+                staticbox = staticboxsizer.GetStaticBox()
+                staticbox.SetLabel("%(name)s - %(value)s"%infos)
+                self.RefreshSizerElement(staticboxsizer, infos["children"], "%s.%s"%(path, infos["name"]))
+                self.ParamsPanelMainSizer.Layout()
+            event.Skip()
+        return OnChoiceContentChanged
+    
+    def GetTextCtrlCallBackFunction(self, textctrl, path):
+        def OnTextCtrlChanged(event):
+            plugin = self.GetSelectedPlugin()
+            if plugin:
+                plugin.SetParamsAttribute(path, textctrl.GetValue())
+            event.Skip()
+        return OnTextCtrlChanged
+    
+    def GetCheckBoxCallBackFunction(self, textctrl, path):
+        def OnCheckBoxChanged(event):
+            plugin = self.GetSelectedPlugin()
+            if plugin:
+                plugin.SetParamsAttribute(path, textctrl.IsChecked())
+            event.Skip()
+        return OnCheckBoxChanged
+    
+    def ClearSizer(self, sizer):
+        staticboxes = []
+        for item in sizer.GetChildren():
+            if item.IsSizer():
+                item_sizer = item.GetSizer()
+                self.ClearSizer(item_sizer)
+                if isinstance(item_sizer, wx.StaticBoxSizer):
+                    staticboxes.append(item_sizer.GetStaticBox())
+        sizer.Clear(True)
+        for staticbox in staticboxes:
+            staticbox.Destroy()
+                
+    def RefreshSizerElement(self, sizer, elements, path):
+        self.ClearSizer(sizer)
+        first = True
+        for element_infos in elements:
+            if path:
+                element_path = "%s.%s"%(path, element_infos["name"])
+            else:
+                element_path = element_infos["name"]
+            if isinstance(element_infos["type"], types.ListType):
+                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                if first:
+                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                else:
+                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
+                    name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
+                    pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
+                boxsizer.AddWindow(statictext, 0, border=0, flag=0)
+                id = wx.NewId()
+                choicectrl = wx.Choice(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
+                    pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)
+                boxsizer.AddWindow(choicectrl, 0, border=0, flag=0)
+                choicectrl.Append("")
+                if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
+                    for choice, xsdclass in element_infos["type"]:
+                        choicectrl.Append(choice)
+                    staticbox = wx.StaticBox(id=-1, label="%(name)s - %(value)s"%element_infos, 
+                        name='%s_staticbox'%element_infos["name"], parent=self.ParamsPanel,
+                        pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
+                    staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
+                    self.RefreshSizerElement(staticboxsizer, element_infos["children"], element_path)
+                    callback = self.GetChoiceContentCallBackFunction(choicectrl, staticboxsizer, element_path)
+                else:
+                    for choice in element_infos["type"]:
+                        choicectrl.Append(choice)
+                    callback = self.GetChoiceCallBackFunction(choicectrl, element_path)
+                choicectrl.Bind(wx.EVT_CHOICE, callback, id=id)
+                choicectrl.SetStringSelection(element_infos["value"])
+            elif isinstance(element_infos["type"], types.DictType):
+                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                if first:
+                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                else:
+                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
+                    name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
+                    pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
+                boxsizer.AddWindow(statictext, 0, border=0, flag=wx.TOP|wx.LEFT|wx.BOTTOM)
+                id = wx.NewId()
+                min = max = -1
+                if "min" in element_infos["type"]:
+                    min = element_infos["type"]["min"]
+                if "max" in element_infos["type"]:
+                    max = element_infos["type"]["max"]
+                spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
+                    pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, 
+                    min=min, max=max)
+                boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
+                spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, element_path), id=id)
+                spinctrl.SetValue(element_infos["value"])
+            elif element_infos["type"] == "element":
+                staticbox = wx.StaticBox(id=-1, label=element_infos["name"], 
+                    name='%s_staticbox'%element_infos["name"], parent=self.ParamsPanel,
+                    pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
+                staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                if first:
+                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW|wx.TOP)
+                else:
+                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
+                self.RefreshSizerElement(staticboxsizer, element_infos["children"], element_path)
+            else:
+                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                if first:
+                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                else:
+                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
+                    name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
+                    pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
+                boxsizer.AddWindow(statictext, 0, border=0, flag=0)
+                id = wx.NewId()
+                if element_infos["type"] == "boolean":
+                    checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
+                        pos=wx.Point(0, 0), size=wx.Size(17, 25), style=0)
+                    boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
+                    checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, element_path), id=id)
+                    checkbox.SetValue(element_infos["value"])
+                elif element_infos["type"] in ["unsignedLong", "long","integer"]:
+                    spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
+                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                    boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
+                    spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, element_path), id=id)
+                    spinctrl.SetValue(element_infos["value"])
+                else:
+                    textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
+                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)
+                    boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
+                    textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, element_path), id=id)
+                    textctrl.SetValue(str(element_infos["value"]))
+            first = False
+    
+    def UpdateAttributesTreeParts(self, tree, new_tree):
+        tree_leafs = [(element_infos["name"], element_infos["type"]) for element_infos in tree["children"]]
+        new_tree_leafs = [(element_infos["name"], element_infos["type"]) for element_infos in new_tree["children"]]
+        if tree_leafs != new_tree_leafs:
+            tree["children"] = new_tree["children"]
+            for child in tree["children"]:
+                self.PrepareAttributesTree(child)
+        else:
+            for idx, new_element_infos in enumerate(new_tree["children"]):
+                tree["children"][idx]["value"] = new_element_infos["value"]
+                if len(new_element_infos["children"]) > 0:
+                    self.UpdateAttributesTreeParts(tree["children"][idx], new_element_infos)
+    
+    def PrepareAttributesTree(self, tree):
+        if len(tree["children"]) > 0:
+            tree["open"] = False
+            for child in tree["children"]:
+                self.PrepareAttributesTree(child)
+    
+    def GenerateTable(self, data, tree, path, indent):
+        if path:
+            tree_path = "%s.%s"%(path, tree["name"])
+            infos = {"Attribute" : "   " * indent + tree["name"], "Value" : tree["value"], "Type" : tree["type"], "Open" : "", "Path" : tree_path}
+            data.append(infos)
+            indent += 1
+        else:
+            tree_path = tree["name"]
+        if len(tree["children"]) > 0:
+            if tree["open"] or not path:
+                if path:
+                    infos["Open"] = "v"
+                for child in tree["children"]:
+                    self.GenerateTable(data, child, tree_path, indent)
+            elif path:
+                infos["Open"] = ">"
+    
     def RefreshAttributesGrid(self):
         plugin = self.GetSelectedPlugin()
         if not plugin:
+            self.AttributesTree = []
             self.Table.Empty()
         else:
-            if plugin == self.PluginRoot:
-                attr_infos = self.PluginRoot.GetTargetAttributes()
-            else:
-                attr_infos = plugin.GetPlugParamsAttributes()
+            new_params = plugin.GetParamsAttributes()
+            for idx, child in enumerate(new_params):
+                if len(self.AttributesTree) > idx:
+                    if self.AttributesTree[idx]["name"] == child["name"]:
+                        self.UpdateAttributesTreeParts(self.AttributesTree[idx], child)
+                    else:
+                        self.AttributesTree[idx] = child
+                        self.PrepareAttributesTree(child)
+                else:
+                    self.AttributesTree.append(child)
+                    self.PrepareAttributesTree(child)
+            while len(self.AttributesTree) > len(new_params):
+                self.AttributesTree.pop(-1)
             data = []
-            for infos in attr_infos:
-                data.append({"Attribute" : infos["name"], "Value" : infos["value"],
-                    "Type" : infos["type"]})
+            for child in self.AttributesTree:
+                self.GenerateTable(data, child, None, 0)
             self.Table.SetData(data)
         self.Table.ResetView(self.AttributesGrid)
+    
+    def OpenClose(self, tree, path):
+        parts = path.split(".", 1)
+        for child in tree["children"]:
+            if child["name"] == parts[0]:
+                if len(parts) > 1:
+                    return self.OpenClose(child, parts[1])
+                elif len(child["children"]) > 0:
+                    child["open"] = not child["open"]
+                    return True
+        return False
+    
+    def OpenCloseAttribute(self):
+        if self.AttributesGrid.GetGridCursorCol() == 0:
+            row = self.AttributesGrid.GetGridCursorRow()
+            path = self.Table.GetValueByName(row, "Path")
+            parts = path.split(".", 1)
+            for child in self.AttributesTree:
+                if child["name"] == parts[0] and len(parts) > 1:
+                    result = self.OpenClose(child, parts[1])
+                    if result:
+                        self.RefreshAttributesGrid()
     
     def OnParamsEnableChanged(self, event):
         plugin = self.GetSelectedPlugin()
@@ -690,12 +694,15 @@ class Beremiz(wx.Frame):
         row = event.GetRow()
         plugin = self.GetSelectedPlugin()
         if plugin:
-            name = self.Table.GetValueByName(row, "Attribute")
+            path = self.Table.GetValueByName(row, "Path")
             value = self.Table.GetValueByName(row, "Value")
-            if plugin == self.PluginRoot:
-                self.PluginRoot.SetTargetAttribute(name, value)
-            else:
-                plugin.SetPlugParamsAttribute(name, value)
+            plugin.SetParamsAttribute(path, value)
+            print plugin.GetParamsAttributes(path)
+            self.RefreshAttributesGrid()
+        event.Skip()
+    
+    def OnAttributesGridCellLeftClick(self, event):
+        wx.CallAfter(self.OpenCloseAttribute)
         event.Skip()
     
     def OnNewProjectMenu(self, event):
