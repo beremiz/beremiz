@@ -56,11 +56,18 @@ class _NodeListPlug(NodeList):
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
-            [(IEC_loc, IEC_Direction IEC_Type, Name)]\
-            ex: [((0,0,4,5),'I','X','__IX_0_0_4_5'),...]
+            [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
+            "NAME" : name of the variable (generally "__IW0_1_2" style)
+            "DIR" : direction "Q","I" or "M"
+            "SIZE" : size "X", "B", "W", "D", "L"
+            "LOC" : tuple of interger for IEC location (0,1,2,...)
+            }, ...]
+        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
+        # define a unique name for the generated C file
         prefix = "_".join(map(lambda x:str(x), current_location))
         Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
+        # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         master = config_utils.GenerateConciseDCF(locations, current_location, self)
         res = gen_cfile.GenerateFile(Gen_OD_path, master)
         if res :
@@ -82,25 +89,6 @@ class RootClass:
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
     
     def PlugGenerate_C(self, buildpath, current_location, locations):
-        """
-        Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
-        @param locations: List of complete variables locations \
-            [(IEC_loc, IEC_Direction IEC_Type, Name)]\
-            ex: [((0,0,4,5),'I','X','__IX_0_0_4_5'),...]
-        """
-        prefix = "_".join(map(lambda x:str(x), current_location))
-        Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
-        master = config_utils.GenerateConciseDCF(locations, self)
-        res = gen_cfile.GenerateFile(Gen_OD_path, master)
-        if not res:
-             s = str(self.BaseParams.BusId)+"_IN(){}\n"
-             s += "CanOpen(str(\""+self.CanFestivalNode.CAN_Device+"\")"
-             f = file(filepath, 'a')
-             f.write(s)
-        else:
-             pass # error
-         
         return [],""
 
 

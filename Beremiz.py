@@ -47,23 +47,18 @@ class LogPseudoFile:
     def writelines(self, l):
         map(self.write, l)
 
-    def write(self, s):
-        if self.default_style != self.black_white: 
-            self.output.SetDefaultStyle(self.black_white)
-            self.default_style = self.black_white
+    def write(self, s, style = None):
+        if not style : style=self.black_white
+        if self.default_style != style: 
+            self.output.SetDefaultStyle(style)
+            self.default_style = style
         self.output.AppendText(s) 
 
     def write_warning(self, s):
-        if self.default_style != self.red_white: 
-            self.output.SetDefaultStyle(self.red_white)
-            self.default_style = self.red_white
-        self.output.AppendText(s) 
+        self.write(s,self.red_white)
 
     def write_error(self, s):
-        if self.default_style != self.red_yellow: 
-            self.output.SetDefaultStyle(self.red_yellow)
-            self.default_style = self.red_yellow
-        self.output.AppendText(s) 
+        self.write(s,self.red_yellow)
 
     def flush(self):
         self.output.SetValue("")
@@ -570,7 +565,8 @@ class Beremiz(wx.Frame):
                         choicectrl.Append(choice)
                     callback = self.GetChoiceCallBackFunction(choicectrl, element_path)
                 choicectrl.Bind(wx.EVT_CHOICE, callback, id=id)
-                choicectrl.SetStringSelection(element_infos["value"])
+                if element_infos["value"]:
+                    choicectrl.SetStringSelection(element_infos["value"])
             elif isinstance(element_infos["type"], types.DictType):
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                 if first:
@@ -582,7 +578,8 @@ class Beremiz(wx.Frame):
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
                 boxsizer.AddWindow(statictext, 0, border=0, flag=wx.TOP|wx.LEFT|wx.BOTTOM)
                 id = wx.NewId()
-                min = max = -1
+                min = -sys.maxint-1
+                max = sys.maxint
                 if "min" in element_infos["type"]:
                     min = element_infos["type"]["min"]
                 if "max" in element_infos["type"]:
@@ -636,7 +633,7 @@ class Beremiz(wx.Frame):
     
     def OnNewProjectMenu(self, event):
         defaultpath = self.PluginRoot.GetProjectPath()
-        if defaultpath == "":
+        if not defaultpath:
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:

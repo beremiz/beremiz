@@ -139,7 +139,20 @@ def GetNewCobID(nodeid, type): # Return a cobid not used
     return ListCobIDAvailable.pop(0)
         
         
-def GenerateConciseDCF(locations, busname, nodelist):
+def GenerateConciseDCF(locations, current_location, nodelist):
+    """
+    Fills a CanFestival network editor model, with DCF with requested PDO mappings.
+    @param locations: List of complete variables locations \
+        [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
+        "NAME" : name of the variable (generally "__IW0_1_2" style)
+        "DIR" : direction "Q","I" or "M"
+        "SIZE" : size "X", "B", "W", "D", "L"
+        "LOC" : tuple of interger for IEC location (0,1,2,...)
+        }, ...]
+    @param nodelist: CanFestival network editor model
+    @return: a modified copy of the given CanFestival network editor model
+    """
+    
     global DictLocations, DictCobID, DictLocationsNotMapped, ListCobIDAvailable, SlavesPdoNumber, DefaultTransmitTypeSlave
 
     DictLocations = {}
@@ -187,45 +200,46 @@ def GenerateConciseDCF(locations, busname, nodelist):
                 ListCobIDAvailable.remove(pdo_cobid)
     
     # Get list of locations check if exists and mappables -> put them in DictLocations
-    for locationtype, name in locations:    
-        if name in DictLocations.keys():
+    for location in locations:
+        locationtype = location["IEC_TYPE"]
+        name = location["NAME"]
+        if name in DictLocations:
             if DictLocations[name]["type"] != DicoTypes[locationtype]:
                 raise ValueError, "Conflict type for location \"%s\"" % name 
         else:
-            loc = [i for i in name.split("_") if len(i) > 0]
-            if len(loc) not in (4, 5):
-                continue
+            #get only the part of the location that concern this node
+            loc = location["LOC"][len(current_location):]
+            # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
+            if len(loc) not in (3, 4):
+                raise ValueError, "Bad location size"
             
-            prefix = loc[0][0]
+            direction = location["DIR"]
             
-            # Extract and check busname
-            if loc[0][1].isdigit():
-                sizelocation = ""
-                busnamelocation = int(loc[0][1:])
-            else:
-                sizelocation = loc[0][1]
-                busnamelocation = int(loc[0][2:])
-            if busnamelocation != busname:
-                continue # A ne pas remplacer par un message d'erreur
+            sizelocation = location["SIZE"]
             
             # Extract and check nodeid
-            nodeid = int(loc[1])
+            nodeid, index, subindex = loc[:3]
+            
+            # Check Id is in slave node list
             if nodeid not in nodelist.SlaveNodes.keys():
-                continue
+                raise ValueError, "Non existing node ID : %d (variable %s)" % (nodeid,name)
+            
+            # Get the model for this node (made from EDS)
             node = nodelist.SlaveNodes[nodeid]["Node"]
             
             # Extract and check index and subindex
-            index = int(loc[2])
-            subindex = int(loc[3])
             if not node.IsEntry(index, subindex):
-                continue
+                raise ValueError, "No such index/subindex (%x,%x) in ID : %d (variable %s)" % (index,subindex,nodeid,name)
+            
+            #Get the entry info
             subentry_infos = node.GetSubentryInfos(index, subindex)
             
+            # If a PDO mappable
             if subentry_infos and subentry_infos["pdo"]:
-                if sizelocation == "X" and len(loc) > 4:
+                if sizelocation == "X" and len(loc) > 3:
                     numbit = loc[4]
-                elif sizelocation != "X" and len(loc) > 4:
-                    continue
+                elif sizelocation != "X" and len(loc) > 3:
+                    raise ValueError, "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
                 else:
                     numbit = None
                 
@@ -235,10 +249,12 @@ def GenerateConciseDCF(locations, busname, nodelist):
                     raise ValueError, "Invalid type for location \"%s\"" % name
                 
                 typeinfos = node.GetEntryInfos(locationtype)
-                DictLocations[name] = {"type":locationtype, "pdotype":SlavePDOType[prefix],
+                DictLocations[name] = {"type":locationtype, "pdotype":SlavePDOType[direction],
                                        "nodeid": nodeid, "index": index,"subindex": subindex, 
                                        "bit": numbit, "size": typeinfos["size"], "busname": busname, "sizelocation": sizelocation}
-                  
+            else:
+                raise ValueError, "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
+                
     # Create DictCobID with variables already mapped and add them in DictValidLocations
     for name, locationinfos in DictLocations.items():
         node = nodelist.SlaveNodes[locationinfos["nodeid"]]["Node"]

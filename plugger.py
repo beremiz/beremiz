@@ -7,6 +7,7 @@ import plugins
 import types
 import shutil
 from xml.dom import minidom
+import wx
 
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
@@ -136,11 +137,15 @@ class PlugTemplate:
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
-            [(IEC_loc, IEC_Direction, IEC_Type, Name)]\
-            ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
+            [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
+            "NAME" : name of the variable (generally "__IW0_1_2" style)
+            "DIR" : direction "Q","I" or "M"
+            "SIZE" : size "X", "B", "W", "D", "L"
+            "LOC" : tuple of interger for IEC location (0,1,2,...)
+            }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        logger.write_warning(".".join(map(lambda x:str(x), current_location)) + " -> Nothing yo do")
+        logger.write_warning(".".join(map(lambda x:str(x), current_location)) + " -> Nothing yo do\n")
         return [],""
     
     def _Generate_C(self, buildpath, current_location, locations, logger):
@@ -158,7 +163,7 @@ class PlugTemplate:
                     # but update location (add curent IEC channel at the end)
                     new_location,
                     # filter locations that start with current IEC location
-                    [ (l,d,t,n) for l,d,t,n in locations if l[0:len(new_location)] == new_location ],
+                    [loc for loc in locations if loc["LOC"][0:len(new_location)] == new_location ],
                     #propagete logger
                     logger)
             # stack the result
@@ -377,6 +382,7 @@ from PLCControler import PLCControler
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
+import re
 
 class PluginsRoot(PlugTemplate):
     """
@@ -504,8 +510,8 @@ class PluginsRoot(PlugTemplate):
         
         # Create Controler for PLCOpen program
         self.PLCManager = PLCControler()
-        self.PLCManager.CreateNewProject(PLCParams.pop("projectName"))
-        self.PLCManager.SetProjectProperties(properties = PLCParams)
+        self.PLCManager.CreateNewProject(values.pop("projectName"))
+        self.PLCManager.SetProjectProperties(properties = values)
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
@@ -587,15 +593,15 @@ class PluginsRoot(PlugTemplate):
         result = self.PLCManager.GenerateProgram(plc_file)
         if not result:
             # Failed !
-            logger.write_error("Error : ST/IL/SFC code generator returned %d"%result)
+            logger.write_error("Error : ST/IL/SFC code generator returned %d\n"%result)
             return False
         logger.write("Compiling ST Program in to C Program...\n")
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
-        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, self.TargetDir))
+        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, buildpath))
         if status:
             # Failed !
-            logger.write_error("Error : IEC to C compiler returned %d"%status)
+            logger.write_error("Error : IEC to C compiler returned %d\n"%status)
             return False
         # Now extract C files of stdout
         C_files = result.splitlines()
@@ -641,14 +647,14 @@ class PluginsRoot(PlugTemplate):
         if not os.path.exists(buildpath):
             os.mkdir(buildpath)
         
-        logger.write("Start build in %s" % buildpath)
+        logger.write("Start build in %s\n" % buildpath)
         
         # Generate SoftPLC code
         if not self._Generate_SoftPLC(logger):
-            logger.write_error("SoftPLC code generation failed !")
+            logger.write_error("SoftPLC code generation failed !\n")
             return False
 
-        logger.write("SoftPLC code generation successfull")
+        logger.write("SoftPLC code generation successfull\n")
         
         # Generate C code and compilation params from plugin hierarchy
         try:
@@ -658,18 +664,18 @@ class PluginsRoot(PlugTemplate):
                 self.PLCGeneratedLocatedVars,
                 logger)
         except Exception, msg:
-            logger.write_error("Plugins code generation Failed !")
+            logger.write_error("Plugins code generation Failed !\n")
             logger.write_error(str(msg))
             return False
 
-        logger.write_error("Plugins code generation successfull")
+        logger.write("Plugins code generation successfull\n")
 
         # Compile the resulting code into object files.
         for CFile, CFLAG in CFilesAndCFLAGS:
-            print CFile,CFLAG
+            logger.write(str((CFile,CFLAG)))
         
         # Link object files into something that can be executed on target
-        print LDFLAGS
+        logger.write(LDFLAGS)
 
     def _showIECcode(self, logger):
         plc_file = self._getIECcodepath()
@@ -687,12 +693,18 @@ class PluginsRoot(PlugTemplate):
 
     def _EditPLC(self, logger):
         if not self.PLCEditor:
-            self.PLCEditor = PLCOpenEditor(self, self.PLCManager)
+            self.PLCEditor = PLCOpenEditor(self.AppFrame, self.PLCManager)
             self.PLCEditor.RefreshProjectTree()
             self.PLCEditor.RefreshFileMenu()
             self.PLCEditor.RefreshEditMenu()
             self.PLCEditor.RefreshToolBar()
             self.PLCEditor.Show()
 
-    PluginMethods = [("Build",_build), ("Clean",None), ("Run",None), ("EditPLC",None), ("Show IEC code",_showIECcode)]
+    def _Clean(self, logger):
+        logger.write_error("Not impl\n")
+    
+    def _Run(self, logger):
+        logger.write_error("Not impl\n")
+
+    PluginMethods = [("EditPLC",_EditPLC), ("Build",_build), ("Clean",_Clean), ("Run",_Run), ("Show IEC code",_showIECcode)]
     
