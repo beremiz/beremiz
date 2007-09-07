@@ -32,6 +32,9 @@ import os, re, platform, sys, time, traceback, getopt, commands
 
 from plugger import PluginsRoot
 
+def CHECK_WX_VERSION(major, minor, release):
+    return not (wx.MAJOR_VERSION < major or wx.MINOR_VERSION < minor or wx.RELEASE_NUMBER < release)
+
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output = None):
@@ -306,7 +309,8 @@ class Beremiz(wx.Frame):
         
         self.ParamsPanel = wx.ScrolledWindow(id=ID_BEREMIZPARAMSPANEL, 
               name='ParamsPanel', parent=self.SecondSplitter, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL|wx.VSCROLL)
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        self.ParamsPanel.SetScrollbars(10, 10, 0, 0, 0, 0)
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
               name='LogConsole', parent=self.SecondSplitter, pos=wx.Point(0, 0),
@@ -360,25 +364,24 @@ class Beremiz(wx.Frame):
     def RefreshPluginTree(self):
         infos = self.PluginRoot.GetPlugInfos()
         root = self.PluginTree.GetRootItem()
-        self.GenerateTreeBranch(root, infos)
+        if not root.IsOk():
+            root = self.PluginTree.AddRoot(infos["name"])
+        self.GenerateTreeBranch(root, infos, True)
         self.PluginTree.Expand(self.PluginTree.GetRootItem())
         self.RefreshPluginParams()
 
-    def GenerateTreeBranch(self, root, infos):
+    def GenerateTreeBranch(self, root, infos, first = False):
         to_delete = []
-        if root.IsOk():
-            self.PluginTree.SetItemText(root, infos["name"])
-        else:
-            root = self.PluginTree.AddRoot(infos["name"])
+        self.PluginTree.SetItemText(root, infos["name"])
         self.PluginTree.SetPyData(root, infos["type"])
         item, root_cookie = self.PluginTree.GetFirstChild(root)
-        if len(infos["values"]) > 0:
-            for values in infos["values"]:
-                if not item.IsOk():
-                    item = self.PluginTree.AppendItem(root, "")
+        for values in infos["values"]:
+            if not item.IsOk():
+                item = self.PluginTree.AppendItem(root, "")
+                if wx.VERSION < (2, 7, 0):
                     item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
-                self.GenerateTreeBranch(item, values)
-                item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+            self.GenerateTreeBranch(item, values)
+            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
         while item.IsOk():
             to_delete.append(item)
             item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
@@ -443,6 +446,16 @@ class Beremiz(wx.Frame):
             self.ParamsPanel.Show()
             infos = plugin.GetParamsAttributes()
             self.RefreshSizerElement(self.ParamsPanelMainSizer, infos, None)
+            if len(plugin.PluginMethods) > 0:
+                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                for name, method in plugin.PluginMethods:
+                    if method:
+                        id = wx.NewId()
+                        button = wx.Button(id=id, label=name, name=name, parent=self.ParamsPanel, 
+                            pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
+                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, method), id=id)
+                        boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
             self.ParamsPanelMainSizer.Layout()
             
             # Refresh PluginChilds
@@ -457,6 +470,12 @@ class Beremiz(wx.Frame):
                 self.PluginChilds.Enable(False)
                 self.AddButton.Enable(False)
             self.DeleteButton.Enable(True)
+    
+    def GetButtonCallBackFunction(self, plugin, method):
+        def OnButtonClick(event):
+            method(plugin, self.Log)
+            event.Skip()
+        return OnButtonClick
     
     def GetChoiceCallBackFunction(self, choicectrl, path):
         def OnChoiceChanged(event):
@@ -474,8 +493,11 @@ class Beremiz(wx.Frame):
                 infos = self.PluginRoot.GetParamsAttributes(path)
                 staticbox = staticboxsizer.GetStaticBox()
                 staticbox.SetLabel("%(name)s - %(value)s"%infos)
+                self.ParamsPanel.Freeze()
                 self.RefreshSizerElement(staticboxsizer, infos["children"], "%s.%s"%(path, infos["name"]))
                 self.ParamsPanelMainSizer.Layout()
+                self.ParamsPanel.Thaw()
+                self.ParamsPanel.Refresh()
             event.Skip()
         return OnChoiceContentChanged
     
@@ -508,7 +530,10 @@ class Beremiz(wx.Frame):
             staticbox.Destroy()
                 
     def RefreshSizerElement(self, sizer, elements, path):
-        self.ClearSizer(sizer)
+        if wx.VERSION >= (2, 7, 0):
+            sizer.Clear(True)
+        else:
+            self.ClearSizer(sizer)
         first = True
         for element_infos in elements:
             if path:
@@ -727,147 +752,6 @@ class Beremiz(wx.Frame):
     
     def DeletePlugin(self):
         pass
-
-#-------------------------------------------------------------------------------
-#                             Add Bus Dialog
-#-------------------------------------------------------------------------------
-
-[ID_ADDBUSDIALOG, ID_ADDBUSDIALOGBUSID, 
- ID_ADDBUSDIALOGBUSNAME, ID_ADDBUSDIALOGBUSTYPE, 
- ID_ADDBUSDIALOGSTATICTEXT1, ID_ADDBUSDIALOGSTATICTEXT2, 
- ID_ADDBUSDIALOGSTATICTEXT3,
-] = [wx.NewId() for _init_ctrls in range(7)]
-
-class AddBusDialog(wx.Dialog):
-    def _init_coll_flexGridSizer1_Items(self, parent):
-        parent.AddSizer(self.MainSizer, 0, border=20, flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        parent.AddSizer(self.ButtonSizer, 0, border=20, flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-    def _init_coll_flexGridSizer1_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(0)
-    
-    def _init_coll_MainSizer_Items(self, parent):
-        parent.AddWindow(self.staticText1, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.BusId, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.staticText2, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.BusType, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.staticText3, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.BusName, 0, border=0, flag=wx.GROW)
-        
-    def _init_coll_MainSizer_Growables(self, parent):
-        parent.AddGrowableCol(1)
-        
-    def _init_sizers(self):
-        self.flexGridSizer1 = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        self.MainSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=3, vgap=15)
-
-        self._init_coll_flexGridSizer1_Items(self.flexGridSizer1)
-        self._init_coll_flexGridSizer1_Growables(self.flexGridSizer1)
-        self._init_coll_MainSizer_Items(self.MainSizer)
-        self._init_coll_MainSizer_Growables(self.MainSizer)
-
-        self.SetSizer(self.flexGridSizer1)
-
-    def _init_ctrls(self, prnt):
-        wx.Dialog.__init__(self, id=ID_ADDBUSDIALOG,
-              name='PouDialog', parent=prnt, pos=wx.Point(376, 183),
-              size=wx.Size(300, 200), style=wx.DEFAULT_DIALOG_STYLE,
-              title='Create a new POU')
-        self.SetClientSize(wx.Size(300, 200))
-
-        self.staticText1 = wx.StaticText(id=ID_ADDBUSDIALOGSTATICTEXT1,
-              label='Bus ID:', name='staticText1', parent=self,
-              pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-
-        self.BusId = wx.TextCtrl(id=ID_ADDBUSDIALOGBUSID,
-              name='BusId', parent=self, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 24), style=0)
-
-        self.staticText2 = wx.StaticText(id=ID_ADDBUSDIALOGSTATICTEXT2,
-              label='Bus Type:', name='staticText2', parent=self,
-              pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-
-        self.BusType = wx.Choice(id=ID_ADDBUSDIALOGBUSTYPE,
-              name='BusType', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=0)
-        
-        self.staticText3 = wx.StaticText(id=ID_ADDBUSDIALOGSTATICTEXT3,
-              label='Bus Name:', name='staticText3', parent=self,
-              pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-
-        self.BusName = wx.TextCtrl(id=ID_ADDBUSDIALOGBUSNAME,
-              name='BusName', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=0)
-        
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.ButtonSizer.GetAffirmativeButton().GetId())
-        
-        self._init_sizers()
-
-    def __init__(self, parent):
-        self._init_ctrls(parent)
-        
-        for option in [""] + plugins.__all__:
-            self.BusType.Append(option)
-    
-    def OnOK(self, event):
-        error = []
-        bus_id = self.BusId.GetValue()
-        if bus_id == "":
-            error.append("Bus ID")
-        if self.BusType.GetStringSelection() == "":
-            error.append("Bus Type")
-        if self.BusName.GetValue() == "":
-            error.append("Bus Name")
-        if len(error) > 0:
-            text = ""
-            for i, item in enumerate(error):
-                if i == 0:
-                    text += item
-                elif i == len(error) - 1:
-                    text += " and %s"%item
-                else:
-                    text += ", %s"%item 
-            message = wxMessageDialog(self, "Form isn't complete. %s must be filled!"%text, "Error", wxOK|wxICON_ERROR)
-            message.ShowModal()
-            message.Destroy()
-        elif bus_id.startswith("0x"):
-            try:
-                bus_id = int(bus_id, 16)
-                self.EndModal(wx.ID_OK)
-            except:
-                message = wxMessageDialog(self, "Bus ID must be a decimal or hexadecimal number!", "Error", wxOK|wxICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-        elif not bus_id.startswith("-"):
-            try:
-                bus_id = int(bus_id)
-                self.EndModal(wx.ID_OK)
-            except:
-                message = wxMessageDialog(self, "Bus ID must be a decimal or hexadecimal number!", "Error", wxOK|wxICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-        else:
-            message = wxMessageDialog(self, "Bus Id must be greater than 0!", "Error", wxOK|wxICON_ERROR)
-            message.ShowModal()
-            message.Destroy()
-
-    def SetValues(self, values):
-        for item, value in values.items():
-            if item == "busID":
-                self.BusID.SetValue(value)
-            elif item == "busType":
-                self.BusType.SetStringSelection(value)
-            elif item == "busName":
-                self.BusName.SetValue(value)
-                
-    def GetValues(self):
-        values = {}
-        values["busID"] = self.BusId.GetValue()
-        values["busType"] = self.BusType.GetStringSelection()
-        values["busName"] = self.BusName.GetValue()
-        return values
 
 #-------------------------------------------------------------------------------
 #                               Exception Handler
