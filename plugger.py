@@ -565,6 +565,8 @@ class PluginsRoot(PlugTemplate):
     def SaveProject(self):
         if not self.PLCManager.SaveXMLFile():
             self.PLCManager.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
+        if self.PLCEditor:
+            self.PLCEditor.RefreshTitle()
         self.PlugRequestSave()
     
     def PlugPath(self, PlugName=None):
@@ -705,11 +707,17 @@ class PluginsRoot(PlugTemplate):
 
     def _EditPLC(self, logger):
         if not self.PLCEditor:
+            def _onclose():
+                self.PLCEditor = None
+            def _onsave():
+                self.SaveProject()
             self.PLCEditor = PLCOpenEditor(self.AppFrame, self.PLCManager)
             self.PLCEditor.RefreshProjectTree()
             self.PLCEditor.RefreshFileMenu()
             self.PLCEditor.RefreshEditMenu()
             self.PLCEditor.RefreshToolBar()
+            self.PLCEditor._onclose = _onclose
+            self.PLCEditor._onsave = _onsave
             self.PLCEditor.Show()
 
     def _Clean(self, logger):

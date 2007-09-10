@@ -36,10 +36,13 @@ class _NodeListPlug(NodeList):
         if not self._View:
             def _onclose():
                 self.View = None
+            def _onsave():
+                self.GetPlugRoot().SaveProject()
             self._View = _NetworkEdit(self.GetPlugRoot().AppFrame, self)
             # TODO redefine BusId when IEC channel change
             self._View.SetBusId(self.GetCurrentLocation())
             self._View._onclose = _onclose
+            self._View._onsave = _onsave
             self._View.Show()
 
     PluginMethods = [("NetworkEdit",_OpenView)]

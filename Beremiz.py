@@ -32,9 +32,6 @@ import os, re, platform, sys, time, traceback, getopt, commands
 
 from plugger import PluginsRoot
 
-def CHECK_WX_VERSION(major, minor, release):
-    return not (wx.MAJOR_VERSION < major or wx.MINOR_VERSION < minor or wx.RELEASE_NUMBER < release)
-
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output = None):
@@ -255,7 +252,7 @@ class Beremiz(wx.Frame):
     def _init_ctrls(self, prnt):
         wx.Frame.__init__(self, id=ID_BEREMIZ, name=u'Beremiz',
               parent=prnt, pos=wx.Point(0, 0), size=wx.Size(1000, 600),
-              style=wx.DEFAULT_FRAME_STYLE, title=u'Beremiz')
+              style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN, title=u'Beremiz')
         self._init_utils()
         self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.menuBar1)
@@ -440,8 +437,22 @@ class Beremiz(wx.Frame):
             # Refresh ParamsPanel
             self.ParamsPanel.Show()
             infos = plugin.GetParamsAttributes()
-            self.RefreshSizerElement(self.ParamsPanelMainSizer, infos, None)
-            if len(plugin.PluginMethods) > 0:
+            if wx.VERSION >= (2, 7, 0):
+                self.ParamsPanelMainSizer.Clear(True)
+            else:
+                self.ClearSizer(self.ParamsPanelMainSizer)
+            if len(self.PluginRoot.PluginMethods) > 0:
+                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                for name, method in self.PluginRoot.PluginMethods:
+                    if method:
+                        id = wx.NewId()
+                        button = wx.Button(id=id, label=name, name=name, parent=self.ParamsPanel, 
+                            pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
+                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(self.PluginRoot, method), id=id)
+                        boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
+            self.RefreshSizerElement(self.ParamsPanelMainSizer, infos, None, False)
+            if plugin != self.PluginRoot and len(plugin.PluginMethods) > 0:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 for name, method in plugin.PluginMethods:
@@ -524,11 +535,12 @@ class Beremiz(wx.Frame):
         for staticbox in staticboxes:
             staticbox.Destroy()
                 
-    def RefreshSizerElement(self, sizer, elements, path):
-        if wx.VERSION >= (2, 7, 0):
-            sizer.Clear(True)
-        else:
-            self.ClearSizer(sizer)
+    def RefreshSizerElement(self, sizer, elements, path, clean = True):
+        if clean:
+            if wx.VERSION >= (2, 7, 0):
+                sizer.Clear(True)
+            else:
+                self.ClearSizer(sizer)
         first = True
         for element_infos in elements:
             if path:
