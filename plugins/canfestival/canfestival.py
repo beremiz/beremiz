@@ -55,7 +55,7 @@ class _NodeListPlug(NodeList):
         self.SaveProject()
         return True
 
-    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations, logger):
         """
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -68,6 +68,7 @@ class _NodeListPlug(NodeList):
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
+        current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(lambda x:str(x), current_location))
         Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
@@ -77,7 +78,7 @@ class _NodeListPlug(NodeList):
         if res :
             raise Exception, res
         
-        return [(Gen_OD_path,CanFestival_OD_CFLAGS)],""
+        return [(Gen_OD_path,"")],""
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -92,7 +93,7 @@ class RootClass:
 
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
     
-    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations, logger):
         return [],""
 
 

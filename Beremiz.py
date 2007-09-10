@@ -324,7 +324,7 @@ class Beremiz(wx.Frame):
         self.PluginRoot = PluginsRoot(self)
         
         if projectOpen:
-            self.PluginRoot.LoadProject(projectOpen)
+            self.PluginRoot.LoadProject(projectOpen, self.Log)
             self.RefreshPluginTree()
         
         self.RefreshPluginParams()
@@ -664,7 +664,7 @@ class Beremiz(wx.Frame):
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             if os.path.isdir(projectpath):
-                result = self.PluginRoot.LoadProject(projectpath)
+                result = self.PluginRoot.LoadProject(projectpath, self.Log)
                 if not result:
                     self.RefreshPluginTree()
                     self.RefreshButtons()

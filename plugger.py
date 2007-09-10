@@ -132,10 +132,9 @@ class PlugTemplate:
         shutil.copytree(src_PlugPath, self.PlugPath)
         return True
 
-    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations, logger):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -145,29 +144,23 @@ class PlugTemplate:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        logger.write_warning(".".join(map(lambda x:str(x), current_location)) + " -> Nothing yo do\n")
+        logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing yo do\n")
         return [],""
     
-    def _Generate_C(self, buildpath, current_location, locations, logger):
+    def _Generate_C(self, buildpath, locations, logger):
         # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS
-        PlugCFilesAndCFLAGS, PlugLDFLAGS = self.PlugGenerate_C(buildpath, current_location, locations, logger)
+        PlugCFilesAndCFLAGS, PlugLDFLAGS = self.PlugGenerate_C(buildpath, locations, logger)
         # recurse through all childs, and stack their results
         for PlugChild in self.IterChilds():
-            # Compute child's IEC location
-            if current_location:
-                new_location = current_location + (self.BaseParams.getIEC_Channel())
-            else:
-                # root 
-                new_location = ()
-            # Get childs [(Cfiles, CFLAGS)], LDFLAGS
+            new_location = PlugChild.GetCurrentLocation()
+            # How deep are we in the tree ?
+            depth=len(new_location)
             CFilesAndCFLAGS, LDFLAGS = \
                 PlugChild._Generate_C(
                     #keep the same path
                     buildpath,
-                    # but update location (add curent IEC channel at the end)
-                    new_location,
                     # filter locations that start with current IEC location
-                    [loc for loc in locations if loc["LOC"][0:len(new_location)] == new_location ],
+                    [loc for loc in locations if loc["LOC"][0:depth] == new_location ],
                     #propagete logger
                     logger)
             # stack the result
@@ -208,6 +201,9 @@ class PlugTemplate:
         return self._GetChildBySomething('_',"IEC_Channel", Name)
     
     def GetCurrentLocation(self):
+        """
+        @return:  Tupple containing plugin IEC location of current plugin : %I0.0.4.5 => (0,0,4,5)
+        """
         return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(),)
 
     def GetPlugRoot(self):
@@ -268,7 +264,7 @@ class PlugTemplate:
         # Ask to his parent to remove it
         PlugInstance.PlugParent._doRemoveChild(PlugInstance)
 
-    def PlugAddChild(self, PlugName, PlugType):
+    def PlugAddChild(self, PlugName, PlugType, logger):
         """
         Create the plugins that may be added as child to this node self
         @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
@@ -321,7 +317,7 @@ class PlugTemplate:
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
                     #Load and init all the childs
-                    _self.LoadChilds()
+                    _self.LoadChilds(logger)
                 else:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
                     # Set plugin name
@@ -357,15 +353,16 @@ class PlugTemplate:
             self.PlugParams[1].loadXMLTree(tree.childNodes[0])
             xmlfile.close()
         
-    def LoadChilds(self):
+    def LoadChilds(self, logger):
         # Iterate over all PlugName@PlugType in plugin directory, and try to open them
         for PlugDir in os.listdir(self.PlugPath()):
             if os.path.isdir(os.path.join(self.PlugPath(), PlugDir)) and \
                PlugDir.count(NameTypeSeparator) == 1:
-                #try:
-                self.PlugAddChild(*PlugDir.split(NameTypeSeparator))
-                #except Exception, e:
-                #    print e
+                pname, ptype = PlugDir.split(NameTypeSeparator)
+                try:
+                    self.PlugAddChild(pname, ptype, logger)
+                except Exception, e:
+                    logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(e)))
 
 def _GetClassFunction(name):
     def GetRootClass():
@@ -535,7 +532,7 @@ class PluginsRoot(PlugTemplate):
         self.ProjectPath = ProjectPath
         return None
         
-    def LoadProject(self, ProjectPath):
+    def LoadProject(self, ProjectPath, logger):
         """
         Load a project contained in a folder
         @param ProjectPath: path of the project folder
@@ -562,7 +559,7 @@ class PluginsRoot(PlugTemplate):
             if result:
                 return result
             #Load and init all the childs
-            self.LoadChilds()
+            self.LoadChilds(logger)
         return None
     
     def SaveProject(self):
@@ -576,10 +573,9 @@ class PluginsRoot(PlugTemplate):
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
 
-    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations, logger):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [(IEC_loc, IEC_Direction, IEC_Type, Name)]\
             ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
@@ -663,6 +659,7 @@ class PluginsRoot(PlugTemplate):
         if not os.path.exists(buildpath):
             os.mkdir(buildpath)
         
+        logger.flush()
         logger.write("Start build in %s\n" % buildpath)
         
         # Generate SoftPLC code
@@ -673,16 +670,15 @@ class PluginsRoot(PlugTemplate):
         logger.write("SoftPLC code generation successfull\n")
         
         # Generate C code and compilation params from plugin hierarchy
-        #try:
-        CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
-            buildpath, 
-            None, #root has no location
-            self.PLCGeneratedLocatedVars,
-            logger)
-        #except Exception, msg:
-        #    logger.write_error("Plugins code generation Failed !\n")
-        #    logger.write_error(str(msg))
-        #    return False
+        try:
+            CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
+                buildpath, 
+                self.PLCGeneratedLocatedVars,
+                logger)
+        except Exception, msg:
+            logger.write_error("Plugins code generation Failed !\n")
+            logger.write_error(str(msg))
+            return False
 
         logger.write("Plugins code generation successfull\n")
 

@@ -26,7 +26,7 @@ from types import *
 
 DicoTypes = {"BOOL":0x01, "SINT":0x02, "INT":0x03,"DINT":0x04,"LINT":0x10,
              "USINT":0x05,"UINT":0x06,"UDINT":0x07,"ULINT":0x1B,"REAL":0x08,
-             "LREAL":0x11,"STRING":0x09,"BYTE":0x02,"WORD":0x03,"DWORD":0x04,
+             "LREAL":0x11,"STRING":0x09,"BYTE":0x05,"WORD":0x06,"DWORD":0x07,
              "LWORD":0x1B,"WSTRING":0x0B}
 
 DictLocations = {}
@@ -211,7 +211,7 @@ def GenerateConciseDCF(locations, current_location, nodelist):
             loc = location["LOC"][len(current_location):]
             # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
             if len(loc) not in (3, 4):
-                raise ValueError, "Bad location size"
+                raise ValueError, "Bad location size : %s"%str(loc)
             
             direction = location["DIR"]
             
@@ -243,15 +243,15 @@ def GenerateConciseDCF(locations, current_location, nodelist):
                 else:
                     numbit = None
                 
-                locationtype = DicoTypes[locationtype]
+                COlocationtype = DicoTypes[locationtype]
                 entryinfos = node.GetSubentryInfos(index, subindex)
-                if entryinfos["type"] != locationtype:
-                    raise ValueError, "Invalid type for location \"%s\"" % name
+                if entryinfos["type"] != COlocationtype:
+                    raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (locationtype,COlocationtype, entryinfos["type"] , name)
                 
-                typeinfos = node.GetEntryInfos(locationtype)
-                DictLocations[name] = {"type":locationtype, "pdotype":SlavePDOType[direction],
-                                       "nodeid": nodeid, "index": index,"subindex": subindex, 
-                                       "bit": numbit, "size": typeinfos["size"], "busname": busname, "sizelocation": sizelocation}
+                typeinfos = node.GetEntryInfos(COlocationtype)
+                DictLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
+                                       "nodeid": nodeid, "index": index,"subindex": subindex,
+                                       "bit": numbit, "size": typeinfos["size"], "sizelocation": sizelocation}
             else:
                 raise ValueError, "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
                 
@@ -375,8 +375,16 @@ def GenerateConciseDCF(locations, current_location, nodelist):
             if type(variable) != IntType:
                 
                 typeidx, varname = variable
-                indexname = DictNameVariable[DictLocations[variable[1]]["pdotype"]][0] + DictLocations[variable[1]]["sizelocation"] + str(DictLocations[variable[1]]["busname"]) + "_" + str(DictLocations[variable[1]]["nodeid"])
+                indexname = \
+                    DictNameVariable[DictLocations[variable[1]]["pdotype"]][0] + \
+                    DictLocations[variable[1]]["sizelocation"] + \
+                    '_'.join(map(str,current_location)) + \
+                    "_" + \
+                    str(DictLocations[variable[1]]["nodeid"])
                 mapvariableidx = DictNameVariable[DictLocations[variable[1]]["pdotype"]][1] +  DictNameVariable[DictLocations[variable[1]]["sizelocation"]] * DictNameVariable["increment"]
+
+                #indexname = DictNameVariable[DictLocations[variable[1]]["pdotype"]][0] + DictLocations[variable[1]]["sizelocation"] + str(DictLocations[variable[1]]["prefix"]) + "_" + str(DictLocations[variable[1]]["nodeid"])
+                #mapvariableidx = DictNameVariable[DictLocations[variable[1]]["pdotype"]][1] +  DictNameVariable[DictLocations[variable[1]]["sizelocation"]] * DictNameVariable["increment"]
                 
                 if not masternode.IsEntry(mapvariableidx):
                     manager.AddMapVariableToCurrent(mapvariableidx, indexname, 3, 1, masternode)
