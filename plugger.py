@@ -154,7 +154,11 @@ class PlugTemplate:
         # recurse through all childs, and stack their results
         for PlugChild in self.IterChilds():
             # Compute child's IEC location
-            new_location = current_location + (self.BaseParams.getIEC_Channel())
+            if current_location:
+                new_location = current_location + (self.BaseParams.getIEC_Channel())
+            else:
+                # root 
+                new_location = ()
             # Get childs [(Cfiles, CFLAGS)], LDFLAGS
             CFilesAndCFLAGS, LDFLAGS = \
                 PlugChild._Generate_C(
@@ -203,6 +207,12 @@ class PlugTemplate:
     def GetChildByIECLocation(self, Location):
         return self._GetChildBySomething('_',"IEC_Channel", Name)
     
+    def GetCurrentLocation(self):
+        return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(),)
+
+    def GetPlugRoot(self):
+        return self.PlugParent.GetPlugRoot()
+
     def GetPlugInfos(self):
         childs = []
         for child in self.IterChilds():
@@ -352,10 +362,10 @@ class PlugTemplate:
         for PlugDir in os.listdir(self.PlugPath()):
             if os.path.isdir(os.path.join(self.PlugPath(), PlugDir)) and \
                PlugDir.count(NameTypeSeparator) == 1:
-                try:
-                    self.PlugAddChild(*PlugDir.split(NameTypeSeparator))
-                except Exception, e:
-                    print e
+                #try:
+                self.PlugAddChild(*PlugDir.split(NameTypeSeparator))
+                #except Exception, e:
+                #    print e
 
 def _GetClassFunction(name):
     def GetRootClass():
@@ -464,7 +474,7 @@ class PluginsRoot(PlugTemplate):
         self.PluggedChilds = {}
         """
 
-        # self is the parent
+        # root have no parent
         self.PlugParent = None
         # Keep track of the plugin type name
         self.PlugType = "Beremiz"
@@ -479,6 +489,12 @@ class PluginsRoot(PlugTemplate):
         Return if a project is actually opened
         """
         return self.ProjectPath != None
+
+    def GetPlugRoot(self):
+        return self
+
+    def GetCurrentLocation(self):
+        return ()
     
     def GetProjectPath(self):
         return self.ProjectPath
@@ -609,7 +625,7 @@ class PluginsRoot(PlugTemplate):
         C_files.remove("POUS.c")
         C_files.remove("LOCATED_VARIABLES.h")
         # transform those base names to full names with path
-        C_files = map(lambda filename:os.path.join(self.TargetDir, filename), C_files)
+        C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
         logger.write("Extracting Located Variables...\n")
         # IEC2CC compiler generate a list of located variables : LOCATED_VARIABLES.h
         location_file = open(os.path.join(buildpath,"LOCATED_VARIABLES.h"))
@@ -657,16 +673,16 @@ class PluginsRoot(PlugTemplate):
         logger.write("SoftPLC code generation successfull\n")
         
         # Generate C code and compilation params from plugin hierarchy
-        try:
-            CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
-                buildpath, 
-                (), 
-                self.PLCGeneratedLocatedVars,
-                logger)
-        except Exception, msg:
-            logger.write_error("Plugins code generation Failed !\n")
-            logger.write_error(str(msg))
-            return False
+        #try:
+        CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
+            buildpath, 
+            None, #root has no location
+            self.PLCGeneratedLocatedVars,
+            logger)
+        #except Exception, msg:
+        #    logger.write_error("Plugins code generation Failed !\n")
+        #    logger.write_error(str(msg))
+        #    return False
 
         logger.write("Plugins code generation successfull\n")
 

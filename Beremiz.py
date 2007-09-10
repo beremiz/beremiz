@@ -578,15 +578,15 @@ class Beremiz(wx.Frame):
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
                 boxsizer.AddWindow(statictext, 0, border=0, flag=wx.TOP|wx.LEFT|wx.BOTTOM)
                 id = wx.NewId()
-                min = -sys.maxint-1
-                max = sys.maxint
+                scmin = -(2**31)
+                scmax = 2**31-1
                 if "min" in element_infos["type"]:
-                    min = element_infos["type"]["min"]
+                    scmin = element_infos["type"]["min"]
                 if "max" in element_infos["type"]:
-                    max = element_infos["type"]["max"]
+                    scmax = element_infos["type"]["max"]
                 spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
-                    pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, 
-                    min=min, max=max)
+                    pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                spinctrl.SetRange(scmin,scmax)
                 boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                 spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, element_path), id=id)
                 spinctrl.SetValue(element_infos["value"])
@@ -618,8 +618,14 @@ class Beremiz(wx.Frame):
                     checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, element_path), id=id)
                     checkbox.SetValue(element_infos["value"])
                 elif element_infos["type"] in ["unsignedLong", "long","integer"]:
+                    if element_infos["type"].startswith("unsigned"):
+                        scmin = 0
+                    else:
+                        scmin = -(2**31)
+                    scmax = 2**31-1
                     spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
                         pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                    spinctrl.SetRange(scmin, scmax)
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                     spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, element_path), id=id)
                     spinctrl.SetValue(element_infos["value"])

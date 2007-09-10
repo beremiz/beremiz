@@ -27,7 +27,8 @@ class _NodeListPlug(NodeList):
 
     def __init__(self):
         manager = NodeManager()
-        NodeList.__init__(self, manager)
+        # TODO change netname when name change
+        NodeList.__init__(self, manager, self.BaseParams.getName())
         self.LoadProject(self.PlugPath())
 
     _View = None
@@ -35,9 +36,12 @@ class _NodeListPlug(NodeList):
         if not self._View:
             def _onclose():
                 self.View = None
-            self._View = _NetworkEdit()
+            self._View = _NetworkEdit(self.GetPlugRoot().AppFrame, self)
+            # TODO redefine BusId when IEC channel change
+            self._View.SetBusId(self.GetCurrentLocation())
             self._View._onclose = _onclose
-        return self.View
+            self._View.Show()
+
     PluginMethods = [("NetworkEdit",_OpenView)]
 
     def OnPlugClose(self):
@@ -88,7 +92,7 @@ class RootClass:
 
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
     
-    def PlugGenerate_C(self, buildpath, current_location, locations):
+    def PlugGenerate_C(self, buildpath, current_location, locations, logger):
         return [],""
 
 
