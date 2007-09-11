@@ -20,6 +20,7 @@ class _NodeListPlug(NodeList):
       <xsd:element name="CanFestivalNode">
         <xsd:complexType>
           <xsd:attribute name="CAN_Device" type="xsd:string" use="required" />
+          <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="required" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -76,7 +77,7 @@ class _NodeListPlug(NodeList):
         prefix = "_".join(map(lambda x:str(x), current_location))
         Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
-        master = config_utils.GenerateConciseDCF(locations, current_location, self)
+        master = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs())
         res = gen_cfile.GenerateFile(Gen_OD_path, master)
         if res :
             raise Exception, res

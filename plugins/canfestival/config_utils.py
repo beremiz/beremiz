@@ -139,7 +139,7 @@ def GetNewCobID(nodeid, type): # Return a cobid not used
     return ListCobIDAvailable.pop(0)
         
         
-def GenerateConciseDCF(locations, current_location, nodelist):
+def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs):
     """
     Fills a CanFestival network editor model, with DCF with requested PDO mappings.
     @param locations: List of complete variables locations \
@@ -402,9 +402,9 @@ def GenerateConciseDCF(locations, current_location, nodelist):
                 
                 if mapvariableidx < 0x6000:
                     if DictLocations[variable[1]]["bit"] != None:
-                        subindexname = "_" + str(DictLocations[variable[1]]["index"]) + "_" + str(DictLocations[variable[1]]["subindex"]) + "_" + str(DictLocations[variable[1]]["bit"])
+                        subindexname = str(DictLocations[variable[1]]["index"]) + "_" + str(DictLocations[variable[1]]["subindex"]) + "_" + str(DictLocations[variable[1]]["bit"])
                     else:
-                        subindexname = "_" + str(DictLocations[variable[1]]["index"]) + "_" + str(DictLocations[variable[1]]["subindex"])
+                        subindexname = str(DictLocations[variable[1]]["index"]) + "_" + str(DictLocations[variable[1]]["subindex"])
                     if not new_index:
                         manager.AddSubentriesToCurrent(mapvariableidx, 1, masternode)
                         nbsubentries += 1
