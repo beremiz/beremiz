@@ -36,7 +36,7 @@ class _NodeListPlug(NodeList):
     def _OpenView(self, logger):
         if not self._View:
             def _onclose():
-                self.View = None
+                self._View = None
             def _onsave():
                 self.GetPlugRoot().SaveProject()
             self._View = _NetworkEdit(self.GetPlugRoot().AppFrame, self)
