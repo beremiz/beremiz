@@ -19,7 +19,7 @@ _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding=
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="BaseParams">
             <xsd:complexType>
-              <xsd:attribute name="Name" type="xsd:string" use="required"/>
+              <xsd:attribute name="Name" type="xsd:string" use="required" default="__unnamed__"/>
               <xsd:attribute name="IEC_Channel" type="xsd:integer" use="required"/>
               <xsd:attribute name="Enabled" type="xsd:boolean" use="required" default="true"/>
             </xsd:complexType>
@@ -39,14 +39,15 @@ class PlugTemplate:
     PluginMethods = []
 
     def _AddParamsMembers(self):
-        Classes = GenerateClassesFromXSDstring(self.XSD)[0]
         self.PlugParams = None
-        Classes = [(name, XSDclass) for name, XSDclass in Classes.items() if XSDclass.IsBaseClass]
-        if len(Classes) == 1:
-            name, XSDclass = Classes[0]
-            obj = XSDclass()
-            self.PlugParams = (name, obj)
-            setattr(self, name, obj)
+        if self.XSD:
+            Classes = GenerateClassesFromXSDstring(self.XSD)[0]
+            Classes = [(name, XSDclass) for name, XSDclass in Classes.items() if XSDclass.IsBaseClass]
+            if len(Classes) == 1:
+                name, XSDclass = Classes[0]
+                obj = XSDclass()
+                self.PlugParams = (name, obj)
+                setattr(self, name, obj)
 
     def __init__(self):
         # Create BaseParam 
@@ -88,12 +89,21 @@ class PlugTemplate:
                 params.append(self.PlugParams[1].getElementInfos(self.PlugParams[0]))
             return params
         
-    def SetParamsAttribute(self, path, value):
+    def SetParamsAttribute(self, path, value, logger):
+        # Filter IEC_Channel and Name, that have specific behavior
+        if path == "BaseParams.IEC_Channel":
+            return self.FindNewIEC_Channel(value,logger), False
+        elif path == "BaseParams.Name":
+            res = self.FindNewName(value,logger)
+            self.PlugRequestSave()
+            return res, True
+        
         parts = path.split(".", 1)
         if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
             self.MandatoryParams[1].setElementValue(parts[1], value)
         elif self.PlugParams and parts[0] == self.PlugParams[0]:
             self.PlugParams[1].setElementValue(parts[1], value)
+        return value, False
 
     def PlugRequestSave(self):
         # If plugin do not have corresponding directory
@@ -215,7 +225,44 @@ class PlugTemplate:
             childs.append(child.GetPlugInfos())
         return {"name" : self.BaseParams.getName(), "type" : None, "values" : childs}
     
-    def FindNewIEC_Channel(self, DesiredChannel):
+    
+    def FindNewName(self, DesiredName, logger):
+        """
+        Changes Name to DesiredName if available, Name-N if not.
+        @param DesiredName: The desired Name (string)
+        """
+        # Get Current Name
+        CurrentName = self.BaseParams.getName()
+        # Do nothing if no change
+        #if CurrentName == DesiredName: return CurrentName
+        # Build a list of used Name out of parent's PluggedChilds
+        AllNames=[]
+        for PlugInstance in self.PlugParent.IterChilds():
+            if PlugInstance != self:
+                AllNames.append(PlugInstance.BaseParams.getName())
+
+        # Find a free name, eventually appending digit
+        res = DesiredName
+        suffix = 1
+        while res in AllNames:
+            res = "%s-%d"%(DesiredName, suffix)
+            suffix += 1
+        
+        # Get old path
+        oldname = self.PlugPath()
+        # Check previous plugin existance
+        dontexist = self.BaseParams.getName() == "__unnamed__"
+        # Set the new name
+        self.BaseParams.setName(res)
+        # Rename plugin dir if exist
+        if not dontexist:
+            shutil.move(oldname, self.PlugPath())
+        # warn user he has two left hands
+        if DesiredName != res:
+            logger.write_warning("A child names \"%s\" already exist -> \"%s\"\n"%(DesiredName,res))
+        return res
+
+    def FindNewIEC_Channel(self, DesiredChannel, logger):
         """
         Changes IEC Channel number to DesiredChannel if available, nearest available if not.
         @param DesiredChannel: The desired IEC channel (int)
@@ -223,7 +270,7 @@ class PlugTemplate:
         # Get Current IEC channel
         CurrentChannel = self.BaseParams.getIEC_Channel()
         # Do nothing if no change
-        if CurrentChannel == DesiredChannel: return CurrentChannel
+        #if CurrentChannel == DesiredChannel: return CurrentChannel
         # Build a list of used Channels out of parent's PluggedChilds
         AllChannels=[]
         for PlugInstance in self.PlugParent.IterChilds():
@@ -241,6 +288,8 @@ class PlugTemplate:
                 res +=  1 # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)
+        if logger and DesiredChannel != res:
+            logger.write_warning("A child with IEC channel %d already exist -> %d\n"%(DesiredChannel,res))
         return res
 
     def OnPlugClose(self):
@@ -301,18 +350,20 @@ class PlugTemplate:
                 _self.PlugType = PlugType
                 # Call the base plugin template init - change XSD into class members
                 PlugTemplate.__init__(_self)
+                # check name is unique
+                NewPlugName = _self.FindNewName(PlugName, logger)
                 # If dir have already be made, and file exist
-                if os.path.isdir(_self.PlugPath(PlugName)) and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
+                if os.path.isdir(_self.PlugPath(NewPlugName)): #and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
                     #Load the plugin.xml file into parameters members
-                    _self.LoadXMLParams(PlugName)
+                    _self.LoadXMLParams(NewPlugName)
                     # Basic check. Better to fail immediately.
-                    if (_self.BaseParams.getName() != PlugName):
-                        raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(PlugName, _self.BaseParams.getName())
+                    if (_self.BaseParams.getName() != NewPlugName):
+                        raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(NewPlugName, _self.BaseParams.getName())
 
                     # Now, self.PlugPath() should be OK
                     
                     # Check that IEC_Channel is not already in use.
-                    _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel())
+                    _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel(),logger)
                     # Call the plugin real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
@@ -320,11 +371,9 @@ class PlugTemplate:
                     _self.LoadChilds(logger)
                 else:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
-                    # Set plugin name
-                    _self.BaseParams.setName(PlugName)
                     os.mkdir(_self.PlugPath())
                     # Find an IEC number
-                    _self.FindNewIEC_Channel(0)
+                    _self.FindNewIEC_Channel(0, None)
                     # Call the plugin real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
