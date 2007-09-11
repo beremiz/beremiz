@@ -358,9 +358,24 @@ class Beremiz(wx.Frame):
         root = self.PluginTree.GetRootItem()
         if not root.IsOk():
             root = self.PluginTree.AddRoot(infos["name"])
+        last_selected = self.GetSelectedPluginName()
         self.GenerateTreeBranch(root, infos, True)
         self.PluginTree.Expand(self.PluginTree.GetRootItem())
+        self.SelectedPluginByName(root,last_selected)
         self.RefreshPluginParams()
+
+    def SelectedPluginByName(self, root, name):
+        toks = name.split('.',1)
+        item, root_cookie = self.PluginTree.GetFirstChild(root)
+        while item.IsOk():
+            if self.PluginTree.GetPyData(item) == toks[0]:
+                if len(toks)>1:
+                    return self.SelectedPluginByName(item, toks[1])
+                else:
+                    self.PluginTree.SelectItem(item, True)
+                    return True
+            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+        return False
 
     def GenerateTreeBranch(self, root, infos, first = False):
         to_delete = []
@@ -380,18 +395,27 @@ class Beremiz(wx.Frame):
         for item in to_delete:
             self.PluginTree.Delete(item)
 
-    def GetSelectedPlugin(self):
+    def GetSelectedPluginName(self):
         selected = self.PluginTree.GetSelection()
         if not selected.IsOk():
             return None
         if selected == self.PluginTree.GetRootItem():
-            return self.PluginRoot
+            return ""
         else:
-            name = self.PluginTree.GetItemText(selected)
+            name = self.PluginTree.GetPyData(selected)
             item = self.PluginTree.GetItemParent(selected)
             while item.IsOk() and item != self.PluginTree.GetRootItem():
-                name = "%s.%s"%(self.PluginTree.GetItemText(item), name)
+                name = "%s.%s"%(self.PluginTree.GetPyData(item), name)
                 item = self.PluginTree.GetItemParent(item)
+            return name
+
+    def GetSelectedPlugin(self):
+        name = self.GetSelectedPluginName()
+        if not name:
+            return None
+        elif name == "":
+            return self.PluginRoot
+        else:
             return self.PluginRoot.GetChildByName(name)
 
     def OnPluginTreeItemSelected(self, event):

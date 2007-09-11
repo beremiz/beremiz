@@ -92,7 +92,7 @@ class PlugTemplate:
     def SetParamsAttribute(self, path, value, logger):
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel":
-            return self.FindNewIEC_Channel(value,logger), False
+            return self.FindNewIEC_Channel(value,logger), True
         elif path == "BaseParams.Name":
             res = self.FindNewName(value,logger)
             self.PlugRequestSave()
@@ -221,9 +221,13 @@ class PlugTemplate:
 
     def GetPlugInfos(self):
         childs = []
-        for child in self.IterChilds():
-            childs.append(child.GetPlugInfos())
-        return {"name" : self.BaseParams.getName(), "type" : None, "values" : childs}
+        # reorder childs by IEC_channels
+        ordered = [(chld.BaseParams.getIEC_Channel(),chld) for chld in self.IterChilds()]
+        if ordered:
+            ordered.sort()
+            for child in zip(*ordered)[1]:
+                childs.append(child.GetPlugInfos())
+        return {"name" : "%s (%d)"%(self.BaseParams.getName(),self.BaseParams.getIEC_Channel()), "type" : self.BaseParams.getName(), "values" : childs}
     
     
     def FindNewName(self, DesiredName, logger):
@@ -283,7 +287,10 @@ class PlugTemplate:
         while res in AllChannels: # While channel not free
             if res < CurrentChannel: # Want to go down ?
                 res -=  1 # Test for n-1
-                if res < 0 : return CurrentChannel # Can't go bellow 0, do nothing
+                if res < 0 :
+                    if logger :
+                        logger.write_warning("Cannot find lower free IEC channel than %d\n"%CurrentChannel)
+                    return CurrentChannel # Can't go bellow 0, do nothing
             else : # Want to go up ?
                 res +=  1 # Test for n-1
         # Finally set IEC Channel
@@ -549,7 +556,7 @@ class PluginsRoot(PlugTemplate):
         childs = []
         for child in self.IterChilds():
             childs.append(child.GetPlugInfos())
-        return {"name" : os.path.split(self.ProjectPath)[1], "type" : None, "values" : childs}
+        return {"name" : "PLC (%s)"%os.path.split(self.ProjectPath)[1], "type" : None, "values" : childs}
     
     def NewProject(self, ProjectPath):
         """
