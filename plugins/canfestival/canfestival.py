@@ -56,6 +56,7 @@ class _NodeListPlug(NodeList):
         return self.HasChanged()
         
     def OnPlugSave(self):
+        self.SetRoot(self.PlugPath())
         self.SaveProject()
         return True
 
