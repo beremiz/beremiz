@@ -1,0 +1,253 @@
+1000 (Device Type): 302
+1001 (Error Register): 0
+1005 (SYNC COB ID): 1073741952
+1006 (Communication / Cycle Period): 50000
+1016 (Consumer Heartbeat Time):
+  001 (Consumer Heartbeat Time): 4005DC
+1018 (Identity):
+  001 (Vendor ID): 0
+  002 (Product Code): 0
+  003 (Revision Number): 0
+  004 (Serial Number): 0
+1280 (Client SDO 1 Parameter):
+  001 (COB ID Client to Server (Transmit SDO)): 640
+  002 (COB ID Server to Client (Receive SDO)): 5C0
+  003 (Node ID of the SDO Server): 40
+1400 (Receive PDO 1 Parameter):
+  001 (COB ID used by PDO): 1C0
+  002 (Transmission Type): 1
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1401 (Receive PDO 2 Parameter):
+  001 (COB ID used by PDO): 2C0
+  002 (Transmission Type): 1
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1402 (Receive PDO 3 Parameter):
+  001 (COB ID used by PDO): 182
+  002 (Transmission Type): 1
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1403 (Receive PDO 4 Parameter):
+  001 (COB ID used by PDO): 183
+  002 (Transmission Type): 1
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1404 (Receive PDO 5 Parameter):
+  001 (COB ID used by PDO): 180
+  002 (Transmission Type): 1
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1600 (Receive PDO 1 Mapping):
+  001 (PDO 1 Mapping for an application object 1): 22400108
+1601 (Receive PDO 2 Mapping):
+  001 (PDO 2 Mapping for an application object 1): 20010310
+  002 (PDO 2 Mapping for an application object 2): 23400110
+  003 (PDO 2 Mapping for an application object 3): 23400210
+  004 (PDO 2 Mapping for an application object 4): 20010310
+1602 (Receive PDO 3 Mapping):
+  001 (PDO 3 Mapping for an application object 1): 24400120
+  002 (PDO 3 Mapping for an application object 2): 24400220
+1603 (Receive PDO 4 Mapping):
+  001 (PDO 4 Mapping for an application object 1): 24400320
+1604 (Receive PDO 5 Mapping):
+  001 (PDO 5 Mapping for an application object 1): 22400208
+  002 (PDO 5 Mapping for an application object 2): 24400420
+1800 (Transmit PDO 1 Parameter):
+  001 (COB ID used by PDO): {True:self.ID+(base+1)*0x100+0x80,False:0}[base<4]
+  002 (Transmission Type): 0
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1801 (Transmit PDO 2 Parameter):
+  001 (COB ID used by PDO): 340
+  002 (Transmission Type): 1
+  003 (Inhibit Time): 0
+  004 (Compatibility Entry): 0
+  005 (Event Timer): 0
+1A00 (Transmit PDO 1 Mapping):
+  001 (PDO 1 Mapping for a process data variable 1): 10010008
+1A01 (Transmit PDO 2 Mapping):
+  001 (PDO 2 Mapping for a process data variable 1): 43400110
+  002 (PDO 2 Mapping for a process data variable 2): 20010310
+  003 (PDO 2 Mapping for a process data variable 3): 20010310
+  004 (PDO 2 Mapping for a process data variable 4): 20010310
+1F22 (Concise DCF):
+  001 (Concise DCF for Node 1): 
+  002 (Concise DCF for Node 2): 
+  003 (Concise DCF for Node 3): 
+  004 (Concise DCF for Node 4): 
+  005 (Concise DCF for Node 5): 
+  006 (Concise DCF for Node 6): 
+  007 (Concise DCF for Node 7): 
+  008 (Concise DCF for Node 8): 
+  009 (Concise DCF for Node 9): 
+  010 (Concise DCF for Node 10): 
+  011 (Concise DCF for Node 11): 
+  012 (Concise DCF for Node 12): 
+  013 (Concise DCF for Node 13): 
+  014 (Concise DCF for Node 14): 
+  015 (Concise DCF for Node 15): 
+  016 (Concise DCF for Node 16): 
+  017 (Concise DCF for Node 17): 
+  018 (Concise DCF for Node 18): 
+  019 (Concise DCF for Node 19): 
+  020 (Concise DCF for Node 20): 
+  021 (Concise DCF for Node 21): 
+  022 (Concise DCF for Node 22): 
+  023 (Concise DCF for Node 23): 
+  024 (Concise DCF for Node 24): 
+  025 (Concise DCF for Node 25): 
+  026 (Concise DCF for Node 26): 
+  027 (Concise DCF for Node 27): 
+  028 (Concise DCF for Node 28): 
+  029 (Concise DCF for Node 29): 
+  030 (Concise DCF for Node 30): 
+  031 (Concise DCF for Node 31): 
+  032 (Concise DCF for Node 32): 
+  033 (Concise DCF for Node 33): 
+  034 (Concise DCF for Node 34): 
+  035 (Concise DCF for Node 35): 
+  036 (Concise DCF for Node 36): 
+  037 (Concise DCF for Node 37): 
+  038 (Concise DCF for Node 38): 
+  039 (Concise DCF for Node 39): 
+  040 (Concise DCF for Node 40): 
+  041 (Concise DCF for Node 41): 
+  042 (Concise DCF for Node 42): 
+  043 (Concise DCF for Node 43): 
+  044 (Concise DCF for Node 44): 
+  045 (Concise DCF for Node 45): 
+  046 (Concise DCF for Node 46): 
+  047 (Concise DCF for Node 47): 
+  048 (Concise DCF for Node 48): 
+  049 (Concise DCF for Node 49): 
+  050 (Concise DCF for Node 50): 
+  051 (Concise DCF for Node 51): 
+  052 (Concise DCF for Node 52): 
+  053 (Concise DCF for Node 53): 
+  054 (Concise DCF for Node 54): 
+  055 (Concise DCF for Node 55): 
+  056 (Concise DCF for Node 56): 
+  057 (Concise DCF for Node 57): 
+  058 (Concise DCF for Node 58): 
+  059 (Concise DCF for Node 59): 
+  060 (Concise DCF for Node 60): 
+  061 (Concise DCF for Node 61): 
+  062 (Concise DCF for Node 62): 
+  063 (Concise DCF for Node 63): 
+  064 (Concise DCF for Node 64): 26
+	1800 01 00000004 800001C0
+	1800 02 00000001 01
+	1800 01 00000004 000001C0
+	1801 01 00000004 800002C0
+	1801 02 00000001 01
+	1801 01 00000004 000002C0
+	1801 01 00000004 800002C0
+	1801 02 00000001 01
+	1801 01 00000004 000002C0
+	1401 01 00000004 80000340
+	1401 02 00000001 01
+	1401 01 00000004 00000340
+	1804 01 00000004 80000180
+	1804 02 00000001 01
+	1804 01 00000004 00000180
+	1A04 01 00000004 60020108
+	1A04 02 00000004 64260120
+	1805 01 00000004 80000182
+	1805 02 00000001 01
+	1805 01 00000004 00000182
+	1A05 01 00000004 64260220
+	1A05 02 00000004 64260320
+	1806 01 00000004 80000183
+	1806 02 00000001 01
+	1806 01 00000004 00000183
+	1A06 01 00000004 64260420
+  065 (Concise DCF for Node 65): 
+  066 (Concise DCF for Node 66): 
+  067 (Concise DCF for Node 67): 
+  068 (Concise DCF for Node 68): 
+  069 (Concise DCF for Node 69): 
+  070 (Concise DCF for Node 70): 
+  071 (Concise DCF for Node 71): 
+  072 (Concise DCF for Node 72): 
+  073 (Concise DCF for Node 73): 
+  074 (Concise DCF for Node 74): 
+  075 (Concise DCF for Node 75): 
+  076 (Concise DCF for Node 76): 
+  077 (Concise DCF for Node 77): 
+  078 (Concise DCF for Node 78): 
+  079 (Concise DCF for Node 79): 
+  080 (Concise DCF for Node 80): 
+  081 (Concise DCF for Node 81): 
+  082 (Concise DCF for Node 82): 
+  083 (Concise DCF for Node 83): 
+  084 (Concise DCF for Node 84): 
+  085 (Concise DCF for Node 85): 
+  086 (Concise DCF for Node 86): 
+  087 (Concise DCF for Node 87): 
+  088 (Concise DCF for Node 88): 
+  089 (Concise DCF for Node 89): 
+  090 (Concise DCF for Node 90): 
+  091 (Concise DCF for Node 91): 
+  092 (Concise DCF for Node 92): 
+  093 (Concise DCF for Node 93): 
+  094 (Concise DCF for Node 94): 
+  095 (Concise DCF for Node 95): 
+  096 (Concise DCF for Node 96): 
+  097 (Concise DCF for Node 97): 
+  098 (Concise DCF for Node 98): 
+  099 (Concise DCF for Node 99): 
+  100 (Concise DCF for Node 100): 
+  101 (Concise DCF for Node 101): 
+  102 (Concise DCF for Node 102): 
+  103 (Concise DCF for Node 103): 
+  104 (Concise DCF for Node 104): 
+  105 (Concise DCF for Node 105): 
+  106 (Concise DCF for Node 106): 
+  107 (Concise DCF for Node 107): 
+  108 (Concise DCF for Node 108): 
+  109 (Concise DCF for Node 109): 
+  110 (Concise DCF for Node 110): 
+  111 (Concise DCF for Node 111): 
+  112 (Concise DCF for Node 112): 
+  113 (Concise DCF for Node 113): 
+  114 (Concise DCF for Node 114): 
+  115 (Concise DCF for Node 115): 
+  116 (Concise DCF for Node 116): 
+  117 (Concise DCF for Node 117): 
+  118 (Concise DCF for Node 118): 
+  119 (Concise DCF for Node 119): 
+  120 (Concise DCF for Node 120): 
+  121 (Concise DCF for Node 121): 
+  122 (Concise DCF for Node 122): 
+  123 (Concise DCF for Node 123): 
+  124 (Concise DCF for Node 124): 
+  125 (Concise DCF for Node 125): 
+  126 (Concise DCF for Node 126): 
+  127 (Concise DCF for Node 127): 
+2000 (Read Inputs): 0
+2001 (trashvariables):
+  001 (TRASH1): 0
+  002 (TRASH8): 0
+  003 (TRASH16): 0
+  004 (TRASH32): 0
+  005 (TRASH64): 0
+2240 (__IB0_1_64):
+  001 (24576_1): 0
+  002 (24578_1): 0
+2340 (__IW0_1_64):
+  001 (25601_2): 0
+  002 (25601_3): 0
+2440 (__ID0_1_64):
+  001 (25638_2): 0
+  002 (25638_3): 0
+  003 (25638_4): 0
+  004 (25638_1): 0
+4340 (__QW0_1_64):
+  001 (25617_1): 0
