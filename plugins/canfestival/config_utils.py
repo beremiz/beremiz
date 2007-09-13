@@ -321,6 +321,10 @@ class ConciseDCFGenerator:
         @param sync_TPDOs: indicate if TPDO must be synchronous
         """
         
+        #-------------------------------------------------------------------------------
+        #               Verify that locations correspond to real slave variables
+        #-------------------------------------------------------------------------------
+        
         # Get list of locations check if exists and mappables -> put them in IECLocations
         for location in locations:
             COlocationtype = IECToCOType[location["IEC_TYPE"]]
@@ -353,7 +357,7 @@ class ConciseDCFGenerator:
                 if not node.IsEntry(index, subindex):
                     raise ValueError, "No such index/subindex (%x,%x) in ID : %d (variable %s)" % (index,subindex,nodeid,name)
                 
-                #Get the entry info
+                # Get the entry info
                 subentry_infos = node.GetSubentryInfos(index, subindex)
                 
                 # If a PDO mappable
@@ -571,20 +575,59 @@ def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs):
     return dcfgenerator.GetMasterNode()
 
 if __name__ == "__main__":
-    import os, sys
+    import os, sys, getopt
 
+    def usage():
+        print """
+Usage of config_utils.py test :
+
+    %s [options]
+
+Options:
+    --help  (-h)
+            Displays help informations for config_utils
+
+    --reset (-r)
+            Reset the reference result of config_utils test.
+            Use with caution. Be sure that config_utils
+            is currently working properly.
+"""%sys.argv[0]
+    
+    # Boolean that indicate if reference result must be redefined
+    reset = False
+
+    # Extract command options
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hr", ["help","reset"])
+    except getopt.GetoptError:
+        # print help information and exit:
+        usage()
+        sys.exit(2)
+
+    # Test each option
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        elif o in ("-r", "--reset"):
+            reset = True
+
+    # Extract workspace base folder
     base_folder = sys.path[0]
     for i in xrange(3):
         base_folder = os.path.split(base_folder)[0]
+    # Add CanFestival folder to search pathes
     sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
     
     from nodemanager import *
     from nodelist import *
     
+    # Open the test nodelist contained into test_config folder
     manager = NodeManager()
     nodelist = NodeList(manager)
     result = nodelist.LoadProject("test_config")
     
+    # List of locations, we try to map for test
     locations = [{"IEC_TYPE":"BYTE","NAME":"__IB0_1_64_24576_1","DIR":"I","SIZE":"B","LOC":(0,1,64,24576,1)},
                  {"IEC_TYPE":"INT","NAME":"__IW0_1_64_25601_2","DIR":"I","SIZE":"W","LOC":(0,1,64,25601,2)},
                  {"IEC_TYPE":"INT","NAME":"__IW0_1_64_25601_3","DIR":"I","SIZE":"W","LOC":(0,1,64,25601,3)},
@@ -595,31 +638,45 @@ if __name__ == "__main__":
                  {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_3","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,3)},
                  {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_4","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,4)}]
     
-    masternode = GenerateConciseDCF(locations, (0, 1), nodelist, True)
-    #masternode.Print()
-    result = [line.rstrip() for line in masternode.PrintString().splitlines()]
+    # Generate MasterNode configuration
+    try:
+        masternode = GenerateConciseDCF(locations, (0, 1), nodelist, True)
+    except ValueError, message:
+        print "%s\nTest Failed!"%message
+        sys.exit()
     
-    file = open("test_config/result.txt", "r")
-    model = [line.rstrip() for line in file.readlines()]
-    file.close()
+    # Get Text corresponding to MasterNode 
+    result = masternode.PrintString()
     
-    errors = 0
-    for i, line in enumerate(model):
-        if i >= len(result):
-            errors += 1
-            print "Line %d disappear :"%(i + 1)
-            print line
-        elif line != result[i]:
-            errors += 1
-            print "Error on line %d :"%(i + 1)
-            print "\t%s"%result[i]
-            print "Instead of :\n\t%s"%line
-    for i in xrange(len(model), len(result)):
-        errors += 1
-        print "Line %d appear :"%(i + 1)
-        print result[i]
-    
-    if errors > 0:
-        print "Test Failed!"
+    # If reset has been choosen
+    if reset:
+        # Write Text into reference result file
+        file = open("test_config/result.txt", "w")
+        file.write(result)
+        file.close()
+        
+        print "Reset Successful!"
     else:
-        print "Test Successful!"
+        # Test each line of the result with the reference result
+        test = [line.rstrip() for line in result.splitlines()]
+        
+        file = open("test_config/result.txt", "r")
+        model = [line.rstrip() for line in file.readlines() if line.rstrip()]
+        file.close()
+        
+        errors = 0
+        for i, line in enumerate(model):
+            if i >= len(test):
+                errors += 1
+                print "Line %d disappear :\n%s\n"%(i + 1, line)
+            elif line != test[i]:
+                errors += 1
+                print "Error on line %d :\n%s\nInstead of :\n%s\n"%(i + 1, test[i], line)
+        for i in xrange(len(model), len(test)):
+            errors += 1
+            print "Line %d appear :\n%s\n"%(i + 1, test[i])
+        
+        if errors > 0:
+            print "%d errors found.\nTest Failed!"%errors
+        else:
+            print "Test Successful!"
