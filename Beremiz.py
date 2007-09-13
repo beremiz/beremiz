@@ -411,7 +411,7 @@ class Beremiz(wx.Frame):
 
     def GetSelectedPlugin(self):
         name = self.GetSelectedPluginName()
-        if not name:
+        if name is None:
             return None
         elif name == "":
             return self.PluginRoot
