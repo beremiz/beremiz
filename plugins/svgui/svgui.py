@@ -131,7 +131,6 @@ class RootClass(DEFControler):
         fct += "    void IN_"+self.BusNumber+"();\n"
         fct += "    void OUT_"+self.BusNumber+"();\n"
         fct += "    void Initialize();\n"
-        fct += "    void SetNoChanges();\n"
         fct += "    void Print();\n"
         return fct
     
@@ -143,8 +142,8 @@ class RootClass(DEFControler):
             for info in infos:
                 if info["name"] == "id":
                     element_id = str(info["value"])
-            text += "bool flag_"+element_id+";\n"
-            text += "volatile int step_"+element_id+";\n"
+            text += "volatile int out_state_"+element_id+";\n"
+            text += "volatile int in_state_"+element_id+";\n"
         text +="\n"
         #Declaration des variables
         for element in elementsTab:
@@ -182,15 +181,15 @@ class RootClass(DEFControler):
 
         text += "IMPLEMENT_APP_NO_MAIN(SVGViewApp);\n"
         text += "IMPLEMENT_WX_THEME_SUPPORT;\n"
-        text += "SVGViewApp *myapp;\n"
+        text += "SVGViewApp *myapp = NULL;\n"
         text += "pthread_t wxMainLoop,automate;\n"
-        text += "int myargc;\n"
-        text += "char** myargv;\n\n"
+        text += "int myargc = 0;\n"
+        text += "char** myargv = NULL;\n\n"
         
-        text += "#define FREE_AND_NO_CHANGES 1 \n"
+        text += "#define UNCHANGED 1 \n"
         text += "#define PLC_BUSY 2 \n"
-        text += "#define FREE_AND_CHANGES 3 \n"
-        text += "#define PLC_OUT_BUSY 4 \n\n"
+        text += "#define CHANGED 3 \n"
+        text += "#define GUI_BUSY 4 \n\n"
         
         
         text += "void* InitWxEntry(void* args)\n{\n"
@@ -198,15 +197,15 @@ class RootClass(DEFControler):
         text += "  return args;\n"
         text += "}\n\n"
         
-        text += "void* SimulAutomate(void* args)\n{\n"
-        text += "  while(1){\n"
-        text += "    myapp->frame->m_svgCtrl->IN_"+self.BusNumber+"();\n"
-        text += "    //printf(\"AUTOMATE\\n\");\n"
-        text += "    myapp->frame->m_svgCtrl->OUT_"+self.BusNumber+"();\n"
-        text += "    sleep(1);\n"
-        text += "  }\n"
-        text += "  return args;\n"
-        text += "}\n\n"
+#        text += "void* SimulAutomate(void* args)\n{\n"
+#        text += "  while(1){\n"
+#        text += "    myapp->frame->m_svgCtrl->IN_"+self.BusNumber+"();\n"
+#        text += "    //printf(\"AUTOMATE\\n\");\n"
+#        text += "    myapp->frame->m_svgCtrl->OUT_"+self.BusNumber+"();\n"
+#        text += "    sleep(1);\n"
+#        text += "  }\n"
+#        text += "  return args;\n"
+#        text += "}\n\n"
         
         if (self.SVGUIRootElement):
             width = self.SVGUIRootElement.GetBBox().GetWidth()
@@ -220,15 +219,27 @@ class RootClass(DEFControler):
         text += "  #endif\n"
         text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxSize((int)"+str(width)+", (int)"+str(height)+"));\n"
         text += "  myapp = this;\n"
-        text += "  pthread_create(&automate, NULL, SimulAutomate, NULL);\n"
+#        text += "  pthread_create(&automate, NULL, SimulAutomate, NULL);\n"
         text += "  return true;\n"
         text += "}\n\n"
         
-        text += "int main(int argc, char** argv)\n{\n"
+        text += "int __init_"+self.BusNumber+"(int argc, char** argv)\n{\n"
         text += "  myargc = argc;\n"
         text += "  myargv = argv;\n"
         text += "  pthread_create(&wxMainLoop, NULL, InitWxEntry, NULL);\n"
         text += "  pause();\n"
+        text += "}\n\n"
+
+        text += "int __retrive_"+self.BusNumber+"()\n{\n"
+        text += "  if(myapp){"
+        text += "    myapp->Retrive()"
+        text += "  }"        
+        text += "}\n\n"
+
+        text += "int __publish_"+self.BusNumber+"()\n{\n"
+        text += "  if(myapp){"
+        text += "    myapp->Publish()"
+        text += "  }"        
         text += "}\n\n"
         
         return text
@@ -299,8 +310,7 @@ class RootClass(DEFControler):
             for info in infos:
                 if info["name"] == "id":
                     element_id = str(info["value"])
-            text += "    flag_"+element_id+" = true;\n"
-            text += "    step_"+element_id+" = FREE_AND_NO_CHANGES;\n"
+            text += "    out_state_"+element_id+" = UNCHANGED;\n"
         text += "}\n\n"
         return text
     
@@ -312,21 +322,21 @@ class RootClass(DEFControler):
             for info in infos:
                 if info["name"] == "id":
                     element_id = str(info["value"])
+                    _lock   = "  in_state_"+element_id+" = GUI_BUSY;\n"
+                    _unlock = "  in_state_"+element_id+" = CHANGED;\n"
                 if info["name"] == "name":
                     element_name = str(info["value"])
             type = element.GetElementInfos()["type"]
             FbdBlock = self.GetBlockType(type)
             if type == "Button":
                 fct += "void Program::On"+element_name+"Click(wxCommandEvent& event)\n{\n"
-                fct += "  if (flag_"+element_id+")\n  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
+                fct += _lock
                 element_num_patte = 1
                 for output in FbdBlock["outputs"]:
                     element_type = TYPECONVERSION[output[1]]
-                    fct += "    _copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)+" = true;\n"
+                    fct += "  _copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)+" = true;\n"
                     element_num_patte +=1
-                fct += "    flag_"+element_id+" = true;\n"
-                fct += "  }\n"
+                fct += _unlock
                 fct += "  event.Skip();\n"
                 fct += "}\n\n"               
                 
@@ -335,8 +345,7 @@ class RootClass(DEFControler):
                 fct += "  SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "  rotating->SendScrollEvent(event);\n"
                 fct += "  double angle = rotating->GetAngle();\n"
-                fct += "  if (flag_"+element_id+")\n  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
+                fct += _lock
                 element_num_patte = 1
                 for output in FbdBlock["outputs"]:
                     element_type = TYPECONVERSION[output[1]]
@@ -345,18 +354,16 @@ class RootClass(DEFControler):
                         value = "angle"
                     elif element_num_patte == 2:
                         value = "true"
-                    fct += "    _copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)+" = "+value+";\n"
+                    fct += "  _copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)+" = "+value+";\n"
                     element_num_patte +=1
-                fct += "    flag_"+element_id+" = true;\n"
-                fct += "  }\n"
+                fct += _unlock
                 fct += "}\n\n"
             elif type == "NoteBook":
                 fct += "void Program::On"+element_name+"TabChanged(wxNotebookEvent& event)\n{\n"
                 fct += "  SVGUINoteBook* notebook = (SVGUINoteBook*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "  notebook->SendNotebookEvent(event);\n"
                 fct += "  unsigned int selected = notebook->GetCurrentPage();\n"
-                fct += "  if (flag_"+element_id+")\n  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
+                fct += _lock
                 element_num_patte = 1
                 for output in FbdBlock["outputs"]:
                     element_type = TYPECONVERSION[output[1]]
@@ -365,63 +372,61 @@ class RootClass(DEFControler):
                         value = "selected"
                     elif element_num_patte == 2:
                         value = "true"
-                    fct += "    _copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)+" = "+value+";\n"
+                    fct += "  _copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)+" = "+value+";\n"
                     element_num_patte +=1
-                fct += "    flag_"+element_id+" = true;\n"
-                fct += "  }\n"
+                fct += _unlock
                 fct += "}\n\n"
             elif type == "Transform":
                 fct += "void Program::On"+element_name+"Paint(wxPaintEvent& event)\n{\n"
                 fct += "  SVGUITransform* transform = (SVGUITransform*)GetElementById(wxT(\""+element_id+"\"));\n"
-                fct += "  if (flag_"+element_id+")\n  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
+                fct += _lock
                 element_num_patte = 1
                 for output in FbdBlock["outputs"]:                    
                     if element_num_patte == 1:
-                        fct += "    if (transform->GetX() != _copy__ID"+self.BusNumber+"_"+element_id+"_1)\n"
-                        fct += "    {\n"
-                        fct += "      _copy__ID"+self.BusNumber+"_"+element_id+"_1 = transform->GetX();\n"
-                        fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
-                        fct += "    }\n"
+                        fct += "  if (transform->GetX() != _copy__ID"+self.BusNumber+"_"+element_id+"_1)\n"
+                        fct += "  {\n"
+                        fct += "    _copy__ID"+self.BusNumber+"_"+element_id+"_1 = transform->GetX();\n"
+                        fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
+                        fct += "  }\n"
                     elif element_num_patte == 2:
-                        fct += "    if (transform->GetY() != _copy__ID"+self.BusNumber+"_"+element_id+"_2)\n"
-                        fct += "    {\n"
-                        fct += "      _copy__ID"+self.BusNumber+"_"+element_id+"_2 = transform->GetY();\n"
-                        fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
-                        fct += "    }\n"
+                        fct += "  if (transform->GetY() != _copy__ID"+self.BusNumber+"_"+element_id+"_2)\n"
+                        fct += "  {\n"
+                        fct += "    _copy__ID"+self.BusNumber+"_"+element_id+"_2 = transform->GetY();\n"
+                        fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
+                        fct += "  }\n"
                     elif element_num_patte == 3:
-                        fct += "    if (transform->GetXScale() != _copy__ID"+self.BusNumber+"_"+element_id+"_3)\n"
-                        fct += "    {\n"
-                        fct += "      _copy__ID"+self.BusNumber+"_"+element_id+"_3 = transform->GetXScale();\n"
-                        fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
-                        fct += "    }\n"
+                        fct += "  if (transform->GetXScale() != _copy__ID"+self.BusNumber+"_"+element_id+"_3)\n"
+                        fct += "  {\n"
+                        fct += "    _copy__ID"+self.BusNumber+"_"+element_id+"_3 = transform->GetXScale();\n"
+                        fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
+                        fct += "  }\n"
                     elif element_num_patte == 4:
-                        fct += "    if (transform->GetYScale() != _copy__ID"+self.BusNumber+"_"+element_id+"_4)\n"
-                        fct += "    {\n"
-                        fct += "      _copy__ID"+self.BusNumber+"_"+element_id+"_4 = transform->GetYScale();\n"
-                        fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
-                        fct += "    }\n"
+                        fct += "  if (transform->GetYScale() != _copy__ID"+self.BusNumber+"_"+element_id+"_4)\n"
+                        fct += "  {\n"
+                        fct += "    _copy__ID"+self.BusNumber+"_"+element_id+"_4 = transform->GetYScale();\n"
+                        fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
+                        fct += "  }\n"
                     elif element_num_patte == 5:
-                        fct += "    if (transform->GetAngle() != _copy__ID"+self.BusNumber+"_"+element_id+"_5)\n"
-                        fct += "    {\n"
-                        fct += "      _copy__ID"+self.BusNumber+"_"+element_id+"_5 = transform->GetAngle();\n"
-                        fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
-                        fct += "    }\n"
+                        fct += "  if (transform->GetAngle() != _copy__ID"+self.BusNumber+"_"+element_id+"_5)\n"
+                        fct += "  {\n"
+                        fct += "    _copy__ID"+self.BusNumber+"_"+element_id+"_5 = transform->GetAngle();\n"
+                        fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n"
+                        fct += "  }\n"
                     element_num_patte +=1
-                fct += "    flag_"+element_id+" = true;\n"
-                fct += "  }\n"
+                fct += _unlock
                 fct += "  event.Skip();\n"
                 fct += "}\n\n"
             elif type == "Container":
                 fct += "void Program::On"+element_name+"Paint(wxPaintEvent& event)\n{\n"
                 fct += "  SVGUIContainer* container = (SVGUIContainer*)GetElementById(wxT(\""+element_id+"\"));\n"
-                fct += "  if (container->IsVisible() != _copy__IX"+self.BusNumber+"_"+element_id+"_1  && flag_"+element_id+")\n"
+                fct += "  bool isvisible = container->IsVisible();\n"
+                fct += _lock
+                fct += "  if (isvisible != _copy__IX"+self.BusNumber+"_"+element_id+"_1)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_1 = container->IsVisible();\n"
                 fct += "    _copy__IX"+self.BusNumber+"_"+element_id+"_2 = true;\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
+                fct += _unlock
                 fct += "  event.Skip();\n"
                 fct += "}\n\n"
         
@@ -437,15 +442,17 @@ class RootClass(DEFControler):
             for info in infos:
                 if info["name"] == "id":
                     element_id = str(info["value"])
+                    _lock   = "      in_state_"+element_id+" = GUI_BUSY;\n"
+                    _unlock = "      in_state_"+element_id+" = CHANGED;\n"
             type = element.GetElementInfos()["type"]
             FbdBlock = self.GetBlockType(type)
             if type == "TextCtrl":
-                fct += "    if (focusedId == wxT(\""+element_id+"\") && flag_"+element_id+")\n"
+                fct += "    if (focusedId == wxT(\""+element_id+"\"))\n"
                 fct += "    {\n"
-                fct += "      flag_"+element_id+" = false;\n"
+                fct += _lock
                 fct += "      _copy__IB"+self.BusNumber+"_"+element_id+"_1 = wxStringToStr(text->GetValue());\n"
                 fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = true;\n"
-                fct += "      flag_"+element_id+" = true;\n"
+                fct += _unlock
                 fct += "    }\n"
         fct += "  }\n"
         fct += "}\n"
@@ -467,13 +474,11 @@ class RootClass(DEFControler):
             type = element.GetElementInfos()["type"]
             FbdBlock = self.GetBlockType(type)
             if type == "ScrollBar":
-                fct += "    if (focusedId == wxT(\""+element_id+"\") && flag_"+element_id+")\n"
+                fct += "    if (focusedId == wxT(\""+element_id+"\"))\n"
                 fct += "    {\n"
-                fct += "      flag_"+element_id+" = false;\n"
                 fct += "      unsigned int scrollPos = scrollbar->GetThumbPosition();\n"
                 fct += "      _copy__IW"+self.BusNumber+"_"+element_id+"_1 = scrollPos;\n"
                 fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = true;\n"
-                fct += "      flag_"+element_id+" = true;\n"
                 fct += "    }\n"
         fct += "  }\n"
         fct += "  event.Skip();\n"
@@ -482,94 +487,84 @@ class RootClass(DEFControler):
         
         
         
+        fct += "/* OnPlcOutEvent updatde GUI with provided IEC __Q* PLC output variables */\n"
         fct += "void Program::OnPlcOutEvent(wxEvent& event)\n{\n"
-        fct += "  int old_state;\n"
         for element in elementsTab:
             infos = element.getElementAttributes()
             for info in infos:
                 if info["name"] == "id":
                     element_id = str(info["value"])
+            _lock =   " if (__sync_val_compare_and_swap (&out_state_"+element_id+", CHANGED, GUI_BUSY) == CHANGED)"
+            _lock +=  " {\n"
+            _unlock = "  __sync_val_compare_and_swap (&out_state_"+element_id+", GUI_BUSY, UNCHANGED);\n"
+            _unlock +=" }\n"
             type = element.GetElementInfos()["type"]
             FbdBlock = self.GetBlockType(type)
             if type == "Button":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUIButton* button = (SVGUIButton*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    if (_copy__QX"+self.BusNumber+"_"+element_id+"_1)\n"
                 fct += "      button->Show();\n"
                 fct += "    else\n"
                 fct += "      button->Hide();\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
             elif type == "Container":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUIContainer* container = (SVGUIContainer*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    if (_copy__QX"+self.BusNumber+"_"+element_id+"_1)\n"
                 fct += "      container->Show();\n"
                 fct += "    else\n"
                 fct += "      container->Hide();\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
             elif type == "TextCtrl":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUITextCtrl* text = (SVGUITextCtrl*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    wxString str = wxString::FromAscii(_copy__QB"+self.BusNumber+"_"+element_id+"_1);\n"
                 fct += "    text->SetText(str);\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
             elif type == "ScrollBar":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUIScrollBar* scrollbar = (SVGUIScrollBar*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    scrollbar->SetThumbPosition(_copy__QW"+self.BusNumber+"_"+element_id+"_1);\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
             elif type == "RotatingCtrl":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    rotating->SetAngle(_copy__QD"+self.BusNumber+"_"+element_id+"_1);\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
             elif type == "NoteBook":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_2 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (copy__QX"+self.BusNumber+"_"+element_id+"_2)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUINoteBook* notebook = (SVGUINoteBook*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    notebook->SetCurrentPage(_copy__QB"+self.BusNumber+"_"+element_id+"_1);\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
             elif type == "Transform":
-                fct += "  old_state = __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_CHANGES, PLC_OUT_BUSY);\n"
-                fct += "  if (_copy__QX"+self.BusNumber+"_"+element_id+"_6 && flag_"+element_id+" && old_state == FREE_AND_CHANGES)\n"
+                fct += _lock
+                fct += "  if (copy__QX"+self.BusNumber+"_"+element_id+"_6)\n"
                 fct += "  {\n"
-                fct += "    flag_"+element_id+" = false;\n"
                 fct += "    SVGUITransform* transform = (SVGUITransform*)GetElementById(wxT(\""+element_id+"\"));\n"
                 fct += "    transform->Move(_copy__QD"+self.BusNumber+"_"+element_id+"_1,_copy__QD"+self.BusNumber+"_"+element_id+"_2);\n"
                 fct += "    transform->Scale(_copy__QD"+self.BusNumber+"_"+element_id+"_3,_copy__QD"+self.BusNumber+"_"+element_id+"_4);\n"
                 fct += "    transform->Rotate(_copy__QD"+self.BusNumber+"_"+element_id+"_5);\n"
-                fct += "    flag_"+element_id+" = true;\n"
                 fct += "  }\n"
-                fct += "  __sync_val_compare_and_swap (&step_"+element_id+", PLC_OUT_BUSY, FREE_AND_NO_CHANGES);\n"
+                fct += _unlock
         fct += "  Update_Elements();\n"
         fct += "  Refresh();\n"
         fct += "  event.Skip();\n"
@@ -578,7 +573,7 @@ class RootClass(DEFControler):
     
     def GenerateProgramPrivateFunctions(self):
         elementsTab = self.GetElementsTab()
-        fct = "void Program::OUT_"+self.BusNumber+"()\n{\n"
+        fct = "void Program::Retrive()\n{\n"
         for element in elementsTab:
             infos = element.getElementAttributes()
             for info in infos:
@@ -586,22 +581,24 @@ class RootClass(DEFControler):
                     element_id = str(info["value"])
             type = element.GetElementInfos()["type"]
             FbdBlock = self.GetBlockType(type)
-            fct += "  if ( flag_"+element_id+" && __sync_val_compare_and_swap (&step_"+element_id+", PLC_BUSY, FREE_AND_CHANGES) == PLC_BUSY){\n"
-            #fct += "  if ( flag_"+element_id+" ){\n"
-            fct += "    flag_"+element_id+" = false;\n"
+            fct += "  if ( __sync_val_compare_and_swap (&out_state_"+element_id+", UNCHANGED, PLC_BUSY) == UNCHANGED ||\n"
+            fct += "       __sync_val_compare_and_swap (&out_state_"+element_id+", CHANGED, PLC_BUSY) == CHANGED){\n"
+            fct += "    bool diff = False;\n"
             element_num_patte = 1
             for input in FbdBlock["inputs"]:
                 element_type = TYPECONVERSION[input[1]]
                 var = "__Q"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
+                fct +="    diff |= _copy"+var+ " != "+var+";\n"
                 fct +="    _copy"+var+ " = "+var+";\n"
                 element_num_patte +=1
-            fct += "    flag_"+element_id+" = true;\n"
+            fct += "    if(diff) out_state_"+element_id+" = CHANGED;\n"
             fct += "  }\n"
+        fct +="  /*Replace this with determinist signal if called from RT*/;\n"
         fct +="  wxCommandEvent event( EVT_PLC );\n"
         fct +="  ProcessEvent(event);\n"
         fct +="};\n\n" 
         
-        fct += "void Program::IN_"+self.BusNumber+"()\n{\n"
+        fct += "void Program::Publish()\n{\n"
 
         for element in elementsTab:
             infos = element.getElementAttributes()
@@ -610,17 +607,34 @@ class RootClass(DEFControler):
                     element_id = str(info["value"])
             type = element.GetElementInfos()["type"]
             FbdBlock = self.GetBlockType(type)
-            fct += "  if ( flag_"+element_id+" && __sync_val_compare_and_swap (&step_"+element_id+", FREE_AND_NO_CHANGES, PLC_BUSY) == FREE_AND_NO_CHANGES){\n"
-            fct += "    flag_"+element_id+" = false;\n"
+            fct += "  do{\n"
+            fct += "    if ( __sync_val_compare_and_swap (&in_state_"+element_id+", CHANGED, PLC_BUSY) == CHANGED){\n"
             element_num_patte = 1
             for output in FbdBlock["outputs"]:
                 element_type = TYPECONVERSION[output[1]]
                 var = "__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
-                fct +="     "+var+ " = _copy"+var+";\n"
+                fct +="      "+var+ " = _copy"+var+";\n"
                 element_num_patte +=1
-            fct += "    flag_"+element_id+" = true;\n"
-            fct += "  }\n"
-        fct += "  SetNoChanges();\n"
+            fct += "      /* reset change status pin */\n"
+            if type == "Button":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
+            elif type == "Container":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
+            elif type == "TextCtrl":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
+            elif type == "ScrollBar":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
+            elif type == "RotatingCtrl":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
+            elif type == "NoteBook":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
+            elif type == "Transform":
+                fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_6 = false;\n"
+            fct += "    }else{\n"
+            fct += "      break;\n"
+            fct += "    }\n"
+            #If GUI did change data while publishing, do it again (in real-time this should be avoided with priority stuff)
+            fct += "  }while(__sync_val_compare_and_swap (&in_state_"+element_id+", PLC_BUSY, UNCHANGED) != PLC_BUSY)\n"
         fct +="};\n\n" 
         
         fct += "void Program::Initialize()\n{\n"
@@ -697,30 +711,6 @@ class RootClass(DEFControler):
                 fct += "  _copy__ID"+self.BusNumber+"_"+element_id+"_5 = transform->GetAngle();\n"
                 fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_6 = true;\n\n"
                 transform = True
-        fct += "}\n\n"
-        
-        fct += "void Program::SetNoChanges()\n{\n"
-        for element in elementsTab:
-            infos = element.getElementAttributes()
-            for info in infos:
-                if info["name"] == "id":
-                    element_id = str(info["value"])
-            type = element.GetElementInfos()["type"]
-            FbdBlock = self.GetBlockType(type)
-            if type == "Button":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
-            elif type == "Container":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
-            elif type == "TextCtrl":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
-            elif type == "ScrollBar":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
-            elif type == "RotatingCtrl":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
-            elif type == "NoteBook":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = false;\n"
-            elif type == "Transform":
-                fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_6 = false;\n"
         fct += "}\n\n"
         
         #DEBUG Fonction d'affichage
