@@ -227,7 +227,7 @@ class PlugTemplate:
             ordered.sort()
             for child in zip(*ordered)[1]:
                 childs.append(child.GetPlugInfos())
-        return {"name" : "%s (%d)"%(self.BaseParams.getName(),self.BaseParams.getIEC_Channel()), "type" : self.BaseParams.getName(), "values" : childs}
+        return {"name" : "%d-%s"%(self.BaseParams.getIEC_Channel(),self.BaseParams.getName()), "type" : self.BaseParams.getName(), "values" : childs}
     
     
     def FindNewName(self, DesiredName, logger):
