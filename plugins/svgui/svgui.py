@@ -749,12 +749,10 @@ class RootClass(DEFControler):
     
     def BlockTypesFactory(self):
         def generate_svgui_block(generator, block, body, link):
-            controller = generator.GetController()
             name = block.getInstanceName()
             type = block.getTypeName()
             block_infos = self.GetBlockType(type)
-            bus_id, name = [word for word in name.split("_") if word != ""]
-            block_id = self.PlugChilds[bus_id].GetElementIdFromName(name)
+            block_id = self.GetElementIdFromName(name)
             if block_id == None:
                 raise ValueError, "No corresponding block found"
             if not generator.ComputedBlocks.get(name, False):
@@ -779,31 +777,38 @@ class RootClass(DEFControler):
            [{"name" : "Container", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Show","BOOL","none"),("Set State","BOOL","none")], 
                     "outputs" : [("Show","BOOL","none"),("State Changed","BOOL","none")],
-                    "comment" : "SVGUI Container"},
+                    "comment" : "SVGUI Container",
+                    "generate" : generate_svgui_block},
                 {"name" : "Button", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Show","BOOL","none"),("Toggle","BOOL","none")], 
                     "outputs" : [("Visible","BOOL","none"),("State","BOOL","none")],
-                    "comment" : "SVGUI Button"},
+                    "comment" : "SVGUI Button",
+                    "generate" : generate_svgui_block},
                 {"name" : "TextCtrl", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Text","STRING","none"),("Set Text","BOOL","none")], 
                     "outputs" : [("Text","STRING","none"),("Text Changed","BOOL","none")],
-                    "comment" : "SVGUI Text Control"},
+                    "comment" : "SVGUI Text Control",
+                    "generate" : generate_svgui_block},
                 {"name" : "ScrollBar", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Position","UINT","none"),("Set Position","BOOL","none")], 
                     "outputs" : [("Position","UINT","none"),("Position Changed","BOOL","none")],
-                    "comment" : "SVGUI ScrollBar"},
+                    "comment" : "SVGUI ScrollBar",
+                    "generate" : generate_svgui_block},
                 {"name" : "NoteBook", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Selected","UINT","none"),("Set Selected","BOOL","none")], 
                     "outputs" : [("Selected","UINT","none"),("Selected Changed","BOOL","none")],
-                    "comment" : "SVGUI Notebook"},
+                    "comment" : "SVGUI Notebook",
+                    "generate" : generate_svgui_block},
                 {"name" : "RotatingCtrl", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Angle","REAL","none"),("Set Angle","BOOL","none")], 
                     "outputs" : [("Angle","REAL","none"),("Angle changed","BOOL","none")],
-                    "comment" : "SVGUI Rotating Control"},
+                    "comment" : "SVGUI Rotating Control",
+                    "generate" : generate_svgui_block},
                 {"name" : "Transform", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("X","REAL","none"),("Y","REAL","none"),("Scale X","REAL","none"),("Scale Y","REAL","none"),("Angle","REAL","none"),("Set","BOOL","none")], 
                     "outputs" : [("X","REAL","none"),("Y","REAL","none"),("Scale X","REAL","none"),("Scale Y","REAL","none"),("Angle","REAL","none"),("Changed","BOOL","none")],
-                    "comment" : "SVGUI Transform"},
+                    "comment" : "SVGUI Transform",
+                    "generate" : generate_svgui_block},
                ]}
         ]
     

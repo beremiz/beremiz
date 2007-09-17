@@ -341,14 +341,14 @@ class Beremiz(wx.Frame):
     def RefreshMainMenu(self):
         if self.menuBar1:
             if self.PluginRoot.HasProjectOpened():
-                self.menuBar1.EnableTop(1, True)
-                self.menuBar1.EnableTop(2, True)
+##                self.menuBar1.EnableTop(1, True)
+##                self.menuBar1.EnableTop(2, True)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, True)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, True)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, True)
             else:
-                self.menuBar1.EnableTop(1, False)
-                self.menuBar1.EnableTop(2, False)
+##                self.menuBar1.EnableTop(1, False)
+##                self.menuBar1.EnableTop(2, False)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, False)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, False)
                 self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, False)
