@@ -750,16 +750,17 @@ class RootClass(DEFControler):
     def BlockTypesFactory(self):
         def generate_svgui_block(generator, block, body, link):
             name = block.getInstanceName()
-            type = block.getTypeName()
-            block_infos = self.GetBlockType(type)
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
                 raise ValueError, "No corresponding block found"
+            type = block.getTypeName()
+            block_infos = self.GetBlockType(type)
+            current_location = ".".join(map(str, self.GetCurrentLocation()))
             if not generator.ComputedBlocks.get(name, False):
                 for num, variable in enumerate(block.inputVariables.getVariable()):
                     connections = variable.connectionPointIn.getConnections()
                     if connections and len(connections) == 1:
-                        parameter = "__Q%s%d_%d_%d"%(TYPECONVERSION[block_infos["inputs"][num][1]], bus_id, block_id, num)
+                        parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num)
                         value = generator.ComputeFBDExpression(body, connections[0])
                         generator.Program += ("  %s := %s;\n"%(parameter, generator.ExtractModifier(variable, value)))
                 generator.ComputedBlocks[name] = True
@@ -768,47 +769,60 @@ class RootClass(DEFControler):
                 for num, variable in enumerate(block.outputVariables.getVariable()):
                     blockPointx, blockPointy = variable.connectionPointOut.getRelPosition()
                     if block.getX() + blockPointx == connectionPoint.getX() and block.getY() + blockPointy == connectionPoint.getY():
-                        return "__I%s%d_%d_%d"%(TYPECONVERSION[block_infos["outputs"][num][1]], bus_id, block_id, num)
+                        return "%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num)
                 raise ValueError, "No output variable found"
             else:
                 return None
+
+        def initialise_block(type, name):
+            block_id = self.GetElementIdFromName(name)
+            if block_id == None:
+                raise ValueError, "No corresponding block found"
+            block_infos = self.GetBlockType(type)
+            current_location = ".".join(map(str, self.GetCurrentLocation()))
+            variables = []
+            for num, (input_name, input_type, input_modifier) in enumerate(block_infos["inputs"]):
+                variables.append((input_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num), None))
+            for num, (output_name, output_type, output_modifier) in enumerate(block_infos["outputs"]):
+                variables.append((output_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num), None))
+            return variables
 
         return [{"name" : "SVGUI function blocks", "list" :
            [{"name" : "Container", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Show","BOOL","none"),("Set State","BOOL","none")], 
                     "outputs" : [("Show","BOOL","none"),("State Changed","BOOL","none")],
                     "comment" : "SVGUI Container",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "Button", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Show","BOOL","none"),("Toggle","BOOL","none")], 
                     "outputs" : [("Visible","BOOL","none"),("State","BOOL","none")],
                     "comment" : "SVGUI Button",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "TextCtrl", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Text","STRING","none"),("Set Text","BOOL","none")], 
                     "outputs" : [("Text","STRING","none"),("Text Changed","BOOL","none")],
                     "comment" : "SVGUI Text Control",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "ScrollBar", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Position","UINT","none"),("Set Position","BOOL","none")], 
                     "outputs" : [("Position","UINT","none"),("Position Changed","BOOL","none")],
                     "comment" : "SVGUI ScrollBar",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "NoteBook", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Selected","UINT","none"),("Set Selected","BOOL","none")], 
                     "outputs" : [("Selected","UINT","none"),("Selected Changed","BOOL","none")],
                     "comment" : "SVGUI Notebook",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "RotatingCtrl", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Angle","REAL","none"),("Set Angle","BOOL","none")], 
                     "outputs" : [("Angle","REAL","none"),("Angle changed","BOOL","none")],
                     "comment" : "SVGUI Rotating Control",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "Transform", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("X","REAL","none"),("Y","REAL","none"),("Scale X","REAL","none"),("Scale Y","REAL","none"),("Angle","REAL","none"),("Set","BOOL","none")], 
                     "outputs" : [("X","REAL","none"),("Y","REAL","none"),("Scale X","REAL","none"),("Scale Y","REAL","none"),("Angle","REAL","none"),("Changed","BOOL","none")],
                     "comment" : "SVGUI Transform",
-                    "generate" : generate_svgui_block},
+                    "generate" : generate_svgui_block, "initialise" : initialise_block},
                ]}
         ]
     
