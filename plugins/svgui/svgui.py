@@ -88,7 +88,7 @@ TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" 
     "STRING" : "B", "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L", "WSTRING" : "W"}
 """
 TYPECONVERSION = {"BOOL" : "X", "UINT" : "W","REAL" : "D","STRING" : "B"}
-CTYPECONVERSION = {"BOOL" : "bool", "UINT" : "unsigned int", "STRING" : "char*", "REAL" : "float"}
+CTYPECONVERSION = {"BOOL" : "IEC_BOOL", "UINT" : "IEC_UINT", "STRING" : "IEC_STRING", "REAL" : "IEC_REAL"}
 CPRINTTYPECONVERSION = {"BOOL" : "d", "UINT" : "d", "STRING" : "s", "REAL" : "f"}
 class RootClass(DEFControler):
 
@@ -128,10 +128,10 @@ class RootClass(DEFControler):
     def GenerateProgramHeadersPublicVars(self):
         fct = ""
         fct += "    void OnPlcOutEvent(wxEvent& event);\n\n"
-        fct += "    void IN_"+self.BusNumber+"();\n"
-        fct += "    void OUT_"+self.BusNumber+"();\n"
+        fct += "    void Retrive();\n"
+        fct += "    void Publish();\n"
         fct += "    void Initialize();\n"
-        fct += "    void Print();\n"
+#        fct += "    void Print();\n"
         return fct
     
     def GenerateIECVars(self):
@@ -174,7 +174,7 @@ class RootClass(DEFControler):
         return text
     
     def GenerateGlobalVarsAndFuncs(self):
-        text = ""
+        text = "#include \"iec_types.h\"\n\n"
         pri_vars = self.GenerateIECVars()
         if (pri_vars):
             text += pri_vars
@@ -241,6 +241,16 @@ class RootClass(DEFControler):
         text += "    myapp->Publish()"
         text += "  }"        
         text += "}\n\n"
+
+        text += "IEC_STRING wxStringToIEC_STRING(wxString s)\n"
+        text += "{\n"
+        text += "  STRING res = {0,""};\n"
+        text += "  for(int i=0; i<s.Length() && i<STR_MAX_LEN; i++)\n"
+        text += "    res.body[i] = s.GetChar(i);\n"
+        text += "  res.len = i;\n"
+        text += "  return res;\n"
+        text += "}\n\n"
+        
         
         return text
     
@@ -450,7 +460,7 @@ class RootClass(DEFControler):
                 fct += "    if (focusedId == wxT(\""+element_id+"\"))\n"
                 fct += "    {\n"
                 fct += _lock
-                fct += "      _copy__IB"+self.BusNumber+"_"+element_id+"_1 = wxStringToStr(text->GetValue());\n"
+                fct += "      _copy__IB"+self.BusNumber+"_"+element_id+"_1 = wxStringToIEC_STRING(text->GetValue());\n"
                 fct += "      _copy__IX"+self.BusNumber+"_"+element_id+"_2 = true;\n"
                 fct += _unlock
                 fct += "    }\n"
@@ -676,7 +686,7 @@ class RootClass(DEFControler):
                 if (not textctrl):
                     fct += "  SVGUITextCtrl* text;\n"
                 fct += "  text = (SVGUITextCtrl*)GetElementById(wxT(\""+element_id+"\"));\n"
-                fct += "  _copy__IB"+self.BusNumber+"_"+element_id+"_1 = wxStringToStr(text->GetValue());\n"
+                fct += "  _copy__IB"+self.BusNumber+"_"+element_id+"_1 = wxStringToIEC_STRING(text->GetValue());\n"
                 fct += "  _copy__IX"+self.BusNumber+"_"+element_id+"_2 = true;\n\n"
                 textctrl = True
             elif type == "ScrollBar":
@@ -714,30 +724,30 @@ class RootClass(DEFControler):
         fct += "}\n\n"
         
         #DEBUG Fonction d'affichage
-        fct += "void Program::Print()\n{\n"
-        for element in elementsTab:
-            infos = element.getElementAttributes()
-            for info in infos:
-                if info["name"] == "id":
-                    element_id = str(info["value"])
-            type = element.GetElementInfos()["type"]
-            FbdBlock = self.GetBlockType(type)
-            element_num_patte = 1
-            for input in FbdBlock["inputs"]:
-                element_type = TYPECONVERSION[input[1]]
-                c_type = CPRINTTYPECONVERSION[input[1]]
-                var = "_copy__Q"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
-                fct +="  printf(\""+var+": %"+c_type+"\\n\","+var+");\n"
-                element_num_patte +=1
-            element_num_patte = 1
-            for output in FbdBlock["outputs"]:
-                element_type = TYPECONVERSION[output[1]]
-                c_type = CPRINTTYPECONVERSION[output[1]]
-                var = "_copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
-                fct +="  printf(\""+var+": %"+c_type+"\\n\","+var+");\n"
-                element_num_patte +=1
+#        fct += "void Program::Print()\n{\n"
+#        for element in elementsTab:
+#            infos = element.getElementAttributes()
+#            for info in infos:
+#                if info["name"] == "id":
+#                    element_id = str(info["value"])
+#            type = element.GetElementInfos()["type"]
+#            FbdBlock = self.GetBlockType(type)
+#            element_num_patte = 1
+#            for input in FbdBlock["inputs"]:
+#                element_type = TYPECONVERSION[input[1]]
+#                c_type = CPRINTTYPECONVERSION[input[1]]
+#                var = "_copy__Q"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
+#                fct +="  printf(\""+var+": %"+c_type+"\\n\","+var+");\n"
+#                element_num_patte +=1
+#            element_num_patte = 1
+#            for output in FbdBlock["outputs"]:
+#                element_type = TYPECONVERSION[output[1]]
+#                c_type = CPRINTTYPECONVERSION[output[1]]
+#                var = "_copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
+#                fct +="  printf(\""+var+": %"+c_type+"\\n\","+var+");\n"
+#                element_num_patte +=1
         #fct +="    wxPostEvent(Program,wxEVT_PLCOUT);\n"
-        fct +="};\n\n"    
+#        fct +="};\n\n"    
         return fct
     
     def PlugGenerate_C(self, buildpath, locations, logger):
