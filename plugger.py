@@ -444,10 +444,10 @@ from datetime import datetime
 from PLCControler import PLCControler
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
-from plcopen.structures import IEC_KEYWORDS
+from plcopen.structures import IEC_KEYWORDS, AddPluginBlockList, ClearPluginTypes, PluginTypes
 import re
 
-class PluginsRoot(PlugTemplate):
+class PluginsRoot(PlugTemplate, PLCControler):
     """
     This class define Root object of the plugin tree. 
     It is responsible of :
@@ -517,7 +517,8 @@ class PluginsRoot(PlugTemplate):
     """
 
     def __init__(self, frame):
-
+        PLCControler.__init__(self)
+        
         self.MandatoryParams = None
         self.AppFrame = frame
         
@@ -534,7 +535,6 @@ class PluginsRoot(PlugTemplate):
         
         # After __init__ root plugin is not valid
         self.ProjectPath = None
-        self.PLCManager = None
         self.PLCEditor = None
     
     def HasProjectOpened(self):
@@ -577,15 +577,15 @@ class PluginsRoot(PlugTemplate):
             dialog.Destroy()
             return "Project not created"
         
-        # Create Controler for PLCOpen program
-        self.PLCManager = PLCControler()
-        self.PLCManager.CreateNewProject(values.pop("projectName"))
-        self.PLCManager.SetProjectProperties(properties = values)
+        # Create PLCOpen program
+        self.CreateNewProject(values.pop("projectName"))
+        self.SetProjectProperties(properties = values)
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
+        self.RefreshPluginsBlockLists()
         return None
         
     def LoadProject(self, ProjectPath, logger):
@@ -597,10 +597,8 @@ class PluginsRoot(PlugTemplate):
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
             return "Folder choosen doesn't contain a program. It's not a valid project!"
-        # Create Controler for PLCOpen program
-        self.PLCManager = PLCControler()
         # Load PLCOpen file
-        result = self.PLCManager.OpenXMLFile(plc_file)
+        result = self.OpenXMLFile(plc_file)
         if result:
             return result
         # Change XSD into class members
@@ -616,14 +614,22 @@ class PluginsRoot(PlugTemplate):
                 return result
             #Load and init all the childs
             self.LoadChilds(logger)
+        self.RefreshPluginsBlockLists()
         return None
     
     def SaveProject(self):
-        if not self.PLCManager.SaveXMLFile():
-            self.PLCManager.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
+        if not self.SaveXMLFile():
+            self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
         if self.PLCEditor:
             self.PLCEditor.RefreshTitle()
         self.PlugRequestSave()
+    
+    # Update PLCOpenEditor Plugin Block types from loaded plugins
+    def RefreshPluginsBlockLists(self):
+        ClearPluginTypes()
+        AddPluginBlockList(self.BlockTypesFactory())
+        for child in self.IterChilds():
+            AddPluginBlockList(child.BlockTypesFactory())
     
     def PlugPath(self, PlugName=None):
         return self.ProjectPath
@@ -655,12 +661,15 @@ class PluginsRoot(PlugTemplate):
         @param logger: the log pseudo file
         """
 
+        # Update PLCOpenEditor Plugin Block types before generate ST code
+        self.RefreshPluginsBlockLists()
+        
         logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
         buildpath = self._getBuildPath()
         # define name for IEC code file
         plc_file = self._getIECcodepath()
         # ask PLCOpenEditor controller to write ST/IL/SFC code file
-        result = self.PLCManager.GenerateProgram(plc_file)
+        result = self.GenerateProgram(plc_file)
         if not result:
             # Failed !
             logger.write_error("Error : ST/IL/SFC code generator returned %d\n"%result)
@@ -763,11 +772,12 @@ class PluginsRoot(PlugTemplate):
 
     def _EditPLC(self, logger):
         if not self.PLCEditor:
+            self.RefreshPluginsBlockLists()
             def _onclose():
                 self.PLCEditor = None
             def _onsave():
                 self.SaveProject()
-            self.PLCEditor = PLCOpenEditor(self.AppFrame, self.PLCManager)
+            self.PLCEditor = PLCOpenEditor(self.AppFrame, self)
             self.PLCEditor.RefreshProjectTree()
             self.PLCEditor.RefreshFileMenu()
             self.PLCEditor.RefreshEditMenu()
