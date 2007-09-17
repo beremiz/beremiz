@@ -3,59 +3,113 @@ import wx.stc as stc
 import os, sys, shutil
 from CppSTC import CppSTC
 from plugger import PlugTemplate
+import tempfile
 
 class _Cfile:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="C_File">
+      <xsd:element name="C_Extension">
         <xsd:complexType>
-          <xsd:attribute name="FileName" type="xsd:string" use="required" default="myfile.c"/>
+          <xsd:attribute name="C_Files" type="xsd:string" use="required" default="myfile.c"/>
+          <xsd:attribute name="CFLAGS" type="xsd:string" use="required"/>
+          <xsd:attribute name="LDFLAGS" type="xsd:string" use="required"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
     """
     def __init__(self):
-        if not os.path.isfile(self.CFileName()):
-            f = open(self.CFileName(), 'w')
-            f.write("/*Empty*/")
+        self.CheckCFilesExist()
+        
+    def CheckCFilesExist(self):
+        for CFile in self.CFileNames():
+            if not os.path.isfile(CFile):
+                f = open(CFile, 'w')
+                f.write("/*Empty*/")
+                f.close()
 
-    def CFileName(self):
-        return os.path.join(self.PlugPath(),self.C_File.getFileName())
+    def CFileBaseNames(self):
+        """
+        Returns list of C files base names, out of C_Extension.C_Files, coma separated list
+        """
+        return map(str.strip,str(self.C_Extension.getC_Files()).split(','))
+
+    def CFileName(self, fn):
+        return os.path.join(self.PlugPath(),fn)
+
+    def CFileNames(self):
+        """
+        Returns list of full C files paths, out of C_Extension.C_Files, coma separated list
+        """
+        return map(self.CFileName, self.CFileBaseNames())
 
     def SetParamsAttribute(self, path, value, logger):
-        oldname = self.CFileName()
+        """
+        Take actions if C_Files changed
+        """
+        # Get a C files list before changes
+        oldnames = self.CFileNames()
+        # Apply changes
         res = PlugTemplate.SetParamsAttribute(self, path, value, logger)
-        if path == "C_File.FileName":
-            shutil.move(oldname, self.CFileName())
-            logger.write("\"%s\" renamed \"%s\"\n"%(oldname, self.CFileName()))
+        # If changes was about C files,
+        if path == "C_Extension.C_Files":
+            # Create files if did not exist
+            self.CheckCFilesExist()
+            # Get new list
+            newnames = self.CFileNames()
+            # Move unused files into trash (temporary directory)
+            for oldfile in oldnames:
+                if oldfile not in newnames:
+                    # define new "trash" name
+                    trashname = os.path.join(tempfile.gettempdir(),os.path.basename(oldfile))
+                    # move the file
+                    shutil.move(oldfile, trashname)
+                    # warn user
+                    logger.write_warning("\"%s\" moved to \"%s\"\n"%(oldfile, trashname))
             return value, False
         return res
 
-    _View = None
+    _Views = {}
     def _OpenView(self, logger):
-        if not self._View:
-            def _onclose(evt):
-                self.OnPlugSave()
-                self._View = None
-                evt.Skip()
-            self._View = wx.Frame(self.GetPlugRoot().AppFrame,-1)
-            self._View.Bind(wx.EVT_CLOSE, _onclose)
-            ed = CppSTC(self._View, wx.NewId())
-            ed.SetText(open(self.CFileName()).read())
-            ed.EmptyUndoBuffer()
-            ed.Colourise(0, -1)
-            ed.SetMarginType(1, stc.STC_MARGIN_NUMBER)
-            ed.SetMarginWidth(1, 25)
-            self._View.ed = ed
+        lst = self.CFileBaseNames()
 
-            self._View.Show()
+        dlg = wx.MultiChoiceDialog( self.GetPlugRoot().AppFrame, 
+                                   "Pick some fruit from\nthis list",
+                                   "wx.MultiChoiceDialog", lst)
 
-    PluginMethods = [("Edit C File",_OpenView)]
+        if (dlg.ShowModal() == wx.ID_OK):
+            selections = dlg.GetSelections()
+            for selected in [lst[x] for x in selections]:
+                if selected not in self._Views:
+                    # keep track of selected name as static for later close
+                    def _onclose(evt, sel = selected):
+                        self.SaveCView(sel)
+                        self._Views.pop(sel)
+                        evt.Skip()
+                    New_View = wx.Frame(self.GetPlugRoot().AppFrame,-1)
+                    New_View.Bind(wx.EVT_CLOSE, _onclose)
+                    ed = CppSTC(New_View, wx.NewId())
+                    ed.SetText(open(self.CFileName(selected)).read())
+                    ed.EmptyUndoBuffer()
+                    ed.Colourise(0, -1)
+                    ed.SetMarginType(1, stc.STC_MARGIN_NUMBER)
+                    ed.SetMarginWidth(1, 25)
+                    New_View.ed = ed
+                    New_View.Show()
+                    self._Views[selected] = New_View
 
+        dlg.Destroy()
+        
+
+    PluginMethods = [("Edit C File",_OpenView), ("Import C File",_OpenView)]
+
+    def SaveCView(self, name):
+        f = open(self.CFileName(name),'w')
+        f.write(self._Views[name].ed.GetText())
+        f.close()
+        
     def OnPlugSave(self):
-        if self._View:
-            f = open(self.CFileName(),'w')
-            f.write(self._View.ed.GetText())
+        for name in self._Views:
+            self.SaveCView(name)
         return True
 
     def PlugGenerate_C(self, buildpath, locations, logger):
@@ -73,16 +127,26 @@ class _Cfile:
         """
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
-        prefix = "_".join(map(lambda x:str(x), current_location))
-        Gen_Cfile_path = os.path.join(buildpath, prefix + "_CFile.c" )
-        f = open(Gen_Cfile_path,'w')
-        f.write("/* Header generated by Beremiz c_ext plugin */\n")
-        f.write("#include \"iec_std_lib.h\"\n")
-        for loc in locations:
-            f.write(loc["IEC_TYPE"]+" "+loc["NAME"]+";\n")
-        f.write("/* End of header generated by Beremiz c_ext plugin */\n")
-        
-        return [(Gen_Cfile_path,"")],""
+        location_str = "_".join(map(lambda x:str(x), current_location))
+        res = []
+        for CFile in self.CFileBaseNames():
+            Gen_Cfile_path = os.path.join(buildpath, location_str + "_" + os.path.splitext(CFile)[0] + "_CFile.c" )
+            f = open(Gen_Cfile_path,'w')
+            f.write("/* Header generated by Beremiz c_ext plugin */\n")
+            f.write("#include \"iec_std_lib.h\"\n")
+            f.write("#define EXT_C_INIT __init_%s\n"%location_str)
+            f.write("#define EXT_C_CLEANUP __init_%s\n"%location_str)
+            f.write("#define EXT_C_PUBLISH __init_%s\n"%location_str)
+            f.write("#define EXT_C_RETRIVE __init_%s\n"%location_str)
+            for loc in locations:
+                f.write(loc["IEC_TYPE"]+" "+loc["NAME"]+";\n")
+            f.write("/* End of header generated by Beremiz c_ext plugin */\n\n")
+            src_file = open(self.CFileName(CFile),'r')
+            f.write(src_file.read())
+            src_file.close()
+            f.close()
+            res.append((Gen_Cfile_path,str(self.C_Extension.getCFLAGS())))
+        return res,str(self.C_Extension.getLDFLAGS())
     
 class RootClass:
 
