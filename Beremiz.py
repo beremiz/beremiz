@@ -65,7 +65,7 @@ class LogPseudoFile:
 
     def LogCommand(self, Command, sz_limit = 100):
 
-        import os, popen2, fcntl, select, signal
+        import os, popen2, select, signal
         
         child = popen2.Popen3(Command, 1) # capture stdout and stderr from command
         child.tochild.close()             # don't need to talk to child
@@ -323,6 +323,7 @@ class Beremiz(wx.Frame):
         if projectOpen:
             self.PluginRoot.LoadProject(projectOpen, self.Log)
             self.RefreshPluginTree()
+            self.PluginTree.SelectItem(self.PluginTree.GetRoot())
         
         self.RefreshPluginParams()
         self.RefreshButtons()
@@ -361,20 +362,21 @@ class Beremiz(wx.Frame):
         last_selected = self.GetSelectedPluginName()
         self.GenerateTreeBranch(root, infos, True)
         self.PluginTree.Expand(self.PluginTree.GetRootItem())
-        self.SelectedPluginByName(root,last_selected)
+        self.SelectedPluginByName(root, last_selected)
         self.RefreshPluginParams()
 
     def SelectedPluginByName(self, root, name):
-        toks = name.split('.',1)
-        item, root_cookie = self.PluginTree.GetFirstChild(root)
-        while item.IsOk():
-            if self.PluginTree.GetPyData(item) == toks[0]:
-                if len(toks)>1:
-                    return self.SelectedPluginByName(item, toks[1])
-                else:
-                    self.PluginTree.SelectItem(item, True)
-                    return True
-            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+        if name:
+            toks = name.split('.',1)
+            item, root_cookie = self.PluginTree.GetFirstChild(root)
+            while item.IsOk():
+                if self.PluginTree.GetPyData(item) == toks[0]:
+                    if len(toks)>1:
+                        return self.SelectedPluginByName(item, toks[1])
+                    else:
+                        self.PluginTree.SelectItem(item, True)
+                        return True
+                item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
         return False
 
     def GenerateTreeBranch(self, root, infos, first = False):
@@ -712,6 +714,7 @@ class Beremiz(wx.Frame):
                 result = self.PluginRoot.LoadProject(projectpath, self.Log)
                 if not result:
                     self.RefreshPluginTree()
+                    self.PluginTree.SelectItem(self.PluginTree.GetRootItem())
                     self.RefreshButtons()
                     self.RefreshMainMenu()
                 else:
