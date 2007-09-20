@@ -28,9 +28,13 @@ import wx
 
 import types
 
+import time
+
 import os, re, platform, sys, time, traceback, getopt, commands
 
 from plugger import PluginsRoot
+
+from wxPopen import wxPopen3
 
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
@@ -63,40 +67,39 @@ class LogPseudoFile:
     def isatty(self):
         return false
 
-    def LogCommand(self, Command, sz_limit = 100):
-
-        import os, popen2, select, signal
+    def LogCommand(self, Command, sz_limit = 100, no_stdout=False):
+        self.errlen = 0
+        self.exitcode = None
+        self.outdata = ""
+        self.errdata = ""
         
-        child = popen2.Popen3(Command, 1) # capture stdout and stderr from command
-        child.tochild.close()             # don't need to talk to child
-        outfile = child.fromchild 
-        outfd = outfile.fileno()
-        errfile = child.childerr
-        errfd = errfile.fileno()
-        outdata = errdata = ''
-        outeof = erreof = 0
-        outlen = errlen = 0
-        while 1:
-            ready = select.select([outfd,errfd],[],[]) # wait for input
-            if outfd in ready[0]:
-                outchunk = outfile.readline()
-                if outchunk == '': outeof = 1 
-                else : outlen += 1
-                outdata += outchunk
-                self.write(outchunk)
-            if errfd in ready[0]:
-                errchunk = errfile.readline()
-                if errchunk == '': erreof = 1 
-                else : errlen += 1
-                errdata += errchunk
-                self.write_warning(errchunk)
-            if outeof and erreof : break
-            if errlen > sz_limit or outlen > sz_limit : 
-                os.kill(child.pid, signal.SIGTERM)
-                self.write_error("Output size reached limit -- killed\n")
-                break
-        err = child.wait()
-        return (err, outdata, errdata)
+        def output(v):
+            self.outdata += v
+            if not no_stdout:
+                self.write(v)
+
+        def errors(v):
+            self.errdata += v
+            self.errlen += 1
+            if self.errlen > sz_limit:
+                p.kill()
+            self.write_warning(v)
+
+        def fin(pid,ecode):
+            self.exitcode = ecode
+            if self.exitcode != 0:
+                self.write("pid %d exited with status %d\n"%(pid,ecode))
+
+        def spin(p):
+            while not p.finished:
+                wx.Yield()
+                time.sleep(0.01)
+
+        input = []
+        p = wxPopen3(Command, input, output, errors, fin, self.output)
+        spin(p)
+
+        return (self.exitcode, self.outdata, self.errdata)
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZSECONDSPLITTER, ID_BEREMIZLEFTPANEL, 
