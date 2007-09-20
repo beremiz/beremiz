@@ -73,8 +73,8 @@ class _Cfile:
         lst = self.CFileBaseNames()
 
         dlg = wx.MultiChoiceDialog( self.GetPlugRoot().AppFrame, 
-                                   "Pick some fruit from\nthis list",
-                                   "wx.MultiChoiceDialog", lst)
+                                   "Choose C files to Edit :",
+                                   "Edit", lst)
 
         if (dlg.ShowModal() == wx.ID_OK):
             selections = dlg.GetSelections()
@@ -85,7 +85,7 @@ class _Cfile:
                         self.SaveCView(sel)
                         self._Views.pop(sel)
                         evt.Skip()
-                    New_View = wx.Frame(self.GetPlugRoot().AppFrame,-1)
+                    New_View = wx.Frame(self.GetPlugRoot().AppFrame,-1,selected)
                     New_View.Bind(wx.EVT_CLOSE, _onclose)
                     ed = CppSTC(New_View, wx.NewId())
                     ed.SetText(open(self.CFileName(selected)).read())

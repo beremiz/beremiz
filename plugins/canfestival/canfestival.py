@@ -1,6 +1,8 @@
 import os, sys
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
+CanfestivalIncludePath = os.path.join(base_folder, "CanFestival-3", "include")
+CanfestivalLibPath = os.path.join(base_folder, "CanFestival-3", "src")
 
 from nodelist import NodeList
 from nodemanager import NodeManager
@@ -83,7 +85,7 @@ class _NodeListPlug(NodeList):
         if res :
             raise Exception, res
         
-        return [(Gen_OD_path,"")],""
+        return [(Gen_OD_path,"-I"+CanfestivalIncludePath)],""
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -99,6 +101,6 @@ class RootClass:
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
     
     def PlugGenerate_C(self, buildpath, locations, logger):
-        return [],""
+        return [],"-L"+CanfestivalLibPath+" -lcanfestival"
 
 

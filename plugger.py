@@ -160,12 +160,29 @@ class PlugTemplate:
     def _Generate_C(self, buildpath, locations, logger):
         # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS
         PlugCFilesAndCFLAGS, PlugLDFLAGS = self.PlugGenerate_C(buildpath, locations, logger)
+        # if some files heve been generated put them in the list with their location
+        if PlugCFilesAndCFLAGS:
+            LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), PlugCFilesAndCFLAGS)]
+        else:
+            LocationCFilesAndCFLAGS = []
+
+        # plugin asks some some LDFLAGS
+        if PlugLDFLAGS:
+            # LDFLAGS can be either string
+            if type(PlugLDFLAGS)==type(str()):
+                LDFLAGS=[PlugLDFLAGS]
+            #or list of strings
+            elif type(PlugLDFLAGS)==type(list()):
+                LDFLAGS=PlugLDFLAGS[:]
+        else:
+            LDFLAGS=[]
+        
         # recurse through all childs, and stack their results
-        for PlugChild in self.IterChilds():
+        for PlugChild in self.IECSortedChilds():
             new_location = PlugChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth=len(new_location)
-            CFilesAndCFLAGS, LDFLAGS = \
+            _LocationCFilesAndCFLAGS, _LDFLAGS = \
                 PlugChild._Generate_C(
                     #keep the same path
                     buildpath,
@@ -174,10 +191,10 @@ class PlugTemplate:
                     #propagete logger
                     logger)
             # stack the result
-            PlugCFilesAndCFLAGS += CFilesAndCFLAGS
-            PlugLDFLAGS += LDFLAGS
+            LocationCFilesAndCFLAGS += _LocationCFilesAndCFLAGS
+            LDFLAGS += _LDFLAGS
         
-        return PlugCFilesAndCFLAGS,PlugLDFLAGS
+        return LocationCFilesAndCFLAGS,LDFLAGS
 
     def BlockTypesFactory(self):
         return []
@@ -190,25 +207,40 @@ class PlugTemplate:
             for PlugInstance in PluggedChilds:
                    yield PlugInstance
     
-    def _GetChildBySomething(self, sep, something, matching):
-        toks = matching.split(sep,1)
+    def IECSortedChilds(self):
+        # reorder childs by IEC_channels
+        ordered = [(chld.BaseParams.getIEC_Channel(),chld) for chld in self.IterChilds()]
+        if ordered:
+            ordered.sort()
+            return zip(*ordered)[1]
+        else:
+            return []
+    
+    def _GetChildBySomething(self, something, toks):
         for PlugInstance in self.IterChilds():
             # if match component of the name
             if getattr(PlugInstance.BaseParams, something) == toks[0]:
                 # if Name have other components
-                if len(toks) == 2:
+                if len(toks) >= 2:
                     # Recurse in order to find the latest object
-                    return PlugInstance._GetChildBySomething( sep, something, toks[1])
+                    return PlugInstance._GetChildBySomething( something, toks[1:])
                 # No sub name -> found
                 return PlugInstance
         # Not found
         return None
 
     def GetChildByName(self, Name):
-        return self._GetChildBySomething('.',"Name", Name)
+        if Name:
+            toks = Name.split('.')
+            return self._GetChildBySomething("Name", toks)
+        else:
+            return self
 
     def GetChildByIECLocation(self, Location):
-        return self._GetChildBySomething('_',"IEC_Channel", Name)
+        if Location:
+            return self._GetChildBySomething("IEC_Channel", Location)
+        else:
+            return self
     
     def GetCurrentLocation(self):
         """
@@ -216,19 +248,27 @@ class PlugTemplate:
         """
         return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(),)
 
+    def GetCurrentName(self):
+        """
+        @return:  String "ParentParentName.ParentName.Name"
+        """
+        return  self.PlugParent._GetCurrentName() + self.BaseParams.getName()
+
+    def _GetCurrentName(self):
+        """
+        @return:  String "ParentParentName.ParentName.Name."
+        """
+        return  self.PlugParent._GetCurrentName() + self.BaseParams.getName() + "."
+
     def GetPlugRoot(self):
         return self.PlugParent.GetPlugRoot()
 
     def GetPlugInfos(self):
         childs = []
         # reorder childs by IEC_channels
-        ordered = [(chld.BaseParams.getIEC_Channel(),chld) for chld in self.IterChilds()]
-        if ordered:
-            ordered.sort()
-            for child in zip(*ordered)[1]:
-                childs.append(child.GetPlugInfos())
+        for child in self.IECSortedChilds():
+            childs.append(child.GetPlugInfos())
         return {"name" : "%d-%s"%(self.BaseParams.getIEC_Channel(),self.BaseParams.getName()), "type" : self.BaseParams.getName(), "values" : childs}
-    
     
     def FindNewName(self, DesiredName, logger):
         """
@@ -464,13 +504,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:simpleType name="Win32Compiler">
-        <xsd:restriction base="xsd:string">
-          <xsd:enumeration value="Cygwin"/>
-          <xsd:enumeration value="MinGW"/>
-          <xsd:enumeration value="VC++"/>
-        </xsd:restriction>
-      </xsd:simpleType>
       <xsd:element name="BeremizRoot">
         <xsd:complexType>
           <xsd:element name="TargetType">
@@ -478,39 +511,35 @@ class PluginsRoot(PlugTemplate, PLCControler):
               <xsd:choice>
                 <xsd:element name="Win32">
                   <xsd:complexType>
-                    <xsd:attribute name="ToolChain" type="ppx:Win32Compiler" use="required" default="MinGW"/>
                     <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
                   </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="Linux">
                   <xsd:complexType>
-                    <xsd:attribute name="Compiler" type="xsd:string" use="required" default="gcc"/>
                     <xsd:attribute name="Nice" type="xsd:integer" use="required"/>
                   </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="Xenomai">
                   <xsd:complexType>
                     <xsd:attribute name="xeno-config" type="xsd:string" use="required" default="/usr/xenomai/"/>
-                    <xsd:attribute name="Compiler" type="xsd:string" use="required"/>
                     <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
                   </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="RTAI">
                   <xsd:complexType>
-                    <xsd:attribute name="xeno-config" type="xsd:string" use="required"/>
-                    <xsd:attribute name="Compiler" type="xsd:string" use="required"/>
+                    <xsd:attribute name="rtai-config" type="xsd:string" use="required"/>
                     <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
                   </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="Library">
                   <xsd:complexType>
                     <xsd:attribute name="Dynamic" type="xsd:boolean" use="required" default="true"/>
-                    <xsd:attribute name="Compiler" type="xsd:string" use="required"/>
                   </xsd:complexType>
                 </xsd:element>
               </xsd:choice>
             </xsd:complexType>
           </xsd:element>
+          <xsd:attribute name="Compiler" type="xsd:string" use="required" default="gcc"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -548,7 +577,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def GetCurrentLocation(self):
         return ()
+
+    def GetCurrentName(self):
+        return ""
     
+    def _GetCurrentName(self):
+        return ""
+
     def GetProjectPath(self):
         return self.ProjectPath
     
@@ -645,7 +680,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        return [(C_file_name, "") for C_file_name in self.PLCGeneratedCFiles ] , ""
+        return [(C_file_name, "-I"+ieclib_path) for C_file_name in self.PLCGeneratedCFiles ] , ""
     
     def _getBuildPath(self):
         return os.path.join(self.ProjectPath, "build")
@@ -674,10 +709,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
             # Failed !
             logger.write_error("Error : ST/IL/SFC code generator returned %d\n"%result)
             return False
-        logger.write("Compiling ST Program in to C Program...\n")
+        logger.write("Compiling IEC Program in to C code...\n")
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
-        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, buildpath))
+        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, buildpath), no_stdout=True)
         if status:
             # Failed !
             logger.write_error("Error : IEC to C compiler returned %d\n"%status)
@@ -734,11 +769,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             logger.write_error("SoftPLC code generation failed !\n")
             return False
 
-        logger.write("SoftPLC code generation successfull\n")
+        #logger.write("SoftPLC code generation successfull\n")
+
+        logger.write("Generating plugins code ...\n")
         
         # Generate C code and compilation params from plugin hierarchy
         try:
-            CFilesAndCFLAGS, LDFLAGS = self._Generate_C(
+            LocationCFilesAndCFLAGS,LDFLAGS = self._Generate_C(
                 buildpath, 
                 self.PLCGeneratedLocatedVars,
                 logger)
@@ -747,14 +784,29 @@ class PluginsRoot(PlugTemplate, PLCControler):
             logger.write_error(str(msg))
             return False
 
-        logger.write("Plugins code generation successfull\n")
 
+        #debug
+        #import pprint
+        #pp = pprint.PrettyPrinter(indent=4)
+        #logger.write("LocationCFilesAndCFLAGS :\n"+pp.pformat(LocationCFilesAndCFLAGS)+"\n")
+        #logger.write("LDFLAGS :\n"+pp.pformat(LDFLAGS)+"\n")
+        
         # Compile the resulting code into object files.
-        for CFile, CFLAG in CFilesAndCFLAGS:
-            logger.write(str((CFile,CFLAG)))
+        compiler = self.BeremizRoot.getCompiler()
+        for Location, CFilesAndCFLAGS in LocationCFilesAndCFLAGS:
+            if Location:
+                logger.write("Plugin : " + self.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
+            else:
+                logger.write("PLC :\n")
+                
+            for CFile, CFLAGS in CFilesAndCFLAGS:
+                bn = os.path.basename(CFile)
+                logger.write("   [CC]  "+bn+" -> "+os.path.splitext(bn)[0]+".o\n")
+                objectfilename = os.path.splitext(bn)[0]+".o"
+                status, result, err_result = logger.LogCommand("%s -c %s -o %s %s"%(compiler, CFile, objectfilename, CFLAGS))
+        
         
         # Link object files into something that can be executed on target
-        logger.write(LDFLAGS)
 
     def _showIECcode(self, logger):
         plc_file = self._getIECcodepath()
@@ -793,4 +845,3 @@ class PluginsRoot(PlugTemplate, PLCControler):
         logger.write_error("Not impl\n")
 
     PluginMethods = [("EditPLC",_EditPLC), ("Build",_build), ("Clean",_Clean), ("Run",_Run), ("Show IEC code",_showIECcode)]
-    

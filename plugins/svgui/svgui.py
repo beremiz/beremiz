@@ -182,7 +182,8 @@ class RootClass(DEFControler):
         text += "IMPLEMENT_APP_NO_MAIN(SVGViewApp);\n"
         text += "IMPLEMENT_WX_THEME_SUPPORT;\n"
         text += "SVGViewApp *myapp = NULL;\n"
-        text += "pthread_t wxMainLoop,automate;\n"
+        text += "pthread_t wxMainLoop;\n"
+#        text += "pthread_t wxMainLoop,automate;\n"
         text += "int myargc = 0;\n"
         text += "char** myargv = NULL;\n\n"
         
@@ -207,17 +208,18 @@ class RootClass(DEFControler):
 #        text += "  return args;\n"
 #        text += "}\n\n"
         
-        if (self.SVGUIRootElement):
-            width = self.SVGUIRootElement.GetBBox().GetWidth()
-            height = self.SVGUIRootElement.GetBBox().GetHeight()
-        else :
-            width = 250
-            height = 350
+#        if (self.SVGUIRootElement):
+#            width = self.SVGUIRootElement.GetBBox().GetWidth()
+#            height = self.SVGUIRootElement.GetBBox().GetHeight()
+#        else :
+#            width = 250
+#            height = 350
         text += "bool SVGViewApp::OnInit()\n{\n"
         text += "  #ifndef __WXMSW__\n"
         text += "    setlocale(LC_NUMERIC, \"C\");\n"
         text += "  #endif\n"
-        text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxSize((int)"+str(width)+", (int)"+str(height)+"));\n"
+        #text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxSize((int)"+str(width)+", (int)"+str(height)+"));\n"
+        text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxDefaultSize);\n"
         text += "  myapp = this;\n"
 #        text += "  pthread_create(&automate, NULL, SimulAutomate, NULL);\n"
         text += "  return true;\n"
@@ -227,7 +229,9 @@ class RootClass(DEFControler):
         text += "  myargc = argc;\n"
         text += "  myargv = argv;\n"
         text += "  pthread_create(&wxMainLoop, NULL, InitWxEntry, NULL);\n"
-        text += "  pause();\n"
+        text += "}\n\n"
+
+        text += "int __cleanup_"+self.BusNumber+"()\n{\n"
         text += "}\n\n"
 
         text += "int __retrive_"+self.BusNumber+"()\n{\n"
@@ -321,6 +325,7 @@ class RootClass(DEFControler):
                 if info["name"] == "id":
                     element_id = str(info["value"])
             text += "    out_state_"+element_id+" = UNCHANGED;\n"
+            text += "    in_state_"+element_id+" = UNCHANGED;\n"
         text += "}\n\n"
         return text
     
@@ -753,8 +758,9 @@ class RootClass(DEFControler):
     def PlugGenerate_C(self, buildpath, locations, logger):
         current_location = self.GetCurrentLocation()
         self.BusNumber = "_".join(map(lambda x:str(x), current_location))
-        self.GenerateProgram(buildpath)
-        Gen_C_file = os.path.join(buildpath, "program.cpp" )
+        progname = self.BusNumber + "_SVGUI"
+        self.GenerateProgram(buildpath, progname)
+        Gen_C_file = os.path.join(buildpath, progname+".cpp" )
         return [(Gen_C_file,"")],""
     
     def BlockTypesFactory(self):
@@ -770,7 +776,7 @@ class RootClass(DEFControler):
                 for num, variable in enumerate(block.inputVariables.getVariable()):
                     connections = variable.connectionPointIn.getConnections()
                     if connections and len(connections) == 1:
-                        parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num)
+                        parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num+1)
                         value = generator.ComputeFBDExpression(body, connections[0])
                         generator.Program += ("  %s := %s;\n"%(parameter, generator.ExtractModifier(variable, value)))
                 generator.ComputedBlocks[name] = True
@@ -779,7 +785,7 @@ class RootClass(DEFControler):
                 for num, variable in enumerate(block.outputVariables.getVariable()):
                     blockPointx, blockPointy = variable.connectionPointOut.getRelPosition()
                     if block.getX() + blockPointx == connectionPoint.getX() and block.getY() + blockPointy == connectionPoint.getY():
-                        return "%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num)
+                        return "%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num+1)
                 raise ValueError, "No output variable found"
             else:
                 return None
@@ -792,9 +798,9 @@ class RootClass(DEFControler):
             current_location = ".".join(map(str, self.GetCurrentLocation()))
             variables = []
             for num, (input_name, input_type, input_modifier) in enumerate(block_infos["inputs"]):
-                variables.append((input_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num), None))
+                variables.append((input_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num+1), None))
             for num, (output_name, output_type, output_modifier) in enumerate(block_infos["outputs"]):
-                variables.append((output_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num), None))
+                variables.append((output_type, None, "%sI%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num+1), None))
             return variables
 
         return [{"name" : "SVGUI function blocks", "list" :
