@@ -1,13 +1,13 @@
 import os, sys
 base_folder = os.path.split(sys.path[0])[0]
-sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
-CanfestivalIncludePath = os.path.join(base_folder, "CanFestival-3", "include")
-CanfestivalLibPath = os.path.join(base_folder, "CanFestival-3", "src")
+CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
+sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 
 from nodelist import NodeList
 from nodemanager import NodeManager
 import config_utils, gen_cfile
 from networkedit import networkedit
+import canfestival_config
 
 class _NetworkEdit(networkedit):
     " Overload some of CanFestival Network Editor methods "
@@ -78,14 +78,14 @@ class _NodeListPlug(NodeList):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(lambda x:str(x), current_location))
-        Gen_OD_path = os.path.join(buildpath, prefix + "_OD.c" )
+        Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         master = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs())
         res = gen_cfile.GenerateFile(Gen_OD_path, master)
         if res :
             raise Exception, res
         
-        return [(Gen_OD_path,"-I"+CanfestivalIncludePath)],""
+        return [(Gen_OD_path,canfestival_config.getCFLAGS(CanFestivalPath))],""
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -101,6 +101,6 @@ class RootClass:
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
     
     def PlugGenerate_C(self, buildpath, locations, logger):
-        return [],"-L"+CanfestivalLibPath+" -lcanfestival"
+        return [],canfestival_config.getLDFLAGS(CanFestivalPath)
 
 

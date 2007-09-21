@@ -88,7 +88,8 @@ class LogPseudoFile:
         def fin(pid,ecode):
             self.exitcode = ecode
             if self.exitcode != 0:
-                self.write("pid %d exited with status %d\n"%(pid,ecode))
+                self.write(Command + "\n")
+                self.write_warning("exited with status %d (pid %d)\n"%(ecode,pid))
 
         def spin(p):
             while not p.finished:
@@ -326,7 +327,7 @@ class Beremiz(wx.Frame):
         if projectOpen:
             self.PluginRoot.LoadProject(projectOpen, self.Log)
             self.RefreshPluginTree()
-            self.PluginTree.SelectItem(self.PluginTree.GetRoot())
+            self.PluginTree.SelectItem(self.PluginTree.GetRootItem())
         
         self.RefreshPluginParams()
         self.RefreshButtons()

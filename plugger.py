@@ -485,6 +485,7 @@ from PLCControler import PLCControler
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS, AddPluginBlockList, ClearPluginTypes, PluginTypes
+import runtime
 import re
 
 class PluginsRoot(PlugTemplate, PLCControler):
@@ -680,7 +681,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        return [(C_file_name, "-I"+ieclib_path) for C_file_name in self.PLCGeneratedCFiles ] , ""
+        return [(C_file_name, self.CFLAGS) for C_file_name in self.PLCGeneratedCFiles ] , ""
     
     def _getBuildPath(self):
         return os.path.join(self.ProjectPath, "build")
@@ -749,6 +750,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PLCGeneratedCFiles = C_files
         # Keep track of generated located variables for later use by self._Generate_C
         self.PLCGeneratedLocatedVars = locations
+        # compute CFLAGS for plc
+        self.CFLAGS = "-I"+ieclib_path
         return True
 
     def _build(self, logger):
@@ -791,6 +794,32 @@ class PluginsRoot(PlugTemplate, PLCControler):
         #logger.write("LocationCFilesAndCFLAGS :\n"+pp.pformat(LocationCFilesAndCFLAGS)+"\n")
         #logger.write("LDFLAGS :\n"+pp.pformat(LDFLAGS)+"\n")
         
+        # Generate main
+        locstrs = map(lambda x:"_".join(map(str,x)), [loc for loc in zip(*LocationCFilesAndCFLAGS)[0] if loc])
+        plc_main = runtime.code("plc_common_main") % {
+            "calls_prototypes":"".join(["""
+void __init%(s)s();
+void __cleanup%(s)s();
+void __retrive%(s)s();
+void __publish%(s)s();"""%{'s':locstr} for locstr in locstrs]),
+            "retrive_calls":"".join(["""
+    __retrive%(s)s();"""%{'s':locstr} for locstr in locstrs]),
+            "publish_calls":"".join(["""
+    __publish%(s)s();"""%{'s':locstr} for locstr in locstrs]),
+            "init_calls":"".join(["""
+    __init%(s)s();"""%{'s':locstr} for locstr in locstrs]),
+            "cleanup_calls":"".join(["""
+    __cleanup%(s)s();"""%{'s':locstr} for locstr in locstrs])}
+        target_name = self.BeremizRoot.TargetType.content["name"]
+        plc_main += runtime.code("plc_%s_main"%target_name)
+
+        main_path = os.path.join(buildpath, "main.c" )
+        f = open(main_path,'w')
+        f.write(plc_main)
+        f.close()
+        # First element is necessarely root
+        LocationCFilesAndCFLAGS[0][1].insert(0,(main_path, self.CFLAGS))
+        
         # Compile the resulting code into object files.
         compiler = self.BeremizRoot.getCompiler()
         for Location, CFilesAndCFLAGS in LocationCFilesAndCFLAGS:
@@ -802,8 +831,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 bn = os.path.basename(CFile)
                 logger.write("   [CC]  "+bn+" -> "+os.path.splitext(bn)[0]+".o\n")
-                objectfilename = os.path.splitext(bn)[0]+".o"
+                objectfilename = os.path.splitext(CFile)[0]+".o"
                 status, result, err_result = logger.LogCommand("%s -c %s -o %s %s"%(compiler, CFile, objectfilename, CFLAGS))
+                if status != 0:
+                    logger.write_error("Build failed\n")
+                    return False
+                    
+        return True
         
         
         # Link object files into something that can be executed on target

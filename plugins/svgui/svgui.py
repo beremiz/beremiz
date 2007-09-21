@@ -758,7 +758,7 @@ class RootClass(DEFControler):
     def PlugGenerate_C(self, buildpath, locations, logger):
         current_location = self.GetCurrentLocation()
         self.BusNumber = "_".join(map(lambda x:str(x), current_location))
-        progname = self.BusNumber + "_SVGUI"
+        progname = "SVGUI_" + self.BusNumber
         self.GenerateProgram(buildpath, progname)
         Gen_C_file = os.path.join(buildpath, progname+".cpp" )
         return [(Gen_C_file,"")],""
