@@ -4,7 +4,7 @@
 #include <signal.h>
 
 
-void timer_notify(sigval_t val)
+void PLC_timer_notify(sigval_t val)
 {
     struct timespec CURRENT_TIME;
     clock_gettime(CLOCK_REALTIME, &CURRENT_TIME);
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
     sigev.sigev_value.sival_int = 0;
     sigev.sigev_notify = SIGEV_THREAD;
     sigev.sigev_notify_attributes = NULL;
-    sigev.sigev_notify_function = timer_notify;
+    sigev.sigev_notify_function = PLC_timer_notify;
     timerValues.it_value.tv_sec = tv_sec;
     timerValues.it_value.tv_nsec = tv_nsec;
     timerValues.it_interval.tv_sec = tv_sec;
