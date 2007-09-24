@@ -146,13 +146,13 @@ class _Cfile:
             src_file.close()
             f.close()
             res.append((Gen_Cfile_path,str(self.C_Extension.getCFLAGS())))
-        return res,str(self.C_Extension.getLDFLAGS())
+        return res,str(self.C_Extension.getLDFLAGS()),True
     
 class RootClass:
 
     PlugChildsTypes = [("C_File",_Cfile)]
     
     def PlugGenerate_C(self, buildpath, locations, logger):
-        return [],""
+        return [],"",False
 
 

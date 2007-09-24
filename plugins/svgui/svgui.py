@@ -761,7 +761,7 @@ class RootClass(DEFControler):
         progname = "SVGUI_" + self.BusNumber
         self.GenerateProgram(buildpath, progname)
         Gen_C_file = os.path.join(buildpath, progname+".cpp" )
-        return [(Gen_C_file,"")],""
+        return [(Gen_C_file,"")],"",True
     
     def BlockTypesFactory(self):
         def generate_svgui_block(generator, block, body, link):
