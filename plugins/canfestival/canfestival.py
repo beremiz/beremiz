@@ -22,6 +22,8 @@ class _NodeListPlug(NodeList):
       <xsd:element name="CanFestivalNode">
         <xsd:complexType>
           <xsd:attribute name="CAN_Device" type="xsd:string" use="required" />
+          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required" />
+          <xsd:attribute name="NodeId" type="xsd:string" use="required" />
           <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="required" default="true"/>
         </xsd:complexType>
       </xsd:element>
@@ -81,11 +83,12 @@ class _NodeListPlug(NodeList):
         Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         master = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs())
+        master.SetNodeName("OD_%s"%prefix)
         res = gen_cfile.GenerateFile(Gen_OD_path, master)
         if res :
             raise Exception, res
         
-        return [(Gen_OD_path,canfestival_config.getCFLAGS(CanFestivalPath))],""
+        return [(Gen_OD_path,canfestival_config.getCFLAGS(CanFestivalPath))],"",False
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -101,6 +104,35 @@ class RootClass:
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
     
     def PlugGenerate_C(self, buildpath, locations, logger):
-        return [],canfestival_config.getLDFLAGS(CanFestivalPath)
+        
+        format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
+                       "candriver" : self.CanFestivalInstance.getCAN_Driver(),
+                       "nodes_includes" : "",
+                       "board_decls" : "",
+                       "nodes_init" : "",
+                       "nodes_open" : "",
+                       "nodes_close" : ""}
+        for child in self.IECSortedChilds():
+            childlocstr = "_".join(map(str,child.GetCurrentLocation()))
+            nodename = "OD_%s" % childlocstr
+
+            format_dict["nodes_includes"] += '#include "%s.h"\n'%(nodename)
+            format_dict["board_decls"] += 'BOARD_DECL(%s, "%s", "%s")\n'%(
+                   nodename,
+                   child.CanFestivalNode.getCAN_Device(),
+                   child.CanFestivalNode.getCAN_Baudrate())
+            format_dict["nodes_init"] += 'NODE_INIT(%s, %s)\n'%(
+                   nodename,
+                   child.CanFestivalNode.getNodeId())
+            format_dict["nodes_open"] += 'NODE_OPEN(%s)\n'%(nodename)
+            format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n'%(nodename)
+        filename = os.path.join(os.path.split(__file__)[0],"cf_runtime.c")
+        cf_main = open(filename).read() % format_dict
+        cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c"%format_dict)
+        f = open(cf_main_path,'w')
+        f.write(cf_main)
+        f.close()
+        
+        return [(cf_main_path, canfestival_config.getCFLAGS(CanFestivalPath))],canfestival_config.getLDFLAGS(CanFestivalPath), True
 
 
