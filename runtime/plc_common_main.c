@@ -26,21 +26,35 @@ IEC_TIME __CURRENT_TIME;
 
 static int tick = 0;
 
+/*
+ * Prototypes of funcions exported by plugins 
+ **/
 %(calls_prototypes)s
 
+/*
+ * Retrive input variables, run PLC and publish output variables 
+ **/
 void __run()
 {
     %(retrive_calls)s
+    
     config_run__(tick++);
+    
     %(publish_calls)s
 }
 
+/*
+ * Initialize variables according to PLC's defalut values,
+ * and then init plugins with that values  
+ **/
 void __init()
 {
     config_init__();
     %(init_calls)s
 }
-
+/*
+ * Calls plugin cleanup proc.
+ **/
 void __cleanup()
 {
     %(cleanup_calls)s
