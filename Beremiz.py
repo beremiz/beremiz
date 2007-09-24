@@ -806,7 +806,13 @@ class Beremiz(wx.Frame):
         dialog.Destroy()
     
     def DeletePlugin(self):
-        pass
+        dialog = wx.MessageDialog(self,"Really delete plugin ?", "Remove plugin",wx.YES_NO|wx.NO_DEFAULT)
+        if dialog.ShowModal() == wx.ID_YES:
+            plugin = self.GetSelectedPlugin()
+            plugin.PlugRemove()
+            del plugin
+            self.RefreshPluginTree()
+        dialog.Destroy()
 
 #-------------------------------------------------------------------------------
 #                               Exception Handler
