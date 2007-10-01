@@ -28,25 +28,25 @@ int main(int argc,char **argv)
         return 1;
     }
 
-    __init();
+    if( __init(argc,argv) == 0 ){
 
-    // Set a timer to wait for 10 seconds.
-    if (!SetWaitableTimer(hTimer, &liDueTime, common_ticktime__, NULL, NULL, 0))
-    {
-        printf("SetWaitableTimer failed (%d)\n", GetLastError());
-        return 2;
-    }
-
-    while(1){
-    // Wait for the timer.
-        if (WaitForSingleObject(hTimer, INFINITE) != WAIT_OBJECT_0)
+        // Set a timer
+        if (!SetWaitableTimer(hTimer, &liDueTime, common_ticktime__, NULL, NULL, 0))
         {
-            printf("WaitForSingleObject failed (%d)\n", GetLastError());
-            break;
+            printf("SetWaitableTimer failed (%d)\n", GetLastError());
+            return 2;
         }
-        timer_notify();
+    
+        while(1){
+        // Wait for the timer.
+            if (WaitForSingleObject(hTimer, INFINITE) != WAIT_OBJECT_0)
+            {
+                printf("WaitForSingleObject failed (%d)\n", GetLastError());
+                break;
+            }
+            timer_notify();
+        }
     }
-
     __cleanup();
 
     return 0;

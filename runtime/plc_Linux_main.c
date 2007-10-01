@@ -37,19 +37,18 @@ int main(int argc,char **argv)
     timerValues.it_interval.tv_sec = tv_sec;
     timerValues.it_interval.tv_nsec = tv_nsec;
 
-    __init();
-
-    timer_create (CLOCK_REALTIME, &sigev, &timer);
-    timer_settime (timer, 0, &timerValues, NULL);
-    
-    /* install signal handler for manual break */
-    signal(SIGTERM, catch_signal);
-    signal(SIGINT, catch_signal);
-    
-    pause();
-    
-    timer_delete (timer);
-
+    if(  __init(argc,argv) == 0 ){
+        timer_create (CLOCK_REALTIME, &sigev, &timer);
+        timer_settime (timer, 0, &timerValues, NULL);
+        
+        /* install signal handler for manual break */
+        signal(SIGTERM, catch_signal);
+        signal(SIGINT, catch_signal);
+        
+        pause();
+        
+        timer_delete (timer);
+    }
     __cleanup();
     
     return 0;

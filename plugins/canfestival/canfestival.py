@@ -82,8 +82,7 @@ class _NodeListPlug(NodeList):
         prefix = "_".join(map(lambda x:str(x), current_location))
         Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
-        master = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs())
-        master.SetNodeName("OD_%s"%prefix)
+        master = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
         res = gen_cfile.GenerateFile(Gen_OD_path, master)
         if res :
             raise Exception, res
@@ -111,7 +110,9 @@ class RootClass:
                        "board_decls" : "",
                        "nodes_init" : "",
                        "nodes_open" : "",
-                       "nodes_close" : ""}
+                       "nodes_close" : "",
+                       "nodes_send_sync" : "",
+                       "nodes_proceed_sync" : ""}
         for child in self.IECSortedChilds():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
@@ -121,11 +122,13 @@ class RootClass:
                    nodename,
                    child.CanFestivalNode.getCAN_Device(),
                    child.CanFestivalNode.getCAN_Baudrate())
-            format_dict["nodes_init"] += 'NODE_INIT(%s, %s)\n'%(
+            format_dict["nodes_init"] += 'NODE_INIT(%s, %s)\n    '%(
                    nodename,
                    child.CanFestivalNode.getNodeId())
-            format_dict["nodes_open"] += 'NODE_OPEN(%s)\n'%(nodename)
-            format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n'%(nodename)
+            format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
+            format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
+            format_dict["nodes_send_sync"] += 'NODE_SEND_SYNC(%s)\n    '%(nodename)
+            format_dict["nodes_proceed_sync"] += 'NODE_PROCEED_SYNC(%s)\n    '%(nodename)
         filename = os.path.join(os.path.split(__file__)[0],"cf_runtime.c")
         cf_main = open(filename).read() % format_dict
         cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c"%format_dict)

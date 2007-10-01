@@ -25,6 +25,7 @@ void config_init__(void);
 IEC_TIME __CURRENT_TIME;
 
 static int tick = 0;
+static int init_level=0;
 
 /*
  * Prototypes of funcions exported by plugins 
@@ -47,10 +48,12 @@ void __run()
  * Initialize variables according to PLC's defalut values,
  * and then init plugins with that values  
  **/
-void __init()
+int __init(int argc,char **argv)
 {
+    int res;
     config_init__();
     %(init_calls)s
+    return 0;
 }
 /*
  * Calls plugin cleanup proc.
