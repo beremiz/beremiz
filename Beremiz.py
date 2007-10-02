@@ -391,7 +391,7 @@ class Beremiz(wx.Frame):
         for values in infos["values"]:
             if not item.IsOk():
                 item = self.PluginTree.AppendItem(root, "")
-                if wx.VERSION < (2, 7, 0):
+                if wx.Platform != '__WXMSW__':
                     item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
             self.GenerateTreeBranch(item, values)
             item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
