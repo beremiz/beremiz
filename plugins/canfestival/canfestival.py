@@ -108,6 +108,7 @@ class RootClass:
                        "candriver" : self.CanFestivalInstance.getCAN_Driver(),
                        "nodes_includes" : "",
                        "board_decls" : "",
+                       "nodes_declare" : "",
                        "nodes_init" : "",
                        "nodes_open" : "",
                        "nodes_close" : "",
@@ -122,6 +123,9 @@ class RootClass:
                    nodename,
                    child.CanFestivalNode.getCAN_Device(),
                    child.CanFestivalNode.getCAN_Baudrate())
+            format_dict["nodes_declare"] += 'NODE_DECLARE(%s, %s)\n    '%(
+                   nodename,
+                   child.CanFestivalNode.getNodeId())
             format_dict["nodes_init"] += 'NODE_INIT(%s, %s)\n    '%(
                    nodename,
                    child.CanFestivalNode.getNodeId())

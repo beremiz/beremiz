@@ -493,8 +493,8 @@ class ConciseDCFGenerator:
                 self.MasterNode.SetEntry(current_idx, 0x02, 0xFF)
             
             # Add some subentries to PDO mapping if there is not enough
-            if len(pdo_infos["mapping"]) > 2:
-                self.Manager.AddSubentriesToCurrent(current_idx + 0x200, len(pdo_infos["mapping"]) - 2, self.MasterNode)
+            if len(pdo_infos["mapping"]) > 1:
+                self.Manager.AddSubentriesToCurrent(current_idx + 0x200, len(pdo_infos["mapping"]) - 1, self.MasterNode)
             
             # Generate MasterNode's PDO mapping
             for subindex, variable in enumerate(pdo_infos["mapping"]):

@@ -11,6 +11,25 @@
 static int init_level=0;
 extern int common_ticktime__;
 
+
+static void ConfigureSlaveNode(CO_Data* d, UNS8 nodeId)
+{
+    /* Put the master in operational mode */
+    setState(d, Operational);
+      
+    /* Ask slave node to go in operational mode */
+    masterSendNMTstateChange (d, 0, NMT_Start_Node);
+}
+
+#define NODE_DECLARE(nodename, nodeid)\
+void nodename##_preOperational()\
+{\
+    ConfigureSlaveNode(&nodename##_Data, nodeid);\
+}\
+
+%(nodes_declare)s
+
+
 #define NODE_INIT(nodename, nodeid) \
     /* Artificially force sync state to 1 so that it is not started */\
     nodename##_Data.CurrentCommunicationState.csSYNC = -1;\
@@ -47,6 +66,7 @@ void __cleanup_%(locstr)s()
 }
 
 #define NODE_OPEN(nodename)\
+    nodename##_Data.preOperational = nodename##_preOperational;\
     if(!canOpen(&nodename##Board,&nodename##_Data)){\
         printf("Cannot open " #nodename " Board (%%s,%%s)\n",nodename##Board.busname, nodename##Board.baudrate);\
         return -1;\
