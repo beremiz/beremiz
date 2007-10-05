@@ -364,14 +364,14 @@ class ConciseDCFGenerator:
                 # If a PDO mappable
                 if subentry_infos and subentry_infos["pdo"]:
                     if sizelocation == "X" and len(loc) > 3:
-                        numbit = loc[4]
+                        numbit = loc[3]
                     elif sizelocation != "X" and len(loc) > 3:
                         raise ValueError, "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
                     else:
                         numbit = None
                     
                     entryinfos = node.GetSubentryInfos(index, subindex)
-                    if entryinfos["type"] != COlocationtype:
+                    if location["IEC_TYPE"] != "BOOL" and entryinfos["type"] != COlocationtype:
                         raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, entryinfos["type"] , name)
                     
                     typeinfos = node.GetEntryInfos(COlocationtype)
@@ -431,7 +431,7 @@ class ConciseDCFGenerator:
         #-------------------------------------------------------------------------------
         
         for nodeid, locations in self.LocationsNotMapped.items():
-            node = nodelist.SlaveNodes[nodeid]["Node"]
+            node = self.NodeList.SlaveNodes[nodeid]["Node"]
             
             # Initialize number of params and data to add to node DCF
             nbparams = 0
