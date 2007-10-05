@@ -665,10 +665,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
-        ClearPluginTypes()
-        AddPluginBlockList(self.BlockTypesFactory())
-        for child in self.IterChilds():
-            AddPluginBlockList(child.BlockTypesFactory())
+        if getattr(self, "PluggedChilds", None) is not None:
+            ClearPluginTypes()
+            AddPluginBlockList(self.BlockTypesFactory())
+            for child in self.IterChilds():
+                AddPluginBlockList(child.BlockTypesFactory())
+        if self.PLCEditor is not None:
+            self.PLCEditor.RefreshEditor()
     
     def PlugPath(self, PlugName=None):
         return self.ProjectPath
@@ -871,7 +874,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         new_dialog.Show()
 
     def _EditPLC(self, logger):
-        if not self.PLCEditor:
+        if self.PLCEditor is None:
             self.RefreshPluginsBlockLists()
             def _onclose():
                 self.PLCEditor = None

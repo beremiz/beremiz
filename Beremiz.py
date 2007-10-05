@@ -260,6 +260,7 @@ class Beremiz(wx.Frame):
         self._init_utils()
         self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.menuBar1)
+        self.Bind(wx.EVT_ACTIVATE, self.OnFrameActivated)
         
         self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
               name='MainSplitter', parent=self, point=wx.Point(0, 0),
@@ -332,7 +333,11 @@ class Beremiz(wx.Frame):
         self.RefreshPluginParams()
         self.RefreshButtons()
         self.RefreshMainMenu()
-        
+    
+    def OnFrameActivated(self, event):
+        if not event.GetActive():
+            self.PluginRoot.RefreshPluginsBlockLists()
+    
     def RefreshButtons(self):
         if self.PluginRoot.HasProjectOpened():
             self.PluginChilds.Enable(True)
@@ -493,6 +498,7 @@ class Beremiz(wx.Frame):
                         button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, method), id=id)
                         boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
             self.ParamsPanelMainSizer.Layout()
+            self.ParamsPanel.SetClientSize(self.ParamsPanel.GetClientSize())
             
             # Refresh PluginChilds
             self.PluginChilds.Clear()
@@ -575,10 +581,7 @@ class Beremiz(wx.Frame):
                 
     def RefreshSizerElement(self, sizer, elements, path, clean = True):
         if clean:
-            if wx.VERSION >= (2, 7, 0):
-                sizer.Clear(True)
-            else:
-                self.ClearSizer(sizer)
+            sizer.Clear(True)
         first = True
         for element_infos in elements:
             if path:
