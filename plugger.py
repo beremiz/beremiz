@@ -474,7 +474,7 @@ def _GetClassFunction(name):
 ####################################################################################
 ####################################################################################
 
-iec2cc_path = os.path.join(base_folder, "matiec", "iec2cc")
+iec2c_path = os.path.join(base_folder, "matiec", "iec2c")
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 # import for project creation timestamping
@@ -698,7 +698,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def _Generate_SoftPLC(self, logger):
         """
-        Generate SoftPLC ST/IL/SFC code out of PLCOpenEditor controller, and compile it with IEC2CC
+        Generate SoftPLC ST/IL/SFC code out of PLCOpenEditor controller, and compile it with IEC2C
         @param buildpath: path where files should be created
         @param logger: the log pseudo file
         """
@@ -719,7 +719,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         logger.write("Compiling IEC Program in to C code...\n")
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
-        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2cc_path, plc_file, ieclib_path, buildpath), no_stdout=True)
+        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2c_path, plc_file, ieclib_path, buildpath), no_stdout=True)
         if status:
             # Failed !
             logger.write_error("Error : IEC to C compiler returned %d\n"%status)
@@ -732,12 +732,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
         logger.write("Extracting Located Variables...\n")
-        # IEC2CC compiler generate a list of located variables : LOCATED_VARIABLES.h
+        # IEC2C compiler generate a list of located variables : LOCATED_VARIABLES.h
         location_file = open(os.path.join(buildpath,"LOCATED_VARIABLES.h"))
         locations = []
         # each line of LOCATED_VARIABLES.h declares a located variable
         lines = [line.strip() for line in location_file.readlines()]
-        # This regular expression parses the lines genereated by IEC2CC
+        # This regular expression parses the lines genereated by IEC2C
         LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWD]))?,(?P<LOC>[,0-9]*)\)")
         for line in lines:
             # If line match RE, 
