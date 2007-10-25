@@ -896,7 +896,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         return True
         
         
-        # Link object files into something that can be executed on target
+    # Link object files into something that can be executed on target
 
     def _showIECcode(self, logger):
         plc_file = self._getIECcodepath()
@@ -914,6 +914,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def _editIECrawcode(self, logger):
         new_dialog = wx.Frame(None)
+        
+        buildpath = self._getBuildPath()
+        # Eventually create build dir
+        if not os.path.exists(buildpath):
+            os.mkdir(buildpath)
+        
         controler = MiniTextControler(self._getIECrawcodepath())
         ST_viewer = TextViewer(new_dialog, None, controler)
         #ST_viewer.Enable(False)
