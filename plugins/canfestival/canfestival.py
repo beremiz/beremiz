@@ -50,7 +50,12 @@ class _NodeListPlug(NodeList):
             self._View._onsave = _onsave
             self._View.Show()
 
-    PluginMethods = [("NetworkEdit",_OpenView)]
+    PluginMethods = [
+        {"bitmap" : os.path.join("images", "NetworkEdit.png"),
+         "name" : "Edit network", 
+         "tooltip" : "Edit CanOpen Network with NetworkEdit",
+         "method" : _OpenView}
+    ]
 
     def OnPlugClose(self):
         if self._View:

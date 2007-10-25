@@ -25,6 +25,7 @@
 __version__ = "$Revision$"
 
 import wx
+import wx.lib.buttons
 
 import types
 
@@ -283,15 +284,17 @@ class Beremiz(wx.Frame):
               name='PluginChilds', parent=self.LeftPanel, pos=wx.Point(0, 0),
               size=wx.Size(-1, -1), style=0)
         
-        self.AddButton = wx.Button(id=ID_BEREMIZADDBUTTON, label='Add',
+        self.AddButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Add.png')),
               name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
-              size=wx.Size(48, 30), style=0)
+              size=wx.Size(32, 32), style=wx.NO_BORDER)
+        self.AddButton.SetToolTipString("Add a plugin of the type selected")
         self.AddButton.Bind(wx.EVT_BUTTON, self.OnAddButton,
               id=ID_BEREMIZADDBUTTON)
         
-        self.DeleteButton = wx.Button(id=ID_BEREMIZDELETEBUTTON, label='Delete',
+        self.DeleteButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Delete.png')),
               name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
-              size=wx.Size(64, 30), style=0)
+              size=wx.Size(32, 32), style=wx.NO_BORDER)
+        self.DeleteButton.SetToolTipString("Delete the current selected plugin")
         self.DeleteButton.Bind(wx.EVT_BUTTON, self.OnDeleteButton,
               id=ID_BEREMIZDELETEBUTTON)
         
@@ -479,23 +482,37 @@ class Beremiz(wx.Frame):
             if len(self.PluginRoot.PluginMethods) > 0:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
-                for name, method in self.PluginRoot.PluginMethods:
-                    if method:
+                for plugin_infos in self.PluginRoot.PluginMethods:
+                    if "method" in plugin_infos:
                         id = wx.NewId()
-                        button = wx.Button(id=id, label=name, name=name, parent=self.ParamsPanel, 
-                            pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
-                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(self.PluginRoot, method), id=id)
+                        if "bitmap" in plugin_infos:
+                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.ParamsPanel,
+                                bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
+                                name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                        else:
+                            button = wx.Button(id=id, label=plugin_infos["name"], 
+                                name=plugin_infos["name"], parent=self.ParamsPanel, 
+                                pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
+                        button.SetToolTipString(plugin_infos["tooltip"])
+                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(self.PluginRoot, plugin_infos["method"]), id=id)
                         boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
             self.RefreshSizerElement(self.ParamsPanelMainSizer, infos, None, False)
             if plugin != self.PluginRoot and len(plugin.PluginMethods) > 0:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
-                for name, method in plugin.PluginMethods:
-                    if method:
+                for plugin_infos in plugin.PluginMethods:
+                    if "method" in plugin_infos:
                         id = wx.NewId()
-                        button = wx.Button(id=id, label=name, name=name, parent=self.ParamsPanel, 
-                            pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
-                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, method), id=id)
+                        if "bitmap" in plugin_infos:
+                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.ParamsPanel, 
+                                bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
+                                name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                        else:
+                            button = wx.Button(id=id, label=plugin_infos["name"], 
+                                name=plugin_infos["name"], parent=self.ParamsPanel, 
+                                pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
+                        button.SetToolTipString(plugin_infos["tooltip"])
+                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_infos["method"]), id=id)
                         boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
             self.ParamsPanelMainSizer.Layout()
             self.ParamsPanel.SetClientSize(self.ParamsPanel.GetClientSize())
@@ -594,6 +611,12 @@ class Beremiz(wx.Frame):
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 else:
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                bitmappath = os.path.join("images", "%s.png"%element_infos["name"])
+                if os.path.isfile(bitmappath):
+                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=wx.Bitmap(bitmappath),
+                        name="%s_bitmap"%element_infos["name"], parent=self.ParamsPanel,
+                        pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
+                    boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
@@ -626,6 +649,12 @@ class Beremiz(wx.Frame):
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 else:
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                bitmappath = os.path.join("images", "%s.png"%element_infos["name"])
+                if os.path.isfile(bitmappath):
+                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=wx.Bitmap(bitmappath),
+                        name="%s_bitmap"%element_infos["name"], parent=self.ParamsPanel,
+                        pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
+                    boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
@@ -659,6 +688,12 @@ class Beremiz(wx.Frame):
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 else:
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                bitmappath = os.path.join("images", "%s.png"%element_infos["name"])
+                if os.path.isfile(bitmappath):
+                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=wx.Bitmap(bitmappath),
+                        name="%s_bitmap"%element_infos["name"], parent=self.ParamsPanel,
+                        pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
+                    boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)

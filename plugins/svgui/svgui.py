@@ -119,7 +119,20 @@ class RootClass(DEFControler):
             self._View.OpenSVGFile(filepath)
             self._View.Show()
 
-    PluginMethods = [("HMI Editor",_OpenView), ("Import SVG",_OpenView), ("Import DEF",_OpenView)]
+    PluginMethods = [
+        {"bitmap" : os.path.join("images","HMIEditor.png"),
+         "name" : "HMI Editor",
+         "tooltip" : "HMI Editor",
+         "method" : _OpenView},
+        {"bitmap" : os.path.join("images","ImportSVG.png"),
+         "name" : "Import SVG",
+         "tooltip" : "Import SVG",
+         "method" : _OpenView},
+        {"bitmap" : os.path.join("images","ImportDEF.png"),
+         "name" : "Import DEF",
+         "tooltip" : "Import DEF",
+         "method" : _OpenView},
+    ]
     
     def OnPlugSave(self):
         self.SaveXMLFile()

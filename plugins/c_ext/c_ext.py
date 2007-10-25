@@ -100,7 +100,14 @@ class _Cfile:
         dlg.Destroy()
         
 
-    PluginMethods = [("Edit C File",_OpenView), ("Import C File",_OpenView)]
+    PluginMethods = [
+        {"name" : "Edit C File", 
+         "tooltip" : "Edit C File",
+         "method" : _OpenView},
+        {"name" : "Import C File", 
+         "tooltip" : "Import C File",
+         "method" : _OpenView}
+    ]
 
     def SaveCView(self, name):
         f = open(self.CFileName(name),'w')
