@@ -232,6 +232,14 @@ class Beremiz(wx.Frame):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(0)
     
+    def _init_coll_RightGridSizer_Items(self, parent):
+        parent.AddSizer(self.MenuSizer, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.SecondSplitter, 0, border=0, flag=wx.GROW)
+        
+    def _init_coll_RightGridSizer_Growables(self, parent):
+        parent.AddGrowableCol(0)
+        parent.AddGrowableRow(1)
+    
     def _init_coll_ButtonGridSizer_Items(self, parent):
         parent.AddWindow(self.PluginChilds, 0, border=0, flag=wx.GROW)
         parent.AddWindow(self.AddButton, 0, border=0, flag=0)
@@ -243,15 +251,20 @@ class Beremiz(wx.Frame):
         
     def _init_sizers(self):
         self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
+        self.RightGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.ButtonGridSizer = wx.FlexGridSizer(cols=3, hgap=2, rows=1, vgap=2)
+        self.MenuSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.ParamsPanelMainSizer = wx.BoxSizer(wx.VERTICAL)
         
         self._init_coll_LeftGridSizer_Growables(self.LeftGridSizer)
         self._init_coll_LeftGridSizer_Items(self.LeftGridSizer)
+        self._init_coll_RightGridSizer_Growables(self.RightGridSizer)
+        self._init_coll_RightGridSizer_Items(self.RightGridSizer)
         self._init_coll_ButtonGridSizer_Growables(self.ButtonGridSizer)
         self._init_coll_ButtonGridSizer_Items(self.ButtonGridSizer)
         
         self.LeftPanel.SetSizer(self.LeftGridSizer)
+        self.RightPanel.SetSizer(self.RightGridSizer)
         self.ParamsPanel.SetSizer(self.ParamsPanelMainSizer)
     
     def _init_ctrls(self, prnt):
@@ -298,13 +311,17 @@ class Beremiz(wx.Frame):
         self.DeleteButton.Bind(wx.EVT_BUTTON, self.OnDeleteButton,
               id=ID_BEREMIZDELETEBUTTON)
         
+        self.RightPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
+              name='RightPanel', parent=self.MainSplitter, pos=wx.Point(0, 0),
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        
         self.SecondSplitter = wx.SplitterWindow(id=ID_BEREMIZSECONDSPLITTER,
-              name='SecondSplitter', parent=self.MainSplitter, point=wx.Point(0, 0),
+              name='SecondSplitter', parent=self.RightPanel, point=wx.Point(0, 0),
               size=wx.Size(0, 0), style=wx.SP_3D)
         self.SecondSplitter.SetNeedUpdating(True)
         self.SecondSplitter.SetMinimumPaneSize(1)
         
-        self.MainSplitter.SplitVertically(self.LeftPanel, self.SecondSplitter,
+        self.MainSplitter.SplitVertically(self.LeftPanel, self.RightPanel,
               300)
         
         self.ParamsPanel = wx.ScrolledWindow(id=ID_BEREMIZPARAMSPANEL, 
@@ -476,44 +493,48 @@ class Beremiz(wx.Frame):
             self.ParamsPanel.Show()
             infos = plugin.GetParamsAttributes()
             if wx.VERSION >= (2, 7, 0):
+                self.MenuSizer.Clear(True)
                 self.ParamsPanelMainSizer.Clear(True)
             else:
+                self.ClearSizer(self.MenuSizer)
                 self.ClearSizer(self.ParamsPanelMainSizer)
             if len(self.PluginRoot.PluginMethods) > 0:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                self.MenuSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 for plugin_infos in self.PluginRoot.PluginMethods:
                     if "method" in plugin_infos:
                         id = wx.NewId()
                         if "bitmap" in plugin_infos:
-                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.ParamsPanel,
+                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel,
                                 bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
                                 name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                         else:
                             button = wx.Button(id=id, label=plugin_infos["name"], 
-                                name=plugin_infos["name"], parent=self.ParamsPanel, 
+                                name=plugin_infos["name"], parent=self.RightPanel, 
                                 pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
                         button.SetToolTipString(plugin_infos["tooltip"])
                         button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(self.PluginRoot, plugin_infos["method"]), id=id)
                         boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
+                self.RightGridSizer.Layout()
             self.RefreshSizerElement(self.ParamsPanelMainSizer, infos, None, False)
             if plugin != self.PluginRoot and len(plugin.PluginMethods) > 0:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.ParamsPanelMainSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+                self.MenuSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 for plugin_infos in plugin.PluginMethods:
                     if "method" in plugin_infos:
                         id = wx.NewId()
                         if "bitmap" in plugin_infos:
-                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.ParamsPanel, 
+                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel, 
                                 bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
                                 name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                         else:
                             button = wx.Button(id=id, label=plugin_infos["name"], 
-                                name=plugin_infos["name"], parent=self.ParamsPanel, 
+                                name=plugin_infos["name"], parent=self.RightPanel, 
                                 pos=wx.Point(0, 0), style=wx.BU_EXACTFIT)
                         button.SetToolTipString(plugin_infos["tooltip"])
                         button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_infos["method"]), id=id)
                         boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
+                self.RightGridSizer.Layout()
             self.ParamsPanelMainSizer.Layout()
             self.ParamsPanel.SetClientSize(self.ParamsPanel.GetClientSize())
             
@@ -620,7 +641,7 @@ class Beremiz(wx.Frame):
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-                boxsizer.AddWindow(statictext, 0, border=0, flag=0)
+                boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
                 id = wx.NewId()
                 choicectrl = wx.Choice(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)
@@ -658,7 +679,7 @@ class Beremiz(wx.Frame):
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-                boxsizer.AddWindow(statictext, 0, border=0, flag=wx.TOP|wx.LEFT|wx.BOTTOM)
+                boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
                 id = wx.NewId()
                 scmin = -(2**31)
                 scmax = 2**31-1
@@ -697,7 +718,7 @@ class Beremiz(wx.Frame):
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=self.ParamsPanel, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-                boxsizer.AddWindow(statictext, 0, border=0, flag=0)
+                boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
                 id = wx.NewId()
                 if element_infos["type"] == "boolean":
                     checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=self.ParamsPanel, 
