@@ -297,16 +297,27 @@ class Beremiz(wx.Frame):
               name='PluginChilds', parent=self.LeftPanel, pos=wx.Point(0, 0),
               size=wx.Size(-1, -1), style=0)
         
-        self.AddButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Add.png')),
-              name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
-              size=wx.Size(32, 32), style=wx.NO_BORDER)
+        if wx.VERSION < (2, 8, 0):
+            self.AddButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Add.png')),
+                  name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
+                  size=wx.Size(32, 32), style=wx.NO_BORDER)
+        else:
+            self.AddButton = wx.lib.buttons.GenBitmapButton(id=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Add.png')),
+                  name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
+                  size=wx.Size(32, 32), style=wx.NO_BORDER)
+
         self.AddButton.SetToolTipString("Add a plugin of the type selected")
         self.AddButton.Bind(wx.EVT_BUTTON, self.OnAddButton,
               id=ID_BEREMIZADDBUTTON)
         
-        self.DeleteButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Delete.png')),
-              name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
-              size=wx.Size(32, 32), style=wx.NO_BORDER)
+        if wx.VERSION < (2, 8, 0):
+            self.DeleteButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Delete.png')),
+                  name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
+                  size=wx.Size(32, 32), style=wx.NO_BORDER)
+        else:
+            self.DeleteButton = wx.lib.buttons.GenBitmapButton(id=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Delete.png')),
+                  name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
+                  size=wx.Size(32, 32), style=wx.NO_BORDER)
         self.DeleteButton.SetToolTipString("Delete the current selected plugin")
         self.DeleteButton.Bind(wx.EVT_BUTTON, self.OnDeleteButton,
               id=ID_BEREMIZDELETEBUTTON)
@@ -505,9 +516,15 @@ class Beremiz(wx.Frame):
                     if "method" in plugin_infos:
                         id = wx.NewId()
                         if "bitmap" in plugin_infos:
-                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel,
-                                bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
-                                name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                            if wx.VERSION < (2, 8, 0):
+                                button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel,
+                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
+                                    name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                            else:
+                                button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=self.RightPanel,
+                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
+                                    name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                            
                         else:
                             button = wx.Button(id=id, label=plugin_infos["name"], 
                                 name=plugin_infos["name"], parent=self.RightPanel, 
@@ -524,9 +541,14 @@ class Beremiz(wx.Frame):
                     if "method" in plugin_infos:
                         id = wx.NewId()
                         if "bitmap" in plugin_infos:
-                            button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel, 
-                                bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
-                                name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                            if wx.VERSION < (2, 8, 0):
+                                button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel, 
+                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
+                                    name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                            else:
+                                button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=self.RightPanel, 
+                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
+                                    name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                         else:
                             button = wx.Button(id=id, label=plugin_infos["name"], 
                                 name=plugin_infos["name"], parent=self.RightPanel, 
