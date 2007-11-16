@@ -29,16 +29,24 @@
 import time
 from StringIO import StringIO
 
-from wxPython.wx import *
+import wx
 
 class ProcessRunnerMix:
+
+    if wx.VERSION < (2, 6, 0):
+        def Bind(self, event, function, id = None):
+            if id is not None:
+                event(self, id, function)
+            else:
+                event(self, function)
+    
     def __init__(self, input, handler=None):
         if handler is None:
             handler = self
         self.handler = handler    
-        EVT_IDLE(handler, self.OnIdle)
-        EVT_END_PROCESS(handler, -1, self.OnProcessEnded)
-
+        handler.Bind(wx.EVT_MENU, self.OnIdle)
+        handler.Bind(wx.EVT_END_PROCESS, self.OnProcessEnded, id=-1)
+        
         input.reverse() # so we can pop
         self.input = input
         
@@ -55,21 +63,21 @@ class ProcessRunnerMix:
         self.outputFunc = None
         self.errorsFunc = None
         self.finishedFunc = None
-        self.finished = false
-        self.responded = false
+        self.finished = False
+        self.responded = False
 
     def execute(self, cmd):
-        self.process = wxProcess(self.handler)
+        self.process = wx.Process(self.handler)
         self.process.Redirect()
 
-        self.pid = wxExecute(cmd, wxEXEC_NOHIDE, self.process)
+        self.pid = wx.Execute(cmd, wx.EXEC_NOHIDE, self.process)
 
         self.inputStream = self.process.GetOutputStream()
         self.errorStream = self.process.GetErrorStream()
         self.outputStream = self.process.GetInputStream()
 
         #self.OnIdle()
-        wxWakeUpIdle()
+        wx.WakeUpIdle()
     
     def setCallbacks(self, output, errors, finished):
         self.outputFunc = output
@@ -85,14 +93,14 @@ class ProcessRunnerMix:
     def kill(self):
         if self.process is not None:
             self.process.CloseOutput()
-            if wxProcess_Kill(self.pid, wxSIGTERM) != wxKILL_OK:
-                wxProcess_Kill(self.pid, wxSIGKILL)
+            if wx.Process_Kill(self.pid, wx.SIGTERM) != wx.KILL_OK:
+                wx.Process_Kill(self.pid, wx.SIGKILL)
             self.process = None
 
     def updateStream(self, stream, data):
         if stream and stream.CanRead():
             if not self.responded:
-                self.responded = true
+                self.responded = True
             text = stream.read()
             data.append(text)
             return text
@@ -115,12 +123,12 @@ class ProcessRunnerMix:
             self.updateInpStream(self.inputStream, self.input)
             e = self.updateErrStream(self.errorStream, self.errors)
             if e is not None and self.errorsFunc is not None:
-                wxCallAfter(self.errorsFunc, e)
+                wx.CallAfter(self.errorsFunc, e)
             o = self.updateOutStream(self.outputStream, self.output)
             if o is not None and self.outputFunc is not None:
-                wxCallAfter(self.outputFunc, o)
+                wx.CallAfter(self.outputFunc, o)
 
-            #wxWakeUpIdle()
+            #wx.WakeUpIdle()
             #time.sleep(0.001)
 
     def OnProcessEnded(self, event):
@@ -130,17 +138,17 @@ class ProcessRunnerMix:
             self.process.Destroy()
             self.process = None
 
-        self.finished = true
+        self.finished = True
         
         # XXX doesn't work ???
-        #self.handler.Disconnect(-1, wxEVT_IDLE)
+        #self.handler.Disconnect(-1, wx.EVT_IDLE)
         
         if self.finishedFunc:
-            wxCallAfter(self.finishedFunc, pid, exitcode)
+            wx.CallAfter(self.finishedFunc, pid, exitcode)
 
-class ProcessRunner(wxEvtHandler, ProcessRunnerMix):
+class ProcessRunner(wx.EvtHandler, ProcessRunnerMix):
     def __init__(self, input):
-        wxEvtHandler.__init__(self)
+        wx.EvtHandler.__init__(self)
         ProcessRunnerMix.__init__(self, input)
 
 def wxPopen3(cmd, input, output, errors, finish, handler=None):
