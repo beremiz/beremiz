@@ -815,7 +815,6 @@ class Beremiz(wx.Frame):
     
     def OnCloseProjectMenu(self, event):
         self.PLCManager = None
-        self.CurrentProjectPath = projectpath
         self.RefreshButtons()
         self.RefreshMainMenu()
         event.Skip()
