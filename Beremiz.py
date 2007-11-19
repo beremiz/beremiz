@@ -234,7 +234,10 @@ class Beremiz(wx.Frame):
     
     def _init_coll_RightGridSizer_Items(self, parent):
         parent.AddSizer(self.MenuSizer, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.SecondSplitter, 0, border=0, flag=wx.GROW)
+        if wx.VERSION < (2, 8, 0):
+            parent.AddWindow(self.SecondSplitter, 0, border=0, flag=wx.GROW)
+        else:
+            parent.AddWindow(self.ParamsPanel, 0, border=0, flag=wx.GROW)
         
     def _init_coll_RightGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
@@ -276,15 +279,25 @@ class Beremiz(wx.Frame):
         self.SetMenuBar(self.menuBar1)
         self.Bind(wx.EVT_ACTIVATE, self.OnFrameActivated)
         
-        self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
-              name='MainSplitter', parent=self, point=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.SP_3D)
-        self.MainSplitter.SetNeedUpdating(True)
-        self.MainSplitter.SetMinimumPaneSize(1)
+        if wx.VERSION >= (2, 8, 0):
+            self.AUIManager = wx.aui.AuiManager(self)
+            self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
         
-        self.LeftPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
-              name='LeftPanel', parent=self.MainSplitter, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        if wx.VERSION < (2, 8, 0):
+            self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
+                  name='MainSplitter', parent=self, point=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.SP_3D)
+            self.MainSplitter.SetNeedUpdating(True)
+            self.MainSplitter.SetMinimumPaneSize(1)
+        
+            self.LeftPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
+                  name='LeftPanel', parent=self.MainSplitter, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        else:
+            self.LeftPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
+                  name='LeftPanel', parent=self, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+            self.AUIManager.AddPane(self.LeftPanel, wx.aui.AuiPaneInfo().Caption("Plugin Tree").Left().Layer(1).BestSize(wx.Size(300, 500)).CloseButton(False))
         
         self.PluginTree = wx.TreeCtrl(id=ID_BEREMIZPLUGINTREE,
               name='PluginTree', parent=self.LeftPanel, pos=wx.Point(0, 0),
@@ -322,30 +335,48 @@ class Beremiz(wx.Frame):
         self.DeleteButton.Bind(wx.EVT_BUTTON, self.OnDeleteButton,
               id=ID_BEREMIZDELETEBUTTON)
         
-        self.RightPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
-              name='RightPanel', parent=self.MainSplitter, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        if wx.VERSION < (2, 8, 0):
+            self.RightPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
+                  name='RightPanel', parent=self.MainSplitter, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
-        self.SecondSplitter = wx.SplitterWindow(id=ID_BEREMIZSECONDSPLITTER,
-              name='SecondSplitter', parent=self.RightPanel, point=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.SP_3D)
-        self.SecondSplitter.SetNeedUpdating(True)
-        self.SecondSplitter.SetMinimumPaneSize(1)
+            self.SecondSplitter = wx.SplitterWindow(id=ID_BEREMIZSECONDSPLITTER,
+                  name='SecondSplitter', parent=self.RightPanel, point=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.SP_3D)
+            self.SecondSplitter.SetNeedUpdating(True)
+            self.SecondSplitter.SetMinimumPaneSize(1)
         
-        self.MainSplitter.SplitVertically(self.LeftPanel, self.RightPanel,
-              300)
+            self.MainSplitter.SplitVertically(self.LeftPanel, self.RightPanel,
+                  300)
         
-        self.ParamsPanel = wx.ScrolledWindow(id=ID_BEREMIZPARAMSPANEL, 
-              name='ParamsPanel', parent=self.SecondSplitter, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
-        self.ParamsPanel.SetScrollbars(10, 10, 0, 0, 0, 0)
+            self.ParamsPanel = wx.ScrolledWindow(id=ID_BEREMIZPARAMSPANEL, 
+                  name='ParamsPanel', parent=self.SecondSplitter, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+            self.ParamsPanel.SetScrollbars(10, 10, 0, 0, 0, 0)
         
-        self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
-              name='LogConsole', parent=self.SecondSplitter, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
+            self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
+                  name='LogConsole', parent=self.SecondSplitter, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
+            
+            self.SecondSplitter.SplitHorizontally(self.ParamsPanel, self.LogConsole,
+                  -250)
+        else:
+            self.RightPanel = wx.Panel(id=ID_BEREMIZLEFTPANEL, 
+                  name='RightPanel', parent=self, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+            self.AUIManager.AddPane(self.RightPanel, wx.aui.AuiPaneInfo().CenterPane())
         
-        self.SecondSplitter.SplitHorizontally(self.ParamsPanel, self.LogConsole,
-              -250)
+            self.ParamsPanel = wx.ScrolledWindow(id=ID_BEREMIZPARAMSPANEL, 
+                  name='ParamsPanel', parent=self.RightPanel, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+            self.ParamsPanel.SetScrollbars(10, 10, 0, 0, 0, 0)
+            
+            self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
+                  name='LogConsole', parent=self, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
+            self.AUIManager.AddPane(self.LogConsole, wx.aui.AuiPaneInfo().Caption("Log Console").Bottom().Layer(0).BestSize(wx.Size(800, 200)).CloseButton(False))
+        
+            self.AUIManager.Update()
         
         self._init_sizers()
 
