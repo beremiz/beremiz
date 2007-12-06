@@ -37,6 +37,8 @@ from plugger import PluginsRoot
 
 from wxPopen import wxPopen3
 
+CWD = os.path.split(os.path.realpath(__file__))[0]
+
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output = None):
@@ -311,11 +313,11 @@ class Beremiz(wx.Frame):
               size=wx.Size(-1, -1), style=0)
         
         if wx.VERSION < (2, 8, 0):
-            self.AddButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Add.png')),
+            self.AddButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Add.png')),
                   name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
                   size=wx.Size(32, 32), style=wx.NO_BORDER)
         else:
-            self.AddButton = wx.lib.buttons.GenBitmapButton(id=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Add.png')),
+            self.AddButton = wx.lib.buttons.GenBitmapButton(id=ID_BEREMIZADDBUTTON, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Add.png')),
                   name='AddBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
                   size=wx.Size(32, 32), style=wx.NO_BORDER)
 
@@ -324,11 +326,11 @@ class Beremiz(wx.Frame):
               id=ID_BEREMIZADDBUTTON)
         
         if wx.VERSION < (2, 8, 0):
-            self.DeleteButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Delete.png')),
+            self.DeleteButton = wx.lib.buttons.GenBitmapButton(ID=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Delete.png')),
                   name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
                   size=wx.Size(32, 32), style=wx.NO_BORDER)
         else:
-            self.DeleteButton = wx.lib.buttons.GenBitmapButton(id=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join('images', 'Delete.png')),
+            self.DeleteButton = wx.lib.buttons.GenBitmapButton(id=ID_BEREMIZDELETEBUTTON, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Delete.png')),
                   name='DeleteBusButton', parent=self.LeftPanel, pos=wx.Point(0, 0),
                   size=wx.Size(32, 32), style=wx.NO_BORDER)
         self.DeleteButton.SetToolTipString("Delete the current selected plugin")
@@ -376,9 +378,10 @@ class Beremiz(wx.Frame):
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
             self.AUIManager.AddPane(self.LogConsole, wx.aui.AuiPaneInfo().Caption("Log Console").Bottom().Layer(0).BestSize(wx.Size(800, 200)).CloseButton(False))
         
-            self.AUIManager.Update()
-        
         self._init_sizers()
+        
+        if wx.VERSION >= (2, 8, 0):
+            self.AUIManager.Update()
 
     def __init__(self, parent, projectOpen):
         self._init_ctrls(parent)
@@ -549,11 +552,11 @@ class Beremiz(wx.Frame):
                         if "bitmap" in plugin_infos:
                             if wx.VERSION < (2, 8, 0):
                                 button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel,
-                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
+                                    bitmap=wx.Bitmap(os.path.join(CWD, plugin_infos["bitmap"])), label=plugin_infos["name"],
                                     name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                             else:
                                 button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=self.RightPanel,
-                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"],
+                                    bitmap=wx.Bitmap(os.path.join(CWD, plugin_infos["bitmap"])), label=plugin_infos["name"],
                                     name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                             
                         else:
@@ -574,11 +577,11 @@ class Beremiz(wx.Frame):
                         if "bitmap" in plugin_infos:
                             if wx.VERSION < (2, 8, 0):
                                 button = wx.lib.buttons.GenBitmapTextButton(ID=id, parent=self.RightPanel, 
-                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
+                                    bitmap=wx.Bitmap(os.path.join(CWD, plugin_infos["bitmap"])), label=plugin_infos["name"], 
                                     name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                             else:
                                 button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=self.RightPanel, 
-                                    bitmap=wx.Bitmap(plugin_infos["bitmap"]), label=plugin_infos["name"], 
+                                    bitmap=wx.Bitmap(os.path.join(CWD, plugin_infos["bitmap"])), label=plugin_infos["name"], 
                                     name=plugin_infos["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
                         else:
                             button = wx.Button(id=id, label=plugin_infos["name"], 
@@ -917,7 +920,7 @@ class Beremiz(wx.Frame):
         dialog.Destroy()
     
     def DeletePlugin(self):
-        dialog = wx.MessageDialog(self,"Really delete plugin ?", "Remove plugin",wx.YES_NO|wx.NO_DEFAULT)
+        dialog = wx.MessageDialog(self, "Really delete plugin ?", "Remove plugin", wx.YES_NO|wx.NO_DEFAULT)
         if dialog.ShowModal() == wx.ID_YES:
             plugin = self.GetSelectedPlugin()
             plugin.PlugRemove()
