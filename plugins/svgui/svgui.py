@@ -777,7 +777,7 @@ class RootClass(DEFControler):
         return [(Gen_C_file,"")],"",True
     
     def BlockTypesFactory(self):
-        def generate_svgui_block(generator, block, body, link):
+        def generate_svgui_block(generator, block, body, link, order=False):
             name = block.getInstanceName()
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
@@ -785,14 +785,14 @@ class RootClass(DEFControler):
             type = block.getTypeName()
             block_infos = self.GetBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
-            if not generator.ComputedBlocks.get(name, False):
+            if not generator.ComputedBlocks.get(name, False) and not order:
                 for num, variable in enumerate(block.inputVariables.getVariable()):
                     connections = variable.connectionPointIn.getConnections()
                     if connections and len(connections) == 1:
                         parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num+1)
                         value = generator.ComputeFBDExpression(body, connections[0])
                         generator.Program += ("  %s := %s;\n"%(parameter, generator.ExtractModifier(variable, value)))
-                generator.ComputedBlocks[name] = True
+                generator.ComputedBlocks[block] = True
             if link:
                 connectionPoint = link.getPosition()[-1]
                 for num, variable in enumerate(block.outputVariables.getVariable()):
