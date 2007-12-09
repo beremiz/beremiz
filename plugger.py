@@ -513,7 +513,12 @@ def _GetClassFunction(name):
 ####################################################################################
 ####################################################################################
 
-iec2c_path = os.path.join(base_folder, "matiec", "iec2c")
+if wx.Platform != '__WXMSW__':
+    exe_ext=".exe"
+else:
+    exe_ext=""
+
+iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 # import for project creation timestamping
@@ -580,6 +585,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
             </xsd:complexType>
           </xsd:element>
           <xsd:attribute name="Compiler" type="xsd:string" use="required" default="gcc"/>
+          <xsd:attribute name="CFLAGS" type="xsd:string" use="required" default=""/>
+          <xsd:attribute name="Linker" type="xsd:string" use="required" default="ld"/>
+          <xsd:attribute name="LDFLAGS" type="xsd:string" use="required" default=""/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -873,6 +881,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         # Compile the resulting code into object files.
         compiler = self.BeremizRoot.getCompiler()
+        _CFLAGS = self.BeremizRoot.getCFLAGS()
+        linker = self.BeremizRoot.getLinker()
+        _LDFLAGS = self.BeremizRoot.getLDFLAGS()
         obns = []
         objs = []
         for Location, CFilesAndCFLAGS, DoCalls in LocationCFilesAndCFLAGS:
@@ -887,7 +898,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 obns.append(obn)
                 logger.write("   [CC]  "+bn+" -> "+obn+"\n")
                 objectfilename = os.path.splitext(CFile)[0]+".o"
-                status, result, err_result = logger.LogCommand("%s -c %s -o %s %s"%(compiler, CFile, objectfilename, CFLAGS))
+                status, result, err_result = logger.LogCommand("%s -c %s -o %s %s %s"%(compiler, CFile, objectfilename, _CFLAGS, CFLAGS))
                 if status != 0:
                     logger.write_error("Build failed\n")
                     return False
@@ -899,7 +910,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             exe += ".exe"
         exe_path = os.path.join(buildpath, exe)
         logger.write("   [CC]  " + ' '.join(obns)+" -> " + exe + "\n")
-        status, result, err_result = logger.LogCommand("%s %s -o %s %s"%(compiler, " ".join(objs), exe_path, ' '.join(LDFLAGS)))
+        status, result, err_result = logger.LogCommand("%s %s -o %s %s"%(linker, " ".join(objs), exe_path, ' '.join(LDFLAGS+[_LDFLAGS])))
         if status != 0:
             logger.write_error("Build failed\n")
             return False

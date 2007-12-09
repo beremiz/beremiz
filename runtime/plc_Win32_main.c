@@ -6,10 +6,11 @@
 void timer_notify()
 {
    struct _timeb timebuffer;
+   printf(".");
 
    _ftime( &timebuffer );
-   CURRENT_TIME.tv_sec = timebuffer.time;
-   CURRENT_TIME.tv_nsec = timebuffer.millitm * 1000000
+   __CURRENT_TIME.tv_sec = timebuffer.time;
+   __CURRENT_TIME.tv_nsec = timebuffer.millitm * 1000000;
    __run();
 }
 
@@ -18,10 +19,10 @@ int main(int argc,char **argv)
     HANDLE hTimer = NULL;
     LARGE_INTEGER liDueTime;
 
-    liDueTime.QuadPart = -10000 * maxval(common_ticktime__,1);;
+    liDueTime.QuadPart = -10000 * maxval(common_ticktime__,1);
 
     // Create a waitable timer.
-    hTimer = CreateWaitableTimer(NULL, TRUE, "WaitableTimer");
+    hTimer = CreateWaitableTimer(NULL, FALSE, "WaitableTimer");
     if (NULL == hTimer)
     {
         printf("CreateWaitableTimer failed (%d)\n", GetLastError());
@@ -30,6 +31,7 @@ int main(int argc,char **argv)
 
     if( __init(argc,argv) == 0 ){
 
+    	printf("Tick Time : %d ms\n", common_ticktime__);
         // Set a timer
         if (!SetWaitableTimer(hTimer, &liDueTime, common_ticktime__, NULL, NULL, 0))
         {

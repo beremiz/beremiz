@@ -77,7 +77,7 @@ void __cleanup_%(locstr)s()
 int __init_%(locstr)s(int argc,char **argv)
 {
 #ifndef NOT_USE_DYNAMIC_LOADING
-    if( !LoadCanDriver("libcanfestival_can_%(candriver)s.so") ){
+    if( !LoadCanDriver("%(candriver)s") ){
         fprintf(stderr, "Cannot load CAN interface library for CanFestival (%(candriver)s)\n");\
         return -1;
     }
