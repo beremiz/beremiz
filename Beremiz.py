@@ -258,7 +258,7 @@ class Beremiz(wx.Frame):
         self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.RightGridSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.ButtonGridSizer = wx.FlexGridSizer(cols=3, hgap=2, rows=1, vgap=2)
-        self.MenuSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.MenuSizer = wx.BoxSizer(wx.VERTICAL)
         self.ParamsPanelMainSizer = wx.BoxSizer(wx.VERTICAL)
         
         self._init_coll_LeftGridSizer_Growables(self.LeftGridSizer)
