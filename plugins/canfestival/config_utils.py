@@ -414,7 +414,8 @@ class ConciseDCFGenerator:
                     values = node.GetEntry(index)
                     # Store the size of each entry mapped in PDO
                     for value in values[1:]:
-                        mapping.append(value % 0x100)
+                        if value != 0:
+                            mapping.append(value % 0x100)
                     self.MasterMapping[cobid] = {"type" : InvertPDOType[locationinfos["pdotype"]], "mapping" : mapping}
             
                 # Indicate that this PDO entry must be saved
