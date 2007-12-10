@@ -70,7 +70,7 @@ class ProcessRunnerMix:
         self.process = wx.Process(self.handler)
         self.process.Redirect()
 
-        self.pid = wx.Execute(cmd, wx.EXEC_NOHIDE, self.process)
+        self.pid = wx.Execute(cmd, wx.EXEC_ASYNC, self.process)
 
         self.inputStream = self.process.GetOutputStream()
         self.errorStream = self.process.GetErrorStream()

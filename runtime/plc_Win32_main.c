@@ -46,6 +46,11 @@ int main(int argc,char **argv)
                 printf("WaitForSingleObject failed (%d)\n", GetLastError());
                 break;
             }
+            if (kbhit())
+            {
+                printf("Finishing\n");
+                break;
+            }
             timer_notify();
         }
     }
