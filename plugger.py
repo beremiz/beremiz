@@ -464,7 +464,10 @@ class PlugTemplate:
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
                     _self.PlugRequestSave()
-
+            
+            def _getBuildPath(_self):
+                return self._getBuildPath()
+            
         # Create the object out of the resulting class
         newPluginOpj = FinalPlugClass()
         # Store it in PluggedChils
