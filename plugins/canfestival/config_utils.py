@@ -395,21 +395,21 @@ class ConciseDCFGenerator:
                 # Get COB ID of the PDO
                 cobid = self.NodeList.GetSlaveNodeEntry(locationinfos["nodeid"], index - 0x200, 1)
                 
-                # Verify that PDO transmit type is conform to sync_TPDOs
-                transmittype = self.NodeList.GetSlaveNodeEntry(locationinfos["nodeid"], index - 0x200, 2)
-                if sync_TPDOs and transmittype != 0x01 or transmittype != 0xFF:
-                    if sync_TPDOs:
-                        # Change TransmitType to SYNCHRONE
-                        data, nbparams = GeneratePDOMappingDCF(index - 0x200, cobid, 0x01, [])
-                    else:
-                        # Change TransmitType to ASYCHRONE
-                        data, nbparams = GeneratePDOMappingDCF(index - 0x200, cobid, 0xFF, [])
-                    
-                    # Add entry to slave dcf to change transmit type of 
-                    self.AddParamsToDCF(locationinfos["nodeid"], data, nbparams)
-                
                 # Add PDO to MasterMapping
                 if cobid not in self.MasterMapping.keys():
+                    # Verify that PDO transmit type is conform to sync_TPDOs
+                    transmittype = self.NodeList.GetSlaveNodeEntry(locationinfos["nodeid"], index - 0x200, 2)
+                    if sync_TPDOs and transmittype != 0x01 or transmittype != 0xFF:
+                        if sync_TPDOs:
+                            # Change TransmitType to SYNCHRONE
+                            data, nbparams = GeneratePDOMappingDCF(index - 0x200, cobid, 0x01, [])
+                        else:
+                            # Change TransmitType to ASYCHRONE
+                            data, nbparams = GeneratePDOMappingDCF(index - 0x200, cobid, 0xFF, [])
+                        
+                        # Add entry to slave dcf to change transmit type of 
+                        self.AddParamsToDCF(locationinfos["nodeid"], data, nbparams)
+                                    
                     mapping = [None]
                     values = node.GetEntry(index)
                     # Store the size of each entry mapped in PDO
