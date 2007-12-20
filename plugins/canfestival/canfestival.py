@@ -71,7 +71,7 @@ class _NodeListPlug(NodeList):
         new_dialog.Show()
 
     PluginMethods = [
-        {"bitmap" : os.path.join("images", "NetworkEdit.png"),
+        {"bitmap" : os.path.join("images", "NetworkEdit"),
          "name" : "Edit network", 
          "tooltip" : "Edit CanOpen Network with NetworkEdit",
          "method" : _OpenView},

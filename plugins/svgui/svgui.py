@@ -120,15 +120,15 @@ class RootClass(DEFControler):
             self._View.Show()
 
     PluginMethods = [
-        {"bitmap" : os.path.join("images","HMIEditor.png"),
+        {"bitmap" : os.path.join("images","HMIEditor"),
          "name" : "HMI Editor",
          "tooltip" : "HMI Editor",
          "method" : _OpenView},
-        {"bitmap" : os.path.join("images","ImportSVG.png"),
+        {"bitmap" : os.path.join("images","ImportSVG"),
          "name" : "Import SVG",
          "tooltip" : "Import SVG",
          "method" : _OpenView},
-        {"bitmap" : os.path.join("images","ImportDEF.png"),
+        {"bitmap" : os.path.join("images","ImportDEF"),
          "name" : "Import DEF",
          "tooltip" : "Import DEF",
          "method" : _OpenView},
