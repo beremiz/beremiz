@@ -357,6 +357,8 @@ class Beremiz(wx.Frame):
                   id=ID_BEREMIZPLUGINTREE)
             self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnPluginTreeItemChecked,
                   id=ID_BEREMIZPLUGINTREE)
+            self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnPluginTreeItemBeginEdit,
+                  id=ID_BEREMIZPLUGINTREE)
             self.Bind(CT.EVT_TREE_END_LABEL_EDIT, self.OnPluginTreeItemEndEdit,
                   id=ID_BEREMIZPLUGINTREE)
             self.Bind(CT.EVT_TREE_ITEM_EXPANDED, self.OnPluginTreeItemExpanded,
@@ -372,26 +374,6 @@ class Beremiz(wx.Frame):
             self.AUIManager.AddPane(self.LogConsole, wx.aui.AuiPaneInfo().Caption("Log Console").Bottom().Layer(1).BestSize(wx.Size(800, 200)).CloseButton(False))
         
             self.AUIManager.Update()
-
-    def ShowChildrenWindows(self, root, show = True):
-        item, root_cookie = self.PluginTree.GetFirstChild(root)
-        while item is not None and item.IsOk():
-            window = self.PluginTree.GetItemWindow(item)
-            if show:
-                window.Show()
-            else:
-                window.Hide()
-            if self.PluginTree.IsExpanded(item):
-                self.ShowChildrenWindows(item, show)
-            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
-
-    def OnPluginTreeItemExpanded(self, event):
-        self.ShowChildrenWindows(event.GetItem(), True)
-        event.Skip()
-
-    def OnPluginTreeItemCollapsed(self, event):
-        self.ShowChildrenWindows(event.GetItem(), False)
-        event.Skip()
 
     def __init__(self, parent, projectOpen):
         self._init_ctrls(parent)
@@ -597,6 +579,12 @@ class Beremiz(wx.Frame):
                 wx.CallAfter(self.RefreshPluginTree)
         event.Skip()
     
+    def OnPluginTreeItemBeginEdit(self, event):
+        if event.GetItem() == self.PluginTree.GetRootItem():
+            event.Veto()
+        else:
+            event.Skip()
+    
     def OnPluginTreeItemEndEdit(self, event):
         if event.GetLabel() == "":
             event.Veto()
@@ -606,6 +594,26 @@ class Beremiz(wx.Frame):
                 res, StructChanged = plugin.SetParamsAttribute("BaseParams.Name", event.GetLabel(), self.Log)
                 wx.CallAfter(self.RefreshPluginTree)
             event.Skip()
+    
+    def ShowChildrenWindows(self, root, show = True):
+        item, root_cookie = self.PluginTree.GetFirstChild(root)
+        while item is not None and item.IsOk():
+            window = self.PluginTree.GetItemWindow(item)
+            if show:
+                window.Show()
+            else:
+                window.Hide()
+            if self.PluginTree.IsExpanded(item):
+                self.ShowChildrenWindows(item, show)
+            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+
+    def OnPluginTreeItemExpanded(self, event):
+        self.ShowChildrenWindows(event.GetItem(), True)
+        event.Skip()
+
+    def OnPluginTreeItemCollapsed(self, event):
+        self.ShowChildrenWindows(event.GetItem(), False)
+        event.Skip()
     
     def GetItemChannelChangedFunction(self, item):
         def OnPluginTreeItemChannelChanged(event):
@@ -958,8 +966,8 @@ class Beremiz(wx.Frame):
             dialog.Destroy()
             res = self.PluginRoot.NewProject(projectpath)
             if not res :
-                self.RefreshPluginTree()
                 self.RefreshPluginToolBar()
+                self.RefreshPluginTree()
                 self.RefreshButtons()
                 self.RefreshMainMenu()
             else:
@@ -978,11 +986,12 @@ class Beremiz(wx.Frame):
             if os.path.isdir(projectpath):
                 result = self.PluginRoot.LoadProject(projectpath, self.Log)
                 if not result:
-                    self.RefreshPluginTree()
                     self.RefreshPluginToolBar()
+                    self.RefreshPluginTree()
                     self.PluginTree.SelectItem(self.PluginTree.GetRootItem())
                     self.RefreshButtons()
                     self.RefreshMainMenu()
+                    self.PluginTree.ScrollWindow(0, self.PluginTree.GetClientSize()[1])
                 else:
                     message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
                     message.ShowModal()
@@ -995,8 +1004,8 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnCloseProjectMenu(self, event):
-        self.RefreshPluginTree()
         self.RefreshPluginToolBar()
+        self.RefreshPluginTree()
         self.RefreshButtons()
         self.RefreshMainMenu()
         event.Skip()
