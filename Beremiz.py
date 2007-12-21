@@ -347,6 +347,7 @@ class Beremiz(wx.Frame):
         else:
             self.AUIManager = wx.aui.AuiManager(self)
             self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
+            self.Panes = {}
             
             self.PluginTree = CT.CustomTreeCtrl(id=ID_BEREMIZPLUGINTREE,
               name='PluginTree', parent=self, pos=wx.Point(0, 0),
@@ -548,7 +549,7 @@ class Beremiz(wx.Frame):
                 else:
                     item = self.PluginTree.AppendItem(root, "")
                 
-                if wx.Platform != '__WXMSW__':
+                if wx.Platform != '__WXMSW__' or wx.VERSION >= (2, 8, 0):
                     item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
             self.GenerateTreeBranch(item, values)
             item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
@@ -643,10 +644,15 @@ class Beremiz(wx.Frame):
     def RefreshPluginToolBar(self):
         if wx.VERSION < (2, 8, 0):
             self.ClearSizer(self.MenuSizer)
+        else:
+            if "ToolBar" in self.Panes:
+                self.AUIManager.DetachPane(self.Panes["ToolBar"])
+                self.Panes["ToolBar"].Destroy()
         if self.PluginRoot.HasOpenedProject() and len(self.PluginRoot.PluginMethods) > 0:
             if wx.VERSION > (2, 8, 0):
                 toolbar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
                     wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER | wx.TB_TEXT)
+                toolbar.SetToolBitmapSize(wx.Size(48, 48))
             else:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
             for plugin_infos in self.PluginRoot.PluginMethods:
@@ -682,6 +688,7 @@ class Beremiz(wx.Frame):
                 self.RightGridSizer.Layout()
             else:
                 toolbar.Realize()
+                self.Panes["ToolBar"] = toolbar
                 self.AUIManager.AddPane(toolbar, wx.aui.AuiPaneInfo().
                       Name("ToolBar").Caption("Toolbar").
                       ToolbarPane().Top().
