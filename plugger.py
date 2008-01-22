@@ -19,12 +19,12 @@ _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding=
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="BaseParams">
             <xsd:complexType>
-              <xsd:attribute name="Name" type="xsd:string" use="required" default="__unnamed__"/>
+              <xsd:attribute name="Name" type="xsd:string" use="optional" default="__unnamed__"/>
               <xsd:attribute name="IEC_Channel" type="xsd:integer" use="required"/>
-              <xsd:attribute name="Enabled" type="xsd:boolean" use="required" default="true"/>
+              <xsd:attribute name="Enabled" type="xsd:boolean" use="optional" default="true"/>
             </xsd:complexType>
           </xsd:element>
-        </xsd:schema>""")[0]["BaseParams"]
+        </xsd:schema>""")["BaseParams"]
 
 NameTypeSeparator = '@'
 
@@ -80,7 +80,7 @@ class PlugTemplate:
     def _AddParamsMembers(self):
         self.PlugParams = None
         if self.XSD:
-            Classes = GenerateClassesFromXSDstring(self.XSD)[0]
+            Classes = GenerateClassesFromXSDstring(self.XSD)
             Classes = [(name, XSDclass) for name, XSDclass in Classes.items() if XSDclass.IsBaseClass]
             if len(Classes) == 1:
                 name, XSDclass = Classes[0]
@@ -500,10 +500,10 @@ class PlugTemplate:
             if os.path.isdir(os.path.join(self.PlugPath(), PlugDir)) and \
                PlugDir.count(NameTypeSeparator) == 1:
                 pname, ptype = PlugDir.split(NameTypeSeparator)
-                try:
-                    self.PlugAddChild(pname, ptype, logger)
-                except Exception, e:
-                    logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(e)))
+                #try:
+                self.PlugAddChild(pname, ptype, logger)
+                #except Exception, e:
+                #    logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(e)))
 
 def _GetClassFunction(name):
     def GetRootClass():
@@ -557,43 +557,45 @@ class PluginsRoot(PlugTemplate, PLCControler):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="BeremizRoot">
         <xsd:complexType>
-          <xsd:element name="TargetType">
-            <xsd:complexType>
-              <xsd:choice>
-                <xsd:element name="Win32">
-                  <xsd:complexType>
-                    <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
-                  </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="Linux">
-                  <xsd:complexType>
-                    <xsd:attribute name="Nice" type="xsd:integer" use="required"/>
-                  </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="Xenomai">
-                  <xsd:complexType>
-                    <xsd:attribute name="xeno-config" type="xsd:string" use="required" default="/usr/xenomai/"/>
-                    <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
-                  </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="RTAI">
-                  <xsd:complexType>
-                    <xsd:attribute name="rtai-config" type="xsd:string" use="required"/>
-                    <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
-                  </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="Library">
-                  <xsd:complexType>
-                    <xsd:attribute name="Dynamic" type="xsd:boolean" use="required" default="true"/>
-                  </xsd:complexType>
-                </xsd:element>
-              </xsd:choice>
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:attribute name="Compiler" type="xsd:string" use="required" default="gcc"/>
-          <xsd:attribute name="CFLAGS" type="xsd:string" use="required" default=""/>
-          <xsd:attribute name="Linker" type="xsd:string" use="required" default="ld"/>
-          <xsd:attribute name="LDFLAGS" type="xsd:string" use="required" default=""/>
+          <xsd:sequence>
+            <xsd:element name="TargetType">
+              <xsd:complexType>
+                <xsd:choice>
+                  <xsd:element name="Win32">
+                    <xsd:complexType>
+                      <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="Linux">
+                    <xsd:complexType>
+                      <xsd:attribute name="Nice" type="xsd:integer" use="required"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="Xenomai">
+                    <xsd:complexType>
+                      <xsd:attribute name="xeno_config" type="xsd:string" use="optional" default="/usr/xenomai/"/>
+                      <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="RTAI">
+                    <xsd:complexType>
+                      <xsd:attribute name="rtai_config" type="xsd:string" use="required"/>
+                      <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="Library">
+                    <xsd:complexType>
+                      <xsd:attribute name="Dynamic" type="xsd:boolean" use="optional" default="true"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                </xsd:choice>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+          <xsd:attribute name="Compiler" type="xsd:string" use="optional" default="gcc"/>
+          <xsd:attribute name="CFLAGS" type="xsd:string" use="required"/>
+          <xsd:attribute name="Linker" type="xsd:string" use="optional" default="ld"/>
+          <xsd:attribute name="LDFLAGS" type="xsd:string" use="required"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>

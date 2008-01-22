@@ -26,10 +26,10 @@ class _NodeListPlug(NodeList):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalNode">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Device" type="xsd:string" use="required" />
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required" />
-          <xsd:attribute name="NodeId" type="xsd:string" use="required" />
-          <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="required" default="true"/>
+          <xsd:attribute name="CAN_Device" type="xsd:string" use="required"/>
+          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required"/>
+          <xsd:attribute name="NodeId" type="xsd:string" use="required"/>
+          <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -126,7 +126,7 @@ class RootClass:
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalInstance">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Driver" type="xsd:string" use="required" />
+          <xsd:attribute name="CAN_Driver" type="xsd:string" use="required"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>

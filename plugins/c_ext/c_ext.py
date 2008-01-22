@@ -10,7 +10,7 @@ class _Cfile:
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="C_Extension">
         <xsd:complexType>
-          <xsd:attribute name="C_Files" type="xsd:string" use="required" default="myfile.c"/>
+          <xsd:attribute name="C_Files" type="xsd:string" use="optional" default="myfile.c"/>
           <xsd:attribute name="CFLAGS" type="xsd:string" use="required"/>
           <xsd:attribute name="LDFLAGS" type="xsd:string" use="required"/>
         </xsd:complexType>
