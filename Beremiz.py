@@ -483,7 +483,7 @@ class Beremiz(wx.Frame):
                           name='AddBusButton', parent=window, pos=wx.Point(0, 0),
                           size=wx.Size(24, 24), style=wx.NO_BORDER)
                     addbutton.SetToolTipString("Add a plugin to this one")
-                    addbutton.Bind(wx.EVT_BUTTON, self.GetAddButtonFunction(root), id=addbutton_id)
+                    addbutton.Bind(wx.EVT_BUTTON, self.GetAddButtonFunction(root, window), id=addbutton_id)
                     tcsizer.AddWindow(addbutton, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER)
                 
                 if plugin != self.PluginRoot:
@@ -663,6 +663,7 @@ class Beremiz(wx.Frame):
                 toolbar.SetToolBitmapSize(wx.Size(48, 48))
             else:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+            width = 0
             for plugin_infos in self.PluginRoot.PluginMethods:
                 if "method" in plugin_infos:
                     id = wx.NewId()
@@ -687,6 +688,7 @@ class Beremiz(wx.Frame):
                                 pos=wx.Point(0, 0), size=(-1, 48), style=wx.BU_EXACTFIT)
                     button.SetToolTipString(plugin_infos["tooltip"])
                     button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(self.PluginRoot, plugin_infos["method"]), id=id)
+                    width += button.GetSize()[0]
                     if wx.VERSION < (2, 8, 0):
                         boxsizer.AddWindow(button, 0, border=5, flag=wx.GROW|wx.RIGHT)
                     else:
@@ -701,6 +703,8 @@ class Beremiz(wx.Frame):
                       Name("ToolBar").Caption("Toolbar").
                       ToolbarPane().Top().
                       LeftDockable(False).RightDockable(False))
+                if wx.Platform == '__WXMSW__':
+                    self.AUIManagerGetPane("ToolBar").BestSize(wx.Size(width + 3, 55))
                 self.AUIManager.Update()
     
     def RefreshPluginParams(self):
@@ -1067,7 +1071,7 @@ class Beremiz(wx.Frame):
         if self.BusManagers.get(bus_id, None) != None:
             self.BusManagers[bus_id]["Editor"] = None
     
-    def GetAddButtonFunction(self, item):
+    def GetAddButtonFunction(self, item, window):
         def AddButtonFunction(event):
             plugin = self.GetSelectedPlugin(item)
             if plugin and len(plugin.PlugChildsTypes) > 0:
@@ -1076,8 +1080,12 @@ class Beremiz(wx.Frame):
                     new_id = wx.NewId()
                     plugin_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=name)
                     self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, item), id=new_id)
-                rect = self.PluginTree.GetBoundingRect(item, True)
-                wx.CallAfter(self.PluginTree.PopupMenuXY, plugin_menu, rect.x + rect.width, rect.y)
+                window_pos = window.GetPosition()
+                button = event.GetButtonObj()
+                button_pos, button_size = button.GetPosition(), button.GetSize()
+                wx.CallAfter(self.PluginTree.PopupMenuXY, plugin_menu, 
+                    window_pos.x + button_pos.x + button_size.width, 
+                    window_pos.y + button_pos.y)
             event.Skip()
         return AddButtonFunction
     
