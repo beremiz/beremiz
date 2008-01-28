@@ -704,7 +704,7 @@ class Beremiz(wx.Frame):
                       ToolbarPane().Top().
                       LeftDockable(False).RightDockable(False))
                 if wx.Platform == '__WXMSW__':
-                    self.AUIManagerGetPane("ToolBar").BestSize(wx.Size(width + 3, 55))
+                    self.AUIManager.GetPane("ToolBar").BestSize(wx.Size(width + 3, 55))
                 self.AUIManager.Update()
     
     def RefreshPluginParams(self):
