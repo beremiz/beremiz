@@ -43,10 +43,10 @@ class ProcessRunnerMix:
     def __init__(self, input, handler=None):
         if handler is None:
             handler = self
-        self.handler = handler    
-        handler.Bind(wx.EVT_MENU, self.OnIdle)
-        handler.Bind(wx.EVT_END_PROCESS, self.OnProcessEnded, id=-1)
-        
+        self.handler = handler
+        handler.Bind(wx.EVT_IDLE, self.OnIdle)
+        handler.Bind(wx.EVT_END_PROCESS, self.OnProcessEnded)
+
         input.reverse() # so we can pop
         self.input = input
         
@@ -93,8 +93,8 @@ class ProcessRunnerMix:
     def kill(self):
         if self.process is not None:
             self.process.CloseOutput()
-            if wx.Process_Kill(self.pid, wx.SIGTERM) != wx.KILL_OK:
-                wx.Process_Kill(self.pid, wx.SIGKILL)
+            if wx.Process.Kill(self.pid, wx.SIGTERM) != wx.KILL_OK:
+                wx.Process.Kill(self.pid, wx.SIGKILL)
             self.process = None
 
     def updateStream(self, stream, data):
@@ -156,5 +156,34 @@ def wxPopen3(cmd, input, output, errors, finish, handler=None):
     p.setCallbacks(output, errors, finish)
     p.execute(cmd)
     return p
-    
-    
+
+def _test():
+    app = wx.PySimpleApp()
+    f = wx.Frame(None, -1, 'asd')#, style=0)
+    f.Show()
+
+    def output(v):
+        print 'OUTPUT:', v
+    def errors(v):
+        print 'ERRORS:', v
+    def fin():
+        p.Close()
+        f.Close()
+        print 'FINISHED'
+
+
+    def spin(p):
+        while not p.finished:
+            wx.Yield()
+            time.sleep(0.01)
+
+    def evt(self, event):
+        input = []
+        p = wxPopen3('''c:\\python23\\python.exe -c "print '*'*5000"''',
+                 input, output, errors, fin, f)
+        print p.pid
+
+    app.MainLoop()
+
+if __name__ == '__main__':
+    _test()
