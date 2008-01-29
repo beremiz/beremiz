@@ -352,9 +352,8 @@ class Beremiz(wx.Frame):
             
             self.PluginTree = CT.CustomTreeCtrl(id=ID_BEREMIZPLUGINTREE,
               name='PluginTree', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(-1, -1), style=CT.TR_HAS_BUTTONS|CT.TR_EDIT_LABELS|CT.TR_HAS_VARIABLE_ROW_HEIGHT|CT.TR_NO_LINES|wx.TR_SINGLE|wx.SUNKEN_BORDER)
+              size=wx.Size(-1, -1), style=CT.TR_HAS_BUTTONS|CT.TR_EDIT_LABELS|CT.TR_HAS_VARIABLE_ROW_HEIGHT|wx.TR_SINGLE|wx.SUNKEN_BORDER)
             self.PluginTree.Bind(wx.EVT_RIGHT_UP, self.OnPluginTreeRightUp)
-            self.PluginTree.Bind(wx.EVT_SIZE, self.OnPluginTreeResize)
             self.PluginTree.Bind(wx.EVT_IDLE, self.OnPluginTreeIdle)
             self.Bind(CT.EVT_TREE_SEL_CHANGED, self.OnPluginTreeItemSelected,
                   id=ID_BEREMIZPLUGINTREE)
@@ -475,10 +474,12 @@ class Beremiz(wx.Frame):
                 outside = wx.Panel(self.PluginTree, -1, size=wx.Size(-1, -1))
                 outside.SetBackgroundColour(wx.WHITE)
                 
-                insidesizer = wx.FlexGridSizer(cols=1,rows=1)
-                insidesizer.AddGrowableCol(0)
+                insidesizer = wx.FlexGridSizer(cols=2,rows=1)
+                insidesizer.AddGrowableCol(1)
                 
                 outside.SetSizer(insidesizer)
+
+                insidesizer.AddSpacer(-1)
                 
                 window = wx.Panel(outside, -1, size=wx.Size(-1, -1))
                 window.SetBackgroundColour(wx.Colour(250,250,255))
@@ -524,7 +525,7 @@ class Beremiz(wx.Frame):
                         if "method" in plugin_method:
                             id = wx.NewId()
                             button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=window,
-                                bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "RunMethod")))), label=plugin_method["name"], 
+                                bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
                                 name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
                             button.SetToolTipString(plugin_method["tooltip"])
                             button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
@@ -563,39 +564,40 @@ class Beremiz(wx.Frame):
             self.PluginTree.Delete(item)
 
     MustRecalTreeSizes = False
-    def OnPluginTreeResize(self,event):
-        self.ResizePluginTreeWindow()
-        event.Skip()
-
     def OnPluginTreeIdle(self,event):
         if self.MustRecalTreeSizes:
-            event.RequestMore()
             self.ResizePluginTreeWindow()
+            event.RequestMore()
         event.Skip()
 
     def ResizePluginTreeWindow(self):
         if getattr(self, "PluginRoot", None):
             root = self.PluginTree.GetRootItem()
             if root is not None and root.IsOk():
-                #sz = self.PluginTree.GetClientSize()
-                #sz = self.PluginTree.GetBestSize()
                 minimalsz = wx.Size(-1,-1)
-                itemswindows = self.ResizePluginTreeWindow_r(root, minimalsz)
+                minimalpos = wx.Point(-1,-1)
+                itemswindows = self.ResizePluginTreeWindow_r(root, minimalsz, minimalpos)
                 for window, posx in itemswindows:
-                    window.SetSize(wx.Size(minimalsz.x - posx, -1))
-                    
-            self.MustRecalTreeSizes = False
+                    spacer_width = minimalpos.x - posx
+                    window.GetSizer().GetItem(0).SetSpacer(wx.Size(spacer_width,-1))
+                    window.SetSize(wx.Size(spacer_width + minimalsz.x, -1))
+                    window.GetSizer().Layout()
+                    #wx.MessageBox(str(itemswindows) + "\n" + str(minimalpos) + "\n" + str(minimalsz) + "\n" + str(window.GetSizer().GetItem(0).GetSpacer()))
+                self.MustRecalTreeSizes = False
 
-    def ResizePluginTreeWindow_r(self, root, sz):
+    def ResizePluginTreeWindow_r(self, root, sz, pt):
         window = self.PluginTree.GetItemWindow(root)
         posx = window.GetPosition().x
         res = [(window,posx)]
+        window.GetSizer().GetItem(0).SetSpacer(wx.Size(0,0))
         bestsz = window.GetBestSize()
-        sz.x = max(sz.x, bestsz.x + posx)
-        item, root_cookie = self.PluginTree.GetFirstChild(root)
-        while item is not None and item.IsOk():
-            res.extend(self.ResizePluginTreeWindow_r(item, sz))
-            item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
+        pt.x = max(pt.x, posx)
+        sz.x = max(sz.x, bestsz.x)
+        if root.IsExpanded():
+            item, root_cookie = self.PluginTree.GetFirstChild(root)
+            while item is not None and item.IsOk() :
+                res.extend(self.ResizePluginTreeWindow_r(item, sz, pt))
+                item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
         return res
 
 
@@ -1142,11 +1144,7 @@ class Beremiz(wx.Frame):
                     plugin_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=name)
                     self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, item), id=new_id)
                 window_pos = window.GetPosition()
-                button = event.GetButtonObj()
-                button_pos, button_size = button.GetPosition(), button.GetSize()
-                wx.CallAfter(self.PluginTree.PopupMenuXY, plugin_menu, 
-                    window_pos.x + button_pos.x + button_size.width, 
-                    window_pos.y + button_pos.y)
+                wx.CallAfter(self.PluginTree.PopupMenu, plugin_menu)
             event.Skip()
         return AddButtonFunction
     
