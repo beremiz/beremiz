@@ -519,16 +519,20 @@ class Beremiz(wx.Frame):
 
                 msizer = wx.BoxSizer(wx.VERTICAL)
                 msizer.AddSizer(bsizer, 0, border=0, flag=wx.GROW)
-                if plugin != self.PluginRoot and len(plugin.PluginMethods) > 0:
+                if len(plugin.PluginMethods) > 0: #and plugin != self.PluginRoot 
                     for plugin_method in plugin.PluginMethods:
                         if "method" in plugin_method:
                             id = wx.NewId()
-                            button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=window, 
+                            button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=window,
                                 bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "RunMethod")))), label=plugin_method["name"], 
-                                name=plugin_method["name"], pos=wx.Point(0, 0), style=wx.BU_EXACTFIT|wx.NO_BORDER)
+                                name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
                             button.SetToolTipString(plugin_method["tooltip"])
                             button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
-                            msizer.AddWindow(button, 0, border=5, flag=wx.RIGHT)
+                            #hack to force size to mini
+                            gen_mini_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenBitmapTextButton._GetLabelSize(obj)[:-1] + (False,))
+                            button._GetLabelSize = gen_mini_GetLabelSize(button)  
+                            #button._GetLabelSize = lambda :(-1,-1,False)
+                            msizer.AddWindow(button, 0, border=5, flag=0)
                 tcsizer.AddSizer(msizer, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL)
                 tcsizer.AddSizer(psizer, 0, border=0, flag=wx.GROW)
                 if plugin == self.PluginRoot:
@@ -544,7 +548,7 @@ class Beremiz(wx.Frame):
                 self.PluginTree.SetItemWindowEnabled(root, infos["enabled"])
 
         item, root_cookie = self.PluginTree.GetFirstChild(root)
-        for values in infos["values"]:
+        for values in infos["values"]:    
             if item is None or not item.IsOk():
                 item = self.PluginTree.AppendItem(root, "")
                 # 2.6.x returns bad item on gtk
@@ -573,19 +577,26 @@ class Beremiz(wx.Frame):
         if getattr(self, "PluginRoot", None):
             root = self.PluginTree.GetRootItem()
             if root is not None and root.IsOk():
-                self.ResizePluginTreeWindow_r(root)
+                #sz = self.PluginTree.GetClientSize()
+                #sz = self.PluginTree.GetBestSize()
+                minimalsz = wx.Size(-1,-1)
+                itemswindows = self.ResizePluginTreeWindow_r(root, minimalsz)
+                for window, posx in itemswindows:
+                    window.SetSize(wx.Size(minimalsz.x - posx, -1))
+                    
             self.MustRecalTreeSizes = False
 
-    def ResizePluginTreeWindow_r(self, root):
+    def ResizePluginTreeWindow_r(self, root, sz):
         window = self.PluginTree.GetItemWindow(root)
-        pos = window.GetPosition()
-        sz = self.PluginTree.GetClientSize()
-        window.SetSize(wx.Size(sz.width - pos.x, -1))
+        posx = window.GetPosition().x
+        res = [(window,posx)]
+        bestsz = window.GetBestSize()
+        sz.x = max(sz.x, bestsz.x + posx)
         item, root_cookie = self.PluginTree.GetFirstChild(root)
         while item is not None and item.IsOk():
-            self.ResizePluginTreeWindow_r(item)
+            res.extend(self.ResizePluginTreeWindow_r(item, sz))
             item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
-        
+        return res
 
 
     def GetSelectedPluginName(self, selected = None):
@@ -701,6 +712,8 @@ class Beremiz(wx.Frame):
         if wx.VERSION < (2, 8, 0):
             self.ClearSizer(self.MenuSizer)
         else:
+            # toolbar temporarely disabled.
+            return
             if "ToolBar" in self.Panes:
                 self.AUIManager.DetachPane(self.Panes["ToolBar"])
                 self.Panes["ToolBar"].Destroy()
