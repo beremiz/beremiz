@@ -1,0 +1,18 @@
+Source: beremiz
+Section: devel
+Priority: standard
+Maintainer: lolitech <gregory.trelat@lolitech.fr>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: beremiz
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, matiec, plcopeneditor
+Description: Beremiz is an Open Source framework for automation
+ With Beremiz, you can :
+    - Automate everything.
+    - Take any processor into a PLC.
+    - Program once, run anywhere.
+    - Create PLC controled customizable HMIs.
+    - Conform to standards.
+    - Avoid vendor lock.
