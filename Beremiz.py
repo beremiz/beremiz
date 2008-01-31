@@ -516,7 +516,7 @@ class Beremiz(wx.Frame):
                 plugin_infos = plugin.GetParamsAttributes()
 
                 psizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.RefreshSizerElement(window, psizer, plugin_infos, None, True, root)
+                self.RefreshSizerElement(window, psizer, plugin, plugin_infos, None, True, root)
 
                 msizer = wx.BoxSizer(wx.VERTICAL)
                 msizer.AddSizer(bsizer, 0, border=0, flag=wx.GROW)
@@ -599,7 +599,6 @@ class Beremiz(wx.Frame):
                 res.extend(self.ResizePluginTreeWindow_r(item, sz, pt))
                 item, root_cookie = self.PluginTree.GetNextChild(root, root_cookie)
         return res
-
 
     def GetSelectedPluginName(self, selected = None):
         if selected is None:
@@ -789,7 +788,7 @@ class Beremiz(wx.Frame):
                 self.ClearSizer(self.MenuSizer.GetChildren()[1].GetSizer())
                 self.MenuSizer.Remove(1)
             self.ClearSizer(self.ParamsPanelMainSizer)
-            self.RefreshSizerElement(self.ParamsPanel, self.ParamsPanelMainSizer, infos, None, False)
+            self.RefreshSizerElement(self.ParamsPanel, self.ParamsPanelMainSizer, plugin, infos, None, False)
             if plugin != self.PluginRoot and len(plugin.PluginMethods) > 0:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.MenuSizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
@@ -830,9 +829,8 @@ class Beremiz(wx.Frame):
             event.Skip()
         return OnButtonClick
     
-    def GetChoiceCallBackFunction(self, choicectrl, path, selected=None):
+    def GetChoiceCallBackFunction(self, choicectrl, plugin, path, selected=None):
         def OnChoiceChanged(event):
-            plugin = self.GetSelectedPlugin(selected)
             if plugin:
                 res, StructChanged = plugin.SetParamsAttribute(path, choicectrl.GetStringSelection(), self.Log)
                 if StructChanged: wx.CallAfter(self.RefreshPluginTree)
@@ -840,9 +838,8 @@ class Beremiz(wx.Frame):
             event.Skip()
         return OnChoiceChanged
     
-    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, path, selected=None):
+    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, plugin, path, selected=None):
         def OnChoiceContentChanged(event):
-            plugin = self.GetSelectedPlugin(selected)
             if plugin:
                 res, StructChanged = plugin.SetParamsAttribute(path, choicectrl.GetStringSelection(), self.Log)
                 if StructChanged: wx.CallAfter(self.RefreshPluginTree)
@@ -852,7 +849,7 @@ class Beremiz(wx.Frame):
                 staticbox.SetLabel("%(name)s - %(value)s"%infos)
                 if wx.VERSION < (2, 8, 0):
                     self.ParamsPanel.Freeze()
-                    self.RefreshSizerElement(self.ParamsPanel, staticboxsizer, infos["children"], "%s.%s"%(path, infos["name"]), selected=selected)
+                    self.RefreshSizerElement(self.ParamsPanel, staticboxsizer, plugin, infos["children"], "%s.%s"%(path, infos["name"]), selected=selected)
                     self.ParamsPanelMainSizer.Layout()
                     self.ParamsPanel.Thaw()
                     self.ParamsPanel.Refresh()
@@ -861,9 +858,8 @@ class Beremiz(wx.Frame):
             event.Skip()
         return OnChoiceContentChanged
     
-    def GetTextCtrlCallBackFunction(self, textctrl, path, selected=None):
+    def GetTextCtrlCallBackFunction(self, textctrl, plugin, path, selected=None):
         def OnTextCtrlChanged(event):
-            plugin = self.GetSelectedPlugin(selected)
             if plugin:
                 res, StructChanged = plugin.SetParamsAttribute(path, textctrl.GetValue(), self.Log)
                 if StructChanged: wx.CallAfter(self.RefreshPluginTree)
@@ -871,9 +867,8 @@ class Beremiz(wx.Frame):
             event.Skip()
         return OnTextCtrlChanged
     
-    def GetCheckBoxCallBackFunction(self, chkbx, path, selected=None):
+    def GetCheckBoxCallBackFunction(self, chkbx, plugin, path, selected=None):
         def OnCheckBoxChanged(event):
-            plugin = self.GetSelectedPlugin(selected)
             if plugin:
                 res, StructChanged = plugin.SetParamsAttribute(path, chkbx.IsChecked(), self.Log)
                 if StructChanged: wx.CallAfter(self.RefreshPluginTree)
@@ -893,7 +888,7 @@ class Beremiz(wx.Frame):
         for staticbox in staticboxes:
             staticbox.Destroy()
                 
-    def RefreshSizerElement(self, parent, sizer, elements, path, clean = True, selected = None):
+    def RefreshSizerElement(self, parent, sizer, plugin, elements, path, clean = True, selected = None):
         if clean:
             sizer.Clear(True)
         first = True
@@ -931,12 +926,12 @@ class Beremiz(wx.Frame):
                         pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
                     staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                     sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-                    self.RefreshSizerElement(parent, staticboxsizer, element_infos["children"], element_path, selected)
-                    callback = self.GetChoiceContentCallBackFunction(choicectrl, staticboxsizer, element_path, selected)
+                    self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path, selected)
+                    callback = self.GetChoiceContentCallBackFunction(choicectrl, staticboxsizer, plugin, element_path, selected)
                 else:
                     for choice in element_infos["type"]:
                         choicectrl.Append(choice)
-                    callback = self.GetChoiceCallBackFunction(choicectrl, element_path, selected)
+                    callback = self.GetChoiceCallBackFunction(choicectrl, plugin, element_path, selected)
                 if element_infos["value"]:
                     choicectrl.SetStringSelection(element_infos["value"])
                 choicectrl.Bind(wx.EVT_CHOICE, callback, id=id)
@@ -968,7 +963,7 @@ class Beremiz(wx.Frame):
                 spinctrl.SetRange(scmin,scmax)
                 boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                 spinctrl.SetValue(element_infos["value"])
-                spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, element_path, selected), id=id)
+                spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path, selected), id=id)
             elif element_infos["type"] == "element":
                 staticbox = wx.StaticBox(id=-1, label=element_infos["name"], 
                     name='%s_staticbox'%element_infos["name"], parent=parent,
@@ -978,7 +973,7 @@ class Beremiz(wx.Frame):
                     sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW|wx.TOP)
                 else:
                     sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
-                self.RefreshSizerElement(parent, staticboxsizer, element_infos["children"], element_path, selected)
+                self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path, False, selected)
             else:
                 boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                 if first:
@@ -1001,7 +996,7 @@ class Beremiz(wx.Frame):
                         pos=wx.Point(0, 0), size=wx.Size(17, 25), style=0)
                     boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
                     checkbox.SetValue(element_infos["value"])
-                    checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, element_path, selected), id=id)
+                    checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, plugin, element_path, selected), id=id)
                 elif element_infos["type"] in ["unsignedLong", "long","integer"]:
                     if element_infos["type"].startswith("unsigned"):
                         scmin = 0
@@ -1013,14 +1008,14 @@ class Beremiz(wx.Frame):
                     spinctrl.SetRange(scmin, scmax)
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                     spinctrl.SetValue(element_infos["value"])
-                    spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, element_path, selected), id=id)
+                    spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path, selected), id=id)
                 else:
                     textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
                         pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.TE_PROCESS_ENTER)
                     boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
                     textctrl.SetValue(str(element_infos["value"]))
-                    textctrl.Bind(wx.EVT_TEXT_ENTER, self.GetTextCtrlCallBackFunction(textctrl, element_path, selected), id=id)
-                    textctrl.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(textctrl, element_path, selected))
+                    textctrl.Bind(wx.EVT_TEXT_ENTER, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path, selected), id=id)
+                    textctrl.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path, selected))
             first = False
     
     def OnNewProjectMenu(self, event):
