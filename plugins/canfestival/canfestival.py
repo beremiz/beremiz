@@ -9,6 +9,7 @@ import config_utils, gen_cfile
 from networkedit import networkedit
 from objdictedit import objdictedit
 import canfestival_config
+from plugger import PlugTemplate
 
 from gnosis.xml.pickle import *
 from gnosis.xml.pickle.util import setParanoia
@@ -131,9 +132,19 @@ class RootClass:
       </xsd:element>
     </xsd:schema>
     """
-
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
-    
+    def GetParamsAttributes(self, path = None):
+        infos = PlugTemplate.GetParamsAttributes(self, path = None)
+        for element in infos:
+            if element["name"] == "CanFestivalInstance":                         
+                for child in element["children"]:
+                    if child["name"] == "CAN_Driver":
+                        DLL_LIST= getattr(canfestival_config,"DLL_LIST",None)
+                        if DLL_LIST is not None:
+                            child["type"] = DLL_LIST
+                        return infos    
+        return infos
+
     def PlugGenerate_C(self, buildpath, locations, logger):
         
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
