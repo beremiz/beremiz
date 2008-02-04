@@ -135,7 +135,7 @@ class PlugTemplate:
         elif path == "BaseParams.Name":
             res = self.FindNewName(value,logger)
             self.PlugRequestSave()
-            return res, True
+            return res, False
         
         parts = path.split(".", 1)
         if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
@@ -301,6 +301,13 @@ class PlugTemplate:
 
     def GetPlugRoot(self):
         return self.PlugParent.GetPlugRoot()
+
+    def GetFullIEC_Channel(self):
+        return ".".join([str(i) for i in self.GetCurrentLocation()]) + ".x"
+
+    def GetLocations(self):
+        location = self.GetCurrentLocation()
+        return [loc for loc in self.PlugParent.GetLocations() if loc["LOC"][0:len(location)] == location]
 
     def GetPlugInfos(self):
         childs = []
@@ -759,6 +766,31 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # define name for IEC raw code file
         return os.path.join(self._getBuildPath(), "raw_plc.st")
     
+    def GetLocations(self):
+        locations = []
+        filepath = os.path.join(self._getBuildPath(),"LOCATED_VARIABLES.h")
+        if os.path.isfile(filepath):
+            # IEC2C compiler generate a list of located variables : LOCATED_VARIABLES.h
+            location_file = open(os.path.join(self._getBuildPath(),"LOCATED_VARIABLES.h"))
+            # each line of LOCATED_VARIABLES.h declares a located variable
+            lines = [line.strip() for line in location_file.readlines()]
+            # This regular expression parses the lines genereated by IEC2C
+            LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWD]))?,(?P<LOC>[,0-9]*)\)")
+            for line in lines:
+                # If line match RE, 
+                result = LOCATED_MODEL.match(line)
+                if result:
+                    # Get the resulting dict
+                    resdict = result.groupdict()
+                    # rewrite string for variadic location as a tuple of integers
+                    resdict['LOC'] = tuple(map(int,resdict['LOC'].split(',')))
+                    # set located size to 'X' if not given 
+                    if not resdict['SIZE']:
+                        resdict['SIZE'] = 'X'
+                    # finally store into located variable list
+                    locations.append(resdict)
+        return locations
+        
     def _Generate_SoftPLC(self, logger):
         """
         Generate SoftPLC ST/IL/SFC code out of PLCOpenEditor controller, and compile it with IEC2C
@@ -799,30 +831,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
         logger.write("Extracting Located Variables...\n")
-        # IEC2C compiler generate a list of located variables : LOCATED_VARIABLES.h
-        location_file = open(os.path.join(buildpath,"LOCATED_VARIABLES.h"))
-        locations = []
-        # each line of LOCATED_VARIABLES.h declares a located variable
-        lines = [line.strip() for line in location_file.readlines()]
-        # This regular expression parses the lines genereated by IEC2C
-        LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWD]))?,(?P<LOC>[,0-9]*)\)")
-        for line in lines:
-            # If line match RE, 
-            result = LOCATED_MODEL.match(line)
-            if result:
-                # Get the resulting dict
-                resdict = result.groupdict()
-                # rewrite string for variadic location as a tuple of integers
-                resdict['LOC'] = tuple(map(int,resdict['LOC'].split(',')))
-                # set located size to 'X' if not given 
-                if not resdict['SIZE']:
-                    resdict['SIZE'] = 'X'
-                # finally store into located variable list
-                locations.append(resdict)
+        # Keep track of generated located variables for later use by self._Generate_C
+        self.PLCGeneratedLocatedVars = self.GetLocations()
         # Keep track of generated C files for later use by self.PlugGenerate_C
         self.PLCGeneratedCFiles = C_files
-        # Keep track of generated located variables for later use by self._Generate_C
-        self.PLCGeneratedLocatedVars = locations
         # compute CFLAGS for plc
         self.CFLAGS = "\"-I"+ieclib_path+"\""
         return True
