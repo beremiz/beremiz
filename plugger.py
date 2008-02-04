@@ -786,7 +786,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         logger.write("Compiling IEC Program in to C code...\n")
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
-        status, result, err_result = logger.LogCommand("%s %s -I %s %s"%(iec2c_path, self._getIECcodepath(), ieclib_path, buildpath), no_stdout=True)
+        status, result, err_result = logger.LogCommand("%s \"%s\" -I \"%s\" \"%s\""%(iec2c_path, self._getIECcodepath(), ieclib_path, buildpath), no_stdout=True)
         if status:
             # Failed !
             logger.write_error("Error : IEC to C compiler returned %d\n"%status)
@@ -824,7 +824,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Keep track of generated located variables for later use by self._Generate_C
         self.PLCGeneratedLocatedVars = locations
         # compute CFLAGS for plc
-        self.CFLAGS = "-I"+ieclib_path
+        self.CFLAGS = "\"-I"+ieclib_path+"\""
         return True
 
     def _build(self, logger):
@@ -906,7 +906,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 obns.append(obn)
                 logger.write("   [CC]  "+bn+" -> "+obn+"\n")
                 objectfilename = os.path.splitext(CFile)[0]+".o"
-                status, result, err_result = logger.LogCommand("%s -c %s -o %s %s %s"%(compiler, CFile, objectfilename, _CFLAGS, CFLAGS))
+                status, result, err_result = logger.LogCommand("\"%s\" -c \"%s\" -o \"%s\" %s %s"%(compiler, CFile, objectfilename, _CFLAGS, CFLAGS))
                 if status != 0:
                     logger.write_error("Build failed\n")
                     return False
@@ -918,7 +918,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             exe += ".exe"
         exe_path = os.path.join(buildpath, exe)
         logger.write("   [CC]  " + ' '.join(obns)+" -> " + exe + "\n")
-        status, result, err_result = logger.LogCommand("%s %s -o %s %s"%(linker, " ".join(objs), exe_path, ' '.join(LDFLAGS+[_LDFLAGS])))
+        status, result, err_result = logger.LogCommand("\"%s\" \"%s\" -o \"%s\" %s"%(linker, '" "'.join(objs), exe_path, ' '.join(LDFLAGS+[_LDFLAGS])))
         if status != 0:
             logger.write_error("Build failed\n")
             return False
