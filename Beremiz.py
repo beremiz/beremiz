@@ -45,7 +45,7 @@ if wx.Platform == '__WXMSW__':
               'mono' : 'Courier New',
               'helv' : 'Arial',
               'other': 'Comic Sans MS',
-              'size' : 18,
+              'size' : 16,
              }
 else:
     faces = { 'times': 'Times',
@@ -59,13 +59,14 @@ CWD = os.path.split(os.path.realpath(__file__))[0]
 
 gen_mini_GetBackgroundBrush = lambda obj:lambda dc: wx.Brush(obj.faceDnClr, wx.SOLID)
 gen_mini_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenBitmapTextButton._GetLabelSize(obj)[:-1] + (False,))
+gen_textbutton_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenButton._GetLabelSize(obj)[:-1] + (False,))
 
-def GenerateEmptyBitmap():
-    bitmap = wx.EmptyBitmap(24, 24)
+def GenerateEmptyBitmap(width, height):
+    bitmap = wx.EmptyBitmap(width, height)
     dc = wx.MemoryDC(bitmap)
     dc.SetPen(wx.Pen(WINDOW_COLOUR))
     dc.SetBrush(wx.Brush(WINDOW_COLOUR))
-    dc.DrawRectangle(0, 0, 24, 24)
+    dc.DrawRectangle(0, 0, width, height)
     return bitmap
                         
 class LogPseudoFile:
@@ -377,49 +378,26 @@ class Beremiz(wx.Frame):
             plcwindow.SetBackgroundColour(WINDOW_COLOUR)
             self.PLCParamsSizer.AddWindow(plcwindow, 0, border=0, flag=wx.GROW)
             
-            plcwindowsizer = wx.BoxSizer(wx.VERTICAL)
+            plcwindowsizer = wx.BoxSizer(wx.HORIZONTAL)
             plcwindow.SetSizer(plcwindowsizer)
             
-            titlesizer = wx.BoxSizer(wx.HORIZONTAL)
-            plcwindowsizer.AddSizer(titlesizer, 0, border=0, flag=wx.ALIGN_CENTER)
-            
             st = wx.StaticText(plcwindow, -1)
-            st.SetFont(wx.Font(faces["size"] * 2, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-            st.SetLabel("PLC (%s)"%self.PluginRoot.GetProjectName())
-            titlesizer.AddWindow(st, 0, border=5, flag=wx.ALL|wx.ALIGN_CENTER)
+            st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
+            st.SetLabel(self.PluginRoot.GetProjectName())
+            plcwindowsizer.AddWindow(st, 0, border=5, flag=wx.ALL|wx.ALIGN_CENTER)
             
-            if len(self.PluginRoot.PlugChildsTypes) > 0:
-                addbutton_id = wx.NewId()
-                addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'AddPlugin.png')),
-                      name='AddBusButton', parent=plcwindow, pos=wx.Point(0, 0),
-                      size=wx.Size(24, 24), style=wx.NO_BORDER)
-                addbutton.GetBackgroundBrush = gen_mini_GetBackgroundBrush(addbutton)
-                addbutton.SetToolTipString("Add a plugin to this one")
-                addbutton.Bind(wx.EVT_BUTTON, self.GetAddButtonFunction(self.PluginRoot, plcwindow), id=addbutton_id)
-                titlesizer.AddWindow(addbutton, 0, border=5, flag=wx.ALL|wx.ALIGN_CENTER)
+            plcwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
+            plcwindowsizer.AddSizer(plcwindowmainsizer, 0, border=5, flag=wx.ALL)
             
-            plcwindowmainsizer = wx.BoxSizer(wx.HORIZONTAL)
-            plcwindowsizer.AddSizer(plcwindowmainsizer, 0, border=0, flag=wx.ALIGN_CENTER)
+            plcwindowbuttonsizer = wx.BoxSizer(wx.HORIZONTAL)
+            plcwindowmainsizer.AddSizer(plcwindowbuttonsizer, 0, border=0, flag=wx.ALIGN_CENTER)
             
-            msizer = wx.FlexGridSizer(cols=len(self.PluginRoot.PluginMethods))
-            plcwindowmainsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
-            if len(self.PluginRoot.PluginMethods) > 0: 
-                for plugin_method in self.PluginRoot.PluginMethods:
-                    if "method" in plugin_method:
-                        id = wx.NewId()
-                        button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=plcwindow,
-                            bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
-                            name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
-                        button.SetToolTipString(plugin_method["tooltip"])
-                        button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(self.PluginRoot, plugin_method["method"]), id=id)
-                        #hack to force size to mini
-                        button._GetLabelSize = gen_mini_GetLabelSize(button)  
-                        #button._GetLabelSize = lambda :(-1,-1,False)
-                        msizer.AddWindow(button, 0, border=0, flag=0)
+            msizer = self.GenerateMethodButtonSizer(self.PluginRoot, plcwindow)
+            plcwindowbuttonsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
             
             paramswindow = wx.Panel(plcwindow, -1, size=wx.Size(-1, -1))
             paramswindow.SetBackgroundColour(WINDOW_COLOUR)
-            plcwindowmainsizer.AddWindow(paramswindow, 0, border=0, flag=0)
+            plcwindowbuttonsizer.AddWindow(paramswindow, 0, border=0, flag=0)
             
             psizer = wx.BoxSizer(wx.HORIZONTAL)
             paramswindow.SetSizer(psizer)
@@ -450,10 +428,49 @@ class Beremiz(wx.Frame):
                 self.RefreshScrollBars()
                 event.Skip()
             minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
-            plcwindowmainsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
+            plcwindowbuttonsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
             
             self.PLCConfigMainSizer.Layout()
             self.RefreshScrollBars()
+            
+            if len(self.PluginRoot.PlugChildsTypes) > 0:
+                plcwindowmainsizer.AddSizer(self.GenerateAddButtonSizer(self.PluginRoot, plcwindow), 0, border=0, flag=wx.ALIGN_CENTER)
+
+    def GenerateAddButtonSizer(self, plugin, parent):
+        addsizer = wx.BoxSizer(wx.HORIZONTAL)
+        for name, XSDClass in plugin.PlugChildsTypes:
+            addbutton_id = wx.NewId()
+            addbutton = wx.lib.buttons.GenButton(id=addbutton_id, label="Add %s"%name,
+                  name='AddBusButton', parent=parent, pos=wx.Point(0, 0),
+                  style=wx.NO_BORDER)
+            font = addbutton.GetFont()
+            font.SetUnderlined(True)
+            addbutton.SetFont(font)
+            addbutton._GetLabelSize = gen_textbutton_GetLabelSize(addbutton)
+            addbutton.SetForegroundColour(wx.BLUE)
+            addbutton.SetToolTipString("Add a %s plugin to this one"%name)
+            addbutton.Bind(wx.EVT_BUTTON, self._GetAddPluginFunction(name, plugin), id=addbutton_id)
+            addsizer.AddWindow(addbutton, 0, border=0, flag=wx.ALIGN_CENTER)
+        return addsizer
+
+    def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
+        if horizontal:
+            msizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
+        else:
+            msizer = wx.FlexGridSizer(cols=1)
+        for plugin_method in plugin.PluginMethods:
+            if "method" in plugin_method:
+                id = wx.NewId()
+                button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=parent,
+                    bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
+                    name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
+                button.SetToolTipString(plugin_method["tooltip"])
+                button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
+                #hack to force size to mini
+                button._GetLabelSize = gen_mini_GetLabelSize(button)
+                #button._GetLabelSize = lambda :(-1,-1,False)
+                msizer.AddWindow(button, 0, border=0, flag=0)
+        return msizer
 
     def RefreshPluginTree(self):
         self.ClearSizer(self.PluginTreeSizer)
@@ -502,7 +519,7 @@ class Beremiz(wx.Frame):
         
         leftbuttonmainsizer = wx.FlexGridSizer(cols=3, rows=1)
         leftbuttonmainsizer.AddGrowableCol(0)
-        leftwindowsizer.AddSizer(leftbuttonmainsizer, 0, border=5, flag=wx.GROW|wx.ALL)
+        leftwindowsizer.AddSizer(leftbuttonmainsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.TOP)
         
         leftbuttonsizer = wx.BoxSizer(wx.HORIZONTAL)
         leftbuttonmainsizer.AddSizer(leftbuttonsizer, 0, border=15, flag=wx.GROW|wx.RIGHT)
@@ -512,15 +529,18 @@ class Beremiz(wx.Frame):
         
         plugin_IECChannel = plugin.BaseParams.getIEC_Channel()
         
-        ieccdownbutton_id = wx.NewId()
-        ieccdownbutton = wx.lib.buttons.GenBitmapButton(id=ieccdownbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'IECCDown.png')),
-              name='IECCDownButton', parent=leftwindow, pos=wx.Point(0, 0),
-              size=wx.Size(16, 16), style=wx.NO_BORDER)
         if plugin_IECChannel > 0:
+            ieccdownbutton_id = wx.NewId()
+            ieccdownbutton = wx.lib.buttons.GenBitmapButton(id=ieccdownbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'IECCDown.png')),
+                  name='IECCDownButton', parent=leftwindow, pos=wx.Point(0, 0),
+                  size=wx.Size(16, 16), style=wx.NO_BORDER)
             ieccdownbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(plugin, plugin_IECChannel - 1), id=ieccdownbutton_id)
+            ieccsizer.AddWindow(ieccdownbutton, 0, border=0, flag=wx.ALIGN_CENTER)
         else:
-            ieccdownbutton.Enable(False)
-        ieccsizer.AddWindow(ieccdownbutton, 0, border=0, flag=wx.ALIGN_CENTER)
+            staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(16, 16),
+                  name="staticBitmap", parent=leftwindow,
+                  pos=wx.Point(0, 0), size=wx.Size(16, 16), style=0)
+            ieccsizer.AddWindow(staticbitmap, 0, border=0, flag=wx.ALIGN_CENTER)
         
         st = wx.StaticText(leftwindow, -1)
         st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
@@ -575,7 +595,6 @@ class Beremiz(wx.Frame):
         enablebutton.SetUseFocusIndicator(False)
         enablebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Enabled.png')))
         enablebutton.SetToggle(plugin.MandatoryParams[1].getEnabled())
-        
         def toggleenablebutton(event):
             res, StructChanged = plugin.SetParamsAttribute("BaseParams.Enabled", enablebutton.GetToggle(), self.Log)
             if StructChanged: wx.CallAfter(self.RefreshPluginTree)
@@ -583,16 +602,6 @@ class Beremiz(wx.Frame):
             event.Skip()
         enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
         leftbuttonsizer.AddWindow(enablebutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        
-        if len(plugin.PlugChildsTypes) > 0:
-            addbutton_id = wx.NewId()
-            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'AddPlugin.png')),
-                  name='AddBusButton', parent=leftwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(24, 24), style=wx.NO_BORDER)
-            addbutton.GetBackgroundBrush = gen_mini_GetBackgroundBrush(addbutton)
-            addbutton.SetToolTipString("Add a plugin to this one")
-            addbutton.Bind(wx.EVT_BUTTON, self.GetAddButtonFunction(plugin, leftwindow), id=addbutton_id)
-            leftbuttonsizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
 
         leftminimizebutton_id = wx.NewId()
         leftminimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=leftminimizebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Maximize.png')),
@@ -625,12 +634,18 @@ class Beremiz(wx.Frame):
         deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(plugin), id=deletebutton_id)
         leftbuttonmainsizer.AddWindow(deletebutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
 
-        lb = wx.ListBox(leftwindow, -1, size=wx.Size(-1, 100), style=wx.NO_BORDER)
-        for location in plugin.GetLocations():
+        locations = plugin.GetLocations()
+        lb = wx.ListBox(leftwindow, -1, size=wx.Size(-1, max(1, min(len(locations), 4)) * 25), style=wx.NO_BORDER)
+        for location in locations:
             lb.Append(location["NAME"].replace("__", "%").replace("_", "."))
         if not self.PluginInfos[plugin]["left_visible"]:
             lb.Hide()
-        leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.ALL)
+        self.PluginInfos[plugin]["variable_list"] = lb
+        if len(plugin.PlugChildsTypes) > 0:
+            leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT)
+            leftwindowsizer.AddSizer(self.GenerateAddButtonSizer(plugin, leftwindow), 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
+        else:
+            leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
 
         rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
         rightwindow.SetBackgroundColour(wx.Colour(240,240,240))
@@ -645,24 +660,8 @@ class Beremiz(wx.Frame):
         rightwindowsizer.AddGrowableRow(0)
         rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=17, flag=wx.TOP|wx.GROW)
         
-        if self.PluginInfos[plugin]["right_visible"]:
-            msizer = wx.FlexGridSizer(cols=1)
-        else:
-            msizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
+        msizer = self.GenerateMethodButtonSizer(plugin, rightwindow, not self.PluginInfos[plugin]["right_visible"])
         rightwindowsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
-        if len(plugin.PluginMethods) > 0: 
-            for plugin_method in plugin.PluginMethods:
-                if "method" in plugin_method:
-                    id = wx.NewId()
-                    button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=rightwindow,
-                        bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
-                        name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
-                    button.SetToolTipString(plugin_method["tooltip"])
-                    button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
-                    #hack to force size to mini
-                    button._GetLabelSize = gen_mini_GetLabelSize(button)  
-                    #button._GetLabelSize = lambda :(-1,-1,False)
-                    msizer.AddWindow(button, 0, border=0, flag=0)
         
         rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
         rightwindowsizer.AddSizer(rightparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
@@ -714,6 +713,16 @@ class Beremiz(wx.Frame):
             if not self.PluginInfos[child]["expanded"]:
                 self.CollapsePlugin(child)
 
+    def RefreshVariableLists(self):
+        for plugin, infos in self.PluginInfos.items():
+            locations = plugin.GetLocations()
+            infos["variable_list"].SetSize(wx.Size(-1, max(1, min(len(locations), 4)) * 25))
+            infos["variable_list"].Clear()
+            for location in locations:
+                infos["variable_list"].Append(location["NAME"].replace("__", "%").replace("_", "."))
+        self.PLCConfigMainSizer.Layout()
+        self.RefreshScrollBars()
+
     def GetItemChannelChangedFunction(self, plugin, value):
         def OnPluginTreeItemChannelChanged(event):
             res, StructChanged = plugin.SetParamsAttribute("BaseParams.IEC_Channel", value, self.Log)
@@ -723,7 +732,7 @@ class Beremiz(wx.Frame):
     
     def _GetAddPluginFunction(self, name, plugin):
         def OnPluginMenu(event):
-            self.AddPlugin(name, plugin)
+            wx.CallAfter(self.AddPlugin, name, plugin)
             event.Skip()
         return OnPluginMenu
     
@@ -748,6 +757,7 @@ class Beremiz(wx.Frame):
     def GetButtonCallBackFunction(self, plugin, method):
         def OnButtonClick(event):
             method(plugin, self.Log)
+            self.RefreshVariableLists()
             event.Skip()
         return OnButtonClick
     
@@ -831,7 +841,7 @@ class Beremiz(wx.Frame):
                         pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                     boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
                 else:
-                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(),
+                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(24, 24),
                         name="%s_bitmap"%element_infos["name"], parent=parent,
                         pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                     boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
@@ -874,7 +884,7 @@ class Beremiz(wx.Frame):
                         pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                     boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
                 else:
-                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(),
+                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(24, 24),
                         name="%s_bitmap"%element_infos["name"], parent=parent,
                         pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                     boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
@@ -918,7 +928,7 @@ class Beremiz(wx.Frame):
                         pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                     boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
                 else:
-                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(),
+                    staticbitmap = wx.StaticBitmap(id=-1, bitmap=GenerateEmptyBitmap(24, 24),
                         name="%s_bitmap"%element_infos["name"], parent=parent,
                         pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                     boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
