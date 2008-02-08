@@ -265,7 +265,7 @@ class Beremiz(wx.Frame):
     def _init_sizers(self):
         self.PLCConfigMainSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.PLCParamsSizer = wx.BoxSizer(wx.VERTICAL)
-        self.PluginTreeSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=0, vgap=2)
+        self.PluginTreeSizer = wx.FlexGridSizer(cols=3, hgap=0, rows=0, vgap=2)
         
         self._init_coll_PLCConfigMainSizer_Items(self.PLCConfigMainSizer)
         self._init_coll_PLCConfigMainSizer_Growables(self.PLCConfigMainSizer)
@@ -417,27 +417,39 @@ class Beremiz(wx.Frame):
             minimizebutton.SetBezelWidth(0)
             minimizebutton.SetUseFocusIndicator(False)
             minimizebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Minimize.png')))
-            def togglewindow(event):
-                if minimizebutton.GetToggle():
-                    paramswindow.Show()
-                    msizer.SetCols(1)
-                else:
-                    paramswindow.Hide()
-                    msizer.SetCols(len(self.PluginRoot.PluginMethods))
-                self.PLCConfigMainSizer.Layout()
-                self.RefreshScrollBars()
-                event.Skip()
-            minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
             plcwindowbuttonsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
             
             self.PLCConfigMainSizer.Layout()
             self.RefreshScrollBars()
             
             if len(self.PluginRoot.PlugChildsTypes) > 0:
-                plcwindowmainsizer.AddSizer(self.GenerateAddButtonSizer(self.PluginRoot, plcwindow), 0, border=0, flag=wx.ALIGN_CENTER)
+                addsizer = self.GenerateAddButtonSizer(self.PluginRoot, plcwindow)
+                plcwindowbuttonsizer.AddSizer(addsizer, 0, border=0, flag=0)
+            else:
+                addsizer = None
 
-    def GenerateAddButtonSizer(self, plugin, parent):
-        addsizer = wx.BoxSizer(wx.HORIZONTAL)
+            def togglewindow(event):
+                if minimizebutton.GetToggle():
+                    paramswindow.Show()
+                    msizer.SetCols(1)
+                    if addsizer is not None:
+                        addsizer.SetCols(1)
+                else:
+                    paramswindow.Hide()
+                    msizer.SetCols(len(self.PluginRoot.PluginMethods))
+                    if addsizer is not None:
+                        addsizer.SetCols(len(self.PluginRoot.PlugChildsTypes))
+                self.PLCConfigMainSizer.Layout()
+                self.RefreshScrollBars()
+                event.Skip()
+            minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
+            
+
+    def GenerateAddButtonSizer(self, plugin, parent, horizontal = True):
+        if horizontal:
+            addsizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
+        else:
+            addsizer = wx.FlexGridSizer(cols=1)
         for name, XSDClass in plugin.PlugChildsTypes:
             addbutton_id = wx.NewId()
             addbutton = wx.lib.buttons.GenButton(id=addbutton_id, label="Add %s"%name,
@@ -450,7 +462,7 @@ class Beremiz(wx.Frame):
             addbutton.SetForegroundColour(wx.BLUE)
             addbutton.SetToolTipString("Add a %s plugin to this one"%name)
             addbutton.Bind(wx.EVT_BUTTON, self._GetAddPluginFunction(name, plugin), id=addbutton_id)
-            addsizer.AddWindow(addbutton, 0, border=0, flag=wx.ALIGN_CENTER)
+            addsizer.AddWindow(addbutton, 0, border=0, flag=0)
         return addsizer
 
     def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
@@ -486,6 +498,7 @@ class Beremiz(wx.Frame):
     def ExpandPlugin(self, plugin, force = False):
         for child in self.PluginInfos[plugin]["children"]:
             self.PluginTreeSizer.Show(self.PluginInfos[child]["left"])
+            self.PluginTreeSizer.Show(self.PluginInfos[child]["middle"])
             self.PluginTreeSizer.Show(self.PluginInfos[child]["right"])
             if force or not self.PluginInfos[child]["expanded"]:
                 self.ExpandPlugin(child, force)
@@ -495,6 +508,7 @@ class Beremiz(wx.Frame):
     def CollapsePlugin(self, plugin, force = False):
         for child in self.PluginInfos[plugin]["children"]:
             self.PluginTreeSizer.Hide(self.PluginInfos[child]["left"])
+            self.PluginTreeSizer.Hide(self.PluginInfos[child]["middle"])
             self.PluginTreeSizer.Hide(self.PluginInfos[child]["right"])
             if force or self.PluginInfos[child]["expanded"]:
                 self.CollapsePlugin(child, force)
@@ -506,7 +520,7 @@ class Beremiz(wx.Frame):
         leftwindow.SetBackgroundColour(WINDOW_COLOUR)
         
         if plugin not in self.PluginInfos:
-            self.PluginInfos[plugin] = {"expanded" : False, "left_visible" : False, "right_visible" : False}
+            self.PluginInfos[plugin] = {"expanded" : False, "left_visible" : False, "middle_visible" : False}
             
         self.PluginInfos[plugin]["children"] = plugin.IECSortedChilds()
         
@@ -585,11 +599,11 @@ class Beremiz(wx.Frame):
         leftbuttonsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         enablebutton_id = wx.NewId()
-        enablebutton = wx.lib.buttons.GenBitmapTextToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Disabled.png')),
-              name='EnableButton', parent=leftwindow, pos=wx.Point(0, 0), label="Enabled", style=wx.NO_BORDER)
+        enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Disabled.png')),
+              name='EnableButton', parent=leftwindow, pos=wx.Point(0, 0), style=wx.NO_BORDER)
+        enablebutton.SetToolTipString("Enable/Disable this plugin")
         enablebutton.GetBackgroundBrush = gen_mini_GetBackgroundBrush(enablebutton)
         enablebutton.SetBackgroundColour(wx.Colour(208, 208, 208))
-        enablebutton._GetLabelSize = gen_mini_GetLabelSize(enablebutton)
         enablebutton.labelDelta = 0
         enablebutton.SetBezelWidth(0)
         enablebutton.SetUseFocusIndicator(False)
@@ -641,73 +655,92 @@ class Beremiz(wx.Frame):
         if not self.PluginInfos[plugin]["left_visible"]:
             lb.Hide()
         self.PluginInfos[plugin]["variable_list"] = lb
-        if len(plugin.PlugChildsTypes) > 0:
-            leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT)
-            leftwindowsizer.AddSizer(self.GenerateAddButtonSizer(plugin, leftwindow), 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
-        else:
-            leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+        leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
 
-        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        rightwindow.SetBackgroundColour(wx.Colour(240,240,240))
+        middlewindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+        middlewindow.SetBackgroundColour(wx.Colour(240,240,240))
         
-        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
+        self.PluginTreeSizer.AddWindow(middlewindow, 0, border=0, flag=wx.GROW)
         
-        rightwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
-        rightwindow.SetSizer(rightwindowmainsizer)
+        middlewindowmainsizer = wx.BoxSizer(wx.VERTICAL)
+        middlewindow.SetSizer(middlewindowmainsizer)
         
-        rightwindowsizer = wx.FlexGridSizer(cols=2, rows=1)
-        rightwindowsizer.AddGrowableCol(1)
-        rightwindowsizer.AddGrowableRow(0)
-        rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=17, flag=wx.TOP|wx.GROW)
+        middlewindowsizer = wx.FlexGridSizer(cols=2, rows=1)
+        middlewindowsizer.AddGrowableCol(1)
+        middlewindowsizer.AddGrowableRow(0)
+        middlewindowmainsizer.AddSizer(middlewindowsizer, 0, border=17, flag=wx.TOP|wx.GROW)
         
-        msizer = self.GenerateMethodButtonSizer(plugin, rightwindow, not self.PluginInfos[plugin]["right_visible"])
-        rightwindowsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
+        msizer = self.GenerateMethodButtonSizer(plugin, middlewindow, not self.PluginInfos[plugin]["middle_visible"])
+        middlewindowsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
         
-        rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
-        rightwindowsizer.AddSizer(rightparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
+        middleparamssizer = wx.BoxSizer(wx.HORIZONTAL)
+        middlewindowsizer.AddSizer(middleparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
         
-        paramswindow = wx.Panel(rightwindow, -1, size=wx.Size(-1, -1))
+        paramswindow = wx.Panel(middlewindow, -1, size=wx.Size(-1, -1))
         paramswindow.SetBackgroundColour(WINDOW_COLOUR)
         
         psizer = wx.BoxSizer(wx.HORIZONTAL)
         paramswindow.SetSizer(psizer)
         
-        rightparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
+        middleparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
         
         plugin_infos = plugin.GetParamsAttributes()
         self.RefreshSizerElement(paramswindow, psizer, plugin, plugin_infos, None, False)
         
-        if not self.PluginInfos[plugin]["right_visible"]:
+        if not self.PluginInfos[plugin]["middle_visible"]:
             paramswindow.Hide()
         
-        rightminimizebutton_id = wx.NewId()
-        rightminimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=rightminimizebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Maximize.png')),
-              name='MinimizeButton', parent=rightwindow, pos=wx.Point(0, 0),
+        middleminimizebutton_id = wx.NewId()
+        middleminimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=middleminimizebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Maximize.png')),
+              name='MinimizeButton', parent=middlewindow, pos=wx.Point(0, 0),
               size=wx.Size(24, 24), style=wx.NO_BORDER)
-        rightminimizebutton.GetBackgroundBrush = gen_mini_GetBackgroundBrush(rightminimizebutton)
-        rightminimizebutton.SetBackgroundColour(wx.Colour(208, 208, 208))
-        rightminimizebutton.labelDelta = 0
-        rightminimizebutton.SetBezelWidth(0)
-        rightminimizebutton.SetUseFocusIndicator(False)
-        rightminimizebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Minimize.png')))
-        rightminimizebutton.SetToggle(self.PluginInfos[plugin]["right_visible"])
-        def togglerightwindow(event):
-            if rightminimizebutton.GetToggle():
-                rightparamssizer.Show(0)
+        middleminimizebutton.GetBackgroundBrush = gen_mini_GetBackgroundBrush(middleminimizebutton)
+        middleminimizebutton.SetBackgroundColour(wx.Colour(208, 208, 208))
+        middleminimizebutton.labelDelta = 0
+        middleminimizebutton.SetBezelWidth(0)
+        middleminimizebutton.SetUseFocusIndicator(False)
+        middleminimizebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Minimize.png')))
+        middleminimizebutton.SetToggle(self.PluginInfos[plugin]["middle_visible"])
+        middleparamssizer.AddWindow(middleminimizebutton, 0, border=5, flag=wx.ALL)
+        
+        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+        rightwindow.SetBackgroundColour(wx.Colour(240,240,240))
+        
+        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
+        
+        rightsizer = wx.BoxSizer(wx.VERTICAL)
+        rightwindow.SetSizer(rightsizer)
+        
+        rightmainsizer = wx.BoxSizer(wx.VERTICAL)
+        rightsizer.AddSizer(rightmainsizer, 0, border=5, flag=wx.ALL)
+        
+        if len(plugin.PlugChildsTypes) > 0:
+            addsizer = self.GenerateAddButtonSizer(plugin, rightwindow)
+            rightmainsizer.AddSizer(addsizer, 0, border=12, flag=wx.TOP)
+        else:
+            addsizer = None
+            
+        def togglemiddlerightwindow(event):
+            if middleminimizebutton.GetToggle():
+                middleparamssizer.Show(0)
                 msizer.SetCols(1)
+                if addsizer is not None:
+                    addsizer.SetCols(1)
             else:
-                rightparamssizer.Hide(0)
+                middleparamssizer.Hide(0)
                 msizer.SetCols(len(plugin.PluginMethods))
-            self.PluginInfos[plugin]["right_visible"] = rightminimizebutton.GetToggle()
+                if addsizer is not None:
+                    addsizer.SetCols(len(plugin.PlugChildsTypes))
+            self.PluginInfos[plugin]["middle_visible"] = middleminimizebutton.GetToggle()
             self.PLCConfigMainSizer.Layout()
             self.RefreshScrollBars()
             event.Skip()
-        rightminimizebutton.Bind(wx.EVT_BUTTON, togglerightwindow, id=rightminimizebutton_id)
-        rightparamssizer.AddWindow(rightminimizebutton, 0, border=5, flag=wx.ALL)
-            
+        middleminimizebutton.Bind(wx.EVT_BUTTON, togglemiddlerightwindow, id=middleminimizebutton_id)
+        
         self.PluginInfos[plugin]["left"] = index[0]
-        self.PluginInfos[plugin]["right"] = index[0] + 1
-        index[0] += 2
+        self.PluginInfos[plugin]["middle"] = index[0] + 1
+        self.PluginInfos[plugin]["right"] = index[0] + 2
+        index[0] += 3
         for child in self.PluginInfos[plugin]["children"]:
             self.GenerateTreeBranch(child, index)
             if not self.PluginInfos[child]["expanded"]:
