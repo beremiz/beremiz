@@ -6,8 +6,7 @@
 
 void PLC_timer_notify(sigval_t val)
 {
-    struct timespec CURRENT_TIME;
-    clock_gettime(CLOCK_REALTIME, &CURRENT_TIME);
+    clock_gettime(CLOCK_REALTIME, &__CURRENT_TIME);
     __run();
 }
 
