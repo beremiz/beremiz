@@ -82,7 +82,7 @@ class LogPseudoFile:
         map(self.write, l)
 
     def write(self, s, style = None):
-        if not style : style=self.black_white
+        if not style : style=self.black_white    
         if self.default_style != style: 
             self.output.SetDefaultStyle(style)
             self.default_style = style
@@ -368,7 +368,7 @@ class Beremiz(wx.Frame):
         if sizer:
             maxx, maxy = sizer.GetMinSize()
             self.PLCConfig.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, xstart, ystart, True)
+                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, xstart, ystart)
 
     def RefreshPLCParams(self):
         self.ClearSizer(self.PLCParamsSizer)
@@ -419,9 +419,6 @@ class Beremiz(wx.Frame):
             minimizebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Minimize.png')))
             plcwindowbuttonsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
             
-            self.PLCConfigMainSizer.Layout()
-            self.RefreshScrollBars()
-            
             if len(self.PluginRoot.PlugChildsTypes) > 0:
                 addsizer = self.GenerateAddButtonSizer(self.PluginRoot, plcwindow)
                 plcwindowbuttonsizer.AddSizer(addsizer, 0, border=0, flag=0)
@@ -443,7 +440,9 @@ class Beremiz(wx.Frame):
                 self.RefreshScrollBars()
                 event.Skip()
             minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
-            
+        
+        self.PLCConfigMainSizer.Layout()
+        self.RefreshScrollBars()
 
     def GenerateAddButtonSizer(self, plugin, parent, horizontal = True):
         if horizontal:
