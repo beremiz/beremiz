@@ -1271,9 +1271,13 @@ if __name__ == '__main__':
     AddExceptHook(os.getcwd(),__version__)
     
     frame = Beremiz(None, projectOpen)
-    if wx.Platform == '__WXMSW__':
-        winicon = wx.Icon(os.path.join(CWD,"brz.ico"))
-        frame.SetIcon(icon)
     
-	frame.Show()
+    # Add beremiz's icon in top left corner of the frame
+    if wx.Platform == '__WXMSW__':
+        winicon = wx.Icon(os.path.join(CWD,"brz.ico"),wx.BITMAP_TYPE_ICO)
+        frame.SetIcon(winicon)
+    else:
+		linicon = wx.Icon(os.path.join(CWD,"brz.png"),wx.BITMAP_TYPE_PNG)
+		frame.SetIcon(linicon)
+    frame.Show()
     app.MainLoop()
