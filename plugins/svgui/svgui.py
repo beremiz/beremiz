@@ -123,15 +123,15 @@ class RootClass(DEFControler):
         {"bitmap" : os.path.join("images","HMIEditor"),
          "name" : "HMI Editor",
          "tooltip" : "HMI Editor",
-         "method" : _OpenView},
+         "method" : "_OpenView"},
         {"bitmap" : os.path.join("images","ImportSVG"),
          "name" : "Import SVG",
          "tooltip" : "Import SVG",
-         "method" : _OpenView},
+         "method" : "_OpenView"},
         {"bitmap" : os.path.join("images","ImportDEF"),
          "name" : "Import DEF",
          "tooltip" : "Import DEF",
-         "method" : _OpenView},
+         "method" : "_OpenView"},
     ]
     
     def OnPlugSave(self):

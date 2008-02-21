@@ -103,10 +103,10 @@ class _Cfile:
     PluginMethods = [
         {"name" : "Edit C File", 
          "tooltip" : "Edit C File",
-         "method" : _OpenView},
+         "method" : "_OpenView"},
         {"name" : "Import C File", 
          "tooltip" : "Import C File",
-         "method" : _OpenView}
+         "method" : "_OpenView"}
     ]
 
     def SaveCView(self, name):

@@ -788,7 +788,7 @@ class Beremiz(wx.Frame):
     
     def GetButtonCallBackFunction(self, plugin, method):
         def OnButtonClick(event):
-            method(plugin, self.Log)
+            getattr(plugin,method)(self.Log)
             self.RefreshVariableLists()
             event.Skip()
         return OnButtonClick
