@@ -132,7 +132,7 @@ class RootClass:
       </xsd:element>
     </xsd:schema>
     """
-    PlugChildsTypes = [("CanOpenNode",_NodeListPlug)]
+    PlugChildsTypes = [("CanOpenNode",_NodeListPlug, "CanOpen node")]
     def GetParamsAttributes(self, path = None):
         infos = PlugTemplate.GetParamsAttributes(self, path = None)
         for element in infos:

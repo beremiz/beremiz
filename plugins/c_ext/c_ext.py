@@ -157,7 +157,7 @@ class _Cfile:
     
 class RootClass:
 
-    PlugChildsTypes = [("C_File",_Cfile)]
+    PlugChildsTypes = [("C_File",_Cfile, "C file")]
     
     def PlugGenerate_C(self, buildpath, locations, logger):
         return [],"",False

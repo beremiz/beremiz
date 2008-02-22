@@ -94,6 +94,8 @@ class PlugTemplate:
         self.MandatoryParams = ("BaseParams", self.BaseParams)
         self._AddParamsMembers()
         self.PluggedChilds = {}
+        # copy PluginMethods so that it can be later customized
+        self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
 
     def PluginBaseXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "baseplugin.xml")
@@ -415,10 +417,13 @@ class PlugTemplate:
         @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
         @param PlugName: string for the name of the plugin instance
         """
-        PlugChildsTypes = dict(self.PlugChildsTypes)
+        # reorgabize self.PlugChildsTypes tuples from (name, PlugClass, Help)
+        # to ( name, (PlugClass, Help)), an make a dict
+        transpose = zip(*self.PlugChildsTypes)
+        PlugChildsTypes = dict(zip(transpose[0],zip(transpose[1],transpose[2])))
         # Check that adding this plugin is allowed
         try:
-            PlugClass = PlugChildsTypes[PlugType]
+            PlugClass, PlugHelp = PlugChildsTypes[PlugType]
         except KeyError:
             raise Exception, "Cannot create child %s of type %s "%(PlugName, PlugType)
         
@@ -444,6 +449,8 @@ class PlugTemplate:
                 _self.PlugParent = self
                 # Keep track of the plugin type name
                 _self.PlugType = PlugType
+                # remind the help string, for more fancy display
+                _self.PlugHelp = PlugHelp
                 # Call the base plugin template init - change XSD into class members
                 PlugTemplate.__init__(_self)
                 # check name is unique
@@ -451,7 +458,7 @@ class PlugTemplate:
                 # If dir have already be made, and file exist
                 if os.path.isdir(_self.PlugPath(NewPlugName)): #and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
                     #Load the plugin.xml file into parameters members
-                    _self.LoadXMLParams(NewPlugName)
+                    _self.LoadXMLParams(logger, NewPlugName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewPlugName):
                         raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(NewPlugName, _self.BaseParams.getName())
@@ -486,24 +493,32 @@ class PlugTemplate:
         return newPluginOpj
             
 
-    def LoadXMLParams(self, PlugName = None):
+    def LoadXMLParams(self, logger, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
         if os.path.isfile(methode_name):
+            logger.write("Info: %s plugin as some special methods in methods.py\n" % (PlugName or "Root"))
             execfile(methode_name)
 
         # Get the base xml tree
         if self.MandatoryParams:
-            basexmlfile = open(self.PluginBaseXmlFilePath(PlugName), 'r')
-            basetree = minidom.parse(basexmlfile)
-            self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
-            basexmlfile.close()
+            #try:
+                basexmlfile = open(self.PluginBaseXmlFilePath(PlugName), 'r')
+                basetree = minidom.parse(basexmlfile)
+                self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
+                basexmlfile.close()
+            #except Exception, e:
+            #    logger.write_error("Couldn't load plugin base parameters %s :\n %s" % (PlugName, str(e)))
+                
         
         # Get the xml tree
         if self.PlugParams:
-            xmlfile = open(self.PluginXmlFilePath(PlugName), 'r')
-            tree = minidom.parse(xmlfile)
-            self.PlugParams[1].loadXMLTree(tree.childNodes[0])
-            xmlfile.close()
+            #try:
+                xmlfile = open(self.PluginXmlFilePath(PlugName), 'r')
+                tree = minidom.parse(xmlfile)
+                self.PlugParams[1].loadXMLTree(tree.childNodes[0])
+                xmlfile.close()
+            #except Exception, e:
+            #    logger.write_error("Couldn't load plugin parameters %s :\n %s" % (PlugName, str(e)))
         
     def LoadChilds(self, logger):
         # Iterate over all PlugName@PlugType in plugin directory, and try to open them
@@ -562,7 +577,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     """
 
     # For root object, available Childs Types are modules of the plugin packages.
-    PlugChildsTypes = [(name, _GetClassFunction(name)) for name in plugins.__all__]
+    PlugChildsTypes = [(name, _GetClassFunction(name), help) for name, help in zip(plugins.__all__,plugins.helps)]
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -602,6 +617,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 </xsd:choice>
               </xsd:complexType>
             </xsd:element>
+            <xsd:element name="Connection">
+              <xsd:complexType>
+                <xsd:choice>
+                  <xsd:element name="Local"/>
+                  <xsd:element name="TCP_IP">
+                    <xsd:complexType>
+                      <xsd:attribute name="Host" type="xsd:string" use="required"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                </xsd:choice>
+              </xsd:complexType>
+            </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="Compiler" type="xsd:string" use="optional" default="gcc"/>
           <xsd:attribute name="CFLAGS" type="xsd:string" use="required"/>
@@ -632,6 +659,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # After __init__ root plugin is not valid
         self.ProjectPath = None
         self.PLCEditor = None
+        
+        # copy PluginMethods so that it can be later customized
+        self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
     
     def HasProjectOpened(self):
         """
@@ -714,7 +744,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # If dir have already be made, and file exist
         if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
             #Load the plugin.xml file into parameters members
-            result = self.LoadXMLParams()
+            result = self.LoadXMLParams(logger)
             if result:
                 return result
             #Load and init all the childs
