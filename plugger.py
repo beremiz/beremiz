@@ -8,7 +8,7 @@ import types
 import shutil
 from xml.dom import minidom
 import wx
-import subprocess, ctypes, time
+import subprocess, ctypes, time, shutil
 
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
@@ -1021,17 +1021,21 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.PLCEditor.Show()
 
     def _Clean(self, logger):
-        logger.write_error("Not impl\n")
+        if os.path.isdir(os.path.join(self._getBuildPath())):
+            logger.write("Cleaning the build directory\n")
+            shutil.rmtree(os.path.join(self._getBuildPath()))
+        else:
+            logger.write_error("Build directory already clean\n")
     
     def _Run(self, logger):
         logger.write("\n")
         self.pid_plc = 0
         command_start_plc = os.path.join(self._getBuildPath(),self.GetProjectName() + exe_ext)
         if os.path.isfile(command_start_plc):
-            logger.write("Starting PLC\n")
+            logger.write("\nStarting PLC\n")
             self.pid_plc = subprocess.Popen(command_start_plc).pid
         else:
-            logger.write("%s doesn't exist\n" %command_start_plc)
+            logger.write_error("%s doesn't exist\n" %command_start_plc)
 
     def _Stop(self, logger):
         PROCESS_TERMINATE = 1
