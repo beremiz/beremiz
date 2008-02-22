@@ -532,6 +532,13 @@ class PlugTemplate:
                 #except Exception, e:
                 #    logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(e)))
 
+    def EnableMethod(self, method, value):
+        for d in self.PluginMethods:
+            if d["method"]==method:
+                d["enabled"]=value
+                return True
+        return False
+
 def _GetClassFunction(name):
     def GetRootClass():
         return getattr(__import__("plugins." + name), name).RootClass
@@ -968,9 +975,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         status, result, err_result = logger.LogCommand("\"%s\" \"%s\" -o \"%s\" %s"%(linker, '" "'.join(objs), exe_path, ' '.join(LDFLAGS+[_LDFLAGS])))
         if status != 0:
             logger.write_error("Build failed\n")
+            self.EnableMethod("_Run", False)
             return False
         
-        
+        self.EnableMethod("_Run", True)
         return True
         
 
@@ -1060,10 +1068,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
          "method" : "_Clean"},
         {"bitmap" : os.path.join("images", "Run"),
          "name" : "Run",
+         "enabled" : False,
          "tooltip" : "Run PLC from build folder",
          "method" : "_Run"},
         {"bitmap" : os.path.join("images", "Stop"),
          "name" : "Stop",
+         "enabled" : False,
          "tooltip" : "Stop Running PLC",
          "method" : "_Stop"},
         {"bitmap" : os.path.join("images", "ShowIECcode"),

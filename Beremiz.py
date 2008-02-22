@@ -59,8 +59,9 @@ else:
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
+# Some helpers to tweak GenBitmapTextButtons
+# TODO: declare customized classes instead.
 gen_mini_GetBackgroundBrush = lambda obj:lambda dc: wx.Brush(obj.GetParent().GetBackgroundColour(), wx.SOLID)
-gen_mini_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenBitmapTextButton._GetLabelSize(obj)[:-1] + (False,))
 gen_textbutton_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenButton._GetLabelSize(obj)[:-1] + (False,))
 
 def make_genbitmaptogglebutton_flat(button):
@@ -69,16 +70,45 @@ def make_genbitmaptogglebutton_flat(button):
     button.SetBezelWidth(0)
     button.SetUseFocusIndicator(False)
 
-def GenerateEmptyBitmap(width, height, color):
-#    bitmap = wx.EmptyBitmap(width, height)
-#    dc = wx.MemoryDC(bitmap)
-#    dc.SetPen(wx.Pen(color))
-#    dc.SetBrush(wx.Brush(color))
-#    dc.DrawRectangle(0, 0, width, height)
-#    return bitmap
-    return wx.Bitmap(os.path.join(CWD, "images", "empty.png"))
+# Patch wx.lib.imageutils so that gray is supported on alpha images
+import wx.lib.imageutils
+def grayOut(anImage):
+    """
+    Convert the given image (in place) to a grayed-out
+    version, appropriate for a 'disabled' appearance.
+    """
+    factor = 0.7        # 0 < f < 1.  Higher is grayer.
+    if anImage.HasMask():
+        maskColor = (anImage.GetMaskRed(), anImage.GetMaskGreen(), anImage.GetMaskBlue())
+    else:
+        maskColor = None
+
+    if anImage.HasAlpha():
+        AlphaData = anImage.GetAlphaData()
+    else :
+        AlphaData = None
+
+    data = map(ord, list(anImage.GetData()))
+         
+    for i in range(0, len(data), 3):
+        pixel = (data[i], data[i+1], data[i+2])
+        pixel = wx.lib.imageutils.makeGray(pixel, factor, maskColor)
+        for x in range(3):
+            data[i+x] = pixel[x]
+    anImage.SetData(''.join(map(chr, data)))
+
+    if AlphaData is not None:
+        anImage.SetAlphaData(AlphaData)
+
+wx.lib.imageutils.grayOut = grayOut
+
+class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
+    def _GetLabelSize(self):
+        return wx.lib.buttons.GenBitmapTextButton._GetLabelSize(self)[:-1] + (False,)
 
 class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
+    """ Customized GenStaticBitmap, fix transparency redraw bug on wx2.8/win32, 
+    and accept image name as __init__ parameter, fail silently if file do not exist"""
     def __init__(self, parent, ID, bitmapname,
                  pos = wx.DefaultPosition, size = wx.DefaultSize,
                  style = 0,
@@ -407,6 +437,7 @@ class Beremiz(wx.Frame):
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, xstart, ystart)
 
     def RefreshPLCParams(self):
+        self.Freeze()
         self.ClearSizer(self.PLCParamsSizer)
         
         if self.PluginRoot.HasProjectOpened():
@@ -483,6 +514,7 @@ class Beremiz(wx.Frame):
         
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
+        self.Thaw()
 
 #    def GenerateAddButtonSizer(self, plugin, parent, horizontal = True):
 #        if horizontal:
@@ -512,18 +544,19 @@ class Beremiz(wx.Frame):
         for plugin_method in plugin.PluginMethods:
             if "method" in plugin_method:
                 id = wx.NewId()
-                button = wx.lib.buttons.GenBitmapTextButton(id=id, parent=parent,
+                button = GenBitmapTextButton(id=id, parent=parent,
                     bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
                     name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
                 button.SetToolTipString(plugin_method["tooltip"])
                 button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
                 #hack to force size to mini
-                button._GetLabelSize = gen_mini_GetLabelSize(button)
-                #button._GetLabelSize = lambda :(-1,-1,False)
+                if not plugin_method.get("enabled",True):
+                    button.Disable()
                 msizer.AddWindow(button, 0, border=0, flag=0)
         return msizer
 
     def RefreshPluginTree(self):
+        self.Freeze()
         self.ClearSizer(self.PluginTreeSizer)
         if self.PluginRoot.HasProjectOpened():
             index = [0]
@@ -533,6 +566,7 @@ class Beremiz(wx.Frame):
                     self.CollapsePlugin(child)
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
+        self.Thaw()
 
     def ExpandPlugin(self, plugin, force = False):
         for child in self.PluginInfos[plugin]["children"]:
@@ -583,10 +617,6 @@ class Beremiz(wx.Frame):
         rolesizer = wx.BoxSizer(wx.HORIZONTAL)
         leftsizer.AddSizer(rolesizer, 0, border=0, flag=wx.GROW|wx.RIGHT)
 
-        roletext = wx.StaticText(leftwindow, -1)
-        roletext.SetLabel(plugin.PlugHelp)
-        rolesizer.AddWindow(roletext, 0, border=5, flag=wx.RIGHT|wx.ALIGN_LEFT)
-
         enablebutton_id = wx.NewId()
         enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Disabled.png')),
               name='EnableButton', parent=leftwindow, size=wx.Size(16, 16), pos=wx.Point(0, 0), style=0)#wx.NO_BORDER)
@@ -602,6 +632,9 @@ class Beremiz(wx.Frame):
         enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
         rolesizer.AddWindow(enablebutton, 0, border=0, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
 
+        roletext = wx.StaticText(leftwindow, -1)
+        roletext.SetLabel(plugin.PlugHelp)
+        rolesizer.AddWindow(roletext, 0, border=5, flag=wx.RIGHT|wx.ALIGN_LEFT)
         
         plugin_IECChannel = plugin.BaseParams.getIEC_Channel()
         
@@ -805,7 +838,11 @@ class Beremiz(wx.Frame):
                 infos["variable_list"].Append(location["NAME"].replace("__", "%").replace("_", "."))
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
-
+        
+    def RefreshAll(self):
+        self.RefreshPLCParams()
+        self.RefreshPluginTree()
+        
     def GetItemChannelChangedFunction(self, plugin, value):
         def OnPluginTreeItemChannelChanged(event):
             res, StructChanged = plugin.SetParamsAttribute("BaseParams.IEC_Channel", value, self.Log)
@@ -834,7 +871,8 @@ class Beremiz(wx.Frame):
     def GetButtonCallBackFunction(self, plugin, method):
         def OnButtonClick(event):
             getattr(plugin,method)(self.Log)
-            self.RefreshVariableLists()
+            #self.RefreshVariableLists()
+            wx.CallAfter(self.RefreshAll)
             event.Skip()
         return OnButtonClick
     
@@ -1166,7 +1204,7 @@ class Beremiz(wx.Frame):
 
 Max_Traceback_List_Size = 20
 
-def Display_Exception_Dialog(e_type,e_value,e_tb):
+def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     trcbck_lst = []
     for i,line in enumerate(traceback.extract_tb(e_tb)):
         trcbck = " " + str(i+1) + ". "
@@ -1184,17 +1222,16 @@ def Display_Exception_Dialog(e_type,e_value,e_tb):
 
     dlg = wx.SingleChoiceDialog(None, 
         """
-An error happens.
+An unhandled exception (bug) occured. Bug report saved at :
+(%s)
 
-Click on OK for saving an error report.
+Please be kind enough to send this file to:
+bugs_beremiz@lolitech.fr
 
-Please contact LOLITech at:
-+33 (0)3 29 52 95 67
-bugs_Beremiz@lolitech.fr
+You should now restart Beremiz.
 
-
-Error:
-""" +
+Traceback:
+""" % bug_report_path +
         str(e_type) + " : " + str(e_value), 
         "Error",
         trcbck_lst)
@@ -1231,7 +1268,9 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
         if str(e_value).startswith("!!!"):
             Display_Error_Dialog(e_value)
         elif ex not in ignored_exceptions:
-            result = Display_Exception_Dialog(e_type,e_value,e_traceback)
+            date = time.ctime()
+            bug_report_path = path+os.sep+"bug_report_"+date.replace(':','-').replace(' ','_')+".txt"
+            result = Display_Exception_Dialog(e_type,e_value,e_traceback,bug_report_path)
             if result:
                 ignored_exceptions.append(ex)
                 info = {
@@ -1243,7 +1282,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
                     'platform' : platform.platform(),
                     'e-type' : e_type,
                     'e-value' : e_value,
-                    'date' : time.ctime(),
+                    'date' : date,
                     'cwd' : os.getcwd(),
                     }
                 if e_traceback:
@@ -1254,7 +1293,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
                     if 'self' in exception_locals:
                         info['self'] = format_namespace(exception_locals['self'].__dict__)
                 
-                output = open(path+os.sep+"bug_report_"+info['date'].replace(':','-').replace(' ','_')+".txt",'w')
+                output = open(bug_report_path,'w')
                 lst = info.keys()
                 lst.sort()
                 for a in lst:
