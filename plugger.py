@@ -8,6 +8,7 @@ import types
 import shutil
 from xml.dom import minidom
 import wx
+import subprocess, ctypes, time
 
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
@@ -1023,10 +1024,22 @@ class PluginsRoot(PlugTemplate, PLCControler):
         logger.write_error("Not impl\n")
     
     def _Run(self, logger):
-        logger.write_error("Not impl\n")
+        logger.write("\n")
+        self.pid_plc = 0
+        command_start_plc = os.path.join(self._getBuildPath(),self.GetProjectName() + exe_ext)
+        if os.path.isfile(command_start_plc):
+            logger.write("Starting PLC\n")
+            self.pid_plc = subprocess.Popen(command_start_plc).pid
+        else:
+            logger.write("%s doesn't exist\n" %command_start_plc)
 
     def _Stop(self, logger):
-        logger.write_error("Not impl\n")
+        PROCESS_TERMINATE = 1
+        if self.pid_plc != 0:
+            logger.write("Stopping PLC\n")
+            handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, self.pid_plc)
+            ctypes.windll.kernel32.TerminateProcess(handle, -1)
+            ctypes.windll.kernel32.CloseHandle(handle)
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "editPLC"),
