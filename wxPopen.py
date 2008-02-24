@@ -22,168 +22,128 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#
-# based on wxPopen.py from boa-constructor
-#
 
 import time
-from StringIO import StringIO
-
 import wx
+import subprocess, ctypes
+import threading
+import os
 
-class ProcessRunnerMix:
-
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
     
-    def __init__(self, input, handler=None):
-        if handler is None:
-            handler = self
-        self.handler = handler
-        handler.Bind(wx.EVT_IDLE, self.OnIdle)
-        handler.Bind(wx.EVT_END_PROCESS, self.OnProcessEnded)
-
-        input.reverse() # so we can pop
-        self.input = input
-        
-        self.reset()
-
-    def reset(self):
-        self.process = None
-        self.pid = -1
-        self.output = []
-        self.errors = []
-        self.inputStream = None
-        self.errorStream = None
-        self.outputStream = None
-        self.outputFunc = None
-        self.errorsFunc = None
-        self.finishedFunc = None
+class outputThread(threading.Thread):
+    """
+    Thread is used to print the output of a command to the stdout
+    """
+    def __init__(self, Proc, fd, callback=None, endcallback=None):
+        threading.Thread.__init__(self)
+        self.killed = False
         self.finished = False
-        self.responded = False
+        self.retval = None
+        self.Proc = Proc
+        self.callback = callback
+        self.endcallback = endcallback
+        self.fd = fd
 
-    def execute(self, cmd):
-        self.process = wx.Process(self.handler)
-        self.process.Redirect()
+    def run(self):
+        outeof = False
+        self.retval = self.Proc.poll()
+        while not self.retval and not self.killed and not outeof:   
+            outchunk = self.fd.readline()
+            if outchunk == '': outeof = True
+            if self.callback :
+                wx.CallAfter(self.callback,outchunk)
+            self.retval=self.Proc.poll()
+        if self.endcallback:
+            err = self.Proc.wait()
+            self.finished = True
+            wx.CallAfter(self.endcallback, self.Proc.pid, self.retval)
 
-        self.pid = wx.Execute(cmd, wx.EXEC_ASYNC, self.process)
+class ProcessLogger:
+    def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False):
+        self.logger = logger
+        self.Command = Command
+        self.finish_callback = finish_callback
+        self.no_stdout = no_stdout
+        self.no_stderr = no_stderr
+        self.errlen = 0
+        self.outlen = 0
+        self.exitcode = None
+        self.outdata = ""
+        self.errdata = ""
+        self.finished = False
 
-        self.inputStream = self.process.GetOutputStream()
-        self.errorStream = self.process.GetErrorStream()
-        self.outputStream = self.process.GetInputStream()
+        self.Proc = subprocess.Popen(self.Command, 
+                                   cwd = os.getcwd(),
+                                   stdin = subprocess.PIPE, 
+                                   stdout = subprocess.PIPE, 
+                                   stderr = subprocess.STDOUT)
+#                                   stderr = subprocess.PIPE)
 
-        #self.OnIdle()
-        wx.WakeUpIdle()
-    
-    def setCallbacks(self, output, errors, finished):
-        self.outputFunc = output
-        self.errorsFunc = errors
-        self.finishedFunc = finished
+        self.outt = outputThread(
+                      self.Proc,
+                      self.Proc.stdout,
+                      self.output,
+                      self.finish)
 
-    def detach(self):
-        if self.process is not None:
-            self.process.CloseOutput()
-            self.process.Detach()
-            self.process = None
+        self.outt.start()
+
+#        self.errt = outputThread(
+#                      self.Proc,
+#                      self.Proc.stderr,
+#                      self.errors)
+#
+#        self.errt.start()
+
+    def output(self,v):
+        self.outdata += v
+        self.outlen += 1
+        if not self.no_stdout:
+            self.logger.write(v)
+
+    def errors(self,v):
+        self.errdata += v
+        self.errlen += 1
+        if not self.no_stderr:
+            self.logger.write_warning(v)
+
+    def finish(self, pid,ecode):
+        self.finished = True
+        self.exitcode = ecode
+        if self.exitcode != 0:
+            self.logger.write(self.Command + "\n")
+            self.logger.write_warning("exited with status %s (pid %s)\n"%(str(ecode),str(pid)))
+        if self.finish_callback is not None:
+            self.finish_callback(self,ecode,pid)
 
     def kill(self):
-        if self.process is not None:
-            self.process.CloseOutput()
-            if wx.Process.Kill(self.pid, wx.SIGTERM) != wx.KILL_OK:
-                wx.Process.Kill(self.pid, wx.SIGKILL)
-            self.process = None
-
-    def updateStream(self, stream, data):
-        if stream and stream.CanRead():
-            if not self.responded:
-                self.responded = True
-            text = stream.read()
-            data.append(text)
-            return text
+        self.outt.killed = True
+#        self.errt.killed = True
+        if wx.Platform == '__WXMSW__':
+            PROCESS_TERMINATE = 1
+            handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, self.Proc.pid)
+            ctypes.windll.kernel32.TerminateProcess(handle, -1)
+            ctypes.windll.kernel32.CloseHandle(handle)
         else:
-            return None
+            os.kill(self.Proc.pid)
 
-    def updateInpStream(self, stream, input):
-        if stream and input:
-            line = input.pop()
-            stream.write(line)
-
-    def updateErrStream(self, stream, data):
-        return self.updateStream(stream, data)
-
-    def updateOutStream(self, stream, data):
-        return self.updateStream(stream, data)
-
-    def OnIdle(self, event=None):
-        if self.process is not None:
-            self.updateInpStream(self.inputStream, self.input)
-            e = self.updateErrStream(self.errorStream, self.errors)
-            if e is not None and self.errorsFunc is not None:
-                wx.CallAfter(self.errorsFunc, e)
-            o = self.updateOutStream(self.outputStream, self.output)
-            if o is not None and self.outputFunc is not None:
-                wx.CallAfter(self.outputFunc, o)
-
-            #wx.WakeUpIdle()
-            #time.sleep(0.001)
-
-    def OnProcessEnded(self, event):
-        self.OnIdle()
-        pid,exitcode = event.GetPid(), event.GetExitCode()
-        if self.process:
-            self.process.Destroy()
-            self.process = None
-
-        self.finished = True
-        
-        # XXX doesn't work ???
-        #self.handler.Disconnect(-1, wx.EVT_IDLE)
-        
-        if self.finishedFunc:
-            wx.CallAfter(self.finishedFunc, pid, exitcode)
-
-class ProcessRunner(wx.EvtHandler, ProcessRunnerMix):
-    def __init__(self, input):
-        wx.EvtHandler.__init__(self)
-        ProcessRunnerMix.__init__(self, input)
-
-def wxPopen3(cmd, input, output, errors, finish, handler=None):
-    p = ProcessRunnerMix(input, handler)
-    p.setCallbacks(output, errors, finish)
-    p.execute(cmd)
-    return p
-
-def _test():
-    app = wx.PySimpleApp()
-    f = wx.Frame(None, -1, 'asd')#, style=0)
-    f.Show()
-
-    def output(v):
-        print 'OUTPUT:', v
-    def errors(v):
-        print 'ERRORS:', v
-    def fin():
-        p.Close()
-        f.Close()
-        print 'FINISHED'
-
-
-    def spin(p):
-        while not p.finished:
+    def spin(self, timeout=None, out_limit=None, err_limit=None, keyword = None, kill_it = True):
+        count = 0
+        while not self.finished:
+            if err_limit and self.errlen > err_limit:
+                break
+            if out_limit and self.outlen > out_limit:
+                break
+            if timeout:
+                if count > timeout:
+                    break
+                count += 1
+            if keyword and self.outdata.find(keyword)!=-1:
+                    break
             wx.Yield()
             time.sleep(0.01)
 
-    def evt(self, event):
-        input = []
-        p = wxPopen3('''c:\\python23\\python.exe -c "print '*'*5000"''',
-                 input, output, errors, fin, f)
-        print p.pid
+        if not self.outt.finished and kill_it:
+            self.kill()
 
-    app.MainLoop()
+        return [self.exitcode, self.outdata, self.errdata]
 
-if __name__ == '__main__':
-    _test()

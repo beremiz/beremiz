@@ -3,10 +3,15 @@
 #include <time.h>
 #include <windows.h>
 
+int localcount = 0;
+
 void timer_notify()
 {
    struct _timeb timebuffer;
-   printf(".");
+   if(++localcount % 50 == 0){
+	   printf("PLC tick : %d\n",localcount);
+	   fflush(stdout);
+	   }
 
    _ftime( &timebuffer );
    __CURRENT_TIME.tv_sec = timebuffer.time;

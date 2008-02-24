@@ -8,13 +8,13 @@ import types
 import shutil
 from xml.dom import minidom
 import wx
-import subprocess, ctypes, time, shutil
 
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 
 from xmlclass import GenerateClassesFromXSDstring
+from wxPopen import ProcessLogger
 
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -670,6 +670,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
+        
+        self.runningPLC = None
+
     
     def HasProjectOpened(self):
         """
@@ -860,7 +863,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         logger.write("Compiling IEC Program in to C code...\n")
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
-        status, result, err_result = logger.LogCommand("%s \"%s\" -I \"%s\" \"%s\""%(iec2c_path, self._getIECcodepath(), ieclib_path, buildpath), no_stdout=True)
+        status, result, err_result = ProcessLogger(
+               logger,
+               "%s \"%s\" -I \"%s\" \"%s\""%(
+                         iec2c_path,
+                         self._getIECcodepath(),
+                         ieclib_path, buildpath),
+               no_stdout=True).spin()
         if status:
             # Failed !
             logger.write_error("Error : IEC to C compiler returned %d\n"%status)
@@ -893,11 +902,15 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         logger.flush()
         logger.write("Start build in %s\n" % buildpath)
+
+        self.EnableMethod("_Clean", True)
+        self.EnableMethod("_showIECcode", True)
         
         # Generate SoftPLC code
         if not self._Generate_SoftPLC(logger):
             logger.write_error("SoftPLC code generation failed !\n")
             return False
+
 
         #logger.write("SoftPLC code generation successfull\n")
 
@@ -960,7 +973,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 obns.append(obn)
                 logger.write("   [CC]  "+bn+" -> "+obn+"\n")
                 objectfilename = os.path.splitext(CFile)[0]+".o"
-                status, result, err_result = logger.LogCommand("\"%s\" -c \"%s\" -o \"%s\" %s %s"%(compiler, CFile, objectfilename, _CFLAGS, CFLAGS))
+
+                status, result, err_result = ProcessLogger(
+                       logger,
+                       "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
+                           (compiler, CFile, objectfilename, _CFLAGS, CFLAGS)
+                       ).spin()
+
                 if status != 0:
                     logger.write_error("Build failed\n")
                     return False
@@ -972,7 +991,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
             exe += ".exe"
         exe_path = os.path.join(buildpath, exe)
         logger.write("   [CC]  " + ' '.join(obns)+" -> " + exe + "\n")
-        status, result, err_result = logger.LogCommand("\"%s\" \"%s\" -o \"%s\" %s"%(linker, '" "'.join(objs), exe_path, ' '.join(LDFLAGS+[_LDFLAGS])))
+        status, result, err_result = ProcessLogger(
+               logger,
+               "\"%s\" \"%s\" -o \"%s\" %s"%
+                   (linker,
+                    '" "'.join(objs),
+                    exe_path,
+                    ' '.join(LDFLAGS+[_LDFLAGS]))
+               ).spin()
         if status != 0:
             logger.write_error("Build failed\n")
             self.EnableMethod("_Run", False)
@@ -1034,24 +1060,42 @@ class PluginsRoot(PlugTemplate, PLCControler):
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
             logger.write_error("Build directory already clean\n")
+        self.EnableMethod("_showIECcode", False)
+        self.EnableMethod("_Clean", False)
+        self.EnableMethod("_Run", False)
     
     def _Run(self, logger):
-        logger.write("\n")
-        self.pid_plc = 0
         command_start_plc = os.path.join(self._getBuildPath(),self.GetProjectName() + exe_ext)
         if os.path.isfile(command_start_plc):
-            logger.write("\nStarting PLC\n")
-            self.pid_plc = subprocess.Popen(command_start_plc).pid
+            logger.write("Starting PLC\n")
+            def this_plc_finish_callback(*args):
+                if self.runningPLC is not None:
+                    self.runningPLC = None
+                    self._Stop(logger) 
+            self.runningPLC = ProcessLogger(
+               logger,
+               command_start_plc,
+               finish_callback = this_plc_finish_callback)
+            self.EnableMethod("_Clean", False)
+            self.EnableMethod("_Run", False)
+            self.EnableMethod("_Stop", True)
+            self.EnableMethod("_build", False)
         else:
             logger.write_error("%s doesn't exist\n" %command_start_plc)
 
+    def reset_finished(self):
+        self.EnableMethod("_Clean", True)
+        self.EnableMethod("_Run", True)
+        self.EnableMethod("_Stop", False)
+        self.EnableMethod("_build", True)
+
     def _Stop(self, logger):
-        PROCESS_TERMINATE = 1
-        if self.pid_plc != 0:
+        if self.runningPLC is not None:
             logger.write("Stopping PLC\n")
-            handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, self.pid_plc)
-            ctypes.windll.kernel32.TerminateProcess(handle, -1)
-            ctypes.windll.kernel32.CloseHandle(handle)
+            was_runningPLC = self.runningPLC 
+            self.runningPLC = None
+            was_runningPLC.kill()
+            self.reset_finished()
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "editPLC"),
@@ -1078,10 +1122,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
          "method" : "_Stop"},
         {"bitmap" : os.path.join("images", "ShowIECcode"),
          "name" : "Show IEC code",
+         "enabled" : False,
          "tooltip" : "Show IEC code generated by PLCGenerator",
          "method" : "_showIECcode"},
         {"name" : "Edit raw IEC code",
          "tooltip" : "Edit raw IEC code added to code generated by PLCGenerator",
          "method" : "_editIECrawcode"}
     ]
-

@@ -36,8 +36,6 @@ import os, re, platform, sys, time, traceback, getopt, commands
 
 from plugger import PluginsRoot
 
-from wxPopen import wxPopen3
-
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
 TITLE_COLOUR = wx.Colour(200,200,220)
@@ -72,30 +70,14 @@ def make_genbitmaptogglebutton_flat(button):
 
 # Patch wx.lib.imageutils so that gray is supported on alpha images
 import wx.lib.imageutils
+from wx.lib.imageutils import grayOut as old_grayOut
 def grayOut(anImage):
-    """
-    Convert the given image (in place) to a grayed-out
-    version, appropriate for a 'disabled' appearance.
-    """
-    factor = 0.7        # 0 < f < 1.  Higher is grayer.
-    if anImage.HasMask():
-        maskColor = (anImage.GetMaskRed(), anImage.GetMaskGreen(), anImage.GetMaskBlue())
-    else:
-        maskColor = None
-
     if anImage.HasAlpha():
         AlphaData = anImage.GetAlphaData()
     else :
         AlphaData = None
 
-    data = map(ord, list(anImage.GetData()))
-         
-    for i in range(0, len(data), 3):
-        pixel = (data[i], data[i+1], data[i+2])
-        pixel = wx.lib.imageutils.makeGray(pixel, factor, maskColor)
-        for x in range(3):
-            data[i+x] = pixel[x]
-    anImage.SetData(''.join(map(chr, data)))
+    old_grayOut(anImage)
 
     if AlphaData is not None:
         anImage.SetAlphaData(AlphaData)
@@ -136,22 +118,23 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
                         
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
-    def __init__(self, output = None):
+    def __init__(self, output):
         self.red_white = wx.TextAttr("RED", "WHITE")
         self.red_yellow = wx.TextAttr("RED", "YELLOW")
         self.black_white = wx.TextAttr("BLACK", "WHITE")
         self.default_style = None
         self.output = output
 
-    def writelines(self, l):
-        map(self.write, l)
-
     def write(self, s, style = None):
-        if not style : style=self.black_white    
+        if style is None : style=self.black_white
+        self.output.Freeze(); 
         if self.default_style != style: 
             self.output.SetDefaultStyle(style)
             self.default_style = style
-        self.output.AppendText(s) 
+        self.output.AppendText(s)
+        self.output.ScrollLines(s.count('\n')+1)
+        self.output.ShowPosition(self.output.GetLastPosition())
+        self.output.Thaw()
 
     def write_warning(self, s):
         self.write(s,self.red_white)
@@ -164,42 +147,6 @@ class LogPseudoFile:
     
     def isatty(self):
         return false
-
-    def LogCommand(self, Command, sz_limit = 100, no_stdout=False):
-        self.errlen = 0
-        self.exitcode = None
-        self.outdata = ""
-        self.errdata = ""
-        
-        def output(v):
-            self.outdata += v
-            if not no_stdout:
-                self.write(v)
-
-        def errors(v):
-            self.errdata += v
-            self.errlen += 1
-            if self.errlen > sz_limit:
-                p.kill()
-            self.write_warning(v)
-
-        def fin(pid,ecode):
-            self.exitcode = ecode
-            if self.exitcode != 0:
-                self.write(Command + "\n")
-                self.write_warning("exited with status %d (pid %d)\n"%(ecode,pid))
-
-        def spin(p):
-            while not p.finished:
-                wx.Yield()
-                time.sleep(0.01)
-
-        input = []
-        p = wxPopen3(Command, input, output, errors, fin, self.output)
-        if p.pid:
-        	spin(p)
-
-        return (self.exitcode, self.outdata, self.errdata)
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
@@ -869,9 +816,15 @@ class Beremiz(wx.Frame):
         return AddPluginMenu
     
     def GetButtonCallBackFunction(self, plugin, method):
+        """ Generate the callbackfunc for a given plugin method"""
         def OnButtonClick(event):
+            # Disable button to prevent re-entrant call 
+            event.GetEventObject().Disable()
+            # Call
             getattr(plugin,method)(self.Log)
-            #self.RefreshVariableLists()
+            # Re-enable button 
+            event.GetEventObject().Enable()
+            # Trigger refresh on Idle
             wx.CallAfter(self.RefreshAll)
             event.Skip()
         return OnButtonClick
