@@ -59,24 +59,30 @@ class outputThread(threading.Thread):
             wx.CallAfter(self.endcallback, self.Proc.pid, self.retval)
 
 class ProcessLogger:
-    def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False):
+    def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False, no_gui=True):
         self.logger = logger
         self.Command = Command
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
         self.no_stderr = no_stderr
+        self.startupinfo = None
         self.errlen = 0
         self.outlen = 0
         self.exitcode = None
         self.outdata = ""
         self.errdata = ""
         self.finished = False
-
+        
+        if no_gui == True and wx.Platform == '__WXMSW__':
+            self.startupinfo = subprocess.STARTUPINFO()
+            self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        
         self.Proc = subprocess.Popen(self.Command, 
                                    cwd = os.getcwd(),
                                    stdin = subprocess.PIPE, 
                                    stdout = subprocess.PIPE, 
-                                   stderr = subprocess.STDOUT)
+                                   stderr = subprocess.STDOUT,
+                                   startupinfo = self.startupinfo)
 #                                   stderr = subprocess.PIPE)
 
         self.outt = outputThread(
