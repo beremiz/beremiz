@@ -730,7 +730,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
+        # get plugins bloclist (is that usefull at project creation?)
         self.RefreshPluginsBlockLists()
+        # this will create files base XML files
+        self.SaveProject()
         return None
         
     def LoadProject(self, ProjectPath, logger):
