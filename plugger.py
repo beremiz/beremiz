@@ -196,7 +196,7 @@ class PlugTemplate:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing yo do\n")
+        logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
         return [],"",False
     
     def _Generate_C(self, buildpath, locations, logger):
@@ -208,7 +208,7 @@ class PlugTemplate:
         else:
             LocationCFilesAndCFLAGS = []
 
-        # plugin asks some some LDFLAGS
+        # plugin asks for some LDFLAGS
         if PlugLDFLAGS:
             # LDFLAGS can be either string
             if type(PlugLDFLAGS)==type(str()):
@@ -880,6 +880,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         C_files = [ fname for fname in result.splitlines() if fname[-2:]==".c" or fname[-2:]==".C" ]
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
+        if not C_files:
+            logger.write_error("Error : At least one configuration and one ressource must be declared in PLC !\n")
+            return False
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
         logger.write("Extracting Located Variables...\n")
