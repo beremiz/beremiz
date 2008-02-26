@@ -724,8 +724,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             return "Project not created"
         
         # Create PLCOpen program
-        self.CreateNewProject(values.pop("projectName"))
-        self.SetProjectProperties(properties = values)
+        self.CreateNewProject(values)
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
@@ -850,9 +849,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         buildpath = self._getBuildPath()
         # ask PLCOpenEditor controller to write ST/IL/SFC code file
         result = self.GenerateProgram(self._getIECgeneratedcodepath())
-        if not result:
+        if result is not None:
             # Failed !
-            logger.write_error("Error : ST/IL/SFC code generator returned %d\n"%result)
+            logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%result)
             return False
         plc_file = open(self._getIECcodepath(), "w")
         if os.path.isfile(self._getIECrawcodepath()):
@@ -875,10 +874,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
             logger.write_error("Error : IEC to C compiler returned %d\n"%status)
             return False
         # Now extract C files of stdout
-        C_files = result.splitlines()
+        C_files = [ fname for fname in result.splitlines() if fname[-2:]==".c" or fname[-2:]==".C" ]
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
-        C_files.remove("LOCATED_VARIABLES.h")
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
         logger.write("Extracting Located Variables...\n")
@@ -1071,7 +1069,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             def this_plc_finish_callback(*args):
                 if self.runningPLC is not None:
                     self.runningPLC = None
-                    self._Stop(logger) 
+                    self.reset_finished()
             self.runningPLC = ProcessLogger(
                logger,
                command_start_plc,
