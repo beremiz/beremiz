@@ -81,9 +81,10 @@ class ProcessLogger:
                                    cwd = os.getcwd(),
                                    stdin = subprocess.PIPE, 
                                    stdout = subprocess.PIPE, 
-                                   stderr = subprocess.STDOUT,
+                                   #stderr = subprocess.STDOUT,
+                                   stderr = subprocess.PIPE,
                                    startupinfo = self.startupinfo)
-#                                   stderr = subprocess.PIPE)
+
 
         self.outt = outputThread(
                       self.Proc,
@@ -93,12 +94,12 @@ class ProcessLogger:
 
         self.outt.start()
 
-#        self.errt = outputThread(
-#                      self.Proc,
-#                      self.Proc.stderr,
-#                      self.errors)
+        self.errt = outputThread(
+                      self.Proc,
+                      self.Proc.stderr,
+                      self.errors)
 #
-#        self.errt.start()
+        self.errt.start()
 
     def output(self,v):
         self.outdata += v
@@ -123,7 +124,7 @@ class ProcessLogger:
 
     def kill(self):
         self.outt.killed = True
-#        self.errt.killed = True
+        self.errt.killed = True
         if wx.Platform == '__WXMSW__':
             PROCESS_TERMINATE = 1
             handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, self.Proc.pid)
