@@ -24,15 +24,44 @@
 
 __version__ = "$Revision$"
 
-import wx
-import wx.lib.buttons
-import wx.lib.statbmp
+import os, sys, getopt, wx
 
-import types
+CWD = os.path.split(os.path.realpath(__file__))[0]
 
-import time
+if __name__ == '__main__':
+    def usage():
+        print "\nUsage of Beremiz.py :"
+        print "\n   %s [Projectpath]\n"%sys.argv[0]
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+    except getopt.GetoptError:
+        # print help information and exit:
+        usage()
+        sys.exit(2)
+    
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            usage()
+            sys.exit()
+    
+    if len(args) > 1:
+        usage()
+        sys.exit()
+    elif len(args) == 1:
+        projectOpen = args[0]
+    else:
+        projectOpen = None
+    
+    app = wx.PySimpleApp()
+    wx.InitAllImageHandlers()
+    
+    bmp = wx.Image(os.path.join(CWD,"images","splash.png")).ConvertToBitmap()
+    splash=wx.SplashScreen(bmp,wx.SPLASH_CENTRE_ON_SCREEN, 1000, None)
+    wx.Yield()
 
-import os, re, platform, sys, time, traceback, getopt, commands
+import wx.lib.buttons, wx.lib.statbmp 
+import types, time, re, platform, time, traceback, commands
 
 from plugger import PluginsRoot
 
@@ -55,7 +84,6 @@ else:
               'size' : 18,
              }
 
-CWD = os.path.split(os.path.realpath(__file__))[0]
 
 # Some helpers to tweak GenBitmapTextButtons
 # TODO: declare customized classes instead.
@@ -340,9 +368,9 @@ class Beremiz(wx.Frame):
         
         # Add beremiz's icon in top left corner of the frame
         if wx.Platform == '__WXMSW__':
-            icon = wx.Icon(os.path.join(CWD,"brz.ico"),wx.BITMAP_TYPE_ICO)
+            icon = wx.Icon(os.path.join(CWD,"images","brz.ico"),wx.BITMAP_TYPE_ICO)
         else:
-            icon = wx.Icon(os.path.join(CWD,"brz.png"),wx.BITMAP_TYPE_PNG)
+            icon = wx.Icon(os.path.join(CWD,"images","brz.png"),wx.BITMAP_TYPE_PNG)
         self.SetIcon(icon)
         
         self.PluginRoot = PluginsRoot(self)
@@ -1263,37 +1291,11 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
     sys.excepthook = handle_exception
 
 if __name__ == '__main__':
-    def usage():
-        print "\nUsage of Beremiz.py :"
-        print "\n   %s [Projectpath]\n"%sys.argv[0]
-    
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
-    except getopt.GetoptError:
-        # print help information and exit:
-        usage()
-        sys.exit(2)
-    
-    for o, a in opts:
-        if o in ("-h", "--help"):
-            usage()
-            sys.exit()
-    
-    if len(args) > 1:
-        usage()
-        sys.exit()
-    elif len(args) == 1:
-        projectOpen = args[0]
-    else:
-        projectOpen = None
-    
-    app = wx.PySimpleApp()
-    wx.InitAllImageHandlers()
-    
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),__version__)
     
     frame = Beremiz(None, projectOpen)
-    
     frame.Show()
+    splash.Hide()
+
     app.MainLoop()
