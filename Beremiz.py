@@ -338,6 +338,13 @@ class Beremiz(wx.Frame):
         
         self.Log = LogPseudoFile(self.LogConsole)
         
+        # Add beremiz's icon in top left corner of the frame
+        if wx.Platform == '__WXMSW__':
+            icon = wx.Icon(os.path.join(CWD,"brz.ico"),wx.BITMAP_TYPE_ICO)
+        else:
+            icon = wx.Icon(os.path.join(CWD,"brz.png"),wx.BITMAP_TYPE_PNG)
+        self.SetIcon(icon)
+        
         self.PluginRoot = PluginsRoot(self)
         self.DisableEvents = False
         
@@ -1288,12 +1295,5 @@ if __name__ == '__main__':
     
     frame = Beremiz(None, projectOpen)
     
-    # Add beremiz's icon in top left corner of the frame
-    if wx.Platform == '__WXMSW__':
-        winicon = wx.Icon(os.path.join(CWD,"brz.ico"),wx.BITMAP_TYPE_ICO)
-        frame.SetIcon(winicon)
-    else:
-		linicon = wx.Icon(os.path.join(CWD,"brz.png"),wx.BITMAP_TYPE_PNG)
-		frame.SetIcon(linicon)
     frame.Show()
     app.MainLoop()
