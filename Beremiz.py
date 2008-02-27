@@ -68,6 +68,8 @@ from plugger import PluginsRoot
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
 TITLE_COLOUR = wx.Colour(200,200,220)
+CHANGED_TITLE_COLOUR = wx.Colour(220,200,220)
+CHANGED_WINDOW_COLOUR = wx.Colour(255,240,240)
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
@@ -322,6 +324,7 @@ class Beremiz(wx.Frame):
         self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.menuBar1)
         self.Bind(wx.EVT_ACTIVATE, self.OnFrameActivated)
+        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
         if wx.VERSION < (2, 8, 0):
             self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
@@ -384,6 +387,17 @@ class Beremiz(wx.Frame):
             self.RefreshPluginTree()
         
         self.RefreshMainMenu()
+
+    def OnCloseFrame(self, event):
+        if self.PluginRoot.HasProjectOpened():
+            if self.PluginRoot.runningPLC is not None:
+                wx.MessageBox("Please stop any running PLC before closing")
+                event.Veto()
+                return
+            if self.PluginRoot.ProjectTestModified():
+                self.PluginRoot.SaveProject()
+                wx.MessageBox("Project saved")
+        event.Skip()
     
     def OnMoveWindow(self, event):
         self.GetBestSize()
@@ -422,8 +436,12 @@ class Beremiz(wx.Frame):
         self.Freeze()
         self.ClearSizer(self.PLCParamsSizer)
         
-        if self.PluginRoot.HasProjectOpened():
+        if self.PluginRoot.HasProjectOpened():    
             plcwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+            if self.PluginRoot.PlugTestModified():
+                bkgdclr = CHANGED_TITLE_COLOUR
+            else:
+                bkgdclr = TITLE_COLOUR
             plcwindow.SetBackgroundColour(TITLE_COLOUR)
             self.PLCParamsSizer.AddWindow(plcwindow, 0, border=0, flag=wx.GROW)
             
@@ -494,6 +512,8 @@ class Beremiz(wx.Frame):
                 event.Skip()
             minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
         
+            self.PluginInfos[self.PluginRoot] = {"main" : plcwindow, "params" : paramswindow}
+            
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
         self.Thaw()
@@ -541,19 +561,34 @@ class Beremiz(wx.Frame):
         self.Freeze()
         self.ClearSizer(self.PluginTreeSizer)
         if self.PluginRoot.HasProjectOpened():
-            index = [0]
             for child in self.PluginRoot.IECSortedChilds():
-                self.GenerateTreeBranch(child, index)
+                self.GenerateTreeBranch(child)
                 if not self.PluginInfos[child]["expanded"]:
                     self.CollapsePlugin(child)
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
         self.Thaw()
 
+    def SetPluginParamsAttribute(self, plugin, *args, **kwargs):
+        res, StructChanged = plugin.SetParamsAttribute(*args, **kwargs)
+        if StructChanged:
+            wx.CallAfter(self.RefreshPluginTree)
+        else:
+            if plugin == self.PluginRoot:
+                bkgdclr = CHANGED_TITLE_COLOUR
+                items = ["main", "params"]
+            else:
+                bkgdclr = CHANGED_WINDOW_COLOUR
+                items = ["left", "middle", "params"]
+            for i in items:
+                self.PluginInfos[plugin][i].SetBackgroundColour(bkgdclr)
+                self.PluginInfos[plugin][i].Refresh()
+        return res
+
     def ExpandPlugin(self, plugin, force = False):
         for child in self.PluginInfos[plugin]["children"]:
-            self.PluginTreeSizer.Show(self.PluginInfos[child]["left"])
-            self.PluginTreeSizer.Show(self.PluginInfos[child]["middle"])
+            self.PluginInfos[child]["left"].Show()
+            self.PluginInfos[child]["middle"].Show()
 #            self.PluginTreeSizer.Show(self.PluginInfos[child]["right"])
             if force or not self.PluginInfos[child]["expanded"]:
                 self.ExpandPlugin(child, force)
@@ -562,17 +597,22 @@ class Beremiz(wx.Frame):
     
     def CollapsePlugin(self, plugin, force = False):
         for child in self.PluginInfos[plugin]["children"]:
-            self.PluginTreeSizer.Hide(self.PluginInfos[child]["left"])
-            self.PluginTreeSizer.Hide(self.PluginInfos[child]["middle"])
+            self.PluginInfos[child]["left"].Hide()
+            self.PluginInfos[child]["middle"].Hide()
 #            self.PluginTreeSizer.Hide(self.PluginInfos[child]["right"])
             if force or self.PluginInfos[child]["expanded"]:
                 self.CollapsePlugin(child, force)
                 if force:
                     self.PluginInfos[child]["expanded"] = False
 
-    def GenerateTreeBranch(self, plugin, index):
+    def GenerateTreeBranch(self, plugin):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        leftwindow.SetBackgroundColour(WINDOW_COLOUR)
+        if plugin.PlugTestModified():
+            bkgdclr=CHANGED_WINDOW_COLOUR
+        else:
+            bkgdclr=WINDOW_COLOUR
+
+        leftwindow.SetBackgroundColour(bkgdclr)
         
         if plugin not in self.PluginInfos:
             self.PluginInfos[plugin] = {"expanded" : False, "left_visible" : False, "middle_visible" : False}
@@ -607,8 +647,7 @@ class Beremiz(wx.Frame):
         enablebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Enabled.png')))
         enablebutton.SetToggle(plugin.MandatoryParams[1].getEnabled())
         def toggleenablebutton(event):
-            res, StructChanged = plugin.SetParamsAttribute("BaseParams.Enabled", enablebutton.GetToggle(), self.Log)
-            if StructChanged: wx.CallAfter(self.RefreshPluginTree)
+            res = self.SetPluginParamsAttribute(plugin, "BaseParams.Enabled", enablebutton.GetToggle(), self.Log)
             enablebutton.SetToggle(res)
             event.Skip()
         enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
@@ -690,10 +729,10 @@ class Beremiz(wx.Frame):
             leftbuttonsizer.AddWindow(expandbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         tc_id = wx.NewId()
-        tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 35), style=wx.TE_PROCESS_ENTER|wx.NO_BORDER)
+        tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 35), style=wx.NO_BORDER)
         tc.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
         tc.SetValue(plugin.MandatoryParams[1].getName())
-        tc.Bind(wx.EVT_TEXT_ENTER, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
+        tc.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
         leftbuttonsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
        
 
@@ -726,7 +765,7 @@ class Beremiz(wx.Frame):
         leftwindowsizer.AddWindow(lb, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
 
         middlewindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        middlewindow.SetBackgroundColour(wx.Colour(240,240,240))
+        middlewindow.SetBackgroundColour(bkgdclr)
         
         self.PluginTreeSizer.AddWindow(middlewindow, 0, border=0, flag=wx.GROW)
         
@@ -745,10 +784,11 @@ class Beremiz(wx.Frame):
         middlewindowsizer.AddSizer(middleparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
         
         paramswindow = wx.Panel(middlewindow, -1, size=wx.Size(-1, -1))
-        paramswindow.SetBackgroundColour(WINDOW_COLOUR)
+        paramswindow.SetBackgroundColour(bkgdclr)
         
         psizer = wx.BoxSizer(wx.HORIZONTAL)
         paramswindow.SetSizer(psizer)
+        self.PluginInfos[plugin]["params"] = paramswindow
         
         middleparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
         
@@ -801,13 +841,11 @@ class Beremiz(wx.Frame):
             event.Skip()
         middleminimizebutton.Bind(wx.EVT_BUTTON, togglemiddlerightwindow, id=middleminimizebutton_id)
         
-        self.PluginInfos[plugin]["left"] = index[0]
-        self.PluginInfos[plugin]["middle"] = index[0] + 1
-#        self.PluginInfos[plugin]["right"] = index[0] + 2
-#        index[0] += 3
-        index[0] += 2
+        self.PluginInfos[plugin]["left"] = leftwindow
+        self.PluginInfos[plugin]["middle"] = middlewindow
+#        self.PluginInfos[plugin]["right"] = rightwindow
         for child in self.PluginInfos[plugin]["children"]:
-            self.GenerateTreeBranch(child, index)
+            self.GenerateTreeBranch(child)
             if not self.PluginInfos[child]["expanded"]:
                 self.CollapsePlugin(child)
 
@@ -827,8 +865,7 @@ class Beremiz(wx.Frame):
         
     def GetItemChannelChangedFunction(self, plugin, value):
         def OnPluginTreeItemChannelChanged(event):
-            res, StructChanged = plugin.SetParamsAttribute("BaseParams.IEC_Channel", value, self.Log)
-            wx.CallAfter(self.RefreshPluginTree)
+            res = self.SetPluginParamsAttribute(plugin, "BaseParams.IEC_Channel", value, self.Log)
             event.Skip()
         return OnPluginTreeItemChannelChanged
     
@@ -866,16 +903,14 @@ class Beremiz(wx.Frame):
     
     def GetChoiceCallBackFunction(self, choicectrl, plugin, path):
         def OnChoiceChanged(event):
-            res, StructChanged = plugin.SetParamsAttribute(path, choicectrl.GetStringSelection(), self.Log)
-            if StructChanged: wx.CallAfter(self.RefreshPluginTree)
+            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection(), self.Log)
             choicectrl.SetStringSelection(res)
             event.Skip()
         return OnChoiceChanged
     
     def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, plugin, path):
         def OnChoiceContentChanged(event):
-            res, StructChanged = plugin.SetParamsAttribute(path, choicectrl.GetStringSelection(), self.Log)
-            if StructChanged: wx.CallAfter(self.RefreshPluginTree)
+            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection(), self.Log)
             choicectrl.SetStringSelection(res)
             infos = self.PluginRoot.GetParamsAttributes(path)
             staticbox = staticboxsizer.GetStaticBox()
@@ -893,16 +928,14 @@ class Beremiz(wx.Frame):
     
     def GetTextCtrlCallBackFunction(self, textctrl, plugin, path):
         def OnTextCtrlChanged(event):
-            res, StructChanged = plugin.SetParamsAttribute(path, textctrl.GetValue(), self.Log)
-            if StructChanged: wx.CallAfter(self.RefreshPluginTree)
+            res = self.SetPluginParamsAttribute(plugin, path, textctrl.GetValue(), self.Log)
             textctrl.SetValue(res)
             event.Skip()
         return OnTextCtrlChanged
     
     def GetCheckBoxCallBackFunction(self, chkbx, plugin, path):
         def OnCheckBoxChanged(event):
-            res, StructChanged = plugin.SetParamsAttribute(path, chkbx.IsChecked(), self.Log)
-            if StructChanged: wx.CallAfter(self.RefreshPluginTree)
+            res = self.SetPluginParamsAttribute(plugin, path, chkbx.IsChecked(), self.Log)
             chkbx.SetValue(res)
             event.Skip()
         return OnCheckBoxChanged
@@ -1040,10 +1073,9 @@ class Beremiz(wx.Frame):
                     spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                 else:
                     textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.TE_PROCESS_ENTER)
+                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)#wx.TE_PROCESS_ENTER)
                     boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
                     textctrl.SetValue(str(element_infos["value"]))
-                    textctrl.Bind(wx.EVT_TEXT_ENTER, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path), id=id)
                     textctrl.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
             first = False
     
@@ -1100,6 +1132,7 @@ class Beremiz(wx.Frame):
     def OnSaveProjectMenu(self, event):
         if self.PluginRoot.HasProjectOpened():
             self.PluginRoot.SaveProject()
+            self.RefreshAll()
         event.Skip()
     
     def OnPropertiesMenu(self, event):

@@ -110,6 +110,19 @@ class PlugTemplate:
         return os.path.join(self.PlugParent.PlugPath(), PlugName + NameTypeSeparator + self.PlugType)
     
     def PlugTestModified(self):
+        return self.ChangesToSave
+
+    def ProjectTestModified(self):
+        """
+        recursively check modified status
+        """
+        if self.PlugTestModified():
+            return True
+
+        for PlugChild in self.IterChilds():
+            if PlugChild.ProjectTestModified():
+                return True
+
         return False
         
     def OnPlugSave(self):
@@ -132,13 +145,14 @@ class PlugTemplate:
             return params
         
     def SetParamsAttribute(self, path, value, logger):
+        self.ChangesToSave = True
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel":
             return self.FindNewIEC_Channel(value,logger), True
         elif path == "BaseParams.Name":
             res = self.FindNewName(value,logger)
             self.PlugRequestSave()
-            return res, False
+            return res, True
         
         parts = path.split(".", 1)
         if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
@@ -172,7 +186,9 @@ class PlugTemplate:
         result = self.OnPlugSave()
         if not result:
             return "Error while saving \"%s\""%self.PlugPath()
-        
+
+        # mark plugin as saved
+        self.ChangesToSave = False        
         # go through all childs and do the same
         for PlugChild in self.IterChilds():
             result = PlugChild.PlugRequestSave()
@@ -473,6 +489,8 @@ class PlugTemplate:
                         PlugClass.__init__(_self)
                     #Load and init all the childs
                     _self.LoadChilds(logger)
+                    #just loaded, nothing to saved
+                    _self.ChangesToSave = False
                 else:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
                     os.mkdir(_self.PlugPath())
@@ -482,6 +500,8 @@ class PlugTemplate:
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
                     _self.PlugRequestSave()
+                    #just created, must be saved
+                    _self.ChangesToSave = True
             
             def _getBuildPath(_self):
                 return self._getBuildPath()
@@ -658,22 +678,23 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self._AddParamsMembers()
         self.PluggedChilds = {}
         """
-
+        # In both new or load scenario, no need to save
+        self.ChangesToSave = False        
         # root have no parent
         self.PlugParent = None
         # Keep track of the plugin type name
         self.PlugType = "Beremiz"
-        
         # After __init__ root plugin is not valid
         self.ProjectPath = None
         self.PLCEditor = None
-        
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
-        
+        # special root member for handlig PLC execution
         self.runningPLC = None
 
-    
+    def PlugTestModified(self):
+         return self.ChangesToSave or not self.ProjectIsSaved()
+
     def HasProjectOpened(self):
         """
         Return if a project is actually opened

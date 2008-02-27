@@ -86,7 +86,7 @@ class _NodeListPlug(NodeList):
             self._View.Close()
 
     def PlugTestModified(self):
-        return self.HasChanged()
+        return self.ChangesToSave or self.HasChanged()
         
     def OnPlugSave(self):
         self.SetRoot(self.PlugPath())
