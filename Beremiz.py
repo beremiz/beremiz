@@ -395,8 +395,19 @@ class Beremiz(wx.Frame):
                 event.Veto()
                 return
             if self.PluginRoot.ProjectTestModified():
-                self.PluginRoot.SaveProject()
-                wx.MessageBox("Project saved")
+                dialog = wx.MessageDialog(self, "There are changes, do you want to save?", "Close Application", wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+                answer = dialog.ShowModal()
+                dialog.Destroy()
+                if answer == wx.ID_YES:
+                    self.PluginRoot.SaveProject()
+                    event.Skip()
+                    return
+                elif answer == wx.ID_NO:
+                    event.Skip()
+                    return
+                else:
+                    event.Veto()
+                    return
         event.Skip()
     
     def OnMoveWindow(self, event):
