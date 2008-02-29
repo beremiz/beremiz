@@ -185,7 +185,7 @@ class LogPseudoFile:
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
-] = [wx.NewId() for _init_ctrls in range(4)]
+ ID_BEREMIZINSPECTOR] = [wx.NewId() for _init_ctrls in range(5)]
 
 [ID_BEREMIZFILEMENUITEMS0, ID_BEREMIZFILEMENUITEMS1, 
  ID_BEREMIZFILEMENUITEMS2, ID_BEREMIZFILEMENUITEMS3, 
@@ -330,6 +330,12 @@ class Beremiz(wx.Frame):
         self.SetMenuBar(self.menuBar1)
         self.Bind(wx.EVT_ACTIVATE, self.OnFrameActivated)
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
+
+        self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
+        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_F12, ID_BEREMIZINSPECTOR)])
+        self.SetAcceleratorTable(accel)
+
+
         
         if wx.VERSION < (2, 8, 0):
             self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
@@ -392,6 +398,19 @@ class Beremiz(wx.Frame):
             self.RefreshPluginTree()
         
         self.RefreshMainMenu()
+
+    def OnOpenWidgetInspector(self, evt):
+        # Activate the widget inspection tool
+        from wx.lib.inspection import InspectionTool
+        if not InspectionTool().initialized:
+            InspectionTool().Init()
+
+        # Find a widget to be selected in the tree.  Use either the
+        # one under the cursor, if any, or this frame.
+        wnd = wx.FindWindowAtPointer()
+        if not wnd:
+            wnd = self
+        InspectionTool().Show(wnd, True)
 
     def OnCloseFrame(self, event):
         if self.PluginRoot.HasProjectOpened():
@@ -1184,18 +1203,9 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnBeremizMenu(self, event):
-        if wx.Platform == '__WXMSW__':
-            readerpath = get_acroversion()
-            readerexepath = os.path.join(readerpath,"AcroRd32.exe")
-            if(os.path.isfile(readerexepath)):
-                os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", '"%s"'%os.path.join(CWD,"doc","manual_beremiz.pdf"))
-        else:
-            os.system("xpdf -remote BEREMIZ %s %d &"%(os.path.join(CWD,"doc","manual_beremiz.pdf",16)))
         event.Skip()
     
     def OnAboutMenu(self, event):
-        about_html = objdictedit(self)
-        about_html.OpenHtmlFrame("About Beremiz", os.path.join(CWD,"doc","about.html"),wx.Size(500,600))
         event.Skip()
     
     def OnAddButton(self, event):
