@@ -60,10 +60,15 @@ if __name__ == '__main__':
     splash=wx.SplashScreen(bmp,wx.SPLASH_CENTRE_ON_SCREEN, 1000, None)
     wx.Yield()
 
-import wx.lib.buttons, wx.lib.statbmp 
+import wx.lib.buttons, wx.lib.statbmp , wx.html
 import types, time, re, platform, time, traceback, commands
 
 from plugger import PluginsRoot
+base_folder = os.path.split(sys.path[0])[0]
+CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
+sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
+from objdictedit import *
+from doc_index.DS301_index import *
 
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
@@ -199,7 +204,7 @@ class LogPseudoFile:
 ] = [wx.NewId() for _init_coll_HelpMenu_Items in range(2)]
 
 class Beremiz(wx.Frame):
-    
+	
     def _init_coll_FileMenu_Items(self, parent):
         parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS0,
               kind=wx.ITEM_NORMAL, text=u'New\tCTRL+N')
@@ -1179,9 +1184,18 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnBeremizMenu(self, event):
+        if wx.Platform == '__WXMSW__':
+            readerpath = get_acroversion()
+            readerexepath = os.path.join(readerpath,"AcroRd32.exe")
+            if(os.path.isfile(readerexepath)):
+                os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", '"%s"'%os.path.join(CWD,"doc","manual_beremiz.pdf"))
+        else:
+            os.system("xpdf -remote BEREMIZ %s %d &"%(os.path.join(CWD,"doc","manual_beremiz.pdf",16)))
         event.Skip()
     
     def OnAboutMenu(self, event):
+        about_html = objdictedit(self)
+        about_html.OpenHtmlFrame("About Beremiz", os.path.join(CWD,"doc","about.html"),wx.Size(500,600))
         event.Skip()
     
     def OnAddButton(self, event):
