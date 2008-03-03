@@ -62,13 +62,15 @@ if __name__ == '__main__':
 
 import wx.lib.buttons, wx.lib.statbmp , wx.html
 import types, time, re, platform, time, traceback, commands
+import docclass.docpdf
 
 from plugger import PluginsRoot
+
 base_folder = os.path.split(sys.path[0])[0]
 CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 from objdictedit import *
-from doc_index.DS301_index import *
+
 
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
@@ -1203,9 +1205,12 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnBeremizMenu(self, event):
+        docclass.docpdf.open_pdf(os.path.join(CWD, "doc","manual_beremiz.pdf"))
         event.Skip()
     
     def OnAboutMenu(self, event):
+        about_html = objdictedit(self)
+        about_html.OpenHtmlFrame("About CAN Festival", os.path.join(CWD, "doc","about.html"), wx.Size(550, 500))
         event.Skip()
     
     def OnAddButton(self, event):
