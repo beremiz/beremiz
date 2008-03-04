@@ -1210,7 +1210,7 @@ class Beremiz(wx.Frame):
     
     def OnAboutMenu(self, event):
         about_html = objdictedit(self)
-        about_html.OpenHtmlFrame("About CAN Festival", os.path.join(CWD, "doc","about.html"), wx.Size(550, 500))
+        about_html.OpenHtmlFrame("About Beremiz", os.path.join(CWD, "doc","about.html"), wx.Size(550, 500))
         event.Skip()
     
     def OnAddButton(self, event):
