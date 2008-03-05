@@ -383,11 +383,7 @@ class Beremiz(wx.Frame):
         self.Log = LogPseudoFile(self.LogConsole)
         
         # Add beremiz's icon in top left corner of the frame
-        if wx.Platform == '__WXMSW__':
-            icon = wx.Icon(os.path.join(CWD,"images","brz.ico"),wx.BITMAP_TYPE_ICO)
-        else:
-            icon = wx.Icon(os.path.join(CWD,"images","brz.png"),wx.BITMAP_TYPE_PNG)
-        self.SetIcon(icon)
+        self.SetIcon(wx.Icon(os.path.join(CWD, "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         self.PluginRoot = PluginsRoot(self)
         self.DisableEvents = False
@@ -1205,7 +1201,7 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnBeremizMenu(self, event):
-        docclass.docpdf.open_pdf(os.path.join(CWD, "doc","manual_beremiz.pdf"))
+        docclass.docpdf.open_pdf(os.path.join(CWD, "doc", "manual_beremiz.pdf"))
         event.Skip()
     
     def OnAboutMenu(self, event):
