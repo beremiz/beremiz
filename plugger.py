@@ -12,8 +12,9 @@ import wx
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
+sys.path.append(os.path.join(base_folder, "docutils"))
 
-import docclass.docpdf
+from docpdf import *
 from xmlclass import GenerateClassesFromXSDstring
 from wxPopen import ProcessLogger
 
@@ -526,7 +527,7 @@ class PlugTemplate:
             - a virtual slave node to simulate output block
             """)
             logger.write("\nInfo: For this demo, %s plugin has some special methods to run external programs.\nThese methods are defined in methods.py\n" % (PlugName or "Root"))
-            docclass.docpdf.open_pdf(os.path.join(os.path.split(__file__)[0], "doc", "manual_beremiz.pdf"), pagenum=20)
+            open_pdf(os.path.join(os.path.split(__file__)[0], "doc", "manual_beremiz.pdf"), pagenum=20)
             execfile(methode_name)
 
         # Get the base xml tree
