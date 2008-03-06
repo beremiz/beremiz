@@ -188,111 +188,88 @@ class LogPseudoFile:
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
  ID_BEREMIZINSPECTOR] = [wx.NewId() for _init_ctrls in range(5)]
 
-[ID_BEREMIZFILEMENUITEMS0, ID_BEREMIZFILEMENUITEMS1, 
- ID_BEREMIZFILEMENUITEMS2, ID_BEREMIZFILEMENUITEMS3, 
- ID_BEREMIZFILEMENUITEMS5, ID_BEREMIZFILEMENUITEMS7, 
-] = [wx.NewId() for _init_coll_FileMenu_Items in range(6)]
-
-[ID_BEREMIZEDITMENUITEMS0, ID_BEREMIZEDITMENUITEMS2, 
- ID_BEREMIZEDITMENUITEMS3, 
-] = [wx.NewId() for _init_coll_EditMenu_Items in range(3)]
-
-[ID_BEREMIZRUNMENUITEMS0, ID_BEREMIZRUNMENUITEMS2, 
- ID_BEREMIZRUNMENUITEMS3, ID_BEREMIZRUNMENUITEMS5, 
+[ID_BEREMIZRUNMENUBUILD, ID_BEREMIZRUNMENUSIMULATE, 
+ ID_BEREMIZRUNMENURUN, ID_BEREMIZRUNMENUSAVELOG, 
 ] = [wx.NewId() for _init_coll_EditMenu_Items in range(4)]
-
-[ID_BEREMIZHELPMENUITEMS0, ID_BEREMIZHELPMENUITEMS1, 
-] = [wx.NewId() for _init_coll_HelpMenu_Items in range(2)]
 
 class Beremiz(wx.Frame):
 	
     def _init_coll_FileMenu_Items(self, parent):
-        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS0,
+        parent.Append(help='', id=wx.ID_NEW,
               kind=wx.ITEM_NORMAL, text=u'New\tCTRL+N')
-        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS1,
+        parent.Append(help='', id=wx.ID_OPEN,
               kind=wx.ITEM_NORMAL, text=u'Open\tCTRL+O')
-        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS2,
+        parent.Append(help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=u'Save\tCTRL+S')
-        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS3,
+        parent.Append(help='', id=wx.ID_CLOSE,
               kind=wx.ITEM_NORMAL, text=u'Close Project')
         parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS5,
+        parent.Append(help='', id=wx.ID_PROPERTIES,
               kind=wx.ITEM_NORMAL, text=u'Properties')
         parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZFILEMENUITEMS7,
+        parent.Append(help='', id=wx.ID_EXIT,
               kind=wx.ITEM_NORMAL, text=u'Quit\tCTRL+Q')
-        self.Bind(wx.EVT_MENU, self.OnNewProjectMenu,
-              id=ID_BEREMIZFILEMENUITEMS0)
-        self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu,
-              id=ID_BEREMIZFILEMENUITEMS1)
-        self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu,
-              id=ID_BEREMIZFILEMENUITEMS2)
-        self.Bind(wx.EVT_MENU, self.OnCloseProjectMenu,
-              id=ID_BEREMIZFILEMENUITEMS3)
-        self.Bind(wx.EVT_MENU, self.OnPropertiesMenu,
-              id=ID_BEREMIZFILEMENUITEMS5)
-        self.Bind(wx.EVT_MENU, self.OnQuitMenu,
-              id=ID_BEREMIZFILEMENUITEMS7)
+        self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
+        self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
+        self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu, id=wx.ID_SAVE)
+        self.Bind(wx.EVT_MENU, self.OnCloseProjectMenu, id=wx.ID_CLOSE)
+        self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
+        self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
         
     def _init_coll_EditMenu_Items(self, parent):
-        parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS0,
+        parent.Append(help='', id=wx.ID_EDIT,
               kind=wx.ITEM_NORMAL, text=u'Edit PLC\tCTRL+R')
         parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS2,
+        parent.Append(help='', id=wx.ID_ADD,
               kind=wx.ITEM_NORMAL, text=u'Add Plugin')
-        parent.Append(help='', id=ID_BEREMIZEDITMENUITEMS3,
+        parent.Append(help='', id=wx.ID_DELETE,
               kind=wx.ITEM_NORMAL, text=u'Delete Plugin')
-        self.Bind(wx.EVT_MENU, self.OnEditPLCMenu,
-              id=ID_BEREMIZEDITMENUITEMS0)
-        self.Bind(wx.EVT_MENU, self.OnAddMenu,
-              id=ID_BEREMIZEDITMENUITEMS2)
-        self.Bind(wx.EVT_MENU, self.OnDeleteMenu,
-              id=ID_BEREMIZEDITMENUITEMS3)
+        self.Bind(wx.EVT_MENU, self.OnEditPLCMenu, id=wx.ID_EDIT)
+        self.Bind(wx.EVT_MENU, self.OnAddMenu, id=wx.ID_ADD)
+        self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=wx.ID_DELETE)
     
     def _init_coll_RunMenu_Items(self, parent):
-        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS0,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUBUILD,
               kind=wx.ITEM_NORMAL, text=u'Build\tCTRL+R')
         parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS2,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUSIMULATE,
               kind=wx.ITEM_NORMAL, text=u'Simulate')
-        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS3,
+        parent.Append(help='', id=ID_BEREMIZRUNMENURUN,
               kind=wx.ITEM_NORMAL, text=u'Run')
         parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZRUNMENUITEMS5,
+        parent.Append(help='', id=ID_BEREMIZRUNMENUSAVELOG,
               kind=wx.ITEM_NORMAL, text=u'Save Log')
         self.Bind(wx.EVT_MENU, self.OnBuildMenu,
-              id=ID_BEREMIZRUNMENUITEMS0)
+              id=ID_BEREMIZRUNMENUBUILD)
         self.Bind(wx.EVT_MENU, self.OnSimulateMenu,
-              id=ID_BEREMIZRUNMENUITEMS2)
+              id=ID_BEREMIZRUNMENUSIMULATE)
         self.Bind(wx.EVT_MENU, self.OnRunMenu,
-              id=ID_BEREMIZRUNMENUITEMS3)
+              id=ID_BEREMIZRUNMENURUN)
         self.Bind(wx.EVT_MENU, self.OnSaveLogMenu,
-              id=ID_BEREMIZRUNMENUITEMS5)
+              id=ID_BEREMIZRUNMENUSAVELOG)
     
     def _init_coll_HelpMenu_Items(self, parent):
-        parent.Append(help='', id=ID_BEREMIZHELPMENUITEMS0,
+        parent.Append(help='', id=wx.ID_HELP,
               kind=wx.ITEM_NORMAL, text=u'Beremiz\tF1')
-        parent.Append(help='', id=ID_BEREMIZHELPMENUITEMS1,
+        parent.Append(help='', id=wx.ID_ABOUT,
               kind=wx.ITEM_NORMAL, text=u'About')
-        self.Bind(wx.EVT_MENU, self.OnBeremizMenu,
-              id=ID_BEREMIZHELPMENUITEMS0)
-        self.Bind(wx.EVT_MENU, self.OnAboutMenu,
-              id=ID_BEREMIZHELPMENUITEMS1)
+        self.Bind(wx.EVT_MENU, self.OnBeremizMenu, id=wx.ID_HELP)
+        self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
     
-    def _init_coll_menuBar1_Menus(self, parent):
+    def _init_coll_MenuBar_Menus(self, parent):
         parent.Append(menu=self.FileMenu, title=u'File')
         #parent.Append(menu=self.EditMenu, title=u'Edit')
         #parent.Append(menu=self.RunMenu, title=u'Run')
         parent.Append(menu=self.HelpMenu, title=u'Help')
     
     def _init_utils(self):
-        self.menuBar1 = wx.MenuBar()
+        self.MenuBar = wx.MenuBar()
         self.FileMenu = wx.Menu(title=u'')
         #self.EditMenu = wx.Menu(title=u'')
         #self.RunMenu = wx.Menu(title=u'')
         self.HelpMenu = wx.Menu(title=u'')
         
-        self._init_coll_menuBar1_Menus(self.menuBar1)
+        self._init_coll_MenuBar_Menus(self.MenuBar)
         self._init_coll_FileMenu_Items(self.FileMenu)
         #self._init_coll_EditMenu_Items(self.EditMenu)
         #self._init_coll_RunMenu_Items(self.RunMenu)
@@ -328,7 +305,7 @@ class Beremiz(wx.Frame):
               style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN, title=u'Beremiz')
         self._init_utils()
         self.SetClientSize(wx.Size(1000, 600))
-        self.SetMenuBar(self.menuBar1)
+        self.SetMenuBar(self.MenuBar)
         self.Bind(wx.EVT_ACTIVATE, self.OnFrameActivated)
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
@@ -441,19 +418,19 @@ class Beremiz(wx.Frame):
             self.PluginRoot.RefreshPluginsBlockLists()
     
     def RefreshMainMenu(self):
-        if self.menuBar1:
+        if self.MenuBar:
             if self.PluginRoot.HasProjectOpened():
-##                self.menuBar1.EnableTop(1, True)
-##                self.menuBar1.EnableTop(2, True)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, True)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, True)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, True)
+##                self.MenuBar.EnableTop(1, True)
+##                self.MenuBar.EnableTop(2, True)
+                self.FileMenu.Enable(wx.ID_SAVE, True)
+                self.FileMenu.Enable(wx.ID_CLOSE, True)
+                self.FileMenu.Enable(wx.ID_PROPERTIES, True)
             else:
-##                self.menuBar1.EnableTop(1, False)
-##                self.menuBar1.EnableTop(2, False)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS2, False)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS3, False)
-                self.FileMenu.Enable(ID_BEREMIZFILEMENUITEMS5, False)
+##                self.MenuBar.EnableTop(1, False)
+##                self.MenuBar.EnableTop(2, False)
+                self.FileMenu.Enable(wx.ID_SAVE, False)
+                self.FileMenu.Enable(wx.ID_CLOSE, False)
+                self.FileMenu.Enable(wx.ID_PROPERTIES, False)
 
     def RefreshScrollBars(self):
         xstart, ystart = self.PLCConfig.GetViewStart()
