@@ -54,7 +54,10 @@ class outputThread(threading.Thread):
                 wx.CallAfter(self.callback,outchunk)
             self.retval=self.Proc.poll()
         if self.endcallback:
-            err = self.Proc.wait()
+            try:
+            	err = self.Proc.wait()
+            except:
+            	pass
             self.finished = True
             wx.CallAfter(self.endcallback, self.Proc.pid, self.retval)
 
