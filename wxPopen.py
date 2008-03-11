@@ -73,17 +73,19 @@ class ProcessLogger:
         self.errdata = ""
         self.finished = False
         
+        popenargs= {
+               "cwd":os.getcwd(),
+               "stdin":subprocess.PIPE, 
+               "stdout":subprocess.PIPE, 
+               "stderr":subprocess.PIPE}
         if no_gui == True and wx.Platform == '__WXMSW__':
             self.startupinfo = subprocess.STARTUPINFO()
             self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            popenargs["startupinfo"] = self.startupinfo
+        elif wx.Platform == '__WXGTK__':
+            popenargs["shell"] = True
         
-        self.Proc = subprocess.Popen(self.Command, 
-                                   cwd = os.getcwd(),
-                                   stdin = subprocess.PIPE, 
-                                   stdout = subprocess.PIPE, 
-                                   #stderr = subprocess.STDOUT,
-                                   stderr = subprocess.PIPE,
-                                   startupinfo = self.startupinfo)
+        self.Proc = subprocess.Popen( self.Command, **popenargs )
 
 
         self.outt = outputThread(
@@ -99,7 +101,7 @@ class ProcessLogger:
                       self.Proc.stderr,
                       self.errors)
 #
-        self.errt.start()
+        self.errt.start()	
 
     def output(self,v):
         self.outdata += v
