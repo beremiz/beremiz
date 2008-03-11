@@ -451,6 +451,10 @@ class Beremiz(wx.Frame):
                 bkgdclr = CHANGED_TITLE_COLOUR
             else:
                 bkgdclr = TITLE_COLOUR
+                
+            if self.PluginRoot not in self.PluginInfos:
+                self.PluginInfos[self.PluginRoot] = {"middle_visible" : False}
+            
             plcwindow.SetBackgroundColour(TITLE_COLOUR)
             self.PLCParamsSizer.AddWindow(plcwindow, 0, border=0, flag=wx.GROW)
             
@@ -476,7 +480,7 @@ class Beremiz(wx.Frame):
             plcwindowbuttonsizer = wx.BoxSizer(wx.HORIZONTAL)
             plcwindowmainsizer.AddSizer(plcwindowbuttonsizer, 0, border=0, flag=wx.ALIGN_CENTER)
             
-            msizer = self.GenerateMethodButtonSizer(self.PluginRoot, plcwindow)
+            msizer = self.GenerateMethodButtonSizer(self.PluginRoot, plcwindow, not self.PluginInfos[self.PluginRoot]["middle_visible"])
             plcwindowbuttonsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
             
             paramswindow = wx.Panel(plcwindow, -1, size=wx.Size(-1, -1))
@@ -489,7 +493,8 @@ class Beremiz(wx.Frame):
             plugin_infos = self.PluginRoot.GetParamsAttributes()
             self.RefreshSizerElement(paramswindow, psizer, self.PluginRoot, plugin_infos, None, False)
             
-            paramswindow.Hide()
+            if not self.PluginInfos[self.PluginRoot]["middle_visible"]:
+                paramswindow.Hide()
             
             minimizebutton_id = wx.NewId()
             minimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=minimizebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Maximize.png')),
@@ -516,12 +521,14 @@ class Beremiz(wx.Frame):
                     msizer.SetCols(len(self.PluginRoot.PluginMethods))
 #                    if addsizer is not None:
 #                        addsizer.SetCols(len(self.PluginRoot.PlugChildsTypes))
+                self.PluginInfos[self.PluginRoot]["middle_visible"] = minimizebutton.GetToggle()
                 self.PLCConfigMainSizer.Layout()
                 self.RefreshScrollBars()
                 event.Skip()
             minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
         
-            self.PluginInfos[self.PluginRoot] = {"main" : plcwindow, "params" : paramswindow}
+            self.PluginInfos[self.PluginRoot]["main"] = plcwindow
+            self.PluginInfos[self.PluginRoot]["params"] = paramswindow
             
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
@@ -920,18 +927,18 @@ class Beremiz(wx.Frame):
     def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, plugin, path):
         def OnChoiceContentChanged(event):
             res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection(), self.Log)
-            choicectrl.SetStringSelection(res)
-            infos = self.PluginRoot.GetParamsAttributes(path)
-            staticbox = staticboxsizer.GetStaticBox()
-            staticbox.SetLabel("%(name)s - %(value)s"%infos)
             if wx.VERSION < (2, 8, 0):
                 self.ParamsPanel.Freeze()
+                choicectrl.SetStringSelection(res)
+                infos = self.PluginRoot.GetParamsAttributes(path)
+                staticbox = staticboxsizer.GetStaticBox()
+                staticbox.SetLabel("%(name)s - %(value)s"%infos)
                 self.RefreshSizerElement(self.ParamsPanel, staticboxsizer, infos["children"], "%s.%s"%(path, infos["name"]), selected=selected)
                 self.ParamsPanelMainSizer.Layout()
                 self.ParamsPanel.Thaw()
                 self.ParamsPanel.Refresh()
             else:
-                wx.CallAfter(self.RefreshPluginTree)
+                wx.CallAfter(self.RefreshAll)
             event.Skip()
         return OnChoiceContentChanged
     
