@@ -1348,6 +1348,6 @@ if __name__ == '__main__':
     
     frame = Beremiz(None, projectOpen)
     frame.Show()
-    splash.Hide()
+    splash.Close()
 
     app.MainLoop()
