@@ -527,7 +527,7 @@ class PlugTemplate:
             - a virtual slave node to simulate output block
             """)
             logger.write("\nInfo: For this demo, %s plugin has some special methods to run external programs.\nThese methods are defined in methods.py\n" % (PlugName or "Root"))
-            open_pdf(os.path.join(os.path.split(__file__)[0], "doc", "manual_beremiz.pdf"), pagenum=20)
+            open_pdf(os.path.join(os.path.split(__file__)[0], "doc", "manual_beremiz.pdf"), pagenum=21)
             execfile(methode_name)
 
         # Get the base xml tree
