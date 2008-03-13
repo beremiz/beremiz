@@ -65,10 +65,8 @@ import types, time, re, platform, time, traceback, commands
 from plugger import PluginsRoot
 
 base_folder = os.path.split(sys.path[0])[0]
-sys.path.append(os.path.join(base_folder, "docutils"))
-
-from docpdf import *
-from dochtml import *
+sys.path.append(base_folder)
+from docutils import *
 
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
