@@ -60,16 +60,15 @@ if __name__ == '__main__':
     splash=wx.SplashScreen(bmp,wx.SPLASH_CENTRE_ON_SCREEN, 1000, None)
     wx.Yield()
 
-import wx.lib.buttons, wx.lib.statbmp , wx.html
+import wx.lib.buttons, wx.lib.statbmp
 import types, time, re, platform, time, traceback, commands
 from plugger import PluginsRoot
 
 base_folder = os.path.split(sys.path[0])[0]
-CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
-sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 sys.path.append(os.path.join(base_folder, "docutils"))
-from objdictedit import *
+
 from docpdf import *
+from dochtml import *
 
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
@@ -1188,8 +1187,7 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnAboutMenu(self, event):
-        about_html = objdictedit(self)
-        about_html.OpenHtmlFrame("About Beremiz", os.path.join(CWD, "doc","about.html"), wx.Size(550, 500))
+        OpenHtmlFrame(self,"About Beremiz", os.path.join(CWD, "doc","about.html"), wx.Size(550, 500))
         event.Skip()
     
     def OnAddButton(self, event):
