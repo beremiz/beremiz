@@ -973,12 +973,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
         locstrs = map(lambda x:"_".join(map(str,x)), [loc for loc,Cfiles,DoCalls in LocationCFilesAndCFLAGS if loc and DoCalls])
         plc_main = runtime.code("plc_common_main") % {
             "calls_prototypes":"\n".join(
-               ["int __init_%(s)s(int argc,char **argv);\nvoid __cleanup_%(s)s();\nvoid __retrive_%(s)s();\nvoid __publish_%(s)s();"%
+               ["int __init_%(s)s(int argc,char **argv);\nvoid __cleanup_%(s)s();\nvoid __retrieve_%(s)s();\nvoid __publish_%(s)s();"%
                 {'s':locstr} for locstr in locstrs]),
-            "retrive_calls":"    \n".join(["__retrive_%(s)s();"%{'s':locstr} for locstr in locstrs]),
-            "publish_calls":"    \n".join(["__publish_%(s)s();"%{'s':locstr} for locstr in locstrs]),
-            "init_calls":"    \n".join(["init_level++; if(res = __init_%(s)s(argc,argv)) return res;"%{'s':locstr} for locstr in locstrs]),
-            "cleanup_calls":"    \n".join(["if(init_level-- > 0) __cleanup_%(s)s();"%{'s':locstr} for locstr in locstrs])}
+            "retrieve_calls":"\n    ".join(["__retrieve_%(s)s();"%{'s':locstr} for locstr in locstrs]),
+            "publish_calls":"\n    ".join(["__publish_%(s)s();"%{'s':locstr} for locstr in locstrs]),
+            "init_calls":"\n    ".join(["init_level++; if(res = __init_%(s)s(argc,argv)) return res;"%{'s':locstr} for locstr in locstrs]),
+            "cleanup_calls":"\n    ".join(["if(init_level-- > 0) __cleanup_%(s)s();"%{'s':locstr} for locstr in locstrs])}
         target_name = self.BeremizRoot.TargetType.content["name"]
         plc_main += runtime.code("plc_%s_main"%target_name)
 

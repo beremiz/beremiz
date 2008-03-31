@@ -94,7 +94,7 @@ int __init_%(locstr)s(int argc,char **argv)
 #define NODE_SEND_SYNC(nodename)\
     sendSYNCMessage(&nodename##_Data);
 
-void __retrive_%(locstr)s()
+void __retrieve_%(locstr)s()
 {
     /* Locks the stack, so that no changes occurs while PLC access variables
      * TODO : implement buffers to avoid such a big lock  

@@ -28,16 +28,16 @@ static int tick = 0;
 static int init_level=0;
 
 /*
- * Prototypes of funcions exported by plugins 
+ * Prototypes of functions exported by plugins 
  **/
 %(calls_prototypes)s
 
 /*
- * Retrive input variables, run PLC and publish output variables 
+ * Retrieve input variables, run PLC and publish output variables 
  **/
 void __run()
 {
-    %(retrive_calls)s
+    %(retrieve_calls)s
     
     config_run__(tick++);
     
