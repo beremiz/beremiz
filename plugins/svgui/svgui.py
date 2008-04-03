@@ -225,7 +225,9 @@ char** myargv = NULL;
 #define PLC_BUSY 2
 #define CHANGED 3
 #define GUI_BUSY 4
-        
+
+bool refreshing = false;
+
 void* InitWxEntry(void* args)
 {
   wxEntry(myargc,myargv);
@@ -345,7 +347,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
     m_svgCtrl->InitScrollBars();
     m_svgCtrl->Initialize();
     m_svgCtrl->Update();
-    //m_svgCtrl->Print();
   }
   else
   {
@@ -375,45 +376,30 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             element_state = "  in_state_%d = %s;\n"%(element.getid(), "%s")
             element_name = element.getname()
                 
-            block_infos = GetBlockType(SVGUIFB_Types[element_type])
             if element_type == ITEM_BUTTON:
                 text += """void Program::On%sClick(wxCommandEvent& event)
 {
   SVGUIButton* button = (SVGUIButton*)GetElementByName(wxT("%s"));\n"""%(element_name, element_name)
                 text += element_state%"GUI_BUSY"
-                for i, output in enumerate(block_infos["outputs"]):
-                    element_type = TYPECONVERSION[output[1]]
-                    if i == 0:
-                        value = "button->IsVisible()"
-                    elif i == 1:
-                        value = "button->GetToggle()"
-                    else:
-                        value = "0"
-                    text += "  _copy__I%s%s_%d_%d = %s;\n"%(TYPECONVERSION[output[1]], current_location, element.getid(), i + 1, value)
+                text += "  _copy__IX%s_%d_1 = button->GetToggle();\n"%(current_location, element.getid())
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_ROTATING:
                 text += """void Program::On%sChanged(wxScrollEvent& event)
 {
   SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementByName(wxT("%s"));
-  rotating->SendScrollEvent(event);
-  double angle = rotating->GetAngle();
 """%(element_name, element_name)
                 text += element_state%"GUI_BUSY"
-                for i, output in enumerate(block_infos["outputs"]):
-                    text += "  _copy__I%s%s_%d_%d = %s;\n"%(TYPECONVERSION[output[1]], current_location, element.getid(), i + 1, ["angle", "true"][value])
+                text += "  _copy__ID%s_%d_1 = rotating->GetAngle();\n"%(current_location, element.getid())
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_NOTEBOOK:
                 text += """void Program::On%sTabChanged(wxNotebookEvent& event)
 {
   SVGUINoteBook* notebook = (SVGUINoteBook*)GetElementByName(wxT("%s"));
-  notebook->SendNotebookEvent(event);
-  unsigned int selected = notebook->GetCurrentPage();
 """%(element_name, element_name)
                 text += element_state%"GUI_BUSY"
-                for i, output in enumerate(block_infos["outputs"]):
-                    text += "  _copy__I%s%s_%d_%d = %s;\n"%(TYPECONVERSION[output[1]], current_location, element.getid(), i + 1, ["selected", "true"][value])
+                text += "  _copy__IB%s_%d_1 = notebook->GetCurrentPage();\n"%(current_location, element.getid())
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_TRANSFORM:
@@ -422,36 +408,10 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
   SVGUITransform* transform = (SVGUITransform*)GetElementByName(wxT("%s"));
 """%(element_name, element_name)
                 text += element_state%"GUI_BUSY"
-                for i, output in enumerate(block_infos["outputs"]):
-                    if i < 5:
-                        texts = {"location" : current_location, "id" : element.getid(), 
-                                 "pin" : i + 1, "param" : ["X", "Y", "XScale", "YScale", "Angle"][i]}
-                    
-                        text += """  if (transform->Get%(param)s() != _copy__ID%(location)s_%(id)d_%(pin)d)
-  {
-    _copy__ID%(location)s_%(id)d_%(pin)d = transform->Get%(param)s();
-    _copy__IX%(location)s_%(id)d_6 = true;
-  }
-"""%texts
+                text += "  _copy__ID%s_%d_1 = transform->GetX();\n"%(current_location, element.getid())
+                text += "  _copy__ID%s_%d_2 = transform->GetY();\n"%(current_location, element.getid())
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
-            elif element_type == ITEM_CONTAINER:
-                text += """void Program::On%sPaint(wxPaintEvent& event)
-{
-  SVGUIContainer* container = (SVGUIContainer*)GetElementByName(wxT("%s"));
-  bool isvisible = container->IsVisible();
-"""%(element_name, element_name)
-                text += element_state%"GUI_BUSY"
-                texts = {"location" : current_location, "id" : element.getid()}
-                
-                text += """  if (isvisible != _copy__IX%(location)s_%(id)d_1)
-  {    
-    _copy__IX%(location)s_%(id)d_1 = container->IsVisible();
-    _copy__IX%(location)s_%(id)d_2 = true;
-"""%texts
-                text += "  %s  }\n  else {\n  %s  }\n"%(element_state%"CHANGED", element_state%"UNCHANGED")
-                text += "  event.Skip();\n}\n\n"
-
 
         text += """void Program::OnChar(wxKeyEvent& event)
 {
@@ -505,86 +465,76 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
 
         
         text += "/* OnPlcOutEvent update GUI with provided IEC __Q* PLC output variables */\n"
-        text += "void Program::OnPlcOutEvent(wxEvent& event)\n{\n  wxMutexGuiEnter();"
+        text += """void Program::OnPlcOutEvent(wxEvent& event)
+{
+  SVGUIElement* element;
+
+  refreshing = true;
+
+  wxMutexGuiEnter();
+"""
         for element in elements:
             element_type = GetElementType(element)
             texts = {"location" : current_location, "id" : element.getid()}
             
-            element_lock = "  if (__sync_val_compare_and_swap (&out_state_%(id)d, CHANGED, GUI_BUSY) == CHANGED)\n  {\n"%texts
-            element_unlock = "    __sync_val_compare_and_swap (&out_state_%(id)d, GUI_BUSY, UNCHANGED);\n  }\n"%texts
-            if element_type == ITEM_BUTTON:
-                text += element_lock
-                text += """    SVGUIButton* button = (SVGUIButton*)GetElementById(wxT("%(id)d"));
-    //if (_copy__QX%(location)s_%(id)d_1)
-    //  button->Show();
-    //else
-    //  button->Hide();
-    if (_copy__QX%(location)s_%(id)d_2 != button->GetToggle()) {
-      button->SetToggle(_copy__QX%(location)s_%(id)d_2);
+            text += """  if (__sync_bool_compare_and_swap (&out_state_%(id)d, CHANGED, GUI_BUSY))
+  {
+    element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
+            
+    if (_copy__QX%(location)s_%(id)d_1 != element->IsVisible()) {
+      if (_copy__QX%(location)s_%(id)d_1)
+        element->Show();
+      else
+        element->Hide();
+    }
+    if (_copy__QX%(location)s_%(id)d_2 != element->IsEnabled()) {
+      if (_copy__QX%(location)s_%(id)d_2)
+        element->Enable();
+      else
+        element->Disable();
     }
 """%texts
-                text += element_unlock
-            elif element_type == ITEM_CONTAINER:
-                text += element_lock
-                text += """  if (_copy__QX%(location)s_%(id)d_2)
-  {
-    SVGUIContainer* container = (SVGUIContainer*)GetElementById(wxT("%(id)d"));
-    //if (_copy__QX%(location)s_%(id)d_1)
-    //  container->Show();
-    //else
-    //  container->Hide();
-  }
+            if element_type == ITEM_BUTTON:
+                text += """    if (_copy__QX%(location)s_%(id)d_3 != ((SVGUIButton*)element)->GetToggle())
+      ((SVGUIButton*)element)->SetToggle(_copy__QX%(location)s_%(id)d_3);
 """%texts
-                text += element_unlock
             elif element_type == ITEM_TEXT:
-                text += element_lock
-                text += """  if (_copy__QX%(location)s_%(id)d_2)
-  {
-    SVGUITextCtrl* text = (SVGUITextCtrl*)GetElementById(wxT("%(id)d"));
-    wxString str = wxString::FromAscii(_copy__QB%(location)s_%(id)d_1);
-    text->SetText(str);
-  }
+                text += """    if (((SVGUITextCtrl*)element)->GetValue().compare(_copy__QX%(location)s_%(id)d_3))
+    {
+      wxString str = wxString::FromAscii(_copy__QB%(location)s_%(id)d_3);
+      ((SVGUITextCtrl*)element)->SetText(str);
+    }
 """%texts
-                text += element_unlock
             elif  element_type == ITEM_SCROLLBAR:
-                text += element_lock
-                text += """  if (_copy__QX%(location)s_%(id)d_2)
-  {
-    SVGUIScrollBar* scrollbar = (SVGUIScrollBar*)GetElementById(wxT("%(id)d"));
-    scrollbar->SetThumbPosition(_copy__QW%(location)s_%(id)d_1);\n"
-  }
+                text += """    if (_copy__QW%(location)s_%(id)d_3 != ((SVGUIScrollBar*)element)->GetThumbPosition() ||
+        _copy__QW%(location)s_%(id)d_4 != ((SVGUIScrollBar*)element)->GetThumbSize() ||
+        _copy__QW%(location)s_%(id)d_5 != ((SVGUIScrollBar*)element)->GetRange())
+      ((SVGUIScrollBar*)element)->Init_ScrollBar(_copy__QW%(location)s_%(id)d_3, _copy__QW%(location)s_%(id)d_4, _copy__QW%(location)s_%(id)d_5);
 """%texts
-                text += element_unlock
             elif element_type == ITEM_ROTATING:
-                text += element_lock
-                text += """  if (_copy__QX%(location)s_%(id)d_2)
-  {
-    SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementById(wxT("%(id)d"));
-    rotating->SetAngle(_copy__QD%(location)s_%(id)d_1);\n"
-  }
+                text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUIRotatingCtrl*)element)->GetAngle())
+      ((SVGUIRotatingCtrl*)element)->SetAngle(_copy__QD%(location)s_%(id)d_3);
 """%texts
-                text += element_unlock
-            elif elment_type == ITEM_NOTEBOOK:
-                text += element_lock
-                text += """  if (copy__QX%(location)s_%(id)d_2)
-  {
-    SVGUINoteBook* notebook = (SVGUINoteBook*)GetElementById(wxT("%(id)d"));
-    notebook->SetCurrentPage(_copy__QB%(location)s_%(id)d_1);
-  }
+            elif element_type == ITEM_NOTEBOOK:
+                text += """    if (_copy__QB%(location)s_%(id)d_3 != ((SVGUINoteBook*)element)->GetCurrentPage())
+      ((SVGUINoteBook*)element)->SetCurrentPage(_copy__QB%(location)s_%(id)d_3);
 """%texts
-                text += element_unlock
-            elif elment_type == ITEM_TRANSFORM:
-                text += element_lock
-                text += """  if (copy__QX%(location)s_%(id)d_6)
-  {
-    SVGUITransform* transform = (SVGUITransform*)GetElementById(wxT("%(id)d"));
-    transform->Move(_copy__QD%(location)s_%(id)d_1, _copy__QD%(location)s_%(id)d_2);
-    transform->Scale(_copy__QD%(location)s_%(id)d_3, _copy__QD%(location)s_%(id)d_4);
-    transform->Rotate(_copy__QD%(location)s_%(id)d_5);
-  }
+            elif element_type == ITEM_TRANSFORM:
+                text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUITransform*)element)->GetX() ||
+        copy__QD%(location)s_%(id)d_4 != ((SVGUITransform*)element)->GetY())
+      transform->Move(_copy__QD%(location)s_%(id)d_3, _copy__QD%(location)s_%(id)d_4);
+    if (_copy__QD%(location)s_%(id)d_5 != ((SVGUITransform*)element)->GetXScale() ||
+        copy__QD%(location)s_%(id)d_6 != ((SVGUITransform*)element)->GetYScale())
+      transform->Scale(_copy__QD%(location)s_%(id)d_5, _copy__QD%(location)s_%(id)d_6);
+    if (_copy__QD%(location)s_%(id)d_7 != ((SVGUITransform*)element)->GetAngle())
+      transform->Rotate(_copy__QD%(location)s_%(id)d_7);
 """%texts
-                text += element_unlock
+            text += "    __sync_bool_compare_and_swap (&out_state_%(id)d, GUI_BUSY, UNCHANGED);\n  }\n"%texts
+            
         text += """  wxMutexGuiLeave();
+
+  refreshing = false;
+
   event.Skip();
 }
 
@@ -610,11 +560,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 variable = "__I%(type)s%(location)s_%(id)d_%(pin)d"%texts
                 text +="      %s = _copy%s;\n"%(variable, variable)
             
-            text += "      /* reset change status pin */\n"
-            if element_type in [ITEM_BUTTON, ITEM_CONTAINER, ITEM_TEXT, ITEM_SCROLLBAR, ITEM_ROTATING, ITEM_NOTEBOOK]:
-                text += "      _copy__IX%(location)s_%(id)d_2 = false;\n"%texts
-            elif element_type == ITEM_TRANSFORM:
-                text += "      _copy__IX%(location)s_%(id)d_6 = false;\n"%texts
             text += """    }
     else {
       break;
@@ -653,7 +598,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
 """%texts
         
         text += """  /*Replace this with determinist signal if called from RT*/;
-  if (refresh) {
+  if (refresh && !refreshing) {
     wxCommandEvent event( EVT_PLC );
     ProcessEvent(event);
   }
@@ -661,91 +606,34 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
 
 """
 
-        text += "void Program::Initialize()\n{\n"
-        button = False
-        container = False
-        textctrl = False
-        scrollbar = False
-        rotatingctrl = False
-        notebook = False
-        transform = False
+        text += """void Program::Initialize()
+{
+  SVGUIElement* element;
+"""
         for element in elements:
             element_type = GetElementType(element)
             texts = {"location" : current_location, "id" : element.getid()}
             
+            text += """
+  element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
+  __QX%(location)s_%(id)d_1 = 1;
+  _copy__QX%(location)s_%(id)d_1 = 1;
+  __QX%(location)s_%(id)d_2 = 1;
+  _copy__QX%(location)s_%(id)d_2 = 1;
+"""%texts
             if element_type == ITEM_BUTTON:
-                if (not button):
-                    text += "  SVGUIButton* button;\n"
-                text += """  button = (SVGUIButton*)GetElementById(wxT("%(id)d"));
-  if (button->IsVisible())
-    _copy__IX%(location)s_%(id)d_1 = true;
-  else
-    _copy__IX%(location)s_%(id)d_1 = false;
-  _copy__IX%(location)s_%(id)d_2 = false;
-
-"""%texts
-                button = True
-            elif element_type == ITEM_CONTAINER:
-                if (not container):
-                    text += "  SVGUIContainer* container;\n"
-                text += """  container = (SVGUIContainer*)GetElementById(wxT("%(id)d"));
-  if (container->IsVisible())
-    _copy__IX%(location)s_%(id)d_1 = true;
-  else
-    _copy__IX%(location)s_%(id)d_1 = false;
-  _copy__IX%(location)s_%(id)d_2 = true;
-
-"""%texts
-                container = True
+                text += "  _copy__IX%(location)s_%(id)d_1 = ((SVGUIButton*)element)->GetToggle();\n"%texts
             elif element_type == ITEM_TEXT:
-                if (not textctrl):
-                    text += "  SVGUITextCtrl* text;\n"
-                text += """  text = (SVGUITextCtrl*)GetElementById(wxT("%(id)d"));
-  _copy__IB%(location)s_%(id)d_1 = wxStringToIEC_STRING(text->GetValue());
-  _copy__IX%(location)s_%(id)d_2 = true;
-
-"""%texts
-                textctrl = True
+                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
             elif element_type == ITEM_SCROLLBAR:
-                if (not scrollbar):
-                    text += "  SVGUIScrollBar* scrollbar;\n"
-                text += """  scrollbar = (SVGUIScrollBar*)GetElementById(wxT("%(id)d"));
-  _copy__IW%(location)s_%(id)d_1 = scrollbar->GetThumbPosition();
-  _copy__IX%(location)s_%(id)d_2 = true;
-
-"""%texts
-                scrollbar = True
+                text += "  _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
             elif element_type == ITEM_ROTATING:
-                if (not rotatingctrl):
-                    text += "  SVGUIRotatingCtrl* rotating;\n"
-                text += """  rotating = (SVGUIRotatingCtrl*)GetElementById(wxT("%(id)d"));
-  _copy__ID%(location)s_%(id)d_1 = rotating->GetAngle();
-  _copy__IX%(location)s_%(id)d_2 = true;
-
-"""%texts
-                rotatingctrl = True
+                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
             elif element_type == ITEM_NOTEBOOK:
-                if (not notebook):
-                    text += "  SVGUINoteBook* notebook;\n"
-                text += """  notebook = (SVGUINoteBook*)GetElementById(wxT("%(id)d"));
-  _copy__IB%(location)s_%(id)d_1 = notebook->GetCurrentPage();
-  _copy__IX%(location)s_%(id)d_2 = true;
-
-"""%texts
-                notebook = True
+                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
             elif element_type == ITEM_TRANSFORM:
-                if (not transform):
-                    text += "  SVGUITransform* transform;\n"
-                text += """  transform = (SVGUITransform*)GetElementById(wxT("%(id)d"));
-  _copy__ID%(location)s_%(id)d_1 = transform->GetX();
-  _copy__ID%(location)s_%(id)d_2 = transform->GetY();
-  _copy__ID%(location)s_%(id)d_3 = transform->GetXScale();
-  _copy__ID%(location)s_%(id)d_4 = transform->GetYScale();
-  _copy__ID%(location)s_%(id)d_5 = transform->GetAngle();
-  _copy__IX%(location)s_%(id)d_6 = true;
-
-"""%texts
-                transform = True
+                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUITransform*)element)->GetX();\n"%texts
+                text += "  _copy__ID%(location)s_%(id)d_2 = ((SVGUITransform*)element)->GetY();\n"%texts
         text += "}\n\n"
         
         #DEBUG Fonction d'affichage
@@ -819,53 +707,62 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             else:
                 return None
 
-        def initialise_block(type, name):
+        def initialise_block(type, name, block = None):
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
                 raise ValueError, "No corresponding block found"
             block_infos = GetBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
             variables = []
+            if block is not None:
+                input_variables = block.inputVariables.getvariable()
+                output_variables = block.outputVariables.getvariable()
+            else:
+                input_variables = None
+                output_variables = None
             for num, (input_name, input_type, input_modifier) in enumerate(block_infos["inputs"]):
-                variables.append((input_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num+1), None))
+                if input_variables is not None and num < len(input_variables):
+                    connections = input_variables[num].connectionPointIn.getconnections()
+                if input_variables is None or connections and len(connections) == 1:
+                    variables.append((input_type, None, "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num+1), None))
             for num, (output_name, output_type, output_modifier) in enumerate(block_infos["outputs"]):
                 variables.append((output_type, None, "%sI%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num+1), None))
             return variables
 
         return [{"name" : "SVGUI function blocks", "list" :
                 [{"name" : "Container", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Show","BOOL","none"),("SetState","BOOL","none")], 
-                    "outputs" : [("Visible","BOOL","none"),("StateChanged","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none")], 
+                    "outputs" : [],
                     "comment" : "SVGUI Container",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "Button", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Show","BOOL","none"),("Toggle","BOOL","none")], 
-                    "outputs" : [("Visible","BOOL","none"),("State","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("Toggle","BOOL","none")], 
+                    "outputs" : [("State","BOOL","none")],
                     "comment" : "SVGUI Button",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "TextCtrl", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Text","STRING","none"),("SetText","BOOL","none")], 
-                    "outputs" : [("Text","STRING","none"),("TextChanged","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("SetText","STRING","none")], 
+                    "outputs" : [("Text","STRING","none")],
                     "comment" : "SVGUI Text Control",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "ScrollBar", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Position","UINT","none"),("SetPosition","BOOL","none")], 
-                    "outputs" : [("Position","UINT","none"),("PositionChanged","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("SetThumb","UINT","none"),("SetRange","UINT","none"),("SetPosition","UINT","none")], 
+                    "outputs" : [("Position","UINT","none")],
                     "comment" : "SVGUI ScrollBar",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "NoteBook", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Selected","UINT","none"),("SetSelected","BOOL","none")], 
-                    "outputs" : [("Selected","UINT","none"),("SelectedChanged","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("SetSelected","BOOL","none")], 
+                    "outputs" : [("Selected","UINT","none")],
                     "comment" : "SVGUI Notebook",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "RotatingCtrl", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Angle","REAL","none"),("SetAngle","BOOL","none")], 
-                    "outputs" : [("Angle","REAL","none"),("AngleChanged","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("SetAngle","REAL","none")], 
+                    "outputs" : [("Angle","REAL","none")],
                     "comment" : "SVGUI Rotating Control",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "Transform", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("X","REAL","none"),("Y","REAL","none"),("XScale","REAL","none"),("YScale","REAL","none"),("Angle","REAL","none"),("Set","BOOL","none")], 
-                    "outputs" : [("X","REAL","none"),("Y","REAL","none"),("XScale","REAL","none"),("YScale","REAL","none"),("Angle","REAL","none"),("Changed","BOOL","none")],
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("SetX","REAL","none"),("SetY","REAL","none"),("SetXScale","REAL","none"),("SetYScale","REAL","none"),("SetAngle","REAL","none")], 
+                    "outputs" : [("X","REAL","none"),("Y","REAL","none")],
                     "comment" : "SVGUI Transform",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                ]}
