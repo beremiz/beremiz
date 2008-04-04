@@ -420,7 +420,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
   {
     wxString focusedId = container->GetFocusedElement();
     SVGUITextCtrl* text = (SVGUITextCtrl*)GetElementById(focusedId);
-    text->SendKeyEvent(event);
+    text->OnChar(event);
 """
         for element in elements:
             element_type = GetElementType(element)
@@ -446,7 +446,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
   {
     wxString focusedId = container->GetFocusedElement();
     SVGUIScrollBar* scrollbar = (SVGUIScrollBar*)GetElementById(focusedId);
-    scrollbar->SendMouseEvent(event);
+    scrollbar->OnLeftDown(event);
 """
         for element in elements:
             element_type = GetElementType(element)
