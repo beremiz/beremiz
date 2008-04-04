@@ -166,7 +166,7 @@ class RootClass(SVGUIControler):
         {"bitmap" : os.path.join("images","ImportDEF"),
          "name" : "Import XML",
          "tooltip" : "Import XML",
-         "method" : "_InportXML"},
+         "method" : "_ImportXML"},
     ]
     
     def OnPlugSave(self):
