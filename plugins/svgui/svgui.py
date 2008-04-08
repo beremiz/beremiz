@@ -208,7 +208,7 @@ class RootClass(SVGUIControler):
         return text
     
     def GenerateGlobalVarsAndFuncs(self, elements, size):
-        text = "#include \"iec_std_lib.h\"\n\n"
+        text = "#include \"iec_types.h\"\n\n"
         
         text += self.GenerateIECVars(elements)
         
@@ -293,7 +293,7 @@ void __publish_%(location)s()
 
 IEC_STRING wxStringToIEC_STRING(wxString s)
 {
-  STRING res = {0,""};
+  IEC_STRING res = {0,""};
   int i;
   for(i = 0; i<s.Length() && i<STR_MAX_LEN; i++)
     res.body[i] = s.GetChar(i);
