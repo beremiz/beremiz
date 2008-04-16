@@ -323,14 +323,11 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             element_name = element.getname()
             if element_type == ITEM_BUTTON:
                 text += "  EVT_BUTTON (SVGUIID(\"%s\"), Program::On%sClick)\n"%(element_name, element_name)
-            elif element_type in [ITEM_SCROLLBAR, ITEM_ROTATING]:
-                text += "  EVT_COMMAND_SCROLL_THUMBTRACK (SVGUIID(\"%s\"), Program::On%sChanged)\n"%(element_name, element_name)
+            elif element_type in [ITEM_SCROLLBAR, ITEM_ROTATING, ITEM_TRANSFORM]:
+                text += "  EVT_COMMAND_SCROLL_THUMBTRACK (SVGUIID(\"%s\"), Program::On%sChanging)\n"%(element_name, element_name)
             elif element_type == ITEM_NOTEBOOK:
                 text += "  EVT_NOTEBOOK_PAGE_CHANGED (SVGUIID(\"%s\"), Program::On%sTabChanged)\n"%(element_name, element_name)
-##            elif element_type in [ITEM_CONTAINER, ITEM_TRANSFORM]:
-##                text += "  EVT_PAINT(Program::On%sPaint)\n"%element_name
-        text += "  EVT_LEFT_UP (Program::OnClick)\n"
-        text += "  EVT_CUSTOM( EVT_PLC, wxID_ANY, Program::OnPlcOutEvent )\n"
+        text += "  EVT_CUSTOM(EVT_PLC, wxID_ANY, Program::OnPlcOutEvent)\n"
         text += "END_EVENT_TABLE()\n\n"
         return text
     
@@ -385,7 +382,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_ROTATING:
-                text += """void Program::On%sChanged(wxScrollEvent& event)
+                text += """void Program::On%sChanging(wxScrollEvent& event)
 {
   SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementByName(wxT("%s"));
 """%(element_name, element_name)
@@ -403,7 +400,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_TRANSFORM:
-                text += """void Program::On%sPaint(wxPaintEvent& event)
+                text += """void Program::On%sChanging(wxScrollEvent& event)
 {
   SVGUITransform* transform = (SVGUITransform*)GetElementByName(wxT("%s"));
 """%(element_name, element_name)
@@ -412,63 +409,12 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += "  _copy__ID%s_%d_2 = transform->GetY();\n"%(current_location, element.getid())
                 text += element_state%"CHANGED"
                 text += "  event.Skip();\n}\n\n"
-
-        text += """void Program::OnChar(wxKeyEvent& event)
-{
-  SVGUIContainer* container = GetSVGUIRootElement();
-  if (container->GetFocusedElementName() == wxT("TextCtrl"))
-  {
-    wxString focusedId = container->GetFocusedElement();
-    SVGUITextCtrl* text = (SVGUITextCtrl*)GetElementById(focusedId);
-    text->OnChar(event);
-"""
-        for element in elements:
-            element_type = GetElementType(element)
-            if element_type == ITEM_TEXT:
-                texts = {"location" : current_location, "id" : element.getid()}
-                
-                text += """    if (focusedId == wxT("%(id)d"))
-    {
-      in_state_%(id)d = GUI_BUSY;
-      _copy__IB%(location)s_%(id)d_1 = wxStringToIEC_STRING(text->GetValue());
-      _copy__IX%(location)s_%(id)d_2 = true;
-      in_state_%(id)d = CHANGED;
-    }
-"""%texts
-
-        text += "  }\n  event.Skip();\n}\n\n"
-
-
-        text += """void Program::OnClick(wxMouseEvent& event)
-{
-  SVGUIContainer* container = GetSVGUIRootElement();
-  if (container->GetFocusedElementName() == wxT("ScrollBar"))
-  {
-    wxString focusedId = container->GetFocusedElement();
-    SVGUIScrollBar* scrollbar = (SVGUIScrollBar*)GetElementById(focusedId);
-    scrollbar->OnLeftDown(event);
-"""
-        for element in elements:
-            element_type = GetElementType(element)
-            if element_type == ITEM_SCROLLBAR:
-                texts = {"location" : current_location, "id" : element.getid()}
-                
-                text += """    if (focusedId == wxT("%(id)d"))
-    {
-      unsigned int scrollPos = scrollbar->GetThumbPosition();
-      _copy__IW%(location)s_%(id)d_1 = scrollPos;
-      _copy__IX%(location)s_%(id)d_2 = true;\n"
-    }
-"""%texts
-
-        text += "  }\n  event.Skip();\n}\n\n"
-
         
         text += "/* OnPlcOutEvent update GUI with provided IEC __Q* PLC output variables */\n"
         text += """void Program::OnPlcOutEvent(wxEvent& event)
 {
   SVGUIElement* element;
-
+  
   refreshing = true;
 
   wxMutexGuiEnter();
