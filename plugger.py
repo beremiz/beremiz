@@ -898,7 +898,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # files are listed to stdout, and errors to stderr. 
         status, result, err_result = ProcessLogger(
                logger,
-               "%s \"%s\" -I \"%s\" \"%s\""%(
+               "\"%s\" \"%s\" -I \"%s\" \"%s\""%(
                          iec2c_path,
                          self._getIECcodepath(),
                          ieclib_path, buildpath),
