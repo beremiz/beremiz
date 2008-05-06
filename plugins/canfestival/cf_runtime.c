@@ -46,6 +46,10 @@ void InitNodes(CO_Data* d, UNS32 id)
     %(nodes_init)s
 }
 
+void Exit(CO_Data* d, UNS32 id)
+{
+}
+
 #define NODE_CLOSE(nodename) \
     if(init_level-- > 0)\
     {\
@@ -61,7 +65,7 @@ void __cleanup_%(locstr)s()
     
     // Stop timer thread
     if(init_level-- > 0)
-        StopTimerLoop();
+        StopTimerLoop(&Exit);
 
 }
 
