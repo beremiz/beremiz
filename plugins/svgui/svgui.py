@@ -5,6 +5,7 @@ sys.path.append(os.path.join(base_folder, "plcopeneditor", "graphics"))
 
 import wx
 
+from SVGUIGenerator import *
 from SVGUIControler import *
 from SVGUIEditor import *
 from FBD_Objects import *
@@ -173,456 +174,26 @@ class RootClass(SVGUIControler):
         self.SaveXMLFile()
         return True
     
-    def GenerateProgramHeadersPublicVars(self, elements):
-        text = """    void OnPlcOutEvent(wxEvent& event);
-
-    void Retrieve();
-    void Publish();
-    void Initialize();
-"""
-#        text += "    void Print();\n"
-        return text
-    
-    def GenerateIECVars(self, elements):
-        text = ""
-        for element in elements:
-            text += "volatile int out_state_%d;\n"%element.getid()
-            text += "volatile int in_state_%d;\n"%element.getid()
-        text +="\n"
-        current_location = "_".join(map(str, self.GetCurrentLocation()))
-        #Declaration des variables
-        for element in elements:
-            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
-            block_id = element.getid()
-            for i, input in enumerate(block_infos["inputs"]):
-                element_c_type = CTYPECONVERSION[input[1]]
-                variable = "__Q%s%s_%d_%d"%(TYPECONVERSION[input[1]], current_location, block_id, i + 1)
-                text += "%s %s;\n"%(element_c_type, variable)
-                text += "%s _copy%s;\n"%(element_c_type, variable)
-            for i, output in enumerate(block_infos["outputs"]):
-                element_c_type = CTYPECONVERSION[output[1]]
-                variable = "__I%s%s_%d_%d"%(TYPECONVERSION[output[1]], current_location, block_id, i + 1)
-                text += "%s %s;\n"%(element_c_type, variable)
-                text += "%s _copy%s;\n"%(element_c_type, variable)
-            text +="\n"
-        return text
-    
-    def GenerateGlobalVarsAndFuncs(self, elements, size):
-        text = "#include \"iec_types.h\"\n\n"
-        
-        text += self.GenerateIECVars(elements)
-        
-        text += """IMPLEMENT_APP_NO_MAIN(SVGViewApp);
-IMPLEMENT_WX_THEME_SUPPORT;
-SVGViewApp *myapp = NULL;
-pthread_t wxMainLoop;
-"""
-#        text += "pthread_t wxMainLoop,automate;\n"
-        text += """int myargc = 0;
-char** myargv = NULL;
-        
-#define UNCHANGED 1
-#define PLC_BUSY 2
-#define CHANGED 3
-#define GUI_BUSY 4
-
-bool refreshing = false;
-
-void* InitWxEntry(void* args)
-{
-  wxEntry(myargc,myargv);
-  return args;
-}
-
-"""
-#        text += """void* SimulAutomate(void* args)
-#{
-#  while(1){
-#    myapp->frame->m_svgCtrl->IN_"+self.BusNumber+"();
-#    //printf(\"AUTOMATE\\n\");
-#    myapp->frame->m_svgCtrl->OUT_"+self.BusNumber+"();
-#    sleep(1);
-#  }
-#  return args;
-#}
-#
-#"""
-      
-        text += """bool SVGViewApp::OnInit()
-{
-  #ifndef __WXMSW__
-    setlocale(LC_NUMERIC, "C");
-  #endif
-"""
-        #text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxSize(%d, %d));\n"%size
-        text += """  frame = new MainFrame(NULL, wxT("Program"),wxDefaultPosition, wxDefaultSize);
-  myapp = this;
-"""
-#        text += "  pthread_create(&automate, NULL, SimulAutomate, NULL);\n"
-        text += """  return true;
-}
-
-extern "C" {
-
-int __init_%(location)s(int argc, char** argv)
-{
-  myargc = argc;
-  myargv = argv;
-  pthread_create(&wxMainLoop, NULL, InitWxEntry, NULL);
-}
-
-void __cleanup_%(location)s()
-{
-}
-
-void __retrieve_%(location)s()
-{
-  if(myapp){
-    myapp->frame->m_svgCtrl->Retrieve();
-  }        
-}
-
-void __publish_%(location)s()
-{
-  if(myapp){
-    myapp->frame->m_svgCtrl->Publish();
-  }
-}
-
-}
-
-IEC_STRING wxStringToIEC_STRING(wxString s)
-{
-  IEC_STRING res = {0,""};
-  int i;
-  for(i = 0; i<s.Length() && i<STR_MAX_LEN; i++)
-    res.body[i] = s.GetChar(i);
-  res.len = i;
-  return res;
-}
-
-"""%{"location" : "_".join(map(str, self.GetCurrentLocation()))}
-        
-        return text
-    
-    def GenerateProgramEventTable(self, elements):
-        text = ""        
-        #text += "wxEVT_PLCOUT = wxNewEventType();\n\n";
-        
-        text += """BEGIN_DECLARE_EVENT_TYPES()
-DECLARE_LOCAL_EVENT_TYPE( EVT_PLC, wxNewEventType() )
-END_DECLARE_EVENT_TYPES()
-         
-DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
-
-"""     
-        #Event Table Declaration
-        text += "BEGIN_EVENT_TABLE(Program, SVGUIWindow)\n"
-        for element in elements:
-            element_type = GetElementType(element)
-            element_name = element.getname()
-            if element_type == ITEM_BUTTON:
-                text += "  EVT_BUTTON (SVGUIID(\"%s\"), Program::On%sClick)\n"%(element_name, element_name)
-            elif element_type in [ITEM_SCROLLBAR, ITEM_ROTATING, ITEM_TRANSFORM]:
-                text += "  EVT_COMMAND_SCROLL_THUMBTRACK (SVGUIID(\"%s\"), Program::On%sChanging)\n"%(element_name, element_name)
-            elif element_type == ITEM_NOTEBOOK:
-                text += "  EVT_NOTEBOOK_PAGE_CHANGED (SVGUIID(\"%s\"), Program::On%sTabChanged)\n"%(element_name, element_name)
-        text += "  EVT_CUSTOM(EVT_PLC, wxID_ANY, Program::OnPlcOutEvent)\n"
-        text += "END_EVENT_TABLE()\n\n"
-        return text
-    
-    def GenerateProgramInitFrame(self, elements):
-        text = """MainFrame::MainFrame(wxWindow *parent, const wxString& title, const wxPoint& pos,const wxSize& size, long style): wxFrame(parent, wxID_ANY, title, pos, size, style)
-{
-  m_svgCtrl = new Program(this);
-  if (m_svgCtrl->LoadFiles(wxT("%s"), wxT("%s")))
-  {
-    Show(true);
-    m_svgCtrl->SetFocus();
-    m_svgCtrl->SetFitToFrame(true);
-    m_svgCtrl->RefreshScale();
-    m_svgCtrl->InitScrollBars();
-    m_svgCtrl->Initialize();
-    m_svgCtrl->Update();
-  }
-  else
-  {
-    printf("Error while opening files\\n");
-    exit(0);
-  }
-}
-
-
-"""%(self.GetSVGFilePath(), self.GetFilePath())
-
-        return text
-    
-    def GenerateProgramInitProgram(self, elements):
-        text = "Program::Program(wxWindow* parent):SVGUIWindow(parent)\n{\n"
-        for element in elements:
-            text += "    out_state_%d = UNCHANGED;\n"%element.getid()
-            text += "    in_state_%d = UNCHANGED;\n"%element.getid()
-        text += "}\n\n"
-        return text
-    
-    def GenerateProgramEventFunctions(self, elements):
-        text = ""
-        current_location = "_".join(map(str, self.GetCurrentLocation()))
-        for element in elements:
-            element_type = GetElementType(element)
-            element_state = "  in_state_%d = %s;\n"%(element.getid(), "%s")
-            element_name = element.getname()
-                
-            if element_type == ITEM_BUTTON:
-                text += """void Program::On%sClick(wxCommandEvent& event)
-{
-  SVGUIButton* button = (SVGUIButton*)GetElementByName(wxT("%s"));\n"""%(element_name, element_name)
-                text += element_state%"GUI_BUSY"
-                text += "  _copy__IX%s_%d_1 = button->GetToggle();\n"%(current_location, element.getid())
-                text += element_state%"CHANGED"
-                text += "  event.Skip();\n}\n\n"
-            elif element_type == ITEM_ROTATING:
-                text += """void Program::On%sChanging(wxScrollEvent& event)
-{
-  SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementByName(wxT("%s"));
-"""%(element_name, element_name)
-                text += element_state%"GUI_BUSY"
-                text += "  _copy__ID%s_%d_1 = rotating->GetAngle();\n"%(current_location, element.getid())
-                text += element_state%"CHANGED"
-                text += "  event.Skip();\n}\n\n"
-            elif element_type == ITEM_NOTEBOOK:
-                text += """void Program::On%sTabChanged(wxNotebookEvent& event)
-{
-  SVGUINoteBook* notebook = (SVGUINoteBook*)GetElementByName(wxT("%s"));
-"""%(element_name, element_name)
-                text += element_state%"GUI_BUSY"
-                text += "  _copy__IB%s_%d_1 = notebook->GetCurrentPage();\n"%(current_location, element.getid())
-                text += element_state%"CHANGED"
-                text += "  event.Skip();\n}\n\n"
-            elif element_type == ITEM_TRANSFORM:
-                text += """void Program::On%sChanging(wxScrollEvent& event)
-{
-  SVGUITransform* transform = (SVGUITransform*)GetElementByName(wxT("%s"));
-"""%(element_name, element_name)
-                text += element_state%"GUI_BUSY"
-                text += "  _copy__ID%s_%d_1 = transform->GetX();\n"%(current_location, element.getid())
-                text += "  _copy__ID%s_%d_2 = transform->GetY();\n"%(current_location, element.getid())
-                text += element_state%"CHANGED"
-                text += "  event.Skip();\n}\n\n"
-        
-        text += "/* OnPlcOutEvent update GUI with provided IEC __Q* PLC output variables */\n"
-        text += """void Program::OnPlcOutEvent(wxEvent& event)
-{
-  SVGUIElement* element;
-  
-  refreshing = true;
-
-  wxMutexGuiEnter();
-"""
-        for element in elements:
-            element_type = GetElementType(element)
-            texts = {"location" : current_location, "id" : element.getid()}
-            
-            text += """  if (__sync_bool_compare_and_swap (&out_state_%(id)d, CHANGED, GUI_BUSY))
-  {
-    element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
-            
-    if (_copy__QX%(location)s_%(id)d_1 != element->IsVisible()) {
-      if (_copy__QX%(location)s_%(id)d_1)
-        element->Show();
-      else
-        element->Hide();
-    }
-    if (_copy__QX%(location)s_%(id)d_2 != element->IsEnabled()) {
-      if (_copy__QX%(location)s_%(id)d_2)
-        element->Enable();
-      else
-        element->Disable();
-    }
-"""%texts
-            if element_type == ITEM_BUTTON:
-                text += """    if (_copy__QX%(location)s_%(id)d_3 != ((SVGUIButton*)element)->GetToggle())
-      ((SVGUIButton*)element)->SetToggle(_copy__QX%(location)s_%(id)d_3);
-"""%texts
-            elif element_type == ITEM_TEXT:
-                text += """    if (((SVGUITextCtrl*)element)->GetValue().compare(_copy__QX%(location)s_%(id)d_3))
-    {
-      wxString str = wxString::FromAscii(_copy__QB%(location)s_%(id)d_3);
-      ((SVGUITextCtrl*)element)->SetText(str);
-    }
-"""%texts
-            elif  element_type == ITEM_SCROLLBAR:
-                text += """    if (_copy__QW%(location)s_%(id)d_3 != ((SVGUIScrollBar*)element)->GetThumbPosition() ||
-        _copy__QW%(location)s_%(id)d_4 != ((SVGUIScrollBar*)element)->GetThumbSize() ||
-        _copy__QW%(location)s_%(id)d_5 != ((SVGUIScrollBar*)element)->GetRange())
-      ((SVGUIScrollBar*)element)->Init_ScrollBar(_copy__QW%(location)s_%(id)d_3, _copy__QW%(location)s_%(id)d_4, _copy__QW%(location)s_%(id)d_5);
-"""%texts
-            elif element_type == ITEM_ROTATING:
-                text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUIRotatingCtrl*)element)->GetAngle())
-      ((SVGUIRotatingCtrl*)element)->SetAngle(_copy__QD%(location)s_%(id)d_3);
-"""%texts
-            elif element_type == ITEM_NOTEBOOK:
-                text += """    if (_copy__QB%(location)s_%(id)d_3 != ((SVGUINoteBook*)element)->GetCurrentPage())
-      ((SVGUINoteBook*)element)->SetCurrentPage(_copy__QB%(location)s_%(id)d_3);
-"""%texts
-            elif element_type == ITEM_TRANSFORM:
-                text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUITransform*)element)->GetX() ||
-        copy__QD%(location)s_%(id)d_4 != ((SVGUITransform*)element)->GetY())
-      transform->Move(_copy__QD%(location)s_%(id)d_3, _copy__QD%(location)s_%(id)d_4);
-    if (_copy__QD%(location)s_%(id)d_5 != ((SVGUITransform*)element)->GetXScale() ||
-        copy__QD%(location)s_%(id)d_6 != ((SVGUITransform*)element)->GetYScale())
-      transform->Scale(_copy__QD%(location)s_%(id)d_5, _copy__QD%(location)s_%(id)d_6);
-    if (_copy__QD%(location)s_%(id)d_7 != ((SVGUITransform*)element)->GetAngle())
-      transform->Rotate(_copy__QD%(location)s_%(id)d_7);
-"""%texts
-            text += "    __sync_bool_compare_and_swap (&out_state_%(id)d, GUI_BUSY, UNCHANGED);\n  }\n"%texts
-            
-        text += """  wxMutexGuiLeave();
-
-  refreshing = false;
-
-  event.Skip();
-}
-
-"""
-        return text
-    
-    def GenerateProgramPrivateFunctions(self, elements):
-        current_location = "_".join(map(str, self.GetCurrentLocation()))
-        
-        text = "void Program::Retrieve()\n{\n"
-        for element in elements:
-            element_type = GetElementType(element)
-            texts = {"location" : current_location, "id" : element.getid()}
-            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
-            
-            text += """  do{
-    if ( __sync_val_compare_and_swap (&in_state_%(id)d, CHANGED, PLC_BUSY) == CHANGED){
-"""%texts
-            for i, output in enumerate(block_infos["outputs"]):
-                texts["type"] = TYPECONVERSION[output[1]]
-                texts["pin"] = i + 1
-                
-                variable = "__I%(type)s%(location)s_%(id)d_%(pin)d"%texts
-                text +="      %s = _copy%s;\n"%(variable, variable)
-            
-            text += """    }
-    else {
-      break;
-    }
-"""
-            #If GUI did change data while publishing, do it again (in real-time this should be avoided with priority stuff)
-            text += "  }while(__sync_val_compare_and_swap (&in_state_%(id)s, PLC_BUSY, UNCHANGED) != PLC_BUSY);\n"%texts
-        text += "}\n\n" 
-
-        text += """void Program::Publish()
-{
-  bool refresh = false;
-"""
-        for element in elements:
-            element_type = GetElementType(element)
-            texts = {"location" : current_location, "id" : element.getid()}
-            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
-            
-            text += """  if ( __sync_bool_compare_and_swap (&out_state_%(id)d, UNCHANGED, PLC_BUSY) ||
-       __sync_bool_compare_and_swap (&out_state_%(id)d, CHANGED, PLC_BUSY)) {
-"""%texts
-            for i, input in enumerate(block_infos["inputs"]):
-                texts["type"] = TYPECONVERSION[input[1]]
-                texts["pin"] = i + 1
-                variable = "__Q%(type)s%(location)s_%(id)d_%(pin)d"%texts
-                text += "    if (_copy%s != %s) {\n"%(variable, variable)
-                text += "      _copy%s = %s;\n"%(variable, variable)
-                text += "      out_state_%(id)d = CHANGED;\n    }\n"%texts
-            text += """    if (out_state_%(id)d == CHANGED) {
-      refresh = true;
-    }
-    else {
-      out_state_%(id)d = UNCHANGED;
-    }
-  }
-"""%texts
-        
-        text += """  /*Replace this with determinist signal if called from RT*/;
-  if (refresh && !refreshing) {
-    wxCommandEvent event( EVT_PLC );
-    ProcessEvent(event);
-  }
-};
-
-"""
-
-        text += """void Program::Initialize()
-{
-  SVGUIElement* element;
-"""
-        for element in elements:
-            element_type = GetElementType(element)
-            texts = {"location" : current_location, "id" : element.getid()}
-            
-            text += """
-  element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
-  __QX%(location)s_%(id)d_1 = 1;
-  _copy__QX%(location)s_%(id)d_1 = 1;
-  __QX%(location)s_%(id)d_2 = 1;
-  _copy__QX%(location)s_%(id)d_2 = 1;
-"""%texts
-            if element_type == ITEM_BUTTON:
-                text += "  _copy__IX%(location)s_%(id)d_1 = ((SVGUIButton*)element)->GetToggle();\n"%texts
-            elif element_type == ITEM_TEXT:
-                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
-            elif element_type == ITEM_SCROLLBAR:
-                text += "  _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
-            elif element_type == ITEM_ROTATING:
-                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
-            elif element_type == ITEM_NOTEBOOK:
-                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
-            elif element_type == ITEM_TRANSFORM:
-                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUITransform*)element)->GetX();\n"%texts
-                text += "  _copy__ID%(location)s_%(id)d_2 = ((SVGUITransform*)element)->GetY();\n"%texts
-        text += "}\n\n"
-        
-        #DEBUG Fonction d'affichage
-#        fct += "void Program::Print()\n{\n"
-#        for element in elementsTab:
-#            infos = element.getElementAttributes()
-#            for info in infos:
-#                if info["name"] == "id":
-#                    element_id = str(info["value"])
-#            type = element.GetElementInfos()["type"]
-#            FbdBlock = self.GetBlockType(type)
-#            element_num_patte = 1
-#            for input in FbdBlock["inputs"]:
-#                element_type = TYPECONVERSION[input[1]]
-#                c_type = CPRINTTYPECONVERSION[input[1]]
-#                var = "_copy__Q"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
-#                fct +="  printf(\""+var+": %"+c_type+"\\n\","+var+");\n"
-#                element_num_patte +=1
-#            element_num_patte = 1
-#            for output in FbdBlock["outputs"]:
-#                element_type = TYPECONVERSION[output[1]]
-#                c_type = CPRINTTYPECONVERSION[output[1]]
-#                var = "_copy__I"+element_type+self.BusNumber+"_"+element_id+"_"+str(element_num_patte)
-#                fct +="  printf(\""+var+": %"+c_type+"\\n\","+var+");\n"
-#                element_num_patte +=1
-        #fct +="    wxPostEvent(Program,wxEVT_PLCOUT);\n"
-#        fct +="};\n\n"    
-        return text
-    
     def PlugGenerate_C(self, buildpath, locations, logger):
         progname = "SVGUI_%s"%"_".join(map(str, self.GetCurrentLocation()))
-        self.GenerateProgram((0, 0), buildpath, progname)
+        
+        generator = _SVGUICGenerator(self.GetElementsByType(), self.GetSVGFilePath(), self.GetFilePath(), self.GetCurrentLocation())
+        generator.GenerateProgram((0, 0), buildpath, progname)
         Gen_C_file = os.path.join(buildpath, progname+".cpp" )
         
-        status, result, err_result = ProcessLogger(logger, "wx-config --cxxflags", no_stdout=True).spin()
-        if status:
-            logger.write_error("Unable to get wx cxxflags\n")
-        cxx_flags = result.strip() + " -I../matiec/lib"
-        
-        status, result, err_result = ProcessLogger(logger, "wx-config --libs", no_stdout=True).spin()
-        if status:
-            logger.write_error("Unable to get wx libs\n")
-        libs = result.strip() + " -lwxsvg"
+        if wx.Platform == '__WXMSW__':
+            cxx_flags = "-I..\\..\\wxPython-src-2.8.7.1\\bld\\lib\\wx\\include\\msw-unicode-release-2.8 -I..\\..\\wxPython-src-2.8.7.1\\include -I..\\..\\wxPython-src-2.8.7.1\\contrib\\include -I..\\..\\matiec\\lib -DWXUSINGDLL -D__WXMSW__ -mthreads"
+            libs = "\"..\\lib\\libwxsvg.a\" \"..\\lib\\libwxsvg_agg.a\" \"..\\lib\\libagg.a\" \"..\\lib\\libaggplatformwin32.a\" \"..\\lib\\libaggfontwin32tt.a\" -L..\\..\\wxPython-src-2.8.7.1\\bld\\lib -mno-cygwin -mwindows -mthreads  -mno-cygwin -mwindows -Wl,--subsystem,windows -mwindows -lwx_mswu_richtext-2.8 -lwx_mswu_aui-2.8 -lwx_mswu_xrc-2.8 -lwx_mswu_qa-2.8 -lwx_mswu_html-2.8 -lwx_mswu_adv-2.8 -lwx_mswu_core-2.8 -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8"
+        else:
+            status, result, err_result = ProcessLogger(logger, "wx-config --cxxflags", no_stdout=True).spin()
+            if status:
+                logger.write_error("Unable to get wx cxxflags\n")
+            cxx_flags = result.strip() + " -I../matiec/lib"
+            
+            status, result, err_result = ProcessLogger(logger, "wx-config --libs", no_stdout=True).spin()
+            if status:
+                logger.write_error("Unable to get wx libs\n")
+            libs = result.strip() + " -lwxsvg"
         
         return [(Gen_C_file, cxx_flags)],libs,True
     
@@ -636,13 +207,13 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             block_infos = GetBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
             if not generator.ComputedBlocks.get(name, False) and not order:
+                generator.ComputedBlocks[block] = True
                 for num, variable in enumerate(block.inputVariables.getvariable()):
                     connections = variable.connectionPointIn.getconnections()
                     if connections and len(connections) == 1:
                         parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num+1)
                         value = generator.ComputeFBDExpression(body, connections[0])
                         generator.Program += ("  %s := %s;\n"%(parameter, generator.ExtractModifier(variable, value)))
-                generator.ComputedBlocks[block] = True
             if link:
                 connectionPoint = link.getposition()[-1]
                 for num, variable in enumerate(block.outputVariables.getvariable()):
@@ -714,3 +285,445 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                ]}
         ]
 
+
+
+class _SVGUICGenerator(SVGUICGenerator):
+
+    def __init__(self, elements, svgfile, xmlfile, current_location):
+        SVGUICGenerator.__init__(self, elements, svgfile, xmlfile)
+        
+        self.CurrentLocation = current_location
+
+    def GenerateProgramHeadersPublicVars(self):
+        text = """    void OnPlcOutEvent(wxEvent& event);
+
+    void Retrieve();
+    void Publish();
+    void Initialize();
+"""
+#        text += "    void Print();\n"
+        return text
+    
+    def GenerateIECVars(self):
+        text = ""
+        for element in self.Elements:
+            text += "STATE_TYPE out_state_%d;\n"%element.getid()
+            text += "STATE_TYPE in_state_%d;\n"%element.getid()
+        text +="\n"
+        current_location = "_".join(map(str, self.CurrentLocation))
+        #Declaration des variables
+        for element in self.Elements:
+            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
+            block_id = element.getid()
+            for i, input in enumerate(block_infos["inputs"]):
+                element_c_type = CTYPECONVERSION[input[1]]
+                variable = "__Q%s%s_%d_%d"%(TYPECONVERSION[input[1]], current_location, block_id, i + 1)
+                text += "%s %s;\n"%(element_c_type, variable)
+                text += "%s _copy%s;\n"%(element_c_type, variable)
+            for i, output in enumerate(block_infos["outputs"]):
+                element_c_type = CTYPECONVERSION[output[1]]
+                variable = "__I%s%s_%d_%d"%(TYPECONVERSION[output[1]], current_location, block_id, i + 1)
+                text += "%s %s;\n"%(element_c_type, variable)
+                text += "%s _copy%s;\n"%(element_c_type, variable)
+            text +="\n"
+        return text
+    
+    def GenerateGlobalVarsAndFuncs(self, size):
+        text = """#include \"iec_types.h\"
+
+#ifdef __WXMSW__
+#define COMPARE_AND_SWAP_VAL(Destination, comparand, exchange) InterlockedCompareExchange(Destination, exchange, comparand)
+#define THREAD_RETURN_TYPE DWORD WINAPI
+#define STATE_TYPE long int
+#else
+#define COMPARE_AND_SWAP_VAL(Destination, comparand, exchange) __sync_val_compare_and_swap(Destination, comparand, exchange)
+#define THREAD_RETURN_TYPE void*
+#define STATE_TYPE volatile int
+#endif
+
+"""
+        
+        text += self.GenerateIECVars()
+        
+        text += """IMPLEMENT_APP_NO_MAIN(SVGViewApp);
+IMPLEMENT_WX_THEME_SUPPORT;
+SVGViewApp *myapp = NULL;
+
+#ifdef __WXMSW__
+HANDLE wxMainLoop;
+DWORD wxMainLoopId;
+#else
+pthread_t wxMainLoop;
+#endif
+
+"""
+
+#        text += "pthread_t wxMainLoop,automate;\n"
+        text += """int myargc = 0;
+char** myargv = NULL;
+        
+#define UNCHANGED 1
+#define PLC_BUSY 2
+#define CHANGED 3
+#define GUI_BUSY 4
+#ifdef __WXMSW__
+#else
+#endif
+
+bool refresh = false;
+bool refreshing = false;
+
+THREAD_RETURN_TYPE InitWxEntry(void* args)
+{
+  wxEntry(myargc,myargv);
+  return 0;
+}
+
+"""
+#        text += """void* SimulAutomate(void* args)
+#{
+#  while(1){
+#    myapp->frame->m_svgCtrl->IN_"+self.BusNumber+"();
+#    //printf(\"AUTOMATE\\n\");
+#    myapp->frame->m_svgCtrl->OUT_"+self.BusNumber+"();
+#    sleep(1);
+#  }
+#  return args;
+#}
+#
+#"""
+      
+        text += """bool SVGViewApp::OnInit()
+{
+  #ifndef __WXMSW__
+    setlocale(LC_NUMERIC, "C");
+  #endif
+"""
+        #text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxSize(%d, %d));\n"%size
+        text += """  frame = new MainFrame(NULL, wxT("Program"),wxDefaultPosition, wxDefaultSize);
+  frame->Show();
+  myapp = this;
+"""
+#        text += "  pthread_create(&automate, NULL, SimulAutomate, NULL);\n"
+        text += """  return true;
+}
+
+extern "C" {
+
+int __init_%(location)s(int argc, char** argv)
+{
+  myargc = argc;
+  myargv = argv;
+#ifdef __WXMSW__
+  wxMainLoop = CreateThread(NULL, 0, InitWxEntry, 0, 0, &wxMainLoopId);
+#else
+  pthread_create(&wxMainLoop, NULL, InitWxEntry, NULL);
+#endif
+  return 0;
+}
+
+void __cleanup_%(location)s()
+{
+}
+
+void __retrieve_%(location)s()
+{
+  if(myapp){
+    myapp->frame->m_svgCtrl->Retrieve();
+  }        
+}
+
+void __publish_%(location)s()
+{
+  if(myapp){
+    myapp->frame->m_svgCtrl->Publish();
+  }
+}
+
+}
+
+IEC_STRING wxStringToIEC_STRING(wxString s)
+{
+  IEC_STRING res = {0,""};
+  int i;
+  for(i = 0; i<s.Length() && i<STR_MAX_LEN; i++)
+    res.body[i] = s.GetChar(i);
+  res.len = i;
+  return res;
+}
+
+"""%{"location" : "_".join(map(str, self.CurrentLocation))}
+        
+        return text
+    
+    def GenerateProgramEventTable(self):
+        text = """BEGIN_DECLARE_EVENT_TYPES()
+DECLARE_LOCAL_EVENT_TYPE( EVT_PLC, wxNewEventType() )
+END_DECLARE_EVENT_TYPES()
+         
+DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
+
+"""     
+        #Event Table Declaration
+        text += "BEGIN_EVENT_TABLE(Program, SVGUIWindow)\n"
+        for element in self.Elements:
+            element_type = GetElementType(element)
+            element_name = element.getname()
+            if element_type == ITEM_BUTTON:
+                text += "  EVT_BUTTON (SVGUIID(\"%s\"), Program::On%sClick)\n"%(element_name, element_name)
+            elif element_type in [ITEM_SCROLLBAR, ITEM_ROTATING, ITEM_TRANSFORM]:
+                text += "  EVT_COMMAND_SCROLL_THUMBTRACK (SVGUIID(\"%s\"), Program::On%sChanging)\n"%(element_name, element_name)
+            elif element_type == ITEM_NOTEBOOK:
+                text += "  EVT_NOTEBOOK_PAGE_CHANGED (SVGUIID(\"%s\"), Program::On%sTabChanged)\n"%(element_name, element_name)
+        text += "  EVT_CUSTOM(EVT_PLC, wxID_ANY, Program::OnPlcOutEvent)\n"
+        text += "END_EVENT_TABLE()\n\n"
+        return text
+    
+    def GenerateProgramInitFrame(self):
+        text = """MainFrame::MainFrame(wxWindow *parent, const wxString& title, const wxPoint& pos,const wxSize& size, long style): wxFrame(parent, wxID_ANY, title, pos, size, style)
+{
+  m_svgCtrl = new Program(this);
+  if (m_svgCtrl->LoadFiles(wxT("%s"), wxT("%s")))
+  {
+    Show(true);
+    m_svgCtrl->SetFocus();
+    m_svgCtrl->SetFitToFrame(true);
+    m_svgCtrl->RefreshScale();
+    m_svgCtrl->InitScrollBars();
+    m_svgCtrl->Initialize();
+    m_svgCtrl->Update();
+  }
+  else
+  {
+    printf("Error while opening files\\n");
+    exit(0);
+  }
+}
+
+
+"""%(self.SVGFilePath, self.XMLFilePath)
+
+        return text
+    
+    def GenerateProgramInitProgram(self):
+        text = "Program::Program(wxWindow* parent):SVGUIWindow(parent)\n{\n"
+        for element in self.Elements:
+            text += "    out_state_%d = UNCHANGED;\n"%element.getid()
+            text += "    in_state_%d = UNCHANGED;\n"%element.getid()
+        text += "}\n\n"
+        return text
+    
+    def GenerateProgramEventFunctions(self):
+        text = ""
+        current_location = "_".join(map(str, self.CurrentLocation))
+        for element in self.Elements:
+            element_type = GetElementType(element)
+            element_lock = """  if (COMPARE_AND_SWAP_VAL(&in_state_%d, CHANGED, GUI_BUSY) == CHANGED ||
+      COMPARE_AND_SWAP_VAL(&in_state_%d, UNCHANGED, GUI_BUSY) == UNCHANGED) {
+"""%(element.getid(), element.getid())
+            element_unlock = """    COMPARE_AND_SWAP_VAL(&in_state_%d, GUI_BUSY, CHANGED);
+  }
+  else
+      ProcessEvent(event);
+"""%element.getid()
+            element_name = element.getname()
+                
+            if element_type == ITEM_BUTTON:
+                text += """void Program::On%sClick(wxCommandEvent& event)
+{
+  SVGUIButton* button = (SVGUIButton*)GetElementByName(wxT("%s"));\n"""%(element_name, element_name)
+                text += element_lock
+                text += "    _copy__IX%s_%d_1 = button->GetToggle();\n"%(current_location, element.getid())
+                text += element_unlock
+                text += "  event.Skip();\n}\n\n"
+            elif element_type == ITEM_ROTATING:
+                text += """void Program::On%sChanging(wxScrollEvent& event)
+{
+  SVGUIRotatingCtrl* rotating = (SVGUIRotatingCtrl*)GetElementByName(wxT("%s"));
+"""%(element_name, element_name)
+                text += element_lock
+                text += "    _copy__ID%s_%d_1 = rotating->GetAngle();\n"%(current_location, element.getid())
+                text += element_unlock
+                text += "  event.Skip();\n}\n\n"
+            elif element_type == ITEM_NOTEBOOK:
+                text += """void Program::On%sTabChanged(wxNotebookEvent& event)
+{
+  SVGUINoteBook* notebook = (SVGUINoteBook*)GetElementByName(wxT("%s"));
+"""%(element_name, element_name)
+                text += element_lock
+                text += "    _copy__IB%s_%d_1 = notebook->GetCurrentPage();\n"%(current_location, element.getid())
+                text += element_unlock
+                text += "  event.Skip();\n}\n\n"
+            elif element_type == ITEM_TRANSFORM:
+                text += """void Program::On%sChanging(wxScrollEvent& event)
+{
+  SVGUITransform* transform = (SVGUITransform*)GetElementByName(wxT("%s"));
+"""%(element_name, element_name)
+                text += element_lock
+                text += "    _copy__ID%s_%d_1 = transform->GetX();\n"%(current_location, element.getid())
+                text += "    _copy__ID%s_%d_2 = transform->GetY();\n"%(current_location, element.getid())
+                text += element_unlock
+                text += "  event.Skip();\n}\n\n"
+        
+        text += "/* OnPlcOutEvent update GUI with provided IEC __Q* PLC output variables */\n"
+        text += """void Program::OnPlcOutEvent(wxEvent& event)
+{
+  SVGUIElement* element;
+  
+  refreshing = true;
+
+  wxMutexGuiEnter();
+"""
+        for element in self.Elements:
+            element_type = GetElementType(element)
+            texts = {"location" : current_location, "id" : element.getid()}
+            
+            text += """  if (COMPARE_AND_SWAP_VAL(&out_state_%(id)d, CHANGED, GUI_BUSY) == CHANGED)
+  {
+    element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
+            
+    if (_copy__QX%(location)s_%(id)d_1 != element->IsVisible()) {
+      if (_copy__QX%(location)s_%(id)d_1)
+        element->Show();
+      else
+        element->Hide();
+    }
+    if (_copy__QX%(location)s_%(id)d_2 != element->IsEnabled()) {
+      if (_copy__QX%(location)s_%(id)d_2)
+        element->Enable();
+      else
+        element->Disable();
+    }
+"""%texts
+            if element_type == ITEM_BUTTON:
+                text += """    if (_copy__QX%(location)s_%(id)d_3 != ((SVGUIButton*)element)->GetToggle())
+      ((SVGUIButton*)element)->SetToggle(_copy__QX%(location)s_%(id)d_3);
+"""%texts
+            elif element_type == ITEM_TEXT:
+                text += """    if (((SVGUITextCtrl*)element)->GetValue().compare(_copy__QX%(location)s_%(id)d_3))
+    {
+      wxString str = wxString::FromAscii(_copy__QB%(location)s_%(id)d_3);
+      ((SVGUITextCtrl*)element)->SetText(str);
+    }
+"""%texts
+            elif  element_type == ITEM_SCROLLBAR:
+                text += """    if (_copy__QW%(location)s_%(id)d_3 != ((SVGUIScrollBar*)element)->GetThumbPosition() ||
+        _copy__QW%(location)s_%(id)d_4 != ((SVGUIScrollBar*)element)->GetThumbSize() ||
+        _copy__QW%(location)s_%(id)d_5 != ((SVGUIScrollBar*)element)->GetRange())
+      ((SVGUIScrollBar*)element)->Init_ScrollBar(_copy__QW%(location)s_%(id)d_3, _copy__QW%(location)s_%(id)d_4, _copy__QW%(location)s_%(id)d_5);
+"""%texts
+            elif element_type == ITEM_ROTATING:
+                text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUIRotatingCtrl*)element)->GetAngle())
+      ((SVGUIRotatingCtrl*)element)->SetAngle(_copy__QD%(location)s_%(id)d_3);
+"""%texts
+            elif element_type == ITEM_NOTEBOOK:
+                text += """    if (_copy__QB%(location)s_%(id)d_3 != ((SVGUINoteBook*)element)->GetCurrentPage())
+      ((SVGUINoteBook*)element)->SetCurrentPage(_copy__QB%(location)s_%(id)d_3);
+"""%texts
+            elif element_type == ITEM_TRANSFORM:
+                text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUITransform*)element)->GetX() ||
+        copy__QD%(location)s_%(id)d_4 != ((SVGUITransform*)element)->GetY())
+      transform->Move(_copy__QD%(location)s_%(id)d_3, _copy__QD%(location)s_%(id)d_4);
+    if (_copy__QD%(location)s_%(id)d_5 != ((SVGUITransform*)element)->GetXScale() ||
+        copy__QD%(location)s_%(id)d_6 != ((SVGUITransform*)element)->GetYScale())
+      transform->Scale(_copy__QD%(location)s_%(id)d_5, _copy__QD%(location)s_%(id)d_6);
+    if (_copy__QD%(location)s_%(id)d_7 != ((SVGUITransform*)element)->GetAngle())
+      transform->Rotate(_copy__QD%(location)s_%(id)d_7);
+"""%texts
+            text += "    COMPARE_AND_SWAP_VAL(&out_state_%(id)d, GUI_BUSY, UNCHANGED);\n  }\n"%texts
+            
+        text += """  wxMutexGuiLeave();
+
+  refreshing = false;
+
+  event.Skip();
+}
+
+"""
+        return text
+    
+    def GenerateProgramPrivateFunctions(self):
+        current_location = "_".join(map(str, self.CurrentLocation))
+        
+        text = "void Program::Retrieve()\n{\n"
+        for element in self.Elements:
+            element_type = GetElementType(element)
+            texts = {"location" : current_location, "id" : element.getid()}
+            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
+            if len(block_infos["outputs"]) > 0:
+                text += """  if (COMPARE_AND_SWAP_VAL(&in_state_%(id)d, CHANGED, PLC_BUSY) == CHANGED) {
+"""%texts
+                for i, output in enumerate(block_infos["outputs"]):
+                    texts["type"] = TYPECONVERSION[output[1]]
+                    texts["pin"] = i + 1
+                    
+                    variable = "__I%(type)s%(location)s_%(id)d_%(pin)d"%texts
+                    text +="    %s = _copy%s;\n"%(variable, variable)
+                
+                text += """    COMPARE_AND_SWAP_VAL(&in_state_%(id)d, PLC_BUSY, UNCHANGED);
+  }
+"""%texts
+        text += "}\n\n" 
+
+        text += "void Program::Publish()\n{\n  STATE_TYPE new_state;\n\n"
+        for element in self.Elements:
+            element_type = GetElementType(element)
+            texts = {"location" : current_location, "id" : element.getid()}
+            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
+            
+            text += """  if ((new_state = COMPARE_AND_SWAP_VAL(&out_state_%(id)d, UNCHANGED, PLC_BUSY)) == UNCHANGED ||
+       (new_state = COMPARE_AND_SWAP_VAL(&out_state_%(id)d, CHANGED, PLC_BUSY)) == CHANGED) {
+"""%texts
+            for i, input in enumerate(block_infos["inputs"]):
+                texts["type"] = TYPECONVERSION[input[1]]
+                texts["pin"] = i + 1
+                variable = "__Q%(type)s%(location)s_%(id)d_%(pin)d"%texts
+                text += "    if (_copy%s != %s) {\n"%(variable, variable)
+                text += "      _copy%s = %s;\n"%(variable, variable)
+                text += "      new_state = CHANGED;\n    }\n"%texts
+            text += """    COMPARE_AND_SWAP_VAL(&out_state_%(id)d, PLC_BUSY, new_state);
+    refresh |= new_state == CHANGED;
+  }
+"""%texts
+        
+        text += """  /* Replace this with determinist signal if called from RT */
+  if (refresh && !refreshing) {
+    wxCommandEvent event( EVT_PLC );
+    ProcessEvent(event);
+    refresh = false;
+  }
+};
+
+"""
+
+        text += """void Program::Initialize()
+{
+  SVGUIElement* element;
+"""
+        for element in self.Elements:
+            element_type = GetElementType(element)
+            texts = {"location" : current_location, "id" : element.getid()}
+            
+            text += """
+  element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
+  __QX%(location)s_%(id)d_1 = 1;
+  _copy__QX%(location)s_%(id)d_1 = 1;
+  __QX%(location)s_%(id)d_2 = 1;
+  _copy__QX%(location)s_%(id)d_2 = 1;
+"""%texts
+            if element_type == ITEM_BUTTON:
+                text += "  _copy__IX%(location)s_%(id)d_1 = ((SVGUIButton*)element)->GetToggle();\n"%texts
+            elif element_type == ITEM_TEXT:
+                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
+            elif element_type == ITEM_SCROLLBAR:
+                text += "  _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
+            elif element_type == ITEM_ROTATING:
+                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
+            elif element_type == ITEM_NOTEBOOK:
+                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
+            elif element_type == ITEM_TRANSFORM:
+                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUITransform*)element)->GetX();\n"%texts
+                text += "  _copy__ID%(location)s_%(id)d_2 = ((SVGUITransform*)element)->GetY();\n"%texts
+        text += "}\n\n"
+        
+        return text
