@@ -49,10 +49,10 @@ class outputThread(threading.Thread):
         while self.retval is None and not self.killed :
             self.retval = self.Proc.poll()
             outchunk = self.fd.readline()
-            if outchunk == '':
-                break
+            #if outchunk == '':
+            #    break
             if self.callback :
-                wx.CallAfter(self.callback,outchunk)
+                self.callback(outchunk)
         if self.endcallback:
             try:
             	err = self.Proc.wait()
@@ -109,13 +109,13 @@ class ProcessLogger:
         self.outdata += v
         self.outlen += 1
         if not self.no_stdout:
-            self.logger.write(v)
+            wx.CallAfter(self.logger.write,v)
 
     def errors(self,v):
         self.errdata += v
         self.errlen += 1
         if not self.no_stderr:
-            self.logger.write_warning(v)
+            wx.CallAfter(self.logger.write_warning,v)
 
     def finish(self, pid,ecode):
         self.finished = True
