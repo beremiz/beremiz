@@ -45,21 +45,21 @@ class outputThread(threading.Thread):
         self.fd = fd
 
     def run(self):
-        outeof = False
-        self.retval = self.Proc.poll()
-        while not self.retval and not self.killed and not outeof:   
+        self.retval = None
+        while self.retval is None and not self.killed :
+            self.retval = self.Proc.poll()
             outchunk = self.fd.readline()
-            if outchunk == '': outeof = True
+            if outchunk == '':
+                break
             if self.callback :
                 wx.CallAfter(self.callback,outchunk)
-            self.retval=self.Proc.poll()
         if self.endcallback:
             try:
             	err = self.Proc.wait()
             except:
-            	pass
+                err = self.retval
             self.finished = True
-            wx.CallAfter(self.endcallback, self.Proc.pid, self.retval)
+            wx.CallAfter(self.endcallback, self.Proc.pid, err)
 
 class ProcessLogger:
     def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False, no_gui=True):
@@ -89,7 +89,6 @@ class ProcessLogger:
             popenargs["shell"] = True
         
         self.Proc = subprocess.Popen( self.Command, **popenargs )
-
 
         self.outt = outputThread(
                       self.Proc,
