@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xsd:schema targetNamespace="cext_xsd.xsd" 
+            xmlns:cext="cext_xsd.xsd" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified" 
+            attributeFormDefault="unqualified">
+
+  <xsd:element name="CFile">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="includes" type="cext:CCode"/>
+        <xsd:element name="variables">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="variable" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required"/>
+                  <xsd:attribute name="type" type="xsd:string" use="required"/>
+                  <xsd:attribute name="class" use="required">
+                    <xsd:simpleType>
+                      <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="input"/>
+                        <xsd:enumeration value="output"/>
+                      </xsd:restriction>
+                    </xsd:simpleType>
+                  </xsd:attribute>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="globals" type="cext:CCode"/>
+        <xsd:element name="initFunction" type="cext:CCode"/>
+        <xsd:element name="cleanUpFunction" type="cext:CCode"/>
+        <xsd:element name="retrieveFunction" type="cext:CCode"/>
+        <xsd:element name="publishFunction" type="cext:CCode"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:complexType name="CCode">
+    <xsd:annotation>
+      <xsd:documentation>Formatted text according to parts of XHTML 1.1</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:any namespace="http://www.w3.org/1999/xhtml" processContents="lax"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>
