@@ -519,15 +519,6 @@ class PlugTemplate:
     def LoadXMLParams(self, logger, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
         if os.path.isfile(methode_name):
-            logger.write_error("Welcome to the Beremiz Demo\n\n")            
-            logger.write("This demo provides a PLC working with the CANopen plugin\n")
-            logger.write("""Some external programs are also provided:\n
-            - a CAN TCP server to simulate the CANopen network
-            - a virtual slave node to simulate input block
-            - a virtual slave node to simulate output block
-            """)
-            logger.write("\nInfo: For this demo, %s plugin has some special methods to run external programs.\nThese methods are defined in methods.py\n" % (PlugName or "Root"))
-            open_pdf(os.path.join(os.path.split(__file__)[0], "doc", "manual_beremiz.pdf"), pagenum=21)
             execfile(methode_name)
 
         # Get the base xml tree
