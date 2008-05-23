@@ -281,7 +281,7 @@ class _Cfile:
         text += "#endif\n\n"
         text += "/* User variables reference */\n"
         for var in vars:
-            text += "#define %s %s;\n"%(var["Name"], var["location"])
+            text += "#define %s %s\n"%(var["Name"], var["location"])
         text += "\n"
         
         # Adding user global variables and routines
