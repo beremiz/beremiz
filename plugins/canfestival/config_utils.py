@@ -642,7 +642,7 @@ Options:
     
     # Generate MasterNode configuration
     try:
-        masternode = GenerateConciseDCF(locations, (0, 1), nodelist, True)
+        masternode = GenerateConciseDCF(locations, (0, 1), nodelist, True, "TestNode")
     except ValueError, message:
         print "%s\nTest Failed!"%message
         sys.exit()
@@ -659,26 +659,11 @@ Options:
         
         print "Reset Successful!"
     else:
-        # Test each line of the result with the reference result
-        test = [line.rstrip() for line in result.splitlines()]
+        import os
         
-        file = open("test_config/result.txt", "r")
-        model = [line.rstrip() for line in file.readlines() if line.rstrip()]
+        file = open("test_config/result_tmp.txt", "w")
+        file.write(result)
         file.close()
         
-        errors = 0
-        for i, line in enumerate(model):
-            if i >= len(test):
-                errors += 1
-                print "Line %d disappear :\n%s\n"%(i + 1, line)
-            elif line != test[i]:
-                errors += 1
-                print "Error on line %d :\n%s\nInstead of :\n%s\n"%(i + 1, test[i], line)
-        for i in xrange(len(model), len(test)):
-            errors += 1
-            print "Line %d appear :\n%s\n"%(i + 1, test[i])
-        
-        if errors > 0:
-            print "%d errors found.\nTest Failed!"%errors
-        else:
-            print "Test Successful!"
+        os.system("diff test_config/result.txt test_config/result_tmp.txt")
+        os.remove("test_config/result_tmp.txt")

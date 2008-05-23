@@ -38,18 +38,19 @@
 1403 04 (Compatibility Entry): 0
 1403 05 (Event Timer): 0
 1404 (Receive PDO 5 Parameter):
-1404 01 (COB ID used by PDO): 180
+1404 01 (COB ID used by PDO): 181
 1404 02 (Transmission Type): 1
 1404 03 (Inhibit Time): 0
 1404 04 (Compatibility Entry): 0
 1404 05 (Event Timer): 0
 1600 (Receive PDO 1 Mapping):
 1600 01 (PDO 1 Mapping for an application object 1): 22400108
+1600 02 (PDO 1 Mapping for an application object 2): 0
 1601 (Receive PDO 2 Mapping):
-1601 01 (PDO 2 Mapping for an application object 1): 20010310
+1601 01 (PDO 2 Mapping for an application object 1): 20000310
 1601 02 (PDO 2 Mapping for an application object 2): 23400110
 1601 03 (PDO 2 Mapping for an application object 3): 23400210
-1601 04 (PDO 2 Mapping for an application object 4): 20010310
+1601 04 (PDO 2 Mapping for an application object 4): 20000310
 1602 (Receive PDO 3 Mapping):
 1602 01 (PDO 3 Mapping for an application object 1): 24400120
 1602 02 (PDO 3 Mapping for an application object 2): 24400220
@@ -59,7 +60,7 @@
 1604 01 (PDO 5 Mapping for an application object 1): 22400208
 1604 02 (PDO 5 Mapping for an application object 2): 24400420
 1800 (Transmit PDO 1 Parameter):
-1800 01 (COB ID used by PDO): {True:self.ID+(base+1)*0x100+0x80,False:0}[base<4]
+1800 01 (COB ID used by PDO): {True:"$NODEID+0x%X80"%(base+1),False:0x80000000}[base<4]
 1800 02 (Transmission Type): 0
 1800 03 (Inhibit Time): 0
 1800 04 (Compatibility Entry): 0
@@ -74,9 +75,9 @@
 1A00 01 (PDO 1 Mapping for a process data variable 1): 10010008
 1A01 (Transmit PDO 2 Mapping):
 1A01 01 (PDO 2 Mapping for a process data variable 1): 43400110
-1A01 02 (PDO 2 Mapping for a process data variable 2): 20010310
-1A01 03 (PDO 2 Mapping for a process data variable 3): 20010310
-1A01 04 (PDO 2 Mapping for a process data variable 4): 20010310
+1A01 02 (PDO 2 Mapping for a process data variable 2): 20000310
+1A01 03 (PDO 2 Mapping for a process data variable 3): 20000310
+1A01 04 (PDO 2 Mapping for a process data variable 4): 20000310
 1F22 (Concise DCF):
 1F22 01 (Concise DCF for Node 1): 
 1F22 02 (Concise DCF for Node 2): 
@@ -141,33 +142,30 @@
 1F22 3D (Concise DCF for Node 61): 
 1F22 3E (Concise DCF for Node 62): 
 1F22 3F (Concise DCF for Node 63): 
-1F22 40 (Concise DCF for Node 64): 26 arg defined
+1F22 40 (Concise DCF for Node 64): 23 arg defined
 1F22 40, arg 1: 1800 01 00000004 800001C0
 1F22 40, arg 2: 1800 02 00000001 01
 1F22 40, arg 3: 1800 01 00000004 000001C0
 1F22 40, arg 4: 1801 01 00000004 800002C0
 1F22 40, arg 5: 1801 02 00000001 01
 1F22 40, arg 6: 1801 01 00000004 000002C0
-1F22 40, arg 7: 1801 01 00000004 800002C0
-1F22 40, arg 8: 1801 02 00000001 01
-1F22 40, arg 9: 1801 01 00000004 000002C0
-1F22 40, arg 10: 1401 01 00000004 80000340
-1F22 40, arg 11: 1401 02 00000001 01
-1F22 40, arg 12: 1401 01 00000004 00000340
-1F22 40, arg 13: 1804 01 00000004 80000180
-1F22 40, arg 14: 1804 02 00000001 01
-1F22 40, arg 15: 1804 01 00000004 00000180
-1F22 40, arg 16: 1A04 01 00000004 60020108
-1F22 40, arg 17: 1A04 02 00000004 64260120
-1F22 40, arg 18: 1805 01 00000004 80000182
-1F22 40, arg 19: 1805 02 00000001 01
-1F22 40, arg 20: 1805 01 00000004 00000182
-1F22 40, arg 21: 1A05 01 00000004 64260220
-1F22 40, arg 22: 1A05 02 00000004 64260320
-1F22 40, arg 23: 1806 01 00000004 80000183
-1F22 40, arg 24: 1806 02 00000001 01
-1F22 40, arg 25: 1806 01 00000004 00000183
-1F22 40, arg 26: 1A06 01 00000004 64260420
+1F22 40, arg 7: 1401 01 00000004 80000340
+1F22 40, arg 8: 1401 02 00000001 01
+1F22 40, arg 9: 1401 01 00000004 00000340
+1F22 40, arg 10: 1804 01 00000004 80000181
+1F22 40, arg 11: 1804 02 00000001 01
+1F22 40, arg 12: 1804 01 00000004 00000181
+1F22 40, arg 13: 1A04 01 00000004 60020108
+1F22 40, arg 14: 1A04 02 00000004 64260120
+1F22 40, arg 15: 1805 01 00000004 80000182
+1F22 40, arg 16: 1805 02 00000001 01
+1F22 40, arg 17: 1805 01 00000004 00000182
+1F22 40, arg 18: 1A05 01 00000004 64260220
+1F22 40, arg 19: 1A05 02 00000004 64260320
+1F22 40, arg 20: 1806 01 00000004 80000183
+1F22 40, arg 21: 1806 02 00000001 01
+1F22 40, arg 22: 1806 01 00000004 00000183
+1F22 40, arg 23: 1A06 01 00000004 64260420
 1F22 41 (Concise DCF for Node 65): 
 1F22 42 (Concise DCF for Node 66): 
 1F22 43 (Concise DCF for Node 67): 
@@ -232,12 +230,6 @@
 1F22 7E (Concise DCF for Node 126): 
 1F22 7F (Concise DCF for Node 127): 
 2000 (Read Inputs): 0
-2001 (trashvariables):
-2001 01 (TRASH1): 0
-2001 02 (TRASH8): 0
-2001 03 (TRASH16): 0
-2001 04 (TRASH32): 0
-2001 05 (TRASH64): 0
 2240 (__IB0_1_64):
 2240 01 (24576_1): 0
 2240 02 (24578_1): 0
