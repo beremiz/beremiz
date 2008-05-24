@@ -28,6 +28,7 @@ import wx
 import subprocess, ctypes
 import threading
 import os
+import signal
 
     
 class outputThread(threading.Thread):
@@ -64,7 +65,16 @@ class outputThread(threading.Thread):
 class ProcessLogger:
     def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False, no_gui=True):
         self.logger = logger
-        self.Command = Command
+        self.Command_str = Command
+        self.Command = []
+        for i,word in enumerate(Command.replace("'",'"').split('"')):
+            if i % 2 == 0:
+                word = word.strip()
+                if len(word) > 0:
+                    self.Command.extend(word.split())
+            else:
+                self.Command.append(word)
+        
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
         self.no_stderr = no_stderr
@@ -86,7 +96,7 @@ class ProcessLogger:
             self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             popenargs["startupinfo"] = self.startupinfo
         elif wx.Platform == '__WXGTK__':
-            popenargs["shell"] = True
+            popenargs["shell"] = False  #True
         
         self.Proc = subprocess.Popen( self.Command, **popenargs )
 
@@ -121,7 +131,7 @@ class ProcessLogger:
         self.finished = True
         self.exitcode = ecode
         if self.exitcode != 0:
-            self.logger.write(self.Command + "\n")
+            self.logger.write(self.Command_str + "\n")
             self.logger.write_warning("exited with status %s (pid %s)\n"%(str(ecode),str(pid)))
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
@@ -135,7 +145,10 @@ class ProcessLogger:
             ctypes.windll.kernel32.TerminateProcess(handle, -1)
             ctypes.windll.kernel32.CloseHandle(handle)
         else:
-            os.kill(self.Proc.pid)
+            try:
+                os.kill(self.Proc.pid, signal.SIGTERM)
+            except:
+                pass
 
     def spin(self, timeout=None, out_limit=None, err_limit=None, keyword = None, kill_it = True):
         count = 0
