@@ -268,7 +268,7 @@ class ConciseDCFGenerator:
     
     def AddParamsToDCF(self, nodeid, data, nbparams):
         """
-        Select a COB ID from the list of those available
+        Add entry to DCF, for the requested nodeID
         @param nodeid: id of the slave (int)
         @param data: data to add to slave DCF (string)
         @param nbparams: number of params added to slave DCF (int)
@@ -290,7 +290,7 @@ class ConciseDCFGenerator:
     
     def AddPDOMapping(self, nodeid, pdotype, pdomapping, sync_TPDOs):
         """
-        Select a COB ID from the list of those available
+        Record a new mapping request for a slave, and add related slave config to the DCF
         @param nodeid: id of the slave (int)
         @param pdotype: type of PDO to generated (RPDO or TPDO)
         @param pdomapping: list od variables to map with PDO
