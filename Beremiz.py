@@ -307,7 +307,7 @@ class Beremiz(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
-        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL, wx.WXK_F12, ID_BEREMIZINSPECTOR)])
+        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_HOME, ID_BEREMIZINSPECTOR)])
         self.SetAcceleratorTable(accel)
 
 
