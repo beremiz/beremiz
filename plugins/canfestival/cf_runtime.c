@@ -57,9 +57,6 @@ void Exit(CO_Data* d, UNS32 id)
         setState(&nodename##_Data, Stopped);\
         LeaveMutex();\
         canClose(&nodename##_Data);\
-        #if !defined(WIN32) || defined(__CYGWIN__)\
-        		TimerCleanup();\
-        #endif\
     }
 
 void __cleanup_%(locstr)s()
@@ -70,13 +67,13 @@ void __cleanup_%(locstr)s()
     if(init_level-- > 0)
         StopTimerLoop(&Exit);
 
+    #if !defined(WIN32) || defined(__CYGWIN__)
+   		TimerCleanup();
+    #endif
 }
 
 #define NODE_OPEN(nodename)\
-	#if !defined(WIN32) || defined(__CYGWIN__)\
-		TimerInit();\
-	#endif\
-	nodename##_Data.preOperational = nodename##_preOperational;\
+    nodename##_Data.preOperational = nodename##_preOperational;\
     if(!canOpen(&nodename##Board,&nodename##_Data)){\
         printf("Cannot open " #nodename " Board (%%s,%%s)\n",nodename##Board.busname, nodename##Board.baudrate);\
         return -1;\
@@ -92,7 +89,10 @@ int __init_%(locstr)s(int argc,char **argv)
         return -1;
     }
 #endif      
-
+	#if !defined(WIN32) || defined(__CYGWIN__)
+		TimerInit();
+	#endif
+	
     %(nodes_open)s
 
     // Start timer thread
