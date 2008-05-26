@@ -128,6 +128,7 @@ class RootClass:
       <xsd:element name="CanFestivalInstance">
         <xsd:complexType>
           <xsd:attribute name="CAN_Driver" type="xsd:string" use="required"/>
+          <xsd:attribute name="Debug_mode" type="xsd:boolean" use="optional" default="false"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -176,6 +177,13 @@ class RootClass:
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
             format_dict["nodes_send_sync"] += 'NODE_SEND_SYNC(%s)\n    '%(nodename)
             format_dict["nodes_proceed_sync"] += 'NODE_PROCEED_SYNC(%s)\n    '%(nodename)
+        
+        if wx.Platform == '__WXMSW__':
+            if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(format_dict["candriver"] + '_DEBUG.dll'))):
+                    format_dict["candriver"] += '_DEBUG.dll'
+            else:
+                format_dict["candriver"] += '.dll'
+        
         filename = os.path.join(os.path.split(__file__)[0],"cf_runtime.c")
         cf_main = open(filename).read() % format_dict
         cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c"%format_dict)
