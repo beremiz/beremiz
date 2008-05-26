@@ -100,6 +100,9 @@ class PlugTemplate:
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
 
+    def IsGUIPlugin(self):
+        return False
+
     def PluginBaseXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "baseplugin.xml")
     
@@ -1093,6 +1096,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def _Run(self, logger):
         command_start_plc = os.path.join(self._getBuildPath(),self.GetProjectName() + exe_ext)
         if os.path.isfile(command_start_plc):
+            has_gui_plugin = False
+            for PlugChild in self.IterChilds():
+                has_gui_plugin |= PlugChild.IsGUIPlugin()
             logger.write("Starting PLC\n")
             def this_plc_finish_callback(*args):
                 if self.runningPLC is not None:
@@ -1101,7 +1107,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.runningPLC = ProcessLogger(
                logger,
                command_start_plc,
-               finish_callback = this_plc_finish_callback)
+               finish_callback = this_plc_finish_callback,
+               no_gui=wx.Platform != '__WXMSW__' or not has_gui_plugin)
             self.EnableMethod("_Clean", False)
             self.EnableMethod("_Run", False)
             self.EnableMethod("_Stop", True)

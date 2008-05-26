@@ -115,6 +115,9 @@ class RootClass(SVGUIControler):
             self.CreateNewInterface()
             self.SetFilePath(filepath)
 
+    def IsGUIPlugin(self):
+        return True
+
     def GetElementIdFromName(self, name):
         element = self.GetElementByName(name)
         if element is not None:
