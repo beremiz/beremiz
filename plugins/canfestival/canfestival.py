@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, wx
 base_folder = os.path.split(sys.path[0])[0]
 CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
