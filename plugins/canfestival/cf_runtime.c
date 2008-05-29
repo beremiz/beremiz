@@ -12,7 +12,7 @@ static int init_level=0;
 extern int common_ticktime__;
 
 
-static void ConfigureSlaveNode(CO_Data* d, UNS8 nodeId)
+static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
 {
     /* Put the master in operational mode */
     setState(d, Operational);
@@ -20,15 +20,6 @@ static void ConfigureSlaveNode(CO_Data* d, UNS8 nodeId)
     /* Ask slave node to go in operational mode */
     masterSendNMTstateChange (d, 0, NMT_Start_Node);
 }
-
-#define NODE_DECLARE(nodename, nodeid)\
-void nodename##_preOperational()\
-{\
-    ConfigureSlaveNode(&nodename##_Data, nodeid);\
-}\
-
-%(nodes_declare)s
-
 
 #define NODE_INIT(nodename, nodeid) \
     /* Artificially force sync state to 1 so that it is not started */\
@@ -54,6 +45,7 @@ void Exit(CO_Data* d, UNS32 id)
     if(init_level-- > 0)\
     {\
         EnterMutex();\
+        masterSendNMTstateChange(&nodename##_Data, 0, NMT_Reset_Node);\
         setState(&nodename##_Data, Stopped);\
         LeaveMutex();\
         canClose(&nodename##_Data);\
@@ -73,7 +65,7 @@ void __cleanup_%(locstr)s()
 }
 
 #define NODE_OPEN(nodename)\
-    nodename##_Data.preOperational = nodename##_preOperational;\
+    nodename##_Data.post_SlaveBootup = Master_post_SlaveBootup;\
     if(!canOpen(&nodename##Board,&nodename##_Data)){\
         printf("Cannot open " #nodename " Board (%%s,%%s)\n",nodename##Board.busname, nodename##Board.baudrate);\
         return -1;\
