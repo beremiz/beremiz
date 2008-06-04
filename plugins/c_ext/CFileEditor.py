@@ -803,7 +803,7 @@ class VariablesEditor(wx.Panel):
             else:
                 dir = "%Q"
                 for i in xrange(row):
-                    if self.Table.GetValueByName(i, "Class") == "input":
+                    if self.Table.GetValueByName(i, "Class") == "output":
                         num += 1
             data_type = self.Table.GetValueByName(row, "Type")
             base_location = ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation()))
