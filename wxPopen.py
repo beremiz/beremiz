@@ -46,14 +46,17 @@ class outputThread(threading.Thread):
         self.fd = fd
 
     def run(self):
+        outchunk = None
         self.retval = None
+        while outchunk != '' and not self.killed :
+            outchunk = self.fd.readline()
+            if self.callback : self.callback(outchunk)
         while self.retval is None and not self.killed :
             self.retval = self.Proc.poll()
             outchunk = self.fd.readline()
-            #if outchunk == '':
-            #    break
-            if self.callback :
-                self.callback(outchunk)
+            if self.callback : self.callback(outchunk)
+        while outchunk != '' and not self.killed :
+            outchunk = self.fd.readline()
         if self.endcallback:
             try:
             	err = self.Proc.wait()
