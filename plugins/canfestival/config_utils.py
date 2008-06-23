@@ -138,6 +138,8 @@ class ConciseDCFGenerator:
         self.SlavesPdoNumber = {}
         # Dictionary of mapping value where unexpected variables are stored
         self.TrashVariables = {}
+        # Dictionary of pointed variables
+        self.PointedVariables = {}
         
         self.NodeList = nodelist
         self.Manager = self.NodeList.Manager
@@ -145,6 +147,8 @@ class ConciseDCFGenerator:
         self.MasterNode.SetNodeName(nodename)
         self.PrepareMasterNode()
 
+    def GetPointedVariables(self):
+        return self.PointedVariables
     
     def RemoveUsedNodeCobId(self, node):
         """
@@ -515,17 +519,18 @@ class ConciseDCFGenerator:
                                      VariableTypeOffset[variable_infos["sizelocation"]] * VariableIncrement + \
                                      variable_infos["nodeid"]
                     
+                    # Generate entry name
+                    indexname = "%s%s%s_%d"%(VariableDirText[variable_infos["pdotype"]],
+                                                 variable_infos["sizelocation"],
+                                                 '_'.join(map(str,current_location)),
+                                                 variable_infos["nodeid"])    
+                    
                     # Search for an entry that has an empty subindex 
                     while mapvariableidx < VariableStartIndex[variable_infos["pdotype"]] + 0x2000:
                         # Entry doesn't exist
                         if not self.MasterNode.IsEntry(mapvariableidx):    
-                            # Generate entry name
-                            indexname = "%s%s%s_%d"%(VariableDirText[variable_infos["pdotype"]],
-                                                     variable_infos["sizelocation"],
-                                                     '_'.join(map(str,current_location)),
-                                                     variable_infos["nodeid"])
                             # Add entry to MasterNode
-                            self.Manager.AddMapVariableToCurrent(mapvariableidx, indexname, 3, 1, self.MasterNode)
+                            self.Manager.AddMapVariableToCurrent(mapvariableidx, "beremiz"+indexname, 3, 1, self.MasterNode)
                             new_index = True
                             nbsubentries = self.MasterNode.GetEntry(mapvariableidx, 0x00)
                         else:
@@ -557,6 +562,9 @@ class ConciseDCFGenerator:
                         if typeinfos != None:
                             value = (mapvariableidx << 16) + ((nbsubentries) << 8) + typeinfos["size"]
                             self.MasterNode.SetEntry(current_idx + 0x200, subindex, value)
+                        
+                        # Add variable to pointed variables
+                        self.PointedVariables[(mapvariableidx, nbsubentries)] = "%s_%s"%(indexname, subindexname)
 
 def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodename):
     """
@@ -574,7 +582,7 @@ def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodena
     
     dcfgenerator = ConciseDCFGenerator(nodelist, nodename)
     dcfgenerator.GenerateDCF(locations, current_location, sync_TPDOs)
-    return dcfgenerator.GetMasterNode()
+    return dcfgenerator.GetMasterNode(), dcfgenerator.GetPointedVariables()
 
 if __name__ == "__main__":
     import os, sys, getopt
