@@ -321,12 +321,14 @@ class _SVGUICGenerator(SVGUICGenerator):
             for i, input in enumerate(block_infos["inputs"]):
                 element_c_type = CTYPECONVERSION[input[1]]
                 variable = "__Q%s%s_%d_%d"%(TYPECONVERSION[input[1]], current_location, block_id, i + 1)
-                text += "%s %s;\n"%(element_c_type, variable)
+                text += "%s beremiz%s;\n"%(element_c_type, variable)
+                text += "%s* %s = &beremiz%s;\n"%(element_c_type, variable, variable)
                 text += "%s _copy%s;\n"%(element_c_type, variable)
             for i, output in enumerate(block_infos["outputs"]):
                 element_c_type = CTYPECONVERSION[output[1]]
                 variable = "__I%s%s_%d_%d"%(TYPECONVERSION[output[1]], current_location, block_id, i + 1)
-                text += "%s %s;\n"%(element_c_type, variable)
+                text += "%s beremiz%s;\n"%(element_c_type, variable)
+                text += "%s* %s = &beremiz%s;\n"%(element_c_type, variable, variable)
                 text += "%s _copy%s;\n"%(element_c_type, variable)
             text +="\n"
         return text
@@ -661,7 +663,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                     texts["pin"] = i + 1
                     
                     variable = "__I%(type)s%(location)s_%(id)d_%(pin)d"%texts
-                    text +="    %s = _copy%s;\n"%(variable, variable)
+                    text +="    beremiz%s = _copy%s;\n"%(variable, variable)
                 
                 text += """    COMPARE_AND_SWAP_VAL(&in_state_%(id)d, PLC_BUSY, UNCHANGED);
   }
@@ -681,8 +683,8 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 texts["type"] = TYPECONVERSION[input[1]]
                 texts["pin"] = i + 1
                 variable = "__Q%(type)s%(location)s_%(id)d_%(pin)d"%texts
-                text += "    if (_copy%s != %s) {\n"%(variable, variable)
-                text += "      _copy%s = %s;\n"%(variable, variable)
+                text += "    if (_copy%s != beremiz%s) {\n"%(variable, variable)
+                text += "      _copy%s = beremiz%s;\n"%(variable, variable)
                 text += "      new_state = CHANGED;\n    }\n"%texts
             text += """    COMPARE_AND_SWAP_VAL(&out_state_%(id)d, PLC_BUSY, new_state);
     refresh |= new_state == CHANGED;
@@ -709,9 +711,9 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             
             text += """
   element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
-  __QX%(location)s_%(id)d_1 = 1;
+  beremiz__QX%(location)s_%(id)d_1 = 1;
   _copy__QX%(location)s_%(id)d_1 = 1;
-  __QX%(location)s_%(id)d_2 = 1;
+  beremiz__QX%(location)s_%(id)d_2 = 1;
   _copy__QX%(location)s_%(id)d_2 = 1;
 """%texts
             if element_type == ITEM_BUTTON:
