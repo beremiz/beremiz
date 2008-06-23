@@ -828,7 +828,7 @@ CFILE_PARTS = ["Includes", "Variables", "Globals", "Init", "CleanUp", "Retrieve"
                "Publish"]
 
 [ID_CFILEEDITOR, ID_CFILEEDITORMAINSPLITTER, 
- ID_CFILEEDITORCFILETREE, CFILEEDITORPARTSOPENED, 
+ ID_CFILEEDITORCFILETREE, ID_CFILEEDITORPARTSOPENED, 
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
 class CFileEditor(base_class):
@@ -910,9 +910,9 @@ class CFileEditor(base_class):
                   0), size=wx.Size(0, 0), style=0)
             if wx.VERSION >= (2, 6, 0):
                 self.PartsOpened.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,
-                    self.OnPartSelectedChanged, id=CFILEEDITORPARTSOPENED)
+                    self.OnPartSelectedChanged, id=ID_CFILEEDITORPARTSOPENED)
             else:
-                wx.EVT_NOTEBOOK_PAGE_CHANGED(self.PartsOpened, CFILEEDITORPARTSOPENED,
+                wx.EVT_NOTEBOOK_PAGE_CHANGED(self.PartsOpened, ID_CFILEEDITORPARTSOPENED,
                     self.OnPartSelectedChanged)
             
             self.MainSplitter.SplitVertically(self.ProjectTree, self.PartsOpened, 200)
