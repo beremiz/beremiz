@@ -341,8 +341,10 @@ class ConciseDCFGenerator:
                 # Get only the part of the location that concern this node
                 loc = location["LOC"][len(current_location):]
                 # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
-                if len(loc) not in (3, 4):
+                if len(loc) not in (2, 3, 4):
                     raise ValueError, "Bad location size : %s"%str(loc)
+                elif len(loc) == 2:
+                    continue
                 
                 direction = location["DIR"]
                 
@@ -374,9 +376,8 @@ class ConciseDCFGenerator:
                     else:
                         numbit = None
                     
-                    entryinfos = node.GetSubentryInfos(index, subindex)
-                    if location["IEC_TYPE"] != "BOOL" and entryinfos["type"] != COlocationtype:
-                        raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, entryinfos["type"] , name)
+                    if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
+                        raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
                     
                     typeinfos = node.GetEntryInfos(COlocationtype)
                     self.IECLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
@@ -584,6 +585,40 @@ def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodena
     dcfgenerator.GenerateDCF(locations, current_location, sync_TPDOs)
     return dcfgenerator.GetMasterNode(), dcfgenerator.GetPointedVariables()
 
+def LocalODPointers(locations, current_location, slave):
+    IECLocations = {}
+    pointers = {}
+    for location in locations:
+        COlocationtype = IECToCOType[location["IEC_TYPE"]]
+        name = location["NAME"]
+        if name in IECLocations:
+            if IECLocations[name] != COlocationtype:
+                raise ValueError, "Conflict type for location \"%s\"" % name 
+        else:
+            # Get only the part of the location that concern this node
+            loc = location["LOC"][len(current_location):]
+            # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
+            if len(loc) not in (2, 3, 4):
+                raise ValueError, "Bad location size : %s"%str(loc)
+            elif len(loc) != 2:
+                continue
+            
+            # Extract and check nodeid
+            index, subindex = loc[:2]
+            
+            # Extract and check index and subindex
+            if not slave.IsEntry(index, subindex):
+                raise ValueError, "No such index/subindex (%x,%x) (variable %s)" % (index, subindex, name)
+            
+            # Get the entry info
+            subentry_infos = slave.GetSubentryInfos(index, subindex)    
+            if subentry_infos["type"] != COlocationtype:
+                raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+            
+            IECLocations[name] = COlocationtype
+            pointers[(index, subindex)] = name
+    return pointers
+        
 if __name__ == "__main__":
     import os, sys, getopt
 
