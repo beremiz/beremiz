@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE PyObject SYSTEM "PyObjects.dtd">
+<PyObject module="node" class="Node" id="156683980">
+<attr name="Profile" type="dict" id="156696060" >
+</attr>
+<attr name="Description" type="string" value="" />
+<attr name="Dictionary" type="dict" id="156695788" >
+  <entry>
+    <key type="numeric" value="4096" />
+    <val type="numeric" value="0" />
+  </entry>
+  <entry>
+    <key type="numeric" value="4097" />
+    <val type="numeric" value="0" />
+  </entry>
+  <entry>
+    <key type="numeric" value="4120" />
+    <val type="list" id="155064396" >
+      <item type="numeric" value="0" />
+      <item type="numeric" value="0" />
+      <item type="numeric" value="0" />
+      <item type="numeric" value="0" />
+    </val>
+  </entry>
+</attr>
+<attr name="SpecificMenu" type="list" id="156683948" >
+</attr>
+<attr name="ParamsDictionary" type="dict" id="152882820" >
+</attr>
+<attr name="UserMapping" type="dict" id="155061620" >
+</attr>
+<attr name="DS302" type="dict" id="155049332" >
+</attr>
+<attr name="ProfileName" type="string" value="None" />
+<attr name="Type" type="string" value="slave" />
+<attr name="ID" type="numeric" value="0" />
+<attr name="Name" type="string" value="SlaveNode" />
+</PyObject>
