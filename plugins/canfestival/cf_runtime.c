@@ -36,6 +36,7 @@ static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
 void InitNodes(CO_Data* d, UNS32 id)
 {
     %(nodes_init)s
+	%(slavebootup_register)s
 }
 
 void Exit(CO_Data* d, UNS32 id)

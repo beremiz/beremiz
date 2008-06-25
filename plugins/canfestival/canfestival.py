@@ -275,7 +275,8 @@ class RootClass:
                        "nodes_close" : "",
                        "nodes_send_sync" : "",
                        "nodes_proceed_sync" : "",
-                       "slavebootups" : ""}
+                       "slavebootups" : "",
+                       "slavebootup_register" : ""}
         for child in self.IECSortedChilds():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
@@ -316,6 +317,8 @@ static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){
                 format_dict["slavebootups"] += """ )
         Master_post_SlaveBootup(d,nodeId);
 }
+"""
+                format_dict["slavebootup_register"] += """
 %s_Data.post_SlaveBootup = %s_post_SlaveBootup;
 """%(nodename,nodename)
                 
