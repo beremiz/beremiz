@@ -1039,7 +1039,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def _showIECcode(self, logger):
         plc_file = self._getIECcodepath()
-        new_dialog = wx.Frame(None)
+        new_dialog = wx.Frame(self.AppFrame)
         ST_viewer = TextViewer(new_dialog, "", None, None)
         #ST_viewer.Enable(False)
         ST_viewer.SetKeywords(IEC_KEYWORDS)
@@ -1052,7 +1052,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         new_dialog.Show()
 
     def _editIECrawcode(self, logger):
-        new_dialog = wx.Frame(None)
+        new_dialog = wx.Frame(self.AppFrame)
         
         buildpath = self._getBuildPath()
         # Eventually create build dir
