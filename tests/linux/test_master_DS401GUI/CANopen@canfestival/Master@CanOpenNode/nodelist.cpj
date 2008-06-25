@@ -1,0 +1,10 @@
+[TOPOLOGY]
+NetName=None
+Nodes=0x02
+Node16Present=0x01
+Node16Name=DS401_Slave_GUI
+Node16DCFName=DS401_Slave_Gui.eds
+Node32Present=0x01
+Node32Name=GUI2
+Node32DCFName=DS401_Slave_Gui.eds
+EDSBaseName=eds
