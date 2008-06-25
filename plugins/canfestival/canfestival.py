@@ -10,6 +10,8 @@ from networkedit import networkedit
 from objdictedit import objdictedit
 import canfestival_config
 from plugger import PlugTemplate
+from commondialogs import CreateNodeDialog
+import wx
 
 from gnosis.xml.pickle import *
 from gnosis.xml.pickle.util import setParanoia
@@ -42,15 +44,33 @@ class _SlavePlug(NodeManager):
         if(os.path.isfile(odfilepath)):
             self.OpenFileInCurrent(odfilepath)
         else:
-            self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
-                               0x00,         # NodeID - will be changed at build time
-                               "slave",      # Type
-                               "",           # description 
-                               "None",       # profile
-                               "",           # prfile filepath
-                               "heartbeat",  # NMT
-                               [])           # options
-            
+            self.FilePath = ""
+            dialog = CreateNodeDialog(None, wx.OK)
+            dialog.Type.Enable(False)
+            dialog.GenSYNC.Enable(False)
+            if dialog.ShowModal() == wx.ID_OK:
+                name, id, nodetype, description = dialog.GetValues()
+                profile, filepath = dialog.GetProfile()
+                NMT = dialog.GetNMTManagement()
+                options = dialog.GetOptions()
+                self.CreateNewNode(name,       # Name - will be changed at build time
+                                   id,         # NodeID - will be changed at build time
+                                   "slave",    # Type
+                                   description,# description 
+                                   profile,    # profile
+                                   filepath,   # prfile filepath
+                                   NMT,        # NMT
+                                   options)     # options
+            else:
+                self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
+                                   0x00,         # NodeID - will be changed at build time
+                                   "slave",      # Type
+                                   "",           # description 
+                                   "None",       # profile
+                                   "", # prfile filepath
+                                   "heartbeat",  # NMT
+                                   [])           # options
+            dialog.Destroy()
     _View = None
     def _OpenView(self, logger):
         if not self._View:
@@ -160,7 +180,7 @@ class _NodeListPlug(NodeList):
             logger.write_error("Error: No Master generated\n")
             return
         
-        new_dialog = objdictedit(None, [masterpath])
+        new_dialog = objdictedit(None, filesOpen=[masterpath])
         new_dialog.Show()
 
     PluginMethods = [
@@ -227,7 +247,8 @@ class RootClass:
       </xsd:element>
     </xsd:schema>
     """
-    PlugChildsTypes = [("CanOpenNode",_NodeListPlug, "CanOpen Master"),("CanOpenSlave",_SlavePlug, "CanOpen Slave")]
+    PlugChildsTypes = [("CanOpenNode",_NodeListPlug, "CanOpen Master"),
+                       ("CanOpenSlave",_SlavePlug, "CanOpen Slave")]
     def GetParamsAttributes(self, path = None):
         infos = PlugTemplate.GetParamsAttributes(self, path = None)
         for element in infos:
@@ -251,7 +272,8 @@ class RootClass:
                        "nodes_open" : "",
                        "nodes_close" : "",
                        "nodes_send_sync" : "",
-                       "nodes_proceed_sync" : ""}
+                       "nodes_proceed_sync" : "",
+                       "slavebootups" : ""}
         for child in self.IECSortedChilds():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
@@ -261,10 +283,40 @@ class RootClass:
             if child_data is None:
                 # Not a slave -> master
                 child_data = getattr(child, "CanFestivalNode")
+                # Apply sync setting
                 if child_data.getSync_TPDOs():
                     format_dict["nodes_send_sync"] += 'NODE_SEND_SYNC(%s)\n    '%(nodename)
                     format_dict["nodes_proceed_sync"] += 'NODE_PROCEED_SYNC(%s)\n    '%(nodename)
-
+                # initialize and declare node table for post_SlaveBootup lookup
+                
+                SlaveIDs = child.GetSlaveIDs()
+                for id in SlaveIDs:
+                    format_dict["slavebootups"] += """
+int %s_slave_%d_booted = 0;
+"""%(nodename, id)
+                format_dict["slavebootups"] += """
+static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){
+    switch(nodeId){
+"""%(nodename)
+                for id in SlaveIDs:
+                    format_dict["slavebootups"] += """
+        case %d:
+            %s_slave_%d_booted = 1;
+            break;
+"""%(id, nodename, id)
+                format_dict["slavebootups"] += """
+        default:
+            break;
+    }
+    if( """
+                format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
+                
+                format_dict["slavebootups"] += """ )
+        Master_post_SlaveBootup(d,nodeId);
+}
+%s_Data.post_SlaveBootup = %s_post_SlaveBootup;
+"""%(nodename,nodename)
+                
             format_dict["nodes_includes"] += '#include "%s.h"\n'%(nodename)
             format_dict["board_decls"] += 'BOARD_DECL(%s, "%s", "%s")\n'%(
                    nodename,
