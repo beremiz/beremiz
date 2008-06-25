@@ -127,7 +127,9 @@ class _SlavePlug(NodeManager):
         res = gen_cfile.GenerateFile(Gen_OD_path, slave, pointers)
         if res :
             raise Exception, res
-        self.ExportCurrentToEDSFile(os.path.join(buildpath, "Slave_%s.eds"%prefix))
+        res = eds_utils.GenerateEDSFile(os.path.join(buildpath, "Slave_%s.eds"%prefix), slave)
+        if res :
+            raise Exception, res
         return [(Gen_OD_path,canfestival_config.getCFLAGS(CanFestivalPath))],"",False
 
 #--------------------------------------------------
