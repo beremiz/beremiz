@@ -11,7 +11,7 @@
               creationDateTime="2007-07-07 11:58:26"
               contentDescription="This tests as most as possible IEC standard library"/>
   <contentHeader name="STD_TEST"
-                 modificationDateTime="2008-05-24 01:22:07">
+                 modificationDateTime="2008-06-26 18:38:30">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -1978,6 +1978,11 @@
                 <derived name="MYTYPE3"/>
               </type>
             </variable>
+            <variable name="GO">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
           </localVars>
         </interface>
         <actions>
@@ -2044,12 +2049,12 @@ TEST_ARRAY[0,1] := TEST_ARRAY[0,2] + 50;
               </connectionPointOutAction>
             </step>
             <jumpStep localId="5" height="13" width="20" targetName="Start">
-              <position x="205" y="630"/>
+              <position x="205" y="755"/>
               <connectionPointIn>
                 <relPosition x="10" y="0"/>
-                <connection refLocalId="12">
-                  <position x="215" y="630"/>
-                  <position x="215" y="601"/>
+                <connection refLocalId="56">
+                  <position x="215" y="755"/>
+                  <position x="215" y="715"/>
                 </connection>
               </connectionPointIn>
             </jumpStep>
@@ -2300,7 +2305,7 @@ TEST_ARRAY[0,1] := TEST_ARRAY[0,2] + 50;
                 <reference name="COUNT2"/>
               </action>
             </actionBlock>
-            <actionBlock localId="32" height="30" width="235">
+            <actionBlock localId="32" height="30" width="350">
               <position x="200" y="170"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -2312,7 +2317,7 @@ TEST_ARRAY[0,1] := TEST_ARRAY[0,2] + 50;
               <action>
                 <inline>
                   <ST>
-<![CDATA[OUT1 := 0;OUT2 := 0;]]>
+<![CDATA[OUT1 := 0;OUT2 := 0;GO := FALSE;]]>
                   </ST>
                 </inline>
               </action>
@@ -2625,6 +2630,59 @@ It is supposed to increment OUT1 and OUT2 according CNT1 and CNT2, and untill UP
                 </variable>
               </outputVariables>
             </block>
+            <step localId="55" height="40" width="120" name="TIMED_WAIT">
+              <position x="155" y="635"/>
+              <connectionPointIn>
+                <relPosition x="60" y="0"/>
+                <connection refLocalId="12">
+                  <position x="215" y="635"/>
+                  <position x="215" y="601"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut formalParameter="">
+                <relPosition x="60" y="40"/>
+              </connectionPointOut>
+              <connectionPointOutAction formalParameter="">
+                <relPosition x="120" y="20"/>
+              </connectionPointOutAction>
+            </step>
+            <transition localId="56" height="5" width="20">
+              <position x="205" y="710"/>
+              <connectionPointIn>
+                <relPosition x="10" y="0"/>
+                <connection refLocalId="55">
+                  <position x="215" y="710"/>
+                  <position x="215" y="675"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="10" y="5"/>
+              </connectionPointOut>
+              <condition>
+                <inline name="">
+                  <ST>
+<![CDATA[GO]]>
+                  </ST>
+                </inline>
+              </condition>
+            </transition>
+            <actionBlock localId="57" height="35" width="170">
+              <position x="320" y="640"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="55">
+                  <position x="320" y="655"/>
+                  <position x="275" y="655"/>
+                </connection>
+              </connectionPointIn>
+              <action qualifier="D" duration="T#2s">
+                <inline>
+                  <ST>
+<![CDATA[GO := TRUE;]]>
+                  </ST>
+                </inline>
+              </action>
+            </actionBlock>
           </SFC>
         </body>
       </pou>
