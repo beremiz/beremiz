@@ -1,16 +1,21 @@
 
 #include "canfestival.h"
 
+/* CanFestival nodes generated OD headers*/
 %(nodes_includes)s
 
 #define BOARD_DECL(nodename, busname, baudrate)\
     s_BOARD nodename##Board = {busname, baudrate};
 
+/* CAN channels declaration */
 %(board_decls)s
 
+/* Keep track of init level to cleanup correctly */
 static int init_level=0;
+/* Retrieve PLC cycle time */
 extern int common_ticktime__;
 
+/* Called once all NetworkEdit declares slaves have booted*/
 static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
 {
     /* Put the master in operational mode */
@@ -20,23 +25,40 @@ static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
     masterSendNMTstateChange (d, 0, NMT_Start_Node);
 }
 
+/* Per master node slavebootup callbacks. Checks that
+ * every node have booted before calling Master_post_SlaveBootup */
 %(slavebootups)s
 
-#define NODE_INIT(nodename, nodeid) \
+/* One slave node post_sync callback.
+ * Used to align PLC tick-time on CANopen SYNC 
+ */
+%(post_sync)s
+
+#define NODE_FORCE_SYNC(nodename) \
     /* Artificially force sync state to 1 so that it is not started */\
     nodename##_Data.CurrentCommunicationState.csSYNC = -1;\
     /* Force sync period to common_ticktime__ so that other node can read it*/\
     *nodename##_Data.COB_ID_Sync = 0x40000080;\
-    *nodename##_Data.Sync_Cycle_Period = common_ticktime__ * 1000;\
+    *nodename##_Data.Sync_Cycle_Period = common_ticktime__ * 1000;
+
+#define NODE_INIT(nodename, nodeid) \
     /* Defining the node Id */\
     setNodeId(&nodename##_Data, nodeid);\
     /* init */\
     setState(&nodename##_Data, Initialisation);
 
+#define NODE_MASTER_INIT(nodename, nodeid) \
+	NODE_FORCE_SYNC(nodename) \
+	NODE_INIT(nodename, nodeid)
+
+#define NODE_SLAVE_INIT(nodename, nodeid) \
+	NODE_INIT(nodename, nodeid)
+
 void InitNodes(CO_Data* d, UNS32 id)
 {
-    %(nodes_init)s
 	%(slavebootup_register)s
+	%(post_sync_register)s
+    %(nodes_init)s
 }
 
 void Exit(CO_Data* d, UNS32 id)
@@ -103,7 +125,7 @@ void __retrieve_%(locstr)s()
      * TODO : implement buffers to avoid such a big lock  
      *  */
     EnterMutex();
-    /*Send Sync */
+    /* Send Sync */
     %(nodes_send_sync)s
 }
 
@@ -112,7 +134,7 @@ void __retrieve_%(locstr)s()
 
 void __publish_%(locstr)s()
 {
-    /*Call SendPDOEvent */
+    /* Process sync event */
     %(nodes_proceed_sync)s
     LeaveMutex();
 }

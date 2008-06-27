@@ -2,7 +2,7 @@
 Base definitions for beremiz plugins
 """
 
-import os,sys
+import os,sys,traceback
 import plugins
 import types
 import shutil
@@ -666,6 +666,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
           <xsd:attribute name="CFLAGS" type="xsd:string" use="required"/>
           <xsd:attribute name="Linker" type="xsd:string" use="optional" default="ld"/>
           <xsd:attribute name="LDFLAGS" type="xsd:string" use="required"/>
+          <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="1"/>
+                    <xsd:maxInclusive value="99"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -955,9 +963,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 buildpath, 
                 self.PLCGeneratedLocatedVars,
                 logger)
-        except Exception, msg:
+        except Exception, exc:
             logger.write_error("Plugins code generation Failed !\n")
-            logger.write_error(str(msg))
+            logger.write_error(traceback.format_exc())
             return False
 
 
@@ -976,7 +984,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             "retrieve_calls":"\n    ".join(["__retrieve_%(s)s();"%{'s':locstr} for locstr in locstrs]),
             "publish_calls":"\n    ".join(["__publish_%(s)s();"%{'s':locstr} for locstr in locstrs]),
             "init_calls":"\n    ".join(["init_level++; if(res = __init_%(s)s(argc,argv)) return res;"%{'s':locstr} for locstr in locstrs]),
-            "cleanup_calls":"\n    ".join(["if(init_level-- > 0) __cleanup_%(s)s();"%{'s':locstr} for locstr in locstrs])}
+            "cleanup_calls":"\n    ".join(["if(init_level-- > 0) __cleanup_%(s)s();"%{'s':locstr} for locstr in locstrs]),
+            "sync_align_ratio":self.BeremizRoot.getSync_Align_Ratio()}
         target_name = self.BeremizRoot.TargetType.content["name"]
         plc_main += runtime.code("plc_%s_main"%target_name)
 

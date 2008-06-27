@@ -8,7 +8,7 @@
               productVersion="1"
               creationDateTime="2008-06-24 18:44:00"/>
   <contentHeader name="test_slave"
-                 modificationDateTime="2008-06-25 16:42:30"
+                 modificationDateTime="2008-06-27 15:41:26"
                  language="en-US">
     <coordinateInfo>
       <fbd>
@@ -113,7 +113,7 @@
     <configurations>
       <configuration name="conf">
         <resource name="res">
-          <task name="tache" interval="00:00:00.100000" priority="0">
+          <task name="tache" interval="00:00:00.050000" priority="0">
             <pouInstance name="toto" type="test_main"/>
           </task>
         </resource>

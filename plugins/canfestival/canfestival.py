@@ -5,7 +5,7 @@ sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 
 from nodelist import NodeList
 from nodemanager import NodeManager
-import config_utils, gen_cfile
+import config_utils, gen_cfile, eds_utils
 from networkedit import networkedit
 from objdictedit import objdictedit
 import canfestival_config
@@ -29,6 +29,7 @@ class _SlavePlug(NodeManager):
           <xsd:attribute name="CAN_Device" type="xsd:string" use="required"/>
           <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required"/>
           <xsd:attribute name="NodeId" type="xsd:string" use="required"/>
+          <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -269,14 +270,16 @@ class RootClass:
                        "candriver" : self.CanFestivalInstance.getCAN_Driver(),
                        "nodes_includes" : "",
                        "board_decls" : "",
-                       "nodes_declare" : "",
                        "nodes_init" : "",
                        "nodes_open" : "",
                        "nodes_close" : "",
                        "nodes_send_sync" : "",
                        "nodes_proceed_sync" : "",
                        "slavebootups" : "",
-                       "slavebootup_register" : ""}
+                       "slavebootup_register" : "",
+                       "post_sync" : "",
+                       "post_sync_register" : "",
+                       }
         for child in self.IECSortedChilds():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
@@ -287,52 +290,68 @@ class RootClass:
                 # Not a slave -> master
                 child_data = getattr(child, "CanFestivalNode")
                 # Apply sync setting
+                format_dict["nodes_init"] += 'NODE_MASTER_INIT(%s, %s)\n    '%(
+                       nodename,
+                       child_data.getNodeId())
                 if child_data.getSync_TPDOs():
                     format_dict["nodes_send_sync"] += 'NODE_SEND_SYNC(%s)\n    '%(nodename)
                     format_dict["nodes_proceed_sync"] += 'NODE_PROCEED_SYNC(%s)\n    '%(nodename)
-                # initialize and declare node table for post_SlaveBootup lookup
-                
+
+                # initialize and declare node boot status variables for post_SlaveBootup lookup
                 SlaveIDs = child.GetSlaveIDs()
                 for id in SlaveIDs:
-                    format_dict["slavebootups"] += """
-int %s_slave_%d_booted = 0;
-"""%(nodename, id)
-                format_dict["slavebootups"] += """
-static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){
-    switch(nodeId){
-"""%(nodename)
+                    format_dict["slavebootups"] += (
+                    "int %s_slave_%d_booted = 0;\n"%(nodename, id))
+                # define post_SlaveBootup lookup functions
+                format_dict["slavebootups"] += (
+                    "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
+                    "    switch(nodeId){\n")
+                # one case per declared node, mark node as booted
                 for id in SlaveIDs:
-                    format_dict["slavebootups"] += """
-        case %d:
-            %s_slave_%d_booted = 1;
-            break;
-"""%(id, nodename, id)
-                format_dict["slavebootups"] += """
-        default:
-            break;
-    }
-    if( """
+                    format_dict["slavebootups"] += (
+                    "        case %d:\n"%(id)+
+                    "            %s_slave_%d_booted = 1;\n"%(nodename, id)+
+                    "            break;\n")
+                format_dict["slavebootups"] += (
+                    "        default:\n"+
+                    "            break;\n"+
+                    "    }\n"+
+                    "    if( ")
+                # expression to test if all declared nodes booted
                 format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
-                
-                format_dict["slavebootups"] += """ )
-        Master_post_SlaveBootup(d,nodeId);
-}
-"""
-                format_dict["slavebootup_register"] += """
-%s_Data.post_SlaveBootup = %s_post_SlaveBootup;
-"""%(nodename,nodename)
-                
+                format_dict["slavebootups"] += " )\n" + (
+                    "        Master_post_SlaveBootup(d,nodeId);\n"+
+                    "}\n")
+                # register previously declared func as post_SlaveBootup callback for that node
+                format_dict["slavebootup_register"] += (
+                    "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n"%(nodename,nodename))
+            else:
+                # Slave node
+                align = child_data.getSync_Align()
+                if align > 0:
+                    format_dict["post_sync"] += (
+                        "static int %s_CalCount = 0;\n"%(nodename)+
+                        "static void %s_post_sync(CO_Data* d){\n"%(nodename)+
+                        "    if(%s_CalCount < %d){\n"%(nodename, align)+
+                        "        %s_CalCount++;\n"%(nodename)+
+                        "        align_tick(1);\n"+
+                        "    }else{\n"+
+                        "        align_tick(0);\n"+
+                        "    }\n"+
+                        "}\n")
+                    format_dict["post_sync_register"] += (
+                        "%s_Data.post_sync = %s_post_sync;\n"%(nodename,nodename))
+                format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    '%(
+                       nodename,
+                       child_data.getNodeId())
+    
+            # Include generated OD headers
             format_dict["nodes_includes"] += '#include "%s.h"\n'%(nodename)
+            # Declare CAN channels according user filled config
             format_dict["board_decls"] += 'BOARD_DECL(%s, "%s", "%s")\n'%(
                    nodename,
                    child_data.getCAN_Device(),
                    child_data.getCAN_Baudrate())
-            format_dict["nodes_declare"] += 'NODE_DECLARE(%s, %s)\n    '%(
-                   nodename,
-                   child_data.getNodeId())
-            format_dict["nodes_init"] += 'NODE_INIT(%s, %s)\n    '%(
-                   nodename,
-                   child_data.getNodeId())
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
         
