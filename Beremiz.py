@@ -309,8 +309,6 @@ class Beremiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
         accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_HOME, ID_BEREMIZINSPECTOR)])
         self.SetAcceleratorTable(accel)
-
-
         
         if wx.VERSION < (2, 8, 0):
             self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
@@ -335,7 +333,6 @@ class Beremiz(wx.Frame):
         
         if wx.VERSION < (2, 8, 0):
             self.MainSplitter.SplitHorizontally(self.PLCConfig, self.LogConsole, -250)
-            
         else:
             self.AUIManager = wx.aui.AuiManager(self)
             self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
@@ -1137,6 +1134,8 @@ class Beremiz(wx.Frame):
     
     def OnCloseProjectMenu(self, event):
         self.PluginInfos = {}
+        self.PluginRoot.CloseProject()
+        self.Log.flush()
         self.RefreshPLCParams()
         self.RefreshPluginTree()
         self.RefreshMainMenu()

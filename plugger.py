@@ -797,6 +797,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.PLCEditor.RefreshTitle()
         self.PlugRequestSave()
     
+    def CloseProject(self):
+        self.ProjectPath = None
+        self.PluggedChilds = {}
+    
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
