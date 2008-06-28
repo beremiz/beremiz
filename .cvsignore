@@ -1,3 +1,6 @@
 *.pyc
 .settings
 .project
+bug_report_*.txt
+.pyproject
+.externalToolBuilders
