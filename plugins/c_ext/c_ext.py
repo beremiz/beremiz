@@ -267,21 +267,17 @@ class _Cfile:
                 outputs += 1
             vars.append(var)
         text += "/* Beremiz c_ext plugin user variables definition */\n"
-        text += "#ifdef _WINDOWS_H\n"
         base_types = self.GetPlugRoot().GetBaseTypes()
         for var in vars:
             if var["Type"] in base_types:
                 prefix = "IEC_"
             else:
                 prefix = ""
-            text += "%s%s %s;\n"%(prefix, var["Type"], var["location"])
-        text += "#else\n"
-        for var in vars:
-            text += "%s %s;\n"%(var["Type"], var["location"])
-        text += "#endif\n\n"
+            text += "%s%s beremiz%s;\n"%(prefix, var["Type"], var["location"])
+            text += "%s%s *%s = &beremiz%s;\n"%(prefix, var["Type"], var["location"], var["location"])
         text += "/* User variables reference */\n"
         for var in vars:
-            text += "#define %s %s\n"%(var["Name"], var["location"])
+            text += "#define %s beremiz%s\n"%(var["Name"], var["location"])
         text += "\n"
         
         # Adding user global variables and routines
@@ -292,6 +288,7 @@ class _Cfile:
         text += "/* Beremiz plugin functions */\n"
         text += "int __init_%s(int argc,char **argv)\n{\n"%location_str
         text += self.CFile.initFunction.gettext()
+        text += "  return 0;\n"
         text += "\n}\n\n"
         
         text += "void __cleanup_%s()\n{\n"%location_str
