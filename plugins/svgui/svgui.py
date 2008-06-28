@@ -334,8 +334,7 @@ class _SVGUICGenerator(SVGUICGenerator):
         return text
     
     def GenerateGlobalVarsAndFuncs(self, size):
-        text = """#include \"iec_types.h\"
-
+        text = """#include "iec_types.h"
 #ifdef __WXMSW__
 #define COMPARE_AND_SWAP_VAL(Destination, comparand, exchange) InterlockedCompareExchange(Destination, exchange, comparand)
 #define THREAD_RETURN_TYPE DWORD WINAPI
@@ -353,6 +352,7 @@ class _SVGUICGenerator(SVGUICGenerator):
         text += """IMPLEMENT_APP_NO_MAIN(SVGViewApp);
 IMPLEMENT_WX_THEME_SUPPORT;
 SVGViewApp *myapp = NULL;
+wxSemaphore MyInitSem;
 
 #ifdef __WXMSW__
 HANDLE wxMainLoop;
@@ -424,6 +424,7 @@ int __init_%(location)s(int argc, char** argv)
 #else
   pthread_create(&wxMainLoop, NULL, InitWxEntry, NULL);
 #endif
+  MyInitSem.Wait();
   return 0;
 }
 
@@ -627,13 +628,13 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
 """%texts
             elif element_type == ITEM_TRANSFORM:
                 text += """    if (_copy__QD%(location)s_%(id)d_3 != ((SVGUITransform*)element)->GetX() ||
-        copy__QD%(location)s_%(id)d_4 != ((SVGUITransform*)element)->GetY())
-      transform->Move(_copy__QD%(location)s_%(id)d_3, _copy__QD%(location)s_%(id)d_4);
+        _copy__QD%(location)s_%(id)d_4 != ((SVGUITransform*)element)->GetY())
+      ((SVGUITransform*)element)->Move(_copy__QD%(location)s_%(id)d_3, _copy__QD%(location)s_%(id)d_4);
     if (_copy__QD%(location)s_%(id)d_5 != ((SVGUITransform*)element)->GetXScale() ||
-        copy__QD%(location)s_%(id)d_6 != ((SVGUITransform*)element)->GetYScale())
-      transform->Scale(_copy__QD%(location)s_%(id)d_5, _copy__QD%(location)s_%(id)d_6);
+        _copy__QD%(location)s_%(id)d_6 != ((SVGUITransform*)element)->GetYScale())
+      ((SVGUITransform*)element)->Scale(_copy__QD%(location)s_%(id)d_5, _copy__QD%(location)s_%(id)d_6);
     if (_copy__QD%(location)s_%(id)d_7 != ((SVGUITransform*)element)->GetAngle())
-      transform->Rotate(_copy__QD%(location)s_%(id)d_7);
+      ((SVGUITransform*)element)->Rotate(_copy__QD%(location)s_%(id)d_7);
 """%texts
             text += "    COMPARE_AND_SWAP_VAL(&out_state_%(id)d, GUI_BUSY, UNCHANGED);\n  }\n"%texts
             
@@ -711,24 +712,28 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             
             text += """
   element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
-  beremiz__QX%(location)s_%(id)d_1 = 1;
-  _copy__QX%(location)s_%(id)d_1 = 1;
-  beremiz__QX%(location)s_%(id)d_2 = 1;
-  _copy__QX%(location)s_%(id)d_2 = 1;
+  beremiz__QX%(location)s_%(id)d_1 = _copy__QX%(location)s_%(id)d_1 = 1;
+  beremiz__QX%(location)s_%(id)d_2 = _copy__QX%(location)s_%(id)d_2 = 1;
 """%texts
             if element_type == ITEM_BUTTON:
-                text += "  _copy__IX%(location)s_%(id)d_1 = ((SVGUIButton*)element)->GetToggle();\n"%texts
+                text += "  beremiz__IX%(location)s_%(id)d_1 = _copy__IX%(location)s_%(id)d_1 = ((SVGUIButton*)element)->GetToggle();\n"%texts
             elif element_type == ITEM_TEXT:
-                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
+                text += "  beremiz__IB%(location)s_%(id)d_1 = _copy__IB%(location)s_%(id)d_1 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
             elif element_type == ITEM_SCROLLBAR:
-                text += "  _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
+                text += "  beremiz__IW%(location)s_%(id)d_1 = _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
             elif element_type == ITEM_ROTATING:
-                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
+                text += "   beremiz__ID%(location)s_%(id)d_1 = _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
             elif element_type == ITEM_NOTEBOOK:
-                text += "  _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
+                text += "  beremiz__IB%(location)s_%(id)d_1 = _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
             elif element_type == ITEM_TRANSFORM:
-                text += "  _copy__ID%(location)s_%(id)d_1 = ((SVGUITransform*)element)->GetX();\n"%texts
-                text += "  _copy__ID%(location)s_%(id)d_2 = ((SVGUITransform*)element)->GetY();\n"%texts
+                text += "  beremiz__QD%(location)s_%(id)d_3 = _copy__QD%(location)s_%(id)d_3 = ((SVGUITransform*)element)->GetX();\n"%texts
+                text += "  beremiz__QD%(location)s_%(id)d_4 = _copy__QD%(location)s_%(id)d_4 = ((SVGUITransform*)element)->GetY();\n"%texts
+                text += "  beremiz__QD%(location)s_%(id)d_5 = _copy__QD%(location)s_%(id)d_5 = ((SVGUITransform*)element)->GetXScale();\n"%texts
+                text += "  beremiz__QD%(location)s_%(id)d_6 = _copy__QD%(location)s_%(id)d_6 = ((SVGUITransform*)element)->GetYScale();\n"%texts
+                text += "  beremiz__QD%(location)s_%(id)d_7 = _copy__QD%(location)s_%(id)d_7 = ((SVGUITransform*)element)->GetAngle();\n"%texts
+                text += "  beremiz__ID%(location)s_%(id)d_1 = _copy__ID%(location)s_%(id)d_1 = ((SVGUITransform*)element)->GetX();\n"%texts
+                text += "  beremiz__ID%(location)s_%(id)d_2 = _copy__ID%(location)s_%(id)d_2 = ((SVGUITransform*)element)->GetY();\n"%texts
+                text += "  MyInitSem.Post();\n"
         text += "}\n\n"
         
         return text
