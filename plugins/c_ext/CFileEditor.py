@@ -1052,10 +1052,9 @@ class CFileEditor(base_class):
 #-------------------------------------------------------------------------------
 
     def RefreshEditMenu(self):
-        if self.EditMenu:
-            undo, redo = self.Controler.GetBufferState()
-            self.EditMenu.Enable(wx.ID_UNDO, undo)
-            self.EditMenu.Enable(wx.ID_REDO, redo)
+        undo, redo = self.Controler.GetBufferState()
+        self.EditMenu.Enable(wx.ID_UNDO, undo)
+        self.EditMenu.Enable(wx.ID_REDO, redo)
 
     def OnRefreshMenu(self, event):
         selected = self.GetPageSelection()
