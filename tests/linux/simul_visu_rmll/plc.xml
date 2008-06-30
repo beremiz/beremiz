@@ -8,7 +8,7 @@
               productVersion="1"
               creationDateTime="2008-06-27 17:09:17"/>
   <contentHeader name="simul_visu_rmll"
-                 modificationDateTime="2008-06-28 17:53:57">
+                 modificationDateTime="2008-06-30 12:02:37">
     <coordinateInfo>
       <pageSize x="700" y="1000"/>
       <fbd>
@@ -143,7 +143,7 @@
               </outputVariables>
             </block>
             <block localId="7" width="128" height="96" typeName="Button" instanceName="led_pump">
-              <position x="1232" y="224"/>
+              <position x="1232" y="80"/>
               <inputVariables>
                 <variable formalParameter="Show">
                   <connectionPointIn>
@@ -155,12 +155,12 @@
                     <relPosition x="0" y="56"/>
                   </connectionPointIn>
                 </variable>
-                <variable formalParameter="Toggle">
+                <variable formalParameter="Value">
                   <connectionPointIn>
                     <relPosition x="0" y="80"/>
-                    <connection refLocalId="39">
-                      <position x="1232" y="304"/>
-                      <position x="1176" y="304"/>
+                    <connection refLocalId="40">
+                      <position x="1232" y="160"/>
+                      <position x="1176" y="160"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -175,7 +175,7 @@
               </outputVariables>
             </block>
             <block localId="8" width="128" height="96" typeName="Button" instanceName="led_sink">
-              <position x="1232" y="80"/>
+              <position x="1232" y="224"/>
               <inputVariables>
                 <variable formalParameter="Show">
                   <connectionPointIn>
@@ -187,12 +187,12 @@
                     <relPosition x="0" y="56"/>
                   </connectionPointIn>
                 </variable>
-                <variable formalParameter="Toggle">
+                <variable formalParameter="Value">
                   <connectionPointIn>
                     <relPosition x="0" y="80"/>
-                    <connection refLocalId="40">
-                      <position x="1232" y="160"/>
-                      <position x="1176" y="160"/>
+                    <connection refLocalId="39">
+                      <position x="1232" y="304"/>
+                      <position x="1176" y="304"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
