@@ -11,6 +11,7 @@ from SVGUIEditor import *
 from FBD_Objects import *
 
 from wxPopen import ProcessLogger
+from wx.wxsvg import SVGDocument
 
 [ID_SVGUIEDITORFBDPANEL, 
 ] = [wx.NewId() for _init_ctrls in range(1)]
@@ -180,8 +181,13 @@ class RootClass(SVGUIControler):
     def PlugGenerate_C(self, buildpath, locations, logger):
         progname = "SVGUI_%s"%"_".join(map(str, self.GetCurrentLocation()))
         
+        doc = SVGDocument(self.GetSVGFilePath())
+        root_element = doc.GetRootElement()
+        window_size = (int(root_element.GetAttribute("width")),
+                       int(root_element.GetAttribute("height")))
+        
         generator = _SVGUICGenerator(self.GetElementsByType(), self.GetSVGFilePath(), self.GetFilePath(), self.GetCurrentLocation())
-        generator.GenerateProgram((0, 0), buildpath, progname)
+        generator.GenerateProgram(window_size, buildpath, progname)
         Gen_C_file = os.path.join(buildpath, progname+".cpp" )
         
         if wx.Platform == '__WXMSW__':
@@ -363,7 +369,6 @@ pthread_t wxMainLoop;
 
 """
 
-#        text += "pthread_t wxMainLoop,automate;\n"
         text += """int myargc = 0;
 char** myargv = NULL;
         
@@ -385,31 +390,18 @@ THREAD_RETURN_TYPE InitWxEntry(void* args)
 }
 
 """
-#        text += """void* SimulAutomate(void* args)
-#{
-#  while(1){
-#    myapp->frame->m_svgCtrl->IN_"+self.BusNumber+"();
-#    //printf(\"AUTOMATE\\n\");
-#    myapp->frame->m_svgCtrl->OUT_"+self.BusNumber+"();
-#    sleep(1);
-#  }
-#  return args;
-#}
-#
-#"""
-      
+
         text += """bool SVGViewApp::OnInit()
 {
   #ifndef __WXMSW__
     setlocale(LC_NUMERIC, "C");
   #endif
 """
-        #text += "  frame = new MainFrame(NULL, wxT(\"Program\"),wxDefaultPosition, wxSize(%d, %d));\n"%size
-        text += """  frame = new MainFrame(NULL, wxT("Program"),wxDefaultPosition, wxDefaultSize);
+        
+        text += """  frame = new MainFrame(NULL, wxT("Program"),wxDefaultPosition, wxSize(%d, %d));
   frame->Show();
   myapp = this;
-"""
-#        text += "  pthread_create(&automate, NULL, SimulAutomate, NULL);\n"
+"""%size
         text += """  return true;
 }
 
