@@ -774,6 +774,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         Load a project contained in a folder
         @param ProjectPath: path of the project folder
         """
+        if os.path.basename(ProjectPath) == "":
+            ProjectPath = os.path.dirname(ProjectPath)
         # Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
