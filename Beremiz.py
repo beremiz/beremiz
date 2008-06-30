@@ -433,7 +433,9 @@ class Beremiz(wx.Frame):
         if sizer:
             maxx, maxy = sizer.GetMinSize()
             self.PLCConfig.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, xstart, ystart)
+                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, 
+                max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT)), 
+                max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT)))
 
     def RefreshPLCParams(self):
         self.Freeze()
@@ -974,70 +976,7 @@ class Beremiz(wx.Frame):
                 element_path = "%s.%s"%(path, element_infos["name"])
             else:
                 element_path = element_infos["name"]
-            if isinstance(element_infos["type"], types.ListType):
-                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-                if first:
-                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
-                else:
-                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
-                staticbitmap = GenStaticBitmap(ID=-1, bitmapname="%s.png"%element_infos["name"],
-                    name="%s_bitmap"%element_infos["name"], parent=parent,
-                    pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
-                boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
-                statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
-                    name="%s_label"%element_infos["name"], parent=parent, 
-                    pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-                boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
-                id = wx.NewId()
-                choicectrl = wx.Choice(id=id, name=element_infos["name"], parent=parent, 
-                    pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)
-                boxsizer.AddWindow(choicectrl, 0, border=0, flag=0)
-                choicectrl.Append("")
-                if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
-                    for choice, xsdclass in element_infos["type"]:
-                        choicectrl.Append(choice)
-                    staticbox = wx.StaticBox(id=-1, label="%(name)s - %(value)s"%element_infos, 
-                        name='%s_staticbox'%element_infos["name"], parent=parent,
-                        pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
-                    staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                    sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-                    self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
-                    callback = self.GetChoiceContentCallBackFunction(choicectrl, staticboxsizer, plugin, element_path)
-                else:
-                    for choice in element_infos["type"]:
-                        choicectrl.Append(choice)
-                    callback = self.GetChoiceCallBackFunction(choicectrl, plugin, element_path)
-                if element_infos["value"]:
-                    choicectrl.SetStringSelection(element_infos["value"])
-                choicectrl.Bind(wx.EVT_CHOICE, callback, id=id)
-            elif isinstance(element_infos["type"], types.DictType):
-                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-                if first:
-                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
-                else:
-                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
-                staticbitmap = GenStaticBitmap(ID=-1, bitmapname="%s.png"%element_infos["name"],
-                    name="%s_bitmap"%element_infos["name"], parent=parent,
-                    pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
-                boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
-                statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
-                    name="%s_label"%element_infos["name"], parent=parent, 
-                    pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-                boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
-                id = wx.NewId()
-                scmin = -(2**31)
-                scmax = 2**31-1
-                if "min" in element_infos["type"]:
-                    scmin = element_infos["type"]["min"]
-                if "max" in element_infos["type"]:
-                    scmax = element_infos["type"]["max"]
-                spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                    pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
-                spinctrl.SetRange(scmin,scmax)
-                boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
-                spinctrl.SetValue(element_infos["value"])
-                spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
-            elif element_infos["type"] == "element":
+            if element_infos["type"] == "element":
                 staticbox = wx.StaticBox(id=-1, label=element_infos["name"], 
                     name='%s_staticbox'%element_infos["name"], parent=parent,
                     pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
@@ -1048,7 +987,8 @@ class Beremiz(wx.Frame):
                     sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
                 self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
             else:
-                boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                boxsizer = wx.FlexGridSizer(cols=3, rows=1)
+                boxsizer.AddGrowableCol(1)
                 if first:
                     sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
                 else:
@@ -1057,36 +997,74 @@ class Beremiz(wx.Frame):
                     name="%s_bitmap"%element_infos["name"], parent=parent,
                     pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                 boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
-
                 statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
                     name="%s_label"%element_infos["name"], parent=parent, 
                     pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
                 boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
                 id = wx.NewId()
-                if element_infos["type"] == "boolean":
-                    checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(17, 25), style=0)
-                    boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
-                    checkbox.SetValue(element_infos["value"])
-                    checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, plugin, element_path), id=id)
-                elif element_infos["type"] in ["unsignedLong", "long","integer"]:
-                    if element_infos["type"].startswith("unsigned"):
-                        scmin = 0
+                if isinstance(element_infos["type"], types.ListType):
+                    choicectrl = wx.Choice(id=id, name=element_infos["name"], parent=parent, 
+                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)
+                    boxsizer.AddWindow(choicectrl, 0, border=0, flag=0)
+                    if element_infos["use"] == "optional":
+                        choicectrl.Append("")
+                    if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
+                        for choice, xsdclass in element_infos["type"]:
+                            choicectrl.Append(choice)
+                        staticbox = wx.StaticBox(id=-1, label="%(name)s - %(value)s"%element_infos, 
+                            name='%s_staticbox'%element_infos["name"], parent=parent,
+                            pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
+                        staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                        sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
+                        self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
+                        callback = self.GetChoiceContentCallBackFunction(choicectrl, staticboxsizer, plugin, element_path)
                     else:
-                        scmin = -(2**31)
+                        for choice in element_infos["type"]:
+                            choicectrl.Append(choice)
+                        callback = self.GetChoiceCallBackFunction(choicectrl, plugin, element_path)
+                    if element_infos["value"] is None:
+                        choicectrl.SetStringSelection("")
+                    else:
+                        choicectrl.SetStringSelection(element_infos["value"])
+                    choicectrl.Bind(wx.EVT_CHOICE, callback, id=id)
+                elif isinstance(element_infos["type"], types.DictType):
+                    scmin = -(2**31)
                     scmax = 2**31-1
+                    if "min" in element_infos["type"]:
+                        scmin = element_infos["type"]["min"]
+                    if "max" in element_infos["type"]:
+                        scmax = element_infos["type"]["max"]
                     spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
                         pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
-                    spinctrl.SetRange(scmin, scmax)
+                    spinctrl.SetRange(scmin,scmax)
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                     spinctrl.SetValue(element_infos["value"])
                     spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                 else:
-                    textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)#wx.TE_PROCESS_ENTER)
-                    boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
-                    textctrl.SetValue(str(element_infos["value"]))
-                    textctrl.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
+                    if element_infos["type"] == "boolean":
+                        checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=parent, 
+                            pos=wx.Point(0, 0), size=wx.Size(17, 25), style=0)
+                        boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
+                        checkbox.SetValue(element_infos["value"])
+                        checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, plugin, element_path), id=id)
+                    elif element_infos["type"] in ["unsignedLong", "long","integer"]:
+                        if element_infos["type"].startswith("unsigned"):
+                            scmin = 0
+                        else:
+                            scmin = -(2**31)
+                        scmax = 2**31-1
+                        spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
+                            pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                        spinctrl.SetRange(scmin, scmax)
+                        boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
+                        spinctrl.SetValue(element_infos["value"])
+                        spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
+                    else:
+                        textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
+                            pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)#wx.TE_PROCESS_ENTER)
+                        boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
+                        textctrl.SetValue(str(element_infos["value"]))
+                        textctrl.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
             first = False
     
     def OnNewProjectMenu(self, event):
