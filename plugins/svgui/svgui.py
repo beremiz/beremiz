@@ -209,7 +209,7 @@ class RootClass(SVGUIControler):
             type = block.gettypeName()
             block_infos = GetBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
-            if not generator.ComputedBlocks.get(name, False) and not order:
+            if not generator.ComputedBlocks.get(block, False) and not order:
                 generator.ComputedBlocks[block] = True
                 for num, variable in enumerate(block.inputVariables.getvariable()):
                     connections = variable.connectionPointIn.getconnections()
@@ -256,7 +256,7 @@ class RootClass(SVGUIControler):
                     "comment" : "SVGUI Container",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                 {"name" : "Button", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("Toggle","BOOL","none")], 
+                    "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none"),("Value","BOOL","none")], 
                     "outputs" : [("State","BOOL","none")],
                     "comment" : "SVGUI Button",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
@@ -494,7 +494,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
     Show(true);
     m_svgCtrl->SetFocus();
     m_svgCtrl->SetFitToFrame(true);
-    m_svgCtrl->RefreshScale();
     m_svgCtrl->InitScrollBars();
     m_svgCtrl->Initialize();
     m_svgCtrl->Update();
@@ -722,7 +721,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             elif element_type == ITEM_SCROLLBAR:
                 text += "  beremiz__IW%(location)s_%(id)d_1 = _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
             elif element_type == ITEM_ROTATING:
-                text += "   beremiz__ID%(location)s_%(id)d_1 = _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
+                text += "  beremiz__ID%(location)s_%(id)d_1 = _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
             elif element_type == ITEM_NOTEBOOK:
                 text += "  beremiz__IB%(location)s_%(id)d_1 = _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
             elif element_type == ITEM_TRANSFORM:
@@ -733,7 +732,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += "  beremiz__QD%(location)s_%(id)d_7 = _copy__QD%(location)s_%(id)d_7 = ((SVGUITransform*)element)->GetAngle();\n"%texts
                 text += "  beremiz__ID%(location)s_%(id)d_1 = _copy__ID%(location)s_%(id)d_1 = ((SVGUITransform*)element)->GetX();\n"%texts
                 text += "  beremiz__ID%(location)s_%(id)d_2 = _copy__ID%(location)s_%(id)d_2 = ((SVGUITransform*)element)->GetY();\n"%texts
-                text += "  MyInitSem.Post();\n"
-        text += "}\n\n"
         
+        text += "\n  MyInitSem.Post();\n}\n\n"
         return text
