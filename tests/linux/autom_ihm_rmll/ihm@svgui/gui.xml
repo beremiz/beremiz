@@ -2,5 +2,5 @@
 <Interface xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="def_xsd.xsd" id="1" name="Interface">
   <Button toggle="true" unselected_id="fill_off" selected_id="fill_on" id="2" name="fill" background_id="fill_bck"/>
   <Button toggle="true" unselected_id="empty_off" selected_id="empty_on" id="3" name="empty" background_id="Empty_bck"/>
-  <Transform moving_id="gague_mobile" id="4" name="gauge" background_id="gauge_bck"/>
+  <Transform moving_id="gague_mobile" id="4" name="gauge" enable="false" background_id="gauge_bck"/>
 </Interface>
