@@ -979,7 +979,7 @@ class Beremiz(wx.Frame):
             if element_infos["type"] == "element":
                 staticbox = wx.StaticBox(id=-1, label=element_infos["name"], 
                     name='%s_staticbox'%element_infos["name"], parent=parent,
-                    pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
+                    pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                 staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                 if first:
                     sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW|wx.TOP)
@@ -1013,7 +1013,7 @@ class Beremiz(wx.Frame):
                             choicectrl.Append(choice)
                         staticbox = wx.StaticBox(id=-1, label="%(name)s - %(value)s"%element_infos, 
                             name='%s_staticbox'%element_infos["name"], parent=parent,
-                            pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
+                            pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                         staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                         sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
                         self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
