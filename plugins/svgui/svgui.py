@@ -186,12 +186,15 @@ class RootClass(SVGUIControler):
         window_size = (int(float(root_element.GetAttribute("width"))),
                        int(float(root_element.GetAttribute("height"))))
 
-##        svgfilepath = self.GetSVGFilePath()
-##        xmlfilepath = self.GetFilePath()
-##        shutil.copy(svgfilepath, buildpath)
-##        shutil.copy(xmlfilepath, buildpath)
+        svgfilepath = self.GetSVGFilePath()
+        xmlfilepath = self.GetFilePath()
+        shutil.copy(svgfilepath, buildpath)
+        shutil.copy(xmlfilepath, buildpath)
         
-        generator = _SVGUICGenerator(self.GetElementsByType(), self.GetSVGFilePath(), self.GetFilePath(), self.GetCurrentLocation())
+        generator = _SVGUICGenerator(self.GetElementsByType(), 
+                                     os.path.split(self.GetSVGFilePath())[1], 
+                                     os.path.split(self.GetFilePath())[1], 
+                                     self.GetCurrentLocation())
         generator.GenerateProgram(window_size, buildpath, progname)
         Gen_C_file = os.path.join(buildpath, progname+".cpp" )
         
@@ -485,8 +488,12 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
     def GenerateProgramInitFrame(self):
         text = """MainFrame::MainFrame(wxWindow *parent, const wxString& title, const wxPoint& pos,const wxSize& size, long style): wxFrame(parent, wxID_ANY, title, pos, size, style)
 {
+  wxFileName apppath(wxTheApp->argv[0]);
+  wxFileName svgfilepath(apppath.GetPath(), wxT("%s"));
+  wxFileName xmlfilepath(apppath.GetPath(), wxT("%s"));
+
   m_svgCtrl = new Program(this);
-  if (m_svgCtrl->LoadFiles(wxT("%s"), wxT("%s")))
+  if (m_svgCtrl->LoadFiles(svgfilepath.GetFullPath(), xmlfilepath.GetFullPath()))
   {
     Show(true);
     m_svgCtrl->SetFocus();
@@ -708,18 +715,25 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
             
             text += """
   element = (SVGUIElement*)GetElementById(wxT("%(id)d"));
-  beremiz__QX%(location)s_%(id)d_1 = _copy__QX%(location)s_%(id)d_1 = 1;
-  beremiz__QX%(location)s_%(id)d_2 = _copy__QX%(location)s_%(id)d_2 = 1;
+  beremiz__QX%(location)s_%(id)d_1 = _copy__QX%(location)s_%(id)d_1 = element->IsVisible();
+  beremiz__QX%(location)s_%(id)d_2 = _copy__QX%(location)s_%(id)d_2 = element->IsEnabled();
 """%texts
             if element_type == ITEM_BUTTON:
+                text += "  beremiz__QX%(location)s_%(id)d_3 = _copy__QX%(location)s_%(id)d_3 = ((SVGUIButton*)element)->GetToggle();\n"%texts
                 text += "  beremiz__IX%(location)s_%(id)d_1 = _copy__IX%(location)s_%(id)d_1 = ((SVGUIButton*)element)->GetToggle();\n"%texts
             elif element_type == ITEM_TEXT:
+                text += "  beremiz__QB%(location)s_%(id)d_3 = _copy__QB%(location)s_%(id)d_3 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
                 text += "  beremiz__IB%(location)s_%(id)d_1 = _copy__IB%(location)s_%(id)d_1 = ((SVGUITextCtrl*)element)->GetValue();\n"%texts
             elif element_type == ITEM_SCROLLBAR:
+                text += "  beremiz__QW%(location)s_%(id)d_3 = _copy__QW%(location)s_%(id)d_3 = ((SVGUIScrollBar*)element)->GetThumbSize();\n"%texts
+                text += "  beremiz__QW%(location)s_%(id)d_4 = _copy__QW%(location)s_%(id)d_4 = ((SVGUIScrollBar*)element)->GetRange();\n"%texts
+                text += "  beremiz__QW%(location)s_%(id)d_5 = _copy__QW%(location)s_%(id)d_5 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
                 text += "  beremiz__IW%(location)s_%(id)d_1 = _copy__IW%(location)s_%(id)d_1 = ((SVGUIScrollBar*)element)->GetThumbPosition();\n"%texts
             elif element_type == ITEM_ROTATING:
+                text += "  beremiz__QD%(location)s_%(id)d_3 = _copy__QD%(location)s_%(id)d_3 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
                 text += "  beremiz__ID%(location)s_%(id)d_1 = _copy__ID%(location)s_%(id)d_1 = ((SVGUIRotatingCtrl*)element)->GetAngle();\n"%texts
             elif element_type == ITEM_NOTEBOOK:
+                text += "  beremiz__QB%(location)s_%(id)d_3 = _copy__QB%(location)s_%(id)d_3 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
                 text += "  beremiz__IB%(location)s_%(id)d_1 = _copy__IB%(location)s_%(id)d_1 = ((SVGUINoteBook*)element)->GetCurrentPage();\n"%texts
             elif element_type == ITEM_TRANSFORM:
                 text += "  beremiz__QD%(location)s_%(id)d_3 = _copy__QD%(location)s_%(id)d_3 = ((SVGUITransform*)element)->GetX();\n"%texts
