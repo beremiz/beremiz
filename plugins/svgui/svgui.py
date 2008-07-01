@@ -183,8 +183,13 @@ class RootClass(SVGUIControler):
         
         doc = SVGDocument(self.GetSVGFilePath())
         root_element = doc.GetRootElement()
-        window_size = (int(root_element.GetAttribute("width")),
-                       int(root_element.GetAttribute("height")))
+        window_size = (int(float(root_element.GetAttribute("width"))),
+                       int(float(root_element.GetAttribute("height"))))
+
+##        svgfilepath = self.GetSVGFilePath()
+##        xmlfilepath = self.GetFilePath()
+##        shutil.copy(svgfilepath, buildpath)
+##        shutil.copy(xmlfilepath, buildpath)
         
         generator = _SVGUICGenerator(self.GetElementsByType(), self.GetSVGFilePath(), self.GetFilePath(), self.GetCurrentLocation())
         generator.GenerateProgram(window_size, buildpath, progname)
