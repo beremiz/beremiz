@@ -463,8 +463,8 @@ class Beremiz(wx.Frame):
             plcwindowsizer.AddWindow(st, 0, border=5, flag=wx.ALL|wx.ALIGN_CENTER)
             
             addbutton_id = wx.NewId()
-            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Add16x16.png')),
-                  name='AddBusButton', parent=plcwindow, pos=wx.Point(0, 0),
+            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Add.png')),
+                  name='AddPluginButton', parent=plcwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
             addbutton.SetToolTipString("Add a sub plugin")
             addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(self.PluginRoot), id=addbutton_id)
@@ -538,7 +538,7 @@ class Beremiz(wx.Frame):
 #        for name, XSDClass, help in plugin.PlugChildsTypes:
 #            addbutton_id = wx.NewId()
 #            addbutton = wx.lib.buttons.GenButton(id=addbutton_id, label="Add %s"%help,
-#                  name='AddBusButton', parent=parent, pos=wx.Point(0, 0),
+#                  name='AddPluginButton', parent=parent, pos=wx.Point(0, 0),
 #                  style=wx.NO_BORDER)
 #            font = addbutton.GetFont()
 #            font.SetUnderlined(True)
@@ -559,7 +559,7 @@ class Beremiz(wx.Frame):
             if "method" in plugin_method:
                 id = wx.NewId()
                 button = GenBitmapTextButton(id=id, parent=parent,
-                    bitmap=wx.Bitmap(os.path.join(CWD, "%s24x24.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
+                    bitmap=wx.Bitmap(os.path.join(CWD, "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
                     name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
                 button.SetToolTipString(plugin_method["tooltip"])
                 button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
@@ -701,8 +701,8 @@ class Beremiz(wx.Frame):
         iecsizer.AddSizer(adddeletesizer, 0, border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
 
         deletebutton_id = wx.NewId()
-        deletebutton = wx.lib.buttons.GenBitmapButton(id=deletebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Delete16x16.png')),
-              name='DeleteBusButton', parent=leftwindow, pos=wx.Point(0, 0),
+        deletebutton = wx.lib.buttons.GenBitmapButton(id=deletebutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Delete.png')),
+              name='DeletePluginButton', parent=leftwindow, pos=wx.Point(0, 0),
               size=wx.Size(16, 16), style=wx.NO_BORDER)
         deletebutton.SetToolTipString("Delete this plugin")
         deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(plugin), id=deletebutton_id)
@@ -710,8 +710,8 @@ class Beremiz(wx.Frame):
 
         if len(plugin.PlugChildsTypes) > 0:
             addbutton_id = wx.NewId()
-            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Add16x16.png')),
-                  name='AddBusButton', parent=leftwindow, pos=wx.Point(0, 0),
+            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'Add.png')),
+                  name='AddPluginButton', parent=leftwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
             addbutton.SetToolTipString("Add a sub plugin")
             addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(plugin), id=addbutton_id)

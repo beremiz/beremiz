@@ -4,3 +4,4 @@
 bug_report_*.txt
 .pyproject
 .externalToolBuilders
+.pydevproject
