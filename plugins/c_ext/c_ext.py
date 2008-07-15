@@ -200,7 +200,8 @@ class _Cfile:
             self._View.Show()
 
     PluginMethods = [
-        {"name" : "Edit C File", 
+        {"bitmap" : os.path.join("images", "EditCfile"),
+         "name" : "Edit C File", 
          "tooltip" : "Edit C File",
          "method" : "_OpenView"},
     ]

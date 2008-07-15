@@ -717,17 +717,17 @@ class Beremiz(wx.Frame):
             addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(plugin), id=addbutton_id)
             adddeletesizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
         
-        if len(self.PluginInfos[plugin]["children"]) > 0:
-            expandbutton_id = wx.NewId()
-            expandbutton = wx.lib.buttons.GenBitmapToggleButton(id=expandbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'plus.png')),
-                  name='ExpandButton', parent=leftwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(13, 13), style=wx.NO_BORDER)
-            expandbutton.labelDelta = 0
-            expandbutton.SetBezelWidth(0)
-            expandbutton.SetUseFocusIndicator(False)
-            expandbutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'minus.png')))
-            expandbutton.SetToggle(self.PluginInfos[plugin]["expanded"])
+        expandbutton_id = wx.NewId()
+        expandbutton = wx.lib.buttons.GenBitmapToggleButton(id=expandbutton_id, bitmap=wx.Bitmap(os.path.join(CWD, 'images', 'plus.png')),
+              name='ExpandButton', parent=leftwindow, pos=wx.Point(0, 0),
+              size=wx.Size(13, 13), style=wx.NO_BORDER)
+        expandbutton.labelDelta = 0
+        expandbutton.SetBezelWidth(0)
+        expandbutton.SetUseFocusIndicator(False)
+        expandbutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'minus.png')))
+        expandbutton.SetToggle(self.PluginInfos[plugin]["expanded"])
             
+        if len(self.PluginInfos[plugin]["children"]) > 0:
             def togglebutton(event):
                 if expandbutton.GetToggle():
                     self.ExpandPlugin(plugin)
@@ -738,14 +738,16 @@ class Beremiz(wx.Frame):
                 self.RefreshScrollBars()
                 event.Skip()
             expandbutton.Bind(wx.EVT_BUTTON, togglebutton, id=expandbutton_id)
-            leftbuttonsizer.AddWindow(expandbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        else:
+            expandbutton.Enable(False)
+        iecsizer.AddWindow(expandbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         tc_id = wx.NewId()
-        tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 35), style=wx.NO_BORDER)
+        tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 25), style=wx.NO_BORDER)
         tc.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
         tc.SetValue(plugin.MandatoryParams[1].getName())
         tc.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
-        leftbuttonsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        iecsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
        
 
         leftminimizebutton_id = wx.NewId()
