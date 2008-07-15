@@ -175,7 +175,7 @@ class RootClass(SVGUIControler):
     ]
     
     def OnPlugSave(self):
-        self.SaveXMLFile()
+        self.SaveXMLFile(os.path.join(self.PlugPath(), "gui.xml"))
         return True
     
     def PlugGenerate_C(self, buildpath, locations, logger):
