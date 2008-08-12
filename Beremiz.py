@@ -89,6 +89,7 @@ else:
               'size' : 18,
              }
 
+MATIEC_ERROR_MODEL = re.compile(".*\.st:([0-9]*)-([0-9]*)..([0-9]*)-([0-9]*): error : (.*)$")
 
 # Some helpers to tweak GenBitmapTextButtons
 # TODO: declare customized classes instead.
@@ -330,6 +331,7 @@ class Beremiz(wx.Frame):
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=parent, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
+        self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         
         if wx.VERSION < (2, 8, 0):
             self.MainSplitter.SplitHorizontally(self.PLCConfig, self.LogConsole, -250)
@@ -380,6 +382,20 @@ class Beremiz(wx.Frame):
             wnd = self
         InspectionTool().Show(wnd, True)
 
+    def OnLogConsoleDClick(self, event):
+        wx.CallAfter(self.SearchLineForError)
+        event.Skip()
+
+    def SearchLineForError(self):
+        text = self.LogConsole.GetRange(0, self.LogConsole.GetInsertionPoint())
+        line = self.LogConsole.GetLineText(len(text.splitlines()) - 1)
+        result = MATIEC_ERROR_MODEL.match(line)
+        if result is not None:
+            first_line, first_column, last_line, last_column, error = result.groups()
+            infos = self.PluginRoot.ShowError(self.Log,
+                                              (int(first_line), int(first_column)), 
+                                              (int(last_line), int(last_column)))
+		
     def OnCloseFrame(self, event):
         if self.PluginRoot.HasProjectOpened():
             if self.PluginRoot.runningPLC is not None:

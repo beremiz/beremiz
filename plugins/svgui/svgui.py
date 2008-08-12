@@ -191,7 +191,7 @@ class RootClass(SVGUIControler):
         shutil.copy(svgfilepath, buildpath)
         shutil.copy(xmlfilepath, buildpath)
         
-        generator = _SVGUICGenerator(self.GetElementsByType(), 
+        generator = _SVGUICGenerator(self, self.GetElementsByType(), 
                                      os.path.split(self.GetSVGFilePath())[1], 
                                      os.path.split(self.GetFilePath())[1], 
                                      self.GetCurrentLocation())
@@ -215,28 +215,44 @@ class RootClass(SVGUIControler):
         return [(Gen_C_file, cxx_flags)],libs,True
     
     def BlockTypesFactory(self):
+        
+        SVGUIBlock_Types = []
+        
+        def GetSVGUIBlockType(type):
+            for category in SVGUIBlock_Types:
+                for blocktype in category["list"]:
+                    if blocktype["name"] == type:
+                        return blocktype
+        setattr(self, "GetSVGUIBlockType", GetSVGUIBlockType)
+        
         def generate_svgui_block(generator, block, body, link, order=False):
             name = block.getinstanceName()
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
                 raise ValueError, "No corresponding block found"
             type = block.gettypeName()
-            block_infos = GetBlockType(type)
+            block_infos = GetSVGUIBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
             if not generator.ComputedBlocks.get(block, False) and not order:
                 generator.ComputedBlocks[block] = True
                 for num, variable in enumerate(block.inputVariables.getvariable()):
                     connections = variable.connectionPointIn.getconnections()
+                    input_info = (generator.TagName, "block", block.getlocalId(), "input", num)
                     if connections and len(connections) == 1:
                         parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num+1)
                         value = generator.ComputeFBDExpression(body, connections[0])
-                        generator.Program += ("  %s := %s;\n"%(parameter, generator.ExtractModifier(variable, value)))
+                        generator.Program += [(generator.CurrentIndent, ()),
+                                              (parameter, input_info),
+                                              (" := ", ())]
+                        generator.Program += generator.ExtractModifier(variable, value, input_info)
+                        generator.Program += [(";\n", ())]
             if link:
                 connectionPoint = link.getposition()[-1]
                 for num, variable in enumerate(block.outputVariables.getvariable()):
                     blockPointx, blockPointy = variable.connectionPointOut.getrelPositionXY()
+                    output_info = (generator.TagName, "block", block.getlocalId(), "output", num)
                     if block.getx() + blockPointx == connectionPoint.getx() and block.gety() + blockPointy == connectionPoint.gety():
-                        return "%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num+1)
+                        return [("%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num+1), output_info)]
                 raise ValueError, "No output variable found"
             else:
                 return None
@@ -245,7 +261,7 @@ class RootClass(SVGUIControler):
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
                 raise ValueError, "No corresponding block found"
-            block_infos = GetBlockType(type)
+            block_infos = GetSVGUIBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
             variables = []
             if block is not None:
@@ -263,7 +279,7 @@ class RootClass(SVGUIControler):
                 variables.append((output_type, None, "%sI%s%s.%d.%d"%("%", TYPECONVERSION[input_type], current_location, block_id, num+1), None))
             return variables
 
-        return [{"name" : "SVGUI function blocks", "list" :
+        SVGUIBlock_Types.extend([{"name" : "SVGUI function blocks", "list" :
                 [{"name" : "Container", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("Show","BOOL","none"),("Enable","BOOL","none")], 
                     "outputs" : [],
@@ -300,16 +316,18 @@ class RootClass(SVGUIControler):
                     "comment" : "SVGUI Transform",
                     "generate" : generate_svgui_block, "initialise" : initialise_block},
                ]}
-        ]
+        ])
 
+        return SVGUIBlock_Types
 
 
 class _SVGUICGenerator(SVGUICGenerator):
 
-    def __init__(self, elements, svgfile, xmlfile, current_location):
+    def __init__(self, controler, elements, svgfile, xmlfile, current_location):
         SVGUICGenerator.__init__(self, elements, svgfile, xmlfile)
         
         self.CurrentLocation = current_location
+        self.Controler = controler
 
     def GenerateProgramHeadersPublicVars(self):
         text = """    void OnPlcOutEvent(wxEvent& event);
@@ -330,7 +348,7 @@ class _SVGUICGenerator(SVGUICGenerator):
         current_location = "_".join(map(str, self.CurrentLocation))
         #Declaration des variables
         for element in self.Elements:
-            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
+            block_infos = self.Controler.GetSVGUIBlockType(SVGUIFB_Types[GetElementType(element)])
             block_id = element.getid()
             for i, input in enumerate(block_infos["inputs"]):
                 element_c_type = CTYPECONVERSION[input[1]]
@@ -658,7 +676,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
         for element in self.Elements:
             element_type = GetElementType(element)
             texts = {"location" : current_location, "id" : element.getid()}
-            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
+            block_infos = self.Controler.GetSVGUIBlockType(SVGUIFB_Types[GetElementType(element)])
             if len(block_infos["outputs"]) > 0:
                 text += """  if (COMPARE_AND_SWAP_VAL(&in_state_%(id)d, CHANGED, PLC_BUSY) == CHANGED) {
 """%texts
@@ -678,7 +696,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
         for element in self.Elements:
             element_type = GetElementType(element)
             texts = {"location" : current_location, "id" : element.getid()}
-            block_infos = GetBlockType(SVGUIFB_Types[GetElementType(element)])
+            block_infos = self.Controler.GetSVGUIBlockType(SVGUIFB_Types[GetElementType(element)])
             
             text += """  if ((new_state = COMPARE_AND_SWAP_VAL(&out_state_%(id)d, UNCHANGED, PLC_BUSY)) == UNCHANGED ||
        (new_state = COMPARE_AND_SWAP_VAL(&out_state_%(id)d, CHANGED, PLC_BUSY)) == CHANGED) {
