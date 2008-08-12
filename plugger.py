@@ -592,7 +592,7 @@ from datetime import datetime
 from PLCControler import PLCControler
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
-from plcopen.structures import IEC_KEYWORDS, AddPluginBlockList, ClearPluginTypes, PluginTypes
+from plcopen.structures import IEC_KEYWORDS
 import runtime
 import re
 
@@ -814,10 +814,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
-            ClearPluginTypes()
-            AddPluginBlockList(self.BlockTypesFactory())
+            self.ClearPluginTypes()
+            self.AddPluginBlockList(self.BlockTypesFactory())
             for child in self.IterChilds():
-                AddPluginBlockList(child.BlockTypesFactory())
+                self.AddPluginBlockList(child.BlockTypesFactory())
         if self.PLCEditor is not None:
             self.PLCEditor.RefreshEditor()
     
@@ -906,7 +906,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # files are listed to stdout, and errors to stderr. 
         status, result, err_result = ProcessLogger(
                logger,
-               "\"%s\" \"%s\" -I \"%s\" \"%s\""%(
+               "\"%s\" -f \"%s\" -I \"%s\" \"%s\""%(
                          iec2c_path,
                          self._getIECcodepath(),
                          ieclib_path, buildpath),
@@ -937,6 +937,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         Method called by user to (re)build SoftPLC and plugin tree
         """
+        if self.PLCEditor is not None:
+            self.PLCEditor.ClearErrors()
+        
         buildpath = self._getBuildPath()
 
         # Eventually create build dir
@@ -1050,8 +1053,15 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         self.EnableMethod("_Run", True)
         return True
-        
-
+    
+    def ShowError(self, logger, from_location, to_location):
+        chunk_infos = self.GetChunkInfos(from_location, to_location)
+        self._EditPLC(logger)
+        for infos, (start_row, start_col) in chunk_infos:
+            start = (from_location[0] - start_row, from_location[1] - start_col)
+            end = (to_location[0] - start_row, to_location[1] - start_col)
+            self.PLCEditor.ShowError(infos, start, end)
+            
     def _showIECcode(self, logger):
         plc_file = self._getIECcodepath()
         new_dialog = wx.Frame(self.AppFrame)
