@@ -70,6 +70,10 @@ class MiniTextControler:
     def BufferProject(self):
         pass
 
+# helper func to get path to images
+def opjimg(imgname):
+    return os.path.join("images",imgname)
+
 class PlugTemplate:
     """
     This class is the one that define plugins.
@@ -100,9 +104,6 @@ class PlugTemplate:
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
 
-    def IsGUIPlugin(self):
-        return False
-
     def PluginBaseXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "baseplugin.xml")
     
@@ -112,7 +113,8 @@ class PlugTemplate:
     def PlugPath(self,PlugName=None):
         if not PlugName:
             PlugName = self.BaseParams.getName()
-        return os.path.join(self.PlugParent.PlugPath(), PlugName + NameTypeSeparator + self.PlugType)
+        return os.path.join(self.PlugParent.PlugPath(),
+                            PlugName + NameTypeSeparator + self.PlugType)
     
     def PlugTestModified(self):
         return self.ChangesToSave
@@ -149,13 +151,13 @@ class PlugTemplate:
                 params.append(self.PlugParams[1].getElementInfos(self.PlugParams[0]))
             return params
         
-    def SetParamsAttribute(self, path, value, logger):
+    def SetParamsAttribute(self, path, value):
         self.ChangesToSave = True
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel":
-            return self.FindNewIEC_Channel(value,logger), True
+            return self.FindNewIEC_Channel(value), True
         elif path == "BaseParams.Name":
-            res = self.FindNewName(value,logger)
+            res = self.FindNewName(value)
             self.PlugRequestSave()
             return res, True
         
@@ -205,7 +207,7 @@ class PlugTemplate:
         shutil.copytree(src_PlugPath, self.PlugPath)
         return True
 
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param locations: List of complete variables locations \
@@ -217,12 +219,15 @@ class PlugTemplate:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
+        self.logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
         return [],"",False
     
-    def _Generate_C(self, buildpath, locations, logger):
-        # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS
-        PlugCFilesAndCFLAGS, PlugLDFLAGS, DoCalls = self.PlugGenerate_C(buildpath, locations, logger)
+    def _Generate_C(self, buildpath, locations):
+        # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
+        # extra_files = [(fname,fobject), ...]
+        gen_result = self.PlugGenerate_C(buildpath, locations)
+        PlugCFilesAndCFLAGS, PlugLDFLAGS, DoCalls = gen_result[:3]
+        extra_files = gen_result[3:]
         # if some files heve been generated put them in the list with their location
         if PlugCFilesAndCFLAGS:
             LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), PlugCFilesAndCFLAGS, DoCalls)]
@@ -245,19 +250,18 @@ class PlugTemplate:
             new_location = PlugChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth=len(new_location)
-            _LocationCFilesAndCFLAGS, _LDFLAGS = \
+            _LocationCFilesAndCFLAGS, _LDFLAGS, _extra_files = \
                 PlugChild._Generate_C(
                     #keep the same path
                     buildpath,
                     # filter locations that start with current IEC location
-                    [loc for loc in locations if loc["LOC"][0:depth] == new_location ],
-                    #propagete logger
-                    logger)
+                    [loc for loc in locations if loc["LOC"][0:depth] == new_location ])
             # stack the result
             LocationCFilesAndCFLAGS += _LocationCFilesAndCFLAGS
             LDFLAGS += _LDFLAGS
+            extra_files += _extra_files
         
-        return LocationCFilesAndCFLAGS,LDFLAGS
+        return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     def BlockTypesFactory(self):
         return []
@@ -343,7 +347,7 @@ class PlugTemplate:
         else:
             return {"name" : self.BaseParams.getName(), "channel" : self.BaseParams.getIEC_Channel(), "enabled" : self.BaseParams.getEnabled(), "parent" : len(self.PlugChildsTypes) > 0, "type" : self.BaseParams.getName(), "values" : childs}
     
-    def FindNewName(self, DesiredName, logger):
+    def FindNewName(self, DesiredName):
         """
         Changes Name to DesiredName if available, Name-N if not.
         @param DesiredName: The desired Name (string)
@@ -376,10 +380,10 @@ class PlugTemplate:
             shutil.move(oldname, self.PlugPath())
         # warn user he has two left hands
         if DesiredName != res:
-            logger.write_warning("A child names \"%s\" already exist -> \"%s\"\n"%(DesiredName,res))
+            self.logger.write_warning("A child names \"%s\" already exist -> \"%s\"\n"%(DesiredName,res))
         return res
 
-    def FindNewIEC_Channel(self, DesiredChannel, logger):
+    def FindNewIEC_Channel(self, DesiredChannel):
         """
         Changes IEC Channel number to DesiredChannel if available, nearest available if not.
         @param DesiredChannel: The desired IEC channel (int)
@@ -401,15 +405,14 @@ class PlugTemplate:
             if res < CurrentChannel: # Want to go down ?
                 res -=  1 # Test for n-1
                 if res < 0 :
-                    if logger :
-                        logger.write_warning("Cannot find lower free IEC channel than %d\n"%CurrentChannel)
+                    self.logger.write_warning("Cannot find lower free IEC channel than %d\n"%CurrentChannel)
                     return CurrentChannel # Can't go bellow 0, do nothing
             else : # Want to go up ?
                 res +=  1 # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)
-        if logger and DesiredChannel != res:
-            logger.write_warning("A child with IEC channel %d already exist -> %d\n"%(DesiredChannel,res))
+        if DesiredChannel != res:
+            self.logger.write_warning("A child with IEC channel %d already exist -> %d\n"%(DesiredChannel,res))
         return res
 
     def OnPlugClose(self):
@@ -433,7 +436,7 @@ class PlugTemplate:
         # Ask to his parent to remove it
         self.PlugParent._doRemoveChild(self)
 
-    def PlugAddChild(self, PlugName, PlugType, logger):
+    def PlugAddChild(self, PlugName, PlugType):
         """
         Create the plugins that may be added as child to this node self
         @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
@@ -469,6 +472,8 @@ class PlugTemplate:
             def __init__(_self):
                 # self is the parent
                 _self.PlugParent = self
+                # self is the parent
+                _self.logger = self.logger
                 # Keep track of the plugin type name
                 _self.PlugType = PlugType
                 # remind the help string, for more fancy display
@@ -476,11 +481,11 @@ class PlugTemplate:
                 # Call the base plugin template init - change XSD into class members
                 PlugTemplate.__init__(_self)
                 # check name is unique
-                NewPlugName = _self.FindNewName(PlugName, logger)
+                NewPlugName = _self.FindNewName(PlugName)
                 # If dir have already be made, and file exist
                 if os.path.isdir(_self.PlugPath(NewPlugName)): #and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
                     #Load the plugin.xml file into parameters members
-                    _self.LoadXMLParams(logger, NewPlugName)
+                    _self.LoadXMLParams(NewPlugName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewPlugName):
                         raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(NewPlugName, _self.BaseParams.getName())
@@ -488,12 +493,12 @@ class PlugTemplate:
                     # Now, self.PlugPath() should be OK
                     
                     # Check that IEC_Channel is not already in use.
-                    _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel(),logger)
+                    _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel())
                     # Call the plugin real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
                     #Load and init all the childs
-                    _self.LoadChilds(logger)
+                    _self.LoadChilds()
                     #just loaded, nothing to saved
                     _self.ChangesToSave = False
                 else:
@@ -519,47 +524,56 @@ class PlugTemplate:
         return newPluginOpj
             
 
-    def LoadXMLParams(self, logger, PlugName = None):
+    def LoadXMLParams(self, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
         if os.path.isfile(methode_name):
             execfile(methode_name)
 
         # Get the base xml tree
         if self.MandatoryParams:
-            #try:
+            try:
                 basexmlfile = open(self.PluginBaseXmlFilePath(PlugName), 'r')
                 basetree = minidom.parse(basexmlfile)
                 self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
                 basexmlfile.close()
-            #except Exception, e:
-            #    logger.write_error("Couldn't load plugin base parameters %s :\n %s" % (PlugName, str(e)))
-                
+            except Exception, exc:
+                self.logger.write_error("Couldn't load plugin base parameters %s :\n %s" % (PlugName, str(exc)))
+                self.logger.write_error(traceback.format_exc())
         
         # Get the xml tree
         if self.PlugParams:
-            #try:
+            try:
                 xmlfile = open(self.PluginXmlFilePath(PlugName), 'r')
                 tree = minidom.parse(xmlfile)
                 self.PlugParams[1].loadXMLTree(tree.childNodes[0])
                 xmlfile.close()
-            #except Exception, e:
-            #    logger.write_error("Couldn't load plugin parameters %s :\n %s" % (PlugName, str(e)))
+            except Exception, exc:
+                self.logger.write_error("Couldn't load plugin parameters %s :\n %s" % (PlugName, str(exc)))
+                self.logger.write_error(traceback.format_exc())
         
-    def LoadChilds(self, logger):
+    def LoadChilds(self):
         # Iterate over all PlugName@PlugType in plugin directory, and try to open them
         for PlugDir in os.listdir(self.PlugPath()):
             if os.path.isdir(os.path.join(self.PlugPath(), PlugDir)) and \
                PlugDir.count(NameTypeSeparator) == 1:
                 pname, ptype = PlugDir.split(NameTypeSeparator)
-                #try:
-                self.PlugAddChild(pname, ptype, logger)
-                #except Exception, e:
-                #    logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(e)))
+                try:
+                    self.PlugAddChild(pname, ptype)
+                except Exception, exc:
+                    self.logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(exc)))
+                    self.logger.write_error(traceback.format_exc())
 
     def EnableMethod(self, method, value):
         for d in self.PluginMethods:
             if d["method"]==method:
                 d["enabled"]=value
+                return True
+        return False
+
+    def ShowMethod(self, method, value):
+        for d in self.PluginMethods:
+            if d["method"]==method:
+                d["shown"]=value
                 return True
         return False
 
@@ -586,15 +600,24 @@ iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 # import for project creation timestamping
+from threading import Timer
 from time import localtime
 from datetime import datetime
 # import necessary stuff from PLCOpenEditor
 from PLCControler import PLCControler
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
-from plcopen.structures import IEC_KEYWORDS
+from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
+
+# Construct debugger natively supported types
+DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")] + \
+    ["STEP","TRANSITION","ACTION"]
+
 import runtime
 import re
+import targets
+import connectors
+from discovery import DiscoveryDialog
 
 class PluginsRoot(PlugTemplate, PLCControler):
     """
@@ -619,77 +642,36 @@ class PluginsRoot(PlugTemplate, PLCControler):
             <xsd:element name="TargetType">
               <xsd:complexType>
                 <xsd:choice>
-                  <xsd:element name="Win32">
-                    <xsd:complexType>
-                      <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
-                    </xsd:complexType>
-                  </xsd:element>
-                  <xsd:element name="Linux">
-                    <xsd:complexType>
-                      <xsd:attribute name="Nice" type="xsd:integer" use="required"/>
-                    </xsd:complexType>
-                  </xsd:element>
-                  <xsd:element name="Xenomai">
-                    <xsd:complexType>
-                      <xsd:attribute name="xeno_config" type="xsd:string" use="optional" default="/usr/xenomai/"/>
-                      <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
-                    </xsd:complexType>
-                  </xsd:element>
-                  <xsd:element name="RTAI">
-                    <xsd:complexType>
-                      <xsd:attribute name="rtai_config" type="xsd:string" use="required"/>
-                      <xsd:attribute name="Priority" type="xsd:integer" use="required"/>
-                    </xsd:complexType>
-                  </xsd:element>
-                  <xsd:element name="Library">
-                    <xsd:complexType>
-                      <xsd:attribute name="Dynamic" type="xsd:boolean" use="optional" default="true"/>
-                    </xsd:complexType>
-                  </xsd:element>
-                </xsd:choice>
-              </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="Connection">
-              <xsd:complexType>
-                <xsd:choice>
-                  <xsd:element name="Local"/>
-                  <xsd:element name="TCP_IP">
-                    <xsd:complexType>
-                      <xsd:attribute name="Host" type="xsd:string" use="required"/>
-                    </xsd:complexType>
-                  </xsd:element>
+                """+targets.targetchoices+"""
                 </xsd:choice>
               </xsd:complexType>
             </xsd:element>
           </xsd:sequence>
-          <xsd:attribute name="Compiler" type="xsd:string" use="optional" default="gcc"/>
-          <xsd:attribute name="CFLAGS" type="xsd:string" use="required"/>
-          <xsd:attribute name="Linker" type="xsd:string" use="optional" default="ld"/>
-          <xsd:attribute name="LDFLAGS" type="xsd:string" use="required"/>
-          <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:integer">
-                    <xsd:minInclusive value="1"/>
-                    <xsd:maxInclusive value="99"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-          </xsd:attribute>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
     """
 
-    def __init__(self, frame):
+    def __init__(self, frame, logger):
         PLCControler.__init__(self)
         
         self.MandatoryParams = None
         self.AppFrame = frame
+        self.logger = logger
+        self._builder = None
+        self._connector = None
         
-        """
-        This method are not called here... but in NewProject and OpenProject
-        self._AddParamsMembers()
-        self.PluggedChilds = {}
-        """
+        # Setup debug information
+        self.IECdebug_callables = {}
+        # Timer to prevent rapid-fire when registering many variables
+        self.DebugTimer=Timer(0.5,self.RegisterDebugVarToConnector)
+        self.ResetIECProgramsAndVariables()
+
+        
+        #This method are not called here... but in NewProject and OpenProject
+        #self._AddParamsMembers()
+        #self.PluggedChilds = {}
+
         # In both new or load scenario, no need to save
         self.ChangesToSave = False        
         # root have no parent
@@ -769,14 +751,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.SaveProject()
         return None
         
-    def LoadProject(self, ProjectPath, logger):
+    def LoadProject(self, ProjectPath):
         """
         Load a project contained in a folder
         @param ProjectPath: path of the project folder
         """
         if os.path.basename(ProjectPath) == "":
             ProjectPath = os.path.dirname(ProjectPath)
-        # Verify that project contains a PLCOpen program
+		# Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
             return "Folder choosen doesn't contain a program. It's not a valid project!"
@@ -792,12 +774,19 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # If dir have already be made, and file exist
         if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
             #Load the plugin.xml file into parameters members
-            result = self.LoadXMLParams(logger)
+            result = self.LoadXMLParams()
             if result:
                 return result
             #Load and init all the childs
-            self.LoadChilds(logger)
+            self.LoadChilds()
         self.RefreshPluginsBlockLists()
+        
+        if os.path.exists(self._getBuildPath()):
+            self.EnableMethod("_Clean", True)
+
+        if os.path.isfile(self._getIECrawcodepath()):
+            self.ShowMethod("_showIECcode", True)
+
         return None
     
     def SaveProject(self):
@@ -827,19 +816,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
 
-    def PlugGenerate_C(self, buildpath, locations, logger):
-        """
-        Generate C code
-        @param locations: List of complete variables locations \
-            [(IEC_loc, IEC_Direction, IEC_Type, Name)]\
-            ex: [((0,0,4,5),'I','STRING','__IX_0_0_4_5'),...]
-        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
-        """
-        return [(C_file_name, self.CFLAGS) for C_file_name in self.PLCGeneratedCFiles ] , "", False
-    
     def _getBuildPath(self):
         return os.path.join(self.ProjectPath, "build")
     
+    def _getExtraFilesPath(self):
+        return os.path.join(self._getBuildPath(), "extra_files")
+
     def _getIECcodepath(self):
         # define name for IEC code file
         return os.path.join(self._getBuildPath(), "plc.st")
@@ -850,7 +832,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def _getIECrawcodepath(self):
         # define name for IEC raw code file
-        return os.path.join(self._getBuildPath(), "raw_plc.st")
+        return os.path.join(self.PlugPath(), "raw_plc.st")
     
     def GetLocations(self):
         locations = []
@@ -877,23 +859,22 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     locations.append(resdict)
         return locations
         
-    def _Generate_SoftPLC(self, logger):
+    def _Generate_SoftPLC(self):
         """
         Generate SoftPLC ST/IL/SFC code out of PLCOpenEditor controller, and compile it with IEC2C
         @param buildpath: path where files should be created
-        @param logger: the log pseudo file
         """
 
         # Update PLCOpenEditor Plugin Block types before generate ST code
         self.RefreshPluginsBlockLists()
         
-        logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
+        self.logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
         buildpath = self._getBuildPath()
         # ask PLCOpenEditor controller to write ST/IL/SFC code file
         result = self.GenerateProgram(self._getIECgeneratedcodepath())
         if result is not None:
             # Failed !
-            logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%result)
+            self.logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%result)
             return False
         plc_file = open(self._getIECcodepath(), "w")
         if os.path.isfile(self._getIECrawcodepath()):
@@ -901,11 +882,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
             plc_file.write("\n")
         plc_file.write(open(self._getIECgeneratedcodepath(), "r").read())
         plc_file.close()
-        logger.write("Compiling IEC Program in to C code...\n")
+        self.logger.write("Compiling IEC Program in to C code...\n")
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
         status, result, err_result = ProcessLogger(
-               logger,
+               self.logger,
                "\"%s\" -f \"%s\" -I \"%s\" \"%s\""%(
                          iec2c_path,
                          self._getIECcodepath(),
@@ -913,27 +894,238 @@ class PluginsRoot(PlugTemplate, PLCControler):
                no_stdout=True).spin()
         if status:
             # Failed !
-            logger.write_error("Error : IEC to C compiler returned %d\n"%status)
+            self.logger.write_error("Error : IEC to C compiler returned %d\n"%status)
             return False
         # Now extract C files of stdout
         C_files = [ fname for fname in result.splitlines() if fname[-2:]==".c" or fname[-2:]==".C" ]
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
         if not C_files:
-            logger.write_error("Error : At least one configuration and one ressource must be declared in PLC !\n")
+            self.logger.write_error("Error : At least one configuration and one ressource must be declared in PLC !\n")
             return False
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
-        logger.write("Extracting Located Variables...\n")
+        self.logger.write("Extracting Located Variables...\n")
         # Keep track of generated located variables for later use by self._Generate_C
         self.PLCGeneratedLocatedVars = self.GetLocations()
         # Keep track of generated C files for later use by self.PlugGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.CFLAGS = "\"-I"+ieclib_path+"\""
+        self.plcCFLAGS = "\"-I"+ieclib_path+"\""
         return True
 
-    def _build(self, logger):
+    def GetBuilder(self):
+        """
+        Return a Builder (compile C code into machine code)
+        """
+        # Get target, module and class name
+        targetname = self.BeremizRoot.getTargetType().getcontent()["name"]
+        modulename = "targets." + targetname
+        classname = targetname + "_target"
+
+        # Get module reference
+        try :
+            targetmodule = getattr(__import__(modulename), targetname)
+
+        except Exception, msg:
+            self.logger.write_error("Can't find module for target %s!\n"%targetname)
+            self.logger.write_error(str(msg))
+            return None
+        
+        # Get target class
+        targetclass = getattr(targetmodule, classname)
+
+        # if target already 
+        if self._builder is None or not isinstance(self._builder,targetclass):
+            # Get classname instance
+            self._builder = targetclass(self)
+        return self._builder
+
+    def GetLastBuildMD5(self):
+        builder=self.GetBuilder()
+        if builder is not None:
+            return builder.GetBinaryCodeMD5()
+        else:
+            return None
+
+    #######################################################################
+    #
+    #                C CODE GENERATION METHODS
+    #
+    #######################################################################
+    
+    def PlugGenerate_C(self, buildpath, locations):
+        """
+        Return C code generated by iec2c compiler 
+        when _generate_softPLC have been called
+        @param locations: ignored
+        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
+        """
+        return [(C_file_name, self.plcCFLAGS) for C_file_name in self.PLCGeneratedCFiles ] , "-lrt", False
+    
+    def ResetIECProgramsAndVariables(self):
+        """
+        Reset variable and program list that are parsed from
+        CSV file generated by IEC2C compiler.
+        """
+        self._ProgramList = None
+        self._VariablesList = None
+        self._IECPathToIdx = None
+        self._IdxToIECPath = None
+        
+    def GetIECProgramsAndVariables(self):
+        """
+        Parse CSV-like file  VARIABLES.csv resulting from IEC2C compiler.
+        Each section is marked with a line staring with '//'
+        list of all variables used in various POUs
+        """
+        if self._ProgramList is None or self._VariablesList is None:
+            try:
+                csvfile = os.path.join(self._getBuildPath(),"VARIABLES.csv")
+                # describes CSV columns
+                ProgramsListAttributeName = ["num", "C_path", "type"]
+                VariablesListAttributeName = ["num", "vartype", "IEC_path", "C_path", "type"]
+                self._ProgramList = []
+                self._VariablesList = []
+                self._IECPathToIdx = {}
+                self._IdxToIECPath = {}
+                
+                # Separate sections
+                ListGroup = []
+                for line in open(csvfile,'r').xreadlines():
+                    strippedline = line.strip()
+                    if strippedline.startswith("//"):
+                        # Start new section
+                        ListGroup.append([])
+                    elif len(strippedline) > 0 and len(ListGroup) > 0:
+                        # append to this section
+                        ListGroup[-1].append(strippedline)
+        
+                # first section contains programs
+                for line in ListGroup[0]:
+                    # Split and Maps each field to dictionnary entries
+                    attrs = dict(zip(ProgramsListAttributeName,line.strip().split(';')))
+                    # Truncate "C_path" to remove conf an ressources names
+                    attrs["C_path"] = '__'.join(attrs["C_path"].split(".",2)[1:])
+                    # Push this dictionnary into result.
+                    self._ProgramList.append(attrs)
+        
+                # second section contains all variables
+                for line in ListGroup[1]:
+                    # Split and Maps each field to dictionnary entries
+                    attrs = dict(zip(VariablesListAttributeName,line.strip().split(';')))
+                    # Truncate "C_path" to remove conf an ressources names
+                    attrs["C_path"] = '__'.join(attrs["C_path"].split(".",2)[1:])
+                    # Push this dictionnary into result.
+                    self._VariablesList.append(attrs)
+                    # Fill in IEC<->C translation dicts
+                    IEC_path=attrs["IEC_path"]
+                    Idx=int(attrs["num"])
+                    self._IECPathToIdx[IEC_path]=Idx
+                    self._IdxToIECPath[Idx]=IEC_path
+            except Exception,e:
+                self.logger.write_error("Cannot open/parse VARIABLES.csv!\n")
+                self.logger.write_error(traceback.format_exc())
+                self.ResetIECProgramsAndVariables()
+                return False
+
+        return True
+
+    def Generate_plc_debugger(self):
+        """
+        Generate trace/debug code out of PLC variable list
+        """
+        self.GetIECProgramsAndVariables()
+
+        # prepare debug code
+        debug_code = runtime.code("plc_debug") % {
+           "programs_declarations":
+               "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
+           "extern_variables_declarations":"\n".join([
+              {"PT":"extern %(type)s *%(C_path)s;",
+               "VAR":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v 
+               for v in self._VariablesList if v["C_path"].find('.')<0]),
+           "subscription_table_count":
+               len(self._VariablesList),
+           "variables_pointer_type_table_count":
+               len(self._VariablesList),
+           "variables_pointer_type_table_initializer":"\n".join([
+               {"PT":"    variable_table[%(num)s].ptrvalue = (void*)(%(C_path)s);\n",
+                "VAR":"    variable_table[%(num)s].ptrvalue = (void*)(&%(C_path)s);\n"}[v["vartype"]]%v + 
+                "    variable_table[%(num)s].type = %(type)s_ENUM;\n"%v
+                for v in self._VariablesList if v["type"] in DebugTypes ])}
+        
+        return debug_code
+
+    def RegisterDebugVarToConnector(self):
+        Idxs = []
+        if self._connector is not None:
+            for IECPath,WeakCallableDict in self.IECdebug_callables:
+                if len(WeakCallableDict) == 0:
+                    # Callable Dict is empty.
+                    # This variable is not needed anymore!
+                    self.IECdebug_callables.pop(IECPath)
+                else:
+                    # Convert 
+                    Idx = self._IECPathToIdx.get(IECPath,None)
+                    if Idx is not None:
+                        Idxs.append(Idx)
+                    else:
+                        self.logger.write_warning("Debug : Unknown variable %s\n"%IECPath)
+            self._connector.TraceVariables(Idxs)
+        
+    def SubscribeDebugIECVariable(self, IECPath, callable, *args, **kwargs):
+        """
+        Dispatching use a dictionnary linking IEC variable paths
+        to a WeakKeyDictionary linking 
+        weakly referenced callables to optionnal args
+        """
+        # If no entry exist, create a new one with a fresh WeakKeyDictionary
+        self.IECdebug_callables.setdefault(
+                   IECPath, 
+                   WeakKeyDictionary())[callable]=(args, kwargs)
+        # Rearm anti-rapid-fire timer
+        self.DebugTimer.cancel()
+        self.DebugTimer.start()
+        
+    def Generate_plc_common_main(self):
+        """
+        Use plugins layout given in LocationCFilesAndCFLAGS to
+        generate glue code that dispatch calls to all plugins
+        """
+        # filter location that are related to code that will be called
+        # in retreive, publish, init, cleanup
+        locstrs = map(lambda x:"_".join(map(str,x)),
+           [loc for loc,Cfiles,DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
+
+        # Generate main, based on template
+        plc_main_code = runtime.code("plc_common_main") % {
+            "calls_prototypes":"\n".join([(
+                  "int __init_%(s)s(int argc,char **argv);\n"+
+                  "void __cleanup_%(s)s();\n"+
+                  "void __retrieve_%(s)s();\n"+
+                  "void __publish_%(s)s();")%{'s':locstr} for locstr in locstrs]),
+            "retrieve_calls":"\n    ".join([
+                  "__retrieve_%s();"%locstr for locstr in locstrs]),
+            "publish_calls":"\n    ".join([ #Call publish in reverse order
+                  "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
+            "init_calls":"\n    ".join([
+                  "init_level=%d; "%i+
+                  "if(res = __init_%s(argc,argv)){"%locstr +
+                  #"printf(\"%s\"); "%locstr + #for debug
+                  "return res;}" for i,locstr in enumerate(locstrs)]),
+            "cleanup_calls":"\n    ".join([
+                  "if(init_level >= %d) "%i+
+                  "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
+            }
+
+        target_name = self.BeremizRoot.getTargetType().getcontent()["name"]
+        plc_main_code += runtime.code("plc_%s_main"%target_name)
+        
+        return plc_main_code
+
+        
+    def _build(self):
         """
         Method called by user to (re)build SoftPLC and plugin tree
         """
@@ -945,113 +1137,90 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Eventually create build dir
         if not os.path.exists(buildpath):
             os.mkdir(buildpath)
-        
-        logger.flush()
-        logger.write("Start build in %s\n" % buildpath)
-
+        # There is something to clean
         self.EnableMethod("_Clean", True)
-        self.EnableMethod("_showIECcode", True)
-        
-        # Generate SoftPLC code
-        if not self._Generate_SoftPLC(logger):
-            logger.write_error("SoftPLC code generation failed !\n")
+
+        self.logger.flush()
+        self.logger.write("Start build in %s\n" % buildpath)
+
+        # Generate SoftPLC IEC code
+        IECGenRes = self._Generate_SoftPLC()
+        self.ShowMethod("_showIECcode", True)
+
+        # If IEC code gen fail, bail out.
+        if not IECGenRes:
+            self.logger.write_error("IEC-61131-3 code generation failed !\n")
             return False
 
-
-        #logger.write("SoftPLC code generation successfull\n")
-
-        logger.write("Generating plugins code ...\n")
+        # Reset variable and program list that are parsed from
+        # CSV file generated by IEC2C compiler.
+        self.ResetIECProgramsAndVariables()
         
         # Generate C code and compilation params from plugin hierarchy
+        self.logger.write("Generating plugins C code\n")
         try:
-            LocationCFilesAndCFLAGS,LDFLAGS = self._Generate_C(
+            self.LocationCFilesAndCFLAGS, self.LDFLAGS, ExtraFiles = self._Generate_C(
                 buildpath, 
-                self.PLCGeneratedLocatedVars,
-                logger)
+                self.PLCGeneratedLocatedVars)
         except Exception, exc:
-            logger.write_error("Plugins code generation Failed !\n")
-            logger.write_error(traceback.format_exc())
+            self.logger.write_error("Plugins code generation failed !\n")
+            self.logger.write_error(traceback.format_exc())
             return False
 
+        # Get temprary directory path
+        extrafilespath = self._getExtraFilesPath()
+        # Remove old directory
+        if os.path.exists(extrafilespath):
+            shutil.rmtree(extrafilespath)
+        # Recreate directory
+        os.mkdir(extrafilespath)
+        # Then write the files
+        for fname,fobject in ExtraFiles:
+            print fname,fobject
+            fpath = os.path.join(extrafilespath,fname)
+            open(fpath, "wb").write(fobject.read())
+        # Now we can forget ExtraFiles (will close files object)
+        del ExtraFiles
 
-        #debug
-        #import pprint
-        #pp = pprint.PrettyPrinter(indent=4)
-        #logger.write("LocationCFilesAndCFLAGS :\n"+pp.pformat(LocationCFilesAndCFLAGS)+"\n")
-        #logger.write("LDFLAGS :\n"+pp.pformat(LDFLAGS)+"\n")
-        
-        # Generate main
-        locstrs = map(lambda x:"_".join(map(str,x)), [loc for loc,Cfiles,DoCalls in LocationCFilesAndCFLAGS if loc and DoCalls])
-        plc_main = runtime.code("plc_common_main") % {
-            "calls_prototypes":"\n".join(
-               ["int __init_%(s)s(int argc,char **argv);\nvoid __cleanup_%(s)s();\nvoid __retrieve_%(s)s();\nvoid __publish_%(s)s();"%
-                {'s':locstr} for locstr in locstrs]),
-            "retrieve_calls":"\n    ".join(["__retrieve_%(s)s();"%{'s':locstr} for locstr in locstrs]),
-            "publish_calls":"\n    ".join(["__publish_%(s)s();"%{'s':locstr} for locstr in locstrs]),
-            "init_calls":"\n    ".join(["init_level++; if(res = __init_%(s)s(argc,argv)) return res;"%{'s':locstr} for locstr in locstrs]),
-            "cleanup_calls":"\n    ".join(["if(init_level-- > 0) __cleanup_%(s)s();"%{'s':locstr} for locstr in locstrs]),
-            "sync_align_ratio":self.BeremizRoot.getSync_Align_Ratio()}
-        target_name = self.BeremizRoot.TargetType.content["name"]
-        plc_main += runtime.code("plc_%s_main"%target_name)
+        # Template based part of C code generation
+        # files are stacked at the beginning, as files of plugin tree root
+        for generator, filename, name in [
+           # debugger code
+           (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
+           # init/cleanup/retrieve/publish, run and align code
+           (self.Generate_plc_common_main,"plc_common_main.c","Common runtime")]:
+            try:
+                # Do generate
+                code = generator()
+                code_path = os.path.join(buildpath,filename)
+                open(code_path, "w").write(code)
+                # Insert this file as first file to be compiled at root plugin
+                self.LocationCFilesAndCFLAGS[0][1].insert(0,(code_path, self.plcCFLAGS))
+            except Exception, exc:
+                self.logger.write_error(name+" generation failed !\n")
+                self.logger.write_error(traceback.format_exc())
+                return False
 
-        main_path = os.path.join(buildpath, "main.c" )
-        f = open(main_path,'w')
-        f.write(plc_main)
-        f.close()
-        # First element is necessarely root
-        LocationCFilesAndCFLAGS[0][1].insert(0,(main_path, self.CFLAGS))
-        
-        # Compile the resulting code into object files.
-        compiler = self.BeremizRoot.getCompiler()
-        _CFLAGS = self.BeremizRoot.getCFLAGS()
-        linker = self.BeremizRoot.getLinker()
-        _LDFLAGS = self.BeremizRoot.getLDFLAGS()
-        obns = []
-        objs = []
-        for Location, CFilesAndCFLAGS, DoCalls in LocationCFilesAndCFLAGS:
-            if Location:
-                logger.write("Plugin : " + self.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
-            else:
-                logger.write("PLC :\n")
-                
-            for CFile, CFLAGS in CFilesAndCFLAGS:
-                bn = os.path.basename(CFile)
-                obn = os.path.splitext(bn)[0]+".o"
-                obns.append(obn)
-                logger.write("   [CC]  "+bn+" -> "+obn+"\n")
-                objectfilename = os.path.splitext(CFile)[0]+".o"
+        self.logger.write("C code generated successfully.\n")
 
-                status, result, err_result = ProcessLogger(
-                       logger,
-                       "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
-                           (compiler, CFile, objectfilename, _CFLAGS, CFLAGS)
-                       ).spin()
-
-                if status != 0:
-                    logger.write_error("Build failed\n")
-                    return False
-                objs.append(objectfilename)
-        # Link all the object files into one executable
-        logger.write("Linking :\n")
-        exe = self.GetProjectName()
-        if target_name == "Win32":
-            exe += ".exe"
-        exe_path = os.path.join(buildpath, exe)
-        logger.write("   [CC]  " + ' '.join(obns)+" -> " + exe + "\n")
-        status, result, err_result = ProcessLogger(
-               logger,
-               "\"%s\" \"%s\" -o \"%s\" %s"%
-                   (linker,
-                    '" "'.join(objs),
-                    exe_path,
-                    ' '.join(LDFLAGS+[_LDFLAGS]))
-               ).spin()
-        if status != 0:
-            logger.write_error("Build failed\n")
-            self.EnableMethod("_Run", False)
+        # Get current or fresh builder
+        builder = self.GetBuilder()
+        if builder is None:
+            self.logger.write_error("Fatal : cannot get builder.\n")
             return False
-        
-        self.EnableMethod("_Run", True)
+
+        # Build
+        try:
+            if not builder.build() :
+                self.logger.write_error("C Build failed.\n")
+                return False
+        except Exception, exc:
+            self.logger.write_error("C Build crashed !\n")
+            self.logger.write_error(traceback.format_exc())
+            return False
+
+        # Update GUI status about need for transfer
+        self.CompareLocalAndRemotePLC()
         return True
     
     def ShowError(self, logger, from_location, to_location):
@@ -1061,8 +1230,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
             self.PLCEditor.ShowError(infos, start, end)
-            
-    def _showIECcode(self, logger):
+
+    def _showIECcode(self):
         plc_file = self._getIECcodepath()
         new_dialog = wx.Frame(self.AppFrame)
         ST_viewer = TextViewer(new_dialog, "", None, None)
@@ -1076,13 +1245,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             
         new_dialog.Show()
 
-    def _editIECrawcode(self, logger):
+    def _editIECrawcode(self):
         new_dialog = wx.Frame(self.AppFrame)
-        
-        buildpath = self._getBuildPath()
-        # Eventually create build dir
-        if not os.path.exists(buildpath):
-            os.mkdir(buildpath)
         
         controler = MiniTextControler(self._getIECrawcodepath())
         ST_viewer = TextViewer(new_dialog, "", None, controler)
@@ -1092,7 +1256,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             
         new_dialog.Show()
 
-    def _EditPLC(self, logger):
+    def _EditPLC(self):
         if self.PLCEditor is None:
             self.RefreshPluginsBlockLists()
             def _onclose():
@@ -1108,83 +1272,245 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.PLCEditor._onsave = _onsave
             self.PLCEditor.Show()
 
-    def _Clean(self, logger):
+    def _Clean(self):
         if os.path.isdir(os.path.join(self._getBuildPath())):
-            logger.write("Cleaning the build directory\n")
+            self.logger.write("Cleaning the build directory\n")
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
-            logger.write_error("Build directory already clean\n")
-        self.EnableMethod("_showIECcode", False)
+            self.logger.write_error("Build directory already clean\n")
+        self.ShowMethod("_showIECcode", False)
         self.EnableMethod("_Clean", False)
-        self.EnableMethod("_Run", False)
-    
-    def _Run(self, logger):
-        command_start_plc = os.path.join(self._getBuildPath(),self.GetProjectName() + exe_ext)
-        if os.path.isfile(command_start_plc):
-            has_gui_plugin = False
-            for PlugChild in self.IterChilds():
-                has_gui_plugin |= PlugChild.IsGUIPlugin()
-            logger.write("Starting PLC\n")
-            def this_plc_finish_callback(*args):
-                if self.runningPLC is not None:
-                    self.runningPLC = None
-                    self.reset_finished()
-            self.runningPLC = ProcessLogger(
-               logger,
-               command_start_plc,
-               finish_callback = this_plc_finish_callback,
-               no_gui=wx.Platform != '__WXMSW__' or not has_gui_plugin)
-            self.EnableMethod("_Clean", False)
-            self.EnableMethod("_Run", False)
-            self.EnableMethod("_Stop", True)
-            self.EnableMethod("_build", False)
+        self.CompareLocalAndRemotePLC()
+
+    ############# Real PLC object access #############
+    def UpdateMethodsFromPLCStatus(self):
+        # Get PLC state : Running or Stopped
+        # TODO : use explicit status instead of boolean
+        if self._connector is not None:
+            status = self._connector.GetPLCstatus()
+            self.logger.write("PLC is %s\n"%status)
         else:
-            logger.write_error("%s doesn't exist\n" %command_start_plc)
+            status = "Disconnected"
+        for args in {
+               "Started":[("_Run", False),
+                          ("_Debug", False),
+                          ("_Stop", True)],
+               "Stopped":[("_Run", True),
+                          ("_Debug", True),
+                          ("_Stop", False)],
+               "Empty":  [("_Run", False),
+                          ("_Debug", False),
+                          ("_Stop", False)],
+               "Dirty":  [("_Run", True),
+                          ("_Debug", True),
+                          ("_Stop", False)],
+               "Disconnected":  [("_Run", False),
+                                 ("_Debug", False),
+                                 ("_Stop", False)],
+               }.get(status,[]):
+            self.ShowMethod(*args)
+        
+    def _Run(self):
+        """
+        Start PLC
+        """
+        if self._connector.StartPLC():
+            self.logger.write("Starting PLC\n")
+        else:
+            self.logger.write_error("Couldn't start PLC !\n")
+        self.UpdateMethodsFromPLCStatus()
 
-    def reset_finished(self):
-        self.EnableMethod("_Clean", True)
-        self.EnableMethod("_Run", True)
-        self.EnableMethod("_Stop", False)
-        self.EnableMethod("_build", True)
+    def _Debug(self): 
+        """
+        Start PLC (Debug Mode)
+        """
+        if self.GetIECProgramsAndVariables() and self._connector.StartPLC():
+            self.logger.write("Starting PLC (debug mode)\n")
+            # TODO : laucnch PLCOpenEditor in Debug Mode
+            self.logger.write_warning("Debug mode for PLCopenEditor not implemented\n")
+            self.logger.write_warning("Starting alternative test GUI\n")
+            # TODO : laucnch PLCOpenEditor in Debug Mode
+        else:
+            self.logger.write_error("Couldn't start PLC debug !\n")
+        self.UpdateMethodsFromPLCStatus()
+       
+    def _Stop(self):
+        """
+        Stop PLC
+        """
+        if self._connector.StopPLC():
+            self.logger.write("Stopping PLC\n")
+        else:
+            self.logger.write_error("Couldn't stop PLC !\n")
+        self.UpdateMethodsFromPLCStatus()
 
-    def _Stop(self, logger):
-        if self.runningPLC is not None:
-            logger.write("Stopping PLC\n")
-            was_runningPLC = self.runningPLC 
-            self.runningPLC = None
-            was_runningPLC.kill()
-            self.reset_finished()
+    def _Connect(self):
+        # don't accept re-connetion is already connected
+        if self._connector is not None:
+            self.logger.write_error("Already connected. Please disconnect\n")
+            return
+        
+        # Get connector uri
+        uri = self.\
+              BeremizRoot.\
+              getTargetType().\
+              getcontent()["value"].\
+              getConnection().\
+              getURI_location().\
+              strip()
+
+        # if uri is empty launch discovery dialog
+        if uri == "":
+            # Launch Service Discovery dialog
+            dia = DiscoveryDialog(self.AppFrame)
+            dia.ShowModal()
+            uri = dia.GetResult()
+            # Nothing choosed or cancel button
+            if uri is None:
+                return
+            else:
+                self.\
+                BeremizRoot.\
+                getTargetType().\
+                getcontent()["value"].\
+                getConnection().\
+                setURI_location(uri)
+       
+        # Get connector from uri
+        try:
+            self._connector = connectors.ConnectorFactory(uri, self)
+        except Exception, msg:
+            self.logger.write_error("Exception while connecting %s!\n"%uri)
+            self.logger.write_error(traceback.format_exc())
+
+        # Did connection success ?
+        if self._connector is None:
+            # Oups.
+            self.logger.write_error("Connection failed to %s!\n"%uri)
+        else:
+            self.ShowMethod("_Connect", False)
+            self.ShowMethod("_Disconnect", True)
+            self.ShowMethod("_Transfer", True)
+
+            self.CompareLocalAndRemotePLC()
+            self.UpdateMethodsFromPLCStatus()
+
+    def CompareLocalAndRemotePLC(self):
+        if self._connector is None:
+            return
+        # We are now connected. Update button status
+        MD5 = self.GetLastBuildMD5()
+        # Check remote target PLC correspondance to that md5
+        if MD5 is not None:
+            if not self._connector.MatchMD5(MD5):
+                self.logger.write_warning(
+                   "Latest build do not match with target, please transfer.\n")
+                self.EnableMethod("_Transfer", True)
+            else:
+                self.logger.write(
+                   "Latest build match target, no transfer needed.\n")
+                self.EnableMethod("_Transfer", True)
+                #self.EnableMethod("_Transfer", False)
+        else:
+            self.logger.write_warning(
+                "Cannot compare latest build to target. Please build.\n")
+            self.EnableMethod("_Transfer", False)
+
+
+    def _Disconnect(self):
+        self._connector = None
+        self.ShowMethod("_Transfer", False)
+        self.ShowMethod("_Connect", True)
+        self.ShowMethod("_Disconnect", False)
+        self.UpdateMethodsFromPLCStatus()
+        
+    def _Transfer(self):
+        # Get the last build PLC's 
+        MD5 = self.GetLastBuildMD5()
+        
+        # Check if md5 file is empty : ask user to build PLC 
+        if MD5 is None :
+            self.logger.write_error("Failed : Must build before transfer.\n")
+            return False
+
+        # Compare PLC project with PLC on target
+        if self._connector.MatchMD5(MD5):
+            self.logger.write(
+                "Latest build already match current target. Transfering anyway...\n")
+
+        # Get temprary directory path
+        extrafilespath = self._getExtraFilesPath()
+        extrafiles = [(name, open(os.path.join(extrafilespath, name), 
+                                  'rb').read()) \
+                      for name in os.listdir(extrafilespath) \
+                      if not name=="CVS"]
+
+        for filename, unused in extrafiles:
+            print filename
+
+        # Send PLC on target
+        builder = self.GetBuilder()
+        if builder is not None:
+            data = builder.GetBinaryCode()
+            if data is not None :
+                if self._connector.NewPLC(MD5, data, extrafiles):
+                    self.logger.write("Transfer completed successfully.\n")
+                else:
+                    self.logger.write_error("Transfer failed\n")
+            else:
+                self.logger.write_error("No PLC to transfer (did build success ?)\n")
+        self.UpdateMethodsFromPLCStatus()
 
     PluginMethods = [
-        {"bitmap" : os.path.join("images", "editPLC"),
+        {"bitmap" : opjimg("editPLC"),
          "name" : "Edit PLC",
          "tooltip" : "Edit PLC program with PLCOpenEditor",
          "method" : "_EditPLC"},
-        {"bitmap" : os.path.join("images", "Build"),
+        {"bitmap" : opjimg("Build"),
          "name" : "Build",
          "tooltip" : "Build project into build folder",
          "method" : "_build"},
-        {"bitmap" : os.path.join("images", "Clean"),
+        {"bitmap" : opjimg("Clean"),
          "name" : "Clean",
+         "enabled" : False,
          "tooltip" : "Clean project build folder",
          "method" : "_Clean"},
-        {"bitmap" : os.path.join("images", "Run"),
+        {"bitmap" : opjimg("Run"),
          "name" : "Run",
-         "enabled" : False,
-         "tooltip" : "Run PLC from build folder",
+         "shown" : False,
+         "tooltip" : "Start PLC",
          "method" : "_Run"},
-        {"bitmap" : os.path.join("images", "Stop"),
+        {"bitmap" : opjimg("Debug"),
+         "name" : "Debug",
+         "shown" : False,
+         "tooltip" : "Start PLC (debug mode)",
+         "method" : "_Debug"},
+        {"bitmap" : opjimg("Stop"),
          "name" : "Stop",
-         "enabled" : False,
+         "shown" : False,
          "tooltip" : "Stop Running PLC",
          "method" : "_Stop"},
-        {"bitmap" : os.path.join("images", "ShowIECcode"),
+        {"bitmap" : opjimg("Connect"),
+         "name" : "Connect",
+         "tooltip" : "Connect to the target PLC",
+         "method" : "_Connect"},
+        {"bitmap" : opjimg("Transfer"),
+         "name" : "Transfer",
+         "shown" : False,
+         "tooltip" : "Transfer PLC",
+         "method" : "_Transfer"},
+        {"bitmap" : opjimg("Disconnect"),
+         "name" : "Disconnect",
+         "shown" : False,
+         "tooltip" : "Disconnect from PLC",
+         "method" : "_Disconnect"},
+        {"bitmap" : opjimg("ShowIECcode"),
          "name" : "Show code",
-         "enabled" : False,
+         "shown" : False,
          "tooltip" : "Show IEC code generated by PLCGenerator",
          "method" : "_showIECcode"},
-        {"bitmap" : os.path.join("images", "editIECrawcode"),
+        {"bitmap" : opjimg("editIECrawcode"),
          "name" : "Append code",
          "tooltip" : "Edit raw IEC code added to code generated by PLCGenerator",
-         "method" : "_editIECrawcode"}
+         "method" : "_editIECrawcode"},
     ]

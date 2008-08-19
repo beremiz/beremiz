@@ -2,6 +2,6 @@
 NetName=None
 Nodes=0x01
 Node3Present=0x01
-Node3Name=myslave
+Node3Name=MySlave
 Node3DCFName=Slave_2_0.eds
 EDSBaseName=eds

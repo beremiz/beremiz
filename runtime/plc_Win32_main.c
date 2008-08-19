@@ -3,7 +3,15 @@
 #include <time.h>
 #include <windows.h>
 
-int localcount = 0;
+long AtomicCompareExchange(long* atomicvar,long exchange, long compared)
+{
+    return InterlockedCompareExchange(atomicvar, exchange, compared);
+}
+
+//long AtomicExchange(long* atomicvar,long exchange)
+//{
+//    return InterlockedExchange(atomicvar, exchange);    
+//}
 
 struct _timeb timetmp;
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)

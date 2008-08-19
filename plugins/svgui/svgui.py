@@ -116,9 +116,6 @@ class RootClass(SVGUIControler):
             self.CreateNewInterface()
             self.SetFilePath(filepath)
 
-    def IsGUIPlugin(self):
-        return True
-
     def GetElementIdFromName(self, name):
         element = self.GetElementByName(name)
         if element is not None:
@@ -126,7 +123,7 @@ class RootClass(SVGUIControler):
         return None
 
     _View = None
-    def _OpenView(self, logger):
+    def _OpenView(self):
         if not self._View:
             def _onclose():
                 self._View = None
@@ -137,7 +134,7 @@ class RootClass(SVGUIControler):
             self._View._onsave = _onsave
             self._View.Show()
 
-    def _ImportSVG(self, logger):
+    def _ImportSVG(self):
         if not self._View:
             dialog = wx.FileDialog(self.GetPlugRoot().AppFrame, "Choose a SVG file", os.getcwd(), "",  "SVG files (*.svg)|*.svg|All files|*.*", wx.OPEN)
             if dialog.ShowModal() == wx.ID_OK:
@@ -145,10 +142,10 @@ class RootClass(SVGUIControler):
                 if os.path.isfile(svgpath):
                     shutil.copy(svgpath, os.path.join(self.PlugPath(), "gui.svg"))
                 else:
-                    logger.write_error("No such SVG file: %s\n"%svgpath)
+                    self.logger.write_error("No such SVG file: %s\n"%svgpath)
             dialog.Destroy()
 
-    def _ImportXML(self, logger):
+    def _ImportXML(self):
         if not self._View:
             dialog = wx.FileDialog(self.GetPlugRoot().AppFrame, "Choose a XML file", os.getcwd(), "",  "XML files (*.xml)|*.xml|All files|*.*", wx.OPEN)
             if dialog.ShowModal() == wx.ID_OK:
@@ -156,7 +153,7 @@ class RootClass(SVGUIControler):
                 if os.path.isfile(xmlpath):
                     shutil.copy(xmlpath, os.path.join(self.PlugPath(), "gui.xml"))
                 else:
-                    logger.write_error("No such XML file: %s\n"%xmlpath)
+                    self.logger.write_error("No such XML file: %s\n"%xmlpath)
             dialog.Destroy()
 
     PluginMethods = [
@@ -178,7 +175,7 @@ class RootClass(SVGUIControler):
         self.SaveXMLFile(os.path.join(self.PlugPath(), "gui.xml"))
         return True
     
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         progname = "SVGUI_%s"%"_".join(map(str, self.GetCurrentLocation()))
         
         doc = SVGDocument(self.GetSVGFilePath())
@@ -186,10 +183,15 @@ class RootClass(SVGUIControler):
         window_size = (int(float(root_element.GetAttribute("width"))),
                        int(float(root_element.GetAttribute("height"))))
 
-        svgfilepath = self.GetSVGFilePath()
-        xmlfilepath = self.GetFilePath()
-        shutil.copy(svgfilepath, buildpath)
-        shutil.copy(xmlfilepath, buildpath)
+#        svgfilepath = self.GetSVGFilePath()
+#        xmlfilepath = self.GetFilePath()
+#        shutil.copy(svgfilepath, buildpath)
+#        shutil.copy(xmlfilepath, buildpath)
+        
+        SVGFilePath = self.GetSVGFilePath()
+        SVGFileBaseName = os.path.split(SVGFilePath)[1]
+        FilePath = self.GetFilePath()
+        FileBaseName = os.path.split(FilePath)[1]
         
         generator = _SVGUICGenerator(self, self.GetElementsByType(), 
                                      os.path.split(self.GetSVGFilePath())[1], 
@@ -202,17 +204,17 @@ class RootClass(SVGUIControler):
             cxx_flags = "-I..\\..\\wxPython-src-2.8.7.1\\bld\\lib\\wx\\include\\msw-unicode-release-2.8 -I..\\..\\wxPython-src-2.8.7.1\\include -I..\\..\\wxPython-src-2.8.7.1\\contrib\\include -I..\\..\\matiec\\lib -DWXUSINGDLL -D__WXMSW__ -mthreads"
             libs = "\"..\\lib\\libwxsvg.a\" \"..\\lib\\libwxsvg_agg.a\" \"..\\lib\\libagg.a\" \"..\\lib\\libaggplatformwin32.a\" \"..\\lib\\libaggfontwin32tt.a\" -L..\\..\\wxPython-src-2.8.7.1\\bld\\lib -mno-cygwin -mwindows -mthreads  -mno-cygwin -mwindows -Wl,--subsystem,windows -mwindows -lwx_mswu_richtext-2.8 -lwx_mswu_aui-2.8 -lwx_mswu_xrc-2.8 -lwx_mswu_qa-2.8 -lwx_mswu_html-2.8 -lwx_mswu_adv-2.8 -lwx_mswu_core-2.8 -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8"
         else:
-            status, result, err_result = ProcessLogger(logger, "wx-config --cxxflags", no_stdout=True).spin()
+            status, result, err_result = ProcessLogger(self.logger, "wx-config --cxxflags", no_stdout=True).spin()
             if status:
-                logger.write_error("Unable to get wx cxxflags\n")
+                self.logger.write_error("Unable to get wx cxxflags\n")
             cxx_flags = result.strip() + " -I../matiec/lib"
             
-            status, result, err_result = ProcessLogger(logger, "wx-config --libs", no_stdout=True).spin()
+            status, result, err_result = ProcessLogger(self.logger, "wx-config --libs", no_stdout=True).spin()
             if status:
-                logger.write_error("Unable to get wx libs\n")
+                self.logger.write_error("Unable to get wx libs\n")
             libs = result.strip() + " -lwxsvg"
         
-        return [(Gen_C_file, cxx_flags)],libs,True
+        return [(Gen_C_file, cxx_flags)],libs,True,(SVGFileBaseName, file(SVGFilePath, "rb")), (FileBaseName, file(FilePath, "rb"))
     
     def BlockTypesFactory(self):
         
@@ -330,7 +332,8 @@ class _SVGUICGenerator(SVGUICGenerator):
         self.Controler = controler
 
     def GenerateProgramHeadersPublicVars(self):
-        text = """    void OnPlcOutEvent(wxEvent& event);
+        text = """
+    void OnPlcOutEvent(wxEvent& event);
 
     void Retrieve();
     void Publish();
@@ -382,7 +385,6 @@ class _SVGUICGenerator(SVGUICGenerator):
         text += self.GenerateIECVars()
         
         text += """IMPLEMENT_APP_NO_MAIN(SVGViewApp);
-IMPLEMENT_WX_THEME_SUPPORT;
 SVGViewApp *myapp = NULL;
 wxSemaphore MyInitSem;
 
@@ -412,12 +414,14 @@ bool refreshing = false;
 THREAD_RETURN_TYPE InitWxEntry(void* args)
 {
   wxEntry(myargc,myargv);
+  MyInitSem.Post();
   return 0;
 }
 
 """
 
-        text += """bool SVGViewApp::OnInit()
+        text += """
+bool SVGViewApp::OnInit()
 {
   #ifndef __WXMSW__
     setlocale(LC_NUMERIC, "C");
@@ -448,6 +452,12 @@ int __init_%(location)s(int argc, char** argv)
 
 void __cleanup_%(location)s()
 {
+  if(myapp){
+      wxCloseEvent event(wxEVT_CLOSE_WINDOW);
+      myapp->frame->AddPendingEvent(event);
+      myapp = NULL;
+  }
+  MyInitSem.Wait();
 }
 
 void __retrieve_%(location)s()
@@ -506,9 +516,8 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
     def GenerateProgramInitFrame(self):
         text = """MainFrame::MainFrame(wxWindow *parent, const wxString& title, const wxPoint& pos,const wxSize& size, long style): wxFrame(parent, wxID_ANY, title, pos, size, style)
 {
-  wxFileName apppath(wxTheApp->argv[0]);
-  wxFileName svgfilepath(apppath.GetPath(), wxT("%s"));
-  wxFileName xmlfilepath(apppath.GetPath(), wxT("%s"));
+  wxFileName svgfilepath(wxTheApp->argv[1], wxT("%s"));
+  wxFileName xmlfilepath(wxTheApp->argv[1], wxT("%s"));
 
   m_svgCtrl = new Program(this);
   if (m_svgCtrl->LoadFiles(svgfilepath.GetFullPath(), xmlfilepath.GetFullPath()))
@@ -522,8 +531,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
   }
   else
   {
-    printf("Error while opening files\\n");
-    exit(0);
+    printf("Error while opening SVGUI files\\n");
   }
 }
 
@@ -545,13 +553,19 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
         current_location = "_".join(map(str, self.CurrentLocation))
         for element in self.Elements:
             element_type = GetElementType(element)
-            element_lock = """  if (COMPARE_AND_SWAP_VAL(&in_state_%d, CHANGED, GUI_BUSY) == CHANGED ||
+            element_lock = """
+  if (COMPARE_AND_SWAP_VAL(&in_state_%d, CHANGED, GUI_BUSY) == CHANGED ||
       COMPARE_AND_SWAP_VAL(&in_state_%d, UNCHANGED, GUI_BUSY) == UNCHANGED) {
 """%(element.getid(), element.getid())
-            element_unlock = """    COMPARE_AND_SWAP_VAL(&in_state_%d, GUI_BUSY, CHANGED);
+            element_unlock = """
+    COMPARE_AND_SWAP_VAL(&in_state_%d, GUI_BUSY, CHANGED);
+    event.Skip();
+  }else{
+      /* re post event for idle */
+      AddPendingEvent(event);
   }
-  else
-      ProcessEvent(event);
+}
+
 """%element.getid()
             element_name = element.getname()
                 
@@ -562,7 +576,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += element_lock
                 text += "    _copy__IX%s_%d_1 = button->GetToggle();\n"%(current_location, element.getid())
                 text += element_unlock
-                text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_ROTATING:
                 text += """void Program::On%sChanging(wxScrollEvent& event)
 {
@@ -571,7 +584,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += element_lock
                 text += "    _copy__ID%s_%d_1 = rotating->GetAngle();\n"%(current_location, element.getid())
                 text += element_unlock
-                text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_NOTEBOOK:
                 text += """void Program::On%sTabChanged(wxNotebookEvent& event)
 {
@@ -580,7 +592,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += element_lock
                 text += "    _copy__IB%s_%d_1 = notebook->GetCurrentPage();\n"%(current_location, element.getid())
                 text += element_unlock
-                text += "  event.Skip();\n}\n\n"
             elif element_type == ITEM_TRANSFORM:
                 text += """void Program::On%sChanging(wxScrollEvent& event)
 {
@@ -590,7 +601,6 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
                 text += "    _copy__ID%s_%d_1 = transform->GetX();\n"%(current_location, element.getid())
                 text += "    _copy__ID%s_%d_2 = transform->GetY();\n"%(current_location, element.getid())
                 text += element_unlock
-                text += "  event.Skip();\n}\n\n"
         
         text += "/* OnPlcOutEvent update GUI with provided IEC __Q* PLC output variables */\n"
         text += """void Program::OnPlcOutEvent(wxEvent& event)
@@ -599,7 +609,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
   
   refreshing = true;
 
-  wxMutexGuiEnter();
+
 """
         for element in self.Elements:
             element_type = GetElementType(element)
@@ -659,7 +669,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
 """%texts
             text += "    COMPARE_AND_SWAP_VAL(&out_state_%(id)d, GUI_BUSY, UNCHANGED);\n  }\n"%texts
             
-        text += """  wxMutexGuiLeave();
+        text += """
 
   refreshing = false;
 
@@ -716,7 +726,7 @@ DEFINE_LOCAL_EVENT_TYPE( EVT_PLC )
         text += """  /* Replace this with determinist signal if called from RT */
   if (refresh && !refreshing) {
     wxCommandEvent event( EVT_PLC );
-    ProcessEvent(event);
+    AddPendingEvent(event);
     refresh = false;
   }
 };

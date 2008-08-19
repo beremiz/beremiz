@@ -357,13 +357,13 @@ class Beremiz(wx.Frame):
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(os.path.join(CWD, "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
-        self.PluginRoot = PluginsRoot(self)
+        self.PluginRoot = PluginsRoot(self, self.Log)
         self.DisableEvents = False
         
         self.PluginInfos = {}
         
         if projectOpen:
-            self.PluginRoot.LoadProject(projectOpen, self.Log)
+            self.PluginRoot.LoadProject(projectOpen)
             self.RefreshPLCParams()
             self.RefreshPluginTree()
         
@@ -572,7 +572,7 @@ class Beremiz(wx.Frame):
         else:
             msizer = wx.FlexGridSizer(cols=1)
         for plugin_method in plugin.PluginMethods:
-            if "method" in plugin_method:
+            if "method" in plugin_method and plugin_method.get("shown",True):
                 id = wx.NewId()
                 button = GenBitmapTextButton(id=id, parent=parent,
                     bitmap=wx.Bitmap(os.path.join(CWD, "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
@@ -675,7 +675,7 @@ class Beremiz(wx.Frame):
         enablebutton.SetBitmapSelected(wx.Bitmap(os.path.join(CWD, 'images', 'Enabled.png')))
         enablebutton.SetToggle(plugin.MandatoryParams[1].getEnabled())
         def toggleenablebutton(event):
-            res = self.SetPluginParamsAttribute(plugin, "BaseParams.Enabled", enablebutton.GetToggle(), self.Log)
+            res = self.SetPluginParamsAttribute(plugin, "BaseParams.Enabled", enablebutton.GetToggle())
             enablebutton.SetToggle(res)
             event.Skip()
         enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
@@ -895,7 +895,7 @@ class Beremiz(wx.Frame):
         
     def GetItemChannelChangedFunction(self, plugin, value):
         def OnPluginTreeItemChannelChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, "BaseParams.IEC_Channel", value, self.Log)
+            res = self.SetPluginParamsAttribute(plugin, "BaseParams.IEC_Channel", value)
             event.Skip()
         return OnPluginTreeItemChannelChanged
     
@@ -923,7 +923,7 @@ class Beremiz(wx.Frame):
             # Disable button to prevent re-entrant call 
             event.GetEventObject().Disable()
             # Call
-            getattr(plugin,method)(self.Log)
+            getattr(plugin,method)()
             # Re-enable button 
             event.GetEventObject().Enable()
             # Trigger refresh on Idle
@@ -933,14 +933,14 @@ class Beremiz(wx.Frame):
     
     def GetChoiceCallBackFunction(self, choicectrl, plugin, path):
         def OnChoiceChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection(), self.Log)
+            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection())
             choicectrl.SetStringSelection(res)
             event.Skip()
         return OnChoiceChanged
     
     def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, plugin, path):
         def OnChoiceContentChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection(), self.Log)
+            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection())
             if wx.VERSION < (2, 8, 0):
                 self.ParamsPanel.Freeze()
                 choicectrl.SetStringSelection(res)
@@ -958,14 +958,14 @@ class Beremiz(wx.Frame):
     
     def GetTextCtrlCallBackFunction(self, textctrl, plugin, path):
         def OnTextCtrlChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, textctrl.GetValue(), self.Log)
+            res = self.SetPluginParamsAttribute(plugin, path, textctrl.GetValue())
             textctrl.SetValue(res)
             event.Skip()
         return OnTextCtrlChanged
     
     def GetCheckBoxCallBackFunction(self, chkbx, plugin, path):
         def OnCheckBoxChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, chkbx.IsChecked(), self.Log)
+            res = self.SetPluginParamsAttribute(plugin, path, chkbx.IsChecked())
             chkbx.SetValue(res)
             event.Skip()
         return OnCheckBoxChanged
@@ -1112,7 +1112,7 @@ class Beremiz(wx.Frame):
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             if os.path.isdir(projectpath):
-                result = self.PluginRoot.LoadProject(projectpath, self.Log)
+                result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
                     self.RefreshPLCParams()
                     self.RefreshPluginTree()
@@ -1216,7 +1216,7 @@ class Beremiz(wx.Frame):
         dialog = wx.TextEntryDialog(self, "Please enter a name for plugin:", "Add Plugin", "", wx.OK|wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
             PluginName = dialog.GetValue()
-            plugin.PlugAddChild(PluginName, PluginType, self.Log)
+            plugin.PlugAddChild(PluginName, PluginType)
             self.RefreshPluginTree()
         dialog.Destroy()
     

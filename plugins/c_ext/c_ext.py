@@ -188,7 +188,7 @@ class _Cfile:
         return ""
     
     _View = None
-    def _OpenView(self, logger):
+    def _OpenView(self):
         if not self._View:
             def _onclose():
                 self._View = None
@@ -222,7 +222,7 @@ class _Cfile:
         self.CFileBuffer.CurrentSaved()
         return True
 
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -359,7 +359,7 @@ class RootClass:
 
     PlugChildsTypes = [("C_File",_Cfile, "C file")]
     
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         return [],"",False
 
 

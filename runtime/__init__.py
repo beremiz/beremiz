@@ -8,3 +8,6 @@ def code(name):
         return open(filename).read()
     else:
         return "#error %s target not implemented !!!\n"%name
+
+from PLCObject import PLCObject
+import ServicePublisher

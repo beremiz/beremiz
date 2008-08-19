@@ -3,6 +3,17 @@
 #include <time.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <pthread.h> 
+
+long AtomicCompareExchange(long* atomicvar,long exchange, long compared)
+{
+    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
+}
+
+//long AtomicExchange(long* atomicvar,long exchange)
+//{
+//    return __sync_lock_test_and_set(atomicvar, exchange);
+//}
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
@@ -41,15 +52,16 @@ void PLC_SetTimer(long long next, long long period)
 	}	
     timer_settime (PLC_timer, 0, &timerValues, NULL);
 }
-
+//
 void catch_signal(int sig)
 {
-  signal(SIGTERM, catch_signal);
+//  signal(SIGTERM, catch_signal);
   signal(SIGINT, catch_signal);
   printf("Got Signal %d\n",sig);
+  exit(0);
 }
 
-int main(int argc,char **argv)
+int startPLC(int argc,char **argv)
 {
     struct sigevent sigev;
     /* Translate PLC's microseconds to Ttick nanoseconds */
@@ -66,15 +78,35 @@ int main(int argc,char **argv)
         PLC_SetTimer(Ttick,Ttick);
         
         /* install signal handler for manual break */
-        signal(SIGTERM, catch_signal);
+//        signal(SIGTERM, catch_signal);
         signal(SIGINT, catch_signal);
-        /* Wait some signal */
-        pause();
-        /* Stop the PLC */
-        PLC_SetTimer(0,0);
+    }else{
+        return 1;
     }
-    __cleanup();
-    timer_delete (PLC_timer);
-    
     return 0;
+}
+
+int stopPLC()
+{
+    /* Stop the PLC */
+    PLC_SetTimer(0,0);
+    timer_delete (PLC_timer);
+    __cleanup();
+}
+
+pthread_mutex_t DebugLock = PTHREAD_MUTEX_INITIALIZER;
+
+/* from plc_debugger.c */
+void WaitDebugData()
+{
+    /* Wait signal from PLC thread */
+    pthread_mutex_lock(&DebugLock);
+}
+ 
+/* Called by PLC thread when debug_publish finished
+ * This is supposed to unlock debugger thread in WaitDebugData*/
+void InitiateDebugTransfer()
+{
+    /* signal debugger thread to continue*/
+    pthread_mutex_unlock(&DebugLock);
 }

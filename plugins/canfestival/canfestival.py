@@ -30,6 +30,14 @@ class _SlavePlug(NodeManager):
           <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required"/>
           <xsd:attribute name="NodeId" type="xsd:string" use="required"/>
           <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
+          <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="1"/>
+                    <xsd:maxInclusive value="99"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -73,7 +81,7 @@ class _SlavePlug(NodeManager):
                                    [])           # options
             dialog.Destroy()
     _View = None
-    def _OpenView(self, logger):
+    def _OpenView(self):
         if not self._View:
             def _onclose():
                 self._View = None
@@ -103,7 +111,7 @@ class _SlavePlug(NodeManager):
     def OnPlugSave(self):
         return self.SaveCurrentInFile(self.GetSlaveODPath())
 
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -158,7 +166,7 @@ class _NodeListPlug(NodeList):
         self.LoadProject(self.PlugPath())
 
     _View = None
-    def _OpenView(self, logger):
+    def _OpenView(self):
         if not self._View:
             def _onclose():
                 self._View = None
@@ -171,16 +179,16 @@ class _NodeListPlug(NodeList):
             self._View._onsave = _onsave
             self._View.Show()
 
-    def _ShowMasterGenerated(self, logger):
+    def _ShowMasterGenerated(self):
         buildpath = self._getBuildPath()
         # Eventually create build dir
         if not os.path.exists(buildpath):
-            logger.write_error("Error: No PLC built\n")
+            self.logger.write_error("Error: No PLC built\n")
             return
         
         masterpath = os.path.join(buildpath, "MasterGenerated.od")
         if not os.path.exists(masterpath):
-            logger.write_error("Error: No Master generated\n")
+            self.logger.write_error("Error: No Master generated\n")
             return
         
         new_dialog = objdictedit(None, filesOpen=[masterpath])
@@ -207,7 +215,7 @@ class _NodeListPlug(NodeList):
         self.SetRoot(self.PlugPath())
         return self.SaveProject() is not None
 
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -264,7 +272,7 @@ class RootClass:
                         return infos    
         return infos
 
-    def PlugGenerate_C(self, buildpath, locations, logger):
+    def PlugGenerate_C(self, buildpath, locations):
         
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
                        "candriver" : self.CanFestivalInstance.getCAN_Driver(),
@@ -328,15 +336,16 @@ class RootClass:
             else:
                 # Slave node
                 align = child_data.getSync_Align()
+                align_ratio=child_data.getSync_Align_Ratio()
                 if align > 0:
                     format_dict["post_sync"] += (
                         "static int %s_CalCount = 0;\n"%(nodename)+
                         "static void %s_post_sync(CO_Data* d){\n"%(nodename)+
                         "    if(%s_CalCount < %d){\n"%(nodename, align)+
                         "        %s_CalCount++;\n"%(nodename)+
-                        "        align_tick(1);\n"+
+                        "        align_tick(-1);\n"+
                         "    }else{\n"+
-                        "        align_tick(0);\n"+
+                        "        align_tick(%d);\n"%(align_ratio)+
                         "    }\n"+
                         "}\n")
                     format_dict["post_sync_register"] += (

@@ -77,12 +77,11 @@ void Exit(CO_Data* d, UNS32 id)
 
 void __cleanup_%(locstr)s()
 {
-    %(nodes_close)s
-    
     // Stop timer thread
-    if(init_level-- > 0)
+    if(init_level-- > 0){
         StopTimerLoop(&Exit);
-
+        %(nodes_close)s
+   }
     #if !defined(WIN32) || defined(__CYGWIN__)
    		TimerCleanup();
     #endif

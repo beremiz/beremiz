@@ -1,0 +1,14 @@
+
+                 <xsd:element name="Xenomai">
+                    <xsd:complexType>
+                      <xsd:sequence>
+                        <xsd:element name="Connection">
+                          <xsd:complexType>
+                            <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
+                          </xsd:complexType>
+                        </xsd:element>
+                      </xsd:sequence>
+                      %(toolchain_gcc)s
+                      <xsd:attribute name="xeno_config" type="xsd:string" use="optional" default="/usr/xenomai/"/>
+                    </xsd:complexType>
+                  </xsd:element>

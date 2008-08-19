@@ -17,6 +17,7 @@ void run(long int tv_sec, long int tv_nsec);
 #define maxval(a,b) ((a>b)?a:b)
 
 #include "iec_types.h"
+/*#include "stdio.h" /* For debug */
 
 /*
  * Functions and variables provied by generated C softPLC
@@ -25,13 +26,14 @@ void config_run__(int tick);
 void config_init__(void);
 
 /*
- *  Functions and variables to export to generated C softPLC
+ *  Functions and variables to export to generated C softPLC and plugins
  **/
  
 IEC_TIME __CURRENT_TIME;
+int __tick = 0;
 
-static int tick = 0;
-static int init_level=0;
+static int init_level = 0;
+static int Debugging = 1;
 
 /*
  * Prototypes of functions exported by plugins 
@@ -44,13 +46,16 @@ static int init_level=0;
 void __run()
 {
     %(retrieve_calls)s
+
+    if(Debugging) __retrieve_debug();
     
-	/*
-	printf("run tick = %%d\n", tick + 1);
-	*/
-    config_run__(tick++);
+    config_run__(__tick);
+
+    if(Debugging) __publish_debug();
     
     %(publish_calls)s
+
+    __tick++;
 }
 
 /*
@@ -88,13 +93,14 @@ static long long Ttick = 0;
 #define mod %%
 /*
  * Call this on each external sync, 
+ * @param sync_align_ratio 0->100 : align ratio, < 0 : no align, calibrate period 
  **/
-void align_tick(int calibrate)
+void align_tick(int sync_align_ratio)
 {
 	/*
 	printf("align_tick(%%d)\n", calibrate);
 	*/
-	if(calibrate){
+	if(sync_align_ratio < 0){ /* Calibration */
 		if(calibration_count == CALIBRATED)
 			/* Re-calibration*/
 			calibration_count = NOT_CALIBRATED;
@@ -102,7 +108,7 @@ void align_tick(int calibrate)
 			/* Calibration start, get time*/
 			PLC_GetTime(&cal_begin);
 		calibration_count++;
-	}else{
+	}else{ /* do alignment (if possible) */
 		if(calibration_count >= 0){
 			/* End of calibration */
 			/* Get final time */
@@ -135,7 +141,7 @@ void align_tick(int calibrate)
 			PLC_GetTime(&now);
 			elapsed = (now.tv_sec - __CURRENT_TIME.tv_sec) * 1000000000 + now.tv_nsec - __CURRENT_TIME.tv_nsec;
 			if(Nticks > 0){
-				PhaseCorr = elapsed - (Ttick + FreqCorr/Nticks)*%(sync_align_ratio)d/100; /* to be divided by Nticks */
+				PhaseCorr = elapsed - (Ttick + FreqCorr/Nticks)*sync_align_ratio/100; /* to be divided by Nticks */
 				Tcorr = Ttick + (PhaseCorr + FreqCorr) / Nticks;
 				if(Nticks < 2){
 					/* When Sync source period is near Tick time */
@@ -144,9 +150,9 @@ void align_tick(int calibrate)
 				}else{
 					PeriodicTcorr = Tcorr; 
 				}
-			}else if(tick > last_tick){
-				last_tick = tick;
-				PhaseCorr = elapsed - (Tsync*%(sync_align_ratio)d/100);
+			}else if(__tick > last_tick){
+				last_tick = __tick;
+				PhaseCorr = elapsed - (Tsync*sync_align_ratio/100);
 				PeriodicTcorr = Tcorr = Ttick + PhaseCorr + FreqCorr;
 			}else{
 				/*PLC did not run meanwhile. Nothing to do*/
@@ -156,4 +162,16 @@ void align_tick(int calibrate)
 			PLC_SetTimer(Tcorr - elapsed, PeriodicTcorr);
 		}
 	}
+}
+
+int suspendDebug()
+{
+    /* Prevent PLC to enter debug code */
+    Debugging = 0;
+}
+
+int resumeDebug()
+{
+    /* Let PLC enter debug code */
+    Debugging = 1;
 }

@@ -8,7 +8,7 @@
               productVersion="1"
               creationDateTime="2008-06-28 15:43:31"/>
   <contentHeader name="autom_ihm_rmll"
-                 modificationDateTime="2008-06-28 18:26:40">
+                 modificationDateTime="2008-08-20 00:50:31">
     <coordinateInfo>
       <pageSize x="700" y="1000"/>
       <fbd>
@@ -65,11 +65,15 @@
                 <BOOL/>
               </type>
             </variable>
-            <variable name="full_in" address="%IX1.0.3.8194.0">
+          </localVars>
+          <externalVars>
+            <variable name="full_in">
               <type>
                 <BOOL/>
               </type>
             </variable>
+          </externalVars>
+          <localVars>
             <variable name="empty_in" address="%IX1.0.3.8195.0">
               <type>
                 <BOOL/>
@@ -787,7 +791,34 @@ YOUT := YTMP * INT_TO_REAL(CONSIGNE) / 100.0;]]>
           <task name="matache" interval="00:00:00.100000" priority="0">
             <pouInstance name="moninst" type="main"/>
           </task>
+          <globalVars>
+            <variable name="full_in" address="%IX1.0.3.8194.0">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="tyto">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="2"/>
+              </initialValue>
+            </variable>
+          </globalVars>
         </resource>
+        <globalVars>
+          <variable name="popy">
+            <type>
+              <INT/>
+            </type>
+          </variable>
+          <variable name="fulfuck" address="%IX1.0.3.8194.0">
+            <type>
+              <BOOL/>
+            </type>
+          </variable>
+        </globalVars>
       </configuration>
     </configurations>
   </instances>
