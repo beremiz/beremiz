@@ -647,6 +647,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
               </xsd:complexType>
             </xsd:element>
           </xsd:sequence>
+          <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
