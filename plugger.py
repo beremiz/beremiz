@@ -1121,8 +1121,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             }
 
         target_name = self.BeremizRoot.getTargetType().getcontent()["name"]
-        plc_main_code += runtime.code("plc_%s_main"%target_name)
-        
+        plc_main_code += targets.code(target_name)
         return plc_main_code
 
         
