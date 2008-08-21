@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeremizRoot>
+<BeremizRoot URI_location="PYRO://localhost:3000">
   <TargetType>
-    <Linux CFLAGS="-g" Linker="g++" LDFLAGS="">
-      <Connection URI_location="PYRO://192.168.0.6:3000"/>
-    </Linux>
+    <Linux CFLAGS="-g" Linker="g++" LDFLAGS=""/>
   </TargetType>
 </BeremizRoot>
