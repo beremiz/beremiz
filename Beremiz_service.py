@@ -52,7 +52,6 @@ for o, a in opts:
         usage()
         sys.exit()
     elif o in ("-a", "--address"):
-        #ip = socket.inet_aton(a)
         if len(a.split(".")) == 4 or a == "localhost":
             ip = a
     elif o in ("-d", "--directory"):
@@ -95,15 +94,23 @@ serviceproperties = {'description':'Remote control for PLC'}
 pyro.initServer()
 daemon=pyro.Daemon(host=ip, port=port)
 uri = daemon.connect(PLCObject(WorkingDir, daemon),"PLCObject")
+
 print "The daemon runs on port :",daemon.port
 print "The object's uri is :",uri
 print "The working directory :",WorkingDir
-print "Publish service on local network"
 
-ip_32b = socket.inet_aton(ip)
 # Configure and publish service
-service = ServicePublisher.PublishService()
-service.ConfigureService(type, name, ip_32b, port, serviceproperties)
-service.PublishService()
+# Not publish service if localhost in address params
+print ip
+if ip != "localhost" and ip != "127.0.0.1":    
+    # No ip params -> get host ip
+    if ip == "":
+        ip_32b = socket.inet_aton(gethostaddr(ip))
+    else:
+        ip_32b = ip
+    print "Publish service on local network"
+    service = ServicePublisher.PublishService()
+    service.ConfigureService(type, name, ip_32b, port, serviceproperties)
+    service.PublishService()
 
 daemon.requestLoop()
