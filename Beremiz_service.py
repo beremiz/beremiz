@@ -35,7 +35,7 @@ Usage of Beremiz PLC execution service :\n
 """%sys.argv[0]
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "a:d:p:h", ["directory=", "port=", "help"])
+    opts, args = getopt.getopt(sys.argv[1:], "a:p:h", ["help"])
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
@@ -43,10 +43,9 @@ except getopt.GetoptError, err:
     sys.exit(2)
 
 # default values
-WorkingDir = os.getcwd()
 ip = ""
 port = 3000
-
+print opts
 for o, a in opts:
     if o in ("-h", "--help"):
         usage()
@@ -54,15 +53,23 @@ for o, a in opts:
     elif o in ("-a", "--address"):
         if len(a.split(".")) == 4 or a == "localhost":
             ip = a
-    elif o in ("-d", "--directory"):
-        # overwrite default working directory
-        WorkingDir = a
     elif o in ("-p", "--port"):
         # port: port that the service runs on
         port = int(a)
     else:
         usage()
         sys.exit()
+
+if len(args) > 1:
+    usage()
+    sys.exit()
+elif len(args) == 1:
+    WorkingDir = args[0]
+elif len(args) == 0:
+    WorkingDir = os.getcwd()
+else:
+    usage()
+    sys.exit()
 
 from runtime import PLCObject, ServicePublisher
 import Pyro.core as pyro
@@ -93,7 +100,7 @@ serviceproperties = {'description':'Remote control for PLC'}
 
 pyro.initServer()
 daemon=pyro.Daemon(host=ip, port=port)
-uri = daemon.connect(PLCObject(WorkingDir, daemon),"PLCObject")
+uri = daemon.connect(PLCObject(WorkingDir, daemon, args),"PLCObject")
 
 print "The daemon runs on port :",daemon.port
 print "The object's uri is :",uri
