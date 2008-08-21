@@ -1353,9 +1353,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Get connector uri
         uri = self.\
               BeremizRoot.\
-              getTargetType().\
-              getcontent()["value"].\
-              getConnection().\
               getURI_location().\
               strip()
 
@@ -1371,9 +1368,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
             else:
                 self.\
                 BeremizRoot.\
-                getTargetType().\
-                getcontent()["value"].\
-                getConnection().\
                 setURI_location(uri)
        
         # Get connector from uri

@@ -25,31 +25,45 @@
 import os, sys, getopt, socket
 
 def usage():
-    print "\nUsage of Beremiz PLC execution service :"
-    print "\n   %s [PLC path]\n"%sys.argv[0]
+    print """
+Usage of Beremiz PLC execution service :\n
+%s {[-a ip] [-d path] [-p port]|-h|--help}
+           -a, --address            - authorized ip to connect (x.x.x.x)
+           -d, --directory path     - set the working directory
+           -p, --port port number   - set the port number
+           -h, --help               - print this help text and quit
+"""%sys.argv[0]
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
-except getopt.GetoptError:
+    opts, args = getopt.getopt(sys.argv[1:], "a:d:p:h", ["directory=", "port=", "help"])
+except getopt.GetoptError, err:
     # print help information and exit:
+    print str(err) # will print something like "option -a not recognized"
     usage()
     sys.exit(2)
+
+# default values
+WorkingDir = os.getcwd()
+ip = ""
+port = 3000
 
 for o, a in opts:
     if o in ("-h", "--help"):
         usage()
         sys.exit()
-
-if len(args) > 1:
-    usage()
-    sys.exit()
-elif len(args) == 1:
-    WorkingDir = args[0]
-elif len(args) == 0:
-    WorkingDir = os.getcwd()
-else:
-    usage()
-    sys.exit()
+    elif o in ("-a", "--address"):
+        #ip = socket.inet_aton(a)
+        if len(a.split(".")) == 4 or a == "localhost":
+            ip = a
+    elif o in ("-d", "--directory"):
+        # overwrite default working directory
+        WorkingDir = a
+    elif o in ("-p", "--port"):
+        # port: port that the service runs on
+        port = int(a)
+    else:
+        usage()
+        sys.exit()
 
 from runtime import PLCObject, ServicePublisher
 import Pyro.core as pyro
@@ -75,9 +89,6 @@ def gethostaddr(dst = '224.0.1.41'):
         pass
     return socket.gethostbyname(socket.gethostname())
 
-ip = gethostaddr()
-# port: port that the service runs on
-port = 3000
 # properties: dictionary of properties (or a string holding the bytes for the text field)
 serviceproperties = {'description':'Remote control for PLC'}
 
