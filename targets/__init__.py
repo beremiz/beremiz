@@ -64,11 +64,14 @@ for targetname in targets:
 for target in DictXSD_target.keys():
     targetchoices += DictXSD_target[target]
 
-def code(target_name):
-    filename = path.join(path.split(__file__)[0], target_name, "plc_%s_main.c"%target_name)
-    if path.exists(filename):
-        return open(filename).read()
-    else:
-        return "#error %s target not implemented !!!\n"%target_name
+def targetcode(target_name, code_name=None):
+    if code_name is None:
+        code_name="plc_%s_main.c"%target_name
+    filename = path.join(path.split(__file__)[0], target_name, code_name)
+    return open(filename).read()
+
+def code(name):
+    filename = path.join(path.split(__file__)[0],name + ".c")
+    return open(filename).read()
 
 from toolchain_gcc import toolchain_gcc

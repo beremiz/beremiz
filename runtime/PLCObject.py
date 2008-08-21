@@ -24,9 +24,7 @@
 
 import Pyro.core as pyro
 from threading import Timer
-import ctypes, os, dl, commands
-#, sys
-#sys.setdlopenflags(dl.RTLD_NOW | dl.RTLD_GLOBAL)
+import ctypes, os, commands
 
 if os.name == ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -42,8 +40,9 @@ lib_ext ={
      }.get(sys.platform, "")
 
 class PLCObject(pyro.ObjBase):
-    def __init__(self, workingdir, daemon):
+    def __init__(self, workingdir, daemon, argv):
         pyro.ObjBase.__init__(self)
+        self.argv=argv
         self.workingdir = workingdir
         self.PLCStatus = "Stopped"
         self.PLClibraryHandle = None
@@ -142,7 +141,7 @@ class PLCObject(pyro.ObjBase):
                                   "libpan",
                                   "libX11",
                                   ]:
-                    badhandle = dlopen(badlib, dl.RTLD_NOLOAD)
+                    #badhandle = dlopen(badlib, dl.RTLD_NOLOAD)
                     print "Dirty lib detected :" + badlib
                     #dlclose(badhandle)
                     return True
@@ -153,20 +152,24 @@ class PLCObject(pyro.ObjBase):
         print "StartPLC"
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(sys.argv)
-            if self._LoadNewPLC() and self._startPLC(len(sys.argv),c_argv(*sys.argv)) == 0:
+            if self._LoadNewPLC() and self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
                 self.PLCStatus = "Started"
                 return True
             else:
                 print "_StartPLC did not return 0 !"
+                self._DoStopPLC()
         return False
+
+    def _DoStopPLC(self):
+        self._stopPLC()
+        self.PLCStatus = "Stopped"
+        if self._FreePLC():
+            self.PLCStatus = "Dirty"
+        return True
 
     def StopPLC(self):
         if self.PLCStatus == "Started":
-            self._stopPLC()
-            self.PLCStatus = "Stopped"
-            if self._FreePLC():
-                self.PLCStatus = "Dirty"
-            return True
+            self._DoStopPLC()
         return False
 
     def _Reload(self):

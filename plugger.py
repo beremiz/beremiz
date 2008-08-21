@@ -613,7 +613,6 @@ from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
 DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")] + \
     ["STEP","TRANSITION","ACTION"]
 
-import runtime
 import re
 import targets
 import connectors
@@ -1039,7 +1038,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.GetIECProgramsAndVariables()
 
         # prepare debug code
-        debug_code = runtime.code("plc_debug") % {
+        debug_code = targets.code("plc_debug") % {
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
@@ -1100,7 +1099,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
            [loc for loc,Cfiles,DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
 
         # Generate main, based on template
-        plc_main_code = runtime.code("plc_common_main") % {
+        plc_main_code = targets.code("plc_common_main") % {
             "calls_prototypes":"\n".join([(
                   "int __init_%(s)s(int argc,char **argv);\n"+
                   "void __cleanup_%(s)s();\n"+
@@ -1121,7 +1120,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             }
 
         target_name = self.BeremizRoot.getTargetType().getcontent()["name"]
-        plc_main_code += targets.code(target_name)
+        plc_main_code += targets.targetcode(target_name)
         return plc_main_code
 
         
@@ -1176,7 +1175,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         os.mkdir(extrafilespath)
         # Then write the files
         for fname,fobject in ExtraFiles:
-            print fname,fobject
             fpath = os.path.join(extrafilespath,fname)
             open(fpath, "wb").write(fobject.read())
         # Now we can forget ExtraFiles (will close files object)
@@ -1438,9 +1436,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
                                   'rb').read()) \
                       for name in os.listdir(extrafilespath) \
                       if not name=="CVS"]
-
-        for filename, unused in extrafiles:
-            print filename
 
         # Send PLC on target
         builder = self.GetBuilder()
