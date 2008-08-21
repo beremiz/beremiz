@@ -101,7 +101,6 @@ print "The working directory :",WorkingDir
 
 # Configure and publish service
 # Not publish service if localhost in address params
-print ip
 if ip != "localhost" and ip != "127.0.0.1":    
     # No ip params -> get host ip
     if ip == "":
