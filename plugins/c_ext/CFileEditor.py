@@ -19,39 +19,6 @@ else:
               'size2': 10,
              }
 
-if wx.VERSION >= (2, 8, 0):
-    import wx.aui
-
-    class MDICppEditor(wx.aui.AuiMDIChildFrame):
-        def __init__(self, parent, name, window, controler):
-            wx.aui.AuiMDIChildFrame.__init__(self, parent, -1, title = name)
-            
-            sizer = wx.BoxSizer(wx.HORIZONTAL)
-            
-            self.Viewer = CppEditor(self, name, window, controler)
-            
-            sizer.AddWindow(self.Viewer, 1, border=0, flag=wx.GROW)
-            
-            self.SetSizer(sizer)
-        
-        def GetViewer(self):
-            return self.Viewer
-
-    class MDIVariablesEditor(wx.aui.AuiMDIChildFrame):
-        def __init__(self, parent, name, window, controler):
-            wx.aui.AuiMDIChildFrame.__init__(self, parent, -1, title = name)
-            
-            sizer = wx.BoxSizer(wx.HORIZONTAL)
-            
-            self.Viewer = VariablesEditor(self, window, controler)
-            
-            sizer.AddWindow(self.Viewer, 1, border=0, flag=wx.GROW)
-            
-            self.SetSizer(sizer)
-        
-        def GetViewer(self):
-            return self.Viewer
-
 
 def AppendMenu(parent, help, id, kind, text):
     if wx.VERSION >= (2, 6, 0):
@@ -819,10 +786,6 @@ class VariablesEditor(wx.Panel):
 #                          SVGUIEditor Main Frame Class
 #-------------------------------------------------------------------------------
 
-if wx.VERSION >= (2, 8, 0):
-    base_class = wx.aui.AuiMDIParentFrame
-else:
-    base_class = wx.Frame
 
 CFILE_PARTS = ["Includes", "Variables", "Globals", "Init", "CleanUp", "Retrieve", 
                "Publish"]
@@ -831,7 +794,7 @@ CFILE_PARTS = ["Includes", "Variables", "Globals", "Init", "CleanUp", "Retrieve"
  ID_CFILEEDITORCFILETREE, ID_CFILEEDITORPARTSOPENED, 
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
-class CFileEditor(base_class):
+class CFileEditor(wx.Frame):
     
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id = None):
@@ -863,14 +826,9 @@ class CFileEditor(base_class):
         self._init_coll_EditMenu_Items(self.EditMenu)
         
     def _init_ctrls(self, prnt):
-        if wx.VERSION >= (2, 8, 0):
-            wx.aui.AuiMDIParentFrame.__init__(self, winid=ID_CFILEEDITOR, name=u'CFileEditor', 
-                  parent=prnt, pos=wx.DefaultPosition, size=wx.Size(800, 650),
-                  style=wx.DEFAULT_FRAME_STYLE|wx.SUNKEN_BORDER|wx.CLIP_CHILDREN, title=u'CFileEditor')
-        else:
-            wx.Frame.__init__(self, id=ID_CFILEEDITOR, name=u'CFileEditor',
-                  parent=prnt, pos=wx.DefaultPosition, size=wx.Size(800, 650),
-                  style=wx.DEFAULT_FRAME_STYLE, title=u'CFileEditor')
+        wx.Frame.__init__(self, id=ID_CFILEEDITOR, name=u'CFileEditor',
+              parent=prnt, pos=wx.DefaultPosition, size=wx.Size(800, 650),
+              style=wx.DEFAULT_FRAME_STYLE, title=u'CFileEditor')
         self._init_utils()
         self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.MenuBar)
@@ -916,7 +874,12 @@ class CFileEditor(base_class):
                     self.OnPartSelectedChanged)
             
             self.MainSplitter.SplitVertically(self.ProjectTree, self.PartsOpened, 200)
-        
+        else:
+            self.PartsOpened = wx.aui.AuiNotebook(self)
+            self.PartsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
+                    self.OnPartSelectedChanged)
+            self.AUIManager.AddPane(self.PartsOpened, wx.aui.AuiPaneInfo().CentrePane())
+            
         self.StatusBar = wx.StatusBar( name='HelpBar',
               parent=self, style=wx.ST_SIZEGRIP)
         self.SetStatusBar(self.StatusBar)
@@ -941,9 +904,9 @@ class CFileEditor(base_class):
         event.Skip()
 
     def OnCloseTabMenu(self, event):
-        selected = self.GetPageSelection()
+        selected = self.PartsOpened.GetSelection()
         if selected >= 0:
-            self.DeletePage(selected)
+            self.PartsOpened.DeletePage(selected)
         event.Skip()
 
     def OnSaveMenu(self, event):
@@ -956,91 +919,23 @@ class CFileEditor(base_class):
 #-------------------------------------------------------------------------------
 #                            Notebook Unified Functions
 #-------------------------------------------------------------------------------
-
-    def GetPageCount(self):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                return notebook.GetPageCount()
-            else:
-                return 0
-        else:
-            return self.PartsOpened.GetPageCount()
     
-    def GetPage(self, idx):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                return notebook.GetPage(idx).GetViewer()
-            else:
-                return None
-        else:
-            return self.PartsOpened.GetPage(idx)
-
-    def GetPageSelection(self):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                return notebook.GetSelection()
-            else:
-                return -1
-        else:
-            return self.PartsOpened.GetSelection()
-
-    def SetPageSelection(self, idx):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                notebook.SetSelection(idx)
-        else:
-            self.PartsOpened.SetSelection(idx)
-
-    def DeletePage(self, idx):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                notebook.DeletePage(idx)
-        else:
-            self.PartsOpened.DeletePage(idx)
-
     def DeleteAllPages(self):
         if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                for idx in xrange(notebook.GetPageCount()):
-                    notebook.DeletePage(0)
+            for idx in xrange(self.PartsOpened.GetPageCount()):
+                self.PartsOpened.DeletePage(0)
         else:
             self.PartsOpened.DeleteAllPages()
 
-    def SetPageText(self, idx, text):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                return notebook.SetPageText(idx, text)
-        else:
-            return self.PartsOpened.SetPageText(idx, text)
-
     def SetPageBitmap(self, idx, bitmap):
         if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                return notebook.SetPageBitmap(idx, bitmap)
+            return self.PartsOpened.SetPageBitmap(idx, bitmap)
         else:
             return self.PartsOpened.SetPageImage(idx, bitmap)
 
-    def GetPageText(self, idx):
-        if wx.VERSION >= (2, 8, 0):
-            notebook = self.GetNotebook()
-            if notebook is not None:
-                return notebook.GetPageText(idx)
-            else:
-                return ""
-        else:
-            return self.PartsOpened.GetPageText(idx)
-
     def IsOpened(self, name):
-        for idx in xrange(self.GetPageCount()):
-            if self.GetPage(idx).IsViewing(name):
+        for idx in xrange(self.PartsOpened.GetPageCount()):
+            if self.PartsOpened.GetPage(idx).IsViewing(name):
                 return idx
         return None
 
@@ -1057,17 +952,17 @@ class CFileEditor(base_class):
         self.EditMenu.Enable(wx.ID_REDO, redo)
 
     def OnRefreshMenu(self, event):
-        selected = self.GetPageSelection()
+        selected = self.PartsOpened.GetSelection()
         if selected != -1:
-            window = self.GetPage(selected)
+            window = self.PartsOpened.GetPage(selected)
             window.RefreshView()
         event.Skip()
 
     def OnUndoMenu(self, event):
         self.Controler.LoadPrevious()
-        selected = self.GetPageSelection()        
+        selected = self.PartsOpened.GetSelection()        
         if selected != -1:
-            window = self.GetPage(selected)
+            window = self.PartsOpened.GetPage(selected)
             window.RefreshView()
         self.RefreshTitle()
         self.RefreshEditMenu()
@@ -1075,9 +970,9 @@ class CFileEditor(base_class):
     
     def OnRedoMenu(self, event):
         self.Controler.LoadNext()
-        selected = self.GetPageSelection()
+        selected = self.PartsOpened.GetSelection()
         if selected != -1:
-            window = self.GetPage(selected)
+            window = self.PartsOpened.GetPage(selected)
             window.RefreshView()
         self.RefreshTitle()
         self.RefreshEditMenu()
@@ -1088,20 +983,13 @@ class CFileEditor(base_class):
 #-------------------------------------------------------------------------------
     
     def OnPartSelectedChanged(self, event):
-        if wx.VERSION < (2, 8, 0) or event.GetActive():
-            old_selected = self.GetPageSelection()
-            if old_selected >= 0:
-                self.GetPage(old_selected).ResetBuffer()
-            if wx.VERSION >= (2, 8, 0):
-                window = event.GetEventObject().GetViewer()
-            else:
-                selected = event.GetSelection()
-                if selected >= 0:
-                    window = self.GetPage(selected)
-                else:
-                    window = None
-            if window:
-                window.RefreshView()
+        old_selected = self.PartsOpened.GetSelection()
+        if old_selected >= 0:
+            self.PartsOpened.GetPage(old_selected).ResetBuffer()
+        selected = event.GetSelection()
+        if selected >= 0:
+            window = self.PartsOpened.GetPage(selected)
+            window.RefreshView()
         event.Skip()
 
 #-------------------------------------------------------------------------------
@@ -1126,35 +1014,27 @@ class CFileEditor(base_class):
     def EditCFilePart(self, name, onlyopened = False):
         openedidx = self.IsOpened(name)
         if openedidx is not None:
-            old_selected = self.GetPageSelection()
+            old_selected = self.PartsOpened.GetSelection()
             if old_selected != openedidx:
                 if old_selected >= 0:
-                    self.GetPage(old_selected).ResetBuffer()
-                self.SetPageSelection(openedidx)
-            self.GetPage(openedidx).RefreshView()
+                    self.PartsOpened.GetPage(old_selected).ResetBuffer()
+                self.PartsOpened.SetSelection(openedidx)
+            self.PartsOpened.GetPage(openedidx).RefreshView()
         elif not onlyopened:
-            if wx.VERSION >= (2, 8, 0):
-                if name == "Variables":
-                    new_window = MDIVariablesEditor(self, name, self, self.Controler)
-                else:
-                    new_window = MDICppEditor(self, name, self, self.Controler)
-                new_window.Bind(wx.EVT_ACTIVATE, self.OnPartSelectedChanged)
-                new_window.Layout()
+            if name == "Variables":
+                new_window = VariablesEditor(self.PartsOpened, self, self.Controler)
+                self.PartsOpened.AddPage(new_window, name)
             else:
-                if name == "Variables":
-                    new_window = VariablesEditor(self.TabsOpened, self, self.Controler)
-                    self.TabsOpened.AddPage(new_window, name)
-                else:
-                    new_window = CppEditor(self.TabsOpened, name, self, self.Controler)
-                    self.TabsOpened.AddPage(new_window, name)
+                new_window = CppEditor(self.PartsOpened, name, self, self.Controler)
+                self.PartsOpened.AddPage(new_window, name)
             openedidx = self.IsOpened(name)
-            old_selected = self.GetPageSelection()
+            old_selected = self.PartsOpened.GetSelection()
             if old_selected != openedidx:
                 if old_selected >= 0:
-                    self.GetPage(old_selected).ResetBuffer()
-            for i in xrange(self.GetPageCount()):
-                window = self.GetPage(i)
+                    self.PartsOpened.GetPage(old_selected).ResetBuffer()
+            for i in xrange(self.PartsOpened.GetPageCount()):
+                window = self.PartsOpened.GetPage(i)
                 if window.IsViewing(name):
-                    self.SetPageSelection(i)
+                    self.PartsOpened.SetSelection(i)
                     window.RefreshView()
                     window.SetFocus()
