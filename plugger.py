@@ -1223,7 +1223,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def ShowError(self, logger, from_location, to_location):
         chunk_infos = self.GetChunkInfos(from_location, to_location)
-        self._EditPLC(logger)
+        self._EditPLC()
         for infos, (start_row, start_col) in chunk_infos:
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
@@ -1262,10 +1262,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
             def _onsave():
                 self.SaveProject()
             self.PLCEditor = PLCOpenEditor(self.AppFrame, self)
-            self.PLCEditor.RefreshProjectTree()
-            self.PLCEditor.RefreshFileMenu()
-            self.PLCEditor.RefreshEditMenu()
-            self.PLCEditor.RefreshToolBar()
             self.PLCEditor._onclose = _onclose
             self.PLCEditor._onsave = _onsave
             self.PLCEditor.Show()
