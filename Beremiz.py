@@ -360,8 +360,6 @@ class Beremiz(wx.Frame):
         
         self.Log = LogPseudoFile(self.LogConsole)
         
-#        self.local_runtime = ProcessLogger(self.Log,
-#                                           "bash -c 'while true; do echo coucou; sleep 1; done'")
         self.local_runtime_tmpdir = tempfile.mkdtemp()
         self.local_runtime = ProcessLogger(self.Log,
                                            "%s %s -i localhost %s"%(sys.executable,

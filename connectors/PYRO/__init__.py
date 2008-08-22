@@ -44,7 +44,7 @@ def PYRO_connector_factory(uri, pluginsroot):
         A function that catch a pyro exceptions, write error to logger
         and return defaul value when it happen
         """
-        def cather_func(*args,**kwargs):
+        def catcher_func(*args,**kwargs):
             try:
                 return func(*args,**kwargs)
             except PyroError,e:
@@ -52,7 +52,7 @@ def PYRO_connector_factory(uri, pluginsroot):
                 pluginsroot.logger.write_error(str(e))
                 pluginsroot._Disconnect()
                 return default
-        return cather_func
+        return catcher_func
 
     # Check connection is effective. 
     # lambda is for getattr of GetPLCstatus to happen inside catcher
