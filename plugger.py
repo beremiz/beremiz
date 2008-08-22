@@ -683,8 +683,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PLCEditor = None
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
-        # special root member for handlig PLC execution
-        self.runningPLC = None
 
     def PlugTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()

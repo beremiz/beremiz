@@ -28,7 +28,7 @@ import wx
 import subprocess, ctypes
 import threading
 import os
-import signal
+from signal import SIGTERM, SIGKILL
 
     
 class outputThread(threading.Thread):
@@ -139,7 +139,7 @@ class ProcessLogger:
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
 
-    def kill(self):
+    def kill(self,signal=SIGTERM):
         self.outt.killed = True
         self.errt.killed = True
         if wx.Platform == '__WXMSW__':
@@ -149,7 +149,7 @@ class ProcessLogger:
             ctypes.windll.kernel32.CloseHandle(handle)
         else:
             try:
-                os.kill(self.Proc.pid, signal.SIGTERM)
+                os.kill(self.Proc.pid, signal)
             except:
                 pass
 

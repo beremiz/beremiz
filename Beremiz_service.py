@@ -22,20 +22,22 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import os, sys, getopt, socket
+import os, sys, getopt
 
 def usage():
     print """
 Usage of Beremiz PLC execution service :\n
-%s {[-a ip] [-d path] [-p port]|-h|--help}
-           -a, --address            - authorized ip to connect (x.x.x.x)
-           -d, --directory path     - set the working directory
-           -p, --port port number   - set the port number
-           -h, --help               - print this help text and quit
+%s {[-n name] [-i ip] [-p port]|-h|--help} working_dir
+           -n        - zeroconf service name
+           -i        - ip of interface to bind to (x.x.x.x)
+           -p        - port number
+           -h        - print this help text and quit
+           
+           working_dir - directory where are stored PLC files
 """%sys.argv[0]
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "a:p:h", ["help"])
+    opts, args = getopt.getopt(sys.argv[1:], "i:p:n:h")
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
@@ -45,17 +47,23 @@ except getopt.GetoptError, err:
 # default values
 ip = ""
 port = 3000
-print opts
+name = os.environ[{
+     "linux2":"USER",
+     "win32":"USERNAME",
+     }.get(sys.platform, "USER")]
+
 for o, a in opts:
-    if o in ("-h", "--help"):
+    if o == "-h":
         usage()
         sys.exit()
-    elif o in ("-a", "--address"):
+    elif o == "-i":
         if len(a.split(".")) == 4 or a == "localhost":
             ip = a
-    elif o in ("-p", "--port"):
+    elif o == "-p":
         # port: port that the service runs on
         port = int(a)
+    elif o == "-n":
+        name = a
     else:
         usage()
         sys.exit()
@@ -67,9 +75,7 @@ elif len(args) == 1:
     WorkingDir = args[0]
 elif len(args) == 0:
     WorkingDir = os.getcwd()
-else:
-    usage()
-    sys.exit()
+    args=[WorkingDir]
 
 from runtime import PLCObject, ServicePublisher
 import Pyro.core as pyro
@@ -77,26 +83,6 @@ import Pyro.core as pyro
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
 
-# type: fully qualified service type name
-type = '_PYRO._tcp.local.'
-# name: fully qualified service name
-name = 'First test.%s'%(type)
-# address: IP address as unsigned short, network byte order
-
-def gethostaddr(dst = '224.0.1.41'):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect((dst, 7))
-        (host, port) = s.getsockname()
-        s.close()
-        if host != '0.0.0.0':
-            return host
-    except error:
-        pass
-    return socket.gethostbyname(socket.gethostname())
-
-# properties: dictionary of properties (or a string holding the bytes for the text field)
-serviceproperties = {'description':'Remote control for PLC'}
 
 pyro.initServer()
 daemon=pyro.Daemon(host=ip, port=port)
@@ -109,14 +95,9 @@ print "The working directory :",WorkingDir
 # Configure and publish service
 # Not publish service if localhost in address params
 if ip != "localhost" and ip != "127.0.0.1":    
-    # No ip params -> get host ip
-    if ip == "":
-        ip_32b = socket.inet_aton(gethostaddr(ip))
-    else:
-        ip_32b = ip
     print "Publish service on local network"
-    service = ServicePublisher.PublishService()
-    service.ConfigureService(type, name, ip_32b, port, serviceproperties)
-    service.PublishService()
+    service = ServicePublisher.ServicePublisher(name, ip, port)
+
+sys.stdout.flush()
 
 daemon.requestLoop()
