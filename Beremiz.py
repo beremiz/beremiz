@@ -761,8 +761,8 @@ class Beremiz(wx.Frame):
         tc_id = wx.NewId()
         tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 25), style=wx.NO_BORDER)
         tc.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-        tc.SetValue(plugin.MandatoryParams[1].getName())
-        tc.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
+        tc.ChangeValue(plugin.MandatoryParams[1].getName())
+        tc.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
         iecsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
        
 
@@ -959,7 +959,8 @@ class Beremiz(wx.Frame):
     def GetTextCtrlCallBackFunction(self, textctrl, plugin, path):
         def OnTextCtrlChanged(event):
             res = self.SetPluginParamsAttribute(plugin, path, textctrl.GetValue())
-            textctrl.SetValue(res)
+            if res != textctrl.GetValue():
+                textctrl.ChangeValue(res)
             event.Skip()
         return OnTextCtrlChanged
     
@@ -1081,8 +1082,8 @@ class Beremiz(wx.Frame):
                         textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
                             pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)#wx.TE_PROCESS_ENTER)
                         boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
-                        textctrl.SetValue(str(element_infos["value"]))
-                        textctrl.Bind(wx.EVT_KILL_FOCUS, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
+                        textctrl.ChangeValue(str(element_infos["value"]))
+                        textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
             first = False
     
     def OnNewProjectMenu(self, event):
