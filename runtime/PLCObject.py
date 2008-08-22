@@ -170,6 +170,7 @@ class PLCObject(pyro.ObjBase):
     def StopPLC(self):
         if self.PLCStatus == "Started":
             self._DoStopPLC()
+            return True
         return False
 
     def _Reload(self):
