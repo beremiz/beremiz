@@ -42,7 +42,7 @@ lib_ext ={
 class PLCObject(pyro.ObjBase):
     def __init__(self, workingdir, daemon, argv):
         pyro.ObjBase.__init__(self)
-        self.argv=argv
+        self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
         self.workingdir = workingdir
         self.PLCStatus = "Stopped"
         self.PLClibraryHandle = None
@@ -151,7 +151,7 @@ class PLCObject(pyro.ObjBase):
     def StartPLC(self):
         print "StartPLC"
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
-            c_argv = ctypes.c_char_p * len(sys.argv)
+            c_argv = ctypes.c_char_p * len(self.argv)
             if self._LoadNewPLC() and self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
                 self.PLCStatus = "Started"
                 return True
