@@ -600,7 +600,7 @@ iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 # import for project creation timestamping
-from threading import Timer
+from threading import Timer, Lock
 from time import localtime
 from datetime import datetime
 # import necessary stuff from PLCOpenEditor
@@ -663,6 +663,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         # Setup debug information
         self.IECdebug_callables = {}
+        self.IECdebug_callables_lock = Lock()
+
         # Timer to prevent rapid-fire when registering many variables
         self.DebugTimer=Timer(0.5,self.RegisterDebugVarToConnector)
         self.ResetIECProgramsAndVariables()
@@ -1058,6 +1060,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def RegisterDebugVarToConnector(self):
         Idxs = []
         if self._connector is not None:
+            self.IECdebug_callables_lock.acquire()
             for IECPath,WeakCallableDict in self.IECdebug_callables:
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
@@ -1070,6 +1073,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         Idxs.append(Idx)
                     else:
                         self.logger.write_warning("Debug : Unknown variable %s\n"%IECPath)
+            self.IECdebug_callables_lock.release()
             self._connector.TraceVariables(Idxs)
         
     def SubscribeDebugIECVariable(self, IECPath, callable, *args, **kwargs):
@@ -1078,10 +1082,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
         to a WeakKeyDictionary linking 
         weakly referenced callables to optionnal args
         """
+        self.IECdebug_callables_lock.acquire()
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         self.IECdebug_callables.setdefault(
                    IECPath, 
                    WeakKeyDictionary())[callable]=(args, kwargs)
+        self.IECdebug_callables_lock.release()
         # Rearm anti-rapid-fire timer
         self.DebugTimer.cancel()
         self.DebugTimer.start()
