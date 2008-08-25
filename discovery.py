@@ -36,45 +36,77 @@ class TestListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def __init__(self, parent, id=-1, title='Service Discovery'):
         self.my_result=None
-        self.itemDataMap = {}
         wx.Dialog.__init__(self, parent, id, title, size=(600,600), style=wx.DEFAULT_DIALOG_STYLE)
 
+        sizer = wx.FlexGridSizer(2, 1, 2, 2)  # rows, cols, vgap, hgap
+        sizer.AddGrowableRow(0)
+        sizer.AddGrowableCol(0)
+
         self.list = TestListCtrl(self, -1,
-                                 pos=(50,20), 
-                                 size=(500,300),
+                                 #pos=(50,20), 
+                                 #size=(500,300),
                                  style=wx.LC_REPORT 
                                 | wx.LC_EDIT_LABELS
                                 | wx.LC_SORT_ASCENDING
                                 )
+        sizer.Add(self.list, 1, wx.EXPAND)
+
+        btsizer = wx.FlexGridSizer(1, 6, 2, 2)  # rows, cols, vgap, hgap
+        
+        sizer.Add(btsizer, 1, wx.EXPAND)
+
         self.PopulateList()
 
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, self.list)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected, self.list)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, self.list)
-        self.Bind(wx.EVT_LIST_DELETE_ITEM, self.OnItemDelete, self.list)
-        self.Bind(wx.EVT_LIST_COL_CLICK, self.OnColClick, self.list)
-        self.list.Bind(wx.EVT_LEFT_DCLICK, self.OnDoubleClick)
 
-        b = wx.Button(self,20, "Connect", (175, 500))
-        self.Bind(wx.EVT_BUTTON, self.OnConnect, b)
-        b.SetSize(b.GetBestSize())
+        local_id = wx.NewId()
+        b = wx.Button(self, local_id, "Refresh")
+        self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, b)
+        btsizer.Add(b)
 
-        b = wx.Button(self, 40, "Cancel", (350, 500))
-        self.Bind(wx.EVT_BUTTON, self.OnClose, b)
-        b.SetSize(b.GetBestSize())
+        btsizer.AddSpacer(0)
+        btsizer.AddGrowableCol(1)
 
-        #type = "_http._tcp.local."
-        type = "_PYRO._tcp.local."
-        self.r = Zeroconf()	
-        browser = ServiceBrowser(self.r, type, self)		
+        local_id = wx.NewId()
+        b = wx.Button(self, local_id, "Local")
+        self.Bind(wx.EVT_BUTTON, self.ChooseLocalID, b)
+        btsizer.Add(b)
+
+        btsizer.AddSpacer(0)
+        btsizer.AddGrowableCol(3)
+
+        b = wx.Button(self, wx.ID_CANCEL, "Cancel")
+        #self.Bind(wx.EVT_BUTTON, self.OnClose, b)
+        btsizer.Add(b)
+
+        b = wx.Button(self, wx.ID_OK, "OK")
+        #self.Bind(wx.EVT_BUTTON, self.OnConnect, b)
+        b.SetDefault()
+        btsizer.Add(b)
+
+        self.SetSizer(sizer)
 
         listmix.ColumnSorterMixin.__init__(self, 4)
+
+        #type = "_http._tcp.local."
+        self.zConfInstance = Zeroconf()
+        self.RefreshList()
+
+    def RefreshList(self):
+        type = "_PYRO._tcp.local."
+        browser = ServiceBrowser(self.zConfInstance, type, self)        
+
+    def OnRefreshButton(self, event):
+        self.list.DeleteAllItems()
+        self.RefreshList()
+
     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
     def GetListCtrl(self):
         return self.list
 
     def PopulateList(self):
- 	self.list.InsertColumn(0, 'NAME')
+        self.list.InsertColumn(0, 'NAME')
         self.list.InsertColumn(1, 'TYPE')
         self.list.InsertColumn(2, 'IP')
         self.list.InsertColumn(3, 'PORT')
@@ -89,33 +121,16 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def OnItemSelected(self, event):
         self.currentItem = event.m_itemIndex
-        print "OnItemSelected: %s, %s, %s, %s\n"%(self.currentItem,
-                            self.list.GetItemText(self.currentItem),
-                            self.getColumnText(self.currentItem, 1),
-                            self.getColumnText(self.currentItem, 2))
+        self.setresult()
         event.Skip()
-
-
-    def OnItemDeselected(self, evt):
-        item = evt.GetItem()
-        print "OnItemDeselected: %d" % evt.m_itemIndex
 
     def OnItemActivated(self, event):
         self.currentItem = event.m_itemIndex
-        print "OnItemActivated: %s\nTopItem: %s" %(self.list.GetItemText(self.currentItem), self.list.GetTopItem())
-
-    def OnItemDelete(self, event):
-        print "OnItemDelete\n"
-
-    def OnColClick(self, event):
-        print "OnColClick: %d\n" % event.GetColumn()
+        self.setresult()
+        self.Close()
         event.Skip()
 
-    def OnColRightClick(self, event):
-        item = self.list.GetColumn(event.GetColumn())
-        print "OnColRightClick: %d %s\n" %(event.GetColumn(), (item.GetText(), item.GetAlign(),
-                                                item.GetWidth(), item.GetImage()))
-    def OnDoubleClick(self, event):
+    def setresult(self):
         connect_type = self.getColumnText(self.currentItem, 1)
         connect_address = self.getColumnText(self.currentItem, 2)
         connect_port = self.getColumnText(self.currentItem, 3)
@@ -127,20 +142,13 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def GetResult(self):
         return self.my_result
         
-    def OnClick(self, event):
-        print "Click! (%d)\n" %event.GetId()
-        index = self.list.GetFocusedItem()
-        self.list.DeleteItem(index)	
-        print "Service", name, "removed"
-
     def removeService(self, zeroconf, type, name):
-        index = self.list.GetFocusedItem()       
+        pass
 	
     def addService(self, zeroconf, type, name):
-        info = self.r.getServiceInfo(type, name)
+        info = self.zConfInstance.getServiceInfo(type, name)
         typename = type.split(".")[0][1:]
         num_items = self.list.GetItemCount()
-        self.itemDataMap[num_items] = (name, "%s"%type, "%s"%str(socket.inet_ntoa(info.getAddress())), "%s"%info.getPort())
         self.list.InsertStringItem(num_items, name.split(".")[0])
         self.list.SetStringItem(num_items, 1, "%s"%typename)
         self.list.SetStringItem(num_items, 2, "%s"%str(socket.inet_ntoa(info.getAddress())))
@@ -148,24 +156,8 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def CreateURI(self, connect_type, connect_address, connect_port):
         uri = "%s://%s:%s"%(connect_type, connect_address, connect_port)
-        print uri
         return uri
 
-    def OnAdd(self, event):
-        num_items = self.list.GetItemCount()
-        self.list.InsertStringItem(num_items, self.tc1.GetValue())
-        self.list.SetStringItem(num_items, 1, self.tc2.GetValue())
-
-    def OnRemove(self, event):
-        index = self.list.GetFocusedItem()
-        self.list.DeleteItem(index)
-
-    def OnConnect(self, event):
-        index = self.list.GetFocusedItem()
-        print self.list.GetItemData(index)
-
-    def OnClose(self, event):
+    def ChooseLocalID(self, event):
+        self.my_result = "PYRO://localhost:3000"
         self.Close()
-
-    def OnClear(self, event):
-        self.list.DeleteAllItems()
