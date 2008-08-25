@@ -409,10 +409,6 @@ class Beremiz(wx.Frame):
                                               (int(last_line), int(last_column)))
 		
     def OnCloseFrame(self, event):
-        # shutdown local runtime
-        self.local_runtime.kill(SIGKILL)
-        # clear temp dir
-        shutil.rmtree(self.local_runtime_tmpdir)
         
         if self.PluginRoot.HasProjectOpened():
             if self.PluginRoot.ProjectTestModified():
@@ -425,13 +421,18 @@ class Beremiz(wx.Frame):
                 if answer == wx.ID_YES:
                     self.PluginRoot.SaveProject()
                     event.Skip()
-                    return
                 elif answer == wx.ID_NO:
                     event.Skip()
                     return
                 else:
                     event.Veto()
                     return
+
+        # shutdown local runtime
+        self.local_runtime.kill(SIGKILL)
+        # clear temp dir
+        shutil.rmtree(self.local_runtime_tmpdir)
+
         event.Skip()
     
     def OnMoveWindow(self, event):
