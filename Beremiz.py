@@ -27,7 +27,6 @@ __version__ = "$Revision$"
 import os, sys, getopt, wx
 import tempfile
 import shutil
-from signal import SIGKILL
 
 _local_path = os.path.split(os.path.realpath(__file__))[0]
 def Bpath(*args):
@@ -429,7 +428,7 @@ class Beremiz(wx.Frame):
                     return
 
         # shutdown local runtime
-        self.local_runtime.kill(SIGKILL)
+        self.local_runtime.kill()
         # clear temp dir
         shutil.rmtree(self.local_runtime_tmpdir)
 

@@ -28,7 +28,7 @@ import wx
 import subprocess, ctypes
 import threading
 import os
-from signal import SIGTERM, SIGKILL
+from signal import SIGTERM
 
     
 class outputThread(threading.Thread):
