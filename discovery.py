@@ -137,7 +137,6 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         
         uri = self.CreateURI(connect_type, connect_address, connect_port)
         self.my_result=uri
-        event.Skip()
 
     def GetResult(self):
         return self.my_result
