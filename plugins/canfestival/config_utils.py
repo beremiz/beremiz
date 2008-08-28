@@ -508,7 +508,7 @@ class ConciseDCFGenerator:
                     continue
                 new_index = False
                 
-                if type(variable) == IntType:
+                if isinstance(variable, (IntType, LongType)):
                     # If variable is an integer then variable is unexpected
                     self.MasterNode.SetEntry(current_idx + 0x200, subindex, self.TrashVariables[variable])
                 else:
