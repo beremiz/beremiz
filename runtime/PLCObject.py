@@ -26,7 +26,7 @@ import Pyro.core as pyro
 from threading import Timer
 import ctypes, os, commands
 
-if os.name == ("nt", "ce"):
+if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
     from _ctypes import FreeLibrary as dlclose
 elif os.name == "posix":

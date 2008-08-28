@@ -369,7 +369,8 @@ class Beremiz(wx.Frame):
                                            "%s %s -p %s -i localhost %s"%(sys.executable,
                                                        Bpath("Beremiz_service.py"),
                                                        runtime_port,
-                                                       self.local_runtime_tmpdir))
+                                                       self.local_runtime_tmpdir),
+                                                       no_gui=False)
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
