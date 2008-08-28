@@ -38,6 +38,11 @@ def ConnectorFactory(uri, pluginsroot):
         connectormodule = getattr(__import__("connectors."+servicetype), servicetype)
         factoryname = servicetype + "_connector_factory"
         return getattr(connectormodule, factoryname)(uri, pluginsroot)
+    elif servicetype == "LOCAL":
+        import PYRO
+        return PYRO.PYRO_connector_factory(
+                       "PYRO://127.0.0.1:"+str(pluginsroot.runtime_port), 
+                       pluginsroot)
     else :
         return None    
 

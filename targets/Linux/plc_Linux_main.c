@@ -96,11 +96,14 @@ int stopPLC()
 
 pthread_mutex_t DebugLock = PTHREAD_MUTEX_INITIALIZER;
 
+static int __debug_tick;
+extern int __tick;
 /* from plc_debugger.c */
-void WaitDebugData()
+int WaitDebugData()
 {
     /* Wait signal from PLC thread */
     pthread_mutex_lock(&DebugLock);
+    return __debug_tick;
 }
  
 /* Called by PLC thread when debug_publish finished
@@ -108,5 +111,6 @@ void WaitDebugData()
 void InitiateDebugTransfer()
 {
     /* signal debugger thread to continue*/
+    __debug_tick = __tick;
     pthread_mutex_unlock(&DebugLock);
 }

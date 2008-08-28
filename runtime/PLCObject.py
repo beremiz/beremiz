@@ -95,6 +95,9 @@ class PLCObject(pyro.ObjBase):
     
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
+            
+            self._WaitDebugData = self.PLClibraryHandle.WaitDebugData
+            self._WaitDebugData.restype = ctypes.c_int  
             return True
         except:
             print traceback.format_exc()
@@ -246,17 +249,47 @@ class PLCObject(pyro.ObjBase):
         self._ResetDebugVariables()
         for idx in idxs:
             self._RegisterDebugVariable(idx)
-
+    
+    TypeTranslator = {"BOOL" :       ctypes.c_uint8,
+                      "STEP" :       ctypes.c_uint8,
+                      "TRANSITION" : ctypes.c_uint8,
+                      "ACTION" :     ctypes.c_uint8,
+                      "SINT" :       ctypes.c_int8,
+                      "USINT" :      ctypes.c_uint8,
+                      "BYTE" :       ctypes.c_uint8,
+                      "STRING" :     None, #TODO
+                      "INT" :        ctypes.c_int16,
+                      "UINT" :       ctypes.c_uint16,
+                      "WORD" :       ctypes.c_uint16,
+                      "WSTRING" :    None, #TODO
+                      "DINT" :       ctypes.c_int32,
+                      "UDINT" :      ctypes.c_uint32,
+                      "DWORD" :      ctypes.c_uint32,
+                      "LINT" :       ctypes.c_int64,
+                      "ULINT" :      ctypes.c_uint64,
+                      "LWORD" :      ctypes.c_uint64,
+                      "REAL" :       ctypes.c_float,
+                      "LREAL" :      ctypes.c_double,
+                      } 
+                           
     def GetTraceVariables(self):
         """
         Return a list of variables, corresponding to the list of requiered idx
         """
-        self._WaitDebugData()
+        tick = self._WaitDebugData()
+        idx = ctypes.c_int()
+        typename = ctypes.c_char_p()
+        res = []
 
         for idx in self._Idxs:
-            buffer=self._IterDebugData()
+            buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
+            c_type = TypeTranslator.get(s.value, None)
+            if c_type is not None:
+                res += cast(buffer, POINTER(c_type)).value
+            else:
+                res += None
         self._FreeDebugData()
-        
+        return res
         
 
 

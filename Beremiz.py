@@ -27,6 +27,7 @@ __version__ = "$Revision$"
 import os, sys, getopt, wx
 import tempfile
 import shutil
+import random
 
 _local_path = os.path.split(os.path.realpath(__file__))[0]
 def Bpath(*args):
@@ -359,16 +360,21 @@ class Beremiz(wx.Frame):
         
         self.Log = LogPseudoFile(self.LogConsole)
         
+        # create temporary directory for runtime working directory
         self.local_runtime_tmpdir = tempfile.mkdtemp()
+        # choose an arbitrary random port for runtime
+        runtime_port = int(random.random() * 1000) + 61131
+        # launch local runtime
         self.local_runtime = ProcessLogger(self.Log,
-                                           "%s %s -i localhost %s"%(sys.executable,
+                                           "%s %s -p %s -i localhost %s"%(sys.executable,
                                                        Bpath("Beremiz_service.py"),
+                                                       runtime_port,
                                                        self.local_runtime_tmpdir))
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
-        self.PluginRoot = PluginsRoot(self, self.Log)
+        self.PluginRoot = PluginsRoot(self, self.Log, runtime_port)
         self.DisableEvents = False
         
         self.PluginInfos = {}

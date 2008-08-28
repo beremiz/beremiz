@@ -652,9 +652,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
     </xsd:schema>
     """
 
-    def __init__(self, frame, logger):
+    def __init__(self, frame, logger, runtime_port):
         PLCControler.__init__(self)
-        
+
+        self.runtime_port = runtime_port
         self.MandatoryParams = None
         self.AppFrame = frame
         self.logger = logger
@@ -662,8 +663,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self._connector = None
         
         # Setup debug information
-        self.IECdebug_callables = {}
-        self.IECdebug_callables_lock = Lock()
+        self.IECdebug_datas = {}
+        self.IECdebug_lock = Lock()
 
         # Timer to prevent rapid-fire when registering many variables
         self.DebugTimer=Timer(0.5,self.RegisterDebugVarToConnector)
@@ -1060,12 +1061,15 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def RegisterDebugVarToConnector(self):
         Idxs = []
         if self._connector is not None:
-            self.IECdebug_callables_lock.acquire()
-            for IECPath,WeakCallableDict in self.IECdebug_callables:
+            self.IECdebug_lock.acquire()
+            for IECPath,data_tuple in self.IECdebug_datas:
+                WeakCallableDict, data_log, status = data_tuple
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
                     # This variable is not needed anymore!
-                    self.IECdebug_callables.pop(IECPath)
+                    # self.IECdebug_callables.pop(IECPath)
+                    # TODO
+                    pass
                 else:
                     # Convert 
                     Idx = self._IECPathToIdx.get(IECPath,None)
@@ -1073,7 +1077,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         Idxs.append(Idx)
                     else:
                         self.logger.write_warning("Debug : Unknown variable %s\n"%IECPath)
-            self.IECdebug_callables_lock.release()
+            self.IECdebug_lock.release()
             self._connector.TraceVariables(Idxs)
         
     def SubscribeDebugIECVariable(self, IECPath, callable, *args, **kwargs):
@@ -1082,12 +1086,19 @@ class PluginsRoot(PlugTemplate, PLCControler):
         to a WeakKeyDictionary linking 
         weakly referenced callables to optionnal args
         """
-        self.IECdebug_callables_lock.acquire()
+        self.IECdebug_lock.acquire()
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
-        self.IECdebug_callables.setdefault(
-                   IECPath, 
-                   WeakKeyDictionary())[callable]=(args, kwargs)
-        self.IECdebug_callables_lock.release()
+        IECdebug_data = self.IECdebug_datas.get(IECPath, None)
+        if IECdebug_data is None:
+            IECdebug_data  = [
+                    WeakKeyDictionary(), # Callables
+                    [],                  # Data storage [(tick, data),...]
+                    "Registered"]        # Variable status
+            self.IECdebug_datas[IECPath] = IECdebug_data
+        
+        IECdebug_data[0][callable]=(args, kwargs)
+
+        self.IECdebug_lock.release()
         # Rearm anti-rapid-fire timer
         self.DebugTimer.cancel()
         self.DebugTimer.start()
