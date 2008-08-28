@@ -962,7 +962,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         @param locations: ignored
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        return [(C_file_name, self.plcCFLAGS) for C_file_name in self.PLCGeneratedCFiles ] , "-lrt", False
+        return [(C_file_name, self.plcCFLAGS) for C_file_name in self.PLCGeneratedCFiles ] , "", False
     
     def ResetIECProgramsAndVariables(self):
         """
@@ -1125,7 +1125,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             "publish_calls":"\n    ".join([ #Call publish in reverse order
                   "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
             "init_calls":"\n    ".join([
-                  "init_level=%d; "%i+
+                  "init_level=%d; "%(i+1)+
                   "if(res = __init_%s(argc,argv)){"%locstr +
                   #"printf(\"%s\"); "%locstr + #for debug
                   "return res;}" for i,locstr in enumerate(locstrs)]),
