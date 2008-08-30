@@ -126,7 +126,56 @@ wx.lib.imageutils.grayOut = grayOut
 
 class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
     def _GetLabelSize(self):
-        return wx.lib.buttons.GenBitmapTextButton._GetLabelSize(self)[:-1] + (False,)
+        """ used internally """
+        w, h = self.GetTextExtent(self.GetLabel())
+        if not self.bmpLabel:
+            return w, h, False       # if there isn't a bitmap use the size of the text
+
+        w_bmp = self.bmpLabel.GetWidth()+2
+        h_bmp = self.bmpLabel.GetHeight()+2
+        height = h + h_bmp
+        if w_bmp > w:
+            width = w_bmp
+        else:
+            width = w
+        return width, height, False
+
+    def DrawLabel(self, dc, width, height, dw=0, dy=0):
+        bmp = self.bmpLabel
+        if bmp != None:     # if the bitmap is used
+            if self.bmpDisabled and not self.IsEnabled():
+                bmp = self.bmpDisabled
+            if self.bmpFocus and self.hasFocus:
+                bmp = self.bmpFocus
+            if self.bmpSelected and not self.up:
+                bmp = self.bmpSelected
+            bw,bh = bmp.GetWidth(), bmp.GetHeight()
+            if not self.up:
+                dw = dy = self.labelDelta
+            hasMask = bmp.GetMask() != None
+        else:
+            bw = bh = 0     # no bitmap -> size is zero
+
+        dc.SetFont(self.GetFont())
+        if self.IsEnabled():
+            dc.SetTextForeground(self.GetForegroundColour())
+        else:
+            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+
+        label = self.GetLabel()
+        tw, th = dc.GetTextExtent(label)        # size of text
+        if not self.up:
+            dw = dy = self.labelDelta
+
+        pos_x = (width-bw)/2+dw      # adjust for bitmap and text to centre
+        pos_y = (height-bh-th)/2+dy
+        if bmp !=None:
+            dc.DrawBitmap(bmp, pos_x, pos_y, hasMask) # draw bitmap if available
+            pos_x = (width-tw)/2+dw      # adjust for bitmap and text to centre
+            pos_y += bh + 2
+
+        dc.DrawText(label, pos_x, pos_y)      # draw the text
+
 
 class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
     """ Customized GenStaticBitmap, fix transparency redraw bug on wx2.8/win32, 
@@ -589,6 +638,8 @@ class Beremiz(wx.Frame):
 #            addsizer.AddWindow(addbutton, 0, border=0, flag=0)
 #        return addsizer
 
+    normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, 0, faceName = faces["helv"])
+    mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, 0, underline=True, faceName = faces["helv"])
     def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
         if horizontal:
             msizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
@@ -597,15 +648,26 @@ class Beremiz(wx.Frame):
         for plugin_method in plugin.PluginMethods:
             if "method" in plugin_method and plugin_method.get("shown",True):
                 id = wx.NewId()
+                label=plugin_method["name"]
                 button = GenBitmapTextButton(id=id, parent=parent,
-                    bitmap=wx.Bitmap(Bpath( "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=plugin_method["name"], 
-                    name=plugin_method["name"], pos=wx.DefaultPosition, style=wx.NO_BORDER)
+                    bitmap=wx.Bitmap(Bpath( "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=label, 
+                    name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
+                button.SetFont(self.normal_bt_font)
                 button.SetToolTipString(plugin_method["tooltip"])
                 button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
+                # a fancy underline on mouseover
+                def setFontStyle(b, s):
+                    def fn(event):
+                        b.SetFont(s)
+                        b.Refresh()
+                        event.Skip()
+                    return fn
+                button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, self.mouseover_bt_font))
+                button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, self.normal_bt_font))
                 #hack to force size to mini
                 if not plugin_method.get("enabled",True):
                     button.Disable()
-                msizer.AddWindow(button, 0, border=0, flag=0)
+                msizer.AddWindow(button, 0, border=0, flag=wx.ALIGN_CENTER)
         return msizer
 
     def RefreshPluginTree(self):
