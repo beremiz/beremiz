@@ -22,6 +22,7 @@ import Pyro.core as pyro
 from Pyro.errors import PyroError
 import traceback
 from time import sleep
+import copy
 
 def PYRO_connector_factory(uri, pluginsroot):
     """
@@ -59,6 +60,9 @@ def PYRO_connector_factory(uri, pluginsroot):
     if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() == None:
         pluginsroot.logger.write_error("Cannot get PLC status - connection failed.\n")
         return None
+
+    # for safe use in from debug thread, must create a copy
+    RemotePLCObjectProxyCopy = copy.copy(RemotePLCObjectProxy)
         
     class PyroProxyProxy:
         """
@@ -71,36 +75,46 @@ def PYRO_connector_factory(uri, pluginsroot):
             Use this if you musn't keep reference to it.
             """
             return RemotePLCObjectProxy
+
+        def _PyroStartPLC(self):
+            """
+            pluginsroot._connector.GetPyroProxy() is used 
+            rather than RemotePLCObjectProxy because
+            object is recreated meanwhile, 
+            so we must not keep ref to it here
+            """
+            if pluginsroot._connector.GetPyroProxy().GetPLCstatus() == "Dirty":
+                """
+                Some bad libs with static symbols may polute PLC
+                ask runtime to suicide and come back again
+                """
+                pluginsroot.logger.write("Force runtime reload\n")
+                pluginsroot._connector.GetPyroProxy().ForceReload()
+                pluginsroot._Disconnect()
+                # let remote PLC time to resurect.(freeze app)
+                sleep(0.5)
+                pluginsroot._Connect()
+            return pluginsroot._connector.GetPyroProxy().StartPLC()
+        StartPLC = PyroCatcher(_PyroStartPLC, False)
+
+
+        def _PyroGetTraceVariables(self):
+            """
+            for safe use in from debug thread, must use the copy
+            """
+            return RemotePLCObjectProxyCopy.GetTraceVariables()
+        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables)
+
         
         def __getattr__(self, attrName):
-            if not self.__dict__.has_key(attrName):
-                if attrName=="StartPLC":
-                    def _StartPLC():
-                        """
-                        pluginsroot._connector.GetPyroProxy() is used 
-                        rather than RemotePLCObjectProxy because
-                        object is recreated meanwhile, 
-                        so we must not keep ref to it here
-                        """
-                        if pluginsroot._connector.GetPyroProxy().GetPLCstatus() == "Dirty":
-                            """
-                            Some bad libs with static symbols may polute PLC
-                            ask runtime to suicide and come back again
-                            """
-                            pluginsroot.logger.write("Force runtime reload\n")
-                            pluginsroot._connector.GetPyroProxy().ForceReload()
-                            pluginsroot._Disconnect()
-                            # let remote PLC time to resurect.(freeze app)
-                            sleep(0.5)
-                            pluginsroot._Connect()
-                        return pluginsroot._connector.GetPyroProxy().StartPLC()
-                    member = PyroCatcher(_StartPLC, False)
-                else:
-                    def my_local_func(*args,**kwargs):
-                        return RemotePLCObjectProxy.__getattr__(attrName)(*args,**kwargs)
-                    member = PyroCatcher(my_local_func, None)
+            member = self.__dict__.get(attrName, None)
+            if member is None:
+                def my_local_func(*args,**kwargs):
+                    return RemotePLCObjectProxy.__getattr__(attrName)(*args,**kwargs)
+                member = PyroCatcher(my_local_func, None)
                 self.__dict__[attrName] = member
-            return self.__dict__[attrName]
+            return member
+
     return PyroProxyProxy()
     
 
