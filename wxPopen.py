@@ -59,7 +59,7 @@ class outputThread(threading.Thread):
             outchunk = self.fd.readline()
         if self.endcallback:
             try:
-            	err = self.Proc.wait()
+                err = self.Proc.wait()
             except:
                 err = self.retval
             self.finished = True
@@ -77,7 +77,7 @@ class ProcessLogger:
                     self.Command.extend(word.split())
             else:
                 self.Command.append(word)
-        
+
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
         self.no_stderr = no_stderr
@@ -107,16 +107,14 @@ class ProcessLogger:
                       self.Proc,
                       self.Proc.stdout,
                       self.output,
-                      self.finish)
-
+                      self.finish) 
         self.outt.start()
 
         self.errt = outputThread(
                       self.Proc,
                       self.Proc.stderr,
                       self.errors)
-#
-        self.errt.start()	
+        self.errt.start()
 
     def output(self,v):
         self.outdata += v
@@ -130,12 +128,15 @@ class ProcessLogger:
         if not self.no_stderr:
             wx.CallAfter(self.logger.write_warning,v)
 
+    def log_the_end(self,ecode,pid):
+        self.logger.write(self.Command_str + "\n")
+        self.logger.write_warning("exited with status %s (pid %s)\n"%(str(ecode),str(pid)))
+
     def finish(self, pid,ecode):
         self.finished = True
         self.exitcode = ecode
         if self.exitcode != 0:
-            self.logger.write(self.Command_str + "\n")
-            self.logger.write_warning("exited with status %s (pid %s)\n"%(str(ecode),str(pid)))
+            wx.CallAfter(self.log_the_end,ecode,pid)
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
 
@@ -152,6 +153,8 @@ class ProcessLogger:
                 os.kill(self.Proc.pid, signal)
             except:
                 pass
+        self.outt.join()
+        self.errt.join()
 
     def spin(self, timeout=None, out_limit=None, err_limit=None, keyword = None, kill_it = True):
         count = 0
