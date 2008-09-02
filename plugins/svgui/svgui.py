@@ -11,6 +11,7 @@ from SVGUIEditor import *
 from FBD_Objects import *
 
 from wxPopen import ProcessLogger
+import subprocess
 from wx.wxsvg import SVGDocument
 
 [ID_SVGUIEDITORFBDPANEL, 
@@ -156,6 +157,21 @@ class RootClass(SVGUIControler):
                     self.logger.write_error("No such XML file: %s\n"%xmlpath)
             dialog.Destroy()
 
+    def _StartInkscape(self):
+        if not self._View:
+            svgfile = os.path.join(self.PlugPath(), "gui.svg")
+            popenargs = []
+
+            if wx.Platform == '__WXMSW__':
+                popenargs.append(os.path.join(base_folder, "Inkscape", "inkscape.exe"))
+            else:
+                popenargs.append("/usr/bin/inkscape")
+
+            if os.path.isfile(svgfile):
+                popenargs.append(svgfile)
+
+            subprocess.Popen(popenargs).pid
+
     PluginMethods = [
         {"bitmap" : os.path.join("images","HMIEditor"),
          "name" : "HMI Editor",
@@ -169,6 +185,10 @@ class RootClass(SVGUIControler):
          "name" : "Import XML",
          "tooltip" : "Import XML",
          "method" : "_ImportXML"},
+         {"bitmap" : os.path.join("images","ImportSVG"),
+         "name" : "Inkscape",
+         "tooltip" : "Create HMI",
+         "method" : "_StartInkscape"},
     ]
     
     def OnPlugSave(self):
