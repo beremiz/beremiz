@@ -86,23 +86,37 @@ int startPLC(int argc,char **argv)
     return 0;
 }
 
+static int __debug_tick;
+
+static pthread_mutex_t wait_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t wait_cond = PTHREAD_COND_INITIALIZER;
+
+void AbortDebug()
+{
+    /* Eventually unlock debugger thread*/
+    __debug_tick = -1;
+    pthread_mutex_lock(&wait_mutex);
+    pthread_cond_broadcast(&wait_cond);
+    pthread_mutex_unlock(&wait_mutex);
+}
+
 int stopPLC()
 {
     /* Stop the PLC */
     PLC_SetTimer(0,0);
     timer_delete (PLC_timer);
     __cleanup();
+    AbortDebug();
 }
 
-pthread_mutex_t DebugLock = PTHREAD_MUTEX_INITIALIZER;
-
-static int __debug_tick;
 extern int __tick;
 /* from plc_debugger.c */
 int WaitDebugData()
 {
     /* Wait signal from PLC thread */
-    pthread_mutex_lock(&DebugLock);
+    pthread_mutex_lock(&wait_mutex);
+    pthread_cond_wait(&wait_cond, &wait_mutex);
+    pthread_mutex_unlock(&wait_mutex);
     return __debug_tick;
 }
  
@@ -112,5 +126,7 @@ void InitiateDebugTransfer()
 {
     /* signal debugger thread to continue*/
     __debug_tick = __tick;
-    pthread_mutex_unlock(&DebugLock);
+    pthread_mutex_lock(&wait_mutex);
+    pthread_cond_broadcast(&wait_cond);
+    pthread_mutex_unlock(&wait_mutex);
 }

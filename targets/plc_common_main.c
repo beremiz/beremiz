@@ -24,6 +24,9 @@ void run(long int tv_sec, long int tv_nsec);
  **/ 
 void config_run__(int tick);
 void config_init__(void);
+void __init_debug(void);
+void __cleanup_debug(void);
+
 
 /*
  *  Functions and variables to export to generated C softPLC and plugins
@@ -33,7 +36,9 @@ IEC_TIME __CURRENT_TIME;
 int __tick = 0;
 
 static int init_level = 0;
-static int Debugging = 1;
+static int Debugging = 0;
+static int WasDebugging = 0;
+void AbortDebug();
 
 /*
  * Prototypes of functions exported by plugins 
@@ -52,6 +57,8 @@ void __run()
     config_run__(__tick);
 
     if(Debugging) __publish_debug();
+    else if(WasDebugging) AbortDebug();
+    WasDebugging = Debugging;
     
     %(publish_calls)s
 
@@ -66,6 +73,7 @@ int __init(int argc,char **argv)
 {
     int res;
     config_init__();
+    __init_debug();
     %(init_calls)s
     return 0;
 }
@@ -75,6 +83,7 @@ int __init(int argc,char **argv)
 void __cleanup()
 {
     %(cleanup_calls)s
+    __cleanup_debug();
 }
 
 
@@ -164,13 +173,16 @@ void align_tick(int sync_align_ratio)
 	}
 }
 
-int suspendDebug()
+extern int WaitDebugData();
+void suspendDebug()
 {
     /* Prevent PLC to enter debug code */
     Debugging = 0;
+    /* wait next tick end to be sure*/
+    WaitDebugData();
 }
 
-int resumeDebug()
+void resumeDebug()
 {
     /* Let PLC enter debug code */
     Debugging = 1;

@@ -40,6 +40,7 @@ lib_ext ={
      }.get(sys.platform, "")
 
 class PLCObject(pyro.ObjBase):
+    _Idxs = []
     def __init__(self, workingdir, daemon, argv):
         pyro.ObjBase.__init__(self)
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
@@ -86,8 +87,9 @@ class PLCObject(pyro.ObjBase):
             self._ResetDebugVariables = self.PLClibraryHandle.ResetDebugVariables
             self._ResetDebugVariables.restype = None
     
-            self._RegisterDebugVariable = self.PLClibraryHandle.ResetDebugVariables
+            self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
             self._RegisterDebugVariable.restype = None
+            self._RegisterDebugVariable.argtypes = [ctypes.c_int]
     
             self._IterDebugData = self.PLClibraryHandle.IterDebugData
             self._IterDebugData.restype = ctypes.c_void_p
@@ -98,6 +100,13 @@ class PLCObject(pyro.ObjBase):
             
             self._WaitDebugData = self.PLClibraryHandle.WaitDebugData
             self._WaitDebugData.restype = ctypes.c_int  
+
+            self._suspendDebug = self.PLClibraryHandle.suspendDebug
+            self._suspendDebug.restype = None
+
+            self._resumeDebug = self.PLClibraryHandle.resumeDebug
+            self._resumeDebug.restype = None
+            
             return True
         except:
             print traceback.format_exc()
@@ -115,6 +124,9 @@ class PLCObject(pyro.ObjBase):
         self._RegisterDebugVariable = lambda x:None
         self._IterDebugData = lambda x,y:None
         self._FreeDebugData = lambda:None
+        self._WaitDebugData = lambda:-1
+        self._suspendDebug = lambda:None
+        self._resumeDebug = lambda:None
         self.PLClibraryHandle = None
         # Unload library explicitely
         if getattr(self,"_PLClibraryHandle",None) is not None:
@@ -151,11 +163,13 @@ class PLCObject(pyro.ObjBase):
         return False
 
     
-    def StartPLC(self):
+    def StartPLC(self, debug=False):
         print "StartPLC"
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
             if self._LoadNewPLC() and self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
+                if debug:
+                    self._resumeDebug()
                 self.PLCStatus = "Started"
                 return True
             else:
@@ -244,11 +258,13 @@ class PLCObject(pyro.ObjBase):
         Call ctype imported function to append 
         these indexes to registred variables in PLC debugger
         """
+        self._suspendDebug()
         # keep a copy of requested idx
         self._Idxs = idxs[:]
         self._ResetDebugVariables()
         for idx in idxs:
             self._RegisterDebugVariable(idx)
+        self._resumeDebug()
     
     TypeTranslator = {"BOOL" :       ctypes.c_uint8,
                       "STEP" :       ctypes.c_uint8,
@@ -277,19 +293,23 @@ class PLCObject(pyro.ObjBase):
         Return a list of variables, corresponding to the list of requiered idx
         """
         tick = self._WaitDebugData()
+        if tick == -1:
+            return -1,None
         idx = ctypes.c_int()
         typename = ctypes.c_char_p()
         res = []
 
-        for idx in self._Idxs:
+        for given_idx in self._Idxs:
             buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-            c_type = TypeTranslator.get(s.value, None)
-            if c_type is not None:
-                res += cast(buffer, POINTER(c_type)).value
+            c_type = self.TypeTranslator.get(typename.value, None)
+            if c_type is not None and given_idx == idx.value:
+                res.append(ctypes.cast(buffer, 
+                                       ctypes.POINTER(c_type)).contents.value)
             else:
-                res += None
+                print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
+                res.append(None)
         self._FreeDebugData()
-        return res
+        return tick, res
         
 
 

@@ -89,7 +89,8 @@ void __cleanup_%(locstr)s()
 
 #define NODE_OPEN(nodename)\
     if(!canOpen(&nodename##Board,&nodename##_Data)){\
-        printf("Cannot open " #nodename " Board (%%s,%%s)\n",nodename##Board.busname, nodename##Board.baudrate);\
+        fprintf(stderr,"Cannot open CAN intefrace %%s at speed %%s\n for CANopen node \"" #nodename "\"",nodename##Board.busname, nodename##Board.baudrate);\
+        fflush(stderr);\
         return -1;\
     }\
     init_level++;
@@ -100,6 +101,7 @@ int __init_%(locstr)s(int argc,char **argv)
 #ifndef NOT_USE_DYNAMIC_LOADING
     if( !LoadCanDriver("%(candriver)s") ){
         fprintf(stderr, "Cannot load CAN interface library for CanFestival (%(candriver)s)\n");\
+        fflush(stderr);
         return -1;
     }
 #endif      

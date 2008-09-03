@@ -600,7 +600,7 @@ iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
 ieclib_path = os.path.join(base_folder, "matiec", "lib")
 
 # import for project creation timestamping
-from threading import Timer, Lock
+from threading import Timer, Lock, Thread
 from time import localtime
 from datetime import datetime
 # import necessary stuff from PLCOpenEditor
@@ -617,6 +617,7 @@ import re
 import targets
 import connectors
 from discovery import DiscoveryDialog
+from weakref import WeakKeyDictionary
 
 class PluginsRoot(PlugTemplate, PLCControler):
     """
@@ -666,10 +667,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.IECdebug_datas = {}
         self.IECdebug_lock = Lock()
 
-        # Timer to prevent rapid-fire when registering many variables
-        self.DebugTimer=Timer(0.5,self.RegisterDebugVarToConnector)
+        self.DebugTimer=None
         self.ResetIECProgramsAndVariables()
-
         
         #This method are not called here... but in NewProject and OpenProject
         #self._AddParamsMembers()
@@ -972,8 +971,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self._ProgramList = None
         self._VariablesList = None
         self._IECPathToIdx = None
-        self._IdxToIECPath = None
-        
+        self.TracedIECPath = []
+
     def GetIECProgramsAndVariables(self):
         """
         Parse CSV-like file  VARIABLES.csv resulting from IEC2C compiler.
@@ -989,7 +988,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self._ProgramList = []
                 self._VariablesList = []
                 self._IECPathToIdx = {}
-                self._IdxToIECPath = {}
                 
                 # Separate sections
                 ListGroup = []
@@ -1023,7 +1021,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     IEC_path=attrs["IEC_path"]
                     Idx=int(attrs["num"])
                     self._IECPathToIdx[IEC_path]=Idx
-                    self._IdxToIECPath[Idx]=IEC_path
             except Exception,e:
                 self.logger.write_error("Cannot open/parse VARIABLES.csv!\n")
                 self.logger.write_error(traceback.format_exc())
@@ -1059,28 +1056,31 @@ class PluginsRoot(PlugTemplate, PLCControler):
         return debug_code
 
     def RegisterDebugVarToConnector(self):
+        self.DebugTimer=None
         Idxs = []
+        self.TracedIECPath = []
         if self._connector is not None:
             self.IECdebug_lock.acquire()
-            for IECPath,data_tuple in self.IECdebug_datas:
+            for IECPath,data_tuple in self.IECdebug_datas.iteritems():
                 WeakCallableDict, data_log, status = data_tuple
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
                     # This variable is not needed anymore!
                     # self.IECdebug_callables.pop(IECPath)
                     # TODO
-                    pass
+                    print "Unused : " + IECPath
                 else:
                     # Convert 
                     Idx = self._IECPathToIdx.get(IECPath,None)
                     if Idx is not None:
                         Idxs.append(Idx)
+                        self.TracedIECPath.append(IECPath)
                     else:
                         self.logger.write_warning("Debug : Unknown variable %s\n"%IECPath)
+            self._connector.SetTraceVariablesList(Idxs)
             self.IECdebug_lock.release()
-            self._connector.TraceVariables(Idxs)
         
-    def SubscribeDebugIECVariable(self, IECPath, callable, *args, **kwargs):
+    def SubscribeDebugIECVariable(self, IECPath, callableobj, *args, **kwargs):
         """
         Dispatching use a dictionnary linking IEC variable paths
         to a WeakKeyDictionary linking 
@@ -1096,12 +1096,20 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     "Registered"]        # Variable status
             self.IECdebug_datas[IECPath] = IECdebug_data
         
-        IECdebug_data[0][callable]=(args, kwargs)
+        IECdebug_data[0][callableobj]=(args, kwargs)
 
         self.IECdebug_lock.release()
+
+        if self.DebugTimer is not None:
+            self.DebugTimer.cancel()
+
+        # Timer to prevent rapid-fire when registering many variables
+        # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
+        self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
         # Rearm anti-rapid-fire timer
-        self.DebugTimer.cancel()
         self.DebugTimer.start()
+
+        return IECdebug_data[1]
         
     def Generate_plc_common_main(self):
         """
@@ -1329,19 +1337,58 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error("Couldn't start PLC !\n")
         self.UpdateMethodsFromPLCStatus()
 
-    def _Debug(self): 
+    def DebugThreadProc(self):
+        while self._connector is not None:
+            debug_tick, debug_vars = self._connector.GetTraceVariables()
+            print debug_tick, debug_vars
+            if debug_vars is not None and \
+               len(debug_vars) == len(self.TracedIECPath):
+                for IECPath,value in zip(self.TracedIECPath, debug_vars):
+                    data_tuple = self.IECdebug_datas.get(IECPath, None)
+                    if data_tuple is not None:
+                        WeakCallableDict, data_log, status = data_tuple
+                        data_log.append((debug_tick, value))
+                        for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
+                            wx.CallAfter(weakcallable, value, *args, **kwargs)
+            elif debug_vars is not None:
+                wx.CallAfter(self.logger.write_warning, 
+                             "debug data not coherent %d != %d"%(len(debug_vars), len(self.TracedIECPath)))
+            elif debug_tick == -1:
+                #wx.CallAfter(self.logger.write, "Debugger unavailable\n")
+                pass
+            else:
+                wx.CallAfter(self.logger.write, "Debugger disabled\n")
+                break
+
+    def _Debug(self):
         """
         Start PLC (Debug Mode)
         """
-        if self.GetIECProgramsAndVariables() and self._connector.StartPLC():
+        if self.GetIECProgramsAndVariables() and \
+           self._connector.StartPLC(debug=True):
             self.logger.write("Starting PLC (debug mode)\n")
             # TODO : laucnch PLCOpenEditor in Debug Mode
-            self.logger.write_warning("Debug mode for PLCopenEditor not implemented\n")
-            self.logger.write_warning("Starting alternative test GUI\n")
-            # TODO : laucnch PLCOpenEditor in Debug Mode
+            self.DebugThread = Thread(target=self.DebugThreadProc)
+            self.DebugThread.start()
         else:
             self.logger.write_error("Couldn't start PLC debug !\n")
         self.UpdateMethodsFromPLCStatus()
+
+#    def _Do_Test_Debug(self):
+#        # debug code
+#        self.temporary_non_weak_callable_refs = []
+#        for IEC_Path, idx in self._IECPathToIdx.iteritems():
+#            class tmpcls:
+#                def __init__(self):
+#                    self.buf = None
+#                def setbuf(self,buf):
+#                    self.buf = buf
+#                def __call__(self, value, idx, name):
+#                    print "debug call:", value, idx, name, self.buf
+#            a = tmpcls()
+#            res = self.SubscribeDebugIECVariable(IEC_Path, a, idx, IEC_Path)
+#            a.setbuf(res)
+#            self.temporary_non_weak_callable_refs.append(a)
        
     def _Stop(self):
         """
@@ -1485,6 +1532,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
          "shown" : False,
          "tooltip" : "Start PLC (debug mode)",
          "method" : "_Debug"},
+#        {"bitmap" : opjimg("Debug"),
+#         "name" : "Do_Test_Debug",
+#         "tooltip" : "Test debug mode)",
+#         "method" : "_Do_Test_Debug"},
         {"bitmap" : opjimg("Stop"),
          "name" : "Stop",
          "shown" : False,

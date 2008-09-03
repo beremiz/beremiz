@@ -484,7 +484,7 @@ class Beremiz(wx.Frame):
                     return
 
         # shutdown local runtime
-        self.local_runtime.kill()
+        self.local_runtime.kill(gently=False)
         # clear temp dir
         shutil.rmtree(self.local_runtime_tmpdir)
 

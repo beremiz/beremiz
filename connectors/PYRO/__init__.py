@@ -76,7 +76,7 @@ def PYRO_connector_factory(uri, pluginsroot):
             """
             return RemotePLCObjectProxy
 
-        def _PyroStartPLC(self):
+        def _PyroStartPLC(self, *args, **kwargs):
             """
             pluginsroot._connector.GetPyroProxy() is used 
             rather than RemotePLCObjectProxy because
@@ -94,7 +94,7 @@ def PYRO_connector_factory(uri, pluginsroot):
                 # let remote PLC time to resurect.(freeze app)
                 sleep(0.5)
                 pluginsroot._Connect()
-            return pluginsroot._connector.GetPyroProxy().StartPLC()
+            return pluginsroot._connector.GetPyroProxy().StartPLC(*args, **kwargs)
         StartPLC = PyroCatcher(_PyroStartPLC, False)
 
 
@@ -102,7 +102,10 @@ def PYRO_connector_factory(uri, pluginsroot):
             """
             for safe use in from debug thread, must use the copy
             """
-            return RemotePLCObjectProxyCopy.GetTraceVariables()
+            if RemotePLCObjectProxyCopy.GetPLCstatus() == "Started":
+                return RemotePLCObjectProxyCopy.GetTraceVariables()
+            else:
+                return None,None
         GetTraceVariables = PyroCatcher(_PyroGetTraceVariables)
 
         
