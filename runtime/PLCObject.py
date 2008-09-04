@@ -294,20 +294,21 @@ class PLCObject(pyro.ObjBase):
         """
         tick = self._WaitDebugData()
         if tick == -1:
-            return -1,None
-        idx = ctypes.c_int()
-        typename = ctypes.c_char_p()
-        res = []
-
-        for given_idx in self._Idxs:
-            buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-            c_type = self.TypeTranslator.get(typename.value, None)
-            if c_type is not None and given_idx == idx.value:
-                res.append(ctypes.cast(buffer, 
-                                       ctypes.POINTER(c_type)).contents.value)
-            else:
-                print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
-                res.append(None)
+            res = None
+        else:
+            idx = ctypes.c_int()
+            typename = ctypes.c_char_p()
+            res = []
+    
+            for given_idx in self._Idxs:
+                buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
+                c_type = self.TypeTranslator.get(typename.value, None)
+                if c_type is not None and given_idx == idx.value:
+                    res.append(ctypes.cast(buffer, 
+                                           ctypes.POINTER(c_type)).contents.value)
+                else:
+                    print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
+                    res.append(None)
         self._FreeDebugData()
         return tick, res
         
