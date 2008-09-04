@@ -266,26 +266,26 @@ class PLCObject(pyro.ObjBase):
             self._RegisterDebugVariable(idx)
         self._resumeDebug()
     
-    TypeTranslator = {"BOOL" :       ctypes.c_uint8,
-                      "STEP" :       ctypes.c_uint8,
-                      "TRANSITION" : ctypes.c_uint8,
-                      "ACTION" :     ctypes.c_uint8,
-                      "SINT" :       ctypes.c_int8,
-                      "USINT" :      ctypes.c_uint8,
-                      "BYTE" :       ctypes.c_uint8,
-                      "STRING" :     None, #TODO
-                      "INT" :        ctypes.c_int16,
-                      "UINT" :       ctypes.c_uint16,
-                      "WORD" :       ctypes.c_uint16,
-                      "WSTRING" :    None, #TODO
-                      "DINT" :       ctypes.c_int32,
-                      "UDINT" :      ctypes.c_uint32,
-                      "DWORD" :      ctypes.c_uint32,
-                      "LINT" :       ctypes.c_int64,
-                      "ULINT" :      ctypes.c_uint64,
-                      "LWORD" :      ctypes.c_uint64,
-                      "REAL" :       ctypes.c_float,
-                      "LREAL" :      ctypes.c_double,
+    TypeTranslator = {"BOOL" :       (ctypes.c_uint8, lambda x:x.value!=0),
+                      "STEP" :       (ctypes.c_uint8, lambda x:x.value),
+                      "TRANSITION" : (ctypes.c_uint8, lambda x:x.value),
+                      "ACTION" :     (ctypes.c_uint8, lambda x:x.value),
+                      "SINT" :       (ctypes.c_int8, lambda x:x.value),
+                      "USINT" :      (ctypes.c_uint8, lambda x:x.value),
+                      "BYTE" :       (ctypes.c_uint8, lambda x:x.value),
+                      "STRING" :     (None, None),#TODO
+                      "INT" :        (ctypes.c_int16, lambda x:x.value),
+                      "UINT" :       (ctypes.c_uint16, lambda x:x.value),
+                      "WORD" :       (ctypes.c_uint16, lambda x:x.value),
+                      "WSTRING" :    (None, None),#TODO
+                      "DINT" :       (ctypes.c_int32, lambda x:x.value),
+                      "UDINT" :      (ctypes.c_uint32, lambda x:x.value),
+                      "DWORD" :      (ctypes.c_uint32, lambda x:x.value),
+                      "LINT" :       (ctypes.c_int64, lambda x:x.value),
+                      "ULINT" :      (ctypes.c_uint64, lambda x:x.value),
+                      "LWORD" :      (ctypes.c_uint64, lambda x:x.value),
+                      "REAL" :       (ctypes.c_float, lambda x:x.value),
+                      "LREAL" :      (ctypes.c_double, lambda x:x.value),
                       } 
                            
     def GetTraceVariables(self):
@@ -302,10 +302,10 @@ class PLCObject(pyro.ObjBase):
     
             for given_idx in self._Idxs:
                 buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-                c_type = self.TypeTranslator.get(typename.value, None)
+                c_type,unpack_func = self.TypeTranslator.get(typename.value, None)
                 if c_type is not None and given_idx == idx.value:
-                    res.append(ctypes.cast(buffer, 
-                                           ctypes.POINTER(c_type)).contents.value)
+                    res.append(unpack_func(ctypes.cast(buffer, 
+                                                       ctypes.POINTER(c_type)).contents))
                 else:
                     print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
                     res.append(None)
