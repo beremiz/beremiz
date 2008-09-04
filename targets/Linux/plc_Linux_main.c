@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <pthread.h> 
 
-long AtomicCompareExchange(long* atomicvar,long exchange, long compared)
+long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
     return __sync_val_compare_and_swap(atomicvar, compared, exchange);
 }
@@ -95,9 +95,9 @@ void AbortDebug()
 {
     /* Eventually unlock debugger thread*/
     __debug_tick = -1;
-    pthread_mutex_lock(&wait_mutex);
+    //pthread_mutex_lock(&wait_mutex);
     pthread_cond_broadcast(&wait_cond);
-    pthread_mutex_unlock(&wait_mutex);
+    //pthread_mutex_unlock(&wait_mutex);
 }
 
 int stopPLC()
@@ -126,7 +126,7 @@ void InitiateDebugTransfer()
 {
     /* signal debugger thread to continue*/
     __debug_tick = __tick;
-    pthread_mutex_lock(&wait_mutex);
+    //pthread_mutex_lock(&wait_mutex);
     pthread_cond_broadcast(&wait_cond);
-    pthread_mutex_unlock(&wait_mutex);
+    //pthread_mutex_unlock(&wait_mutex);
 }

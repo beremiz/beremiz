@@ -136,17 +136,28 @@ void FreeDebugData()
         &buffer_state,
         BUFFER_BUSY,
         BUFFER_FREE);
-    subscription_cursor = subscription_table;
 }
 
 void* IterDebugData(int* idx, const char **type_name)
 {
     if(subscription_cursor < latest_subscription){
+        char* old_cursor = buffer_cursor;
         *idx = *subscription_cursor;
         struct_plcvar* my_var = &variable_table[*(subscription_cursor++)];
         *type_name = __get_type_enum_name(my_var->type);
-        return my_var->ptrvalue;
+        /* get variable size*/
+        USINT size = __get_type_enum_size(my_var->type);
+        /* compute next cursor positon*/
+        buffer_cursor = buffer_cursor + size;
+        if(old_cursor < debug_buffer + BUFFER_SIZE)
+        {
+            return old_cursor;
+        }else{
+            return NULL;
+        } 
     }
+    *idx = -1;
+    *type_name = NULL;
     return NULL;
 }
 

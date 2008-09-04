@@ -1349,7 +1349,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         WeakCallableDict, data_log, status = data_tuple
                         data_log.append((debug_tick, value))
                         for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
-                            wx.CallAfter(weakcallable, value, *args, **kwargs)
+                            wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
                              "debug data not coherent %d != %d"%(len(debug_vars), len(self.TracedIECPath)))
@@ -1383,7 +1383,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 #                    self.buf = None
 #                def setbuf(self,buf):
 #                    self.buf = buf
-#                def __call__(self, value, idx, name):
+#                def SetValue(self, value, idx, name):
 #                    print "debug call:", value, idx, name, self.buf
 #            a = tmpcls()
 #            res = self.SubscribeDebugIECVariable(IEC_Path, a, idx, IEC_Path)

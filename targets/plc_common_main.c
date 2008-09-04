@@ -33,7 +33,7 @@ void __cleanup_debug(void);
  **/
  
 IEC_TIME __CURRENT_TIME;
-int __tick = 0;
+int __tick = -1;
 
 static int init_level = 0;
 static int Debugging = 0;
@@ -50,6 +50,8 @@ void AbortDebug();
  **/
 void __run()
 {
+    __tick++;
+
     %(retrieve_calls)s
 
     if(Debugging) __retrieve_debug();
@@ -62,7 +64,6 @@ void __run()
     
     %(publish_calls)s
 
-    __tick++;
 }
 
 /*
