@@ -259,10 +259,10 @@ class RootClass(SVGUIControler):
                 generator.ComputedBlocks[block] = True
                 for num, variable in enumerate(block.inputVariables.getvariable()):
                     connections = variable.connectionPointIn.getconnections()
-                    input_info = (generator.TagName, "block", block.getlocalId(), "input", num)
-                    if connections and len(connections) == 1:
+                    if connections is not None:
+                        input_info = (generator.TagName, "block", block.getlocalId(), "input", num)
                         parameter = "%sQ%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["inputs"][num][1]], current_location, block_id, num+1)
-                        value = generator.ComputeFBDExpression(body, connections[0])
+                        value = generator.ComputeExpression(body, connections)
                         generator.Program += [(generator.CurrentIndent, ()),
                                               (parameter, input_info),
                                               (" := ", ())]
