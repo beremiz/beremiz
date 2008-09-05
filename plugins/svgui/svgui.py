@@ -434,6 +434,7 @@ bool refreshing = false;
 THREAD_RETURN_TYPE InitWxEntry(void* args)
 {
   wxEntry(myargc,myargv);
+  myapp = NULL;
   MyInitSem.Post();
   return 0;
 }
