@@ -61,6 +61,12 @@ void catch_signal(int sig)
   exit(0);
 }
 
+
+static int __debug_tick;
+
+static pthread_mutex_t wait_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int startPLC(int argc,char **argv)
 {
     struct sigevent sigev;
@@ -72,6 +78,8 @@ int startPLC(int argc,char **argv)
     sigev.sigev_notify = SIGEV_THREAD;
     sigev.sigev_notify_attributes = NULL;
     sigev.sigev_notify_function = PLC_timer_notify;
+
+    pthread_mutex_lock(&wait_mutex);
 
     timer_create (CLOCK_REALTIME, &sigev, &PLC_timer);
     if(  __init(argc,argv) == 0 ){
@@ -86,18 +94,14 @@ int startPLC(int argc,char **argv)
     return 0;
 }
 
-static int __debug_tick;
-
-static pthread_mutex_t wait_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t wait_cond = PTHREAD_COND_INITIALIZER;
-
-void AbortDebug()
+int TryEnterDebugSection(void)
 {
-    /* Eventually unlock debugger thread*/
-    __debug_tick = -1;
-    //pthread_mutex_lock(&wait_mutex);
-    pthread_cond_broadcast(&wait_cond);
-    //pthread_mutex_unlock(&wait_mutex);
+    return pthread_mutex_trylock(&debug_mutex) == 0;
+}
+
+void LeaveDebugSection(void)
+{
+    pthread_mutex_unlock(&debug_mutex);
 }
 
 int stopPLC()
@@ -106,7 +110,8 @@ int stopPLC()
     PLC_SetTimer(0,0);
     timer_delete (PLC_timer);
     __cleanup();
-    AbortDebug();
+    __debug_tick = -1;
+    pthread_mutex_unlock(&wait_mutex);
 }
 
 extern int __tick;
@@ -115,8 +120,6 @@ int WaitDebugData()
 {
     /* Wait signal from PLC thread */
     pthread_mutex_lock(&wait_mutex);
-    pthread_cond_wait(&wait_cond, &wait_mutex);
-    pthread_mutex_unlock(&wait_mutex);
     return __debug_tick;
 }
  
@@ -124,9 +127,23 @@ int WaitDebugData()
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
 {
-    /* signal debugger thread to continue*/
+    /* Leave debugger section */
+    pthread_mutex_unlock(&debug_mutex);
+    /* remember tick */
     __debug_tick = __tick;
-    //pthread_mutex_lock(&wait_mutex);
-    pthread_cond_broadcast(&wait_cond);
-    //pthread_mutex_unlock(&wait_mutex);
+    /* signal debugger thread it can read data */
+    pthread_mutex_unlock(&wait_mutex);
 }
+
+void suspendDebug()
+{
+    /* Prevent PLC to enter debug code */
+    pthread_mutex_lock(&debug_mutex);
+}
+
+void resumeDebug()
+{
+    /* Let PLC enter debug code */
+    pthread_mutex_unlock(&debug_mutex);
+}
+

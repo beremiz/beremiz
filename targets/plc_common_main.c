@@ -54,13 +54,11 @@ void __run()
 
     %(retrieve_calls)s
 
-    if(Debugging) __retrieve_debug();
+    /*__retrieve_debug();*/
     
     config_run__(__tick);
 
-    if(Debugging) __publish_debug();
-    else if(WasDebugging) AbortDebug();
-    WasDebugging = Debugging;
+    __publish_debug();
     
     %(publish_calls)s
 
@@ -172,19 +170,4 @@ void align_tick(int sync_align_ratio)
 			PLC_SetTimer(Tcorr - elapsed, PeriodicTcorr);
 		}
 	}
-}
-
-extern int WaitDebugData();
-void suspendDebug()
-{
-    /* Prevent PLC to enter debug code */
-    Debugging = 0;
-    /* wait next tick end to be sure*/
-    WaitDebugData();
-}
-
-void resumeDebug()
-{
-    /* Let PLC enter debug code */
-    Debugging = 1;
 }

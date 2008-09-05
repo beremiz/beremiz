@@ -63,52 +63,62 @@ void __retrieve_debug()
 {
 }
 
+extern int TryEnterDebugSection(void);
+extern void LeaveDebugSection(void);
+
+extern int __tick;
 void __publish_debug()
 {
-    /* Lock buffer */
-    long latest_state = AtomicCompareExchange(
-        &buffer_state,
-        BUFFER_FREE,
-        BUFFER_BUSY);
-        
-    /* If buffer was free */
-    if(latest_state == BUFFER_FREE)
-    {
-        int* subscription;
-        
-        /* Reset buffer cursor */
-        buffer_cursor = debug_buffer;
-        
-        /* iterate over subscriptions */
-        for(subscription=subscription_table;
-            subscription < latest_subscription;
-            subscription++)
+    /* Check there is no running debugger re-configuration */
+    if(TryEnterDebugSection()){
+        /* Lock buffer */
+        long latest_state = AtomicCompareExchange(
+            &buffer_state,
+            BUFFER_FREE,
+            BUFFER_BUSY);
+            
+        /* If buffer was free */
+        if(latest_state == BUFFER_FREE)
         {
-            /* get variable descriptor */
-            struct_plcvar* my_var = &variable_table[*subscription];
-            char* next_cursor;
-            /* get variable size*/
-            USINT size = __get_type_enum_size(my_var->type);
-            /* compute next cursor positon*/
-            next_cursor = buffer_cursor + size;
-            /* if buffer not full */
-            if(next_cursor < debug_buffer + BUFFER_SIZE)
+            int* subscription;
+            
+            /* Reset buffer cursor */
+            buffer_cursor = debug_buffer;
+            
+            /* iterate over subscriptions */
+            for(subscription=subscription_table;
+                subscription < latest_subscription;
+                subscription++)
             {
-                /* copy data to the buffer */
-                memcpy(buffer_cursor, my_var->ptrvalue, size);
-                /* increment cursor according size*/
-                buffer_cursor = next_cursor;
-            }else{
-                /*TODO : signal overflow*/
+                /* get variable descriptor */
+                struct_plcvar* my_var = &variable_table[*subscription];
+                char* next_cursor;
+                /* get variable size*/
+                USINT size = __get_type_enum_size(my_var->type);
+                /* compute next cursor positon*/
+                next_cursor = buffer_cursor + size;
+                /* if buffer not full */
+                if(next_cursor < debug_buffer + BUFFER_SIZE)
+                {
+                    /* copy data to the buffer */
+                    memcpy(buffer_cursor, my_var->ptrvalue, size);
+                    /* increment cursor according size*/
+                    buffer_cursor = next_cursor;
+                }else{
+                    /*TODO : signal overflow*/
+                }
             }
+    
+            /* Reset buffer cursor again (for IterDebugData)*/
+            buffer_cursor = debug_buffer;
+            subscription_cursor = subscription_table;
+            
+            /* Leave debug section,
+             * Trigger asynchronous transmission 
+             * (returns immediately) */
+            InitiateDebugTransfer(); /* size */
         }
-
-        /* Reset buffer cursor again (for IterDebugData)*/
-        buffer_cursor = debug_buffer;
-        subscription_cursor = subscription_table;
-        
-        /* Trigger asynchronous transmission (returns immediately) */
-        InitiateDebugTransfer(); /* size */
+        LeaveDebugSection();
     }
 }
 

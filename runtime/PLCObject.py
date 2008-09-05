@@ -302,9 +302,9 @@ class PLCObject(pyro.ObjBase):
     
             for given_idx in self._Idxs:
                 buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-                c_type,unpack_func = self.TypeTranslator.get(typename.value, None)
+                c_type,unpack_func = self.TypeTranslator.get(typename.value, (None,None))
                 if c_type is not None and given_idx == idx.value:
-                    res.append(unpack_func(ctypes.cast(buffer, 
+                    res.append(unpack_func(ctypes.cast(buffer,
                                                        ctypes.POINTER(c_type)).contents))
                 else:
                     print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
