@@ -683,6 +683,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # After __init__ root plugin is not valid
         self.ProjectPath = None
         self.PLCEditor = None
+        self.PLCDebug = None
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
 
@@ -1308,6 +1309,20 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
             self._connector.SetTraceVariablesList(Idxs)
             self.IECdebug_lock.release()
+            
+            #for IEC_path, IECdebug_data in self.IECdebug_datas.iteritems():
+            #    print IEC_path, IECdebug_data[0].keys()
+
+    def ReArmDebugRegisterTimer(self):
+        if self.DebugTimer is not None:
+            self.DebugTimer.cancel()
+
+        # Timer to prevent rapid-fire when registering many variables
+        # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
+        self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
+        # Rearm anti-rapid-fire timer
+        self.DebugTimer.start()
+
         
     def SubscribeDebugIECVariable(self, IECPath, callableobj, *args, **kwargs):
         """
@@ -1328,22 +1343,20 @@ class PluginsRoot(PlugTemplate, PLCControler):
         IECdebug_data[0][callableobj]=(args, kwargs)
 
         self.IECdebug_lock.release()
-
-        if self.DebugTimer is not None:
-            self.DebugTimer.cancel()
-
-        # Timer to prevent rapid-fire when registering many variables
-        # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
-        self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
-        # Rearm anti-rapid-fire timer
-        self.DebugTimer.start()
-
+        
+        self.ReArmDebugRegisterTimer()
+        
         return IECdebug_data[1]
 
     def UnsubscribeDebugIECVariable(self, IECPath, callableobj):
+        #print "Unsubscribe", IECPath, callableobj
+        self.IECdebug_lock.acquire()
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
-        if IECdebug_data is None:
+        if IECdebug_data is not None:
             IECdebug_data[0].pop(callableobj,None)
+        self.IECdebug_lock.release()
+
+        self.ReArmDebugRegisterTimer()
 
     def DebugCallerFunc(self, weakcallable, value, *args, **kwargs):
         # do the call
@@ -1360,6 +1373,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         while self._connector is not None:
             debug_tick, debug_vars = self._connector.GetTraceVariables()
             #print debug_tick, debug_vars
+            self.IECdebug_lock.acquire()
             if debug_vars is not None and \
                len(debug_vars) == len(self.TracedIECPath):
                 for IECPath,value in zip(self.TracedIECPath, debug_vars):
@@ -1375,12 +1389,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
                              "debug data not coherent %d != %d"%(len(debug_vars), len(self.TracedIECPath)))
-            #elif debug_tick == -1:
+            elif debug_tick == -1:
                 #wx.CallAfter(self.logger.write, "Debugger unavailable\n")
-            #    pass
+                pass
             else:
                 wx.CallAfter(self.logger.write, "Debugger disabled\n")
                 break
+            self.IECdebug_lock.release()
 
     def _Debug(self):
         """
@@ -1390,7 +1405,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
            self._connector.StartPLC(debug=True):
             self.logger.write("Starting PLC (debug mode)\n")
             self.TracedIECPath = []
-            # TODO : laucnch PLCOpenEditor in Debug Mode
+            if self.PLCDebug is None:
+                self.RefreshPluginsBlockLists()
+                def _onclose():
+                    self.PLCDebug = None
+                self.PLCDebug = PLCOpenEditor(self.AppFrame, self, debug=True)
+                self.PLCDebug._onclose = _onclose
+                self.PLCDebug.Show()
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()
         else:
