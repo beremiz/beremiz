@@ -161,12 +161,14 @@ void InitiateDebugTransfer()
 
 void suspendDebug()
 {
+	__DEBUG = 0;
     /* Prevent PLC to enter debug code */
 	WaitForSingleObject(debug_sem, INFINITE);  
 }
 
 void resumeDebug()
 {
+	__DEBUG = 1;
     /* Let PLC enter debug code */
 	ReleaseSemaphore(debug_sem, 1, NULL);
 }
