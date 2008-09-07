@@ -690,12 +690,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def PlugTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
 
-    def HasProjectOpened(self):
-        """
-        Return if a project is actually opened
-        """
-        return self.ProjectPath != None
-
     def GetPlugRoot(self):
         return self
 
@@ -796,10 +790,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.PLCEditor:
             self.PLCEditor.RefreshTitle()
         self.PlugRequestSave()
-    
-    def CloseProject(self):
-        self.ProjectPath = None
-        self.PluggedChilds = {}
     
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):

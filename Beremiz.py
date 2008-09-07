@@ -254,7 +254,7 @@ class Beremiz(wx.Frame):
               kind=wx.ITEM_NORMAL, text=u'Open\tCTRL+O')
         parent.Append(help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=u'Save\tCTRL+S')
-        parent.Append(help='', id=wx.ID_CLOSE,
+        parent.Append(help='', id=wx.ID_CLOSE_ALL,
               kind=wx.ITEM_NORMAL, text=u'Close Project')
         parent.AppendSeparator()
         parent.Append(help='', id=wx.ID_PROPERTIES,
@@ -412,27 +412,29 @@ class Beremiz(wx.Frame):
         # create temporary directory for runtime working directory
         self.local_runtime_tmpdir = tempfile.mkdtemp()
         # choose an arbitrary random port for runtime
-        runtime_port = int(random.random() * 1000) + 61131
+        self.runtime_port = int(random.random() * 1000) + 61131
         # launch local runtime
         self.local_runtime = ProcessLogger(self.Log,
                                            "\"%s\" \"%s\" -p %s -i localhost %s"%(sys.executable,
                                                        Bpath("Beremiz_service.py"),
-                                                       runtime_port,
+                                                       self.runtime_port,
                                                        self.local_runtime_tmpdir),
                                                        no_gui=False)
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
-        self.PluginRoot = PluginsRoot(self, self.Log, runtime_port)
         self.DisableEvents = False
         
         self.PluginInfos = {}
         
         if projectOpen:
+            self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
             self.PluginRoot.LoadProject(projectOpen)
             self.RefreshPLCParams()
             self.RefreshPluginTree()
+        else:
+            self.PluginRoot = None
         
         self.RefreshMainMenu()
 
@@ -454,18 +456,18 @@ class Beremiz(wx.Frame):
         event.Skip()
 
     def SearchLineForError(self):
-        text = self.LogConsole.GetRange(0, self.LogConsole.GetInsertionPoint())
-        line = self.LogConsole.GetLineText(len(text.splitlines()) - 1)
-        result = MATIEC_ERROR_MODEL.match(line)
-        if result is not None:
-            first_line, first_column, last_line, last_column, error = result.groups()
-            infos = self.PluginRoot.ShowError(self.Log,
-                                              (int(first_line), int(first_column)), 
-                                              (int(last_line), int(last_column)))
+        if self.PluginRoot is not None:
+            text = self.LogConsole.GetRange(0, self.LogConsole.GetInsertionPoint())
+            line = self.LogConsole.GetLineText(len(text.splitlines()) - 1)
+            result = MATIEC_ERROR_MODEL.match(line)
+            if result is not None:
+                first_line, first_column, last_line, last_column, error = result.groups()
+                infos = self.PluginRoot.ShowError(self.Log,
+                                                  (int(first_line), int(first_column)), 
+                                                  (int(last_line), int(last_column)))
 		
     def OnCloseFrame(self, event):
-        
-        if self.PluginRoot.HasProjectOpened():
+        if self.PluginRoot is not None:
             if self.PluginRoot.ProjectTestModified():
                 dialog = wx.MessageDialog(self,
                                           "Save changes ?",
@@ -496,23 +498,22 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnFrameActivated(self, event):
-        if not event.GetActive():
+        if not event.GetActive() and self.PluginRoot is not None:
             self.PluginRoot.RefreshPluginsBlockLists()
     
     def RefreshMainMenu(self):
-        if self.MenuBar:
-            if self.PluginRoot.HasProjectOpened():
-##                self.MenuBar.EnableTop(1, True)
-##                self.MenuBar.EnableTop(2, True)
-                self.FileMenu.Enable(wx.ID_SAVE, True)
-                self.FileMenu.Enable(wx.ID_CLOSE, True)
-                self.FileMenu.Enable(wx.ID_PROPERTIES, True)
-            else:
-##                self.MenuBar.EnableTop(1, False)
-##                self.MenuBar.EnableTop(2, False)
-                self.FileMenu.Enable(wx.ID_SAVE, False)
-                self.FileMenu.Enable(wx.ID_CLOSE, False)
-                self.FileMenu.Enable(wx.ID_PROPERTIES, False)
+        if self.PluginRoot is not None:
+##            self.MenuBar.EnableTop(1, True)
+##            self.MenuBar.EnableTop(2, True)
+            self.FileMenu.Enable(wx.ID_SAVE, True)
+            self.FileMenu.Enable(wx.ID_CLOSE, True)
+            self.FileMenu.Enable(wx.ID_PROPERTIES, True)
+        else:
+##            self.MenuBar.EnableTop(1, False)
+##            self.MenuBar.EnableTop(2, False)
+            self.FileMenu.Enable(wx.ID_SAVE, False)
+            self.FileMenu.Enable(wx.ID_CLOSE, False)
+            self.FileMenu.Enable(wx.ID_PROPERTIES, False)
 
     def RefreshScrollBars(self):
         xstart, ystart = self.PLCConfig.GetViewStart()
@@ -529,7 +530,7 @@ class Beremiz(wx.Frame):
         self.Freeze()
         self.ClearSizer(self.PLCParamsSizer)
         
-        if self.PluginRoot.HasProjectOpened():    
+        if self.PluginRoot is not None:    
             plcwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
             if self.PluginRoot.PlugTestModified():
                 bkgdclr = CHANGED_TITLE_COLOUR
@@ -673,7 +674,7 @@ class Beremiz(wx.Frame):
     def RefreshPluginTree(self):
         self.Freeze()
         self.ClearSizer(self.PluginTreeSizer)
-        if self.PluginRoot.HasProjectOpened():
+        if self.PluginRoot is not None:
             for child in self.PluginRoot.IECSortedChilds():
                 self.GenerateTreeBranch(child)
                 if not self.PluginInfos[child]["expanded"]:
@@ -1172,13 +1173,16 @@ class Beremiz(wx.Frame):
             first = False
     
     def OnNewProjectMenu(self, event):
-        defaultpath = self.PluginRoot.GetProjectPath()
+        defaultpath = ""
+        if self.PluginRoot is not None:
+            defaultpath = self.PluginRoot.GetProjectPath()
         if not defaultpath:
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
+            self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
             res = self.PluginRoot.NewProject(projectpath)
             if not res :
                 self.RefreshPLCParams()
@@ -1191,13 +1195,16 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnOpenProjectMenu(self, event):
-        defaultpath = self.PluginRoot.GetProjectPath()
+        defaultpath = ""
+        if self.PluginRoot is not None:
+            defaultpath = self.PluginRoot.GetProjectPath()
         if not defaultpath:
             defaultpath = os.getcwd()
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             if os.path.isdir(projectpath):
+                self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
                 result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
                     self.RefreshPLCParams()
@@ -1215,16 +1222,28 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnCloseProjectMenu(self, event):
-        self.PluginInfos = {}
-        self.PluginRoot.CloseProject()
-        self.Log.flush()
-        self.RefreshPLCParams()
-        self.RefreshPluginTree()
-        self.RefreshMainMenu()
+        if self.PluginRoot is not None:
+            if self.PluginRoot.ProjectTestModified():
+                dialog = wx.MessageDialog(self,
+                                          "Save changes ?",
+                                          "Close Application", 
+                                          wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+                answer = dialog.ShowModal()
+                dialog.Destroy()
+                if answer == wx.ID_YES:
+                    self.PluginRoot.SaveProject()
+                elif answer == wx.ID_CANCEL:
+                    return
+            self.PluginInfos = {}
+            self.PluginRoot = None
+            self.Log.flush()
+            self.RefreshPLCParams()
+            self.RefreshPluginTree()
+            self.RefreshMainMenu()
         event.Skip()
     
     def OnSaveProjectMenu(self, event):
-        if self.PluginRoot.HasProjectOpened():
+        if self.PluginRoot is not None:
             self.PluginRoot.SaveProject()
             self.RefreshAll()
         event.Skip()
