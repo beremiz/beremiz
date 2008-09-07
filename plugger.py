@@ -1330,6 +1330,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         to a WeakKeyDictionary linking 
         weakly referenced callables to optionnal args
         """
+        if self._IECPathToIdx.get(IECPath, None) is None:
+            return None
+        
         self.IECdebug_lock.acquire()
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
@@ -1543,6 +1546,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             data = builder.GetBinaryCode()
             if data is not None :
                 if self._connector.NewPLC(MD5, data, extrafiles):
+                    self.ProgramTransferred()
                     self.logger.write("Transfer completed successfully.\n")
                 else:
                     self.logger.write_error("Transfer failed\n")
