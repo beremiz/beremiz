@@ -506,13 +506,13 @@ class Beremiz(wx.Frame):
 ##            self.MenuBar.EnableTop(1, True)
 ##            self.MenuBar.EnableTop(2, True)
             self.FileMenu.Enable(wx.ID_SAVE, True)
-            self.FileMenu.Enable(wx.ID_CLOSE, True)
+            self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
         else:
 ##            self.MenuBar.EnableTop(1, False)
 ##            self.MenuBar.EnableTop(2, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
-            self.FileMenu.Enable(wx.ID_CLOSE, False)
+            self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
 
     def RefreshScrollBars(self):
