@@ -137,12 +137,14 @@ void InitiateDebugTransfer()
 
 void suspendDebug()
 {
+    __DEBUG = 0;
     /* Prevent PLC to enter debug code */
     pthread_mutex_lock(&debug_mutex);
 }
 
 void resumeDebug()
 {
+    __DEBUG = 1;
     /* Let PLC enter debug code */
     pthread_mutex_unlock(&debug_mutex);
 }

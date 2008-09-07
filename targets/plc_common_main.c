@@ -33,12 +33,10 @@ void __cleanup_debug(void);
  **/
  
 IEC_TIME __CURRENT_TIME;
+IEC_BOOL __DEBUG;
 int __tick = -1;
 
 static int init_level = 0;
-static int Debugging = 0;
-static int WasDebugging = 0;
-void AbortDebug();
 
 /*
  * Prototypes of functions exported by plugins 
