@@ -1358,19 +1358,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         self.ReArmDebugRegisterTimer()
 
-    def DebugCallerFunc(self, weakcallable, value, *args, **kwargs):
-        # do the call
-        weakcallable.SetValue(value, *args, **kwargs)
-        # will unlock debug thread
-        self.DebugThreadSlowDownLock.release()
-
     def DebugThreadProc(self):
         """
         This thread waid PLC debug data, and dispatch them to subscribers
         """
         # This lock is used to avoid flooding wx event stack calling callafter
         self.DebugThreadSlowDownLock = Semaphore(0)
-        while self._connector is not None:
+        _break = False
+        while not _break and self._connector is not None:
             debug_tick, debug_vars = self._connector.GetTraceVariables()
             #print debug_tick, debug_vars
             self.IECdebug_lock.acquire()
@@ -1383,9 +1378,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         data_log.append((debug_tick, value))
                         for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
                             # delegate call to wx event loop
-                            wx.CallAfter(self.DebugCallerFunc, weakcallable, value, *args, **kwargs)
+                            #print weakcallable, value, args, kwargs
+                            wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
                             # This will block thread if more than one call is waiting
-                            self.DebugThreadSlowDownLock.acquire()
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
                              "debug data not coherent %d != %d"%(len(debug_vars), len(self.TracedIECPath)))
@@ -1394,8 +1389,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 pass
             else:
                 wx.CallAfter(self.logger.write, "Debugger disabled\n")
-                break
+                _break = True
             self.IECdebug_lock.release()
+            wx.CallAfter(self.DebugThreadSlowDownLock.release)
+            self.DebugThreadSlowDownLock.acquire()
 
     def _Debug(self):
         """
@@ -1424,9 +1421,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
 #        for IEC_Path, idx in self._IECPathToIdx.iteritems():
 #            class tmpcls:
 #                def __init__(_self):
-#                    self.buf = None
+#                    _self.buf = None
 #                def setbuf(_self,buf):
-#                    self.buf = buf
+#                    _self.buf = buf
 #                def SetValue(_self, value, idx, name):
 #                    self.logger.write("debug call: %s %d %s\n"%(repr(value), idx, name))
 #                    #self.logger.write("debug call: %s %d %s %s\n"%(repr(value), idx, name, repr(self.buf)))

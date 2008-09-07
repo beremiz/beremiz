@@ -3,7 +3,7 @@
 #include <time.h>
 #include <windows.h>
 
-long AtomicCompareExchange(long* atomicvar,long exchange, long compared)
+long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
 {
     return InterlockedCompareExchange(atomicvar, exchange, compared);
 }
@@ -62,8 +62,10 @@ void PlcLoop()
 	}
 }
 
-HANDLE DebugLock;
 HANDLE PLC_thread;
+HANDLE debug_sem;
+HANDLE wait_sem; 
+#define MAX_SEM_COUNT 10
 
 int startPLC(int argc,char **argv)
 {
@@ -71,12 +73,24 @@ int startPLC(int argc,char **argv)
 	/* Translate PLC's microseconds to Ttick nanoseconds */
 	Ttick = 1000000 * maxval(common_ticktime__,1);
 
-	DebugLock = CreateMutex( 
-	        	NULL,              // default security attributes
-	        	FALSE,             // initially not owned
-	        	NULL);             // unnamed mutex
+	debug_sem = CreateSemaphore( 
+							NULL,           // default security attributes
+					        1,  			// initial count
+					        MAX_SEM_COUNT,  // maximum count
+					        NULL);          // unnamed semaphore
+    if (debug_sem == NULL) 
+    {
+        printf("CreateMutex error: %d\n", GetLastError());
+        return;
+    }
+    
+	wait_sem = CreateSemaphore( 
+					        NULL,           // default security attributes
+					        0,  			// initial count
+					        MAX_SEM_COUNT,  // maximum count
+					        NULL);          // unnamed semaphore
 
-    if (DebugLock == NULL) 
+    if (wait_sem == NULL) 
     {
         printf("CreateMutex error: %d\n", GetLastError());
         return;
@@ -99,30 +113,60 @@ int startPLC(int argc,char **argv)
     }
     return 0;
 }
+static int __debug_tick;
+
+int TryEnterDebugSection(void)
+{
+	//printf("TryEnterDebugSection\n");
+	return WaitForSingleObject(debug_sem, 0) == WAIT_OBJECT_0;
+}
+
+void LeaveDebugSection(void)
+{
+	ReleaseSemaphore(debug_sem, 1, NULL);
+    //printf("LeaveDebugSection\n");
+}
 
 int stopPLC()
 {
 	runplcloop = 0;
 	WaitForSingleObject(PLC_thread, INFINITE);
+	__cleanup();
+	__debug_tick = -1;
+	ReleaseSemaphore(wait_sem, 1, NULL);
+	CloseHandle(debug_sem);
+	CloseHandle(wait_sem);
+	CloseHandle(PLC_timer);
 	CloseHandle(PLC_thread);
-	CloseHandle(DebugLock);
-    CloseHandle(PLC_timer);
-    __cleanup();
 }
 
 /* from plc_debugger.c */
-void WaitDebugData()
+int WaitDebugData()
 {
-	DWORD dwWaitResult;
-	dwWaitResult = WaitForSingleObject( 
-					DebugLock,  // handle to mutex
-					INFINITE);  // no time-out interval
+	WaitForSingleObject(wait_sem, INFINITE);
+	return __debug_tick;
 }
  
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
 {
-    /* signal debugger thread to continue*/
-	ReleaseMutex(DebugLock);
+	/* Leave debugger section */
+	ReleaseSemaphore(debug_sem, 1, NULL);
+    /* remember tick */
+    __debug_tick = __tick;
+    /* signal debugger thread it can read data */
+    ReleaseSemaphore(wait_sem, 1, NULL);
+}
+
+void suspendDebug()
+{
+    /* Prevent PLC to enter debug code */
+	WaitForSingleObject(debug_sem, INFINITE);  
+}
+
+void resumeDebug()
+{
+    /* Let PLC enter debug code */
+	ReleaseSemaphore(debug_sem, 1, NULL);
 }
