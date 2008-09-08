@@ -213,7 +213,7 @@ class _NodeListPlug(NodeList):
         
     def OnPlugSave(self):
         self.SetRoot(self.PlugPath())
-        return self.SaveProject() is not None
+        return self.SaveProject() is None
 
     def PlugGenerate_C(self, buildpath, locations):
         """

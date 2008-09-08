@@ -192,7 +192,7 @@ class PlugTemplate:
         # Call the plugin specific OnPlugSave method
         result = self.OnPlugSave()
         if not result:
-            return "Error while saving \"%s\""%self.PlugPath()
+            return "Error while saving \"%s\"\n"%self.PlugPath()
 
         # mark plugin as saved
         self.ChangesToSave = False        
@@ -272,7 +272,7 @@ class PlugTemplate:
     def IterChilds(self):
         for PlugType, PluggedChilds in self.PluggedChilds.items():
             for PlugInstance in PluggedChilds:
-                   yield PlugInstance
+                yield PlugInstance
     
     def IECSortedChilds(self):
         # reorder childs by IEC_channels
@@ -789,7 +789,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
         if self.PLCEditor:
             self.PLCEditor.RefreshTitle()
-        self.PlugRequestSave()
+        result = self.PlugRequestSave()
+        if result:
+            self.logger.write_error(result)
     
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
