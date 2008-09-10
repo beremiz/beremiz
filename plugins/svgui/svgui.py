@@ -47,6 +47,8 @@ class _SVGUIEditor(SVGUIEditor):
         self.FBDPanel.Bind(wx.EVT_PAINT, self.OnPaintFBDPanel)
         
         setattr(self.FBDPanel, "GetScaling", lambda: None) 
+        setattr(self.FBDPanel, "IsOfType", self.IsOfType) 
+        setattr(self.FBDPanel, "GetBlockType", self.GetBlockType) 
         
         self._init_sizers()
     
@@ -54,6 +56,12 @@ class _SVGUIEditor(SVGUIEditor):
         SVGUIEditor.__init__(self, parent, controler, fileOpen)
         
         self.FBDBlock = None
+    
+    def IsOfType(self, type, reference):
+        return self.Controler.GetPlugRoot().IsOfType(type, reference)
+    
+    def GetBlockType(self, type, inputs = None):
+        return self.Controler.GetPlugRoot().GetBlockType(type, inputs)
     
     def RefreshView(self, select_id = None):
         SVGUIEditor.RefreshView(self, select_id)
