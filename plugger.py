@@ -505,7 +505,7 @@ class PlugTemplate:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
                     os.mkdir(_self.PlugPath())
                     # Find an IEC number
-                    _self.FindNewIEC_Channel(0, None)
+                    _self.FindNewIEC_Channel(0)
                     # Call the plugin real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
