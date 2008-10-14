@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeremizRoot CFLAGS="" Linker="g++" LDFLAGS="">
+<BeremizRoot URI_location="LOCAL://">
   <TargetType>
-    <Linux Nice="0"/>
+    <Linux CFLAGS="-g" LDFLAGS=""/>
   </TargetType>
-  <Connection>
-    <Local/>
-  </Connection>
 </BeremizRoot>
