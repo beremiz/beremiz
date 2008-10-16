@@ -36,7 +36,7 @@ def Bpath(*args):
 if __name__ == '__main__':
     def usage():
         print "\nUsage of Beremiz.py :"
-        print "\n   %s [Projectpath]\n"%sys.argv[0]
+        print "\n   %s [Projectpath] [Buildpath]\n"%sys.argv[0]
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
@@ -50,13 +50,17 @@ if __name__ == '__main__':
             usage()
             sys.exit()
     
-    if len(args) > 1:
+    if len(args) > 2:
         usage()
         sys.exit()
     elif len(args) == 1:
         projectOpen = args[0]
+    elif len(args) == 2:
+        projectOpen = args[0]
+        buildpath = args[1]
     else:
         projectOpen = None
+        buildpath = None
     
     app = wx.PySimpleApp()
     wx.InitAllImageHandlers()
@@ -404,7 +408,7 @@ class Beremiz(wx.Frame):
 
         self._init_sizers()
 
-    def __init__(self, parent, projectOpen):
+    def __init__(self, parent, projectOpen, buildpath):
         self._init_ctrls(parent)
         
         self.Log = LogPseudoFile(self.LogConsole)
@@ -430,7 +434,7 @@ class Beremiz(wx.Frame):
         
         if projectOpen:
             self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
-            self.PluginRoot.LoadProject(projectOpen)
+            self.PluginRoot.LoadProject(projectOpen, buildpath)
             self.RefreshPLCParams()
             self.RefreshPluginTree()
         else:
@@ -1173,11 +1177,10 @@ class Beremiz(wx.Frame):
             first = False
     
     def OnNewProjectMenu(self, event):
-        defaultpath = ""
+        defaultpath = config.Read("workspacedir")
         if self.PluginRoot is not None:
             defaultpath = self.PluginRoot.GetProjectPath()
-        if not defaultpath:
-            defaultpath = os.getcwd()
+        
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
@@ -1195,11 +1198,10 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnOpenProjectMenu(self, event):
-        defaultpath = ""
+        defaultpath = config.Read("workspacedir")
         if self.PluginRoot is not None:
             defaultpath = self.PluginRoot.GetProjectPath()
-        if not defaultpath:
-            defaultpath = os.getcwd()
+        
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
@@ -1442,8 +1444,16 @@ if __name__ == '__main__':
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),__version__)
     
-    frame = Beremiz(None, projectOpen)
+    frame = Beremiz(None, projectOpen, buildpath)
     frame.Show()
     splash.Close()
-
+    config = wx.ConfigBase.Get()
+    if not config.HasEntry("workspacedir"):
+        defaultpath = os.path.expanduser("~")
+        dialog = wx.DirDialog(frame, "Select a Workspace", defaultpath, wx.DD_NEW_DIR_BUTTON)
+        if dialog.ShowModal() == wx.ID_OK:
+            defaultpath = dialog.GetPath()
+            dialog.Destroy()        
+        config.Write("workspacedir", defaultpath)
+        config.Flush()
     app.MainLoop()

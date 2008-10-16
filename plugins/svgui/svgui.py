@@ -230,7 +230,7 @@ class RootClass(SVGUIControler):
         
         if wx.Platform == '__WXMSW__':
             cxx_flags = "-I..\\..\\wxPython-src-2.8.8.1\\bld\\lib\\wx\\include\\msw-unicode-release-2.8 -I..\\..\\wxPython-src-2.8.8.1\\include -I..\\..\\wxPython-src-2.8.8.1\\contrib\\include -I..\\..\\matiec\\lib -DWXUSINGDLL -D__WXMSW__ -mthreads"
-            libs = "\"..\\lib\\libwxsvg.a\" \"..\\lib\\libwxsvg_agg.a\" \"..\\lib\\libagg.a\" \"..\\lib\\libaggplatformwin32.a\" \"..\\lib\\libaggfontwin32tt.a\" -L..\\..\\wxPython-src-2.8.8.1\\bld\\lib -mno-cygwin -mwindows -mthreads  -mno-cygwin -mwindows -Wl,--subsystem,windows -mwindows -lwx_mswu_richtext-2.8 -lwx_mswu_aui-2.8 -lwx_mswu_xrc-2.8 -lwx_mswu_qa-2.8 -lwx_mswu_html-2.8 -lwx_mswu_adv-2.8 -lwx_mswu_core-2.8 -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8"
+            libs = "\"..\\lib\\libwxsvg.a\" \"..\\lib\\libwxsvg_agg.a\" \"..\\lib\\libagg.a\" \"..\\lib\\libaggplatformwin32.a\" \"..\\lib\\libaggfontwin32tt.a\" -L..\\..\\wxPython-src-2.8.8.1\\bld\\lib -mwindows -mthreads -Wl,--subsystem,windows -mwindows -lwx_mswu_richtext-2.8 -lwx_mswu_aui-2.8 -lwx_mswu_xrc-2.8 -lwx_mswu_qa-2.8 -lwx_mswu_html-2.8 -lwx_mswu_adv-2.8 -lwx_mswu_core-2.8 -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8"
         else:
             status, result, err_result = ProcessLogger(self.logger, "wx-config --cxxflags", no_stdout=True).spin()
             if status:

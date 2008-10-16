@@ -682,6 +682,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PlugType = "Beremiz"
         # After __init__ root plugin is not valid
         self.ProjectPath = None
+        self.BuildPath = None
         self.PLCEditor = None
         self.PLCDebug = None
         # copy PluginMethods so that it can be later customized
@@ -714,7 +715,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             childs.append(child.GetPlugInfos())
         return {"name" : "PLC (%s)"%self.GetProjectName(), "type" : None, "values" : childs}
     
-    def NewProject(self, ProjectPath):
+    def NewProject(self, ProjectPath, BuildPath=None):
         """
         Create a new project in an empty folder
         @param ProjectPath: path of the folder where project have to be created
@@ -740,13 +741,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
+        self.BuildPath = BuildPath
         # get plugins bloclist (is that usefull at project creation?)
         self.RefreshPluginsBlockLists()
         # this will create files base XML files
         self.SaveProject()
         return None
         
-    def LoadProject(self, ProjectPath):
+    def LoadProject(self, ProjectPath, BuildPath=None):
         """
         Load a project contained in a folder
         @param ProjectPath: path of the project folder
@@ -766,6 +768,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
+        self.BuildPath = BuildPath
         # If dir have already be made, and file exist
         if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
             #Load the plugin.xml file into parameters members
@@ -810,7 +813,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
 
     def _getBuildPath(self):
-        return os.path.join(self.ProjectPath, "build")
+        if self.BuildPath is None:
+            return os.path.join(self.ProjectPath, "build")
+        return self.BuildPath
     
     def _getExtraFilesPath(self):
         return os.path.join(self._getBuildPath(), "extra_files")
