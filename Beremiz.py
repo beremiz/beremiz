@@ -1186,10 +1186,10 @@ class Beremiz(wx.Frame):
         
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
-            config.Write("lastopenedfolder", os.path.dirname(projectpath))
-            config.Flush()
             projectpath = dialog.GetPath()
             dialog.Destroy()
+            config.Write("lastopenedfolder", os.path.dirname(projectpath))
+            config.Flush()
             self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
             res = self.PluginRoot.NewProject(projectpath)
             if not res :
