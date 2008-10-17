@@ -63,6 +63,8 @@ if __name__ == '__main__':
         buildpath = None
     
     app = wx.PySimpleApp()
+    app.SetAppName('beremiz')
+    config = wx.ConfigBase.Get()
     wx.InitAllImageHandlers()
     
     bmp = wx.Image(Bpath("images","splash.png")).ConvertToBitmap()
@@ -1177,12 +1179,15 @@ class Beremiz(wx.Frame):
             first = False
     
     def OnNewProjectMenu(self, event):
-        defaultpath = config.Read("workspacedir")
-        if self.PluginRoot is not None:
-            defaultpath = self.PluginRoot.GetProjectPath()
+        if not config.HasEntry("lastopenedfolder"):
+            defaultpath = os.path.expanduser("~")
+        else:
+            defaultpath = config.Read("lastopenedfolder")
         
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
+            config.Write("lastopenedfolder", os.path.dirname(projectpath))
+            config.Flush()
             projectpath = dialog.GetPath()
             dialog.Destroy()
             self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
@@ -1198,14 +1203,17 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnOpenProjectMenu(self, event):
-        defaultpath = config.Read("workspacedir")
-        if self.PluginRoot is not None:
-            defaultpath = self.PluginRoot.GetProjectPath()
+        if not config.HasEntry("lastopenedfolder"):
+            defaultpath = os.path.expanduser("~")
+        else:
+            defaultpath = config.Read("lastopenedfolder")
         
         dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             if os.path.isdir(projectpath):
+                config.Write("lastopenedfolder", os.path.dirname(projectpath))
+                config.Flush()
                 self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
                 result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
@@ -1447,13 +1455,4 @@ if __name__ == '__main__':
     frame = Beremiz(None, projectOpen, buildpath)
     frame.Show()
     splash.Close()
-    config = wx.ConfigBase.Get()
-    if not config.HasEntry("workspacedir"):
-        defaultpath = os.path.expanduser("~")
-        dialog = wx.DirDialog(frame, "Select a Workspace", defaultpath, wx.DD_NEW_DIR_BUTTON)
-        if dialog.ShowModal() == wx.ID_OK:
-            defaultpath = dialog.GetPath()
-            dialog.Destroy()        
-        config.Write("workspacedir", defaultpath)
-        config.Flush()
     app.MainLoop()
