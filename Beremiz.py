@@ -55,6 +55,7 @@ if __name__ == '__main__':
         sys.exit()
     elif len(args) == 1:
         projectOpen = args[0]
+        buildpath = None
     elif len(args) == 2:
         projectOpen = args[0]
         buildpath = args[1]

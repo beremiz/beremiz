@@ -3,7 +3,7 @@ base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(os.path.join(base_folder, "wxsvg", "SVGUIEditor"))
 sys.path.append(os.path.join(base_folder, "plcopeneditor", "graphics"))
 
-import wx
+import wx, subprocess
 
 from SVGUIGenerator import *
 from SVGUIControler import *
@@ -11,8 +11,8 @@ from SVGUIEditor import *
 from FBD_Objects import *
 
 from wxPopen import ProcessLogger
-import subprocess
 from wx.wxsvg import SVGDocument
+from docutils import *
 
 [ID_SVGUIEDITORFBDPANEL, 
 ] = [wx.NewId() for _init_ctrls in range(1)]
@@ -167,18 +167,10 @@ class RootClass(SVGUIControler):
 
     def _StartInkscape(self):
         if not self._View:
-            svgfile = os.path.join(self.PlugPath(), "gui.svg")
-            popenargs = []
-
-            if wx.Platform == '__WXMSW__':
-                popenargs.append(os.path.join(base_folder, "Inkscape", "inkscape.exe"))
-            else:
-                popenargs.append("/usr/bin/inkscape")
-
-            if os.path.isfile(svgfile):
-                popenargs.append(svgfile)
-
-            subprocess.Popen(popenargs).pid
+		svgfile = os.path.join(self.PlugPath(), "gui.svg")		
+		if not os.path.isfile(svgfile):
+		    svgfile = None
+		open_svg(svgfile)
 
     PluginMethods = [
         {"bitmap" : os.path.join("images","HMIEditor"),
