@@ -46,7 +46,7 @@ def my_methods(self):
         # External programs list 
         # Launch them and get their pid
         for prog in self.listLaunchProg:
-            logger.write("Starting %s\n" % prog['name'])
+            self.logger.write("Starting %s\n" % prog['name'])
             prog['pid'] = ProcessLogger(self.logger, prog['command'], no_gui=prog['no_gui'])
             prog['pid'].spin(
             		 timeout=200,
