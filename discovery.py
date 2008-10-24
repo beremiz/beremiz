@@ -90,15 +90,17 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         listmix.ColumnSorterMixin.__init__(self, 4)
 
         #type = "_http._tcp.local."
+        self.browser = None
         self.zConfInstance = Zeroconf()
         self.RefreshList()
 
     def RefreshList(self):
         type = "_PYRO._tcp.local."
-        browser = ServiceBrowser(self.zConfInstance, type, self)        
+        self.browser = ServiceBrowser(self.zConfInstance, type, self)        
 
     def OnRefreshButton(self, event):
         self.list.DeleteAllItems()
+        self.browser.cancel()
         self.RefreshList()
 
     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py

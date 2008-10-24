@@ -24,46 +24,61 @@
 
 import Zeroconf, socket
 
-# type: fully qualified service type name
-service_type = '_PYRO._tcp.local.'
-
-# properties: dictionary of properties (or a string holding the bytes for the text field)
-serviceproperties = {'description':'Beremiz remote PLC'}
-
-def gethostaddr(dst = '224.0.1.41'):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect((dst, 7))
-        (host, port) = s.getsockname()
-        s.close()
-        if host != '0.0.0.0':
-            return host
-    except error:
-        pass
-    return socket.gethostbyname(socket.gethostname())
-
-
-def ServicePublisher(name, ip, port):
+class ServicePublisher():
+    def __init__(self):
+        # type: fully qualified service type name
+        self.service_type = '_PYRO._tcp.local.'
+        # properties: dictionary of properties (or a string holding the bytes for the text field)
+        self.serviceproperties = {'description':'Beremiz remote PLC'}
+        
+        self.name = None
+        self.ip_32b = None
+        self.port = None
+        self.server = None
+        self.service_name = None
+        
+    def RegisterService(self, name, ip, port):
 
         # name: fully qualified service name
-        service_name = 'Beremiz_%s.%s'%(name,service_type)
-
+        self.service_name = 'Beremiz_%s.%s'%(name,self.service_type)
+        self.name = name
+        self.port = port
         # No ip params -> get host ip
         if ip == "":
-            ip = gethostaddr()
+            ip = self.gethostaddr()
 
-        print "Mon IP est :"+ip
+        print "My IP is :"+ip
 
-        server = Zeroconf.Zeroconf(ip)
+        self.server = Zeroconf.Zeroconf(ip)
 
         # address: IP address as unsigned short, network byte order
-        ip_32b = socket.inet_aton(ip)
+        self.ip_32b = socket.inet_aton(ip)
 
-        server.registerService(
-             Zeroconf.ServiceInfo(service_type,
-                                  service_name,
-                                  ip_32b,
-                                  port,
-                                  properties = serviceproperties))
-        
-        return server
+        self.server.registerService(
+             Zeroconf.ServiceInfo(self.service_type,
+                                  self.service_name,
+                                  self.ip_32b,
+                                  self.port,
+                                  properties = self.serviceproperties))
+    
+    def UnRegisterService(self):
+        self.server.unregisterService(
+                                      Zeroconf.ServiceInfo(self.service_type, 
+                                                           self.service_name, 
+                                                           self.ip_32b, 
+                                                           self.port, 
+                                                           properties = self.serviceproperties))
+        self.server.close()
+        del self.server
+    
+    def gethostaddr(self, dst = '224.0.1.41'):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect((dst, 7))
+            (host, port) = s.getsockname()
+            s.close()
+            if host != '0.0.0.0':
+                return host
+        except error:
+            pass
+        return socket.gethostbyname(socket.gethostname())
