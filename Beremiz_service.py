@@ -177,7 +177,7 @@ class Server():
         self.workdir = workdir
         self.args = args
         self.plcobj = None
-        self.servicepublisher = ServicePublisher.ServicePublisher()
+        self.servicepublisher = None
 
     def Loop(self):
         while self.continueloop:
@@ -203,7 +203,8 @@ class Server():
         # Configure and publish service
         # Not publish service if localhost in address params
         if self.ip != "localhost" and self.ip != "127.0.0.1":    
-            print "Publish service on local network"            
+            print "Publish service on local network"
+            self.servicepublisher = ServicePublisher.ServicePublisher()            
             self.servicepublisher.RegisterService(self.name, self.ip, self.port)
         
         sys.stdout.flush()
@@ -211,7 +212,9 @@ class Server():
         self.daemon.requestLoop()
     
     def Stop(self):
-        self.servicepublisher.UnRegisterService()
+        if self.servicepublisher is not None:
+            self.servicepublisher.UnRegisterService()
+            del self.servicepublisher
         self.daemon.shutdown(True)
 
 class ParamsEntryDialog(wx.TextEntryDialog):
@@ -335,6 +338,7 @@ class DemoTaskBarIcon(wx.TaskBarIcon):
     def OnTaskBarQuit(self,evt):
         pyroserver.Quit()
         self.RemoveIcon()
+        wx.GetApp().ExitMainLoop()
         
 pyroserver = Server(name, ip, port, WorkingDir, args)
 
