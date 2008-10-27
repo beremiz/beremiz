@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<CFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="cext_xsd.xsd">
+  <includes>
+<![CDATA[]]>
+  </includes>
+  <variables/>
+  <globals>
+<![CDATA[]]>
+  </globals>
+  <initFunction>
+<![CDATA[]]>
+  </initFunction>
+  <cleanUpFunction>
+<![CDATA[]]>
+  </cleanUpFunction>
+  <retrieveFunction>
+<![CDATA[]]>
+  </retrieveFunction>
+  <publishFunction>
+<![CDATA[]]>
+  </publishFunction>
+</CFile>

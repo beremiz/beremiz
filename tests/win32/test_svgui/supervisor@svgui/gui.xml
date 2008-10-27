@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Interface xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="def_xsd.xsd" id="1" name="Interface" background_id="fond">
+  <Button toggle="true" selected_id="test1_on" id="2" name="test1" background_id="test1_off"/>
+  <Button toggle="true" selected_id="test2_on" id="3" name="test2" background_id="test2_off"/>
+  <Button toggle="true" selected_id="LED1_on" id="4" name="LED1" enable="false" background_id="LED1_off"/>
+  <Button toggle="true" selected_id="LED2_on" id="5" name="LED2" enable="false" background_id="LED2_off"/>
+  <Button toggle="true" selected_id="LED3_on" id="6" name="LED3" enable="false" background_id="LED3_off"/>
+  <Button toggle="true" selected_id="LED4_on" id="7" name="LED4" enable="false" background_id="LED4_off"/>
+  <RotatingCtrl rotating_id="counter1_rotating" center_id="counter1_center" min_angle="-180" show_center="true" max_angle="0" id="8" name="counter1" enable="false" background_id="counter1_back"/>
+  <RotatingCtrl rotating_id="counter2_rotating" center_id="counter2_center" min_angle="-180" show_center="true" max_angle="0" id="9" name="counter2" enable="false" background_id="counter2_back"/>
+</Interface>

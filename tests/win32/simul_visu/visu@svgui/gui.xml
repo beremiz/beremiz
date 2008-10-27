@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Interface xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="def_xsd.xsd" id="1" name="Interface">
+  <Button toggle="true" unselected_id="led_full_off" selected_id="led_full_on" id="3" name="led_full" enable="false" background_id="rect3479"/>
+  <Button toggle="true" unselected_id="led_pompe_off" selected_id="led_pompe_on" id="4" name="led_pump" enable="false" background_id="rect3489"/>
+  <Button toggle="true" unselected_id="led_vidange_off" selected_id="led_vidange_on" id="5" name="led_sink" enable="false" background_id="rect3493"/>
+  <Button toggle="true" unselected_id="led_empty_off" selected_id="led_empty_on" id="6" name="led_empty" enable="false" background_id="rect3497"/>
+  <Transform moving_id="rect3244" id="2" name="movewater" enable="false" background_id="rect3246"/>
+</Interface>
