@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CanFestivalSlaveNode CAN_Device="127.0.0.1" CAN_Baudrate="125K" NodeId="3" Sync_Align="100"/>
+<CanFestivalSlaveNode CAN_Device="vcan0" CAN_Baudrate="125K" NodeId="3" Sync_Align="100"/>
