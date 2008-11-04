@@ -73,6 +73,7 @@ if __name__ == '__main__':
     wx.Yield()
 
 import wx.lib.buttons, wx.lib.statbmp
+import TextCtrlAutoComplete, cPickle
 import types, time, re, platform, time, traceback, commands
 from plugger import PluginsRoot
 from wxPopen import ProcessLogger
@@ -438,8 +439,7 @@ class Beremiz(wx.Frame):
         if projectOpen:
             self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
             self.PluginRoot.LoadProject(projectOpen, buildpath)
-            self.RefreshPLCParams()
-            self.RefreshPluginTree()
+            self.RefreshAll()
         else:
             self.PluginRoot = None
         
@@ -1172,8 +1172,17 @@ class Beremiz(wx.Frame):
                         spinctrl.SetValue(element_infos["value"])
                         spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                     else:
-                        textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)#wx.TE_PROCESS_ENTER)
+                        choices = cPickle.loads(str(config.Read(element_path, cPickle.dumps([""]))))                           
+                        textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
+                                                                     name=element_infos["name"], 
+                                                                     parent=parent, 
+                                                                     choices=choices, 
+                                                                     selectCallback = None,
+                                                                     element_path=element_path,
+                                                                     pos=wx.Point(0, 0), 
+                                                                     size=wx.Size(150, 25), 
+                                                                     style=0)
+                        
                         boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
                         textctrl.ChangeValue(str(element_infos["value"]))
                         textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
@@ -1194,8 +1203,7 @@ class Beremiz(wx.Frame):
             self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
             res = self.PluginRoot.NewProject(projectpath)
             if not res :
-                self.RefreshPLCParams()
-                self.RefreshPluginTree()
+                self.RefreshAll()
                 self.RefreshMainMenu()
             else:
                 message = wx.MessageDialog(self, res, "ERROR", wx.OK|wx.ICON_ERROR)
@@ -1218,8 +1226,7 @@ class Beremiz(wx.Frame):
                 self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
                 result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
-                    self.RefreshPLCParams()
-                    self.RefreshPluginTree()
+                    self.RefreshAll()
                     self.RefreshMainMenu()
                 else:
                     message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
@@ -1248,8 +1255,7 @@ class Beremiz(wx.Frame):
             self.PluginInfos = {}
             self.PluginRoot = None
             self.Log.flush()
-            self.RefreshPLCParams()
-            self.RefreshPluginTree()
+            self.RefreshAll()
             self.RefreshMainMenu()
         event.Skip()
     
