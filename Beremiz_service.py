@@ -33,78 +33,97 @@ try:
 except:
     havewx = False
 
-BeremizIcon = PyEmbeddedImage(
-"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"
-"ycvmAAAAAElFTkSuQmCC")
+if havewx:
+    defaulticon = PyEmbeddedImage(
+    "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")
+    
+    #----------------------------------------------------------------------
+    starticon = PyEmbeddedImage(
+    "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"
+    "Dw/HnwT4P6CDl+TMvD0JAAAAAElFTkSuQmCC")
+    
+    #----------------------------------------------------------------------
+    stopicon = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAABPRJ"
+    "REFUSImdlllsVGUUx3/f/e4sd5iZLjNt6XSFdtgkjWFRePABDaCBGgjamIg81CU0aoxbRHww"
+    "+EDkhWjEB5rYGEMUxQTCJg8EoQ2BbgrFCNJWltplgC63naEzd+bO50NLLVAq4STfwz3nfP/f"
+    "PSf3O98VSikmmQ94HFgDLDdNM1BfX5955swZX0tLi5FKpbSSkpJkaWlpIhQKdVdVVX2XkZFx"
+    "EpBAEGgHLgH/iSqlUEoJpVSBUqpaKXXYNM0r1dXVt6WUajx5ylVYWKi2bdvWY1nWUaXUgQ0b"
+    "NtRWVFQUjmuilEKMV5ALvAhsPHDgQFlNTU2gr69Pk1JSFMphTomfRXO8+A243i/oG9I5f6mX"
+    "K1evAxAOhykrKxs9duyYkZ+f/0lPT8/2OwXogBtYDKzYunVr0c6dO3Ns26akMIcdbxQyv0hy"
+    "rwmh8Bas5/eb89nxRR1NTU20t7cb4x1ZPjlXB2YBiw8ePJhdW1tb4DEMXng6xJtrPQhxn/Y4"
+    "QSM12o89fJnOjst3hXRdLxZCGEqpUQANmBuJRLK3bNmy1OFwUPVMPm9VTiMOqLRNYvg6+shv"
+    "rFoWwutxTcSklGEpZXDiXZRSr6xbt+6dtra2xUW5Lr7c7EUD3Flhwmu/nRKQGO7CvHaCwY7D"
+    "WNEeEmoGe0+PWnuOXHWmrBTl5eW7GxsbNwPoFy5ccHV2di7yzjD4uMqDNtFngZDOKQHurDLc"
+    "WWX4Qk/ScfRVXCLGoorU8J+z5gbjxyWGYbwshPhQKTWi7d+/P9/pdIp5xR5C2Q9uS1fDp3T+"
+    "8jo32uomfJ7cCtzZYQCOjKhYOmgxI+hBSumdOXPmegDt4sWLxU6nk3BIf7A6EB/sIBY5R/+l"
+    "nyd8yrZIRnvZ02tduxVwFQOojBQAfr9/tRBC103TLHe5XMwpSEwLKFj2EWk7gRGYOyaeTtJ4"
+    "pnZk+7UhM5FtlAhAIMYAESd+v78IyNWBYqfTSUF2fFqAJ7firufhRFSdTg36rIDhQ6XHnAI0"
+    "L1iWhWEYASBLl1L+JaWcfSuqk+u3AUikRer4ADffg/w7gt80fs35r34k3BYh2xNAarooAJ4d"
+    "vsHgaP8EWMR17GiaVo8r0+Fw6DrQDDzXO+RgQSjBUFIlPh+wB0vLZD6TrLWrkWRXB29fGAK6"
+    "pql1rNXVmrCklJYGtAgh6DXHDsuuG8k+O9M5895tq+atpSwwZ9o2TjZlWTGl1IAGNEsp1c1E"
+    "DiMqmI7nZRQJ7j/G6xZWMS/vsYcGkEzG4vF4RDt06FBfZmbmwR/27uOD3f1aVk+BljMjD6lp"
+    "/DN07a4VTYw8tL4rrQZgbNixadOm90+dOvX82cZmcbaxmWBukOVrlvJudw1R1xDp8a+kuPM6"
+    "Gx8S4LXtCIwNO1asWDGYl5dn3gneunGLc7/+gTttoAntQRrTmgMmpimAHQwGOycnlBaX4rUz"
+    "8LszMRweXLr7kWB35oMdCAT+1jRt0cqVK6Otra2+hvoGGuobWPLEEsoXzkbPkLhvR4CBRwJY"
+    "Xq/3SGVlZbq7u7utsrJyxDTNz06cOJHZ0tRCS1MLAKuRwNQT9v8AyV27dn1fXl7eqmlae11d"
+    "XXLfvn0/+Xy+l6LR6Gu2befFYjFfzrk2FzeHp7mK7jdxz2/LffGamhpvc3NzyLKsbFd3z1PG"
+    "aHyBTKdjum0POGzbFAp7qo0xVOtJZdf/C/wRDnL5FYGSAAAAAElFTkSuQmCC")
 
 def usage():
     print """
@@ -178,8 +197,10 @@ class Server():
         self.args = args
         self.plcobj = None
         self.servicepublisher = None
-
-    def Loop(self):
+        self.statuschange = None
+    
+    def Loop(self, statuschange=None):
+        self.statuschange = statuschange
         while self.continueloop:
             self.Start()
         
@@ -193,7 +214,7 @@ class Server():
     def Start(self):
         pyro.initServer()
         self.daemon=pyro.Daemon(host=self.ip, port=self.port)
-        self.plcobj = PLCObject(self.workdir, self.daemon, self.args)
+        self.plcobj = PLCObject(self.workdir, self.daemon, self.args, self.statuschange)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
     
         print "The daemon runs on port :",self.port
@@ -265,11 +286,9 @@ class DemoTaskBarIcon(wx.TaskBarIcon):
     def __init__(self, pyroserver):
         wx.TaskBarIcon.__init__(self)
         # Set the image
-        icon = self.MakeIcon(BeremizIcon.GetImage())
-        self.SetIcon(icon, "Beremiz Service")        
+        self.UpdateIcon(None)
+
         # bind some events
-        #self.Bind(wx.EVT_TASKBAR_CLICK, self.OnClick)
-        #self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarActivate)
         self.Bind(wx.EVT_MENU, self.OnTaskBarChangeName, id=self.TBMENU_CHANGE_NAME)
         self.Bind(wx.EVT_MENU, self.OnTaskBarChangeInterface, id=self.TBMENU_CHANGE_INTERFACE)
         self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
@@ -340,12 +359,23 @@ class DemoTaskBarIcon(wx.TaskBarIcon):
         self.RemoveIcon()
         wx.GetApp().ExitMainLoop()
         
+    def UpdateIcon(self, plcstatus):
+        if plcstatus is "Started" :
+            currenticon = self.MakeIcon(starticon.GetImage())
+        elif plcstatus is "Stopped":
+            currenticon = self.MakeIcon(stopicon.GetImage())
+        else:
+            currenticon = self.MakeIcon(defaulticon.GetImage())
+        self.SetIcon(currenticon, "Beremiz Service")
+        
 pyroserver = Server(name, ip, port, WorkingDir, args)
 
 if havewx:
     app=wx.App(redirect=False)
     taskbar_instance = DemoTaskBarIcon(pyroserver)
-    pyro_thread=Thread(target=pyroserver.Loop)
+    def statuschange(status):
+        wx.CallAfter(taskbar_instance.UpdateIcon,status)
+    pyro_thread=Thread(target=pyroserver.Loop, args=[statuschange])
     pyro_thread.start()
     app.MainLoop()
 else:

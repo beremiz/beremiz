@@ -41,7 +41,7 @@ lib_ext ={
 
 class PLCObject(pyro.ObjBase):
     _Idxs = []
-    def __init__(self, workingdir, daemon, argv):
+    def __init__(self, workingdir, daemon, argv, statuschange=None):
         pyro.ObjBase.__init__(self)
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
         self.workingdir = workingdir
@@ -50,6 +50,7 @@ class PLCObject(pyro.ObjBase):
         # Creates fake C funcs proxies
         self._FreePLC()
         self.daemon = daemon
+        self.statuschange = statuschange
         
         # Get the last transfered PLC if connector must be restart
         try:
@@ -171,6 +172,8 @@ class PLCObject(pyro.ObjBase):
                 if debug:
                     self._resumeDebug()
                 self.PLCStatus = "Started"
+                if self.statuschange is not None:
+                    self.statuschange(self.PLCStatus)
                 return True
             else:
                 print "_StartPLC did not return 0 !"
@@ -180,6 +183,8 @@ class PLCObject(pyro.ObjBase):
     def _DoStopPLC(self):
         self._stopPLC()
         self.PLCStatus = "Stopped"
+        if self.statuschange is not None:
+            self.statuschange(self.PLCStatus)
         if self._FreePLC():
             self.PLCStatus = "Dirty"
         return True
