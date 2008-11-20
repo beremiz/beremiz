@@ -87,14 +87,13 @@ def SearchNodePDOMapping(loc_infos, node):
     @return: a list of indexes found
     """
     
-    typeinfos = node.GetEntryInfos(loc_infos["type"])
-    model = (loc_infos["index"] << 16) + (loc_infos["subindex"] << 8) + typeinfos["size"]
+    model = (loc_infos["index"] << 16) + (loc_infos["subindex"] << 8)
     
     for PDOidx in GetNodePDOIndexes(node, loc_infos["pdotype"]):
         values = node.GetEntry(PDOidx)
         if values != None:
             for subindex, mapping in enumerate(values):
-                if subindex != 0 and mapping == model:
+                if subindex != 0 and mapping & 0xFFFFFF00 == model:
                     return PDOidx, subindex
     return None
 
@@ -424,7 +423,13 @@ class ConciseDCFGenerator:
                     self.MasterMapping[cobid] = {"type" : InvertPDOType[locationinfos["pdotype"]], "mapping" : mapping}
             
                 # Indicate that this PDO entry must be saved
-                self.MasterMapping[cobid]["mapping"][subindex] = (locationinfos["type"], name)
+                if locationinfos["bit"] is not None:
+                    if not isinstance(self.MasterMapping[cobid]["mapping"][subindex], ListType):
+                        self.MasterMapping[cobid]["mapping"][subindex] = [1] * self.MasterMapping[cobid]["mapping"][subindex]
+                    if locationinfos["bit"] < len(self.MasterMapping[cobid]["mapping"][subindex]):
+                        self.MasterMapping[cobid]["mapping"][subindex][locationinfos["bit"]] = (locationinfos["type"], name)
+                else:
+                    self.MasterMapping[cobid]["mapping"][subindex] = (locationinfos["type"], name)
                 
             else:
                 # Add location to those that haven't been mapped yet
@@ -498,12 +503,19 @@ class ConciseDCFGenerator:
             else:
                 self.MasterNode.SetEntry(current_idx, 0x02, 0xFF)
             
+            mapping = []
+            for item in pdo_infos["mapping"]:
+                if isinstance(item, ListType):
+                    mapping.extend(item)
+                else:
+                    mapping.append(item)
+            
             # Add some subentries to PDO mapping if there is not enough
-            if len(pdo_infos["mapping"]) > 1:
-                self.Manager.AddSubentriesToCurrent(current_idx + 0x200, len(pdo_infos["mapping"]) - 1, self.MasterNode)
+            if len(mapping) > 1:
+                self.Manager.AddSubentriesToCurrent(current_idx + 0x200, len(mapping) - 1, self.MasterNode)
             
             # Generate MasterNode's PDO mapping
-            for subindex, variable in enumerate(pdo_infos["mapping"]):
+            for subindex, variable in enumerate(mapping):
                 if subindex == 0:
                     continue
                 new_index = False
