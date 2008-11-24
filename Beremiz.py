@@ -423,7 +423,7 @@ class Beremiz(wx.Frame):
         self.runtime_port = int(random.random() * 1000) + 61131
         # launch local runtime
         self.local_runtime = ProcessLogger(self.Log,
-                                           "\"%s\" \"%s\" -p %s -i localhost %s"%(sys.executable,
+                                           "\"%s\" \"%s\" -p %s -i localhost -x 0 %s"%(sys.executable,
                                                        Bpath("Beremiz_service.py"),
                                                        self.runtime_port,
                                                        self.local_runtime_tmpdir),
