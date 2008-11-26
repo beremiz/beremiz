@@ -9,6 +9,7 @@ from SVGUIGenerator import *
 from SVGUIControler import *
 from SVGUIEditor import *
 from FBD_Objects import *
+from PLCGenerator import PLCGenException
 
 from wxPopen import ProcessLogger
 from wx.wxsvg import SVGDocument
@@ -166,11 +167,10 @@ class RootClass(SVGUIControler):
             dialog.Destroy()
 
     def _StartInkscape(self):
-        if not self._View:
-		svgfile = os.path.join(self.PlugPath(), "gui.svg")		
-		if not os.path.isfile(svgfile):
-		    svgfile = None
-		open_svg(svgfile)
+        svgfile = os.path.join(self.PlugPath(), "gui.svg")		
+        if not os.path.isfile(svgfile):
+            svgfile = None
+        open_svg(svgfile)
 
     PluginMethods = [
         {"bitmap" : os.path.join("images","HMIEditor"),
@@ -251,7 +251,7 @@ class RootClass(SVGUIControler):
             name = block.getinstanceName()
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
-                raise ValueError, "No corresponding block found"
+                raise PLCGenException, "Undefined SVGUI Block \"%s\""%name
             type = block.gettypeName()
             block_infos = GetSVGUIBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
@@ -273,16 +273,17 @@ class RootClass(SVGUIControler):
                 for num, variable in enumerate(block.outputVariables.getvariable()):
                     blockPointx, blockPointy = variable.connectionPointOut.getrelPositionXY()
                     output_info = (generator.TagName, "block", block.getlocalId(), "output", num)
+                    parameter = "%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num+1)
                     if block.getx() + blockPointx == connectionPoint.getx() and block.gety() + blockPointy == connectionPoint.gety():
-                        return [("%sI%s%s.%d.%d"%("%", TYPECONVERSION[block_infos["outputs"][num][1]], current_location, block_id, num+1), output_info)]
-                raise ValueError, "No output variable found"
+                        return generator.ExtractModifier(variable, [(parameter, output_info)], output_info)
+                raise PLCGenException, "No corresponding output variable found on SVGUI Block \"%s\""%name
             else:
                 return None
 
         def initialise_block(type, name, block = None):
             block_id = self.GetElementIdFromName(name)
             if block_id == None:
-                raise ValueError, "No corresponding block found"
+                raise PLCGenException, "Undefined SVGUI Block \"%s\""%name
             block_infos = GetSVGUIBlockType(type)
             current_location = ".".join(map(str, self.GetCurrentLocation()))
             variables = []
