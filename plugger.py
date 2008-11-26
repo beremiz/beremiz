@@ -41,7 +41,7 @@ class MiniTextControler:
         file.write(text)
         file.close()
         
-    def GetEditedElementText(self, tagname):
+    def GetEditedElementText(self, tagname, debug = False):
         if os.path.isfile(self.FilePath):
             file = open(self.FilePath, "r")
             text = file.read()
@@ -49,16 +49,16 @@ class MiniTextControler:
             return text
         return ""
     
-    def GetEditedElementInterfaceVars(self, tagname):
+    def GetEditedElementInterfaceVars(self, tagname, debug = False):
         return []
     
-    def GetEditedElementType(self, tagname):
+    def GetEditedElementType(self, tagname, debug = False):
         return "program"
     
-    def GetBlockTypes(self, tagname = ""):
+    def GetBlockTypes(self, tagname = "", debug = False):
         return []
     
-    def GetEnumeratedDataValues(self):
+    def GetEnumeratedDataValues(self, debug = False):
         return []
     
     def StartBuffering(self):
