@@ -18,6 +18,8 @@ from docpdf import *
 from xmlclass import GenerateClassesFromXSDstring
 from wxPopen import ProcessLogger
 
+from PLCControler import PLCControler
+
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="BaseParams">
@@ -83,6 +85,7 @@ class PlugTemplate:
     PlugChildsTypes = []
     PlugMaxCount = None
     PluginMethods = []
+    LibraryControler = None
 
     def _AddParamsMembers(self):
         self.PlugParams = None
@@ -109,6 +112,9 @@ class PlugTemplate:
     
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "plugin.xml")
+
+    def PluginLibraryFilePath(self, PlugName=None):
+        return os.path.join(os.path.join(os.path.split(__file__)[0], "plugins", self.PlugType, "pous.xml"))
 
     def PlugPath(self,PlugName=None):
         if not PlugName:
@@ -264,9 +270,13 @@ class PlugTemplate:
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     def BlockTypesFactory(self):
+        if self.LibraryControler is not None:
+            return [{"name" : "%s POUs" % self.PlugType, "list": self.LibraryControler.Project.GetCustomBlockTypes()}]
         return []
 
     def STLibraryFactory(self):
+        if self.LibraryControler is not None:
+            return self.LibraryControler.GenerateProgram()
         return ""
 
     def IterChilds(self):
@@ -528,7 +538,13 @@ class PlugTemplate:
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
         if os.path.isfile(methode_name):
             execfile(methode_name)
-
+        
+        # Get library blocks if plcopen library exist
+        library_path = self.PluginLibraryFilePath(PlugName)
+        if os.path.isfile(library_path):
+            self.LibraryControler = PLCControler()
+            self.LibraryControler.OpenXMLFile(library_path)
+        
         # Get the base xml tree
         if self.MandatoryParams:
             try:
@@ -604,7 +620,6 @@ from threading import Timer, Lock, Thread, Semaphore
 from time import localtime
 from datetime import datetime
 # import necessary stuff from PLCOpenEditor
-from PLCControler import PLCControler
 from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
@@ -687,6 +702,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PLCDebug = None
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
+
+    def PluginLibraryFilePath(self, PlugName=None):
+        return os.path.join(os.path.join(os.path.split(__file__)[0], "pous.xml"))
 
     def PlugTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
@@ -875,6 +893,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%result)
             return False
         plc_file = open(self._getIECcodepath(), "w")
+        if getattr(self, "PluggedChilds", None) is not None:
+            # Add ST Library from plugins
+            plc_file.write(self.STLibraryFactory())
+            plc_file.write("\n")
+            for child in self.IterChilds():
+                plc_file.write(child.STLibraryFactory())
+                plc_file.write("\n")
         if os.path.isfile(self._getIECrawcodepath()):
             plc_file.write(open(self._getIECrawcodepath(), "r").read())
             plc_file.write("\n")
