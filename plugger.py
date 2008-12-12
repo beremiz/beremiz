@@ -1065,7 +1065,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
            "extern_variables_declarations":"\n".join([
               {"PT":"extern %(type)s *%(C_path)s;",
                "VAR":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v 
-               for v in self._VariablesList if v["C_path"].find('.')<0]),
+               for v in self._VariablesList if v["vartype"] != "FB" and v["C_path"].find('.')<0]),
            "subscription_table_count":
                len(self._VariablesList),
            "variables_pointer_type_table_count":
@@ -1074,7 +1074,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                {"PT":"    variable_table[%(num)s].ptrvalue = (void*)(%(C_path)s);\n",
                 "VAR":"    variable_table[%(num)s].ptrvalue = (void*)(&%(C_path)s);\n"}[v["vartype"]]%v + 
                 "    variable_table[%(num)s].type = %(type)s_ENUM;\n"%v
-                for v in self._VariablesList if v["type"] in DebugTypes ])}
+                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ])}
         
         return debug_code
         
