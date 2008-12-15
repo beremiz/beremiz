@@ -65,7 +65,7 @@ void PlcLoop()
 HANDLE PLC_thread;
 HANDLE debug_sem;
 HANDLE wait_sem; 
-#define MAX_SEM_COUNT 10
+#define MAX_SEM_COUNT 1
 
 int startPLC(int argc,char **argv)
 {
@@ -147,12 +147,10 @@ int WaitDebugData()
 	return __debug_tick;
 }
  
-/* Called by PLC thread when debug_publish finished
+/* Called by PLC thread when debug_pu//blish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
 {
-	/* Leave debugger section */
-	ReleaseSemaphore(debug_sem, 1, NULL);
     /* remember tick */
     __debug_tick = __tick;
     /* signal debugger thread it can read data */
