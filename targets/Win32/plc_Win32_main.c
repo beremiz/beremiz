@@ -1,17 +1,19 @@
+/**
+ * Win32 specific code
+ **/ 
+
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <time.h>
 #include <windows.h>
 
+/* provided by POUS.C */
+extern int common_ticktime__;
+
 long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
 {
     return InterlockedCompareExchange(atomicvar, exchange, compared);
 }
-
-//long AtomicExchange(long* atomicvar,long exchange)
-//{
-//    return InterlockedExchange(atomicvar, exchange);    
-//}
 
 struct _timeb timetmp;
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
@@ -64,9 +66,11 @@ void PlcLoop()
 
 HANDLE PLC_thread;
 HANDLE debug_sem;
-HANDLE wait_sem; 
-#define MAX_SEM_COUNT 1
+HANDLE debug_wait_sem; 
+HANDLE python_sem;
+HANDLE python_wait_sem; 
 
+#define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
 	unsigned long thread_id = 0;
@@ -76,25 +80,50 @@ int startPLC(int argc,char **argv)
 	debug_sem = CreateSemaphore( 
 							NULL,           // default security attributes
 					        1,  			// initial count
-					        MAX_SEM_COUNT,  // maximum count
+					        1,  			// maximum count
 					        NULL);          // unnamed semaphore
     if (debug_sem == NULL) 
     {
-        printf("CreateMutex error: %d\n", GetLastError());
+        printf("startPLC CreateSemaphore debug_sem error: %d\n", GetLastError());
         return;
     }
     
-	wait_sem = CreateSemaphore( 
+	debug_wait_sem = CreateSemaphore( 
 					        NULL,           // default security attributes
 					        0,  			// initial count
-					        MAX_SEM_COUNT,  // maximum count
+					        1,  			// maximum count
 					        NULL);          // unnamed semaphore
 
-    if (wait_sem == NULL) 
+    if (debug_wait_sem == NULL) 
     {
-        printf("CreateMutex error: %d\n", GetLastError());
+        printf("startPLC CreateSemaphore debug_wait_sem error: %d\n", GetLastError());
         return;
     }
+
+	python_sem = CreateSemaphore( 
+					        NULL,           // default security attributes
+					        1,  			// initial count
+					        1,  			// maximum count
+					        NULL);          // unnamed semaphore
+
+    if (python_sem == NULL) 
+    {
+        printf("startPLC CreateSemaphore python_sem error: %d\n", GetLastError());
+        return;
+    }
+	python_wait_sem = CreateSemaphore( 
+					        NULL,           // default security attributes
+					        0,  			// initial count
+					        1,  			// maximum count
+					        NULL);          // unnamed semaphore
+
+
+    if (python_wait_sem == NULL) 
+    {
+        printf("startPLC CreateSemaphore python_wait_sem error: %d\n", GetLastError());
+        return;
+    }
+
 	
 	/* Create a waitable timer */
     PLC_timer = CreateWaitableTimer(NULL, FALSE, "WaitableTimer");
@@ -133,9 +162,9 @@ int stopPLC()
 	WaitForSingleObject(PLC_thread, INFINITE);
 	__cleanup();
 	__debug_tick = -1;
-	ReleaseSemaphore(wait_sem, 1, NULL);
+	ReleaseSemaphore(debug_wait_sem, 1, NULL);
 	CloseHandle(debug_sem);
-	CloseHandle(wait_sem);
+	CloseHandle(debug_wait_sem);
 	CloseHandle(PLC_timer);
 	CloseHandle(PLC_thread);
 }
@@ -143,30 +172,58 @@ int stopPLC()
 /* from plc_debugger.c */
 int WaitDebugData()
 {
-	WaitForSingleObject(wait_sem, INFINITE);
+	WaitForSingleObject(debug_wait_sem, INFINITE);
 	return __debug_tick;
 }
  
-/* Called by PLC thread when debug_pu//blish finished
+/* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
 {
     /* remember tick */
     __debug_tick = __tick;
     /* signal debugger thread it can read data */
-    ReleaseSemaphore(wait_sem, 1, NULL);
+    ReleaseSemaphore(debug_wait_sem, 1, NULL);
 }
 
 void suspendDebug()
 {
-	__DEBUG = 0;
     /* Prevent PLC to enter debug code */
 	WaitForSingleObject(debug_sem, INFINITE);  
 }
 
 void resumeDebug()
 {
-	__DEBUG = 1;
     /* Let PLC enter debug code */
 	ReleaseSemaphore(debug_sem, 1, NULL);
 }
+
+/* from plc_python.c */
+int WaitPythonCommands(void)
+{
+    /* Wait signal from PLC thread */
+	WaitForSingleObject(python_wait_sem, INFINITE);
+}
+ 
+/* Called by PLC thread on each new python command*/
+void UnBlockPythonCommands(void)
+{
+    /* signal debugger thread it can read data */
+	ReleaseSemaphore(python_wait_sem, 1, NULL);
+}
+
+int TryLockPython(void)
+{
+	return WaitForSingleObject(python_sem, 0) == WAIT_OBJECT_0;
+}
+
+void UnLockPython(void)
+{
+	ReleaseSemaphore(python_sem, 1, NULL);
+}
+
+void LockPython(void)
+{
+	WaitForSingleObject(python_sem, INFINITE);
+}
+

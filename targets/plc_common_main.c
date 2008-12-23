@@ -1,41 +1,35 @@
-/*
- * Prototypes for function provided by arch-specific code (main)
- * concatained after this template
- ** /
-
-
-/*
- * Functions and variables provied by generated C softPLC
+/**
+ * Code common to all C targets
  **/ 
-extern int common_ticktime__;
-
-/*
- * Functions and variables provied by plc.c
- **/ 
-void run(long int tv_sec, long int tv_nsec);
-
-#define maxval(a,b) ((a>b)?a:b)
 
 #include "iec_types.h"
-/*#include "stdio.h" /* For debug */
 
 /*
- * Functions and variables provied by generated C softPLC
+ * Prototypes of functions provied by generated C softPLC
  **/ 
 void config_run__(int tick);
 void config_init__(void);
-void __init_debug(void);
-void __cleanup_debug(void);
-
 
 /*
- *  Functions and variables to export to generated C softPLC and plugins
+ * Prototypes of functions provied by generated target C code
+ * */
+void __init_debug(void);
+void __cleanup_debug(void);
+/*void __retrieve_debug(void);*/
+void __publish_debug(void);
+
+void __init_python(void);
+void __cleanup_python(void);
+void __retrieve_python(void);
+void __publish_python(void);
+
+/*
+ *  Variables used by generated C softPLC and plugins
  **/
- 
 IEC_TIME __CURRENT_TIME;
-IEC_BOOL __DEBUG;
 int __tick = -1;
 
+/* Help to quit cleanly when init fail at a certain level */
 static int init_level = 0;
 
 /*
@@ -52,9 +46,13 @@ void __run()
 
     %(retrieve_calls)s
 
+    __retrieve_python();
+
     /*__retrieve_debug();*/
     
     config_run__(__tick);
+
+    __publish_python();
 
     __publish_debug();
     
@@ -169,3 +167,8 @@ void align_tick(int sync_align_ratio)
 		}
 	}
 }
+
+/**
+ * Prototypes for function provided by arch-specific code (main)
+ * is concatained hereafter
+ **/

@@ -53,10 +53,7 @@ struct_plcvar variable_table[%(variables_pointer_type_table_count)d];
 void __init_debug()
 {
 %(variables_pointer_type_table_initializer)s
-AtomicCompareExchange(
-            &buffer_state,
-            BUFFER_BUSY,
-            BUFFER_FREE);
+    buffer_state = BUFFER_FREE;
 }
 
 void __cleanup_debug()

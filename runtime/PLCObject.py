@@ -23,8 +23,9 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import Pyro.core as pyro
-from threading import Timer
+from threading import Timer, Thread
 import ctypes, os, commands
+import time
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -107,6 +108,10 @@ class PLCObject(pyro.ObjBase):
 
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
             self._resumeDebug.restype = None
+
+            self._PythonIterator = self.PLClibraryHandle.PythonIterator
+            self._PythonIterator.restype = ctypes.c_char_p
+            self._PythonIterator.argtypes = [ctypes.c_char_p]
             
             return True
         except:
@@ -128,6 +133,7 @@ class PLCObject(pyro.ObjBase):
         self._WaitDebugData = lambda:-1
         self._suspendDebug = lambda:None
         self._resumeDebug = lambda:None
+        self._PythonIterator = lambda:""
         self.PLClibraryHandle = None
         # Unload library explicitely
         if getattr(self,"_PLClibraryHandle",None) is not None:
@@ -163,6 +169,18 @@ class PLCObject(pyro.ObjBase):
                     return True
         return False
 
+    def PythonThreadProc(self):
+        res = ""
+        print "PythonThreadProc started"
+        while self.PLCStatus == "Started":
+            cmd = self._PythonIterator(res)
+            print "_PythonIterator(", res, ") -> ", cmd
+            try :
+                res = eval(cmd)
+            except Exception,e:
+                res = "#EXCEPTION : "+str(e)
+                print res
+        print "PythonThreadProc finished"
     
     def StartPLC(self, debug=False):
         print "StartPLC"
@@ -174,6 +192,8 @@ class PLCObject(pyro.ObjBase):
                 self.PLCStatus = "Started"
                 if self.statuschange is not None:
                     self.statuschange(self.PLCStatus)
+                self.PythonThread = Thread(target=self.PythonThreadProc)
+                self.PythonThread.start()
                 return True
             else:
                 print "_StartPLC did not return 0 !"
@@ -270,6 +290,13 @@ class PLCObject(pyro.ObjBase):
         for idx in idxs:
             self._RegisterDebugVariable(idx)
         self._resumeDebug()
+
+    class IEC_STRING(ctypes.Structure):
+        """
+        Must be changed according to changes in iec_types.h
+        """
+        _fields_ = [("len", ctypes.c_uint8),
+                    ("body", ctypes.c_char * 40)] 
     
     TypeTranslator = {"BOOL" :       (ctypes.c_uint8, lambda x:x.value!=0),
                       "STEP" :       (ctypes.c_uint8, lambda x:x.value),
@@ -278,7 +305,7 @@ class PLCObject(pyro.ObjBase):
                       "SINT" :       (ctypes.c_int8, lambda x:x.value),
                       "USINT" :      (ctypes.c_uint8, lambda x:x.value),
                       "BYTE" :       (ctypes.c_uint8, lambda x:x.value),
-                      "STRING" :     (None, None),#TODO
+                      "STRING" :     (IEC_STRING, lambda x:x.body[:x.len]),
                       "INT" :        (ctypes.c_int16, lambda x:x.value),
                       "UINT" :       (ctypes.c_uint16, lambda x:x.value),
                       "WORD" :       (ctypes.c_uint16, lambda x:x.value),

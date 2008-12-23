@@ -1,3 +1,7 @@
+/**
+ * Linux specific code
+ **/ 
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -5,15 +9,13 @@
 #include <stdlib.h>
 #include <pthread.h> 
 
+/* provided by POUS.C */
+extern int common_ticktime__;
+
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
     return __sync_val_compare_and_swap(atomicvar, compared, exchange);
 }
-
-//long AtomicExchange(long* atomicvar,long exchange)
-//{
-//    return __sync_lock_test_and_set(atomicvar, exchange);
-//}
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
@@ -64,9 +66,12 @@ void catch_signal(int sig)
 
 static int __debug_tick;
 
-static pthread_mutex_t wait_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t python_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t debug_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+#define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
     struct sigevent sigev;
@@ -79,7 +84,8 @@ int startPLC(int argc,char **argv)
     sigev.sigev_notify_attributes = NULL;
     sigev.sigev_notify_function = PLC_timer_notify;
 
-    pthread_mutex_lock(&wait_mutex);
+    pthread_mutex_lock(&debug_wait_mutex);
+    pthread_mutex_lock(&python_wait_mutex);
 
     timer_create (CLOCK_REALTIME, &sigev, &PLC_timer);
     if(  __init(argc,argv) == 0 ){
@@ -111,7 +117,7 @@ int stopPLC()
     timer_delete (PLC_timer);
     __cleanup();
     __debug_tick = -1;
-    pthread_mutex_unlock(&wait_mutex);
+    pthread_mutex_unlock(&debug_wait_mutex);
 }
 
 extern int __tick;
@@ -119,7 +125,7 @@ extern int __tick;
 int WaitDebugData()
 {
     /* Wait signal from PLC thread */
-    pthread_mutex_lock(&wait_mutex);
+    pthread_mutex_lock(&debug_wait_mutex);
     return __debug_tick;
 }
  
@@ -127,25 +133,49 @@ int WaitDebugData()
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
 {
-    /* Leave debugger section */
-    pthread_mutex_unlock(&debug_mutex);
     /* remember tick */
     __debug_tick = __tick;
     /* signal debugger thread it can read data */
-    pthread_mutex_unlock(&wait_mutex);
+    pthread_mutex_unlock(&debug_wait_mutex);
 }
 
-void suspendDebug()
+void suspendDebug(void)
 {
-    __DEBUG = 0;
     /* Prevent PLC to enter debug code */
     pthread_mutex_lock(&debug_mutex);
 }
 
-void resumeDebug()
+void resumeDebug(void)
 {
-    __DEBUG = 1;
     /* Let PLC enter debug code */
     pthread_mutex_unlock(&debug_mutex);
 }
 
+/* from plc_python.c */
+int WaitPythonCommands(void)
+{
+    /* Wait signal from PLC thread */
+    pthread_mutex_lock(&python_wait_mutex);
+}
+ 
+/* Called by PLC thread on each new python command*/
+void UnBlockPythonCommands(void)
+{
+    /* signal debugger thread it can read data */
+    pthread_mutex_unlock(&python_wait_mutex);
+}
+
+int TryLockPython(void)
+{
+    return pthread_mutex_trylock(&python_mutex) == 0;
+}
+
+void UnLockPython(void)
+{
+    pthread_mutex_unlock(&python_mutex);
+}
+
+void LockPython(void)
+{
+    pthread_mutex_lock(&python_mutex);
+}

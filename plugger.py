@@ -1078,6 +1078,23 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         return debug_code
         
+    def Generate_plc_python(self):
+        """
+        Generate trace/debug code out of PLC variable list
+        """
+        self.GetIECProgramsAndVariables()
+
+        python_eval_fb_list = []
+        for v in self._VariablesList :
+            if v["vartype"] == "FB" and v["type"] == "PYTHON_EVAL":
+                python_eval_fb_list.append(v)
+        python_eval_fb_count = len(python_eval_fb_list)
+        
+        # prepare debug code
+        python_code = targets.code("plc_python") % {
+           "python_eval_fb_count": python_eval_fb_count}
+        return python_code
+        
     def Generate_plc_common_main(self):
         """
         Use plugins layout given in LocationCFilesAndCFLAGS to
@@ -1175,6 +1192,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for generator, filename, name in [
            # debugger code
            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
+           # IEC<->python gateway code
+           (self.Generate_plc_python, "plc_python.c", "IEC-Python gateway"),
            # init/cleanup/retrieve/publish, run and align code
            (self.Generate_plc_common_main,"plc_common_main.c","Common runtime")]:
             try:
@@ -1408,7 +1427,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                             # This will block thread if more than one call is waiting
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
-                             "debug data not coherent %d != %d"%(len(debug_vars), len(self.TracedIECPath)))
+                             "Debug data not coherent %d != %d\n"%(len(debug_vars), len(self.TracedIECPath)))
             elif debug_tick == -1:
                 #wx.CallAfter(self.logger.write, "Debugger unavailable\n")
                 pass

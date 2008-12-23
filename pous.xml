@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
+  <fileHeader companyName="LOLITECH"
+              productName="Beremiz"
+              productVersion="0.0"
+              creationDateTime="2008-12-14T16:53:26"/>
+  <contentHeader name="Beremiz non-standard POUs library"
+                 modificationDateTime="2008-12-18T18:41:34">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="0" y="0"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="python_eval" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="TRIG">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="CODE">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="ACK">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="RESULT">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="STATE">
+              <type>
+                <DWORD/>
+              </type>
+            </variable>
+            <variable name="BUFFER">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="TRIGM1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[{extern void __PythonEvalFB(PYTHON_EVAL*);__PythonEvalFB(data__);}]]>
+          </ST>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations/>
+  </instances>
+</project>
