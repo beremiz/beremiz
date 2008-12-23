@@ -160,5 +160,5 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         return uri
 
     def ChooseLocalID(self, event):
-        self.my_result = "PYRO://localhost:3000"
+        self.my_result = "LOCAL://"
         self.Close()
