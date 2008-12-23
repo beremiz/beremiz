@@ -21,8 +21,8 @@
 /* The fifo (fixed size, as number of FB is fixed) */
 static PYTHON_EVAL* EvalFBs[%(python_eval_fb_count)d];
 /* Producer and consumer cursors */
-static long Current_PLC_EvalFB;
-static long Current_Python_EvalFB;
+static int Current_PLC_EvalFB;
+static int Current_Python_EvalFB;
 
 /* A global IEC-Python gateway state, for use inside python_eval FBs*/
 static int PythonState;
@@ -85,39 +85,50 @@ void __publish_python()
  */
 void __PythonEvalFB(PYTHON_EVAL* data__)
 {
+	/* detect rising edge on TRIG */
+	if(data__->TRIG && !data__->TRIGM1 && data__->TRIGGED == 0){
+		/* mark as trigged */
+		data__->TRIGGED = 1;
+		/* make a safe copy of the code */
+		data__->PREBUFFER = data__->CODE;
+	}
+	/* retain value for next detection */
+	data__->TRIGM1 = data__->TRIG;
+
 	/* python thread is not in ? */
 	if( PythonState & PYTHON_LOCKED_BY_PLC){
-		/* Rising edge on TRIG */
-		if(data__->TRIG && !data__->TRIGM1 &&
+		/* got the order to act */
+		if(data__->TRIGGED == 1 &&
 		   /* and not already being processed */ 
 		   data__->STATE == PYTHON_FB_FREE) 
 		{
-			/* Get a new line */
-			Current_PLC_EvalFB = (Current_PLC_EvalFB + 1) %% %(python_eval_fb_count)d;
 			/* Enter the block in the fifo
 			/* Don't have to check if fifo cell is free
 			 * as fifo size == FB count, and a FB cannot 
 			 * be requested twice */
 			EvalFBs[Current_PLC_EvalFB] = data__;
-			/* copy CODE in variable into BUFFER local*/
-			data__->BUFFER = data__->CODE;
+			/* copy into BUFFER local*/
+			data__->BUFFER = data__->PREBUFFER;
 			/* Set ACK pin to low so that we can set a rising edge on result */
 			data__->ACK = 0;
 			/* Mark FB busy */
 			data__->STATE = PYTHON_FB_REQUESTED;
 			/* Have to wakeup python thread in case he was asleep */
 			PythonState |= PYTHON_MUSTWAKEUP;
-			//printf("__PythonEvalFB push %%*s\n",data__->BUFFER.len, data__->BUFFER.body);
+			//printf("__PythonEvalFB push %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);
+			/* Get a new line */
+			Current_PLC_EvalFB = (Current_PLC_EvalFB + 1) %% %(python_eval_fb_count)d;
 		}else if(data__->STATE == PYTHON_FB_ANSWERED){
+			/* Copy buffer content into result*/
 			data__->RESULT = data__->BUFFER;
+			/* signal result presece to PLC*/
 			data__->ACK = 1;
+			/* Mark as free */
 			data__->STATE = PYTHON_FB_FREE;
-			//printf("__PythonEvalFB pop %%*s\n",data__->BUFFER.len, data__->BUFFER.body);
+			/* mark as not trigged */
+			data__->TRIGGED = 0;
+			//printf("__PythonEvalFB pop %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);
 		}
-		/* retain value for trig
-		 * do this only when PYTHON_LOCKED_BY_PLC
-		 * to avoid missed rising edge due to asynchronism */
-		data__->TRIGM1 = data__->TRIG;
 	}
 }
 
@@ -153,6 +164,7 @@ char* PythonIterator(char* result)
 		data__->STATE = PYTHON_FB_ANSWERED;
 		/* Get a new line */
 		Current_Python_EvalFB = (Current_Python_EvalFB + 1) %% %(python_eval_fb_count)d;
+		//printf("PythonIterator ++ Current_Python_EvalFB %%d\n", Current_Python_EvalFB);
 	}
 	/* while next slot is empty */
 	while(((data__ = EvalFBs[Current_Python_EvalFB]) == NULL) || 
