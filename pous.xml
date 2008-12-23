@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:53:26"/>
   <contentHeader name="Beremiz non-standard POUs library"
-                 modificationDateTime="2008-12-18T18:41:34">
+                 modificationDateTime="2008-12-23T22:35:46">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -61,7 +61,17 @@
                 <string/>
               </type>
             </variable>
+            <variable name="PREBUFFER">
+              <type>
+                <string/>
+              </type>
+            </variable>
             <variable name="TRIGM1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="TRIGGED">
               <type>
                 <BOOL/>
               </type>
