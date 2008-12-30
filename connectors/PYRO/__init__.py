@@ -61,14 +61,16 @@ def PYRO_connector_factory(uri, pluginsroot):
         pluginsroot.logger.write_error("Cannot get PLC status - connection failed.\n")
         return None
 
-    # for safe use in from debug thread, must create a copy
-    RemotePLCObjectProxyCopy = copy.copy(RemotePLCObjectProxy)
-        
+
     class PyroProxyProxy:
         """
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
         And to put pyro exception catcher in between caller and pyro proxy
         """
+        def __init__(self):
+            # for safe use in from debug thread, must create a copy
+            self.RemotePLCObjectProxyCopy = None
+
         def GetPyroProxy(self):
             """
             This func returns the real Pyro Proxy.
@@ -94,6 +96,7 @@ def PYRO_connector_factory(uri, pluginsroot):
                 # let remote PLC time to resurect.(freeze app)
                 sleep(0.5)
                 pluginsroot._Connect()
+            self.RemotePLCObjectProxyCopy = copy.copy(pluginsroot._connector.GetPyroProxy())
             return pluginsroot._connector.GetPyroProxy().StartPLC(*args, **kwargs)
         StartPLC = PyroCatcher(_PyroStartPLC, False)
 
@@ -102,11 +105,11 @@ def PYRO_connector_factory(uri, pluginsroot):
             """
             for safe use in from debug thread, must use the copy
             """
-            if RemotePLCObjectProxyCopy.GetPLCstatus() == "Started":
-                return RemotePLCObjectProxyCopy.GetTraceVariables()
+            if self.RemotePLCObjectProxyCopy is not None and self.RemotePLCObjectProxyCopy.GetPLCstatus() == "Started":
+                return self.RemotePLCObjectProxyCopy.GetTraceVariables()
             else:
                 return None,None
-        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables)
+        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,(None,None))
 
         
         def __getattr__(self, attrName):
