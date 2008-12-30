@@ -25,7 +25,6 @@
 import Pyro.core as pyro
 from threading import Timer, Thread
 import ctypes, os, commands
-import time
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -170,11 +169,15 @@ class PLCObject(pyro.ObjBase):
         return False
 
     def PythonThreadProc(self):
+        pyfile = os.path.join(self.workingdir, "runtime.py")
+        if os.path.exists(pyfile):
+            # TODO handle exceptions in runtime.py
+            execfile(pyfile)
         res = ""
         print "PythonThreadProc started"
         while self.PLCStatus == "Started":
             cmd = self._PythonIterator(res)
-            print "_PythonIterator(", res, ") -> ", cmd
+            #print "_PythonIterator(", res, ") -> ", cmd
             try :
                 res = eval(cmd)
             except Exception,e:
