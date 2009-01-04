@@ -69,6 +69,7 @@ int __init(int argc,char **argv)
     int res;
     config_init__();
     __init_debug();
+    __init_python();
     %(init_calls)s
     return 0;
 }
@@ -79,6 +80,7 @@ void __cleanup()
 {
     %(cleanup_calls)s
     __cleanup_debug();
+    __cleanup_python();
 }
 
 

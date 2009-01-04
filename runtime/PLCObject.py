@@ -61,6 +61,10 @@ class PLCObject(pyro.ObjBase):
             self.PLCStatus = "Empty"
             self.CurrentPLCFilename=None
 
+    def StatusChange(self):
+        if self.statuschange is not None:
+            self.statuschange(self.PLCStatus)
+
     def _GetMD5FileName(self):
         return os.path.join(self.workingdir, "lasttransferedPLC.md5")
 
@@ -169,21 +173,30 @@ class PLCObject(pyro.ObjBase):
         return False
 
     def PythonThreadProc(self):
+        print "PythonThreadProc started"
+        my_globs = globals().copy()
         pyfile = os.path.join(self.workingdir, "runtime.py")
         if os.path.exists(pyfile):
             # TODO handle exceptions in runtime.py
-            execfile(pyfile)
-        res = ""
-        print "PythonThreadProc started"
+            # pyfile may redefine _runtime_cleanup
+            # or even call _PythonThreadProc itself.
+            execfile(pyfile, my_globs)
+        res,cmd = "None","None"
         while self.PLCStatus == "Started":
+            print "_PythonIterator(", res, ")",
             cmd = self._PythonIterator(res)
-            #print "_PythonIterator(", res, ") -> ", cmd
+            print " -> ", cmd
+            if cmd is None:
+                break
             try :
-                res = eval(cmd)
+                res = str(eval(cmd,my_globs))
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
                 print res
-        print "PythonThreadProc finished"
+        print "PythonThreadProc interrupted"
+        if my_globs.get("_runtime_cleanup",None) is not None:
+            my_globs["_runtime_cleanup"]()
+        print "PythonThreadProc cleaned up"
     
     def StartPLC(self, debug=False):
         print "StartPLC"
@@ -193,8 +206,7 @@ class PLCObject(pyro.ObjBase):
                 if debug:
                     self._resumeDebug()
                 self.PLCStatus = "Started"
-                if self.statuschange is not None:
-                    self.statuschange(self.PLCStatus)
+                self.StatusChange()
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 return True
@@ -206,10 +218,12 @@ class PLCObject(pyro.ObjBase):
     def _DoStopPLC(self):
         self._stopPLC()
         self.PLCStatus = "Stopped"
-        if self.statuschange is not None:
-            self.statuschange(self.PLCStatus)
+        self.PythonThread.join(timeout=1)
+        if self.PythonThread.isAlive():
+            print "Python thread couldn't be killed"
         if self._FreePLC():
             self.PLCStatus = "Dirty"
+        self.StatusChange()
         return True
 
     def StopPLC(self):
@@ -327,25 +341,27 @@ class PLCObject(pyro.ObjBase):
         """
         Return a list of variables, corresponding to the list of requiered idx
         """
-        tick = self._WaitDebugData()
-        if tick == -1:
-            res = None
-        else:
-            idx = ctypes.c_int()
-            typename = ctypes.c_char_p()
-            res = []
-    
-            for given_idx in self._Idxs:
-                buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-                c_type,unpack_func = self.TypeTranslator.get(typename.value, (None,None))
-                if c_type is not None and given_idx == idx.value:
-                    res.append(unpack_func(ctypes.cast(buffer,
-                                                       ctypes.POINTER(c_type)).contents))
-                else:
-                    print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
-                    res.append(None)
-        self._FreeDebugData()
-        return tick, res
+        if self.PLCStatus == "Started":
+            tick = self._WaitDebugData()
+            if tick == -1:
+                res = None
+            else:
+                idx = ctypes.c_int()
+                typename = ctypes.c_char_p()
+                res = []
+        
+                for given_idx in self._Idxs:
+                    buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
+                    c_type,unpack_func = self.TypeTranslator.get(typename.value, (None,None))
+                    if c_type is not None and given_idx == idx.value:
+                        res.append(unpack_func(ctypes.cast(buffer,
+                                                           ctypes.POINTER(c_type)).contents))
+                    else:
+                        print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
+                        res.append(None)
+            self._FreeDebugData()
+            return tick, res
+        return -1, None
         
 
 

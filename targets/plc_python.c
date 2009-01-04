@@ -29,6 +29,7 @@ static int PythonState;
 #define PYTHON_LOCKED_BY_PYTHON 0
 #define PYTHON_LOCKED_BY_PLC 1
 #define PYTHON_MUSTWAKEUP 2
+#define PYTHON_FINISHED 4
  
 /* Each python_eval FunctionBlock have it own state */
 #define PYTHON_FB_FREE 0
@@ -55,6 +56,8 @@ void __init_python()
 
 void __cleanup_python()
 {
+	PythonState = PYTHON_FINISHED;
+	UnBlockPythonCommands();
 }
 
 void __retrieve_python()
@@ -173,7 +176,10 @@ char* PythonIterator(char* result)
 	{
 		UnLockPython();
 		/* wait next FB to eval */
+		//printf("PythonIterator wait\n");
 		WaitPythonCommands();
+		/*emergency exit*/
+		if(PythonState & PYTHON_FINISHED) return NULL;
 		LockPython();
 	}
 	/* Mark block as processing */

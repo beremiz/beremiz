@@ -700,6 +700,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.BuildPath = None
         self.PLCEditor = None
         self.PLCDebug = None
+        self.DebugThread = None
+        self.debug_break = False
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
 
@@ -1309,6 +1311,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error("Build directory already clean\n")
         self.ShowMethod("_showIECcode", False)
         self.EnableMethod("_Clean", False)
+        # kill the builder
+        self._builder = None
         self.CompareLocalAndRemotePLC()
 
     ############# Real PLC object access #############
@@ -1434,8 +1438,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         # This lock is used to avoid flooding wx event stack calling callafter
         self.DebugThreadSlowDownLock = Semaphore(0)
-        _break = False
-        while not _break and self._connector is not None:
+        self.debug_break = False
+        while (not self.debug_break) and (self._connector is not None):
             debug_tick, debug_vars = self._connector.GetTraceVariables()
             #print debug_tick, debug_vars
             self.IECdebug_lock.acquire()
@@ -1459,10 +1463,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 pass
             else:
                 wx.CallAfter(self.logger.write, "Debugger disabled\n")
-                _break = True
+                self.debug_break = True
             self.IECdebug_lock.release()
             wx.CallAfter(self.DebugThreadSlowDownLock.release)
             self.DebugThreadSlowDownLock.acquire()
+
+    def KillDebugThread(self):
+        self.debug_break = True
+        self.DebugThreadSlowDownLock.release()
+        self.DebugThread.join(timeout=1)
+        if self.DebugThread.isAlive():
+            self.logger.write_warning("Debug Thread couldn't be killed")
+        self.DebugThread = None
 
     def _Debug(self):
         """
@@ -1485,6 +1497,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error("Couldn't start PLC debug !\n")
         self.UpdateMethodsFromPLCStatus()
 
+
 #    def _Do_Test_Debug(self):
 #        # debug code
 #        self.temporary_non_weak_callable_refs = []
@@ -1506,6 +1519,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         Stop PLC
         """
+        if self.DebugThread is not None:
+            self.logger.write("Stopping debug\n")
+            self.KillDebugThread()
+        
         if self._connector.StopPLC():
             self.logger.write("Stopping PLC\n")
         else:
