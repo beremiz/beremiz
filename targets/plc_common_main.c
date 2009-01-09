@@ -27,6 +27,7 @@ void __publish_python(void);
  *  Variables used by generated C softPLC and plugins
  **/
 IEC_TIME __CURRENT_TIME;
+IEC_BOOL __DEBUG;
 int __tick = -1;
 
 /* Help to quit cleanly when init fail at a certain level */
