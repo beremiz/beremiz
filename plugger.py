@@ -1105,7 +1105,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for v in self._VariablesList :
             if v["vartype"] == "FB" and v["type"] == "PYTHON_EVAL":
                 python_eval_fb_list.append(v)
-        python_eval_fb_count = len(python_eval_fb_list)
+        python_eval_fb_count = max(1, len(python_eval_fb_list))
         
         # prepare debug code
         python_code = targets.code("plc_python") % {
