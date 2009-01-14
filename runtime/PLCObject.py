@@ -25,6 +25,7 @@
 import Pyro.core as pyro
 from threading import Timer, Thread
 import ctypes, os, commands
+import sys
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -38,6 +39,10 @@ lib_ext ={
      "linux2":".so",
      "win32":".dll",
      }.get(sys.platform, "")
+
+def PLCprint(message):
+    sys.stdout.write("PLCobject : "+message+"\n")
+    sys.stdout.flush()
 
 class PLCObject(pyro.ObjBase):
     _Idxs = []
@@ -78,7 +83,7 @@ class PLCObject(pyro.ObjBase):
         Load PLC library
         Declare all functions, arguments and return values
         """
-        print "Load PLC"
+        PLCprint("Load PLC")
         try:
             self._PLClibraryHandle = dlopen(self._GetLibFileName())
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
@@ -119,7 +124,7 @@ class PLCObject(pyro.ObjBase):
             
             return True
         except:
-            print traceback.format_exc()
+            PLCprint(traceback.format_exc())
             return False
 
     def _FreePLC(self):
@@ -141,7 +146,7 @@ class PLCObject(pyro.ObjBase):
         self.PLClibraryHandle = None
         # Unload library explicitely
         if getattr(self,"_PLClibraryHandle",None) is not None:
-            print "Unload PLC"
+            PLCprint("Unload PLC")
             dlclose(self._PLClibraryHandle)
             res = self._DetectDirtyLibs()
         else:
@@ -168,13 +173,12 @@ class PLCObject(pyro.ObjBase):
                                   "libX11",
                                   ]:
                     #badhandle = dlopen(badlib, dl.RTLD_NOLOAD)
-                    print "Dirty lib detected :" + badlib
+                    PLCprint("Dirty lib detected :" + badlib)
                     #dlclose(badhandle)
                     return True
         return False
 
-    def PythonThreadProc(self):
-        print "PythonThreadProc started"
+    def ExecRuntimePy(self):
         self.python_threads_vars = globals().copy()
         pyfile = os.path.join(self.workingdir, "runtime.py")
         if os.path.exists(pyfile):
@@ -182,6 +186,14 @@ class PLCObject(pyro.ObjBase):
             # pyfile may redefine _runtime_cleanup
             # or even call _PythonThreadProc itself.
             execfile(pyfile, self.python_threads_vars)
+
+    def FinishRuntimePy(self):
+        if self.python_threads_vars.get("_runtime_cleanup",None) is not None:
+            self.python_threads_vars["_runtime_cleanup"]()
+        self.python_threads_vars = None
+
+    def PythonThreadProc(self):
+        PLCprint("PythonThreadProc started")
         res,cmd = "None","None"
         while self.PLCStatus == "Started":
             #print "_PythonIterator(", res, ")",
@@ -193,15 +205,11 @@ class PLCObject(pyro.ObjBase):
                 res = str(eval(cmd,self.python_threads_vars))
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
-                print res
-        print "PythonThreadProc interrupted"
-        if self.python_threads_vars.get("_runtime_cleanup",None) is not None:
-            self.python_threads_vars["_runtime_cleanup"]()
-        self.python_threads_vars = None
-        print "PythonThreadProc cleaned up"
+                PLCprint(res)
+        PLCprint("PythonThreadProc interrupted")
     
     def StartPLC(self, debug=False):
-        print "StartPLC"
+        PLCprint("StartPLC")
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
             if self._LoadNewPLC() and self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
@@ -209,11 +217,12 @@ class PLCObject(pyro.ObjBase):
                     self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
+                self.ExecRuntimePy()
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 return True
             else:
-                print "_StartPLC did not return 0 !"
+                PLCprint("Problem starting PLC")
                 self._DoStopPLC()
         return False
 
@@ -222,7 +231,8 @@ class PLCObject(pyro.ObjBase):
         self.PLCStatus = "Stopped"
         self.PythonThread.join(timeout=1)
         if self.PythonThread.isAlive():
-            print "Python thread couldn't be killed"
+            PLCprint("Python thread couldn't be killed")
+        self.FinishRuntimePy()
         if self._FreePLC():
             self.PLCStatus = "Dirty"
         self.StatusChange()
@@ -250,7 +260,7 @@ class PLCObject(pyro.ObjBase):
         return self.PLCStatus
     
     def NewPLC(self, md5sum, data, extrafiles):
-        print "NewPLC (%s)"%md5sum
+        PLCprint("NewPLC (%s)"%md5sum)
         if self.PLCStatus in ["Stopped", "Empty", "Dirty"]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
@@ -283,7 +293,7 @@ class PLCObject(pyro.ObjBase):
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName
             except:
-                print traceback.format_exc()
+                PLCprint(traceback.format_exc())
                 return False
             if self.PLCStatus == "Empty":
                 self.PLCStatus = "Stopped"
@@ -359,7 +369,7 @@ class PLCObject(pyro.ObjBase):
                         res.append(unpack_func(ctypes.cast(buffer,
                                                            ctypes.POINTER(c_type)).contents))
                     else:
-                        print "Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value)
+                        PLCprint("Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value))
                         res.append(None)
             self._FreeDebugData()
             return tick, res
