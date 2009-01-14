@@ -1458,7 +1458,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
                             # delegate call to wx event loop
                             #print weakcallable, value, args, kwargs
-                            wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
+                            if getattr(weakcallable, "SetValue", None) is not None:
+                                wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
+                            elif getattr(weakcallable, "AddPoint", None) is not None:
+                                wx.CallAfter(weakcallable.AddPoint, debug_tick, value, *args, **kwargs)
                             # This will block thread if more than one call is waiting
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
