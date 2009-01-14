@@ -313,6 +313,12 @@ class PlugTemplate:
         else:
             return self
 
+    def GetChildByType(self, TypeName):
+        if TypeName:
+            return self._GetChildBySomething("PlugType", TypeName)
+        else:
+            return self
+
     def GetChildByIECLocation(self, Location):
         if Location:
             return self._GetChildBySomething("IEC_Channel", Location)
@@ -668,10 +674,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
     </xsd:schema>
     """
 
-    def __init__(self, frame, logger, runtime_port):
+    def __init__(self, frame, logger):
         PLCControler.__init__(self)
 
-        self.runtime_port = runtime_port
         self.MandatoryParams = None
         self.AppFrame = frame
         self.logger = logger

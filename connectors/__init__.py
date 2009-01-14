@@ -39,9 +39,12 @@ def ConnectorFactory(uri, pluginsroot):
         factoryname = servicetype + "_connector_factory"
         return getattr(connectormodule, factoryname)(uri, pluginsroot)
     elif servicetype == "LOCAL":
+        #handle incompatibility with tray icon and svgui...
+        no_poisoned_plugin = pluginsroot.GetChildByType("svgui") is None
+        runtime_port = pluginsroot.AppFrame.StartLocalRuntime(taskbaricon = no_poisoned_plugin)
         import PYRO
         return PYRO.PYRO_connector_factory(
-                       "PYRO://127.0.0.1:"+str(pluginsroot.runtime_port), 
+                       "PYRO://127.0.0.1:"+str(runtime_port), 
                        pluginsroot)
     else :
         return None    

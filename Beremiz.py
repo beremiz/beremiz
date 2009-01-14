@@ -416,18 +416,10 @@ class Beremiz(wx.Frame):
         self._init_ctrls(parent)
         
         self.Log = LogPseudoFile(self.LogConsole)
-        
-        # create temporary directory for runtime working directory
-        self.local_runtime_tmpdir = tempfile.mkdtemp()
-        # choose an arbitrary random port for runtime
-        self.runtime_port = int(random.random() * 1000) + 61131
-        # launch local runtime
-        self.local_runtime = ProcessLogger(self.Log,
-                                           "\"%s\" \"%s\" -p %s -i localhost -x 0 %s"%(sys.executable,
-                                                       Bpath("Beremiz_service.py"),
-                                                       self.runtime_port,
-                                                       self.local_runtime_tmpdir),
-                                                       no_gui=False)
+
+        self.local_runtime = None
+        self.runtime_port = None
+        self.local_runtime_tmpdir = None
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
@@ -437,13 +429,37 @@ class Beremiz(wx.Frame):
         self.PluginInfos = {}
         
         if projectOpen:
-            self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
+            self.PluginRoot = PluginsRoot(self, self.Log)
             self.PluginRoot.LoadProject(projectOpen, buildpath)
             self.RefreshAll()
         else:
             self.PluginRoot = None
         
         self.RefreshMainMenu()
+
+    def StartLocalRuntime(self, taskbaricon = True):
+        if self.local_runtime is None or self.local_runtime.finished:
+            # create temporary directory for runtime working directory
+            self.local_runtime_tmpdir = tempfile.mkdtemp()
+            # choose an arbitrary random port for runtime
+            self.runtime_port = int(random.random() * 1000) + 61131
+            # launch local runtime
+            self.local_runtime = ProcessLogger(self.Log,
+                                               "\"%s\" \"%s\" -p %s -i localhost %s %s"%(sys.executable,
+                                                           Bpath("Beremiz_service.py"),
+                                                           self.runtime_port,
+                                                           {False : "-x 0", True :"-x 1"}[taskbaricon],
+                                                           self.local_runtime_tmpdir),
+                                                           no_gui=False)
+            self.local_runtime.spin(timeout=500, keyword = "working", kill_it = False)
+        return self.runtime_port
+    
+    def KillLocalRuntime(self):
+        if self.local_runtime is not None:
+            # shutdown local runtime
+            self.local_runtime.kill(gently=False)
+            # clear temp dir
+            shutil.rmtree(self.local_runtime_tmpdir)
 
     def OnOpenWidgetInspector(self, evt):
         # Activate the widget inspection tool
@@ -492,11 +508,8 @@ class Beremiz(wx.Frame):
                     event.Veto()
                     return
 
-        # shutdown local runtime
-        self.local_runtime.kill(gently=False)
-        # clear temp dir
-        shutil.rmtree(self.local_runtime_tmpdir)
-
+        self.KillLocalRuntime()
+        
         event.Skip()
     
     def OnMoveWindow(self, event):

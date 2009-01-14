@@ -51,6 +51,7 @@ class PLCObject(pyro.ObjBase):
         self._FreePLC()
         self.daemon = daemon
         self.statuschange = statuschange
+        self.python_threads_vars = None
         
         # Get the last transfered PLC if connector must be restart
         try:
@@ -174,28 +175,29 @@ class PLCObject(pyro.ObjBase):
 
     def PythonThreadProc(self):
         print "PythonThreadProc started"
-        my_globs = globals().copy()
+        self.python_threads_vars = globals().copy()
         pyfile = os.path.join(self.workingdir, "runtime.py")
         if os.path.exists(pyfile):
             # TODO handle exceptions in runtime.py
             # pyfile may redefine _runtime_cleanup
             # or even call _PythonThreadProc itself.
-            execfile(pyfile, my_globs)
+            execfile(pyfile, self.python_threads_vars)
         res,cmd = "None","None"
         while self.PLCStatus == "Started":
-            print "_PythonIterator(", res, ")",
+            #print "_PythonIterator(", res, ")",
             cmd = self._PythonIterator(res)
-            print " -> ", cmd
+            #print " -> ", cmd
             if cmd is None:
                 break
             try :
-                res = str(eval(cmd,my_globs))
+                res = str(eval(cmd,self.python_threads_vars))
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
                 print res
         print "PythonThreadProc interrupted"
-        if my_globs.get("_runtime_cleanup",None) is not None:
-            my_globs["_runtime_cleanup"]()
+        if self.python_threads_vars.get("_runtime_cleanup",None) is not None:
+            self.python_threads_vars["_runtime_cleanup"]()
+        self.python_threads_vars = None
         print "PythonThreadProc cleaned up"
     
     def StartPLC(self, debug=False):

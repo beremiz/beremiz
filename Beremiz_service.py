@@ -215,6 +215,7 @@ if enablewx:
                     message.Destroy()
                     return
             self.EndModal(wx.ID_OK)
+            event.Skip()
         
         def GetValue(self):
             return self.GetSizer().GetItem(1).GetWindow().GetValue()
@@ -222,21 +223,24 @@ if enablewx:
         def SetTests(self, tests):
             self.Tests = tests
             
-    class DemoTaskBarIcon(wx.TaskBarIcon):
+    class BeremizTaskBarIcon(wx.TaskBarIcon):
         TBMENU_CHANGE_NAME = wx.NewId()
         TBMENU_CHANGE_PORT = wx.NewId()
         TBMENU_CHANGE_INTERFACE = wx.NewId()
+        TBMENU_LIVE_SHELL = wx.NewId()
         TBMENU_CHANGE_WD = wx.NewId()
         TBMENU_QUIT = wx.NewId()
         
         def __init__(self, pyroserver):
             wx.TaskBarIcon.__init__(self)
+            self.pyroserver = pyroserver
             # Set the image
             self.UpdateIcon(None)
     
             # bind some events
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangeName, id=self.TBMENU_CHANGE_NAME)
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangeInterface, id=self.TBMENU_CHANGE_INTERFACE)
+            self.Bind(wx.EVT_MENU, self.OnTaskBarLiveShell, id=self.TBMENU_LIVE_SHELL)
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
             self.Bind(wx.EVT_MENU, self.OnTaskBarQuit, id=self.TBMENU_QUIT)
@@ -251,6 +255,7 @@ if enablewx:
             menu = wx.Menu()
             menu.Append(self.TBMENU_CHANGE_NAME, "Change Name")
             menu.Append(self.TBMENU_CHANGE_INTERFACE, "Change IP of interface to bind")
+            menu.Append(self.TBMENU_LIVE_SHELL, "Launch a live Python shell")
             menu.Append(self.TBMENU_CHANGE_PORT, "Change Port Number")
             menu.AppendSeparator()
             menu.Append(self.TBMENU_CHANGE_WD, "Change working directory")
@@ -276,34 +281,47 @@ if enablewx:
                            ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, "Ip is not valid!")
                            ])
             if dlg.ShowModal() == wx.ID_OK:
-                pyroserver.ip = dlg.GetValue()
-                pyroserver.Stop()
+                self.pyroserver.ip = dlg.GetValue()
+                self.pyroserver.Stop()
+            evt.Skip()
                 
         def OnTaskBarChangePort(self,evt):
             dlg = ParamsEntryDialog(None, "Enter a port number ", defaultValue=str(pyroserver.port))
             dlg.SetTests([(UnicodeType.isdigit, "Port number must be an integer!"), (lambda port : 0 <= int(port) <= 65535 , "Port number must be 0 <= port <= 65535!")])
             if dlg.ShowModal() == wx.ID_OK:
-                pyroserver.port = int(dlg.GetValue())
-                pyroserver.Stop()
-                
+                self.pyroserver.port = int(dlg.GetValue())
+                self.pyroserver.Stop()
+            evt.Skip()
         
         def OnTaskBarChangeWorkingDir(self,evt):
             dlg = wx.DirDialog(None, "Choose a working directory ", pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
             if dlg.ShowModal() == wx.ID_OK:
-                pyroserver.workdir = dlg.GetPath()
-                pyroserver.Stop()
+                self.pyroserver.workdir = dlg.GetPath()
+                self.pyroserver.Stop()
+            evt.Skip()
                 
         def OnTaskBarChangeName(self,evt):
             dlg = ParamsEntryDialog(None, "Enter a name ", defaultValue=pyroserver.name)
             dlg.SetTests([(lambda name : len(name) is not 0 , "Name must not be null!")])
             if dlg.ShowModal() == wx.ID_OK:
-                pyroserver.name = dlg.GetValue()
-                pyroserver.Restart()
-    
+                self.pyroserver.name = dlg.GetValue()
+                self.pyroserver.Restart()
+            evt.Skip()
+
+        def OnTaskBarLiveShell(self,evt):
+            if self.pyroserver.plcobj is not None and self.pyroserver.plcobj.python_threads_vars is not None:
+                from wx import py
+                frame = py.shell.ShellFrame(locals=self.pyroserver.plcobj.python_threads_vars)
+                frame.Show()
+            else:
+                wx.MessageBox("No runnning PLC","Error")
+            evt.Skip()
+
         def OnTaskBarQuit(self,evt):
             pyroserver.Quit()
             self.RemoveIcon()
             wx.GetApp().ExitMainLoop()
+            evt.Skip()
             
         def UpdateIcon(self, plcstatus):
             if plcstatus is "Started" :
@@ -376,7 +394,7 @@ pyroserver = Server(name, ip, port, WorkingDir, args)
 
 if havewx:
     app=wx.App(redirect=False)
-    taskbar_instance = DemoTaskBarIcon(pyroserver)
+    taskbar_instance = BeremizTaskBarIcon(pyroserver)
     def statuschange(status):
         wx.CallAfter(taskbar_instance.UpdateIcon,status)
     pyro_thread=Thread(target=pyroserver.Loop, args=[statuschange])

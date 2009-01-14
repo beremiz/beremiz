@@ -19,6 +19,19 @@ class toolchain_gcc():
         self.md5key = None
         self.srcmd5 = {}
 
+    def getBuilderLDFLAGS(self):
+        """
+        Returns list of builder specific CFLAGS
+        """
+        return [self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getCFLAGS()]
+
+    def getBuilderCFLAGS(self):
+        """
+        Returns list of builder specific LDFLAGS
+        """
+        return self.PuginsRootInstance.LDFLAGS + \
+               [self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getLDFLAGS()]
+
     def GetBinaryCode(self):
         try:
             return open(self.exe_path, "rb").read()
@@ -67,9 +80,9 @@ class toolchain_gcc():
         # Retrieve toolchain user parameters
         toolchain_params = self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"]
         self.compiler = toolchain_params.getCompiler()
-        self._CFLAGS = toolchain_params.getCFLAGS()
         self.linker = toolchain_params.getLinker()
-        self._LDFLAGS = toolchain_params.getLDFLAGS()
+
+        Builder_CFLAGS = ' '.join(self.getBuilderCFLAGS())
 
         ######### GENERATE OBJECT FILES ########################################
         obns = []
@@ -98,7 +111,7 @@ class toolchain_gcc():
                     status, result, err_result = ProcessLogger(
                            self.logger,
                            "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
-                               (self.compiler, CFile, objectfilename, self._CFLAGS, CFLAGS)
+                               (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
                            ).spin()
 
                     if status :
@@ -117,7 +130,7 @@ class toolchain_gcc():
             # Generate list .o files
             listobjstring = '"' + '"  "'.join(objs) + '"'
     
-            ALLldflags = ' '.join(self.CustomLDFLAGS+self.PuginsRootInstance.LDFLAGS+[self._LDFLAGS])
+            ALLldflags = ' '.join(self.getBuilderLDFLAGS())
     
             self.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
     
