@@ -85,7 +85,6 @@ elif len(args) == 0:
 if enablewx:
     try:
         import wx, re
-        from wx.lib.embeddedimage import PyEmbeddedImage
         from threading import Thread
         from types import *
         havewx = True
@@ -93,6 +92,19 @@ if enablewx:
         havewx = False
 
     if havewx:
+        try:
+            from wx.lib.embeddedimage import PyEmbeddedImage
+        except:
+            import cStringIO
+            import base64
+            
+            class PyEmbeddedImage:
+                def __init__(self, image_string):
+                    stream = cStringIO.StringIO(base64.b64decode(image_string))
+                    self.Image = wx.ImageFromStream(stream)
+                def GetImage(self):
+                    return self.Image
+        
         defaulticon = PyEmbeddedImage(
         "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAABc5J"
         "REFUSIl9lW1MW9cZx3/n2vf6BQO2MZiXGBISILCVUEUlitYpjaKpXZJ1XZZ2kzJVY9r6IeLD"
