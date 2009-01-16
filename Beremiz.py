@@ -389,6 +389,7 @@ class Beremiz(wx.Frame):
               name='PLCConfig', parent=parent, pos=wx.Point(0, 0),
               size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.PLCConfig.SetBackgroundColour(wx.WHITE)
+        self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
@@ -521,6 +522,12 @@ class Beremiz(wx.Frame):
         if not event.GetActive() and self.PluginRoot is not None:
             self.PluginRoot.RefreshPluginsBlockLists()
     
+    def OnPanelLeftDown(self, event):
+        focused = self.FindFocus()
+        if isinstance(focused, TextCtrlAutoComplete.TextCtrlAutoComplete):
+            focused._showDropDown(False)
+        event.Skip()
+    
     def RefreshMainMenu(self):
         if self.PluginRoot is not None:
 ##            self.MenuBar.EnableTop(1, True)
@@ -561,6 +568,7 @@ class Beremiz(wx.Frame):
                 self.PluginInfos[self.PluginRoot] = {"middle_visible" : False}
             
             plcwindow.SetBackgroundColour(TITLE_COLOUR)
+            plcwindow.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
             self.PLCParamsSizer.AddWindow(plcwindow, 0, border=0, flag=wx.GROW)
             
             plcwindowsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -588,8 +596,9 @@ class Beremiz(wx.Frame):
             msizer = self.GenerateMethodButtonSizer(self.PluginRoot, plcwindow, not self.PluginInfos[self.PluginRoot]["middle_visible"])
             plcwindowbuttonsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
             
-            paramswindow = wx.Panel(plcwindow, -1, size=wx.Size(-1, -1))
+            paramswindow = wx.Panel(plcwindow, -1, size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL)
             paramswindow.SetBackgroundColour(TITLE_COLOUR)
+            paramswindow.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
             plcwindowbuttonsizer.AddWindow(paramswindow, 0, border=0, flag=0)
             
             psizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1128,30 +1137,30 @@ class Beremiz(wx.Frame):
                 boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
                 id = wx.NewId()
                 if isinstance(element_infos["type"], types.ListType):
-                    choicectrl = wx.Choice(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=0)
-                    boxsizer.AddWindow(choicectrl, 0, border=0, flag=0)
+                    combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
+                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.CB_READONLY)
+                    boxsizer.AddWindow(combobox, 0, border=0, flag=0)
                     if element_infos["use"] == "optional":
-                        choicectrl.Append("")
+                        combobox.Append("")
                     if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
                         for choice, xsdclass in element_infos["type"]:
-                            choicectrl.Append(choice)
+                            combobox.Append(choice)
                         staticbox = wx.StaticBox(id=-1, label="%(name)s - %(value)s"%element_infos, 
                             name='%s_staticbox'%element_infos["name"], parent=parent,
                             pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                         staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                         sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
                         self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
-                        callback = self.GetChoiceContentCallBackFunction(choicectrl, staticboxsizer, plugin, element_path)
+                        callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, plugin, element_path)
                     else:
                         for choice in element_infos["type"]:
-                            choicectrl.Append(choice)
-                        callback = self.GetChoiceCallBackFunction(choicectrl, plugin, element_path)
+                            combobox.Append(choice)
+                        callback = self.GetChoiceCallBackFunction(combobox, plugin, element_path)
                     if element_infos["value"] is None:
-                        choicectrl.SetStringSelection("")
+                        combobox.SetStringSelection("")
                     else:
-                        choicectrl.SetStringSelection(element_infos["value"])
-                    choicectrl.Bind(wx.EVT_CHOICE, callback, id=id)
+                        combobox.SetStringSelection(element_infos["value"])
+                    combobox.Bind(wx.EVT_COMBOBOX, callback, id=id)
                 elif isinstance(element_infos["type"], types.DictType):
                     scmin = -(2**31)
                     scmax = 2**31-1
@@ -1190,7 +1199,6 @@ class Beremiz(wx.Frame):
                                                                      name=element_infos["name"], 
                                                                      parent=parent, 
                                                                      choices=choices, 
-                                                                     selectCallback = None,
                                                                      element_path=element_path,
                                                                      pos=wx.Point(0, 0), 
                                                                      size=wx.Size(150, 25), 
