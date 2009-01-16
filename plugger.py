@@ -313,12 +313,6 @@ class PlugTemplate:
         else:
             return self
 
-    def GetChildByType(self, TypeName):
-        if TypeName:
-            return self._GetChildBySomething("PlugType", TypeName)
-        else:
-            return self
-
     def GetChildByIECLocation(self, Location):
         if Location:
             return self._GetChildBySomething("IEC_Channel", Location)
