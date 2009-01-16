@@ -19,13 +19,13 @@ class toolchain_gcc():
         self.md5key = None
         self.srcmd5 = {}
 
-    def getBuilderLDFLAGS(self):
+    def getBuilderCFLAGS(self):
         """
         Returns list of builder specific CFLAGS
         """
         return [self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getCFLAGS()]
 
-    def getBuilderCFLAGS(self):
+    def getBuilderLDFLAGS(self):
         """
         Returns list of builder specific LDFLAGS
         """
