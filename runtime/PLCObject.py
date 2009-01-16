@@ -178,22 +178,32 @@ class PLCObject(pyro.ObjBase):
                     return True
         return False
 
-    def ExecRuntimePy(self):
+    def PrepareRuntimePy(self):
         self.python_threads_vars = globals().copy()
         pyfile = os.path.join(self.workingdir, "runtime.py")
         if os.path.exists(pyfile):
-            # TODO handle exceptions in runtime.py
-            # pyfile may redefine _runtime_cleanup
-            # or even call _PythonThreadProc itself.
-            execfile(pyfile, self.python_threads_vars)
+            try:
+                # TODO handle exceptions in runtime.py
+                # pyfile may redefine _runtime_cleanup
+                # or even call _PythonThreadProc itself.
+                execfile(pyfile, self.python_threads_vars)
+            except:
+                PLCprint(traceback.format_exc())
+
+    def BeginRuntimePy(self):
+        runtime_begin = self.python_threads_vars.get("_runtime_begin",None)
+        if runtime_begin is not None:
+            runtime_begin()
 
     def FinishRuntimePy(self):
-        if self.python_threads_vars.get("_runtime_cleanup",None) is not None:
-            self.python_threads_vars["_runtime_cleanup"]()
+        runtime_cleanup = self.python_threads_vars.get("_runtime_cleanup",None)
+        if runtime_cleanup is not None:
+            runtime_cleanup()
         self.python_threads_vars = None
 
     def PythonThreadProc(self):
         PLCprint("PythonThreadProc started")
+        self.BeginRuntimePy()
         res,cmd = "None","None"
         while self.PLCStatus == "Started":
             #print "_PythonIterator(", res, ")",
@@ -217,7 +227,7 @@ class PLCObject(pyro.ObjBase):
                     self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
-                self.ExecRuntimePy()
+                self.PrepareRuntimePy()
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 return True
