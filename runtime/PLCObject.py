@@ -24,8 +24,8 @@
 
 import Pyro.core as pyro
 from threading import Timer, Thread
-import ctypes, os, commands
-import sys
+import ctypes, os, commands, types, sys
+
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -46,8 +46,9 @@ def PLCprint(message):
 
 class PLCObject(pyro.ObjBase):
     _Idxs = []
-    def __init__(self, workingdir, daemon, argv, statuschange=None):
+    def __init__(self, workingdir, daemon, argv, statuschange=None, evaluator=eval):
         pyro.ObjBase.__init__(self)
+        self.evaluator = evaluator
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
         self.workingdir = workingdir
         self.PLCStatus = "Stopped"
@@ -57,6 +58,7 @@ class PLCObject(pyro.ObjBase):
         self.daemon = daemon
         self.statuschange = statuschange
         self.python_threads_vars = None
+        self.hmi_frame = None
         
         # Get the last transfered PLC if connector must be restart
         try:
@@ -181,24 +183,40 @@ class PLCObject(pyro.ObjBase):
     def PrepareRuntimePy(self):
         self.python_threads_vars = globals().copy()
         pyfile = os.path.join(self.workingdir, "runtime.py")
+        hmifile = os.path.join(self.workingdir, "hmi.py")
         if os.path.exists(pyfile):
             try:
                 # TODO handle exceptions in runtime.py
                 # pyfile may redefine _runtime_cleanup
                 # or even call _PythonThreadProc itself.
+                if os.path.exists(hmifile):
+                   execfile(hmifile, self.python_threads_vars)
                 execfile(pyfile, self.python_threads_vars)
+                try:
+                   # try to instanciate the first frame found.
+                   for name, obj in self.python_threads_vars.iteritems():
+                       # obj is a class
+                       if type(obj)==type(type) and issubclass(obj,self.python_threads_vars['wx'].Frame):
+                           self.hmi_frame = obj(None)
+                           self.python_threads_vars['_'+name] = self.hmi_frame
+                           self.hmi_frame.Show()
+                           break
+                except:
+                    PLCprint(traceback.format_exc())
             except:
                 PLCprint(traceback.format_exc())
 
     def BeginRuntimePy(self):
         runtime_begin = self.python_threads_vars.get("_runtime_begin",None)
         if runtime_begin is not None:
-            runtime_begin()
+            self.evaluator(runtime_begin)
 
     def FinishRuntimePy(self):
         runtime_cleanup = self.python_threads_vars.get("_runtime_cleanup",None)
         if runtime_cleanup is not None:
-            runtime_cleanup()
+            self.evaluator(runtime_cleanup)
+        if self.hmi_frame is not None:
+            self.evaluator(self.hmi_frame.Destroy)
         self.python_threads_vars = None
 
     def PythonThreadProc(self):
@@ -212,7 +230,7 @@ class PLCObject(pyro.ObjBase):
             if cmd is None:
                 break
             try :
-                res = str(eval(cmd,self.python_threads_vars))
+                res = str(self.evaluator(eval,cmd,self.python_threads_vars))
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
                 PLCprint(res)
@@ -227,7 +245,7 @@ class PLCObject(pyro.ObjBase):
                     self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
-                self.PrepareRuntimePy()
+                self.evaluator(self.PrepareRuntimePy)
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 return True

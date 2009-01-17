@@ -38,7 +38,7 @@ Usage of Beremiz PLC execution service :\n
 """%sys.argv[0]
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "i:p:n:x:h")
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:h")
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
@@ -73,14 +73,14 @@ for o, a in opts:
         usage()
         sys.exit()
 
-if len(args) > 1:
+if len(argv) > 1:
     usage()
     sys.exit()
-elif len(args) == 1:
-    WorkingDir = args[0]
-elif len(args) == 0:
+elif len(argv) == 1:
+    WorkingDir = argv[0]
+elif len(argv) == 0:
     WorkingDir = os.getcwd()
-    args=[WorkingDir]
+    argv=[WorkingDir]
 
 if enablewx:
     try:
@@ -351,20 +351,20 @@ if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
 
 class Server():
-    def __init__(self, name, ip, port, workdir, args):
+    def __init__(self, name, ip, port, workdir, argv, statuschange=None, evaluator=eval):
         self.continueloop = True
         self.daemon = None
         self.name = name
         self.ip = ip
         self.port = port
         self.workdir = workdir
-        self.args = args
+        self.argv = argv
         self.plcobj = None
         self.servicepublisher = None
-        self.statuschange = None
-    
-    def Loop(self, statuschange=None):
         self.statuschange = statuschange
+        self.evaluator = evaluator
+    
+    def Loop(self):
         while self.continueloop:
             self.Start()
         
@@ -378,7 +378,7 @@ class Server():
     def Start(self):
         pyro.initServer()
         self.daemon=pyro.Daemon(host=self.ip, port=self.port)
-        self.plcobj = PLCObject(self.workdir, self.daemon, self.args, self.statuschange)
+        self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
     
         print "The daemon runs on port :",self.port
@@ -402,15 +402,32 @@ class Server():
             del self.servicepublisher
         self.daemon.shutdown(True)
         
-pyroserver = Server(name, ip, port, WorkingDir, args)
 
 if havewx:
+    from threading import Semaphore
+    wx_eval_lock = Semaphore(0)
     app=wx.App(redirect=False)
-    taskbar_instance = BeremizTaskBarIcon(pyroserver)
     def statuschange(status):
         wx.CallAfter(taskbar_instance.UpdateIcon,status)
-    pyro_thread=Thread(target=pyroserver.Loop, args=[statuschange])
+        
+    eval_res = None
+    def wx_evaluator(callable, *args, **kwargs):
+        global eval_res
+        eval_res=callable(*args,**kwargs)
+        #print eval_res
+        wx_eval_lock.release()
+        
+    def evaluator(callable, *args, **kwargs):
+        wx.CallAfter(wx_evaluator,callable,*args,**kwargs)
+        wx_eval_lock.acquire()
+        return eval_res
+
+    pyroserver = Server(name, ip, port, WorkingDir, argv, statuschange, evaluator)
+    taskbar_instance = BeremizTaskBarIcon(pyroserver)
+    
+    pyro_thread=Thread(target=pyroserver.Loop)
     pyro_thread.start()
     app.MainLoop()
 else:
+    pyroserver = Server(name, ip, port, WorkingDir, argv)
     pyroserver.Loop()

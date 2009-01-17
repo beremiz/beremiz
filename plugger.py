@@ -855,6 +855,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # define name for IEC raw code file
         return os.path.join(self.PlugPath(), "runtime.py")
 
+    def _getWXGLADEpath(self):
+        # define name for IEC raw code file
+        return os.path.join(self.PlugPath(), "hmi.wxg")
+
     def GetLocations(self):
         locations = []
         filepath = os.path.join(self._getBuildPath(),"LOCATED_VARIABLES.h")
@@ -976,6 +980,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         else:
             return None
 
+    def launch_wxglade(self,options, wait=False):
+        from wxglade import __file__ as fileName
+        path    = os.path.dirname(fileName)
+        glade   = os.path.join(path,'wxglade.py')
+        mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
+        print (mode,sys.executable,[sys.executable]+[glade]+options)
+        os.spawnv(mode,sys.executable,[sys.executable]+[glade]+options)
+
     #######################################################################
     #
     #                C CODE GENERATION METHODS
@@ -998,6 +1010,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         pyfile=self._getPYTHONcodepath()
         if os.path.exists(pyfile):
             res += (("runtime.py", file(pyfile,"rb")),)
+        wxgfile=self._getWXGLADEpath()
+        if os.path.exists(wxgfile):
+            hmipyfile=os.path.join(self._getBuildPath(),"hmi.py")
+            self.launch_wxglade(['-o', hmipyfile, '-g','python', wxgfile], wait=True)
+            res += (("hmi.py", file(hmipyfile,"rb")),)
 
         return res
 
@@ -1102,7 +1119,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         python_eval_fb_list = []
         for v in self._VariablesList :
-            if v["vartype"] == "FB" and v["type"] == "PYTHON_EVAL":
+            if v["vartype"] == "FB" and v["type"] in ["PYTHON_EVAL","PYTHON_POLL"]:
                 python_eval_fb_list.append(v)
         python_eval_fb_count = max(1, len(python_eval_fb_list))
         
@@ -1290,6 +1307,19 @@ class PluginsRoot(PlugTemplate, PLCControler):
             
         new_dialog.Show()
 
+    def _editWXGLADE(self):
+        wxg_filename = self._getWXGLADEpath()
+        if not os.path.exists(wxg_filename):
+            open(wxg_filename,"w").write("""<?xml version="1.0"?>
+<application path="" name="" class="" option="0" language="python" top_window="frame_1" encoding="UTF-8" use_gettext="0" overwrite="0" use_new_namespace="1" for_version="2.8" is_template="0">
+    <object class="HMIFrame" name="frame_1" base="EditFrame">
+        <style>wxDEFAULT_FRAME_STYLE</style>
+        <title>frame_1</title>
+    </object>
+</application>
+""")
+        self.launch_wxglade([wxg_filename])
+        
     def _EditPLC(self):
         if self.PLCEditor is None:
             self.RefreshPluginsBlockLists()
@@ -1700,4 +1730,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
          "name" : "Python code",
          "tooltip" : "Write Python runtime code, for use with python_eval FBs",
          "method" : "_editPYTHONcode"},
+        {"bitmap" : opjimg("editWXGLADE"),
+         "name" : "WXGLADE GUI",
+         "tooltip" : "Edit a WxWidgets GUI with WXGlade",
+         "method" : "_editWXGLADE"},
     ]
