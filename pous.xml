@@ -80,7 +80,67 @@
         </interface>
         <body>
           <ST>
-<![CDATA[{extern void __PythonEvalFB(PYTHON_EVAL*);__PythonEvalFB(data__);}]]>
+<![CDATA[{extern void __PythonEvalFB(int, PYTHON_EVAL*);__PythonEvalFB(0, data__);}]]>
+          </ST>
+        </body>
+      </pou>
+      <pou name="python_poll" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="TRIG">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="CODE">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="ACK">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="RESULT">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="STATE">
+              <type>
+                <DWORD/>
+              </type>
+            </variable>
+            <variable name="BUFFER">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="PREBUFFER">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="TRIGM1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="TRIGGED">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[{extern void __PythonEvalFB(int, PYTHON_EVAL*);__PythonEvalFB(1,(PYTHON_EVAL*)(void*)data__);}]]>
           </ST>
         </body>
       </pou>

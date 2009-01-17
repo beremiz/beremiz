@@ -86,21 +86,41 @@ void __publish_python()
  * Called by the PLC, each time a python_eval 
  * FB instance is executed
  */
-void __PythonEvalFB(PYTHON_EVAL* data__)
+void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 {
-	/* detect rising edge on TRIG */
-	if(data__->TRIG && !data__->TRIGM1 && data__->TRIGGED == 0){
+	/* detect rising edge on TRIG to trigger evaluation */ 
+	if(((data__->TRIG && !data__->TRIGM1) || 
+	   /* polling is equivalent to trig on value rather than on rising edge*/
+	    (poll && data__->TRIG )) &&
+	    /* trig only if not already trigged */
+	   data__->TRIGGED == 0){
 		/* mark as trigged */
 		data__->TRIGGED = 1;
 		/* make a safe copy of the code */
 		data__->PREBUFFER = data__->CODE;
 	}
-	/* retain value for next detection */
+	/* retain value for next rising edge detection */
 	data__->TRIGM1 = data__->TRIG;
 
 	/* python thread is not in ? */
 	if( PythonState & PYTHON_LOCKED_BY_PLC){
-		/* got the order to act */
+		/* if some answer are waiting, publish*/
+		if(data__->STATE == PYTHON_FB_ANSWERED){
+			/* Copy buffer content into result*/
+			data__->RESULT = data__->BUFFER;
+			/* signal result presece to PLC*/
+			data__->ACK = 1;
+			/* Mark as free */
+			data__->STATE = PYTHON_FB_FREE;
+			/* mark as not trigged */
+			if(!poll)
+				data__->TRIGGED = 0;
+			/*printf("__PythonEvalFB pop %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
+		}else if(poll){
+			/* when in polling, no answer == ack down */
+			data__->ACK = 0;
+		}
+		/* got the order to act ?*/
 		if(data__->TRIGGED == 1 &&
 		   /* and not already being processed */ 
 		   data__->STATE == PYTHON_FB_FREE) 
@@ -113,24 +133,20 @@ void __PythonEvalFB(PYTHON_EVAL* data__)
 			/* copy into BUFFER local*/
 			data__->BUFFER = data__->PREBUFFER;
 			/* Set ACK pin to low so that we can set a rising edge on result */
-			data__->ACK = 0;
+			if(!poll){
+				/* when not polling, a new answer imply reseting ack*/
+				data__->ACK = 0;
+			}else{
+				/* when in polling, acting reset trigger */
+				data__->TRIGGED = 0;
+			}
 			/* Mark FB busy */
 			data__->STATE = PYTHON_FB_REQUESTED;
 			/* Have to wakeup python thread in case he was asleep */
 			PythonState |= PYTHON_MUSTWAKEUP;
-			//printf("__PythonEvalFB push %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);
+			/*printf("__PythonEvalFB push %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
 			/* Get a new line */
 			Current_PLC_EvalFB = (Current_PLC_EvalFB + 1) %% %(python_eval_fb_count)d;
-		}else if(data__->STATE == PYTHON_FB_ANSWERED){
-			/* Copy buffer content into result*/
-			data__->RESULT = data__->BUFFER;
-			/* signal result presece to PLC*/
-			data__->ACK = 1;
-			/* Mark as free */
-			data__->STATE = PYTHON_FB_FREE;
-			/* mark as not trigged */
-			data__->TRIGGED = 0;
-			//printf("__PythonEvalFB pop %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);
 		}
 	}
 }
