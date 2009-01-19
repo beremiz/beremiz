@@ -1221,7 +1221,7 @@ class Beremiz(wx.Frame):
             dialog.Destroy()
             config.Write("lastopenedfolder", os.path.dirname(projectpath))
             config.Flush()
-            self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
+            self.PluginRoot = PluginsRoot(self, self.Log)
             res = self.PluginRoot.NewProject(projectpath)
             if not res :
                 self.RefreshAll()
@@ -1244,7 +1244,7 @@ class Beremiz(wx.Frame):
             if os.path.isdir(projectpath):
                 config.Write("lastopenedfolder", os.path.dirname(projectpath))
                 config.Flush()
-                self.PluginRoot = PluginsRoot(self, self.Log, self.runtime_port)
+                self.PluginRoot = PluginsRoot(self, self.Log)
                 result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
                     self.RefreshAll()
