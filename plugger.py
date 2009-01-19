@@ -985,7 +985,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         path    = os.path.dirname(fileName)
         glade   = os.path.join(path,'wxglade.py')
         mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
-        print (mode,sys.executable,[sys.executable]+[glade]+options)
         os.spawnv(mode,sys.executable,[sys.executable]+[glade]+options)
 
     #######################################################################
