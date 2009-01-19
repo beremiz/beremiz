@@ -240,6 +240,7 @@ if enablewx:
         TBMENU_CHANGE_PORT = wx.NewId()
         TBMENU_CHANGE_INTERFACE = wx.NewId()
         TBMENU_LIVE_SHELL = wx.NewId()
+        TBMENU_WXINSPECTOR = wx.NewId()
         TBMENU_CHANGE_WD = wx.NewId()
         TBMENU_QUIT = wx.NewId()
         
@@ -253,6 +254,7 @@ if enablewx:
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangeName, id=self.TBMENU_CHANGE_NAME)
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangeInterface, id=self.TBMENU_CHANGE_INTERFACE)
             self.Bind(wx.EVT_MENU, self.OnTaskBarLiveShell, id=self.TBMENU_LIVE_SHELL)
+            self.Bind(wx.EVT_MENU, self.OnTaskBarWXInspector, id=self.TBMENU_WXINSPECTOR)
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
             self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
             self.Bind(wx.EVT_MENU, self.OnTaskBarQuit, id=self.TBMENU_QUIT)
@@ -268,6 +270,7 @@ if enablewx:
             menu.Append(self.TBMENU_CHANGE_NAME, "Change Name")
             menu.Append(self.TBMENU_CHANGE_INTERFACE, "Change IP of interface to bind")
             menu.Append(self.TBMENU_LIVE_SHELL, "Launch a live Python shell")
+            menu.Append(self.TBMENU_WXINSPECTOR, "Launch WX GUI inspector")
             menu.Append(self.TBMENU_CHANGE_PORT, "Change Port Number")
             menu.AppendSeparator()
             menu.Append(self.TBMENU_CHANGE_WD, "Change working directory")
@@ -323,10 +326,25 @@ if enablewx:
         def OnTaskBarLiveShell(self,evt):
             if self.pyroserver.plcobj is not None and self.pyroserver.plcobj.python_threads_vars is not None:
                 from wx import py
-                frame = py.shell.ShellFrame(locals=self.pyroserver.plcobj.python_threads_vars)
+                #frame = py.shell.ShellFrame(locals=self.pyroserver.plcobj.python_threads_vars)
+                frame = py.crust.CrustFrame(locals=self.pyroserver.plcobj.python_threads_vars)
                 frame.Show()
             else:
                 wx.MessageBox("No runnning PLC","Error")
+            evt.Skip()
+
+        def OnTaskBarWXInspector(self, evt):
+            # Activate the widget inspection tool
+            from wx.lib.inspection import InspectionTool
+            if not InspectionTool().initialized:
+                InspectionTool().Init(locals=self.pyroserver.plcobj.python_threads_vars)
+    
+            # Find a widget to be selected in the tree.  Use either the
+            # one under the cursor, if any, or this frame.
+            wnd = wx.FindWindowAtPointer()
+            if not wnd:
+                wnd = wx.GetApp()
+            InspectionTool().Show(wnd, True)
             evt.Skip()
 
         def OnTaskBarQuit(self,evt):
