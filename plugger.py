@@ -276,7 +276,8 @@ class PlugTemplate:
 
     def STLibraryFactory(self):
         if self.LibraryControler is not None:
-            return self.LibraryControler.GenerateProgram()
+            program, errors, warnings = self.LibraryControler.GenerateProgram()
+            return program
         return ""
 
     def IterChilds(self):
@@ -896,10 +897,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
         buildpath = self._getBuildPath()
         # ask PLCOpenEditor controller to write ST/IL/SFC code file
-        result = self.GenerateProgram(self._getIECgeneratedcodepath())
-        if result is not None:
+        program, errors, warnings = self.GenerateProgram(self._getIECgeneratedcodepath())
+        if len(warnings) > 0:
+            self.logger.write_warning("Warnings in ST/IL/SFC code generator :\n")
+            for warning in warnings:
+                self.logger.write_warning("%s\n"%warning)
+        if len(errors) > 0:
             # Failed !
-            self.logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%result)
+            self.logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%errors[0])
             return False
         plc_file = open(self._getIECcodepath(), "w")
         if getattr(self, "PluggedChilds", None) is not None:
