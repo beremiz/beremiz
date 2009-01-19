@@ -234,8 +234,6 @@ class _NodeListPlug(NodeList):
         Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
-        # allow access to local OD from Master PLC
-        pointers.update(config_utils.LocalODPointers(locations, current_location, master))
         # Do generate C file.
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)
         if res :

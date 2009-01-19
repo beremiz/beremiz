@@ -595,7 +595,10 @@ def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodena
     
     dcfgenerator = ConciseDCFGenerator(nodelist, nodename)
     dcfgenerator.GenerateDCF(locations, current_location, sync_TPDOs)
-    return dcfgenerator.GetMasterNode(), dcfgenerator.GetPointedVariables()
+    masternode,pointers = dcfgenerator.GetMasterNode(), dcfgenerator.GetPointedVariables()
+    # allow access to local OD from Master PLC
+    pointers.update(LocalODPointers(locations, current_location, masternode))
+    return masternode,pointers
 
 def LocalODPointers(locations, current_location, slave):
     IECLocations = {}
@@ -693,32 +696,36 @@ Options:
                  {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_1","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,1)},
                  {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_2","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,2)},
                  {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_3","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,3)},
-                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_4","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,4)}]
+                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_4","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,4)},
+                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_4096_0","DIR":"I","SIZE":"D","LOC":(0,1,4096,0)}]
     
     # Generate MasterNode configuration
     try:
-        masternode = GenerateConciseDCF(locations, (0, 1), nodelist, True, "TestNode")
+        masternode, pointedvariables = GenerateConciseDCF(locations, (0, 1), nodelist, True, "TestNode")
     except ValueError, message:
         print "%s\nTest Failed!"%message
         sys.exit()
     
+    import pprint
     # Get Text corresponding to MasterNode 
-    result = masternode.PrintString()
+    result_node = masternode.PrintString()
+    result_vars = pprint.pformat(pointedvariables)
+    result = result_node + "\n********POINTERS*********\n" + result_vars + "\n"
     
     # If reset has been choosen
     if reset:
         # Write Text into reference result file
-        file = open("test_config/result.txt", "w")
-        file.write(result)
-        file.close()
+        testfile = open("test_config/result.txt", "w")
+        testfile.write(result)
+        testfile.close()
         
         print "Reset Successful!"
     else:
         import os
         
-        file = open("test_config/result_tmp.txt", "w")
-        file.write(result)
-        file.close()
+        testfile = open("test_config/result_tmp.txt", "w")
+        testfile.write(result)
+        testfile.close()
         
         os.system("diff test_config/result.txt test_config/result_tmp.txt")
         os.remove("test_config/result_tmp.txt")
