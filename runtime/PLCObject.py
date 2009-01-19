@@ -193,13 +193,27 @@ class PLCObject(pyro.ObjBase):
                    execfile(hmifile, self.python_threads_vars)
                 execfile(pyfile, self.python_threads_vars)
                 try:
+                   wx = self.python_threads_vars['wx']
                    # try to instanciate the first frame found.
                    for name, obj in self.python_threads_vars.iteritems():
                        # obj is a class
-                       if type(obj)==type(type) and issubclass(obj,self.python_threads_vars['wx'].Frame):
-                           self.hmi_frame = obj(None)
-                           self.python_threads_vars['_'+name] = self.hmi_frame
-                           self.hmi_frame.Show()
+                       if type(obj)==type(type) and issubclass(obj,wx.Frame):
+                           def create_frame():
+                               self.hmi_frame = obj(None)
+                               self.python_threads_vars[name] = self.hmi_frame
+                               # keep track of class... never know
+                               self.python_threads_vars['Class_'+name] = obj
+                               self.hmi_frame.Bind(wx.EVT_CLOSE, OnCloseFrame)
+                               self.hmi_frame.Show()
+                           
+                           def OnCloseFrame(evt):
+                               self.hmi_frame.Destroy()
+                               self.hmi_frame = None
+                               wx.MessageBox("Please stop PLC to close")
+                               #wx.CallAfter(self.StopPLC)
+                               create_frame()
+                               #evt.Skip()
+                           create_frame()
                            break
                 except:
                     PLCprint(traceback.format_exc())
@@ -353,7 +367,7 @@ class PLCObject(pyro.ObjBase):
         Must be changed according to changes in iec_types.h
         """
         _fields_ = [("len", ctypes.c_uint8),
-                    ("body", ctypes.c_char * 40)] 
+                    ("body", ctypes.c_char * 127)] 
     
     TypeTranslator = {"BOOL" :       (ctypes.c_uint8, lambda x:x.value!=0),
                       "STEP" :       (ctypes.c_uint8, lambda x:x.value),
