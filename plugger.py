@@ -1021,8 +1021,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
             hmipyfile=os.path.join(self._getBuildPath(),"hmi.py")
             if wx.Platform == '__WXMSW__':
                 wxgfile = "\"%s\""%wxgfile
-                hmipyfile = "\"%s\""%hmipyfile
-            self.launch_wxglade(['-o', hmipyfile, '-g', 'python', wxgfile], wait=True)
+                _hmipyfile = "\"%s\""%hmipyfile
+            else:
+                _hmipyfile = hmipyfile
+            self.launch_wxglade(['-o', _hmipyfile, '-g', 'python', wxgfile], wait=True)
             res += (("hmi.py", file(hmipyfile,"rb")),)
 
         return res
