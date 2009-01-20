@@ -1019,7 +1019,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         wxgfile=self._getWXGLADEpath()
         if os.path.exists(wxgfile):
             hmipyfile=os.path.join(self._getBuildPath(),"hmi.py")
-            self.launch_wxglade(['-o', hmipyfile, '-g','python', wxgfile], wait=True)
+            if wx.Platform == '__WXMSW__':
+                wxgfile = "\"%s\""%wxgfile
+                hmipyfile = "\"%s\""%hmipyfile
+            self.launch_wxglade(['-o', hmipyfile, '-g', 'python', wxgfile], wait=True)
             res += (("hmi.py", file(hmipyfile,"rb")),)
 
         return res
@@ -1324,6 +1327,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
     </object>
 </application>
 """)
+        if wx.Platform == '__WXMSW__':
+            wxg_filename = "\"%s\""%wxg_filename
         self.launch_wxglade([wxg_filename])
         
     def _EditPLC(self):
