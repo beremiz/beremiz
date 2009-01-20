@@ -985,12 +985,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         else:
             return None
 
-    def launch_wxglade(self,options, wait=False):
+    def launch_wxglade(self, options, wait=False):
         from wxglade import __file__ as fileName
-        path    = os.path.dirname(fileName)
-        glade   = os.path.join(path,'wxglade.py')
+        path = os.path.dirname(fileName)
+        glade = os.path.join(path, 'wxglade.py')
+        if wx.Platform == '__WXMSW__':
+            glade = "\"%s\""%glade
         mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
-        os.spawnv(mode,sys.executable,[sys.executable]+[glade]+options)
+        os.spawnv(mode, sys.executable, ["\"%s\""%sys.executable] + [glade] + options)
 
     #######################################################################
     #
