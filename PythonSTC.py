@@ -521,8 +521,6 @@ class PythonCodePanel(wx.Panel):
     """Panel for the 'Demo Code' tab"""
     def __init__(self, parent, mainFrame):
         wx.Panel.__init__(self, parent, size=(1,1))
-        if 'wxMSW' in wx.PlatformInfo:
-            self.Hide()
         self.mainFrame = mainFrame
         self.editor = PythonCodeEditor(self)
         self.editor.RegisterModifiedEvent(self.OnCodeModified)
