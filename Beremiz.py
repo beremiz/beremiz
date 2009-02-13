@@ -668,8 +668,8 @@ class Beremiz(wx.Frame):
 #            addsizer.AddWindow(addbutton, 0, border=0, flag=0)
 #        return addsizer
 
-    normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, 0, faceName = faces["helv"])
-    mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, 0, underline=True, faceName = faces["helv"])
+    normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
+    mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, underline=True, faceName = faces["helv"])
     def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
         if horizontal:
             msizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
