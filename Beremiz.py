@@ -1138,7 +1138,7 @@ class Beremiz(wx.Frame):
                 id = wx.NewId()
                 if isinstance(element_infos["type"], types.ListType):
                     combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.CB_READONLY)
+                        pos=wx.Point(0, 0), size=wx.Size(150, 28), style=wx.CB_READONLY)
                     boxsizer.AddWindow(combobox, 0, border=0, flag=0)
                     if element_infos["use"] == "optional":
                         combobox.Append("")
