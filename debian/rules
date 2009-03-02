@@ -56,14 +56,22 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/beremiz.
-	#$(MAKE) DESTDIR=$(CURDIR)/debian/beremiz install
 	mkdir -p $(CURDIR)/debian/beremiz/usr/share/beremiz
+	mkdir -p $(CURDIR)/debian/beremiz/usr/share/applications
+	
 	cp -a images $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a plugins $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a runtime $(CURDIR)/debian/beremiz/usr/share/beremiz
-	cp -a test $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp -a tests $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp -a connectors $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp -a targets $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp *.xml $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp *.py $(CURDIR)/debian/beremiz/usr/share/beremiz
 
+	cp debian/beremiz.desktop $(CURDIR)/debian/beremiz/usr/share/applications/beremiz.desktop
+
+	rm -rf `find .|grep CVS`
+	rm -rf `find .|grep .cvsignore`
 	chmod -R a+r $(CURDIR)/debian/beremiz
 
 # Build architecture-independent files here.
@@ -96,7 +104,7 @@ binary-arch: build install
 #	dh_perl
 #	dh_makeshlibs
 	dh_installdeb
-	dh_shlibdeps
+#	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

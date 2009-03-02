@@ -1,4 +1,4 @@
-beremiz (1.0-1) unstable; urgency=low
+beremiz (2009.0-%DATEVERSION%) unstable; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 

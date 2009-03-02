@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Beremiz
+Comment=Open Source framework for automation
+Comment[fr]=Environnement de développement Open Source pour l'automatisme
+Exec=/usr/bin/beremiz
+Icon=/usr/share/beremiz/images/brz.png
+Terminal=false
+MultipleArgs=false
+Type=Application
+Categories=Application;Development;
+StartupNotify=true
+
