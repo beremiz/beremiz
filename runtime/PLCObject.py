@@ -193,28 +193,29 @@ class PLCObject(pyro.ObjBase):
                    execfile(hmifile, self.python_threads_vars)
                 execfile(pyfile, self.python_threads_vars)
                 try:
-                   wx = self.python_threads_vars['wx']
-                   # try to instanciate the first frame found.
-                   for name, obj in self.python_threads_vars.iteritems():
-                       # obj is a class
-                       if type(obj)==type(type) and issubclass(obj,wx.Frame):
-                           def create_frame():
-                               self.hmi_frame = obj(None)
-                               self.python_threads_vars[name] = self.hmi_frame
-                               # keep track of class... never know
-                               self.python_threads_vars['Class_'+name] = obj
-                               self.hmi_frame.Bind(wx.EVT_CLOSE, OnCloseFrame)
-                               self.hmi_frame.Show()
-                           
-                           def OnCloseFrame(evt):
-                               self.hmi_frame.Destroy()
-                               self.hmi_frame = None
-                               wx.MessageBox("Please stop PLC to close")
-                               #wx.CallAfter(self.StopPLC)
-                               create_frame()
-                               #evt.Skip()
-                           create_frame()
-                           break
+                   if self.python_threads_vars.has_key('wx'):
+	                   wx = self.python_threads_vars['wx']
+	                   # try to instanciate the first frame found.
+	                   for name, obj in self.python_threads_vars.iteritems():
+	                       # obj is a class
+	                       if type(obj)==type(type) and issubclass(obj,wx.Frame):
+	                           def create_frame():
+	                               self.hmi_frame = obj(None)
+	                               self.python_threads_vars[name] = self.hmi_frame
+	                               # keep track of class... never know
+	                               self.python_threads_vars['Class_'+name] = obj
+	                               self.hmi_frame.Bind(wx.EVT_CLOSE, OnCloseFrame)
+	                               self.hmi_frame.Show()
+	                           
+	                           def OnCloseFrame(evt):
+	                               self.hmi_frame.Destroy()
+	                               self.hmi_frame = None
+	                               wx.MessageBox("Please stop PLC to close")
+	                               #wx.CallAfter(self.StopPLC)
+	                               create_frame()
+	                               #evt.Skip()
+	                           create_frame()
+	                           break
                 except:
                     PLCprint(traceback.format_exc())
             except:

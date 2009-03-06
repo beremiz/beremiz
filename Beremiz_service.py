@@ -368,8 +368,11 @@ import Pyro.core as pyro
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
 
+def default_evaluator(callable, *args, **kwargs):
+    return callable(*args,**kwargs)
+
 class Server():
-    def __init__(self, name, ip, port, workdir, argv, statuschange=None, evaluator=eval):
+    def __init__(self, name, ip, port, workdir, argv, statuschange=None, evaluator=default_evaluator):
         self.continueloop = True
         self.daemon = None
         self.name = name
