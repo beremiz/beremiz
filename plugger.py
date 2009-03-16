@@ -1488,18 +1488,19 @@ class PluginsRoot(PlugTemplate, PLCControler):
             if debug_vars is not None and \
                len(debug_vars) == len(self.TracedIECPath):
                 for IECPath,value in zip(self.TracedIECPath, debug_vars):
-                    data_tuple = self.IECdebug_datas.get(IECPath, None)
-                    if data_tuple is not None:
-                        WeakCallableDict, data_log, status = data_tuple
-                        data_log.append((debug_tick, value))
-                        for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
-                            # delegate call to wx event loop
-                            #print weakcallable, value, args, kwargs
-                            if getattr(weakcallable, "SetValue", None) is not None:
-                                wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
-                            elif getattr(weakcallable, "AddPoint", None) is not None:
-                                wx.CallAfter(weakcallable.AddPoint, debug_tick, value, *args, **kwargs)
-                            # This will block thread if more than one call is waiting
+                    if value is not None:
+	                    data_tuple = self.IECdebug_datas.get(IECPath, None)
+	                    if data_tuple is not None:
+	                        WeakCallableDict, data_log, status = data_tuple
+	                        data_log.append((debug_tick, value))
+	                        for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
+	                            # delegate call to wx event loop
+	                            #print weakcallable, value, args, kwargs
+	                            if getattr(weakcallable, "SetValue", None) is not None:
+	                                wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
+	                            elif getattr(weakcallable, "AddPoint", None) is not None:
+	                                wx.CallAfter(weakcallable.AddPoint, debug_tick, value, *args, **kwargs)
+	                            # This will block thread if more than one call is waiting
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
                              "Debug data not coherent %d != %d\n"%(len(debug_vars), len(self.TracedIECPath)))

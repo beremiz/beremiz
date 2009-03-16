@@ -1,7 +1,7 @@
 
-                 <xsd:element name="Xenomai">
+                  <xsd:element name="Xenomai">
                     <xsd:complexType>
                       %(toolchain_gcc)s
-                      <xsd:attribute name="xeno_config" type="xsd:string" use="optional" default="/usr/xenomai/"/>
+                      <xsd:attribute name="XenoConfig" type="xsd:string" use="optional" default="/usr/xenomai/bin/xeno-config"/>
                     </xsd:complexType>
                   </xsd:element>
