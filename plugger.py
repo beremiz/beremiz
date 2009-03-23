@@ -106,14 +106,15 @@ class PlugTemplate:
         self.PluggedChilds = {}
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
-
+        self.LoadSTLibrary()
+        
     def PluginBaseXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "baseplugin.xml")
     
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "plugin.xml")
 
-    def PluginLibraryFilePath(self, PlugName=None):
+    def PluginLibraryFilePath(self):
         return os.path.join(os.path.join(os.path.split(__file__)[0], "plugins", self.PlugType, "pous.xml"))
 
     def PlugPath(self,PlugName=None):
@@ -534,17 +535,17 @@ class PlugTemplate:
         
         return newPluginOpj
             
+    def LoadSTLibrary(self):
+        # Get library blocks if plcopen library exist
+        library_path = self.PluginLibraryFilePath()
+        if os.path.isfile(library_path):
+            self.LibraryControler = PLCControler()
+            self.LibraryControler.OpenXMLFile(library_path)
 
     def LoadXMLParams(self, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
         if os.path.isfile(methode_name):
             execfile(methode_name)
-        
-        # Get library blocks if plcopen library exist
-        library_path = self.PluginLibraryFilePath(PlugName)
-        if os.path.isfile(library_path):
-            self.LibraryControler = PLCControler()
-            self.LibraryControler.OpenXMLFile(library_path)
         
         # Get the base xml tree
         if self.MandatoryParams:
@@ -704,9 +705,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.debug_break = False
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
+        self.LoadSTLibrary()
 
-    def PluginLibraryFilePath(self, PlugName=None):
-        return os.path.join(os.path.join(os.path.split(__file__)[0], "pous.xml"))
+    def PluginLibraryFilePath(self):
+        return os.path.join(os.path.split(__file__)[0], "pous.xml")
 
     def PlugTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
