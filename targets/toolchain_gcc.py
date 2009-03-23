@@ -10,11 +10,11 @@ class toolchain_gcc():
     It cannot be used as this and should be inherited in a target specific
     class such as target_linux or target_win32
     """
-    def __init__(self, PuginsRootInstance):
-        self.PuginsRootInstance = PuginsRootInstance
-        self.logger = PuginsRootInstance.logger
-        self.exe = PuginsRootInstance.GetProjectName() + self.extension
-        self.buildpath = PuginsRootInstance._getBuildPath()
+    def __init__(self, PluginsRootInstance):
+        self.PluginsRootInstance = PluginsRootInstance
+        self.logger = PluginsRootInstance.logger
+        self.exe = PluginsRootInstance.GetProjectName() + self.extension
+        self.buildpath = PluginsRootInstance._getBuildPath()
         self.exe_path = os.path.join(self.buildpath, self.exe)
         self.md5key = None
         self.srcmd5 = {}
@@ -23,14 +23,14 @@ class toolchain_gcc():
         """
         Returns list of builder specific CFLAGS
         """
-        return [self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getCFLAGS()]
+        return [self.PluginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getCFLAGS()]
 
     def getBuilderLDFLAGS(self):
         """
         Returns list of builder specific LDFLAGS
         """
-        return self.PuginsRootInstance.LDFLAGS + \
-               [self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getLDFLAGS()]
+        return self.PluginsRootInstance.LDFLAGS + \
+               [self.PluginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getLDFLAGS()]
 
     def GetBinaryCode(self):
         try:
@@ -78,7 +78,7 @@ class toolchain_gcc():
                 
     def build(self):
         # Retrieve toolchain user parameters
-        toolchain_params = self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"]
+        toolchain_params = self.PluginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"]
         self.compiler = toolchain_params.getCompiler()
         self.linker = toolchain_params.getLinker()
 
@@ -87,13 +87,13 @@ class toolchain_gcc():
         ######### GENERATE OBJECT FILES ########################################
         obns = []
         objs = []
-        for Location, CFilesAndCFLAGS, DoCalls in self.PuginsRootInstance.LocationCFilesAndCFLAGS:
+        relink = False
+        for Location, CFilesAndCFLAGS, DoCalls in self.PluginsRootInstance.LocationCFilesAndCFLAGS:
             if Location:
-                self.logger.write("Plugin : " + self.PuginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
+                self.logger.write("Plugin : " + self.PluginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
             else:
                 self.logger.write("PLC :\n")
                 
-            relink = False
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 bn = os.path.basename(CFile)
                 obn = os.path.splitext(bn)[0]+".o"
@@ -115,6 +115,7 @@ class toolchain_gcc():
                            ).spin()
 
                     if status :
+                        self.srcmd5.pop(bn)
                         self.logger.write_error("C compilation of "+ bn +" failed.\n")
                         return False
 
