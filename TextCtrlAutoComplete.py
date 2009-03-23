@@ -45,7 +45,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
 
         #Some variables
         self._dropDownClick = dropDownClick
-        self._lastinsertionpoint = 0
+        self._lastinsertionpoint = None
         
         self._screenheight = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
         self.element_path = element_path
@@ -124,6 +124,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
     def onClickToggleUp(self, event):
         if self.GetInsertionPoint() == self._lastinsertionpoint:
             self._showDropDown(not self.dropdown.IsShown())
+        self._lastinsertionpoint = None
         event.Skip()
 
     def onControlChanged(self, event):
