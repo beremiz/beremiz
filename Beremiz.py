@@ -616,6 +616,7 @@ class Beremiz(wx.Frame):
                   size=wx.Size(24, 24), style=wx.NO_BORDER)
             make_genbitmaptogglebutton_flat(minimizebutton)
             minimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
+            minimizebutton.SetToggle(self.PluginInfos[self.PluginRoot]["middle_visible"])
             plcwindowbuttonsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
             
 #            if len(self.PluginRoot.PlugChildsTypes) > 0:
