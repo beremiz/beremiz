@@ -257,6 +257,8 @@ class PLCObject(pyro.ObjBase):
             c_argv = ctypes.c_char_p * len(self.argv)
             if self._LoadNewPLC() and self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
                 if debug:
+                    for idx in self._Idxs:
+                        self._RegisterDebugVariable(idx)
                     self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
