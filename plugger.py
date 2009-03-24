@@ -1494,7 +1494,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 	                    data_tuple = self.IECdebug_datas.get(IECPath, None)
 	                    if data_tuple is not None:
 	                        WeakCallableDict, data_log, status = data_tuple
-	                        data_log.append((debug_tick, value))
+	                        #data_log.append((debug_tick, value))
 	                        for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
 	                            # delegate call to wx event loop
 	                            #print weakcallable, value, args, kwargs
@@ -1531,7 +1531,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.GetIECProgramsAndVariables() and \
            self._connector.StartPLC(debug=True):
             self.logger.write("Starting PLC (debug mode)\n")
-            self.TracedIECPath = []
             if self.PLCDebug is None:
                 self.RefreshPluginsBlockLists()
                 def _onclose():
@@ -1539,6 +1538,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self.PLCDebug = PLCOpenEditor(self.AppFrame, self, debug=True)
                 self.PLCDebug._onclose = _onclose
                 self.PLCDebug.Show()
+            else:
+                self.PLCDebug.ResetGraphicViewers()
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()
         else:
@@ -1678,6 +1679,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
             data = builder.GetBinaryCode()
             if data is not None :
                 if self._connector.NewPLC(MD5, data, extrafiles):
+                    if self.PLCDebug is not None:
+                        self.PLCDebug.Close()
+                        self.TracedIECPath = []
+                        self.PLCDebug = None
                     self.ProgramTransferred()
                     self.logger.write("Transfer completed successfully.\n")
                 else:
