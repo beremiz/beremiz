@@ -46,7 +46,7 @@ def PLCprint(message):
 
 class PLCObject(pyro.ObjBase):
     _Idxs = []
-    def __init__(self, workingdir, daemon, argv, statuschange=None, evaluator=eval):
+    def __init__(self, workingdir, daemon, argv, statuschange, evaluator):
         pyro.ObjBase.__init__(self)
         self.evaluator = evaluator
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
@@ -57,7 +57,6 @@ class PLCObject(pyro.ObjBase):
         self._FreePLC()
         self.daemon = daemon
         self.statuschange = statuschange
-        self.python_threads_vars = None
         self.hmi_frame = None
         
         # Get the last transfered PLC if connector must be restart
@@ -220,23 +219,21 @@ class PLCObject(pyro.ObjBase):
                             break
             except:
                 PLCprint(traceback.format_exc())
-            
-    def BeginRuntimePy(self):
         runtime_begin = self.python_threads_vars.get("_runtime_begin",None)
         if runtime_begin is not None:
-            self.evaluator(runtime_begin)
+            runtime_begin()
 
     def FinishRuntimePy(self):
         runtime_cleanup = self.python_threads_vars.get("_runtime_cleanup",None)
         if runtime_cleanup is not None:
-            self.evaluator(runtime_cleanup)
+            runtime_cleanup()
         if self.hmi_frame is not None:
-            self.evaluator(self.hmi_frame.Destroy)
+            self.hmi_frame.Destroy()
         self.python_threads_vars = None
 
     def PythonThreadProc(self):
         PLCprint("PythonThreadProc started")
-        self.BeginRuntimePy()
+        self.evaluator(self.PrepareRuntimePy)
         res,cmd = "None","None"
         while self.PLCStatus == "Started":
             #print "_PythonIterator(", res, ")",
@@ -249,6 +246,7 @@ class PLCObject(pyro.ObjBase):
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
                 PLCprint(res)
+        self.evaluator(self.FinishRuntimePy)
         PLCprint("PythonThreadProc interrupted")
     
     def StartPLC(self, debug=False):
@@ -262,7 +260,6 @@ class PLCObject(pyro.ObjBase):
                     self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
-                self.evaluator(self.PrepareRuntimePy)
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 return True
@@ -272,12 +269,8 @@ class PLCObject(pyro.ObjBase):
         return False
 
     def _DoStopPLC(self):
-        self._stopPLC()
         self.PLCStatus = "Stopped"
-        self.PythonThread.join(timeout=1)
-        if self.PythonThread.isAlive():
-            PLCprint("Python thread couldn't be killed")
-        self.FinishRuntimePy()
+        self._stopPLC()
         if self._FreePLC():
             self.PLCStatus = "Dirty"
         self.StatusChange()

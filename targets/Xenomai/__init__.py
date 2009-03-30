@@ -5,7 +5,7 @@ class Xenomai_target(toolchain_gcc):
     extension = ".so"
     def getXenoConfig(self):
         """ Get xeno-config from target parameters """
-        return self.PuginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getXenoConfig()
+        return self.PluginsRootInstance.BeremizRoot.getTargetType().getcontent()["value"].getXenoConfig()
     
     def getBuilderLDFLAGS(self):
         # get xeno-config from target parameters

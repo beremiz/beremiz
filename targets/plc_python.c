@@ -1,17 +1,17 @@
 /*
  * Python Asynchronous execution code
- * 
+ *
  * PLC put python commands in a fifo, respecting execution order
- * with the help of C pragmas inserted in python_eval FB code 
- * 
- * Buffer content is read asynchronously, (from non real time part), 
+ * with the help of C pragmas inserted in python_eval FB code
+ *
+ * Buffer content is read asynchronously, (from non real time part),
  * commands are executed and result stored for later use by PLC.
- * 
+ *
  * In this implementation, fifo is a list of pointer to python_eval
  * function blocks structures. Some local variables have been added in
  * python_eval interface. We use those local variables as buffer and state
  * flags.
- * 
+ *
  * */
 
 #include "iec_types_all.h"
@@ -30,7 +30,7 @@ static int PythonState;
 #define PYTHON_LOCKED_BY_PLC 1
 #define PYTHON_MUSTWAKEUP 2
 #define PYTHON_FINISHED 4
- 
+
 /* Each python_eval FunctionBlock have it own state */
 #define PYTHON_FB_FREE 0
 #define PYTHON_FB_REQUESTED 1
@@ -62,12 +62,12 @@ void __cleanup_python()
 
 void __retrieve_python()
 {
-	/* Check Python thread is not being 
+	/* Check Python thread is not being
 	 * modifying internal python_eval data */
-	PythonState = TryLockPython() ? 
-	                PYTHON_LOCKED_BY_PLC : 
+	PythonState = TryLockPython() ?
+	                PYTHON_LOCKED_BY_PLC :
 	                PYTHON_LOCKED_BY_PYTHON;
-	/* If python thread _is_ in, then PythonState remains PYTHON_LOCKED_BY_PYTHON 
+	/* If python thread _is_ in, then PythonState remains PYTHON_LOCKED_BY_PYTHON
 	 * and python_eval will no do anything */
 }
 
@@ -83,13 +83,13 @@ void __publish_python()
 	}
 }
 /**
- * Called by the PLC, each time a python_eval 
+ * Called by the PLC, each time a python_eval
  * FB instance is executed
  */
 void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 {
-	/* detect rising edge on TRIG to trigger evaluation */ 
-	if(((data__->TRIG && !data__->TRIGM1) || 
+	/* detect rising edge on TRIG to trigger evaluation */
+	if(((data__->TRIG && !data__->TRIGM1) ||
 	   /* polling is equivalent to trig on value rather than on rising edge*/
 	    (poll && data__->TRIG )) &&
 	    /* trig only if not already trigged */
@@ -122,12 +122,12 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 		}
 		/* got the order to act ?*/
 		if(data__->TRIGGED == 1 &&
-		   /* and not already being processed */ 
-		   data__->STATE == PYTHON_FB_FREE) 
+		   /* and not already being processed */
+		   data__->STATE == PYTHON_FB_FREE)
 		{
 			/* Enter the block in the fifo
 			/* Don't have to check if fifo cell is free
-			 * as fifo size == FB count, and a FB cannot 
+			 * as fifo size == FB count, and a FB cannot
 			 * be requested twice */
 			EvalFBs[Current_PLC_EvalFB] = data__;
 			/* copy into BUFFER local*/
@@ -186,14 +186,14 @@ char* PythonIterator(char* result)
 		//printf("PythonIterator ++ Current_Python_EvalFB %%d\n", Current_Python_EvalFB);
 	}
 	/* while next slot is empty */
-	while(((data__ = EvalFBs[Current_Python_EvalFB]) == NULL) || 
-	 	  /* or doesn't contain command */ 
+	while(((data__ = EvalFBs[Current_Python_EvalFB]) == NULL) ||
+	 	  /* or doesn't contain command */
 	      data__->STATE != PYTHON_FB_REQUESTED)
 	{
 		UnLockPython();
 		/* wait next FB to eval */
 		//printf("PythonIterator wait\n");
-		WaitPythonCommands();
+		if(WaitPythonCommands()) return NULL;
 		/*emergency exit*/
 		if(PythonState & PYTHON_FINISHED) return NULL;
 		LockPython();

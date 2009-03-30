@@ -1,13 +1,13 @@
 /**
  * Linux specific code
- **/ 
+ **/
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <pthread.h> 
+#include <pthread.h>
 
 /* provided by POUS.C */
 extern int common_ticktime__;
@@ -51,7 +51,7 @@ void PLC_SetTimer(long long next, long long period)
 	    timerValues.it_interval.tv_sec = period / 1000000000;
 	    timerValues.it_interval.tv_nsec = period % 1000000000;
 #endif
-	}	
+	}
     timer_settime (PLC_timer, 0, &timerValues, NULL);
 }
 //
@@ -77,12 +77,15 @@ int startPLC(int argc,char **argv)
     struct sigevent sigev;
     /* Translate PLC's microseconds to Ttick nanoseconds */
     Ttick = 1000000 * maxval(common_ticktime__,1);
-    
+
     memset (&sigev, 0, sizeof (struct sigevent));
     sigev.sigev_value.sival_int = 0;
     sigev.sigev_notify = SIGEV_THREAD;
     sigev.sigev_notify_attributes = NULL;
     sigev.sigev_notify_function = PLC_timer_notify;
+
+    pthread_mutex_init(&debug_wait_mutex);
+    pthread_mutex_init(&python_wait_mutex);
 
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
@@ -90,7 +93,7 @@ int startPLC(int argc,char **argv)
     timer_create (CLOCK_REALTIME, &sigev, &PLC_timer);
     if(  __init(argc,argv) == 0 ){
         PLC_SetTimer(Ttick,Ttick);
-        
+
         /* install signal handler for manual break */
 //        signal(SIGTERM, catch_signal);
         signal(SIGINT, catch_signal);
@@ -118,6 +121,9 @@ int stopPLC()
     __cleanup();
     __debug_tick = -1;
     pthread_mutex_unlock(&debug_wait_mutex);
+    pthread_mutex_destroy(&debug_wait_mutex);
+    pthread_mutex_unlock(&python_wait_mutex);
+    pthread_mutex_destroy(&python_wait_mutex);
 }
 
 extern int __tick;
@@ -125,10 +131,10 @@ extern int __tick;
 int WaitDebugData()
 {
     /* Wait signal from PLC thread */
-    pthread_mutex_lock(&debug_wait_mutex);
+    if(pthread_mutex_lock(&debug_wait_mutex)) return -1;
     return __debug_tick;
 }
- 
+
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
@@ -157,9 +163,9 @@ void resumeDebug(void)
 int WaitPythonCommands(void)
 {
     /* Wait signal from PLC thread */
-    pthread_mutex_lock(&python_wait_mutex);
+    return pthread_mutex_lock(&python_wait_mutex);
 }
- 
+
 /* Called by PLC thread on each new python command*/
 void UnBlockPythonCommands(void)
 {
