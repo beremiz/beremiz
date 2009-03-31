@@ -237,7 +237,6 @@ class PLCObject(pyro.ObjBase):
             if cmd is None:
                 break
             try :
-                PLCprint(cmd)
                 res = str(self.evaluator(eval,cmd,self.python_threads_vars))
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
