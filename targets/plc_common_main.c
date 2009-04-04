@@ -1,12 +1,12 @@
 /**
  * Code common to all C targets
- **/ 
+ **/
 
+#include <locale.h>
 #include "iec_types.h"
-
 /*
  * Prototypes of functions provied by generated C softPLC
- **/ 
+ **/
 void config_run__(int tick);
 void config_init__(void);
 
@@ -34,12 +34,12 @@ int __tick = -1;
 static int init_level = 0;
 
 /*
- * Prototypes of functions exported by plugins 
+ * Prototypes of functions exported by plugins
  **/
 %(calls_prototypes)s
 
 /*
- * Retrieve input variables, run PLC and publish output variables 
+ * Retrieve input variables, run PLC and publish output variables
  **/
 void __run()
 {
@@ -50,24 +50,25 @@ void __run()
     __retrieve_python();
 
     /*__retrieve_debug();*/
-    
+
     config_run__(__tick);
 
     __publish_python();
 
     __publish_debug();
-    
+
     %(publish_calls)s
 
 }
 
 /*
  * Initialize variables according to PLC's defalut values,
- * and then init plugins with that values  
+ * and then init plugins with that values
  **/
 int __init(int argc,char **argv)
 {
     int res;
+    setlocale(LC_NUMERIC, "C");
     config_init__();
     __init_debug();
     __init_python();
@@ -99,8 +100,8 @@ static int  last_tick = 0;
 static long long Ttick = 0;
 #define mod %%
 /*
- * Call this on each external sync, 
- * @param sync_align_ratio 0->100 : align ratio, < 0 : no align, calibrate period 
+ * Call this on each external sync,
+ * @param sync_align_ratio 0->100 : align ratio, < 0 : no align, calibrate period
  **/
 void align_tick(int sync_align_ratio)
 {
@@ -123,7 +124,7 @@ void align_tick(int sync_align_ratio)
 			PLC_GetTime(&cal_end);
 			/*adjust calibration_count*/
 			calibration_count++;
-			/* compute mean of Tsync, over calibration period */	
+			/* compute mean of Tsync, over calibration period */
 			Tsync = ((long long)(cal_end.tv_sec - cal_begin.tv_sec) * (long long)1000000000 +
 					(cal_end.tv_nsec - cal_begin.tv_nsec)) / calibration_count;
 			if( (Nticks = (Tsync / Ttick)) > 0){
@@ -155,7 +156,7 @@ void align_tick(int sync_align_ratio)
 					/* PhaseCorr may not be applied to Periodic time given to timer */
 					PeriodicTcorr = Ttick + FreqCorr / Nticks;
 				}else{
-					PeriodicTcorr = Tcorr; 
+					PeriodicTcorr = Tcorr;
 				}
 			}else if(__tick > last_tick){
 				last_tick = __tick;

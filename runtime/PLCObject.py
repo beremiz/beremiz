@@ -26,7 +26,6 @@ import Pyro.core as pyro
 from threading import Timer, Thread
 import ctypes, os, commands, types, sys
 
-
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
     from _ctypes import FreeLibrary as dlclose
@@ -183,17 +182,17 @@ class PLCObject(pyro.ObjBase):
         self.python_threads_vars = globals().copy()
         pyfile = os.path.join(self.workingdir, "runtime.py")
         hmifile = os.path.join(self.workingdir, "hmi.py")
-        if os.path.exists(pyfile):
-            try:
-                # TODO handle exceptions in runtime.py
-                # pyfile may redefine _runtime_cleanup
-                # or even call _PythonThreadProc itself.
-                execfile(pyfile, self.python_threads_vars)
-            except:
-                PLCprint(traceback.format_exc())
         if os.path.exists(hmifile):
             try:
                 execfile(hmifile, self.python_threads_vars)
+                if os.path.exists(pyfile):
+                    try:
+                        # TODO handle exceptions in runtime.py
+                        # pyfile may redefine _runtime_cleanup
+                        # or even call _PythonThreadProc itself.
+                        execfile(pyfile, self.python_threads_vars)
+                    except:
+                        PLCprint(traceback.format_exc())
                 if self.python_threads_vars.has_key('wx'):
                     wx = self.python_threads_vars['wx']
                     # try to instanciate the first frame found.
@@ -212,6 +211,14 @@ class PLCObject(pyro.ObjBase):
                                 wx.MessageBox("Please stop PLC to close")
                             create_frame()
                             break
+            except:
+                PLCprint(traceback.format_exc())
+        elif os.path.exists(pyfile):
+            try:
+                # TODO handle exceptions in runtime.py
+                # pyfile may redefine _runtime_cleanup
+                # or even call _PythonThreadProc itself.
+                execfile(pyfile, self.python_threads_vars)
             except:
                 PLCprint(traceback.format_exc())
         runtime_begin = self.python_threads_vars.get("_runtime_begin",None)

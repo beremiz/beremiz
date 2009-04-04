@@ -351,7 +351,7 @@ class PythonCodeEditor(PythonSTC):
     # Some methods to make it compatible with how the wxTextCtrl is used
     def SetValue(self, value):
         if wx.USE_UNICODE:
-            value = value.decode('iso8859_1')
+            value = value.decode('utf-8')
         self.SetText(value)
         self.EmptyUndoBuffer()
         self.SetSavePoint()
@@ -544,7 +544,10 @@ class PythonCodePanel(wx.Panel):
         self.SetSizer(self.box)
         
         self.sourceFile = None
-
+        
+        self.Bind(wx.EVT_MENU, self.OnSave, id=wx.ID_SAVE)
+        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL, 83, wx.ID_SAVE)])
+        self.SetAcceleratorTable(accel)
 
     # Loads from a file object
     def LoadSourceFile(self, filename):
@@ -578,7 +581,7 @@ class PythonCodePanel(wx.Panel):
             return
         dlg.Destroy()
 
-        source = self.editor.GetText()
+        source = self.editor.GetText().encode("utf-8")
 
         f = file(self.sourceFile, "w")
         f.write(source)
