@@ -84,8 +84,8 @@ int startPLC(int argc,char **argv)
     sigev.sigev_notify_attributes = NULL;
     sigev.sigev_notify_function = PLC_timer_notify;
 
-    pthread_mutex_init(&debug_wait_mutex);
-    pthread_mutex_init(&python_wait_mutex);
+    pthread_mutex_init(&debug_wait_mutex, NULL);
+    pthread_mutex_init(&python_wait_mutex, NULL);
 
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
