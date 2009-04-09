@@ -1476,6 +1476,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         self.ReArmDebugRegisterTimer()
 
+    def UnsubscribeAllDebugIECVariable(self):
+        self.IECdebug_lock.acquire()
+        IECdebug_data = {}
+        self.IECdebug_lock.release()
+
+        self.ReArmDebugRegisterTimer()        
+
     def DebugThreadProc(self):
         """
         This thread waid PLC debug data, and dispatch them to subscribers
@@ -1681,8 +1688,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 if self._connector.NewPLC(MD5, data, extrafiles):
                     if self.PLCDebug is not None:
                         self.PLCDebug.Close()
-                        self.TracedIECPath = []
                         self.PLCDebug = None
+                    self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
                     self.logger.write("Transfer completed successfully.\n")
                 else:
