@@ -1,6 +1,6 @@
 /**
  * Linux specific code
- **/ 
+ **/
 
 #include <stdio.h>
 #include <string.h>
@@ -52,7 +52,7 @@ void PLC_SetTimer(long long next, long long period)
 void PLC_task_proc(void *arg)
 {
     PLC_SetTimer(Ttick, Ttick);
-  
+
     while (1) {
         PLC_GetTime(&__CURRENT_TIME);
         __run();
@@ -84,7 +84,7 @@ void PLC_cleanup_all(void)
         rt_mutex_delete(&python_mutex);
         PLC_state &= ~ PLC_STATE_PYTHON_MUTEX_CREATED;
     }
-    
+
     if (PLC_state & PLC_STATE_DEBUG_WAIT_SEM_CREATED) {
         rt_sem_delete(&debug_wait_sem);
         PLC_state &= ~ PLC_STATE_DEBUG_WAIT_SEM_CREATED;
@@ -122,40 +122,40 @@ void catch_signal(int sig)
 int startPLC(int argc,char **argv)
 {
     int ret = 0;
-    
+
     signal(SIGINT, catch_signal);
-    
+
     /* ne-memory-swapping for this program */
     mlockall(MCL_CURRENT | MCL_FUTURE);
-    
+
     /* Translate PLC's microseconds to Ttick nanoseconds */
     Ttick = 1000000 * max_val(common_ticktime__,1);
-    
+
     /* create python_wait_sem */
     ret = rt_sem_create(&python_wait_sem, "python_wait_sem", 0, S_FIFO);
     if (ret) goto error;
     PLC_state |= PLC_STATE_PYTHON_WAIT_SEM_CREATED;
-    
+
     /* create python_mutex */
     ret = rt_mutex_create(&python_mutex, "python_mutex");
     if (ret) goto error;
     PLC_state |= PLC_STATE_PYTHON_MUTEX_CREATED;
-    
+
     /* create debug_wait_sem */
     ret = rt_sem_create(&debug_wait_sem, "debug_wait_sem", 0, S_FIFO);
     if (ret) goto error;
     PLC_state |= PLC_STATE_DEBUG_WAIT_SEM_CREATED;
-    
+
     /* create debug_mutex */
     ret = rt_mutex_create(&debug_mutex, "debug_mutex");
     if (ret) goto error;
     PLC_state |= PLC_STATE_DEBUG_MUTEX_CREATED;
-    
+
     /* create can_driver_task */
     ret = rt_task_create(&PLC_task, "PLC_task", 0, 50, 0);
     if (ret) goto error;
     PLC_state |= PLC_STATE_TASK_CREATED;
-    
+
     ret = __init(argc,argv);
     if (ret) goto error;
 
@@ -189,7 +189,7 @@ int WaitDebugData()
     rt_sem_p(&debug_wait_sem, TM_INFINITE);
     return __debug_tick;
 }
- 
+
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
@@ -221,7 +221,7 @@ int WaitPythonCommands(void)
     /* Wait signal from PLC thread */
     rt_sem_p(&python_wait_sem, TM_INFINITE);
 }
- 
+
 /* Called by PLC thread on each new python command*/
 void UnBlockPythonCommands(void)
 {

@@ -226,7 +226,9 @@ class PLCObject(pyro.ObjBase):
             runtime_begin()
 
     def FinishRuntimePy(self):
-        runtime_cleanup = self.python_threads_vars.get("_runtime_cleanup",None)
+        runtime_cleanup = None
+        if self.python_threads_vars is not None:
+            runtime_cleanup = self.python_threads_vars.get("_runtime_cleanup",None)
         if runtime_cleanup is not None:
             runtime_cleanup()
         if self.hmi_frame is not None:

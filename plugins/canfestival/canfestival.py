@@ -278,6 +278,7 @@ class RootClass:
                        "board_decls" : "",
                        "nodes_init" : "",
                        "nodes_open" : "",
+                       "nodes_stop" : "",
                        "nodes_close" : "",
                        "nodes_send_sync" : "",
                        "nodes_proceed_sync" : "",
@@ -361,7 +362,7 @@ class RootClass:
                    child_data.getCAN_Baudrate())
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
-        
+            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)        
         if sys.platform == 'win32':
             if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(format_dict["candriver"] + '_DEBUG.dll'))):
                     format_dict["candriver"] += '_DEBUG.dll'

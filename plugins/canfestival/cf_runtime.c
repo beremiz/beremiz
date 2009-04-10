@@ -20,7 +20,7 @@ static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
 {
     /* Put the master in operational mode */
     setState(d, Operational);
-      
+
     /* Ask slave node to go in operational mode */
     masterSendNMTstateChange (d, 0, NMT_Start_Node);
 }
@@ -30,7 +30,7 @@ static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
 %(slavebootups)s
 
 /* One slave node post_sync callback.
- * Used to align PLC tick-time on CANopen SYNC 
+ * Used to align PLC tick-time on CANopen SYNC
  */
 %(post_sync)s
 
@@ -48,42 +48,47 @@ static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
     setState(&nodename##_Data, Initialisation);
 
 #define NODE_MASTER_INIT(nodename, nodeid) \
-	NODE_FORCE_SYNC(nodename) \
-	NODE_INIT(nodename, nodeid)
+    NODE_FORCE_SYNC(nodename) \
+    NODE_INIT(nodename, nodeid)
 
 #define NODE_SLAVE_INIT(nodename, nodeid) \
-	NODE_INIT(nodename, nodeid)
+    NODE_INIT(nodename, nodeid)
 
 void InitNodes(CO_Data* d, UNS32 id)
 {
-	%(slavebootup_register)s
-	%(post_sync_register)s
+    %(slavebootup_register)s
+    %(post_sync_register)s
     %(nodes_init)s
 }
 
+#define NODE_STOP(nodename) \
+    if(init_level-- > 0)\
+    {\
+        masterSendNMTstateChange(&nodename##_Data, 0, NMT_Reset_Node);\
+        setState(&nodename##_Data, Stopped);\
+    }
+
 void Exit(CO_Data* d, UNS32 id)
 {
+    %(nodes_stop)s
 }
 
 #define NODE_CLOSE(nodename) \
-    if(init_level-- > 0)\
+    if(init_level_c-- > 0)\
     {\
-        EnterMutex();\
-        masterSendNMTstateChange(&nodename##_Data, 0, NMT_Reset_Node);\
-        setState(&nodename##_Data, Stopped);\
-        LeaveMutex();\
-        canClose(&nodename##_Data);\
+      canClose(&nodename##_Data);\
     }
 
 void __cleanup_%(locstr)s()
 {
     // Stop timer thread
     if(init_level-- > 0){
+    int init_level_c = init_level;	
         StopTimerLoop(&Exit);
         %(nodes_close)s
-   }
+    }
     #if !defined(WIN32) || defined(__CYGWIN__)
-   		TimerCleanup();
+        TimerCleanup();
     #endif
 }
 
@@ -104,11 +109,11 @@ int __init_%(locstr)s(int argc,char **argv)
         fflush(stderr);
         return -1;
     }
-#endif      
-	#if !defined(WIN32) || defined(__CYGWIN__)
-		TimerInit();
-	#endif
-	
+#endif
+    #if !defined(WIN32) || defined(__CYGWIN__)
+        TimerInit();
+    #endif
+
     %(nodes_open)s
 
     // Start timer thread
@@ -123,7 +128,7 @@ int __init_%(locstr)s(int argc,char **argv)
 void __retrieve_%(locstr)s()
 {
     /* Locks the stack, so that no changes occurs while PLC access variables
-     * TODO : implement buffers to avoid such a big lock  
+     * TODO : implement buffers to avoid such a big lock
      *  */
     EnterMutex();
     /* Send Sync */
