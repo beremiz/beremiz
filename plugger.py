@@ -629,6 +629,27 @@ from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
 # Construct debugger natively supported types
 DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")] + \
     ["STEP","TRANSITION","ACTION"]
+DebugTypesSize =  {"BOOL" :       1,
+                   "STEP" :       1,
+                   "TRANSITION" : 1,
+                   "ACTION" :     1,
+                   "SINT" :       1,
+                   "USINT" :      1,
+                   "BYTE" :       1,
+                   "STRING" :     128,
+                   "INT" :        2,
+                   "UINT" :       2,
+                   "WORD" :       2,
+                   "WSTRING" :    0, #TODO
+                   "DINT" :       4,
+                   "UDINT" :      4,
+                   "DWORD" :      4,
+                   "LINT" :       4,
+                   "ULINT" :      8,
+                   "LWORD" :      8,
+                   "REAL" :       4,
+                   "LREAL" :      8,
+                  } 
 
 import re
 import targets
@@ -1106,6 +1127,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         # prepare debug code
         debug_code = targets.code("plc_debug") % {
+           "buffer_size": reduce(lambda x, y: x + y, [DebugTypesSize.get(v["type"], 0) for v in self._VariablesList], 0),
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
@@ -1245,6 +1267,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             try:
                 # Do generate
                 code = generator()
+                if code is None:
+                     raise
                 code_path = os.path.join(buildpath,filename)
                 open(code_path, "w").write(code)
                 # Insert this file as first file to be compiled at root plugin

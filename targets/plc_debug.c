@@ -14,8 +14,9 @@
 #include "POUS.h"
 /*for memcpy*/
 #include <string.h>
+#include <stdio.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE %(buffer_size)d
 #define MAX_SUBSCRIBTION %(subscription_table_count)d
 
 /* Atomically accessed variable for buffer state */
@@ -158,13 +159,14 @@ void* IterDebugData(int* idx, const char **type_name)
         *type_name = __get_type_enum_name(my_var->type);
         /* get variable size*/
         USINT size = __get_type_enum_size(my_var->type);
-        /* compute next cursor positon*/
+        /* compute next cursor position*/
         buffer_cursor = buffer_cursor + size;
         if(old_cursor < debug_buffer + BUFFER_SIZE)
         {
             return old_cursor;
         }else{
-            return NULL;
+            printf("%%d > %%d\n", old_cursor - debug_buffer, BUFFER_SIZE);
+	    return NULL;
         } 
     }
     *idx = -1;
