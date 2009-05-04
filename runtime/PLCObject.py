@@ -274,6 +274,7 @@ class PLCObject(pyro.ObjBase):
 
     def _DoStopPLC(self):
         self.PLCStatus = "Stopped"
+        self.StatusChange()
         self._stopPLC()
         if self._FreePLC():
             self.PLCStatus = "Dirty"
@@ -393,7 +394,7 @@ class PLCObject(pyro.ObjBase):
                            
     def GetTraceVariables(self):
         """
-        Return a list of variables, corresponding to the list of requiered idx
+        Return a list of variables, corresponding to the list of required idx
         """
         if self.PLCStatus == "Started":
             tick = self._WaitDebugData()
