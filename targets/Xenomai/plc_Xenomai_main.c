@@ -8,18 +8,25 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/fcntl.h>
 
 #include <native/task.h>
 #include <native/timer.h>
 #include <native/mutex.h>
 #include <native/sem.h>
+#include <native/pipe.h>
 
 unsigned int PLC_state = 0;
 #define PLC_STATE_TASK_CREATED                  1
 #define PLC_STATE_PYTHON_MUTEX_CREATED          2
 #define PLC_STATE_PYTHON_WAIT_SEM_CREATED       4
 #define PLC_STATE_DEBUG_MUTEX_CREATED           8
-#define PLC_STATE_DEBUG_WAIT_SEM_CREATED       16
+#define PLC_STATE_DEBUG_FILE_OPENED             16
+#define PLC_STATE_DEBUG_PIPE_CREATED            32
+
+#define WAITDEBUG_PIPE_DEVICE       "/dev/rtp0"
+#define WAITDEBUG_PIPE_MINOR        0
+#define WAITDEBUG_PIPE_SIZE         500
 
 /* provided by POUS.C */
 extern int common_ticktime__;
@@ -37,11 +44,15 @@ void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 }
 
 RT_TASK PLC_task;
-RT_TASK WaitDebug_task;
+RT_PIPE WaitDebug_pipe;
+RT_TASK SuspendDebug_task;
+RT_TASK ResumeDebug_task;
 RT_TASK WaitPythonCommand_task;
 RT_TASK UnLockPython_task;
 RT_TASK LockPython_task;
 int PLC_shutdown = 0;
+
+int WaitDebug_pipe_fd = -1;
 
 void PLC_SetTimer(long long next, long long period)
 {
@@ -65,7 +76,6 @@ static int __debug_tick;
 
 RT_SEM python_wait_sem;
 RT_MUTEX python_mutex;
-RT_SEM debug_wait_sem;
 RT_MUTEX debug_mutex;
 
 void PLC_cleanup_all(void)
@@ -76,6 +86,7 @@ void PLC_cleanup_all(void)
     }
 
     if (PLC_state & PLC_STATE_PYTHON_WAIT_SEM_CREATED) {
+        rt_sem_v(&python_wait_sem);
         rt_sem_delete(&python_wait_sem);
         PLC_state &= ~ PLC_STATE_PYTHON_WAIT_SEM_CREATED;
     }
@@ -85,9 +96,14 @@ void PLC_cleanup_all(void)
         PLC_state &= ~ PLC_STATE_PYTHON_MUTEX_CREATED;
     }
 
-    if (PLC_state & PLC_STATE_DEBUG_WAIT_SEM_CREATED) {
-        rt_sem_delete(&debug_wait_sem);
-        PLC_state &= ~ PLC_STATE_DEBUG_WAIT_SEM_CREATED;
+    if (PLC_state & PLC_STATE_DEBUG_PIPE_CREATED) {
+        rt_pipe_delete(&WaitDebug_pipe);
+        PLC_state &= ~PLC_STATE_DEBUG_PIPE_CREATED;
+    }
+
+    if (PLC_state & PLC_STATE_DEBUG_FILE_OPENED) {
+        close(WaitDebug_pipe_fd);
+        PLC_state &= ~PLC_STATE_DEBUG_FILE_OPENED;
     }
 
     if (PLC_state & PLC_STATE_DEBUG_MUTEX_CREATED) {
@@ -101,11 +117,9 @@ int stopPLC()
     PLC_shutdown = 1;
     /* Stop the PLC */
     PLC_SetTimer(0, 0);
-    PLC_cleanup_all();
     __cleanup();
+    PLC_cleanup_all();
     __debug_tick = -1;
-    rt_sem_v(&debug_wait_sem);
-    rt_sem_v(&python_wait_sem);
 }
 
 //
@@ -141,10 +155,19 @@ int startPLC(int argc,char **argv)
     if (ret) goto error;
     PLC_state |= PLC_STATE_PYTHON_MUTEX_CREATED;
 
-    /* create debug_wait_sem */
-    ret = rt_sem_create(&debug_wait_sem, "debug_wait_sem", 0, S_FIFO);
+    /* create WaitDebug_pipe */
+    ret = rt_pipe_create(&WaitDebug_pipe, "WaitDebug_pipe", WAITDEBUG_PIPE_MINOR,
+          WAITDEBUG_PIPE_SIZE * sizeof(char));
     if (ret) goto error;
-    PLC_state |= PLC_STATE_DEBUG_WAIT_SEM_CREATED;
+    PLC_state |= PLC_STATE_DEBUG_PIPE_CREATED;
+
+    /* open WaitDebug_pipe*/
+    WaitDebug_pipe_fd = open(WAITDEBUG_PIPE_DEVICE, O_RDWR);
+    if (WaitDebug_pipe_fd == -1) {
+        ret = -EBADF;
+        goto error;
+    }
+    PLC_state |= PLC_STATE_DEBUG_FILE_OPENED;
 
     /* create debug_mutex */
     ret = rt_mutex_create(&debug_mutex, "debug_mutex");
@@ -184,9 +207,10 @@ extern int __tick;
 /* from plc_debugger.c */
 int WaitDebugData()
 {
-    rt_task_shadow(&WaitDebug_task, "WaitDebug_task", 0, 0);
+    char message;
     /* Wait signal from PLC thread */
-    rt_sem_p(&debug_wait_sem, TM_INFINITE);
+    if (PLC_state & PLC_STATE_DEBUG_FILE_OPENED)
+        read(WaitDebug_pipe_fd, &message, sizeof(char));
     return __debug_tick;
 }
 
@@ -194,32 +218,42 @@ int WaitDebugData()
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer()
 {
+    char message = 1;
     /* remember tick */
     __debug_tick = __tick;
     /* signal debugger thread it can read data */
-    rt_sem_v(&debug_wait_sem);
+    if (PLC_state & PLC_STATE_DEBUG_PIPE_CREATED)
+        rt_pipe_write(&WaitDebug_pipe, &message, sizeof(char), P_NORMAL);
 }
 
 void suspendDebug(void)
 {
     __DEBUG = 0;
-    /* Prevent PLC to enter debug code */
-    rt_mutex_acquire(&debug_mutex, TM_INFINITE);
+    if (PLC_state & PLC_STATE_DEBUG_MUTEX_CREATED) {
+        rt_task_shadow(&SuspendDebug_task, "SuspendDebug_task", 0, 0);
+        /* Prevent PLC to enter debug code */
+        rt_mutex_acquire(&debug_mutex, TM_INFINITE);
+    }
 }
 
 void resumeDebug(void)
 {
     __DEBUG = 1;
-    /* Let PLC enter debug code */
-    rt_mutex_release(&debug_mutex);
+    if (PLC_state & PLC_STATE_DEBUG_MUTEX_CREATED) {
+        rt_task_shadow(&ResumeDebug_task, "ResumeDebug_task", 0, 0);
+        /* Let PLC enter debug code */
+        rt_mutex_release(&debug_mutex);
+    }
 }
 
 /* from plc_python.c */
 int WaitPythonCommands(void)
 {
-    rt_task_shadow(&WaitPythonCommand_task, "WaitPythonCommand_task", 0, 0);
     /* Wait signal from PLC thread */
-    rt_sem_p(&python_wait_sem, TM_INFINITE);
+    if (PLC_state & PLC_STATE_PYTHON_WAIT_SEM_CREATED) {
+        rt_task_shadow(&WaitPythonCommand_task, "WaitPythonCommand_task", 0, 0);
+        rt_sem_p(&python_wait_sem, TM_INFINITE);
+    }
 }
 
 /* Called by PLC thread on each new python command*/
@@ -236,12 +270,16 @@ int TryLockPython(void)
 
 void UnLockPython(void)
 {
-    rt_task_shadow(&UnLockPython_task, "UnLockPython_task", 0, 0);
-    rt_mutex_release(&python_mutex);
+    if (PLC_state & PLC_STATE_PYTHON_MUTEX_CREATED) {
+        rt_task_shadow(&UnLockPython_task, "UnLockPython_task", 0, 0);
+        rt_mutex_release(&python_mutex);
+    }
 }
 
 void LockPython(void)
 {
-    rt_task_shadow(&LockPython_task, "LockPython_task", 0, 0);
-    rt_mutex_acquire(&python_mutex, TM_INFINITE);
+    if (PLC_state & PLC_STATE_PYTHON_MUTEX_CREATED) {
+        rt_task_shadow(&LockPython_task, "LockPython_task", 0, 0);
+        rt_mutex_acquire(&python_mutex, TM_INFINITE);
+    }
 }
