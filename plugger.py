@@ -686,6 +686,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
+          <xsd:attribute name="Enable_Plugins" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -1174,25 +1175,34 @@ class PluginsRoot(PlugTemplate, PLCControler):
            [loc for loc,Cfiles,DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
 
         # Generate main, based on template
-        plc_main_code = targets.code("plc_common_main") % {
-            "calls_prototypes":"\n".join([(
-                  "int __init_%(s)s(int argc,char **argv);\n"+
-                  "void __cleanup_%(s)s();\n"+
-                  "void __retrieve_%(s)s();\n"+
-                  "void __publish_%(s)s();")%{'s':locstr} for locstr in locstrs]),
-            "retrieve_calls":"\n    ".join([
-                  "__retrieve_%s();"%locstr for locstr in locstrs]),
-            "publish_calls":"\n    ".join([ #Call publish in reverse order
-                  "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
-            "init_calls":"\n    ".join([
-                  "init_level=%d; "%(i+1)+
-                  "if(res = __init_%s(argc,argv)){"%locstr +
-                  #"printf(\"%s\"); "%locstr + #for debug
-                  "return res;}" for i,locstr in enumerate(locstrs)]),
-            "cleanup_calls":"\n    ".join([
-                  "if(init_level >= %d) "%i+
-                  "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
-            }
+        if self.BeremizRoot.getEnable_Plugins():
+            plc_main_code = targets.code("plc_common_main") % {
+                "calls_prototypes":"\n".join([(
+                      "int __init_%(s)s(int argc,char **argv);\n"+
+                      "void __cleanup_%(s)s();\n"+
+                      "void __retrieve_%(s)s();\n"+
+                      "void __publish_%(s)s();")%{'s':locstr} for locstr in locstrs]),
+                "retrieve_calls":"\n    ".join([
+                      "__retrieve_%s();"%locstr for locstr in locstrs]),
+                "publish_calls":"\n    ".join([ #Call publish in reverse order
+                      "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
+                "init_calls":"\n    ".join([
+                      "init_level=%d; "%(i+1)+
+                      "if(res = __init_%s(argc,argv)){"%locstr +
+                      #"printf(\"%s\"); "%locstr + #for debug
+                      "return res;}" for i,locstr in enumerate(locstrs)]),
+                "cleanup_calls":"\n    ".join([
+                      "if(init_level >= %d) "%i+
+                      "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
+                }
+        else:
+            plc_main_code = targets.code("plc_common_main") % {
+                "calls_prototypes":"\n",
+                "retrieve_calls":"\n",
+                "publish_calls":"\n",
+                "init_calls":"\n",
+                "cleanup_calls":"\n"
+                }
 
         target_name = self.BeremizRoot.getTargetType().getcontent()["name"]
         plc_main_code += targets.targetcode(target_name)
