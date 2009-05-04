@@ -233,7 +233,10 @@ class _NodeListPlug(NodeList):
         prefix = "_".join(map(str, current_location))
         Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
-        master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
+        try:
+            master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
+        except config_utils.PDOmappingException, e:
+            raise Exception, e.message
         # Do generate C file.
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)
         if res :
