@@ -36,6 +36,8 @@ TPDO = 2
 
 SlavePDOType = {"I" : TPDO, "Q" : RPDO}
 InvertPDOType = {RPDO : TPDO, TPDO : RPDO}
+PDOTypeBaseIndex = {RPDO : 0x1400, TPDO : 0x1800}
+PDOTypeBaseCobId = {RPDO : 0x200, TPDO : 0x180}
 
 VariableIncrement = 0x100
 VariableStartIndex = {TPDO : 0x2000, RPDO : 0x4000}
@@ -43,6 +45,14 @@ VariableDirText = {TPDO : "__I", RPDO : "__Q"}
 VariableTypeOffset = dict(zip(["","X","B","W","D","L"], range(6)))
 
 TrashVariables = [(1, 0x01), (8, 0x05), (16, 0x06), (32, 0x07), (64, 0x1B)]
+
+#-------------------------------------------------------------------------------
+#                  Specific exception for PDO mapping errors
+#-------------------------------------------------------------------------------
+
+class PDOmappingException(Exception):
+    pass
+
 
 def LE_to_BE(value, size):
     """
@@ -109,18 +119,21 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     """
     
     # Create entry for RPDO or TPDO parameters and Disable PDO
-    dcfdata = LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE((0x80000000 + cobid), 4)
+    dcfdata = LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(0x80000000 + cobid, 4)
     # Set Transmit type synchrone
     dcfdata += LE_to_BE(idx, 2) + LE_to_BE(0x02, 1) + LE_to_BE(0x01, 4) + LE_to_BE(transmittype, 1)
     # Re-Enable PDO
     #         ---- INDEX -----   --- SUBINDEX ----   ----- SIZE ------   ------ DATA ------
-    dcfdata += LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(0x00000000 + cobid, 4)
+    dcfdata += LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(cobid, 4)
     nbparams = 3
-    # Map Variables
-    for subindex, (name, loc_infos) in enumerate(pdomapping):
-        value = (loc_infos["index"] << 16) + (loc_infos["subindex"] << 8) + loc_infos["size"]
-        dcfdata += LE_to_BE(idx + 0x200, 2) + LE_to_BE(subindex + 1, 1) + LE_to_BE(0x04, 4) + LE_to_BE(value, 4)
+    if len(pdomapping) > 0:
+        dcfdata += LE_to_BE(idx + 0x200, 2) + LE_to_BE(0x00, 1) + LE_to_BE(0x01, 4) + LE_to_BE(len(pdomapping), 1)
         nbparams += 1
+        # Map Variables
+        for subindex, (name, loc_infos) in enumerate(pdomapping):
+            value = (loc_infos["index"] << 16) + (loc_infos["subindex"] << 8) + loc_infos["size"]
+            dcfdata += LE_to_BE(idx + 0x200, 2) + LE_to_BE(subindex + 1, 1) + LE_to_BE(0x04, 4) + LE_to_BE(value, 4)
+            nbparams += 1
     return dcfdata, nbparams
 
 class ConciseDCFGenerator:
@@ -134,7 +147,6 @@ class ConciseDCFGenerator:
         self.MasterMapping = {}
         # List of COB IDs available
         self.ListCobIDAvailable = range(0x180, 0x580)
-        self.SlavesPdoNumber = {}
         # Dictionary of mapping value where unexpected variables are stored
         self.TrashVariables = {}
         # Dictionary of pointed variables
@@ -206,9 +218,6 @@ class ConciseDCFGenerator:
             
             RPDOnumber, TPDOnumber = self.RemoveUsedNodeCobId(node)
             
-            # Store the number of TPDO and RPDO for this node
-            self.SlavesPdoNumber[nodeid] = {RPDO : RPDOnumber, TPDO : TPDOnumber}
-            
             # Get Slave's default SDO server parameters
             RSDO_cobid = node.GetEntry(0x1200,0x01)
             if not RSDO_cobid:
@@ -229,45 +238,6 @@ class ConciseDCFGenerator:
         Return MasterNode.
         """
         return self.MasterNode
-
-    
-    def GetNewCobID(self, nodeid, type):
-        """
-        Select a COB ID from the list of those available
-        @param nodeid: id of the slave (int)
-        @param type: type of PDO (RPDO or TPDO)
-        @return: a tuple of the COD ID and PDO index or None
-        """
-        # Verify that there is still some cobid available
-        if len(self.ListCobIDAvailable) == 0:
-            return None
-        
-        # Get the number of PDO of the type given for the node
-        nbSlavePDO = self.SlavesPdoNumber[nodeid][type]
-        if type == RPDO:
-            if nbSlavePDO < 4:
-                # For the four first RPDO -> cobid = 0x200 + ( numPdo parameters * 0x100) + nodeid
-                newcobid = (0x200 + nbSlavePDO * 0x100 + nodeid)
-                # Return calculated cobid if it's still available
-                if newcobid in self.ListCobIDAvailable:
-                    self.ListCobIDAvailable.remove(newcobid)
-                    return newcobid, 0x1400 + nbSlavePDO
-            # Return the first cobid available if no cobid found
-            return self.ListCobIDAvailable.pop(0), 0x1400 + nbSlavePDO
-    
-        elif type == TPDO:
-            if nbSlavePDO < 4:
-                # For the four first TPDO -> cobid = 0x180 + ( numPdo parameters * 0x100) + nodeid
-                newcobid = (0x180 + nbSlavePDO * 0x100 + nodeid)
-                # Return calculated cobid if it's still available
-                if newcobid in self.ListCobIDAvailable:
-                    self.ListCobIDAvailable.remove(newcobid)
-                    return newcobid, 0x1800 + nbSlavePDO
-            # Return the first cobid available if no cobid found
-            return self.ListCobIDAvailable.pop(0), 0x1800 + nbSlavePDO
-        
-        return None
-    
     
     def AddParamsToDCF(self, nodeid, data, nbparams):
         """
@@ -291,30 +261,57 @@ class ConciseDCFGenerator:
         # Set new DCF for slave
         self.MasterNode.SetEntry(0x1F22, nodeid, dcf)
     
-    def AddPDOMapping(self, nodeid, pdotype, pdomapping, sync_TPDOs):
+    def GetEmptyPDO(self, nodeid, pdotype, start_index=None):
+        """
+        Search a not configured PDO for a slave
+        @param node: the slave node object
+        @param pdotype: type of PDO to generated (RPDO or TPDO)
+        @param start_index: Index where search must start (default: None)
+        @return tuple of PDO index, COB ID and number of subindex defined
+        """
+        # If no start_index defined, start with PDOtype base index
+        if start_index is None:
+            index = PDOTypeBaseIndex[pdotype]
+        else:
+            index = start_index
+        
+        # Search for all PDO possible index until find a configurable PDO
+        # starting from start_index
+        while index < PDOTypeBaseIndex[pdotype] + 0x200:
+            values = self.NodeList.GetSlaveNodeEntry(nodeid, index + 0x200)
+            if values != None and values[0] > 0:
+                # Check that all subindex upper than 0 equal 0 => configurable PDO
+                if reduce(lambda x, y: x and y, map(lambda x: x == 0, values[1:]), True):
+                    cobid = self.NodeList.GetSlaveNodeEntry(nodeid, index, 1)
+                    # If no COB ID defined in PDO, generate a new one (not used)
+                    if cobid == 0:
+                        if len(self.ListCobIDAvailable) == 0:
+                            return None
+                        # Calculate COB ID from standard values
+                        if index < PDOTypeBaseIndex[pdotype] + 4:
+                            cobid = PDOTypeBaseCobId[pdotype] + 0x100 * (index - PDOTypeBaseIndex[pdotype]) + nodeid
+                        if cobid not in self.ListCobIDAvailable:
+                            cobid = self.ListCobIDAvailable.pop(0)
+                    return index, cobid, values[0]
+            index += 1
+        return None
+    
+    def AddPDOMapping(self, nodeid, pdotype, pdoindex, pdocobid, pdomapping, sync_TPDOs):
         """
         Record a new mapping request for a slave, and add related slave config to the DCF
         @param nodeid: id of the slave (int)
         @param pdotype: type of PDO to generated (RPDO or TPDO)
         @param pdomapping: list od variables to map with PDO
         """
-        # Get a new cob id
-        result = self.GetNewCobID(nodeid, pdotype)
-        if result:
-            new_cobid, new_idx = result
-            
-            # Increment the number of PDO of this type for node
-            self.SlavesPdoNumber[nodeid][pdotype] += 1
-            
-            # Add an entry to MasterMapping
-            self.MasterMapping[new_cobid] = {"type" : InvertPDOType[pdotype], 
-                "mapping" : [None] + [(loc_infos["type"], name) for name, loc_infos in pdomapping]}
-            
-            # Return the data to add to DCF
-            if sync_TPDOs:
-                return GeneratePDOMappingDCF(new_idx, new_cobid, 0x01, pdomapping)
-            else:
-                return GeneratePDOMappingDCF(new_idx, new_cobid, 0xFF, pdomapping)
+        # Add an entry to MasterMapping
+        self.MasterMapping[pdocobid] = {"type" : InvertPDOType[pdotype], 
+            "mapping" : [None] + [(loc_infos["type"], name) for name, loc_infos in pdomapping]}
+        
+        # Return the data to add to DCF
+        if sync_TPDOs:
+            return GeneratePDOMappingDCF(pdoindex, pdocobid, 0x01, pdomapping)
+        else:
+            return GeneratePDOMappingDCF(pdoindex, pdocobid, 0xFF, pdomapping)
         return 0, ""
     
     def GenerateDCF(self, locations, current_location, sync_TPDOs):
@@ -335,13 +332,13 @@ class ConciseDCFGenerator:
             name = location["NAME"]
             if name in self.IECLocations:
                 if self.IECLocations[name]["type"] != COlocationtype:
-                    raise ValueError, "Conflict type for location \"%s\"" % name 
+                    raise PDOmappingException, "Conflict type for location \"%s\"" % name 
             else:
                 # Get only the part of the location that concern this node
                 loc = location["LOC"][len(current_location):]
                 # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
                 if len(loc) not in (2, 3, 4):
-                    raise ValueError, "Bad location size : %s"%str(loc)
+                    raise PDOmappingException, "Bad location size : %s"%str(loc)
                 elif len(loc) == 2:
                     continue
                 
@@ -354,14 +351,14 @@ class ConciseDCFGenerator:
                 
                 # Check Id is in slave node list
                 if nodeid not in self.NodeList.SlaveNodes.keys():
-                    raise ValueError, "Non existing node ID : %d (variable %s)" % (nodeid,name)
+                    raise PDOmappingException, "Non existing node ID : %d (variable %s)" % (nodeid,name)
                 
                 # Get the model for this node (made from EDS)
                 node = self.NodeList.SlaveNodes[nodeid]["Node"]
                 
                 # Extract and check index and subindex
                 if not node.IsEntry(index, subindex):
-                    raise ValueError, "No such index/subindex (%x,%x) in ID : %d (variable %s)" % (index,subindex,nodeid,name)
+                    raise PDOmappingException, "No such index/subindex (%x,%x) in ID : %d (variable %s)" % (index,subindex,nodeid,name)
                 
                 # Get the entry info
                 subentry_infos = node.GetSubentryInfos(index, subindex)
@@ -371,19 +368,19 @@ class ConciseDCFGenerator:
                     if sizelocation == "X" and len(loc) > 3:
                         numbit = loc[3]
                     elif sizelocation != "X" and len(loc) > 3:
-                        raise ValueError, "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
+                        raise PDOmappingException, "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
                     else:
                         numbit = None
                     
                     if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
-                        raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+                        raise PDOmappingException, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
                     
                     typeinfos = node.GetEntryInfos(COlocationtype)
                     self.IECLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
                                                 "nodeid": nodeid, "index": index,"subindex": subindex,
                                                 "bit": numbit, "size": typeinfos["size"], "sizelocation": sizelocation}
                 else:
-                    raise ValueError, "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
+                    raise PDOmappingException, "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
         
         #-------------------------------------------------------------------------------
         #                         Search for locations already mapped
@@ -450,27 +447,36 @@ class ConciseDCFGenerator:
             
             # Generate the best PDO mapping for each type of PDO
             for pdotype in (TPDO, RPDO):
-                pdosize = 0
-                pdomapping = []
-                for name, loc_infos in locations[pdotype]:
-                    pdosize += loc_infos["size"]
-                    # If pdo's size > 64 bits
-                    if pdosize > 64:
+                if len(locations[pdotype]) > 0:
+                    pdosize = 0
+                    pdomapping = []
+                    result = self.GetEmptyPDO(nodeid, pdotype)
+                    if result is None:
+                        raise PDOmappingException, "Impossible to define PDO mapping for node %02x"%nodeid
+                    pdoindex, pdocobid, pdonbparams = result
+                    for name, loc_infos in locations[pdotype]:
+                        pdosize += loc_infos["size"]
+                        # If pdo's size > 64 bits
+                        if pdosize > 64 or len(pdomapping) >= pdonbparams:
+                            # Generate a new PDO Mapping
+                            data, nbaddedparams = self.AddPDOMapping(nodeid, pdotype, pdoindex, pdocobid, pdomapping, sync_TPDOs)
+                            dataparams += data
+                            nbparams += nbaddedparams
+                            pdosize = loc_infos["size"]
+                            pdomapping = [(name, loc_infos)]
+                            result = self.GetEmptyPDO(nodeid, pdotype, pdoindex + 1)
+                            if result is None:
+                                raise PDOmappingException, "Impossible to define PDO mapping for node %02x"%nodeid
+                            pdoindex, pdocobid, pdonbparams = result
+                        else:
+                            pdomapping.append((name, loc_infos))
+                    # If there isn't locations yet but there is still a PDO to generate
+                    if len(pdomapping) > 0:
                         # Generate a new PDO Mapping
-                        data, nbaddedparams = self.AddPDOMapping(nodeid, pdotype, pdomapping, sync_TPDOs)
+                        data, nbaddedparams = self.AddPDOMapping(nodeid, pdotype, pdoindex, pdocobid, pdomapping, sync_TPDOs)
                         dataparams += data
                         nbparams += nbaddedparams
-                        pdosize = loc_infos["size"]
-                        pdomapping = [(name, loc_infos)]
-                    else:
-                        pdomapping.append((name, loc_infos))
-                # If there isn't locations yet but there is still a PDO to generate
-                if len(pdomapping) > 0:
-                    # Generate a new PDO Mapping
-                    data, nbaddedparams = self.AddPDOMapping(nodeid, pdotype, pdomapping, sync_TPDOs)
-                    dataparams += data
-                    nbparams += nbaddedparams
-            
+                
             # Add number of params and data to node DCF
             self.AddParamsToDCF(nodeid, dataparams, nbparams)
         
@@ -608,13 +614,13 @@ def LocalODPointers(locations, current_location, slave):
         name = location["NAME"]
         if name in IECLocations:
             if IECLocations[name] != COlocationtype:
-                raise ValueError, "Conflict type for location \"%s\"" % name 
+                raise PDOmappingException, "Conflict type for location \"%s\"" % name 
         else:
             # Get only the part of the location that concern this node
             loc = location["LOC"][len(current_location):]
             # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
             if len(loc) not in (2, 3, 4):
-                raise ValueError, "Bad location size : %s"%str(loc)
+                raise PDOmappingException, "Bad location size : %s"%str(loc)
             elif len(loc) != 2:
                 continue
             
@@ -623,12 +629,12 @@ def LocalODPointers(locations, current_location, slave):
             
             # Extract and check index and subindex
             if not slave.IsEntry(index, subindex):
-                raise ValueError, "No such index/subindex (%x,%x) (variable %s)" % (index, subindex, name)
+                raise PDOmappingException, "No such index/subindex (%x,%x) (variable %s)" % (index, subindex, name)
             
             # Get the entry info
             subentry_infos = slave.GetSubentryInfos(index, subindex)    
             if subentry_infos["type"] != COlocationtype:
-                raise ValueError, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+                raise PDOmappingException, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
             
             IECLocations[name] = COlocationtype
             pointers[(index, subindex)] = name
