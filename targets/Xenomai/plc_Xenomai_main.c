@@ -208,10 +208,14 @@ extern int __tick;
 int WaitDebugData()
 {
     char message;
+    int res;
     /* Wait signal from PLC thread */
-    if (PLC_state & PLC_STATE_DEBUG_FILE_OPENED)
-        read(WaitDebug_pipe_fd, &message, sizeof(char));
-    return __debug_tick;
+    if (PLC_state & PLC_STATE_DEBUG_FILE_OPENED) {
+        res = read(WaitDebug_pipe_fd, &message, sizeof(char));
+        if (res == sizeof(char))
+            return __debug_tick;
+    }
+    return -1;
 }
 
 /* Called by PLC thread when debug_publish finished
@@ -252,8 +256,9 @@ int WaitPythonCommands(void)
     /* Wait signal from PLC thread */
     if (PLC_state & PLC_STATE_PYTHON_WAIT_SEM_CREATED) {
         rt_task_shadow(&WaitPythonCommand_task, "WaitPythonCommand_task", 0, 0);
-        rt_sem_p(&python_wait_sem, TM_INFINITE);
+        return rt_sem_p(&python_wait_sem, TM_INFINITE);
     }
+    return -1;
 }
 
 /* Called by PLC thread on each new python command*/
