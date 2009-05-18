@@ -200,189 +200,189 @@ if enablewx:
         "XXLfvn0/+Xy+l6LR6Gu2befFYjFfzrk2FzeHp7mK7jdxz2/LffGamhpvc3NzyLKsbFd3z1PG"
         "aHyBTKdjum0POGzbFAp7qo0xVOtJZdf/C/wRDnL5FYGSAAAAAElFTkSuQmCC")
         
-    class ParamsEntryDialog(wx.TextEntryDialog):
-        if wx.VERSION < (2, 6, 0):
-            def Bind(self, event, function, id = None):
-                if id is not None:
-                    event(self, id, function)
+        class ParamsEntryDialog(wx.TextEntryDialog):
+            if wx.VERSION < (2, 6, 0):
+                def Bind(self, event, function, id = None):
+                    if id is not None:
+                        event(self, id, function)
+                    else:
+                        event(self, function)
+            
+            
+            def __init__(self, parent, message, caption = "Please enter text", defaultValue = "", 
+                               style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
+                wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
+                
+                self.Tests = []
+                if wx.VERSION >= (2, 8, 0):
+                    self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
+                elif wx.VERSION >= (2, 6, 0):
+                    self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetAffirmativeButton().GetId())
                 else:
-                    event(self, function)
-        
-    
-        def __init__(self, parent, message, caption = "Please enter text", defaultValue = "", 
-                           style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
-            wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
+                    self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetChildren()[0].GetSizer().GetChildren()[0].GetWindow().GetId())
             
-            self.Tests = []
-            if wx.VERSION >= (2, 8, 0):
-                self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
-            elif wx.VERSION >= (2, 6, 0):
-                self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetAffirmativeButton().GetId())
-            else:
-                self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetChildren()[0].GetSizer().GetChildren()[0].GetWindow().GetId())
-        
-        def OnOK(self, event):
-            value = self.GetValue()
-            texts = {"value" : value}
-            for function, message in self.Tests:
-                if not function(value):
-                    message = wx.MessageDialog(self, message%texts, "Error", wx.OK|wx.ICON_ERROR)
-                    message.ShowModal()
-                    message.Destroy()
-                    return
-            self.EndModal(wx.ID_OK)
-            event.Skip()
-        
-        def GetValue(self):
-            return self.GetSizer().GetItem(1).GetWindow().GetValue()
-        
-        def SetTests(self, tests):
-            self.Tests = tests
+            def OnOK(self, event):
+                value = self.GetValue()
+                texts = {"value" : value}
+                for function, message in self.Tests:
+                    if not function(value):
+                        message = wx.MessageDialog(self, message%texts, "Error", wx.OK|wx.ICON_ERROR)
+                        message.ShowModal()
+                        message.Destroy()
+                        return
+                self.EndModal(wx.ID_OK)
+                event.Skip()
             
-    class BeremizTaskBarIcon(wx.TaskBarIcon):
-        TBMENU_START = wx.NewId()
-        TBMENU_STOP = wx.NewId()
-        TBMENU_CHANGE_NAME = wx.NewId()
-        TBMENU_CHANGE_PORT = wx.NewId()
-        TBMENU_CHANGE_INTERFACE = wx.NewId()
-        TBMENU_LIVE_SHELL = wx.NewId()
-        TBMENU_WXINSPECTOR = wx.NewId()
-        TBMENU_CHANGE_WD = wx.NewId()
-        TBMENU_QUIT = wx.NewId()
-        
-        def __init__(self, pyroserver):
-            wx.TaskBarIcon.__init__(self)
-            self.pyroserver = pyroserver
-            # Set the image
-            self.UpdateIcon(None)
-    
-            # bind some events
-            self.Bind(wx.EVT_MENU, self.OnTaskBarStartPLC, id=self.TBMENU_START)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarStopPLC, id=self.TBMENU_STOP)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarChangeName, id=self.TBMENU_CHANGE_NAME)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarChangeInterface, id=self.TBMENU_CHANGE_INTERFACE)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarLiveShell, id=self.TBMENU_LIVE_SHELL)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarWXInspector, id=self.TBMENU_WXINSPECTOR)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
-            self.Bind(wx.EVT_MENU, self.OnTaskBarQuit, id=self.TBMENU_QUIT)
-        
-        def CreatePopupMenu(self):
-            """
-            This method is called by the base class when it needs to popup
-            the menu for the default EVT_RIGHT_DOWN event.  Just create
-            the menu how you want it and return it from this function,
-            the base class takes care of the rest.
-            """
-            menu = wx.Menu()
-            menu.Append(self.TBMENU_START, "Start PLC")
-            menu.Append(self.TBMENU_STOP, "Stop PLC")
-            menu.Append(self.TBMENU_CHANGE_NAME, "Change Name")
-            menu.Append(self.TBMENU_CHANGE_INTERFACE, "Change IP of interface to bind")
-            menu.Append(self.TBMENU_LIVE_SHELL, "Launch a live Python shell")
-            menu.Append(self.TBMENU_WXINSPECTOR, "Launch WX GUI inspector")
-            menu.Append(self.TBMENU_CHANGE_PORT, "Change Port Number")
-            menu.AppendSeparator()
-            menu.Append(self.TBMENU_CHANGE_WD, "Change working directory")
-            menu.Append(self.TBMENU_QUIT, "Quit")
-            return menu
-    
-        def MakeIcon(self, img):
-            """
-            The various platforms have different requirements for the
-            icon size...
-            """
-            if "wxMSW" in wx.PlatformInfo:
-                img = img.Scale(16, 16)
-            elif "wxGTK" in wx.PlatformInfo:
-                img = img.Scale(22, 22)
-            # wxMac can be any size upto 128x128, so leave the source img alone....
-            icon = wx.IconFromBitmap(img.ConvertToBitmap() )
-            return icon
-        
-        def OnTaskBarStartPLC(self, evt):
-            if self.pyroserver.plcobj is not None: 
-                self.pyroserver.plcobj.StartPLC()
-            evt.Skip()
+            def GetValue(self):
+                return self.GetSizer().GetItem(1).GetWindow().GetValue()
             
-        def OnTaskBarStopPLC(self, evt):
-            if self.pyroserver.plcobj is not None:
-                self.pyroserver.plcobj.StopPLC()
-            evt.Skip()
+            def SetTests(self, tests):
+                self.Tests = tests
+        
+        class BeremizTaskBarIcon(wx.TaskBarIcon):
+            TBMENU_START = wx.NewId()
+            TBMENU_STOP = wx.NewId()
+            TBMENU_CHANGE_NAME = wx.NewId()
+            TBMENU_CHANGE_PORT = wx.NewId()
+            TBMENU_CHANGE_INTERFACE = wx.NewId()
+            TBMENU_LIVE_SHELL = wx.NewId()
+            TBMENU_WXINSPECTOR = wx.NewId()
+            TBMENU_CHANGE_WD = wx.NewId()
+            TBMENU_QUIT = wx.NewId()
             
-        def OnTaskBarChangeInterface(self, evt):
-            dlg = ParamsEntryDialog(None, "Enter the ip of the interface to bind", defaultValue=self.pyroserver.ip)
-            dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, "Ip is not valid!"),
-                           ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, "Ip is not valid!")
-                           ])
-            if dlg.ShowModal() == wx.ID_OK:
-                self.pyroserver.ip = dlg.GetValue()
-                self.pyroserver.Stop()
-            evt.Skip()
+            def __init__(self, pyroserver):
+                wx.TaskBarIcon.__init__(self)
+                self.pyroserver = pyroserver
+                # Set the image
+                self.UpdateIcon(None)
                 
-        def OnTaskBarChangePort(self, evt):
-            dlg = ParamsEntryDialog(None, "Enter a port number ", defaultValue=str(self.pyroserver.port))
-            dlg.SetTests([(UnicodeType.isdigit, "Port number must be an integer!"), (lambda port : 0 <= int(port) <= 65535 , "Port number must be 0 <= port <= 65535!")])
-            if dlg.ShowModal() == wx.ID_OK:
-                self.pyroserver.port = int(dlg.GetValue())
-                self.pyroserver.Stop()
-            evt.Skip()
-        
-        def OnTaskBarChangeWorkingDir(self, evt):
-            dlg = wx.DirDialog(None, "Choose a working directory ", self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
-            if dlg.ShowModal() == wx.ID_OK:
-                self.pyroserver.workdir = dlg.GetPath()
-                self.pyroserver.Stop()
-            evt.Skip()
-                
-        def OnTaskBarChangeName(self, evt):
-            dlg = ParamsEntryDialog(None, "Enter a name ", defaultValue=self.pyroserver.name)
-            dlg.SetTests([(lambda name : len(name) is not 0 , "Name must not be null!")])
-            if dlg.ShowModal() == wx.ID_OK:
-                self.pyroserver.name = dlg.GetValue()
-                self.pyroserver.Restart()
-            evt.Skip()
-
-        def OnTaskBarLiveShell(self, evt):
-            if self.pyroserver.plcobj is not None and self.pyroserver.plcobj.python_threads_vars is not None:
-                from wx import py
-                #frame = py.shell.ShellFrame(locals=self.pyroserver.plcobj.python_threads_vars)
-                frame = py.crust.CrustFrame(locals=self.pyroserver.plcobj.python_threads_vars)
-                frame.Show()
-            else:
-                wx.MessageBox("No runnning PLC","Error")
-            evt.Skip()
-
-        def OnTaskBarWXInspector(self, evt):
-            # Activate the widget inspection tool
-            from wx.lib.inspection import InspectionTool
-            if not InspectionTool().initialized:
-                InspectionTool().Init(locals=self.pyroserver.plcobj.python_threads_vars)
-    
-            # Find a widget to be selected in the tree.  Use either the
-            # one under the cursor, if any, or this frame.
-            wnd = wx.FindWindowAtPointer()
-            if not wnd:
-                wnd = wx.GetApp()
-            InspectionTool().Show(wnd, True)
-            evt.Skip()
-
-        def OnTaskBarQuit(self, evt):
-            self.pyroserver.Quit()
-            self.RemoveIcon()
-            wx.CallAfter(wx.GetApp().Exit)
-            evt.Skip()
+                # bind some events
+                self.Bind(wx.EVT_MENU, self.OnTaskBarStartPLC, id=self.TBMENU_START)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarStopPLC, id=self.TBMENU_STOP)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarChangeName, id=self.TBMENU_CHANGE_NAME)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarChangeInterface, id=self.TBMENU_CHANGE_INTERFACE)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarLiveShell, id=self.TBMENU_LIVE_SHELL)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarWXInspector, id=self.TBMENU_WXINSPECTOR)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
+                self.Bind(wx.EVT_MENU, self.OnTaskBarQuit, id=self.TBMENU_QUIT)
             
-        def UpdateIcon(self, plcstatus):
-            if plcstatus is "Started" :
-                currenticon = self.MakeIcon(starticon.GetImage())
-            elif plcstatus is "Stopped":
-                currenticon = self.MakeIcon(stopicon.GetImage())
-            else:
-                currenticon = self.MakeIcon(defaulticon.GetImage())
-            self.SetIcon(currenticon, "Beremiz Service")
+            def CreatePopupMenu(self):
+                """
+                This method is called by the base class when it needs to popup
+                the menu for the default EVT_RIGHT_DOWN event.  Just create
+                the menu how you want it and return it from this function,
+                the base class takes care of the rest.
+                """
+                menu = wx.Menu()
+                menu.Append(self.TBMENU_START, "Start PLC")
+                menu.Append(self.TBMENU_STOP, "Stop PLC")
+                menu.Append(self.TBMENU_CHANGE_NAME, "Change Name")
+                menu.Append(self.TBMENU_CHANGE_INTERFACE, "Change IP of interface to bind")
+                menu.Append(self.TBMENU_LIVE_SHELL, "Launch a live Python shell")
+                menu.Append(self.TBMENU_WXINSPECTOR, "Launch WX GUI inspector")
+                menu.Append(self.TBMENU_CHANGE_PORT, "Change Port Number")
+                menu.AppendSeparator()
+                menu.Append(self.TBMENU_CHANGE_WD, "Change working directory")
+                menu.Append(self.TBMENU_QUIT, "Quit")
+                return menu
+            
+            def MakeIcon(self, img):
+                """
+                The various platforms have different requirements for the
+                icon size...
+                """
+                if "wxMSW" in wx.PlatformInfo:
+                    img = img.Scale(16, 16)
+                elif "wxGTK" in wx.PlatformInfo:
+                    img = img.Scale(22, 22)
+                # wxMac can be any size upto 128x128, so leave the source img alone....
+                icon = wx.IconFromBitmap(img.ConvertToBitmap() )
+                return icon
+            
+            def OnTaskBarStartPLC(self, evt):
+                if self.pyroserver.plcobj is not None: 
+                    self.pyroserver.plcobj.StartPLC()
+                evt.Skip()
+            
+            def OnTaskBarStopPLC(self, evt):
+                if self.pyroserver.plcobj is not None:
+                    self.pyroserver.plcobj.StopPLC()
+                evt.Skip()
+            
+            def OnTaskBarChangeInterface(self, evt):
+                dlg = ParamsEntryDialog(None, "Enter the ip of the interface to bind", defaultValue=self.pyroserver.ip)
+                dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, "Ip is not valid!"),
+                               ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, "Ip is not valid!")
+                               ])
+                if dlg.ShowModal() == wx.ID_OK:
+                    self.pyroserver.ip = dlg.GetValue()
+                    self.pyroserver.Stop()
+                evt.Skip()
+            
+            def OnTaskBarChangePort(self, evt):
+                dlg = ParamsEntryDialog(None, "Enter a port number ", defaultValue=str(self.pyroserver.port))
+                dlg.SetTests([(UnicodeType.isdigit, "Port number must be an integer!"), (lambda port : 0 <= int(port) <= 65535 , "Port number must be 0 <= port <= 65535!")])
+                if dlg.ShowModal() == wx.ID_OK:
+                    self.pyroserver.port = int(dlg.GetValue())
+                    self.pyroserver.Stop()
+                evt.Skip()
+            
+            def OnTaskBarChangeWorkingDir(self, evt):
+                dlg = wx.DirDialog(None, "Choose a working directory ", self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
+                if dlg.ShowModal() == wx.ID_OK:
+                    self.pyroserver.workdir = dlg.GetPath()
+                    self.pyroserver.Stop()
+                evt.Skip()
+            
+            def OnTaskBarChangeName(self, evt):
+                dlg = ParamsEntryDialog(None, "Enter a name ", defaultValue=self.pyroserver.name)
+                dlg.SetTests([(lambda name : len(name) is not 0 , "Name must not be null!")])
+                if dlg.ShowModal() == wx.ID_OK:
+                    self.pyroserver.name = dlg.GetValue()
+                    self.pyroserver.Restart()
+                evt.Skip()
+            
+            def OnTaskBarLiveShell(self, evt):
+                if self.pyroserver.plcobj is not None and self.pyroserver.plcobj.python_threads_vars is not None:
+                    from wx import py
+                    #frame = py.shell.ShellFrame(locals=self.pyroserver.plcobj.python_threads_vars)
+                    frame = py.crust.CrustFrame(locals=self.pyroserver.plcobj.python_threads_vars)
+                    frame.Show()
+                else:
+                    wx.MessageBox("No runnning PLC","Error")
+                evt.Skip()
+            
+            def OnTaskBarWXInspector(self, evt):
+                # Activate the widget inspection tool
+                from wx.lib.inspection import InspectionTool
+                if not InspectionTool().initialized:
+                    InspectionTool().Init(locals=self.pyroserver.plcobj.python_threads_vars)
+                
+                # Find a widget to be selected in the tree.  Use either the
+                # one under the cursor, if any, or this frame.
+                wnd = wx.FindWindowAtPointer()
+                if not wnd:
+                    wnd = wx.GetApp()
+                InspectionTool().Show(wnd, True)
+                evt.Skip()
+            
+            def OnTaskBarQuit(self, evt):
+                self.pyroserver.Quit()
+                self.RemoveIcon()
+                wx.CallAfter(wx.GetApp().Exit)
+                evt.Skip()
+            
+            def UpdateIcon(self, plcstatus):
+                if plcstatus is "Started" :
+                    currenticon = self.MakeIcon(starticon.GetImage())
+                elif plcstatus is "Stopped":
+                    currenticon = self.MakeIcon(stopicon.GetImage())
+                else:
+                    currenticon = self.MakeIcon(defaulticon.GetImage())
+                self.SetIcon(currenticon, "Beremiz Service")
 
-from runtime import PLCObject, ServicePublisher
+from runtime import PLCObject, PLCprint, ServicePublisher
 import Pyro.core as pyro
 
 if not os.path.isdir(WorkingDir):
@@ -461,9 +461,12 @@ if havewx:
     eval_res = None
     def wx_evaluator(callable, *args, **kwargs):
         global eval_res
-        eval_res=callable(*args,**kwargs)
-        #print eval_res
-        wx_eval_lock.release()
+        try:
+            eval_res=callable(*args,**kwargs)
+        except Exception,e:
+            PLCprint("#EXCEPTION : "+str(e))
+        finally:
+            wx_eval_lock.release()
         
     def evaluator(callable, *args, **kwargs):
         # call directly the callable function if call from the wx mainloop (avoid dead lock) 
