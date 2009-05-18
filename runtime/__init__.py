@@ -2,5 +2,5 @@
 
 import os
 
-from PLCObject import PLCObject
+from PLCObject import PLCObject, PLCprint
 import ServicePublisher

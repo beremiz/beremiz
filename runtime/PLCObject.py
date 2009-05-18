@@ -25,6 +25,7 @@
 import Pyro.core as pyro
 from threading import Timer, Thread
 import ctypes, os, commands, types, sys
+import time
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -32,7 +33,7 @@ if os.name in ("nt", "ce"):
 elif os.name == "posix":
     from _ctypes import dlopen, dlclose
 
-import os,sys,traceback
+import traceback
 
 lib_ext ={
      "linux2":".so",
@@ -180,6 +181,7 @@ class PLCObject(pyro.ObjBase):
 
     def PrepareRuntimePy(self):
         self.python_threads_vars = globals().copy()
+        self.python_threads_vars["WorkingDir"] = self.workingdir
         pyfile = os.path.join(self.workingdir, "runtime.py")
         hmifile = os.path.join(self.workingdir, "hmi.py")
         if os.path.exists(hmifile):
@@ -276,6 +278,8 @@ class PLCObject(pyro.ObjBase):
         self.PLCStatus = "Stopped"
         self.StatusChange()
         self._stopPLC()
+        if self.PythonThread.isAlive():
+            self.PythonThread.join()
         if self._FreePLC():
             self.PLCStatus = "Dirty"
         self.StatusChange()
@@ -414,6 +418,7 @@ class PLCObject(pyro.ObjBase):
                     else:
                         PLCprint("Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value))
                         res.append(None)
+            time.sleep(0.1)
             self._FreeDebugData()
             return tick, res
         return -1, None
