@@ -446,12 +446,6 @@
               </connectionPointIn>
               <expression>COUNTER</expression>
             </outVariable>
-            <comment localId="18" height="110" width="775">
-              <position x="220" y="90"/>
-              <content>
-<![CDATA[Ce block permet d'executer une commande python pour un intervalle de cycles donnees (N).]]>
-              </content>
-            </comment>
           </FBD>
         </body>
       </pou>
