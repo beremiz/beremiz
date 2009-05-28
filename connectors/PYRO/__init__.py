@@ -50,7 +50,7 @@ def PYRO_connector_factory(uri, pluginsroot):
                 return func(*args,**kwargs)
             except PyroError,e:
                 #pluginsroot.logger.write_error(traceback.format_exc())
-                pluginsroot.logger.write_error(str(e))
+                pluginsroot.logger.write_error(str(e)+"\n")
                 pluginsroot._Disconnect()
                 return default
         return catcher_func
