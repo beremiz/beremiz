@@ -237,57 +237,62 @@ class PLCObject(pyro.ObjBase):
             self.hmi_frame.Destroy()
         self.python_threads_vars = None
 
-    def PythonThreadProc(self):
+    def PythonThreadProc(self, debug):
         PLCprint("PythonThreadProc started")
-        self.evaluator(self.PrepareRuntimePy)
-        res,cmd = "None","None"
-        while self.PLCStatus == "Started":
-            #print "_PythonIterator(", res, ")",
-            cmd = self._PythonIterator(res)
-            #print " -> ", cmd
-            if cmd is None:
-                break
-            try :
-                res = str(self.evaluator(eval,cmd,self.python_threads_vars))
-            except Exception,e:
-                res = "#EXCEPTION : "+str(e)
-                PLCprint(res)
-        self.evaluator(self.FinishRuntimePy)
-        PLCprint("PythonThreadProc interrupted")
-    
-    def StartPLC(self, debug=False):
-        PLCprint("StartPLC")
-        if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
-            c_argv = ctypes.c_char_p * len(self.argv)
-            if self._LoadNewPLC() and self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
+        c_argv = ctypes.c_char_p * len(self.argv)
+        error = None
+        if self._LoadNewPLC():
+            if self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
                 if debug:
                     for idx in self._Idxs:
                         self._RegisterDebugVariable(idx)
                     self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
-                self.PythonThread = Thread(target=self.PythonThreadProc)
-                self.PythonThread.start()
-                return True
+                self.evaluator(self.PrepareRuntimePy)
+                res,cmd = "None","None"
+                while self.PLCStatus == "Started":
+                    #print "_PythonIterator(", res, ")",
+                    cmd = self._PythonIterator(res)
+                    #print " -> ", cmd
+                    if cmd is None:
+                        break
+                    try :
+                        res = str(self.evaluator(eval,cmd,self.python_threads_vars))
+                    except Exception,e:
+                        res = "#EXCEPTION : "+str(e)
+                        PLCprint(res)
+                self.PLCStatus = "Stopped"
+                self.StatusChange()
+                self.evaluator(self.FinishRuntimePy)
             else:
-                PLCprint("Problem starting PLC")
-                self._DoStopPLC()
-        return False
+                error = "starting"
+        else:
+            error = "loading"
+        if error is not None:
+            PLCprint("Problem %s PLC"%error)
+            self.PLCStatus = "Broken"
+        self._DoStopPLC()
+        self._FreePLC()
+        PLCprint("PythonThreadProc interrupted")
+    
+    def StartPLC(self, debug=False):
+        PLCprint("StartPLC")
+        if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
+            self.PythonThread = Thread(target=self.PythonThreadProc, args=[debug])
+            self.PythonThread.start()
 
     def _DoStopPLC(self):
-        self.PLCStatus = "Stopped"
         self.StatusChange()
         self._stopPLC()
-        if self.PythonThread.isAlive():
-            self.PythonThread.join()
-        if self._FreePLC():
-            self.PLCStatus = "Dirty"
         self.StatusChange()
         return True
 
     def StopPLC(self):
+        PLCprint("StopPLC")
         if self.PLCStatus == "Started":
             self._DoStopPLC()
+            self.PLCStatus = "Stopped"
             return True
         return False
 
@@ -308,7 +313,7 @@ class PLCObject(pyro.ObjBase):
     
     def NewPLC(self, md5sum, data, extrafiles):
         PLCprint("NewPLC (%s)"%md5sum)
-        if self.PLCStatus in ["Stopped", "Empty", "Dirty"]:
+        if self.PLCStatus in ["Stopped", "Empty", "Dirty", "Broken"]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
             try:

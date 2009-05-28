@@ -708,12 +708,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.DebugTimer=None
         self.ResetIECProgramsAndVariables()
         
+        # Timer to pull PLC status
+        ID_STATUSTIMER = wx.NewId()
+        self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
+        self.AppFrame.Bind(wx.EVT_TIMER, self.PullPLCStatusProc, self.StatusTimer)
+        
         #This method are not called here... but in NewProject and OpenProject
         #self._AddParamsMembers()
         #self.PluggedChilds = {}
 
         # In both new or load scenario, no need to save
-        self.ChangesToSave = False        
+        self.ChangesToSave = False
         # root have no parent
         self.PlugParent = None
         # Keep track of the plugin type name
@@ -725,6 +730,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PLCDebug = None
         self.DebugThread = None
         self.debug_break = False
+        self.previous_plcstate = None
+        self.StatusPrint = {"Broken": self.logger.write_error,
+                            None: lambda x: None}
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
         self.LoadSTLibrary()
@@ -1399,7 +1407,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # TODO : use explicit status instead of boolean
         if self._connector is not None:
             status = self._connector.GetPLCstatus()
-            self.logger.write("PLC is %s\n"%status)
         else:
             status = "Disconnected"
         for args in {
@@ -1415,20 +1422,28 @@ class PluginsRoot(PlugTemplate, PLCControler):
                "Dirty":  [("_Run", True),
                           ("_Debug", True),
                           ("_Stop", False)],
+               "Broken": [("_Run", True),
+                          ("_Debug", True),
+                          ("_Stop", False)],
                "Disconnected":  [("_Run", False),
                                  ("_Debug", False),
                                  ("_Stop", False)],
                }.get(status,[]):
             self.ShowMethod(*args)
-        
+        return status
+    
+    def PullPLCStatusProc(self, event): 
+        current_status = self.UpdateMethodsFromPLCStatus()
+        if current_status != self.previous_plcstate:
+            self.previous_plcstate = current_status
+            self.StatusPrint.get(current_status, self.logger.write)("PLC is %s\n"%current_status)
+            self.AppFrame.RefreshAll()
+            
     def _Run(self):
         """
         Start PLC
         """
-        if self._connector.StartPLC():
-            self.logger.write("Starting PLC\n")
-        else:
-            self.logger.write_error("Couldn't start PLC !\n")
+        self._connector.StartPLC()
         self.UpdateMethodsFromPLCStatus()
 
     def RegisterDebugVarToConnector(self):
@@ -1569,8 +1584,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         Start PLC (Debug Mode)
         """
-        if self.GetIECProgramsAndVariables() and \
-           self._connector.StartPLC(debug=True):
+        if self.GetIECProgramsAndVariables():
+            self._connector.StartPLC(debug=True)
             self.logger.write("Starting PLC (debug mode)\n")
             if self.PLCDebug is None:
                 self.RefreshPluginsBlockLists()
@@ -1613,9 +1628,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write("Stopping debug\n")
             self.KillDebugThread()
         
-        if self._connector.StopPLC():
-            self.logger.write("Stopping PLC\n")
-        else:
+        if not self._connector.StopPLC():
             self.logger.write_error("Couldn't stop PLC !\n")
         self.UpdateMethodsFromPLCStatus()
 
@@ -1662,7 +1675,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.ShowMethod("_Transfer", True)
 
             self.CompareLocalAndRemotePLC()
-            self.UpdateMethodsFromPLCStatus()
+            
+            # Init with actual PLC status and print it
+            self.previous_plcstate = self.UpdateMethodsFromPLCStatus()
+            self.logger.write("PLC is %s\n"%self.previous_plcstate)
+            
+            # Start the status Timer
+            self.StatusTimer.Start(milliseconds=500, oneShot=False)
 
     def CompareLocalAndRemotePLC(self):
         if self._connector is None:
@@ -1691,6 +1710,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.ShowMethod("_Transfer", False)
         self.ShowMethod("_Connect", True)
         self.ShowMethod("_Disconnect", False)
+        self.StatusTimer.Stop()
         self.UpdateMethodsFromPLCStatus()
         
     def _Transfer(self):
