@@ -956,10 +956,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # files are listed to stdout, and errors to stderr. 
         status, result, err_result = ProcessLogger(
                self.logger,
-               "\"%s\" -f \"%s\" -I \"%s\" \"%s\""%(
+               "\"%s\" -f -I \"%s\" -T \"%s\" \"%s\""%(
                          iec2c_path,
-                         self._getIECcodepath(),
-                         ieclib_path, buildpath),
+                         ieclib_path, 
+                         buildpath,
+                         self._getIECcodepath()),
                no_stdout=True).spin()
         if status:
             # Failed !
