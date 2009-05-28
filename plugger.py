@@ -893,7 +893,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             # each line of LOCATED_VARIABLES.h declares a located variable
             lines = [line.strip() for line in location_file.readlines()]
             # This regular expression parses the lines genereated by IEC2C
-            LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWD]))?,(?P<LOC>[,0-9]*)\)")
+            LOCATED_MODEL = re.compile("__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWDL]))?,(?P<LOC>[,0-9]*)\)")
             for line in lines:
                 # If line match RE, 
                 result = LOCATED_MODEL.match(line)
