@@ -23,7 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import Pyro.core as pyro
-from threading import Timer, Thread
+from threading import Timer, Thread, Lock
 import ctypes, os, commands, types, sys
 import time
 
@@ -53,6 +53,7 @@ class PLCObject(pyro.ObjBase):
         self.workingdir = workingdir
         self.PLCStatus = "Stopped"
         self.PLClibraryHandle = None
+        self.PLClibraryLock = Lock()
         # Creates fake C funcs proxies
         self._FreePLC()
         self.daemon = daemon
@@ -93,7 +94,12 @@ class PLCObject(pyro.ObjBase):
             self._startPLC.restype = ctypes.c_int
             self._startPLC.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
             
-            self._stopPLC = self.PLClibraryHandle.stopPLC
+            def StopPLCLock():
+                self.PLClibraryLock.acquire()
+                self.PLClibraryHandle.stopPLC()
+                self.PLClibraryLock.release()
+            
+            self._stopPLC = StopPLCLock
             self._stopPLC.restype = None
     
             self._ResetDebugVariables = self.PLClibraryHandle.ResetDebugVariables
@@ -133,6 +139,7 @@ class PLCObject(pyro.ObjBase):
         Unload PLC library.
         This is also called by __init__ to create dummy C func proxies
         """
+        self.PLClibraryLock.acquire()
         # Forget all refs to library
         self._startPLC = lambda:None
         self._stopPLC = lambda:None
@@ -154,7 +161,7 @@ class PLCObject(pyro.ObjBase):
             res = False
 
         self._PLClibraryHandle = None
-
+        self.PLClibraryLock.release()
         return res
 
     def _DetectDirtyLibs(self):
@@ -251,7 +258,7 @@ class PLCObject(pyro.ObjBase):
                 self.StatusChange()
                 self.evaluator(self.PrepareRuntimePy)
                 res,cmd = "None","None"
-                while self.PLCStatus == "Started":
+                while True:
                     #print "_PythonIterator(", res, ")",
                     cmd = self._PythonIterator(res)
                     #print " -> ", cmd
@@ -272,27 +279,19 @@ class PLCObject(pyro.ObjBase):
         if error is not None:
             PLCprint("Problem %s PLC"%error)
             self.PLCStatus = "Broken"
-        self._DoStopPLC()
         self._FreePLC()
         PLCprint("PythonThreadProc interrupted")
     
     def StartPLC(self, debug=False):
         PLCprint("StartPLC")
-        if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
+        if self.CurrentPLCFilename is not None:
             self.PythonThread = Thread(target=self.PythonThreadProc, args=[debug])
             self.PythonThread.start()
-
-    def _DoStopPLC(self):
-        self.StatusChange()
-        self._stopPLC()
-        self.StatusChange()
-        return True
-
+            
     def StopPLC(self):
         PLCprint("StopPLC")
         if self.PLCStatus == "Started":
-            self._DoStopPLC()
-            self.PLCStatus = "Stopped"
+            self._stopPLC()
             return True
         return False
 
