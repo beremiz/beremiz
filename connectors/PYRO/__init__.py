@@ -51,7 +51,7 @@ def PYRO_connector_factory(uri, pluginsroot):
             except PyroError,e:
                 #pluginsroot.logger.write_error(traceback.format_exc())
                 pluginsroot.logger.write_error(str(e)+"\n")
-                pluginsroot._Disconnect()
+                pluginsroot._connector = None
                 return default
         return catcher_func
 
@@ -111,7 +111,6 @@ def PYRO_connector_factory(uri, pluginsroot):
                 return None,None
         GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,(None,None))
 
-        
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:
