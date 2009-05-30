@@ -1428,18 +1428,23 @@ class PluginsRoot(PlugTemplate, PLCControler):
                           ("_Stop", False)],
                "Disconnected":  [("_Run", False),
                                  ("_Debug", False),
-                                 ("_Stop", False)],
+                                 ("_Stop", False),
+                                 ("_Transfer", False),
+                                 ("_Connect", True),
+                                 ("_Disconnect", False)],
                }.get(status,[]):
             self.ShowMethod(*args)
         return status
     
     def PullPLCStatusProc(self, event): 
+        if self._connector is None:
+            self.StatusTimer.Stop()
         current_status = self.UpdateMethodsFromPLCStatus()
         if current_status != self.previous_plcstate:
             self.previous_plcstate = current_status
             self.StatusPrint.get(current_status, self.logger.write)("PLC is %s\n"%current_status)
             self.AppFrame.RefreshAll()
-            
+        
     def _Run(self):
         """
         Start PLC
@@ -1461,7 +1466,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     # This variable is not needed anymore!
                     #print "Unused : " + IECPath
                     IECPathsToPop.append(IECPath)
-                else:
+                elif IECPath != "__tick__":
                     # Convert 
                     Idx = self._IECPathToIdx.get(IECPath,None)
                     if Idx is not None:
@@ -1495,7 +1500,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         to a WeakKeyDictionary linking 
         weakly referenced callables to optionnal args
         """
-        if self._IECPathToIdx.get(IECPath, None) is None:
+        if IECPath != "__tick__" and self._IECPathToIdx.get(IECPath, None) is None:
             return None
         
         self.IECdebug_lock.acquire()
@@ -1531,14 +1536,25 @@ class PluginsRoot(PlugTemplate, PLCControler):
         IECdebug_data = {}
         self.IECdebug_lock.release()
 
-        self.ReArmDebugRegisterTimer()        
+        self.ReArmDebugRegisterTimer()
+
+    def CallWeakcallables(self, IECPath, function_name, *cargs):
+        data_tuple = self.IECdebug_datas.get(IECPath, None)
+        if data_tuple is not None:
+            WeakCallableDict, data_log, status = data_tuple
+            #data_log.append((debug_tick, value))
+            for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
+                #print weakcallable, value, args, kwargs
+                function = getattr(weakcallable, function_name, None)
+                if function is not None:
+                    function(*(cargs + args), **kwargs)
+                # This will block thread if more than one call is waiting
 
     def DebugThreadProc(self):
         """
         This thread waid PLC debug data, and dispatch them to subscribers
         """
         # This lock is used to avoid flooding wx event stack calling callafter
-        self.DebugThreadSlowDownLock = Semaphore(0)
         self.debug_break = False
         while (not self.debug_break) and (self._connector is not None):
             debug_tick, debug_vars = self._connector.GetTraceVariables()
@@ -1548,18 +1564,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
                len(debug_vars) == len(self.TracedIECPath):
                 for IECPath,value in zip(self.TracedIECPath, debug_vars):
                     if value is not None:
-	                    data_tuple = self.IECdebug_datas.get(IECPath, None)
-	                    if data_tuple is not None:
-	                        WeakCallableDict, data_log, status = data_tuple
-	                        #data_log.append((debug_tick, value))
-	                        for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
-	                            # delegate call to wx event loop
-	                            #print weakcallable, value, args, kwargs
-	                            if getattr(weakcallable, "SetValue", None) is not None:
-	                                wx.CallAfter(weakcallable.SetValue, value, *args, **kwargs)
-	                            elif getattr(weakcallable, "AddPoint", None) is not None:
-	                                wx.CallAfter(weakcallable.AddPoint, debug_tick, value, *args, **kwargs)
-	                            # This will block thread if more than one call is waiting
+                        self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
+                self.CallWeakcallables("__tick__", "NewDataAvailable")
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
                              "Debug data not coherent %d != %d\n"%(len(debug_vars), len(self.TracedIECPath)))
@@ -1570,12 +1576,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 wx.CallAfter(self.logger.write, "Debugger disabled\n")
                 self.debug_break = True
             self.IECdebug_lock.release()
-            wx.CallAfter(self.DebugThreadSlowDownLock.release)
-            self.DebugThreadSlowDownLock.acquire()
 
     def KillDebugThread(self):
         self.debug_break = True
-        self.DebugThreadSlowDownLock.release()
         self.DebugThread.join(timeout=1)
         if self.DebugThread.isAlive():
             self.logger.write_warning("Debug Thread couldn't be killed")
@@ -1708,9 +1711,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def _Disconnect(self):
         self._connector = None
-        self.ShowMethod("_Transfer", False)
-        self.ShowMethod("_Connect", True)
-        self.ShowMethod("_Disconnect", False)
         self.StatusTimer.Stop()
         self.UpdateMethodsFromPLCStatus()
         
