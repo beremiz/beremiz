@@ -25,7 +25,6 @@
 import Pyro.core as pyro
 from threading import Timer, Thread, Lock
 import ctypes, os, commands, types, sys
-import time
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -405,7 +404,9 @@ class PLCObject(pyro.ObjBase):
         Return a list of variables, corresponding to the list of required idx
         """
         if self.PLCStatus == "Started":
+            self.PLClibraryLock.acquire()
             tick = self._WaitDebugData()
+            #PLCprint("Debug tick : %d"%tick)
             if tick == -1:
                 res = None
             else:
@@ -422,10 +423,8 @@ class PLCObject(pyro.ObjBase):
                     else:
                         PLCprint("Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value))
                         res.append(None)
-            time.sleep(0.1)
             self._FreeDebugData()
+            self.PLClibraryLock.release()
             return tick, res
         return -1, None
-        
-
 
