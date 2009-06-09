@@ -75,7 +75,7 @@ if __name__ == '__main__':
 import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle
 import types, time, re, platform, time, traceback, commands
-from plugger import PluginsRoot
+from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 base_folder = os.path.split(sys.path[0])[0]
@@ -102,8 +102,6 @@ else:
               'other': 'new century schoolbook',
               'size' : 18,
              }
-
-MATIEC_ERROR_MODEL = re.compile(".*\.st:([0-9]*)-([0-9]*)..([0-9]*)-([0-9]*): error : (.*)$")
 
 # Some helpers to tweak GenBitmapTextButtons
 # TODO: declare customized classes instead.

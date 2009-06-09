@@ -657,6 +657,8 @@ import connectors
 from discovery import DiscoveryDialog
 from weakref import WeakKeyDictionary
 
+MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)$")
+
 class PluginsRoot(PlugTemplate, PLCControler):
     """
     This class define Root object of the plugin tree. 
@@ -949,6 +951,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if os.path.isfile(self._getIECrawcodepath()):
             plc_file.write(open(self._getIECrawcodepath(), "r").read())
             plc_file.write("\n")
+        plc_file.close()
+        plc_file = open(self._getIECcodepath(), "r")
+        self.ProgramOffset = 0
+        for line in plc_file.xreadlines():
+            self.ProgramOffset += 1
+        plc_file.close()
+        plc_file = open(self._getIECcodepath(), "a")
         plc_file.write(open(self._getIECgeneratedcodepath(), "r").read())
         plc_file.close()
         self.logger.write("Compiling IEC Program in to C code...\n")
@@ -961,11 +970,38 @@ class PluginsRoot(PlugTemplate, PLCControler):
                          ieclib_path, 
                          buildpath,
                          self._getIECcodepath()),
-               no_stdout=True).spin()
+               no_stdout=True, no_stderr=True).spin()
         if status:
             # Failed !
+            
+            # parse iec2c's error message. if it contains a line number,
+            # then print those lines from the generated IEC file.
+            for err_line in err_result.split('\n'):
+                self.logger.write_warning(err_line + "\n")
+
+                m_result = MATIEC_ERROR_MODEL.match(err_line)
+                if m_result is not None:
+                    first_line, first_column, last_line, last_column, error = m_result.groups()
+                    first_line, last_line = int(first_line), int(last_line)
+                    
+                    last_section = None
+                    f = open(self._getIECcodepath())
+
+                    for i, line in enumerate(f.readlines()):
+                        if line[0] not in '\t \r\n':
+                            last_section = line
+
+                        if first_line <= i <= last_line:
+                            if last_section is not None:
+                                self.logger.write_warning("In section: " + last_section)
+                                last_section = None # only write section once
+                            self.logger.write_warning("%04d: %s" % (i, line))
+
+                    f.close()
+            
             self.logger.write_error("Error : IEC to C compiler returned %d\n"%status)
             return False
+        
         # Now extract C files of stdout
         C_files = [ fname for fname in result.splitlines() if fname[-2:]==".c" or fname[-2:]==".C" ]
         # remove those that are not to be compiled because included by others
