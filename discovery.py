@@ -77,11 +77,11 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         btsizer.AddGrowableCol(3)
 
         b = wx.Button(self, wx.ID_CANCEL, "Cancel")
-        #self.Bind(wx.EVT_BUTTON, self.OnClose, b)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, b)
         btsizer.Add(b)
 
         b = wx.Button(self, wx.ID_OK, "OK")
-        #self.Bind(wx.EVT_BUTTON, self.OnConnect, b)
+        self.Bind(wx.EVT_BUTTON, self.OnOk, b)
         b.SetDefault()
         btsizer.Add(b)
 
@@ -94,6 +94,8 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.zConfInstance = Zeroconf()
         self.RefreshList()
 
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
     def RefreshList(self):
         type = "_PYRO._tcp.local."
         self.browser = ServiceBrowser(self.zConfInstance, type, self)        
@@ -102,6 +104,18 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.list.DeleteAllItems()
         self.browser.cancel()
         self.RefreshList()
+
+    def OnClose(self, event):
+        self.zConfInstance.close()
+        event.Skip()
+
+    def OnCancel(self, event):
+        self.zConfInstance.close()
+        event.Skip()
+
+    def OnOk(self, event):
+        self.zConfInstance.close()
+        event.Skip()
 
     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
     def GetListCtrl(self):
@@ -145,7 +159,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         
     def removeService(self, zeroconf, type, name):
         pass
-	
+
     def addService(self, zeroconf, type, name):
         info = self.zConfInstance.getServiceInfo(type, name)
         typename = type.split(".")[0][1:]
