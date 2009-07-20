@@ -83,13 +83,12 @@ void __cleanup_%(locstr)s()
 {
     // Stop timer thread
     if(init_level-- > 0){
-    int init_level_c = init_level;	
+    int init_level_c = init_level;
         StopTimerLoop(&Exit);
         %(nodes_close)s
     }
-    #if !defined(WIN32) || defined(__CYGWIN__)
-        TimerCleanup();
-    #endif
+
+    TimerCleanup();
 }
 
 #define NODE_OPEN(nodename)\
@@ -110,9 +109,8 @@ int __init_%(locstr)s(int argc,char **argv)
         return -1;
     }
 #endif
-    #if !defined(WIN32) || defined(__CYGWIN__)
-        TimerInit();
-    #endif
+
+    TimerInit();
 
     %(nodes_open)s
 
