@@ -332,13 +332,13 @@ class ConciseDCFGenerator:
             name = location["NAME"]
             if name in self.IECLocations:
                 if self.IECLocations[name]["type"] != COlocationtype:
-                    raise PDOmappingException, "Conflict type for location \"%s\"" % name 
+                    raise PDOmappingException, _("Conflict type for location \"%s\"") % name 
             else:
                 # Get only the part of the location that concern this node
                 loc = location["LOC"][len(current_location):]
                 # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
                 if len(loc) not in (2, 3, 4):
-                    raise PDOmappingException, "Bad location size : %s"%str(loc)
+                    raise PDOmappingException, _("Bad location size : %s") % str(loc)
                 elif len(loc) == 2:
                     continue
                 
@@ -351,14 +351,14 @@ class ConciseDCFGenerator:
                 
                 # Check Id is in slave node list
                 if nodeid not in self.NodeList.SlaveNodes.keys():
-                    raise PDOmappingException, "Non existing node ID : %d (variable %s)" % (nodeid,name)
+                    raise PDOmappingException, _("Non existing node ID : %d (variable %s)") % (nodeid,name)
                 
                 # Get the model for this node (made from EDS)
                 node = self.NodeList.SlaveNodes[nodeid]["Node"]
                 
                 # Extract and check index and subindex
                 if not node.IsEntry(index, subindex):
-                    raise PDOmappingException, "No such index/subindex (%x,%x) in ID : %d (variable %s)" % (index,subindex,nodeid,name)
+                    raise PDOmappingException, _("No such index/subindex (%x,%x) in ID : %d (variable %s)") % (index,subindex,nodeid,name)
                 
                 # Get the entry info
                 subentry_infos = node.GetSubentryInfos(index, subindex)
@@ -368,19 +368,19 @@ class ConciseDCFGenerator:
                     if sizelocation == "X" and len(loc) > 3:
                         numbit = loc[3]
                     elif sizelocation != "X" and len(loc) > 3:
-                        raise PDOmappingException, "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
+                        raise PDOmappingException, _("Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))") % (name,nodeid,index,subindex)
                     else:
                         numbit = None
                     
                     if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
-                        raise PDOmappingException, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+                        raise PDOmappingException, _("Invalid type \"%s\"-> %d != %d  for location\"%s\"") % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
                     
                     typeinfos = node.GetEntryInfos(COlocationtype)
                     self.IECLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
                                                 "nodeid": nodeid, "index": index,"subindex": subindex,
                                                 "bit": numbit, "size": typeinfos["size"], "sizelocation": sizelocation}
                 else:
-                    raise PDOmappingException, "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))" % (name,nodeid,index,subindex)
+                    raise PDOmappingException, _("Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))") % (name,nodeid,index,subindex)
         
         #-------------------------------------------------------------------------------
         #                         Search for locations already mapped
@@ -452,7 +452,7 @@ class ConciseDCFGenerator:
                     pdomapping = []
                     result = self.GetEmptyPDO(nodeid, pdotype)
                     if result is None:
-                        raise PDOmappingException, "Impossible to define PDO mapping for node %02x"%nodeid
+                        raise PDOmappingException, _("Impossible to define PDO mapping for node %02x") % nodeid
                     pdoindex, pdocobid, pdonbparams = result
                     for name, loc_infos in locations[pdotype]:
                         pdosize += loc_infos["size"]
@@ -466,7 +466,7 @@ class ConciseDCFGenerator:
                             pdomapping = [(name, loc_infos)]
                             result = self.GetEmptyPDO(nodeid, pdotype, pdoindex + 1)
                             if result is None:
-                                raise PDOmappingException, "Impossible to define PDO mapping for node %02x"%nodeid
+                                raise PDOmappingException, _("Impossible to define PDO mapping for node %02x") % nodeid
                             pdoindex, pdocobid, pdonbparams = result
                         else:
                             pdomapping.append((name, loc_infos))
@@ -614,13 +614,13 @@ def LocalODPointers(locations, current_location, slave):
         name = location["NAME"]
         if name in IECLocations:
             if IECLocations[name] != COlocationtype:
-                raise PDOmappingException, "Conflict type for location \"%s\"" % name 
+                raise PDOmappingException, _("Conflict type for location \"%s\"") % name 
         else:
             # Get only the part of the location that concern this node
             loc = location["LOC"][len(current_location):]
             # loc correspond to (ID, INDEX, SUBINDEX [,BIT])
             if len(loc) not in (2, 3, 4):
-                raise PDOmappingException, "Bad location size : %s"%str(loc)
+                raise PDOmappingException, _("Bad location size : %s") % str(loc)
             elif len(loc) != 2:
                 continue
             
@@ -629,12 +629,12 @@ def LocalODPointers(locations, current_location, slave):
             
             # Extract and check index and subindex
             if not slave.IsEntry(index, subindex):
-                raise PDOmappingException, "No such index/subindex (%x,%x) (variable %s)" % (index, subindex, name)
+                raise PDOmappingException, _("No such index/subindex (%x,%x) (variable %s)") % (index, subindex, name)
             
             # Get the entry info
             subentry_infos = slave.GetSubentryInfos(index, subindex)    
             if subentry_infos["type"] != COlocationtype:
-                raise PDOmappingException, "Invalid type \"%s\"-> %d != %d  for location\"%s\"" % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+                raise PDOmappingException, _("Invalid type \"%s\"-> %d != %d  for location\"%s\"") % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
             
             IECLocations[name] = COlocationtype
             pointers[(index, subindex)] = name

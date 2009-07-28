@@ -216,7 +216,7 @@ class PLCObject(pyro.ObjBase):
                                 self.hmi_frame.Show()
                             
                             def OnCloseFrame(evt):
-                                wx.MessageBox("Please stop PLC to close")
+                                wx.MessageBox(_("Please stop PLC to close"))
                             create_frame()
                             break
             except:

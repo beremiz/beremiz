@@ -13,7 +13,7 @@ class Xenomai_target(toolchain_gcc):
 
         status, result, err_result = ProcessLogger(self.logger, xeno_config + " --xeno-ldflags", no_stdout=True).spin()
         if status:
-            self.logger.write_error("Unable to get Xenomai's LDFLAGS\n")
+            self.logger.write_error(_("Unable to get Xenomai's LDFLAGS\n"))
         xeno_ldlags = result.strip()
         
         return toolchain_gcc.getBuilderLDFLAGS(self) + [xeno_ldlags, "-shared", "-lnative"]
@@ -24,7 +24,7 @@ class Xenomai_target(toolchain_gcc):
 
         status, result, err_result = ProcessLogger(self.logger, xeno_config + " --xeno-cflags", no_stdout=True).spin()
         if status:
-            self.logger.write_error("Unable to get Xenomai's CFLAGS\n")
+            self.logger.write_error(_("Unable to get Xenomai's CFLAGS\n"))
         xeno_cflags = result.strip()
         
         return toolchain_gcc.getBuilderCFLAGS(self) + [xeno_cflags]

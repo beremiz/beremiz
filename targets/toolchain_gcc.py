@@ -90,9 +90,9 @@ class toolchain_gcc():
         relink = False
         for Location, CFilesAndCFLAGS, DoCalls in self.PluginsRootInstance.LocationCFilesAndCFLAGS:
             if Location:
-                self.logger.write("Plugin : " + self.PluginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
+                self.logger.write(_("Plugin : ") + self.PluginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
             else:
-                self.logger.write("PLC :\n")
+                self.logger.write(_("PLC :\n"))
                 
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 bn = os.path.basename(CFile)
@@ -116,7 +116,7 @@ class toolchain_gcc():
 
                     if status :
                         self.srcmd5.pop(bn)
-                        self.logger.write_error("C compilation of "+ bn +" failed.\n")
+                        self.logger.write_error(_("C compilation of %s failed.\n")%bn)
                         return False
 
                 obns.append(obn)
@@ -124,7 +124,7 @@ class toolchain_gcc():
 
         ######### GENERATE library FILE ########################################
         # Link all the object files into one binary file
-        self.logger.write("Linking :\n")
+        self.logger.write(_("Linking :\n"))
         if relink:
             objstring = []
     

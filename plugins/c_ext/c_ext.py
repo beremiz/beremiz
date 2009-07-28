@@ -201,8 +201,8 @@ class _Cfile:
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "EditCfile"),
-         "name" : "Edit C File", 
-         "tooltip" : "Edit C File",
+         "name" : _("Edit C File"), 
+         "tooltip" : _("Edit C File"),
          "method" : "_OpenView"},
     ]
 

@@ -1,0 +1,989 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-06-24 18:44+0200\n"
+"PO-Revision-Date: 2009-07-02 18:27+0100\n"
+"Last-Translator: \n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: Beremiz.py:1429
+#, python-format
+msgid ""
+"\n"
+"An unhandled exception (bug) occured. Bug report saved at :\n"
+"(%s)\n"
+"\n"
+"Please contact LOLITech at:\n"
+"+33 (0)3 29 57 60 42\n"
+"or please be kind enough to send this file to:\n"
+"bugs_beremiz@lolitech.fr\n"
+"\n"
+"You should now restart Beremiz.\n"
+"\n"
+"Traceback:\n"
+msgstr ""
+"\n"
+"一个未处理的异常（漏洞）出现。漏洞报告存为：\n"
+"(%s)\n"
+"\n"
+"请用以下方式联系LOLITech：\n"
+"+33 (0)3 29 57 60 42\n"
+"或者请将文件发送至下列邮箱：\n"
+"bugs_beremiz@lolitech.fr\n"
+"\n"
+"你现在必须重新启动Beremiz。\n"
+"\n"
+"回溯：\n"
+
+#: plugger.py:1332
+msgid " generation failed !\n"
+msgstr "生成失败！\n"
+
+#: Beremiz.py:1288
+#, python-format
+msgid "\"%s\" folder is not a valid Beremiz project\n"
+msgstr "\"%s\" 文件夹不是有效的Beremiz项目\n"
+
+#: Beremiz_service.py:467
+#: runtime/PLCObject.py:269
+msgid "#EXCEPTION : "
+msgstr "#异常："
+
+#: Beremiz.py:1417
+#: Beremiz.py:1419
+#: Beremiz.py:1420
+msgid ",   "
+msgstr "，"
+
+#: Beremiz.py:1415
+msgid ". "
+msgstr "。"
+
+#: plugger.py:395
+#, python-format
+msgid "A child names \"%s\" already exist -> \"%s\"\n"
+msgstr "分支名字 \"%s\" 已经存在 -> \"%s\"\n"
+
+#: plugger.py:427
+#, python-format
+msgid "A child with IEC channel %d already exist -> %d\n"
+msgstr "一个IEC通道的分支 %d 已经存在 -> %d\n"
+
+#: Beremiz.py:342
+msgid "About"
+msgstr "关于"
+
+#: Beremiz.py:1357
+msgid "About Beremiz"
+msgstr "关于Beremiz"
+
+#: Beremiz.py:311
+#: Beremiz.py:1390
+msgid "Add Plugin"
+msgstr "添加插件"
+
+#: Beremiz.py:612
+#: Beremiz.py:874
+msgid "Add a sub plugin"
+msgstr "添加一个子插件"
+
+#: plugger.py:1680
+msgid "Already connected. Please disconnect\n"
+msgstr "已经连接。请断开连接\n"
+
+#: Beremiz.py:1056
+msgid "Append "
+msgstr "追加"
+
+#: plugins/canfestival/config_utils.py:341
+#: plugins/canfestival/config_utils.py:623
+#, python-format
+msgid "Bad location size : %s"
+msgstr "不好的位置大小：%s"
+
+#: Beremiz.py:392
+msgid "Beremiz"
+msgstr "Beremiz"
+
+#: Beremiz.py:340
+msgid "Beremiz\tF1"
+msgstr "Beremiz\tF1"
+
+#: plugger.py:1464
+msgid "Broken"
+msgstr "损坏"
+
+#: plugger.py:1800
+msgid "Build"
+msgstr "构建"
+
+#: Beremiz.py:320
+msgid "Build\tCTRL+R"
+msgstr "建立\tCTRL+R"
+
+#: plugger.py:1434
+msgid "Build directory already clean\n"
+msgstr "构建目录已经清除\n"
+
+#: plugger.py:1801
+msgid "Build project into build folder"
+msgstr "在构建文件夹中构建项目"
+
+#: plugger.py:1350
+msgid "C Build crashed !\n"
+msgstr "C构建损坏！\n"
+
+#: plugger.py:1347
+msgid "C Build failed.\n"
+msgstr "C构建失败。\n"
+
+#: plugger.py:1336
+msgid "C code generated successfully.\n"
+msgstr "C代码生成成功。\n"
+
+#: targets/toolchain_gcc.py:119
+#, python-format
+msgid "C compilation of %s failed.\n"
+msgstr " %s 的C编译失败。\n"
+
+#: plugger.py:1037
+#, python-format
+msgid "Can't find module for target %s!\n"
+msgstr "无法为目标找到模型 %s!\n"
+
+#: discovery.py:79
+msgid "Cancel"
+msgstr "取消"
+
+#: plugger.py:1746
+msgid "Cannot compare latest build to target. Please build.\n"
+msgstr "无法与目标比较最新的建立。\n"
+
+#: plugger.py:465
+#, python-format
+msgid "Cannot create child %s of type %s "
+msgstr "无法新建分支 %s 类型 %s "
+
+#: plugger.py:420
+#, python-format
+msgid "Cannot find lower free IEC channel than %d\n"
+msgstr "无法找到比 %d 更低的自由的IEC通道\n"
+
+#: connectors/PYRO/__init__.py:61
+msgid "Cannot get PLC status - connection failed.\n"
+msgstr "无法获取PLC的状态 - 连接失败。\n"
+
+#: plugger.py:1161
+msgid "Cannot open/parse VARIABLES.csv!\n"
+msgstr "无法打开／解析 VARIABLES.csv！\n"
+
+#: plugins/canfestival/config_utils.py:371
+#, python-format
+msgid "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))"
+msgstr "无法设定位抵消非布尔 '%s' variable (ID:%d,Idx:%x,sIdx:%x)) "
+
+#: Beremiz_service.py:281
+msgid "Change IP of interface to bind"
+msgstr "更改界面的ip用以绑定"
+
+#: Beremiz_service.py:280
+msgid "Change Name"
+msgstr "更改名字"
+
+#: Beremiz_service.py:284
+msgid "Change Port Number"
+msgstr "更改端口号"
+
+#: Beremiz_service.py:286
+msgid "Change working directory"
+msgstr "更改工作目录"
+
+#: Beremiz.py:1249
+#: Beremiz.py:1272
+msgid "Choose a project"
+msgstr "选择一个项目"
+
+#: Beremiz_service.py:332
+msgid "Choose a working directory "
+msgstr "选择一个工作目录"
+
+#: plugger.py:1804
+msgid "Clean"
+msgstr "清除"
+
+#: plugger.py:1806
+msgid "Clean project build folder"
+msgstr "清除项目构建目录"
+
+#: plugger.py:1431
+msgid "Cleaning the build directory\n"
+msgstr "清除构建目录\n"
+
+#: Beremiz.py:524
+#: Beremiz.py:1299
+msgid "Close Application"
+msgstr "关闭应用"
+
+#: Beremiz.py:292
+msgid "Close Project"
+msgstr "关闭项目"
+
+#: plugger.py:963
+msgid "Compiling IEC Program in to C code...\n"
+msgstr "正在将IEC程序编译成C代码...\n"
+
+#: plugins/canfestival/config_utils.py:335
+#: plugins/canfestival/config_utils.py:617
+#, python-format
+msgid "Conflict type for location \"%s\""
+msgstr "位置的冲突类型 \"%s\""
+
+#: plugger.py:1828
+msgid "Connect"
+msgstr "连接"
+
+#: plugger.py:1829
+msgid "Connect to the target PLC"
+msgstr "连接到PLC目标"
+
+#: connectors/PYRO/__init__.py:31
+#, python-format
+msgid "Connecting to URI : %s\n"
+msgstr "连接到URI： %s!\n"
+
+#: plugger.py:1713
+#, python-format
+msgid "Connection failed to %s!\n"
+msgstr "连接失败 %s!\n"
+
+#: plugger.py:581
+#, python-format
+msgid ""
+"Could not add child \"%s\", type %s :\n"
+"%s\n"
+msgstr ""
+"无法添加分支 \"%s\", type %s :\n"
+"%s\n"
+
+#: plugger.py:558
+#, python-format
+msgid ""
+"Couldn't load plugin base parameters %s :\n"
+" %s"
+msgstr ""
+"无法下载插件基本参数 %s :\n"
+" %s"
+
+#: plugger.py:569
+#, python-format
+msgid ""
+"Couldn't load plugin parameters %s :\n"
+" %s"
+msgstr ""
+"无法下载插件参数  %s :\n"
+" %s"
+
+#: plugger.py:1644
+msgid "Couldn't start PLC debug !\n"
+msgstr "无法开始PLC调试！\n"
+
+#: plugger.py:1674
+msgid "Couldn't stop PLC !\n"
+msgstr "无法停止PLC！\n"
+
+#: plugger.py:1814
+msgid "Debug"
+msgstr "调试"
+
+#: plugger.py:1514
+#, python-format
+msgid "Debug : Unknown variable %s\n"
+msgstr "调试 ：未知变量 %s\n"
+
+#: plugger.py:1622
+msgid "Debug Thread couldn't be killed"
+msgstr "调试线程不能结束"
+
+#: plugger.py:1609
+#, python-format
+msgid "Debug data not coherent %d != %d\n"
+msgstr "调试不和谐的数据 %d != %d\n"
+
+#: runtime/PLCObject.py:424
+#, python-format
+msgid "Debug error idx : %d, expected_idx %d, type : %s"
+msgstr "调试错误 idx : %d， expected_idx %d, 类型 ： %s"
+
+#: plugger.py:1614
+msgid "Debugger disabled\n"
+msgstr "调试器禁用\n"
+
+#: Beremiz.py:313
+msgid "Delete Plugin"
+msgstr "删除插件"
+
+#: Beremiz.py:865
+msgid "Delete this plugin"
+msgstr "删除这个插件"
+
+#: plugger.py:1461
+msgid "Dirty"
+msgstr "变质"
+
+#: plugger.py:1837
+msgid "Disconnect"
+msgstr "断开"
+
+#: plugger.py:1839
+msgid "Disconnect from PLC"
+msgstr "从PLC断开"
+
+#: plugger.py:1467
+msgid "Disconnected"
+msgstr "已断开"
+
+#: PythonSTC.py:576
+msgid "Do you want to continue?"
+msgstr "你希望继续吗？"
+
+#: Beremiz.py:1261
+msgid "ERROR"
+msgstr "错误"
+
+#: plugins/c_ext/c_ext.py:204
+#: plugins/c_ext/c_ext.py:205
+msgid "Edit C File"
+msgstr "编辑C文件"
+
+#: plugins/canfestival/canfestival.py:200
+msgid "Edit CanOpen Network with NetworkEdit"
+msgstr "用网络编辑器编辑CanOpen网络"
+
+#: plugger.py:1796
+msgid "Edit PLC"
+msgstr "编辑PLC"
+
+#: Beremiz.py:308
+msgid "Edit PLC\tCTRL+R"
+msgstr "编辑PLC\tCTRL+R"
+
+#: plugger.py:1797
+msgid "Edit PLC program with PLCOpenEditor"
+msgstr "使用PLCOpen编辑器编辑PLC程序"
+
+#: plugger.py:1856
+msgid "Edit a WxWidgets GUI with WXGlade"
+msgstr "用 WXGlade 编辑一个 WxWidgets 用户图形界面"
+
+#: plugins/canfestival/canfestival.py:199
+msgid "Edit network"
+msgstr "编辑网络"
+
+#: plugger.py:1848
+msgid "Edit raw IEC code added to code generated by PLCGenerator"
+msgstr "编辑原始的IEC代码添加至PLCGenerator生成的代码"
+
+#: plugger.py:1458
+msgid "Empty"
+msgstr "空的"
+
+#: Beremiz.py:815
+msgid "Enable/Disable this plugin"
+msgstr "激活／禁用这个插件"
+
+#: Beremiz_service.py:339
+msgid "Enter a name "
+msgstr "输入一个名字"
+
+#: Beremiz_service.py:324
+msgid "Enter a port number "
+msgstr "输入一个端口号"
+
+#: Beremiz_service.py:314
+msgid "Enter the ip of the interface to bind"
+msgstr "输入界面的ip用以绑定"
+
+#: Beremiz.py:1284
+#: Beremiz.py:1288
+#: Beremiz.py:1443
+#: Beremiz.py:1453
+#: Beremiz_service.py:229
+#: Beremiz_service.py:353
+msgid "Error"
+msgstr "错误"
+
+#: plugger.py:1010
+msgid "Error : At least one configuration and one ressource must be declared in PLC !\n"
+msgstr "错误：在PLC中，必须申明至少一个配置和一个资源！\n"
+
+#: plugger.py:1002
+#, python-format
+msgid "Error : IEC to C compiler returned %d\n"
+msgstr "错误：IEC到C编译器返回 %d\n"
+
+#: plugger.py:941
+#, python-format
+msgid ""
+"Error in ST/IL/SFC code generator :\n"
+"%s\n"
+msgstr ""
+"错误在ST/IL/SFC代码生成器中：\n"
+"%s\n"
+
+#: plugger.py:202
+#, python-format
+msgid "Error while saving \"%s\"\n"
+msgstr "存储时有错误 \"%s\"\n"
+
+#: plugins/canfestival/canfestival.py:191
+msgid "Error: No Master generated\n"
+msgstr "错误：没有主控生成\n"
+
+#: plugins/canfestival/canfestival.py:186
+msgid "Error: No PLC built\n"
+msgstr "错误：没有PLC构建\n"
+
+#: plugger.py:1707
+#, python-format
+msgid "Exception while connecting %s!\n"
+msgstr "连接时存在异常 %s!\n"
+
+#: plugger.py:1014
+msgid "Extracting Located Variables...\n"
+msgstr "正在提取位置变量......\n"
+
+#: plugger.py:1761
+msgid "Failed : Must build before transfer.\n"
+msgstr "失败：传输之前必须构建。\n"
+
+#: plugger.py:1341
+msgid "Fatal : cannot get builder.\n"
+msgstr "致命错误：无法获取构建者。\n"
+
+#: Beremiz.py:347
+msgid "File"
+msgstr "文件"
+
+#: plugger.py:815
+msgid "Folder choosen doesn't contain a program. It's not a valid project!"
+msgstr "被选中的文件夹未包含一个程序。它不是一个有效项目！"
+
+#: plugger.py:780
+msgid "Folder choosen isn't empty. You can't use it for a new project!"
+msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
+
+#: connectors/PYRO/__init__.py:93
+msgid "Force runtime reload\n"
+msgstr "强制重新运行\n"
+
+#: plugger.py:931
+msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
+msgstr "生成软PLC IEC-61131 ST/IL/SFC 代码......\n"
+
+#: plugger.py:1289
+msgid "Generating plugins C code\n"
+msgstr "生成C代码插件\n"
+
+#: Beremiz.py:350
+msgid "Help"
+msgstr "帮助"
+
+#: plugger.py:1281
+msgid "IEC-61131-3 code generation failed !\n"
+msgstr "IEC-61131-3代码生成失败！\n"
+
+#: plugins/canfestival/config_utils.py:376
+#: plugins/canfestival/config_utils.py:637
+#, python-format
+msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
+msgstr "无效类型 \"%s\"-> %d != %d  用于位置 \"%s\""
+
+#: Beremiz_service.py:315
+#: Beremiz_service.py:316
+msgid "Ip is not valid!"
+msgstr "Ip无效！"
+
+#: plugger.py:1767
+msgid "Latest build already match current target. Transfering anyway...\n"
+msgstr "最新构建已经与当前目标匹配。正在传输中......\n"
+
+#: plugger.py:1737
+msgid "Latest build do not match with target, please transfer.\n"
+msgstr "最新构建与目标不匹配，请传输。\n"
+
+#: plugger.py:1741
+msgid "Latest build match target, no transfer needed.\n"
+msgstr "最新构建与目标匹配，不需要传输。\n"
+
+#: Beremiz_service.py:283
+msgid "Launch WX GUI inspector"
+msgstr "启动 WX GUI 检查员"
+
+#: Beremiz_service.py:282
+msgid "Launch a live Python shell"
+msgstr "启动一个活的Python Shell"
+
+#: targets/toolchain_gcc.py:127
+msgid "Linking :\n"
+msgstr "链接：\n"
+
+#: discovery.py:72
+msgid "Local"
+msgstr "本地"
+
+#: Beremiz.py:435
+msgid "Log Console"
+msgstr "控制台日志"
+
+#: plugger.py:475
+#, python-format
+msgid "Max count (%d) reached for this plugin of type %s "
+msgstr "最大计数 (%d) 到达"
+
+#: runtime/ServicePublisher.py:50
+msgid "My IP is :"
+msgstr "我的IP是："
+
+#: Beremiz_service.py:340
+msgid "Name must not be null!"
+msgstr "名称不能为空！"
+
+#: Beremiz.py:286
+msgid "New\tCTRL+N"
+msgstr "新建\tCTRL+N"
+
+#: runtime/PLCObject.py:313
+#, python-format
+msgid "NewPLC (%s)"
+msgstr "新的PLC(%s)"
+
+#: plugger.py:1791
+msgid "No PLC to transfer (did build success ?)\n"
+msgstr "没有PLC可传输（构建是否成功？）\n"
+
+#: Beremiz_service.py:353
+msgid "No runnning PLC"
+msgstr "没有正在运行的PLC"
+
+#: plugins/canfestival/config_utils.py:632
+#, python-format
+msgid "No such index/subindex (%x,%x) (variable %s)"
+msgstr "没有这样的索引／子索引 (%x,%x) (variable %s)"
+
+#: plugins/canfestival/config_utils.py:361
+#, python-format
+msgid "No such index/subindex (%x,%x) in ID : %d (variable %s)"
+msgstr "没有这样的索引／子索引 (%x,%x) in ID : %d (variable %s)"
+
+#: plugins/canfestival/config_utils.py:354
+#, python-format
+msgid "Non existing node ID : %d (variable %s)"
+msgstr "不存在节点ID：%d (variable %s)"
+
+#: plugins/canfestival/config_utils.py:383
+#, python-format
+msgid "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
+msgstr "不是PDO填图变量： '%s' (ID:%d,Idx:%x,sIdx:%x))"
+
+#: discovery.py:83
+msgid "OK"
+msgstr "确定"
+
+#: Beremiz.py:288
+msgid "Open\tCTRL+O"
+msgstr "打开\tCTRL+O"
+
+#: targets/toolchain_gcc.py:95
+msgid "PLC :\n"
+msgstr "PLC：\n"
+
+#: plugger.py:1447
+#: plugger.py:1483
+#: plugger.py:1723
+#, python-format
+msgid "PLC is %s\n"
+msgstr "PLC 是 %s\n"
+
+#: Beremiz.py:1390
+msgid "Please enter a name for plugin:"
+msgstr "请为插件输入一个名字："
+
+#: runtime/PLCObject.py:219
+msgid "Please stop PLC to close"
+msgstr "请停止PLC以便关闭"
+
+#: targets/toolchain_gcc.py:93
+msgid "Plugin : "
+msgstr "插件："
+
+#: plugger.py:1295
+msgid "Plugins code generation failed !\n"
+msgstr "插件代码生成失败！\n"
+
+#: Beremiz_service.py:325
+msgid "Port number must be 0 <= port <= 65535!"
+msgstr "端口号必须为 0 <= 端口号 <= 65535！"
+
+#: Beremiz_service.py:325
+msgid "Port number must be an integer!"
+msgstr "端口号必须是整数！"
+
+#: runtime/PLCObject.py:279
+#, python-format
+msgid "Problem %s PLC"
+msgstr "问题  %s PLC"
+
+#: plugger.py:789
+msgid "Project not created"
+msgstr "项目未创建"
+
+#: plugger.py:503
+#, python-format
+msgid "Project tree layout do not match plugin.xml %s!=%s "
+msgstr "项目树型布局与 plugin.xml 不匹配 %s!=%s "
+
+#: Beremiz.py:295
+msgid "Properties"
+msgstr "属性"
+
+#: Beremiz_service.py:433
+msgid "Publish service on local network"
+msgstr "在本地网络发布服务"
+
+#: plugger.py:1851
+msgid "Python code"
+msgstr "Python代码"
+
+#: runtime/PLCObject.py:282
+msgid "PythonThreadProc interrupted"
+msgstr "Python线程处理被中断"
+
+#: PythonSTC.py:577
+msgid "Question"
+msgstr "问题"
+
+#: Beremiz_service.py:287
+msgid "Quit"
+msgstr "退出"
+
+#: Beremiz.py:298
+msgid "Quit\tCTRL+Q"
+msgstr "退出\tCTRL+Q"
+
+#: plugger.py:1847
+msgid "Raw IEC code"
+msgstr "原始的IEC代码"
+
+#: Beremiz.py:1398
+msgid "Really delete plugin ?"
+msgstr "确定删除插件？"
+
+#: discovery.py:64
+msgid "Refresh"
+msgstr "刷新"
+
+#: Beremiz.py:1398
+msgid "Remove plugin"
+msgstr "移除这个插件"
+
+#: Beremiz.py:325
+#: plugger.py:1809
+msgid "Run"
+msgstr "运行"
+
+#: Beremiz.py:290
+msgid "Save\tCTRL+S"
+msgstr "保存\tCTRL+S"
+
+#: Beremiz.py:328
+msgid "Save Log"
+msgstr "保存日志"
+
+#: Beremiz.py:523
+#: Beremiz.py:1298
+msgid "Save changes ?"
+msgstr "保存修改？"
+
+#: discovery.py:37
+msgid "Service Discovery"
+msgstr "服务探索"
+
+#: plugger.py:1844
+msgid "Show IEC code generated by PLCGenerator"
+msgstr "显示由PLCGenerator生成的IEC代码"
+
+#: plugins/canfestival/canfestival.py:202
+msgid "Show Master"
+msgstr "显示主控"
+
+#: plugins/canfestival/canfestival.py:203
+msgid "Show Master generated by config_utils"
+msgstr "显示由config_utils生成的主控"
+
+#: plugger.py:1842
+msgid "Show code"
+msgstr "显示代码"
+
+#: Beremiz.py:323
+msgid "Simulate"
+msgstr "模拟"
+
+#: plugger.py:1811
+#: Beremiz_service.py:278
+#: runtime/PLCObject.py:285
+msgid "Start PLC"
+msgstr "开始PLC"
+
+#: plugger.py:1816
+msgid "Start PLC (debug mode)"
+msgstr "开始PLC（调试模式）"
+
+#: plugger.py:1273
+#, python-format
+msgid "Start build in %s\n"
+msgstr "开始建立 %s\n"
+
+#: plugger.py:1452
+msgid "Started"
+msgstr "已开始"
+
+#: plugger.py:1631
+msgid "Starting PLC (debug mode)\n"
+msgstr "正在开始PLC（调试模式）\n"
+
+#: plugger.py:1823
+msgid "Stop"
+msgstr "停止"
+
+#: Beremiz_service.py:279
+#: runtime/PLCObject.py:291
+msgid "Stop PLC"
+msgstr "停止PLC"
+
+#: plugger.py:1825
+msgid "Stop Running PLC"
+msgstr "停止运行PLC"
+
+#: plugger.py:1455
+msgid "Stopped"
+msgstr "已停止"
+
+#: plugger.py:1670
+msgid "Stopping debug\n"
+msgstr "正在停止调试\n"
+
+#: Beremiz_service.py:426
+msgid "The daemon runs on port :"
+msgstr "守护进程在端口运行："
+
+#: Beremiz_service.py:427
+msgid "The object's uri is :"
+msgstr "对象的uri是："
+
+#: Beremiz_service.py:428
+msgid "The working directory :"
+msgstr "工作目录："
+
+#: plugger.py:1832
+msgid "Transfer"
+msgstr "传输"
+
+#: plugger.py:1834
+msgid "Transfer PLC"
+msgstr "传输PLC"
+
+#: plugger.py:1787
+msgid "Transfer completed successfully.\n"
+msgstr "传输成功\n"
+
+#: plugger.py:1789
+msgid "Transfer failed\n"
+msgstr "传输失败\n"
+
+#: targets/Xenomai/__init__.py:27
+msgid "Unable to get Xenomai's CFLAGS\n"
+msgstr "无法获取Xenomai的CFLAGS\n"
+
+#: targets/Xenomai/__init__.py:16
+msgid "Unable to get Xenomai's LDFLAGS\n"
+msgstr "无法获取Xenomai的LDFLAGS\n"
+
+#: plugger.py:1855
+msgid "WXGLADE GUI"
+msgstr "WXGLADE 用户图形界面"
+
+#: plugger.py:936
+msgid "Warnings in ST/IL/SFC code generator :\n"
+msgstr "警告在ST/IL/SFC代码生成器中：\n"
+
+#: plugger.py:1852
+msgid "Write Python runtime code, for use with python_eval FBs"
+msgstr "编辑Python运行时间代码，与python_eval FBs一起使用"
+
+#: connectors/PYRO/__init__.py:39
+msgid "Wrong URI, please check it !\n"
+msgstr "错误的URI，请检查！\n"
+
+#: PythonSTC.py:575
+msgid "You are about to overwrite that file\n"
+msgstr "你即将要覆盖该文件\n"
+
+#: wxPopen.py:134
+#, python-format
+msgid "exited with status %s (pid %s)\n"
+msgstr "退出并保持现状 %s (pid %s)\n"
+
+#: Beremiz.py:1417
+#: Beremiz.py:1419
+msgid "file : "
+msgstr "文件："
+
+#: Beremiz.py:1420
+msgid "function : "
+msgstr "功能："
+
+#: Beremiz.py:1420
+msgid "line : "
+msgstr "在线："
+
+#: runtime/PLCObject.py:277
+msgid "loading"
+msgstr "载入"
+
+#: runtime/PLCObject.py:275
+msgid "starting"
+msgstr "正在开始"
+
+#: Extra XSD strings
+msgid "BaseParams"
+msgstr "基本参照 "
+
+msgid "Name"
+msgstr "名字"
+
+msgid "IEC_Channel"
+msgstr "IEC_频道"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "BeremizRoot"
+msgstr "Beremiz根"
+
+msgid "TargetType"
+msgstr "目标类型"
+
+msgid "URI_location"
+msgstr "URI_位置"
+
+msgid "Enable_Plugins"
+msgstr "启用_插件"
+
+msgid "CExtension"
+msgstr "C扩展"
+
+msgid "CFLAGS"
+msgstr "CFLAGS"
+
+msgid "LDFLAGS"
+msgstr "LDFLAGS"
+
+msgid "CanFestivalSlaveNode"
+msgstr "CanFestival从节点"
+
+msgid "CAN_Device"
+msgstr "CAN_设备"
+
+msgid "CAN_Baudrate"
+msgstr "CAN_波特率"
+
+msgid "NodeId"
+msgstr "节点Id"
+
+msgid "Sync_Align"
+msgstr "同步_对齐"
+
+msgid "Sync_Align_Ratio"
+msgstr "同步_对齐_比率"
+
+msgid "CanFestivalNode"
+msgstr "CanFestival节点"
+
+msgid "Sync_TPDOs"
+msgstr "Sync_TPDOs"
+
+msgid "CanFestivalInstance"
+msgstr "CanFestival实例"
+
+msgid "CAN_Driver"
+msgstr "CAN_驱动"
+
+msgid "Debug_mode"
+msgstr "调试_模式"
+
+msgid "Compiler"
+msgstr "编译"
+
+msgid "Linker"
+msgstr "链接 "
+
+msgid "Linux"
+msgstr "Linux"
+
+msgid "Rtai"
+msgstr "Rtai"
+
+msgid "rtai_config"
+msgstr "rtai_config"
+
+msgid "Win32"
+msgstr "Win32"
+
+msgid "Xenomai"
+msgstr "Xenomai"
+
+msgid "XenoConfig"
+msgstr "XenoConfig"
+
+#~ msgid "#define %s beremiz%s\n"
+#~ msgstr "#定义 %s beremiz%s\n"
+#~ msgid "/* Beremiz c_ext plugin user variables definition */\n"
+#~ msgstr "/* Beremiz c_ext 插件的用户变量定义  */\n"
+#~ msgid "/* Beremiz plugin functions */\n"
+#~ msgstr "/* Beremiz插件功能 */\n"
+#~ msgid ""
+#~ "/* Code generated by Beremiz c_ext plugin */\n"
+#~ "\n"
+#~ msgstr ""
+#~ "/* 代码由Beremiz c_ext插件生成 */\n"
+#~ "\n"
+#~ msgid "/* User includes */\n"
+#~ msgstr "/* 用户包含 */\n"
+#~ msgid "/* User internal user variables and routines */\n"
+#~ msgstr "/* 用户内部用户变量和例程 */\n"
+#~ msgid "/* User variables reference */\n"
+#~ msgstr "/* 用户变量参照 */\n"
+#~ msgid "Choose a SVG file"
+#~ msgstr "选择一个SVG文件"
+#~ msgid "Choose a XML file"
+#~ msgstr "选择一个XML文件"
+#~ msgid "Couldn't start PLC !\n"
+#~ msgstr "无法开始PLC！\n"
+#~ msgid "No corresponding output variable found on SVGUI Block \"%s\""
+#~ msgstr "没有相应的输出变量"
+#~ msgid "No such SVG file: %s\n"
+#~ msgstr "没有这样的SVG文件：%s\n"
+#~ msgid "No such XML file: %s\n"
+#~ msgstr "没有这样的XML文件：%s\n"
+#~ msgid "Shortcuts created."
+#~ msgstr "快捷方式已被建立。"
+

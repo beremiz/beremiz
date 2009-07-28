@@ -28,7 +28,7 @@ def PYRO_connector_factory(uri, pluginsroot):
     """
     This returns the connector to Pyro style PLCobject
     """
-    pluginsroot.logger.write("Connecting to URI : %s\n"%uri)
+    pluginsroot.logger.write(_("Connecting to URI : %s\n")%uri)
 
     servicetype, location = uri.split("://")
     
@@ -36,7 +36,7 @@ def PYRO_connector_factory(uri, pluginsroot):
     try :
         RemotePLCObjectProxy = pyro.getAttrProxyForURI("PYROLOC://"+location+"/PLCObject")
     except Exception, msg:
-        pluginsroot.logger.write_error("Wrong URI, please check it !\n")
+        pluginsroot.logger.write_error(_("Wrong URI, please check it !\n"))
         pluginsroot.logger.write_error(traceback.format_exc())
         return None
 
@@ -58,7 +58,7 @@ def PYRO_connector_factory(uri, pluginsroot):
     # Check connection is effective. 
     # lambda is for getattr of GetPLCstatus to happen inside catcher
     if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() == None:
-        pluginsroot.logger.write_error("Cannot get PLC status - connection failed.\n")
+        pluginsroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
         return None
 
 
@@ -90,7 +90,7 @@ def PYRO_connector_factory(uri, pluginsroot):
                 Some bad libs with static symbols may polute PLC
                 ask runtime to suicide and come back again
                 """
-                pluginsroot.logger.write("Force runtime reload\n")
+                pluginsroot.logger.write(_("Force runtime reload\n"))
                 pluginsroot._connector.GetPyroProxy().ForceReload()
                 pluginsroot._Disconnect()
                 # let remote PLC time to resurect.(freeze app)

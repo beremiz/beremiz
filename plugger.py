@@ -199,7 +199,7 @@ class PlugTemplate:
         # Call the plugin specific OnPlugSave method
         result = self.OnPlugSave()
         if not result:
-            return "Error while saving \"%s\"\n"%self.PlugPath()
+            return _("Error while saving \"%s\"\n")%self.PlugPath()
 
         # mark plugin as saved
         self.ChangesToSave = False        
@@ -235,7 +235,7 @@ class PlugTemplate:
         gen_result = self.PlugGenerate_C(buildpath, locations)
         PlugCFilesAndCFLAGS, PlugLDFLAGS, DoCalls = gen_result[:3]
         extra_files = gen_result[3:]
-        # if some files heve been generated put them in the list with their location
+        # if some files have been generated put them in the list with their location
         if PlugCFilesAndCFLAGS:
             LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), PlugCFilesAndCFLAGS, DoCalls)]
         else:
@@ -392,7 +392,7 @@ class PlugTemplate:
             shutil.move(oldname, self.PlugPath())
         # warn user he has two left hands
         if DesiredName != res:
-            self.logger.write_warning("A child names \"%s\" already exist -> \"%s\"\n"%(DesiredName,res))
+            self.logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
         return res
 
     def FindNewIEC_Channel(self, DesiredChannel):
@@ -417,14 +417,14 @@ class PlugTemplate:
             if res < CurrentChannel: # Want to go down ?
                 res -=  1 # Test for n-1
                 if res < 0 :
-                    self.logger.write_warning("Cannot find lower free IEC channel than %d\n"%CurrentChannel)
+                    self.logger.write_warning(_("Cannot find lower free IEC channel than %d\n")%CurrentChannel)
                     return CurrentChannel # Can't go bellow 0, do nothing
             else : # Want to go up ?
                 res +=  1 # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)
         if DesiredChannel != res:
-            self.logger.write_warning("A child with IEC channel %d already exist -> %d\n"%(DesiredChannel,res))
+            self.logger.write_warning(_("A child with IEC channel %d already exist -> %d\n")%(DesiredChannel,res))
         return res
 
     def OnPlugClose(self):
@@ -462,7 +462,7 @@ class PlugTemplate:
         try:
             PlugClass, PlugHelp = PlugChildsTypes[PlugType]
         except KeyError:
-            raise Exception, "Cannot create child %s of type %s "%(PlugName, PlugType)
+            raise Exception, _("Cannot create child %s of type %s ")%(PlugName, PlugType)
         
         # if PlugClass is a class factory, call it. (prevent unneeded imports)
         if type(PlugClass) == types.FunctionType:
@@ -472,7 +472,7 @@ class PlugTemplate:
         PluggedChildsWithSameClass = self.PluggedChilds.setdefault(PlugType, list())
         # Check count
         if getattr(PlugClass, "PlugMaxCount", None) and len(PluggedChildsWithSameClass) >= PlugClass.PlugMaxCount:
-            raise Exception, "Max count (%d) reached for this plugin of type %s "%(PlugClass.PlugMaxCount, PlugType)
+            raise Exception, _("Max count (%d) reached for this plugin of type %s ")%(PlugClass.PlugMaxCount, PlugType)
         
         # create the final class, derived of provided plugin and template
         class FinalPlugClass(PlugClass, PlugTemplate):
@@ -500,7 +500,7 @@ class PlugTemplate:
                     _self.LoadXMLParams(NewPlugName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewPlugName):
-                        raise Exception, "Project tree layout do not match plugin.xml %s!=%s "%(NewPlugName, _self.BaseParams.getName())
+                        raise Exception, _("Project tree layout do not match plugin.xml %s!=%s ")%(NewPlugName, _self.BaseParams.getName())
 
                     # Now, self.PlugPath() should be OK
                     
@@ -555,7 +555,7 @@ class PlugTemplate:
                 self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
                 basexmlfile.close()
             except Exception, exc:
-                self.logger.write_error("Couldn't load plugin base parameters %s :\n %s" % (PlugName, str(exc)))
+                self.logger.write_error(_("Couldn't load plugin base parameters %s :\n %s") % (PlugName, str(exc)))
                 self.logger.write_error(traceback.format_exc())
         
         # Get the xml tree
@@ -566,7 +566,7 @@ class PlugTemplate:
                 self.PlugParams[1].loadXMLTree(tree.childNodes[0])
                 xmlfile.close()
             except Exception, exc:
-                self.logger.write_error("Couldn't load plugin parameters %s :\n %s" % (PlugName, str(exc)))
+                self.logger.write_error(_("Couldn't load plugin parameters %s :\n %s") % (PlugName, str(exc)))
                 self.logger.write_error(traceback.format_exc())
         
     def LoadChilds(self):
@@ -578,7 +578,7 @@ class PlugTemplate:
                 try:
                     self.PlugAddChild(pname, ptype)
                 except Exception, exc:
-                    self.logger.write_error("Could not add child \"%s\", type %s :\n%s\n"%(pname, ptype, str(exc)))
+                    self.logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
                     self.logger.write_error(traceback.format_exc())
 
     def EnableMethod(self, method, value):
@@ -777,7 +777,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         # Verify that choosen folder is empty
         if not os.path.isdir(ProjectPath) or len(os.listdir(ProjectPath)) > 0:
-            return "Folder choosen isn't empty. You can't use it for a new project!"
+            return _("Folder choosen isn't empty. You can't use it for a new project!")
         
         dialog = ProjectDialog(self.AppFrame)
         if dialog.ShowModal() == wx.ID_OK:
@@ -786,7 +786,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             dialog.Destroy()
         else:
             dialog.Destroy()
-            return "Project not created"
+            return _("Project not created")
         
         # Create PLCOpen program
         self.CreateNewProject(values)
@@ -812,7 +812,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 		# Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
-            return "Folder choosen doesn't contain a program. It's not a valid project!"
+            return _("Folder choosen doesn't contain a program. It's not a valid project!")
         # Load PLCOpen file
         result = self.OpenXMLFile(plc_file)
         if result:
@@ -928,17 +928,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Update PLCOpenEditor Plugin Block types before generate ST code
         self.RefreshPluginsBlockLists()
         
-        self.logger.write("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n")
+        self.logger.write(_("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"))
         buildpath = self._getBuildPath()
         # ask PLCOpenEditor controller to write ST/IL/SFC code file
         program, errors, warnings = self.GenerateProgram(self._getIECgeneratedcodepath())
         if len(warnings) > 0:
-            self.logger.write_warning("Warnings in ST/IL/SFC code generator :\n")
+            self.logger.write_warning(_("Warnings in ST/IL/SFC code generator :\n"))
             for warning in warnings:
                 self.logger.write_warning("%s\n"%warning)
         if len(errors) > 0:
             # Failed !
-            self.logger.write_error("Error in ST/IL/SFC code generator :\n%s\n"%errors[0])
+            self.logger.write_error(_("Error in ST/IL/SFC code generator :\n%s\n")%errors[0])
             return False
         plc_file = open(self._getIECcodepath(), "w")
         if getattr(self, "PluggedChilds", None) is not None:
@@ -960,7 +960,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         plc_file = open(self._getIECcodepath(), "a")
         plc_file.write(open(self._getIECgeneratedcodepath(), "r").read())
         plc_file.close()
-        self.logger.write("Compiling IEC Program in to C code...\n")
+        self.logger.write(_("Compiling IEC Program in to C code...\n"))
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
         status, result, err_result = ProcessLogger(
@@ -999,7 +999,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
                     f.close()
             
-            self.logger.write_error("Error : IEC to C compiler returned %d\n"%status)
+            self.logger.write_error(_("Error : IEC to C compiler returned %d\n")%status)
             return False
         
         # Now extract C files of stdout
@@ -1007,11 +1007,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
         if not C_files:
-            self.logger.write_error("Error : At least one configuration and one ressource must be declared in PLC !\n")
+            self.logger.write_error(_("Error : At least one configuration and one ressource must be declared in PLC !\n"))
             return False
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
-        self.logger.write("Extracting Located Variables...\n")
+        self.logger.write(_("Extracting Located Variables...\n"))
         # Keep track of generated located variables for later use by self._Generate_C
         self.PLCGeneratedLocatedVars = self.GetLocations()
         # Keep track of generated C files for later use by self.PlugGenerate_C
@@ -1034,7 +1034,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             targetmodule = getattr(__import__(modulename), targetname)
 
         except Exception, msg:
-            self.logger.write_error("Can't find module for target %s!\n"%targetname)
+            self.logger.write_error(_("Can't find module for target %s!\n")%targetname)
             self.logger.write_error(str(msg))
             return None
         
@@ -1158,7 +1158,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     Idx=int(attrs["num"])
                     self._IECPathToIdx[IEC_path]=Idx
             except Exception,e:
-                self.logger.write_error("Cannot open/parse VARIABLES.csv!\n")
+                self.logger.write_error(_("Cannot open/parse VARIABLES.csv!\n"))
                 self.logger.write_error(traceback.format_exc())
                 self.ResetIECProgramsAndVariables()
                 return False
@@ -1270,7 +1270,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.EnableMethod("_Clean", True)
 
         self.logger.flush()
-        self.logger.write("Start build in %s\n" % buildpath)
+        self.logger.write(_("Start build in %s\n") % buildpath)
 
         # Generate SoftPLC IEC code
         IECGenRes = self._Generate_SoftPLC()
@@ -1278,7 +1278,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         # If IEC code gen fail, bail out.
         if not IECGenRes:
-            self.logger.write_error("IEC-61131-3 code generation failed !\n")
+            self.logger.write_error(_("IEC-61131-3 code generation failed !\n"))
             return False
 
         # Reset variable and program list that are parsed from
@@ -1286,17 +1286,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.ResetIECProgramsAndVariables()
         
         # Generate C code and compilation params from plugin hierarchy
-        self.logger.write("Generating plugins C code\n")
+        self.logger.write(_("Generating plugins C code\n"))
         try:
             self.LocationCFilesAndCFLAGS, self.LDFLAGS, ExtraFiles = self._Generate_C(
                 buildpath, 
                 self.PLCGeneratedLocatedVars)
         except Exception, exc:
-            self.logger.write_error("Plugins code generation failed !\n")
+            self.logger.write_error(_("Plugins code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             return False
 
-        # Get temprary directory path
+        # Get temporary directory path
         extrafilespath = self._getExtraFilesPath()
         # Remove old directory
         if os.path.exists(extrafilespath):
@@ -1329,25 +1329,25 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 # Insert this file as first file to be compiled at root plugin
                 self.LocationCFilesAndCFLAGS[0][1].insert(0,(code_path, self.plcCFLAGS))
             except Exception, exc:
-                self.logger.write_error(name+" generation failed !\n")
+                self.logger.write_error(name+_(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
                 return False
 
-        self.logger.write("C code generated successfully.\n")
+        self.logger.write(_("C code generated successfully.\n"))
 
         # Get current or fresh builder
         builder = self.GetBuilder()
         if builder is None:
-            self.logger.write_error("Fatal : cannot get builder.\n")
+            self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
         # Build
         try:
             if not builder.build() :
-                self.logger.write_error("C Build failed.\n")
+                self.logger.write_error(_("C Build failed.\n"))
                 return False
         except Exception, exc:
-            self.logger.write_error("C Build crashed !\n")
+            self.logger.write_error(_("C Build crashed !\n"))
             self.logger.write_error(traceback.format_exc())
             return False
 
@@ -1428,10 +1428,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def _Clean(self):
         if os.path.isdir(os.path.join(self._getBuildPath())):
-            self.logger.write("Cleaning the build directory\n")
+            self.logger.write(_("Cleaning the build directory\n"))
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
-            self.logger.write_error("Build directory already clean\n")
+            self.logger.write_error(_("Build directory already clean\n"))
         self.ShowMethod("_showIECcode", False)
         self.EnableMethod("_Clean", False)
         # kill the builder
@@ -1446,28 +1446,29 @@ class PluginsRoot(PlugTemplate, PLCControler):
             status = self._connector.GetPLCstatus()
         else:
             status = "Disconnected"
+        _ = lambda x : x
         for args in {
-               "Started":[("_Run", False),
-                          ("_Debug", False),
-                          ("_Stop", True)],
-               "Stopped":[("_Run", True),
-                          ("_Debug", True),
-                          ("_Stop", False)],
-               "Empty":  [("_Run", False),
-                          ("_Debug", False),
-                          ("_Stop", False)],
-               "Dirty":  [("_Run", True),
-                          ("_Debug", True),
-                          ("_Stop", False)],
-               "Broken": [("_Run", True),
-                          ("_Debug", True),
-                          ("_Stop", False)],
-               "Disconnected":  [("_Run", False),
-                                 ("_Debug", False),
-                                 ("_Stop", False),
-                                 ("_Transfer", False),
-                                 ("_Connect", True),
-                                 ("_Disconnect", False)],
+               _("Started"):     [("_Run", False),
+                                  ("_Debug", False),
+                                  ("_Stop", True)],
+               _("Stopped"):     [("_Run", True),
+                                  ("_Debug", True),
+                                  ("_Stop", False)],
+               _("Empty"):       [("_Run", False),
+                                  ("_Debug", False),
+                                  ("_Stop", False)],
+               _("Dirty"):       [("_Run", True),
+                                  ("_Debug", True),
+                                  ("_Stop", False)],
+               _("Broken"):      [("_Run", True),
+                                  ("_Debug", True),
+                                  ("_Stop", False)],
+               _("Disconnected"):[("_Run", False),
+                                  ("_Debug", False),
+                                  ("_Stop", False),
+                                  ("_Transfer", False),
+                                  ("_Connect", True),
+                                  ("_Disconnect", False)],
                }.get(status,[]):
             self.ShowMethod(*args)
         return status
@@ -1478,7 +1479,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         current_status = self.UpdateMethodsFromPLCStatus()
         if current_status != self.previous_plcstate:
             self.previous_plcstate = current_status
-            self.StatusPrint.get(current_status, self.logger.write)("PLC is %s\n"%current_status)
+            if current_status is not None:
+                status = _(current_status)
+            else:
+                status = ""
+            self.StatusPrint.get(current_status, self.logger.write)(_("PLC is %s\n")%status)
             self.AppFrame.RefreshAll()
         
     def _Run(self):
@@ -1509,7 +1514,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         Idxs.append(Idx)
                         self.TracedIECPath.append(IECPath)
                     else:
-                        self.logger.write_warning("Debug : Unknown variable %s\n"%IECPath)
+                        self.logger.write_warning(_("Debug : Unknown variable %s\n")%IECPath)
             for IECPathToPop in IECPathsToPop:
                 self.IECdebug_datas.pop(IECPathToPop)
 
@@ -1604,12 +1609,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self.CallWeakcallables("__tick__", "NewDataAvailable")
             elif debug_vars is not None:
                 wx.CallAfter(self.logger.write_warning, 
-                             "Debug data not coherent %d != %d\n"%(len(debug_vars), len(self.TracedIECPath)))
+                             _("Debug data not coherent %d != %d\n")%(len(debug_vars), len(self.TracedIECPath)))
             elif debug_tick == -1:
                 #wx.CallAfter(self.logger.write, "Debugger unavailable\n")
                 pass
             else:
-                wx.CallAfter(self.logger.write, "Debugger disabled\n")
+                wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
                 self.debug_break = True
             self.IECdebug_lock.release()
 
@@ -1617,7 +1622,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.debug_break = True
         self.DebugThread.join(timeout=1)
         if self.DebugThread.isAlive():
-            self.logger.write_warning("Debug Thread couldn't be killed")
+            self.logger.write_warning(_("Debug Thread couldn't be killed"))
         self.DebugThread = None
 
     def _Debug(self):
@@ -1626,7 +1631,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC(debug=True)
-            self.logger.write("Starting PLC (debug mode)\n")
+            self.logger.write(_("Starting PLC (debug mode)\n"))
             if self.PLCDebug is None:
                 self.RefreshPluginsBlockLists()
                 def _onclose():
@@ -1639,7 +1644,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()
         else:
-            self.logger.write_error("Couldn't start PLC debug !\n")
+            self.logger.write_error(_("Couldn't start PLC debug !\n"))
         self.UpdateMethodsFromPLCStatus()
 
 
@@ -1665,17 +1670,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
         Stop PLC
         """
         if self.DebugThread is not None:
-            self.logger.write("Stopping debug\n")
+            self.logger.write(_("Stopping debug\n"))
             self.KillDebugThread()
         
         if not self._connector.StopPLC():
-            self.logger.write_error("Couldn't stop PLC !\n")
+            self.logger.write_error(_("Couldn't stop PLC !\n"))
         self.UpdateMethodsFromPLCStatus()
 
     def _Connect(self):
         # don't accept re-connetion is already connected
         if self._connector is not None:
-            self.logger.write_error("Already connected. Please disconnect\n")
+            self.logger.write_error(_("Already connected. Please disconnect\n"))
             return
         
         # Get connector uri
@@ -1702,13 +1707,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         try:
             self._connector = connectors.ConnectorFactory(uri, self)
         except Exception, msg:
-            self.logger.write_error("Exception while connecting %s!\n"%uri)
+            self.logger.write_error(_("Exception while connecting %s!\n")%uri)
             self.logger.write_error(traceback.format_exc())
 
         # Did connection success ?
         if self._connector is None:
             # Oups.
-            self.logger.write_error("Connection failed to %s!\n"%uri)
+            self.logger.write_error(_("Connection failed to %s!\n")%uri)
         else:
             self.ShowMethod("_Connect", False)
             self.ShowMethod("_Disconnect", True)
@@ -1718,7 +1723,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
             
             # Init with actual PLC status and print it
             self.previous_plcstate = self.UpdateMethodsFromPLCStatus()
-            self.logger.write("PLC is %s\n"%self.previous_plcstate)
+            if self.previous_plcstate is not None:
+                status = _(self.previous_plcstate)
+            else:
+                status = ""
+            self.logger.write(_("PLC is %s\n")%status)
             
             # Start the status Timer
             self.StatusTimer.Start(milliseconds=500, oneShot=False)
@@ -1732,16 +1741,16 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if MD5 is not None:
             if not self._connector.MatchMD5(MD5):
                 self.logger.write_warning(
-                   "Latest build do not match with target, please transfer.\n")
+                   _("Latest build do not match with target, please transfer.\n"))
                 self.EnableMethod("_Transfer", True)
             else:
                 self.logger.write(
-                   "Latest build match target, no transfer needed.\n")
+                   _("Latest build match target, no transfer needed.\n"))
                 self.EnableMethod("_Transfer", True)
                 #self.EnableMethod("_Transfer", False)
         else:
             self.logger.write_warning(
-                "Cannot compare latest build to target. Please build.\n")
+                _("Cannot compare latest build to target. Please build.\n"))
             self.EnableMethod("_Transfer", False)
 
 
@@ -1756,13 +1765,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         # Check if md5 file is empty : ask user to build PLC 
         if MD5 is None :
-            self.logger.write_error("Failed : Must build before transfer.\n")
+            self.logger.write_error(_("Failed : Must build before transfer.\n"))
             return False
 
         # Compare PLC project with PLC on target
         if self._connector.MatchMD5(MD5):
             self.logger.write(
-                "Latest build already match current target. Transfering anyway...\n")
+                _("Latest build already match current target. Transfering anyway...\n"))
 
         # Get temprary directory path
         extrafilespath = self._getExtraFilesPath()
@@ -1782,68 +1791,68 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         self.PLCDebug = None
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
-                    self.logger.write("Transfer completed successfully.\n")
+                    self.logger.write(_("Transfer completed successfully.\n"))
                 else:
-                    self.logger.write_error("Transfer failed\n")
+                    self.logger.write_error(_("Transfer failed\n"))
             else:
-                self.logger.write_error("No PLC to transfer (did build success ?)\n")
+                self.logger.write_error(_("No PLC to transfer (did build success ?)\n"))
         self.UpdateMethodsFromPLCStatus()
 
     PluginMethods = [
         {"bitmap" : opjimg("editPLC"),
-         "name" : "Edit PLC",
-         "tooltip" : "Edit PLC program with PLCOpenEditor",
+         "name" : _("Edit PLC"),
+         "tooltip" : _("Edit PLC program with PLCOpenEditor"),
          "method" : "_EditPLC"},
         {"bitmap" : opjimg("Build"),
-         "name" : "Build",
-         "tooltip" : "Build project into build folder",
+         "name" : _("Build"),
+         "tooltip" : _("Build project into build folder"),
          "method" : "_build"},
         {"bitmap" : opjimg("Clean"),
-         "name" : "Clean",
+         "name" : _("Clean"),
          "enabled" : False,
-         "tooltip" : "Clean project build folder",
+         "tooltip" : _("Clean project build folder"),
          "method" : "_Clean"},
         {"bitmap" : opjimg("Run"),
-         "name" : "Run",
+         "name" : _("Run"),
          "shown" : False,
-         "tooltip" : "Start PLC",
+         "tooltip" : _("Start PLC"),
          "method" : "_Run"},
         {"bitmap" : opjimg("Debug"),
-         "name" : "Debug",
+         "name" : _("Debug"),
          "shown" : False,
-         "tooltip" : "Start PLC (debug mode)",
+         "tooltip" : _("Start PLC (debug mode)"),
          "method" : "_Debug"},
 #        {"bitmap" : opjimg("Debug"),
 #         "name" : "Do_Test_Debug",
 #         "tooltip" : "Test debug mode)",
 #         "method" : "_Do_Test_Debug"},
         {"bitmap" : opjimg("Stop"),
-         "name" : "Stop",
+         "name" : _("Stop"),
          "shown" : False,
-         "tooltip" : "Stop Running PLC",
+         "tooltip" : _("Stop Running PLC"),
          "method" : "_Stop"},
         {"bitmap" : opjimg("Connect"),
-         "name" : "Connect",
-         "tooltip" : "Connect to the target PLC",
+         "name" : _("Connect"),
+         "tooltip" : _("Connect to the target PLC"),
          "method" : "_Connect"},
         {"bitmap" : opjimg("Transfer"),
-         "name" : "Transfer",
+         "name" : _("Transfer"),
          "shown" : False,
-         "tooltip" : "Transfer PLC",
+         "tooltip" : _("Transfer PLC"),
          "method" : "_Transfer"},
         {"bitmap" : opjimg("Disconnect"),
-         "name" : "Disconnect",
+         "name" : _("Disconnect"),
          "shown" : False,
-         "tooltip" : "Disconnect from PLC",
+         "tooltip" : _("Disconnect from PLC"),
          "method" : "_Disconnect"},
         {"bitmap" : opjimg("ShowIECcode"),
-         "name" : "Show code",
+         "name" : _("Show code"),
          "shown" : False,
-         "tooltip" : "Show IEC code generated by PLCGenerator",
+         "tooltip" : _("Show IEC code generated by PLCGenerator"),
          "method" : "_showIECcode"},
         {"bitmap" : opjimg("editIECrawcode"),
-         "name" : "Raw IEC code",
-         "tooltip" : "Edit raw IEC code added to code generated by PLCGenerator",
+         "name" : _("Raw IEC code"),
+         "tooltip" : _("Edit raw IEC code added to code generated by PLCGenerator"),
          "method" : "_editIECrawcode"},
         {"bitmap" : opjimg("editPYTHONcode"),
          "name" : "Python code",

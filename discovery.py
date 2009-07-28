@@ -34,7 +34,7 @@ class TestListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
 class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
-    def __init__(self, parent, id=-1, title='Service Discovery'):
+    def __init__(self, parent, id=-1, title=_('Service Discovery')):
         self.my_result=None
         wx.Dialog.__init__(self, parent, id, title, size=(600,600), style=wx.DEFAULT_DIALOG_STYLE)
 
@@ -61,7 +61,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, self.list)
 
         local_id = wx.NewId()
-        b = wx.Button(self, local_id, "Refresh")
+        b = wx.Button(self, local_id, _("Refresh"))
         self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, b)
         btsizer.Add(b)
 
@@ -69,18 +69,18 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         btsizer.AddGrowableCol(1)
 
         local_id = wx.NewId()
-        b = wx.Button(self, local_id, "Local")
+        b = wx.Button(self, local_id, _("Local"))
         self.Bind(wx.EVT_BUTTON, self.ChooseLocalID, b)
         btsizer.Add(b)
 
         btsizer.AddSpacer(0)
         btsizer.AddGrowableCol(3)
 
-        b = wx.Button(self, wx.ID_CANCEL, "Cancel")
+        b = wx.Button(self, wx.ID_CANCEL, _("Cancel"))
         self.Bind(wx.EVT_BUTTON, self.OnCancel, b)
         btsizer.Add(b)
 
-        b = wx.Button(self, wx.ID_OK, "OK")
+        b = wx.Button(self, wx.ID_OK, _("OK"))
         self.Bind(wx.EVT_BUTTON, self.OnOk, b)
         b.SetDefault()
         btsizer.Add(b)

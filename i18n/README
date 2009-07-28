@@ -1,0 +1,8 @@
+To generate message.pot file:
+
+	python mki18n.py -p --domain=Beremiz
+	
+To generate .mo files for all languages:
+
+	python mki18n.py -m --moTarget=../locale --domain=Beremiz
+	

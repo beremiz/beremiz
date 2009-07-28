@@ -86,6 +86,10 @@ elif len(argv) == 0:
     WorkingDir = os.getcwd()
     argv=[WorkingDir]
 
+import __builtin__
+if __name__ == '__main__':
+    __builtin__.__dict__['_'] = lambda x: x
+
 if enablewx:
     try:
         import wx, re
@@ -96,6 +100,36 @@ if enablewx:
         havewx = False
 
     if havewx:
+        app=wx.App(redirect=False)
+        
+        # Import module for internationalization
+        import gettext
+        
+        CWD = os.path.split(os.path.realpath(__file__))[0]
+        
+        # Get folder containing translation files
+        localedir = os.path.join(CWD,"locale")
+        # Get the default language
+        langid = wx.LANGUAGE_DEFAULT
+        # Define translation domain (name of translation files)
+        domain = "Beremiz"
+
+        # Define locale for wx
+        loc = __builtin__.__dict__.get('loc', None)
+        if loc is None:
+            loc = wx.Locale(langid)
+            __builtin__.__dict__['loc'] = loc
+        # Define location for searching translation files
+        loc.AddCatalogLookupPathPrefix(localedir)
+        # Define locale domain
+        loc.AddCatalog(domain)
+
+        def unicode_translation(message):
+            return wx.GetTranslation(message).encode("utf-8")
+
+        if __name__ == '__main__':
+            __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
+        
         try:
             from wx.lib.embeddedimage import PyEmbeddedImage
         except:
@@ -226,7 +260,7 @@ if enablewx:
                 texts = {"value" : value}
                 for function, message in self.Tests:
                     if not function(value):
-                        message = wx.MessageDialog(self, message%texts, "Error", wx.OK|wx.ICON_ERROR)
+                        message = wx.MessageDialog(self, message%texts, _("Error"), wx.OK|wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                         return
@@ -275,16 +309,16 @@ if enablewx:
                 the base class takes care of the rest.
                 """
                 menu = wx.Menu()
-                menu.Append(self.TBMENU_START, "Start PLC")
-                menu.Append(self.TBMENU_STOP, "Stop PLC")
-                menu.Append(self.TBMENU_CHANGE_NAME, "Change Name")
-                menu.Append(self.TBMENU_CHANGE_INTERFACE, "Change IP of interface to bind")
-                menu.Append(self.TBMENU_LIVE_SHELL, "Launch a live Python shell")
-                menu.Append(self.TBMENU_WXINSPECTOR, "Launch WX GUI inspector")
-                menu.Append(self.TBMENU_CHANGE_PORT, "Change Port Number")
+                menu.Append(self.TBMENU_START, _("Start PLC"))
+                menu.Append(self.TBMENU_STOP, _("Stop PLC"))
+                menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
+                menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
+                menu.Append(self.TBMENU_LIVE_SHELL, _("Launch a live Python shell"))
+                menu.Append(self.TBMENU_WXINSPECTOR, _("Launch WX GUI inspector"))
+                menu.Append(self.TBMENU_CHANGE_PORT, _("Change Port Number"))
                 menu.AppendSeparator()
-                menu.Append(self.TBMENU_CHANGE_WD, "Change working directory")
-                menu.Append(self.TBMENU_QUIT, "Quit")
+                menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
+                menu.Append(self.TBMENU_QUIT, _("Quit"))
                 return menu
             
             def MakeIcon(self, img):
@@ -311,9 +345,9 @@ if enablewx:
                 evt.Skip()
             
             def OnTaskBarChangeInterface(self, evt):
-                dlg = ParamsEntryDialog(None, "Enter the ip of the interface to bind", defaultValue=self.pyroserver.ip)
-                dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, "Ip is not valid!"),
-                               ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, "Ip is not valid!")
+                dlg = ParamsEntryDialog(None, _("Enter the ip of the interface to bind"), defaultValue=self.pyroserver.ip)
+                dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("Ip is not valid!")),
+                               ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, _("Ip is not valid!"))
                                ])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip = dlg.GetValue()
@@ -321,23 +355,23 @@ if enablewx:
                 evt.Skip()
             
             def OnTaskBarChangePort(self, evt):
-                dlg = ParamsEntryDialog(None, "Enter a port number ", defaultValue=str(self.pyroserver.port))
-                dlg.SetTests([(UnicodeType.isdigit, "Port number must be an integer!"), (lambda port : 0 <= int(port) <= 65535 , "Port number must be 0 <= port <= 65535!")])
+                dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
+                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port : 0 <= int(port) <= 65535 , _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Stop()
                 evt.Skip()
             
             def OnTaskBarChangeWorkingDir(self, evt):
-                dlg = wx.DirDialog(None, "Choose a working directory ", self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
+                dlg = wx.DirDialog(None, _("Choose a working directory "), self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.workdir = dlg.GetPath()
                     self.pyroserver.Stop()
                 evt.Skip()
             
             def OnTaskBarChangeName(self, evt):
-                dlg = ParamsEntryDialog(None, "Enter a name ", defaultValue=self.pyroserver.name)
-                dlg.SetTests([(lambda name : len(name) is not 0 , "Name must not be null!")])
+                dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=self.pyroserver.name)
+                dlg.SetTests([(lambda name : len(name) is not 0 , _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.name = dlg.GetValue()
                     self.pyroserver.Restart()
@@ -350,7 +384,7 @@ if enablewx:
                     frame = py.crust.CrustFrame(locals=self.pyroserver.plcobj.python_threads_vars)
                     frame.Show()
                 else:
-                    wx.MessageBox("No runnning PLC","Error")
+                    wx.MessageBox(_("No runnning PLC"), _("Error"))
                 evt.Skip()
             
             def OnTaskBarWXInspector(self, evt):

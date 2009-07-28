@@ -29,9 +29,10 @@ import tempfile
 import shutil
 import random
 
-_local_path = os.path.split(os.path.realpath(__file__))[0]
+CWD = os.path.split(os.path.realpath(__file__))[0]
+
 def Bpath(*args):
-    return os.path.join(_local_path,*args)
+    return os.path.join(CWD,*args)
 
 if __name__ == '__main__':
     def usage():
@@ -71,6 +72,33 @@ if __name__ == '__main__':
     bmp = wx.Image(Bpath("images","splash.png")).ConvertToBitmap()
     splash=wx.SplashScreen(bmp,wx.SPLASH_CENTRE_ON_SCREEN, 1000, None)
     wx.Yield()
+
+# Import module for internationalization
+import gettext
+import __builtin__
+
+# Get folder containing translation files
+localedir = os.path.join(CWD,"locale")
+# Get the default language
+langid = wx.LANGUAGE_DEFAULT
+# Define translation domain (name of translation files)
+domain = "Beremiz"
+
+# Define locale for wx
+loc = __builtin__.__dict__.get('loc', None)
+if loc is None:
+    loc = wx.Locale(langid)
+    __builtin__.__dict__['loc'] = loc
+# Define location for searching translation files
+loc.AddCatalogLookupPathPrefix(localedir)
+# Define locale domain
+loc.AddCatalog(domain)
+
+def unicode_translation(message):
+    return wx.GetTranslation(message).encode("utf-8")
+
+if __name__ == '__main__':
+    __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
 
 import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle
@@ -255,19 +283,19 @@ class Beremiz(wx.Frame):
 	
     def _init_coll_FileMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_NEW,
-              kind=wx.ITEM_NORMAL, text=u'New\tCTRL+N')
+              kind=wx.ITEM_NORMAL, text=_(u'New\tCTRL+N'))
         parent.Append(help='', id=wx.ID_OPEN,
-              kind=wx.ITEM_NORMAL, text=u'Open\tCTRL+O')
+              kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
         parent.Append(help='', id=wx.ID_SAVE,
-              kind=wx.ITEM_NORMAL, text=u'Save\tCTRL+S')
+              kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
         parent.Append(help='', id=wx.ID_CLOSE_ALL,
-              kind=wx.ITEM_NORMAL, text=u'Close Project')
+              kind=wx.ITEM_NORMAL, text=_(u'Close Project'))
         parent.AppendSeparator()
         parent.Append(help='', id=wx.ID_PROPERTIES,
-              kind=wx.ITEM_NORMAL, text=u'Properties')
+              kind=wx.ITEM_NORMAL, text=_(u'Properties'))
         parent.AppendSeparator()
         parent.Append(help='', id=wx.ID_EXIT,
-              kind=wx.ITEM_NORMAL, text=u'Quit\tCTRL+Q')
+              kind=wx.ITEM_NORMAL, text=_(u'Quit\tCTRL+Q'))
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu, id=wx.ID_SAVE)
@@ -277,27 +305,27 @@ class Beremiz(wx.Frame):
         
     def _init_coll_EditMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_EDIT,
-              kind=wx.ITEM_NORMAL, text=u'Edit PLC\tCTRL+R')
+              kind=wx.ITEM_NORMAL, text=_(u'Edit PLC\tCTRL+R'))
         parent.AppendSeparator()
         parent.Append(help='', id=wx.ID_ADD,
-              kind=wx.ITEM_NORMAL, text=u'Add Plugin')
+              kind=wx.ITEM_NORMAL, text=_(u'Add Plugin'))
         parent.Append(help='', id=wx.ID_DELETE,
-              kind=wx.ITEM_NORMAL, text=u'Delete Plugin')
+              kind=wx.ITEM_NORMAL, text=_(u'Delete Plugin'))
         self.Bind(wx.EVT_MENU, self.OnEditPLCMenu, id=wx.ID_EDIT)
         self.Bind(wx.EVT_MENU, self.OnAddMenu, id=wx.ID_ADD)
         self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=wx.ID_DELETE)
     
     def _init_coll_RunMenu_Items(self, parent):
         parent.Append(help='', id=ID_BEREMIZRUNMENUBUILD,
-              kind=wx.ITEM_NORMAL, text=u'Build\tCTRL+R')
+              kind=wx.ITEM_NORMAL, text=_(u'Build\tCTRL+R'))
         parent.AppendSeparator()
         parent.Append(help='', id=ID_BEREMIZRUNMENUSIMULATE,
-              kind=wx.ITEM_NORMAL, text=u'Simulate')
+              kind=wx.ITEM_NORMAL, text=_(u'Simulate'))
         parent.Append(help='', id=ID_BEREMIZRUNMENURUN,
-              kind=wx.ITEM_NORMAL, text=u'Run')
+              kind=wx.ITEM_NORMAL, text=_(u'Run'))
         parent.AppendSeparator()
         parent.Append(help='', id=ID_BEREMIZRUNMENUSAVELOG,
-              kind=wx.ITEM_NORMAL, text=u'Save Log')
+              kind=wx.ITEM_NORMAL, text=_(u'Save Log'))
         self.Bind(wx.EVT_MENU, self.OnBuildMenu,
               id=ID_BEREMIZRUNMENUBUILD)
         self.Bind(wx.EVT_MENU, self.OnSimulateMenu,
@@ -309,17 +337,17 @@ class Beremiz(wx.Frame):
     
     def _init_coll_HelpMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_HELP,
-              kind=wx.ITEM_NORMAL, text=u'Beremiz\tF1')
+              kind=wx.ITEM_NORMAL, text=_(u'Beremiz\tF1'))
         parent.Append(help='', id=wx.ID_ABOUT,
-              kind=wx.ITEM_NORMAL, text=u'About')
+              kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnBeremizMenu, id=wx.ID_HELP)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
     
     def _init_coll_MenuBar_Menus(self, parent):
-        parent.Append(menu=self.FileMenu, title=u'File')
+        parent.Append(menu=self.FileMenu, title=_(u'File'))
         #parent.Append(menu=self.EditMenu, title=u'Edit')
         #parent.Append(menu=self.RunMenu, title=u'Run')
-        parent.Append(menu=self.HelpMenu, title=u'Help')
+        parent.Append(menu=self.HelpMenu, title=_(u'Help'))
     
     def _init_utils(self):
         self.MenuBar = wx.MenuBar()
@@ -361,7 +389,7 @@ class Beremiz(wx.Frame):
     def _init_ctrls(self, prnt):
         wx.Frame.__init__(self, id=ID_BEREMIZ, name=u'Beremiz',
               parent=prnt, pos=wx.Point(0, 0), size=wx.Size(1000, 600),
-              style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN, title=u'Beremiz')
+              style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN, title=_(u'Beremiz'))
         self._init_utils()
         self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.MenuBar)
@@ -404,7 +432,7 @@ class Beremiz(wx.Frame):
             self.AUIManager.AddPane(self.PLCConfig, wx.aui.AuiPaneInfo().CenterPane())
             
             self.AUIManager.AddPane(self.LogConsole, wx.aui.AuiPaneInfo().
-                Caption("Log Console").Bottom().Layer(1).
+                Caption(_("Log Console")).Bottom().Layer(1).
                 BestSize(wx.Size(800, 200)).CloseButton(False))
         
             self.AUIManager.Update()
@@ -492,8 +520,8 @@ class Beremiz(wx.Frame):
         if self.PluginRoot is not None:
             if self.PluginRoot.ProjectTestModified():
                 dialog = wx.MessageDialog(self,
-                                          "Save changes ?",
-                                          "Close Application", 
+                                          _("Save changes ?"),
+                                          _("Close Application"), 
                                           wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
                 answer = dialog.ShowModal()
                 dialog.Destroy()
@@ -581,7 +609,7 @@ class Beremiz(wx.Frame):
             addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
                   name='AddPluginButton', parent=plcwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
-            addbutton.SetToolTipString("Add a sub plugin")
+            addbutton.SetToolTipString(_("Add a sub plugin"))
             addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(self.PluginRoot), id=addbutton_id)
             plcwindowsizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
     
@@ -677,7 +705,7 @@ class Beremiz(wx.Frame):
         for plugin_method in plugin.PluginMethods:
             if "method" in plugin_method and plugin_method.get("shown",True):
                 id = wx.NewId()
-                label=plugin_method["name"]
+                label = plugin_method["name"]
                 button = GenBitmapTextButton(id=id, parent=parent,
                     bitmap=wx.Bitmap(Bpath( "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=label, 
                     name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
@@ -784,7 +812,7 @@ class Beremiz(wx.Frame):
         enablebutton_id = wx.NewId()
         enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Disabled.png')),
               name='EnableButton', parent=leftwindow, size=wx.Size(16, 16), pos=wx.Point(0, 0), style=0)#wx.NO_BORDER)
-        enablebutton.SetToolTipString("Enable/Disable this plugin")
+        enablebutton.SetToolTipString(_("Enable/Disable this plugin"))
         make_genbitmaptogglebutton_flat(enablebutton)
         enablebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Enabled.png')))
         enablebutton.SetToggle(plugin.MandatoryParams[1].getEnabled())
@@ -834,7 +862,7 @@ class Beremiz(wx.Frame):
         deletebutton = wx.lib.buttons.GenBitmapButton(id=deletebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Delete.png')),
               name='DeletePluginButton', parent=leftwindow, pos=wx.Point(0, 0),
               size=wx.Size(16, 16), style=wx.NO_BORDER)
-        deletebutton.SetToolTipString("Delete this plugin")
+        deletebutton.SetToolTipString(_("Delete this plugin"))
         deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(plugin), id=deletebutton_id)
         adddeletesizer.AddWindow(deletebutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
 
@@ -843,7 +871,7 @@ class Beremiz(wx.Frame):
             addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
                   name='AddPluginButton', parent=leftwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
-            addbutton.SetToolTipString("Add a sub plugin")
+            addbutton.SetToolTipString(_("Add a sub plugin"))
             addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(plugin), id=addbutton_id)
             adddeletesizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
         
@@ -1025,7 +1053,7 @@ class Beremiz(wx.Frame):
             if len(plugin.PlugChildsTypes) > 0:
                 for name, XSDClass, help in plugin.PlugChildsTypes:
                     new_id = wx.NewId()
-                    main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text="Append "+help)
+                    main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Append ")+help)
                     self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, plugin), id=new_id)
             self.PopupMenuXY(main_menu)
             event.Skip()
@@ -1110,7 +1138,8 @@ class Beremiz(wx.Frame):
             else:
                 element_path = element_infos["name"]
             if element_infos["type"] == "element":
-                staticbox = wx.StaticBox(id=-1, label=element_infos["name"], 
+                label = element_infos["name"]
+                staticbox = wx.StaticBox(id=-1, label=_(label), 
                     name='%s_staticbox'%element_infos["name"], parent=parent,
                     pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                 staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
@@ -1130,10 +1159,11 @@ class Beremiz(wx.Frame):
                     name="%s_bitmap"%element_infos["name"], parent=parent,
                     pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                 boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
-                statictext = wx.StaticText(id=-1, label="%s:"%element_infos["name"], 
+                label = element_infos["name"]
+                statictext = wx.StaticText(id=-1, label="%s:"%_(label), 
                     name="%s_label"%element_infos["name"], parent=parent, 
-                    pos=wx.Point(0, 0), size=wx.Size(100, 17), style=0)
-                boxsizer.AddWindow(statictext, 0, border=4, flag=wx.TOP)
+                    pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+                boxsizer.AddWindow(statictext, 0, border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT)
                 id = wx.NewId()
                 if isinstance(element_infos["type"], types.ListType):
                     combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
@@ -1144,7 +1174,9 @@ class Beremiz(wx.Frame):
                     if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
                         for choice, xsdclass in element_infos["type"]:
                             combobox.Append(choice)
-                        staticbox = wx.StaticBox(id=-1, label="%(name)s - %(value)s"%element_infos, 
+                        name = element_infos["name"]
+                        value = element_infos["value"]
+                        staticbox = wx.StaticBox(id=-1, label="%s - %s"%(_(name), _(value)), 
                             name='%s_staticbox'%element_infos["name"], parent=parent,
                             pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                         staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
@@ -1214,7 +1246,7 @@ class Beremiz(wx.Frame):
         else:
             defaultpath = config.Read("lastopenedfolder")
         
-        dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
+        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
@@ -1226,7 +1258,7 @@ class Beremiz(wx.Frame):
                 self.RefreshAll()
                 self.RefreshMainMenu()
             else:
-                message = wx.MessageDialog(self, res, "ERROR", wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, res, _("ERROR"), wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         event.Skip()
@@ -1237,7 +1269,7 @@ class Beremiz(wx.Frame):
         else:
             defaultpath = config.Read("lastopenedfolder")
         
-        dialog = wx.DirDialog(self , "Choose a project", defaultpath, wx.DD_NEW_DIR_BUTTON)
+        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             if os.path.isdir(projectpath):
@@ -1249,11 +1281,11 @@ class Beremiz(wx.Frame):
                     self.RefreshAll()
                     self.RefreshMainMenu()
                 else:
-                    message = wx.MessageDialog(self, result, "Error", wx.OK|wx.ICON_ERROR)
+                    message = wx.MessageDialog(self, result, _("Error"), wx.OK|wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
             else:
-                message = wx.MessageDialog(self, "\"%s\" folder is not a valid Beremiz project\n"%projectpath, "Error", wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, _("\"%s\" folder is not a valid Beremiz project\n")%projectpath, _("Error"), wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
             dialog.Destroy()
@@ -1263,8 +1295,8 @@ class Beremiz(wx.Frame):
         if self.PluginRoot is not None:
             if self.PluginRoot.ProjectTestModified():
                 dialog = wx.MessageDialog(self,
-                                          "Save changes ?",
-                                          "Close Application", 
+                                          _("Save changes ?"),
+                                          _("Close Application"), 
                                           wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
                 answer = dialog.ShowModal()
                 dialog.Destroy()
@@ -1322,7 +1354,7 @@ class Beremiz(wx.Frame):
         event.Skip()
     
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,"About Beremiz", Bpath("doc","about.html"), wx.Size(550, 500))
+        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
         event.Skip()
     
     def OnAddButton(self, event):
@@ -1355,7 +1387,7 @@ class Beremiz(wx.Frame):
         return DeleteButtonFunction
     
     def AddPlugin(self, PluginType, plugin):
-        dialog = wx.TextEntryDialog(self, "Please enter a name for plugin:", "Add Plugin", "", wx.OK|wx.CANCEL)
+        dialog = wx.TextEntryDialog(self, _("Please enter a name for plugin:"), _("Add Plugin"), "", wx.OK|wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
             PluginName = dialog.GetValue()
             plugin.PlugAddChild(PluginName, PluginType)
@@ -1363,7 +1395,7 @@ class Beremiz(wx.Frame):
         dialog.Destroy()
     
     def DeletePlugin(self, plugin):
-        dialog = wx.MessageDialog(self, "Really delete plugin ?", "Remove plugin", wx.YES_NO|wx.NO_DEFAULT)
+        dialog = wx.MessageDialog(self, _("Really delete plugin ?"), _("Remove plugin"), wx.YES_NO|wx.NO_DEFAULT)
         if dialog.ShowModal() == wx.ID_YES:
             self.PluginInfos.pop(plugin)
             plugin.PlugRemove()
@@ -1380,12 +1412,12 @@ Max_Traceback_List_Size = 20
 def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     trcbck_lst = []
     for i,line in enumerate(traceback.extract_tb(e_tb)):
-        trcbck = " " + str(i+1) + ". "
+        trcbck = " " + str(i+1) + _(". ")
         if line[0].find(os.getcwd()) == -1:
-            trcbck += "file : " + str(line[0]) + ",   "
+            trcbck += _("file : ") + str(line[0]) + _(",   ")
         else:
-            trcbck += "file : " + str(line[0][len(os.getcwd()):]) + ",   "
-        trcbck += "line : " + str(line[1]) + ",   " + "function : " + str(line[2])
+            trcbck += _("file : ") + str(line[0][len(os.getcwd()):]) + _(",   ")
+        trcbck += _("line : ") + str(line[1]) + _(",   ") + _("function : ") + str(line[2])
         trcbck_lst.append(trcbck)
         
     # Allow clicking....
@@ -1394,7 +1426,7 @@ def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
         cap.ReleaseMouse()
 
     dlg = wx.SingleChoiceDialog(None, 
-        """
+        _("""
 An unhandled exception (bug) occured. Bug report saved at :
 (%s)
 
@@ -1406,9 +1438,9 @@ bugs_beremiz@lolitech.fr
 You should now restart Beremiz.
 
 Traceback:
-""" % bug_report_path +
+""") % bug_report_path +
         str(e_type) + " : " + str(e_value), 
-        "Error",
+        _("Error"),
         trcbck_lst)
     try:
         res = (dlg.ShowModal() == wx.ID_OK)
@@ -1418,7 +1450,7 @@ Traceback:
     return res
 
 def Display_Error_Dialog(e_value):
-    message = wxMessageDialog(None, str(e_value), "Error", wxOK|wxICON_ERROR)
+    message = wxMessageDialog(None, str(e_value), _("Error"), wxOK|wxICON_ERROR)
     message.ShowModal()
     message.Destroy()
 
