@@ -115,7 +115,10 @@ class PlugTemplate:
         return os.path.join(self.PlugPath(PlugName), "plugin.xml")
 
     def PluginLibraryFilePath(self):
-        return os.path.join(os.path.join(os.path.split(__file__)[0], "plugins", self.PlugType, "pous.xml"))
+        return os.path.join(self.PluginPath(), "pous.xml")
+
+    def PluginPath(self):
+        return os.path.join(self.PlugParent.PluginPath(), self.PlugType)
 
     def PlugPath(self,PlugName=None):
         if not PlugName:
@@ -275,12 +278,27 @@ class PlugTemplate:
             return [{"name" : "%s POUs" % self.PlugType, "list": self.LibraryControler.Project.GetCustomBlockTypes()}]
         return []
 
+    def ParentsBlockTypesFactory(self):
+        return self.PlugParent.ParentsBlockTypesFactory() + self.BlockTypesFactory()
+
+    def PluginsBlockTypesFactory(self):
+        list = self.BlockTypesFactory()
+        for PlugChild in self.IterChilds():
+            list += PlugChild.PluginsBlockTypesFactory()
+        return list
+
     def STLibraryFactory(self):
         if self.LibraryControler is not None:
             program, errors, warnings = self.LibraryControler.GenerateProgram()
-            return program
+            return program + "\n"
         return ""
 
+    def PluginsSTLibraryFactory(self):
+        program = self.STLibraryFactory()
+        for PlugChild in self.IECSortedChilds():
+            program += PlugChild.PluginsSTLibraryFactory()
+        return program
+        
     def IterChilds(self):
         for PlugType, PluggedChilds in self.PluggedChilds.items():
             for PlugInstance in PluggedChilds:
@@ -541,6 +559,8 @@ class PlugTemplate:
         if os.path.isfile(library_path):
             self.LibraryControler = PLCControler()
             self.LibraryControler.OpenXMLFile(library_path)
+            self.LibraryControler.ClearPluginTypes()
+            self.LibraryControler.AddPluginBlockList(self.ParentsBlockTypesFactory())
 
     def LoadXMLParams(self, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
@@ -854,17 +874,21 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def RefreshPluginsBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
             self.ClearPluginTypes()
-            self.AddPluginBlockList(self.BlockTypesFactory())
-            for child in self.IterChilds():
-                self.AddPluginBlockList(child.BlockTypesFactory())
+            self.AddPluginBlockList(self.PluginsBlockTypesFactory())
         if self.PLCEditor is not None:
             self.PLCEditor.RefreshEditor()
+    
+    def PluginPath(self):
+        return os.path.join(os.path.split(__file__)[0], "plugins")
     
     def PlugPath(self, PlugName=None):
         return self.ProjectPath
     
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
+
+    def ParentsBlockTypesFactory(self):
+        return self.BlockTypesFactory()
 
     def _getBuildPath(self):
         if self.BuildPath is None:
@@ -941,13 +965,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error(_("Error in ST/IL/SFC code generator :\n%s\n")%errors[0])
             return False
         plc_file = open(self._getIECcodepath(), "w")
-        if getattr(self, "PluggedChilds", None) is not None:
-            # Add ST Library from plugins
-            plc_file.write(self.STLibraryFactory())
-            plc_file.write("\n")
-            for child in self.IterChilds():
-                plc_file.write(child.STLibraryFactory())
-                plc_file.write("\n")
+        # Add ST Library from plugins
+        plc_file.write(self.PluginsSTLibraryFactory())
         if os.path.isfile(self._getIECrawcodepath()):
             plc_file.write(open(self._getIECrawcodepath(), "r").read())
             plc_file.write("\n")
