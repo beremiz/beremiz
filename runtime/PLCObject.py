@@ -123,10 +123,6 @@ class PLCObject(pyro.ObjBase):
 
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
             self._resumeDebug.restype = None
-
-            self._PythonIterator = self.PLClibraryHandle.PythonIterator
-            self._PythonIterator.restype = ctypes.c_char_p
-            self._PythonIterator.argtypes = [ctypes.c_char_p]
             
             return True
         except:
@@ -317,9 +313,9 @@ class PLCObject(pyro.ObjBase):
             try:
                 os.remove(os.path.join(self.workingdir,
                                        self.CurrentPLCFilename))
-                for filename in file(extra_files_log, "r").readlines() + extra_files_log:
+                for filename in file(extra_files_log, "r").readlines() + [extra_files_log]:
                     try:
-                        os.remove(os.path.join(self.workingdir, filename))
+                        os.remove(os.path.join(self.workingdir, filename.strip()))
                     except:
                         pass
             except:
