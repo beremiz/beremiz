@@ -486,7 +486,6 @@ class Server():
 if havewx:
     from threading import Semaphore
     wx_eval_lock = Semaphore(0)
-    app=wx.App(redirect=False)
     mythread = currentThread()
     
     def statuschange(status):
