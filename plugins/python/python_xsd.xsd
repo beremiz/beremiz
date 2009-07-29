@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xsd:schema targetNamespace="python_xsd.xsd" 
+            xmlns:cext="python_xsd.xsd" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified" 
+            attributeFormDefault="unqualified">
+
+  <xsd:element name="Python">
+	  <xsd:complexType>
+	    <xsd:annotation>
+	      <xsd:documentation>Formatted text according to parts of XHTML 1.1</xsd:documentation>
+	    </xsd:annotation>
+	    <xsd:sequence>
+	      <xsd:any namespace="http://www.w3.org/1999/xhtml" processContents="lax"/>
+	    </xsd:sequence>
+	  </xsd:complexType>
+	</xsd:element>
+</xsd:schema>

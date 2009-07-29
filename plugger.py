@@ -910,14 +910,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # define name for IEC raw code file
         return os.path.join(self.PlugPath(), "raw_plc.st")
     
-    def _getPYTHONcodepath(self):
-        # define name for IEC raw code file
-        return os.path.join(self.PlugPath(), "runtime.py")
-
-    def _getWXGLADEpath(self):
-        # define name for IEC raw code file
-        return os.path.join(self.PlugPath(), "hmi.wxg")
-
     def GetLocations(self):
         locations = []
         filepath = os.path.join(self._getBuildPath(),"LOCATED_VARIABLES.h")
@@ -1073,15 +1065,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         else:
             return None
 
-    def launch_wxglade(self, options, wait=False):
-        from wxglade import __file__ as fileName
-        path = os.path.dirname(fileName)
-        glade = os.path.join(path, 'wxglade.py')
-        if wx.Platform == '__WXMSW__':
-            glade = "\"%s\""%glade
-        mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
-        os.spawnv(mode, sys.executable, ["\"%s\""%sys.executable] + [glade] + options)
-
     #######################################################################
     #
     #                C CODE GENERATION METHODS
@@ -1096,27 +1079,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
 
-        res = ([(C_file_name, self.plcCFLAGS) 
+        return ([(C_file_name, self.plcCFLAGS) 
                 for C_file_name in self.PLCGeneratedCFiles ], 
                "", # no ldflags
                False) # do not expose retreive/publish calls
-        
-        pyfile=self._getPYTHONcodepath()
-        if os.path.exists(pyfile):
-            res += (("runtime.py", file(pyfile,"rb")),)
-        wxgfile=self._getWXGLADEpath()
-        if os.path.exists(wxgfile):
-            hmipyfile=os.path.join(self._getBuildPath(),"hmi.py")
-            if wx.Platform == '__WXMSW__':
-                wxgfile = "\"%s\""%wxgfile
-                _hmipyfile = "\"%s\""%hmipyfile
-            else:
-                _hmipyfile = hmipyfile
-            self.launch_wxglade(['-o', _hmipyfile, '-g', 'python', wxgfile], wait=True)
-            res += (("hmi.py", file(hmipyfile,"rb")),)
-
-        return res
-
     
     def ResetIECProgramsAndVariables(self):
         """
@@ -1210,23 +1176,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ])}
         
         return debug_code
-        
-    def Generate_plc_python(self):
-        """
-        Generate trace/debug code out of PLC variable list
-        """
-        self.GetIECProgramsAndVariables()
-
-        python_eval_fb_list = []
-        for v in self._VariablesList :
-            if v["vartype"] == "FB" and v["type"] in ["PYTHON_EVAL","PYTHON_POLL"]:
-                python_eval_fb_list.append(v)
-        python_eval_fb_count = max(1, len(python_eval_fb_list))
-        
-        # prepare debug code
-        python_code = targets.code("plc_python") % {
-           "python_eval_fb_count": python_eval_fb_count}
-        return python_code
         
     def Generate_plc_common_main(self):
         """
@@ -1334,8 +1283,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for generator, filename, name in [
            # debugger code
            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
-           # IEC<->python gateway code
-           (self.Generate_plc_python, "plc_python.c", "IEC-Python gateway"),
            # init/cleanup/retrieve/publish, run and align code
            (self.Generate_plc_common_main,"plc_common_main.c","Common runtime")]:
             try:
@@ -1407,32 +1354,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
             
         new_dialog.Show()
 
-    def _editPYTHONcode(self):
-        from PythonSTC import PythonCodePanel
-        new_dialog = wx.Frame(self.AppFrame)
-        
-        PYTHON_viewer = PythonCodePanel(new_dialog, self.AppFrame)
-        #ST_viewer.Enable(False)
-        pyfile=self._getPYTHONcodepath()
-        PYTHON_viewer.LoadSourceFile(pyfile)
-            
-        new_dialog.Show()
-
-    def _editWXGLADE(self):
-        wxg_filename = self._getWXGLADEpath()
-        if not os.path.exists(wxg_filename):
-            open(wxg_filename,"w").write("""<?xml version="1.0"?>
-<application path="" name="" class="" option="0" language="python" top_window="frame_1" encoding="UTF-8" use_gettext="0" overwrite="0" use_new_namespace="1" for_version="2.8" is_template="0">
-    <object class="HMIFrame" name="frame_1" base="EditFrame">
-        <style>wxDEFAULT_FRAME_STYLE</style>
-        <title>frame_1</title>
-    </object>
-</application>
-""")
-        if wx.Platform == '__WXMSW__':
-            wxg_filename = "\"%s\""%wxg_filename
-        self.launch_wxglade([wxg_filename])
-        
     def _EditPLC(self):
         if self.PLCEditor is None:
             self.RefreshPluginsBlockLists()
@@ -1873,12 +1794,4 @@ class PluginsRoot(PlugTemplate, PLCControler):
          "name" : _("Raw IEC code"),
          "tooltip" : _("Edit raw IEC code added to code generated by PLCGenerator"),
          "method" : "_editIECrawcode"},
-        {"bitmap" : opjimg("editPYTHONcode"),
-         "name" : "Python code",
-         "tooltip" : "Write Python runtime code, for use with python_eval FBs",
-         "method" : "_editPYTHONcode"},
-        {"bitmap" : opjimg("editWXGLADE"),
-         "name" : "WXGLADE GUI",
-         "tooltip" : "Edit a WxWidgets GUI with WXGlade",
-         "method" : "_editWXGLADE"},
     ]

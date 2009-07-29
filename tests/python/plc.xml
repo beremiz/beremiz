@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2008-12-30T00:26:11">
+                 modificationDateTime="2009-07-29T14:39:02">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -466,8 +466,8 @@
     <configurations>
       <configuration name="conf_pytest">
         <resource name="res_pytest">
-          <task name="pytest_task" interval="00:00:00.100000" priority="0"/>
-          <pouInstance name="pytest_instance" type="main_pytest"/>
+          <task name="pytest_task" interval="t#100ms" priority="0"/>
+          <pouInstance name="pytest_instance" typeName="main_pytest"/>
         </resource>
       </configuration>
     </configurations>

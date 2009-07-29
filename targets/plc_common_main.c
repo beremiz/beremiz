@@ -18,11 +18,6 @@ void __cleanup_debug(void);
 /*void __retrieve_debug(void);*/
 void __publish_debug(void);
 
-void __init_python(void);
-void __cleanup_python(void);
-void __retrieve_python(void);
-void __publish_python(void);
-
 /*
  *  Variables used by generated C softPLC and plugins
  **/
@@ -47,13 +42,9 @@ void __run()
 
     %(retrieve_calls)s
 
-    __retrieve_python();
-
     /*__retrieve_debug();*/
 
     config_run__(__tick);
-
-    __publish_python();
 
     __publish_debug();
 
@@ -71,7 +62,6 @@ int __init(int argc,char **argv)
     setlocale(LC_NUMERIC, "C");
     config_init__();
     __init_debug();
-    __init_python();
     %(init_calls)s
     return 0;
 }
@@ -82,7 +72,6 @@ void __cleanup()
 {
     %(cleanup_calls)s
     __cleanup_debug();
-    __cleanup_python();
 }
 
 

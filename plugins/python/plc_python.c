@@ -43,7 +43,7 @@ int TryLockPython(void);
 void UnLockPython(void);
 void LockPython(void);
 
-void __init_python()
+int __init_%(location)s()
 {
 	int i;
 	/* Initialize cursors */
@@ -52,15 +52,16 @@ void __init_python()
 	PythonState = PYTHON_LOCKED_BY_PYTHON;
 	for(i = 0; i < %(python_eval_fb_count)d; i++)
 		EvalFBs[i] = NULL;
+  return 0;
 }
 
-void __cleanup_python()
+void __cleanup_%(location)s()
 {
 	PythonState = PYTHON_FINISHED;
 	UnBlockPythonCommands();
 }
 
-void __retrieve_python()
+void __retrieve_%(location)s()
 {
 	/* Check Python thread is not being
 	 * modifying internal python_eval data */
@@ -71,7 +72,7 @@ void __retrieve_python()
 	 * and python_eval will no do anything */
 }
 
-void __publish_python()
+void __publish_%(location)s()
 {
 	if(PythonState & PYTHON_LOCKED_BY_PLC){
 		/* If runnig PLC did push something in the fifo*/
