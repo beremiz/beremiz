@@ -123,6 +123,10 @@ class PLCObject(pyro.ObjBase):
 
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
             self._resumeDebug.restype = None
+
+            self._PythonIterator = self.PLClibraryHandle.PythonIterator
+            self._PythonIterator.restype = ctypes.c_char_p
+            self._PythonIterator.argtypes = [ctypes.c_char_p]
             
             return True
         except:
