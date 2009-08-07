@@ -244,7 +244,7 @@ class RootClass(PythonCodeTemplate):
         plc_python_code = plc_python_file.read()
         plc_python_file.close()
         python_eval_fb_list = []
-        for v in plugin_root._VariablesList :
+        for v in plugin_root._VariablesList:
             if v["vartype"] == "FB" and v["type"] in ["PYTHON_EVAL","PYTHON_POLL"]:
                 python_eval_fb_list.append(v)
         python_eval_fb_count = max(1, len(python_eval_fb_list))
@@ -262,14 +262,6 @@ class RootClass(PythonCodeTemplate):
         runtimefile_path = os.path.join(buildpath, "runtime_%s.py"%location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write(self.GetPythonCode())
-        runtimefile.write("""
-def _runtime_%(location)s_begin():
-    print "runtime_begin"
-
-def _runtime_%(location)s_cleanup():
-    print "runtime_cleanup"
-
-""" % {"location": location_str})
         runtimefile.close()
         
         if wx.Platform == '__WXMSW__':
