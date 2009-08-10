@@ -34,12 +34,13 @@ Usage of Beremiz PLC execution service :\n
            -h        - print this help text and quit
            -a        - autostart PLC (0:disable 1:enable)
            -x        - enable/disable wxTaskbarIcon (0:disable 1:enable)
+           -t        - enable/disable Twisted web interface (0:disable 1:enable)
            
            working_dir - directory where are stored PLC files
 """%sys.argv[0]
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:a:h")
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:h")
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
@@ -56,6 +57,8 @@ name = os.environ[{
 autostart = False
 enablewx = True
 havewx = False
+enabletwisted = True
+havetwisted = False
 
 for o, a in opts:
     if o == "-h":
@@ -71,6 +74,8 @@ for o, a in opts:
         name = a
     elif o == "-x":
         enablewx = int(a)
+    elif o == "-t":
+        enabletwisted = int(a)
     elif o == "-a":
         autostart = int(a)
     else:
@@ -426,7 +431,7 @@ def default_evaluator(callable, *args, **kwargs):
     return callable(*args,**kwargs)
 
 class Server():
-    def __init__(self, name, ip, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator):
+    def __init__(self, name, ip, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
         self.continueloop = True
         self.daemon = None
         self.name = name
@@ -439,6 +444,7 @@ class Server():
         self.autostart = autostart
         self.statuschange = statuschange
         self.evaluator = evaluator
+        self.website = website
     
     def Loop(self):
         while self.continueloop:
@@ -454,7 +460,7 @@ class Server():
     def Start(self):
         pyro.initServer()
         self.daemon=pyro.Daemon(host=self.ip, port=self.port)
-        self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator)
+        self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator, self.website)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
     
         print "The daemon runs on port :",self.port
@@ -481,7 +487,161 @@ class Server():
             self.servicepublisher.UnRegisterService()
             del self.servicepublisher
         self.daemon.shutdown(True)
+
+if enabletwisted:
+    try:
+        if havewx:
+            from twisted.internet import wxreactor
+            wxreactor.install()
+        from twisted.internet import reactor, task
+        from twisted.python import log, util
+        from nevow import rend, appserver, inevow, tags, loaders, athena
+        from nevow.page import renderer
         
+        havetwisted = True
+    except:
+        havetwisted = False
+
+if havetwisted:
+    
+    xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+'''
+
+    
+    class DefaultPLCStartedHMI(athena.LiveElement):
+        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[                                    
+                                             tags.h1["PLC IS NOW STARTED"],
+                                             ])
+    class PLCStoppedHMI(athena.LiveElement):
+        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
+                                             tags.h1["PLC IS STOPPED"]
+                                             ])
+    
+    class MainPage(athena.LiveElement):
+        jsClass = u"WebInterface.PLC"
+        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
+                                                        tags.div(id='content')[                         
+                                                        tags.div(render = tags.directive('PLCElement')),
+                                                        ]])
+        
+        def __init__(self, *a, **kw):
+            athena.LiveElement.__init__(self, *a, **kw)
+            self.pcl_state = False
+            self.HMI = None
+            self.resetPLCStartedHMI()
+        
+        def setPLCState(self, state):
+            self.pcl_state = state
+            if self.HMI is not None:
+                self.callRemote('updateHMI')
+        
+        def setPLCStartedHMI(self, hmi):
+            self.PLCStartedHMIClass = hmi
+        
+        def resetPLCStartedHMI(self):
+            self.PLCStartedHMIClass = DefaultPLCStartedHMI
+        
+        def getHMI(self):
+            return self.HMI
+        
+        def HMIexec(self, function, *args, **kwargs):
+            if self.HMI is not None:
+                getattr(self.HMI, function, lambda:None)(*args, **kwargs)
+        athena.expose(executeOnHMI)
+        
+        def resetHMI(self):
+            self.HMI = None
+        
+        def PLCElement(self, ctx, data):
+            return self.getPLCElement()
+        renderer(PLCElement)
+        
+        def getPLCElement(self):
+            self.detachFragmentChildren()
+            if self.pcl_state:
+                f = self.PLCStartedHMIClass()
+            else:
+                f = PLCStoppedHMI()
+            self.HMI = f
+            f.setFragmentParent(self)
+            return f
+        athena.expose(getPLCElement)
+
+        def detachFragmentChildren(self):
+            for child in self.liveFragmentChildren[:]:
+                child.detach()
+        
+    class WebInterface(athena.LivePage):
+
+        docFactory = loaders.stan([tags.raw(xhtml_header),
+                                   tags.html(xmlns="http://www.w3.org/1999/xhtml")[
+                                       tags.head(render=tags.directive('liveglue')),
+                                       tags.body[
+                                           tags.div[
+                                                   tags.div( render = tags.directive( "MainPage" ))
+                                                   ]]]])
+        MainPage = MainPage()
+
+        def __init__(self, plcState=False, *a, **kw):
+            super(WebInterface, self).__init__(*a, **kw)
+            self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, 'webinterface.js')
+            self.plcState = plcState
+            self.MainPage.setPLCState(plcState)
+
+        def getHMI(self):
+            return self.MainPage.getHMI()
+        
+        def LoadHMI(self, plc, jsmodules):
+            for name, path in jsmodules.iteritems():
+                self.jsModules.mapping[name] = os.path.join(WorkingDir, path)
+            self.MainPage.setPLCStarted(plc)
+        
+        def UnLoadHMI(self):
+            self.MainPage.resetPLCStartedHMI()
+        
+        def PLCStarted(self):
+            self.plcState = True
+            self.MainPage.setPLCState(True)
+        
+        def PLCStopped(self):
+            self.plcState = False
+            self.MainPage.setPLCState(False)
+            
+        def renderHTTP(self, ctx):
+            """
+            Force content type to fit with SVG
+            """
+            req = inevow.IRequest(ctx)
+            req.setHeader('Content-type', 'application/xhtml+xml')
+            return super(WebInterface, self).renderHTTP(ctx)
+
+        def render_MainPage(self, ctx, data):
+            f = self.MainPage
+            f.setFragmentParent(self)
+            return ctx.tag[f]
+
+        def child_(self, ctx):
+            self.MainPage.detachFragmentChildren()
+            return WebInterface(plcState=self.plcState)
+            
+        def beforeRender(self, ctx):
+            d = self.notifyOnDisconnect()
+            d.addErrback(self.disconnected)
+        
+        def disconnected(self, reason):
+            self.MainPage.resetHMI()
+            #print reason
+            #print "We will be called back when the client disconnects"
+    
+    if havewx:
+        reactor.registerWxApp(app)
+    res = WebInterface()
+    site = appserver.NevowSite(res)
+    reactor.listenTCP(8009, site)
+else:
+    res = None
 
 if havewx:
     from threading import Semaphore
@@ -510,12 +670,17 @@ if havewx:
             wx_eval_lock.acquire()
         return eval_res
 
-    pyroserver = Server(name, ip, port, WorkingDir, argv, autostart, statuschange, evaluator)
+    pyroserver = Server(name, ip, port, WorkingDir, argv, autostart, statuschange, evaluator, res)
     taskbar_instance = BeremizTaskBarIcon(pyroserver)
     
     pyro_thread=Thread(target=pyroserver.Loop)
     pyro_thread.start()
+else:
+    pyroserver = Server(name, ip, port, WorkingDir, argv, autostart, website=res)
+
+if havetwisted:
+    reactor.run()
+elif havewx:
     app.MainLoop()
 else:
-    pyroserver = Server(name, ip, port, WorkingDir, argv, autostart)
     pyroserver.Loop()

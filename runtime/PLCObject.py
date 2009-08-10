@@ -45,7 +45,7 @@ def PLCprint(message):
 
 class PLCObject(pyro.ObjBase):
     _Idxs = []
-    def __init__(self, workingdir, daemon, argv, statuschange, evaluator):
+    def __init__(self, workingdir, daemon, argv, statuschange, evaluator, website):
         pyro.ObjBase.__init__(self)
         self.evaluator = evaluator
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
@@ -59,6 +59,7 @@ class PLCObject(pyro.ObjBase):
         self.daemon = daemon
         self.statuschange = statuschange
         self.hmi_frame = None
+        self.website = website
         
         # Get the last transfered PLC if connector must be restart
         try:
@@ -205,49 +206,10 @@ class PLCObject(pyro.ObjBase):
     def PrepareRuntimePy(self):
         self.python_threads_vars = globals().copy()
         self.python_threads_vars["WorkingDir"] = self.workingdir
+        self.python_threads_vars["website"] = self.website
         self.python_threads_vars["_runtime_begin"] = []
         self.python_threads_vars["_runtime_cleanup"] = []
-#        pyfile = os.path.join(self.workingdir, "runtime.py")
-#        hmifile = os.path.join(self.workingdir, "hmi.py")
-#        if os.path.exists(hmifile):
-#            try:
-#                execfile(hmifile, self.python_threads_vars)
-#                if os.path.exists(pyfile):
-#                    try:
-#                        # TODO handle exceptions in runtime.py
-#                        # pyfile may redefine _runtime_cleanup
-#                        # or even call _PythonThreadProc itself.
-#                        execfile(pyfile, self.python_threads_vars)
-#                    except:
-#                        PLCprint(traceback.format_exc())
-#                if self.python_threads_vars.has_key('wx'):
-#                    wx = self.python_threads_vars['wx']
-#                    # try to instanciate the first frame found.
-#                    for name, obj in self.python_threads_vars.iteritems():
-#                        # obj is a class
-#                        if type(obj)==type(type) and issubclass(obj,wx.Frame):
-#                            def create_frame():
-#                                self.hmi_frame = obj(None)
-#                                self.python_threads_vars[name] = self.hmi_frame
-#                                # keep track of class... never know
-#                                self.python_threads_vars['Class_'+name] = obj
-#                                self.hmi_frame.Bind(wx.EVT_CLOSE, OnCloseFrame)
-#                                self.hmi_frame.Show()
-#                            
-#                            def OnCloseFrame(evt):
-#                                wx.MessageBox(_("Please stop PLC to close"))
-#                            create_frame()
-#                            break
-#            except:
-#                PLCprint(traceback.format_exc())
-#        elif os.path.exists(pyfile):
-#            try:
-#                # TODO handle exceptions in runtime.py
-#                # pyfile may redefine _runtime_cleanup
-#                # or even call _PythonThreadProc itself.
-#                execfile(pyfile, self.python_threads_vars)
-#            except:
-#                PLCprint(traceback.format_exc())
+        
         for filename in os.listdir(self.workingdir):
             name, ext = os.path.splitext(filename)
             if name.startswith("runtime") and ext == ".py":
@@ -267,16 +229,15 @@ class PLCObject(pyro.ObjBase):
         
         for runtime_begin in self.python_threads_vars.get("_runtime_begin", []):
             runtime_begin()
+            
+        if self.website is not None:
+            self.website.PLCStarted()
 
     def FinishRuntimePy(self):
         for runtime_cleanup in self.python_threads_vars.get("_runtime_cleanup", []):
             runtime_cleanup()    
-#        if self.python_threads_vars is not None:
-#            runtime_cleanup = self.python_threads_vars.get("_runtime_cleanup",None)
-#        if runtime_cleanup is not None:
-#            runtime_cleanup()
-#        if self.hmi_frame is not None:
-#            self.hmi_frame.Destroy()
+        if self.website is not None:
+            self.website.PLCStopped()
         self.python_threads_vars = None
 
     def PythonThreadProc(self, debug):
