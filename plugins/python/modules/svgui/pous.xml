@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
+  <fileHeader companyName="LOLITECH"
+              productName="Beremiz"
+              productVersion="0.0"
+              creationDateTime="2008-12-14T16:53:26"/>
+  <contentHeader name="Beremiz non-standard POUs library"
+                 modificationDateTime="2009-07-15T17:13:23">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="0" y="0"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="GetBoolString" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="VALUE">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="CODE">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </outputVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[IF VALUE THEN
+  CODE := 'True';
+ELSE
+  CODE := 'False';
+END_IF;]]>
+          </ST>
+        </body>
+      </pou>
+      <pou name="Button_toggle" pouType="functionBlock">
+        <interface>
+          <localVars>
+            <variable name="SVGUI_Command">
+              <type>
+                <derived name="python_poll"/>
+              </type>
+            </variable>
+          </localVars>
+          <inputVars>
+            <variable name="back_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="sele_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="set_state">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="current_state">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="GetButtonState">
+              <type>
+                <derived name="GetBoolString"/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <FBD>
+            <block localId="1" width="125" height="140" typeName="python_poll" instanceName="SVGUI_Command">
+              <position x="872" y="137"/>
+              <inputVariables>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="10">
+                      <position x="872" y="187"/>
+                      <position x="795" y="187"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="CODE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="110"/>
+                    <connection refLocalId="2" formalParameter="OUT">
+                      <position x="872" y="247"/>
+                      <position x="678" y="247"/>
+                      <position x="678" y="80"/>
+                      <position x="636" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ACK">
+                  <connectionPointOut>
+                    <relPosition x="125" y="50"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="RESULT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="110"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="2" width="150" height="485" typeName="CONCAT">
+              <position x="486" y="25"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="55"/>
+                    <connection refLocalId="3">
+                      <position x="486" y="80"/>
+                      <position x="380" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
+                    <connection refLocalId="11">
+                      <position x="486" y="145"/>
+                      <position x="170" y="145"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN3">
+                  <connectionPointIn>
+                    <relPosition x="0" y="185"/>
+                    <connection refLocalId="5">
+                      <position x="486" y="210"/>
+                      <position x="380" y="210"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN4">
+                  <connectionPointIn>
+                    <relPosition x="0" y="250"/>
+                    <connection refLocalId="12">
+                      <position x="486" y="275"/>
+                      <position x="205" y="275"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN5">
+                  <connectionPointIn>
+                    <relPosition x="0" y="315"/>
+                    <connection refLocalId="7">
+                      <position x="486" y="340"/>
+                      <position x="350" y="340"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN6">
+                  <connectionPointIn>
+                    <relPosition x="0" y="385"/>
+                    <connection refLocalId="28" formalParameter="CODE">
+                      <position x="486" y="410"/>
+                      <position x="389" y="410"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN7">
+                  <connectionPointIn>
+                    <relPosition x="0" y="450"/>
+                    <connection refLocalId="9">
+                      <position x="486" y="475"/>
+                      <position x="389" y="475"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="150" y="55"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="3" height="30" width="291">
+              <position x="89" y="65"/>
+              <connectionPointOut>
+                <relPosition x="291" y="15"/>
+              </connectionPointOut>
+              <expression>'int(SVGUI("SvguiButton","'</expression>
+            </inVariable>
+            <inVariable localId="5" height="30" width="140">
+              <position x="240" y="195"/>
+              <connectionPointOut>
+                <relPosition x="140" y="15"/>
+              </connectionPointOut>
+              <expression>'",sele_id="'</expression>
+            </inVariable>
+            <inVariable localId="7" height="30" width="110">
+              <position x="240" y="325"/>
+              <connectionPointOut>
+                <relPosition x="110" y="15"/>
+              </connectionPointOut>
+              <expression>'",state='</expression>
+            </inVariable>
+            <inVariable localId="9" height="30" width="290">
+              <position x="99" y="460"/>
+              <connectionPointOut>
+                <relPosition x="290" y="15"/>
+              </connectionPointOut>
+              <expression>',toggle=True,active=True))'</expression>
+            </inVariable>
+            <inVariable localId="10" height="30" width="70">
+              <position x="725" y="172"/>
+              <connectionPointOut>
+                <relPosition x="70" y="15"/>
+              </connectionPointOut>
+              <expression>BOOL#1</expression>
+            </inVariable>
+            <inVariable localId="11" height="35" width="85">
+              <position x="85" y="130"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>back_id</expression>
+            </inVariable>
+            <inVariable localId="12" height="35" width="85">
+              <position x="120" y="260"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>sele_id</expression>
+            </inVariable>
+            <inVariable localId="13" height="35" width="100">
+              <position x="109" y="395"/>
+              <connectionPointOut>
+                <relPosition x="100" y="15"/>
+              </connectionPointOut>
+              <expression>set_state</expression>
+            </inVariable>
+            <block localId="25" width="145" height="45" typeName="STRING_TO_INT">
+              <position x="1052" y="217"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="1" formalParameter="RESULT">
+                      <position x="1052" y="247"/>
+                      <position x="997" y="247"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="145" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="26" width="125" height="45" typeName="INT_TO_BOOL">
+              <position x="1247" y="217"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="25" formalParameter="OUT">
+                      <position x="1247" y="247"/>
+                      <position x="1197" y="247"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="27" height="35" width="145">
+              <position x="1402" y="232"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="26" formalParameter="OUT">
+                  <position x="1402" y="247"/>
+                  <position x="1372" y="247"/>
+                </connection>
+              </connectionPointIn>
+              <expression>current_state</expression>
+            </outVariable>
+            <block localId="28" width="140" height="40" typeName="GetBoolString" instanceName="GetButtonState">
+              <position x="249" y="380"/>
+              <inputVariables>
+                <variable formalParameter="VALUE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="13">
+                      <position x="249" y="410"/>
+                      <position x="209" y="410"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="CODE">
+                  <connectionPointOut>
+                    <relPosition x="140" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+          </FBD>
+        </body>
+      </pou>
+      <pou name="TextCtrl" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="back_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="state">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </inputVars>
+          <localVars>
+            <variable name="SVGUI_TEXTCTRL">
+              <type>
+                <derived name="python_poll"/>
+              </type>
+            </variable>
+          </localVars>
+          <outputVars>
+            <variable name="code">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </outputVars>
+        </interface>
+        <body>
+          <FBD>
+            <block localId="1" width="265" height="230" typeName="CONCAT">
+              <position x="549" y="125"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="2">
+                      <position x="549" y="165"/>
+                      <position x="361" y="165"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="85"/>
+                    <connection refLocalId="3">
+                      <position x="549" y="210"/>
+                      <position x="160" y="210"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN3">
+                  <connectionPointIn>
+                    <relPosition x="0" y="125"/>
+                    <connection refLocalId="5">
+                      <position x="549" y="250"/>
+                      <position x="195" y="250"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN4">
+                  <connectionPointIn>
+                    <relPosition x="0" y="165"/>
+                    <connection refLocalId="4">
+                      <position x="549" y="290"/>
+                      <position x="140" y="290"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN5">
+                  <connectionPointIn>
+                    <relPosition x="0" y="210"/>
+                    <connection refLocalId="6">
+                      <position x="549" y="335"/>
+                      <position x="125" y="335"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="265" y="40"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="2" height="30" width="286">
+              <position x="75" y="150"/>
+              <connectionPointOut>
+                <relPosition x="286" y="15"/>
+              </connectionPointOut>
+              <expression>'SVGUI("SvguiTextCtrl","'</expression>
+            </inVariable>
+            <inVariable localId="3" height="35" width="85">
+              <position x="75" y="195"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>back_id</expression>
+            </inVariable>
+            <inVariable localId="4" height="35" width="65">
+              <position x="75" y="275"/>
+              <connectionPointOut>
+                <relPosition x="65" y="15"/>
+              </connectionPointOut>
+              <expression>state</expression>
+            </inVariable>
+            <inVariable localId="5" height="30" width="120">
+              <position x="75" y="235"/>
+              <connectionPointOut>
+                <relPosition x="120" y="15"/>
+              </connectionPointOut>
+              <expression>'",state="'</expression>
+            </inVariable>
+            <inVariable localId="6" height="30" width="50">
+              <position x="75" y="320"/>
+              <connectionPointOut>
+                <relPosition x="50" y="15"/>
+              </connectionPointOut>
+              <expression>'")'</expression>
+            </inVariable>
+            <block localId="7" width="125" height="115" typeName="python_poll" instanceName="SVGUI_TEXTCTRL">
+              <position x="909" y="75"/>
+              <inputVariables>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="45"/>
+                    <connection refLocalId="9">
+                      <position x="909" y="120"/>
+                      <position x="886" y="120"/>
+                      <position x="886" y="85"/>
+                      <position x="869" y="85"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="CODE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="90"/>
+                    <connection refLocalId="1" formalParameter="OUT">
+                      <position x="909" y="165"/>
+                      <position x="814" y="165"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ACK">
+                  <connectionPointOut>
+                    <relPosition x="125" y="45"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="RESULT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="90"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="8" height="35" width="55">
+              <position x="1084" y="150"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="7" formalParameter="RESULT">
+                  <position x="1084" y="165"/>
+                  <position x="1034" y="165"/>
+                </connection>
+              </connectionPointIn>
+              <expression>code</expression>
+            </outVariable>
+            <inVariable localId="9" height="30" width="70">
+              <position x="799" y="70"/>
+              <connectionPointOut>
+                <relPosition x="70" y="15"/>
+              </connectionPointOut>
+              <expression>BOOL#1</expression>
+            </inVariable>
+          </FBD>
+        </body>
+      </pou>
+      <pou name="Button" pouType="functionBlock">
+        <interface>
+          <localVars>
+            <variable name="SVGUI_Command">
+              <type>
+                <derived name="python_poll"/>
+              </type>
+            </variable>
+          </localVars>
+          <inputVars>
+            <variable name="back_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="sele_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="set_state">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="current_state">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="GetButtonState">
+              <type>
+                <derived name="GetBoolString"/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <FBD>
+            <block localId="1" width="125" height="140" typeName="python_poll" instanceName="SVGUI_Command">
+              <position x="827" y="168"/>
+              <inputVariables>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="10">
+                      <position x="827" y="218"/>
+                      <position x="766" y="218"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="CODE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="110"/>
+                    <connection refLocalId="2" formalParameter="OUT">
+                      <position x="827" y="278"/>
+                      <position x="679" y="278"/>
+                      <position x="679" y="80"/>
+                      <position x="649" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ACK">
+                  <connectionPointOut>
+                    <relPosition x="125" y="50"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="RESULT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="110"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="2" width="150" height="485" typeName="CONCAT">
+              <position x="499" y="25"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="55"/>
+                    <connection refLocalId="3">
+                      <position x="499" y="80"/>
+                      <position x="378" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
+                    <connection refLocalId="11">
+                      <position x="499" y="145"/>
+                      <position x="170" y="145"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN3">
+                  <connectionPointIn>
+                    <relPosition x="0" y="185"/>
+                    <connection refLocalId="5">
+                      <position x="499" y="210"/>
+                      <position x="380" y="210"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN4">
+                  <connectionPointIn>
+                    <relPosition x="0" y="250"/>
+                    <connection refLocalId="12">
+                      <position x="499" y="275"/>
+                      <position x="205" y="275"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN5">
+                  <connectionPointIn>
+                    <relPosition x="0" y="315"/>
+                    <connection refLocalId="7">
+                      <position x="499" y="340"/>
+                      <position x="348" y="340"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN6">
+                  <connectionPointIn>
+                    <relPosition x="0" y="385"/>
+                    <connection refLocalId="28" formalParameter="CODE">
+                      <position x="499" y="410"/>
+                      <position x="369" y="410"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN7">
+                  <connectionPointIn>
+                    <relPosition x="0" y="450"/>
+                    <connection refLocalId="9">
+                      <position x="499" y="475"/>
+                      <position x="275" y="475"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="150" y="55"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="3" height="30" width="290">
+              <position x="88" y="65"/>
+              <connectionPointOut>
+                <relPosition x="290" y="15"/>
+              </connectionPointOut>
+              <expression>'int(SVGUI("SvguiButton","'</expression>
+            </inVariable>
+            <inVariable localId="5" height="30" width="140">
+              <position x="240" y="195"/>
+              <connectionPointOut>
+                <relPosition x="140" y="15"/>
+              </connectionPointOut>
+              <expression>'",sele_id="'</expression>
+            </inVariable>
+            <inVariable localId="7" height="30" width="110">
+              <position x="238" y="325"/>
+              <connectionPointOut>
+                <relPosition x="110" y="15"/>
+              </connectionPointOut>
+              <expression>'",state='</expression>
+            </inVariable>
+            <inVariable localId="9" height="30" width="180">
+              <position x="225" y="460"/>
+              <connectionPointOut>
+                <relPosition x="180" y="15"/>
+              </connectionPointOut>
+              <expression>',active=True))'</expression>
+            </inVariable>
+            <inVariable localId="10" height="30" width="70">
+              <position x="696" y="203"/>
+              <connectionPointOut>
+                <relPosition x="70" y="15"/>
+              </connectionPointOut>
+              <expression>BOOL#1</expression>
+            </inVariable>
+            <inVariable localId="11" height="35" width="85">
+              <position x="85" y="130"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>back_id</expression>
+            </inVariable>
+            <inVariable localId="12" height="35" width="85">
+              <position x="120" y="260"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>sele_id</expression>
+            </inVariable>
+            <inVariable localId="13" height="35" width="100">
+              <position x="62" y="395"/>
+              <connectionPointOut>
+                <relPosition x="100" y="15"/>
+              </connectionPointOut>
+              <expression>set_state</expression>
+            </inVariable>
+            <block localId="25" width="145" height="45" typeName="STRING_TO_INT">
+              <position x="1014" y="248"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="1" formalParameter="RESULT">
+                      <position x="1014" y="278"/>
+                      <position x="952" y="278"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="145" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="26" width="125" height="45" typeName="INT_TO_BOOL">
+              <position x="1209" y="248"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="25" formalParameter="OUT">
+                      <position x="1209" y="278"/>
+                      <position x="1159" y="278"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="27" height="35" width="145">
+              <position x="1364" y="263"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="26" formalParameter="OUT">
+                  <position x="1364" y="278"/>
+                  <position x="1334" y="278"/>
+                </connection>
+              </connectionPointIn>
+              <expression>current_state</expression>
+            </outVariable>
+            <block localId="28" width="140" height="40" typeName="GetBoolString" instanceName="GetButtonState">
+              <position x="229" y="380"/>
+              <inputVariables>
+                <variable formalParameter="VALUE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="13">
+                      <position x="229" y="410"/>
+                      <position x="162" y="410"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="CODE">
+                  <connectionPointOut>
+                    <relPosition x="140" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+          </FBD>
+        </body>
+      </pou>
+      <pou name="Button_led" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="back_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="sele_id">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </inputVars>
+          <inputVars>
+            <variable name="state">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </inputVars>
+          <localVars>
+            <variable name="SVGUI_Command_LED">
+              <type>
+                <derived name="python_poll"/>
+              </type>
+            </variable>
+            <variable name="GetLEDState">
+              <type>
+                <derived name="GetBoolString"/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <FBD>
+            <inVariable localId="1" height="30" width="244">
+              <position x="51" y="110"/>
+              <connectionPointOut>
+                <relPosition x="244" y="15"/>
+              </connectionPointOut>
+              <expression>'SVGUI("SvguiButton","'</expression>
+            </inVariable>
+            <inVariable localId="2" height="30" width="140">
+              <position x="50" y="255"/>
+              <connectionPointOut>
+                <relPosition x="140" y="15"/>
+              </connectionPointOut>
+              <expression>'",sele_id="'</expression>
+            </inVariable>
+            <inVariable localId="3" height="35" width="85">
+              <position x="50" y="185"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>back_id</expression>
+            </inVariable>
+            <inVariable localId="4" height="35" width="85">
+              <position x="50" y="325"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>sele_id</expression>
+            </inVariable>
+            <inVariable localId="5" height="30" width="165">
+              <position x="50" y="545"/>
+              <connectionPointOut>
+                <relPosition x="165" y="15"/>
+              </connectionPointOut>
+              <expression>',toggle=True)'</expression>
+            </inVariable>
+            <inVariable localId="6" height="30" width="120">
+              <position x="50" y="400"/>
+              <connectionPointOut>
+                <relPosition x="120" y="15"/>
+              </connectionPointOut>
+              <expression>'", state='</expression>
+            </inVariable>
+            <inVariable localId="9" height="35" width="65">
+              <position x="52" y="470"/>
+              <connectionPointOut>
+                <relPosition x="65" y="15"/>
+              </connectionPointOut>
+              <expression>state</expression>
+            </inVariable>
+            <block localId="10" width="80" height="530" typeName="CONCAT">
+              <position x="503" y="70"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="55"/>
+                    <connection refLocalId="1">
+                      <position x="503" y="125"/>
+                      <position x="295" y="125"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="130"/>
+                    <connection refLocalId="3">
+                      <position x="503" y="200"/>
+                      <position x="135" y="200"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN3">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="2">
+                      <position x="503" y="270"/>
+                      <position x="190" y="270"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN4">
+                  <connectionPointIn>
+                    <relPosition x="0" y="270"/>
+                    <connection refLocalId="4">
+                      <position x="503" y="340"/>
+                      <position x="135" y="340"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN5">
+                  <connectionPointIn>
+                    <relPosition x="0" y="345"/>
+                    <connection refLocalId="6">
+                      <position x="503" y="415"/>
+                      <position x="170" y="415"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN6">
+                  <connectionPointIn>
+                    <relPosition x="0" y="415"/>
+                    <connection refLocalId="28" formalParameter="CODE">
+                      <position x="503" y="485"/>
+                      <position x="368" y="485"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN7">
+                  <connectionPointIn>
+                    <relPosition x="0" y="490"/>
+                    <connection refLocalId="5">
+                      <position x="503" y="560"/>
+                      <position x="215" y="560"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="80" y="55"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="11" width="125" height="65" typeName="python_poll" instanceName="SVGUI_Command_LED">
+              <position x="753" y="135"/>
+              <inputVariables>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="12">
+                      <position x="753" y="165"/>
+                      <position x="715" y="165"/>
+                      <position x="715" y="90"/>
+                      <position x="698" y="90"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="CODE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="55"/>
+                    <connection refLocalId="10" formalParameter="OUT">
+                      <position x="753" y="190"/>
+                      <position x="658" y="190"/>
+                      <position x="658" y="125"/>
+                      <position x="583" y="125"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ACK">
+                  <connectionPointOut>
+                    <relPosition x="125" y="30"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="RESULT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="55"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="12" height="30" width="70">
+              <position x="628" y="75"/>
+              <connectionPointOut>
+                <relPosition x="70" y="15"/>
+              </connectionPointOut>
+              <expression>BOOL#1</expression>
+            </inVariable>
+            <block localId="28" width="140" height="40" typeName="GetBoolString" instanceName="GetLEDState">
+              <position x="228" y="455"/>
+              <inputVariables>
+                <variable formalParameter="VALUE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="9">
+                      <position x="228" y="485"/>
+                      <position x="117" y="485"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="CODE">
+                  <connectionPointOut>
+                    <relPosition x="140" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+          </FBD>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations/>
+  </instances>
+</project>
