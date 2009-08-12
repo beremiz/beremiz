@@ -108,7 +108,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
     def RefreshList(self):
-        type = "_WGPLC._tcp.local."
+        type = "_PYRO._tcp.local."
         self.browser = ServiceBrowser(self.zConfInstance, type, self)        
 
     def OnRefreshButton(self, event):
