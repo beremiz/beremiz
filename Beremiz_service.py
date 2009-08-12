@@ -549,7 +549,7 @@ if havetwisted:
         def HMIexec(self, function, *args, **kwargs):
             if self.HMI is not None:
                 getattr(self.HMI, function, lambda:None)(*args, **kwargs)
-        athena.expose(executeOnHMI)
+        athena.expose(HMIexec)
         
         def resetHMI(self):
             self.HMI = None
@@ -564,8 +564,8 @@ if havetwisted:
                 f = self.PLCStartedHMIClass()
             else:
                 f = PLCStoppedHMI()
-            self.HMI = f
             f.setFragmentParent(self)
+            self.HMI = f
             return f
         athena.expose(getPLCElement)
 
@@ -593,10 +593,10 @@ if havetwisted:
         def getHMI(self):
             return self.MainPage.getHMI()
         
-        def LoadHMI(self, plc, jsmodules):
+        def LoadHMI(self, hmi, jsmodules):
             for name, path in jsmodules.iteritems():
                 self.jsModules.mapping[name] = os.path.join(WorkingDir, path)
-            self.MainPage.setPLCStarted(plc)
+            self.MainPage.setPLCStartedHMI(hmi)
         
         def UnLoadHMI(self):
             self.MainPage.resetPLCStartedHMI()
