@@ -1154,7 +1154,7 @@ class ServiceInfo(object):
         """Updates service information from a DNS record"""
         if record is not None and not record.isExpired(now):
             if record.type == _TYPE_A:
-                if record.name == self.name:
+                if record.name == self.server:
                     self.address = record.address
             elif record.type == _TYPE_SRV:
                 if record.name == self.name:
@@ -1162,7 +1162,6 @@ class ServiceInfo(object):
                     self.port = record.port
                     self.weight = record.weight
                     self.priority = record.priority
-                    self.address = None
                     self.updateRecord(zeroconf, now, zeroconf.cache.getByDetails(self.server, _TYPE_A, _CLASS_IN))
             elif record.type == _TYPE_TXT:
                 if record.name == self.name:
