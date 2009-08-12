@@ -162,12 +162,17 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def addService(self, zeroconf, type, name):
         info = self.zConfInstance.getServiceInfo(type, name)
+
+        svcname  = name.split(".")[0]
         typename = type.split(".")[0][1:]
+        ip       = str(socket.inet_ntoa(info.getAddress()))
+        port     = info.getPort()
+
         num_items = self.list.GetItemCount()
-        self.list.InsertStringItem(num_items, name.split(".")[0])
-        self.list.SetStringItem(num_items, 1, "%s"%typename)
-        self.list.SetStringItem(num_items, 2, "%s"%str(socket.inet_ntoa(info.getAddress())))
-        self.list.SetStringItem(num_items, 3, "%s"%info.getPort())
+        new_item = self.list.InsertStringItem(num_items, svcname)
+        self.list.SetStringItem(new_item, 1, "%s" % typename)
+        self.list.SetStringItem(new_item, 2, "%s" % ip)
+        self.list.SetStringItem(new_item, 3, "%s" % info.getPort())
 
     def CreateURI(self, connect_type, connect_address, connect_port):
         uri = "%s://%s:%s"%(connect_type, connect_address, connect_port)
