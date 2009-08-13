@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #This file is part of Beremiz, a Integrated Development Environment for
@@ -27,7 +26,7 @@ from Zeroconf import *
 import socket
 import  wx.lib.mixins.listctrl  as  listmix
 
-class TestListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
+class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0):
         wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
@@ -38,17 +37,22 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.my_result=None
         wx.Dialog.__init__(self, parent, id, title, size=(600,600), style=wx.DEFAULT_DIALOG_STYLE)
 
+        # set up dialog sizer
+
         sizer = wx.FlexGridSizer(2, 1, 2, 2)  # rows, cols, vgap, hgap
         sizer.AddGrowableRow(0)
         sizer.AddGrowableCol(0)
 
-        self.list = TestListCtrl(self, -1,
-                                 #pos=(50,20), 
-                                 #size=(500,300),
-                                 style=wx.LC_REPORT 
-                                | wx.LC_EDIT_LABELS
-                                | wx.LC_SORT_ASCENDING
-                                )
+        # set up list control
+
+        self.list = AutoWidthListCtrl(self, -1,
+                                      #pos=(50,20), 
+                                      #size=(500,300),
+                                      style=wx.LC_REPORT 
+                                     | wx.LC_EDIT_LABELS
+                                     | wx.LC_SORT_ASCENDING
+                                     | wx.LC_SINGLE_SEL 
+                                     )
         sizer.Add(self.list, 1, wx.EXPAND)
 
         btsizer = wx.FlexGridSizer(1, 6, 2, 2)  # rows, cols, vgap, hgap
@@ -59,6 +63,8 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, self.list)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, self.list)
+
+        # set up buttons
 
         local_id = wx.NewId()
         b = wx.Button(self, local_id, _("Refresh"))
@@ -89,7 +95,12 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
         listmix.ColumnSorterMixin.__init__(self, 4)
 
-        #type = "_http._tcp.local."
+        # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
+        self.itemDataMap = {}
+
+        # a counter used to assign a unique id to each listctrl item
+        self.nextItemId = 0
+
         self.browser = None
         self.zConfInstance = Zeroconf()
         self.RefreshList()
@@ -158,16 +169,55 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         return self.my_result
         
     def removeService(self, zeroconf, type, name):
-        pass
+        '''
+        called when a service with the desired type goes offline.
+        '''
+
+        # loop through the list items looking for the service that went offline
+        for idx in xrange(self.list.GetItemCount()):
+            # this is the unique identifier assigned to the item
+            item_id = self.list.GetItemData(idx)
+
+            # this is the full typename that was received by addService
+            item_name = self.itemDataMap[item_id][4]
+
+            if item_name == name:
+                self.list.DeleteItem(idx)
+                break
 
     def addService(self, zeroconf, type, name):
+        '''
+        called when a service with the desired type is discovered.
+        '''
+
         info = self.zConfInstance.getServiceInfo(type, name)
+
+        svcname  = name.split(".")[0]
         typename = type.split(".")[0][1:]
+        ip       = str(socket.inet_ntoa(info.getAddress()))
+        port     = info.getPort()
+
         num_items = self.list.GetItemCount()
-        self.list.InsertStringItem(num_items, name.split(".")[0])
-        self.list.SetStringItem(num_items, 1, "%s"%typename)
-        self.list.SetStringItem(num_items, 2, "%s"%str(socket.inet_ntoa(info.getAddress())))
-        self.list.SetStringItem(num_items, 3, "%s"%info.getPort())
+
+        # display the new data in the list
+        new_item = self.list.InsertStringItem(num_items, svcname)
+        self.list.SetStringItem(new_item, 1, "%s" % typename)
+        self.list.SetStringItem(new_item, 2, "%s" % ip)
+        self.list.SetStringItem(new_item, 3, "%s" % port)
+
+        # record the new data for the ColumnSorterMixin
+        # we assign every list item a unique id (that won't change when items
+        # are added or removed)
+        self.list.SetItemData(new_item, self.nextItemId)
+ 
+        # the value of each column has to be stored in the itemDataMap
+        # so that ColumnSorterMixin knows how to sort the column.
+
+        # "name" is included at the end so that self.removeService
+        # can access it.
+        self.itemDataMap[self.nextItemId] = [ svcname, typename, ip, port, name ]
+
+        self.nextItemId += 1
 
     def CreateURI(self, connect_type, connect_address, connect_port):
         uri = "%s://%s:%s"%(connect_type, connect_address, connect_port)
