@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2009-08-10T16:18:56">
+                 modificationDateTime="2009-08-14T16:13:40">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -73,21 +73,6 @@
                 <BOOL/>
               </type>
             </variable>
-            <variable name="Texte_compteur">
-              <type>
-                <derived name="TextCtrl"/>
-              </type>
-            </variable>
-            <variable name="Start_Stop">
-              <type>
-                <derived name="Button_toggle"/>
-              </type>
-            </variable>
-            <variable name="Temoin">
-              <type>
-                <derived name="Button_led"/>
-              </type>
-            </variable>
             <variable name="Btn1">
               <type>
                 <derived name="Button"/>
@@ -128,45 +113,56 @@
                 <derived name="Button"/>
               </type>
             </variable>
+            <variable name="Start_Stop">
+              <type>
+                <derived name="Button"/>
+              </type>
+            </variable>
+            <variable name="Compteur">
+              <type>
+                <derived name="TextCtrl"/>
+              </type>
+            </variable>
+            <variable name="Temoin">
+              <type>
+                <derived name="Led"/>
+              </type>
+            </variable>
           </localVars>
         </interface>
         <body>
           <FBD>
-            <block localId="32" width="80" height="80" typeName="ADD">
-              <position x="150" y="400"/>
+            <block localId="32" width="80" height="110" typeName="ADD">
+              <position x="665" y="420"/>
               <inputVariables>
                 <variable formalParameter="EN">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
-                    <connection refLocalId="49" formalParameter="current_state">
-                      <position x="150" y="430"/>
-                      <position x="140" y="430"/>
-                      <position x="140" y="272"/>
-                      <position x="485" y="272"/>
-                      <position x="485" y="150"/>
-                      <position x="425" y="150"/>
+                    <relPosition x="0" y="35"/>
+                    <connection refLocalId="5">
+                      <position x="665" y="455"/>
+                      <position x="610" y="455"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
-                    <connection refLocalId="39">
-                      <position x="150" y="450"/>
-                      <position x="105" y="450"/>
+                    <relPosition x="0" y="65"/>
+                    <connection refLocalId="100" formalParameter="OUT">
+                      <position x="665" y="485"/>
+                      <position x="490" y="485"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="95"/>
                     <connection refLocalId="33">
-                      <position x="150" y="470"/>
-                      <position x="140" y="470"/>
-                      <position x="140" y="500"/>
-                      <position x="345" y="500"/>
-                      <position x="345" y="530"/>
-                      <position x="335" y="530"/>
+                      <position x="665" y="515"/>
+                      <position x="645" y="515"/>
+                      <position x="645" y="555"/>
+                      <position x="870" y="555"/>
+                      <position x="870" y="485"/>
+                      <position x="855" y="485"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -175,25 +171,23 @@
               <outputVariables>
                 <variable formalParameter="ENO">
                   <connectionPointOut>
-                    <relPosition x="80" y="30"/>
+                    <relPosition x="80" y="35"/>
                   </connectionPointOut>
                 </variable>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="80" y="50"/>
+                    <relPosition x="80" y="65"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
             <inOutVariable localId="33" height="35" width="85">
-              <position x="250" y="515"/>
+              <position x="770" y="470"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="32" formalParameter="OUT">
-                  <position x="250" y="530"/>
-                  <position x="240" y="530"/>
-                  <position x="240" y="450"/>
-                  <position x="230" y="450"/>
+                  <position x="770" y="485"/>
+                  <position x="745" y="485"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -201,158 +195,49 @@
               </connectionPointOut>
               <expression>counter</expression>
             </inOutVariable>
-            <inVariable localId="39" height="30" width="60">
-              <position x="45" y="435"/>
+            <inVariable localId="39" height="35" width="70">
+              <position x="90" y="470"/>
               <connectionPointOut>
-                <relPosition x="60" y="15"/>
+                <relPosition x="70" y="15"/>
               </connectionPointOut>
-              <expression>INT#1</expression>
+              <expression>BOOL#1</expression>
             </inVariable>
             <inVariable localId="41" height="30" width="120">
-              <position x="20" y="120"/>
+              <position x="45" y="180"/>
               <connectionPointOut>
                 <relPosition x="120" y="15"/>
               </connectionPointOut>
               <expression>'stop_back'</expression>
             </inVariable>
             <inVariable localId="42" height="30" width="120">
-              <position x="20" y="170"/>
+              <position x="45" y="225"/>
               <connectionPointOut>
                 <relPosition x="120" y="15"/>
               </connectionPointOut>
               <expression>'stop_sele'</expression>
             </inVariable>
             <inVariable localId="46" height="30" width="180">
-              <position x="385" y="340"/>
+              <position x="675" y="265"/>
               <connectionPointOut>
                 <relPosition x="180" y="15"/>
               </connectionPointOut>
               <expression>'text_compteur'</expression>
             </inVariable>
-            <block localId="47" width="130" height="65" typeName="TextCtrl" instanceName="Texte_compteur">
-              <position x="715" y="395"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="30"/>
-                    <connection refLocalId="46">
-                      <position x="715" y="425"/>
-                      <position x="630" y="425"/>
-                      <position x="630" y="355"/>
-                      <position x="565" y="355"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state">
-                  <connectionPointIn>
-                    <relPosition x="0" y="55"/>
-                    <connection refLocalId="83" formalParameter="OUT">
-                      <position x="715" y="450"/>
-                      <position x="540" y="450"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables>
-                <variable formalParameter="code">
-                  <connectionPointOut>
-                    <relPosition x="130" y="30"/>
-                  </connectionPointOut>
-                </variable>
-              </outputVariables>
-            </block>
-            <block localId="49" width="240" height="125" typeName="Button_toggle" instanceName="Start_Stop">
-              <position x="185" y="115"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="35"/>
-                    <connection refLocalId="41">
-                      <position x="185" y="150"/>
-                      <position x="160" y="150"/>
-                      <position x="160" y="135"/>
-                      <position x="140" y="135"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="70"/>
-                    <connection refLocalId="42">
-                      <position x="185" y="185"/>
-                      <position x="140" y="185"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="set_state">
-                  <connectionPointIn>
-                    <relPosition x="0" y="105"/>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables>
-                <variable formalParameter="current_state">
-                  <connectionPointOut>
-                    <relPosition x="240" y="35"/>
-                  </connectionPointOut>
-                </variable>
-              </outputVariables>
-            </block>
-            <block localId="50" width="115" height="135" typeName="Button_led" instanceName="Temoin">
-              <position x="660" y="20"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="40"/>
-                    <connection refLocalId="51">
-                      <position x="660" y="60"/>
-                      <position x="632" y="60"/>
-                      <position x="632" y="55"/>
-                      <position x="615" y="55"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="75"/>
-                    <connection refLocalId="52">
-                      <position x="660" y="95"/>
-                      <position x="625" y="95"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state">
-                  <connectionPointIn>
-                    <relPosition x="0" y="115"/>
-                    <connection refLocalId="49" formalParameter="current_state">
-                      <position x="660" y="135"/>
-                      <position x="545" y="135"/>
-                      <position x="545" y="150"/>
-                      <position x="425" y="150"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
             <inVariable localId="51" height="30" width="110">
-              <position x="505" y="40"/>
+              <position x="725" y="80"/>
               <connectionPointOut>
                 <relPosition x="110" y="15"/>
               </connectionPointOut>
               <expression>'led_stop'</expression>
             </inVariable>
             <inVariable localId="52" height="30" width="120">
-              <position x="505" y="80"/>
+              <position x="715" y="115"/>
               <connectionPointOut>
                 <relPosition x="120" y="15"/>
               </connectionPointOut>
               <expression>'led_start'</expression>
             </inVariable>
-            <block localId="53" width="235" height="135" typeName="Button" instanceName="Btn1">
+            <block localId="53" width="235" height="200" typeName="Button" instanceName="Btn1">
               <position x="180" y="620"/>
               <inputVariables>
                 <variable formalParameter="back_id">
@@ -373,15 +258,25 @@
                     </connection>
                   </connectionPointIn>
                 </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="110"/>
+                  </connectionPointIn>
+                </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="115"/>
+                    <relPosition x="0" y="145"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="180"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
                     <relPosition x="235" y="40"/>
                   </connectionPointOut>
@@ -402,408 +297,444 @@
               </connectionPointOut>
               <expression>'btn1_sele'</expression>
             </inVariable>
-            <block localId="56" width="240" height="85" typeName="Button" instanceName="Btn2">
-              <position x="180" y="785"/>
+            <block localId="56" width="240" height="210" typeName="Button" instanceName="Btn2">
+              <position x="175" y="855"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="63">
-                      <position x="180" y="815"/>
-                      <position x="130" y="815"/>
+                      <position x="175" y="895"/>
+                      <position x="125" y="895"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="75"/>
                     <connection refLocalId="67">
-                      <position x="180" y="835"/>
-                      <position x="155" y="835"/>
-                      <position x="155" y="855"/>
-                      <position x="130" y="855"/>
+                      <position x="175" y="930"/>
+                      <position x="125" y="930"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="115"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="155"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="190"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="57" width="240" height="85" typeName="Button" instanceName="Btn3">
-              <position x="180" y="895"/>
+            <block localId="57" width="240" height="225" typeName="Button" instanceName="Btn3">
+              <position x="175" y="1100"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="66">
-                      <position x="180" y="925"/>
-                      <position x="140" y="925"/>
+                      <position x="175" y="1140"/>
+                      <position x="135" y="1140"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="80"/>
                     <connection refLocalId="65">
-                      <position x="180" y="945"/>
-                      <position x="157" y="945"/>
-                      <position x="157" y="965"/>
-                      <position x="140" y="965"/>
+                      <position x="175" y="1180"/>
+                      <position x="135" y="1180"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="165"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="205"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="58" width="240" height="85" typeName="Button" instanceName="Btn4">
-              <position x="180" y="1005"/>
+            <block localId="58" width="240" height="225" typeName="Button" instanceName="Btn4">
+              <position x="175" y="1355"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="69">
-                      <position x="180" y="1035"/>
-                      <position x="140" y="1035"/>
+                      <position x="175" y="1395"/>
+                      <position x="135" y="1395"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="80"/>
                     <connection refLocalId="70">
-                      <position x="180" y="1055"/>
-                      <position x="160" y="1055"/>
-                      <position x="160" y="1075"/>
-                      <position x="140" y="1075"/>
+                      <position x="175" y="1435"/>
+                      <position x="135" y="1435"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="165"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="205"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="59" width="240" height="85" typeName="Button" instanceName="Btn5">
-              <position x="180" y="1115"/>
+            <block localId="59" width="240" height="215" typeName="Button" instanceName="Btn5">
+              <position x="900" y="615"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="72">
-                      <position x="180" y="1145"/>
-                      <position x="140" y="1145"/>
+                      <position x="900" y="655"/>
+                      <position x="860" y="655"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="80"/>
                     <connection refLocalId="73">
-                      <position x="180" y="1165"/>
-                      <position x="160" y="1165"/>
-                      <position x="160" y="1185"/>
-                      <position x="140" y="1185"/>
+                      <position x="900" y="695"/>
+                      <position x="860" y="695"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="115"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="155"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="195"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="60" width="240" height="85" typeName="Button" instanceName="Btn6">
-              <position x="180" y="1230"/>
+            <block localId="60" width="240" height="230" typeName="Button" instanceName="Btn6">
+              <position x="900" y="855"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="75">
-                      <position x="180" y="1260"/>
-                      <position x="160" y="1260"/>
-                      <position x="160" y="1255"/>
-                      <position x="140" y="1255"/>
+                      <position x="900" y="895"/>
+                      <position x="860" y="895"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="85"/>
                     <connection refLocalId="76">
-                      <position x="180" y="1280"/>
-                      <position x="160" y="1280"/>
-                      <position x="160" y="1300"/>
-                      <position x="140" y="1300"/>
+                      <position x="900" y="940"/>
+                      <position x="860" y="940"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="125"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="165"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="210"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="61" width="240" height="85" typeName="Button" instanceName="Btn7">
-              <position x="180" y="1345"/>
+            <block localId="61" width="240" height="230" typeName="Button" instanceName="Btn7">
+              <position x="900" y="1105"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="78">
-                      <position x="180" y="1375"/>
-                      <position x="160" y="1375"/>
-                      <position x="160" y="1370"/>
-                      <position x="140" y="1370"/>
+                      <position x="900" y="1145"/>
+                      <position x="860" y="1145"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="85"/>
                     <connection refLocalId="79">
-                      <position x="180" y="1395"/>
-                      <position x="160" y="1395"/>
-                      <position x="160" y="1415"/>
-                      <position x="140" y="1415"/>
+                      <position x="900" y="1190"/>
+                      <position x="860" y="1190"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="125"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="165"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="210"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="62" width="240" height="85" typeName="Button" instanceName="Btn8">
-              <position x="180" y="1455"/>
+            <block localId="62" width="240" height="220" typeName="Button" instanceName="Btn8">
+              <position x="900" y="1355"/>
               <inputVariables>
                 <variable formalParameter="back_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="81">
-                      <position x="180" y="1485"/>
-                      <position x="140" y="1485"/>
+                      <position x="900" y="1395"/>
+                      <position x="860" y="1395"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="sele_id">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="80"/>
                     <connection refLocalId="82">
-                      <position x="180" y="1505"/>
-                      <position x="160" y="1505"/>
-                      <position x="160" y="1525"/>
-                      <position x="140" y="1525"/>
+                      <position x="900" y="1435"/>
+                      <position x="860" y="1435"/>
                     </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="set_state">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="160"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="current_state">
+                <variable formalParameter="state_out">
                   <connectionPointOut>
-                    <relPosition x="240" y="30"/>
+                    <relPosition x="240" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
             <inVariable localId="63" height="30" width="120">
-              <position x="10" y="800"/>
+              <position x="5" y="880"/>
               <connectionPointOut>
                 <relPosition x="120" y="15"/>
               </connectionPointOut>
               <expression>'btn2_back'</expression>
             </inVariable>
             <inVariable localId="65" height="35" width="125">
-              <position x="15" y="950"/>
+              <position x="10" y="1165"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn3_sele'</expression>
             </inVariable>
             <inVariable localId="66" height="35" width="125">
-              <position x="15" y="910"/>
+              <position x="10" y="1125"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn3_back'</expression>
             </inVariable>
             <inVariable localId="67" height="30" width="120">
-              <position x="10" y="840"/>
+              <position x="5" y="915"/>
               <connectionPointOut>
                 <relPosition x="120" y="15"/>
               </connectionPointOut>
               <expression>'btn2_sele'</expression>
             </inVariable>
             <inVariable localId="69" height="35" width="125">
-              <position x="15" y="1020"/>
+              <position x="10" y="1380"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn4_back'</expression>
             </inVariable>
             <inVariable localId="70" height="35" width="125">
-              <position x="15" y="1060"/>
+              <position x="10" y="1420"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn4_sele'</expression>
             </inVariable>
             <inVariable localId="72" height="35" width="125">
-              <position x="15" y="1130"/>
+              <position x="735" y="640"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn5_back'</expression>
             </inVariable>
             <inVariable localId="73" height="35" width="125">
-              <position x="15" y="1170"/>
+              <position x="735" y="680"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn5_sele'</expression>
             </inVariable>
             <inVariable localId="75" height="35" width="125">
-              <position x="15" y="1240"/>
+              <position x="735" y="880"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn6_back'</expression>
             </inVariable>
             <inVariable localId="76" height="35" width="125">
-              <position x="15" y="1285"/>
+              <position x="735" y="925"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn6_sele'</expression>
             </inVariable>
             <inVariable localId="78" height="35" width="125">
-              <position x="15" y="1355"/>
+              <position x="735" y="1130"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn7_back'</expression>
             </inVariable>
             <inVariable localId="79" height="35" width="125">
-              <position x="15" y="1400"/>
+              <position x="735" y="1175"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn7_sele'</expression>
             </inVariable>
             <inVariable localId="81" height="35" width="125">
-              <position x="15" y="1470"/>
+              <position x="735" y="1380"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn8_back'</expression>
             </inVariable>
             <inVariable localId="82" height="35" width="125">
-              <position x="15" y="1510"/>
+              <position x="735" y="1420"/>
               <connectionPointOut>
                 <relPosition x="125" y="15"/>
               </connectionPointOut>
               <expression>'btn8_sele'</expression>
             </inVariable>
             <block localId="83" width="145" height="60" typeName="INT_TO_STRING">
-              <position x="395" y="400"/>
+              <position x="600" y="320"/>
               <inputVariables>
-                <variable formalParameter="EN">
-                  <connectionPointIn>
-                    <relPosition x="0" y="30"/>
-                    <connection refLocalId="32" formalParameter="ENO">
-                      <position x="395" y="430"/>
-                      <position x="230" y="430"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
                 <variable formalParameter="IN">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
-                    <connection refLocalId="33">
-                      <position x="395" y="450"/>
-                      <position x="365" y="450"/>
-                      <position x="365" y="530"/>
-                      <position x="335" y="530"/>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="4">
+                      <position x="600" y="360"/>
+                      <position x="555" y="360"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables>
-                <variable formalParameter="ENO">
-                  <connectionPointOut>
-                    <relPosition x="145" y="30"/>
-                  </connectionPointOut>
-                </variable>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="145" y="50"/>
+                    <relPosition x="145" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
@@ -812,7 +743,7 @@
               <position x="505" y="645"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="53" formalParameter="current_state">
+                <connection refLocalId="53" formalParameter="state_out">
                   <position x="505" y="660"/>
                   <position x="415" y="660"/>
                 </connection>
@@ -820,82 +751,353 @@
               <expression>DigitalBit0</expression>
             </outVariable>
             <outVariable localId="85" height="35" width="125">
-              <position x="505" y="800"/>
+              <position x="500" y="880"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="56" formalParameter="current_state">
-                  <position x="505" y="815"/>
-                  <position x="420" y="815"/>
+                <connection refLocalId="56" formalParameter="state_out">
+                  <position x="500" y="895"/>
+                  <position x="415" y="895"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit1</expression>
             </outVariable>
             <outVariable localId="91" height="35" width="125">
-              <position x="515" y="1470"/>
+              <position x="1230" y="1380"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="62" formalParameter="current_state">
-                  <position x="515" y="1485"/>
-                  <position x="420" y="1485"/>
+                <connection refLocalId="62" formalParameter="state_out">
+                  <position x="1230" y="1395"/>
+                  <position x="1140" y="1395"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit7</expression>
             </outVariable>
             <outVariable localId="90" height="35" width="125">
-              <position x="515" y="1360"/>
+              <position x="1235" y="1130"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="61" formalParameter="current_state">
-                  <position x="515" y="1375"/>
-                  <position x="420" y="1375"/>
+                <connection refLocalId="61" formalParameter="state_out">
+                  <position x="1235" y="1145"/>
+                  <position x="1140" y="1145"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit6</expression>
             </outVariable>
             <outVariable localId="89" height="35" width="125">
-              <position x="510" y="1245"/>
+              <position x="1230" y="880"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="60" formalParameter="current_state">
-                  <position x="510" y="1260"/>
-                  <position x="420" y="1260"/>
+                <connection refLocalId="60" formalParameter="state_out">
+                  <position x="1230" y="895"/>
+                  <position x="1140" y="895"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit5</expression>
             </outVariable>
             <outVariable localId="88" height="35" width="125">
-              <position x="510" y="1130"/>
+              <position x="1230" y="640"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="59" formalParameter="current_state">
-                  <position x="510" y="1145"/>
-                  <position x="420" y="1145"/>
+                <connection refLocalId="59" formalParameter="state_out">
+                  <position x="1230" y="655"/>
+                  <position x="1140" y="655"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit4</expression>
             </outVariable>
             <outVariable localId="87" height="35" width="125">
-              <position x="505" y="1020"/>
+              <position x="500" y="1380"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="58" formalParameter="current_state">
-                  <position x="505" y="1035"/>
-                  <position x="420" y="1035"/>
+                <connection refLocalId="58" formalParameter="state_out">
+                  <position x="500" y="1395"/>
+                  <position x="415" y="1395"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit3</expression>
             </outVariable>
             <outVariable localId="86" height="35" width="125">
-              <position x="505" y="910"/>
+              <position x="500" y="1125"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="57" formalParameter="current_state">
-                  <position x="505" y="925"/>
-                  <position x="420" y="925"/>
+                <connection refLocalId="57" formalParameter="state_out">
+                  <position x="500" y="1140"/>
+                  <position x="415" y="1140"/>
                 </connection>
               </connectionPointIn>
               <expression>DigitalBit2</expression>
             </outVariable>
+            <block localId="92" width="200" height="230" typeName="Button" instanceName="Start_Stop">
+              <position x="225" y="155"/>
+              <inputVariables>
+                <variable formalParameter="back_id">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="41">
+                      <position x="225" y="195"/>
+                      <position x="165" y="195"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="sele_id">
+                  <connectionPointIn>
+                    <relPosition x="0" y="85"/>
+                    <connection refLocalId="42">
+                      <position x="225" y="240"/>
+                      <position x="165" y="240"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="toggle">
+                  <connectionPointIn>
+                    <relPosition x="0" y="125"/>
+                    <connection refLocalId="93">
+                      <position x="225" y="280"/>
+                      <position x="165" y="280"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="set_state">
+                  <connectionPointIn>
+                    <relPosition x="0" y="165"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="210"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="state_out">
+                  <connectionPointOut>
+                    <relPosition x="200" y="40"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="93" height="30" width="70">
+              <position x="95" y="265"/>
+              <connectionPointOut>
+                <relPosition x="70" y="15"/>
+              </connectionPointOut>
+              <expression>BOOL#1</expression>
+            </inVariable>
+            <block localId="94" width="100" height="145" typeName="TextCtrl" instanceName="Compteur">
+              <position x="900" y="240"/>
+              <inputVariables>
+                <variable formalParameter="back_id">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="46">
+                      <position x="900" y="280"/>
+                      <position x="855" y="280"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="set_text">
+                  <connectionPointIn>
+                    <relPosition x="0" y="80"/>
+                    <connection refLocalId="3">
+                      <position x="900" y="320"/>
+                      <position x="855" y="320"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="text">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
+                    <connection refLocalId="83" formalParameter="OUT">
+                      <position x="900" y="360"/>
+                      <position x="745" y="360"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <inVariable localId="1" height="30" width="70">
+              <position x="80" y="85"/>
+              <connectionPointOut>
+                <relPosition x="70" y="15"/>
+              </connectionPointOut>
+              <expression>BOOL#1</expression>
+            </inVariable>
+            <block localId="95" width="100" height="130" typeName="Led" instanceName="Temoin">
+              <position x="900" y="55"/>
+              <inputVariables>
+                <variable formalParameter="back_id">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="51">
+                      <position x="900" y="95"/>
+                      <position x="835" y="95"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="sele_id">
+                  <connectionPointIn>
+                    <relPosition x="0" y="75"/>
+                    <connection refLocalId="52">
+                      <position x="900" y="130"/>
+                      <position x="835" y="130"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="state_in">
+                  <connectionPointIn>
+                    <relPosition x="0" y="110"/>
+                    <connection refLocalId="2">
+                      <position x="900" y="165"/>
+                      <position x="835" y="165"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <block localId="96" width="80" height="65" typeName="AND">
+              <position x="200" y="45"/>
+              <inputVariables>
+                <variable formalParameter="IN1" negated="true">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="96" formalParameter="OUT">
+                      <position x="200" y="75"/>
+                      <position x="175" y="75"/>
+                      <position x="175" y="30"/>
+                      <position x="305" y="30"/>
+                      <position x="305" y="75"/>
+                      <position x="280" y="75"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="55"/>
+                    <connection refLocalId="1">
+                      <position x="200" y="100"/>
+                      <position x="150" y="100"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="80" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <connector name="CLOCK" localId="97" height="30" width="90">
+              <position x="345" y="60"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="96" formalParameter="OUT">
+                  <position x="345" y="75"/>
+                  <position x="280" y="75"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <connector name="COUNT" localId="98" height="30" width="90">
+              <position x="485" y="180"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="92" formalParameter="state_out">
+                  <position x="485" y="195"/>
+                  <position x="425" y="195"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <continuation name="COUNT" localId="2" height="30" width="90">
+              <position x="745" y="150"/>
+              <connectionPointOut>
+                <relPosition x="90" y="15"/>
+              </connectionPointOut>
+            </continuation>
+            <inVariable localId="4" height="35" width="85">
+              <position x="470" y="345"/>
+              <connectionPointOut>
+                <relPosition x="85" y="15"/>
+              </connectionPointOut>
+              <expression>counter</expression>
+            </inVariable>
+            <continuation name="COUNT" localId="5" height="30" width="90">
+              <position x="520" y="440"/>
+              <connectionPointOut>
+                <relPosition x="90" y="15"/>
+              </connectionPointOut>
+            </continuation>
+            <block localId="99" width="80" height="110" typeName="AND">
+              <position x="215" y="445"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="39">
+                      <position x="215" y="485"/>
+                      <position x="160" y="485"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="85"/>
+                    <connection refLocalId="6">
+                      <position x="215" y="530"/>
+                      <position x="160" y="530"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="80" y="40"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <continuation name="CLOCK" localId="6" height="30" width="90">
+              <position x="70" y="515"/>
+              <connectionPointOut>
+                <relPosition x="90" y="15"/>
+              </connectionPointOut>
+            </continuation>
+            <block localId="100" width="125" height="45" typeName="BOOL_TO_INT">
+              <position x="365" y="455"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="99" formalParameter="OUT">
+                      <position x="365" y="485"/>
+                      <position x="295" y="485"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="125" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <continuation name="CLOCK" localId="3" height="30" width="90">
+              <position x="765" y="305"/>
+              <connectionPointOut>
+                <relPosition x="90" y="15"/>
+              </connectionPointOut>
+            </continuation>
           </FBD>
         </body>
       </pou>

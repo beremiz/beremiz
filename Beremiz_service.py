@@ -509,16 +509,26 @@ if havetwisted:
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 '''
 
+    class PLCHMI(athena.LiveElement):
     
-    class DefaultPLCStartedHMI(athena.LiveElement):
+        initialised = False
+    
+        def HMIinitialised(self, result):
+            self.initialised = True
+        
+        def HMIinitialisation(self):
+            self.HMIinitialised(None)
+    
+    class DefaultPLCStartedHMI(PLCHMI):
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[                                    
                                              tags.h1["PLC IS NOW STARTED"],
                                              ])
-    class PLCStoppedHMI(athena.LiveElement):
+        
+    class PLCStoppedHMI(PLCHMI):
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                              tags.h1["PLC IS STOPPED"]
                                              ])
-    
+        
     class MainPage(athena.LiveElement):
         jsClass = u"WebInterface.PLC"
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
@@ -583,6 +593,7 @@ if havetwisted:
                                                    tags.div( render = tags.directive( "MainPage" ))
                                                    ]]]])
         MainPage = MainPage()
+        PLCHMI = PLCHMI
 
         def __init__(self, plcState=False, *a, **kw):
             super(WebInterface, self).__init__(*a, **kw)

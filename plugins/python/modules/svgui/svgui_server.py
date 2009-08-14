@@ -8,77 +8,123 @@ import simplejson as json
 
 svgfile = '%(svgfile)s'
 
-svguiWidgets={}
+svguiWidgets = {}
+
+currentId = 0
+def getNewId():
+    global currentId
+    currentId += 1
+    return currentId
 
 class SvguiWidget:
     
-    def __init__(self, classname, back_id, **kwargs):
+    def __init__(self, classname, id, **kwargs):
         self.classname = classname
-        self.back_id = back_id
+        self.id = id
         self.attrs = kwargs.copy()
-        self.lastattrs = kwargs.copy()
+        self.inputs = {}
+        self.outputs = {}
         self.inhibit = False
         self.changed = False
 
-    def setattr(self, attrname, value):
-        self.attrs[attrname] = value
+    def setinput(self, attrname, value):
+        self.inputs[attrname] = value
         
-    def getattr(self, attrname):
-        return self.args.get(attrname, None)
+    def getinput(self, attrname, default=None):
+        if not self.inputs.has_key(attrname):
+            self.inputs[attrname] = default
+        return self.inputs[attrname]
 
-    def update(self, **kwargs):
+    def setoutput(self, attrname, value):
+        if self.outputs.get(attrname) != value:
+            self.outputs[attrname] = value
+            self.changed = True
+            self.RefreshInterface()
+        
+    def updateoutputs(self, **kwargs):
         for attrname, value in kwargs.iteritems():
-            if self.lastattrs.get(attrname, None) != value:
+            if self.outputs.get(attrname) != value:
+                self.outputs[attrname] = value
                 self.changed = True
-                self.attrs[attrname] = value
-                self.lastattrs[attrname] = value
-        interface = website.getHMI()
-        if interface is not None and self.changed and not self.inhibit:
-            self.changed = False
-            interface.sendData(self)
+        self.RefreshInterface()
         
-        return self.attrs["state"]
+    def RefreshInterface(self):
+        interface = website.getHMI()
+        if isinstance(interface, SVGUI_HMI) and self.changed and not self.inhibit:
+            self.changed = False
+            d = interface.sendData(self)
+            if d is not None:
+                self.inhibit = True
+                d.addCallback(self.InterfaceRefreshed)
+    
+    def InterfaceRefreshed(self, result):
+        self.inhibit = False
+        if self.changed:
+            self.RefreshInterface()
 
-def convert_to_builtin_type(obj):
+def get_object_init_state(obj):
     # Convert objects to a dictionary of their representation
-    d = { '__class__':obj.classname,
-          'back_id':obj.back_id,
-          'kwargs':json.dumps(obj.attrs),
+    attrs = obj.attrs.copy()
+    attrs.update(obj.inputs)
+    d = { '__class__': obj.classname,
+          'id': obj.id,
+          'kwargs': json.dumps(attrs),
           }
     return d
 
-def dataToSend():
-    gadgets = []
-    for gadget in svguiWidgets.values():
-        gadgets.append(unicode(json.dumps(gadget, default=convert_to_builtin_type, indent=2), 'ascii'))
-    return gadgets
+def get_object_current_state(obj):
+    # Convert objects to a dictionary of their representation
+    d = { '__class__': obj.classname,
+          'id': obj.id,
+          'kwargs': json.dumps(obj.outputs),
+          }
+    return d
 
-
-class SVGUI_HMI(athena.LiveElement):
+class SVGUI_HMI(website.PLCHMI):
     jsClass = u"LiveSVGPage.LiveSVGWidget"
     
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[                                    
                                          tags.xml(loaders.xmlfile(os.path.join(WorkingDir, svgfile))),
                                          ])
-
-    def sendData(self,data):
-        objDefer = self.callRemote('receiveData',unicode(json.dumps(data, default=convert_to_builtin_type, indent=2), 'ascii'))
-
-    def initClient(self):
-        self.callRemote('init', dataToSend())
     
+    def HMIinitialisation(self):
+        gadgets = []
+        for gadget in svguiWidgets.values():
+            gadgets.append(unicode(json.dumps(gadget, default=get_object_init_state, indent=2), 'ascii'))
+        d = self.callRemote('init', gadgets)
+        d.addCallback(self.HMIinitialised)
+    
+    def sendData(self,data):
+        if self.initialised:
+            return self.callRemote('receiveData',unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
+        return None
+        
     def setattr(self, id, attrname, value):
-        svguiWidgets[id].setattr(attrname, value)
+        svguiWidgets[id].setinput(attrname, value)
 
-def SVGUI(*args, **kwargs):
-    classname, back_id = args
-    gad = svguiWidgets.get(back_id, None)
-    if gad is None:
-        gad = SvguiWidget(classname, back_id, **kwargs)
-        svguiWidgets[back_id] = gad
-        gadget = [unicode(json.dumps(gad, default=convert_to_builtin_type, indent=2), 'ascii')]
-        interface = website.getHMI()
-        if interface is not None:
-            interface.callRemote('init', gadget)
+def createSVGUIControl(*args, **kwargs):
+    id = getNewId()
+    gad = SvguiWidget(args[0], id, **kwargs)
+    svguiWidgets[id] = gad
+    gadget = [unicode(json.dumps(gad, default=get_object_init_state, indent=2), 'ascii')]
+    interface = website.getHMI()
+    if isinstance(interface, SVGUI_HMI) and interface.initialised:
+        interface.callRemote('init', gadget)
+    return id
 
-    return gad.update(**kwargs)
+def setAttr(id, attrname, value):
+    gad = svguiWidgets.get(id, None)
+    if gad is not None:
+        gad.setoutput(attrname, value)
+
+def updateAttr(id, **kwargs):
+    gad = svguiWidgets.get(id, None)
+    if gad is not None:
+        gad.updateoutput(**kwargs)
+
+def getAttr(id, attrname, default=None):
+    gad = svguiWidgets.get(id, None)
+    if gad is not None:
+        return gad.getinput(attrname, default)
+    return default
+

@@ -1,5 +1,9 @@
 // import Nevow.Athena
 
+function init() {
+  Nevow.Athena.Widget.fromAthenaID(1).callRemote('HMIexec', 'HMIinitialisation');
+}
+
 WebInterface.PLC = Nevow.Athena.Widget.subclass('WebInterface.PLC');
 WebInterface.PLC.method(
 	 'updateHMI',
@@ -12,6 +16,9 @@ WebInterface.PLC.method(
 						function childAdded(widget) {
 						var node = self.nodeById('content');
 						node.replaceChild(widget.node, node.getElementsByTagName('div')[0]);
+						init();
 						});
 				});
 	   });
+
+Divmod.Base.addLoadEvent(init);

@@ -1,13 +1,14 @@
 
 class button:
     
-    def __init__(self, parent, back_id, sele_id, toggle, state, active):
+    def __init__(self, parent, id, args):
         self.parent = parent
-        self.back_elt = getSVGElementById(back_id)
-        self.sele_elt = getSVGElementById(sele_id)
-        self.toggle = toggle
-        self.state = state
-        self.active = active
+        self.id = id
+        self.back_elt = getSVGElementById(args.back_id)
+        self.sele_elt = getSVGElementById(args.sele_id)
+        self.toggle = args.toggle
+        self.active = args.active
+        self.state = False
         self.dragging = False
         if toggle:
             self.up = not state
@@ -40,9 +41,11 @@ class button:
             self.sele_elt.setAttribute("visibility", "visible")
             self.back_elt.setAttribute("visibility", "hidden")
         
-    def updateState(self, value):
-        self.up = not value
-        self.updateElements()
+    def updateValues(self, values):
+        if values.state != self.state:
+            self.state = values.state
+            self.up = not self.state
+            self.updateElements()
 
     def handleEvent(self, evt):
         # Quand le bouton de la souris est presse
@@ -57,7 +60,7 @@ class button:
             else:
                 self.up = False
                 self.state = True
-                updateAttr(self.back_elt.id, 'state', self.state)
+                updateAttr(self.id, 'state', self.state)
             self.updateElements()
         
         if isCurrentObject(self) and self.dragging:
@@ -76,31 +79,31 @@ class button:
                 evt.stopPropagation()
                 if self.toggle and self.up == self.state:
                     self.state = not self.state
-                    updateAttr(self.back_elt.id, 'state', self.state)
+                    updateAttr(self.id, 'state', self.state)
                 elif not self.toggle:
                     self.up = True
                     self.state = False
-                    updateAttr(self.back_elt.id, 'state', self.state)
+                    updateAttr(self.id, 'state', self.state)
                     self.updateElements()
                 self.dragging = False
         
 class textControl:
     
-    def __init__(self, parent, back_id, state):
+    def __init__(self, parent, id, args):
         self.parent = parent
-        self.back_elt = getSVGElementById(back_id)
-        self.state = state
-        self.setValue(self.state)
+        self.id = id
+        self.back_elt = getSVGElementById(args.back_id)
+        self.value = ""
+        self.updateElements()
+    
+    def updateValues(self, values):
+        if values.text != self.value:
+            self.value = values.text
+            self.updateElements()
+    
+    def updateElements(self):
+        self.back_elt.firstChild.firstChild.textContent = self.value
     
     def handleEvent(self, evt):
         pass
-    
-    def getValue(self):
-        return self.back_elt.firstChild.firstChild.textContent
-    
-    def setValue(self, value):
-        self.back_elt.firstChild.firstChild.textContent = value
-    
-    def updateState(self, value):
-        self.setValue(value)
     
