@@ -1305,6 +1305,7 @@ class Beremiz(wx.Frame):
                 elif answer == wx.ID_CANCEL:
                     return
             self.PluginInfos = {}
+            self.PluginRoot.CloseProject()
             self.PluginRoot = None
             self.Log.flush()
             self.RefreshAll()

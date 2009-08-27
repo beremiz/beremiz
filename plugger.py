@@ -870,6 +870,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if result:
             self.logger.write_error(result)
     
+    def CloseProject(self):
+        if self.PLCEditor is not None:
+            self.PLCEditor.Close()
+        if self.PLCDebug is not None:
+            self.PLCDebug.Close()
+        
+    
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
