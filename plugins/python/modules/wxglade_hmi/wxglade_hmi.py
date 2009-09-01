@@ -58,8 +58,10 @@ class RootClass(PythonCodeTemplate):
             hmipyfile_path=os.path.join(self._getBuildPath(), "hmi.py")
             if wx.Platform == '__WXMSW__':
                 wxgfile_path = "\"%s\""%wxgfile_path
-                hmipyfile_path = "\"%s\""%hmipyfile_path
-            self.launch_wxglade(['-o', hmipyfile_path, '-g', 'python', wxgfile_path], wait=True)
+                wxghmipyfile_path = "\"%s\""%hmipyfile_path
+            else:
+                wxghmipyfile_path = hmipyfile_path
+            self.launch_wxglade(['-o', wxghmipyfile_path, '-g', 'python', wxgfile_path], wait=True)
             
             hmipyfile = open(hmipyfile_path, 'r')
             runtimefile.write(hmipyfile.read())
