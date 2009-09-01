@@ -6,9 +6,9 @@
   <fileHeader companyName="LOLITECH"
               productName="Beremiz"
               productVersion="0.0"
-              creationDateTime="2008-12-14 16:21:19"/>
+              creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2009-01-18 18:40:44">
+                 modificationDateTime="2009-08-31T10:45:18">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -421,8 +421,8 @@
     <configurations>
       <configuration name="conf_pytest">
         <resource name="res_pytest">
-          <task name="pytest_task" interval="00:00:00.100000" priority="0"/>
-          <pouInstance name="pytest_instance" type="main_pytest"/>
+          <task name="pytest_task" interval="t#100ms" priority="0"/>
+          <pouInstance name="pytest_instance" typeName="main_pytest"/>
         </resource>
       </configuration>
     </configurations>

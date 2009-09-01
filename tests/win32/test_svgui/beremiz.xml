@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BeremizRoot URI_location="LOCAL://">
   <TargetType>
-    <Win32 CFLAGS="" Linker="g++" LDFLAGS=""/>
+    <Win32 CFLAGS="" LDFLAGS=""/>
   </TargetType>
 </BeremizRoot>
