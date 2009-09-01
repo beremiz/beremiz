@@ -1288,7 +1288,7 @@ class Beremiz(wx.Frame):
                 message = wx.MessageDialog(self, _("\"%s\" folder is not a valid Beremiz project\n")%projectpath, _("Error"), wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
-            dialog.Destroy()
+        dialog.Destroy()
         event.Skip()
     
     def OnCloseProjectMenu(self, event):
