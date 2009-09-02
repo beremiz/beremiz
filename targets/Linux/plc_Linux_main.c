@@ -124,6 +124,7 @@ int stopPLC()
     pthread_mutex_destroy(&debug_wait_mutex);
     pthread_mutex_unlock(&python_wait_mutex);
     pthread_mutex_destroy(&python_wait_mutex);
+    return 0;
 }
 
 extern int __tick;

@@ -58,12 +58,12 @@ void __run()
  **/
 int __init(int argc,char **argv)
 {
-    int res;
+    int res = 0;
     setlocale(LC_NUMERIC, "C");
     config_init__();
     __init_debug();
     %(init_calls)s
-    return 0;
+    return res;
 }
 /*
  * Calls plugin cleanup proc.

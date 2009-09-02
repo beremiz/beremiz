@@ -67,6 +67,8 @@ void __retrieve_debug()
 
 extern int TryEnterDebugSection(void);
 extern void LeaveDebugSection(void);
+extern long AtomicCompareExchange(long*, long, long);
+extern void InitiateDebugTransfer(void);
 
 extern int __tick;
 void __publish_debug()
@@ -152,13 +154,15 @@ void FreeDebugData()
 
 void* IterDebugData(int* idx, const char **type_name)
 {
+	struct_plcvar* my_var;
+	USINT size;
     if(subscription_cursor < latest_subscription){
         char* old_cursor = buffer_cursor;
         *idx = *subscription_cursor;
-        struct_plcvar* my_var = &variable_table[*(subscription_cursor++)];
+        my_var = &variable_table[*(subscription_cursor++)];
         *type_name = __get_type_enum_name(my_var->type);
         /* get variable size*/
-        USINT size = __get_type_enum_size(my_var->type);
+        size = __get_type_enum_size(my_var->type);
         /* compute next cursor position*/
         buffer_cursor = buffer_cursor + size;
         if(old_cursor < debug_buffer + BUFFER_SIZE)
