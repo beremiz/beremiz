@@ -1639,11 +1639,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # if uri is empty launch discovery dialog
         if uri == "":
             # Launch Service Discovery dialog
-            dia = DiscoveryDialog(self.AppFrame)
-            dia.ShowModal()
-            uri = dia.GetResult()
+            dialog = DiscoveryDialog(self.AppFrame)
+            answer = dialog.ShowModal()
+            uri = dialog.GetURI()
+            dialog.Destroy()
+            
             # Nothing choosed or cancel button
-            if uri is None:
+            if uri is None or answer == wx.ID_CANCEL:
+                self.logger.write_error(_("Connection canceled!\n"))
                 return
             else:
                 self.\
