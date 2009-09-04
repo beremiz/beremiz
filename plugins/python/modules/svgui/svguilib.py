@@ -8,10 +8,13 @@ class button:
         self.sele_elt = getSVGElementById(args.sele_id)
         self.toggle = args.toggle
         self.active = args.active
-        self.state = False
+        if args.state != undefined:
+            self.state = args.state
+        else:
+            self.state = False
         self.dragging = False
-        if toggle:
-            self.up = not state
+        if self.toggle:
+            self.up = not self.state
         else:
             self.up = True
         
@@ -45,6 +48,7 @@ class button:
         if values.state != self.state:
             self.state = values.state
             self.up = not self.state
+            updateAttr(self.id, 'state', self.state)
             self.updateElements()
 
     def handleEvent(self, evt):
@@ -86,23 +90,27 @@ class button:
                     updateAttr(self.id, 'state', self.state)
                     self.updateElements()
                 self.dragging = False
-        
+
 class textControl:
     
     def __init__(self, parent, id, args):
         self.parent = parent
         self.id = id
         self.back_elt = getSVGElementById(args.back_id)
-        self.value = ""
+        if args.text != undefined:
+            self.text = args.text
+        else:
+            self.text = ""
         self.updateElements()
     
     def updateValues(self, values):
         if values.text != self.value:
-            self.value = values.text
+            self.text = values.text
+            updateAttr(self.id, 'text', self.text)
             self.updateElements()
     
     def updateElements(self):
-        self.back_elt.firstChild.firstChild.textContent = self.value
+        self.back_elt.firstChild.firstChild.textContent = self.text
     
     def handleEvent(self, evt):
         pass
