@@ -111,6 +111,7 @@ class PLCObject(pyro.ObjBase):
             else:
                 def DummyIterator(res):
                     self.DummyIteratorLock.acquire()
+                    self.DummyIteratorLock.release()
                     return None
                 self._PythonIterator = DummyIterator
                 
@@ -171,36 +172,10 @@ class PLCObject(pyro.ObjBase):
         self.PLClibraryHandle = None
         # Unload library explicitely
         if getattr(self,"_PLClibraryHandle",None) is not None:
-            PLCprint("Unload PLC")
             dlclose(self._PLClibraryHandle)
-            res = self._DetectDirtyLibs()
-        else:
-            res = False
-
-        self._PLClibraryHandle = None
+            self._PLClibraryHandle = None
+        
         self.PLClibraryLock.release()
-        return res
-
-    def _DetectDirtyLibs(self):
-        # Detect dirty libs
-        # Get lib dependencies (for dirty lib detection)
-        if os.name == "posix":
-            # parasiting libs listed with ldd
-            badlibs = [ toks.split()[0] for toks in commands.getoutput(
-                            "ldd "+self._GetLibFileName()).splitlines() ]
-            for badlib in badlibs:
-                if badlib[:6] in ["libwx_",
-                                  "libwxs",
-                                  "libgtk",
-                                  "libgdk",
-                                  "libatk",
-                                  "libpan",
-                                  "libX11",
-                                  ]:
-                    #badhandle = dlopen(badlib, dl.RTLD_NOLOAD)
-                    PLCprint("Dirty lib detected :" + badlib)
-                    #dlclose(badhandle)
-                    return True
         return False
 
     def PrepareRuntimePy(self):
@@ -308,7 +283,7 @@ class PLCObject(pyro.ObjBase):
     
     def NewPLC(self, md5sum, data, extrafiles):
         PLCprint("NewPLC (%s)"%md5sum)
-        if self.PLCStatus in ["Stopped", "Empty", "Dirty", "Broken"]:
+        if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
             try:
