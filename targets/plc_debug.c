@@ -102,7 +102,7 @@ void __publish_debug()
                 /* compute next cursor positon*/
                 next_cursor = buffer_cursor + size;
                 /* if buffer not full */
-                if(next_cursor < debug_buffer + BUFFER_SIZE)
+                if(next_cursor <= debug_buffer + BUFFER_SIZE)
                 {
                     /* copy data to the buffer */
                     memcpy(buffer_cursor, my_var->ptrvalue, size);
