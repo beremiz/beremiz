@@ -66,7 +66,6 @@ if __name__ == '__main__':
     
     app = wx.PySimpleApp()
     app.SetAppName('beremiz')
-    config = wx.ConfigBase.Get()
     wx.InitAllImageHandlers()
     
     bmp = wx.Image(Bpath("images","splash.png")).ConvertToBitmap()
@@ -100,15 +99,20 @@ def unicode_translation(message):
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
 
+#Quick hack to be able to find Beremiz IEC tools. Should be config params.
+base_folder = os.path.split(sys.path[0])[0]
+sys.path.append(base_folder)
+sys.path.append(os.path.join(base_folder, "plcopeneditor"))
+sys.path.append(os.path.join(base_folder, "docutils"))
+
 import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle
 import types, time, re, platform, time, traceback, commands
 from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
-base_folder = os.path.split(sys.path[0])[0]
-sys.path.append(base_folder)
 from docutils import *
+from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING
 
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
@@ -279,61 +283,43 @@ class LogPseudoFile:
  ID_BEREMIZRUNMENURUN, ID_BEREMIZRUNMENUSAVELOG, 
 ] = [wx.NewId() for _init_coll_EditMenu_Items in range(4)]
 
-class Beremiz(wx.Frame):
+class Beremiz(IDEFrame):
 	
     def _init_coll_FileMenu_Items(self, parent):
-        parent.Append(help='', id=wx.ID_NEW,
+        AppendMenu(parent, help='', id=wx.ID_NEW,
               kind=wx.ITEM_NORMAL, text=_(u'New\tCTRL+N'))
-        parent.Append(help='', id=wx.ID_OPEN,
+        AppendMenu(parent, help='', id=wx.ID_OPEN,
               kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
-        parent.Append(help='', id=wx.ID_SAVE,
+        AppendMenu(parent, help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
-        parent.Append(help='', id=wx.ID_CLOSE_ALL,
+        AppendMenu(parent, help='', id=wx.ID_CLOSE,
+              kind=wx.ITEM_NORMAL, text=_(u'Close Tab\tCTRL+W'))
+        AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
               kind=wx.ITEM_NORMAL, text=_(u'Close Project'))
         parent.AppendSeparator()
-        parent.Append(help='', id=wx.ID_PROPERTIES,
+        AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
+              kind=wx.ITEM_NORMAL, text=_(u'Page Setup'))
+        AppendMenu(parent, help='', id=wx.ID_PREVIEW,
+              kind=wx.ITEM_NORMAL, text=_(u'Preview'))
+        AppendMenu(parent, help='', id=wx.ID_PRINT,
+              kind=wx.ITEM_NORMAL, text=_(u'Print'))
+        parent.AppendSeparator()
+        AppendMenu(parent, help='', id=wx.ID_PROPERTIES,
               kind=wx.ITEM_NORMAL, text=_(u'Properties'))
         parent.AppendSeparator()
-        parent.Append(help='', id=wx.ID_EXIT,
+        AppendMenu(parent, help='', id=wx.ID_EXIT,
               kind=wx.ITEM_NORMAL, text=_(u'Quit\tCTRL+Q'))
+        
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu, id=wx.ID_SAVE)
+        self.Bind(wx.EVT_MENU, self.OnCloseTabMenu, id=wx.ID_CLOSE)
         self.Bind(wx.EVT_MENU, self.OnCloseProjectMenu, id=wx.ID_CLOSE_ALL)
+        self.Bind(wx.EVT_MENU, self.OnPageSetupMenu, id=wx.ID_PAGE_SETUP)
+        self.Bind(wx.EVT_MENU, self.OnPreviewMenu, id=wx.ID_PREVIEW)
+        self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
-        
-    def _init_coll_EditMenu_Items(self, parent):
-        parent.Append(help='', id=wx.ID_EDIT,
-              kind=wx.ITEM_NORMAL, text=_(u'Edit PLC\tCTRL+R'))
-        parent.AppendSeparator()
-        parent.Append(help='', id=wx.ID_ADD,
-              kind=wx.ITEM_NORMAL, text=_(u'Add Plugin'))
-        parent.Append(help='', id=wx.ID_DELETE,
-              kind=wx.ITEM_NORMAL, text=_(u'Delete Plugin'))
-        self.Bind(wx.EVT_MENU, self.OnEditPLCMenu, id=wx.ID_EDIT)
-        self.Bind(wx.EVT_MENU, self.OnAddMenu, id=wx.ID_ADD)
-        self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=wx.ID_DELETE)
-    
-    def _init_coll_RunMenu_Items(self, parent):
-        parent.Append(help='', id=ID_BEREMIZRUNMENUBUILD,
-              kind=wx.ITEM_NORMAL, text=_(u'Build\tCTRL+R'))
-        parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZRUNMENUSIMULATE,
-              kind=wx.ITEM_NORMAL, text=_(u'Simulate'))
-        parent.Append(help='', id=ID_BEREMIZRUNMENURUN,
-              kind=wx.ITEM_NORMAL, text=_(u'Run'))
-        parent.AppendSeparator()
-        parent.Append(help='', id=ID_BEREMIZRUNMENUSAVELOG,
-              kind=wx.ITEM_NORMAL, text=_(u'Save Log'))
-        self.Bind(wx.EVT_MENU, self.OnBuildMenu,
-              id=ID_BEREMIZRUNMENUBUILD)
-        self.Bind(wx.EVT_MENU, self.OnSimulateMenu,
-              id=ID_BEREMIZRUNMENUSIMULATE)
-        self.Bind(wx.EVT_MENU, self.OnRunMenu,
-              id=ID_BEREMIZRUNMENURUN)
-        self.Bind(wx.EVT_MENU, self.OnSaveLogMenu,
-              id=ID_BEREMIZRUNMENUSAVELOG)
     
     def _init_coll_HelpMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_HELP,
@@ -342,25 +328,6 @@ class Beremiz(wx.Frame):
               kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnBeremizMenu, id=wx.ID_HELP)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
-    
-    def _init_coll_MenuBar_Menus(self, parent):
-        parent.Append(menu=self.FileMenu, title=_(u'File'))
-        #parent.Append(menu=self.EditMenu, title=u'Edit')
-        #parent.Append(menu=self.RunMenu, title=u'Run')
-        parent.Append(menu=self.HelpMenu, title=_(u'Help'))
-    
-    def _init_utils(self):
-        self.MenuBar = wx.MenuBar()
-        self.FileMenu = wx.Menu(title=u'')
-        #self.EditMenu = wx.Menu(title=u'')
-        #self.RunMenu = wx.Menu(title=u'')
-        self.HelpMenu = wx.Menu(title=u'')
-        
-        self._init_coll_MenuBar_Menus(self.MenuBar)
-        self._init_coll_FileMenu_Items(self.FileMenu)
-        #self._init_coll_EditMenu_Items(self.EditMenu)
-        #self._init_coll_RunMenu_Items(self.RunMenu)
-        self._init_coll_HelpMenu_Items(self.HelpMenu)
     
     def _init_coll_PLCConfigMainSizer_Items(self, parent):
         parent.AddSizer(self.PLCParamsSizer, 0, border=10, flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
@@ -374,7 +341,7 @@ class Beremiz(wx.Frame):
         parent.AddGrowableCol(0)
         parent.AddGrowableCol(1)
         
-    def _init_sizers(self):
+    def _init_beremiz_sizers(self):
         self.PLCConfigMainSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.PLCParamsSizer = wx.BoxSizer(wx.VERTICAL)
         #self.PluginTreeSizer = wx.FlexGridSizer(cols=3, hgap=0, rows=0, vgap=2)
@@ -387,69 +354,37 @@ class Beremiz(wx.Frame):
         self.PLCConfig.SetSizer(self.PLCConfigMainSizer)
         
     def _init_ctrls(self, prnt):
-        wx.Frame.__init__(self, id=ID_BEREMIZ, name=u'Beremiz',
-              parent=prnt, pos=wx.Point(0, 0), size=wx.Size(1000, 600),
-              style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN, title=_(u'Beremiz'))
-        self._init_utils()
-        self.SetClientSize(wx.Size(1000, 600))
-        self.SetMenuBar(self.MenuBar)
-        self.Bind(wx.EVT_ACTIVATE, self.OnFrameActivated)
-        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-
+        IDEFrame._init_ctrls(self, prnt)
+        
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
         accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR)])
         self.SetAcceleratorTable(accel)
         
-        if wx.VERSION < (2, 8, 0):
-            self.MainSplitter = wx.SplitterWindow(id=ID_BEREMIZMAINSPLITTER,
-                  name='MainSplitter', parent=self, point=wx.Point(0, 0),
-                  size=wx.Size(0, 0), style=wx.SP_3D)
-            self.MainSplitter.SetNeedUpdating(True)
-            self.MainSplitter.SetMinimumPaneSize(1)
-        
-            parent = self.MainSplitter
-        else:
-            parent = self
-        
         self.PLCConfig = wx.ScrolledWindow(id=ID_BEREMIZPLCCONFIG,
-              name='PLCConfig', parent=parent, pos=wx.Point(0, 0),
+              name='PLCConfig', parent=self.LeftNoteBook, pos=wx.Point(0, 0),
               size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.PLCConfig.SetBackgroundColour(wx.WHITE)
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
+        self.LeftNoteBook.AddPage(self.PLCConfig, _("Topology"))
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
-                  name='LogConsole', parent=parent, pos=wx.Point(0, 0),
+                  name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
+        self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
         
-        if wx.VERSION < (2, 8, 0):
-            self.MainSplitter.SplitHorizontally(self.PLCConfig, self.LogConsole, -250)
-        else:
-            self.AUIManager = wx.aui.AuiManager(self)
-            self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
-            
-            self.AUIManager.AddPane(self.PLCConfig, wx.aui.AuiPaneInfo().CenterPane())
-            
-            self.AUIManager.AddPane(self.LogConsole, wx.aui.AuiPaneInfo().
-                Caption(_("Log Console")).Bottom().Layer(1).
-                BestSize(wx.Size(800, 200)).CloseButton(False))
-        
-            self.AUIManager.Update()
+        self._init_beremiz_sizers()
 
-        self._init_sizers()
-
-    def __init__(self, parent, projectOpen, buildpath):
-        self._init_ctrls(parent)
+    def __init__(self, parent, projectOpen, buildpath, debug=True):
+        IDEFrame.__init__(self, parent, debug)
+        self.Config = wx.ConfigBase.Get()
         
         self.Log = LogPseudoFile(self.LogConsole)
-
+        
         self.local_runtime = None
         self.runtime_port = None
         self.local_runtime_tmpdir = None
-        
-        # Add beremiz's icon in top left corner of the frame
-        self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         self.DisableEvents = False
         
@@ -457,12 +392,27 @@ class Beremiz(wx.Frame):
         
         if projectOpen:
             self.PluginRoot = PluginsRoot(self, self.Log)
+            self.Controler = self.PluginRoot
             self.PluginRoot.LoadProject(projectOpen, buildpath)
+            self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
             self.RefreshAll()
         else:
             self.PluginRoot = None
+            self.Controler = None
         
-        self.RefreshMainMenu()
+        # Add beremiz's icon in top left corner of the frame
+        self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
+        
+        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
+        
+        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
+
+    def RefreshTitle(self):
+        name = _("Beremiz")
+        if self.PluginRoot is not None:
+            self.SetTitle("%s - %s"%(name, self.PluginRoot.GetProjectName()))
+        else:
+            self.SetTitle(name)
 
     def StartLocalRuntime(self, taskbaricon = True):
         if self.local_runtime is None or self.local_runtime.finished:
@@ -544,29 +494,45 @@ class Beremiz(wx.Frame):
         self.RefreshScrollBars()
         event.Skip()
     
-    def OnFrameActivated(self, event):
-        if not event.GetActive() and self.PluginRoot is not None:
-            self.PluginRoot.RefreshPluginsBlockLists()
-    
     def OnPanelLeftDown(self, event):
         focused = self.FindFocus()
         if isinstance(focused, TextCtrlAutoComplete.TextCtrlAutoComplete):
             focused._showDropDown(False)
         event.Skip()
     
-    def RefreshMainMenu(self):
+    def RefreshFileMenu(self):
         if self.PluginRoot is not None:
-##            self.MenuBar.EnableTop(1, True)
-##            self.MenuBar.EnableTop(2, True)
+            selected = self.TabsOpened.GetSelection()
+            if selected >= 0:
+                graphic_viewer = isinstance(self.TabsOpened.GetPage(selected), Viewer)
+            else:
+                graphic_viewer = False
+            if self.TabsOpened.GetPageCount() > 0:
+                self.FileMenu.Enable(wx.ID_CLOSE, True)
+                if graphic_viewer:
+                    self.FileMenu.Enable(wx.ID_PREVIEW, True)
+                    self.FileMenu.Enable(wx.ID_PRINT, True)
+                else:
+                    self.FileMenu.Enable(wx.ID_PREVIEW, False)
+                    self.FileMenu.Enable(wx.ID_PRINT, False)
+            else:
+                self.FileMenu.Enable(wx.ID_CLOSE, False)
+                self.FileMenu.Enable(wx.ID_PREVIEW, False)
+                self.FileMenu.Enable(wx.ID_PRINT, False)
+            self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
             self.FileMenu.Enable(wx.ID_SAVE, True)
-            self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
+            self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
+            self.FileMenu.Enable(wx.ID_SAVEAS, True)
         else:
-##            self.MenuBar.EnableTop(1, False)
-##            self.MenuBar.EnableTop(2, False)
+            self.FileMenu.Enable(wx.ID_CLOSE, False)
+            self.FileMenu.Enable(wx.ID_PAGE_SETUP, False)
+            self.FileMenu.Enable(wx.ID_PREVIEW, False)
+            self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
-            self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
+            self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
+            self.FileMenu.Enable(wx.ID_SAVEAS, False)
 
     def RefreshScrollBars(self):
         xstart, ystart = self.PLCConfig.GetViewStart()
@@ -1225,7 +1191,7 @@ class Beremiz(wx.Frame):
                         spinctrl.SetValue(element_infos["value"])
                         spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                     else:
-                        choices = cPickle.loads(str(config.Read(element_path, cPickle.dumps([""]))))                           
+                        choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))                           
                         textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
                                                                      name=element_infos["name"], 
                                                                      parent=parent, 
@@ -1241,59 +1207,55 @@ class Beremiz(wx.Frame):
             first = False
     
     def OnNewProjectMenu(self, event):
-        if not config.HasEntry("lastopenedfolder"):
+        if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
-            defaultpath = config.Read("lastopenedfolder")
+            defaultpath = self.Config.Read("lastopenedfolder")
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             dialog.Destroy()
-            config.Write("lastopenedfolder", os.path.dirname(projectpath))
-            config.Flush()
+            self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
+            self.Config.Flush()
             self.PluginInfos = {}
-            if self.PluginRoot is not None:
-                self.PluginRoot.CloseProject()
             self.PluginRoot = PluginsRoot(self, self.Log)
-            res = self.PluginRoot.NewProject(projectpath)
-            if not res :
+            self.Controler = self.PluginRoot
+            result = self.PluginRoot.NewProject(projectpath)
+            if not result:
+                self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                self._Refresh(TITLE, FILEMENU, EDITMENU, TYPESTREE, INSTANCESTREE, 
+                          LIBRARYTREE)
                 self.RefreshAll()
-                self.RefreshMainMenu()
             else:
-                message = wx.MessageDialog(self, res, _("ERROR"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
+                self.ShowErrorMessage(result)
         event.Skip()
     
     def OnOpenProjectMenu(self, event):
-        if not config.HasEntry("lastopenedfolder"):
+        if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
-            defaultpath = config.Read("lastopenedfolder")
+            defaultpath = self.Config.Read("lastopenedfolder")
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             if os.path.isdir(projectpath):
-                config.Write("lastopenedfolder", os.path.dirname(projectpath))
-                config.Flush()
+                self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
+                self.Config.Flush()
                 self.PluginInfos = {}
-                if self.PluginRoot is not None:
-                    self.PluginRoot.CloseProject()
                 self.PluginRoot = PluginsRoot(self, self.Log)
+                self.Controler = self.PluginRoot
                 result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
+                    self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                    self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                     self.RefreshAll()
-                    self.RefreshMainMenu()
                 else:
-                    message = wx.MessageDialog(self, result, _("Error"), wx.OK|wx.ICON_ERROR)
-                    message.ShowModal()
-                    message.Destroy()
+                    self.ShowErrorMessage(result)
             else:
-                message = wx.MessageDialog(self, _("\"%s\" folder is not a valid Beremiz project\n")%projectpath, _("Error"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
+                self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
+            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
         event.Skip()
     
@@ -1311,17 +1273,24 @@ class Beremiz(wx.Frame):
                 elif answer == wx.ID_CANCEL:
                     return
             self.PluginInfos = {}
-            self.PluginRoot.CloseProject()
             self.PluginRoot = None
             self.Log.flush()
+            self.DeleteAllPages()
+            self.VariablePanelIndexer.RemoveAllPanels()
+            self.TypesTree.DeleteAllItems()
+            self.InstancesTree.DeleteAllItems()
+            self.LibraryTree.DeleteAllItems()
+            self.Controler = None
+            self.DebugVariablePanel.SetDataProducer(None)
+            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
             self.RefreshAll()
-            self.RefreshMainMenu()
         event.Skip()
     
     def OnSaveProjectMenu(self, event):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProject()
             self.RefreshAll()
+            self.RefreshTitle()
         event.Skip()
     
     def OnPropertiesMenu(self, event):
@@ -1330,48 +1299,13 @@ class Beremiz(wx.Frame):
     def OnQuitMenu(self, event):
         self.Close()
         event.Skip()
-    
-    def OnEditPLCMenu(self, event):
-        self.EditPLC()
-        event.Skip()
-    
-    def OnAddMenu(self, event):
-        self.AddPlugin()
-        event.Skip()
-    
-    def OnDeleteMenu(self, event):
-        self.DeletePlugin()
-        event.Skip()
-
-    def OnBuildMenu(self, event):
-        #self.BuildAutom()
-        event.Skip()
-
-    def OnSimulateMenu(self, event):
-        event.Skip()
-    
-    def OnRunMenu(self, event):
-        event.Skip()
-    
-    def OnSaveLogMenu(self, event):
-        event.Skip()
-    
+        
     def OnBeremizMenu(self, event):
         open_pdf(Bpath( "doc", "manual_beremiz.pdf"))
         event.Skip()
     
     def OnAboutMenu(self, event):
         OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
-        event.Skip()
-    
-    def OnAddButton(self, event):
-        PluginType = self.PluginChilds.GetStringSelection()
-        if PluginType != "":
-            self.AddPlugin(PluginType)
-        event.Skip()
-    
-    def OnDeleteButton(self, event):
-        self.DeletePlugin()
         event.Skip()
     
     def GetAddButtonFunction(self, plugin, window):
@@ -1399,6 +1333,7 @@ class Beremiz(wx.Frame):
             PluginName = dialog.GetValue()
             plugin.PlugAddChild(PluginName, PluginType)
             self.RefreshPluginTree()
+            self.PluginRoot.RefreshPluginsBlockLists()
         dialog.Destroy()
     
     def DeletePlugin(self, plugin):
@@ -1407,6 +1342,7 @@ class Beremiz(wx.Frame):
             self.PluginInfos.pop(plugin)
             plugin.PlugRemove()
             del plugin
+            self.PluginRoot.RefreshPluginsBlockLists()
             self.RefreshPluginTree()
         dialog.Destroy()
 

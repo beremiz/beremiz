@@ -11,8 +11,6 @@ import wx
 
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
-sys.path.append(os.path.join(base_folder, "plcopeneditor"))
-sys.path.append(os.path.join(base_folder, "docutils"))
 
 from docpdf import *
 from xmlclass import GenerateClassesFromXSDstring
@@ -177,6 +175,9 @@ class PlugTemplate:
         elif self.PlugParams and parts[0] == self.PlugParams[0]:
             self.PlugParams[1].setElementValue(parts[1], value)
         return value, False
+
+    def PlugMakeDir(self):
+        os.mkdir(self.PlugPath())
 
     def PlugRequestSave(self):
         # If plugin do not have corresponding directory
@@ -533,7 +534,7 @@ class PlugTemplate:
                     _self.ChangesToSave = False
                 else:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
-                    os.mkdir(_self.PlugPath())
+                    _self.PlugMakeDir()
                     # Find an IEC number
                     _self.FindNewIEC_Channel(0)
                     # Call the plugin real __init__
@@ -722,6 +723,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.logger = logger
         self._builder = None
         self._connector = None
+        self.Deleting = False
         
         # Setup debug information
         self.IECdebug_datas = {}
@@ -748,8 +750,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # After __init__ root plugin is not valid
         self.ProjectPath = None
         self.BuildPath = None
-        self.PLCEditor = None
-        self.PLCDebug = None
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
@@ -758,6 +758,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
         self.LoadSTLibrary()
+
+    def __del__(self):
+        self.Deleting = True
 
     def PluginLibraryFilePath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml")
@@ -864,26 +867,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def SaveProject(self):
         if not self.SaveXMLFile():
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
-        if self.PLCEditor:
-            self.PLCEditor.RefreshTitle()
         result = self.PlugRequestSave()
         if result:
             self.logger.write_error(result)
-    
-    def CloseProject(self):
-        if self.PLCEditor is not None:
-            self.PLCEditor.Close()
-        if self.PLCDebug is not None:
-            self.PLCDebug.Close()
-        
     
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
             self.ClearPluginTypes()
             self.AddPluginBlockList(self.PluginsBlockTypesFactory())
-        if self.PLCEditor is not None:
-            self.PLCEditor.RefreshEditor()
+        if self.AppFrame is not None:
+            self.AppFrame.RefreshLibraryTree()
+            self.AppFrame.RefreshEditor()
     
     def PluginPath(self):
         return os.path.join(os.path.split(__file__)[0], "plugins")
@@ -1233,8 +1228,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         Method called by user to (re)build SoftPLC and plugin tree
         """
-        if self.PLCEditor is not None:
-            self.PLCEditor.ClearErrors()
+        if self.AppFrame is not None:
+            self.AppFrame.ClearErrors()
         
         buildpath = self._getBuildPath()
 
@@ -1334,7 +1329,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for infos, (start_row, start_col) in chunk_infos:
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
-            self.PLCEditor.ShowError(infos, start, end)
+            self.AppFrame.ShowError(infos, start, end)
 
     def _showIECcode(self):
         plc_file = self._getIECcodepath()
@@ -1475,11 +1470,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.DebugTimer is not None:
             self.DebugTimer.cancel()
 
-        # Timer to prevent rapid-fire when registering many variables
-        # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
-        self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
-        # Rearm anti-rapid-fire timer
-        self.DebugTimer.start()
+        if not self.Deleting:
+            # Timer to prevent rapid-fire when registering many variables
+            # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
+            self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
+            # Rearm anti-rapid-fire timer
+            self.DebugTimer.start()
 
         
     def SubscribeDebugIECVariable(self, IECPath, callableobj, *args, **kwargs):
@@ -1579,15 +1575,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC(debug=True)
             self.logger.write(_("Starting PLC (debug mode)\n"))
-            if self.PLCDebug is None:
-                self.RefreshPluginsBlockLists()
-                def _onclose():
-                    self.PLCDebug = None
-                self.PLCDebug = PLCOpenEditor(self.AppFrame, self, debug=True)
-                self.PLCDebug._onclose = _onclose
-                self.PLCDebug.Show()
-            else:
-                self.PLCDebug.ResetGraphicViewers()
+            if self.AppFrame:
+                self.AppFrame.ResetGraphicViewers()
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()
         else:
@@ -1736,9 +1725,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             data = builder.GetBinaryCode()
             if data is not None :
                 if self._connector.NewPLC(MD5, data, extrafiles):
-                    if self.PLCDebug is not None:
-                        self.PLCDebug.Close()
-                        self.PLCDebug = None
+                    if self.AppFrame is not None:
+                        self.AppFrame.CloseDebugTabs()
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
                     self.logger.write(_("Transfer completed successfully.\n"))
@@ -1749,10 +1737,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.UpdateMethodsFromPLCStatus()
 
     PluginMethods = [
-        {"bitmap" : opjimg("editPLC"),
-         "name" : _("Edit PLC"),
-         "tooltip" : _("Edit PLC program with PLCOpenEditor"),
-         "method" : "_EditPLC"},
         {"bitmap" : opjimg("Build"),
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),
