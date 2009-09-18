@@ -212,7 +212,7 @@ class PLCObject(pyro.ObjBase):
         
         for filename in os.listdir(self.workingdir):
             name, ext = os.path.splitext(filename)
-            if name.startswith("runtime") and ext == ".py":
+            if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
                 try:
                     # TODO handle exceptions in runtime.py
                     # pyfile may redefine _runtime_cleanup
