@@ -64,7 +64,7 @@ void catch_signal(int sig)
 }
 
 
-static int __debug_tick;
+static unsigned long __debug_tick;
 
 static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t python_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -75,8 +75,8 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 int startPLC(int argc,char **argv)
 {
     struct sigevent sigev;
-    /* Translate PLC's microseconds to Ttick nanoseconds */
-    Ttick = 1000000 * maxval(common_ticktime__,1);
+    /* Define Ttick to 1ms if common_ticktime not defined */
+    Ttick = common_ticktime__?common_ticktime__:1000000;
 
     memset (&sigev, 0, sizeof (struct sigevent));
     sigev.sigev_value.sival_int = 0;
@@ -97,6 +97,8 @@ int startPLC(int argc,char **argv)
         /* install signal handler for manual break */
 //        signal(SIGTERM, catch_signal);
         signal(SIGINT, catch_signal);
+
+        pthread_mutex_trylock(&debug_mutex);
     }else{
         return 1;
     }
@@ -120,6 +122,7 @@ int stopPLC()
     timer_delete (PLC_timer);
     __cleanup();
     __debug_tick = -1;
+    pthread_mutex_unlock(&debug_mutex);
     pthread_mutex_unlock(&debug_wait_mutex);
     pthread_mutex_destroy(&debug_wait_mutex);
     pthread_mutex_unlock(&python_wait_mutex);
@@ -127,9 +130,9 @@ int stopPLC()
     return 0;
 }
 
-extern int __tick;
+extern unsigned long __tick;
 /* from plc_debugger.c */
-int WaitDebugData()
+unsigned long WaitDebugData()
 {
     /* Wait signal from PLC thread */
     if(pthread_mutex_lock(&debug_wait_mutex)) return -1;

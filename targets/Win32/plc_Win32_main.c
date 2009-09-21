@@ -8,7 +8,7 @@
 #include <windows.h>
 
 /* provided by POUS.C */
-extern int common_ticktime__;
+extern unsigned long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
 {
@@ -74,8 +74,8 @@ HANDLE python_wait_sem;
 int startPLC(int argc,char **argv)
 {
 	unsigned long thread_id = 0;
-	/* Translate PLC's microseconds to Ttick nanoseconds */
-	Ttick = 1000000 * maxval(common_ticktime__,1);
+	/* Define Ttick to 1ms if common_ticktime not defined */
+    Ttick = common_ticktime__?common_ticktime__:1000000;
 
 	debug_sem = CreateSemaphore(
 							NULL,           // default security attributes
@@ -142,7 +142,7 @@ int startPLC(int argc,char **argv)
     }
     return 0;
 }
-static int __debug_tick;
+static unsigned long __debug_tick;
 
 int TryEnterDebugSection(void)
 {
@@ -170,7 +170,7 @@ int stopPLC()
 }
 
 /* from plc_debugger.c */
-int WaitDebugData()
+unsigned long WaitDebugData()
 {
 	if(WaitForSingleObject(debug_wait_sem, INFINITE) != WAIT_OBJECT_0) return -1;
 	return __debug_tick;

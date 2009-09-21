@@ -29,7 +29,7 @@ unsigned int PLC_state = 0;
 #define WAITDEBUG_PIPE_SIZE         500
 
 /* provided by POUS.C */
-extern int common_ticktime__;
+extern unsigned long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
@@ -72,7 +72,7 @@ void PLC_task_proc(void *arg)
     }
 }
 
-static int __debug_tick;
+static unsigned long __debug_tick;
 
 RT_SEM python_wait_sem;
 RT_MUTEX python_mutex;
@@ -142,8 +142,8 @@ int startPLC(int argc,char **argv)
     /* ne-memory-swapping for this program */
     mlockall(MCL_CURRENT | MCL_FUTURE);
 
-    /* Translate PLC's microseconds to Ttick nanoseconds */
-    Ttick = 1000000 * max_val(common_ticktime__,1);
+    /* Define Ttick to 1ms if common_ticktime not defined */
+    Ttick = common_ticktime__?common_ticktime__:1000000;
 
     /* create python_wait_sem */
     ret = rt_sem_create(&python_wait_sem, "python_wait_sem", 0, S_FIFO);
@@ -203,9 +203,9 @@ void LeaveDebugSection(void)
     rt_mutex_release(&debug_mutex);
 }
 
-extern int __tick;
+extern unsigned long __tick;
 /* from plc_debugger.c */
-int WaitDebugData()
+unsigned long WaitDebugData()
 {
     char message;
     int res;

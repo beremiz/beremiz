@@ -70,7 +70,7 @@ extern void LeaveDebugSection(void);
 extern long AtomicCompareExchange(long*, long, long);
 extern void InitiateDebugTransfer(void);
 
-extern int __tick;
+extern unsigned long __tick;
 void __publish_debug()
 {
     /* Check there is no running debugger re-configuration */
