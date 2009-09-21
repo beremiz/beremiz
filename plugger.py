@@ -1325,11 +1325,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def ShowError(self, logger, from_location, to_location):
         chunk_infos = self.GetChunkInfos(from_location, to_location)
-        self._EditPLC()
         for infos, (start_row, start_col) in chunk_infos:
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
-            self.AppFrame.ShowError(infos, start, end)
+            if self.AppFrame is not None:
+                self.AppFrame.ShowError(infos, start, end)
 
     def _showIECcode(self):
         plc_file = self._getIECcodepath()
@@ -1355,18 +1355,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         ST_viewer.RefreshView()
             
         new_dialog.Show()
-
-    def _EditPLC(self):
-        if self.PLCEditor is None:
-            self.RefreshPluginsBlockLists()
-            def _onclose():
-                self.PLCEditor = None
-            def _onsave():
-                self.SaveProject()
-            self.PLCEditor = PLCOpenEditor(self.AppFrame, self)
-            self.PLCEditor._onclose = _onclose
-            self.PLCEditor._onsave = _onsave
-            self.PLCEditor.Show()
 
     def _Clean(self):
         if os.path.isdir(os.path.join(self._getBuildPath())):
@@ -1727,6 +1715,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 if self._connector.NewPLC(MD5, data, extrafiles):
                     if self.AppFrame is not None:
                         self.AppFrame.CloseDebugTabs()
+                        self.AppFrame.RefreshInstanceTree()
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
                     self.logger.write(_("Transfer completed successfully.\n"))

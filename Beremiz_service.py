@@ -526,9 +526,9 @@ if havetwisted:
         
     class PLCStoppedHMI(PLCHMI):
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                             tags.h1["PLC IS STOPPED"]
+                                             tags.h1["PLC IS STOPPED"],
                                              ])
-        
+    
     class MainPage(athena.LiveElement):
         jsClass = u"WebInterface.PLC"
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
@@ -582,7 +582,7 @@ if havetwisted:
         def detachFragmentChildren(self):
             for child in self.liveFragmentChildren[:]:
                 child.detach()
-        
+    
     class WebInterface(athena.LivePage):
 
         docFactory = loaders.stan([tags.raw(xhtml_header),
@@ -594,7 +594,7 @@ if havetwisted:
                                                    ]]]])
         MainPage = MainPage()
         PLCHMI = PLCHMI
-
+        
         def __init__(self, plcState=False, *a, **kw):
             super(WebInterface, self).__init__(*a, **kw)
             self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, 'webinterface.js')
@@ -645,7 +645,7 @@ if havetwisted:
             self.MainPage.resetHMI()
             #print reason
             #print "We will be called back when the client disconnects"
-    
+        
     if havewx:
         reactor.registerWxApp(app)
     res = WebInterface()

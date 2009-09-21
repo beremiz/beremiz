@@ -410,7 +410,10 @@ class Beremiz(IDEFrame):
     def RefreshTitle(self):
         name = _("Beremiz")
         if self.PluginRoot is not None:
-            self.SetTitle("%s - %s"%(name, self.PluginRoot.GetProjectName()))
+            projectname = self.PluginRoot.GetProjectName()
+            if self.PluginRoot.PlugTestModified():
+                projectname = "~%s~" % projectname
+            self.SetTitle("%s - %s" % (name, projectname))
         else:
             self.SetTitle(name)
 
@@ -1206,6 +1209,13 @@ class Beremiz(IDEFrame):
                         textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
             first = False
     
+    def ResetView(self):
+        IDEFrame.ResetView(self)
+        self.PluginInfos = {}
+        self.PluginRoot = None
+        self.Log.flush()
+        self.DebugVariablePanel.SetDataProducer(None)
+    
     def OnNewProjectMenu(self, event):
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
@@ -1218,17 +1228,17 @@ class Beremiz(IDEFrame):
             dialog.Destroy()
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
-            self.PluginInfos = {}
+            self.ResetView()
             self.PluginRoot = PluginsRoot(self, self.Log)
             self.Controler = self.PluginRoot
             result = self.PluginRoot.NewProject(projectpath)
             if not result:
                 self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
-                self._Refresh(TITLE, FILEMENU, EDITMENU, TYPESTREE, INSTANCESTREE, 
-                          LIBRARYTREE)
+                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
             else:
                 self.ShowErrorMessage(result)
+            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
         event.Skip()
     
     def OnOpenProjectMenu(self, event):
@@ -1243,7 +1253,7 @@ class Beremiz(IDEFrame):
             if os.path.isdir(projectpath):
                 self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
                 self.Config.Flush()
-                self.PluginInfos = {}
+                self.ResetView()
                 self.PluginRoot = PluginsRoot(self, self.Log)
                 self.Controler = self.PluginRoot
                 result = self.PluginRoot.LoadProject(projectpath)
@@ -1272,16 +1282,7 @@ class Beremiz(IDEFrame):
                     self.PluginRoot.SaveProject()
                 elif answer == wx.ID_CANCEL:
                     return
-            self.PluginInfos = {}
-            self.PluginRoot = None
-            self.Log.flush()
-            self.DeleteAllPages()
-            self.VariablePanelIndexer.RemoveAllPanels()
-            self.TypesTree.DeleteAllItems()
-            self.InstancesTree.DeleteAllItems()
-            self.LibraryTree.DeleteAllItems()
-            self.Controler = None
-            self.DebugVariablePanel.SetDataProducer(None)
+            self.ResetView()
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
             self.RefreshAll()
         event.Skip()
