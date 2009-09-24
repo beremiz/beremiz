@@ -773,9 +773,10 @@ class VariablesEditor(wx.Panel):
                     if self.Table.GetValueByName(i, "Class") == "output":
                         num += 1
             data_type = self.Table.GetValueByName(row, "Type")
+            var_name = self.Table.GetValueByName(row, "Name")
             base_location = ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation()))
             location = "%s%s%s.%d"%(dir, self.Controler.GetSizeOfType(data_type), base_location, num)
-            data = wx.TextDataObject(str((location, "location", data_type)))
+            data = wx.TextDataObject(str((location, "location", data_type, var_name, "")))
             dragSource = wx.DropSource(self.VariablesGrid)
             dragSource.SetData(data)
             dragSource.DoDragDrop()

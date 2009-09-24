@@ -16,7 +16,7 @@ from docpdf import *
 from xmlclass import GenerateClassesFromXSDstring
 from wxPopen import ProcessLogger
 
-from PLCControler import PLCControler
+from PLCControler import PLCControler, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -367,6 +367,22 @@ class PlugTemplate:
     def GetLocations(self):
         location = self.GetCurrentLocation()
         return [loc for loc in self.PlugParent.GetLocations() if loc["LOC"][0:len(location)] == location]
+
+    def GetVariableLocationTree(self):
+        '''
+        This function is meant to be overridden by plugins.
+
+        It should returns an list of dictionaries
+        
+        - IEC_type is an IEC type like BOOL/BYTE/SINT/...
+        - location is a string of this variable's location, like "%IX0.0.0"
+        '''
+        children = []
+        for child in self.IECSortedChilds():
+            children.append({"name": child.BaseParams.getName(),
+                             "type": LOCATION_PLUGIN,
+                             "children": child.GetVariableLocationTree()})
+        return children
 
     def GetPlugInfos(self):
         childs = []
@@ -879,6 +895,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.AppFrame is not None:
             self.AppFrame.RefreshLibraryTree()
             self.AppFrame.RefreshEditor()
+    
+    def GetVariableLocationTree(self):
+        return PlugTemplate.GetVariableLocationTree(self)
     
     def PluginPath(self):
         return os.path.join(os.path.split(__file__)[0], "plugins")
