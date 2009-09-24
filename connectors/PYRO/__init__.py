@@ -24,6 +24,13 @@ import traceback
 from time import sleep
 import copy
 
+# this module attribute contains a list of DNS-SD (Zeroconf) service types
+# supported by this connector plugin.
+#
+# for connectors that do not support DNS-SD, this attribute can be omitted
+# or set to an empty list.
+supported_dnssd_services = ["_PYRO._tcp.local."]
+
 def PYRO_connector_factory(uri, pluginsroot):
     """
     This returns the connector to Pyro style PLCobject

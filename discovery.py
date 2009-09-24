@@ -21,10 +21,12 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import wx
-from Zeroconf import *
 import socket
+import wx
 import  wx.lib.mixins.listctrl  as  listmix
+from Zeroconf import *
+
+import connectors
 
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, id, name, pos=wx.DefaultPosition,
@@ -117,21 +119,26 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.nextItemId = 0
         
         self.URI = None
-        self.Browser = None
+        self.Browsers = []
         
         self.ZeroConfInstance = Zeroconf()
         self.RefreshList()
         
     def __del__(self):
-        self.Browser.cancel()
+        for browser in self.Browsers:
+            browser.cancel()
         self.ZeroConfInstance.close()
         
     def RefreshList(self):
-        self.Browser = ServiceBrowser(self.ZeroConfInstance, "_PYRO._tcp.local.", self)        
+        for browser in self.Browsers:
+            browser.cancel()
+        
+        self.Browsers = []
+        for t in connectors.dnssd_connectors.keys():
+            self.Browsers.append(ServiceBrowser(self.ZeroConfInstance, t, self))
 
     def OnRefreshButton(self, event):
         self.ServicesList.DeleteAllItems()
-        self.Browser.cancel()
         self.RefreshList()
 
     def OnLocalButton(self, event):
