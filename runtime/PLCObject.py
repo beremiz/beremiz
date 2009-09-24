@@ -379,7 +379,8 @@ class PLCObject(pyro.ObjBase):
             self.PLClibraryLock.acquire()
             tick = self._WaitDebugData()
             #PLCprint("Debug tick : %d"%tick)
-            if tick == -1:
+            if tick == 2**32 - 1:
+                tick = -1
                 res = None
             else:
                 idx = ctypes.c_int()
