@@ -185,7 +185,10 @@ class _Cfile:
                          "description": "",
                          "children": []})
                 
-        return vars
+        return  {"name": self.BaseParams.getName(),
+                "type": LOCATION_PLUGIN,
+                "location": self.GetFullIEC_Channel(),
+                "children": vars}
 
     def SetPartText(self, name, text):
         if name == "Includes":

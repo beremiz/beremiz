@@ -379,10 +379,11 @@ class PlugTemplate:
         '''
         children = []
         for child in self.IECSortedChilds():
-            children.append({"name": child.BaseParams.getName(),
-                             "type": LOCATION_PLUGIN,
-                             "children": child.GetVariableLocationTree()})
-        return children
+            children.append(child.GetVariableLocationTree())
+        return {"name": self.BaseParams.getName(),
+                "type": LOCATION_PLUGIN,
+                "location": self.GetFullIEC_Channel(),
+                "children": children}
 
     def GetPlugInfos(self):
         childs = []
@@ -1734,7 +1735,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 if self._connector.NewPLC(MD5, data, extrafiles):
                     if self.AppFrame is not None:
                         self.AppFrame.CloseDebugTabs()
-                        self.AppFrame.RefreshInstanceTree()
+                        self.AppFrame.RefreshInstancesTree()
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
                     self.logger.write(_("Transfer completed successfully.\n"))

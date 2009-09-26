@@ -367,7 +367,7 @@ class Beremiz(IDEFrame):
         self.PLCConfig.SetBackgroundColour(wx.WHITE)
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
-        self.LeftNoteBook.AddPage(self.PLCConfig, _("Topology"))
+        self.BottomNoteBook.InsertPage(0, self.PLCConfig, _("Topology"), True)
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
@@ -391,7 +391,7 @@ class Beremiz(IDEFrame):
         
         self.PluginInfos = {}
         
-        if projectOpen:
+        if projectOpen is not None and os.path.isdir(projectOpen):
             self.PluginRoot = PluginsRoot(self, self.Log)
             self.Controler = self.PluginRoot
             self.PluginRoot.LoadProject(projectOpen, buildpath)
@@ -728,7 +728,7 @@ class Beremiz(IDEFrame):
         for child in locations_infos[group]["children"]:
             locations_infos[child]["left"].Show()
             locations_infos[child]["right"].Show()
-            if force or not locations_infos[child]["expanded"]:
+            if force or locations_infos[child]["expanded"]:
                 self.ExpandLocation(locations_infos, child, force)
                 if force:
                     locations_infos[child]["expanded"] = True
@@ -757,7 +757,7 @@ class Beremiz(IDEFrame):
         self.PluginInfos[plugin]["children"] = plugin.IECSortedChilds()
         plugin_locations = []
         if len(self.PluginInfos[plugin]["children"]) == 0:
-            plugin_locations = plugin.GetVariableLocationTree()
+            plugin_locations = plugin.GetVariableLocationTree()["children"]
             if not self.PluginInfos[plugin].has_key("locations_infos"):
                 self.PluginInfos[plugin]["locations_infos"] = {"root": {"expanded" : False}}
                 
@@ -856,9 +856,9 @@ class Beremiz(IDEFrame):
         expandbutton.SetBezelWidth(0)
         expandbutton.SetUseFocusIndicator(False)
         expandbutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'minus.png')))
-        expandbutton.SetToggle(self.PluginInfos[plugin]["expanded"])
             
         if len(self.PluginInfos[plugin]["children"]) > 0:
+            expandbutton.SetToggle(self.PluginInfos[plugin]["expanded"])
             def togglebutton(event):
                 if expandbutton.GetToggle():
                     self.ExpandPlugin(plugin)
@@ -871,6 +871,7 @@ class Beremiz(IDEFrame):
             expandbutton.Bind(wx.EVT_BUTTON, togglebutton, id=expandbutton_id)
         elif len(plugin_locations) > 0:
             locations_infos = self.PluginInfos[plugin]["locations_infos"]
+            expandbutton.SetToggle(locations_infos["root"]["expanded"])
             def togglebutton(event):
                 if expandbutton.GetToggle():
                     self.ExpandLocation(locations_infos, "root")
@@ -962,7 +963,10 @@ class Beremiz(IDEFrame):
                 if not locations_infos["root"]["expanded"]:
                     self.CollapseLocation(locations_infos, "root")
         
-    LOCATION_BITMAP = {LOCATION_VAR_INPUT: "VAR_INPUT",
+    LOCATION_BITMAP = {LOCATION_PLUGIN: "CONFIGURATION",
+                       LOCATION_MODULE: "RESOURCE",
+                       LOCATION_GROUP: "PROGRAM",
+                       LOCATION_VAR_INPUT: "VAR_INPUT",
                        LOCATION_VAR_OUTPUT: "VAR_OUTPUT",
                        LOCATION_VAR_MEMORY: "VAR_LOCAL"}
     
@@ -979,8 +983,6 @@ class Beremiz(IDEFrame):
         location_name = "%s.%s" % (parent, location["name"])
         if not locations_infos.has_key(location_name):
             locations_infos[location_name] = {"expanded" : False}
-        
-        locations_infos[location_name]["children"] = ["%s.%s" % (location_name, child["name"]) for child in location["children"]]
         
         if location["type"] in [LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP]:
             leftwindow.SetBackgroundColour(WINDOW_COLOUR)
@@ -999,7 +1001,7 @@ class Beremiz(IDEFrame):
             expandbutton.SetBezelWidth(0)
             expandbutton.SetUseFocusIndicator(False)
             expandbutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'minus.png')))
-            expandbutton.SetToggle(self.PluginInfos[plugin]["expanded"])
+            expandbutton.SetToggle(locations_infos[location_name]["expanded"])
                 
             if len(location["children"]) > 0:
                 def togglebutton(event):
@@ -1020,28 +1022,35 @@ class Beremiz(IDEFrame):
             leftwindow.SetBackgroundColour(wx.WHITE)
             rightwindow.SetBackgroundColour(wx.WHITE)
             
-            leftwindowsizer.Add(wx.Size(50, 16), 0)
+            leftwindowsizer.Add(wx.Size(20, 16), 0)
             
-            st = wx.StaticBitmap(leftwindow, -1)
-            st.SetBitmap(wx.Bitmap(os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png' % self.LOCATION_BITMAP[location["type"]])))
-            leftwindowsizer.AddWindow(st, 0, border=5, flag=wx.RIGHT)
+        sb = wx.StaticBitmap(leftwindow, -1)
+        sb.SetBitmap(wx.Bitmap(os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png' % self.LOCATION_BITMAP[location["type"]])))
+        leftwindowsizer.AddWindow(sb, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         st_id = wx.NewId()
         st = wx.StaticText(leftwindow, st_id, size=wx.DefaultSize, style=wx.NO_BORDER)
-        st.SetFont(wx.Font(faces["size"] * 0.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
-        st.SetLabel(location["name"])
+        label = location["name"]
         if location["type"] in [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]:
+            label += " (%s)" % location["location"]
             infos = location.copy()
             infos.pop("children")
+            st.SetFont(wx.Font(faces["size"] * 0.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
             st.Bind(wx.EVT_LEFT_DOWN, self.GenerateLocationLeftDownFunction(infos))
+        else:
+            st.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
+        st.SetLabel(label)
         leftwindowsizer.AddWindow(st, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         locations_infos[location_name]["left"] = leftwindow
         locations_infos[location_name]["right"] = rightwindow
-        for child in locations_infos[location_name]["children"]:
-            self.GenerateLocationTreeBranch(child)
-            if not locations_infos[child]["expanded"]:
-                self.CollapseLocation(locations_infos, child)
+        locations_infos[location_name]["children"] = []
+        for child in location["children"]:
+            child_name = "%s.%s" % (location_name, child["name"])
+            locations_infos[location_name]["children"].append(child_name)
+            self.GenerateLocationTreeBranch(locations_infos, location_name, child)
+            if not locations_infos[child_name]["expanded"]:
+                self.CollapseLocation(locations_infos, child_name)
     
     def GenerateLocationLeftDownFunction(self, infos):
         def OnLocationLeftDownFunction(event):
