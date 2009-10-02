@@ -1273,6 +1273,8 @@ class Beremiz(IDEFrame):
     def ResetView(self):
         IDEFrame.ResetView(self)
         self.PluginInfos = {}
+        if self.PluginRoot is not None:
+            self.PluginRoot.CloseProject()
         self.PluginRoot = None
         self.Log.flush()
         self.DebugVariablePanel.SetDataProducer(None)

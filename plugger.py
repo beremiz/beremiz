@@ -560,7 +560,7 @@ class PlugTemplate:
                     _self.PlugRequestSave()
                     #just created, must be saved
                     _self.ChangesToSave = True
-            
+                
             def _getBuildPath(_self):
                 return self._getBuildPath()
             
@@ -570,7 +570,12 @@ class PlugTemplate:
         PluggedChildsWithSameClass.append(newPluginOpj)
         
         return newPluginOpj
-            
+    
+    def ClearPluggedChilds(self):
+        for child in self.IterChilds():
+            child.ClearPluggedChilds()
+        self.PluggedChilds = {}
+    
     def LoadSTLibrary(self):
         # Get library blocks if plcopen library exist
         library_path = self.PluginLibraryFilePath()
@@ -880,6 +885,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.ShowMethod("_showIECcode", True)
 
         return None
+    
+    def CloseProject(self):
+        self.ClearPluggedChilds()
+        self.AppFrame.Unbind(wx.EVT_TIMER, self.StatusTimer)
     
     def SaveProject(self):
         if not self.SaveXMLFile():
