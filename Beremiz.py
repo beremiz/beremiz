@@ -728,7 +728,7 @@ class Beremiz(IDEFrame):
         for child in locations_infos[group]["children"]:
             locations_infos[child]["left"].Show()
             locations_infos[child]["right"].Show()
-            if force or locations_infos[child]["expanded"]:
+            if force or not locations_infos[child]["expanded"]:
                 self.ExpandLocation(locations_infos, child, force)
                 if force:
                     locations_infos[child]["expanded"] = True
@@ -737,7 +737,7 @@ class Beremiz(IDEFrame):
         for child in locations_infos[group]["children"]:
             locations_infos[child]["left"].Hide()
             locations_infos[child]["right"].Hide()
-            if force or not locations_infos[child]["expanded"]:
+            if force or locations_infos[child]["expanded"]:
                 self.CollapseLocation(locations_infos, child, force)
                 if force:
                     locations_infos[child]["expanded"] = False
@@ -960,8 +960,8 @@ class Beremiz(IDEFrame):
             for location in plugin_locations:
                 locations_infos["root"]["children"].append("root.%s" % location["name"])
                 self.GenerateLocationTreeBranch(locations_infos, "root", location)
-                if not locations_infos["root"]["expanded"]:
-                    self.CollapseLocation(locations_infos, "root")
+            if not locations_infos["root"]["expanded"]:
+                self.CollapseLocation(locations_infos, "root")
         
     LOCATION_BITMAP = {LOCATION_PLUGIN: "CONFIGURATION",
                        LOCATION_MODULE: "RESOURCE",
@@ -1049,8 +1049,8 @@ class Beremiz(IDEFrame):
             child_name = "%s.%s" % (location_name, child["name"])
             locations_infos[location_name]["children"].append(child_name)
             self.GenerateLocationTreeBranch(locations_infos, location_name, child)
-            if not locations_infos[child_name]["expanded"]:
-                self.CollapseLocation(locations_infos, child_name)
+        if not locations_infos[location_name]["expanded"]:
+            self.CollapseLocation(locations_infos, location_name)
     
     def GenerateLocationLeftDownFunction(self, infos):
         def OnLocationLeftDownFunction(event):
