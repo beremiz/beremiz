@@ -874,6 +874,7 @@ class Beremiz(IDEFrame):
                     self.ExpandLocation(locations_infos, "root")
                 else:
                     self.CollapseLocation(locations_infos, "root")
+                self.PluginInfos[plugin]["expanded"] = expandbutton.GetToggle()
                 locations_infos["root"]["expanded"] = expandbutton.GetToggle()
                 self.PLCConfigMainSizer.Layout()
                 self.RefreshScrollBars()
