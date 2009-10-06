@@ -713,22 +713,20 @@ class Beremiz(IDEFrame):
         for child in self.PluginInfos[plugin]["children"]:
             self.PluginInfos[child]["left"].Hide()
             self.PluginInfos[child]["right"].Hide()
-            if force or self.PluginInfos[child]["expanded"]:
-                self.CollapsePlugin(child, force)
-                if force:
-                    self.PluginInfos[child]["expanded"] = False
+            self.CollapsePlugin(child, force)
+            if force:
+                self.PluginInfos[child]["expanded"] = False
         locations_infos = self.PluginInfos[plugin].get("locations_infos", None)
         if locations_infos is not None:
-            if force or not locations_infos["root"]["expanded"]:
-                self.CollapseLocation(locations_infos, "root", force)
-                if force:
-                    locations_infos["root"]["expanded"] = False
+            self.CollapseLocation(locations_infos, "root", force)
+            if force:
+                locations_infos["root"]["expanded"] = False
 
     def ExpandLocation(self, locations_infos, group, force = False):
         for child in locations_infos[group]["children"]:
             locations_infos[child]["left"].Show()
             locations_infos[child]["right"].Show()
-            if force or not locations_infos[child]["expanded"]:
+            if force or locations_infos[child]["expanded"]:
                 self.ExpandLocation(locations_infos, child, force)
                 if force:
                     locations_infos[child]["expanded"] = True
@@ -737,10 +735,9 @@ class Beremiz(IDEFrame):
         for child in locations_infos[group]["children"]:
             locations_infos[child]["left"].Hide()
             locations_infos[child]["right"].Hide()
-            if force or locations_infos[child]["expanded"]:
-                self.CollapseLocation(locations_infos, child, force)
-                if force:
-                    locations_infos[child]["expanded"] = False
+            self.CollapseLocation(locations_infos, child, force)
+            if force:
+                locations_infos[child]["expanded"] = False
 
     def GenerateTreeBranch(self, plugin):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
