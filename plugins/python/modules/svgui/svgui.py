@@ -1,5 +1,5 @@
 import wx
-import os, sys
+import os, sys, shutil
 
 from plugger import opjimg
 from plugins.python import PythonCodeTemplate
