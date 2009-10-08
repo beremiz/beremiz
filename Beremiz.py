@@ -1077,7 +1077,6 @@ class Beremiz(IDEFrame):
     def _GetAddPluginFunction(self, name, plugin):
         def OnPluginMenu(event):
             wx.CallAfter(self.AddPlugin, name, plugin)
-            event.Skip()
         return OnPluginMenu
     
     def Gen_AddPluginMenu(self, plugin):
@@ -1089,7 +1088,6 @@ class Beremiz(IDEFrame):
                     main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Append ")+help)
                     self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, plugin), id=new_id)
             self.PopupMenuXY(main_menu)
-            event.Skip()
         return AddPluginMenu
     
     def GetButtonCallBackFunction(self, plugin, method):
@@ -1306,7 +1304,6 @@ class Beremiz(IDEFrame):
                 self.ResetView()
                 self.ShowErrorMessage(result)
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
-        event.Skip()
     
     def OnOpenProjectMenu(self, event):
         if not self.Config.HasEntry("lastopenedfolder"):
@@ -1335,7 +1332,6 @@ class Beremiz(IDEFrame):
                 self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
-        event.Skip()
     
     def OnCloseProjectMenu(self, event):
         if self.PluginRoot is not None:
@@ -1353,29 +1349,24 @@ class Beremiz(IDEFrame):
             self.ResetView()
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
             self.RefreshAll()
-        event.Skip()
     
     def OnSaveProjectMenu(self, event):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProject()
             self.RefreshAll()
             self.RefreshTitle()
-        event.Skip()
     
     def OnPropertiesMenu(self, event):
-        event.Skip()
+        self.ShowProperties()
     
     def OnQuitMenu(self, event):
         self.Close()
-        event.Skip()
         
     def OnBeremizMenu(self, event):
         open_pdf(Bpath( "doc", "manual_beremiz.pdf"))
-        event.Skip()
     
     def OnAboutMenu(self, event):
         OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
-        event.Skip()
     
     def GetAddButtonFunction(self, plugin, window):
         def AddButtonFunction(event):
