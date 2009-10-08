@@ -394,9 +394,14 @@ class Beremiz(IDEFrame):
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.PluginRoot = PluginsRoot(self, self.Log)
             self.Controler = self.PluginRoot
-            self.PluginRoot.LoadProject(projectOpen, buildpath)
-            self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
-            self.RefreshAll()
+            result = self.PluginRoot.LoadProject(projectOpen, buildpath)
+            if not result:
+                self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self.RefreshAll()
+            else:
+                self.ResetView()
+                self.ShowErrorMessage(result)
         else:
             self.PluginRoot = None
             self.Controler = None
@@ -1298,6 +1303,7 @@ class Beremiz(IDEFrame):
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
             else:
+                self.ResetView()
                 self.ShowErrorMessage(result)
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
         event.Skip()
@@ -1323,6 +1329,7 @@ class Beremiz(IDEFrame):
                     self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                     self.RefreshAll()
                 else:
+                    self.ResetView()
                     self.ShowErrorMessage(result)
             else:
                 self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
