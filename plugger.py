@@ -1616,10 +1616,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 #wx.CallAfter(self.logger.write, "Debugger unavailable\n")
                 pass
             else:
-                wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
                 if self._connector.PLCIsStarting():
                     time.sleep(0.01)
                 else:
+                    wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
                     self.debug_break = True
             self.IECdebug_lock.release()
 
