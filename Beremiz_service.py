@@ -650,7 +650,15 @@ if havetwisted:
         reactor.registerWxApp(app)
     res = WebInterface()
     site = appserver.NevowSite(res)
-    reactor.listenTCP(8009, site)
+    
+    website_port = 8009
+    listening = False
+    while not listening:
+        try:
+            reactor.listenTCP(website_port, site)
+            listening = True
+        except:
+            website_port += 1
 else:
     res = None
 
