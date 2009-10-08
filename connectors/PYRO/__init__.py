@@ -118,6 +118,13 @@ def PYRO_connector_factory(uri, pluginsroot):
                 return None,None
         GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,(None,None))
 
+        def _PyroPLCIsStarting(self):
+            """
+            for safe use in from debug thread, must use the copy
+            """
+            return self.RemotePLCObjectProxyCopy is not None and self.RemotePLCObjectProxyCopy.GetPLCstatus() == "Starting"
+        PLCIsStarting = PyroCatcher(_PyroPLCIsStarting,False)
+        
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:

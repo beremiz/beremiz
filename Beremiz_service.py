@@ -415,7 +415,7 @@ if enablewx:
             def UpdateIcon(self, plcstatus):
                 if plcstatus is "Started" :
                     currenticon = self.MakeIcon(starticon.GetImage())
-                elif plcstatus is "Stopped":
+                elif plcstatus is "Stopped" or plcstatus is "Starting":
                     currenticon = self.MakeIcon(stopicon.GetImage())
                 else:
                     currenticon = self.MakeIcon(defaulticon.GetImage())

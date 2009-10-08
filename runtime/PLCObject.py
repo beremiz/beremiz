@@ -256,6 +256,7 @@ class PLCObject(pyro.ObjBase):
     def StartPLC(self, debug=False):
         PLCprint("StartPLC")
         if self.CurrentPLCFilename is not None:
+            self.PLCStatus = "Starting"
             self.PythonThread = Thread(target=self.PythonThreadProc, args=[debug])
             self.PythonThread.start()
             

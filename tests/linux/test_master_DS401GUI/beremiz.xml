@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<BeremizRoot CFLAGS="-g" Linker="g++" LDFLAGS="-g">
-  <TargetType>
-    <Linux Nice="0"/>
-  </TargetType>
-  <Connection>
-    <Local/>
-  </Connection>
-</BeremizRoot>

@@ -17,6 +17,23 @@ from gnosis.xml.pickle import *
 from gnosis.xml.pickle.util import setParanoia
 setParanoia(0)
 
+if wx.Platform == '__WXMSW__':
+    DEFAULT_SETTINGS = {
+        "CAN_Driver": "can_tcp_win32",
+        "CAN_Device": "127.0.0.1",
+        "CAN_Baudrate": "125K",
+        "Slave_NodeId": 2,
+        "Master_NodeId": 1,
+    }
+else:
+    DEFAULT_SETTINGS = {
+        "CAN_Driver": "../CanFestival-3/drivers/can_socket/libcanfestival_can_socket.so",
+        "CAN_Device": "vcan0",
+        "CAN_Baudrate": "125K",
+        "Slave_NodeId": 2,
+        "Master_NodeId": 1,
+    }
+
 #--------------------------------------------------
 #                    SLAVE
 #--------------------------------------------------
@@ -26,9 +43,9 @@ class _SlavePlug(NodeManager):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalSlaveNode">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Device" type="xsd:string" use="required"/>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="required"/>
+          <xsd:attribute name="CAN_Device" type="xsd:string" use="optional" default="%(CAN_Device)s"/>
+          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
+          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Slave_NodeId)d"/>
           <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
           <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
             <xsd:simpleType>
@@ -41,7 +58,7 @@ class _SlavePlug(NodeManager):
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """
+    """ % DEFAULT_SETTINGS
 
     def GetSlaveODPath(self):
         return os.path.join(self.PlugPath(), 'slave.od')
@@ -150,14 +167,14 @@ class _NodeListPlug(NodeList):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalNode">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Device" type="xsd:string" use="required"/>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="required"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="required"/>
+          <xsd:attribute name="CAN_Device" type="xsd:string" use="optional" default="%(CAN_Device)s"/>
+          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
+          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Master_NodeId)d"/>
           <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """
+    """ % DEFAULT_SETTINGS
 
     def __init__(self):
         manager = NodeManager()
@@ -254,12 +271,13 @@ class RootClass:
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalInstance">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Driver" type="xsd:string" use="required"/>
+          <xsd:attribute name="CAN_Driver" type="xsd:string" use="optional" default="%(CAN_Driver)s"/>
           <xsd:attribute name="Debug_mode" type="xsd:boolean" use="optional" default="false"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """
+    """ % DEFAULT_SETTINGS
+    
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug, "CanOpen Master"),
                        ("CanOpenSlave",_SlavePlug, "CanOpen Slave")]
     def GetParamsAttributes(self, path = None):

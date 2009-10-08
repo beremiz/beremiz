@@ -3,6 +3,7 @@ Base definitions for beremiz plugins
 """
 
 import os,sys,traceback
+import time
 import plugins
 import types
 import shutil
@@ -88,8 +89,8 @@ class PlugTemplate:
     def _AddParamsMembers(self):
         self.PlugParams = None
         if self.XSD:
-            Classes = GenerateClassesFromXSDstring(self.XSD)
-            Classes = [(name, XSDclass) for name, XSDclass in Classes.items() if XSDclass.IsBaseClass]
+            self.Classes = GenerateClassesFromXSDstring(self.XSD)
+            Classes = [(name, XSDclass) for name, XSDclass in self.Classes.items() if XSDclass.IsBaseClass]
             if len(Classes) == 1:
                 name, XSDclass = Classes[0]
                 obj = XSDclass()
@@ -724,7 +725,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
           <xsd:sequence>
             <xsd:element name="TargetType">
               <xsd:complexType>
-                <xsd:choice>
+                <xsd:choice minOccurs="0">
                 """+targets.targetchoices+"""
                 </xsd:choice>
               </xsd:complexType>
@@ -813,6 +814,27 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for child in self.IterChilds():
             childs.append(child.GetPlugInfos())
         return {"name" : "PLC (%s)"%self.GetProjectName(), "type" : None, "values" : childs}
+
+    def GetDefaultTarget(self):
+        target = self.Classes["BeremizRoot_TargetType"]()
+        if wx.Platform == '__WXMSW__':
+            target.setcontent({"name": "Win32", "value": self.Classes["TargetType_Win32"]()})
+        else:
+            target.setcontent({"name": "Linux", "value": self.Classes["TargetType_Linux"]()})
+        return target
+    
+    def GetParamsAttributes(self, path = None):
+        params = PlugTemplate.GetParamsAttributes(self, path)
+        if params[0]["name"] == "BeremizRoot":
+            for child in params[0]["children"]:
+                if child["name"] == "TargetType" and child["value"] == '':
+                    child.update(self.GetDefaultTarget().getElementInfos("TargetType")) 
+        return params
+        
+    def SetParamsAttribute(self, path, value):
+        if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
+            self.BeremizRoot.setTargetType(self.GetDefaultTarget())
+        return PlugTemplate.SetParamsAttribute(self, path, value)
     
     def NewProject(self, ProjectPath, BuildPath=None):
         """
@@ -907,7 +929,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.AppFrame.RefreshEditor()
     
     def GetVariableLocationTree(self):
-        return PlugTemplate.GetVariableLocationTree(self)
+        '''
+        This function is meant to be overridden by plugins.
+
+        It should returns an list of dictionaries
+        
+        - IEC_type is an IEC type like BOOL/BYTE/SINT/...
+        - location is a string of this variable's location, like "%IX0.0.0"
+        '''
+        children = []
+        for child in self.IECSortedChilds():
+            children.append(child.GetVariableLocationTree())
+        return children
     
     def PluginPath(self):
         return os.path.join(os.path.split(__file__)[0], "plugins")
@@ -1067,7 +1100,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         Return a Builder (compile C code into machine code)
         """
         # Get target, module and class name
-        targetname = self.BeremizRoot.getTargetType().getcontent()["name"]
+        target = self.BeremizRoot.getTargetType()
+        if target.getcontent() is None:
+            target = self.GetDefaultTarget()
+        targetname = target.getcontent()["name"]
         modulename = "targets." + targetname
         classname = targetname + "_target"
 
@@ -1247,8 +1283,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 "init_calls":"\n",
                 "cleanup_calls":"\n"
                 }
-
-        target_name = self.BeremizRoot.getTargetType().getcontent()["name"]
+        
+        target = self.BeremizRoot.getTargetType()
+        if target.getcontent() is None:
+            target = self.GetDefaultTarget()
+        target_name = target.getcontent()["name"]
         plc_main_code += targets.targetcode(target_name)
         return plc_main_code
 
@@ -1407,6 +1446,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
             status = "Disconnected"
         _ = lambda x : x
         for args in {
+               _("Starting"):     [("_Run", True),
+                                  ("_Debug", True),
+                                  ("_Stop", False)],
                _("Started"):     [("_Run", False),
                                   ("_Debug", False),
                                   ("_Stop", True)],
@@ -1575,7 +1617,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 pass
             else:
                 wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
-                self.debug_break = True
+                if self._connector.PLCIsStarting():
+                    time.sleep(0.01)
+                else:
+                    self.debug_break = True
             self.IECdebug_lock.release()
 
     def KillDebugThread(self):
