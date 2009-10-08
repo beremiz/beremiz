@@ -71,11 +71,9 @@ class RootClass:
         runtimefile.write(svguiservercode % {"svgfile" : "gui.svg"})
         runtimefile.write("""
 def _runtime_%(location)s_begin():
-    print "SVGUI start"
     website.LoadHMI(%(svgui_class)s, %(jsmodules)s)
     
 def _runtime_%(location)s_cleanup():
-    print "SVGUI stop"
     website.UnLoadHMI()
     
 """ % {"location": location_str,
