@@ -487,17 +487,17 @@ class PythonEditorFrame(wx.Frame):
     
     def _init_coll_EditMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_REFRESH,
-              kind=wx.ITEM_NORMAL, text=u'Refresh\tCTRL+R')
+              kind=wx.ITEM_NORMAL, text=_(u'Refresh\tCTRL+R'))
         AppendMenu(parent, help='', id=wx.ID_UNDO,
-              kind=wx.ITEM_NORMAL, text=u'Undo\tCTRL+Z')
+              kind=wx.ITEM_NORMAL, text=_(u'Undo\tCTRL+Z'))
         AppendMenu(parent, help='', id=wx.ID_REDO,
-              kind=wx.ITEM_NORMAL, text=u'Redo\tCTRL+Y')
+              kind=wx.ITEM_NORMAL, text=_(u'Redo\tCTRL+Y'))
         self.Bind(wx.EVT_MENU, self.OnRefreshMenu, id=wx.ID_REFRESH)
         self.Bind(wx.EVT_MENU, self.OnUndoMenu, id=wx.ID_UNDO)
         self.Bind(wx.EVT_MENU, self.OnRedoMenu, id=wx.ID_REDO)
     
     def _init_coll_MenuBar_Menus(self, parent):
-        parent.Append(menu=self.EditMenu, title=u'&Edit')
+        parent.Append(menu=self.EditMenu, title=_(u'&Edit'))
     
     def _init_utils(self):
         self.MenuBar = wx.MenuBar()
@@ -510,7 +510,7 @@ class PythonEditorFrame(wx.Frame):
     def _init_ctrls(self, prnt):
         wx.Frame.__init__(self, id=ID_PYTHONEDITORFRAME, name=u'PythonEditor',
               parent=prnt, pos=wx.DefaultPosition, size=wx.Size(800, 650),
-              style=wx.DEFAULT_FRAME_STYLE, title=u'PythonEditor')
+              style=wx.DEFAULT_FRAME_STYLE, title=_(u'PythonEditor'))
         self._init_utils()
         self.SetClientSize(wx.Size(1000, 600))
         self.SetMenuBar(self.MenuBar)
@@ -563,7 +563,8 @@ class PythonEditorFrame(wx.Frame):
         event.Skip()
 
     def RefreshTitle(self):
-        self.SetTitle("PythonEditor - %s"%self.Controler.GetFilename())
+        title = _("PythonEditor")
+        self.SetTitle("%s - %s"%(title, self.Controler.GetFilename()))
         
 #-------------------------------------------------------------------------------
 #                          Edit Project Menu Functions

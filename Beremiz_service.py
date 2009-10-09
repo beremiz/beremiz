@@ -350,9 +350,9 @@ if enablewx:
                 evt.Skip()
             
             def OnTaskBarChangeInterface(self, evt):
-                dlg = ParamsEntryDialog(None, _("Enter the ip of the interface to bind"), defaultValue=self.pyroserver.ip)
-                dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("Ip is not valid!")),
-                               ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, _("Ip is not valid!"))
+                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip)
+                dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
+                               ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
                                ])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip = dlg.GetValue()
@@ -389,7 +389,7 @@ if enablewx:
                     frame = py.crust.CrustFrame(locals=self.pyroserver.plcobj.python_threads_vars)
                     frame.Show()
                 else:
-                    wx.MessageBox(_("No runnning PLC"), _("Error"))
+                    wx.MessageBox(_("No running PLC"), _("Error"))
                 evt.Skip()
             
             def OnTaskBarWXInspector(self, evt):

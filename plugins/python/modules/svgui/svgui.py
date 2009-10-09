@@ -12,12 +12,12 @@ class RootClass:
 
     PluginMethods = [
         {"bitmap" : os.path.join("images","ImportSVG"),
-         "name" : "Import SVG",
-         "tooltip" : "Import SVG",
+         "name" : _("Import SVG"),
+         "tooltip" : _("Import SVG"),
          "method" : "_ImportSVG"},
         {"bitmap" : os.path.join("images","ImportSVG"),
-         "name" : "Inkscape",
-         "tooltip" : "Create HMI",
+         "name" : _("Inkscape"),
+         "tooltip" : _("Create HMI"),
          "method" : "_StartInkscape"},
     ]
 
@@ -87,13 +87,13 @@ def _runtime_%(location)s_cleanup():
         return res
 
     def _ImportSVG(self):
-        dialog = wx.FileDialog(self.GetPlugRoot().AppFrame, "Choose a SVG file", os.getcwd(), "",  "SVG files (*.svg)|*.svg|All files|*.*", wx.OPEN)
+        dialog = wx.FileDialog(self.GetPlugRoot().AppFrame, _("Choose a SVG file"), os.getcwd(), "",  _("SVG files (*.svg)|*.svg|All files|*.*"), wx.OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             svgpath = dialog.GetPath()
             if os.path.isfile(svgpath):
                 shutil.copy(svgpath, self._getSVGpath())
             else:
-                self.logger.write_error("No such SVG file: %s\n"%svgpath)
+                self.logger.write_error(_("No such SVG file: %s\n")%svgpath)
         dialog.Destroy()  
 
     def _StartInkscape(self):

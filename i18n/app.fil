@@ -3,13 +3,14 @@
 ../beremiz_postinst.py
 ../Beremiz_service.py
 ../discovery.py
-../PythonSTC.py
 ../wxPopen.py
 ../connectors/PYRO/__init__.py
 ../plugins/c_ext/c_ext.py
 ../plugins/canfestival/canfestival.py
 ../plugins/canfestival/config_utils.py
-../plugins/svgui/svgui.py
+../plugins/python/PythonEditor.py
+../plugins/python/modules/svgui/svgui.py
+../plugins/python/modules/wxglade_hmi/wxglade_hmi.py
 ../runtime/PLCObject.py
 ../runtime/ServicePublisher.py
 ../targets/toolchain_gcc.py

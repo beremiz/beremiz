@@ -842,9 +842,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         @param ProjectPath: path of the folder where project have to be created
         @param PLCParams: properties of the PLCOpen program created
         """
-        # Verify that choosen folder is empty
+        # Verify that chosen folder is empty
         if not os.path.isdir(ProjectPath) or len(os.listdir(ProjectPath)) > 0:
-            return _("Folder choosen isn't empty. You can't use it for a new project!")
+            return _("Chosen folder isn't empty. You can't use it for a new project!")
         
         dialog = ProjectDialog(self.AppFrame)
         if dialog.ShowModal() == wx.ID_OK:
@@ -879,7 +879,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 		# Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
-            return _("Folder choosen doesn't contain a program. It's not a valid project!")
+            return _("Chosen folder doesn't contain a program. It's not a valid project!")
         # Load PLCOpen file
         result = self.OpenXMLFile(plc_file)
         if result:
@@ -1035,7 +1035,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         plc_file = open(self._getIECcodepath(), "a")
         plc_file.write(open(self._getIECgeneratedcodepath(), "r").read())
         plc_file.close()
-        self.logger.write(_("Compiling IEC Program in to C code...\n"))
+
+        self.logger.write(_("Compiling IEC Program into C code...\n"))
+
         # Now compile IEC code into many C files
         # files are listed to stdout, and errors to stderr. 
         status, result, err_result = ProcessLogger(
@@ -1082,7 +1084,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
         if not C_files:
-            self.logger.write_error(_("Error : At least one configuration and one ressource must be declared in PLC !\n"))
+            self.logger.write_error(_("Error : At least one configuration and one resource must be declared in PLC !\n"))
             return False
         # transform those base names to full names with path
         C_files = map(lambda filename:os.path.join(buildpath, filename), C_files)
@@ -1742,11 +1744,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if MD5 is not None:
             if not self._connector.MatchMD5(MD5):
                 self.logger.write_warning(
-                   _("Latest build do not match with target, please transfer.\n"))
+                   _("Latest build does not match with target, please transfer.\n"))
                 self.EnableMethod("_Transfer", True)
             else:
                 self.logger.write(
-                   _("Latest build match target, no transfer needed.\n"))
+                   _("Latest build matches target, no transfer needed.\n"))
                 self.EnableMethod("_Transfer", True)
                 #self.EnableMethod("_Transfer", False)
         else:
@@ -1772,7 +1774,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Compare PLC project with PLC on target
         if self._connector.MatchMD5(MD5):
             self.logger.write(
-                _("Latest build already match current target. Transfering anyway...\n"))
+                _("Latest build already matches current target. Transfering anyway...\n"))
 
         # Get temprary directory path
         extrafilespath = self._getExtraFilesPath()
@@ -1796,7 +1798,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 else:
                     self.logger.write_error(_("Transfer failed\n"))
             else:
-                self.logger.write_error(_("No PLC to transfer (did build success ?)\n"))
+                self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
+
         self.UpdateMethodsFromPLCStatus()
 
     PluginMethods = [

@@ -238,13 +238,13 @@ msgid "Close Project"
 msgstr "关闭项目"
 
 #: plugger.py:963
-msgid "Compiling IEC Program in to C code...\n"
+msgid "Compiling IEC Program into C code...\n"
 msgstr "正在将IEC程序编译成C代码...\n"
 
 #: plugins/canfestival/config_utils.py:335
 #: plugins/canfestival/config_utils.py:617
 #, python-format
-msgid "Conflict type for location \"%s\""
+msgid "Type conflict for location \"%s\""
 msgstr "位置的冲突类型 \"%s\""
 
 #: plugger.py:1828
@@ -409,7 +409,7 @@ msgid "Enter a port number "
 msgstr "输入一个端口号"
 
 #: Beremiz_service.py:314
-msgid "Enter the ip of the interface to bind"
+msgid "Enter the IP of the interface to bind"
 msgstr "输入界面的ip用以绑定"
 
 #: Beremiz.py:1284
@@ -422,7 +422,7 @@ msgid "Error"
 msgstr "错误"
 
 #: plugger.py:1010
-msgid "Error : At least one configuration and one ressource must be declared in PLC !\n"
+msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
 msgstr "错误：在PLC中，必须申明至少一个配置和一个资源！\n"
 
 #: plugger.py:1002
@@ -474,11 +474,11 @@ msgid "File"
 msgstr "文件"
 
 #: plugger.py:815
-msgid "Folder choosen doesn't contain a program. It's not a valid project!"
+msgid "Chosen folder doesn't contain a program. It's not a valid project!"
 msgstr "被选中的文件夹未包含一个程序。它不是一个有效项目！"
 
 #: plugger.py:780
-msgid "Folder choosen isn't empty. You can't use it for a new project!"
+msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
 
 #: connectors/PYRO/__init__.py:93
@@ -509,19 +509,19 @@ msgstr "无效类型 \"%s\"-> %d != %d  用于位置 \"%s\""
 
 #: Beremiz_service.py:315
 #: Beremiz_service.py:316
-msgid "Ip is not valid!"
+msgid "IP is not valid!"
 msgstr "Ip无效！"
 
 #: plugger.py:1767
-msgid "Latest build already match current target. Transfering anyway...\n"
+msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr "最新构建已经与当前目标匹配。正在传输中......\n"
 
 #: plugger.py:1737
-msgid "Latest build do not match with target, please transfer.\n"
+msgid "Latest build does not match with target, please transfer.\n"
 msgstr "最新构建与目标不匹配，请传输。\n"
 
 #: plugger.py:1741
-msgid "Latest build match target, no transfer needed.\n"
+msgid "Latest build matches target, no transfer needed.\n"
 msgstr "最新构建与目标匹配，不需要传输。\n"
 
 #: Beremiz_service.py:283
@@ -567,11 +567,11 @@ msgid "NewPLC (%s)"
 msgstr "新的PLC(%s)"
 
 #: plugger.py:1791
-msgid "No PLC to transfer (did build success ?)\n"
+msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr "没有PLC可传输（构建是否成功？）\n"
 
 #: Beremiz_service.py:353
-msgid "No runnning PLC"
+msgid "No running PLC"
 msgstr "没有正在运行的PLC"
 
 #: plugins/canfestival/config_utils.py:632

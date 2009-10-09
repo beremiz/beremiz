@@ -332,7 +332,7 @@ class ConciseDCFGenerator:
             name = location["NAME"]
             if name in self.IECLocations:
                 if self.IECLocations[name]["type"] != COlocationtype:
-                    raise PDOmappingException, _("Conflict type for location \"%s\"") % name 
+                    raise PDOmappingException, _("Type conflict for location \"%s\"") % name 
             else:
                 # Get only the part of the location that concern this node
                 loc = location["LOC"][len(current_location):]
@@ -452,7 +452,7 @@ class ConciseDCFGenerator:
                     pdomapping = []
                     result = self.GetEmptyPDO(nodeid, pdotype)
                     if result is None:
-                        raise PDOmappingException, _("Impossible to define PDO mapping for node %02x") % nodeid
+                        raise PDOmappingException, _("Unable to define PDO mapping for node %02x") % nodeid
                     pdoindex, pdocobid, pdonbparams = result
                     for name, loc_infos in locations[pdotype]:
                         pdosize += loc_infos["size"]
@@ -466,7 +466,7 @@ class ConciseDCFGenerator:
                             pdomapping = [(name, loc_infos)]
                             result = self.GetEmptyPDO(nodeid, pdotype, pdoindex + 1)
                             if result is None:
-                                raise PDOmappingException, _("Impossible to define PDO mapping for node %02x") % nodeid
+                                raise PDOmappingException, _("Unable to define PDO mapping for node %02x") % nodeid
                             pdoindex, pdocobid, pdonbparams = result
                         else:
                             pdomapping.append((name, loc_infos))
@@ -614,7 +614,7 @@ def LocalODPointers(locations, current_location, slave):
         name = location["NAME"]
         if name in IECLocations:
             if IECLocations[name] != COlocationtype:
-                raise PDOmappingException, _("Conflict type for location \"%s\"") % name 
+                raise PDOmappingException, _("Type conflict for location \"%s\"") % name 
         else:
             # Get only the part of the location that concern this node
             loc = location["LOC"][len(current_location):]
