@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-10-09 16:27+0200\n"
-"PO-Revision-Date: 2009-10-09 16:30+0100\n"
+"PO-Revision-Date: 2009-10-09 17:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -170,7 +170,7 @@ msgstr "Impossible de trouver un numéro IEC inférieur à %d libre\n"
 
 #: ../connectors/PYRO/__init__.py:68
 msgid "Cannot get PLC status - connection failed.\n"
-msgstr "Impossible d'obtenir le statut de l'automate - la connecxion a échoué.\n"
+msgstr "Impossible d'obtenir le statut de l'automate - la connexion a échoué.\n"
 
 #: ../plugger.py:1215
 msgid "Cannot open/parse VARIABLES.csv!\n"
