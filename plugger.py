@@ -485,7 +485,7 @@ class PlugTemplate:
         # Ask to his parent to remove it
         self.PlugParent._doRemoveChild(self)
 
-    def PlugAddChild(self, PlugName, PlugType):
+    def PlugAddChild(self, PlugName, PlugType, IEC_Channel=0):
         """
         Create the plugins that may be added as child to this node self
         @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
@@ -554,7 +554,7 @@ class PlugTemplate:
                     # If plugin do not have corresponding file/dirs - they will be created on Save
                     _self.PlugMakeDir()
                     # Find an IEC number
-                    _self.FindNewIEC_Channel(0)
+                    _self.FindNewIEC_Channel(IEC_Channel)
                     # Call the plugin real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
@@ -742,8 +742,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         PLCControler.__init__(self)
 
         self.MandatoryParams = None
-        self.AppFrame = frame
-        self.logger = logger
+        self.SetAppFrame(frame, logger)
         self._builder = None
         self._connector = None
         self.Deleting = False
@@ -754,11 +753,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         self.DebugTimer=None
         self.ResetIECProgramsAndVariables()
-        
-        # Timer to pull PLC status
-        ID_STATUSTIMER = wx.NewId()
-        self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
-        self.AppFrame.Bind(wx.EVT_TIMER, self.PullPLCStatusProc, self.StatusTimer)
         
         #This method are not called here... but in NewProject and OpenProject
         #self._AddParamsMembers()
@@ -784,6 +778,25 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def __del__(self):
         self.Deleting = True
+
+    def SetAppFrame(self, frame, logger):
+        self.AppFrame = frame
+        self.logger = logger
+        self.StatusTimer = None
+        
+        if frame is not None:
+            # Timer to pull PLC status
+            ID_STATUSTIMER = wx.NewId()
+            self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
+            self.AppFrame.Bind(wx.EVT_TIMER, self.PullPLCStatusProc, self.StatusTimer)
+
+    def ResetAppFrame(self, logger):
+        if self.AppFrame is not None:
+            self.AppFrame.Unbind(wx.EVT_TIMER, self.StatusTimer)
+            self.StatusTimer = None
+            self.AppFrame = None
+        
+        self.logger = logger
 
     def PluginLibraryFilePath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml")
@@ -910,8 +923,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def CloseProject(self):
         self.ClearPluggedChilds()
-        self.AppFrame.Unbind(wx.EVT_TIMER, self.StatusTimer)
-    
+        self.ResetAppFrame(None)
+        
     def SaveProject(self):
         if not self.SaveXMLFile():
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))

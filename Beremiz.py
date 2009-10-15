@@ -377,7 +377,7 @@ class Beremiz(IDEFrame):
         
         self._init_beremiz_sizers()
 
-    def __init__(self, parent, projectOpen, buildpath, debug=True):
+    def __init__(self, parent, projectOpen=None, buildpath=None, plugin_root=None, debug=True):
         IDEFrame.__init__(self, parent, debug)
         self.Config = wx.ConfigBase.Get()
         
@@ -403,8 +403,11 @@ class Beremiz(IDEFrame):
                 self.ResetView()
                 self.ShowErrorMessage(result)
         else:
-            self.PluginRoot = None
-            self.Controler = None
+            self.PluginRoot = plugin_root
+            self.Controler = plugin_root
+            if plugin_root is not None:
+                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self.RefreshAll()
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
