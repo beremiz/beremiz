@@ -341,10 +341,7 @@ class _Cfile:
         cfile.write(text)
         cfile.close()
         
-        if wx.Platform == '__WXMSW__':
-            matiec_flags = " -I../../matiec/lib"
-        else:
-            matiec_flags = " -I../matiec/lib"
+        matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_flags))],str(self.CExtension.getLDFLAGS()),True
         

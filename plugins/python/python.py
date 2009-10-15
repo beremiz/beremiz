@@ -264,9 +264,6 @@ class RootClass(PythonCodeTemplate):
         runtimefile.write(self.GetPythonCode())
         runtimefile.close()
         
-        if wx.Platform == '__WXMSW__':
-            matiec_flags = " -I../../matiec/lib"
-        else:
-            matiec_flags = " -I../matiec/lib"
+        matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
         
         return [(Gen_Pythonfile_path, matiec_flags)], "", True, ("runtime_%s.py"%location_str, file(runtimefile_path,"rb"))

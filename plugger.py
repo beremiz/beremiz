@@ -658,9 +658,6 @@ if wx.Platform == '__WXMSW__':
 else:
     exe_ext=""
 
-iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
-ieclib_path = os.path.join(base_folder, "matiec", "lib")
-
 # import for project creation timestamping
 from threading import Timer, Lock, Thread, Semaphore
 from time import localtime
@@ -748,6 +745,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self._connector = None
         self.Deleting = False
         
+        self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
+        self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
+        
         # Setup debug information
         self.IECdebug_datas = {}
         self.IECdebug_lock = Lock()
@@ -794,6 +794,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def GetPlugRoot(self):
         return self
 
+    def GetIECLibPath(self):
+        return self.ieclib_path
+    
+    def GetIEC2cPath(self):
+        return self.iec2c_path
+    
     def GetCurrentLocation(self):
         return ()
 
@@ -1043,8 +1049,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         status, result, err_result = ProcessLogger(
                self.logger,
                "\"%s\" -f -I \"%s\" -T \"%s\" \"%s\""%(
-                         iec2c_path,
-                         ieclib_path, 
+                         self.iec2c_path,
+                         self.ieclib_path, 
                          buildpath,
                          self._getIECcodepath()),
                no_stdout=True, no_stderr=True).spin()
@@ -1094,7 +1100,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Keep track of generated C files for later use by self.PlugGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = "\"-I"+ieclib_path+"\""
+        self.plcCFLAGS = "\"-I"+self.ieclib_path+"\""
         return True
 
     def GetBuilder(self):
@@ -1261,9 +1267,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
             plc_main_code = targets.code("plc_common_main") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
-                      "void __cleanup_%(s)s();\n"+
-                      "void __retrieve_%(s)s();\n"+
-                      "void __publish_%(s)s();")%{'s':locstr} for locstr in locstrs]),
+                      "void __cleanup_%(s)s(void);\n"+
+                      "void __retrieve_%(s)s(void);\n"+
+                      "void __publish_%(s)s(void);")%{'s':locstr} for locstr in locstrs]),
                 "retrieve_calls":"\n    ".join([
                       "__retrieve_%s();"%locstr for locstr in locstrs]),
                 "publish_calls":"\n    ".join([ #Call publish in reverse order
