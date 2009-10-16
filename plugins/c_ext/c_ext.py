@@ -341,7 +341,7 @@ class _Cfile:
         cfile.write(text)
         cfile.close()
         
-        matiec_flags = " -I%s"%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
+        matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_flags))],str(self.CExtension.getLDFLAGS()),True
         
