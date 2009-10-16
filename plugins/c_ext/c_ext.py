@@ -324,15 +324,15 @@ class _Cfile:
         text += "  return 0;\n"
         text += "\n}\n\n"
         
-        text += "void __cleanup_%s()\n{\n"%location_str
+        text += "void __cleanup_%s(void)\n{\n"%location_str
         text += self.CFile.cleanUpFunction.gettext()
         text += "\n}\n\n"
         
-        text += "void __retrieve_%s()\n{\n"%location_str
+        text += "void __retrieve_%s(void)\n{\n"%location_str
         text += self.CFile.retrieveFunction.gettext()
         text += "\n}\n\n"
         
-        text += "void __publish_%s()\n{\n"%location_str
+        text += "void __publish_%s(void)\n{\n"%location_str
         text += self.CFile.publishFunction.gettext()
         text += "\n}\n\n"
         
@@ -341,10 +341,7 @@ class _Cfile:
         cfile.write(text)
         cfile.close()
         
-        if wx.Platform == '__WXMSW__':
-            matiec_flags = " -I../../matiec/lib"
-        else:
-            matiec_flags = " -I../matiec/lib"
+        matiec_flags = " -I%s"%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_flags))],str(self.CExtension.getLDFLAGS()),True
         
