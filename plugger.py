@@ -231,7 +231,7 @@ class PlugTemplate:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        self.logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
+        self.GetPlugRoot().logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
         return [],"",False
     
     def _Generate_C(self, buildpath, locations):
@@ -429,7 +429,7 @@ class PlugTemplate:
             shutil.move(oldname, self.PlugPath())
         # warn user he has two left hands
         if DesiredName != res:
-            self.logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
+            self.GetPlugRoot().logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
         return res
 
     def FindNewIEC_Channel(self, DesiredChannel):
@@ -454,14 +454,14 @@ class PlugTemplate:
             if res < CurrentChannel: # Want to go down ?
                 res -=  1 # Test for n-1
                 if res < 0 :
-                    self.logger.write_warning(_("Cannot find lower free IEC channel than %d\n")%CurrentChannel)
+                    self.GetPlugRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n")%CurrentChannel)
                     return CurrentChannel # Can't go bellow 0, do nothing
             else : # Want to go up ?
                 res +=  1 # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)
         if DesiredChannel != res:
-            self.logger.write_warning(_("A child with IEC channel %d already exist -> %d\n")%(DesiredChannel,res))
+            self.GetPlugRoot().logger.write_warning(_("A child with IEC channel %d already exist -> %d\n")%(DesiredChannel,res))
         return res
 
     def OnPlugClose(self):
@@ -521,8 +521,6 @@ class PlugTemplate:
             def __init__(_self):
                 # self is the parent
                 _self.PlugParent = self
-                # self is the parent
-                _self.logger = self.logger
                 # Keep track of the plugin type name
                 _self.PlugType = PlugType
                 # remind the help string, for more fancy display
@@ -599,8 +597,8 @@ class PlugTemplate:
                 self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
                 basexmlfile.close()
             except Exception, exc:
-                self.logger.write_error(_("Couldn't load plugin base parameters %s :\n %s") % (PlugName, str(exc)))
-                self.logger.write_error(traceback.format_exc())
+                self.GetPlugRoot().logger.write_error(_("Couldn't load plugin base parameters %s :\n %s") % (PlugName, str(exc)))
+                self.GetPlugRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
         if self.PlugParams:
@@ -610,8 +608,8 @@ class PlugTemplate:
                 self.PlugParams[1].loadXMLTree(tree.childNodes[0])
                 xmlfile.close()
             except Exception, exc:
-                self.logger.write_error(_("Couldn't load plugin parameters %s :\n %s") % (PlugName, str(exc)))
-                self.logger.write_error(traceback.format_exc())
+                self.GetPlugRoot().logger.write_error(_("Couldn't load plugin parameters %s :\n %s") % (PlugName, str(exc)))
+                self.GetPlugRoot().logger.write_error(traceback.format_exc())
         
     def LoadChilds(self):
         # Iterate over all PlugName@PlugType in plugin directory, and try to open them
@@ -622,8 +620,8 @@ class PlugTemplate:
                 try:
                     self.PlugAddChild(pname, ptype)
                 except Exception, exc:
-                    self.logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
-                    self.logger.write_error(traceback.format_exc())
+                    self.GetPlugRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
+                    self.GetPlugRoot().logger.write_error(traceback.format_exc())
 
     def EnableMethod(self, method, value):
         for d in self.PluginMethods:

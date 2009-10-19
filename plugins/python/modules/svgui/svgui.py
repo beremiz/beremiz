@@ -93,7 +93,7 @@ def _runtime_%(location)s_cleanup():
             if os.path.isfile(svgpath):
                 shutil.copy(svgpath, self._getSVGpath())
             else:
-                self.logger.write_error(_("No such SVG file: %s\n")%svgpath)
+                self.GetPlugRoot().logger.write_error(_("No such SVG file: %s\n")%svgpath)
         dialog.Destroy()  
 
     def _StartInkscape(self):

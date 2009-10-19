@@ -200,12 +200,12 @@ class _NodeListPlug(NodeList):
         buildpath = self._getBuildPath()
         # Eventually create build dir
         if not os.path.exists(buildpath):
-            self.logger.write_error(_("Error: No PLC built\n"))
+            self.GetPlugRoot().logger.write_error(_("Error: No PLC built\n"))
             return
         
         masterpath = os.path.join(buildpath, "MasterGenerated.od")
         if not os.path.exists(masterpath):
-            self.logger.write_error(_("Error: No Master generated\n"))
+            self.GetPlugRoot().logger.write_error(_("Error: No Master generated\n"))
             return
         
         new_dialog = objdictedit(None, filesOpen=[masterpath])

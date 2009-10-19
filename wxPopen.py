@@ -64,8 +64,8 @@ class outputThread(threading.Thread):
             except:
                 err = self.retval
             self.finished = True
-            wx.CallAfter(self.endcallback, self.Proc.pid, err)
-
+            self.endcallback(self.Proc.pid, err)
+        
 class ProcessLogger:
     def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False, no_gui=True):
         self.logger = logger
@@ -121,13 +121,19 @@ class ProcessLogger:
         self.outdata += v
         self.outlen += 1
         if not self.no_stdout:
-            wx.CallAfter(self.logger.write,v)
-
+            if wx.GetApp() is None:
+                self.logger.write(v)
+            else:
+                wx.CallAfter(self.logger.write,v)
+            
     def errors(self,v):
         self.errdata += v
         self.errlen += 1
         if not self.no_stderr:
-            wx.CallAfter(self.logger.write_warning,v)
+            if wx.GetApp() is None:
+                self.logger.write_warning(v)
+            else:
+                wx.CallAfter(self.logger.write_warning,v)
 
     def log_the_end(self,ecode,pid):
         self.logger.write(self.Command_str + "\n")
@@ -137,7 +143,10 @@ class ProcessLogger:
         self.finished = True
         self.exitcode = ecode
         if self.exitcode != 0:
-            wx.CallAfter(self.log_the_end,ecode,pid)
+            if wx.GetApp() is None:
+                self.log_the_end(ecode,pid)
+            else:
+                wx.CallAfter(self.log_the_end,ecode,pid)
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
 
@@ -174,7 +183,9 @@ class ProcessLogger:
                 count += 1
             if keyword and self.outdata.find(keyword)!=-1:
                     break
-            wx.Yield()
+            app = wx.GetApp()
+            if app is not None:
+                app.Yield()
             time.sleep(0.01)
 
         if not self.outt.finished and kill_it:

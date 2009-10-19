@@ -12,7 +12,6 @@ class toolchain_gcc():
     """
     def __init__(self, PluginsRootInstance):
         self.PluginsRootInstance = PluginsRootInstance
-        self.logger = PluginsRootInstance.logger
         self.exe = PluginsRootInstance.GetProjectName() + self.extension
         self.buildpath = PluginsRootInstance._getBuildPath()
         self.exe_path = os.path.join(self.buildpath, self.exe)
@@ -96,9 +95,9 @@ class toolchain_gcc():
         relink = False
         for Location, CFilesAndCFLAGS, DoCalls in self.PluginsRootInstance.LocationCFilesAndCFLAGS:
             if Location:
-                self.logger.write(_("Plugin : ") + self.PluginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
+                self.PluginsRootInstance.logger.write(_("Plugin : ") + self.PluginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
             else:
-                self.logger.write(_("PLC :\n"))
+                self.PluginsRootInstance.logger.write(_("PLC :\n"))
                 
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 bn = os.path.basename(CFile)
@@ -108,21 +107,21 @@ class toolchain_gcc():
                 match = self.check_and_update_hash_and_deps(bn)
                 
                 if match:
-                    self.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
+                    self.PluginsRootInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
                 else:
                     relink = True
 
-                    self.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
+                    self.PluginsRootInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
                     
                     status, result, err_result = ProcessLogger(
-                           self.logger,
+                           self.PluginsRootInstance.logger,
                            "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
                                (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
                            ).spin()
 
                     if status :
                         self.srcmd5.pop(bn)
-                        self.logger.write_error(_("C compilation of %s failed.\n")%bn)
+                        self.PluginsRootInstance.logger.write_error(_("C compilation of %s failed.\n")%bn)
                         return False
 
                 obns.append(obn)
@@ -130,7 +129,7 @@ class toolchain_gcc():
 
         ######### GENERATE library FILE ########################################
         # Link all the object files into one binary file
-        self.logger.write(_("Linking :\n"))
+        self.PluginsRootInstance.logger.write(_("Linking :\n"))
         if relink:
             objstring = []
     
@@ -139,10 +138,10 @@ class toolchain_gcc():
     
             ALLldflags = ' '.join(self.getBuilderLDFLAGS())
     
-            self.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
+            self.PluginsRootInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
     
             status, result, err_result = ProcessLogger(
-                   self.logger,
+                   self.PluginsRootInstance.logger,
                    "\"%s\" %s -o \"%s\" %s"%
                        (self.linker,
                         listobjstring,
@@ -162,7 +161,7 @@ class toolchain_gcc():
                 f.write(self.md5key)
                 f.close()
         else:
-            self.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.exe + "\n")
+            self.PluginsRootInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.exe + "\n")
             
         
         return True
