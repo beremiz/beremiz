@@ -641,9 +641,9 @@ class Beremiz(IDEFrame):
         self.RefreshScrollBars()
         self.Thaw()
 
-    normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
-    mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, underline=True, faceName = faces["helv"])
     def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
+        normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
+        mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, underline=True, faceName = faces["helv"])
         if horizontal:
             msizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
         else:
@@ -655,7 +655,7 @@ class Beremiz(IDEFrame):
                 button = GenBitmapTextButton(id=id, parent=parent,
                     bitmap=wx.Bitmap(Bpath( "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=label, 
                     name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
-                button.SetFont(self.normal_bt_font)
+                button.SetFont(normal_bt_font)
                 button.SetToolTipString(plugin_method["tooltip"])
                 button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
                 # a fancy underline on mouseover
@@ -665,8 +665,8 @@ class Beremiz(IDEFrame):
                         b.Refresh()
                         event.Skip()
                     return fn
-                button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, self.mouseover_bt_font))
-                button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, self.normal_bt_font))
+                button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, mouseover_bt_font))
+                button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, normal_bt_font))
                 #hack to force size to mini
                 if not plugin_method.get("enabled",True):
                     button.Disable()
