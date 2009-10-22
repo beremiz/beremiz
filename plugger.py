@@ -1287,7 +1287,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                       "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls":"\n    ".join([
                       "init_level=%d; "%(i+1)+
-                      "if(res = __init_%s(argc,argv)){"%locstr +
+                      "if((res = __init_%s(argc,argv))){"%locstr +
                       #"printf(\"%s\"); "%locstr + #for debug
                       "return res;}" for i,locstr in enumerate(locstrs)]),
                 "cleanup_calls":"\n    ".join([
