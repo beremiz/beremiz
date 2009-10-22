@@ -367,6 +367,7 @@ class Beremiz(IDEFrame):
         self.PLCConfig.SetBackgroundColour(wx.WHITE)
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
+        self.PLCConfig.Bind(wx.EVT_MOUSEWHEEL, self.OnPLCConfigScroll)
         self.BottomNoteBook.InsertPage(0, self.PLCConfig, _("Topology"), True)
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
@@ -388,6 +389,8 @@ class Beremiz(IDEFrame):
         self.local_runtime_tmpdir = None
         
         self.DisableEvents = False
+        # Variable allowing disabling of PLCConfig scroll when Popup shown 
+        self.ScrollingEnabled = True
         
         self.PluginInfos = {}
         
@@ -506,10 +509,17 @@ class Beremiz(IDEFrame):
         self.RefreshScrollBars()
         event.Skip()
     
+    def EnableScrolling(self, enable):
+        self.ScrollingEnabled = enable
+    
+    def OnPLCConfigScroll(self, event):
+        if self.ScrollingEnabled:
+            event.Skip()
+
     def OnPanelLeftDown(self, event):
         focused = self.FindFocus()
         if isinstance(focused, TextCtrlAutoComplete.TextCtrlAutoComplete):
-            focused._showDropDown(False)
+            focused.DismissListBox()
         event.Skip()
     
     def RefreshFileMenu(self):
@@ -1201,7 +1211,7 @@ class Beremiz(IDEFrame):
                 id = wx.NewId()
                 if isinstance(element_infos["type"], types.ListType):
                     combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 28), style=wx.CB_READONLY)
+                        pos=wx.Point(0, 0), size=wx.Size(300, 28), style=wx.CB_READONLY)
                     boxsizer.AddWindow(combobox, 0, border=0, flag=0)
                     if element_infos["use"] == "optional":
                         combobox.Append("")
@@ -1234,7 +1244,7 @@ class Beremiz(IDEFrame):
                     if "max" in element_infos["type"]:
                         scmax = element_infos["type"]["max"]
                     spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                        pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                     spinctrl.SetRange(scmin,scmax)
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                     spinctrl.SetValue(element_infos["value"])
@@ -1253,7 +1263,7 @@ class Beremiz(IDEFrame):
                             scmin = -(2**31)
                         scmax = 2**31-1
                         spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                            pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                         spinctrl.SetRange(scmin, scmax)
                         boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                         spinctrl.SetValue(element_infos["value"])
@@ -1263,10 +1273,11 @@ class Beremiz(IDEFrame):
                         textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
                                                                      name=element_infos["name"], 
                                                                      parent=parent, 
+                                                                     appframe=self, 
                                                                      choices=choices, 
                                                                      element_path=element_path,
                                                                      pos=wx.Point(0, 0), 
-                                                                     size=wx.Size(150, 25), 
+                                                                     size=wx.Size(300, 25), 
                                                                      style=0)
                         
                         boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
