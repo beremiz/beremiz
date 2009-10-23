@@ -293,6 +293,8 @@ class Beremiz(IDEFrame):
               kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
         AppendMenu(parent, help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
+        AppendMenu(parent, help='', id=wx.ID_SAVEAS,
+              kind=wx.ITEM_NORMAL, text=_(u'Save as\tCTRL+S'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
               kind=wx.ITEM_NORMAL, text=_(u'Close Tab\tCTRL+W'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
@@ -314,6 +316,7 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu, id=wx.ID_SAVE)
+        self.Bind(wx.EVT_MENU, self.OnSaveProjectAsMenu, id=wx.ID_SAVEAS)
         self.Bind(wx.EVT_MENU, self.OnCloseTabMenu, id=wx.ID_CLOSE)
         self.Bind(wx.EVT_MENU, self.OnCloseProjectMenu, id=wx.ID_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.OnPageSetupMenu, id=wx.ID_PAGE_SETUP)
@@ -543,6 +546,7 @@ class Beremiz(IDEFrame):
                 self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
             self.FileMenu.Enable(wx.ID_SAVE, True)
+            self.FileMenu.Enable(wx.ID_SAVEAS, True)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
         else:
@@ -551,6 +555,7 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_PREVIEW, False)
             self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
+            self.FileMenu.Enable(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
         
@@ -1370,6 +1375,13 @@ class Beremiz(IDEFrame):
             self.RefreshAll()
             self.RefreshTitle()
     
+    def OnSaveProjectAsMenu(self, event):
+        if self.PluginRoot is not None:
+            self.PluginRoot.SaveProjectAs()
+            self.RefreshAll()
+            self.RefreshTitle()
+        event.Skip()
+    
     def OnPropertiesMenu(self, event):
         self.ShowProperties()
     
@@ -1402,24 +1414,26 @@ class Beremiz(IDEFrame):
         return DeleteButtonFunction
     
     def AddPlugin(self, PluginType, plugin):
-        dialog = wx.TextEntryDialog(self, _("Please enter a name for plugin:"), _("Add Plugin"), "", wx.OK|wx.CANCEL)
-        if dialog.ShowModal() == wx.ID_OK:
-            PluginName = dialog.GetValue()
-            plugin.PlugAddChild(PluginName, PluginType)
-            self.RefreshPluginTree()
-            self.PluginRoot.RefreshPluginsBlockLists()
-        dialog.Destroy()
+        if self.PluginRoot.CheckProjectPathPerm():
+            dialog = wx.TextEntryDialog(self, _("Please enter a name for plugin:"), _("Add Plugin"), "", wx.OK|wx.CANCEL)
+            if dialog.ShowModal() == wx.ID_OK:
+                PluginName = dialog.GetValue()
+                plugin.PlugAddChild(PluginName, PluginType)
+                self.RefreshPluginTree()
+                self.PluginRoot.RefreshPluginsBlockLists()
+            dialog.Destroy()
     
     def DeletePlugin(self, plugin):
-        dialog = wx.MessageDialog(self, _("Really delete plugin ?"), _("Remove plugin"), wx.YES_NO|wx.NO_DEFAULT)
-        if dialog.ShowModal() == wx.ID_YES:
-            self.PluginInfos.pop(plugin)
-            plugin.PlugRemove()
-            del plugin
-            self.PluginRoot.RefreshPluginsBlockLists()
-            self.RefreshPluginTree()
-        dialog.Destroy()
-
+        if self.PluginRoot.CheckProjectPathPerm():
+            dialog = wx.MessageDialog(self, _("Really delete plugin ?"), _("Remove plugin"), wx.YES_NO|wx.NO_DEFAULT)
+            if dialog.ShowModal() == wx.ID_YES:
+                self.PluginInfos.pop(plugin)
+                plugin.PlugRemove()
+                del plugin
+                self.PluginRoot.RefreshPluginsBlockLists()
+                self.RefreshPluginTree()
+            dialog.Destroy()
+    
 #-------------------------------------------------------------------------------
 #                               Exception Handler
 #-------------------------------------------------------------------------------

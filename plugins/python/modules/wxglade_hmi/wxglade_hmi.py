@@ -100,16 +100,25 @@ def _runtime_%(location)s_cleanup():
 
     def _editWXGLADE(self):
         wxg_filename = self._getWXGLADEpath()
-        if not os.path.exists(wxg_filename):
-            hmi_name = self.BaseParams.getName()
-            open(wxg_filename,"w").write("""<?xml version="1.0"?>
-<application path="" name="" class="" option="0" language="python" top_window="%(name)s" encoding="UTF-8" use_gettext="0" overwrite="0" use_new_namespace="1" for_version="2.8" is_template="0">
-    <object class="%(class)s" name="%(name)s" base="EditFrame">
-        <style>wxDEFAULT_FRAME_STYLE</style>
-        <title>frame_1</title>
-    </object>
-</application>
-""" % {"name": hmi_name, "class": "Class_%s" % hmi_name})
-        if wx.Platform == '__WXMSW__':
-            wxg_filename = "\"%s\""%wxg_filename
-        self.launch_wxglade([wxg_filename])
+        open_wxglade = True
+        if not self.GetPlugRoot().CheckProjectPathPerm():
+            dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
+                                      _("You don't have write permissions.\nOpen wxGlade anyway ?"),
+                                      _("Open wxGlade"),
+                                      wx.YES_NO|wx.ICON_QUESTION)
+            open_wxglade = dialog.ShowModal() == wx.ID_YES
+            dialog.Destroy()
+        if open_wxglade:
+            if not os.path.exists(wxg_filename):
+                hmi_name = self.BaseParams.getName()
+                open(wxg_filename,"w").write("""<?xml version="1.0"?>
+    <application path="" name="" class="" option="0" language="python" top_window="%(name)s" encoding="UTF-8" use_gettext="0" overwrite="0" use_new_namespace="1" for_version="2.8" is_template="0">
+        <object class="%(class)s" name="%(name)s" base="EditFrame">
+            <style>wxDEFAULT_FRAME_STYLE</style>
+            <title>frame_1</title>
+        </object>
+    </application>
+    """ % {"name": hmi_name, "class": "Class_%s" % hmi_name})
+            if wx.Platform == '__WXMSW__':
+                wxg_filename = "\"%s\""%wxg_filename
+            self.launch_wxglade([wxg_filename])
