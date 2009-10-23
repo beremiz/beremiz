@@ -869,7 +869,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if CheckPathPerm(self.ProjectPath):
             return True
         dialog = wx.MessageDialog(self.AppFrame, 
-                    _('You must have write permission to work on the project\nWork on a project copy ?'),
+                    _('You must have permission to work on the project\nWork on a project copy ?'),
                     _('Error'), 
                     wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         answer = dialog.ShowModal()

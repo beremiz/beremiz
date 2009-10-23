@@ -294,7 +294,7 @@ class Beremiz(IDEFrame):
         AppendMenu(parent, help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
-              kind=wx.ITEM_NORMAL, text=_(u'Save as\tCTRL+S'))
+              kind=wx.ITEM_NORMAL, text=_(u'Save as\tCTRL+SHIFT+S'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
               kind=wx.ITEM_NORMAL, text=_(u'Close Tab\tCTRL+W'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
