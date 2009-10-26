@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-10-23 18:41+0200\n"
+"POT-Creation-Date: 2009-10-26 10:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../Beremiz.py:1460
+#: ../Beremiz.py:1457
 #, python-format
 msgid ""
 "\n"
@@ -37,7 +37,7 @@ msgstr ""
 msgid " generation failed !\n"
 msgstr ""
 
-#: ../Beremiz.py:1351
+#: ../Beremiz.py:1357
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr ""
@@ -46,11 +46,11 @@ msgstr ""
 msgid "&Edit"
 msgstr ""
 
-#: ../Beremiz.py:1448 ../Beremiz.py:1450 ../Beremiz.py:1451
+#: ../Beremiz.py:1445 ../Beremiz.py:1447 ../Beremiz.py:1448
 msgid ",   "
 msgstr ""
 
-#: ../Beremiz.py:1446
+#: ../Beremiz.py:1443
 msgid ". "
 msgstr ""
 
@@ -68,11 +68,11 @@ msgstr ""
 msgid "About"
 msgstr ""
 
-#: ../Beremiz.py:1395
+#: ../Beremiz.py:1392
 msgid "About Beremiz"
 msgstr ""
 
-#: ../Beremiz.py:1418
+#: ../Beremiz.py:1415
 msgid "Add Plugin"
 msgstr ""
 
@@ -191,7 +191,7 @@ msgstr ""
 msgid "Choose a directory to save project"
 msgstr ""
 
-#: ../Beremiz.py:1308 ../Beremiz.py:1333
+#: ../Beremiz.py:1311 ../Beremiz.py:1339
 msgid "Choose a project"
 msgstr ""
 
@@ -219,11 +219,11 @@ msgstr ""
 msgid "Cleaning the build directory\n"
 msgstr ""
 
-#: ../Beremiz.py:492 ../Beremiz.py:1360
+#: ../Beremiz.py:504
 msgid "Close Application"
 msgstr ""
 
-#: ../Beremiz.py:301
+#: ../Beremiz.py:301 ../Beremiz.py:489
 msgid "Close Project"
 msgstr ""
 
@@ -372,7 +372,7 @@ msgstr ""
 msgid "Enter the IP of the interface to bind"
 msgstr ""
 
-#: ../Beremiz.py:1474 ../Beremiz.py:1484 ../plugger.py:873
+#: ../Beremiz.py:1471 ../Beremiz.py:1481 ../plugger.py:873
 #: ../Beremiz_service.py:268 ../Beremiz_service.py:392
 msgid "Error"
 msgstr ""
@@ -573,7 +573,7 @@ msgstr ""
 msgid "Page Setup"
 msgstr ""
 
-#: ../Beremiz.py:1418
+#: ../Beremiz.py:1415
 msgid "Please enter a name for plugin:"
 msgstr ""
 
@@ -630,7 +630,7 @@ msgstr ""
 msgid "Raw IEC code"
 msgstr ""
 
-#: ../Beremiz.py:1428
+#: ../Beremiz.py:1425
 msgid "Really delete plugin ?"
 msgstr ""
 
@@ -646,7 +646,7 @@ msgstr ""
 msgid "Refresh\tCTRL+R"
 msgstr ""
 
-#: ../Beremiz.py:1428
+#: ../Beremiz.py:1425
 msgid "Remove plugin"
 msgstr ""
 
@@ -664,10 +664,6 @@ msgstr ""
 
 #: ../Beremiz.py:297
 msgid "Save as\tCTRL+SHIFT+S"
-msgstr ""
-
-#: ../Beremiz.py:491 ../Beremiz.py:1359
-msgid "Save changes ?"
 msgstr ""
 
 #: ../discovery.py:81
@@ -733,6 +729,10 @@ msgstr ""
 
 #: ../plugger.py:1756
 msgid "Stopping debug\n"
+msgstr ""
+
+#: ../Beremiz.py:492
+msgid "There are changes, do you want to save?"
 msgstr ""
 
 #: ../Beremiz.py:374
@@ -832,15 +832,15 @@ msgstr ""
 msgid "exited with status %s (pid %s)\n"
 msgstr ""
 
-#: ../Beremiz.py:1448 ../Beremiz.py:1450
+#: ../Beremiz.py:1445 ../Beremiz.py:1447
 msgid "file : "
 msgstr ""
 
-#: ../Beremiz.py:1451
+#: ../Beremiz.py:1448
 msgid "function : "
 msgstr ""
 
-#: ../Beremiz.py:1451
+#: ../Beremiz.py:1448
 msgid "line : "
 msgstr ""
 

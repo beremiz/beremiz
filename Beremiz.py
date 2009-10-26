@@ -483,29 +483,29 @@ class Beremiz(IDEFrame):
                 infos = self.PluginRoot.ShowError(self.Log,
                                                   (int(first_line), int(first_column)), 
                                                   (int(last_line), int(last_column)))
-		
+	
+    ## Function displaying an Error dialog in PLCOpenEditor.
+    #  @return False if closing cancelled.
+    def CheckSaveBeforeClosing(self, title=_("Close Project")):
+        if self.PluginRoot.ProjectTestModified():
+            dialog = wx.MessageDialog(self,
+                                      _("There are changes, do you want to save?"),
+                                      title,
+                                      wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+            answer = dialog.ShowModal()
+            dialog.Destroy()
+            if answer == wx.ID_YES:
+                self.PluginRoot.SaveProject()
+            elif answer == wx.ID_CANCEL:
+                return False
+        return True
+    
     def OnCloseFrame(self, event):
-        if self.PluginRoot is not None:
-            if self.PluginRoot.ProjectTestModified():
-                dialog = wx.MessageDialog(self,
-                                          _("Save changes ?"),
-                                          _("Close Application"), 
-                                          wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
-                answer = dialog.ShowModal()
-                dialog.Destroy()
-                if answer == wx.ID_YES:
-                    self.PluginRoot.SaveProject()
-                    event.Skip()
-                elif answer == wx.ID_NO:
-                    event.Skip()
-                    return
-                else:
-                    event.Veto()
-                    return
-
-        self.KillLocalRuntime()
-        
-        event.Skip()
+        if self.PluginRoot is None or self.CheckSaveBeforeClosing(_("Close Application")):
+            self.KillLocalRuntime()
+            event.Skip()
+        else:
+            event.Veto()
     
     def OnMoveWindow(self, event):
         self.GetBestSize()
@@ -1300,6 +1300,9 @@ class Beremiz(IDEFrame):
         self.DebugVariablePanel.SetDataProducer(None)
     
     def OnNewProjectMenu(self, event):
+        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            return
+        
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
@@ -1325,6 +1328,9 @@ class Beremiz(IDEFrame):
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
     
     def OnOpenProjectMenu(self, event):
+        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            return
+        
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
@@ -1353,21 +1359,12 @@ class Beremiz(IDEFrame):
         dialog.Destroy()
     
     def OnCloseProjectMenu(self, event):
-        if self.PluginRoot is not None:
-            if self.PluginRoot.ProjectTestModified():
-                dialog = wx.MessageDialog(self,
-                                          _("Save changes ?"),
-                                          _("Close Application"), 
-                                          wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
-                answer = dialog.ShowModal()
-                dialog.Destroy()
-                if answer == wx.ID_YES:
-                    self.PluginRoot.SaveProject()
-                elif answer == wx.ID_CANCEL:
-                    return
-            self.ResetView()
-            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
-            self.RefreshAll()
+        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            return
+        
+        self.ResetView()
+        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+        self.RefreshAll()
     
     def OnSaveProjectMenu(self, event):
         if self.PluginRoot is not None:
