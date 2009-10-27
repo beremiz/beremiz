@@ -262,7 +262,7 @@ class _Cfile:
         text += self.CFile.generateXMLText("CFile", 0, extras)
 
         xmlfile = open(filepath,"w")
-        xmlfile.write(text)
+        xmlfile.write(text.encode("utf-8"))
         xmlfile.close()
         
         self.CFileBuffer.CurrentSaved()
