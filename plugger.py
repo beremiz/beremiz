@@ -202,14 +202,14 @@ class PlugTemplate:
             if self.MandatoryParams:
                 BaseXMLFile = open(self.PluginBaseXmlFilePath(),'w')
                 BaseXMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0))
+                BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0).encode("utf-8"))
                 BaseXMLFile.close()
             
             # generate XML for XML parameters controller of the plugin
             if self.PlugParams:
                 XMLFile = open(self.PluginXmlFilePath(),'w')
                 XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0))
+                XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0).encode("utf-8"))
                 XMLFile.close()
             
             # Call the plugin specific OnPlugSave method

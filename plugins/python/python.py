@@ -174,7 +174,7 @@ class PythonCodeTemplate:
         text += self.PythonCode.generateXMLText("Python", 0, extras)
 
         xmlfile = open(filepath,"w")
-        xmlfile.write(text)
+        xmlfile.write(text.encode("utf-8"))
         xmlfile.close()
         
         self.PythonBuffer.CurrentSaved()
