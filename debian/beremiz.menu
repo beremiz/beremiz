@@ -1,0 +1,40 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Directory>Applications.directory</Directory>
+
+  <!-- Read standard .directory and .desktop file locations -->
+  <DefaultAppDirs/>
+  <DefaultDirectoryDirs/>
+	<Menu>
+	  <Name>Development</Name>
+	  <Directory>Development.directory</Directory>
+
+		  <!-- Beremiz submenu -->
+		  <Menu>
+		    <Name>Beremiz</Name>
+		    	<Directory>Beremiz.directory</Directory>
+				<Include>
+					<Category>Beremiz</Category>
+			    	</Include>
+				<Menu>
+				    <Name>Demos</Name>
+				    <Directory>Beremiz_demos.directory</Directory>
+				    <Include>
+					<Category>Beremiz_demo</Category>
+				    </Include>
+				</Menu> <!-- End Beremiz demo -->
+				<Menu>
+				    <Name>Doc</Name>
+				    <Directory>Beremiz_docs.directory</Directory>
+				    <Include>
+					<Category>Beremiz_doc</Category>
+				    </Include>
+				</Menu> <!-- End Beremiz doc -->
+		  </Menu> <!-- End Beremiz -->
+
+  	</Menu> <!-- End Development -->
+  <!-- possibly more submenus -->
+
+</Menu> <!-- End Applications -->
