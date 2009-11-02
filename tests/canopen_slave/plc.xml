@@ -3,7 +3,7 @@
          xmlns="http://www.plcopen.org/xml/tc6.xsd"
          xmlns:xhtml="http://www.w3.org/1999/xhtml"
          xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
-  <fileHeader companyName="lolitech"
+  <fileHeader companyName="beremiz"
               productName="beremiz"
               productVersion="1"
               creationDateTime="2008-06-24T18:44:00"/>
