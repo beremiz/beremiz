@@ -141,14 +141,28 @@ class PythonCodeTemplate:
     _View = None
     def _OpenView(self):
         if not self._View:
-            def _onclose():
-                self._View = None
-            def _onsave():
-                self.GetPlugRoot().SaveProject()
-            self._View = PythonEditorFrame(self.GetPlugRoot().AppFrame, self)
-            self._View._onclose = _onclose
-            self._View._onsave = _onsave
-            self._View.Show()
+            open_pyeditor = True
+            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
+            if not has_permissions:
+                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
+                                          _("You don't have write permissions.\nOpen PythonEditor anyway ?"),
+                                          _("Open PythonEditor"),
+                                          wx.YES_NO|wx.ICON_QUESTION)
+                open_pyeditor = dialog.ShowModal() == wx.ID_YES
+                dialog.Destroy()
+            if open_pyeditor:
+                def _onclose():
+                    self._View = None
+                if has_permissions:
+                    def _onsave():
+                        self.GetPlugRoot().SaveProject()
+                else:
+                    def _onsave():
+                        pass
+                self._View = PythonEditorFrame(self.GetPlugRoot().AppFrame, self)
+                self._View._onclose = _onclose
+                self._View._onsave = _onsave
+                self._View.Show()
     
     def OnPlugSave(self):
         filepath = self.PythonFileName()
@@ -160,7 +174,7 @@ class PythonCodeTemplate:
         text += self.PythonCode.generateXMLText("Python", 0, extras)
 
         xmlfile = open(filepath,"w")
-        xmlfile.write(text)
+        xmlfile.write(text.encode("utf-8"))
         xmlfile.close()
         
         self.PythonBuffer.CurrentSaved()

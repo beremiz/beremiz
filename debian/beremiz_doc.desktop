@@ -1,13 +1,12 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Beremiz
+Name=Manual
 Comment=Open Source framework for automation
 Comment[fr]=Environnement de développement Open Source pour l'automatisme
-Exec=/usr/bin/beremiz
-Icon=/usr/share/beremiz/images/brz.png
+Exec=/usr/bin/xpdf /usr/share/beremiz/doc/manual_beremiz.pdf
+Icon=
 Terminal=false
 MultipleArgs=false
 Type=Application
-Categories=Beremiz;
+Categories=Beremiz_doc;
 StartupNotify=true
-

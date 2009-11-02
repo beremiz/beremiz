@@ -98,6 +98,15 @@ def _runtime_%(location)s_cleanup():
 
     def _StartInkscape(self):
         svgfile = self._getSVGpath()
-        if not os.path.isfile(svgfile):
-            svgfile = None
-        open_svg(svgfile)
+        open_inkscape = True
+        if not self.GetPlugRoot().CheckProjectPathPerm():
+            dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
+                                      _("You don't have write permissions.\nOpen Inkscape anyway ?"),
+                                      _("Open Inkscape"),
+                                      wx.YES_NO|wx.ICON_QUESTION)
+            open_inkscape = dialog.ShowModal() == wx.ID_YES
+            dialog.Destroy()
+        if open_inkscape:
+            if not os.path.isfile(svgfile):
+                svgfile = None
+            open_svg(svgfile)

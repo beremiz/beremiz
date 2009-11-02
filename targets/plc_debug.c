@@ -51,17 +51,17 @@ static int* subscription_cursor = subscription_table;
 
 struct_plcvar variable_table[%(variables_pointer_type_table_count)d];
 
-void __init_debug()
+void __init_debug(void)
 {
 %(variables_pointer_type_table_initializer)s
     buffer_state = BUFFER_FREE;
 }
 
-void __cleanup_debug()
+void __cleanup_debug(void)
 {
 }
 
-void __retrieve_debug()
+void __retrieve_debug(void)
 {
 }
 
@@ -71,7 +71,7 @@ extern long AtomicCompareExchange(long*, long, long);
 extern void InitiateDebugTransfer(void);
 
 extern unsigned long __tick;
-void __publish_debug()
+void __publish_debug(void)
 {
     /* Check there is no running debugger re-configuration */
     if(TryEnterDebugSection()){
@@ -143,10 +143,11 @@ void ResetDebugVariables(void)
     latest_subscription = subscription_table;
 }
 
-void FreeDebugData()
+void FreeDebugData(void)
 {
     /* atomically mark buffer as free */
-    long latest_state = AtomicCompareExchange(
+    long latest_state;
+    latest_state = AtomicCompareExchange(
         &buffer_state,
         BUFFER_BUSY,
         BUFFER_FREE);
@@ -169,8 +170,8 @@ void* IterDebugData(int* idx, const char **type_name)
         {
             return old_cursor;
         }else{
-            printf("%%d > %%d\n", old_cursor - debug_buffer, BUFFER_SIZE);
-	    return NULL;
+            //printf("%%d > %%d\n", old_cursor - debug_buffer, BUFFER_SIZE);
+            return NULL;
         } 
     }
     *idx = -1;

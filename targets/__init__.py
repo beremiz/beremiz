@@ -75,3 +75,4 @@ def code(name):
     return open(filename).read()
 
 from toolchain_gcc import toolchain_gcc
+from toolchain_makefile import toolchain_makefile

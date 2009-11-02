@@ -908,14 +908,12 @@ class CFileEditor(wx.Frame):
         selected = self.PartsOpened.GetSelection()
         if selected >= 0:
             self.PartsOpened.DeletePage(selected)
-        event.Skip()
 
     def OnSaveMenu(self, event):
         if getattr(self, "_onsave", None) != None:
             self._onsave()
         self.RefreshTitle()
         self.RefreshEditMenu()
-        event.Skip()
 
 #-------------------------------------------------------------------------------
 #                            Notebook Unified Functions
@@ -957,7 +955,6 @@ class CFileEditor(wx.Frame):
         if selected != -1:
             window = self.PartsOpened.GetPage(selected)
             window.RefreshView()
-        event.Skip()
 
     def OnUndoMenu(self, event):
         self.Controler.LoadPrevious()
@@ -967,7 +964,6 @@ class CFileEditor(wx.Frame):
             window.RefreshView()
         self.RefreshTitle()
         self.RefreshEditMenu()
-        event.Skip()
     
     def OnRedoMenu(self, event):
         self.Controler.LoadNext()
@@ -977,7 +973,6 @@ class CFileEditor(wx.Frame):
             window.RefreshView()
         self.RefreshTitle()
         self.RefreshEditMenu()
-        event.Skip()
         
 #-------------------------------------------------------------------------------
 #                      CFile Editor Panels Management Functions

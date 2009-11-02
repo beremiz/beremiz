@@ -100,16 +100,31 @@ class _SlavePlug(NodeManager):
     _View = None
     def _OpenView(self):
         if not self._View:
-            def _onclose():
-                self._View = None
-            def _onsave():
-                self.GetPlugRoot().SaveProject()
-            self._View = objdictedit(self.GetPlugRoot().AppFrame, self)
-            # TODO redefine BusId when IEC channel change
-            self._View.SetBusId(self.GetCurrentLocation())
-            self._View._onclose = _onclose
-            self._View._onsave = _onsave
-            self._View.Show()
+            open_objdictedit = True
+            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
+            if not has_permissions:
+                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
+                                          _("You don't have write permissions.\nOpen ObjDictEdit anyway ?"),
+                                          _("Open ObjDictEdit"),
+                                          wx.YES_NO|wx.ICON_QUESTION)
+                open_objdictedit = dialog.ShowModal() == wx.ID_YES
+                dialog.Destroy()
+            if open_objdictedit:
+                def _onclose():
+                    self._View = None
+                if has_permissions:
+                    def _onsave():
+                        self.GetPlugRoot().SaveProject()
+                else:
+                    def _onsave():
+                        pass
+            
+                self._View = objdictedit(self.GetPlugRoot().AppFrame, self)
+                # TODO redefine BusId when IEC channel change
+                self._View.SetBusId(self.GetCurrentLocation())
+                self._View._onclose = _onclose
+                self._View._onsave = _onsave
+                self._View.Show()
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "NetworkEdit"),
@@ -185,16 +200,30 @@ class _NodeListPlug(NodeList):
     _View = None
     def _OpenView(self):
         if not self._View:
-            def _onclose():
-                self._View = None
-            def _onsave():
-                self.GetPlugRoot().SaveProject()
-            self._View = networkedit(self.GetPlugRoot().AppFrame, self)
-            # TODO redefine BusId when IEC channel change
-            self._View.SetBusId(self.GetCurrentLocation())
-            self._View._onclose = _onclose
-            self._View._onsave = _onsave
-            self._View.Show()
+            open_networkedit = True
+            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
+            if not has_permissions:
+                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
+                                          _("You don't have write permissions.\nOpen NetworkEdit anyway ?"),
+                                          _("Open NetworkEdit"),
+                                          wx.YES_NO|wx.ICON_QUESTION)
+                open_networkedit = dialog.ShowModal() == wx.ID_YES
+                dialog.Destroy()
+            if open_networkedit:
+                def _onclose():
+                    self._View = None
+                if has_permissions:
+                    def _onsave():
+                        self.GetPlugRoot().SaveProject()
+                else:
+                    def _onsave():
+                        pass
+                self._View = networkedit(self.GetPlugRoot().AppFrame, self)
+                # TODO redefine BusId when IEC channel change
+                self._View.SetBusId(self.GetCurrentLocation())
+                self._View._onclose = _onclose
+                self._View._onsave = _onsave
+                self._View.Show()
 
     def _ShowMasterGenerated(self):
         buildpath = self._getBuildPath()

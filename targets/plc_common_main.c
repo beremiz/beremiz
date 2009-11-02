@@ -41,7 +41,7 @@ static int init_level = 0;
 /*
  * Retrieve input variables, run PLC and publish output variables
  **/
-void __run()
+void __run(void)
 {
     __tick++;
     if (greatest_tick_count__)
@@ -66,6 +66,7 @@ void __run()
 int __init(int argc,char **argv)
 {
     int res = 0;
+    init_level = 0;
     setlocale(LC_NUMERIC, "C");
     config_init__();
     __init_debug();
@@ -75,7 +76,7 @@ int __init(int argc,char **argv)
 /*
  * Calls plugin cleanup proc.
  **/
-void __cleanup()
+void __cleanup(void)
 {
     %(cleanup_calls)s
     __cleanup_debug();

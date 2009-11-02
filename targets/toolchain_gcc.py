@@ -12,11 +12,8 @@ class toolchain_gcc():
     """
     def __init__(self, PluginsRootInstance):
         self.PluginsRootInstance = PluginsRootInstance
-        self.exe = PluginsRootInstance.GetProjectName() + self.extension
-        self.buildpath = PluginsRootInstance._getBuildPath()
-        self.exe_path = os.path.join(self.buildpath, self.exe)
-        self.md5key = None
-        self.srcmd5 = {}
+        self.buildpath = None
+        self.SetBuildPath(self.PluginsRootInstance._getBuildPath())
 
     def getTarget(self):
         target = self.PluginsRootInstance.BeremizRoot.getTargetType()
@@ -54,7 +51,15 @@ class toolchain_gcc():
                 return open(self._GetMD5FileName(), "r").read()
             except Exception, e:
                 return None
-
+    
+    def SetBuildPath(self, buildpath):
+        if self.buildpath != buildpath:
+            self.buildpath = buildpath
+            self.exe = self.PluginsRootInstance.GetProjectName() + self.extension
+            self.exe_path = os.path.join(self.buildpath, self.exe)
+            self.md5key = None
+            self.srcmd5 = {}
+    
     def check_and_update_hash_and_deps(self, bn):
         # Get latest computed hash and deps
         oldhash, deps = self.srcmd5.get(bn,(None,[]))

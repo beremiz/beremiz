@@ -293,6 +293,8 @@ class Beremiz(IDEFrame):
               kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
         AppendMenu(parent, help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
+        AppendMenu(parent, help='', id=wx.ID_SAVEAS,
+              kind=wx.ITEM_NORMAL, text=_(u'Save as\tCTRL+SHIFT+S'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
               kind=wx.ITEM_NORMAL, text=_(u'Close Tab\tCTRL+W'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
@@ -314,6 +316,7 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu, id=wx.ID_SAVE)
+        self.Bind(wx.EVT_MENU, self.OnSaveProjectAsMenu, id=wx.ID_SAVEAS)
         self.Bind(wx.EVT_MENU, self.OnCloseTabMenu, id=wx.ID_CLOSE)
         self.Bind(wx.EVT_MENU, self.OnCloseProjectMenu, id=wx.ID_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.OnPageSetupMenu, id=wx.ID_PAGE_SETUP)
@@ -367,6 +370,7 @@ class Beremiz(IDEFrame):
         self.PLCConfig.SetBackgroundColour(wx.WHITE)
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
+        self.PLCConfig.Bind(wx.EVT_MOUSEWHEEL, self.OnPLCConfigScroll)
         self.BottomNoteBook.InsertPage(0, self.PLCConfig, _("Topology"), True)
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
@@ -388,6 +392,8 @@ class Beremiz(IDEFrame):
         self.local_runtime_tmpdir = None
         
         self.DisableEvents = False
+        # Variable allowing disabling of PLCConfig scroll when Popup shown 
+        self.ScrollingEnabled = True
         
         self.PluginInfos = {}
         
@@ -477,39 +483,46 @@ class Beremiz(IDEFrame):
                 infos = self.PluginRoot.ShowError(self.Log,
                                                   (int(first_line), int(first_column)), 
                                                   (int(last_line), int(last_column)))
-		
+	
+    ## Function displaying an Error dialog in PLCOpenEditor.
+    #  @return False if closing cancelled.
+    def CheckSaveBeforeClosing(self, title=_("Close Project")):
+        if self.PluginRoot.ProjectTestModified():
+            dialog = wx.MessageDialog(self,
+                                      _("There are changes, do you want to save?"),
+                                      title,
+                                      wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+            answer = dialog.ShowModal()
+            dialog.Destroy()
+            if answer == wx.ID_YES:
+                self.PluginRoot.SaveProject()
+            elif answer == wx.ID_CANCEL:
+                return False
+        return True
+    
     def OnCloseFrame(self, event):
-        if self.PluginRoot is not None:
-            if self.PluginRoot.ProjectTestModified():
-                dialog = wx.MessageDialog(self,
-                                          _("Save changes ?"),
-                                          _("Close Application"), 
-                                          wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
-                answer = dialog.ShowModal()
-                dialog.Destroy()
-                if answer == wx.ID_YES:
-                    self.PluginRoot.SaveProject()
-                    event.Skip()
-                elif answer == wx.ID_NO:
-                    event.Skip()
-                    return
-                else:
-                    event.Veto()
-                    return
-
-        self.KillLocalRuntime()
-        
-        event.Skip()
+        if self.PluginRoot is None or self.CheckSaveBeforeClosing(_("Close Application")):
+            self.KillLocalRuntime()
+            event.Skip()
+        else:
+            event.Veto()
     
     def OnMoveWindow(self, event):
         self.GetBestSize()
         self.RefreshScrollBars()
         event.Skip()
     
+    def EnableScrolling(self, enable):
+        self.ScrollingEnabled = enable
+    
+    def OnPLCConfigScroll(self, event):
+        if self.ScrollingEnabled:
+            event.Skip()
+
     def OnPanelLeftDown(self, event):
         focused = self.FindFocus()
         if isinstance(focused, TextCtrlAutoComplete.TextCtrlAutoComplete):
-            focused._showDropDown(False)
+            focused.DismissListBox()
         event.Skip()
     
     def RefreshFileMenu(self):
@@ -533,6 +546,7 @@ class Beremiz(IDEFrame):
                 self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
             self.FileMenu.Enable(wx.ID_SAVE, True)
+            self.FileMenu.Enable(wx.ID_SAVEAS, True)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
         else:
@@ -541,6 +555,7 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_PREVIEW, False)
             self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
+            self.FileMenu.Enable(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
         
@@ -1201,7 +1216,7 @@ class Beremiz(IDEFrame):
                 id = wx.NewId()
                 if isinstance(element_infos["type"], types.ListType):
                     combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 28), style=wx.CB_READONLY)
+                        pos=wx.Point(0, 0), size=wx.Size(300, 28), style=wx.CB_READONLY)
                     boxsizer.AddWindow(combobox, 0, border=0, flag=0)
                     if element_infos["use"] == "optional":
                         combobox.Append("")
@@ -1234,7 +1249,7 @@ class Beremiz(IDEFrame):
                     if "max" in element_infos["type"]:
                         scmax = element_infos["type"]["max"]
                     spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                        pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                     spinctrl.SetRange(scmin,scmax)
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                     spinctrl.SetValue(element_infos["value"])
@@ -1253,7 +1268,7 @@ class Beremiz(IDEFrame):
                             scmin = -(2**31)
                         scmax = 2**31-1
                         spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(150, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                            pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                         spinctrl.SetRange(scmin, scmax)
                         boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                         spinctrl.SetValue(element_infos["value"])
@@ -1263,10 +1278,11 @@ class Beremiz(IDEFrame):
                         textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
                                                                      name=element_infos["name"], 
                                                                      parent=parent, 
+                                                                     appframe=self, 
                                                                      choices=choices, 
                                                                      element_path=element_path,
                                                                      pos=wx.Point(0, 0), 
-                                                                     size=wx.Size(150, 25), 
+                                                                     size=wx.Size(300, 25), 
                                                                      style=0)
                         
                         boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
@@ -1284,6 +1300,9 @@ class Beremiz(IDEFrame):
         self.DebugVariablePanel.SetDataProducer(None)
     
     def OnNewProjectMenu(self, event):
+        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            return
+        
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
@@ -1309,6 +1328,9 @@ class Beremiz(IDEFrame):
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
     
     def OnOpenProjectMenu(self, event):
+        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            return
+        
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
@@ -1337,27 +1359,25 @@ class Beremiz(IDEFrame):
         dialog.Destroy()
     
     def OnCloseProjectMenu(self, event):
-        if self.PluginRoot is not None:
-            if self.PluginRoot.ProjectTestModified():
-                dialog = wx.MessageDialog(self,
-                                          _("Save changes ?"),
-                                          _("Close Application"), 
-                                          wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
-                answer = dialog.ShowModal()
-                dialog.Destroy()
-                if answer == wx.ID_YES:
-                    self.PluginRoot.SaveProject()
-                elif answer == wx.ID_CANCEL:
-                    return
-            self.ResetView()
-            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
-            self.RefreshAll()
+        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            return
+        
+        self.ResetView()
+        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+        self.RefreshAll()
     
     def OnSaveProjectMenu(self, event):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProject()
             self.RefreshAll()
             self.RefreshTitle()
+    
+    def OnSaveProjectAsMenu(self, event):
+        if self.PluginRoot is not None:
+            self.PluginRoot.SaveProjectAs()
+            self.RefreshAll()
+            self.RefreshTitle()
+        event.Skip()
     
     def OnPropertiesMenu(self, event):
         self.ShowProperties()
@@ -1391,24 +1411,26 @@ class Beremiz(IDEFrame):
         return DeleteButtonFunction
     
     def AddPlugin(self, PluginType, plugin):
-        dialog = wx.TextEntryDialog(self, _("Please enter a name for plugin:"), _("Add Plugin"), "", wx.OK|wx.CANCEL)
-        if dialog.ShowModal() == wx.ID_OK:
-            PluginName = dialog.GetValue()
-            plugin.PlugAddChild(PluginName, PluginType)
-            self.RefreshPluginTree()
-            self.PluginRoot.RefreshPluginsBlockLists()
-        dialog.Destroy()
+        if self.PluginRoot.CheckProjectPathPerm():
+            dialog = wx.TextEntryDialog(self, _("Please enter a name for plugin:"), _("Add Plugin"), "", wx.OK|wx.CANCEL)
+            if dialog.ShowModal() == wx.ID_OK:
+                PluginName = dialog.GetValue()
+                plugin.PlugAddChild(PluginName, PluginType)
+                self.RefreshPluginTree()
+                self.PluginRoot.RefreshPluginsBlockLists()
+            dialog.Destroy()
     
     def DeletePlugin(self, plugin):
-        dialog = wx.MessageDialog(self, _("Really delete plugin ?"), _("Remove plugin"), wx.YES_NO|wx.NO_DEFAULT)
-        if dialog.ShowModal() == wx.ID_YES:
-            self.PluginInfos.pop(plugin)
-            plugin.PlugRemove()
-            del plugin
-            self.PluginRoot.RefreshPluginsBlockLists()
-            self.RefreshPluginTree()
-        dialog.Destroy()
-
+        if self.PluginRoot.CheckProjectPathPerm():
+            dialog = wx.MessageDialog(self, _("Really delete plugin ?"), _("Remove plugin"), wx.YES_NO|wx.NO_DEFAULT)
+            if dialog.ShowModal() == wx.ID_YES:
+                self.PluginInfos.pop(plugin)
+                plugin.PlugRemove()
+                del plugin
+                self.PluginRoot.RefreshPluginsBlockLists()
+                self.RefreshPluginTree()
+            dialog.Destroy()
+    
 #-------------------------------------------------------------------------------
 #                               Exception Handler
 #-------------------------------------------------------------------------------
@@ -1436,10 +1458,8 @@ def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
 An unhandled exception (bug) occured. Bug report saved at :
 (%s)
 
-Please contact LOLITech at:
-+33 (0)3 29 57 60 42
-or please be kind enough to send this file to:
-bugs_beremiz@lolitech.fr
+Please be kind enough to send this file to:
+edouard.tisserant@gmail.com
 
 You should now restart Beremiz.
 

@@ -222,14 +222,28 @@ class _Cfile:
     _View = None
     def _OpenView(self):
         if not self._View:
-            def _onclose():
-                self._View = None
-            def _onsave():
-                self.GetPlugRoot().SaveProject()
-            self._View = CFileEditor(self.GetPlugRoot().AppFrame, self)
-            self._View._onclose = _onclose
-            self._View._onsave = _onsave
-            self._View.Show()
+            open_cfileeditor = True
+            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
+            if not has_permissions:
+                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
+                                          _("You don't have write permissions.\nOpen CFileEditor anyway ?"),
+                                          _("Open CFileEditor"),
+                                          wx.YES_NO|wx.ICON_QUESTION)
+                open_cfileeditor = dialog.ShowModal() == wx.ID_YES
+                dialog.Destroy()
+            if open_cfileeditor:
+                def _onclose():
+                    self._View = None
+                if has_permissions:
+                    def _onsave():
+                        self.GetPlugRoot().SaveProject()
+                else:
+                    def _onsave():
+                        pass
+                self._View = CFileEditor(self.GetPlugRoot().AppFrame, self)
+                self._View._onclose = _onclose
+                self._View._onsave = _onsave
+                self._View.Show()
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "EditCfile"),
@@ -248,7 +262,7 @@ class _Cfile:
         text += self.CFile.generateXMLText("CFile", 0, extras)
 
         xmlfile = open(filepath,"w")
-        xmlfile.write(text)
+        xmlfile.write(text.encode("utf-8"))
         xmlfile.close()
         
         self.CFileBuffer.CurrentSaved()

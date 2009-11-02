@@ -560,7 +560,6 @@ class PythonEditorFrame(wx.Frame):
             self._onsave()
         self.RefreshTitle()
         self.RefreshEditMenu()
-        event.Skip()
 
     def RefreshTitle(self):
         title = _("PythonEditor")
@@ -577,19 +576,17 @@ class PythonEditorFrame(wx.Frame):
 
     def OnRefreshMenu(self, event):
         self.PythonEdited.RefreshView()
-        event.Skip()
 
     def OnUndoMenu(self, event):
         self.Controler.LoadPrevious()
         self.PythonEdited.RefreshView()
         self.RefreshTitle()
         self.RefreshEditMenu()
-        event.Skip()
     
     def OnRedoMenu(self, event):
         self.Controler.LoadNext()
         self.PythonEdited.RefreshView()
         self.RefreshTitle()
         self.RefreshEditMenu()
-        event.Skip()
+        
 

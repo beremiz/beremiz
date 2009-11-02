@@ -2,5 +2,5 @@ beremiz (2009.0-%DATEVERSION%) unstable; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 
- -- lolitech <gregory.trelat@lolitech.fr>  Thu, 29 Nov 2007 14:55:13 +0100
+ -- edouard <edouard.tisserant@gmail.com>  Thu, 29 Nov 2007 14:55:13 +0100
 

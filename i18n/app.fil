@@ -1,6 +1,5 @@
 ../Beremiz.py
 ../plugger.py
-../beremiz_postinst.py
 ../Beremiz_service.py
 ../discovery.py
 ../wxPopen.py

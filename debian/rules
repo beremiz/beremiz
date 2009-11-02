@@ -1,16 +1,8 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
-# Sample debian/rules that uses debhelper.
-# This file was originally written by Joey Hess and Craig Small.
-# As a special exception, when this file is copied by dh-make into a
-# dh-make output file, you may use that output file without restriction.
-# This special exception was added by Craig Small in version 0.37 of dh-make.
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
-
-
-
 
 CFLAGS = -Wall -g
 
@@ -23,8 +15,6 @@ endif
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	# Add here commands to configure the package.
-
 	touch configure-stamp
 
 
@@ -32,21 +22,12 @@ build: build-stamp
 
 build-stamp: configure-stamp 
 	dh_testdir
-
-	# Add here commands to compile the package.
-	#$(MAKE)
-	#docbook-to-man debian/beremiz.sgml > beremiz.1
-
 	touch $@
 
 clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
-
-	# Add here commands to clean up after the build process.
-	#-$(MAKE) clean
-
 	dh_clean 
 
 install: build
@@ -55,35 +36,49 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	# Add here commands to install the package into debian/beremiz.
+	# Copy source files
 	mkdir -p $(CURDIR)/debian/beremiz/usr/share/beremiz
-	mkdir -p $(CURDIR)/debian/beremiz/usr/share/applications
-	
 	cp -a images $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a plugins $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a runtime $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a tests $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a connectors $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp -a targets $(CURDIR)/debian/beremiz/usr/share/beremiz
-	cp *.xml $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp -a doc $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp -a locale $(CURDIR)/debian/beremiz/usr/share/beremiz
+	cp *.js $(CURDIR)/debian/beremiz/usr/share/beremiz
 	cp *.py $(CURDIR)/debian/beremiz/usr/share/beremiz
 
-	cp debian/beremiz.desktop $(CURDIR)/debian/beremiz/usr/share/applications/beremiz.desktop
-
+	# Copy desktop directory file
+	mkdir -p $(CURDIR)/debian/beremiz/usr/share/desktop-directories
+	cp debian/Beremiz.directory $(CURDIR)/debian/beremiz/usr/share/desktop-directories
+	cp debian/Beremiz_demos.directory $(CURDIR)/debian/beremiz/usr/share/desktop-directories
+	cp debian/Beremiz_docs.directory $(CURDIR)/debian/beremiz/usr/share/desktop-directories
+	
+	# Copy desktop menu file
+	mkdir -p $(CURDIR)/debian/beremiz/etc/xdg/menus/applications-merged
+	cp debian/beremiz.menu $(CURDIR)/debian/beremiz/etc/xdg/menus/applications-merged
+	
+	# Copy desktop entry files
+	mkdir -p $(CURDIR)/debian/beremiz/usr/share/applications
+	cp debian/beremiz.desktop $(CURDIR)/debian/beremiz/usr/share/applications/
+	cp debian/beremiz_svgui.desktop $(CURDIR)/debian/beremiz/usr/share/applications/
+	cp debian/beremiz_wxglade.desktop $(CURDIR)/debian/beremiz/usr/share/applications/
+	cp debian/beremiz_doc.desktop $(CURDIR)/debian/beremiz/usr/share/applications/
+	
 	rm -rf `find .|grep CVS`
 	rm -rf `find .|grep .cvsignore`
 	chmod -R a+r $(CURDIR)/debian/beremiz
 
 # Build architecture-independent files here.
 binary-indep: build install
-# We have nothing to do by default.
 
 # Build architecture-dependent files here.
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs 
-	dh_installdocs
+#	dh_installchangelogs 
+#	dh_installdocs
 	dh_installexamples
 #	dh_install
 #	dh_installmenu

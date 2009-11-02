@@ -74,7 +74,17 @@ class MiniTextControler:
 # helper func to get path to images
 def opjimg(imgname):
     return os.path.join("images",imgname)
-
+    
+# helper func to check path write permission
+def CheckPathPerm(path):
+    if path is None or not os.path.isdir(path):
+        return False
+    for root, dirs, files in os.walk(path):
+         for name in files:
+             if os.access(root, os.W_OK) is not True or os.access(os.path.join(root, name), os.W_OK) is not True:
+                 return False
+    return True
+    
 class PlugTemplate:
     """
     This class is the one that define plugins.
@@ -181,38 +191,39 @@ class PlugTemplate:
         os.mkdir(self.PlugPath())
 
     def PlugRequestSave(self):
-        # If plugin do not have corresponding directory
-        plugpath = self.PlugPath()
-        if not os.path.isdir(plugpath):
-            # Create it
-            os.mkdir(plugpath)
-
-        # generate XML for base XML parameters controller of the plugin
-        if self.MandatoryParams:
-            BaseXMLFile = open(self.PluginBaseXmlFilePath(),'w')
-            BaseXMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0))
-            BaseXMLFile.close()
-        
-        # generate XML for XML parameters controller of the plugin
-        if self.PlugParams:
-            XMLFile = open(self.PluginXmlFilePath(),'w')
-            XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0))
-            XMLFile.close()
-        
-        # Call the plugin specific OnPlugSave method
-        result = self.OnPlugSave()
-        if not result:
-            return _("Error while saving \"%s\"\n")%self.PlugPath()
-
-        # mark plugin as saved
-        self.ChangesToSave = False        
-        # go through all childs and do the same
-        for PlugChild in self.IterChilds():
-            result = PlugChild.PlugRequestSave()
-            if result:
-                return result
+        if self.GetPlugRoot().CheckProjectPathPerm(False):
+            # If plugin do not have corresponding directory
+            plugpath = self.PlugPath()
+            if not os.path.isdir(plugpath):
+                # Create it
+                os.mkdir(plugpath)
+    
+            # generate XML for base XML parameters controller of the plugin
+            if self.MandatoryParams:
+                BaseXMLFile = open(self.PluginBaseXmlFilePath(),'w')
+                BaseXMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+                BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0).encode("utf-8"))
+                BaseXMLFile.close()
+            
+            # generate XML for XML parameters controller of the plugin
+            if self.PlugParams:
+                XMLFile = open(self.PluginXmlFilePath(),'w')
+                XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+                XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0).encode("utf-8"))
+                XMLFile.close()
+            
+            # Call the plugin specific OnPlugSave method
+            result = self.OnPlugSave()
+            if not result:
+                return _("Error while saving \"%s\"\n")%self.PlugPath()
+    
+            # mark plugin as saved
+            self.ChangesToSave = False
+            # go through all childs and do the same
+            for PlugChild in self.IterChilds():
+                result = PlugChild.PlugRequestSave()
+                if result:
+                    return result
         return None
     
     def PlugImport(self, src_PlugPath):
@@ -690,7 +701,7 @@ DebugTypesSize =  {"BOOL" :       1,
                    "LREAL" :      8,
                   } 
 
-import re
+import re, tempfile
 import targets
 import connectors
 from discovery import DiscoveryDialog
@@ -764,7 +775,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PlugType = "Beremiz"
         # After __init__ root plugin is not valid
         self.ProjectPath = None
-        self.BuildPath = None
+        self._setBuildPath(None)
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
@@ -852,6 +863,23 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
             self.BeremizRoot.setTargetType(self.GetDefaultTarget())
         return PlugTemplate.SetParamsAttribute(self, path, value)
+        
+    # helper func to check project path write permission
+    def CheckProjectPathPerm(self, dosave=True):
+        if CheckPathPerm(self.ProjectPath):
+            return True
+        dialog = wx.MessageDialog(self.AppFrame, 
+                    _('You must have permission to work on the project\nWork on a project copy ?'),
+                    _('Error'), 
+                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        answer = dialog.ShowModal()
+        dialog.Destroy()
+        if answer == wx.ID_YES:
+            if self.SaveProjectAs():
+                self.AppFrame.RefreshAll()
+                self.AppFrame.RefreshTitle()
+                return True
+        return False
     
     def NewProject(self, ProjectPath, BuildPath=None):
         """
@@ -879,7 +907,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
-        self.BuildPath = BuildPath
+        self._setBuildPath(BuildPath)
         # get plugins bloclist (is that usefull at project creation?)
         self.RefreshPluginsBlockLists()
         # this will create files base XML files
@@ -906,7 +934,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
-        self.BuildPath = BuildPath
+        self._setBuildPath(BuildPath)
         # If dir have already be made, and file exist
         if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
             #Load the plugin.xml file into parameters members
@@ -930,11 +958,26 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.ResetAppFrame(None)
         
     def SaveProject(self):
-        if not self.SaveXMLFile():
+        if self.CheckProjectPathPerm(False):
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
-        result = self.PlugRequestSave()
-        if result:
-            self.logger.write_error(result)
+            result = self.PlugRequestSave()
+            if result:
+                self.logger.write_error(result)
+    
+    def SaveProjectAs(self, dosave=True):
+        # Ask user to choose a path with write permissions
+        dirdialog = wx.DirDialog(self.AppFrame , _("Choose a directory to save project"), os.getenv("HOME"), wx.DD_NEW_DIR_BUTTON)
+        answer = dirdialog.ShowModal()
+        dirdialog.Destroy()
+        if answer == wx.ID_OK:
+            newprojectpath = dirdialog.GetPath()
+            if os.path.isdir(newprojectpath):
+                self.ProjectPath = newprojectpath
+                if dosave:
+                    self.SaveProject()
+                self._setBuildPath(self.BuildPath)
+                return True
+        return False
     
     # Update PLCOpenEditor Plugin Block types from loaded plugins
     def RefreshPluginsBlockLists(self):
@@ -971,10 +1014,33 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def ParentsBlockTypesFactory(self):
         return self.BlockTypesFactory()
 
+    def _setBuildPath(self, buildpath):
+        if CheckPathPerm(buildpath):
+            self.BuildPath = buildpath
+        else:
+            self.BuildPath = None
+        self.BuildPath = buildpath
+        self.DefaultBuildPath = None
+        if self._builder is not None:
+            self._builder.SetBuildPath(self._getBuildPath())
+
     def _getBuildPath(self):
-        if self.BuildPath is None:
-            return os.path.join(self.ProjectPath, "build")
-        return self.BuildPath
+        # BuildPath is defined by user
+        if self.BuildPath is not None:
+            return self.BuildPath
+        # BuildPath isn't defined by user but already created by default
+        if self.DefaultBuildPath is not None:
+            return self.DefaultBuildPath
+        # Create a build path in project folder if user has permissions
+        if CheckPathPerm(self.ProjectPath):
+            self.DefaultBuildPath = os.path.join(self.ProjectPath, "build")
+        # Create a build path in temp folder
+        else:
+            self.DefaultBuildPath = os.path.join(tempfile.mkdtemp(), os.path.basename(self.ProjectPath), "build")
+            
+        if not os.path.exists(self.DefaultBuildPath):
+            os.makedirs(self.DefaultBuildPath)
+        return self.DefaultBuildPath
     
     def _getExtraFilesPath(self):
         return os.path.join(self._getBuildPath(), "extra_files")
@@ -1287,7 +1353,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                       "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls":"\n    ".join([
                       "init_level=%d; "%(i+1)+
-                      "if(res = __init_%s(argc,argv)){"%locstr +
+                      "if((res = __init_%s(argc,argv))){"%locstr +
                       #"printf(\"%s\"); "%locstr + #for debug
                       "return res;}" for i,locstr in enumerate(locstrs)]),
                 "cleanup_calls":"\n    ".join([

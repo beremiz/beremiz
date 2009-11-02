@@ -1,13 +1,13 @@
 Source: beremiz
 Section: devel
 Priority: standard
-Maintainer: lolitech <gregory.trelat@lolitech.fr>
+Maintainer: edouard <edouard.tisserant@gmail.com>
 Build-Depends: debhelper (>= 5)
 Standards-Version: 3.7.2
 
 Package: beremiz
 Architecture: any
-Depends: build-essential, python-wxgtk2.8, python-ctypes, python-wxglade, xpdf, canfestival-devel, canfestival-objdictedit, matiec, docutils, pyro, xmlclass, plcopeneditor
+Depends: build-essential, python-wxgtk2.8, python-ctypes, python-numpy, python-twisted, python-nevow, python-simplejson, python-wxglade, xpdf, canfestival-devel, canfestival-objdictedit, matiec, docutils, pyro, xmlclass, plcopeneditor
 Description: Beremiz is an Open Source framework for automation
  With Beremiz, you can :
     - Automate everything.
