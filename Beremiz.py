@@ -1458,10 +1458,8 @@ def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
 An unhandled exception (bug) occured. Bug report saved at :
 (%s)
 
-Please contact LOLITech at:
-+33 (0)3 29 57 60 42
-or please be kind enough to send this file to:
-bugs_beremiz@lolitech.fr
+Please be kind enough to send this file to:
+edouard.tisserant@gmail.com
 
 You should now restart Beremiz.
 
