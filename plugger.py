@@ -1529,27 +1529,23 @@ class PluginsRoot(PlugTemplate, PLCControler):
             status = self._connector.GetPLCstatus()
         else:
             status = "Disconnected"
-        _ = lambda x : x
         for args in {
-               _("Starting"):     [("_Run", True),
+                 "Starting" :    [("_Run", True),
                                   ("_Debug", True),
                                   ("_Stop", False)],
-               _("Started"):     [("_Run", False),
+                 "Started" :     [("_Run", False),
                                   ("_Debug", False),
                                   ("_Stop", True)],
-               _("Stopped"):     [("_Run", True),
+                 "Stopped" :     [("_Run", True),
                                   ("_Debug", True),
                                   ("_Stop", False)],
-               _("Empty"):       [("_Run", False),
+                 "Empty" :       [("_Run", False),
                                   ("_Debug", False),
                                   ("_Stop", False)],
-               _("Dirty"):       [("_Run", True),
+                 "Broken" :      [("_Run", True),
                                   ("_Debug", True),
                                   ("_Stop", False)],
-               _("Broken"):      [("_Run", True),
-                                  ("_Debug", True),
-                                  ("_Stop", False)],
-               _("Disconnected"):[("_Run", False),
+                 "Disconnected" :[("_Run", False),
                                   ("_Debug", False),
                                   ("_Stop", False),
                                   ("_Transfer", False),
