@@ -38,12 +38,12 @@ class button:
     # method to display the current state of interface
     def updateElements(self):
         if self.up:
-            self.sele_elt.setAttribute("visibility", "hidden")
-            self.back_elt.setAttribute("visibility", "visible")
+            self.sele_elt.setAttribute("display", "none")
+            self.back_elt.removeAttribute("display")
         else:
-            self.sele_elt.setAttribute("visibility", "visible")
-            self.back_elt.setAttribute("visibility", "hidden")
-        
+            self.sele_elt.removeAttribute("display")
+            self.back_elt.setAttribute("display", "none")
+            
     def updateValues(self, values):
         if values.state != self.state:
             self.state = values.state
