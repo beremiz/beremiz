@@ -1006,9 +1006,13 @@ class Beremiz(IDEFrame):
             locations_infos[location_name] = {"expanded" : False}
         
         if location["type"] in [LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP]:
-            leftwindow.SetBackgroundColour(WINDOW_COLOUR)
-            rightwindow.SetBackgroundColour(WINDOW_COLOUR)
-                    
+            if location["type"] == LOCATION_GROUP:
+                leftwindow.SetBackgroundColour(wx.WHITE)
+                rightwindow.SetBackgroundColour(wx.WHITE)
+            else:
+                leftwindow.SetBackgroundColour(WINDOW_COLOUR)
+                rightwindow.SetBackgroundColour(WINDOW_COLOUR)
+            
             st = wx.StaticText(leftwindow, -1)
             st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
             st.SetLabel(location["location"])
@@ -1046,7 +1050,10 @@ class Beremiz(IDEFrame):
             leftwindowsizer.Add(wx.Size(20, 16), 0)
             
         sb = wx.StaticBitmap(leftwindow, -1)
-        sb.SetBitmap(wx.Bitmap(os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png' % self.LOCATION_BITMAP[location["type"]])))
+        icon = location.get("icon")
+        if icon is None:
+            icon = os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png' % self.LOCATION_BITMAP[location["type"]])
+        sb.SetBitmap(wx.Bitmap(icon))
         leftwindowsizer.AddWindow(sb, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         st_id = wx.NewId()
@@ -1058,6 +1065,8 @@ class Beremiz(IDEFrame):
             infos.pop("children")
             st.SetFont(wx.Font(faces["size"] * 0.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
             st.Bind(wx.EVT_LEFT_DOWN, self.GenerateLocationLeftDownFunction(infos))
+        elif location["type"] == LOCATION_GROUP:
+            st.SetFont(wx.Font(faces["size"] * 0.6, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
         else:
             st.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
         st.SetLabel(label)
