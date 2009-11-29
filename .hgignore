@@ -1,1 +1,20 @@
 .project
+
+syntax: regexp
+^LPCBeremiz\.py$
+syntax: regexp
+^tests/canopen_slave/build$
+syntax: regexp
+^tests/canopen_master/build$
+syntax: regexp
+^tests/python/build$
+syntax: regexp
+^tests/svgui/build$
+syntax: regexp
+^tests/wxGlade/build$
+syntax: regexp
+^.*\.pyc$
+syntax: regexp
+^xmlclass$
+syntax: regexp
+^\.settings/org.eclipse.core.resources.prefs$
