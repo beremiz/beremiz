@@ -131,12 +131,12 @@ int stopPLC()
 }
 
 extern unsigned long __tick;
-/* from plc_debugger.c */
-unsigned long WaitDebugData()
+
+int WaitDebugData(unsigned long *tick)
 {
+    *tick = __debug_tick;
     /* Wait signal from PLC thread */
-    if(pthread_mutex_lock(&debug_wait_mutex)) return -1;
-    return __debug_tick;
+    return pthread_mutex_lock(&debug_wait_mutex);
 }
 
 /* Called by PLC thread when debug_publish finished

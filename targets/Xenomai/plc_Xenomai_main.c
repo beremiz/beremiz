@@ -205,15 +205,16 @@ void LeaveDebugSection(void)
 
 extern unsigned long __tick;
 /* from plc_debugger.c */
-unsigned long WaitDebugData()
+int WaitDebugData(unsigned long *tick)
 {
     char message;
     int res;
+    *tick = __debug_tick;
     /* Wait signal from PLC thread */
     if (PLC_state & PLC_STATE_DEBUG_FILE_OPENED) {
         res = read(WaitDebug_pipe_fd, &message, sizeof(char));
         if (res == sizeof(char))
-            return __debug_tick;
+            return 0;
     }
     return -1;
 }

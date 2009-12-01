@@ -256,7 +256,7 @@ class PLCObject(pyro.ObjBase):
     def StartPLC(self, debug=False):
         PLCprint("StartPLC")
         if self.CurrentPLCFilename is not None:
-            self.PLCStatus = "Starting"
+            self.PLCStatus = "Started"
             self.PythonThread = Thread(target=self.PythonThreadProc, args=[debug])
             self.PythonThread.start()
             
@@ -378,16 +378,12 @@ class PLCObject(pyro.ObjBase):
         """
         if self.PLCStatus == "Started":
             self.PLClibraryLock.acquire()
-            tick = self._WaitDebugData()
+            tick = ctypes.c_int()
             #PLCprint("Debug tick : %d"%tick)
-            if tick == 2**32 - 1:
-                tick = -1
-                res = None
-            else:
+            if self._WaitDebugData(ctypes.byref(tick)) != 0:
                 idx = ctypes.c_int()
                 typename = ctypes.c_char_p()
                 res = []
-        
                 for given_idx in self._Idxs:
                     buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
                     c_type,unpack_func = self.TypeTranslator.get(typename.value, (None,None))
@@ -399,6 +395,6 @@ class PLCObject(pyro.ObjBase):
                         res.append(None)
             self._FreeDebugData()
             self.PLClibraryLock.release()
-            return tick, res
-        return -1, None
+            return self.PLCStatus, tick, res
+        return self.PLCStatus, None, None
 

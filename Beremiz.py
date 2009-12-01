@@ -28,6 +28,7 @@ import os, sys, getopt, wx
 import tempfile
 import shutil
 import random
+import time
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
@@ -252,6 +253,8 @@ class LogPseudoFile:
         self.black_white = wx.TextAttr("BLACK", "WHITE")
         self.default_style = None
         self.output = output
+        # to prevent rapid fire on rising log panel
+        self.rising_timer = 0
 
     def write(self, s, style = None):
         if style is None : style=self.black_white
@@ -263,6 +266,10 @@ class LogPseudoFile:
         self.output.ScrollLines(s.count('\n')+1)
         self.output.ShowPosition(self.output.GetLastPosition())
         self.output.Thaw()
+        newtime = time.time()
+        if newtime - self.rising_timer > 1:
+            self.output.Rise()
+        self.rising_timer = newtime 
 
     def write_warning(self, s):
         self.write(s,self.red_white)
@@ -376,6 +383,7 @@ class Beremiz(IDEFrame):
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
+        self.LogConsole.Rise = self.RiseLogConsole 
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
         
@@ -422,6 +430,13 @@ class Beremiz(IDEFrame):
         
         self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
 
+    def RiseLogConsole(self):
+        for idx in xrange(self.BottomNoteBook.GetPageCount()):
+            window = self.BottomNoteBook.GetPage(idx)
+            if window == self.LogConsole:
+                self.BottomNoteBook.SetSelection(idx)
+                break
+        
     def RefreshTitle(self):
         name = _("Beremiz")
         if self.PluginRoot is not None:

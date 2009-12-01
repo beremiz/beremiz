@@ -779,8 +779,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
-        self.StatusPrint = {"Broken": self.logger.write_error,
-                            None: lambda x: None}
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
         self.LoadSTLibrary()
@@ -1529,43 +1527,38 @@ class PluginsRoot(PlugTemplate, PLCControler):
             status = self._connector.GetPLCstatus()
         else:
             status = "Disconnected"
-        for args in {
-                 "Starting" :    [("_Run", True),
-                                  ("_Debug", True),
-                                  ("_Stop", False)],
-                 "Started" :     [("_Run", False),
-                                  ("_Debug", False),
-                                  ("_Stop", True)],
-                 "Stopped" :     [("_Run", True),
-                                  ("_Debug", True),
-                                  ("_Stop", False)],
-                 "Empty" :       [("_Run", False),
-                                  ("_Debug", False),
-                                  ("_Stop", False)],
-                 "Broken" :      [("_Run", True),
-                                  ("_Debug", True),
-                                  ("_Stop", False)],
-                 "Disconnected" :[("_Run", False),
-                                  ("_Debug", False),
-                                  ("_Stop", False),
-                                  ("_Transfer", False),
-                                  ("_Connect", True),
-                                  ("_Disconnect", False)],
-               }.get(status,[]):
-            self.ShowMethod(*args)
-        return status
+        if(self.previous_plcstate != status):
+            for args in {
+                     "Started" :     [("_Run", False),
+                                      ("_Debug", False),
+                                      ("_Stop", True)],
+                     "Stopped" :     [("_Run", True),
+                                      ("_Debug", True),
+                                      ("_Stop", False)],
+                     "Empty" :       [("_Run", False),
+                                      ("_Debug", False),
+                                      ("_Stop", False)],
+                     "Broken" :      [],
+                     "Disconnected" :[("_Run", False),
+                                      ("_Debug", False),
+                                      ("_Stop", False),
+                                      ("_Transfer", False),
+                                      ("_Connect", True),
+                                      ("_Disconnect", False)],
+                   }.get(status,[]):
+                self.ShowMethod(*args)
+            self.previous_plcstate = status
+            return True
+        return False
     
-    def PullPLCStatusProc(self, event): 
+    def PullPLCStatusProc(self, event):
         if self._connector is None:
             self.StatusTimer.Stop()
-        current_status = self.UpdateMethodsFromPLCStatus()
-        if current_status != self.previous_plcstate:
-            self.previous_plcstate = current_status
-            if current_status is not None:
-                status = _(current_status)
-            else:
-                status = ""
-            self.StatusPrint.get(current_status, self.logger.write)(_("PLC is %s\n")%status)
+        if self.UpdateMethodsFromPLCStatus():
+            status = _(self.previous_plcstate)
+            {"Broken": self.logger.write_error,
+             None: lambda x: None}.get(
+                self.previous_plcstate, self.logger.write)(_("PLC is %s\n")%status)
             self.AppFrame.RefreshAll()
         
     def _Run(self):
@@ -1681,23 +1674,21 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # This lock is used to avoid flooding wx event stack calling callafter
         self.debug_break = False
         while (not self.debug_break) and (self._connector is not None):
-            debug_tick, debug_vars = self._connector.GetTraceVariables()
+            plc_status, debug_tick, debug_vars = self._connector.GetTraceVariables()
             #print debug_tick, debug_vars
             self.IECdebug_lock.acquire()
-            if debug_vars is not None and \
-               len(debug_vars) == len(self.TracedIECPath):
-                for IECPath,value in zip(self.TracedIECPath, debug_vars):
-                    if value is not None:
-                        self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
-                self.CallWeakcallables("__tick__", "NewDataAvailable")
-            elif debug_vars is not None:
-                wx.CallAfter(self.logger.write_warning, 
-                             _("Debug data not coherent %d != %d\n")%(len(debug_vars), len(self.TracedIECPath)))
-            elif debug_tick == -1:
-                #wx.CallAfter(self.logger.write, "Debugger unavailable\n")
-                pass
+            if debug_vars is not None:
+                if len(debug_vars) == len(self.TracedIECPath):
+                    for IECPath,value in zip(self.TracedIECPath, debug_vars):
+                        if value is not None:
+                            self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
+                    self.CallWeakcallables("__tick__", "NewDataAvailable")
+                else :
+                    wx.CallAfter(self.logger.write_warning, 
+                                 _("Debug data do not match requested variable count %d != %d\n")%(len(debug_vars), len(self.TracedIECPath)))
             else:
-                if self._connector.PLCIsStarting():
+                if plc_status == "Started":
+                    # Be patient, tollerate PLC to come up before debugging
                     time.sleep(0.01)
                 else:
                     wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
@@ -1804,7 +1795,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.CompareLocalAndRemotePLC()
             
             # Init with actual PLC status and print it
-            self.previous_plcstate = self.UpdateMethodsFromPLCStatus()
+            self.UpdateMethodsFromPLCStatus()
             if self.previous_plcstate is not None:
                 status = _(self.previous_plcstate)
             else:
