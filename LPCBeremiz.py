@@ -381,6 +381,19 @@ class LPCPluginsRoot(PluginsRoot):
     def SetProjectName(self, name):
         return self.Project.setname(name)
 
+    # Update a PLCOpenEditor Pou variable name
+    def UpdateProjectVariableName(self, old_name, new_name):
+        self.Project.updateElementName(old_name, new_name)
+        self.BufferProject()
+
+    def RemoveProjectVariableByAddress(self, address):
+        self.Project.removeVariableByAddress(address)
+        self.BufferProject()
+
+    def RemoveProjectVariableByFilter(self, leading):
+        self.Project.removeVariableByFilter(leading)
+        self.BufferProject()
+
     def LoadProject(self, ProjectPath, BuildPath=None):
         """
         Load a project XML file
@@ -737,6 +750,8 @@ if __name__ == '__main__':
         def Refresh(self):
             global frame
             if frame is not None:
+                wx.CallAfter(frame._Refresh, TITLE, INSTANCESTREE, FILEMENU, EDITMENU)
+                wx.CallAfter(frame.RefreshEditor)
                 wx.CallAfter(frame.RefreshAll)
         
         def Close(self):
@@ -785,6 +800,7 @@ if __name__ == '__main__':
             for child in self.PluginRoot.IterChilds():
                 if child != bus and child.BaseParams.getIEC_Channel() == new_iec_channel:
                     return "Error: A bus with IEC_channel %d already exists" % new_iec_channel
+            self.PluginRoot.UpdateProjectVariableLocation(str(old_iec_channel), str(new_iec_channel))
             bus.BaseParams.setIEC_Channel(new_iec_channel)
             self.RestartTimer()
         
@@ -792,6 +808,7 @@ if __name__ == '__main__':
             bus = self.PluginRoot.GetChildByIECLocation((iec_channel,))
             if bus is None:
                 return "Error: No bus found"
+            self.PluginRoot.RemoveProjectVariableByFilter(str(iec_channel))
             self.PluginRoot.PluggedChilds["LPCBus"].remove(bus)
             self.RestartTimer()
     
@@ -836,6 +853,7 @@ if __name__ == '__main__':
                 for child in _GetModuleChildren(parent):
                     if child["IEC_Channel"] == new_iec_channel:
                         return "Error: A module with IEC_channel %d already exists" % new_iec_channel
+            self.PluginRoot.UpdateProjectVariableLocation(".".join(map(str, old_iec_location)), ".".join(map(str, old_iec_location[:1] + (new_iec_channel,))))
             module["IEC_Channel"] = new_iec_channel
             self.RestartTimer()
     
@@ -846,6 +864,7 @@ if __name__ == '__main__':
             child = _GetModuleBySomething(module, "IEC_Channel", (iec_channel,))
             if child is None:
                 return "Error: No module found"
+            self.PluginRoot.RemoveProjectVariableByFilter(".".join(map(str, parent + (iec_channel,))))
             _RemoveModuleChild(module, child)
             self.RestartTimer()
         
@@ -893,7 +912,9 @@ if __name__ == '__main__':
                     return "Error: A variable named %s already exists" % new_name
             if variable is None:
                 return "Error: No variable found"
-            variable["name"] = new_name
+            if variable["name"] != new_name:
+                self.PluginRoot.UpdateProjectVariableName(variable["name"], new_name)
+                variable["name"] = new_name
             variable["type"] = LOCATION_TYPES[new_direction]
             variable["IEC_type"] = new_type
             variable["declare"] = new_dcode
@@ -910,6 +931,9 @@ if __name__ == '__main__':
             child = _GetModuleVariable(module, location)
             if child is None:
                 return "Error: No variable found"
+            size = LOCATION_SIZES[self.PluginRoot.GetBaseType(child["IEC_type"])]
+            address = "%" + LOCATION_DIRS[child["type"]] + size + ".".join(map(str, parent + location))
+            self.PluginRoot.RemoveProjectVariableByAddress(address)
             _RemoveModuleChild(module, child)
             self.RestartTimer()
         
@@ -978,8 +1002,8 @@ if __name__ == '__main__':
                                        "ChangeModuleIECChannel": ([location, int], 0),
                                        "RemoveModule": ([location, int], 0),
                                        "StartGroup": ([location, str, str], 1),
-                                       "AddVariable": ([location, location, str, str, str, str, str, str], 1),
-                                       "ChangeVariableParams": ([location, location, str, str, str, str, str, str, str, str], 1),
+                                       "AddVariable": ([location, location, str, str, str, str, str, str, str], 1),
+                                       "ChangeVariableParams": ([location, location, str, str, str, str, str, str, str], 1),
                                        "RemoveVariable": ([location, location], 0)}.iteritems():
         
         setattr(LPCBeremiz_Cmd, "do_%s" % function, GetCmdFunction(function, arg_types, opt))
