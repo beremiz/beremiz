@@ -1,8 +1,6 @@
 .project
 
 syntax: regexp
-^LPCBeremiz\.py$
-syntax: regexp
 ^tests/canopen_slave/build$
 syntax: regexp
 ^tests/canopen_master/build$
