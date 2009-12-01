@@ -174,7 +174,11 @@ class PlugTemplate:
         self.ChangesToSave = True
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel":
-            return self.FindNewIEC_Channel(value), True
+            old_leading = ".".join(map(str, self.GetCurrentLocation()))
+            new_value = self.FindNewIEC_Channel(value)
+            new_leading = ".".join(map(str, self.PlugParent.GetCurrentLocation() + (new_value,)))
+            self.GetPlugRoot().UpdateProjectVariableLocation(old_leading, new_leading)
+            return new_value, True
         elif path == "BaseParams.Name":
             res = self.FindNewName(value)
             self.PlugRequestSave()
@@ -986,6 +990,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.AddPluginBlockList(self.PluginsBlockTypesFactory())
         if self.AppFrame is not None:
             self.AppFrame.RefreshLibraryTree()
+            self.AppFrame.RefreshEditor()
+    
+    # Update a PLCOpenEditor Pou variable location
+    def UpdateProjectVariableLocation(self, old_leading, new_leading):
+        self.Project.updateElementAddress(old_leading, new_leading)
+        self.BufferProject()
+        if self.AppFrame is not None:
+            self.AppFrame._Refresh(TITLE, INSTANCESTREE, FILEMENU, EDITMENU)
             self.AppFrame.RefreshEditor()
     
     def GetVariableLocationTree(self):
