@@ -1303,7 +1303,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     # Fill in IEC<->C translation dicts
                     IEC_path=attrs["IEC_path"]
                     Idx=int(attrs["num"])
-                    self._IECPathToIdx[IEC_path]=Idx
+                    self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
             except Exception,e:
                 self.logger.write_error(_("Cannot open/parse VARIABLES.csv!\n"))
                 self.logger.write_error(traceback.format_exc())
@@ -1331,10 +1331,15 @@ class PluginsRoot(PlugTemplate, PLCControler):
                len(self._VariablesList),
            "variables_pointer_type_table_count":
                len(self._VariablesList),
-           "variables_pointer_type_table_initializer":"\n".join([
-               {"PT":"    variable_table[%(num)s].ptrvalue = (void*)(%(C_path)s);\n",
-                "VAR":"    variable_table[%(num)s].ptrvalue = (void*)(&%(C_path)s);\n"}[v["vartype"]]%v + 
-                "    variable_table[%(num)s].type = %(type)s_ENUM;\n"%v
+           "for_each_variable_do_code":"\n".join([
+               {"PT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
+                "VAR":"    (*fp)((void*)&%(C_path)s,%(type)s_ENUM);\n"}[v["vartype"]]%v
+                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ]),
+           "find_variable_case_code":"\n".join([
+               "    case %(num)s:\n"%v+
+               "        varp = (void*)&%(C_path)s;\n"%v+
+               {"PT":"        return %(type)s_P_ENUM;\n",
+                "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ])}
         
         return debug_code
@@ -1596,16 +1601,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     IECPathsToPop.append(IECPath)
                 elif IECPath != "__tick__":
                     # Convert 
-                    Idx = self._IECPathToIdx.get(IECPath,None)
+                    Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
                     if Idx is not None:
-                        Idxs.append(Idx)
-                        self.TracedIECPath.append(IECPath)
+                        Idxs.append((Idx, IEC_Type, IECPath))
                     else:
                         self.logger.write_warning(_("Debug : Unknown variable %s\n")%IECPath)
             for IECPathToPop in IECPathsToPop:
                 self.IECdebug_datas.pop(IECPathToPop)
 
-            self._connector.SetTraceVariablesList(Idxs)
+            Idxs.sort()
+            self.TracedIECPath = zip(Idxs)[2]
+            self._connector.SetTraceVariablesList(zip(zip(Idxs)[0:1]))
             self.IECdebug_lock.release()
             
             #for IEC_path, IECdebug_data in self.IECdebug_datas.iteritems():
@@ -1629,7 +1635,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         to a WeakKeyDictionary linking 
         weakly referenced callables to optionnal args
         """
-        if IECPath != "__tick__" and self._IECPathToIdx.get(IECPath, None) is None:
+        if IECPath != "__tick__" and not self._IECPathToIdx.has_key(IECPath):
             return None
         
         self.IECdebug_lock.acquire()

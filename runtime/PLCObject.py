@@ -131,15 +131,12 @@ class PLCObject(pyro.ObjBase):
             self._RegisterDebugVariable.restype = None
             self._RegisterDebugVariable.argtypes = [ctypes.c_int]
     
-            self._IterDebugData = self.PLClibraryHandle.IterDebugData
-            self._IterDebugData.restype = ctypes.c_void_p
-            self._IterDebugData.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_char_p)]
-    
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
             
-            self._WaitDebugData = self.PLClibraryHandle.WaitDebugData
-            self._WaitDebugData.restype = ctypes.c_int  
+            self._GetDebugData = self.PLClibraryHandle.GetDebugData
+            self._GetDebugData.restype = ctypes.c_int  
+            self._GetDebugData.argtypes = [ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_void_p)]
 
             self._suspendDebug = self.PLClibraryHandle.suspendDebug
             self._suspendDebug.restype = None
@@ -165,7 +162,7 @@ class PLCObject(pyro.ObjBase):
         self._RegisterDebugVariable = lambda x:None
         self._IterDebugData = lambda x,y:None
         self._FreeDebugData = lambda:None
-        self._WaitDebugData = lambda:-1
+        self._GetDebugData = lambda:-1
         self._suspendDebug = lambda:None
         self._resumeDebug = lambda:None
         self._PythonIterator = lambda:""
@@ -339,7 +336,7 @@ class PLCObject(pyro.ObjBase):
         # keep a copy of requested idx
         self._Idxs = idxs[:]
         self._ResetDebugVariables()
-        for idx in idxs:
+        for idx,iectype in idxs:
             self._RegisterDebugVariable(idx)
         self._resumeDebug()
 
@@ -378,21 +375,21 @@ class PLCObject(pyro.ObjBase):
         """
         if self.PLCStatus == "Started":
             self.PLClibraryLock.acquire()
-            tick = ctypes.c_int()
-            #PLCprint("Debug tick : %d"%tick)
-            if self._WaitDebugData(ctypes.byref(tick)) != 0:
-                idx = ctypes.c_int()
-                typename = ctypes.c_char_p()
-                res = []
-                for given_idx in self._Idxs:
-                    buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-                    c_type,unpack_func = self.TypeTranslator.get(typename.value, (None,None))
-                    if c_type is not None and given_idx == idx.value:
-                        res.append(unpack_func(ctypes.cast(buffer,
+            tick = ctypes.c_uint32()
+            size = ctypes.c_uint32()
+            buffer = ctypes.c_void_p()
+            if self._GetDebugData(ctypes.byref(tick),ctypes.byref(size),ctypes.byref(buffer)) == 0 :
+                offset = 0
+                for idx, iectype in self._Idxs:
+                    cursor = ctypes.c_void_p(buffer.value + offset)
+                    c_type,unpack_func = self.TypeTranslator.get(iectype, (None,None))
+                    if c_type is not None and offset < size:
+                        res.append(unpack_func(ctypes.cast(cursor,
                                                            ctypes.POINTER(c_type)).contents))
+                        offset += ctypes.sizeof(c_type) 
                     else:
-                        PLCprint("Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value))
-                        res.append(None)
+                        PLCprint("Debug error !")
+                        break
             self._FreeDebugData()
             self.PLClibraryLock.release()
             return self.PLCStatus, tick, res

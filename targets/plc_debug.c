@@ -30,11 +30,6 @@ char debug_buffer[BUFFER_SIZE];
 /* Buffer's cursor*/
 static char* buffer_cursor = debug_buffer;
 
-typedef struct{
-    void* ptrvalue;
-    __IEC_types_enum type;
-}struct_plcvar;
-
 /***
  * Declare programs 
  **/
@@ -45,15 +40,23 @@ typedef struct{
  **/
 %(extern_variables_declarations)s
 
-static int subscription_table[MAX_SUBSCRIBTION];
-static int* latest_subscription = subscription_table;
-static int* subscription_cursor = subscription_table;
+typedef void(*__for_each_variable_do_fp)(void*, __IEC_types_enum);
+__for_each_variable_do(__for_each_variable_do_fp fp)
+{
+%(for_each_variable_do_code)s
+}
 
-struct_plcvar variable_table[%(variables_pointer_type_table_count)d];
+__IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
+{
+    switch(varindex){
+%(find_variable_case_code)s
+    }
+    *varp = NULL;
+    return UNKNOWN_ENUM;
+}
 
 void __init_debug(void)
 {
-%(variables_pointer_type_table_initializer)s
     buffer_state = BUFFER_FREE;
 }
 
@@ -71,6 +74,44 @@ extern long AtomicCompareExchange(long*, long, long);
 extern void InitiateDebugTransfer(void);
 
 extern unsigned long __tick;
+
+#define __BufferDebugDataIterator_case_t(TYPENAME) \
+        case TYPENAME##_ENUM :\
+            flags = ((__IEC_##TYPENAME##_t *)varp)->flags;\
+            ptrvalue = &((__IEC_##TYPENAME##_t *)varp)->value;
+
+#define __BufferDebugDataIterator_case_p(TYPENAME)\
+        case TYPENAME##_P_ENUM :\
+            flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
+            ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;
+
+void BufferDebugDataIterator(void* varp, __IEC_types_enum vartype)
+{
+    void *ptrvalue = NULL;
+    char flags = 0;
+    /* find data to copy*/
+    switch(vartype){
+        ANY(__BufferDebugDataIterator_case_t)
+        ANY(__BufferDebugDataIterator_case_p)
+    }
+    if(flags && __IEC_DEBUG_FLAG){
+        USINT size = __get_type_enum_size(vartype);
+        /* compute next cursor positon*/
+        char* next_cursor = buffer_cursor + size;
+        /* if buffer not full */
+        if(next_cursor <= debug_buffer + BUFFER_SIZE)
+        {
+            /* copy data to the buffer */
+            memcpy(buffer_cursor, ptrvalue, size);
+            /* increment cursor according size*/
+            buffer_cursor = next_cursor;
+        }else{
+            /*TODO : signal overflow*/
+        }
+    }
+}
+
+
 void __publish_debug(void)
 {
     /* Check there is no running debugger re-configuration */
@@ -84,38 +125,10 @@ void __publish_debug(void)
         /* If buffer was free */
         if(latest_state == BUFFER_FREE)
         {
-            int* subscription;
-            
             /* Reset buffer cursor */
             buffer_cursor = debug_buffer;
-            
-            /* iterate over subscriptions */
-            for(subscription=subscription_table;
-                subscription < latest_subscription;
-                subscription++)
-            {
-                /* get variable descriptor */
-                struct_plcvar* my_var = &variable_table[*subscription];
-                char* next_cursor;
-                /* get variable size*/
-                USINT size = __get_type_enum_size(my_var->type);
-                /* compute next cursor positon*/
-                next_cursor = buffer_cursor + size;
-                /* if buffer not full */
-                if(next_cursor <= debug_buffer + BUFFER_SIZE)
-                {
-                    /* copy data to the buffer */
-                    memcpy(buffer_cursor, my_var->ptrvalue, size);
-                    /* increment cursor according size*/
-                    buffer_cursor = next_cursor;
-                }else{
-                    /*TODO : signal overflow*/
-                }
-            }
-    
-            /* Reset buffer cursor again (for IterDebugData)*/
-            buffer_cursor = debug_buffer;
-            subscription_cursor = subscription_table;
+            /* Iterate over all variables to fill debug buffer */
+            __for_each_variable_do(BufferDebugDataIterator);
             
             /* Leave debug section,
              * Trigger asynchronous transmission 
@@ -126,21 +139,41 @@ void __publish_debug(void)
     }
 }
 
+#define __RegisterDebugVariable_case_t(TYPENAME) \
+        case TYPENAME##_ENUM :\
+            ((__IEC_##TYPENAME##_t *)varp)->flags |= __IEC_DEBUG_FLAG;
+#define __RegisterDebugVariable_case_p(TYPENAME)\
+        case TYPENAME##_P_ENUM :\
+            ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_DEBUG_FLAG;
 void RegisterDebugVariable(int idx)
 {
-    /*If subscription table not full */
-    if(latest_subscription - subscription_table < MAX_SUBSCRIBTION)
-    {
-        *(latest_subscription++) = idx;
-        /* TODO pre-calc buffer size and signal overflow*/
-    }else{
-        /*TODO : signal subscription overflow*/
+    void *varp;
+    switch(__find_variable(idx, varp)){
+        ANY(__RegisterDebugVariable_case_t)
+        ANY(__RegisterDebugVariable_case_p)
+    }
+}
+
+#define __ResetDebugVariablesIterator_case_t(TYPENAME) \
+        case TYPENAME##_ENUM :\
+            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~__IEC_DEBUG_FLAG;
+
+#define __ResetDebugVariablesIterator_case_p(TYPENAME)\
+        case TYPENAME##_P_ENUM :\
+            ((__IEC_##TYPENAME##_p *)varp)->flags &= ~__IEC_DEBUG_FLAG;\
+
+void ResetDebugVariablesIterator(void* varp, __IEC_types_enum vartype)
+{
+    /* force debug flag to 0*/
+    switch(vartype){
+        ANY(__ResetDebugVariablesIterator_case_t)
+        ANY(__ResetDebugVariablesIterator_case_p)
     }
 }
 
 void ResetDebugVariables(void)
 {
-    latest_subscription = subscription_table;
+    __for_each_variable_do(ResetDebugVariablesIterator);
 }
 
 void FreeDebugData(void)
@@ -153,29 +186,11 @@ void FreeDebugData(void)
         BUFFER_FREE);
 }
 
-void* IterDebugData(int* idx, const char **type_name)
-{
-	struct_plcvar* my_var;
-	USINT size;
-    if(subscription_cursor < latest_subscription){
-        char* old_cursor = buffer_cursor;
-        *idx = *subscription_cursor;
-        my_var = &variable_table[*(subscription_cursor++)];
-        *type_name = __get_type_enum_name(my_var->type);
-        /* get variable size*/
-        size = __get_type_enum_size(my_var->type);
-        /* compute next cursor position*/
-        buffer_cursor = buffer_cursor + size;
-        if(old_cursor < debug_buffer + BUFFER_SIZE)
-        {
-            return old_cursor;
-        }else{
-            //printf("%%d > %%d\n", old_cursor - debug_buffer, BUFFER_SIZE);
-            return NULL;
-        } 
-    }
-    *idx = -1;
-    *type_name = NULL;
-    return NULL;
+/* Wait until debug data ready and return pointer to it */
+int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
+    int res = WaitDebugData(tick);
+    *size = buffer_cursor - debug_buffer;
+    *buffer = NULL;
+    return res;
 }
 
