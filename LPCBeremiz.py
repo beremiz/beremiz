@@ -688,8 +688,11 @@ def BeremizStartProc(plugin_root):
     frame = LPCBeremiz(None, plugin_root=plugin_root, debug=False)
     plugin_root.SetAppFrame(frame, frame.Log)
     frame.Show()
+    frame.Raise()
     
     app.MainLoop()
+
+    frame = None
 
 class StdoutPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
@@ -744,8 +747,10 @@ if __name__ == '__main__':
             return self.Exit()
         
         def Show(self):
-            beremiz_thread=Thread(target=BeremizStartProc, args=[self.PluginRoot])
-            beremiz_thread.start()
+            global frame
+            if frame is None:
+                beremiz_thread=Thread(target=BeremizStartProc, args=[self.PluginRoot])
+                beremiz_thread.start()
         
         def Refresh(self):
             global frame
