@@ -25,96 +25,59 @@
 from threading import Timer, Thread, Lock
 import ctypes, os, commands, types, sys
 import traceback
+from LPCProto import *
 
 class LPCObject():
-    _Idxs = []
     def __init__(self,pluginsroot):
         self.PLCStatus = "Stopped"
         self.pluginsroot = pluginsroot
         self.PLCprint = pluginsroot.logger.write
-    
+        self.SerialConnection = None
+        self._Idxs = []
+        
+    def HandleSerialTransaction(self, transaction):
+        if self.SerialConnection is None:
+            try:
+                self.SerialConnection = LPCProto(6,115200,2)
+            except Exception,e:
+                self.pluginsroot.logger.write_error(str(e)+"\n")
+                self.SerialConnection = None
+                return "Disconnected", res
+        try:
+            return self.SerialConnection.HandleTransaction(transaction)
+        except LPCError,e:
+            #pluginsroot.logger.write_error(traceback.format_exc())
+            self.pluginsroot.logger.write_error(str(e)+"\n")
+            self.SerialConnection = None
+            return "Disconnected", res
+
     def StartPLC(self, debug=False):
         PLCprint("StartPLC")
-        if self.CurrentPLCFilename is not None:
-            self.PLCStatus = "Started"
-            self.PythonThread = Thread(target=self.PythonThreadProc, args=[debug])
-            self.PythonThread.start()
+        self.HandleSerialTransaction(STARTTransaction())
             
     def StopPLC(self):
         PLCprint("StopPLC")
-        if self.PLCStatus == "Started":
-            self._stopPLC()
-            return True
-        return False
+        self.HandleSerialTransaction(STOPTransaction())
 
     def ForceReload(self):
-        # respawn python interpreter
-        Timer(0.1,self._Reload).start()
-        return True
+        pass
 
     def GetPLCstatus(self):
-        return self.PLCStatus
+        status,data = self.HandleSerialTransaction(IDLETransaction())
+        return status
     
     def NewPLC(self, md5sum, data, extrafiles):
-        PLCprint("NewPLC (%s)"%md5sum)
-        if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
-            NewFileName = md5sum + lib_ext
-            extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
-            try:
-                os.remove(os.path.join(self.workingdir,
-                                       self.CurrentPLCFilename))
-                for filename in file(extra_files_log, "r").readlines() + [extra_files_log]:
-                    try:
-                        os.remove(os.path.join(self.workingdir, filename.strip()))
-                    except:
-                        pass
-            except:
-                pass
-                        
-            try:
-                # Create new PLC file
-                open(os.path.join(self.workingdir,NewFileName),
-                     'wb').write(data)
-        
-                # Store new PLC filename based on md5 key
-                open(self._GetMD5FileName(), "w").write(md5sum)
-        
-                # Then write the files
-                log = file(extra_files_log, "w")
-                for fname,fdata in extrafiles:
-                    fpath = os.path.join(self.workingdir,fname)
-                    open(fpath, "wb").write(fdata)
-                    log.write(fname+'\n')
-
-                # Store new PLC filename
-                self.CurrentPLCFilename = NewFileName
-            except:
-                PLCprint(traceback.format_exc())
-                return False
-            if self.PLCStatus == "Empty":
-                self.PLCStatus = "Stopped"
-            return True
-        return False
+        pass
 
     def MatchMD5(self, MD5):
-        try:
-            last_md5 = open(self._GetMD5FileName(), "r").read()
-            return last_md5 == MD5
-        except:
-            return False
+        status,data = self.HandleSerialTransaction(PLCIDTransaction())
+        return data == MD5
     
     def SetTraceVariablesList(self, idxs):
-        """
-        Call ctype imported function to append 
-        these indexes to registred variables in PLC debugger
-        """
-        self._suspendDebug()
-        # keep a copy of requested idx
-        self._Idxs = idxs[:]
-        self._ResetDebugVariables()
-        for idx in idxs:
-            self._RegisterDebugVariable(idx)
-        self._resumeDebug()
+        self._Idxs = idxs[]
+        status,data = self.HandleSerialTransaction(
+               SET_TRACE_VARIABLETransaction(
+                     ''.join(map(chr,idx))))
 
     class IEC_STRING(ctypes.Structure):
         """
@@ -149,29 +112,25 @@ class LPCObject():
         """
         Return a list of variables, corresponding to the list of required idx
         """
-        if self.PLCStatus == "Started":
-            self.PLClibraryLock.acquire()
-            tick = self._WaitDebugData()
-            #PLCprint("Debug tick : %d"%tick)
-            if tick == 2**32 - 1:
-                tick = -1
-                res = None
-            else:
-                idx = ctypes.c_int()
-                typename = ctypes.c_char_p()
-                res = []
-        
-                for given_idx in self._Idxs:
-                    buffer=self._IterDebugData(ctypes.byref(idx), ctypes.byref(typename))
-                    c_type,unpack_func = self.TypeTranslator.get(typename.value, (None,None))
-                    if c_type is not None and given_idx == idx.value:
-                        res.append(unpack_func(ctypes.cast(buffer,
-                                                           ctypes.POINTER(c_type)).contents))
-                    else:
-                        PLCprint("Debug error idx : %d, expected_idx %d, type : %s"%(idx.value, given_idx,typename.value))
-                        res.append(None)
-            self._FreeDebugData()
-            self.PLClibraryLock.release()
-            return tick, res
-        return -1, None
+        status,data = self.HandleSerialTransaction(GET_TRACE_VARIABLETransaction())
+        if data is not None:
+            # transform serial string to real byte string in memory 
+            buffer = ctypes.c_char_p(data)
+            # tick is first value in buffer
+            tick = ctypes.cast(buffer,ctypes.POINTER(ctypes.c_uint32)).contents
+            # variable data starts just after tick 
+            cursorp = ctypes.addressof(buffer) = ctypes.sizeof(ctypes.c_uint32)
+            endp = offset + len(data)
+            for idx, iectype in self._Idxs:
+                cursor = ctypes.c_void_p(cursorp)
+                c_type,unpack_func = self.TypeTranslator.get(iectype, (None,None))
+                if c_type is not None and cursorp < endp:
+                    res.append(unpack_func(ctypes.cast(cursor,
+                                                       ctypes.POINTER(c_type)).contents))
+                    cursorp += ctypes.sizeof(c_type) 
+                else:
+                    PLCprint("Debug error !")
+                        break
+            return self.PLCStatus, tick, res
+        return self.PLCStatus, None, None
 
