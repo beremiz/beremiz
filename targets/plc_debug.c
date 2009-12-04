@@ -41,7 +41,7 @@ static char* buffer_cursor = debug_buffer;
 %(extern_variables_declarations)s
 
 typedef void(*__for_each_variable_do_fp)(void*, __IEC_types_enum);
-__for_each_variable_do(__for_each_variable_do_fp fp)
+void __for_each_variable_do(__for_each_variable_do_fp fp)
 {
 %(for_each_variable_do_code)s
 }
@@ -50,9 +50,10 @@ __IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
 {
     switch(varindex){
 %(find_variable_case_code)s
+     default:
+      *varp = NULL;
+      return UNKNOWN_ENUM;
     }
-    *varp = NULL;
-    return UNKNOWN_ENUM;
 }
 
 void __init_debug(void)
@@ -93,6 +94,8 @@ void BufferDebugDataIterator(void* varp, __IEC_types_enum vartype)
     switch(vartype){
         ANY(__BufferDebugDataIterator_case_t)
         ANY(__BufferDebugDataIterator_case_p)
+    default:
+        break;
     }
     if(flags && __IEC_DEBUG_FLAG){
         USINT size = __get_type_enum_size(vartype);
@@ -147,10 +150,12 @@ void __publish_debug(void)
             ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_DEBUG_FLAG;
 void RegisterDebugVariable(int idx)
 {
-    void *varp;
+    void *varp = NULL;
     switch(__find_variable(idx, varp)){
         ANY(__RegisterDebugVariable_case_t)
         ANY(__RegisterDebugVariable_case_p)
+    default:
+        break;
     }
 }
 
@@ -168,6 +173,8 @@ void ResetDebugVariablesIterator(void* varp, __IEC_types_enum vartype)
     switch(vartype){
         ANY(__ResetDebugVariablesIterator_case_t)
         ANY(__ResetDebugVariablesIterator_case_p)
+    default:
+        break;
     }
 }
 
@@ -185,7 +192,7 @@ void FreeDebugData(void)
         BUFFER_BUSY,
         BUFFER_FREE);
 }
-
+int WaitDebugData(unsigned long *tick);
 /* Wait until debug data ready and return pointer to it */
 int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     int res = WaitDebugData(tick);

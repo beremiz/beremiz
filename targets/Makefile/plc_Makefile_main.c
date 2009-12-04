@@ -49,8 +49,9 @@ int stopPLC(void)
 
 extern unsigned long __tick;
 /* from plc_debugger.c */
-int WaitDebugData(void)
+int WaitDebugData(unsigned long *tick)
 {
+    *tick = __tick;
     return 0;
 }
 
