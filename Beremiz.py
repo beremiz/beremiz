@@ -247,12 +247,13 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
                         
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
-    def __init__(self, output):
+    def __init__(self, output, risecall):
         self.red_white = wx.TextAttr("RED", "WHITE")
         self.red_yellow = wx.TextAttr("RED", "YELLOW")
         self.black_white = wx.TextAttr("BLACK", "WHITE")
         self.default_style = None
         self.output = output
+        self.risecall = risecall
         # to prevent rapid fire on rising log panel
         self.rising_timer = 0
 
@@ -268,7 +269,7 @@ class LogPseudoFile:
         self.output.Thaw()
         newtime = time.time()
         if newtime - self.rising_timer > 1:
-            self.output.Rise()
+            self.risecall()
         self.rising_timer = newtime 
 
     def write_warning(self, s):
@@ -383,7 +384,7 @@ class Beremiz(IDEFrame):
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
-        self.LogConsole.Rise = self.RiseLogConsole 
+        self.LogConsole.SetRise(self.RiseLogConsole)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
         
@@ -392,8 +393,7 @@ class Beremiz(IDEFrame):
     def __init__(self, parent, projectOpen=None, buildpath=None, plugin_root=None, debug=True):
         IDEFrame.__init__(self, parent, debug)
         self.Config = wx.ConfigBase.Get()
-        
-        self.Log = LogPseudoFile(self.LogConsole)
+        self.Log = LogPseudoFile(self.LogConsole,self.RiseLogConsole)
         
         self.local_runtime = None
         self.runtime_port = None
