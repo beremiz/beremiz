@@ -755,7 +755,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.SetAppFrame(frame, logger)
         self._builder = None
         self._connector = None
-        self.Deleting = False
         
         self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+exe_ext)
         self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
@@ -788,7 +787,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.LoadSTLibrary()
 
     def __del__(self):
-        self.Deleting = True
+        if self.DebugTimer:
+            self.DebugTimer.cancel()
+        self.KillDebugThread()
 
     def SetAppFrame(self, frame, logger):
         self.AppFrame = frame
@@ -1614,12 +1615,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.DebugTimer is not None:
             self.DebugTimer.cancel()
 
-        if not self.Deleting:
-            # Timer to prevent rapid-fire when registering many variables
-            # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
-            self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
-            # Rearm anti-rapid-fire timer
-            self.DebugTimer.start()
+        # Timer to prevent rapid-fire when registering many variables
+        # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
+        self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
+        # Rearm anti-rapid-fire timer
+        self.DebugTimer.start()
 
     def GetDebugIECVariableType(self, IECPath):
         Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
@@ -1725,9 +1725,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def KillDebugThread(self):
         self.debug_break = True
-        self.DebugThread.join(timeout=1)
-        if self.DebugThread.isAlive():
-            self.logger.write_warning(_("Debug Thread couldn't be killed"))
+        if self.DebugThread is not None:
+            self.DebugThread.join(timeout=1)
+            if self.DebugThread.isAlive() and self.logger:
+                self.logger.write_warning(_("Debug Thread couldn't be killed"))
         self.DebugThread = None
 
     def _connect_debug(self): 
