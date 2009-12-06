@@ -384,7 +384,6 @@ class Beremiz(IDEFrame):
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
-        self.LogConsole.SetRise(self.RiseLogConsole)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
         
