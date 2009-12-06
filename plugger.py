@@ -1609,9 +1609,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
             for IECPathToPop in IECPathsToPop:
                 self.IECdebug_datas.pop(IECPathToPop)
 
-            Idxs.sort()
-            self.TracedIECPath = zip(Idxs)[2]
-            self._connector.SetTraceVariablesList(zip(zip(Idxs)[0:1]))
+            if Idxs:
+                Idxs.sort()
+                self.TracedIECPath = zip(Idxs)[2]
+                self._connector.SetTraceVariablesList(zip(zip(Idxs)[0:1]))
             self.IECdebug_lock.release()
             
             #for IEC_path, IECdebug_data in self.IECdebug_datas.iteritems():
@@ -1761,7 +1762,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write(_("Stopping debug\n"))
             self.KillDebugThread()
         
-        if not self._connector.StopPLC():
+        if self._connector is not None and not self._connector.StopPLC():
             self.logger.write_error(_("Couldn't stop PLC !\n"))
         self.UpdateMethodsFromPLCStatus()
 
