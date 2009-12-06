@@ -1729,17 +1729,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def _Run(self):
         """
-        Start PLC (Debug Mode)
+        Start PLC
         """
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC()
-            self.logger.write(_("Starting PLC (debug mode)\n"))
+            self.logger.write(_("Starting PLC\n"))
             if self.AppFrame:
                 self.AppFrame.ResetGraphicViewers()
+            self.RegisterDebugVarToConnector()
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()
         else:
-            self.logger.write_error(_("Couldn't start PLC debug !\n"))
+            self.logger.write_error(_("Couldn't start PLC !\n"))
         self.UpdateMethodsFromPLCStatus()
 
 
