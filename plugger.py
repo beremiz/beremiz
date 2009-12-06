@@ -1324,8 +1324,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
-              {"PT":"extern %(type)s *%(C_path)s;",
-               "VAR":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v 
+              {"PT":"extern __IEC_%(type)s_p %(C_path)s;",
+               "VAR":"extern __IEC_%(type)s_t %(C_path)s;"}[v["vartype"]]%v 
                for v in self._VariablesList if v["vartype"] != "FB" and v["C_path"].find('.')<0]),
            "subscription_table_count":
                len(self._VariablesList),
@@ -1618,6 +1618,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
             # Rearm anti-rapid-fire timer
             self.DebugTimer.start()
 
+    def GetDebugIECVariableType(self, IECPath):
+        Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
+        return IEC_Type
         
     def SubscribeDebugIECVariable(self, IECPath, callableobj, *args, **kwargs):
         """
@@ -1662,6 +1665,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
+
+    def ForceDebugIECVariable(self, IECPath, value):
+        pass
+    
+    def ReleaseDebugIECVariable(self, IECPath):
+        pass
 
     def CallWeakcallables(self, IECPath, function_name, *cargs):
         data_tuple = self.IECdebug_datas.get(IECPath, None)
