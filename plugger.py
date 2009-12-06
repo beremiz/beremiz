@@ -1337,7 +1337,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ]),
            "find_variable_case_code":"\n".join([
                "    case %(num)s:\n"%v+
-               "        varp = (void*)&%(C_path)s;\n"%v+
+               "        *varp = (void*)&%(C_path)s;\n"%v+
                {"PT":"        return %(type)s_P_ENUM;\n",
                 "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ])}
@@ -1612,7 +1612,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             if Idxs:
                 Idxs.sort()
                 self.TracedIECPath = zip(Idxs)[2]
-                self._connector.SetTraceVariablesList(zip(zip(Idxs)[0:1]))
+                self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:2]))
             self.IECdebug_lock.release()
             
             #for IEC_path, IECdebug_data in self.IECdebug_datas.iteritems():

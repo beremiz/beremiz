@@ -79,12 +79,14 @@ extern unsigned long __tick;
 #define __BufferDebugDataIterator_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
             flags = ((__IEC_##TYPENAME##_t *)varp)->flags;\
-            ptrvalue = &((__IEC_##TYPENAME##_t *)varp)->value;
+            ptrvalue = &((__IEC_##TYPENAME##_t *)varp)->value;\
+            break;
 
 #define __BufferDebugDataIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
             flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
-            ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;
+            ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;\
+            break;
 
 void BufferDebugDataIterator(void* varp, __IEC_types_enum vartype)
 {
@@ -144,14 +146,16 @@ void __publish_debug(void)
 
 #define __RegisterDebugVariable_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            ((__IEC_##TYPENAME##_t *)varp)->flags |= __IEC_DEBUG_FLAG;
+            ((__IEC_##TYPENAME##_t *)varp)->flags |= __IEC_DEBUG_FLAG;\
+            break;
 #define __RegisterDebugVariable_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
-            ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_DEBUG_FLAG;
+            ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_DEBUG_FLAG;\
+            break;
 void RegisterDebugVariable(int idx)
 {
     void *varp = NULL;
-    switch(__find_variable(idx, varp)){
+    switch(__find_variable(idx, &varp)){
         ANY(__RegisterDebugVariable_case_t)
         ANY(__RegisterDebugVariable_case_p)
     default:
@@ -161,11 +165,13 @@ void RegisterDebugVariable(int idx)
 
 #define __ResetDebugVariablesIterator_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~__IEC_DEBUG_FLAG;
+            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~__IEC_DEBUG_FLAG;\
+            break;
 
 #define __ResetDebugVariablesIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
             ((__IEC_##TYPENAME##_p *)varp)->flags &= ~__IEC_DEBUG_FLAG;\
+            break;
 
 void ResetDebugVariablesIterator(void* varp, __IEC_types_enum vartype)
 {
@@ -197,7 +203,7 @@ int WaitDebugData(unsigned long *tick);
 int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     int res = WaitDebugData(tick);
     *size = buffer_cursor - debug_buffer;
-    *buffer = NULL;
+    *buffer = debug_buffer;
     return res;
 }
 
