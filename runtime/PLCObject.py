@@ -252,7 +252,7 @@ class PLCObject(pyro.ObjBase):
     
     def StartPLC(self):
         PLCprint("StartPLC")
-        if self.CurrentPLCFilename is not None:
+        if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             self.PLCStatus = "Started"
             self.PythonThread = Thread(target=self.PythonThreadProc)
             self.PythonThread.start()
@@ -384,8 +384,8 @@ class PLCObject(pyro.ObjBase):
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buffer = ctypes.c_void_p()
+            offset = 0
             if self._GetDebugData(ctypes.byref(tick),ctypes.byref(size),ctypes.byref(buffer)) == 0 :
-                offset = 0
                 for idx, iectype in self._Idxs:
                     cursor = ctypes.c_void_p(buffer.value + offset)
                     c_type,unpack_func = self.TypeTranslator.get(iectype, (None,None))
@@ -401,7 +401,7 @@ class PLCObject(pyro.ObjBase):
                         break
             self._FreeDebugData()
             self.PLClibraryLock.release()
-            if offset == size.value:
+            if offset and offset == size.value:
                 return self.PLCStatus, tick.value, res
             else:
                 PLCprint("Debug error - bad buffer unpack !")

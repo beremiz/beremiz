@@ -92,7 +92,8 @@ def PYRO_connector_factory(uri, pluginsroot):
             object is recreated meanwhile, 
             so we must not keep ref to it here
             """
-            if pluginsroot._connector.GetPyroProxy().GetPLCstatus() == "Dirty":
+            current_status = pluginsroot._connector.GetPyroProxy().GetPLCstatus()
+            if current_status == "Dirty":
                 """
                 Some bad libs with static symbols may polute PLC
                 ask runtime to suicide and come back again
@@ -112,6 +113,8 @@ def PYRO_connector_factory(uri, pluginsroot):
             """
             for safe use in from debug thread, must use the copy
             """
+            if self.RemotePLCObjectProxyCopy is None:
+                self.RemotePLCObjectProxyCopy = copy.copy(pluginsroot._connector.GetPyroProxy())
             return self.RemotePLCObjectProxyCopy.GetTraceVariables()
         GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",None,None))
 

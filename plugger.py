@@ -1602,6 +1602,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 Idxs.sort()
                 self.TracedIECPath = zip(*Idxs)[2]
                 self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:2]))
+            else:
+                self.TracedIECPath = []
+                self._connector.SetTraceVariablesList([])
             self.IECdebug_lock.release()
             
             #for IEC_path, IECdebug_data in self.IECdebug_datas.iteritems():
@@ -1727,6 +1730,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_warning(_("Debug Thread couldn't be killed"))
         self.DebugThread = None
 
+    def _connect_debug(self): 
+        if self.AppFrame:
+            self.AppFrame.ResetGraphicViewers()
+        self.RegisterDebugVarToConnector()
+        self.DebugThread = Thread(target=self.DebugThreadProc)
+        self.DebugThread.start()
+    
     def _Run(self):
         """
         Start PLC
@@ -1734,11 +1744,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC()
             self.logger.write(_("Starting PLC\n"))
-            if self.AppFrame:
-                self.AppFrame.ResetGraphicViewers()
-            self.RegisterDebugVarToConnector()
-            self.DebugThread = Thread(target=self.DebugThreadProc)
-            self.DebugThread.start()
+            self._connect_debug()
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
         self.UpdateMethodsFromPLCStatus()
@@ -1830,6 +1836,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
             
             # Start the status Timer
             self.StatusTimer.Start(milliseconds=500, oneShot=False)
+            
+            if self.previous_plcstate=="Started":
+                if self.DebugAvailable() and self.GetIECProgramsAndVariables():
+                    self.logger.write(_("Debug connect matching running PLC\n"))
+                    self._connect_debug()
+                else:
+                    self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
 
     def CompareLocalAndRemotePLC(self):
         if self._connector is None:
@@ -1846,6 +1859,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self.logger.write(
                    _("Latest build matches target, no transfer needed.\n"))
                 self.EnableMethod("_Transfer", True)
+                # warns controller that program match
+                self.ProgramTransferred()
                 #self.EnableMethod("_Transfer", False)
         else:
             self.logger.write_warning(
