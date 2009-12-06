@@ -1708,7 +1708,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             else:
                 if plc_status == "Started":
                     # Be patient, tollerate PLC to come up before debugging
-                    time.sleep(0.01)
+                    time.sleep(0.1)
                 else:
                     wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
                     self.debug_break = True

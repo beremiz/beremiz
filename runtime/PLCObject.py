@@ -392,10 +392,16 @@ class PLCObject(pyro.ObjBase):
                                                            ctypes.POINTER(c_type)).contents))
                         offset += ctypes.sizeof(c_type)
                     else:
-                        PLCprint("Debug error !")
+                        if c_type is None:
+                            PLCprint("Debug error - " + iectype + " not supported !")
+                        if offset >= size:
+                            PLCprint("Debug error - buffer too small !")
                         break
             self._FreeDebugData()
             self.PLClibraryLock.release()
-            return self.PLCStatus, tick.value, res
+            if offset == size:
+                return self.PLCStatus, tick.value, res
+            else:
+                PLCprint("Debug error - bad buffer unpack !")
         return self.PLCStatus, None, None
 
