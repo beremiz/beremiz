@@ -90,41 +90,41 @@ void __publish_%(location)s()
 void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 {
 	/* detect rising edge on TRIG to trigger evaluation */
-	if(((data__->TRIG && !data__->TRIGM1) ||
+	if(((__GET_VAR(data__->TRIG) && !__GET_VAR(data__->TRIGM1)) ||
 	   /* polling is equivalent to trig on value rather than on rising edge*/
-	    (poll && data__->TRIG )) &&
+	    (poll && __GET_VAR(data__->TRIG) )) &&
 	    /* trig only if not already trigged */
-	   data__->TRIGGED == 0){
+	    __GET_VAR(data__->TRIGGED) == 0){
 		/* mark as trigged */
-		data__->TRIGGED = 1;
+	    __SET_VAR(data__->TRIGGED, 1);
 		/* make a safe copy of the code */
-		data__->PREBUFFER = data__->CODE;
+		__SET_VAR(data__->PREBUFFER, __GET_VAR(data__->CODE));
 	}
 	/* retain value for next rising edge detection */
-	data__->TRIGM1 = data__->TRIG;
+	__SET_VAR(data__->TRIGM1, __GET_VAR(data__->TRIG));
 
 	/* python thread is not in ? */
 	if( PythonState & PYTHON_LOCKED_BY_PLC){
 		/* if some answer are waiting, publish*/
-		if(data__->STATE == PYTHON_FB_ANSWERED){
+		if(__GET_VAR(data__->STATE) == PYTHON_FB_ANSWERED){
 			/* Copy buffer content into result*/
-			data__->RESULT = data__->BUFFER;
+			__SET_VAR(data__->RESULT, __GET_VAR(data__->BUFFER));
 			/* signal result presece to PLC*/
-			data__->ACK = 1;
+			__SET_VAR(data__->ACK, 1);
 			/* Mark as free */
-			data__->STATE = PYTHON_FB_FREE;
+			__SET_VAR(data__->STATE, PYTHON_FB_FREE);
 			/* mark as not trigged */
 			if(!poll)
-				data__->TRIGGED = 0;
+			    __SET_VAR(data__->TRIGGED, 0);
 			/*printf("__PythonEvalFB pop %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
 		}else if(poll){
 			/* when in polling, no answer == ack down */
-			data__->ACK = 0;
+		    __SET_VAR(data__->ACK, 0);
 		}
 		/* got the order to act ?*/
-		if(data__->TRIGGED == 1 &&
+		if(__GET_VAR(data__->TRIGGED) == 1 &&
 		   /* and not already being processed */
-		   data__->STATE == PYTHON_FB_FREE)
+		   __GET_VAR(data__->STATE) == PYTHON_FB_FREE)
 		{
 			/* Enter the block in the fifo
 			/* Don't have to check if fifo cell is free
@@ -132,17 +132,17 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 			 * be requested twice */
 			EvalFBs[Current_PLC_EvalFB] = data__;
 			/* copy into BUFFER local*/
-			data__->BUFFER = data__->PREBUFFER;
+			__SET_VAR(data__->BUFFER, __GET_VAR(data__->PREBUFFER));
 			/* Set ACK pin to low so that we can set a rising edge on result */
 			if(!poll){
 				/* when not polling, a new answer imply reseting ack*/
-				data__->ACK = 0;
+			    __SET_VAR(data__->ACK, 0);
 			}else{
 				/* when in polling, acting reset trigger */
-				data__->TRIGGED = 0;
+			    __SET_VAR(data__->TRIGGED, 0);
 			}
 			/* Mark FB busy */
-			data__->STATE = PYTHON_FB_REQUESTED;
+			__SET_VAR(data__->STATE, PYTHON_FB_REQUESTED);
 			/* Have to wakeup python thread in case he was asleep */
 			PythonState |= PYTHON_MUSTWAKEUP;
 			/*printf("__PythonEvalFB push %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
@@ -162,26 +162,26 @@ char* PythonIterator(char* result)
 	/* Get current FB */
 	data__ = EvalFBs[Current_Python_EvalFB];
 	if(data__ && /* may be null at first run */
-	   data__->STATE == PYTHON_FB_PROCESSING){ /* some answer awaited*/
+	    __GET_VAR(data__->STATE) == PYTHON_FB_PROCESSING){ /* some answer awaited*/
 	   	/* If result not None */
 	   	if(result){
 			/* Get results len */
-			data__->BUFFER.len = strlen(result);
+	   	    __SET_VAR(data__->BUFFER, strlen(result), .len);
 			/* prevent results overrun */
-			if(data__->BUFFER.len > STR_MAX_LEN)
+			if(__GET_VAR(data__->BUFFER, .len) > STR_MAX_LEN)
 			{
-				data__->BUFFER.len = STR_MAX_LEN;
+			    __SET_VAR(data__->BUFFER, STR_MAX_LEN, .len );
 				/* TODO : signal error */
 			}
 			/* Copy results to buffer */
-			strncpy(data__->BUFFER.body, result, data__->BUFFER.len);
+			strncpy(__GET_VAR(data__->BUFFER, .body), result, __GET_VAR(data__->BUFFER,.len));
 	   	}else{
-	   		data__->BUFFER.len = 0;
+	   	    __SET_VAR(data__->BUFFER, 0, .len);
 	   	}
 		/* remove block from fifo*/
 		EvalFBs[Current_Python_EvalFB] = NULL;
 		/* Mark block as answered */
-		data__->STATE = PYTHON_FB_ANSWERED;
+		__SET_VAR(data__->STATE, PYTHON_FB_ANSWERED);
 		/* Get a new line */
 		Current_Python_EvalFB = (Current_Python_EvalFB + 1) %% %(python_eval_fb_count)d;
 		//printf("PythonIterator ++ Current_Python_EvalFB %%d\n", Current_Python_EvalFB);
@@ -189,7 +189,7 @@ char* PythonIterator(char* result)
 	/* while next slot is empty */
 	while(((data__ = EvalFBs[Current_Python_EvalFB]) == NULL) ||
 	 	  /* or doesn't contain command */
-	      data__->STATE != PYTHON_FB_REQUESTED)
+	      __GET_VAR(data__->STATE) != PYTHON_FB_REQUESTED)
 	{
 		UnLockPython();
 		/* wait next FB to eval */
@@ -200,12 +200,12 @@ char* PythonIterator(char* result)
 		LockPython();
 	}
 	/* Mark block as processing */
-	data__->STATE = PYTHON_FB_PROCESSING;
+	__SET_VAR(data__->STATE, PYTHON_FB_PROCESSING);
 	//printf("PythonIterator\n");
 	/* make BUFFER a null terminated string */
-	data__->BUFFER.body[data__->BUFFER.len] = 0;
+	__SET_VAR(data__->BUFFER, 0, .body[__GET_VAR(data__->BUFFER, .len)]);
 	/* next command is BUFFER */
-	next_command = data__->BUFFER.body;
+	next_command = __GET_VAR(data__->BUFFER, .body);
 	/* free python mutex */
 	UnLockPython();
 	/* return the next command to eval */
