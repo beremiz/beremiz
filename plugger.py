@@ -1692,11 +1692,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         # This lock is used to avoid flooding wx event stack calling callafter
         self.debug_break = False
+        debug_getvar_retry = 0
         while (not self.debug_break) and (self._connector is not None):
             plc_status, debug_tick, debug_vars = self._connector.GetTraceVariables()
             #print debug_tick, debug_vars
             self.IECdebug_lock.acquire()
             if debug_vars is not None:
+                debug_getvar_retry = 0
                 if len(debug_vars) == len(self.TracedIECPath):
                     for IECPath,value in zip(self.TracedIECPath, debug_vars):
                         if value is not None:
@@ -1707,6 +1709,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
                                  _("Debug data do not match requested variable count %d != %d\n")%(len(debug_vars), len(self.TracedIECPath)))
             else:
                 if plc_status == "Started":
+                    # Just in case, re-register debug registry to PLC
+                    if debug_getvar_retry == 0:
+                        wx.CallAfter(self.RegisterDebugVarToConnector)
+                        wx.CallAfter(self.logger.write_warning, 
+                                 _("Waiting debugger to recover...\n"))
+                    debug_getvar_retry += 1
                     # Be patient, tollerate PLC to come up before debugging
                     time.sleep(0.1)
                 else:

@@ -399,7 +399,7 @@ class PLCObject(pyro.ObjBase):
                         break
             self._FreeDebugData()
             self.PLClibraryLock.release()
-            if offset == size:
+            if offset == size.value:
                 return self.PLCStatus, tick.value, res
             else:
                 PLCprint("Debug error - bad buffer unpack !")
