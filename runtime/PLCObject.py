@@ -348,7 +348,7 @@ class PLCObject(pyro.ObjBase):
         Must be changed according to changes in iec_types.h
         """
         _fields_ = [("len", ctypes.c_uint8),
-                    ("body", ctypes.c_char * 127)] 
+                    ("body", ctypes.c_char * 126)] 
     
     TypeTranslator = {"BOOL" :       (ctypes.c_uint8, lambda x:x.value!=0),
                       "STEP" :       (ctypes.c_uint8, lambda x:x.value),
@@ -390,12 +390,12 @@ class PLCObject(pyro.ObjBase):
                     if c_type is not None and offset < size:
                         res.append(unpack_func(ctypes.cast(cursor,
                                                            ctypes.POINTER(c_type)).contents))
-                        offset += ctypes.sizeof(c_type) 
+                        offset += ctypes.sizeof(c_type)
                     else:
                         PLCprint("Debug error !")
                         break
             self._FreeDebugData()
             self.PLClibraryLock.release()
-            return self.PLCStatus, tick, res
+            return self.PLCStatus, tick.value, res
         return self.PLCStatus, None, None
 

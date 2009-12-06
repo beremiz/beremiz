@@ -1611,7 +1611,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
             if Idxs:
                 Idxs.sort()
-                self.TracedIECPath = zip(Idxs)[2]
+                self.TracedIECPath = zip(*Idxs)[2]
                 self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:2]))
             self.IECdebug_lock.release()
             
