@@ -95,8 +95,8 @@ class PLCObject(pyro.ObjBase):
             self._startPLC.restype = ctypes.c_int
             self._startPLC.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
             
-            self.DummyIteratorLock = Lock()
-            self.DummyIteratorLock.acquire()
+            self._stopPLC_real = self.PLClibraryHandle.stopPLC
+            self._stopPLC_real.restype = None
             
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
             if self._PythonIterator is not None:
@@ -105,24 +105,27 @@ class PLCObject(pyro.ObjBase):
                 
                 def StopPLCLock():
                     self.PLClibraryLock.acquire()
-                    self.PLClibraryHandle.stopPLC()
+                    self._stopPLC_real()
                     self.PLClibraryLock.release()
                 
             else:
-                def DummyIterator(res):
-                    self.DummyIteratorLock.acquire()
-                    self.DummyIteratorLock.release()
+                # If python plugin is not enabled, we reuse _PythonIterator
+                # as a call that block pythonthread until StopPLC 
+                self.PythonIteratorLock = Lock()
+                self.PythonIteratorLock.acquire()
+                def PythonIterator(res):
+                    self.PythonIteratorLock.acquire()
+                    self.PythonIteratorLock.release()
                     return None
-                self._PythonIterator = DummyIterator
+                self._PythonIterator = PythonIterator
                 
                 def StopPLCLock():
                     self.PLClibraryLock.acquire()
-                    self.PLClibraryHandle.stopPLC()
-                    self.DummyIteratorLock.release()
+                    self._stopPLC_real()
+                    self.PythonIteratorLock.release()
                     self.PLClibraryLock.release()
             
             self._stopPLC = StopPLCLock
-            self._stopPLC.restype = None
     
             self._ResetDebugVariables = self.PLClibraryHandle.ResetDebugVariables
             self._ResetDebugVariables.restype = None
@@ -374,6 +377,7 @@ class PLCObject(pyro.ObjBase):
         Return a list of variables, corresponding to the list of required idx
         """
         if self.PLCStatus == "Started":
+            res=[]
             self.PLClibraryLock.acquire()
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
