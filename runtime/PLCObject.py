@@ -143,6 +143,7 @@ class PLCObject(pyro.ObjBase):
 
             self._suspendDebug = self.PLClibraryHandle.suspendDebug
             self._suspendDebug.restype = None
+            self._suspendDebug.argtypes = [ctypes.c_int]
 
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
             self._resumeDebug.restype = None
@@ -215,16 +216,12 @@ class PLCObject(pyro.ObjBase):
             self.website.PLCStopped()
         self.python_threads_vars = None
 
-    def PythonThreadProc(self, debug):
+    def PythonThreadProc(self):
         PLCprint("PythonThreadProc started")
         c_argv = ctypes.c_char_p * len(self.argv)
         error = None
         if self._LoadNewPLC():
             if self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
-                if debug:
-                    for idx in self._Idxs:
-                        self._RegisterDebugVariable(idx)
-                    self._resumeDebug()
                 self.PLCStatus = "Started"
                 self.StatusChange()
                 self.evaluator(self.PrepareRuntimePy)
@@ -253,11 +250,11 @@ class PLCObject(pyro.ObjBase):
         self._FreePLC()
         PLCprint("PythonThreadProc interrupted")
     
-    def StartPLC(self, debug=False):
+    def StartPLC(self):
         PLCprint("StartPLC")
         if self.CurrentPLCFilename is not None:
             self.PLCStatus = "Started"
-            self.PythonThread = Thread(target=self.PythonThreadProc, args=[debug])
+            self.PythonThread = Thread(target=self.PythonThreadProc)
             self.PythonThread.start()
             
     def StopPLC(self):
@@ -335,13 +332,18 @@ class PLCObject(pyro.ObjBase):
         Call ctype imported function to append 
         these indexes to registred variables in PLC debugger
         """
-        self._suspendDebug()
-        # keep a copy of requested idx
-        self._Idxs = idxs[:]
-        self._ResetDebugVariables()
-        for idx,iectype in idxs:
-            self._RegisterDebugVariable(idx)
-        self._resumeDebug()
+        if idxs:
+            # suspend but dont disable
+            self._suspendDebug(False)
+            # keep a copy of requested idx
+            self._Idxs = idxs[:]
+            self._ResetDebugVariables()
+            for idx,iectype in idxs:
+                self._RegisterDebugVariable(idx)
+            self._resumeDebug()
+        else:
+            self._suspendDebug(True)
+            self._Idxs =  []
 
     class IEC_STRING(ctypes.Structure):
         """

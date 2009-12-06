@@ -1547,17 +1547,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if(self.previous_plcstate != status):
             for args in {
                      "Started" :     [("_Run", False),
-                                      ("_Debug", False),
                                       ("_Stop", True)],
                      "Stopped" :     [("_Run", True),
-                                      ("_Debug", True),
                                       ("_Stop", False)],
                      "Empty" :       [("_Run", False),
-                                      ("_Debug", False),
                                       ("_Stop", False)],
                      "Broken" :      [],
                      "Disconnected" :[("_Run", False),
-                                      ("_Debug", False),
                                       ("_Stop", False),
                                       ("_Transfer", False),
                                       ("_Connect", True),
@@ -1578,13 +1574,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self.previous_plcstate, self.logger.write)(_("PLC is %s\n")%status)
             self.AppFrame.RefreshAll()
         
-    def _Run(self):
-        """
-        Start PLC
-        """
-        self._connector.StartPLC()
-        self.UpdateMethodsFromPLCStatus()
-
     def RegisterDebugVarToConnector(self):
         self.DebugTimer=None
         Idxs = []
@@ -1729,12 +1718,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_warning(_("Debug Thread couldn't be killed"))
         self.DebugThread = None
 
-    def _Debug(self):
+    def _Run(self):
         """
         Start PLC (Debug Mode)
         """
         if self.GetIECProgramsAndVariables():
-            self._connector.StartPLC(debug=True)
+            self._connector.StartPLC()
             self.logger.write(_("Starting PLC (debug mode)\n"))
             if self.AppFrame:
                 self.AppFrame.ResetGraphicViewers()
@@ -1914,15 +1903,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
          "shown" : False,
          "tooltip" : _("Start PLC"),
          "method" : "_Run"},
-        {"bitmap" : opjimg("Debug"),
-         "name" : _("Debug"),
-         "shown" : False,
-         "tooltip" : _("Start PLC (debug mode)"),
-         "method" : "_Debug"},
-#        {"bitmap" : opjimg("Debug"),
-#         "name" : "Do_Test_Debug",
-#         "tooltip" : "Test debug mode)",
-#         "method" : "_Do_Test_Debug"},
         {"bitmap" : opjimg("Stop"),
          "name" : _("Stop"),
          "shown" : False,

@@ -85,7 +85,9 @@ int startPLC(int argc,char **argv)
     sigev.sigev_notify_function = PLC_timer_notify;
 
     pthread_mutex_init(&debug_wait_mutex, NULL);
+    pthread_mutex_init(&debug_mutex, NULL);
     pthread_mutex_init(&python_wait_mutex, NULL);
+    pthread_mutex_init(&python_mutex, NULL);
 
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
@@ -95,10 +97,7 @@ int startPLC(int argc,char **argv)
         PLC_SetTimer(Ttick,Ttick);
 
         /* install signal handler for manual break */
-//        signal(SIGTERM, catch_signal);
         signal(SIGINT, catch_signal);
-
-        pthread_mutex_trylock(&debug_mutex);
     }else{
         return 1;
     }
@@ -107,7 +106,14 @@ int startPLC(int argc,char **argv)
 
 int TryEnterDebugSection(void)
 {
-    return pthread_mutex_trylock(&debug_mutex) == 0;
+    if (pthread_mutex_trylock(&debug_mutex) == 0){
+        /* Only enter if debug active */
+        if(__DEBUG){
+            return 1;
+        }
+    }
+    pthread_mutex_unlock(&debug_mutex);
+    return 0;
 }
 
 void LeaveDebugSection(void)
@@ -149,11 +155,12 @@ void InitiateDebugTransfer()
     pthread_mutex_unlock(&debug_wait_mutex);
 }
 
-void suspendDebug(void)
+void suspendDebug(int disable)
 {
-    __DEBUG = 0;
     /* Prevent PLC to enter debug code */
     pthread_mutex_lock(&debug_mutex);
+    /*__DEBUG is protected by this mutex */
+    __DEBUG = !disable;
 }
 
 void resumeDebug(void)
