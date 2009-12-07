@@ -1713,7 +1713,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
                     if status == "Forced":
-                        function(*(cargs + [True] + args), **kwargs)
+                        function(*(cargs + (True,) + args), **kwargs)
                     else:
                         function(*(cargs + args), **kwargs)
                 # This will block thread if more than one call is waiting
