@@ -1586,7 +1586,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.IECdebug_lock.acquire()
             IECPathsToPop = []
             for IECPath,data_tuple in self.IECdebug_datas.iteritems():
-                WeakCallableDict, data_log, status = data_tuple
+                WeakCallableDict, data_log, status, fvalue = data_tuple
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
                     # This variable is not needed anymore!
@@ -1596,7 +1596,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     # Convert 
                     Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
                     if Idx is not None:
-                        Idxs.append((Idx, IEC_Type, IECPath))
+                        Idxs.append((Idx, IEC_Type, IECPath, fvalue))
                     else:
                         self.logger.write_warning(_("Debug : Unknown variable %s\n")%IECPath)
             for IECPathToPop in IECPathsToPop:
@@ -1605,7 +1605,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             if Idxs:
                 Idxs.sort()
                 self.TracedIECPath = zip(*Idxs)[2]
-                self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:2]))
+                self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:3]))
             else:
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
@@ -1644,7 +1644,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             IECdebug_data  = [
                     WeakKeyDictionary(), # Callables
                     [],                  # Data storage [(tick, data),...]
-                    "Registered"]        # Variable status
+                    "Registered",        # Variable status
+                    None]                # Forced value
             self.IECdebug_datas[IECPath] = IECdebug_data
         
         IECdebug_data[0][callableobj]=(args, kwargs)
@@ -1672,22 +1673,49 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         self.ReArmDebugRegisterTimer()
 
-    def ForceDebugIECVariable(self, IECPath, value):
-        pass
+    def ForceDebugIECVariable(self, IECPath, fvalue):
+        if not self.IECdebug_datas.has_key(IECPath):
+            return
+        
+        self.IECdebug_lock.acquire()
+        
+        # If no entry exist, create a new one with a fresh WeakKeyDictionary
+        IECdebug_data = self.IECdebug_datas.get(IECPath, None)
+        IECdebug_data[2] = "Forced"
+        IECdebug_data[3] = fvalue
+        
+        self.IECdebug_lock.release()
+        
+        self.ReArmDebugRegisterTimer()
     
     def ReleaseDebugIECVariable(self, IECPath):
-        pass
-
+        if not self.IECdebug_datas.has_key(IECPath):
+            return
+        
+        self.IECdebug_lock.acquire()
+        
+        # If no entry exist, create a new one with a fresh WeakKeyDictionary
+        IECdebug_data = self.IECdebug_datas.get(IECPath, None)
+        IECdebug_data[2] = "Registered"
+        IECdebug_data[3] = None
+        
+        self.IECdebug_lock.release()
+        
+        self.ReArmDebugRegisterTimer()
+    
     def CallWeakcallables(self, IECPath, function_name, *cargs):
         data_tuple = self.IECdebug_datas.get(IECPath, None)
         if data_tuple is not None:
-            WeakCallableDict, data_log, status = data_tuple
+            WeakCallableDict, data_log, status, fvalue = data_tuple
             #data_log.append((debug_tick, value))
             for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
                 #print weakcallable, value, args, kwargs
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
-                    function(*(cargs + args), **kwargs)
+                    if status == "Forced":
+                        function(*(cargs + [True] + args), **kwargs)
+                    else:
+                        function(*(cargs + args), **kwargs)
                 # This will block thread if more than one call is waiting
 
     def DebugThreadProc(self):
