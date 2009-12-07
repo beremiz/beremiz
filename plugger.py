@@ -1596,7 +1596,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     # Convert 
                     Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
                     if Idx is not None:
-                        Idxs.append((Idx, IEC_Type, IECPath, fvalue))
+                        Idxs.append((Idx, IEC_Type, fvalue, IECPath))
                     else:
                         self.logger.write_warning(_("Debug : Unknown variable %s\n")%IECPath)
             for IECPathToPop in IECPathsToPop:
@@ -1604,7 +1604,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
             if Idxs:
                 Idxs.sort()
-                self.TracedIECPath = zip(*Idxs)[2]
+                self.TracedIECPath = zip(*Idxs)[3]
                 self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:3]))
             else:
                 self.TracedIECPath = []
