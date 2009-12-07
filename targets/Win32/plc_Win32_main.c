@@ -147,7 +147,14 @@ static unsigned long __debug_tick;
 int TryEnterDebugSection(void)
 {
 	//printf("TryEnterDebugSection\n");
-	return WaitForSingleObject(debug_sem, 0) == WAIT_OBJECT_0;
+    if(WaitForSingleObject(debug_sem, 0) == WAIT_OBJECT_0){
+        /* Only enter if debug active */
+        if(__DEBUG){
+            return 1;
+        }
+    ReleaseSemaphore(debug_sem, 1, NULL);
+    return 0;
+    }
 }
 
 void LeaveDebugSection(void)
@@ -171,7 +178,6 @@ int stopPLC()
 
 /* from plc_debugger.c */
 int WaitDebugData(unsigned long *tick)
-unsigned long WaitDebugData()
 {
     *tick = __debug_tick;
     /* Wait signal from PLC thread */
@@ -188,11 +194,12 @@ void InitiateDebugTransfer()
     ReleaseSemaphore(debug_wait_sem, 1, NULL);
 }
 
-void suspendDebug()
+void suspendDebug(int disable)
 {
-	__DEBUG = 0;
     /* Prevent PLC to enter debug code */
 	WaitForSingleObject(debug_sem, INFINITE);
+    /*__DEBUG is protected by this mutex */
+    __DEBUG = !disable;
 }
 
 void resumeDebug()
