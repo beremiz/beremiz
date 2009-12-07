@@ -132,7 +132,7 @@ class PLCObject(pyro.ObjBase):
     
             self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
             self._RegisterDebugVariable.restype = None
-            self._RegisterDebugVariable.argtypes = [ctypes.c_int]
+            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p]
     
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
@@ -327,6 +327,36 @@ class PLCObject(pyro.ObjBase):
         except:
             return False
     
+
+    class IEC_STRING(ctypes.Structure):
+        """
+        Must be changed according to changes in iec_types.h
+        """
+        _fields_ = [("len", ctypes.c_uint8),
+                    ("body", ctypes.c_char * 126)] 
+    
+    TypeTranslator = {"BOOL" :       (ctypes.c_uint8,  lambda x:x.value!=0,     lambda t,x:t(x)),
+                      "STEP" :       (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
+                      "TRANSITION" : (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
+                      "ACTION" :     (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
+                      "SINT" :       (ctypes.c_int8,   lambda x:x.value,        lambda t,x:t(x)),
+                      "USINT" :      (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
+                      "BYTE" :       (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
+                      "STRING" :     (IEC_STRING,      lambda x:x.body[:x.len], lambda t,x:t(len(x),x)),
+                      "INT" :        (ctypes.c_int16,  lambda x:x.value,        lambda t,x:t(x)),
+                      "UINT" :       (ctypes.c_uint16, lambda x:x.value,        lambda t,x:t(x)),
+                      "WORD" :       (ctypes.c_uint16, lambda x:x.value,        lambda t,x:t(x)),
+                      "WSTRING" :    (None,            None,                    None),#TODO
+                      "DINT" :       (ctypes.c_int32,  lambda x:x.value,        lambda t,x:t(x)),
+                      "UDINT" :      (ctypes.c_uint32, lambda x:x.value,        lambda t,x:t(x)),
+                      "DWORD" :      (ctypes.c_uint32, lambda x:x.value,        lambda t,x:t(x)),
+                      "LINT" :       (ctypes.c_int64,  lambda x:x.value,        lambda t,x:t(x)),
+                      "ULINT" :      (ctypes.c_uint64, lambda x:x.value,        lambda t,x:t(x)),
+                      "LWORD" :      (ctypes.c_uint64, lambda x:x.value,        lambda t,x:t(x)),
+                      "REAL" :       (ctypes.c_float,  lambda x:x.value,        lambda t,x:t(x)),
+                      "LREAL" :      (ctypes.c_double, lambda x:x.value,        lambda t,x:t(x)),
+                      } 
+
     def SetTraceVariablesList(self, idxs):
         """
         Call ctype imported function to append 
@@ -338,42 +368,16 @@ class PLCObject(pyro.ObjBase):
             # keep a copy of requested idx
             self._Idxs = idxs[:]
             self._ResetDebugVariables()
-            for idx,iectype in idxs:
-                self._RegisterDebugVariable(idx)
+            for idx,iectype,force in idxs:
+                if force !=None:
+                    c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
+                    force = ctypes.byref(pack_func(c_type,force)) 
+                self._RegisterDebugVariable(idx, force)
             self._resumeDebug()
         else:
             self._suspendDebug(True)
             self._Idxs =  []
 
-    class IEC_STRING(ctypes.Structure):
-        """
-        Must be changed according to changes in iec_types.h
-        """
-        _fields_ = [("len", ctypes.c_uint8),
-                    ("body", ctypes.c_char * 126)] 
-    
-    TypeTranslator = {"BOOL" :       (ctypes.c_uint8, lambda x:x.value!=0),
-                      "STEP" :       (ctypes.c_uint8, lambda x:x.value),
-                      "TRANSITION" : (ctypes.c_uint8, lambda x:x.value),
-                      "ACTION" :     (ctypes.c_uint8, lambda x:x.value),
-                      "SINT" :       (ctypes.c_int8, lambda x:x.value),
-                      "USINT" :      (ctypes.c_uint8, lambda x:x.value),
-                      "BYTE" :       (ctypes.c_uint8, lambda x:x.value),
-                      "STRING" :     (IEC_STRING, lambda x:x.body[:x.len]),
-                      "INT" :        (ctypes.c_int16, lambda x:x.value),
-                      "UINT" :       (ctypes.c_uint16, lambda x:x.value),
-                      "WORD" :       (ctypes.c_uint16, lambda x:x.value),
-                      "WSTRING" :    (None, None),#TODO
-                      "DINT" :       (ctypes.c_int32, lambda x:x.value),
-                      "UDINT" :      (ctypes.c_uint32, lambda x:x.value),
-                      "DWORD" :      (ctypes.c_uint32, lambda x:x.value),
-                      "LINT" :       (ctypes.c_int64, lambda x:x.value),
-                      "ULINT" :      (ctypes.c_uint64, lambda x:x.value),
-                      "LWORD" :      (ctypes.c_uint64, lambda x:x.value),
-                      "REAL" :       (ctypes.c_float, lambda x:x.value),
-                      "LREAL" :      (ctypes.c_double, lambda x:x.value),
-                      } 
-                           
     def GetTraceVariables(self):
         """
         Return a list of variables, corresponding to the list of required idx
@@ -386,9 +390,9 @@ class PLCObject(pyro.ObjBase):
             buffer = ctypes.c_void_p()
             offset = 0
             if self._GetDebugData(ctypes.byref(tick),ctypes.byref(size),ctypes.byref(buffer)) == 0 :
-                for idx, iectype in self._Idxs:
+                for idx, iectype, forced in self._Idxs:
                     cursor = ctypes.c_void_p(buffer.value + offset)
-                    c_type,unpack_func = self.TypeTranslator.get(iectype, (None,None))
+                    c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
                     if c_type is not None and offset < size:
                         res.append(unpack_func(ctypes.cast(cursor,
                                                            ctypes.POINTER(c_type)).contents))

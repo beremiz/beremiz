@@ -20,6 +20,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import Pyro.core as pyro
 from Pyro.errors import PyroError
+import Pyro.util
 import traceback
 from time import sleep
 import copy
@@ -55,9 +56,11 @@ def PYRO_connector_factory(uri, pluginsroot):
         def catcher_func(*args,**kwargs):
             try:
                 return func(*args,**kwargs)
-            except PyroError,e:
+            except Exception,e:
                 #pluginsroot.logger.write_error(traceback.format_exc())
-                pluginsroot.logger.write_error(str(e)+"\n")
+                errmess = ''.join(Pyro.util.getPyroTraceback(e))
+                pluginsroot.logger.write_error(errmess+"\n")
+                print errmess
                 pluginsroot._connector = None
                 return default
         return catcher_func

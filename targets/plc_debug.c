@@ -146,15 +146,20 @@ void __publish_debug(void)
 
 #define __RegisterDebugVariable_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            ((__IEC_##TYPENAME##_t *)varp)->flags |= __IEC_DEBUG_FLAG;\
+            ((__IEC_##TYPENAME##_t *)varp)->flags |= flags;\
+            if(force)\
+             ((__IEC_##TYPENAME##_t *)varp)->value = *((TYPENAME *)force);\
             break;
 #define __RegisterDebugVariable_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
-            ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_DEBUG_FLAG;\
+            ((__IEC_##TYPENAME##_p *)varp)->flags |= flags;\
+            if(force)\
+             ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
             break;
-void RegisterDebugVariable(int idx)
+void RegisterDebugVariable(int idx, void* force)
 {
     void *varp = NULL;
+    unsigned char flags = force ? __IEC_DEBUG_FLAG | __IEC_FORCE_FLAG : __IEC_DEBUG_FLAG;
     switch(__find_variable(idx, &varp)){
         ANY(__RegisterDebugVariable_case_t)
         ANY(__RegisterDebugVariable_case_p)
@@ -165,12 +170,12 @@ void RegisterDebugVariable(int idx)
 
 #define __ResetDebugVariablesIterator_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~__IEC_DEBUG_FLAG;\
+            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~(__IEC_DEBUG_FLAG|__IEC_FORCE_FLAG);\
             break;
 
 #define __ResetDebugVariablesIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
-            ((__IEC_##TYPENAME##_p *)varp)->flags &= ~__IEC_DEBUG_FLAG;\
+            ((__IEC_##TYPENAME##_p *)varp)->flags &= ~(__IEC_DEBUG_FLAG|__IEC_FORCE_FLAG);\
             break;
 
 void ResetDebugVariablesIterator(void* varp, __IEC_types_enum vartype)
