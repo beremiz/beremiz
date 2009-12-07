@@ -996,7 +996,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.Project.updateElementAddress(old_leading, new_leading)
         self.BufferProject()
         if self.AppFrame is not None:
-            self.AppFrame._Refresh(TITLE, INSTANCESTREE, FILEMENU, EDITMENU)
+            self.AppFrame.RefreshTitle()
+            self.AppFrame.RefreshInstancesTree()
+            self.AppFrame.RefreshFileMenu()
+            self.AppFrame.RefreshEditMenu()
             self.AppFrame.RefreshEditor()
     
     def GetVariableLocationTree(self):
