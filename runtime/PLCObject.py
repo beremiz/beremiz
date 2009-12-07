@@ -167,7 +167,7 @@ class PLCObject(pyro.ObjBase):
         self._IterDebugData = lambda x,y:None
         self._FreeDebugData = lambda:None
         self._GetDebugData = lambda:-1
-        self._suspendDebug = lambda:None
+        self._suspendDebug = lambda x:None
         self._resumeDebug = lambda:None
         self._PythonIterator = lambda:""
         self.PLClibraryHandle = None
