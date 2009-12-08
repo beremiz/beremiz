@@ -1708,7 +1708,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 #print weakcallable, value, args, kwargs
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
-                    if status == "Forced":
+                    if status == "Forced" and cargs[1] == fvalue:
                         function(*(cargs + (True,) + args), **kwargs)
                     else:
                         function(*(cargs + args), **kwargs)
