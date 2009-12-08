@@ -681,12 +681,8 @@ from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
 
 # Construct debugger natively supported types
-DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")] + \
-    ["STEP","TRANSITION","ACTION"]
+DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")]
 DebugTypesSize =  {"BOOL" :       1,
-                   "STEP" :       1,
-                   "TRANSITION" : 1,
-                   "ACTION" :     1,
                    "SINT" :       1,
                    "USINT" :      1,
                    "BYTE" :       1,
