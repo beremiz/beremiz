@@ -4,6 +4,8 @@ import ctypes
 import time
 from threading import Lock
 
+MAX_PACKET_SIZE=64
+
 LPC_STATUS=dict(STARTED = 0x01,
                 STOPPED = 0x02,
                 DEBUG = 0x03)
@@ -84,8 +86,21 @@ class LPCTransaction:
         length = len(self.OptData)
         # transform length into a byte string
         # we presuppose endianess of LPC same as PC
-        lengthstr = ctypes.string_at(ctypes.pointer(ctypes.c_int(length)),4) 
-        self.pseudofile.write(lengthstr + self.OptData)
+        lengthstr = ctypes.string_at(ctypes.pointer(ctypes.c_int(length)),4)
+        buffer = lengthstr + self.OptData
+        ###################################################################
+        # TO BE REMOVED AS SOON AS USB IS FIXED IN CONTROLLER
+        ###################################################################
+        length += 4
+        cursor = 0
+        while cursor < length:
+            next_cursor = cursor + MAX_PACKET_SIZE
+            # sent just enough bytes to not crash controller
+            self.pseudofile.write(buffer[cursor:next_cursor])
+            # if sent quantity was 128
+            if next_cursor <= length:
+                self.GetCommandAck()
+            cursor = next_cursor
 
     def GetData(self):
         lengthstr = self.pseudofile.read(4)
@@ -130,14 +145,14 @@ class GET_PLCIDTransaction(LPCTransaction):
 
 if __name__ == "__main__":
     TestConnection = LPCProto(6,115200,2)
-    #TestConnection.HandleTransaction(GET_PLCIDTransaction())
+#    TestConnection.HandleTransaction(GET_PLCIDTransaction())
     TestConnection.HandleTransaction(STARTTransaction())
-    TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
-           "\x03\x00\x00\x00"))
-    TestConnection.HandleTransaction(STARTTransaction())
+#    TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
+#           "\x03\x00\x00\x00"*200))
+#    TestConnection.HandleTransaction(STARTTransaction())
     while True:
-        time.sleep(0.5)
+        #time.sleep(0.5)
         TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
-           "\x01\x00\x00\x00"*31))
+           "\x01\x00\x00\x00"*200))
    #print map(hex,map(ord,TestConnection.HandleTransaction(GET_TRACE_VARIABLETransaction())))
     #TestConnection.HandleTransaction(STOPTransaction())
