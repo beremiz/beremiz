@@ -163,7 +163,7 @@ class PLCObject(pyro.ObjBase):
         self._startPLC = lambda:None
         self._stopPLC = lambda:None
         self._ResetDebugVariables = lambda:None
-        self._RegisterDebugVariable = lambda x:None
+        self._RegisterDebugVariable = lambda x, y:None
         self._IterDebugData = lambda x,y:None
         self._FreeDebugData = lambda:None
         self._GetDebugData = lambda:-1
