@@ -354,26 +354,23 @@ def mycopytree(src, dst):
 
 class LPCPluginsRoot(PluginsRoot):
 
-    PlugChildsTypes = [("LPCBus", LPCBus, "LPC bus")]
-
     PluginMethods = [
         {"bitmap" : opjimg("Build"),
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),
          "method" : "_build"},
-        {"bitmap" : opjimg("Clean"),
-         "name" : _("Clean"),
-         "enabled" : False,
-         "tooltip" : _("Clean project build folder"),
-         "method" : "_Clean"},
     ]
+
+    def __init__(self, frame, logger):
+        PluginsRoot.__init__(self, frame, logger)
+        self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
 
     def GetProjectName(self):
         return self.Project.getname()
 
     def GetDefaultTarget(self):
         target = self.Classes["BeremizRoot_TargetType"]()
-        target_value = self.Classes["TargetType_Makefile"]()
+        target_value = self.Classes["TargetType_LPC"]()
         target_value.setBuildPath(self.BuildPath)
         target.setcontent({"name": "Makefile", "value": target_value})
         return target
@@ -396,11 +393,17 @@ class LPCPluginsRoot(PluginsRoot):
 
     def LoadProject(self, ProjectPath, BuildPath=None):
         """
-        Load a project XML file
-        @param ProjectPath: path of the project xml file
+        Load a project contained in a folder
+        @param ProjectPath: path of the project folder
         """
+        if os.path.basename(ProjectPath) == "":
+            ProjectPath = os.path.dirname(ProjectPath)
+        # Verify that project contains a PLCOpen program
+        plc_file = os.path.join(ProjectPath, "plc.xml")
+        if not os.path.isfile(plc_file):
+            return _("Chosen folder doesn't contain a program. It's not a valid project!")
         # Load PLCOpen file
-        result = self.OpenXMLFile(ProjectPath)
+        result = self.OpenXMLFile(plc_file)
         if result:
             return result
         # Change XSD into class members
@@ -408,15 +411,21 @@ class LPCPluginsRoot(PluginsRoot):
         self.PluggedChilds = {}
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
-
-        self.BuildPath = tempfile.mkdtemp()
+        self.BuildPath = self._getBuildPath()
         if BuildPath is not None:
             mycopytree(BuildPath, self.BuildPath)
         
+        # If dir have already be made, and file exist
+        if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
+            #Load the plugin.xml file into parameters members
+            result = self.LoadXMLParams()
+            if result:
+                return result
+            #Load and init all the childs
+            self.LoadChilds()
         self.RefreshPluginsBlockLists()
-        
-        if os.path.exists(self._getBuildPath()):
-            self.EnableMethod("_Clean", True)
+
+        return None
         
     def SaveProject(self):
         self.SaveXMLFile(self.ProjectPath)
@@ -726,7 +735,7 @@ if __name__ == '__main__':
         def __init__(self, projectOpen, buildpath):
             cmd.Cmd.__init__(self)
             self.PluginRoot = LPCPluginsRoot(None, self.Log)
-            if projectOpen is not None and os.path.isfile(projectOpen):
+            if projectOpen is not None and os.path.isdir(projectOpen):
                 result = self.PluginRoot.LoadProject(projectOpen, buildpath)
                 if result:
                     print "Error: Invalid project directory", result
