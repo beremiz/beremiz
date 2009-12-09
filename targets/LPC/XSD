@@ -1,5 +1,5 @@
 
-                  <xsd:element name="Makefile">
+                  <xsd:element name="LPC">
                     <xsd:complexType>
                       %(toolchain_makefile)s
                     </xsd:complexType>
