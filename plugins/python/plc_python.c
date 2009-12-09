@@ -157,6 +157,8 @@ char* PythonIterator(char* result)
 	char* next_command;
 	PYTHON_EVAL* data__;
 	//printf("PythonIterator result %%s\n", result);
+    /*emergency exit*/
+    if(PythonState & PYTHON_FINISHED) return NULL;
 	/* take python mutex to prevent changing PLC data while PLC running */
 	LockPython();
 	/* Get current FB */

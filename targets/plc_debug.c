@@ -29,7 +29,7 @@ char debug_buffer[BUFFER_SIZE];
 
 /* Buffer's cursor*/
 static char* buffer_cursor = debug_buffer;
-
+static unsigned int retain_offset = 0;
 /***
  * Declare programs 
  **/
@@ -56,42 +56,20 @@ __IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
     }
 }
 
-void __init_debug(void)
-{
-    buffer_state = BUFFER_FREE;
-}
-
-void __cleanup_debug(void)
-{
-}
-
-void __retrieve_debug(void)
-{
-}
-
-extern int TryEnterDebugSection(void);
-extern void LeaveDebugSection(void);
-extern long AtomicCompareExchange(long*, long, long);
-extern void InitiateDebugTransfer(void);
-
-extern unsigned long __tick;
-
 #define __BufferDebugDataIterator_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            flags = ((__IEC_##TYPENAME##_t *)varp)->flags;\
-            ptrvalue = &((__IEC_##TYPENAME##_t *)varp)->value;\
+            *flags = ((__IEC_##TYPENAME##_t *)varp)->flags;\
+            *ptrvalue = &((__IEC_##TYPENAME##_t *)varp)->value;\
             break;
 
 #define __BufferDebugDataIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
-            flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
-            ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;\
+            *flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
+            *ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;\
             break;
 
-void BufferDebugDataIterator(void* varp, __IEC_types_enum vartype)
+void UnpackVar(void* varp, __IEC_types_enum vartype, void **ptrvalue, char *flags)
 {
-    void *ptrvalue = NULL;
-    char flags = 0;
     /* find data to copy*/
     switch(vartype){
         ANY(__BufferDebugDataIterator_case_t)
@@ -99,26 +77,114 @@ void BufferDebugDataIterator(void* varp, __IEC_types_enum vartype)
     default:
         break;
     }
-    if(flags && __IEC_DEBUG_FLAG){
+}
+
+void Remind(unsigned int offset, unsigned int count, void * p);
+
+void RemindIterator(void* varp, __IEC_types_enum vartype)
+{
+    void *ptrvalue = NULL;
+    char flags = 0;
+    UnpackVar(varp, vartype, &ptrvalue, &flags);
+
+    if(flags && __IEC_RETAIN_FLAG){
         USINT size = __get_type_enum_size(vartype);
         /* compute next cursor positon*/
-        char* next_cursor = buffer_cursor + size;
+        unsigned int next_retain_offset = retain_offset + size;
         /* if buffer not full */
-        if(next_cursor <= debug_buffer + BUFFER_SIZE)
-        {
-            /* copy data to the buffer */
-            memcpy(buffer_cursor, ptrvalue, size);
-            /* increment cursor according size*/
-            buffer_cursor = next_cursor;
-        }else{
-            /*TODO : signal overflow*/
+        Remind(retain_offset, size, ptrvalue);
+        /* increment cursor according size*/
+        retain_offset = next_retain_offset;
+    }
+}
+
+void __init_debug(void)
+{
+    /* init local static vars */
+    buffer_cursor = debug_buffer;
+    retain_offset = 0;
+    buffer_state = BUFFER_FREE;
+    /* Iterate over all variables to fill debug buffer */
+    __for_each_variable_do(RemindIterator);
+    retain_offset = 0;
+}
+
+extern void InitiateDebugTransfer(void);
+
+extern unsigned long __tick;
+
+void __cleanup_debug(void)
+{
+    buffer_cursor = debug_buffer;
+    InitiateDebugTransfer();
+}
+
+void __retrieve_debug(void)
+{
+}
+
+void DoDebug(void *ptrvalue, char flags, USINT size)
+{
+    /* compute next cursor positon*/
+    char* next_cursor = buffer_cursor + size;
+    /* if buffer not full */
+    if(next_cursor <= debug_buffer + BUFFER_SIZE)
+    {
+        /* copy data to the buffer */
+        memcpy(buffer_cursor, ptrvalue, size);
+        /* increment cursor according size*/
+        buffer_cursor = next_cursor;
+    }else{
+        /*TODO : signal overflow*/
+    }
+}
+
+void Retain(unsigned int offset, unsigned int count, void * p);
+void DoRetain(void *ptrvalue, char flags, USINT size){
+    /* compute next cursor positon*/
+    unsigned int next_retain_offset = retain_offset + size;
+    /* if buffer not full */
+    Retain(retain_offset, size, ptrvalue);
+    /* increment cursor according size*/
+    retain_offset = next_retain_offset;
+}
+
+void BufferDebugDataIterator(void* varp, __IEC_types_enum vartype)
+{
+    void *ptrvalue = NULL;
+    char flags = 0;
+    UnpackVar(varp, vartype, &ptrvalue, &flags);
+    /* For optimization purpose we do retain and debug in the same pass */
+    if(flags & (__IEC_DEBUG_FLAG | __IEC_RETAIN_FLAG)){
+        USINT size = __get_type_enum_size(vartype);
+        if(flags & __IEC_DEBUG_FLAG){
+            DoDebug(ptrvalue, flags, size);
+        }
+        if(flags & __IEC_RETAIN_FLAG){
+            DoRetain(ptrvalue, flags, size);
         }
     }
 }
 
+void RetainIterator(void* varp, __IEC_types_enum vartype)
+{
+    void *ptrvalue = NULL;
+    char flags = 0;
+    UnpackVar(varp, vartype, &ptrvalue, &flags);
+
+    if(flags & __IEC_RETAIN_FLAG){
+        USINT size = __get_type_enum_size(vartype);
+        DoRetain(ptrvalue, flags, size);
+    }
+}
+
+extern int TryEnterDebugSection(void);
+extern long AtomicCompareExchange(long*, long, long);
+extern void LeaveDebugSection(void);
 
 void __publish_debug(void)
 {
+    retain_offset = 0;
     /* Check there is no running debugger re-configuration */
     if(TryEnterDebugSection()){
         /* Lock buffer */
@@ -141,6 +207,9 @@ void __publish_debug(void)
             InitiateDebugTransfer(); /* size */
         }
         LeaveDebugSection();
+    }else{
+        /* when not debugging, do only retain */
+        __for_each_variable_do(RetainIterator);
     }
 }
 

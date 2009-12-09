@@ -37,31 +37,19 @@ void PLC_SetTimer(long long next, long long period)
 	/* arg 2 of SetWaitableTimer take 100 ns interval*/
 	liDueTime.QuadPart =  next / (-100);
 
-	/*
-	printf("SetTimer(%lld,%lld)\n",next, period);
-	*/
-
-	if (!SetWaitableTimer(PLC_timer, &liDueTime, common_ticktime__, NULL, NULL, 0))
+	if (!SetWaitableTimer(PLC_timer, &liDueTime, period/1000000, NULL, NULL, 0))
     {
         printf("SetWaitableTimer failed (%d)\n", GetLastError());
     }
 }
 
 /* Variable used to stop plcloop thread */
-int runplcloop;
 void PlcLoop()
 {
-	runplcloop = 1;
-	while(runplcloop)
-	{
-	// Set a timer
-	PLC_SetTimer(Ttick,Ttick);
-	if (WaitForSingleObject(PLC_timer, INFINITE) != WAIT_OBJECT_0)
-	{
-		printf("WaitForSingleObject failed (%d)\n", GetLastError());
-	}
-	PLC_timer_notify();
-	}
+    while(WaitForSingleObject(PLC_timer, INFINITE) == WAIT_OBJECT_0)
+    {
+        PLC_timer_notify();
+    }
 }
 
 HANDLE PLC_thread;
@@ -77,22 +65,22 @@ int startPLC(int argc,char **argv)
 	/* Define Ttick to 1ms if common_ticktime not defined */
     Ttick = common_ticktime__?common_ticktime__:1000000;
 
-	debug_sem = CreateSemaphore(
-							NULL,           // default security attributes
-					        1,  			// initial count
-					        1,  			// maximum count
-					        NULL);          // unnamed semaphore
+    debug_sem = CreateSemaphore(
+                            NULL,           // default security attributes
+                            1,  			// initial count
+                            1,  			// maximum count
+                            NULL);          // unnamed semaphore
     if (debug_sem == NULL)
     {
         printf("startPLC CreateSemaphore debug_sem error: %d\n", GetLastError());
         return;
     }
 
-	debug_wait_sem = CreateSemaphore(
-					        NULL,           // default security attributes
-					        0,  			// initial count
-					        1,  			// maximum count
-					        NULL);          // unnamed semaphore
+    debug_wait_sem = CreateSemaphore(
+                            NULL,           // default security attributes
+                            0,  			// initial count
+                            1,  			// maximum count
+                            NULL);          // unnamed semaphore
 
     if (debug_wait_sem == NULL)
     {
@@ -100,22 +88,22 @@ int startPLC(int argc,char **argv)
         return;
     }
 
-	python_sem = CreateSemaphore(
-					        NULL,           // default security attributes
-					        1,  			// initial count
-					        1,  			// maximum count
-					        NULL);          // unnamed semaphore
+    python_sem = CreateSemaphore(
+                            NULL,           // default security attributes
+                            1,  			// initial count
+                            1,  			// maximum count
+                            NULL);          // unnamed semaphore
 
     if (python_sem == NULL)
     {
         printf("startPLC CreateSemaphore python_sem error: %d\n", GetLastError());
         return;
     }
-	python_wait_sem = CreateSemaphore(
-					        NULL,           // default security attributes
-					        0,  			// initial count
-					        1,  			// maximum count
-					        NULL);          // unnamed semaphore
+    python_wait_sem = CreateSemaphore(
+                            NULL,           // default security attributes
+                            0,  			// initial count
+                            1,  			// maximum count
+                            NULL);          // unnamed semaphore
 
 
     if (python_wait_sem == NULL)
@@ -125,7 +113,7 @@ int startPLC(int argc,char **argv)
     }
 
 
-	/* Create a waitable timer */
+    /* Create a waitable timer */
     PLC_timer = CreateWaitableTimer(NULL, FALSE, "WaitableTimer");
     if(NULL == PLC_timer)
     {
@@ -134,11 +122,11 @@ int startPLC(int argc,char **argv)
     }
     if( __init(argc,argv) == 0 )
     {
-    	printf("Tick Time : %d ms\n", common_ticktime__);
-    	PLC_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PlcLoop, NULL, 0, &thread_id);
+        PLC_SetTimer(Ttick,Ttick);
+        PLC_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PlcLoop, NULL, 0, &thread_id);
     }
     else{
-    	return 1;
+        return 1;
     }
     return 0;
 }
@@ -152,9 +140,9 @@ int TryEnterDebugSection(void)
         if(__DEBUG){
             return 1;
         }
-    ReleaseSemaphore(debug_sem, 1, NULL);
-    return 0;
+        ReleaseSemaphore(debug_sem, 1, NULL);
     }
+    return 0;
 }
 
 void LeaveDebugSection(void)
@@ -165,15 +153,14 @@ void LeaveDebugSection(void)
 
 int stopPLC()
 {
-	runplcloop = 0;
-	WaitForSingleObject(PLC_thread, INFINITE);
-	__cleanup();
-	__debug_tick = -1;
-	ReleaseSemaphore(debug_wait_sem, 1, NULL);
-	CloseHandle(debug_sem);
-	CloseHandle(debug_wait_sem);
-	CloseHandle(PLC_timer);
-	CloseHandle(PLC_thread);
+    CloseHandle(PLC_timer);
+    WaitForSingleObject(PLC_thread, INFINITE);
+    __cleanup();
+    CloseHandle(debug_wait_sem);
+    CloseHandle(debug_sem);
+    CloseHandle(python_wait_sem);
+    CloseHandle(python_sem);
+    CloseHandle(PLC_thread);
 }
 
 /* from plc_debugger.c */
@@ -197,7 +184,7 @@ void InitiateDebugTransfer()
 void suspendDebug(int disable)
 {
     /* Prevent PLC to enter debug code */
-	WaitForSingleObject(debug_sem, INFINITE);
+    WaitForSingleObject(debug_sem, INFINITE);
     /*__DEBUG is protected by this mutex */
     __DEBUG = !disable;
 }
@@ -236,5 +223,17 @@ void UnLockPython(void)
 void LockPython(void)
 {
 	WaitForSingleObject(python_sem, INFINITE);
+}
+
+void Retain(unsigned int offset, unsigned int count, void * p)
+{
+    unsigned int position;
+    for(position=0; position<count; position++ ){
+        printf("%d : 0x%2.2x\n", offset+position, ((char*)p)[position]);
+    }
+}
+
+void Remind(unsigned int offset, unsigned int count, void *p)
+{
 }
 

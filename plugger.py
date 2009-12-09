@@ -681,12 +681,8 @@ from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
 
 # Construct debugger natively supported types
-DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")] + \
-    ["STEP","TRANSITION","ACTION"]
+DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")]
 DebugTypesSize =  {"BOOL" :       1,
-                   "STEP" :       1,
-                   "TRANSITION" : 1,
-                   "ACTION" :     1,
                    "SINT" :       1,
                    "USINT" :      1,
                    "BYTE" :       1,
@@ -1712,7 +1708,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 #print weakcallable, value, args, kwargs
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
-                    if status == "Forced":
+                    if status == "Forced" and cargs[1] == fvalue:
                         function(*(cargs + (True,) + args), **kwargs)
                     else:
                         function(*(cargs + args), **kwargs)
@@ -1803,12 +1799,13 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         Stop PLC
         """
+        if self._connector is not None and not self._connector.StopPLC():
+            self.logger.write_error(_("Couldn't stop PLC !\n"))
+
         if self.DebugThread is not None:
             self.logger.write(_("Stopping debug\n"))
             self.KillDebugThread()
         
-        if self._connector is not None and not self._connector.StopPLC():
-            self.logger.write_error(_("Couldn't stop PLC !\n"))
         self.UpdateMethodsFromPLCStatus()
 
     def _Connect(self):

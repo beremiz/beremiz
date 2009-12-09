@@ -86,7 +86,6 @@ class PLCObject(pyro.ObjBase):
         Load PLC library
         Declare all functions, arguments and return values
         """
-        PLCprint("Load PLC")
         try:
             self._PLClibraryHandle = dlopen(self._GetLibFileName())
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
@@ -103,11 +102,7 @@ class PLCObject(pyro.ObjBase):
                 self._PythonIterator.restype = ctypes.c_char_p
                 self._PythonIterator.argtypes = [ctypes.c_char_p]
                 
-                def StopPLCLock():
-                    self.PLClibraryLock.acquire()
-                    self._stopPLC_real()
-                    self.PLClibraryLock.release()
-                
+                self._stopPLC = self._stopPLC_real
             else:
                 # If python plugin is not enabled, we reuse _PythonIterator
                 # as a call that block pythonthread until StopPLC 
@@ -119,13 +114,11 @@ class PLCObject(pyro.ObjBase):
                     return None
                 self._PythonIterator = PythonIterator
                 
-                def StopPLCLock():
-                    self.PLClibraryLock.acquire()
+                def __StopPLC():
                     self._stopPLC_real()
                     self.PythonIteratorLock.release()
-                    self.PLClibraryLock.release()
+                self._stopPLC = __StopPLC
             
-            self._stopPLC = StopPLCLock
     
             self._ResetDebugVariables = self.PLClibraryHandle.ResetDebugVariables
             self._ResetDebugVariables.restype = None
@@ -163,7 +156,7 @@ class PLCObject(pyro.ObjBase):
         self._startPLC = lambda:None
         self._stopPLC = lambda:None
         self._ResetDebugVariables = lambda:None
-        self._RegisterDebugVariable = lambda x:None
+        self._RegisterDebugVariable = lambda x, y:None
         self._IterDebugData = lambda x,y:None
         self._FreeDebugData = lambda:None
         self._GetDebugData = lambda:-1
@@ -217,7 +210,6 @@ class PLCObject(pyro.ObjBase):
         self.python_threads_vars = None
 
     def PythonThreadProc(self):
-        PLCprint("PythonThreadProc started")
         c_argv = ctypes.c_char_p * len(self.argv)
         error = None
         if self._LoadNewPLC():
@@ -248,7 +240,6 @@ class PLCObject(pyro.ObjBase):
             PLCprint("Problem %s PLC"%error)
             self.PLCStatus = "Broken"
         self._FreePLC()
-        PLCprint("PythonThreadProc interrupted")
     
     def StartPLC(self):
         PLCprint("StartPLC")
@@ -260,6 +251,7 @@ class PLCObject(pyro.ObjBase):
     def StopPLC(self):
         PLCprint("StopPLC")
         if self.PLCStatus == "Started":
+            self.PLCStatus = "Stopped"
             self._stopPLC()
             return True
         return False
@@ -384,30 +376,31 @@ class PLCObject(pyro.ObjBase):
         """
         if self.PLCStatus == "Started":
             res=[]
-            self.PLClibraryLock.acquire()
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buffer = ctypes.c_void_p()
             offset = 0
-            if self._GetDebugData(ctypes.byref(tick),ctypes.byref(size),ctypes.byref(buffer)) == 0 :
-                for idx, iectype, forced in self._Idxs:
-                    cursor = ctypes.c_void_p(buffer.value + offset)
-                    c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
-                    if c_type is not None and offset < size:
-                        res.append(unpack_func(ctypes.cast(cursor,
-                                                           ctypes.POINTER(c_type)).contents))
-                        offset += ctypes.sizeof(c_type)
-                    else:
-                        if c_type is None:
-                            PLCprint("Debug error - " + iectype + " not supported !")
-                        if offset >= size:
-                            PLCprint("Debug error - buffer too small !")
-                        break
-            self._FreeDebugData()
-            self.PLClibraryLock.release()
+            if self.PLClibraryLock.acquire(False) and \
+               self._GetDebugData(ctypes.byref(tick),ctypes.byref(size),ctypes.byref(buffer)) == 0 :
+                if size.value:
+                    for idx, iectype, forced in self._Idxs:
+                        cursor = ctypes.c_void_p(buffer.value + offset)
+                        c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
+                        if c_type is not None and offset < size:
+                            res.append(unpack_func(ctypes.cast(cursor,
+                                                               ctypes.POINTER(c_type)).contents))
+                            offset += ctypes.sizeof(c_type)
+                        else:
+                            if c_type is None:
+                                PLCprint("Debug error - " + iectype + " not supported !")
+                            if offset >= size:
+                                PLCprint("Debug error - buffer too small !")
+                            break
+                self._FreeDebugData()
+                self.PLClibraryLock.release()
             if offset and offset == size.value:
                 return self.PLCStatus, tick.value, res
-            else:
-                PLCprint("Debug error - bad buffer unpack !")
+            elif size.value:
+                PLCprint("Debug error - wrong buffer unpack !")
         return self.PLCStatus, None, None
 

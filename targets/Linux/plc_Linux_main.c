@@ -111,8 +111,8 @@ int TryEnterDebugSection(void)
         if(__DEBUG){
             return 1;
         }
+        pthread_mutex_unlock(&debug_mutex);
     }
-    pthread_mutex_unlock(&debug_mutex);
     return 0;
 }
 
@@ -127,12 +127,10 @@ int stopPLC()
     PLC_SetTimer(0,0);
     timer_delete (PLC_timer);
     __cleanup();
-    __debug_tick = -1;
-    pthread_mutex_unlock(&debug_mutex);
-    pthread_mutex_unlock(&debug_wait_mutex);
     pthread_mutex_destroy(&debug_wait_mutex);
-    pthread_mutex_unlock(&python_wait_mutex);
+    pthread_mutex_destroy(&debug_mutex);
     pthread_mutex_destroy(&python_wait_mutex);
+    pthread_mutex_destroy(&python_mutex);
     return 0;
 }
 
@@ -197,4 +195,12 @@ void UnLockPython(void)
 void LockPython(void)
 {
     pthread_mutex_lock(&python_mutex);
+}
+
+void Retain(unsigned int offset, unsigned int count, void *p)
+{
+}
+
+void Remind(unsigned int offset, unsigned int count, void *p)
+{
 }
