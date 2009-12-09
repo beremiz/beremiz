@@ -159,6 +159,8 @@ void suspendDebug(int disable)
     pthread_mutex_lock(&debug_mutex);
     /*__DEBUG is protected by this mutex */
     __DEBUG = !disable;
+    if (disable)
+    	pthread_mutex_unlock(&debug_mutex);
 }
 
 void resumeDebug(void)
