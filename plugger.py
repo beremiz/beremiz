@@ -1540,9 +1540,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def UpdateMethodsFromPLCStatus(self):
         # Get PLC state : Running or Stopped
         # TODO : use explicit status instead of boolean
+        status = None
         if self._connector is not None:
             status = self._connector.GetPLCstatus()
-        else:
+        if status is None:
             status = "Disconnected"
         if(self.previous_plcstate != status):
             for args in {
@@ -1568,6 +1569,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self._connector is None:
             self.StatusTimer.Stop()
         if self.UpdateMethodsFromPLCStatus():
+            
             status = _(self.previous_plcstate)
             {"Broken": self.logger.write_error,
              None: lambda x: None}.get(

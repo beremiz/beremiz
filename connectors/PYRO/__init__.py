@@ -56,6 +56,9 @@ def PYRO_connector_factory(uri, pluginsroot):
         def catcher_func(*args,**kwargs):
             try:
                 return func(*args,**kwargs)
+            except Pyro.errors.ConnectionClosedError, e:
+                pluginsroot.logger.write_error("Connection lost!\n")
+                pluginsroot._connector = None
             except Exception,e:
                 #pluginsroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
