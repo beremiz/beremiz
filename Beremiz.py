@@ -409,7 +409,6 @@ class Beremiz(IDEFrame):
             self.Controler = self.PluginRoot
             result = self.PluginRoot.LoadProject(projectOpen, buildpath)
             if not result:
-                self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
             else:
@@ -421,6 +420,9 @@ class Beremiz(IDEFrame):
             if plugin_root is not None:
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
+        if self.EnableDebug:
+            self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
@@ -516,8 +518,8 @@ class Beremiz(IDEFrame):
     
     def OnCloseFrame(self, event):
         if self.PluginRoot is None or self.CheckSaveBeforeClosing(_("Close Application")):
-            self.KillLocalRuntime()
             self.PluginRoot.KillDebugThread()
+            self.KillLocalRuntime()
             event.Skip()
         else:
             event.Veto()
@@ -1321,7 +1323,8 @@ class Beremiz(IDEFrame):
             self.PluginRoot.CloseProject()
         self.PluginRoot = None
         self.Log.flush()
-        self.DebugVariablePanel.SetDataProducer(None)
+        if self.EnableDebug:
+            self.DebugVariablePanel.SetDataProducer(None)
     
     def OnNewProjectMenu(self, event):
         if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
@@ -1343,7 +1346,8 @@ class Beremiz(IDEFrame):
             self.Controler = self.PluginRoot
             result = self.PluginRoot.NewProject(projectpath)
             if not result:
-                self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                if self.EnableDebug:
+                    self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
             else:
@@ -1371,7 +1375,8 @@ class Beremiz(IDEFrame):
                 self.Controler = self.PluginRoot
                 result = self.PluginRoot.LoadProject(projectpath)
                 if not result:
-                    self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                    if self.EnableDebug:
+                        self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
                     self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                     self.RefreshAll()
                 else:
