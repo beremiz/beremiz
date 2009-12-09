@@ -65,7 +65,10 @@ __IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
 #define __BufferDebugDataIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
             *flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
-            *ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;\
+            if (*flags && __IEC_FORCE_FLAG)\
+               *ptrvalue = &((__IEC_##TYPENAME##_p *)varp)->fvalue;\
+            else\
+               *ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;\
             break;
 
 void UnpackVar(void* varp, __IEC_types_enum vartype, void **ptrvalue, char *flags)
