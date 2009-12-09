@@ -187,6 +187,8 @@ void suspendDebug(int disable)
     WaitForSingleObject(debug_sem, INFINITE);
     /*__DEBUG is protected by this mutex */
     __DEBUG = !disable;
+    if(disable)
+        ReleaseSemaphore(debug_sem, 1, NULL);
 }
 
 void resumeDebug()
