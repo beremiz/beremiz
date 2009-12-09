@@ -359,11 +359,30 @@ class LPCPluginsRoot(PluginsRoot):
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),
          "method" : "_build"},
+        {"bitmap" : opjimg("Run"),
+         "name" : _("Run"),
+         "shown" : False,
+         "tooltip" : _("Start PLC"),
+         "method" : "_Run"},
+        {"bitmap" : opjimg("Stop"),
+         "name" : _("Stop"),
+         "shown" : False,
+         "tooltip" : _("Stop Running PLC"),
+         "method" : "_Stop"},
+        {"bitmap" : opjimg("Transfer"),
+         "name" : _("Transfer"),
+         "shown" : False,
+         "tooltip" : _("Transfer PLC"),
+         "method" : "_Transfer"},
     ]
 
     def __init__(self, frame, logger):
         PluginsRoot.__init__(self, frame, logger)
+        
         self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
+
+        self.OnlineMode = 0
+        self.OnlinePath = None
 
     def GetProjectName(self):
         return self.Project.getname()
@@ -377,6 +396,11 @@ class LPCPluginsRoot(PluginsRoot):
      
     def SetProjectName(self, name):
         return self.Project.setname(name)
+
+    def SetOnlineMode(self, mode, path=None):
+        self.OnlineMode = mode
+        self.OnlinePath = path
+        self.UpdateMethodsFromPLCStatus()
 
     # Update a PLCOpenEditor Pou variable name
     def UpdateProjectVariableName(self, old_name, new_name):
@@ -429,6 +453,42 @@ class LPCPluginsRoot(PluginsRoot):
         
     def SaveProject(self):
         self.SaveXMLFile(self.ProjectPath)
+
+    ############# Real PLC object access #############
+    def UpdateMethodsFromPLCStatus(self):
+        # Get PLC state : Running or Stopped
+        # TODO : use explicit status instead of boolean
+        if self.OnlineMode == 0:
+            status = "Disconnected"
+        elif self.OnlineMode == 1:
+            status = "Connected"
+        elif self._connector is not None:
+            status = self._connector.GetPLCstatus()
+        else:
+            status = "Disconnected"
+        if(self.previous_plcstate != status):
+            for args in {
+                     "Started" :     [("_build", False),
+                                      ("_Run", False),
+                                      ("_Stop", True),
+                                      ("_Transfer", False)],
+                     "Stopped" :     [("_build", False),
+                                      ("_Run", True),
+                                      ("_Stop", False),
+                                      ("_Transfer", False)],
+                     "Connected" :   [("_build", False),
+                                      ("_Run", False),
+                                      ("_Stop", False),
+                                      ("_Transfer", True)],
+                     "Disconnected" :[("_build", True),
+                                      ("_Run", False),
+                                      ("_Stop", False),
+                                      ("_Transfer", False)],
+                   }.get(status,[]):
+                self.ShowMethod(*args)
+            self.previous_plcstate = status
+            return True
+        return False
 
 #-------------------------------------------------------------------------------
 #                              LPCBeremiz Class
@@ -785,6 +845,10 @@ if __name__ == '__main__':
             self.PluginRoot.SetProjectName(name)
             self.RestartTimer()
         
+        def SetOnlineMode(self, mode, path=None):
+            self.PluginRoot.SetOnlineMode(mode, path)
+            self.RestartTimer()
+        
         def AddBus(self, iec_channel, name, icon=None):
             for child in self.PluginRoot.IterChilds():
                 if child.BaseParams.getName() == name:
@@ -1007,6 +1071,7 @@ if __name__ == '__main__':
                                        "Close": ([], 0),
                                        "Compile": ([], 0),
                                        "SetProjectName": ([str], 0),
+                                       "SetOnlineMode": ([int, str], 1),
                                        "AddBus": ([int, str, str], 1),
                                        "RenameBus": ([int, str], 0),
                                        "ChangeBusIECChannel": ([int, int], 0),
