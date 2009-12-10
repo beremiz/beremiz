@@ -563,7 +563,7 @@ class Beremiz(IDEFrame):
                 self.FileMenu.Enable(wx.ID_PREVIEW, False)
                 self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            self.FileMenu.Enable(wx.ID_SAVE, True)
+            self.FileMenu.Enable(wx.ID_SAVE, self.PluginRoot.PlugTestModified())
             self.FileMenu.Enable(wx.ID_SAVEAS, True)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
