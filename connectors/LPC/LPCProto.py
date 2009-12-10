@@ -151,7 +151,13 @@ if __name__ == "__main__":
 #           "\x03\x00\x00\x00"*200))
 #    TestConnection.HandleTransaction(STARTTransaction())
     TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
-       "\x05\x00\x00\x00"+
+       "\x01\x00\x00\x00"+
+       "\x04"+
+       "\x01\x02\x02\x04"+
+       "\x01\x00\x00\x00"+
+       "\x08"+
+       "\x01\x02\x02\x04"+
+       "\x01\x02\x02\x04"+
        "\x01\x00\x00\x00"+
        "\x04"+
        "\x01\x02\x02\x04"))

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import shutil
 
 __version__ = "$Revision$"
 
@@ -347,8 +348,9 @@ def mycopytree(src, dst):
             srcpath = os.path.join(src,i)
             dstpath = os.path.join(dst,i)
             if os.path.isdir(srcpath):
-                if not os.path.exists(dstpath):
-                    os.makedirs(dstpath)
+                if os.path.exists(dstpath):
+                    shutil.rmtree(dstpath)
+                os.makedirs(dstpath)
                 mycopytree(srcpath, dstpath)
             elif os.path.isfile(srcpath):
                 shutil.copy2(srcpath, dstpath)
@@ -419,6 +421,11 @@ class LPCPluginsRoot(PluginsRoot):
             return self.SimulationBuildPath
         else:
             return PluginsRoot._getBuildPath(self)
+
+    def _build(self):
+        if self.BuildPath is not None:
+            mycopytree(self.OrigBuildPath, self.BuildPath)
+        PluginsRoot._build(self)
     
     def SetProjectName(self, name):
         return self.Project.setname(name)
@@ -514,6 +521,7 @@ class LPCPluginsRoot(PluginsRoot):
         self.ProjectPath = ProjectPath
         
         self.BuildPath = self._getBuildPath()
+        self.OrigBuildPath = BuildPath
         if BuildPath is not None:
             mycopytree(BuildPath, self.BuildPath)
         
