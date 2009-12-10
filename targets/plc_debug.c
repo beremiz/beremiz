@@ -279,8 +279,10 @@ int WaitDebugData(unsigned long *tick);
 /* Wait until debug data ready and return pointer to it */
 int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     int res = WaitDebugData(tick);
-    *size = buffer_cursor - debug_buffer;
-    *buffer = debug_buffer;
+    if(res){
+        *size = buffer_cursor - debug_buffer;
+        *buffer = debug_buffer;
+    }
     return res;
 }
 

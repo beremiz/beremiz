@@ -150,9 +150,12 @@ if __name__ == "__main__":
 #    TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
 #           "\x03\x00\x00\x00"*200))
 #    TestConnection.HandleTransaction(STARTTransaction())
-    while True:
-        #time.sleep(0.5)
-        TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
-           "\x01\x00\x00\x00"*200))
-   #print map(hex,map(ord,TestConnection.HandleTransaction(GET_TRACE_VARIABLETransaction())))
+    TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
+       "\x05\x00\x00\x00"+
+       "\x01\x00\x00\x00"+
+       "\x04"+
+       "\x01\x02\x02\x04"))
+    #status,res = TestConnection.HandleTransaction(GET_TRACE_VARIABLETransaction())
+    #print len(res)
+    #print "GOT : ", map(hex, map(ord, res))
     #TestConnection.HandleTransaction(STOPTransaction())

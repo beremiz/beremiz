@@ -34,7 +34,7 @@ int startPLC(int argc,char **argv)
 
 int TryEnterDebugSection(void)
 {
-    return 0;
+    return __DEBUG;
 }
 
 void LeaveDebugSection(void)
@@ -48,49 +48,29 @@ int stopPLC(void)
 }
 
 extern unsigned long __tick;
+int _DebugDataAvailable = 0;
 /* from plc_debugger.c */
 int WaitDebugData(unsigned long *tick)
 {
     *tick = __tick;
-    return 0;
+    return _DebugDataAvailable;
 }
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer(void)
 {
+    _DebugDataAvailable = 1;
 }
 
-void suspendDebug(void)
+void suspendDebug(int disable)
 {
+    __DEBUG = !disable;
 }
 
 void resumeDebug(void)
 {
-}
-
-/* from plc_python.c */
-int WaitPythonCommands(void)
-{
-    return 0;
-}
-
-/* Called by PLC thread on each new python command*/
-void UnBlockPythonCommands(void)
-{
-}
-
-int TryLockPython(void)
-{
-	return 0;
-}
-
-void UnLockPython(void)
-{
-}
-
-void LockPython(void)
-{
+    __DEBUG = 1;
 }
 
 void Retain(unsigned int offset, unsigned int count, void *p)
