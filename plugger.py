@@ -772,6 +772,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.PlugParent = None
         # Keep track of the plugin type name
         self.PlugType = "Beremiz"
+        self.PluggedChilds = {}
         # After __init__ root plugin is not valid
         self.ProjectPath = None
         self._setBuildPath(None)
