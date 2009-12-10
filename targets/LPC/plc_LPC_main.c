@@ -94,7 +94,7 @@ void LockPython(void)
 }
 
 void Retain(unsigned int offset, unsigned int count, void *p)
-{t
+{
 }
 
 void Remind(unsigned int offset, unsigned int count, void *p)
