@@ -417,7 +417,7 @@ class LPCPluginsRoot(PluginsRoot):
                 self.SimulationBuildPath = os.path.join(tempfile.mkdtemp(), os.path.basename(self.ProjectPath), "build")
             return self.SimulationBuildPath
         else:
-            PluginsRoot._getBuildPath(self)
+            return PluginsRoot._getBuildPath(self)
     
     def SetProjectName(self, name):
         return self.Project.setname(name)
