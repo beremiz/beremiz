@@ -518,7 +518,8 @@ class Beremiz(IDEFrame):
     
     def OnCloseFrame(self, event):
         if self.PluginRoot is None or self.CheckSaveBeforeClosing(_("Close Application")):
-            self.PluginRoot.KillDebugThread()
+            if self.PluginRoot is not None:
+                self.PluginRoot.KillDebugThread()
             self.KillLocalRuntime()
             event.Skip()
         else:
