@@ -347,7 +347,8 @@ def mycopytree(src, dst):
             srcpath = os.path.join(src,i)
             dstpath = os.path.join(dst,i)
             if os.path.isdir(srcpath):
-                os.makedirs(dstpath)
+                if not os.path.exists(dstpath):
+                    os.makedirs(dstpath)
                 mycopytree(srcpath, dstpath)
             elif os.path.isfile(srcpath):
                 shutil.copy2(srcpath, dstpath)
