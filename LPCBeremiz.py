@@ -66,7 +66,7 @@ from plugger import PluginsRoot, PlugTemplate, opjimg, connectors
 from plcopen.structures import LOCATIONDATATYPES
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP,\
                          LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
-from PLCOpenEditor import IDEFrame
+from PLCOpenEditor import IDEFrame, ProjectDialog
 
 #-------------------------------------------------------------------------------
 #                              LPCModule Class
@@ -489,19 +489,29 @@ class LPCPluginsRoot(PluginsRoot):
         """
         if os.path.basename(ProjectPath) == "":
             ProjectPath = os.path.dirname(ProjectPath)
+        
         # Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
-        if not os.path.isfile(plc_file):
-            return _("Chosen folder doesn't contain a program. It's not a valid project!")
-        # Load PLCOpen file
-        result = self.OpenXMLFile(plc_file)
-        if result:
-            return result
+        if os.path.isfile(plc_file):
+            # Load PLCOpen file
+            result = self.OpenXMLFile(plc_file)
+            if result:
+                return result
+        else:
+            self.CreateNewProject({"companyName": "",
+                                   "productName": "",
+                                   "productVersion": "",
+                                   "projectName": "",
+                                   "pageSize": (0, 0),
+                                   "scaling": {}})
+        
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
+        
         # Keep track of the root plugin (i.e. project path)
         self.ProjectPath = ProjectPath
+        
         self.BuildPath = self._getBuildPath()
         if BuildPath is not None:
             mycopytree(BuildPath, self.BuildPath)
@@ -514,6 +524,10 @@ class LPCPluginsRoot(PluginsRoot):
                 return result
             #Load and init all the childs
             self.LoadChilds()
+        
+        if self.PlugTestModified():
+            self.SaveProject()
+        
         self.RefreshPluginsBlockLists()
 
         return None
@@ -771,6 +785,19 @@ class LPCBeremiz(Beremiz):
         
         event.Skip()
 
+    def ShowProperties(self):
+        old_values = self.Controler.GetProjectProperties()
+        dialog = ProjectDialog(self ,False)
+        dialog.SetValues(old_values)
+        if dialog.ShowModal() == wx.ID_OK:
+            new_values = dialog.GetValues()
+            new_values["creationDateTime"] = old_values["creationDateTime"]
+            if new_values != old_values:
+                self.Controler.SetProjectProperties(None, new_values)
+                self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, 
+                              TYPESTREE, INSTANCESTREE, SCALING)
+        dialog.Destroy()
+
     def RefreshFileMenu(self):
         if self.PluginRoot is not None:
             selected = self.TabsOpened.GetSelection()
@@ -791,7 +818,7 @@ class LPCBeremiz(Beremiz):
                 self.FileMenu.Enable(wx.ID_PREVIEW, False)
                 self.FileMenu.Enable(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            self.FileMenu.Enable(wx.ID_SAVE, True)
+            self.FileMenu.Enable(wx.ID_SAVE, self.PluginRoot.PlugTestModified())
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
         else:
             self.FileMenu.Enable(wx.ID_CLOSE, False)
@@ -1057,8 +1084,13 @@ if __name__ == '__main__':
             else:
                 wx.CallAfter(self.PluginRoot._build)
         
-        def SetProjectName(self, name):
-            self.PluginRoot.SetProjectName(name)
+        def SetProjectProperties(self, projectname, productname, productversion, companyname):
+            properties = self.PluginRoot.GetProjectProperties()
+            properties["projectName"] = projectname
+            properties["productName"] = productname
+            properties["productVersion"] = productversion
+            properties["companyName"] = companyname
+            self.PluginRoot.SetProjectProperties(properties=properties)
             self.RestartTimer()
         
         def SetOnlineMode(self, mode, path=None):
@@ -1286,7 +1318,7 @@ if __name__ == '__main__':
                                        "Refresh": ([], 0),
                                        "Close": ([], 0),
                                        "Compile": ([], 0),
-                                       "SetProjectName": ([str], 0),
+                                       "SetProjectProperties": ([str, str, str, str], 0),
                                        "SetOnlineMode": ([int, str], 1),
                                        "AddBus": ([int, str, str], 1),
                                        "RenameBus": ([int, str], 0),
