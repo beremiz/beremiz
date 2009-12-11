@@ -18,15 +18,20 @@
 #You should have received a copy of the GNU General Public
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-import traceback
 import LPCObject
 
+permanant_connector = None
 
 def LPC_connector_factory(uri, pluginsroot):
     """
     This returns the connector to LPC style PLCobject
     """
-    pluginsroot.logger.write(_("Connecting to URI : %s\n")%uri)
-    return LPCObject()
+    global permanant_connector
+    if permanant_connector is None:
+        permanant_connector  = LPCObject(pluginsroot,location)
+    else:
+        servicetype, location = uri.split("://")
+        permanant_connector.UpdateLocation(location)
+    return permanant_connector
     
 

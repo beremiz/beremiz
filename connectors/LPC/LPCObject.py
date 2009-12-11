@@ -22,35 +22,60 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from threading import Timer, Thread, Lock
 import ctypes, os, commands, types, sys
-import traceback
 from LPCProto import *
 
 class LPCObject():
-    def __init__(self,pluginsroot):
-        self.PLCStatus = "Stopped"
+    def __init__(self,pluginsroot, location):
+        self.PLCStatus = "Disconnected"
         self.pluginsroot = pluginsroot
         self.PLCprint = pluginsroot.logger.write
-        self.SerialConnection = None
-        self.StorageConnection = None
         self._Idxs = []
-        
-    def HandleSerialTransaction(self, transaction):
-        if self.SerialConnection is None:
+        self.UpdateLocation(location)
+
+    def UpdateLocation(self, location):
+        # Is that a comport ?
+        if len(location) == 5 and\
+           location.startswith("COM") and \
+           location[3].isdigit() and \
+           location[4]==":" :
+            self.StorageConnection = None
             try:
-                self.SerialConnection = LPCProto(6,115200,2)
+                comport = int(location[3]) - 1
+                self.SerialConnection = LPCProto(comport,#number
+                                                 115200, #speed
+                                                 2)      #timeout
+                # This will update status
+                self.HandleSerialTransaction(IDLETransaction())
             except Exception,e:
                 self.pluginsroot.logger.write_error(str(e)+"\n")
                 self.SerialConnection = None
-                return "Disconnected", res
-        try:
-            return self.SerialConnection.HandleTransaction(transaction)
-        except LPCError,e:
-            #pluginsroot.logger.write_error(traceback.format_exc())
-            self.pluginsroot.logger.write_error(str(e)+"\n")
+                self.PLCStatus = "Disconnected"
+        # or a drive unit ?
+        elif len(location)==2 and \
+             location[0].isalpha() and \
+             location[1] == ':' :
             self.SerialConnection = None
-            return "Disconnected", res
+            if os.path.exist(location):
+                self.StorageConnection = location
+                self.PLCStatus = "Stopped"
+            else:
+                self.pluginsroot.logger.write_error("Drive "+
+                                                    location+
+                                                    " do not exist !\n")
+                self.StorageConnection = None
+                self.PLCStatus = "Disconnected"
+        
+    def HandleSerialTransaction(self, transaction):
+        if self.SerialConnection is not None:
+            try:
+                self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
+                return res
+            except LPCError,e:
+                self.pluginsroot.logger.write_error(str(e)+"\n")
+                self.SerialConnection = None
+                self.PLCStatus = "Disconnected"
+                return None
 
     def StartPLC(self, debug=False):
         PLCprint("StartPLC")
@@ -64,14 +89,14 @@ class LPCObject():
         pass
 
     def GetPLCstatus(self):
-        status,data = self.HandleSerialTransaction(IDLETransaction())
-        return status
+        self.HandleSerialTransaction(IDLETransaction())
+        return self.PLCStatus
     
     def NewPLC(self, md5sum, data, extrafiles):
         pass
 
     def MatchMD5(self, MD5):
-        status,data = self.HandleSerialTransaction(PLCIDTransaction())
+        data = self.HandleSerialTransaction(PLCIDTransaction())
         return data == MD5
 
     class IEC_STRING(ctypes.Structure):
@@ -104,12 +129,6 @@ class LPCObject():
                       } 
 
     def SetTraceVariablesList(self, idxs):
-        self._Idxs = idxs[:]
-        status,data = self.HandleSerialTransaction(
-               SET_TRACE_VARIABLETransaction(
-                     ''.join(map(chr,idx))))
-
-    def SetTraceVariablesList(self, idxs):
         """
         Call ctype imported function to append 
         these indexes to registred variables in PLC debugger
@@ -132,7 +151,7 @@ class LPCObject():
                     buff += idxstr + forced_type_size_str + forcestr
                 else:
                     buff += idxstr + chr(0)
-            status,data = self.HandleSerialTransaction(
+            data = self.HandleSerialTransaction(
                    SET_TRACE_VARIABLETransaction(buff))
         else:
             self._Idxs =  []
@@ -141,33 +160,32 @@ class LPCObject():
         """
         Return a list of variables, corresponding to the list of required idx
         """
-        if self.PLCStatus == "Started":
-            res=[]
-            tick = ctypes.c_uint32()
-            size = ctypes.c_uint32()
-            buffer = ctypes.c_void_p()
-            offset = 0
-            if self.PLClibraryLock.acquire(False) and \
-               self._GetDebugData(ctypes.byref(tick),ctypes.byref(size),ctypes.byref(buffer)) == 0 :
-                if size.value:
-                    for idx, iectype, forced in self._Idxs:
-                        cursor = ctypes.c_void_p(buffer.value + offset)
-                        c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
-                        if c_type is not None and offset < size:
-                            res.append(unpack_func(ctypes.cast(cursor,
-                                                               ctypes.POINTER(c_type)).contents))
-                            offset += ctypes.sizeof(c_type)
-                        else:
-                            if c_type is None:
-                                PLCprint("Debug error - " + iectype + " not supported !")
-                            if offset >= size:
-                                PLCprint("Debug error - buffer too small !")
-                            break
-                self._FreeDebugData()
-                self.PLClibraryLock.release()
-            if offset and offset == size.value:
+        offset = 0
+        strbuf = self.HandleSerialTransaction(
+                                     GET_TRACE_VARIABLETransaction())
+        size = len(strbuf) - 4
+        if size > 0 and self.PLCStatus == "Started":
+            tick = ctypes.cast(
+                    ctypes.c_char_p(strbuf[:4]),
+                    ctypes.POINTER(ctypes.c_int)).contents
+            buffer = ctypes.cast(
+                      ctypes.c_char_p(strbuf[4:]),
+                      ctypes.c_void_p)
+            for idx, iectype, forced in self._Idxs:
+                cursor = ctypes.c_void_p(buffer.value + offset)
+                c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
+                if c_type is not None and offset < size:
+                    res.append(unpack_func(ctypes.cast(cursor,
+                                                       ctypes.POINTER(c_type)).contents))
+                    offset += ctypes.sizeof(c_type)
+                else:
+                    if c_type is None:
+                        PLCprint("Debug error - " + iectype + " not supported !")
+                    if offset >= size:
+                        PLCprint("Debug error - buffer too small !")
+                    break
+            if offset and offset == size:
                 return self.PLCStatus, tick.value, res
-            elif size.value:
-                PLCprint("Debug error - wrong buffer unpack !")
+            PLCprint("Debug error - wrong buffer unpack !")
         return self.PLCStatus, None, None
 

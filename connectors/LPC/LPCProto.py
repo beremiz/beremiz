@@ -6,9 +6,8 @@ from threading import Lock
 
 MAX_PACKET_SIZE=64
 
-LPC_STATUS=dict(STARTED = 0x01,
-                STOPPED = 0x02,
-                DEBUG = 0x03)
+LPC_STATUS={0x01 : "Started",
+            0x02 : "Stopped"}
 
 class LPCError(exceptions.Exception):
         """Exception class"""
@@ -40,8 +39,6 @@ class LPCProto:
         self.serialPort = myser()
         # start with empty
         self.serialPort.flush()
-        # handshake
-        self.HandleTransaction(IDLETransaction())
     
     def HandleTransaction(self, transaction):
         self.TransactionLock.acquire()
@@ -56,7 +53,7 @@ class LPCProto:
                 raise LPCError("LPC transaction error - controller did not answer as expected")
         finally:
             self.TransactionLock.release()
-        return current_plc_status, res
+        return LPC_STATUS.get(current_plc_status,"Broken"), res
     
 class LPCTransaction:
     def __init__(self, command, optdata = ""):
@@ -133,11 +130,6 @@ class GET_TRACE_VARIABLETransaction(LPCTransaction):
         LPCTransaction.__init__(self, 0x05)
     ExchangeData = LPCTransaction.GetData
 
-class SET_FORCED_VARIABLETransaction(LPCTransaction):
-    def __init__(self, data):
-        LPCTransaction.__init__(self, 0x06, data)
-    ExchangeData = LPCTransaction.SendData
-
 class GET_PLCIDTransaction(LPCTransaction):
     def __init__(self):
         LPCTransaction.__init__(self, 0x07)
@@ -150,17 +142,18 @@ if __name__ == "__main__":
 #    TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
 #           "\x03\x00\x00\x00"*200))
 #    TestConnection.HandleTransaction(STARTTransaction())
-    TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
-       "\x01\x00\x00\x00"+
-       "\x04"+
-       "\x01\x02\x02\x04"+
-       "\x01\x00\x00\x00"+
-       "\x08"+
-       "\x01\x02\x02\x04"+
-       "\x01\x02\x02\x04"+
-       "\x01\x00\x00\x00"+
-       "\x04"+
-       "\x01\x02\x02\x04"))
+    while True:
+        TestConnection.HandleTransaction(SET_TRACE_VARIABLETransaction(
+           "\x01\x00\x00\x00"+
+           "\x04"+
+           "\x01\x02\x02\x04"+
+           "\x01\x00\x00\x00"+
+           "\x08"+
+           "\x01\x02\x02\x04"+
+           "\x01\x02\x02\x04"+
+           "\x01\x00\x00\x00"+
+           "\x04"+
+           "\x01\x02\x02\x04"))
     #status,res = TestConnection.HandleTransaction(GET_TRACE_VARIABLETransaction())
     #print len(res)
     #print "GOT : ", map(hex, map(ord, res))
