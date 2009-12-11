@@ -1325,7 +1325,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
-              {"PT":"extern __IEC_%(type)s_p %(C_path)s;",
+              {"EXT":"extern __IEC_%(type)s_p %(C_path)s;",
+               "IN":"extern __IEC_%(type)s_p %(C_path)s;",
+               "OUT":"extern __IEC_%(type)s_p %(C_path)s;",
                "VAR":"extern __IEC_%(type)s_t %(C_path)s;"}[v["vartype"]]%v 
                for v in self._VariablesList if v["vartype"] != "FB" and v["C_path"].find('.')<0]),
            "subscription_table_count":
@@ -1333,13 +1335,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
            "variables_pointer_type_table_count":
                len(self._VariablesList),
            "for_each_variable_do_code":"\n".join([
-               {"PT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
+               {"EXT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
+                "IN":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
+                "OUT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
                 "VAR":"    (*fp)((void*)&%(C_path)s,%(type)s_ENUM);\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ]),
            "find_variable_case_code":"\n".join([
                "    case %(num)s:\n"%v+
                "        *varp = (void*)&%(C_path)s;\n"%v+
-               {"PT":"        return %(type)s_P_ENUM;\n",
+               {"EXT":"        return %(type)s_P_ENUM;\n",
+                "IN":"        return %(type)s_P_ENUM;\n",
+                "OUT":"        return %(type)s_P_ENUM;\n",
                 "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ])}
         
