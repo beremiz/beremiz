@@ -732,6 +732,7 @@ class Beremiz(IDEFrame):
             for i in items:
                 self.PluginInfos[plugin][i].SetBackgroundColour(bkgdclr)
                 self.PluginInfos[plugin][i].Refresh()
+        self.RefreshFileMenu()
         return res
 
     def ExpandPlugin(self, plugin, force = False):
@@ -1446,8 +1447,9 @@ class Beremiz(IDEFrame):
             if dialog.ShowModal() == wx.ID_OK:
                 PluginName = dialog.GetValue()
                 plugin.PlugAddChild(PluginName, PluginType)
-                self.RefreshPluginTree()
                 self.PluginRoot.RefreshPluginsBlockLists()
+                self.RefreshFileMenu()
+                self.RefreshPluginTree()
             dialog.Destroy()
     
     def DeletePlugin(self, plugin):
@@ -1458,6 +1460,7 @@ class Beremiz(IDEFrame):
                 plugin.PlugRemove()
                 del plugin
                 self.PluginRoot.RefreshPluginsBlockLists()
+                self.RefreshFileMenu()
                 self.RefreshPluginTree()
             dialog.Destroy()
     
