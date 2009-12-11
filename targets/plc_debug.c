@@ -65,7 +65,7 @@ __IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
 #define __BufferDebugDataIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
             *flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
-            if (*flags && __IEC_FORCE_FLAG)\
+            if (*flags & __IEC_FORCE_FLAG)\
                *ptrvalue = &((__IEC_##TYPENAME##_p *)varp)->fvalue;\
             else\
                *ptrvalue = ((__IEC_##TYPENAME##_p *)varp)->value;\
@@ -90,7 +90,7 @@ void RemindIterator(void* varp, __IEC_types_enum vartype)
     char flags = 0;
     UnpackVar(varp, vartype, &ptrvalue, &flags);
 
-    if(flags && __IEC_RETAIN_FLAG){
+    if(flags & __IEC_RETAIN_FLAG){
         USINT size = __get_type_enum_size(vartype);
         /* compute next cursor positon*/
         unsigned int next_retain_offset = retain_offset + size;
