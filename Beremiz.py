@@ -1401,13 +1401,13 @@ class Beremiz(IDEFrame):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProject()
             self.RefreshAll()
-            self.RefreshTitle()
+            self._Refresh(TITLE, FILEMENU)
     
     def OnSaveProjectAsMenu(self, event):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProjectAs()
             self.RefreshAll()
-            self.RefreshTitle()
+            self._Refresh(TITLE, FILEMENU)
         event.Skip()
     
     def OnPropertiesMenu(self, event):
