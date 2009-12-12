@@ -1,7 +1,6 @@
-import os, re, operator
+import os, re
 from wxPopen import ProcessLogger
-import hashlib, shutil
-from toolchain_gcc import toolchain_gcc
+import hashlib
 
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
@@ -11,12 +10,6 @@ class toolchain_makefile():
         self.md5key = None 
         self.buildpath = None
         self.SetBuildPath(self.PluginsRootInstance._getBuildPath())
-
-    def getTarget(self):
-        target = self.PluginsRootInstance.BeremizRoot.getTargetType()
-        if target.getcontent() is None:
-            target = self.PluginsRootInstance.GetDefaultTarget()
-        return target
 
     def SetBuildPath(self, buildpath):
         self.buildpath = buildpath
@@ -64,7 +57,7 @@ class toolchain_makefile():
                           "md5": self.md5key
                          }
         
-        target = self.getTarget().getcontent()["value"]
+        target = self.PluginsRootInstance.GetTarget().getcontent()["value"]
         command = target.getCommand().split(' ') +\
                   [target.getBuildPath()] +\
                   [arg % beremizcommand for arg in target.getArguments().split(' ')] +\

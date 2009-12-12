@@ -843,12 +843,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
             childs.append(child.GetPlugInfos())
         return {"name" : "PLC (%s)"%self.GetProjectName(), "type" : None, "values" : childs}
 
-    def GetDefaultTarget(self):
-        target = self.Classes["BeremizRoot_TargetType"]()
+    def GetDefaultTargetName(self):
         if wx.Platform == '__WXMSW__':
-            target.setcontent({"name": "Win32", "value": self.Classes["TargetType_Win32"]()})
+            return "Win32"
         else:
-            target.setcontent({"name": "Linux", "value": self.Classes["TargetType_Linux"]()})
+            return "Linux"
+
+    def GetTarget(self):
+        target = self.BeremizRoot.getTargetType()
+        if target.getcontent() is None:
+            target = self.Classes["BeremizRoot_TargetType"]()
+            target_name = self.GetDefaultTargetName()
+            target.setcontent({"name": target_name, "value": self.Classes["TargetType_%s"%target_name]()})
         return target
     
     def GetParamsAttributes(self, path = None):
@@ -856,7 +862,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if params[0]["name"] == "BeremizRoot":
             for child in params[0]["children"]:
                 if child["name"] == "TargetType" and child["value"] == '':
-                    child.update(self.GetDefaultTarget().getElementInfos("TargetType")) 
+                    child.update(self.GetTarget().getElementInfos("TargetType")) 
         return params
         
     def SetParamsAttribute(self, path, value):
@@ -1196,10 +1202,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         Return a Builder (compile C code into machine code)
         """
         # Get target, module and class name
-        target = self.BeremizRoot.getTargetType()
-        if target.getcontent() is None:
-            target = self.GetDefaultTarget()
-        targetname = target.getcontent()["name"]
+        targetname = self.GetTarget().getcontent()["name"]
         modulename = "targets." + targetname
         classname = targetname + "_target"
 
@@ -1390,12 +1393,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 "init_calls":"\n",
                 "cleanup_calls":"\n"
                 }
-        
-        target = self.BeremizRoot.getTargetType()
-        if target.getcontent() is None:
-            target = self.GetDefaultTarget()
-        target_name = target.getcontent()["name"]
-        plc_main_code += targets.targetcode(target_name)
+        plc_main_code += targets.targetcode(self.GetTarget().getcontent()["name"])
         return plc_main_code
 
         
@@ -1454,7 +1452,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             open(fpath, "wb").write(fobject.read())
         # Now we can forget ExtraFiles (will close files object)
         del ExtraFiles
-
+        
         # Template based part of C code generation
         # files are stacked at the beginning, as files of plugin tree root
         for generator, filename, name in [

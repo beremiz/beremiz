@@ -399,19 +399,16 @@ class LPCPluginsRoot(PluginsRoot):
     def GetProjectName(self):
         return self.Project.getname()
 
-    def GetDefaultTarget(self):
-        target = self.Classes["BeremizRoot_TargetType"]()
+    def GetDefaultTargetName(self):
         if self.BuildSimulation:
-            if wx.Platform == '__WXMSW__':
-                target_name = "Win32"
-            else:
-                target_name = "Linux"
-            target_value = self.Classes["TargetType_%s"%target_name]()
+            return PluginsRoot.GetDefaultTargetName(self)
         else:
-            target_name = "LPC"
-            target_value = self.Classes["TargetType_LPC"]()
-            target_value.setBuildPath(self.BuildPath)
-        target.setcontent({"name": target_name, "value": target_value})
+            return "LPC"
+
+    def GetTarget(self):
+        target = PluginsRoot.GetTarget(self)
+        if not self.BuildSimulation:
+            target.getcontent()["value"].setBuildPath(self.BuildPath)
         return target
     
     def _getBuildPath(self):
@@ -433,6 +430,8 @@ class LPCPluginsRoot(PluginsRoot):
     def SetOnlineMode(self, mode, path=None):
         if self.OnlineMode != mode:
             self.OnlineMode = mode
+            self.KillDebugThread()
+            
             if self.OnLineMode != 0:
                 if self._connector is None:
                     uri = "LPC://%s" % path

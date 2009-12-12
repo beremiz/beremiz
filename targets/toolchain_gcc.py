@@ -14,25 +14,19 @@ class toolchain_gcc():
         self.PluginsRootInstance = PluginsRootInstance
         self.buildpath = None
         self.SetBuildPath(self.PluginsRootInstance._getBuildPath())
-
-    def getTarget(self):
-        target = self.PluginsRootInstance.BeremizRoot.getTargetType()
-        if target.getcontent() is None:
-            target = self.PluginsRootInstance.GetDefaultTarget()
-        return target
-
+    
     def getBuilderCFLAGS(self):
         """
         Returns list of builder specific CFLAGS
         """
-        return [self.getTarget().getcontent()["value"].getCFLAGS()]
+        return [self.PluginsRootInstance.GetTarget().getcontent()["value"].getCFLAGS()]
 
     def getBuilderLDFLAGS(self):
         """
         Returns list of builder specific LDFLAGS
         """
         return self.PluginsRootInstance.LDFLAGS + \
-               [self.getTarget().getcontent()["value"].getLDFLAGS()]
+               [self.PluginsRootInstance.GetTarget().getcontent()["value"].getLDFLAGS()]
 
     def GetBinaryCode(self):
         try:
@@ -88,7 +82,7 @@ class toolchain_gcc():
                 
     def build(self):
         # Retrieve toolchain user parameters
-        toolchain_params = self.getTarget().getcontent()["value"]
+        toolchain_params = self.PluginsRootInstance.GetTarget().getcontent()["value"]
         self.compiler = toolchain_params.getCompiler()
         self.linker = toolchain_params.getLinker()
 
