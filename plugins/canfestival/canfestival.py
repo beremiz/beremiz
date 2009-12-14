@@ -8,7 +8,7 @@ from nodemanager import NodeManager
 import config_utils, gen_cfile, eds_utils
 from networkedit import networkedit
 from objdictedit import objdictedit
-import canfestival_config
+import canfestival_config as local_canfestival_config
 from plugger import PlugTemplate
 from commondialogs import CreateNodeDialog
 import wx
@@ -171,7 +171,7 @@ class _SlavePlug(NodeManager):
         res = eds_utils.GenerateEDSFile(os.path.join(buildpath, "Slave_%s.eds"%prefix), slave)
         if res :
             raise Exception, res
-        return [(Gen_OD_path,canfestival_config.getCFLAGS(CanFestivalPath))],"",False
+        return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
 
 #--------------------------------------------------
 #                    MASTER
@@ -293,7 +293,7 @@ class _NodeListPlug(NodeList):
         dump(master, file)
         file.close()
         
-        return [(Gen_OD_path,canfestival_config.getCFLAGS(CanFestivalPath))],"",False
+        return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -315,7 +315,7 @@ class RootClass:
             if element["name"] == "CanFestivalInstance":
                 for child in element["children"]:
                     if child["name"] == "CAN_Driver":
-                        DLL_LIST= getattr(canfestival_config,"DLL_LIST",None)
+                        DLL_LIST= getattr(local_canfestival_config,"DLL_LIST",None)
                         if DLL_LIST is not None:
                             child["type"] = DLL_LIST
                         return infos    
@@ -427,6 +427,6 @@ class RootClass:
         f.write(cf_main)
         f.close()
         
-        return [(cf_main_path, canfestival_config.getCFLAGS(CanFestivalPath))],canfestival_config.getLDFLAGS(CanFestivalPath), True
+        return [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))],local_canfestival_config.getLDFLAGS(CanFestivalPath), True
 
 

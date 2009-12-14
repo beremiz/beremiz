@@ -79,7 +79,7 @@ void Exit(CO_Data* d, UNS32 id)
       canClose(&nodename##_Data);\
     }
 
-void __cleanup_%(locstr)s()
+void __cleanup_%(locstr)s(void)
 {
     // Stop timer thread
     if(init_level-- > 0){
@@ -90,6 +90,11 @@ void __cleanup_%(locstr)s()
 
     TimerCleanup();
 }
+
+#ifndef stderr
+#define fprintf(...)
+#define fflush(...)
+#endif
 
 #define NODE_OPEN(nodename)\
     if(!canOpen(&nodename##Board,&nodename##_Data)){\
@@ -105,8 +110,8 @@ int __init_%(locstr)s(int argc,char **argv)
 #ifndef NOT_USE_DYNAMIC_LOADING
     if( !LoadCanDriver("%(candriver)s") ){
         fprintf(stderr, "Cannot load CAN interface library for CanFestival (%(candriver)s)\n");\
-        fflush(stderr);
-        return -1;
+        fflush(stderr);\
+        return -1;\
     }
 #endif
 
@@ -123,7 +128,7 @@ int __init_%(locstr)s(int argc,char **argv)
 #define NODE_SEND_SYNC(nodename)\
     sendSYNCMessage(&nodename##_Data);
 
-void __retrieve_%(locstr)s()
+void __retrieve_%(locstr)s(void)
 {
     /* Locks the stack, so that no changes occurs while PLC access variables
      * TODO : implement buffers to avoid such a big lock
@@ -136,7 +141,7 @@ void __retrieve_%(locstr)s()
 #define NODE_PROCEED_SYNC(nodename)\
     proceedSYNC(&nodename##_Data);
 
-void __publish_%(locstr)s()
+void __publish_%(locstr)s(void)
 {
     /* Process sync event */
     %(nodes_proceed_sync)s
