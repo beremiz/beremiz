@@ -64,6 +64,7 @@ __IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
 
 #define __BufferDebugDataIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
+        case TYPENAME##_O_ENUM :\
             *flags = ((__IEC_##TYPENAME##_p *)varp)->flags;\
             if (*flags & __IEC_FORCE_FLAG)\
                *ptrvalue = &((__IEC_##TYPENAME##_p *)varp)->fvalue;\
@@ -227,6 +228,12 @@ void __publish_debug(void)
             ((__IEC_##TYPENAME##_p *)varp)->flags |= flags;\
             if(force)\
              ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
+            break;\
+        case TYPENAME##_O_ENUM :\
+            ((__IEC_##TYPENAME##_p *)varp)->flags |= flags;\
+            if(force)\
+             ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
+             *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
             break;
 void RegisterDebugVariable(int idx, void* force)
 {
