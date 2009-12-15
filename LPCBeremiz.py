@@ -444,7 +444,7 @@ class LPCPluginsRoot(PluginsRoot):
             self.OnlineMode = mode
             self.KillDebugThread()
             
-            if self.OnLineMode != 0:
+            if self.OnlineMode != 0:
                 if self._connector is None:
                     uri = "LPC://%s" % path
                     try:
@@ -460,7 +460,7 @@ class LPCPluginsRoot(PluginsRoot):
                 
                 if self._connector is not None:
                 
-                    if self.OnLineMode == 1:
+                    if self.OnlineMode == 1:
                         self.CompareLocalAndRemotePLC()
                     
                         # Init with actual PLC status and print it
