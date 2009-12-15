@@ -979,9 +979,15 @@ class LPCBeremiz(Beremiz):
                 self.CollapseLocation(locations_infos, "root")
 
 frame = None
+app = None
+
+def GetApp():
+    global app
+    return app
+wx.GetApp = GetApp
 
 def BeremizStartProc(plugin_root):
-    global frame
+    global frame, app
 
     app = wx.PySimpleApp()
     app.SetAppName('beremiz')
@@ -1013,6 +1019,7 @@ def BeremizStartProc(plugin_root):
     app.MainLoop()
 
     frame = None
+    app = None
 
 class StdoutPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
