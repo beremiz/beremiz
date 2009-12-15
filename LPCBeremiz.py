@@ -70,6 +70,18 @@ from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP,\
 from PLCOpenEditor import IDEFrame, ProjectDialog
 
 #-------------------------------------------------------------------------------
+#                          CANFESTIVAL PLUGIN HACK
+#-------------------------------------------------------------------------------
+from plugins.canfestival import canfestival
+class LPC_canfestival_config:
+    def getCFLAGS(self, *args):
+        return ""
+
+    def getLDFLAGS(self, *args):
+        return ""
+        
+canfestival.local_canfestival_config = LPC_canfestival_config() 
+#-------------------------------------------------------------------------------
 #                              LPCModule Class
 #-------------------------------------------------------------------------------
 
