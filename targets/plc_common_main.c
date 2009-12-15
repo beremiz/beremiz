@@ -84,7 +84,7 @@ void __cleanup(void)
 
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME);
-void PLC_SetTimer(long long next, long long period);
+void PLC_SetTimer(unsigned long long next, unsigned long long period);
 
 #define CALIBRATED -2
 #define NOT_CALIBRATED -1

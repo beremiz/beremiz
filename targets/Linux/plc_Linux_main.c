@@ -10,7 +10,7 @@
 #include <pthread.h>
 
 /* provided by POUS.C */
-extern int common_ticktime__;
+extern unsigned long long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
@@ -30,7 +30,7 @@ void PLC_timer_notify(sigval_t val)
 
 timer_t PLC_timer;
 
-void PLC_SetTimer(long long next, long long period)
+void PLC_SetTimer(unsigned long long next, unsigned long long period)
 {
     struct itimerspec timerValues;
 	/*

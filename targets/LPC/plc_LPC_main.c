@@ -2,34 +2,43 @@
  * Yagarto specific code
  **/
 
-//#include <stdio.h>
+#include <app_glue.h>
 
 /* provided by POUS.C */
-extern int common_ticktime__;
-
-void Target_GetTime(IEC_TIME*);
+extern unsigned long long common_ticktime__;
+void LPC_GetTime(IEC_TIME*);
+void LPC_SetTimer(unsigned long long next, unsigned long long period);
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
-	return 0;
+	/* No need for real atomic op on LPC,
+	 * no possible preemption between debug and PLC */
+	long res = *atomicvar;
+	if(res == compared){
+		*atomicvar = exchange;
+	}
+	return res;
 }
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
 	/* Call target GetTime function */
-	Target_GetTime(CURRENT_TIME);
+	LPC_GetTime(CURRENT_TIME);
 }
 
-void PLC_SetTimer(long long next, long long period)
+void PLC_SetTimer(unsigned long long next, unsigned long long period)
 {
+	LPC_SetTimer(next, period);
 }
 
 int startPLC(int argc,char **argv)
 {
-	if(__init(argc,argv) == 0)
+	if(__init(argc,argv) == 0){
+		PLC_SetTimer(0, common_ticktime__);
 		return 0;
-	else
+	}else{
 		return 1;
+	}
 }
 
 int TryEnterDebugSection(void)
