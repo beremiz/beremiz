@@ -386,6 +386,7 @@ class Beremiz(IDEFrame):
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
+        self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
         self._init_beremiz_sizers()
 
@@ -432,11 +433,7 @@ class Beremiz(IDEFrame):
         self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
 
     def RiseLogConsole(self):
-        for idx in xrange(self.BottomNoteBook.GetPageCount()):
-            window = self.BottomNoteBook.GetPage(idx)
-            if window == self.LogConsole:
-                self.BottomNoteBook.SetSelection(idx)
-                break
+        self.BottomNoteBook.SetSelection(self.BottomNoteBook.GetPageIndex(self.LogConsole))
         
     def RefreshTitle(self):
         name = _("Beremiz")
