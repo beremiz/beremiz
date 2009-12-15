@@ -794,7 +794,7 @@ class LPCBeremiz(Beremiz):
         self._init_beremiz_sizers()
 
     def OnCloseFrame(self, event):
-        global frame, lpcberemiz_cmd
+        global frame
         frame = None
         self.PluginRoot.ResetAppFrame(lpcberemiz_cmd.Log)
         if self.PluginRoot.OnlineMode == 0:
@@ -802,6 +802,8 @@ class LPCBeremiz(Beremiz):
         
         self.PluginRoot.KillDebugThread()
         self.KillLocalRuntime()
+        
+        print "Closed"
         
         event.Skip()
 
