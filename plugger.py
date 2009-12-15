@@ -1549,6 +1549,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self._connector is not None:
             status = self._connector.GetPLCstatus()
         if status is None:
+            self._connector = None
             status = "Disconnected"
         if(self.previous_plcstate != status):
             for args in {
