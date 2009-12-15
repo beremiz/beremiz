@@ -56,7 +56,7 @@ class LPCObject():
              location[0].isalpha() and \
              location[1] == ':' :
             self.SerialConnection = None
-            if os.path.exist(location):
+            if os.path.exists(location):
                 self.StorageConnection = location
                 self.PLCStatus = "Stopped"
             else:
