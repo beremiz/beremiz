@@ -199,6 +199,11 @@ void LockPython(void)
     pthread_mutex_lock(&python_mutex);
 }
 
+int CheckRetainBuffer(void)
+{
+	return 1;
+}
+
 void Retain(unsigned int offset, unsigned int count, void *p)
 {
 }
