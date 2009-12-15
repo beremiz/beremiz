@@ -227,6 +227,11 @@ void LockPython(void)
 	WaitForSingleObject(python_sem, INFINITE);
 }
 
+int CheckRetainBuffer(void)
+{
+	return 1;
+}
+
 void Retain(unsigned int offset, unsigned int count, void * p)
 {
     unsigned int position;

@@ -102,6 +102,8 @@ void RemindIterator(void* varp, __IEC_types_enum vartype)
     }
 }
 
+int CheckRetainBuffer(void);
+
 void __init_debug(void)
 {
     /* init local static vars */
@@ -109,7 +111,8 @@ void __init_debug(void)
     retain_offset = 0;
     buffer_state = BUFFER_FREE;
     /* Iterate over all variables to fill debug buffer */
-    __for_each_variable_do(RemindIterator);
+    if(CheckRetainBuffer())
+    	__for_each_variable_do(RemindIterator);
     retain_offset = 0;
 }
 

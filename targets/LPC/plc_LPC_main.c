@@ -82,10 +82,18 @@ void resumeDebug(void)
     __DEBUG = 1;
 }
 
+int CheckRetainBuffer(void)
+{
+	/* TODO : compare RETAIN buffer start with MD5 */
+	return 0;
+}
+
 void Retain(unsigned int offset, unsigned int count, void *p)
 {
+	/* TODO : write in RETAIN buffer at offset*/
 }
 
 void Remind(unsigned int offset, unsigned int count, void *p)
 {
+	/* TODO : read at offset in RETAIN buffer */
 }

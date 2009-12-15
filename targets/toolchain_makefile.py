@@ -2,6 +2,8 @@ import os, re
 from wxPopen import ProcessLogger
 import hashlib
 
+import time
+
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
 class toolchain_makefile():
@@ -48,6 +50,11 @@ class toolchain_makefile():
                     cflags.append(CFLAGS)
                     
             self.md5key = hashlib.md5(wholesrcdata).hexdigest()
+            props = self.PluginsRootInstance.GetProjectProperties()
+            self.md5key += '|'.join([props[key] for key in ['companyName',
+                                                            'projectName',
+                                                            'productName']])
+            self.md5key += '|'+','.join(map(str,time.localtime()))
             # Store new PLC filename based on md5 key
             f = open(self._GetMD5FileName(), "w")
             f.write(self.md5key)

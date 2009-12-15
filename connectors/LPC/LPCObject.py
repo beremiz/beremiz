@@ -93,11 +93,31 @@ class LPCObject():
         return self.PLCStatus
     
     def NewPLC(self, md5sum, data, extrafiles):
-        pass
+        if os.path.exists(self.StorageConnection):
+            firmwarepath = os.path.join(
+                    self.StorageConnection, 
+                    "firmware.bin")
+            try:
+                if os.path.exists(firmwarepath ):
+                    os.unlink(firmwarepath)
+                f = open(firmwarepath, "wb")
+                f.write(data)
+                f.close()
+                return True
+            except LPCError,e:
+                self.StorageConnection = None
+                self.PLCStatus = "Disconnected"
+                self.pluginsroot.logger.write_error(
+                                    "LPC transfer error : "+
+                                    str(e)+"\n")
 
     def MatchMD5(self, MD5):
-        data = self.HandleSerialTransaction(PLCIDTransaction())
-        return data == MD5
+        data = self.HandleSerialTransaction(GET_PLCIDTransaction())
+        return data[:32] == MD5
+
+    def GetPLCInfo(self, MD5):
+        data = self.HandleSerialTransaction(GET_PLCIDTransaction())
+        return data[32:]
 
     class IEC_STRING(ctypes.Structure):
         """

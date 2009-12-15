@@ -561,7 +561,7 @@ class LPCPluginsRoot(PluginsRoot):
             if self._connector is not None:
                 simulating = self._connector.GetPLCstatus() == "Started"
             status = "Disconnected"
-        elif self.OnlineMode == 1:
+        elif self.OnlineMode == 2:
             if self._connector is not None:
                 simulating = self._connector.GetPLCstatus() == "Started"
             status = "Connected"
