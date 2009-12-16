@@ -804,6 +804,7 @@ class LPCBeremiz(Beremiz):
         self.KillLocalRuntime()
         
         print "Closed"
+        sys.stdout.flush()
         
         event.Skip()
 
@@ -1301,6 +1302,7 @@ if __name__ == '__main__':
             args_toks = line.split('"')
             if len(args_toks) % 2 == 0:
                 print "Error: Invalid command"
+                sys.stdout.flush()
                 return
             args = []
             for num, arg in enumerate(args_toks):
@@ -1327,16 +1329,19 @@ if __name__ == '__main__':
                     print "Error: 1 argument%s expected" % extra
                 else:
                     print "Error: %d arguments%s expected" % (number, extra)
+                sys.stdout.flush()
                 return
             for num, arg in enumerate(args):
                 try:
                     args[num] = arg_types[num](arg)
                 except:
                     print "Error: Invalid value for argument %d" % (num + 1)
+                    sys.stdout.flush()
                     return
             res = getattr(self, function)(*args)
             if isinstance(res, (StringType, UnicodeType)):
                 print res
+                sys.stdout.flush()
                 return False
             else:
                 return res
