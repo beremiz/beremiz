@@ -113,11 +113,8 @@ class LPCObject():
 
     def MatchMD5(self, MD5):
         data = self.HandleSerialTransaction(GET_PLCIDTransaction())
+        print "PLCINFO",data[32:]
         return data[:32] == MD5
-
-    def GetPLCInfo(self, MD5):
-        data = self.HandleSerialTransaction(GET_PLCIDTransaction())
-        return data[32:]
 
     class IEC_STRING(ctypes.Structure):
         """
