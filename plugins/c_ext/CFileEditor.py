@@ -227,12 +227,14 @@ class CppEditor(stc.StyledTextCtrl):
         self.Controler.BufferCFile()
         if self.ParentWindow:
             self.ParentWindow.RefreshTitle()
+            self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
     
     def StartBuffering(self):
         self.Controler.StartBuffering()
         if self.ParentWindow:
             self.ParentWindow.RefreshTitle()
+            self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
     
     def ResetBuffer(self):
@@ -688,6 +690,7 @@ class VariablesEditor(wx.Panel):
     def RefreshBuffer(self):
         self.Controler.BufferCFile()
         self.ParentWindow.RefreshTitle()
+        self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
 
     def RefreshView(self):
