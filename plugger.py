@@ -972,7 +972,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def SaveProjectAs(self, dosave=True):
         # Ask user to choose a path with write permissions
-        dirdialog = wx.DirDialog(self.AppFrame , _("Choose a directory to save project"), os.getenv("HOME"), wx.DD_NEW_DIR_BUTTON)
+        if wx.Platform == '__WXMSW__':
+            path = os.getenv("USERPROFILE")
+        else:
+            path = os.getenv("HOME")
+        dirdialog = wx.DirDialog(self.AppFrame , _("Choose a directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
         answer = dirdialog.ShowModal()
         dirdialog.Destroy()
         if answer == wx.ID_OK:
