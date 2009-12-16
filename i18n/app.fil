@@ -1,4 +1,5 @@
 ../Beremiz.py
+../LPCBeremiz.py
 ../plugger.py
 ../Beremiz_service.py
 ../discovery.py
