@@ -306,7 +306,7 @@ class LPCBus(object):
                     i += 1
                     group = next
             var_loc = loc[i:]
-            for variable in group["children"]:
+            for variable in _GetModuleChildren(group):
                 if variable["location"] == var_loc:
                     if location["DIR"] != LOCATION_DIRS[variable["type"]]:
                         raise Exception, "Direction conflict in variable definition"
