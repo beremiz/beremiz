@@ -1261,7 +1261,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         self._ProgramList = None
         self._VariablesList = None
-        self._IECPathToIdx = None
+        self._IECPathToIdx = {}
         self.TracedIECPath = []
 
     def GetIECProgramsAndVariables(self):
