@@ -14,6 +14,5 @@ do
 done
 
 cp ico24.png brz.png
-# doesn't work... cannot set 8bpp alpha. use gimp instead
-#convert ico*.png brz.ico
-#rm -f ico*.png
+convert ico*.png brz.ico
+rm -f ico*.png
