@@ -85,19 +85,7 @@ class LPCTransaction:
         # we presuppose endianess of LPC same as PC
         lengthstr = ctypes.string_at(ctypes.pointer(ctypes.c_int(length)),4)
         buffer = lengthstr + self.OptData
-        ###################################################################
-        # TO BE REMOVED AS SOON AS USB IS FIXED IN CONTROLLER
-        ###################################################################
-        length += 4
-        cursor = 0
-        while cursor < length:
-            next_cursor = cursor + MAX_PACKET_SIZE
-            # sent just enough bytes to not crash controller
-            self.pseudofile.write(buffer[cursor:next_cursor])
-            # if sent quantity was 128
-            if next_cursor <= length:
-                self.GetCommandAck()
-            cursor = next_cursor
+        return self.pseudofile.write(buffer)
 
     def GetData(self):
         lengthstr = self.pseudofile.read(4)
