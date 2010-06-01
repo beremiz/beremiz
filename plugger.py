@@ -884,6 +884,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             if self.SaveProjectAs():
                 self.AppFrame.RefreshAll()
                 self.AppFrame.RefreshTitle()
+                self.AppFrame.RefreshFileMenu()
                 return True
         return False
     

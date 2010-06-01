@@ -277,12 +277,14 @@ class PythonEditor(stc.StyledTextCtrl):
         self.Controler.BufferPython()
         if self.ParentWindow:
             self.ParentWindow.RefreshTitle()
+            self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
     
     def StartBuffering(self):
         self.Controler.StartBuffering()
         if self.ParentWindow:
             self.ParentWindow.RefreshTitle()
+            self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
     
     def ResetBuffer(self):
