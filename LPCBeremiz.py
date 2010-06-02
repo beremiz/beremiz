@@ -386,6 +386,10 @@ class LPCPluginsRoot(PluginsRoot):
          "shown" : False,
          "tooltip" : _("Stop Running PLC"),
          "method" : "_Stop"},
+        {"bitmap" : opjimg("Build"),
+         "name" : _("Build"),
+         "tooltip" : _("Build project into build folder"),
+         "method" : "_build"},
         {"bitmap" : opjimg("Transfer"),
          "name" : _("Transfer"),
          "shown" : False,
@@ -592,18 +596,22 @@ class LPCPluginsRoot(PluginsRoot):
                      "Started" :     [("_Simulate", False),
                                       ("_Run", False),
                                       ("_Stop", True),
+                                      ("_build", False),
                                       ("_Transfer", False)],
                      "Stopped" :     [("_Simulate", True),
                                       ("_Run", True),
                                       ("_Stop", False),
+                                      ("_build", False),
                                       ("_Transfer", False)],
                      "Connected" :   [("_Simulate", not simulating),
                                       ("_Run", False),
                                       ("_Stop", simulating),
+                                      ("_build", False),
                                       ("_Transfer", True)],
                      "Disconnected" :[("_Simulate", not simulating),
                                       ("_Run", False),
                                       ("_Stop", simulating),
+                                      ("_build", True),
                                       ("_Transfer", False)],
                    }.get(status,[]):
                 self.ShowMethod(*args)
@@ -1144,6 +1152,7 @@ if __name__ == '__main__':
             if frame is not None:
                 self.PluginRoot.SetAppFrame(frame, frame.Log)
                 wx.CallAfter(frame.Show)
+                wx.CallAfter(frame.Raise)
         
         def Refresh(self):
             global frame
