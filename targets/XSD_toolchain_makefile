@@ -1,6 +1,6 @@
 
           <xsd:attribute name="BuildPath" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Command" type="xsd:string" use="optional" default="make -C"/>
-          <xsd:attribute name="Arguments" type="xsd:string" use="optional" default="BEREMIZSRC=%(src)s BEREMIZCFLAGS=%(cflags)s MD5=%(md5)s USE_BEREMIZ=1 --quiet"/>
+          <xsd:attribute name="Arguments" type="xsd:string" use="optional" default="BEREMIZSRC=%(src)s BEREMIZCFLAGS=%(cflags)s MD5=%(md5)s USE_BEREMIZ=1 FROM_BEREMIZ=1 --quiet"/>
           <xsd:attribute name="Rule" type="xsd:string" use="optional" default="all"/>
           

@@ -15,14 +15,9 @@ class toolchain_makefile():
 
     def SetBuildPath(self, buildpath):
         self.buildpath = buildpath
-        self.exe_path = os.path.join(self.buildpath, "ArmPLC_rom.bin")
-        self.md5_path = os.path.join(self.buildpath, "ArmPLC.md5")
 
     def GetBinaryCode(self):
-        try:
-            return open(self.exe_path, "rb").read()
-        except Exception, e:
-            return None
+        return None
 
     def _GetMD5FileName(self):
         return os.path.join(self.buildpath, "lastbuildPLC.md5")
