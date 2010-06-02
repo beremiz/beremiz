@@ -468,6 +468,8 @@ class Beremiz(IDEFrame):
             self.local_runtime.kill(gently=False)
             # clear temp dir
             shutil.rmtree(self.local_runtime_tmpdir)
+            
+            self.local_runtime = None
 
     def OnOpenWidgetInspector(self, evt):
         # Activate the widget inspection tool

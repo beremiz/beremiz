@@ -41,7 +41,7 @@ if __name__ == '__main__':
     else:
         projectOpen = None
         buildpath = None
-
+    
 class PseudoLocale:
     LocaleDirs = []
     Domains = []
@@ -367,6 +367,8 @@ def mycopytree(src, dst):
             elif os.path.isfile(srcpath):
                 shutil.copy2(srcpath, dstpath)
 
+[SIMULATION_MODE, TRANSFER_MODE] = range(2)
+
 class LPCPluginsRoot(PluginsRoot):
 
     PluginMethods = [
@@ -384,10 +386,6 @@ class LPCPluginsRoot(PluginsRoot):
          "shown" : False,
          "tooltip" : _("Stop Running PLC"),
          "method" : "_Stop"},
-        {"bitmap" : opjimg("Build"),
-         "name" : _("Build"),
-         "tooltip" : _("Build project into build folder"),
-         "method" : "_build"},
         {"bitmap" : opjimg("Transfer"),
          "name" : _("Transfer"),
          "shown" : False,
@@ -400,31 +398,33 @@ class LPCPluginsRoot(PluginsRoot):
         
         self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
 
-        self.OnlineMode = 0
-        self.OnlinePath = None
+        self.OnlineMode = "OFF"
+        self.LPCConnector = False
         
-        self.BuildSimulation = False
+        self.CurrentMode = None
+        self.previous_mode = None
+        
         self.SimulationBuildPath = None
-
-        self.previous_simulating = False
-
+        
+        self.AbortTransferTimer = None
+        
     def GetProjectName(self):
         return self.Project.getname()
 
     def GetDefaultTargetName(self):
-        if self.BuildSimulation:
+        if self.CurrentMode == SIMULATION_MODE:
             return PluginsRoot.GetDefaultTargetName(self)
         else:
             return "LPC"
 
     def GetTarget(self):
         target = PluginsRoot.GetTarget(self)
-        if not self.BuildSimulation:
+        if self.CurrentMode != SIMULATION_MODE:
             target.getcontent()["value"].setBuildPath(self.BuildPath)
         return target
     
     def _getBuildPath(self):
-        if self.BuildSimulation:
+        if self.CurrentMode == SIMULATION_MODE:
             if self.SimulationBuildPath is None:
                 self.SimulationBuildPath = os.path.join(tempfile.mkdtemp(), os.path.basename(self.ProjectPath), "build")
             return self.SimulationBuildPath
@@ -440,54 +440,72 @@ class LPCPluginsRoot(PluginsRoot):
         return self.Project.setname(name)
 
     def SetOnlineMode(self, mode, path=None):
-        if self.OnlineMode != mode:
-            self.OnlineMode = mode
-            self.KillDebugThread()
+        if self.OnlineMode != mode.upper():
+            self.OnlineMode = mode.upper()
             
-            if self.OnlineMode != 0:
-                if self._connector is None:
-                    uri = "LPC://%s" % path
-                    try:
-                        self._connector = connectors.ConnectorFactory(uri, self)
-                    except Exception, msg:
-                        self.logger.write_error(_("Exception while connecting %s!\n")%uri)
-                        self.logger.write_error(traceback.format_exc())
+            if self.OnlineMode != "OFF":
+                uri = "LPC://%s" % path
+                try:
+                    self.LPCConnector = connectors.ConnectorFactory(uri, self)
+                except Exception, msg:
+                    self.logger.write_error(_("Exception while connecting %s!\n")%uri)
+                    self.logger.write_error(traceback.format_exc())
 
-                    # Did connection success ?
-                    if self._connector is None:
-                        # Oups.
-                        self.logger.write_error(_("Connection failed to %s!\n")%uri)
-                
-                if self._connector is not None:
-                
-                    if self.OnlineMode == 1:
-                        self.CompareLocalAndRemotePLC()
-                    
-                        # Init with actual PLC status and print it
-                        self.UpdateMethodsFromPLCStatus()
-                        if self.previous_plcstate is not None:
-                            status = _(self.previous_plcstate)
-                        else:
-                            status = ""
-                        self.logger.write(_("PLC is %s\n")%status)
-                        
-                        # Start the status Timer
-                        self.StatusTimer.Start(milliseconds=500, oneShot=False)
-                        
-                        if self.previous_plcstate=="Started":
-                            if self.DebugAvailable() and self.GetIECProgramsAndVariables():
-                                self.logger.write(_("Debug connect matching running PLC\n"))
-                                self._connect_debug()
-                            else:
-                                self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
+                # Did connection success ?
+                if self.LPCConnector is None:
+                    # Oups.
+                    self.logger.write_error(_("Connection failed to %s!\n")%uri)
                 
             else:
-                self._connector = None
-                self.StatusTimer.Stop()
-                
-            self.OnlinePath = path
-            self.UpdateMethodsFromPLCStatus()
+                self.LPCConnector = None
+            
+            self.ApplyOnlineMode()
 
+    def ApplyOnlineMode(self):
+        if self.CurrentMode != SIMULATION_MODE:
+            self.KillDebugThread()
+            
+            self._connector = self.LPCConnector
+            
+            # Init with actual PLC status and print it
+            self.UpdateMethodsFromPLCStatus()
+                
+            if self.LPCConnector is not None and self.OnlineMode == "APPLICATION":
+                
+                self.CompareLocalAndRemotePLC()
+                            
+                if self.previous_plcstate is not None:
+                    status = _(self.previous_plcstate)
+                else:
+                    status = ""
+                self.logger.write(_("PLC is %s\n")%status)
+                
+                if not self.StatusTimer.IsRunning():
+                    # Start the status Timer
+                    self.StatusTimer.Start(milliseconds=500, oneShot=False)
+                
+                if self.previous_plcstate=="Started":
+                    if self.DebugAvailable() and self.GetIECProgramsAndVariables():
+                        self.logger.write(_("Debug connect matching running PLC\n"))
+                        self._connect_debug()
+                    else:
+                        self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
+            
+            elif self.StatusTimer.IsRunning():
+                self.StatusTimer.Stop()
+            
+            if self.CurrentMode == TRANSFER_MODE:
+                
+                if self.OnlineMode == "BOOTLOADER":
+                    self.BeginTransfer()
+                
+                elif self.OnlineMode == "APPLICATION":
+                    self.CurrentMode = None
+                    self.AbortTransferTimer.Stop()
+                    self.AbortTransferTimer = None
+                    
+                    self.logger.write(_("PLC transferred successfully\n"))
+    
     # Update a PLCOpenEditor Pou variable name
     def UpdateProjectVariableName(self, old_name, new_name):
         self.Project.updateElementName(old_name, new_name)
@@ -548,7 +566,10 @@ class LPCPluginsRoot(PluginsRoot):
         if self.PlugTestModified():
             self.SaveProject()
         
-        self.RefreshPluginsBlockLists()
+        if wx.GetApp() is None:
+            self.RefreshPluginsBlockLists()
+        else:
+            wx.CallAfter(self.RefreshPluginsBlockLists)
 
         return None
 
@@ -556,46 +577,38 @@ class LPCPluginsRoot(PluginsRoot):
     def UpdateMethodsFromPLCStatus(self):
         # Get PLC state : Running or Stopped
         # TODO : use explicit status instead of boolean
-        simulating = False
-        if self.OnlineMode == 0:
-            if self._connector is not None:
-                simulating = self._connector.GetPLCstatus() == "Started"
+        if self.OnlineMode == "OFF":
             status = "Disconnected"
-        elif self.OnlineMode == 2:
-            if self._connector is not None:
-                simulating = self._connector.GetPLCstatus() == "Started"
+        elif self.OnlineMode == "BOOTLOADER":
             status = "Connected"
         else:
             if self._connector is not None:
                 status = self._connector.GetPLCstatus()
             else:
                 status = "Disconnected"
-        if self.previous_plcstate != status or self.previous_simulating != simulating:
+        if self.previous_plcstate != status or self.previous_mode != self.CurrentMode:
+            simulating = self.CurrentMode == SIMULATION_MODE
             for args in {
                      "Started" :     [("_Simulate", False),
                                       ("_Run", False),
                                       ("_Stop", True),
-                                      ("_build", False),
                                       ("_Transfer", False)],
-                     "Stopped" :     [("_Simulate", False),
+                     "Stopped" :     [("_Simulate", True),
                                       ("_Run", True),
                                       ("_Stop", False),
-                                      ("_build", False),
                                       ("_Transfer", False)],
                      "Connected" :   [("_Simulate", not simulating),
                                       ("_Run", False),
                                       ("_Stop", simulating),
-                                      ("_build", False),
                                       ("_Transfer", True)],
                      "Disconnected" :[("_Simulate", not simulating),
                                       ("_Run", False),
                                       ("_Stop", simulating),
-                                      ("_build", True),
                                       ("_Transfer", False)],
                    }.get(status,[]):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
-            self.previous_simulating = simulating
+            self.previous_mode = self.CurrentMode
             return True
         return False
 
@@ -619,6 +632,8 @@ type *name = &beremiz_##name;
         """
         Method called by user to Simulate PLC
         """
+        self.CurrentMode = SIMULATION_MODE
+        
         uri = "LOCAL://"
         try:
             self._connector = connectors.ConnectorFactory(uri, self)
@@ -630,11 +645,9 @@ type *name = &beremiz_##name;
         if self._connector is None:
             # Oups.
             self.logger.write_error(_("Connection failed to %s!\n")%uri)
+            self.StopSimulation()
             return False
         
-        self.BuildSimulation = True
-
-
         buildpath = self._getBuildPath()
         
         # Eventually create build dir
@@ -647,7 +660,7 @@ type *name = &beremiz_##name;
          # If IEC code gen fail, bail out.
         if not IECGenRes:
             self.logger.write_error(_("IEC-61131-3 code generation failed !\n"))
-            self.BuildSimulation = False
+            self.StopSimulation()
             return False
 
         # Reset variable and program list that are parsed from
@@ -694,26 +707,26 @@ type *name = &beremiz_##name;
             except Exception, exc:
                 self.logger.write_error(name+_(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
-                self.BuildSimulation = False
+                self.StopSimulation()
                 return False
         
         # Get simulation builder
         builder = self.GetBuilder()
         if builder is None:
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
-            self.BuildSimulation = False
+            self.StopSimulation()
             return False
 
         # Build
         try:
             if not builder.build() :
                 self.logger.write_error(_("C Build failed.\n"))
-                self.BuildSimulation = False
+                self.StopSimulation()
                 return False
         except Exception, exc:
             self.logger.write_error(_("C Build crashed !\n"))
             self.logger.write_error(traceback.format_exc())
-            self.BuildSimulation = False
+            self.StopSimulation()
             return False
 
         data = builder.GetBinaryCode()
@@ -727,16 +740,59 @@ type *name = &beremiz_##name;
                 self.logger.write(_("Transfer completed successfully.\n"))
             else:
                 self.logger.write_error(_("Transfer failed\n"))
-                self.BuildSimulation = False
+                self.StopSimulation()
                 return False
         
         self._Run()
                 
-        self.BuildSimulation = False
-
-        # Start the status Timer
-        self.StatusTimer.Start(milliseconds=500, oneShot=False)
+        if not self.StatusTimer.IsRunning():
+            # Start the status Timer
+            self.StatusTimer.Start(milliseconds=500, oneShot=False)
+    
+    def StopSimulation(self):
+        self.CurrentMode = None
+        self.ApplyOnlineMode()
+    
+    def _Stop(self):
+        PluginsRoot._Stop(self)
         
+        if self.CurrentMode == SIMULATION_MODE:
+            self.StopSimulation()
+
+    def _Transfer(self):
+        if self.CurrentMode is None and self.OnlineMode != "OFF":
+            self.CurrentMode = TRANSFER_MODE
+            
+            PluginsRoot._build(self)
+            
+            ID_ABORTTRANSFERTIMER = wx.NewId()
+            self.AbortTransferTimer = wx.Timer(self.AppFrame, ID_ABORTTRANSFERTIMER)
+            self.AppFrame.Bind(wx.EVT_TIMER, self.AbortTransfer, self.AbortTransferTimer)  
+            
+            if self.OnlineMode == "BOOTLOADER":
+                self.BeginTransfer()
+            
+            else:
+                self.logger.write(_("Resetting PLC\n"))
+                
+                self.LPCConnector.ResetPLC()
+                self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
+    
+    def BeginTransfer(self):
+        self.logger.write(_("Start PLC transfer\n"))
+        
+        self.AbortTransferTimer.Stop()
+        PluginsRoot._Transfer(self)
+        self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
+    
+    def AbortTransfer(self, event):
+        self.logger.write(_("Transfer failed\n"))
+        
+        self.CurrentMode = None
+        self.AbortTransferTimer.Stop()
+        self.AbortTransferTimer = None
+        event.Skip()
+
 #-------------------------------------------------------------------------------
 #                              LPCBeremiz Class
 #-------------------------------------------------------------------------------
@@ -795,7 +851,9 @@ class LPCBeremiz(Beremiz):
 
     def OnCloseFrame(self, event):
         global frame
-        frame = None
+        
+        frame.Hide()
+        
         self.PluginRoot.ResetAppFrame(lpcberemiz_cmd.Log)
         if self.PluginRoot.OnlineMode == 0:
             self.PluginRoot._connector = None
@@ -806,7 +864,7 @@ class LPCBeremiz(Beremiz):
         print "Closed"
         sys.stdout.flush()
         
-        event.Skip()
+        event.Veto()
 
     def ShowProperties(self):
         old_values = self.Controler.GetProjectProperties()
@@ -996,14 +1054,9 @@ class LPCBeremiz(Beremiz):
 frame = None
 app = None
 
-def GetApp():
-    global app
-    return app
-wx.GetApp = GetApp
-
-def BeremizStartProc(plugin_root):
+def MainLoopProc(plugin_root):
     global frame, app
-
+    
     app = wx.PySimpleApp()
     app.SetAppName('beremiz')
     wx.InitAllImageHandlers()
@@ -1025,17 +1078,11 @@ def BeremizStartProc(plugin_root):
     
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),__version__)
-
+    
     frame = LPCBeremiz(None, plugin_root=plugin_root, debug=True)
-    plugin_root.SetAppFrame(frame, frame.Log)
-    frame.Show()
-    frame.Raise()
     
     app.MainLoop()
-
-    frame = None
-    app = None
-
+    
 class StdoutPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def write(self, s, style = None):
@@ -1074,6 +1121,8 @@ if __name__ == '__main__':
                     print "Error: Invalid project directory", result
             else:
                 print "Error: No such file or directory"
+            beremiz_thread=Thread(target=MainLoopProc, args=[self.PluginRoot])
+            beremiz_thread.start()
             
         def RestartTimer(self):
             if self.RefreshTimer is not None:
@@ -1082,7 +1131,9 @@ if __name__ == '__main__':
             self.RefreshTimer.start()
         
         def Exit(self):
+            global frame, app
             self.Close()
+            app.ExitMainLoop()
             return True
         
         def do_EOF(self, line):
@@ -1090,9 +1141,9 @@ if __name__ == '__main__':
         
         def Show(self):
             global frame
-            if frame is None:
-                beremiz_thread=Thread(target=BeremizStartProc, args=[self.PluginRoot])
-                beremiz_thread.start()
+            if frame is not None:
+                self.PluginRoot.SetAppFrame(frame, frame.Log)
+                wx.CallAfter(frame.Show)
         
         def Refresh(self):
             global frame
@@ -1106,13 +1157,10 @@ if __name__ == '__main__':
             
             self.PluginRoot.ResetAppFrame(self.Log)
             if frame is not None:
-                wx.CallAfter(frame.Close)
+                wx.CallAfter(frame.Hide)
         
         def Compile(self):
-            if wx.GetApp() is None:
-                self.PluginRoot._build()
-            else:
-                wx.CallAfter(self.PluginRoot._build)
+            wx.CallAfter(self.PluginRoot._build)
         
         def SetProjectProperties(self, projectname, productname, productversion, companyname):
             properties = self.PluginRoot.GetProjectProperties()
@@ -1124,7 +1172,7 @@ if __name__ == '__main__':
             self.RestartTimer()
         
         def SetOnlineMode(self, mode, path=None):
-            self.PluginRoot.SetOnlineMode(mode, path)
+            wx.CallAfter(self.PluginRoot.SetOnlineMode, mode, path)
             self.RestartTimer()
         
         def AddBus(self, iec_channel, name, icon=None):
@@ -1156,7 +1204,13 @@ if __name__ == '__main__':
             for child in self.PluginRoot.IterChilds():
                 if child != bus and child.BaseParams.getIEC_Channel() == new_iec_channel:
                     return "Error: A bus with IEC_channel %d already exists" % new_iec_channel
-            self.PluginRoot.UpdateProjectVariableLocation(str(old_iec_channel), str(new_iec_channel))
+            if wx.GetApp() is None:
+                self.PluginRoot.UpdateProjectVariableLocation(str(old_iec_channel), 
+                                                              str(new_iec_channel))
+            else:
+                wx.CallAfter(self.PluginRoot.UpdateProjectVariableLocation,
+                             str(old_iec_channel), 
+                             str(new_iec_channel))
             bus.BaseParams.setIEC_Channel(new_iec_channel)
             self.RestartTimer()
         
