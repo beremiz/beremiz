@@ -38,7 +38,7 @@ class LPCAppObject(LPCObject):
             try:
                 self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
                 return res
-            except LPCError,e:
+            except LPCProtoError,e:
                 self.pluginsroot.logger.write_error(str(e)+"\n")
                 self.SerialConnection = None
                 self.PLCStatus = "Disconnected"
@@ -52,17 +52,17 @@ class LPCAppObject(LPCObject):
         PLCprint("StopPLC")
         self.HandleSerialTransaction(STOPTransaction())
 
-    def GetPLCstatus(self):
+    def ResetPLC(self):
         self.HandleSerialTransaction(RESETTransaction())
         return self.PLCStatus
 
-    def ResetPLC(self):
+    def GetPLCstatus(self):
         self.HandleSerialTransaction(IDLETransaction())
         return self.PLCStatus
 
     def MatchMD5(self, MD5):
         data = self.HandleSerialTransaction(GET_PLCIDTransaction())
-        print "PLCINFO",data[32:]
+        print "PLCINFO",data
         return data[:32] == MD5
 
     class IEC_STRING(ctypes.Structure):

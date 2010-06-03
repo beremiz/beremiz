@@ -19,7 +19,8 @@ class LPCBootTransaction:
         self.pseudofile = pseudofile
         
     def SendData(self):
-        return self.pseudofile.write(self.OptData) == len(self.OptData)
+        res = self.pseudofile.write(self.OptData)
+        return True 
 
     def GetData(self):
         pass # not impl

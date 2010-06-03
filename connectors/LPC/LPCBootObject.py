@@ -38,7 +38,7 @@ class LPCBootObject(LPCObject):
     
     def NewPLC(self, md5sum, data, extrafiles):
         self.successfully_transfered = self.HandleSerialTransaction(LOADTransaction(data))
-        return successfully_transfered
+        return self.successfully_transfered
 
     def MatchMD5(self, MD5):
         return self.successfully_transfered
