@@ -308,10 +308,10 @@ class LPCBus(object):
             var_loc = loc[i:]
             for variable in _GetModuleChildren(group):
                 if variable["location"] == var_loc:
-                    if location["DIR"] != LOCATION_DIRS[variable["type"]]:
-                        raise Exception, "Direction conflict in variable definition"
-                    if location["IEC_TYPE"] != variable["IEC_type"]:
-                        raise Exception, "Type conflict in variable definition"
+#                    if location["DIR"] != LOCATION_DIRS[variable["type"]]:
+#                        raise Exception, "Direction conflict in variable definition"
+#                    if location["IEC_TYPE"] != variable["IEC_type"]:
+#                        raise Exception, "Type conflict in variable definition"
                     if location["DIR"] == "Q":
                         if self.CheckLocationConflicts(location["LOC"]):
                             raise Exception, "BYTE and BIT from the same BYTE can't be used together"
@@ -448,7 +448,7 @@ class LPCPluginsRoot(PluginsRoot):
             self.OnlineMode = mode.upper()
             
             if self.OnlineMode != "OFF":
-                uri = "LPC://%s" % path
+                uri = "LPC://%s/%s" % (self.OnlineMode,path)
                 try:
                     self.LPCConnector = connectors.ConnectorFactory(uri, self)
                 except Exception, msg:
@@ -484,7 +484,7 @@ class LPCPluginsRoot(PluginsRoot):
                     status = ""
                 self.logger.write(_("PLC is %s\n")%status)
                 
-                if not self.StatusTimer.IsRunning():
+                if self.StatusTimer and not self.StatusTimer.IsRunning():
                     # Start the status Timer
                     self.StatusTimer.Start(milliseconds=500, oneShot=False)
                 
@@ -495,7 +495,7 @@ class LPCPluginsRoot(PluginsRoot):
                     else:
                         self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
             
-            elif self.StatusTimer.IsRunning():
+            elif self.StatusTimer and self.StatusTimer.IsRunning():
                 self.StatusTimer.Stop()
             
             if self.CurrentMode == TRANSFER_MODE:
@@ -794,7 +794,7 @@ type *name = &beremiz_##name;
         self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
     
     def AbortTransfer(self, event):
-        self.logger.write(_("Transfer failed\n"))
+        self.logger.write_warning(_("Timeout waiting PLC to recover\n"))
         
         self.CurrentMode = None
         self.AbortTransferTimer.Stop()
@@ -1416,7 +1416,7 @@ if __name__ == '__main__':
                                        "Close": ([], 0),
                                        "Compile": ([], 0),
                                        "SetProjectProperties": ([str, str, str, str], 0),
-                                       "SetOnlineMode": ([int, str], 1),
+                                       "SetOnlineMode": ([str, str], 1),
                                        "AddBus": ([int, str, str], 1),
                                        "RenameBus": ([int, str], 0),
                                        "ChangeBusIECChannel": ([int, int], 0),
