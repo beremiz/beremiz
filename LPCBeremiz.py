@@ -42,22 +42,14 @@ if __name__ == '__main__':
         projectOpen = None
         buildpath = None
     
-class PseudoLocale:
-    LocaleDirs = []
-    Domains = []
-    
-    def AddCatalogLookupPathPrefix(self, localedir):
-        self.LocaleDirs.append(localedir)
-    
-    def AddCatalog(self, domain):
-        self.Domains.append(domain)
+
+app = wx.PySimpleApp()
+app.SetAppName('beremiz')
+wx.InitAllImageHandlers()
 
 # Import module for internationalization
 import gettext
 import __builtin__
-
-# Define locale for wx
-__builtin__.__dict__['loc'] = PseudoLocale()
 
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
@@ -1059,38 +1051,6 @@ class LPCBeremiz(Beremiz):
             if not locations_infos["root"]["expanded"]:
                 self.CollapseLocation(locations_infos, "root")
 
-frame = None
-app = None
-
-def MainLoopProc(plugin_root):
-    global frame, app
-    
-    app = wx.PySimpleApp()
-    app.SetAppName('beremiz')
-    wx.InitAllImageHandlers()
-    
-    # Get the english language
-    langid = wx.LANGUAGE_ENGLISH
-    # Import module for internationalization
-    import gettext
-    import __builtin__
-    
-    # Define locale for wx
-    loc = wx.Locale(langid)
-    for localedir in PseudoLocale.LocaleDirs:
-        loc.AddCatalogLookupPathPrefix(localedir)
-    for domain in PseudoLocale.Domains:
-        loc.AddCatalog(domain)
-    
-    __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
-    
-    # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),__version__)
-    
-    frame = LPCBeremiz(None, plugin_root=plugin_root, debug=True)
-    
-    app.MainLoop()
-    
 class StdoutPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def write(self, s, style = None):
@@ -1111,31 +1071,43 @@ class StdoutPseudoFile:
 
 if __name__ == '__main__':
     
-    from threading import Thread, Timer
+    from threading import Thread, Timer, Semaphore
     import cmd
+
+    wx_eval_lock = Semaphore(0)
+    eval_res = None
+    def wx_evaluator(callable, *args, **kwargs):
+        global eval_res
+        eval_res = None
+        try:
+            eval_res=callable(*args,**kwargs)
+        finally:
+            wx_eval_lock.release()
+
+    def evaluator(callable, *args, **kwargs):
+        global eval_res
+        wx.CallAfter(wx_evaluator,callable,*args,**kwargs)
+        wx_eval_lock.acquire()
+        return eval_res
+
+    # Command log for debug, for viewing from wxInspector
+    __builtins__.cmdlog = []
+    cmdlogf=open("bmzcmdlog.txt","w")
 
     class LPCBeremiz_Cmd(cmd.Cmd):
         
         prompt = ""
-        Log = StdoutPseudoFile()
         RefreshTimer = None
         
-        def __init__(self, projectOpen, buildpath):
+        def __init__(self, PluginRoot, Log):
             cmd.Cmd.__init__(self)
-            self.PluginRoot = LPCPluginsRoot(None, self.Log)
-            if projectOpen is not None and os.path.isdir(projectOpen):
-                result = self.PluginRoot.LoadProject(projectOpen, buildpath)
-                if result:
-                    print "Error: Invalid project directory", result
-            else:
-                print "Error: No such file or directory"
-            beremiz_thread=Thread(target=MainLoopProc, args=[self.PluginRoot])
-            beremiz_thread.start()
+            self.Log = Log
+            self.PluginRoot = PluginRoot
             
         def RestartTimer(self):
             if self.RefreshTimer is not None:
                 self.RefreshTimer.cancel()
-            self.RefreshTimer = Timer(0.1, self.Refresh)
+            self.RefreshTimer = Timer(0.1, wx.CallAfter, args = [self.Refresh])
             self.RefreshTimer.start()
         
         def Exit(self):
@@ -1151,25 +1123,25 @@ if __name__ == '__main__':
             global frame
             if frame is not None:
                 self.PluginRoot.SetAppFrame(frame, frame.Log)
-                wx.CallAfter(frame.Show)
-                wx.CallAfter(frame.Raise)
+                frame.Show()
+                frame.Raise()
         
         def Refresh(self):
             global frame
             if frame is not None:
-                wx.CallAfter(frame._Refresh, TITLE, INSTANCESTREE, FILEMENU, EDITMENU)
-                wx.CallAfter(frame.RefreshEditor)
-                wx.CallAfter(frame.RefreshAll)
+                frame._Refresh(TITLE, INSTANCESTREE, FILEMENU, EDITMENU)
+                frame.RefreshEditor()
+                frame.RefreshAll()
         
         def Close(self):
             global frame
             
             self.PluginRoot.ResetAppFrame(self.Log)
             if frame is not None:
-                wx.CallAfter(frame.Hide)
+                frame.Hide()
         
         def Compile(self):
-            wx.CallAfter(self.PluginRoot._build)
+            self.PluginRoot._build()
         
         def SetProjectProperties(self, projectname, productname, productversion, companyname):
             properties = self.PluginRoot.GetProjectProperties()
@@ -1181,7 +1153,7 @@ if __name__ == '__main__':
             self.RestartTimer()
         
         def SetOnlineMode(self, mode, path=None):
-            wx.CallAfter(self.PluginRoot.SetOnlineMode, mode, path)
+            self.PluginRoot.SetOnlineMode(mode, path)
             self.RestartTimer()
         
         def AddBus(self, iec_channel, name, icon=None):
@@ -1217,7 +1189,7 @@ if __name__ == '__main__':
                 self.PluginRoot.UpdateProjectVariableLocation(str(old_iec_channel), 
                                                               str(new_iec_channel))
             else:
-                wx.CallAfter(self.PluginRoot.UpdateProjectVariableLocation,
+                self.PluginRoot.UpdateProjectVariableLocation(
                              str(old_iec_channel), 
                              str(new_iec_channel))
             bus.BaseParams.setIEC_Channel(new_iec_channel)
@@ -1401,7 +1373,18 @@ if __name__ == '__main__':
                     print "Error: Invalid value for argument %d" % (num + 1)
                     sys.stdout.flush()
                     return
-            res = getattr(self, function)(*args)
+
+            cmdlogf.write(str((function,line))+'\n')
+
+            func = getattr(self, function)
+            res = evaluator(func,*args)
+
+            # Keep log for debug
+            cmdlogf.write("--->"+str(res)+'\n')
+            cmdlog.append((function,line,res))
+            if len(cmdlog) > 100: #prevent debug log to grow too much
+                cmdlog.pop(0) 
+
             if isinstance(res, (StringType, UnicodeType)):
                 print res
                 sys.stdout.flush()
@@ -1409,29 +1392,49 @@ if __name__ == '__main__':
             else:
                 return res
         return CmdFunction
-    
-    for function, (arg_types, opt) in {"Exit": ([], 0),
-                                       "Show": ([], 0),
-                                       "Refresh": ([], 0),
-                                       "Close": ([], 0),
-                                       "Compile": ([], 0),
-                                       "SetProjectProperties": ([str, str, str, str], 0),
-                                       "SetOnlineMode": ([str, str], 1),
-                                       "AddBus": ([int, str, str], 1),
-                                       "RenameBus": ([int, str], 0),
-                                       "ChangeBusIECChannel": ([int, int], 0),
-                                       "RemoveBus": ([int], 0),
-                                       "AddModule": ([location, int, str, str], 1), 
-                                       "RenameModule": ([location, str], 0),
-                                       "ChangeModuleIECChannel": ([location, int], 0),
-                                       "RemoveModule": ([location, int], 0),
-                                       "StartGroup": ([location, str, str], 1),
-                                       "AddVariable": ([location, location, str, str, str, str, str, str, str], 1),
-                                       "ChangeVariableParams": ([location, location, str, str, str, str, str, str, str], 1),
-                                       "RemoveVariable": ([location, location], 0)}.iteritems():
-        
-        setattr(LPCBeremiz_Cmd, "do_%s" % function, GetCmdFunction(function, arg_types, opt))
-    
-    lpcberemiz_cmd = LPCBeremiz_Cmd(projectOpen, buildpath)
-    lpcberemiz_cmd.cmdloop()
 
+    def CmdThreadProc(PluginRoot, Log):
+        for function, (arg_types, opt) in {"Exit": ([], 0),
+                                           "Show": ([], 0),
+                                           "Refresh": ([], 0),
+                                           "Close": ([], 0),
+                                           "Compile": ([], 0),
+                                           "SetProjectProperties": ([str, str, str, str], 0),
+                                           "SetOnlineMode": ([str, str], 1),
+                                           "AddBus": ([int, str, str], 1),
+                                           "RenameBus": ([int, str], 0),
+                                           "ChangeBusIECChannel": ([int, int], 0),
+                                           "RemoveBus": ([int], 0),
+                                           "AddModule": ([location, int, str, str], 1), 
+                                           "RenameModule": ([location, str], 0),
+                                           "ChangeModuleIECChannel": ([location, int], 0),
+                                           "RemoveModule": ([location, int], 0),
+                                           "StartGroup": ([location, str, str], 1),
+                                           "AddVariable": ([location, location, str, str, str, str, str, str, str], 1),
+                                           "ChangeVariableParams": ([location, location, str, str, str, str, str, str, str], 1),
+                                           "RemoveVariable": ([location, location], 0)}.iteritems():
+            
+            setattr(LPCBeremiz_Cmd, "do_%s" % function, GetCmdFunction(function, arg_types, opt))
+        lpcberemiz_cmd = LPCBeremiz_Cmd(PluginRoot, Log)
+        lpcberemiz_cmd.cmdloop()
+
+    Log = StdoutPseudoFile()
+
+    PluginRoot = LPCPluginsRoot(None, Log)
+    if projectOpen is not None and os.path.isdir(projectOpen):
+        result = PluginRoot.LoadProject(projectOpen, buildpath)
+        if result:
+            print "Error: Invalid project directory", result
+    else:
+        print "Error: No such file or directory"
+    
+    cmd_thread=Thread(target=CmdThreadProc, args=[PluginRoot, Log])
+    cmd_thread.start()
+
+    # Install a exception handle for bug reports
+    AddExceptHook(os.getcwd(),__version__)
+    
+    frame = LPCBeremiz(None, plugin_root=PluginRoot, debug=True)
+    
+    app.MainLoop()
+    
