@@ -56,7 +56,7 @@ class toolchain_makefile():
             f.close()
         beremizcommand = {"src": ' '.join(srcfiles),
                           "cflags": ' '.join(cflags),
-                          "md5": self.md5key
+                          "md5": '"'+self.md5key+'"'
                          }
         
         target = self.PluginsRootInstance.GetTarget().getcontent()["value"]
