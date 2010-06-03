@@ -1894,19 +1894,19 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Check remote target PLC correspondance to that md5
         if MD5 is not None:
             if not self._connector.MatchMD5(MD5):
-                self.logger.write_warning(
-                   _("Latest build does not match with target, please transfer.\n"))
+#                self.logger.write_warning(
+#                   _("Latest build does not match with target, please transfer.\n"))
                 self.EnableMethod("_Transfer", True)
             else:
-                self.logger.write(
-                   _("Latest build matches target, no transfer needed.\n"))
+#                self.logger.write(
+#                   _("Latest build matches target, no transfer needed.\n"))
                 self.EnableMethod("_Transfer", True)
                 # warns controller that program match
                 self.ProgramTransferred()
                 #self.EnableMethod("_Transfer", False)
         else:
-            self.logger.write_warning(
-                _("Cannot compare latest build to target. Please build.\n"))
+#            self.logger.write_warning(
+#                _("Cannot compare latest build to target. Please build.\n"))
             self.EnableMethod("_Transfer", False)
 
 
