@@ -19,19 +19,17 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-permanant_connector = None
-
 def LPC_connector_factory(uri, pluginsroot):
     """
     This returns the connector to LPC style PLCobject
     """
-    from LPCObject import LPCObject
-    global permanant_connector
     servicetype, location = uri.split("://")
-    if permanant_connector is None:
-        permanant_connector  = LPCObject(pluginsroot,location)
-    else:
-        permanant_connector.UpdateLocation(location)
-    return permanant_connector
-    
+    mode,comportstr = location.split('/')
+    if mode=="APPLICATION":
+        from LPCAppObject import LPCAppObject 
+        return LPCAppObject(pluginsroot,comportstr)
+    elif mode=="BOOTLOADER":
+        from LPCBootObject import LPCBootObject 
+        return LPCBootObject(pluginsroot,comportstr)
+
 
