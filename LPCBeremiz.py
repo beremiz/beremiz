@@ -796,6 +796,7 @@ type *name = &beremiz_##name;
 #-------------------------------------------------------------------------------
 #                              LPCBeremiz Class
 #-------------------------------------------------------------------------------
+lpcberemiz_cmd=None
 
 class LPCBeremiz(Beremiz):
     
@@ -1394,6 +1395,7 @@ if __name__ == '__main__':
         return CmdFunction
 
     def CmdThreadProc(PluginRoot, Log):
+        global lpcberemiz_cmd
         for function, (arg_types, opt) in {"Exit": ([], 0),
                                            "Show": ([], 0),
                                            "Refresh": ([], 0),
