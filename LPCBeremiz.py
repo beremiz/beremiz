@@ -406,7 +406,7 @@ class LPCPluginsRoot(PluginsRoot):
         self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
 
         self.OnlineMode = "OFF"
-        self.LPCConnector = False
+        self.LPCConnector = None
         
         self.CurrentMode = None
         self.previous_mode = None
