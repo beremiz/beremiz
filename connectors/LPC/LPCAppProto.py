@@ -1,8 +1,8 @@
 import ctypes
 from LPCProto import *
 
-LPC_STATUS={0x01 : "Started",
-            0x02 : "Stopped"}
+LPC_STATUS={0xaa : "Started",
+            0x55 : "Stopped"}
 
 class LPCAppProto(LPCProto):
     def HandleTransaction(self, transaction):
