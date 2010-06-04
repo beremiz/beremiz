@@ -1123,7 +1123,7 @@ if __name__ == '__main__':
 
     # Command log for debug, for viewing from wxInspector
     __builtins__.cmdlog = []
-    cmdlogf=open("bmzcmdlog.txt","w")
+    #cmdlogf=open("bmzcmdlog.txt","w")
 
     class LPCBeremiz_Cmd(cmd.Cmd):
         
@@ -1411,13 +1411,16 @@ if __name__ == '__main__':
                     sys.stdout.flush()
                     return
 
-            cmdlogf.write(str((function,line))+'\n')
-
+            #cmdlogf.write(str((function,line))+'\n')
+            #cmdlogf.flush()
+            
             func = getattr(self, function)
             res = evaluator(func,*args)
 
             # Keep log for debug
-            cmdlogf.write("--->"+str(res)+'\n')
+            #cmdlogf.write("--->"+str(res)+'\n')
+            #cmdlogf.flush()
+
             cmdlog.append((function,line,res))
             if len(cmdlog) > 100: #prevent debug log to grow too much
                 cmdlog.pop(0) 
