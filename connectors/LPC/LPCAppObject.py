@@ -45,11 +45,9 @@ class LPCAppObject(LPCObject):
                 return None
 
     def StartPLC(self, debug=False):
-        PLCprint("StartPLC")
         self.HandleSerialTransaction(STARTTransaction())
             
     def StopPLC(self):
-        PLCprint("StopPLC")
         self.HandleSerialTransaction(STOPTransaction())
 
     def ResetPLC(self):
@@ -62,7 +60,6 @@ class LPCAppObject(LPCObject):
 
     def MatchMD5(self, MD5):
         data = self.HandleSerialTransaction(GET_PLCIDTransaction())
-        print "PLCINFO",data
         return data[:32] == MD5
 
     class IEC_STRING(ctypes.Structure):
@@ -145,13 +142,13 @@ class LPCAppObject(LPCObject):
                                                        ctypes.POINTER(c_type)).contents))
                     offset += ctypes.sizeof(c_type)
                 else:
-                    if c_type is None:
-                        PLCprint("Debug error - " + iectype + " not supported !")
-                    if offset >= size:
-                        PLCprint("Debug error - buffer too small !")
+                    #if c_type is None:
+                        #PLCprint("Debug error - " + iectype + " not supported !")
+                    #if offset >= size:
+                        #PLCprint("Debug error - buffer too small !")
                     break
             if offset and offset == size:
                 return self.PLCStatus, tick.value, res
-            PLCprint("Debug error - wrong buffer unpack !")
+            #PLCprint("Debug error - wrong buffer unpack !")
         return self.PLCStatus, None, None
 
