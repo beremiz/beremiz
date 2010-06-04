@@ -30,7 +30,7 @@ class LPCObject():
         self.pluginsroot = pluginsroot
         self.PLCprint = pluginsroot.logger.write
         self._Idxs = []
-        comport = int(comportstr[3:comportstr.index(':')]) - 1
+        comport = int(comportstr[3:]) - 1
         try:
             self.connect(comportstr)
         except Exception,e:
