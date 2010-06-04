@@ -32,7 +32,7 @@ class LPCAppObject(LPCObject):
                                          115200, #speed
                                          2)      #timeout
         self.HandleSerialTransaction(IDLETransaction())
-        
+
     def StartPLC(self, debug=False):
         self.HandleSerialTransaction(STARTTransaction())
             
@@ -50,7 +50,9 @@ class LPCAppObject(LPCObject):
 
     def MatchMD5(self, MD5):
         data = self.HandleSerialTransaction(GET_PLCIDTransaction())
-        return data[:32] == MD5
+        if data is not None:
+            return data[:32] == MD5
+        return False
 
     class IEC_STRING(ctypes.Structure):
         """
