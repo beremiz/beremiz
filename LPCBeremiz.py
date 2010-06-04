@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import shutil
+import socket
 
 __version__ = "$Revision$"
 
@@ -15,7 +16,7 @@ def Bpath(*args):
 if __name__ == '__main__':
     def usage():
         print "\nUsage of LPCBeremiz.py :"
-        print "\n   %s [Projectpath] [Buildpath]\n"%sys.argv[0]
+        print "\n   %s Projectpath Buildpath port\n"%sys.argv[0]
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
@@ -29,19 +30,17 @@ if __name__ == '__main__':
             usage()
             sys.exit()
     
-    if len(args) > 2:
+    if len(args) != 3:
         usage()
         sys.exit()
-    elif len(args) == 1:
-        projectOpen = args[0]
-        buildpath = None
-    elif len(args) == 2:
+    else:
         projectOpen = args[0]
         buildpath = args[1]
-    else:
-        projectOpen = None
-        buildpath = None
-    
+        try:
+            port = int(args[2])
+        except:
+            usage()
+            sys.exit()
 
 app = wx.PySimpleApp()
 app.SetAppName('beremiz')
@@ -1062,10 +1061,21 @@ class LPCBeremiz(Beremiz):
                 self.CollapseLocation(locations_infos, "root")
 
 class StdoutPseudoFile:
+    
+    def __init__(self, port):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect(('localhost', port))
+    
+    def __del__(self):
+        self.socket.close()
+    
+    def readline(self):
+        return self.socket.recv(2048)
+    
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def write(self, s, style = None):
         if s != '':
-            print s
+            self.socket.send(s)
         
     def write_warning(self, s):
         self.write(s)
@@ -1077,7 +1087,7 @@ class StdoutPseudoFile:
         pass
     
     def isatty(self):
-        return false
+        return False
 
 if __name__ == '__main__':
     
@@ -1110,7 +1120,8 @@ if __name__ == '__main__':
         RefreshTimer = None
         
         def __init__(self, PluginRoot, Log):
-            cmd.Cmd.__init__(self)
+            cmd.Cmd.__init__(self, stdin=Log, stdout=Log)
+            self.use_rawinput = False
             self.Log = Log
             self.PluginRoot = PluginRoot
             
@@ -1169,32 +1180,32 @@ if __name__ == '__main__':
         def AddBus(self, iec_channel, name, icon=None):
             for child in self.PluginRoot.IterChilds():
                 if child.BaseParams.getName() == name:
-                    return "Error: A bus named %s already exists" % name
+                    return "Error: A bus named %s already exists\n" % name
                 elif child.BaseParams.getIEC_Channel() == iec_channel:
-                    return "Error: A bus with IEC_channel %d already exists" % iec_channel
+                    return "Error: A bus with IEC_channel %d already exists\n" % iec_channel
             bus = self.PluginRoot.PlugAddChild(name, "LPCBus", iec_channel)
             if bus is None:
-                return "Error: Unable to create bus"
+                return "Error: Unable to create bus\n"
             bus.SetIcon(icon)
             self.RestartTimer()
         
         def RenameBus(self, iec_channel, name):
             bus = self.PluginRoot.GetChildByIECLocation((iec_channel,))
             if bus is None:
-                return "Error: No bus found"
+                return "Error: No bus found\n"
             for child in self.PluginRoot.IterChilds():
                 if child != bus and child.BaseParams.getName() == name:
-                    return "Error: A bus named %s already exists" % name
+                    return "Error: A bus named %s already exists\n" % name
             bus.BaseParams.setName(name)
             self.RestartTimer()
         
         def ChangeBusIECChannel(self, old_iec_channel, new_iec_channel):
             bus = self.PluginRoot.GetChildByIECLocation((old_iec_channel,))
             if bus is None:
-                return "Error: No bus found"
+                return "Error: No bus found\n"
             for child in self.PluginRoot.IterChilds():
                 if child != bus and child.BaseParams.getIEC_Channel() == new_iec_channel:
-                    return "Error: A bus with IEC_channel %d already exists" % new_iec_channel
+                    return "Error: A bus with IEC_channel %d already exists\n" % new_iec_channel
             if wx.GetApp() is None:
                 self.PluginRoot.UpdateProjectVariableLocation(str(old_iec_channel), 
                                                               str(new_iec_channel))
@@ -1208,7 +1219,7 @@ if __name__ == '__main__':
         def RemoveBus(self, iec_channel):
             bus = self.PluginRoot.GetChildByIECLocation((iec_channel,))
             if bus is None:
-                return "Error: No bus found"
+                return "Error: No bus found\n"
             self.PluginRoot.RemoveProjectVariableByFilter(str(iec_channel))
             self.PluginRoot.PluggedChilds["LPCBus"].remove(bus)
             self.RestartTimer()
@@ -1216,12 +1227,12 @@ if __name__ == '__main__':
         def AddModule(self, parent, iec_channel, name, icon=None):
             module = self.PluginRoot.GetChildByIECLocation(parent)
             if module is None:
-                return "Error: No parent found"
+                return "Error: No parent found\n"
             for child in _GetModuleChildren(module):
                 if child["name"] == name:
-                    return "Error: A module named %s already exists" % name
+                    return "Error: A module named %s already exists\n" % name
                 elif child["IEC_Channel"] == iec_channel:
-                    return "Error: A module with IEC_channel %d already exists" % iec_channel 
+                    return "Error: A module with IEC_channel %d already exists\n" % iec_channel 
             _GetLastModuleGroup(module).append({"name": name, 
                                                 "type": LOCATION_MODULE, 
                                                 "IEC_Channel": iec_channel, 
@@ -1232,28 +1243,28 @@ if __name__ == '__main__':
         def RenameModule(self, iec_location, name):
             module = self.PluginRoot.GetChildByIECLocation(iec_location)
             if module is None:
-                return "Error: No module found"
+                return "Error: No module found\n"
             parent = self.PluginRoot.GetChildByIECLocation(iec_location[:-1])
             if parent is self.PluginRoot:
-                return "Error: No module found"
+                return "Error: No module found\n"
             if module["name"] != name:
                 for child in _GetModuleChildren(parent):
                     if child["name"] == name:
-                        return "Error: A module named %s already exists" % name
+                        return "Error: A module named %s already exists\n" % name
                 module["name"] = name
             self.RestartTimer()
     
         def ChangeModuleIECChannel(self, old_iec_location, new_iec_channel):
             module = self.PluginRoot.GetChildByIECLocation(old_iec_location)
             if module is None:
-                return "Error: No module found"
+                return "Error: No module found\n"
             parent = self.PluginRoot.GetChildByIECLocation(old_iec_location[:-1])
             if parent is self.PluginRoot:
-                return "Error: No module found"
+                return "Error: No module found\n"
             if module["IEC_Channel"] != new_iec_channel:
                 for child in _GetModuleChildren(parent):
                     if child["IEC_Channel"] == new_iec_channel:
-                        return "Error: A module with IEC_channel %d already exists" % new_iec_channel
+                        return "Error: A module with IEC_channel %d already exists\n" % new_iec_channel
             self.PluginRoot.UpdateProjectVariableLocation(".".join(map(str, old_iec_location)), ".".join(map(str, old_iec_location[:1] + (new_iec_channel,))))
             module["IEC_Channel"] = new_iec_channel
             self.RestartTimer()
@@ -1261,10 +1272,10 @@ if __name__ == '__main__':
         def RemoveModule(self, parent, iec_channel):
             module = self.PluginRoot.GetChildByIECLocation(parent)
             if module is None:
-                return "Error: No parent found"
+                return "Error: No parent found\n"
             child = _GetModuleBySomething(module, "IEC_Channel", (iec_channel,))
             if child is None:
-                return "Error: No module found"
+                return "Error: No module found\n"
             self.PluginRoot.RemoveProjectVariableByFilter(".".join(map(str, parent + (iec_channel,))))
             _RemoveModuleChild(module, child)
             self.RestartTimer()
@@ -1272,10 +1283,10 @@ if __name__ == '__main__':
         def StartGroup(self, parent, name, icon=None):
             module = self.PluginRoot.GetChildByIECLocation(parent)
             if module is None:
-                return "Error: No parent found"
+                return "Error: No parent found\n"
             for child in module["children"]:
                 if child["type"] == LOCATION_GROUP and child["name"] == name:
-                    return "Error: A group named %s already exists" % name
+                    return "Error: A group named %s already exists\n" % name
             module["children"].append({"name": name, 
                                       "type": LOCATION_GROUP, 
                                       "icon": icon, 
@@ -1285,12 +1296,12 @@ if __name__ == '__main__':
         def AddVariable(self, parent, location, name, direction, type, dcode, rcode, pcode, description=""):
             module = self.PluginRoot.GetChildByIECLocation(parent)
             if module is None:
-                return "Error: No parent found"
+                return "Error: No parent found\n"
             for child in _GetModuleChildren(module):
                 if child["name"] == name:
-                    return "Error: A variable named %s already exists" % name
+                    return "Error: A variable named %s already exists\n" % name
                 if child["location"] == location and child["type"] == LOCATION_TYPES[direction]:
-                    return "Error: A variable with location %s already exists" % ".".join(map(str, location))
+                    return "Error: A variable with location %s already exists\n" % ".".join(map(str, location))
             _GetLastModuleGroup(module).append({"name": name, 
                                                 "location": location, 
                                                 "type": LOCATION_TYPES[direction], 
@@ -1304,15 +1315,15 @@ if __name__ == '__main__':
         def ChangeVariableParams(self, parent, location, new_name, new_direction, new_type, new_dcode, new_rcode, new_pcode, new_description=None):
             module = self.PluginRoot.GetChildByIECLocation(parent)
             if module is None:
-                return "Error: No parent found"
+                return "Error: No parent found\n"
             variable = None
             for child in _GetModuleChildren(module):
                 if child["location"] == location and child["type"] == LOCATION_TYPES[new_direction]:
                     variable = child
                 elif child["name"] == new_name:
-                    return "Error: A variable named %s already exists" % new_name
+                    return "Error: A variable named %s already exists\n" % new_name
             if variable is None:
-                return "Error: No variable found"
+                return "Error: No variable found\n"
             if variable["name"] != new_name:
                 self.PluginRoot.UpdateProjectVariableName(variable["name"], new_name)
                 variable["name"] = new_name
@@ -1328,10 +1339,10 @@ if __name__ == '__main__':
         def RemoveVariable(self, parent, location, direction):
             module = self.PluginRoot.GetChildByIECLocation(parent)
             if module is None:
-                return "Error: No parent found"
+                return "Error: No parent found\n"
             child = _GetModuleVariable(module, location, direction)
             if child is None:
-                return "Error: No variable found"
+                return "Error: No variable found\n"
             size = LOCATION_SIZES[self.PluginRoot.GetBaseType(child["IEC_type"])]
             address = "%" + LOCATION_DIRS[child["type"]] + size + ".".join(map(str, parent + location))
             self.PluginRoot.RemoveProjectVariableByAddress(address)
@@ -1346,7 +1357,7 @@ if __name__ == '__main__':
         def CmdFunction(self, line):
             args_toks = line.split('"')
             if len(args_toks) % 2 == 0:
-                print "Error: Invalid command"
+                self.Log.write("Error: Invalid command\n")
                 sys.stdout.flush()
                 return
             args = []
@@ -1369,18 +1380,18 @@ if __name__ == '__main__':
                 extra = " at least"
             if number is not None:
                 if number == 0:
-                    print "Error: No argument%s expected" % extra
+                    self.Log.write("Error: No argument%s expected\n" % extra)
                 elif number == 1:
-                    print "Error: 1 argument%s expected" % extra
+                    self.Log.write("Error: 1 argument%s expected\n" % extra)
                 else:
-                    print "Error: %d arguments%s expected" % (number, extra)
+                    self.Log.write("Error: %d arguments%s expected\n" % (number, extra))
                 sys.stdout.flush()
                 return
             for num, arg in enumerate(args):
                 try:
                     args[num] = arg_types[num](arg)
                 except:
-                    print "Error: Invalid value for argument %d" % (num + 1)
+                    self.Log.write("Error: Invalid value for argument %d\n" % (num + 1))
                     sys.stdout.flush()
                     return
 
@@ -1396,8 +1407,7 @@ if __name__ == '__main__':
                 cmdlog.pop(0) 
 
             if isinstance(res, (StringType, UnicodeType)):
-                print res
-                sys.stdout.flush()
+                self.Log.write(res)
                 return False
             else:
                 return res
@@ -1429,15 +1439,15 @@ if __name__ == '__main__':
         lpcberemiz_cmd = LPCBeremiz_Cmd(PluginRoot, Log)
         lpcberemiz_cmd.cmdloop()
 
-    Log = StdoutPseudoFile()
+    Log = StdoutPseudoFile(port)
 
     PluginRoot = LPCPluginsRoot(None, Log)
     if projectOpen is not None and os.path.isdir(projectOpen):
         result = PluginRoot.LoadProject(projectOpen, buildpath)
         if result:
-            print "Error: Invalid project directory", result
+            Log.write("Error: Invalid project directory", result)
     else:
-        print "Error: No such file or directory"
+        Log.write("Error: No such file or directory")
     
     cmd_thread=Thread(target=CmdThreadProc, args=[PluginRoot, Log])
     cmd_thread.start()
