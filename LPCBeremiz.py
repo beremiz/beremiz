@@ -870,8 +870,7 @@ class LPCBeremiz(Beremiz):
         self.PluginRoot.KillDebugThread()
         self.KillLocalRuntime()
         
-        print "Closed"
-        sys.stdout.flush()
+        lpcberemiz_cmd.Log.write("Closed\n")
         
         event.Veto()
 
@@ -1065,12 +1064,21 @@ class StdoutPseudoFile:
     def __init__(self, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect(('localhost', port))
+        self.Buffer = ""
     
     def __del__(self):
         self.socket.close()
     
     def readline(self):
-        return self.socket.recv(2048)
+        idx = self.Buffer.find("\n")
+        if idx == -1:
+            self.Buffer += self.socket.recv(2048)
+            idx = self.Buffer.find("\n")
+        if idx != -1:
+            line = self.Buffer[:idx+1]
+            self.Buffer = self.Buffer[idx+1:]
+            return line
+        return ""
     
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def write(self, s, style = None):
