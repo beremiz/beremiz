@@ -45,6 +45,7 @@ class LPCObject():
                 return res
             except LPCProtoError,e:
                 self.pluginsroot.logger.write_error(str(e)+"\n")
+                self.SerialConnection.close()
                 self.SerialConnection = None
                 self.PLCStatus = "Disconnected"
                 return None

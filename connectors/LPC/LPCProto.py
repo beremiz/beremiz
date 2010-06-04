@@ -17,25 +17,32 @@ class LPCProto:
         # open serial port
 #        self.serialPort = serial.Serial( port, rate, timeout = timeout )
         # Debugging serial stuff
-        self._serialPort = serial.Serial( port, rate, timeout = timeout )
-        class myser:
-            def read(self_,cnt):
-                res = self._serialPort.read(cnt)
-                if len(res) > 16:
-                    print "Recv :", map(hex,map(ord,res[:16])), "[...]"
-                else:
-                    print "Recv :", map(hex,map(ord,res))
-                    
-                return res
-            def write(self_, str):
-                if len(str) > 16:
-                    print "Send :", map(hex,map(ord,str[:16])), "[...]"
-                else:
-                    print "Send :", map(hex,map(ord,str))
-                self._serialPort.write(str)
-            def flush(self_):
-                self._serialPort.flush()
-        self.serialPort = myser()
+        self.serialPort = serial.Serial( port, rate, timeout = timeout )
+#        class myser:
+#            def read(self_,cnt):
+#                res = self._serialPort.read(cnt)
+#                if len(res) > 16:
+#                    print "Recv :", map(hex,map(ord,res[:16])), "[...]"
+#                else:
+#                    print "Recv :", map(hex,map(ord,res))
+#                    
+#                return res
+#            def write(self_, str):
+#                if len(str) > 16:
+#                    print "Send :", map(hex,map(ord,str[:16])), "[...]"
+#                else:
+#                    print "Send :", map(hex,map(ord,str))
+#                self._serialPort.write(str)
+#            def flush(self_):
+#                self._serialPort.flush()
+#        self.serialPort = myser()
         # start with empty
         self.serialPort.flush()
     
+    def __del__(self):
+        if self.serialPort:
+            self.serialPort.close()
+
+    def close(self):
+        self.serialPort.close()
+        self.serialPort = None

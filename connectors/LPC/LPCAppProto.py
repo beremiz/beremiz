@@ -15,7 +15,9 @@ class LPCAppProto(LPCProto):
             if current_plc_status is not None:
                 res = transaction.ExchangeData()
             else:
-                raise LPCProtoError("LPC transaction error - controller did not answer as expected")
+                raise LPCProtoError("controller did not answer as expected")
+        except Exception, e:
+            raise LPCProtoError("LPC transaction error : "+str(e))
         finally:
             self.TransactionLock.release()
         return LPC_STATUS.get(current_plc_status,"Broken"), res

@@ -33,17 +33,6 @@ class LPCAppObject(LPCObject):
                                          2)      #timeout
         self.HandleSerialTransaction(IDLETransaction())
         
-    def HandleSerialTransaction(self, transaction):
-        if self.SerialConnection is not None:
-            try:
-                self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
-                return res
-            except LPCProtoError,e:
-                self.pluginsroot.logger.write_error(str(e)+"\n")
-                self.SerialConnection = None
-                self.PLCStatus = "Disconnected"
-                return None
-
     def StartPLC(self, debug=False):
         self.HandleSerialTransaction(STARTTransaction())
             
