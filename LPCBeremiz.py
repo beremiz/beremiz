@@ -599,17 +599,17 @@ class LPCPluginsRoot(PluginsRoot):
                      "Started" :     [("_Simulate", False),
                                       ("_Run", False),
                                       ("_Stop", True),
-                                      ("_build", False),
+                                      ("_build", True),
                                       ("_Transfer", True)],
                      "Stopped" :     [("_Simulate", False),
                                       ("_Run", True),
                                       ("_Stop", False),
-                                      ("_build", False),
+                                      ("_build", True),
                                       ("_Transfer", True)],
                      "Connected" :   [("_Simulate", not simulating),
                                       ("_Run", False),
                                       ("_Stop", simulating),
-                                      ("_build", False),
+                                      ("_build", True),
                                       ("_Transfer", True)],
                      "Disconnected" :[("_Simulate", not simulating),
                                       ("_Run", False),
@@ -769,6 +769,16 @@ type *name = &beremiz_##name;
         
         if self.CurrentMode == SIMULATION_MODE:
             self.StopSimulation()
+
+    def CompareLocalAndRemotePLC(self):
+        if self.LPCConnector is None:
+            return
+        # We are now connected. Update button status
+        MD5 = self.GetLastBuildMD5()
+        # Check remote target PLC correspondance to that md5
+        if MD5 is not None and self.LPCConnector.MatchMD5(MD5):
+            # warns controller that program match
+            self.ProgramTransferred()
 
     def _Transfer(self):
         if self.CurrentMode is None and self.OnlineMode != "OFF":
