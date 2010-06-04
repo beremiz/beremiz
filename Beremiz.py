@@ -1066,7 +1066,7 @@ class Beremiz(IDEFrame):
             rightwindow.SetBackgroundColour(wx.WHITE)
             
             leftwindowsizer.Add(wx.Size(20, 16), 0)
-            
+        
         sb = wx.StaticBitmap(leftwindow, -1)
         icon = location.get("icon")
         if icon is None:
@@ -1082,7 +1082,9 @@ class Beremiz(IDEFrame):
             infos = location.copy()
             infos.pop("children")
             st.SetFont(wx.Font(faces["size"] * 0.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
-            st.Bind(wx.EVT_LEFT_DOWN, self.GenerateLocationLeftDownFunction(infos))
+            leftcallback = self.GenerateLocationLeftDownFunction(infos)
+            st.Bind(wx.EVT_LEFT_DOWN, leftcallback)
+            sb.Bind(wx.EVT_LEFT_DOWN, leftcallback)
         elif location["type"] == LOCATION_GROUP:
             st.SetFont(wx.Font(faces["size"] * 0.6, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
         else:
