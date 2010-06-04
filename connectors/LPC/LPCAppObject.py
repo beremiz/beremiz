@@ -49,6 +49,7 @@ class LPCAppObject(LPCObject):
             
     def StopPLC(self):
         self.HandleSerialTransaction(STOPTransaction())
+        return True
 
     def ResetPLC(self):
         self.HandleSerialTransaction(RESETTransaction())
