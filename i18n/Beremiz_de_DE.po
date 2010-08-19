@@ -1,0 +1,995 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-12-16 12:32+0100\n"
+"PO-Revision-Date: 2010-07-20 15:29+0100\n"
+"Last-Translator: Mark Muzenhardt <mark.muzenhardt@googlemail.com>\n"
+"Language-Team: LANGUAGE <mark.muzenhardt@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+
+#: ../Beremiz.py:1487
+#, python-format
+msgid ""
+"\n"
+"An unhandled exception (bug) occured. Bug report saved at :\n"
+"(%s)\n"
+"\n"
+"Please be kind enough to send this file to:\n"
+"edouard.tisserant@gmail.com\n"
+"\n"
+"You should now restart Beremiz.\n"
+"\n"
+"Traceback:\n"
+msgstr ""
+"\n"
+"Ein nicht behandelter Fehler ist aufgetreten. Fehlerreport gespeichert unter: \n"
+"(%s)\n"
+"\n"
+"Bitte unterstützen Sie uns und senden ihn hierher:\n"
+"edouard.tisserant@gmail.com\n"
+"\n"
+"Sie sollten Beremiz nun neu starten.\n"
+"\n"
+"Traceback:\n"
+
+#: ../LPCBeremiz.py:695
+#: ../plugger.py:1473
+msgid " generation failed !\n"
+msgstr " Erstellung fehlgeschlagen !\n"
+
+#: ../Beremiz.py:1385
+#, python-format
+msgid "\"%s\" folder is not a valid Beremiz project\n"
+msgstr "Verzeichnis \"%s\" ist kein korrektes Beremiz-Projekt\n"
+
+#: ../plugins/python/PythonEditor.py:500
+msgid "&Edit"
+msgstr "&Bearbeiten"
+
+#: ../Beremiz.py:1475
+#: ../Beremiz.py:1477
+#: ../Beremiz.py:1478
+msgid ",   "
+msgstr ",   "
+
+#: ../Beremiz.py:1473
+msgid ". "
+msgstr ". "
+
+#: ../plugger.py:447
+#, python-format
+msgid "A child names \"%s\" already exist -> \"%s\"\n"
+msgstr "Ein Zweigname \"%s\" existiert bereits -> \"%s\"\n"
+
+#: ../plugger.py:479
+#, python-format
+msgid "A child with IEC channel %d already exist -> %d\n"
+msgstr "Ein Zweig mit IEC-Kanal %d existiert bereits -> %d\n"
+
+#: ../Beremiz.py:340
+msgid "About"
+msgstr "Über"
+
+#: ../Beremiz.py:1420
+msgid "About Beremiz"
+msgstr "Über Beremiz"
+
+#: ../Beremiz.py:1443
+msgid "Add Plugin"
+msgstr "Plugin hinzufügen"
+
+#: ../Beremiz.py:618
+#: ../Beremiz.py:883
+msgid "Add a sub plugin"
+msgstr "Unter-Plugin hinzufügen"
+
+#: ../plugger.py:1822
+msgid "Already connected. Please disconnect\n"
+msgstr "Bereits verbunden. Bitte Verbindung trennen\n"
+
+#: ../Beremiz.py:1131
+msgid "Append "
+msgstr "Hinzufügen"
+
+#: ../plugins/canfestival/config_utils.py:341
+#: ../plugins/canfestival/config_utils.py:623
+#, python-format
+msgid "Bad location size : %s"
+msgstr "Fehlerhafte location size : %s"
+
+#: ../Beremiz.py:439
+msgid "Beremiz"
+msgstr "Beremiz"
+
+#: ../Beremiz.py:338
+msgid "Beremiz\tF1"
+msgstr "Beremiz\tF1"
+
+#: ../LPCBeremiz.py:388
+#: ../plugger.py:1955
+msgid "Build"
+msgstr "Build"
+
+#: ../plugger.py:1537
+msgid "Build directory already clean\n"
+msgstr "Build-Verzeichnis bereits sauber\n"
+
+#: ../LPCBeremiz.py:389
+#: ../plugger.py:1956
+msgid "Build project into build folder"
+msgstr "Build-Projekt nach Build-Verzeichnis"
+
+#: ../LPCBeremiz.py:714
+#: ../plugger.py:1491
+msgid "C Build crashed !\n"
+msgstr "C Build abgestürzt !\n"
+
+#: ../LPCBeremiz.py:710
+#: ../plugger.py:1488
+msgid "C Build failed.\n"
+msgstr "C Build fehlgeschlagen.\n"
+
+#: ../plugger.py:1477
+msgid "C code generated successfully.\n"
+msgstr "C Code erfolgreich generiert.\n"
+
+#: ../targets/toolchain_gcc.py:123
+#, python-format
+msgid "C compilation of %s failed.\n"
+msgstr "C Kompilierung von %s fehlgeschlagen.\n"
+
+#: ../plugger.py:1214
+#, python-format
+msgid "Can't find module for target %s!\n"
+msgstr "Kann Modul für folgendes Ziel nicht finden: %s!\n"
+
+#: ../plugger.py:1904
+msgid "Cannot compare latest build to target. Please build.\n"
+msgstr "Kann den letzten Build nicht mit dem Ziel vergleichen. Bitte neu builden.\n"
+
+#: ../plugger.py:517
+#, python-format
+msgid "Cannot create child %s of type %s "
+msgstr "Kann Zweig %s von Typ %s nicht erstellen"
+
+#: ../plugger.py:472
+#, python-format
+msgid "Cannot find lower free IEC channel than %d\n"
+msgstr "Kann keinen niedrigeren IEC-Kanal als %d finden\n"
+
+#: ../connectors/PYRO/__init__.py:76
+msgid "Cannot get PLC status - connection failed.\n"
+msgstr "Kann den SPS-Status nicht einlesen - Verbindung gescheitert.\n"
+
+#: ../plugger.py:1312
+msgid "Cannot open/parse VARIABLES.csv!\n"
+msgstr "Kann die Datei VARIABLES.csv nicht öffnen/lesen!\n"
+
+#: ../plugins/canfestival/config_utils.py:371
+#, python-format
+msgid "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))"
+msgstr "Unmöglich, den Bit-Offset in der nicht boolschen Variable '%s' zu setzen! (ID:%d,Idx:%x,sIdx:%x))"
+
+#: ../Beremiz_service.py:320
+msgid "Change IP of interface to bind"
+msgstr "Ändere IP-Adresse des zu verbindenden Interfaces."
+
+#: ../Beremiz_service.py:319
+msgid "Change Name"
+msgstr "Ändere Name"
+
+#: ../Beremiz_service.py:323
+msgid "Change Port Number"
+msgstr "Ändere Port-Nummer"
+
+#: ../Beremiz_service.py:325
+msgid "Change working directory"
+msgstr "Ändere Arbeitsverzeichnis"
+
+#: ../plugins/python/modules/svgui/svgui.py:90
+msgid "Choose a SVG file"
+msgstr "Wählen Sie eine SVG-Datei"
+
+#: ../plugger.py:975
+msgid "Choose a directory to save project"
+msgstr "Wählen Sie ein Verzeichnis um das Projekt zu speichern"
+
+#: ../Beremiz.py:1337
+#: ../Beremiz.py:1366
+msgid "Choose a project"
+msgstr "Wähle Projekt"
+
+#: ../Beremiz_service.py:371
+msgid "Choose a working directory "
+msgstr "Wähle Arbeitsverzeichnis"
+
+#: ../plugger.py:933
+msgid "Chosen folder doesn't contain a program. It's not a valid project!"
+msgstr "Ausgewählter Ordner beinhaltet kein Programm. Es handelt sich dabei nicht um ein gültiges Projekt!"
+
+#: ../plugger.py:898
+msgid "Chosen folder isn't empty. You can't use it for a new project!"
+msgstr "Gewählter Ordner ist nicht leer. Sie können diesen nicht für ein neues Projekt verwenden!"
+
+#: ../plugger.py:1959
+msgid "Clean"
+msgstr "Säubern"
+
+#: ../plugger.py:1961
+msgid "Clean project build folder"
+msgstr "Säubere Projekt-Build Verzeichnis"
+
+#: ../plugger.py:1534
+msgid "Cleaning the build directory\n"
+msgstr "Säubere das Build-Verzeichnis\n"
+
+#: ../Beremiz.py:517
+msgid "Close Application"
+msgstr "schließe Applikation"
+
+#: ../Beremiz.py:309
+#: ../Beremiz.py:502
+msgid "Close Project"
+msgstr "Projekt schließen"
+
+#: ../Beremiz.py:307
+#: ../LPCBeremiz.py:750
+msgid "Close Tab\tCTRL+W"
+msgstr "Schließe Tab\tCTRL+W"
+
+#: ../plugger.py:1139
+msgid "Compiling IEC Program into C code...\n"
+msgstr "Kompilliere IEC Programm zu c-Code...\n"
+
+#: ../plugger.py:1974
+msgid "Connect"
+msgstr "Verbinden"
+
+#: ../plugger.py:1975
+msgid "Connect to the target PLC"
+msgstr "Verbinde zur Ziel-SPS"
+
+#: ../connectors/PYRO/__init__.py:39
+#, python-format
+msgid "Connecting to URI : %s\n"
+msgstr "verbinde zu URI: %s\n"
+
+#: ../plugger.py:1841
+msgid "Connection canceled!\n"
+msgstr "Verbindung abgebrochen!\n"
+
+#: ../LPCBeremiz.py:459
+#: ../LPCBeremiz.py:632
+#: ../plugger.py:1858
+#, python-format
+msgid "Connection failed to %s!\n"
+msgstr "Verbindung zu %s! gescheitert!\n"
+
+#: ../plugger.py:638
+#, python-format
+msgid ""
+"Could not add child \"%s\", type %s :\n"
+"%s\n"
+msgstr ""
+"Konnte Zweig nicht hinzufügen \"%s\", type %s :\n"
+"%s\n"
+
+#: ../plugger.py:615
+#, python-format
+msgid ""
+"Couldn't load plugin base parameters %s :\n"
+" %s"
+msgstr ""
+"Konnte PlugIn Basis Parameter %s nicht laden :\n"
+" %s"
+
+#: ../plugger.py:626
+#, python-format
+msgid ""
+"Couldn't load plugin parameters %s :\n"
+" %s"
+msgstr ""
+"Konnte PlugIn Parameter %s nicht laden :\n"
+" %s"
+
+#: ../plugger.py:1785
+msgid "Couldn't start PLC !\n"
+msgstr "Konnte SPS nicht starten !\n"
+
+#: ../plugger.py:1811
+msgid "Couldn't stop PLC !\n"
+msgstr "Konnte SPS nicht anhalten !\n"
+
+#: ../plugins/python/modules/svgui/svgui.py:20
+msgid "Create HMI"
+msgstr "Erstelle HMI"
+
+#: ../plugger.py:1605
+#, python-format
+msgid "Debug : Unknown variable %s\n"
+msgstr "Debug : Unbekannte Variable %s\n"
+
+#: ../plugger.py:1766
+msgid "Debug Thread couldn't be killed"
+msgstr "Debug Thread konnte nicht beendet werden"
+
+#: ../LPCBeremiz.py:479
+#: ../plugger.py:1879
+msgid "Debug connect matching running PLC\n"
+msgstr "Debug Verbindung entspricht laufender SPS\n"
+
+#: ../plugger.py:1745
+#, python-format
+msgid "Debug data do not match requested variable count %d != %d\n"
+msgstr "Debug Daten entsprechen nicht der angeforderten Variablen-Nummer %d != %d\n"
+
+#: ../LPCBeremiz.py:482
+#: ../plugger.py:1882
+msgid "Debug do not match PLC - stop/transfert/start to re-enable\n"
+msgstr "Debug entspricht nicht der SPS - stop/transfert/start um neu zu aktivieren\n"
+
+#: ../plugger.py:1757
+msgid "Debugger disabled\n"
+msgstr "Debugger deaktiviert\n"
+
+#: ../Beremiz.py:874
+msgid "Delete this plugin"
+msgstr "lösche dieses PlugIn"
+
+#: ../plugger.py:1983
+msgid "Disconnect"
+msgstr "Verbindung trennen"
+
+#: ../plugger.py:1985
+msgid "Disconnect from PLC"
+msgstr "Verbindung zu SPS trennen"
+
+#: ../plugins/c_ext/c_ext.py:250
+#: ../plugins/c_ext/c_ext.py:251
+msgid "Edit C File"
+msgstr "bearbeite C-Datei"
+
+#: ../plugins/canfestival/canfestival.py:246
+msgid "Edit CanOpen Network with NetworkEdit"
+msgstr "bearbeite CanOpen-Netzwerk mit NetworkEdit"
+
+#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:13
+msgid "Edit a WxWidgets GUI with WXGlade"
+msgstr "bearbeite eine wxWidgets GUI mit wxGlade"
+
+#: ../plugins/canfestival/canfestival.py:245
+msgid "Edit network"
+msgstr "bearbeite Netzwerk"
+
+#: ../plugger.py:1994
+msgid "Edit raw IEC code added to code generated by PLCGenerator"
+msgstr "Bearbeite hinzugefügten Roh-IEC Code, der vom PLCGenerator generiert wurde"
+
+#: ../Beremiz.py:824
+msgid "Enable/Disable this plugin"
+msgstr "Aktiviere/Deaktiviere dieses PlugIn"
+
+#: ../Beremiz_service.py:378
+msgid "Enter a name "
+msgstr "Geben Sie einen Namen ein"
+
+#: ../Beremiz_service.py:363
+msgid "Enter a port number "
+msgstr "Geben Sie eine Port-Nummer ein"
+
+#: ../Beremiz_service.py:353
+msgid "Enter the IP of the interface to bind"
+msgstr "Geben Sie die IP-Adresse des anzubindenden Interfaces ein"
+
+#: ../Beremiz.py:1499
+#: ../Beremiz.py:1509
+#: ../plugger.py:879
+#: ../Beremiz_service.py:268
+#: ../Beremiz_service.py:392
+msgid "Error"
+msgstr "Fehler"
+
+#: ../plugger.py:1187
+msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
+msgstr "Fehler : Mindestens eine Konfiguration und eine Ressource müssen in der SPS deklariert sein!\n"
+
+#: ../plugger.py:1179
+#, python-format
+msgid "Error : IEC to C compiler returned %d\n"
+msgstr "Fehler : IEC nach C Compiler gab folgendes zurück: %d\n"
+
+#: ../plugger.py:1121
+#, python-format
+msgid ""
+"Error in ST/IL/SFC code generator :\n"
+"%s\n"
+msgstr ""
+"Fehler in ST/IL/SFC Code-Generator :\n"
+"%s\n"
+
+#: ../plugger.py:222
+#, python-format
+msgid "Error while saving \"%s\"\n"
+msgstr "Fehler während der Speicherung von \"%s\"\n"
+
+#: ../plugins/canfestival/canfestival.py:237
+msgid "Error: No Master generated\n"
+msgstr "Fehler: Kein Master angelegt\n"
+
+#: ../plugins/canfestival/canfestival.py:232
+msgid "Error: No PLC built\n"
+msgstr "Fehler: Kein SPS built\n"
+
+#: ../LPCBeremiz.py:453
+#: ../LPCBeremiz.py:626
+#: ../plugger.py:1852
+#, python-format
+msgid "Exception while connecting %s!\n"
+msgstr "Fehler beim verbinden von %s!\n"
+
+#: ../plugger.py:1191
+msgid "Extracting Located Variables...\n"
+msgstr "Extrahiere gefundene Variablen...\n"
+
+#: ../plugger.py:1919
+msgid "Failed : Must build before transfer.\n"
+msgstr "Fehler : Sie müssen kompillieren vor dem Transfer.\n"
+
+#: ../LPCBeremiz.py:703
+#: ../plugger.py:1482
+msgid "Fatal : cannot get builder.\n"
+msgstr "schwerer Fehler : Kann den Builder nicht finden.\n"
+
+#: ../connectors/PYRO/__init__.py:109
+msgid "Force runtime reload\n"
+msgstr "Erzwinge neues laden der Runtime\n"
+
+#: ../plugger.py:1111
+msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
+msgstr "Generiere SoftPLC IEC-61131 ST/IL/SFC Code...\n"
+
+#: ../plugger.py:1432
+msgid "Generating plugins C code\n"
+msgstr "Generiere Plugin C Code\n"
+
+#: ../LPCBeremiz.py:649
+#: ../plugger.py:1424
+msgid "IEC-61131-3 code generation failed !\n"
+msgstr "IEC-61131-3 Code Generierung gescheitert !\n"
+
+#: ../Beremiz_service.py:354
+#: ../Beremiz_service.py:355
+msgid "IP is not valid!"
+msgstr "IP ist nicht gültig!"
+
+#: ../plugins/python/modules/svgui/svgui.py:15
+#: ../plugins/python/modules/svgui/svgui.py:16
+msgid "Import SVG"
+msgstr "Importiere SVG"
+
+#: ../plugins/python/modules/svgui/svgui.py:19
+msgid "Inkscape"
+msgstr "Inkscape"
+
+#: ../plugins/canfestival/config_utils.py:376
+#: ../plugins/canfestival/config_utils.py:637
+#, python-format
+msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
+msgstr "Ungültiger Typ \"%s\"-> %d != %d  für Ort\"%s\""
+
+#: ../plugger.py:1925
+msgid "Latest build already matches current target. Transfering anyway...\n"
+msgstr "Letzter Build entspricht bereits dem Ziel. Übertrage trotzdem...\n"
+
+#: ../plugger.py:1893
+msgid "Latest build does not match with target, please transfer.\n"
+msgstr "Letzter Build entspricht nicht dem Ziel, bitte Übertragen.\n"
+
+#: ../plugger.py:1897
+msgid "Latest build matches target, no transfer needed.\n"
+msgstr "Letzter Build entspricht dem Ziel, kein Transfer benötigt.\n"
+
+#: ../Beremiz_service.py:322
+msgid "Launch WX GUI inspector"
+msgstr "Starte WX GUI Inspector"
+
+#: ../Beremiz_service.py:321
+msgid "Launch a live Python shell"
+msgstr "Starte eine live-Python shell"
+
+#: ../targets/toolchain_gcc.py:131
+msgid "Linking :\n"
+msgstr "Linking :\n"
+
+#: ../discovery.py:107
+msgid "Local"
+msgstr "Lokal"
+
+#: ../Beremiz.py:388
+#: ../LPCBeremiz.py:792
+msgid "Log Console"
+msgstr "Log Konsole"
+
+#: ../plugger.py:527
+#, python-format
+msgid "Max count (%d) reached for this plugin of type %s "
+msgstr "Maximale Zahl (%d) erreicht für dieses PlugIn des Typs %s "
+
+#: ../Beremiz_service.py:379
+msgid "Name must not be null!"
+msgstr "Name darf nicht NULL sein!"
+
+#: ../Beremiz.py:299
+msgid "New\tCTRL+N"
+msgstr "Neu\tCTRL+N"
+
+#: ../plugger.py:1949
+msgid "No PLC to transfer (did build succeed ?)\n"
+msgstr "Keine SPS zu übertragen (war das Kompillieren erfolgreich ?)\n"
+
+#: ../Beremiz_service.py:392
+msgid "No running PLC"
+msgstr "Keine laufende SPS"
+
+#: ../plugins/python/modules/svgui/svgui.py:96
+#, python-format
+msgid "No such SVG file: %s\n"
+msgstr "Kein SVG-File namens: %s\n"
+
+#: ../plugins/canfestival/config_utils.py:632
+#, python-format
+msgid "No such index/subindex (%x,%x) (variable %s)"
+msgstr "Kein solcher index/subindex (%x,%x) (variable %s)"
+
+#: ../plugins/canfestival/config_utils.py:361
+#, python-format
+msgid "No such index/subindex (%x,%x) in ID : %d (variable %s)"
+msgstr "Kein solcher index/subindex (%x,%x) in ID : %d (variable %s)"
+
+#: ../plugins/canfestival/config_utils.py:354
+#, python-format
+msgid "Non existing node ID : %d (variable %s)"
+msgstr "Nicht existierende Zweig-ID : %d (variable %s)"
+
+#: ../plugins/canfestival/config_utils.py:383
+#, python-format
+msgid "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
+msgstr "Keine PDO Mappbare Variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
+
+#: ../Beremiz.py:301
+msgid "Open\tCTRL+O"
+msgstr "Öffnen\tCTRL+O"
+
+#: ../plugins/c_ext/c_ext.py:230
+msgid "Open CFileEditor"
+msgstr "Öffne CFileEditor"
+
+#: ../plugins/python/modules/svgui/svgui.py:105
+msgid "Open Inkscape"
+msgstr "öffne Inkscape"
+
+#: ../plugins/canfestival/canfestival.py:208
+msgid "Open NetworkEdit"
+msgstr "öffne NetworkEdit"
+
+#: ../plugins/canfestival/canfestival.py:108
+msgid "Open ObjDictEdit"
+msgstr "öffne ObjDictEdit"
+
+#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:107
+msgid "Open wxGlade"
+msgstr "öffne wxGlade"
+
+#: ../targets/toolchain_gcc.py:99
+msgid "PLC :\n"
+msgstr "SPS :\n"
+
+#: ../LPCBeremiz.py:472
+#: ../plugger.py:1582
+#: ../plugger.py:1872
+#, python-format
+msgid "PLC is %s\n"
+msgstr "SPS ist %s\n"
+
+#: ../Beremiz.py:312
+#: ../LPCBeremiz.py:753
+msgid "Page Setup"
+msgstr "Seitenformat"
+
+#: ../Beremiz.py:1443
+msgid "Please enter a name for plugin:"
+msgstr "Bitte geben sie einen Namen für das PlugIn ein:"
+
+#: ../targets/toolchain_gcc.py:97
+msgid "Plugin : "
+msgstr "Plugin : "
+
+#: ../plugger.py:1438
+msgid "Plugins code generation failed !\n"
+msgstr "PlugIns Codeerstellung fehlgeschlagen !\n"
+
+#: ../Beremiz_service.py:364
+msgid "Port number must be 0 <= port <= 65535!"
+msgstr "Port Nummer darf folgenden Wertbereich haben: 0 <= port <= 65535!"
+
+#: ../Beremiz_service.py:364
+msgid "Port number must be an integer!"
+msgstr "Port Nummer muß eine natürliche Zahl sein (Integer)!"
+
+#: ../Beremiz.py:314
+#: ../LPCBeremiz.py:755
+msgid "Preview"
+msgstr "Vorschau"
+
+#: ../Beremiz.py:316
+#: ../LPCBeremiz.py:757
+msgid "Print"
+msgstr "Drucken"
+
+#: ../plugger.py:907
+msgid "Project not created"
+msgstr "Projekt nicht angelegt"
+
+#: ../plugger.py:553
+#, python-format
+msgid "Project tree layout do not match plugin.xml %s!=%s "
+msgstr "Projektbaum Layout entspricht nicht plugin.xml %s!=%s "
+
+#: ../Beremiz.py:319
+#: ../LPCBeremiz.py:760
+msgid "Properties"
+msgstr "Eigenschaften"
+
+#: ../plugins/python/PythonEditor.py:513
+#: ../plugins/python/PythonEditor.py:565
+msgid "PythonEditor"
+msgstr "PythonEditor"
+
+#: ../Beremiz_service.py:326
+msgid "Quit"
+msgstr "Beenden"
+
+#: ../Beremiz.py:322
+#: ../LPCBeremiz.py:763
+msgid "Quit\tCTRL+Q"
+msgstr "Beenden\tCTRL+Q"
+
+#: ../plugger.py:1993
+msgid "Raw IEC code"
+msgstr "Raw IEC code"
+
+#: ../Beremiz.py:1454
+msgid "Really delete plugin ?"
+msgstr "Plugin wirklich löschen ?"
+
+#: ../plugins/python/PythonEditor.py:494
+msgid "Redo\tCTRL+Y"
+msgstr "Wiederholen\tCTRL+Y"
+
+#: ../discovery.py:102
+msgid "Refresh"
+msgstr "Refresh"
+
+#: ../plugins/python/PythonEditor.py:490
+msgid "Refresh\tCTRL+R"
+msgstr "Refresh\tCTRL+R"
+
+#: ../Beremiz.py:1454
+msgid "Remove plugin"
+msgstr "Entferne Plugin"
+
+#: ../LPCBeremiz.py:378
+#: ../plugger.py:1964
+msgid "Run"
+msgstr "Starte"
+
+#: ../plugins/python/modules/svgui/svgui.py:90
+msgid "SVG files (*.svg)|*.svg|All files|*.*"
+msgstr "SVG files (*.svg)|*.svg|Alle Dateien|*.*"
+
+#: ../Beremiz.py:303
+#: ../LPCBeremiz.py:748
+msgid "Save\tCTRL+S"
+msgstr "Speichern\tCTRL+S"
+
+#: ../Beremiz.py:305
+msgid "Save as\tCTRL+SHIFT+S"
+msgstr "Speichern als\tCTRL+SHIFT+S"
+
+#: ../discovery.py:81
+msgid "Services available:"
+msgstr "Service verfügbar:"
+
+#: ../plugger.py:1990
+msgid "Show IEC code generated by PLCGenerator"
+msgstr "Zeige IEC Code, der vom PLCGenerator erzeugt wurde"
+
+#: ../plugins/canfestival/canfestival.py:249
+msgid "Show Master"
+msgstr "Zeige Master"
+
+#: ../plugins/canfestival/canfestival.py:250
+msgid "Show Master generated by config_utils"
+msgstr "Zeige Master, der von den config_utils generiert wurde."
+
+#: ../plugger.py:1988
+msgid "Show code"
+msgstr "Zeige Code"
+
+#: ../LPCBeremiz.py:374
+msgid "Simulate"
+msgstr "Simuliere"
+
+#: ../LPCBeremiz.py:375
+msgid "Simulate PLC"
+msgstr "Simuliere SPS"
+
+#: ../LPCBeremiz.py:380
+#: ../plugger.py:1966
+#: ../Beremiz_service.py:317
+msgid "Start PLC"
+msgstr "Starte SPS"
+
+#: ../plugger.py:1416
+#, python-format
+msgid "Start build in %s\n"
+msgstr "Zeige build in %s\n"
+
+#: ../plugger.py:1782
+msgid "Starting PLC\n"
+msgstr "starte SPS\n"
+
+#: ../LPCBeremiz.py:383
+#: ../plugger.py:1969
+msgid "Stop"
+msgstr "Stop"
+
+#: ../Beremiz_service.py:318
+msgid "Stop PLC"
+msgstr "Stop SPS"
+
+#: ../LPCBeremiz.py:385
+#: ../plugger.py:1971
+msgid "Stop Running PLC"
+msgstr "Halte laufende SPS an"
+
+#: ../plugger.py:1814
+msgid "Stopping debug\n"
+msgstr "Halte Debugger an\n"
+
+#: ../Beremiz.py:505
+msgid "There are changes, do you want to save?"
+msgstr "Es wurden Änderungen gemacht, wollen Sie speichern?"
+
+#: ../Beremiz.py:382
+#: ../LPCBeremiz.py:786
+msgid "Topology"
+msgstr "Topologie"
+
+#: ../LPCBeremiz.py:392
+#: ../plugger.py:1978
+msgid "Transfer"
+msgstr "Übertrage"
+
+#: ../LPCBeremiz.py:394
+#: ../plugger.py:1980
+msgid "Transfer PLC"
+msgstr "Übertrage SPS"
+
+#: ../LPCBeremiz.py:727
+#: ../plugger.py:1945
+msgid "Transfer completed successfully.\n"
+msgstr "Übertragung erfolgreich beendet.\n"
+
+#: ../LPCBeremiz.py:729
+#: ../plugger.py:1947
+msgid "Transfer failed\n"
+msgstr "Übertragung gescheitert\n"
+
+#: ../plugins/canfestival/config_utils.py:335
+#: ../plugins/canfestival/config_utils.py:617
+#, python-format
+msgid "Type conflict for location \"%s\""
+msgstr "Typenkonflikt für Ort \"%s\""
+
+#: ../plugins/canfestival/config_utils.py:455
+#: ../plugins/canfestival/config_utils.py:469
+#, python-format
+msgid "Unable to define PDO mapping for node %02x"
+msgstr "Unmöglich, PDO-Mapping für %02x zu definieren"
+
+#: ../targets/Xenomai/__init__.py:27
+msgid "Unable to get Xenomai's CFLAGS\n"
+msgstr "Unmöglich, Xonomai's CFLAGS zu auszulesen\n"
+
+#: ../targets/Xenomai/__init__.py:16
+msgid "Unable to get Xenomai's LDFLAGS\n"
+msgstr "Unmöglich, Xenomai's LDFLAGS auszulesen\n"
+
+#: ../plugins/python/PythonEditor.py:492
+msgid "Undo\tCTRL+Z"
+msgstr "Undo\tCTRL+Z"
+
+#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:12
+msgid "WXGLADE GUI"
+msgstr "WXGLADE GUI"
+
+#: ../plugger.py:1752
+msgid "Waiting debugger to recover...\n"
+msgstr "Warte auf Selbstheilung des Debuggers...\n"
+
+#: ../plugger.py:1116
+msgid "Warnings in ST/IL/SFC code generator :\n"
+msgstr "Warnungen im ST/IL/SFC Code Generator :\n"
+
+#: ../connectors/PYRO/__init__.py:47
+msgid "Wrong URI, please check it !\n"
+msgstr "Falsche URI, bitte überprüfen !\n"
+
+#: ../plugins/c_ext/c_ext.py:229
+msgid ""
+"You don't have write permissions.\n"
+"Open CFileEditor anyway ?"
+msgstr ""
+"Sie haben keine Schreibberechtigung.\n"
+"Soll CFileEditor trotzdem geöffnet werden?"
+
+#: ../plugins/python/modules/svgui/svgui.py:104
+msgid ""
+"You don't have write permissions.\n"
+"Open Inkscape anyway ?"
+msgstr ""
+"Sie haben keine Schreibberechtigung.\n"
+"soll Inkscape trotzdem geöffnet werden ?"
+
+#: ../plugins/canfestival/canfestival.py:207
+msgid ""
+"You don't have write permissions.\n"
+"Open NetworkEdit anyway ?"
+msgstr ""
+"Sie haben keine Leseberechtigung.\n"
+"Soll Open NetworkEdit trotzdem geöffnet werden ?"
+
+#: ../plugins/canfestival/canfestival.py:107
+msgid ""
+"You don't have write permissions.\n"
+"Open ObjDictEdit anyway ?"
+msgstr ""
+"Sie haben keine Leseberechtigung.\n"
+"Soll ObjDictEdit trotzdem geöffnet werden ?"
+
+#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:106
+msgid ""
+"You don't have write permissions.\n"
+"Open wxGlade anyway ?"
+msgstr ""
+"Sie haben keine Schreibberechtigung.\n"
+"Soll wxGlade dennoch geöffnet werden ?"
+
+#: ../plugger.py:878
+msgid ""
+"You must have permission to work on the project\n"
+"Work on a project copy ?"
+msgstr ""
+"Sie müssen Berechtigungen besitzen um mit diesem Projekt arbeiten zu können\n"
+"Wollen Sie dieses Projekt stattdessen kopieren ?"
+
+#: ../wxPopen.py:145
+#, python-format
+msgid "exited with status %s (pid %s)\n"
+msgstr "Beendet mit Status %s(pid %s)\n"
+
+#: ../Beremiz.py:1475
+#: ../Beremiz.py:1477
+msgid "file : "
+msgstr "Datei : "
+
+#: ../Beremiz.py:1478
+msgid "function : "
+msgstr "Funktion : "
+
+#: ../Beremiz.py:1478
+msgid "line : "
+msgstr "Zeile :"
+
+#: Extra XSD strings
+msgid "BaseParams"
+msgstr "BaseParams"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "IEC_Channel"
+msgstr "IEC_Channel"
+
+msgid "Enabled"
+msgstr "Aktiviert"
+
+msgid "BeremizRoot"
+msgstr "BeremizRoot"
+
+msgid "TargetType"
+msgstr "ZielTyp"
+
+msgid "URI_location"
+msgstr "URI_location"
+
+msgid "Enable_Plugins"
+msgstr "Enable_Plugins"
+
+msgid "CExtension"
+msgstr "CExtension"
+
+msgid "CFLAGS"
+msgstr "CFLAGS"
+
+msgid "LDFLAGS"
+msgstr "LDFLAGS"
+
+msgid "CanFestivalSlaveNode"
+msgstr "CanFestivalSlaveNode"
+
+msgid "CAN_Device"
+msgstr "CAN_Gerät"
+
+msgid "CAN_Baudrate"
+msgstr "CAN_Baudrate"
+
+msgid "NodeId"
+msgstr "ZweigId"
+
+msgid "Sync_Align"
+msgstr "Sync_Align"
+
+msgid "Sync_Align_Ratio"
+msgstr "Sync_Align_Ratio"
+
+msgid "CanFestivalNode"
+msgstr "CanFestivalNode"
+
+msgid "Sync_TPDOs"
+msgstr "Sync_TPDOs"
+
+msgid "CanFestivalInstance"
+msgstr "CanFestivalInstanz"
+
+msgid "CAN_Driver"
+msgstr "CAN_Treiber"
+
+msgid "Debug_mode"
+msgstr "Debug_Modus"
+
+msgid "Compiler"
+msgstr "Compiler"
+
+msgid "Linker"
+msgstr "Linker"
+
+msgid "Linux"
+msgstr "Linux"
+
+msgid "Rtai"
+msgstr "Rtai"
+
+msgid "rtai_config"
+msgstr "rtai_config"
+
+msgid "Win32"
+msgstr "Win32"
+
+msgid "Xenomai"
+msgstr "Xenomai"
+
+msgid "XenoConfig"
+msgstr "XenoConfig"
+
