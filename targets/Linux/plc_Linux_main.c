@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <locale.h>
 
 /* provided by POUS.C */
 extern unsigned long long common_ticktime__;
@@ -75,6 +76,7 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 int startPLC(int argc,char **argv)
 {
     struct sigevent sigev;
+    setlocale(LC_NUMERIC, "C");
     /* Define Ttick to 1ms if common_ticktime not defined */
     Ttick = common_ticktime__?common_ticktime__:1000000;
 

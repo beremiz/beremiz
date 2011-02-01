@@ -6,6 +6,7 @@
 #include <sys/timeb.h>
 #include <time.h>
 #include <windows.h>
+#include <locale.h>
 
 /* provided by POUS.C */
 extern unsigned long long common_ticktime__;
@@ -62,6 +63,7 @@ HANDLE python_wait_sem;
 int startPLC(int argc,char **argv)
 {
 	unsigned long thread_id = 0;
+    setlocale(LC_NUMERIC, "C");
 	/* Define Ttick to 1ms if common_ticktime not defined */
     Ttick = common_ticktime__?common_ticktime__:1000000;
 

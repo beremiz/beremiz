@@ -2,7 +2,6 @@
  * Code common to all C targets
  **/
 
-#include <locale.h>
 #include "iec_types.h"
 /*
  * Prototypes of functions provided by generated C softPLC
@@ -67,7 +66,6 @@ int __init(int argc,char **argv)
 {
     int res = 0;
     init_level = 0;
-    setlocale(LC_NUMERIC, "C");
     config_init__();
     __init_debug();
     %(init_calls)s
