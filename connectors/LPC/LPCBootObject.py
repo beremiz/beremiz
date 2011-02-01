@@ -34,6 +34,7 @@ class LPCBootObject(LPCObject):
         self.SerialConnection = LPCBootProto(comport,#number
                                          115200, #speed
                                          120)      #timeout
+        self.HandleSerialTransaction(KEEPBOOTINGTransaction())
         self.PLCStatus = "Stopped"
     
     def NewPLC(self, md5sum, data, extrafiles):

@@ -28,6 +28,11 @@ class LPCBootTransaction:
     def ExchangeData(self): 
         pass
 
+class KEEPBOOTINGTransaction(LPCBootTransaction):
+    def __init__(self):
+        LPCBootTransaction.__init__(self, "md5\n")
+    ExchangeData = LPCBootTransaction.SendData
+
 class LOADTransaction(LPCBootTransaction):
     def __init__(self, data):
         LPCBootTransaction.__init__(self, data)
