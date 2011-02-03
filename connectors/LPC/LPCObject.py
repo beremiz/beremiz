@@ -24,11 +24,13 @@
 
 from LPCProto import *
 
+
+
 class LPCObject():
     def __init__(self, pluginsroot, comportstr):
         self.PLCStatus = "Disconnected"
         self.pluginsroot = pluginsroot
-        self.PLCprint = pluginsroot.logger.write
+        self.PLCprint = pluginsroot.logger.writeyield
         self._Idxs = []
         comport = int(comportstr[3:]) - 1
         try:
@@ -43,7 +45,7 @@ class LPCObject():
             try:
                 self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
                 return res
-            except LPCProtoError,e:
+            except Exception,e:
                 self.pluginsroot.logger.write_error(str(e)+"\n")
                 self.SerialConnection.close()
                 self.SerialConnection = None

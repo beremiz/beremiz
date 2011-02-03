@@ -38,7 +38,7 @@ class LPCBootObject(LPCObject):
         self.PLCStatus = "Stopped"
     
     def NewPLC(self, md5sum, data, extrafiles):
-        self.successfully_transfered = self.HandleSerialTransaction(LOADTransaction(data))
+        self.successfully_transfered = self.HandleSerialTransaction(LOADTransaction(data, self.PLCprint))
         return self.successfully_transfered
 
     def MatchMD5(self, MD5):

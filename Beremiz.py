@@ -278,6 +278,10 @@ class LogPseudoFile:
     def write_error(self, s):
         self.write(s,self.red_yellow)
 
+    def writeyield(self, s):
+        self.write(s)
+        wx.GetApp().Yield()
+
     def flush(self):
         self.output.SetValue("")
     
