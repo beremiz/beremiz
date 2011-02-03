@@ -65,7 +65,8 @@ class LPCAppTransaction:
 
 class IDLETransaction(LPCAppTransaction):
     def __init__(self):
-        LPCAppTransaction.__init__(self, 0x00)
+        LPCAppTransaction.__init__(self, 0x07)
+    ExchangeData = LPCAppTransaction.GetData
 
 class STARTTransaction(LPCAppTransaction):
     def __init__(self):
