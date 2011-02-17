@@ -31,7 +31,6 @@ class LPCAppObject(LPCObject):
         self.SerialConnection = LPCAppProto(comport,#number
                                          115200, #speed
                                          2)      #timeout
-        self.HandleSerialTransaction(IDLETransaction())
 
     def StartPLC(self, debug=False):
         self.HandleSerialTransaction(STARTTransaction())
@@ -45,13 +44,13 @@ class LPCAppObject(LPCObject):
         return self.PLCStatus
 
     def GetPLCstatus(self):
-        self.HandleSerialTransaction(IDLETransaction())
+        self.HandleSerialTransaction(GET_PLCIDTransaction())
         return self.PLCStatus
 
     def MatchMD5(self, MD5):
         data = self.HandleSerialTransaction(GET_PLCIDTransaction())
         if data is not None:
-            return data[:32] == MD5
+            return data[:32] == MD5[:32]
         return False
 
     class IEC_STRING(ctypes.Structure):

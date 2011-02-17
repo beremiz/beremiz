@@ -492,9 +492,9 @@ class LPCPluginsRoot(PluginsRoot):
                     status = ""
                 self.logger.write(_("PLC is %s\n")%status)
                 
-                if self.StatusTimer and not self.StatusTimer.IsRunning():
-                    # Start the status Timer
-                    self.StatusTimer.Start(milliseconds=2000, oneShot=False)
+                #if self.StatusTimer and not self.StatusTimer.IsRunning():
+                #    # Start the status Timer
+                #    self.StatusTimer.Start(milliseconds=2000, oneShot=False)
                 
                 if self.previous_plcstate=="Started":
                     if self.DebugAvailable() and self.GetIECProgramsAndVariables():
@@ -808,7 +808,7 @@ type *name = &beremiz_##name;
             
             else:
                 self.logger.write(_("Resetting PLC\n"))
-                self.StatusTimer.Stop()
+                #self.StatusTimer.Stop()
                 self.LPCConnector.ResetPLC()
                 self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
     
