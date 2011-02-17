@@ -42,7 +42,12 @@ if __name__ == '__main__':
             usage()
             sys.exit()
 
-app = wx.PySimpleApp()
+    if os.path.exists("LPC_DEBUG"):
+        __builtins__.BMZ_DBG = True
+    else :
+        __builtins__.BMZ_DBG = False
+
+app = wx.PySimpleApp(redirect=BMZ_DBG)
 app.SetAppName('beremiz')
 wx.InitAllImageHandlers()
 
@@ -370,7 +375,7 @@ def mycopytree(src, dst):
             elif os.path.isfile(srcpath):
                 shutil.copy2(srcpath, dstpath)
 
-[SIMULATION_MODE, TRANSFER_MODE] = range(2)
+[SIMULATION_MODE, ONLINE_MODE] = range(2)
 
 class LPCPluginsRoot(PluginsRoot):
 
@@ -489,19 +494,20 @@ class LPCPluginsRoot(PluginsRoot):
                 
                 if self.StatusTimer and not self.StatusTimer.IsRunning():
                     # Start the status Timer
-                    self.StatusTimer.Start(milliseconds=500, oneShot=False)
+                    self.StatusTimer.Start(milliseconds=1000, oneShot=False)
                 
                 if self.previous_plcstate=="Started":
                     if self.DebugAvailable() and self.GetIECProgramsAndVariables():
                         self.logger.write(_("Debug connect matching running PLC\n"))
-                        self._connect_debug()
+                        #TODO re-enable
+                        #self._connect_debug()
                     else:
                         self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
             
             elif self.StatusTimer and self.StatusTimer.IsRunning():
                 self.StatusTimer.Stop()
             
-            if self.CurrentMode == TRANSFER_MODE:
+            if self.CurrentMode == ONLINE_MODE:
                 
                 if self.OnlineMode == "BOOTLOADER":
                     self.BeginTransfer()
@@ -607,7 +613,7 @@ class LPCPluginsRoot(PluginsRoot):
                                       ("_build", True),
                                       ("_Transfer", True)],
                      "Connected" :   [("_Simulate", not simulating),
-                                      ("_Run", False),
+                                      ("_Run", True),
                                       ("_Stop", simulating),
                                       ("_build", True),
                                       ("_Transfer", True)],
@@ -780,9 +786,16 @@ type *name = &beremiz_##name;
             # warns controller that program match
             self.ProgramTransferred()
 
+    def GetLastBuildMD5(self):
+        builder=self.GetBuilder()
+        if builder is not None:
+            return builder.GetBinaryCodeMD5(self.OnlineMode)
+        else:
+            return None
+
     def _Transfer(self):
         if self.CurrentMode is None and self.OnlineMode != "OFF":
-            self.CurrentMode = TRANSFER_MODE
+            self.CurrentMode = ONLINE_MODE
             
             PluginsRoot._build(self)
             
@@ -813,6 +826,19 @@ type *name = &beremiz_##name;
         self.AbortTransferTimer.Stop()
         self.AbortTransferTimer = None
         event.Skip()
+
+    def _Run(self):
+        """
+        Start PLC
+        """
+        if self.GetIECProgramsAndVariables():
+            self._connector.StartPLC()
+            self.logger.write(_("Starting PLC\n"))
+            #TODO re-enable
+            #self._connect_debug()
+        else:
+            self.logger.write_error(_("Couldn't start PLC !\n"))
+        self.UpdateMethodsFromPLCStatus()
 
 #-------------------------------------------------------------------------------
 #                              LPCBeremiz Class
@@ -1090,6 +1116,8 @@ class StdoutPseudoFile:
         if idx != -1:
             line = self.Buffer[:idx+1]
             self.Buffer = self.Buffer[idx+1:]
+            if BMZ_DBG:
+                print "command >"+line
             return line
         return ""
     
@@ -1132,8 +1160,8 @@ if __name__ == '__main__':
         return eval_res
 
     # Command log for debug, for viewing from wxInspector
-    __builtins__.cmdlog = []
-    #cmdlogf=open("bmzcmdlog.txt","w")
+    if BMZ_DBG:
+        __builtins__.cmdlog = []
 
     class LPCBeremiz_Cmd(cmd.Cmd):
         
@@ -1421,19 +1449,13 @@ if __name__ == '__main__':
                     sys.stdout.flush()
                     return
 
-            #cmdlogf.write(str((function,line))+'\n')
-            #cmdlogf.flush()
-            
             func = getattr(self, function)
             res = evaluator(func,*args)
 
-            # Keep log for debug
-            #cmdlogf.write("--->"+str(res)+'\n')
-            #cmdlogf.flush()
-
-            cmdlog.append((function,line,res))
-            if len(cmdlog) > 100: #prevent debug log to grow too much
-                cmdlog.pop(0) 
+            if BMZ_DBG:
+                cmdlog.append((function,line,res))
+                if len(cmdlog) > 100: #prevent debug log to grow too much
+                    cmdlog.pop(0) 
 
             if isinstance(res, (StringType, UnicodeType)):
                 self.Log.write(res)

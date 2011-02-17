@@ -28,7 +28,7 @@ class toolchain_makefile():
         else:
             try:
                 return open(self._GetMD5FileName(), "r").read()
-            except Exception, e:
+            except IOError, e:
                 return None
 
     def build(self):
@@ -49,7 +49,7 @@ class toolchain_makefile():
             self.md5key += '#'.join([props[key] for key in ['companyName',
                                                             'projectName',
                                                             'productName']])
-            self.md5key += '#'+','.join(map(str,time.localtime()))
+            self.md5key += '#' #+','.join(map(str,time.localtime()))
             # Store new PLC filename based on md5 key
             f = open(self._GetMD5FileName(), "w")
             f.write(self.md5key)

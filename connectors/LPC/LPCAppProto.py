@@ -96,6 +96,7 @@ class GET_PLCIDTransaction(LPCAppTransaction):
     ExchangeData = LPCAppTransaction.GetData
 
 if __name__ == "__main__":
+    __builtins__.BMZ_DBG = True
     TestConnection = LPCAppProto(6,115200,2)
 #    TestConnection.HandleTransaction(GET_PLCIDTransaction())
     TestConnection.HandleTransaction(STARTTransaction())

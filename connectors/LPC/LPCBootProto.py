@@ -18,27 +18,31 @@ class LPCBootTransaction:
     def SetPseudoFile(self, pseudofile):
         self.pseudofile = pseudofile
         
-    def SendData(self):
-        res = self.pseudofile.write(self.OptData)
-        return True 
-
-    def GetData(self):
-        pass # not impl
-
     def ExchangeData(self): 
-        pass
+        self.pseudofile.write(self.OptData)
+        return map(lambda x:self.pseudofile.readline(), xrange(self.expectedlines))
 
 class KEEPBOOTINGTransaction(LPCBootTransaction):
     def __init__(self):
+        self.expectedlines = 2
         LPCBootTransaction.__init__(self, "md5\n")
-    ExchangeData = LPCBootTransaction.SendData
+
+class STARTTransaction(LPCBootTransaction):
+    def __init__(self):
+        self.expectedlines = 0
+        LPCBootTransaction.__init__(self, "go\n")
+
+class CHECKMD5Transaction(LPCBootTransaction):
+    def __init__(self, md5ref):
+        self.expectedlines = 5 
+        LPCBootTransaction.__init__(self, md5ref+"md5\n")
 
 class LOADTransaction(LPCBootTransaction):
     def __init__(self, data, PLCprint):
         self.PLCprint = PLCprint
         LPCBootTransaction.__init__(self, data)
 
-    def sendDataHook(self):
+    def ExchangeData(self):
         #file("fw.bin","w").write(self.OptData)
         data = self.OptData
         loptdata = len(self.OptData)
@@ -54,9 +58,9 @@ class LOADTransaction(LPCBootTransaction):
                 self.PLCprint(".")
         self.PLCprint("\n")
         return True
-    ExchangeData = sendDataHook
 
 if __name__ == "__main__":
+    __builtins__.BMZ_DBG = True
     TestConnection = LPCBootProto(2,115200,1200)
     mystr=file("fw.bin").read()
     def mylog(blah):

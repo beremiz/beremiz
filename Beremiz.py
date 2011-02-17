@@ -65,7 +65,12 @@ if __name__ == '__main__':
         projectOpen = None
         buildpath = None
     
-    app = wx.PySimpleApp()
+    if os.path.exists("BEREMIZ_DEBUG"):
+        __builtins__.BMZ_DBG = True
+    else :
+        __builtins__.BMZ_DBG = False
+
+    app = wx.PySimpleApp(redirect=BMZ_DBG)
     app.SetAppName('beremiz')
     wx.InitAllImageHandlers()
     

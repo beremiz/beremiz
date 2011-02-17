@@ -37,12 +37,16 @@ class LPCBootObject(LPCObject):
         self.HandleSerialTransaction(KEEPBOOTINGTransaction())
         self.PLCStatus = "Stopped"
     
+    def StartPLC(self, debug=False):
+        self.HandleSerialTransaction(STARTTransaction())
+
     def NewPLC(self, md5sum, data, extrafiles):
         self.successfully_transfered = self.HandleSerialTransaction(LOADTransaction(data, self.PLCprint))
         return self.successfully_transfered
 
     def MatchMD5(self, MD5):
-        return self.successfully_transfered
+        res = self.HandleSerialTransaction(CHECKMD5Transaction(MD5))
+        return "".join(res).find('FAILED') == -1
 
 
     def SetTraceVariablesList(self, idxs):
