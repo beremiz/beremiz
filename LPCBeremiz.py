@@ -808,7 +808,7 @@ type *name = &beremiz_##name;
             
             else:
                 self.logger.write(_("Resetting PLC\n"))
-                
+                self.StatusTimer.Stop()
                 self.LPCConnector.ResetPLC()
                 self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
     
