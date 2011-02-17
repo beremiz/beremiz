@@ -1,4 +1,4 @@
-import os, re
+import os, re, operator
 from wxPopen import ProcessLogger
 import hashlib
 
@@ -33,16 +33,32 @@ class toolchain_makefile():
             except IOError, e:
                 return None
 
+    def concat_deps(self, bn):
+        # read source
+        src = open(os.path.join(self.buildpath, bn),"r").read()
+        # update direct dependencies
+        deps = []
+        for l in src.splitlines():
+            res = includes_re.match(l)
+            if res is not None:
+                depfn = res.groups()[0]
+                if os.path.exists(os.path.join(self.buildpath, depfn)):
+                    #print bn + " depends on "+depfn
+                    deps.append(depfn)
+        # recurse through deps
+        # TODO detect cicular deps.
+        return reduce(operator.concat, map(self.concat_deps, deps), src)
+
     def build(self):
         srcfiles= []
         cflags = []
         wholesrcdata = "" 
-        print self.PluginsRootInstance.LocationCFilesAndCFLAGS
         for Location, CFilesAndCFLAGS, DoCalls in self.PluginsRootInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 CFileName = os.path.basename(CFile)
-                wholesrcdata += open(CFile, "r").read()
+                wholesrcdata += self.concat_deps(CFileName)
+                #wholesrcdata += open(CFile, "r").read()
                 srcfiles.append(CFileName)
                 if CFLAGS not in cflags:
                     cflags.append(CFLAGS)
