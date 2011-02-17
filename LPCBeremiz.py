@@ -375,7 +375,7 @@ def mycopytree(src, dst):
             elif os.path.isfile(srcpath):
                 shutil.copy2(srcpath, dstpath)
 
-[SIMULATION_MODE, ONLINE_MODE] = range(2)
+[SIMULATION_MODE, TRANSFER_MODE] = range(2)
 
 class LPCPluginsRoot(PluginsRoot):
 
@@ -494,7 +494,7 @@ class LPCPluginsRoot(PluginsRoot):
                 
                 if self.StatusTimer and not self.StatusTimer.IsRunning():
                     # Start the status Timer
-                    self.StatusTimer.Start(milliseconds=1000, oneShot=False)
+                    self.StatusTimer.Start(milliseconds=2000, oneShot=False)
                 
                 if self.previous_plcstate=="Started":
                     if self.DebugAvailable() and self.GetIECProgramsAndVariables():
@@ -507,7 +507,7 @@ class LPCPluginsRoot(PluginsRoot):
             elif self.StatusTimer and self.StatusTimer.IsRunning():
                 self.StatusTimer.Stop()
             
-            if self.CurrentMode == ONLINE_MODE:
+            if self.CurrentMode == TRANSFER_MODE:
                 
                 if self.OnlineMode == "BOOTLOADER":
                     self.BeginTransfer()
@@ -795,7 +795,7 @@ type *name = &beremiz_##name;
 
     def _Transfer(self):
         if self.CurrentMode is None and self.OnlineMode != "OFF":
-            self.CurrentMode = ONLINE_MODE
+            self.CurrentMode = TRANSFER_MODE
             
             PluginsRoot._build(self)
             
