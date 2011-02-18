@@ -9,7 +9,7 @@ class LPCProtoError(exceptions.Exception):
                 self.msg = msg
 
         def __str__(self):
-                return "LPC communication error ! " + str(self.msg)
+                return "Exception in PLC protocol : " + str(self.msg)
 
 class LPCProto:
     def __init__(self, port, rate, timeout):

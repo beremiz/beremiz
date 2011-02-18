@@ -499,8 +499,7 @@ class LPCPluginsRoot(PluginsRoot):
                 if self.previous_plcstate=="Started":
                     if self.DebugAvailable() and self.GetIECProgramsAndVariables():
                         self.logger.write(_("Debug connect matching running PLC\n"))
-                        #TODO re-enable
-                        #self._connect_debug()
+                        self._connect_debug()
                     else:
                         self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
             
@@ -834,8 +833,7 @@ type *name = &beremiz_##name;
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC()
             self.logger.write(_("Starting PLC\n"))
-            #TODO re-enable
-            #self._connect_debug()
+            self._connect_debug()
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
         self.UpdateMethodsFromPLCStatus()

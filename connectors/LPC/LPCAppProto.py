@@ -17,7 +17,7 @@ class LPCAppProto(LPCProto):
             else:
                 raise LPCProtoError("controller did not answer as expected")
         except Exception, e:
-            raise LPCProtoError("LPC transaction error : "+str(e))
+            raise LPCProtoError("application mode transaction error : "+str(e))
         finally:
             self.TransactionLock.release()
         return LPC_STATUS.get(current_plc_status,"Broken"), res

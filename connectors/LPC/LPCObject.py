@@ -46,7 +46,7 @@ class LPCObject():
                 self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
                 return res
             except Exception,e:
-                self.pluginsroot.logger.write_error(str(e)+"\n")
+                self.pluginsroot.logger.write_warning(str(e)+"\n")
                 self.SerialConnection.close()
                 self.SerialConnection = None
                 self.PLCStatus = "Disconnected"

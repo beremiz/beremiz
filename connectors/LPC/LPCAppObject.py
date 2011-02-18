@@ -94,10 +94,11 @@ class LPCAppObject(LPCObject):
             for idx,iectype,force in idxs:
                 idxstr = ctypes.string_at(
                           ctypes.pointer(
-                           ctypes.c_uint32(length)),4)
+                           ctypes.c_uint32(idx)),4)
                 if force !=None:
                     c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
-                    forcedsizestr = chr(ctypes.sizeof(c_type))
+                    forced_type_size = ctypes.sizeof(c_type)
+                    forcedsizestr = chr(forced_type_size)
                     forcestr = ctypes.string_at(
                                 ctypes.pointer(
                                  pack_func(c_type,force)),
@@ -117,8 +118,8 @@ class LPCAppObject(LPCObject):
         offset = 0
         strbuf = self.HandleSerialTransaction(
                                      GET_TRACE_VARIABLETransaction())
-        size = len(strbuf) - 4
-        if size > 0 and self.PLCStatus == "Started":
+        if strbuf is not None and len(strbuf) > 4 and self.PLCStatus == "Started":
+            size = len(strbuf) - 4
             tick = ctypes.cast(
                     ctypes.c_char_p(strbuf[:4]),
                     ctypes.POINTER(ctypes.c_int)).contents
