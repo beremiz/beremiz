@@ -6,6 +6,12 @@
 
 /* provided by POUS.C */
 extern unsigned long long common_ticktime__;
+extern unsigned long __tick;
+
+static int debug_locked = 0;
+static int _DebugDataAvailable = 0;
+static unsigned long __debug_tick;
+
 void LPC_GetTime(IEC_TIME*);
 void LPC_SetTimer(unsigned long long next, unsigned long long period);
 
@@ -43,11 +49,16 @@ int startPLC(int argc,char **argv)
 
 int TryEnterDebugSection(void)
 {
-    return __DEBUG;
+    if(!debug_locked && __DEBUG){
+        debug_locked = 1;
+		return 1;
+    }
+    return 0;
 }
 
 void LeaveDebugSection(void)
 {
+        debug_locked = 0;
 }
 
 int stopPLC(void)
@@ -56,30 +67,40 @@ int stopPLC(void)
     return 0;
 }
 
-extern unsigned long __tick;
-int _DebugDataAvailable = 0;
 /* from plc_debugger.c */
 int WaitDebugData(unsigned long *tick)
 {
-    *tick = __tick;
-    return _DebugDataAvailable;
+    /* no blocking call on LPC */
+    if(_DebugDataAvailable && !debug_locked){
+        /* returns 0 on success */
+        *tick = __debug_tick;
+        _DebugDataAvailable = 0;
+        return 0;
+    }
+    return 1;
 }
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
 void InitiateDebugTransfer(void)
 {
+    /* remember tick */
+    __debug_tick = __tick;
     _DebugDataAvailable = 1;
 }
 
 void suspendDebug(int disable)
 {
+    /* Prevent PLC to enter debug code */
     __DEBUG = !disable;
+    debug_locked = !disable;
 }
 
 void resumeDebug(void)
 {
+    /* Let PLC enter debug code */
     __DEBUG = 1;
+    debug_locked = 0;
 }
 
 int CheckRetainBuffer(void)

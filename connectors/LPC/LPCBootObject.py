@@ -46,7 +46,9 @@ class LPCBootObject(LPCObject):
 
     def MatchMD5(self, MD5):
         res = self.HandleSerialTransaction(CHECKMD5Transaction(MD5))
-        return "".join(res).find('FAILED') == -1
+        if res :
+            return "".join(res).find('FAILED') == -1
+        return False
 
 
     def SetTraceVariablesList(self, idxs):
