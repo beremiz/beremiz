@@ -1122,8 +1122,11 @@ class StdoutPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def write(self, s, style = None):
         if s != '':
-            self.socket.send(s)
+            self.socket.send(s.encode('utf8'))
         
+    def writeyield(self, s):
+        self.write(s)
+
     def write_warning(self, s):
         self.write(s)
 

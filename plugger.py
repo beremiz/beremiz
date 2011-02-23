@@ -709,6 +709,9 @@ from weakref import WeakKeyDictionary
 
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)$")
 
+DEBUG_RETRIES_WARN = 3
+DEBUG_RETRIES_REREGISTER = 4
+
 class PluginsRoot(PlugTemplate, PLCControler):
     """
     This class define Root object of the plugin tree. 
@@ -1731,52 +1734,55 @@ class PluginsRoot(PlugTemplate, PLCControler):
         """
         This thread waid PLC debug data, and dispatch them to subscribers
         """
-        # This lock is used to avoid flooding wx event stack calling callafter
         self.debug_break = False
         debug_getvar_retry = 0
         while (not self.debug_break) and (self._connector is not None):
             plc_status, debug_tick, debug_vars = self._connector.GetTraceVariables()
+            debug_getvar_retry += 1
             #print debug_tick, debug_vars
-            self.IECdebug_lock.acquire()
-            if debug_vars is not None:
-                debug_getvar_retry = 0
+            if plc_status == "Started":
+                self.IECdebug_lock.acquire()
                 if len(debug_vars) == len(self.TracedIECPath):
+                    if debug_getvar_retry > DEBUG_RETRIES_WARN:
+                        wx.CallAfter(self.logger.write, 
+                                 _("... debugger recovered\n"))
+                    debug_getvar_retry = 0
                     for IECPath,value in zip(self.TracedIECPath, debug_vars):
                         if value is not None:
                             self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
                     self.CallWeakcallables("__tick__", "NewDataAvailable")
-                else :
-                    wx.CallAfter(self.logger.write_warning, 
-                                 _("Debug data do not match requested variable count %d != %d\n")%(len(debug_vars), len(self.TracedIECPath)))
-            else:
-                if plc_status == "Started":
-                    # Just in case, re-register debug registry to PLC
-                    if debug_getvar_retry == 0:
-                        wx.CallAfter(self.RegisterDebugVarToConnector)
-                        wx.CallAfter(self.logger.write_warning, 
-                                 _("Waiting debugger to recover...\n"))
-                    debug_getvar_retry += 1
+                self.IECdebug_lock.release()
+                if debug_getvar_retry == DEBUG_RETRIES_WARN:
+                    wx.CallAfter(self.logger.write, 
+                             _("Waiting debugger to recover...\n"))
+                if debug_getvar_retry == DEBUG_RETRIES_REREGISTER:
+                    # re-register debug registry to PLC
+                    wx.CallAfter(self.RegisterDebugVarToConnector)
+                if debug_getvar_retry != 0:
                     # Be patient, tollerate PLC to come up before debugging
                     time.sleep(0.1)
-                else:
-                    wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
-                    self.debug_break = True
-            self.IECdebug_lock.release()
+            else:
+                self.debug_break = True
+        wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
 
     def KillDebugThread(self):
         self.debug_break = True
         if self.DebugThread is not None:
-            self.DebugThread.join(timeout=1)
+            self.logger.writeyield(_("Stopping debug ... "))
+            self.DebugThread.join(timeout=5)
             if self.DebugThread.isAlive() and self.logger:
                 self.logger.write_warning(_("Debug Thread couldn't be killed"))
+            else:
+                self.logger.write(_("success\n"))
         self.DebugThread = None
 
     def _connect_debug(self): 
         if self.AppFrame:
             self.AppFrame.ResetGraphicViewers()
         self.RegisterDebugVarToConnector()
-        self.DebugThread = Thread(target=self.DebugThreadProc)
-        self.DebugThread.start()
+        if self.DebugThread is None:
+            self.DebugThread = Thread(target=self.DebugThreadProc)
+            self.DebugThread.start()
     
     def _Run(self):
         """
@@ -1815,9 +1821,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self._connector is not None and not self._connector.StopPLC():
             self.logger.write_error(_("Couldn't stop PLC !\n"))
 
-        if self.DebugThread is not None:
-            self.logger.write(_("Stopping debug\n"))
-            self.KillDebugThread()
+        self.KillDebugThread()
         
         self.UpdateMethodsFromPLCStatus()
 

@@ -106,10 +106,11 @@ class LPCAppObject(LPCObject):
                     buff += idxstr + forced_type_size_str + forcestr
                 else:
                     buff += idxstr + chr(0)
-            data = self.HandleSerialTransaction(
-                   SET_TRACE_VARIABLETransaction(buff))
         else:
+            buff = ""
             self._Idxs =  []
+
+        self.HandleSerialTransaction(SET_TRACE_VARIABLETransaction(buff))
 
     def GetTraceVariables(self):
         """
@@ -143,5 +144,5 @@ class LPCAppObject(LPCObject):
             if offset and offset == size:
                 return self.PLCStatus, tick.value, res
             #PLCprint("Debug error - wrong buffer unpack !")
-        return self.PLCStatus, None, None
+        return self.PLCStatus, None, [] 
 

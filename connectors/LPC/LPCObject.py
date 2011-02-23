@@ -45,12 +45,15 @@ class LPCObject():
             try:
                 self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
                 return res
-            except Exception,e:
-                self.pluginsroot.logger.write_warning(str(e)+"\n")
-                self.SerialConnection.close()
-                self.SerialConnection = None
+            except LPCProtoError,e:
+                self.pluginsroot.logger.write(_("PLC disconnected\n"))
+                if self.SerialConnection is not None:
+                    self.SerialConnection.close()
+                    self.SerialConnection = None
                 self.PLCStatus = "Disconnected"
                 return None
+            except Exception,e:
+                self.pluginsroot.logger.write_warning(str(e)+"\n")
         
     def StartPLC(self, debug=False):
         raise LPCProtoError("Not implemented")
