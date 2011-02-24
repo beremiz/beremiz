@@ -2,11 +2,18 @@
  * Yagarto specific code
  **/
 
+#include <string.h>
 #include <app_glue.h>
 
 /* provided by POUS.C */
 extern unsigned long long common_ticktime__;
 extern unsigned long __tick;
+
+extern unsigned long idLen;
+extern unsigned char *idBuf;
+
+static unsigned char RetainedIdBuf[128] __attribute__((section (".nvolatile")));
+static unsigned char retain_buffer[RETAIN_BUFFER_SIZE] __attribute__((section (".nvolatile")));
 
 static int debug_locked = 0;
 static int _DebugDataAvailable = 0;
@@ -40,6 +47,8 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 int startPLC(int argc,char **argv)
 {
 	if(__init(argc,argv) == 0){
+        /* sign retain buffer */
+        memcpy(RetainedIdBuf, idBuf, idLen);
 		PLC_SetTimer(0, common_ticktime__);
 		return 0;
 	}else{
@@ -105,16 +114,25 @@ void resumeDebug(void)
 
 int CheckRetainBuffer(void)
 {
-	/* TODO : compare RETAIN buffer start with MD5 */
-	return 0;
+	/* compare RETAIN ID buffer with MD5 */
+    /* return true if identical */
+    int res = memcmp(RetainedIdBuf, idBuf, idLen) == 0;
+    /* invalidate that buffer, might help when value cause PLC crash before next publish */
+    RetainedIdBuf[0] = 0;
+    return res;
+
 }
 
 void Retain(unsigned int offset, unsigned int count, void *p)
 {
-	/* TODO : write in RETAIN buffer at offset*/
+    if(offset + count < RETAIN_BUFFER_SIZE)
+        /* write in RETAIN buffer at offset*/
+        memcpy(&retain_buffer[offset], p, count);
 }
 
 void Remind(unsigned int offset, unsigned int count, void *p)
 {
-	/* TODO : read at offset in RETAIN buffer */
+    if(offset + count < RETAIN_BUFFER_SIZE)
+        /* read at offset in RETAIN buffer */
+        memcpy(p, &retain_buffer[offset], count);
 }

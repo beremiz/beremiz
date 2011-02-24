@@ -17,7 +17,6 @@
 #include <stdio.h>
 
 #define BUFFER_SIZE %(buffer_size)d
-#define MAX_SUBSCRIBTION %(subscription_table_count)d
 
 /* Atomically accessed variable for buffer state */
 #define BUFFER_FREE 0

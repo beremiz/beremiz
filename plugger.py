@@ -1341,10 +1341,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
                "OUT":"extern __IEC_%(type)s_p %(C_path)s;",
                "VAR":"extern __IEC_%(type)s_t %(C_path)s;"}[v["vartype"]]%v 
                for v in self._VariablesList if v["vartype"] != "FB" and v["C_path"].find('.')<0]),
-           "subscription_table_count":
-               len(self._VariablesList),
-           "variables_pointer_type_table_count":
-               len(self._VariablesList),
            "for_each_variable_do_code":"\n".join([
                {"EXT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
                 "IN":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
