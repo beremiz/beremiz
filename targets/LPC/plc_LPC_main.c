@@ -48,7 +48,6 @@ int startPLC(int argc,char **argv)
 {
 	if(__init(argc,argv) == 0){
         /* sign retain buffer */
-        memcpy(RetainedIdBuf, idBuf, idLen);
 		PLC_SetTimer(0, common_ticktime__);
 		return 0;
 	}else{
@@ -112,15 +111,23 @@ void resumeDebug(void)
     debug_locked = 0;
 }
 
+void ValidateRetainBuffer(void)
+{
+        memcpy(RetainedIdBuf, idBuf, idLen);
+}
+
+void InValidateRetainBuffer(void)
+{
+    /* invalidate that buffer */
+    RetainedIdBuf[0] = 0;
+}
+
 int CheckRetainBuffer(void)
 {
 	/* compare RETAIN ID buffer with MD5 */
     /* return true if identical */
     int res = memcmp(RetainedIdBuf, idBuf, idLen) == 0;
-    /* invalidate that buffer, might help when value cause PLC crash before next publish */
-    RetainedIdBuf[0] = 0;
     return res;
-
 }
 
 void Retain(unsigned int offset, unsigned int count, void *p)

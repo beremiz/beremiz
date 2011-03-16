@@ -101,7 +101,7 @@ void RemindIterator(void* varp, __IEC_types_enum vartype)
     }
 }
 
-int CheckRetainBuffer(void);
+extern int CheckRetainBuffer(void);
 
 void __init_debug(void)
 {
@@ -187,10 +187,13 @@ void RetainIterator(void* varp, __IEC_types_enum vartype)
 extern int TryEnterDebugSection(void);
 extern long AtomicCompareExchange(long*, long, long);
 extern void LeaveDebugSection(void);
+extern void ValidateRetainBuffer(void);
+extern void InValidateRetainBuffer(void);
 
 void __publish_debug(void)
 {
     retain_offset = 0;
+    InValidateRetainBuffer();
     /* Check there is no running debugger re-configuration */
     if(TryEnterDebugSection()){
         /* Lock buffer */
@@ -217,6 +220,7 @@ void __publish_debug(void)
         /* when not debugging, do only retain */
         __for_each_variable_do(RetainIterator);
     }
+    ValidateRetainBuffer();
 }
 
 #define __RegisterDebugVariable_case_t(TYPENAME) \
