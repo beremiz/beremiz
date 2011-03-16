@@ -214,6 +214,9 @@ void __publish_debug(void)
              * Trigger asynchronous transmission 
              * (returns immediately) */
             InitiateDebugTransfer(); /* size */
+        }else{
+            /* when not debugging, do only retain */
+            __for_each_variable_do(RetainIterator);
         }
         LeaveDebugSection();
     }else{
