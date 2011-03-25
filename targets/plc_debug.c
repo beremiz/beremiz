@@ -240,9 +240,10 @@ void __publish_debug(void)
             break;\
         case TYPENAME##_O_ENUM :\
             ((__IEC_##TYPENAME##_p *)varp)->flags |= flags;\
-            if(force)\
+            if(force){\
              ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
              *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
+            }\
             break;
 void RegisterDebugVariable(int idx, void* force)
 {
@@ -263,6 +264,7 @@ void RegisterDebugVariable(int idx, void* force)
 
 #define __ResetDebugVariablesIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
+        case TYPENAME##_O_ENUM :\
             ((__IEC_##TYPENAME##_p *)varp)->flags &= ~(__IEC_DEBUG_FLAG|__IEC_FORCE_FLAG);\
             break;
 
