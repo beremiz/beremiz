@@ -690,6 +690,7 @@ class VariablesEditor(wx.Panel):
     def RefreshBuffer(self):
         self.Controler.BufferCFile()
         self.ParentWindow.RefreshTitle()
+        self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
 
     def RefreshView(self):
@@ -817,15 +818,23 @@ class CFileEditor(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnUndoMenu, id=wx.ID_UNDO)
         self.Bind(wx.EVT_MENU, self.OnRedoMenu, id=wx.ID_REDO)
     
+    def _init_coll_FileMenu_Items(self, parent):
+        AppendMenu(parent, help='', id=wx.ID_SAVE,
+              kind=wx.ITEM_NORMAL, text=u'Save\tCTRL+S')
+        self.Bind(wx.EVT_MENU, self.OnSaveMenu, id=wx.ID_SAVE)
+
     def _init_coll_MenuBar_Menus(self, parent):
+        parent.Append(menu=self.FileMenu, title=u'&File')
         parent.Append(menu=self.EditMenu, title=u'&Edit')
     
     def _init_utils(self):
         self.MenuBar = wx.MenuBar()
 
+        self.FileMenu = wx.Menu(title='')
         self.EditMenu = wx.Menu(title='')
         
         self._init_coll_MenuBar_Menus(self.MenuBar)
+        self._init_coll_FileMenu_Items(self.FileMenu)
         self._init_coll_EditMenu_Items(self.EditMenu)
         
     def _init_ctrls(self, prnt):
@@ -976,6 +985,12 @@ class CFileEditor(wx.Frame):
         self.RefreshTitle()
         self.RefreshEditMenu()
         
+#-------------------------------------------------------------------------------
+#                          File Project Menu Functions
+#-------------------------------------------------------------------------------
+    def RefreshFileMenu(self):
+        self.FileMenu.Enable(wx.ID_SAVE, True)
+    
 #-------------------------------------------------------------------------------
 #                      CFile Editor Panels Management Functions
 #-------------------------------------------------------------------------------
