@@ -690,7 +690,6 @@ class VariablesEditor(wx.Panel):
     def RefreshBuffer(self):
         self.Controler.BufferCFile()
         self.ParentWindow.RefreshTitle()
-        self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
 
     def RefreshView(self):
