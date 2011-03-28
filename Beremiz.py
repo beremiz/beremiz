@@ -22,9 +22,11 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-__version__ = "$Revision$"
+
+updateinfo_url = None
 
 import os, sys, getopt, wx
+from wx.lib.agw.advancedsplash import AdvancedSplash
 import tempfile
 import shutil
 import random
@@ -41,7 +43,7 @@ if __name__ == '__main__':
         print "\n   %s [Projectpath] [Buildpath]\n"%sys.argv[0]
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "hu:", ["help", "updatecheck="])
     except getopt.GetoptError:
         # print help information and exit:
         usage()
@@ -51,6 +53,8 @@ if __name__ == '__main__':
         if o in ("-h", "--help"):
             usage()
             sys.exit()
+        if o in ("-u", "--updatecheck"):
+            updateinfo_url = a
     
     if len(args) > 2:
         usage()
@@ -74,9 +78,31 @@ if __name__ == '__main__':
     app.SetAppName('beremiz')
     wx.InitAllImageHandlers()
     
+    # popup splash
     bmp = wx.Image(Bpath("images","splash.png")).ConvertToBitmap()
-    splash=wx.SplashScreen(bmp,wx.SPLASH_CENTRE_ON_SCREEN, 1000, None)
+    #splash=AdvancedSplash(None, bitmap=bmp, style=wx.SPLASH_CENTRE_ON_SCREEN, timeout=4000)
+    splash=AdvancedSplash(None, bitmap=bmp)
     wx.Yield()
+
+    if updateinfo_url is not None:
+        updateinfo = "Fetching %s" % updateinfo_url
+        # warn for possible updates
+        def updateinfoproc():
+            global updateinfo
+            try :
+                import urllib2
+                updateinfo = urllib2.urlopen(updateinfo_url,None).read()
+            except :
+                updateinfo = "update info unavailable." 
+                
+        from threading import Thread
+        splash.SetText(text=updateinfo)
+        wx.Yield()
+        updateinfoThread = Thread(target=updateinfoproc)
+        updateinfoThread.start()
+        updateinfoThread.join(2)
+        splash.SetText(text=updateinfo)
+        wx.Yield()
 
 # Import module for internationalization
 import gettext
@@ -1580,7 +1606,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 
 if __name__ == '__main__':
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),__version__)
+    AddExceptHook(os.getcwd(),updateinfo_url)
     
     frame = Beremiz(None, projectOpen, buildpath)
     frame.Show()
