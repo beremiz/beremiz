@@ -118,7 +118,12 @@ domain = "Beremiz"
 # Define locale for wx
 loc = __builtin__.__dict__.get('loc', None)
 if loc is None:
-    loc = wx.Locale(langid)
+    test_loc = wx.Locale(langid)
+    test_loc.AddCatalogLookupPathPrefix(localedir)
+    if test_loc.AddCatalog(domain):
+        loc = wx.Locale(langid)
+    else:
+        loc = wx.Locale(wx.LANGUAGE_ENGLISH)
     __builtin__.__dict__['loc'] = loc
 # Define location for searching translation files
 loc.AddCatalogLookupPathPrefix(localedir)
