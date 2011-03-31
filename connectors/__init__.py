@@ -29,7 +29,7 @@ _base_path = path.split(__file__)[0]
 
 connector_types = [name for name in listdir(_base_path)
                         if path.isdir(path.join(_base_path, name))
-                            and name.upper() != "CVS"
+                            and name.lower() != ".hg"
                             and not name.startswith("__")]
 
 # a dict from a URI scheme (connector name) to connector module
