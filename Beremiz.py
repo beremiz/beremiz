@@ -326,7 +326,7 @@ class LogPseudoFile:
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
- ID_BEREMIZINSPECTOR] = [wx.NewId() for _init_ctrls in range(5)]
+ ID_BEREMIZINSPECTOR, ID_BUILD] = [wx.NewId() for _init_ctrls in range(6)]
 
 [ID_BEREMIZRUNMENUBUILD, ID_BEREMIZRUNMENUSIMULATE, 
  ID_BEREMIZRUNMENURUN, ID_BEREMIZRUNMENUSAVELOG, 
@@ -409,7 +409,9 @@ class Beremiz(IDEFrame):
         IDEFrame._init_ctrls(self, prnt)
         
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
-        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR)])
+        self.Bind(wx.EVT_MENU, self.OnBuildProject, id=ID_BUILD)
+        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR),
+                                     wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F11, ID_BUILD)])
         self.SetAcceleratorTable(accel)
         
         self.PLCConfig = wx.ScrolledWindow(id=ID_BEREMIZPLCCONFIG,
@@ -471,6 +473,7 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
         self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
+        self.LogConsole.SetFocus()
 
     def RiseLogConsole(self):
         self.BottomNoteBook.SetSelection(self.BottomNoteBook.GetPageIndex(self.LogConsole))
@@ -523,6 +526,10 @@ class Beremiz(IDEFrame):
         if not wnd:
             wnd = self
         InspectionTool().Show(wnd, True)
+
+    def OnBuildProject(self, evt):
+        if self.PluginRoot is not None:
+            self.PluginRoot._build()
 
     def OnLogConsoleDClick(self, event):
         wx.CallAfter(self.SearchLineForError)
@@ -1614,6 +1621,7 @@ if __name__ == '__main__':
     AddExceptHook(os.getcwd(),updateinfo_url)
     
     frame = Beremiz(None, projectOpen, buildpath)
-    frame.Show()
     splash.Close()
+    wx.Yield()
+    frame.Show()
     app.MainLoop()
