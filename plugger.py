@@ -680,29 +680,11 @@ from PLCOpenEditor import PLCOpenEditor, ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS, TypeHierarchy_list
 
-# Construct debugger natively supported types
-DebugTypes = [t for t in zip(*TypeHierarchy_list)[0] if not t.startswith("ANY")]
-DebugTypesSize =  {"BOOL" :       1,
-                   "SINT" :       1,
-                   "USINT" :      1,
-                   "BYTE" :       1,
-                   "STRING" :     128,
-                   "INT" :        2,
-                   "UINT" :       2,
-                   "WORD" :       2,
-                   "WSTRING" :    0, #TODO
-                   "DINT" :       4,
-                   "UDINT" :      4,
-                   "DWORD" :      4,
-                   "LINT" :       4,
-                   "ULINT" :      8,
-                   "LWORD" :      8,
-                   "REAL" :       4,
-                   "LREAL" :      8,
-                  } 
 
 import re, tempfile
 import targets
+from targets.typemapping import DebugTypesSize
+
 import connectors
 from discovery import DiscoveryDialog
 from weakref import WeakKeyDictionary
@@ -1346,7 +1328,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 "IN":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
                 "OUT":"    (*fp)((void*)&%(C_path)s,%(type)s_O_ENUM);\n",
                 "VAR":"    (*fp)((void*)&%(C_path)s,%(type)s_ENUM);\n"}[v["vartype"]]%v
-                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ]),
+                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ]),
            "find_variable_case_code":"\n".join([
                "    case %(num)s:\n"%v+
                "        *varp = (void*)&%(C_path)s;\n"%v+
@@ -1354,7 +1336,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 "IN":"        return %(type)s_P_ENUM;\n",
                 "OUT":"        return %(type)s_O_ENUM;\n",
                 "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
-                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypes ])}
+                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ])}
         
         return debug_code
         
@@ -1604,7 +1586,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     # Convert 
                     Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
                     if Idx is not None:
-                        Idxs.append((Idx, IEC_Type, fvalue, IECPath))
+                        if IEC_Type in DebugTypesSize: 
+                            Idxs.append((Idx, IEC_Type, fvalue, IECPath))
+                        else:
+                            self.logger.write_warning(_("Debug : Unsuppoted type to debug %s\n")%IEC_Type)
                     else:
                         self.logger.write_warning(_("Debug : Unknown variable %s\n")%IECPath)
             for IECPathToPop in IECPathsToPop:

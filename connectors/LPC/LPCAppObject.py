@@ -25,6 +25,7 @@
 import ctypes
 from LPCAppProto import *
 from LPCObject import *
+from targets.typemapping import SameEndianessTypeTranslator as TypeTranslator
 
 class LPCAppObject(LPCObject):
     def connect(self,comport):

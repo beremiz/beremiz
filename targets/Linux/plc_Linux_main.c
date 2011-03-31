@@ -20,7 +20,10 @@ long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
-    clock_gettime(CLOCK_REALTIME, CURRENT_TIME);
+    struct timespec tmp;
+    clock_gettime(CLOCK_REALTIME, &tmp);
+    CURRENT_TIME->tv_sec = tmp.tv_sec;
+    CURRENT_TIME->tv_nsec = tmp.tv_nsec;
 }
 
 void PLC_timer_notify(sigval_t val)
