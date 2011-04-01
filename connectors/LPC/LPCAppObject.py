@@ -54,35 +54,6 @@ class LPCAppObject(LPCObject):
             return data[:32] == MD5[:32]
         return False
 
-    class IEC_STRING(ctypes.Structure):
-        """
-        Must be changed according to changes in iec_types.h
-        """
-        _fields_ = [("len", ctypes.c_uint8),
-                    ("body", ctypes.c_char * 126)] 
-    
-    TypeTranslator = {"BOOL" :       (ctypes.c_uint8,  lambda x:x.value!=0,     lambda t,x:t(x)),
-                      "STEP" :       (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
-                      "TRANSITION" : (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
-                      "ACTION" :     (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
-                      "SINT" :       (ctypes.c_int8,   lambda x:x.value,        lambda t,x:t(x)),
-                      "USINT" :      (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
-                      "BYTE" :       (ctypes.c_uint8,  lambda x:x.value,        lambda t,x:t(x)),
-                      "STRING" :     (IEC_STRING,      lambda x:x.body[:x.len], lambda t,x:t(len(x),x)),
-                      "INT" :        (ctypes.c_int16,  lambda x:x.value,        lambda t,x:t(x)),
-                      "UINT" :       (ctypes.c_uint16, lambda x:x.value,        lambda t,x:t(x)),
-                      "WORD" :       (ctypes.c_uint16, lambda x:x.value,        lambda t,x:t(x)),
-                      "WSTRING" :    (None,            None,                    None),#TODO
-                      "DINT" :       (ctypes.c_int32,  lambda x:x.value,        lambda t,x:t(x)),
-                      "UDINT" :      (ctypes.c_uint32, lambda x:x.value,        lambda t,x:t(x)),
-                      "DWORD" :      (ctypes.c_uint32, lambda x:x.value,        lambda t,x:t(x)),
-                      "LINT" :       (ctypes.c_int64,  lambda x:x.value,        lambda t,x:t(x)),
-                      "ULINT" :      (ctypes.c_uint64, lambda x:x.value,        lambda t,x:t(x)),
-                      "LWORD" :      (ctypes.c_uint64, lambda x:x.value,        lambda t,x:t(x)),
-                      "REAL" :       (ctypes.c_float,  lambda x:x.value,        lambda t,x:t(x)),
-                      "LREAL" :      (ctypes.c_double, lambda x:x.value,        lambda t,x:t(x)),
-                      } 
-
     def SetTraceVariablesList(self, idxs):
         """
         Call ctype imported function to append 
@@ -97,7 +68,7 @@ class LPCAppObject(LPCObject):
                           ctypes.pointer(
                            ctypes.c_uint32(idx)),4)
                 if force !=None:
-                    c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
+                    c_type,unpack_func, pack_func = TypeTranslator.get(iectype, (None,None,None))
                     forced_type_size = ctypes.sizeof(c_type)
                     forced_type_size_str = chr(forced_type_size)
                     forcestr = ctypes.string_at(
@@ -131,7 +102,7 @@ class LPCAppObject(LPCObject):
                       ctypes.c_void_p)
             for idx, iectype, forced in self._Idxs:
                 cursor = ctypes.c_void_p(buff.value + offset)
-                c_type,unpack_func, pack_func = self.TypeTranslator.get(iectype, (None,None,None))
+                c_type,unpack_func, pack_func = TypeTranslator.get(iectype, (None,None,None))
                 if c_type is not None and offset < size:
                     res.append(unpack_func(ctypes.cast(cursor,
                                                        ctypes.POINTER(c_type)).contents))

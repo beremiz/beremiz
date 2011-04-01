@@ -25,7 +25,6 @@
 import Pyro.core as pyro
 from threading import Timer, Thread, Lock
 import ctypes, os, commands, types, sys
-from datetime import timedelta as td
 from targets.typemapping import SameEndianessTypeTranslator as TypeTranslator
 
 if os.name in ("nt", "ce"):
@@ -337,7 +336,7 @@ class PLCObject(pyro.ObjBase):
             for idx,iectype,force in idxs:
                 if force !=None:
                     c_type,unpack_func, pack_func = \
-                        self.TypeTranslator.get(iectype,
+                        TypeTranslator.get(iectype,
                                                 (None,None,None))
                     force = ctypes.byref(pack_func(c_type,force)) 
                 self._RegisterDebugVariable(idx, force)
@@ -364,7 +363,7 @@ class PLCObject(pyro.ObjBase):
                     for idx, iectype, forced in self._Idxs:
                         cursor = ctypes.c_void_p(buffer.value + offset)
                         c_type,unpack_func, pack_func = \
-                            self.TypeTranslator.get(iectype,
+                            TypeTranslator.get(iectype,
                                                     (None,None,None))
                         if c_type is not None and offset < size.value:
                             res.append(unpack_func(
