@@ -62,7 +62,7 @@ SameEndianessTypeTranslator = {
     "LREAL" :      _t(c_double),
     "TIME" :       _t(IEC_TIME, 
                       lambda x:td(0, x.s, x.ns/1000), 
-                      lambda t,x:t(x.seconds, x.microseconds*1000)),
+                      lambda t,x:t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000)),
     } 
 
 SwapedEndianessTypeTranslator = {
