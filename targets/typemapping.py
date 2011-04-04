@@ -37,6 +37,9 @@ class IEC_TIME(Structure):
                 ("ns", c_long)] #tv_nsec
 
 def _t(t, u=lambda x:x.value, p=lambda t,x:t(x)): return  (t, u, p)
+def _ttime(): return (IEC_TIME, 
+                      lambda x:td(0, x.s, x.ns/1000), 
+                      lambda t,x:t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000))
 
 SameEndianessTypeTranslator = {
     "BOOL" :       _t(c_uint8,  lambda x:x.value!=0),
@@ -46,7 +49,7 @@ SameEndianessTypeTranslator = {
     "SINT" :       _t(c_int8),
     "USINT" :      _t(c_uint8),
     "BYTE" :       _t(c_uint8),
-    "STRING" :     _t(IEC_STRING, 
+    "STRING" :     (IEC_STRING, 
                       lambda x:x.body[:x.len], 
                       lambda t,x:t(len(x),x)),
     "INT" :        _t(c_int16),
@@ -60,9 +63,10 @@ SameEndianessTypeTranslator = {
     "LWORD" :      _t(c_uint64),
     "REAL" :       _t(c_float),
     "LREAL" :      _t(c_double),
-    "TIME" :       _t(IEC_TIME, 
-                      lambda x:td(0, x.s, x.ns/1000), 
-                      lambda t,x:t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000)),
+    "TIME" :       _ttime(),
+    "TOD" :        _ttime(),
+    "DATE" :       _ttime(),
+    "DT" :         _ttime(),
     } 
 
 SwapedEndianessTypeTranslator = {
