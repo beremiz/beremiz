@@ -898,17 +898,19 @@ class LPCBeremiz(Beremiz):
     def OnCloseFrame(self, event):
         global frame
         
-        frame.Hide()
-        
-        self.PluginRoot.ResetAppFrame(lpcberemiz_cmd.Log)
-        if self.PluginRoot.OnlineMode == 0:
-            self.PluginRoot._connector = None
-        
-        self.PluginRoot.KillDebugThread()
-        self.KillLocalRuntime()
-        
-        lpcberemiz_cmd.Log.write("Closed\n")
-        
+        if self.CheckSaveBeforeClosing(_("Close Application")):
+            
+            frame.Hide()
+            
+            self.PluginRoot.ResetAppFrame(lpcberemiz_cmd.Log)
+            if self.PluginRoot.OnlineMode == 0:
+                self.PluginRoot._connector = None
+            
+            self.PluginRoot.KillDebugThread()
+            self.KillLocalRuntime()
+            
+            lpcberemiz_cmd.Log.write("Closed\n")
+            
         event.Veto()
 
     def ShowProperties(self):
