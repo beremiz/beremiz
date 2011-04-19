@@ -1218,12 +1218,14 @@ if __name__ == '__main__':
         
         def SetProjectProperties(self, projectname, productname, productversion, companyname):
             properties = self.PluginRoot.GetProjectProperties()
-            properties["projectName"] = projectname
-            properties["productName"] = productname
-            properties["productVersion"] = productversion
-            properties["companyName"] = companyname
-            self.PluginRoot.SetProjectProperties(properties=properties)
-            self.RestartTimer()
+            new_properties = properties.copy()
+            new_properties["projectName"] = projectname
+            new_properties["productName"] = productname
+            new_properties["productVersion"] = productversion
+            new_properties["companyName"] = companyname
+            if new_properties != properties:
+                self.PluginRoot.SetProjectProperties(properties=new_properties)
+                self.RestartTimer()
         
         def SetOnlineMode(self, mode, path=None):
             self.PluginRoot.SetOnlineMode(mode, path)
