@@ -434,7 +434,6 @@ class Beremiz(IDEFrame):
 
     def __init__(self, parent, projectOpen=None, buildpath=None, plugin_root=None, debug=True):
         IDEFrame.__init__(self, parent, debug)
-        self.Config = wx.ConfigBase.Get()
         self.Log = LogPseudoFile(self.LogConsole,self.RiseLogConsole)
         
         self.local_runtime = None
@@ -567,6 +566,9 @@ class Beremiz(IDEFrame):
             if self.PluginRoot is not None:
                 self.PluginRoot.KillDebugThread()
             self.KillLocalRuntime()
+            
+            self.SaveFrameSize()
+            
             event.Skip()
         else:
             event.Veto()

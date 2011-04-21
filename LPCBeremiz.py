@@ -909,6 +909,8 @@ class LPCBeremiz(Beremiz):
             self.PluginRoot.KillDebugThread()
             self.KillLocalRuntime()
             
+            self.SaveFrameSize()
+            
             lpcberemiz_cmd.Log.write("Closed\n")
             
         event.Veto()
