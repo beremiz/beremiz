@@ -444,9 +444,15 @@ class LPCPluginsRoot(PluginsRoot):
             return PluginsRoot._getBuildPath(self)
 
     def _build(self):
+        save = self.ProjectTestModified()
+        if save:
+            self.SaveProject()
+            self.AppFrame._Refresh(TITLE, FILEMENU)
         if self.BuildPath is not None:
             mycopytree(self.OrigBuildPath, self.BuildPath)
         PluginsRoot._build(self)
+        if save:
+            wx.CallAfter(self.AppFrame.RefreshAll)
     
     def SetProjectName(self, name):
         return self.Project.setname(name)
