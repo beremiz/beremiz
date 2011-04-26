@@ -47,7 +47,7 @@ class LOADTransaction(LPCBootTransaction):
         data = self.OptData
         loptdata = len(self.OptData)
         count=0
-        self.PLCprint("%dkB:" % (loptdata/1024))
+        #self.PLCprint("%dkB:" % (loptdata/1024))
         while len(data)>0:
             res = self.pseudofile.write(data[:loptdata/100])
             data = data[res:]
