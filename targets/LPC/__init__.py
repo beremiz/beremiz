@@ -36,7 +36,7 @@ class LPC_target(toolchain_makefile):
             return self.binmd5key
         else:
             try:
-                return open(self._GetMD5FileName(), "r").read()
+                return open(self._GetBinMD5FileName(), "r").read()
             except IOError, e:
                 return None
 
@@ -52,5 +52,12 @@ class LPC_target(toolchain_makefile):
         f = open(self._GetBinMD5FileName(), "w")
         f.write(self.binmd5key)
         f.close()
+        try:
+            self.PluginsRootInstance.logger.write(
+                _("Binary is %s bytes long\n")%
+                    str(os.path.getsize(
+                        os.path.join(self.buildpath, "ArmPLC_rom.bin"))))
+        except Exception, e:
+            pass 
         return res
 
