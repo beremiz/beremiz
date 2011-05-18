@@ -529,7 +529,7 @@ class VariablesTable(wx.grid.PyGridTableBase):
                     editor = wx.grid.GridCellTextEditor()
                 elif colname == "Class":
                     editor = wx.grid.GridCellChoiceEditor()
-                    editor.SetParameters("input,output")
+                    editor.SetParameters("input,memory,output")
                 elif colname == "Type":
                     pass
                 else:
@@ -769,6 +769,11 @@ class VariablesEditor(wx.Panel):
                 dir = "%I"
                 for i in xrange(row):
                     if self.Table.GetValueByName(i, "Class") == "input":
+                        num += 1
+            elif self.Table.GetValueByName(row, "Class") == "memory":
+                dir = "%M"
+                for i in xrange(row):
+                    if self.Table.GetValueByName(i, "Class") == "memory":
                         num += 1
             else:
                 dir = "%Q"

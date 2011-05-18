@@ -20,6 +20,7 @@
                     <xsd:simpleType>
                       <xsd:restriction base="xsd:string">
                         <xsd:enumeration value="input"/>
+                        <xsd:enumeration value="memory"/>
                         <xsd:enumeration value="output"/>
                       </xsd:restriction>
                     </xsd:simpleType>

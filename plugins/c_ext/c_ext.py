@@ -166,13 +166,17 @@ class _Cfile:
         current_location = ".".join(map(str, self.GetCurrentLocation()))
         
         vars = []
-        input = output = 0
+        input = memory = output = 0
         for var in self.CFile.variables.getvariable():
             var_size = self.GetSizeOfType(var.gettype())
             if var.getclass() == "input":
                 var_class = LOCATION_VAR_INPUT
                 var_location = "%%I%s%s.%d"%(var_size, current_location, input)
                 input += 1
+            elif var.getclass() == "memory":
+                var_class = LOCATION_VAR_INPUT
+                var_location = "%%M%s%s.%d"%(var_size, current_location, memory)
+                memory += 1
             else:
                 var_class = LOCATION_VAR_OUTPUT
                 var_location = "%%Q%s%s.%d"%(var_size, current_location, output)
@@ -303,12 +307,15 @@ class _Cfile:
 
         # Adding variables
         vars = []
-        inputs = outputs = 0
+        inputs = memories = outputs = 0
         for variable in self.CFile.variables.variable:
             var = {"Name" : variable.getname(), "Type" : variable.gettype()}
             if variable.getclass() == "input":
                 var["location"] = "__I%s%s_%d"%(self.GetSizeOfType(var["Type"]), location_str, inputs)
                 inputs += 1
+            elif variable.getclass() == "memory":
+                var["location"] = "__M%s%s_%d"%(self.GetSizeOfType(var["Type"]), location_str, memories)
+                memories += 1
             else:
                 var["location"] = "__Q%s%s_%d"%(self.GetSizeOfType(var["Type"]), location_str, outputs)
                 outputs += 1
