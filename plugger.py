@@ -1327,7 +1327,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
            "for_each_variable_do_code":"\n".join([
                {"EXT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
                 "IN":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
-                "MEM":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
+                "MEM":"    (*fp)((void*)&%(C_path)s,%(type)s_O_ENUM);\n",
                 "OUT":"    (*fp)((void*)&%(C_path)s,%(type)s_O_ENUM);\n",
                 "VAR":"    (*fp)((void*)&%(C_path)s,%(type)s_ENUM);\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ]),
@@ -1336,7 +1336,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                "        *varp = (void*)&%(C_path)s;\n"%v+
                {"EXT":"        return %(type)s_P_ENUM;\n",
                 "IN":"        return %(type)s_P_ENUM;\n",
-                "MEM":"        return %(type)s_P_ENUM;\n",
+                "MEM":"        return %(type)s_O_ENUM;\n",
                 "OUT":"        return %(type)s_O_ENUM;\n",
                 "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ])}
