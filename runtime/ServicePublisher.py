@@ -69,7 +69,7 @@ class ServicePublisher():
                                                            self.port, 
                                                            properties = self.serviceproperties))
         self.server.close()
-        del self.server
+        self.server = None
     
     def gethostaddr(self, dst = '224.0.1.41'):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

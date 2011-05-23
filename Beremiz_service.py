@@ -27,14 +27,14 @@ import os, sys, getopt
 def usage():
     print """
 Usage of Beremiz PLC execution service :\n
-%s {[-n name] [-i ip] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
-           -n        - zeroconf service name
-           -i        - ip of interface to bind to (x.x.x.x)
-           -p        - port number
+%s {[-n servicename] [-i ip] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
+           -n        - zeroconf service name (default:disabled)
+           -i        - ip of interface to bind to (default:localhost)
+           -p        - port number default:3000
            -h        - print this help text and quit
-           -a        - autostart PLC (0:disable 1:enable)
-           -x        - enable/disable wxTaskbarIcon (0:disable 1:enable)
-           -t        - enable/disable Twisted web interface (0:disable 1:enable)
+           -a        - autostart PLC (0:disable 1:enable) (default:0)
+           -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
+           -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
            
            working_dir - directory where are stored PLC files
 """%sys.argv[0]
@@ -50,10 +50,7 @@ except getopt.GetoptError, err:
 # default values
 ip = ""
 port = 3000
-name = os.environ[{
-     "linux2":"USER",
-     "win32":"USERNAME",
-     }.get(sys.platform, "USER")]
+servicename = None
 autostart = False
 enablewx = True
 havewx = False
@@ -71,7 +68,7 @@ for o, a in opts:
         # port: port that the service runs on
         port = int(a)
     elif o == "-n":
-        name = a
+        servicename = a
     elif o == "-x":
         enablewx = int(a)
     elif o == "-t":
@@ -102,6 +99,7 @@ if enablewx:
         from types import *
         havewx = True
     except:
+        print "Wx unavailable !"
         havewx = False
 
     if havewx:
@@ -431,10 +429,10 @@ def default_evaluator(callable, *args, **kwargs):
     return callable(*args,**kwargs)
 
 class Server():
-    def __init__(self, name, ip, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
+    def __init__(self, servicename, ip, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
         self.continueloop = True
         self.daemon = None
-        self.name = name
+        self.servicename = servicename
         self.ip = ip
         self.port = port
         self.workdir = workdir
@@ -463,16 +461,16 @@ class Server():
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator, self.website)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
     
-        print "The daemon runs on port :",self.port
-        print "The object's uri is :",uri
-        print "The working directory :",self.workdir
+        print "Pyro port :",self.port
+        print "Pyro object's uri :",uri
+        print "Current working directory :",self.workdir
         
         # Configure and publish service
         # Not publish service if localhost in address params
-        if self.ip != "localhost" and self.ip != "127.0.0.1":    
-            print "Publish service on local network"
+        if self.servicename is not None and self.ip != "localhost" and self.ip != "127.0.0.1":    
+            print "Publishing service on local network"
             self.servicepublisher = ServicePublisher.ServicePublisher()
-            self.servicepublisher.RegisterService(self.name, self.ip, self.port)
+            self.servicepublisher.RegisterService(self.servicename, self.ip, self.port)
         
         if self.autostart:
             self.plcobj.StartPLC()
@@ -485,11 +483,12 @@ class Server():
         self.plcobj.StopPLC()
         if self.servicepublisher is not None:
             self.servicepublisher.UnRegisterService()
-            del self.servicepublisher
+            self.servicepublisher = None
         self.daemon.shutdown(True)
 
 if enabletwisted:
     try:
+        from threading import Thread, currentThread
         if havewx:
             from twisted.internet import wxreactor
             wxreactor.install()
@@ -500,6 +499,7 @@ if enabletwisted:
         
         havetwisted = True
     except:
+        print "Twisted unavailable !"
         havetwisted = False
 
 if havetwisted:
@@ -648,8 +648,8 @@ if havetwisted:
         
     if havewx:
         reactor.registerWxApp(app)
-    res = WebInterface()
-    site = appserver.NevowSite(res)
+    website = WebInterface()
+    site = appserver.NevowSite(website)
     
     website_port = 8009
     listening = False
@@ -659,8 +659,9 @@ if havetwisted:
             listening = True
         except:
             website_port += 1
+    print "Http interface port :",website_port
 else:
-    res = None
+    website = None
 
 if havewx:
     from threading import Semaphore
@@ -688,18 +689,25 @@ if havewx:
             wx.CallAfter(wx_evaluator,callable,*args,**kwargs)
             wx_eval_lock.acquire()
         return eval_res
-
-    pyroserver = Server(name, ip, port, WorkingDir, argv, autostart, statuschange, evaluator, res)
-    taskbar_instance = BeremizTaskBarIcon(pyroserver)
     
+    pyroserver = Server(servicename, ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
+    taskbar_instance = BeremizTaskBarIcon(pyroserver)
+else:
+    pyroserver = Server(servicename, ip, port, WorkingDir, argv, autostart, website=website)
+
+if havetwisted or havewx:
     pyro_thread=Thread(target=pyroserver.Loop)
     pyro_thread.start()
-else:
-    pyroserver = Server(name, ip, port, WorkingDir, argv, autostart, website=res)
 
-if havetwisted:
-    reactor.run()
-elif havewx:
-    app.MainLoop()
+    if havetwisted:
+        reactor.run()
+    elif havewx:
+        app.MainLoop()
 else:
-    pyroserver.Loop()
+    try :
+        pyroserver.Loop()
+    except KeyboardInterrupt,e:
+        pass
+pyroserver.Quit()
+sys.exit(0)
+
