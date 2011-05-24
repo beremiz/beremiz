@@ -852,7 +852,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
     def SetParamsAttribute(self, path, value):
         if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
-            self.BeremizRoot.setTargetType(self.GetDefaultTarget())
+            self.BeremizRoot.setTargetType(self.GetTarget())
         return PlugTemplate.SetParamsAttribute(self, path, value)
         
     # helper func to check project path write permission
