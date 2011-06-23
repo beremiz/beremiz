@@ -1542,7 +1542,7 @@ An unhandled exception (bug) occured. Bug report saved at :
 (%s)
 
 Please be kind enough to send this file to:
-edouard.tisserant@gmail.com
+dev@pibit.ch
 
 You should now restart Beremiz.
 
