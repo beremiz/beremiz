@@ -740,7 +740,7 @@ class VariablesEditor(wx.Panel):
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), id=new_id)
             type_menu.AppendMenu(wx.NewId(), "Base Types", base_menu)
             datatype_menu = wx.Menu(title='')
-            for datatype in self.Controler.GetDataTypes(basetypes = False):
+            for datatype in self.Controler.GetDataTypes(basetypes=False, only_locatables=True):
                 new_id = wx.NewId()
                 AppendMenu(datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)

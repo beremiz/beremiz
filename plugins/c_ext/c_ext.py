@@ -139,11 +139,11 @@ class _Cfile:
     def GetBaseTypes(self):
         return self.GetPlugRoot().GetBaseTypes()
 
-    def GetDataTypes(self, basetypes = False):
-        return self.GetPlugRoot().GetDataTypes(basetypes = basetypes)
+    def GetDataTypes(self, basetypes = False, only_locatables = False):
+        return self.GetPlugRoot().GetDataTypes(basetypes=basetypes, only_locatables=only_locatables)
 
     def GetSizeOfType(self, type):
-        return TYPECONVERSION[self.GetPlugRoot().GetBaseType(type)]
+        return TYPECONVERSION.get(self.GetPlugRoot().GetBaseType(type), None)
 
     def SetVariables(self, variables):
         self.CFile.variables.setvariable([])
@@ -169,17 +169,21 @@ class _Cfile:
         input = memory = output = 0
         for var in self.CFile.variables.getvariable():
             var_size = self.GetSizeOfType(var.gettype())
+            var_location = ""
             if var.getclass() == "input":
                 var_class = LOCATION_VAR_INPUT
-                var_location = "%%I%s%s.%d"%(var_size, current_location, input)
+                if var_size is not None:
+                    var_location = "%%I%s%s.%d"%(var_size, current_location, input)
                 input += 1
             elif var.getclass() == "memory":
                 var_class = LOCATION_VAR_INPUT
-                var_location = "%%M%s%s.%d"%(var_size, current_location, memory)
+                if var_size is not None:
+                    var_location = "%%M%s%s.%d"%(var_size, current_location, memory)
                 memory += 1
             else:
                 var_class = LOCATION_VAR_OUTPUT
-                var_location = "%%Q%s%s.%d"%(var_size, current_location, output)
+                if var_size is not None:
+                    var_location = "%%Q%s%s.%d"%(var_size, current_location, output)
                 output += 1
             vars.append({"name": var.getname(),
                          "type": var_class,
