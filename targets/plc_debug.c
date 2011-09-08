@@ -76,8 +76,8 @@ void* UnpackVar(void* varp, __IEC_types_enum vartype, void **real_value_p, char 
     *flags = 0;
     /* find data to copy*/
     switch(vartype){
-        ANY(__Unpack_case_t)
-        ANY(__Unpack_case_p)
+        __ANY(__Unpack_case_t)
+        __ANY(__Unpack_case_p)
     default:
         break;
     }
@@ -248,8 +248,8 @@ void RegisterDebugVariable(int idx, void* force)
     void *varp = NULL;
     unsigned char flags = force ? __IEC_DEBUG_FLAG | __IEC_FORCE_FLAG : __IEC_DEBUG_FLAG;
     switch(__find_variable(idx, &varp)){
-        ANY(__RegisterDebugVariable_case_t)
-        ANY(__RegisterDebugVariable_case_p)
+        __ANY(__RegisterDebugVariable_case_t)
+        __ANY(__RegisterDebugVariable_case_p)
     default:
         break;
     }
@@ -270,8 +270,8 @@ void ResetDebugVariablesIterator(void* varp, __IEC_types_enum vartype)
 {
     /* force debug flag to 0*/
     switch(vartype){
-        ANY(__ResetDebugVariablesIterator_case_t)
-        ANY(__ResetDebugVariablesIterator_case_p)
+        __ANY(__ResetDebugVariablesIterator_case_t)
+        __ANY(__ResetDebugVariablesIterator_case_p)
     default:
         break;
     }
