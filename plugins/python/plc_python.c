@@ -127,7 +127,7 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 		   __GET_VAR(data__->STATE) == PYTHON_FB_FREE)
 		{
 			/* Enter the block in the fifo
-			/* Don't have to check if fifo cell is free
+			 * Don't have to check if fifo cell is free
 			 * as fifo size == FB count, and a FB cannot
 			 * be requested twice */
 			EvalFBs[Current_PLC_EvalFB] = data__;
@@ -176,7 +176,7 @@ char* PythonIterator(char* result)
 				/* TODO : signal error */
 			}
 			/* Copy results to buffer */
-			strncpy(__GET_VAR(data__->BUFFER, .body), result, __GET_VAR(data__->BUFFER,.len));
+			strncpy((char*)__GET_VAR(data__->BUFFER, .body), result, __GET_VAR(data__->BUFFER,.len));
 	   	}else{
 	   	    __SET_VAR(data__->BUFFER, 0, .len);
 	   	}
@@ -207,7 +207,7 @@ char* PythonIterator(char* result)
 	/* make BUFFER a null terminated string */
 	__SET_VAR(data__->BUFFER, 0, .body[__GET_VAR(data__->BUFFER, .len)]);
 	/* next command is BUFFER */
-	next_command = __GET_VAR(data__->BUFFER, .body);
+	next_command = (char*)__GET_VAR(data__->BUFFER, .body);
 	/* free python mutex */
 	UnLockPython();
 	/* return the next command to eval */
