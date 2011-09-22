@@ -183,14 +183,14 @@ void InitiateDebugTransfer()
     ReleaseSemaphore(debug_wait_sem, 1, NULL);
 }
 
-void suspendDebug(int disable)
+int suspendDebug(int disable)
 {
     /* Prevent PLC to enter debug code */
     WaitForSingleObject(debug_sem, INFINITE);
-    /*__DEBUG is protected by this mutex */
     __DEBUG = !disable;
     if(disable)
         ReleaseSemaphore(debug_sem, 1, NULL);
+    return 0;
 }
 
 void resumeDebug()

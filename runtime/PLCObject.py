@@ -136,7 +136,7 @@ class PLCObject(pyro.ObjBase):
             self._GetDebugData.argtypes = [ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_void_p)]
 
             self._suspendDebug = self.PLClibraryHandle.suspendDebug
-            self._suspendDebug.restype = None
+            self._suspendDebug.restype = ctypes.c_int
             self._suspendDebug.argtypes = [ctypes.c_int]
 
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
@@ -161,7 +161,7 @@ class PLCObject(pyro.ObjBase):
         self._IterDebugData = lambda x,y:None
         self._FreeDebugData = lambda:None
         self._GetDebugData = lambda:-1
-        self._suspendDebug = lambda x:None
+        self._suspendDebug = lambda x:-1
         self._resumeDebug = lambda:None
         self._PythonIterator = lambda:""
         self.PLClibraryHandle = None
@@ -329,18 +329,18 @@ class PLCObject(pyro.ObjBase):
         """
         if idxs:
             # suspend but dont disable
-            self._suspendDebug(False)
-            # keep a copy of requested idx
-            self._Idxs = idxs[:]
-            self._ResetDebugVariables()
-            for idx,iectype,force in idxs:
-                if force !=None:
-                    c_type,unpack_func, pack_func = \
-                        TypeTranslator.get(iectype,
-                                                (None,None,None))
-                    force = ctypes.byref(pack_func(c_type,force)) 
-                self._RegisterDebugVariable(idx, force)
-            self._resumeDebug()
+            if self._suspendDebug(False) == 0:
+                # keep a copy of requested idx
+                self._Idxs = idxs[:]
+                self._ResetDebugVariables()
+                for idx,iectype,force in idxs:
+                    if force !=None:
+                        c_type,unpack_func, pack_func = \
+                            TypeTranslator.get(iectype,
+                                                    (None,None,None))
+                        force = ctypes.byref(pack_func(c_type,force)) 
+                    self._RegisterDebugVariable(idx, force)
+                self._resumeDebug()
         else:
             self._suspendDebug(True)
             self._Idxs =  []

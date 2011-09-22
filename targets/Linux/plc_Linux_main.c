@@ -10,7 +10,6 @@
 #include <pthread.h>
 #include <locale.h>
 
-/* provided by POUS.C */
 extern unsigned long long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
@@ -158,7 +157,7 @@ void InitiateDebugTransfer()
     pthread_mutex_unlock(&debug_wait_mutex);
 }
 
-void suspendDebug(int disable)
+int suspendDebug(int disable)
 {
     /* Prevent PLC to enter debug code */
     pthread_mutex_lock(&debug_mutex);
@@ -166,6 +165,7 @@ void suspendDebug(int disable)
     __DEBUG = !disable;
     if (disable)
     	pthread_mutex_unlock(&debug_mutex);
+    return 0;
 }
 
 void resumeDebug(void)
