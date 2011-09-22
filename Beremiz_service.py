@@ -487,20 +487,23 @@ class Server():
         self.daemon.shutdown(True)
 
 if enabletwisted:
-    try:
-        from threading import Thread, currentThread
-        if havewx:
-            from twisted.internet import wxreactor
-            wxreactor.install()
-        from twisted.internet import reactor, task
-        from twisted.python import log, util
-        from nevow import rend, appserver, inevow, tags, loaders, athena
-        from nevow.page import renderer
-        
-        havetwisted = True
-    except:
-        print "Twisted unavailable !"
-        havetwisted = False
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        try:
+            from threading import Thread, currentThread
+            if havewx:
+                from twisted.internet import wxreactor
+                wxreactor.install()
+            from twisted.internet import reactor, task
+            from twisted.python import log, util
+            from nevow import rend, appserver, inevow, tags, loaders, athena
+            from nevow.page import renderer
+            
+            havetwisted = True
+        except:
+            print "Twisted unavailable !"
+            havetwisted = False
 
 if havetwisted:
     
