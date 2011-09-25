@@ -186,7 +186,7 @@ int startPLC(int argc,char **argv)
     PLC_state |= PLC_STATE_PYTHON_FILE_OPENED;
 
     /* create WaitDebug_pipe */
-    if(rt_pipe_create(&WaitDebug_pipe, "Debug_pipe", WAITDEBUG_PIPE_MINOR, PIPE_SIZE))
+    if(rt_pipe_create(&WaitDebug_pipe, "WaitDebug_pipe", WAITDEBUG_PIPE_MINOR, PIPE_SIZE))
         goto error;
     PLC_state |= PLC_STATE_WAITDEBUG_PIPE_CREATED;
 
@@ -195,7 +195,7 @@ int startPLC(int argc,char **argv)
     PLC_state |= PLC_STATE_WAITDEBUG_FILE_OPENED;
 
     /* create WaitPython_pipe */
-    if(rt_pipe_create(&WaitPython_pipe, "Python_pipe", WAITPYTHON_PIPE_MINOR, PIPE_SIZE))
+    if(rt_pipe_create(&WaitPython_pipe, "WaitPython_pipe", WAITPYTHON_PIPE_MINOR, PIPE_SIZE))
         goto error;
     PLC_state |= PLC_STATE_WAITPYTHON_PIPE_CREATED;
 
@@ -215,6 +215,7 @@ int startPLC(int argc,char **argv)
     return 0;
 
 error:
+
     PLC_cleanup_all();
     return 1;
 }
@@ -225,11 +226,16 @@ static long debug_state = DEBUG_FREE;
 
 int TryEnterDebugSection(void)
 {
-    long old_debug_state = AtomicCompareExchange(
+    if(AtomicCompareExchange(
         &debug_state,
         DEBUG_FREE,
-        DEBUG_BUSY);
-    return old_debug_state == DEBUG_FREE;
+        DEBUG_BUSY) == DEBUG_FREE){
+        if(__DEBUG){
+            return 1;
+        }
+        AtomicCompareExchange( &debug_state, DEBUG_BUSY, DEBUG_FREE);
+    }
+    return 0;
 }
 
 #define DEBUG_UNLOCK 1
@@ -277,7 +283,7 @@ int suspendDebug(int disable)
             DEBUG_FREE,
             DEBUG_BUSY) != DEBUG_FREE &&
             cmd == DEBUG_UNLOCK){
-       if(read(Debug_pipe_fd, &cmd, sizeof(cmd)) == sizeof(cmd)){
+       if(read(Debug_pipe_fd, &cmd, sizeof(cmd)) != sizeof(cmd)){
            return -1;
        }
     }
@@ -345,5 +351,26 @@ void UnLockPython(void)
            rt_pipe_write(&Python_pipe, &cmd, sizeof(cmd), P_NORMAL);
         }/* otherwise, no signaling from non real time */
     }    /* as plc does not wait for lock. */
+}
+
+int CheckRetainBuffer(void)
+{
+	return 1;
+}
+
+void ValidateRetainBuffer(void)
+{
+}
+
+void InValidateRetainBuffer(void)
+{
+}
+
+void Retain(unsigned int offset, unsigned int count, void *p)
+{
+}
+
+void Remind(unsigned int offset, unsigned int count, void *p)
+{
 }
 
