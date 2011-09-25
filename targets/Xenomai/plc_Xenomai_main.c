@@ -256,11 +256,12 @@ int WaitDebugData(unsigned long *tick)
 {
     char cmd;
     int res;
-    *tick = __debug_tick;
     /* Wait signal from PLC thread */
     res = read(WaitDebug_pipe_fd, &cmd, sizeof(cmd));
-    if (res == sizeof(cmd) && cmd == DEBUG_PENDING_DATA)
+    if (res == sizeof(cmd) && cmd == DEBUG_PENDING_DATA){
+        *tick = __debug_tick;
         return 0;
+    }
     return -1;
 }
 
@@ -288,6 +289,8 @@ int suspendDebug(int disable)
        }
     }
     __DEBUG = !disable;
+    if (disable)
+        AtomicCompareExchange( &debug_state, DEBUG_BUSY, DEBUG_FREE);
     return 0;
 }
 

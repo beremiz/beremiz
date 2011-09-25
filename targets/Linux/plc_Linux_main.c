@@ -142,9 +142,11 @@ extern unsigned long __tick;
 
 int WaitDebugData(unsigned long *tick)
 {
-    *tick = __debug_tick;
+    int res;
     /* Wait signal from PLC thread */
-    return pthread_mutex_lock(&debug_wait_mutex);
+    res = pthread_mutex_lock(&debug_wait_mutex);
+    *tick = __debug_tick;
+    return res;
 }
 
 /* Called by PLC thread when debug_publish finished
