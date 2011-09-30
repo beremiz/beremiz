@@ -13,6 +13,4 @@ syntax: regexp
 syntax: regexp
 ^.*\.pyc$
 syntax: regexp
-^xmlclass$
-syntax: regexp
 ^\.settings/org.eclipse.core.resources.prefs$

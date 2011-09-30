@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: beremiz
 Architecture: any
-Depends: build-essential, python-wxgtk2.8, python-ctypes, python-numpy, python-twisted, python-nevow, python-simplejson, python-wxglade, xpdf, canfestival-devel, canfestival-objdictedit, matiec, docutils, pyro, xmlclass, plcopeneditor
+Depends: build-essential, python-wxgtk2.8, python-ctypes, python-numpy, python-twisted, python-nevow, python-simplejson, python-wxglade, xpdf, canfestival-devel, canfestival-objdictedit, matiec, pyro, plcopeneditor
 Description: Beremiz is an Open Source framework for automation
  With Beremiz, you can :
     - Automate everything.

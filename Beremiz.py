@@ -140,7 +140,6 @@ if __name__ == '__main__':
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(base_folder)
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
-sys.path.append(os.path.join(base_folder, "docutils"))
 
 import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle

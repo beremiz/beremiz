@@ -13,7 +13,6 @@ import wx
 #Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
 
-from docpdf import *
 from xmlclass import GenerateClassesFromXSDstring
 from wxPopen import ProcessLogger
 
