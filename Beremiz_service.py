@@ -84,6 +84,7 @@ if len(argv) > 1:
     sys.exit()
 elif len(argv) == 1:
     WorkingDir = argv[0]
+    os.chdir(WorkingDir)
 elif len(argv) == 0:
     WorkingDir = os.getcwd()
     argv=[WorkingDir]
