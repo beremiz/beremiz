@@ -325,11 +325,7 @@ class LogPseudoFile:
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
- ID_BEREMIZINSPECTOR, ID_BUILD] = [wx.NewId() for _init_ctrls in range(6)]
-
-[ID_BEREMIZRUNMENUBUILD, ID_BEREMIZRUNMENUSIMULATE, 
- ID_BEREMIZRUNMENURUN, ID_BEREMIZRUNMENUSAVELOG, 
-] = [wx.NewId() for _init_coll_EditMenu_Items in range(4)]
+ ID_BEREMIZINSPECTOR] = [wx.NewId() for _init_ctrls in range(5)]
 
 class Beremiz(IDEFrame):
 	
@@ -408,10 +404,23 @@ class Beremiz(IDEFrame):
         IDEFrame._init_ctrls(self, prnt)
         
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
-        self.Bind(wx.EVT_MENU, self.OnBuildProject, id=ID_BUILD)
-        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR),
-                                     wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F11, ID_BUILD)])
-        self.SetAcceleratorTable(accel)
+        accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR)]
+        for method,shortcut in [("Stop",     wx.WXK_F4),
+                                ("Run",      wx.WXK_F5),
+                                ("Transfer", wx.WXK_F6),
+                                ("Connect",  wx.WXK_F7),
+                                ("Build",    wx.WXK_F11)]:
+            def OnMethodGen(obj,meth):
+                def OnMethod(evt):
+                    if obj.PluginRoot is not None:
+                       obj.PluginRoot.CallMethod('_'+meth)
+                    wx.CallAfter(self.RefreshAll)
+                return OnMethod
+            newid = wx.NewId()
+            self.Bind(wx.EVT_MENU, OnMethodGen(self,method), id=newid)
+            accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, shortcut,newid)]
+        
+        self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
         self.PLCConfig = wx.ScrolledWindow(id=ID_BEREMIZPLCCONFIG,
               name='PLCConfig', parent=self.LeftNoteBook, pos=wx.Point(0, 0),
@@ -524,10 +533,6 @@ class Beremiz(IDEFrame):
         if not wnd:
             wnd = self
         InspectionTool().Show(wnd, True)
-
-    def OnBuildProject(self, evt):
-        if self.PluginRoot is not None:
-            self.PluginRoot._build()
 
     def OnLogConsoleDClick(self, event):
         wx.CallAfter(self.SearchLineForError)
