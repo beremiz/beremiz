@@ -1485,6 +1485,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error(traceback.format_exc())
             return False
 
+        self.logger.write(_("Successfully built.\n"))
         # Update GUI status about need for transfer
         self.CompareLocalAndRemotePLC()
         return True
@@ -1756,12 +1757,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def KillDebugThread(self):
         self.debug_break = True
         if self.DebugThread is not None:
-            self.logger.writeyield(_("Stopping debug ... "))
+            self.logger.writeyield(_("Stopping debugger...\n"))
             self.DebugThread.join(timeout=5)
             if self.DebugThread.isAlive() and self.logger:
-                self.logger.write_warning(_("Debug Thread couldn't be killed"))
+                self.logger.write_warning(_("Couldn't stop debugger.\n"))
             else:
-                self.logger.write(_("success\n"))
+                self.logger.write(_("Debugger stopped.\n"))
         self.DebugThread = None
 
     def _connect_debug(self): 
