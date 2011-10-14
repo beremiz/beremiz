@@ -779,7 +779,7 @@ class Beremiz(IDEFrame):
             for i in items:
                 self.PluginInfos[plugin][i].SetBackgroundColour(bkgdclr)
                 self.PluginInfos[plugin][i].Refresh()
-        self.RefreshFileMenu()
+        self._Refresh(TITLE, FILEMENU)
         return res
 
     def ExpandPlugin(self, plugin, force = False):
@@ -1497,7 +1497,7 @@ class Beremiz(IDEFrame):
                 PluginName = dialog.GetValue()
                 plugin.PlugAddChild(PluginName, PluginType)
                 self.PluginRoot.RefreshPluginsBlockLists()
-                self.RefreshFileMenu()
+                self._Refresh(TITLE, FILEMENU)
                 self.RefreshPluginTree()
             dialog.Destroy()
     
@@ -1509,7 +1509,7 @@ class Beremiz(IDEFrame):
                 plugin.PlugRemove()
                 del plugin
                 self.PluginRoot.RefreshPluginsBlockLists()
-                self.RefreshFileMenu()
+                self._Refresh(TITLE, FILEMENU)
                 self.RefreshPluginTree()
             dialog.Destroy()
     
