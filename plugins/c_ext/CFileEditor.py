@@ -2,6 +2,8 @@ import  wx, wx.grid
 import  wx.stc  as  stc
 import keyword
 
+from controls import CustomGrid
+
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
               'mono' : 'Courier New',
@@ -555,15 +557,18 @@ class VariablesTable(wx.grid.PyGridTableBase):
     def AppendRow(self, row_content):
         self.data.append(row_content)
 
+    def InsertRow(self, row_index, row_content):
+        self.data.insert(row_index, row_content)
+
     def RemoveRow(self, row_index):
         self.data.pop(row_index)
 
-    def MoveRow(self, row_index, move, grid):
+    def MoveRow(self, row_index, move):
         new_index = max(0, min(row_index + move, len(self.data) - 1))
         if new_index != row_index:
             self.data.insert(new_index, self.data.pop(row_index))
-            grid.SetGridCursor(new_index, grid.GetGridCursorCol())
-
+        return new_index
+    
     def GetRow(self, row_index):
         return self.data[row_index]
 
@@ -619,7 +624,7 @@ class VariablesEditor(wx.Panel):
         wx.Panel.__init__(self, id=ID_VARIABLESEDITOR, name='', parent=prnt,
               size=wx.Size(0, 0), style=wx.SUNKEN_BORDER)
         
-        self.VariablesGrid = wx.grid.Grid(id=ID_VARIABLESEDITORVARIABLESGRID,
+        self.VariablesGrid = CustomGrid(id=ID_VARIABLESEDITORVARIABLESGRID,
               name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
               size=wx.Size(-1, -1), style=wx.VSCROLL)
         self.VariablesGrid.SetFont(wx.Font(12, 77, wx.NORMAL, wx.NORMAL, False,
@@ -638,23 +643,19 @@ class VariablesEditor(wx.Panel):
         self.AddVariableButton = wx.Button(id=ID_VARIABLESEDITORADDVARIABLEBUTTON, label='Add Variable',
               name='AddVariableButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(122, 32), style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnAddVariableButton, id=ID_VARIABLESEDITORADDVARIABLEBUTTON)
-
+        
         self.DeleteVariableButton = wx.Button(id=ID_VARIABLESEDITORDELETEVARIABLEBUTTON, label='Delete Variable',
               name='DeleteVariableButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(122, 32), style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnDeleteVariableButton, id=ID_VARIABLESEDITORDELETEVARIABLEBUTTON)
-
+        
         self.UpVariableButton = wx.Button(id=ID_VARIABLESEDITORUPVARIABLEBUTTON, label='^',
               name='UpVariableButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(32, 32), style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnUpVariableButton, id=ID_VARIABLESEDITORUPVARIABLEBUTTON)
-
+        
         self.DownVariableButton = wx.Button(id=ID_VARIABLESEDITORDOWNVARIABLEBUTTON, label='v',
               name='DownVariableButton', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(32, 32), style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnDownVariableButton, id=ID_VARIABLESEDITORDOWNVARIABLEBUTTON)
-
+        
         self._init_sizers()
 
     def __init__(self, parent, window, controler):
@@ -668,6 +669,32 @@ class VariablesEditor(wx.Panel):
         self.ColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
         self.ColSizes = [40, 200, 150, 150]
         self.VariablesGrid.SetTable(self.Table)
+        self.VariablesGrid.SetButtons({"Add": self.AddVariableButton,
+                                       "Delete": self.DeleteVariableButton,
+                                       "Up": self.UpVariableButton,
+                                       "Down": self.DownVariableButton})
+        
+        def _AddVariable(new_row):
+            self.Table.InsertRow(new_row, self.VariablesDefaultValue.copy())
+            self.RefreshModel()
+            self.RefreshView()
+            return new_row
+        setattr(self.VariablesGrid, "_AddRow", _AddVariable)
+        
+        def _DeleteVariable(row):
+            self.Table.RemoveRow(row)
+            self.RefreshModel()
+            self.RefreshView()
+        setattr(self.VariablesGrid, "_DeleteRow", _DeleteVariable)
+        
+        def _MoveVariable(row, move):
+            new_row = self.Table.MoveRow(row, move)
+            if new_row != row:
+                self.RefreshModel()
+                self.RefreshView()
+            return new_row
+        setattr(self.VariablesGrid, "_MoveRow", _MoveVariable)
+        
         self.VariablesGrid.SetRowLabelSize(0)
         for col in range(self.Table.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
@@ -696,34 +723,8 @@ class VariablesEditor(wx.Panel):
     def RefreshView(self):
         self.Table.SetData(self.Controler.GetVariables())
         self.Table.ResetView(self.VariablesGrid)
+        self.VariablesGrid.RefreshButtons()
     
-    def OnAddVariableButton(self, event):
-        self.Table.AppendRow(self.VariablesDefaultValue.copy())
-        self.RefreshModel()
-        self.RefreshView()
-        event.Skip()
-
-    def OnDeleteVariableButton(self, event):
-        row = self.VariablesGrid.GetGridCursorRow()
-        self.Table.RemoveRow(row)
-        self.RefreshModel()
-        self.RefreshView()
-        event.Skip()
-
-    def OnUpVariableButton(self, event):
-        row = self.VariablesGrid.GetGridCursorRow()
-        self.Table.MoveRow(row, -1, self.VariablesGrid)
-        self.RefreshModel()
-        self.RefreshView()
-        event.Skip()
-
-    def OnDownVariableButton(self, event):
-        row = self.VariablesGrid.GetGridCursorRow()
-        self.Table.MoveRow(row, 1, self.VariablesGrid)
-        self.RefreshModel()
-        self.RefreshView()
-        event.Skip()
-
     def OnVariablesGridCellChange(self, event):
         self.RefreshModel()
         self.RefreshView()
