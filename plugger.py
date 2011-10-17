@@ -651,6 +651,11 @@ class PlugTemplate:
                 return True
         return False
 
+    def CallMethod(self, method):
+        for d in self.PluginMethods:
+            if d["method"]==method and d.get("enabled", True) and d.get("shown", True):
+                getattr(self, method)()
+
 def _GetClassFunction(name):
     def GetRootClass():
         return getattr(__import__("plugins." + name), name).RootClass
@@ -1385,7 +1390,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         return plc_main_code
 
         
-    def _build(self):
+    def _Build(self):
         """
         Method called by user to (re)build SoftPLC and plugin tree
         """
@@ -1480,6 +1485,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error(traceback.format_exc())
             return False
 
+        self.logger.write(_("Successfully built.\n"))
         # Update GUI status about need for transfer
         self.CompareLocalAndRemotePLC()
         return True
@@ -1751,12 +1757,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def KillDebugThread(self):
         self.debug_break = True
         if self.DebugThread is not None:
-            self.logger.writeyield(_("Stopping debug ... "))
+            self.logger.writeyield(_("Stopping debugger...\n"))
             self.DebugThread.join(timeout=5)
             if self.DebugThread.isAlive() and self.logger:
-                self.logger.write_warning(_("Debug Thread couldn't be killed"))
+                self.logger.write_warning(_("Couldn't stop debugger.\n"))
             else:
-                self.logger.write(_("success\n"))
+                self.logger.write(_("Debugger stopped.\n"))
         self.DebugThread = None
 
     def _connect_debug(self): 
@@ -1946,7 +1952,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         {"bitmap" : opjimg("Build"),
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),
-         "method" : "_build"},
+         "method" : "_Build"},
         {"bitmap" : opjimg("Clean"),
          "name" : _("Clean"),
          "enabled" : False,

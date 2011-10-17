@@ -397,7 +397,7 @@ class LPCPluginsRoot(PluginsRoot):
         {"bitmap" : opjimg("Build"),
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),
-         "method" : "_build"},
+         "method" : "_Build"},
         {"bitmap" : opjimg("Transfer"),
          "name" : _("Transfer"),
          "shown" : False,
@@ -443,14 +443,14 @@ class LPCPluginsRoot(PluginsRoot):
         else:
             return PluginsRoot._getBuildPath(self)
 
-    def _build(self):
+    def _Build(self):
         save = self.ProjectTestModified()
         if save:
             self.SaveProject()
             self.AppFrame._Refresh(TITLE, FILEMENU)
         if self.BuildPath is not None:
             mycopytree(self.OrigBuildPath, self.BuildPath)
-        PluginsRoot._build(self)
+        PluginsRoot._Build(self)
         if save:
             wx.CallAfter(self.AppFrame.RefreshAll)
     
@@ -610,22 +610,22 @@ class LPCPluginsRoot(PluginsRoot):
                      "Started" :     [("_Simulate", False),
                                       ("_Run", False),
                                       ("_Stop", True),
-                                      ("_build", True),
+                                      ("_Build", True),
                                       ("_Transfer", True)],
                      "Stopped" :     [("_Simulate", False),
                                       ("_Run", True),
                                       ("_Stop", False),
-                                      ("_build", True),
+                                      ("_Build", True),
                                       ("_Transfer", True)],
                      "Connected" :   [("_Simulate", not simulating),
                                       ("_Run", True),
                                       ("_Stop", simulating),
-                                      ("_build", True),
+                                      ("_Build", True),
                                       ("_Transfer", True)],
                      "Disconnected" :[("_Simulate", not simulating),
                                       ("_Run", False),
                                       ("_Stop", simulating),
-                                      ("_build", True),
+                                      ("_Build", True),
                                       ("_Transfer", False)],
                    }.get(status,[]):
                 self.ShowMethod(*args)
@@ -802,7 +802,7 @@ type *name = &beremiz_##name;
         if self.CurrentMode is None and self.OnlineMode != "OFF":
             self.CurrentMode = TRANSFER_MODE
             
-            PluginsRoot._build(self)
+            PluginsRoot._Build(self)
             
             ID_ABORTTRANSFERTIMER = wx.NewId()
             self.AbortTransferTimer = wx.Timer(self.AppFrame, ID_ABORTTRANSFERTIMER)
@@ -1222,7 +1222,7 @@ if __name__ == '__main__':
                 frame.Hide()
         
         def Compile(self):
-            self.PluginRoot._build()
+            self.PluginRoot._Build()
         
         def SetProjectProperties(self, projectname, productname, productversion, companyname):
             properties = self.PluginRoot.GetProjectProperties()
