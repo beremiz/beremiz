@@ -5,94 +5,11 @@ import cPickle
 
 from xmlclass import *
 
-from plugger import PlugTemplate
+from plugger import PlugTemplate, opjimg
 from CFileEditor import CFileEditor
-from PLCControler import PLCControler, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import PLCControler, UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
-CFileClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "cext_xsd.xsd")) 
-
-#-------------------------------------------------------------------------------
-#                         Undo Buffer for CFile
-#-------------------------------------------------------------------------------
-
-# Length of the buffer
-UNDO_BUFFER_LENGTH = 20
-
-"""
-Class implementing a buffer of changes made on the current editing model
-"""
-class UndoBuffer:
-
-    # Constructor initialising buffer
-    def __init__(self, currentstate, issaved = False):
-        self.Buffer = []
-        self.CurrentIndex = -1
-        self.MinIndex = -1
-        self.MaxIndex = -1
-        # if current state is defined
-        if currentstate:
-            self.CurrentIndex = 0
-            self.MinIndex = 0
-            self.MaxIndex = 0
-        # Initialising buffer with currentstate at the first place
-        for i in xrange(UNDO_BUFFER_LENGTH):
-            if i == 0:
-                self.Buffer.append(currentstate)
-            else:
-                self.Buffer.append(None)
-        # Initialising index of state saved
-        if issaved:
-            self.LastSave = 0
-        else:
-            self.LastSave = -1
-    
-    # Add a new state in buffer
-    def Buffering(self, currentstate):
-        self.CurrentIndex = (self.CurrentIndex + 1) % UNDO_BUFFER_LENGTH
-        self.Buffer[self.CurrentIndex] = currentstate
-        # Actualising buffer limits
-        self.MaxIndex = self.CurrentIndex
-        if self.MinIndex == self.CurrentIndex:
-            # If the removed state was the state saved, there is no state saved in the buffer
-            if self.LastSave == self.MinIndex:
-                self.LastSave = -1
-            self.MinIndex = (self.MinIndex + 1) % UNDO_BUFFER_LENGTH
-        self.MinIndex = max(self.MinIndex, 0)
-    
-    # Return current state of buffer
-    def Current(self):
-        return self.Buffer[self.CurrentIndex]
-    
-    # Change current state to previous in buffer and return new current state
-    def Previous(self):
-        if self.CurrentIndex != self.MinIndex:
-            self.CurrentIndex = (self.CurrentIndex - 1) % UNDO_BUFFER_LENGTH
-            return self.Buffer[self.CurrentIndex]
-        return None
-    
-    # Change current state to next in buffer and return new current state
-    def Next(self):
-        if self.CurrentIndex != self.MaxIndex:
-            self.CurrentIndex = (self.CurrentIndex + 1) % UNDO_BUFFER_LENGTH
-            return self.Buffer[self.CurrentIndex]
-        return None
-    
-    # Return True if current state is the first in buffer
-    def IsFirst(self):
-        return self.CurrentIndex == self.MinIndex
-    
-    # Return True if current state is the last in buffer
-    def IsLast(self):
-        return self.CurrentIndex == self.MaxIndex
-
-    # Note that current state is saved
-    def CurrentSaved(self):
-        self.LastSave = self.CurrentIndex
-        
-    # Return True if current state is saved
-    def IsCurrentSaved(self):
-        return self.LastSave == self.CurrentIndex
-
+CFileClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "cext_xsd.xsd"))
 
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", "REAL" : "D", "LREAL" : "L",
@@ -127,14 +44,14 @@ class _Cfile:
         else:
             self.OnPlugSave()
 
+    def GetIconPath(self, name):
+        return opjimg(name)
+
     def CFileName(self):
         return os.path.join(self.PlugPath(), "cfile.xml")
 
     def GetFilename(self):
-        if self.CFileBuffer.IsCurrentSaved():
-            return "cfile"
-        else:
-            return "~cfile~"
+        return self.MandatoryParams[1].getName()
 
     def GetBaseTypes(self):
         return self.GetPlugRoot().GetBaseTypes()
@@ -227,38 +144,22 @@ class _Cfile:
             return self.CFile.publishFunction.gettext()
         return ""
     
-    _View = None
     def _OpenView(self):
-        if not self._View:
-            open_cfileeditor = True
-            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
-            if not has_permissions:
-                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
-                                          _("You don't have write permissions.\nOpen CFileEditor anyway ?"),
-                                          _("Open CFileEditor"),
-                                          wx.YES_NO|wx.ICON_QUESTION)
-                open_cfileeditor = dialog.ShowModal() == wx.ID_YES
-                dialog.Destroy()
-            if open_cfileeditor:
-                def _onclose():
-                    self._View = None
-                if has_permissions:
-                    def _onsave():
-                        self.GetPlugRoot().SaveProject()
-                else:
-                    def _onsave():
-                        pass
-                self._View = CFileEditor(self.GetPlugRoot().AppFrame, self)
-                self._View._onclose = _onclose
-                self._View._onsave = _onsave
-                self._View.Show()
-
+        app_frame = self.GetPlugRoot().AppFrame
+        
+        cfileeditor = CFileEditor(app_frame.TabsOpened, self, app_frame)
+        
+        app_frame.EditProjectElement(cfileeditor, self.GetFilename())
+                
     PluginMethods = [
         {"bitmap" : os.path.join("images", "EditCfile"),
          "name" : _("Edit C File"), 
          "tooltip" : _("Edit C File"),
          "method" : "_OpenView"},
     ]
+
+    def PlugTestModified(self):
+        return self.ChangesToSave or not self.CFileIsSaved()    
 
     def OnPlugSave(self):
         filepath = self.CFileName()

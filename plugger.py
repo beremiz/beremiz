@@ -58,6 +58,9 @@ class MiniTextControler:
     def GetBlockTypes(self, tagname = "", debug = False):
         return []
     
+    def GetDataTypes(self, tagname = "", basetypes = True, only_locatables = False, debug = False):
+        return []
+    
     def GetEnumeratedDataValues(self, debug = False):
         return []
     
@@ -1500,28 +1503,32 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def _showIECcode(self):
         plc_file = self._getIECcodepath()
-        new_dialog = wx.Frame(self.AppFrame)
-        ST_viewer = TextViewer(new_dialog, "", None, None)
-        #ST_viewer.Enable(False)
-        ST_viewer.SetKeywords(IEC_KEYWORDS)
+        
+        IEC_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath="IEC code")
+        #IEC_code_viewer.Enable(False)
+        IEC_code_viewer.SetTextSyntax("ALL")
+        IEC_code_viewer.SetKeywords(IEC_KEYWORDS)
         try:
             text = file(plc_file).read()
         except:
             text = '(* No IEC code have been generated at that time ! *)'
-        ST_viewer.SetText(text = text)
+        IEC_code_viewer.SetText(text = text)
+        IEC_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
             
-        new_dialog.Show()
-
+        self.AppFrame.EditProjectElement(IEC_code_viewer, "IEC code")
+        
     def _editIECrawcode(self):
         new_dialog = wx.Frame(self.AppFrame)
         
         controler = MiniTextControler(self._getIECrawcodepath())
-        ST_viewer = TextViewer(new_dialog, "", None, controler)
-        #ST_viewer.Enable(False)
-        ST_viewer.SetKeywords(IEC_KEYWORDS)
-        ST_viewer.RefreshView()
+        IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath="IEC raw code")
+        #IEC_raw_code_viewer.Enable(False)
+        IEC_raw_code_viewer.SetTextSyntax("ALL")
+        IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
+        IEC_raw_code_viewer.RefreshView()
+        IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
             
-        new_dialog.Show()
+        self.AppFrame.EditProjectElement(IEC_raw_code_viewer, "IEC raw code")
 
     def _Clean(self):
         if os.path.isdir(os.path.join(self._getBuildPath())):

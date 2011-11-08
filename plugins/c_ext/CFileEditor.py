@@ -1,8 +1,11 @@
-import  wx, wx.grid
-import  wx.stc  as  stc
 import keyword
 
-from controls import CustomGrid
+import wx
+import wx.grid
+import wx.stc as stc
+import wx.lib.buttons
+
+from controls import CustomGrid, EditorPanel
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
@@ -69,7 +72,7 @@ class CppEditor(stc.StyledTextCtrl):
     
     def __init__(self, parent, name, window, controler):
         stc.StyledTextCtrl.__init__(self, parent, ID_CPPEDITOR, wx.DefaultPosition, 
-                 wx.DefaultSize, 0)
+                 wx.Size(0, 0), 0)
 
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, 25)
@@ -231,6 +234,7 @@ class CppEditor(stc.StyledTextCtrl):
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
+            self.ParentWindow.RefreshPageTitles()
     
     def StartBuffering(self):
         self.Controler.StartBuffering()
@@ -238,6 +242,7 @@ class CppEditor(stc.StyledTextCtrl):
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
+            self.ParentWindow.RefreshPageTitles()
     
     def ResetBuffer(self):
         if self.CurrentAction != None:
@@ -261,6 +266,9 @@ class CppEditor(stc.StyledTextCtrl):
         self.DisableEvents = False
         
         self.Colourise(0, -1)
+
+    def DoGetBestSize(self):
+        return self.ParentWindow.GetPanelBestSize()
 
     def RefreshModel(self):
         self.Controler.SetPartText(self.Name, self.GetText())
@@ -622,7 +630,7 @@ class VariablesEditor(wx.Panel):
 
     def _init_ctrls(self, prnt):
         wx.Panel.__init__(self, id=ID_VARIABLESEDITOR, name='', parent=prnt,
-              size=wx.Size(0, 0), style=wx.SUNKEN_BORDER)
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
         self.VariablesGrid = CustomGrid(id=ID_VARIABLESEDITORVARIABLESGRID,
               name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
@@ -719,11 +727,15 @@ class VariablesEditor(wx.Panel):
         self.ParentWindow.RefreshTitle()
         self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
+        self.ParentWindow.RefreshPageTitles()
 
     def RefreshView(self):
         self.Table.SetData(self.Controler.GetVariables())
         self.Table.ResetView(self.VariablesGrid)
         self.VariablesGrid.RefreshButtons()
+    
+    def DoGetBestSize(self):
+        return self.ParentWindow.GetPanelBestSize()
     
     def OnVariablesGridCellChange(self, event):
         self.RefreshModel()
@@ -796,264 +808,257 @@ class VariablesEditor(wx.Panel):
 #                          SVGUIEditor Main Frame Class
 #-------------------------------------------------------------------------------
 
+CFILE_PARTS = [
+    ("Includes", CppEditor), 
+    ("Variables", VariablesEditor), 
+    ("Globals", CppEditor), 
+    ("Init", CppEditor), 
+    ("CleanUp", CppEditor), 
+    ("Retrieve", CppEditor), 
+    ("Publish", CppEditor),
+]
 
-CFILE_PARTS = ["Includes", "Variables", "Globals", "Init", "CleanUp", "Retrieve", 
-               "Publish"]
+#----------------------------------------------------------------------
+# different icons for the collapsed/expanded states.
+# Taken from standard Windows XP collapsed/expanded states.
+#----------------------------------------------------------------------
+
+def GetCollapsedIconData():
+    return \
+'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
+\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
+\x00\x01\x8eIDAT8\x8d\xa5\x93-n\xe4@\x10\x85?g\x03\n6lh)\xc4\xd2\x12\xc3\x81\
+\xd6\xa2I\x90\x154\xb9\x81\x8f1G\xc8\x11\x16\x86\xcd\xa0\x99F\xb3A\x91\xa1\
+\xc9J&\x96L"5lX\xcc\x0bl\xf7v\xb2\x7fZ\xa5\x98\xebU\xbdz\xf5\\\x9deW\x9f\xf8\
+H\\\xbfO|{y\x9dT\x15P\x04\x01\x01UPUD\x84\xdb/7YZ\x9f\xa5\n\xce\x97aRU\x8a\
+\xdc`\xacA\x00\x04P\xf0!0\xf6\x81\xa0\xf0p\xff9\xfb\x85\xe0|\x19&T)K\x8b\x18\
+\xf9\xa3\xe4\xbe\xf3\x8c^#\xc9\xd5\n\xa8*\xc5?\x9a\x01\x8a\xd2b\r\x1cN\xc3\
+\x14\t\xce\x97a\xb2F0Ks\xd58\xaa\xc6\xc5\xa6\xf7\xdfya\xe7\xbdR\x13M2\xf9\
+\xf9qKQ\x1fi\xf6-\x00~T\xfac\x1dq#\x82,\xe5q\x05\x91D\xba@\xefj\xba1\xf0\xdc\
+zzW\xcff&\xb8,\x89\xa8@Q\xd6\xaaf\xdfRm,\xee\xb1BDxr#\xae\xf5|\xddo\xd6\xe2H\
+\x18\x15\x84\xa0q@]\xe54\x8d\xa3\xedf\x05M\xe3\xd8Uy\xc4\x15\x8d\xf5\xd7\x8b\
+~\x82\x0fh\x0e"\xb0\xad,\xee\xb8c\xbb\x18\xe7\x8e;6\xa5\x89\x04\xde\xff\x1c\
+\x16\xef\xe0p\xfa>\x19\x11\xca\x8d\x8d\xe0\x93\x1b\x01\xd8m\xf3(;x\xa5\xef=\
+\xb7w\xf3\x1d$\x7f\xc1\xe0\xbd\xa7\xeb\xa0(,"Kc\x12\xc1+\xfd\xe8\tI\xee\xed)\
+\xbf\xbcN\xc1{D\x04k\x05#\x12\xfd\xf2a\xde[\x81\x87\xbb\xdf\x9cr\x1a\x87\xd3\
+0)\xba>\x83\xd5\xb97o\xe0\xaf\x04\xff\x13?\x00\xd2\xfb\xa9`z\xac\x80w\x00\
+\x00\x00\x00IEND\xaeB`\x82' 
+
+def GetCollapsedIconBitmap():
+    return wx.BitmapFromImage(GetCollapsedIconImage())
+
+def GetCollapsedIconImage():
+    import cStringIO
+    stream = cStringIO.StringIO(GetCollapsedIconData())
+    return wx.ImageFromStream(stream)
+
+#----------------------------------------------------------------------
+def GetExpandedIconData():
+    return \
+'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
+\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
+\x00\x01\x9fIDAT8\x8d\x95\x93\xa1\x8e\xdc0\x14EO\xb2\xc4\xd0\xd2\x12\xb7(mI\
+\xa4%V\xd1lQT4[4-\x9a\xfe\xc1\xc2|\xc6\xc2~BY\x83:A3E\xd3\xa0*\xa4\xd2\x90H!\
+\x95\x0c\r\r\x1fK\x81g\xb2\x99\x84\xb4\x0fY\xd6\xbb\xc7\xf7>=\'Iz\xc3\xbcv\
+\xfbn\xb8\x9c\x15 \xe7\xf3\xc7\x0fw\xc9\xbc7\x99\x03\x0e\xfbn0\x99F+\x85R\
+\x80RH\x10\x82\x08\xde\x05\x1ef\x90+\xc0\xe1\xd8\ryn\xd0Z-\\A\xb4\xd2\xf7\
+\x9e\xfbwoF\xc8\x088\x1c\xbbae\xb3\xe8y&\x9a\xdf\xf5\xbd\xe7\xfem\x84\xa4\
+\x97\xccYf\x16\x8d\xdb\xb2a]\xfeX\x18\xc9s\xc3\xe1\x18\xe7\x94\x12cb\xcc\xb5\
+\xfa\xb1l8\xf5\x01\xe7\x84\xc7\xb2Y@\xb2\xcc0\x02\xb4\x9a\x88%\xbe\xdc\xb4\
+\x9e\xb6Zs\xaa74\xadg[6\x88<\xb7]\xc6\x14\x1dL\x86\xe6\x83\xa0\x81\xba\xda\
+\x10\x02x/\xd4\xd5\x06\r\x840!\x9c\x1fM\x92\xf4\x86\x9f\xbf\xfe\x0c\xd6\x9ae\
+\xd6u\x8d \xf4\xf5\x165\x9b\x8f\x04\xe1\xc5\xcb\xdb$\x05\x90\xa97@\x04lQas\
+\xcd*7\x14\xdb\x9aY\xcb\xb8\\\xe9E\x10|\xbc\xf2^\xb0E\x85\xc95_\x9f\n\xaa/\
+\x05\x10\x81\xce\xc9\xa8\xf6><G\xd8\xed\xbbA)X\xd9\x0c\x01\x9a\xc6Q\x14\xd9h\
+[\x04\xda\xd6c\xadFkE\xf0\xc2\xab\xd7\xb7\xc9\x08\x00\xf8\xf6\xbd\x1b\x8cQ\
+\xd8|\xb9\x0f\xd3\x9a\x8a\xc7\x08\x00\x9f?\xdd%\xde\x07\xda\x93\xc3{\x19C\
+\x8a\x9c\x03\x0b8\x17\xe8\x9d\xbf\x02.>\x13\xc0n\xff{PJ\xc5\xfdP\x11""<\xbc\
+\xff\x87\xdf\xf8\xbf\xf5\x17FF\xaf\x8f\x8b\xd3\xe6K\x00\x00\x00\x00IEND\xaeB\
+`\x82' 
+
+def GetExpandedIconBitmap():
+    return wx.BitmapFromImage(GetExpandedIconImage())
+
+def GetExpandedIconImage():
+    import cStringIO
+    stream = cStringIO.StringIO(GetExpandedIconData())
+    return wx.ImageFromStream(stream)
+
+class FoldPanelCaption(wx.lib.buttons.GenBitmapTextToggleButton):
+    
+    def GetBackgroundBrush(self, dc):
+        colBg = self.GetBackgroundColour()
+        brush = wx.Brush(colBg, wx.SOLID)
+        if self.style & wx.BORDER_NONE:
+            myAttr = self.GetDefaultAttributes()
+            parAttr = self.GetParent().GetDefaultAttributes()
+            myDef = colBg == myAttr.colBg
+            parDef = self.GetParent().GetBackgroundColour() == parAttr.colBg
+            if myDef and parDef:
+                if wx.Platform == "__WXMAC__":
+                    brush.MacSetTheme(1) # 1 == kThemeBrushDialogBackgroundActive
+                elif wx.Platform == "__WXMSW__":
+                    if self.DoEraseBackground(dc):
+                        brush = None
+            elif myDef and not parDef:
+                colBg = self.GetParent().GetBackgroundColour()
+                brush = wx.Brush(colBg, wx.SOLID)
+        return brush
+    
+    def DrawLabel(self, dc, width, height, dx=0, dy=0):
+        bmp = self.bmpLabel
+        if bmp is not None:     # if the bitmap is used
+            if self.bmpDisabled and not self.IsEnabled():
+                bmp = self.bmpDisabled
+            if self.bmpFocus and self.hasFocus:
+                bmp = self.bmpFocus
+            if self.bmpSelected and not self.up:
+                bmp = self.bmpSelected
+            bw,bh = bmp.GetWidth(), bmp.GetHeight()
+            hasMask = bmp.GetMask() is not None
+        else:
+            bw = bh = 0     # no bitmap -> size is zero
+        
+        dc.SetFont(self.GetFont())
+        if self.IsEnabled():
+            dc.SetTextForeground(self.GetForegroundColour())
+        else:
+            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+
+        label = self.GetLabel()
+        tw, th = dc.GetTextExtent(label)        # size of text
+        
+        if bmp is not None:
+            dc.DrawBitmap(bmp, width - bw - 2, (height-bh)/2, hasMask) # draw bitmap if available
+        
+        dc.DrawText(label, 2, (height-th)/2)      # draw the text
+
+        dc.SetPen(wx.Pen(self.GetForegroundColour()))
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        dc.DrawRectangle(0, 0, width, height)
 
 [ID_CFILEEDITOR, ID_CFILEEDITORMAINSPLITTER, 
  ID_CFILEEDITORCFILETREE, ID_CFILEEDITORPARTSOPENED, 
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
-class CFileEditor(wx.Frame):
+class CFileEditor(EditorPanel):
     
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
-    
-    def _init_coll_EditMenu_Items(self, parent):
-        AppendMenu(parent, help='', id=wx.ID_REFRESH,
-              kind=wx.ITEM_NORMAL, text=u'Refresh\tCTRL+R')
-        AppendMenu(parent, help='', id=wx.ID_UNDO,
-              kind=wx.ITEM_NORMAL, text=u'Undo\tCTRL+Z')
-        AppendMenu(parent, help='', id=wx.ID_REDO,
-              kind=wx.ITEM_NORMAL, text=u'Redo\tCTRL+Y')
-        self.Bind(wx.EVT_MENU, self.OnRefreshMenu, id=wx.ID_REFRESH)
-        self.Bind(wx.EVT_MENU, self.OnUndoMenu, id=wx.ID_UNDO)
-        self.Bind(wx.EVT_MENU, self.OnRedoMenu, id=wx.ID_REDO)
-    
-    def _init_coll_FileMenu_Items(self, parent):
-        AppendMenu(parent, help='', id=wx.ID_SAVE,
-              kind=wx.ITEM_NORMAL, text=u'Save\tCTRL+S')
-        self.Bind(wx.EVT_MENU, self.OnSaveMenu, id=wx.ID_SAVE)
-
-    def _init_coll_MenuBar_Menus(self, parent):
-        parent.Append(menu=self.FileMenu, title=u'&File')
-        parent.Append(menu=self.EditMenu, title=u'&Edit')
-    
-    def _init_utils(self):
-        self.MenuBar = wx.MenuBar()
-
-        self.FileMenu = wx.Menu(title='')
-        self.EditMenu = wx.Menu(title='')
+    def _init_Editor(self, prnt):
+        self.Editor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
+                size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
-        self._init_coll_MenuBar_Menus(self.MenuBar)
-        self._init_coll_FileMenu_Items(self.FileMenu)
-        self._init_coll_EditMenu_Items(self.EditMenu)
+        self.Panels = {}
+        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2 * len(CFILE_PARTS) + 1, vgap=0)
+        self.MainSizer.AddGrowableCol(0)
         
-    def _init_ctrls(self, prnt):
-        wx.Frame.__init__(self, id=ID_CFILEEDITOR, name=u'CFileEditor',
-              parent=prnt, pos=wx.DefaultPosition, size=wx.Size(800, 650),
-              style=wx.DEFAULT_FRAME_STYLE, title=u'CFileEditor')
-        self._init_utils()
-        self.SetClientSize(wx.Size(1000, 600))
-        self.SetMenuBar(self.MenuBar)
-        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-        
-        self.Bind(wx.EVT_MENU, self.OnSaveMenu, id=wx.ID_SAVE)
-        accel = wx.AcceleratorTable([wx.AcceleratorEntry(wx.ACCEL_CTRL, 83, wx.ID_SAVE)])
-        self.SetAcceleratorTable(accel)
-        
-        if wx.VERSION >= (2, 8, 0):
-            self.AUIManager = wx.aui.AuiManager(self)
-            self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
-        
-        if wx.VERSION < (2, 8, 0):
-            self.MainSplitter = wx.SplitterWindow(id=ID_CFILEEDITORMAINSPLITTER, 
-                  name='MainSplitter', parent=self, point=wx.Point(0, 0),
-                  size=wx.Size(-1, -1), style=wx.SP_3D)
-            self.MainSplitter.SetNeedUpdating(True)
-            self.MainSplitter.SetMinimumPaneSize(1)
-        
-            self.CFileTree = wx.TreeCtrl(id=ID_CFILEEDITORCFILETREE, 
-                  name='CFileTree', parent=self.MainSplitter, pos=wx.Point(0, 0),
-                  size=wx.Size(-1, -1), style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER)
-        else:
-            self.CFileTree = wx.TreeCtrl(id=ID_CFILEEDITORCFILETREE, 
-                  name='CFileTree', parent=self, pos=wx.Point(0, 0),
-                  size=wx.Size(-1, -1), style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER)
-            self.AUIManager.AddPane(self.CFileTree, wx.aui.AuiPaneInfo().Caption("CFile Tree").Left().Layer(1).BestSize(wx.Size(200, 500)).CloseButton(False))
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnCFileTreeItemSelected, 
-              id=ID_CFILEEDITORCFILETREE)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnCFileTreeItemActivated,
-              id=ID_CFILEEDITORCFILETREE)
-        
-        if wx.VERSION < (2, 8, 0):
-            self.PartsOpened = wx.Notebook(id=ID_CFILEEDITORPARTSOPENED,
-                  name='PartsOpened', parent=self.MainSplitter, pos=wx.Point(0,
-                  0), size=wx.Size(0, 0), style=0)
-            if wx.VERSION >= (2, 6, 0):
-                self.PartsOpened.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED,
-                    self.OnPartSelectedChanged, id=ID_CFILEEDITORPARTSOPENED)
-            else:
-                wx.EVT_NOTEBOOK_PAGE_CHANGED(self.PartsOpened, ID_CFILEEDITORPARTSOPENED,
-                    self.OnPartSelectedChanged)
+        for idx, (name, panel_class) in enumerate(CFILE_PARTS):
+            button_id = wx.NewId()
+            button = FoldPanelCaption(id=button_id, name='FoldPanelCaption_%s' % name, 
+                  label=name, bitmap=GetCollapsedIconBitmap(), parent=self.Editor, pos=wx.Point(0, 0),
+                  size=wx.Size(0, 20), style=wx.NO_BORDER|wx.ALIGN_LEFT)
+            button.SetBitmapSelected(GetExpandedIconBitmap())
+            button.Bind(wx.EVT_BUTTON, self.GenPanelButtonCallback(name), id=button_id)
+            self.MainSizer.AddWindow(button, 0, border=0, flag=wx.TOP|wx.GROW)
             
-            self.MainSplitter.SplitVertically(self.ProjectTree, self.PartsOpened, 200)
-        else:
-            self.PartsOpened = wx.aui.AuiNotebook(self)
-            self.PartsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED,
-                    self.OnPartSelectedChanged)
-            self.AUIManager.AddPane(self.PartsOpened, wx.aui.AuiPaneInfo().CentrePane())
+            if panel_class == VariablesEditor:
+                panel = VariablesEditor(self.Editor, self.ParentWindow, self.Controler)
+            else:
+                panel = panel_class(self.Editor, name, self.ParentWindow, self.Controler)
+            self.MainSizer.AddWindow(panel, 0, border=0, flag=wx.BOTTOM|wx.GROW)
+            panel.Hide()
             
-        self.StatusBar = wx.StatusBar( name='HelpBar',
-              parent=self, style=wx.ST_SIZEGRIP)
-        self.SetStatusBar(self.StatusBar)
+            self.Panels[name] = {"button": button, "panel": panel, "expanded": False, "row": 2 * idx + 1}
         
-        if wx.VERSION >= (2, 8, 0):
-            self.AUIManager.Update()
+        self.Spacer = wx.Panel(self.Editor, -1)
+        self.SpacerExpanded = True
+        self.MainSizer.AddWindow(self.Spacer, 0, border=0, flag=wx.GROW)
+        
+        self.MainSizer.AddGrowableRow(2 * len(CFILE_PARTS))
+        
+        self.Editor.SetSizer(self.MainSizer)
+        
+    def __init__(self, parent, controler, window):
+        EditorPanel.__init__(self, parent, "", window, controler)
+        
+        img = wx.Bitmap(self.Controler.GetIconPath("Cfile.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
+        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
+        
+    def GetTitle(self):
+        filename = self.Controler.GetFilename()
+        if not self.Controler.CFileIsSaved():
+            return "~%s~" % filename
+        return filename
     
-    def __init__(self, parent, controler):
-        self._init_ctrls(parent)
+    def GetBufferState(self):
+        return self.Controler.GetBufferState()
         
-        self.Controler = controler
-
-        self.InitCFileTree()
-        self.RefreshTitle()
-        self.RefreshEditMenu()
-
-    def OnCloseFrame(self, event):
-        if wx.VERSION >= (2, 8, 0):
-            self.AUIManager.UnInit()
-        if getattr(self, "_onclose", None) is not None:
-            self._onclose()
-        event.Skip()
-
-    def OnCloseTabMenu(self, event):
-        selected = self.PartsOpened.GetSelection()
-        if selected >= 0:
-            self.PartsOpened.DeletePage(selected)
-
-    def OnSaveMenu(self, event):
-        if getattr(self, "_onsave", None) != None:
-            self._onsave()
-        self.RefreshTitle()
-        self.RefreshEditMenu()
-
-#-------------------------------------------------------------------------------
-#                            Notebook Unified Functions
-#-------------------------------------------------------------------------------
-    
-    def DeleteAllPages(self):
-        if wx.VERSION >= (2, 8, 0):
-            for idx in xrange(self.PartsOpened.GetPageCount()):
-                self.PartsOpened.DeletePage(0)
-        else:
-            self.PartsOpened.DeleteAllPages()
-
-    def SetPageBitmap(self, idx, bitmap):
-        if wx.VERSION >= (2, 8, 0):
-            return self.PartsOpened.SetPageBitmap(idx, bitmap)
-        else:
-            return self.PartsOpened.SetPageImage(idx, bitmap)
-
-    def IsOpened(self, name):
-        for idx in xrange(self.PartsOpened.GetPageCount()):
-            if self.PartsOpened.GetPage(idx).IsViewing(name):
-                return idx
-        return None
-
-    def RefreshTitle(self):
-        self.SetTitle("CFileEditor - %s"%self.Controler.GetFilename())
-        
-#-------------------------------------------------------------------------------
-#                          Edit Project Menu Functions
-#-------------------------------------------------------------------------------
-
-    def RefreshEditMenu(self):
-        undo, redo = self.Controler.GetBufferState()
-        self.EditMenu.Enable(wx.ID_UNDO, undo)
-        self.EditMenu.Enable(wx.ID_REDO, redo)
-
-    def OnRefreshMenu(self, event):
-        selected = self.PartsOpened.GetSelection()
-        if selected != -1:
-            window = self.PartsOpened.GetPage(selected)
-            window.RefreshView()
-
-    def OnUndoMenu(self, event):
+    def Undo(self):
         self.Controler.LoadPrevious()
-        selected = self.PartsOpened.GetSelection()        
-        if selected != -1:
-            window = self.PartsOpened.GetPage(selected)
-            window.RefreshView()
-        self.RefreshTitle()
-        self.RefreshEditMenu()
-    
-    def OnRedoMenu(self, event):
+        self.RefreshView()
+            
+    def Redo(self):
         self.Controler.LoadNext()
-        selected = self.PartsOpened.GetSelection()
-        if selected != -1:
-            window = self.PartsOpened.GetPage(selected)
-            window.RefreshView()
-        self.RefreshTitle()
-        self.RefreshEditMenu()
-        
-#-------------------------------------------------------------------------------
-#                          File Project Menu Functions
-#-------------------------------------------------------------------------------
-    def RefreshFileMenu(self):
-        self.FileMenu.Enable(wx.ID_SAVE, True)
+        self.RefreshView()
     
-#-------------------------------------------------------------------------------
-#                      CFile Editor Panels Management Functions
-#-------------------------------------------------------------------------------
-    
-    def OnPartSelectedChanged(self, event):
-        old_selected = self.PartsOpened.GetSelection()
-        if old_selected >= 0:
-            self.PartsOpened.GetPage(old_selected).ResetBuffer()
-        selected = event.GetSelection()
-        if selected >= 0:
-            window = self.PartsOpened.GetPage(selected)
-            window.RefreshView()
-        event.Skip()
+    def HasNoModel(self):
+        return False
 
-#-------------------------------------------------------------------------------
-#                         CFile Tree Management Functions
-#-------------------------------------------------------------------------------
+    def RefreshView(self):
+        for infos in self.Panels.itervalues():
+            infos["panel"].RefreshView()
 
-    def InitCFileTree(self):
-        root = self.CFileTree.AddRoot("C File")
-        for name in CFILE_PARTS:
-            self.CFileTree.AppendItem(root, name)
-        self.CFileTree.Expand(root)
+    def GenPanelButtonCallback(self, name):
+        def PanelButtonCallback(event):
+            self.TogglePanel(name)
+        return PanelButtonCallback
 
-    def OnCFileTreeItemActivated(self, event):
-        self.EditCFilePart(self.CFileTree.GetItemText(event.GetItem()))
-        event.Skip()
-
-    def OnCFileTreeItemSelected(self, event):
-        select_item = event.GetItem()
-        self.EditCFilePart(self.CFileTree.GetItemText(event.GetItem()), True)
-        event.Skip()
+    def ExpandPanel(self, name):
+        infos = self.Panels.get(name, None)
+        if infos is not None and not infos["expanded"]:
+            infos["expanded"] = True
+            infos["button"].SetToggle(True)
+            infos["panel"].Show()
+            self.MainSizer.AddGrowableRow(infos["row"])
         
-    def EditCFilePart(self, name, onlyopened = False):
-        openedidx = self.IsOpened(name)
-        if openedidx is not None:
-            old_selected = self.PartsOpened.GetSelection()
-            if old_selected != openedidx:
-                if old_selected >= 0:
-                    self.PartsOpened.GetPage(old_selected).ResetBuffer()
-                self.PartsOpened.SetSelection(openedidx)
-            self.PartsOpened.GetPage(openedidx).RefreshView()
-        elif not onlyopened:
-            if name == "Variables":
-                new_window = VariablesEditor(self.PartsOpened, self, self.Controler)
-                self.PartsOpened.AddPage(new_window, name)
+            self.RefreshSizerLayout()
+    
+    def CollapsePanel(self, name):
+        infos = self.Panels.get(name, None)
+        if infos is not None and infos["expanded"]:
+            infos["expanded"] = False
+            infos["button"].SetToggle(False)
+            infos["panel"].Hide()
+            self.MainSizer.RemoveGrowableRow(infos["row"])
+        
+            self.RefreshSizerLayout()
+        
+    def TogglePanel(self, name):
+        infos = self.Panels.get(name, None)
+        if infos is not None:
+            infos["expanded"] = not infos["expanded"]
+            infos["button"].SetToggle(infos["expanded"])
+            if infos["expanded"]:
+                infos["panel"].Show()
+                self.MainSizer.AddGrowableRow(infos["row"])
             else:
-                new_window = CppEditor(self.PartsOpened, name, self, self.Controler)
-                self.PartsOpened.AddPage(new_window, name)
-            openedidx = self.IsOpened(name)
-            old_selected = self.PartsOpened.GetSelection()
-            if old_selected != openedidx:
-                if old_selected >= 0:
-                    self.PartsOpened.GetPage(old_selected).ResetBuffer()
-            for i in xrange(self.PartsOpened.GetPageCount()):
-                window = self.PartsOpened.GetPage(i)
-                if window.IsViewing(name):
-                    self.PartsOpened.SetSelection(i)
-                    window.RefreshView()
-                    window.SetFocus()
+                infos["panel"].Hide()
+                self.MainSizer.RemoveGrowableRow(infos["row"])
+            
+            self.RefreshSizerLayout()
+    
+    def RefreshSizerLayout(self):
+        expand_spacer = True
+        for infos in self.Panels.itervalues():
+            expand_spacer = expand_spacer and not infos["expanded"]
+        
+        if self.SpacerExpanded != expand_spacer:
+            self.SpacerExpanded = expand_spacer
+            if expand_spacer:
+                self.Spacer.Show()
+                self.MainSizer.AddGrowableRow(2 * len(CFILE_PARTS))
+            else:
+                self.Spacer.Hide()
+                self.MainSizer.RemoveGrowableRow(2 * len(CFILE_PARTS))
+        
+        self.MainSizer.Layout()
+            
