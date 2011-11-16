@@ -148,7 +148,7 @@ from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 from docutils import *
-from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING
+from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 SCROLLBAR_UNIT = 10
@@ -1455,13 +1455,13 @@ class Beremiz(IDEFrame):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProject()
             self.RefreshAll()
-            self._Refresh(TITLE, FILEMENU)
+            self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
     
     def OnSaveProjectAsMenu(self, event):
         if self.PluginRoot is not None:
             self.PluginRoot.SaveProjectAs()
             self.RefreshAll()
-            self._Refresh(TITLE, FILEMENU)
+            self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
         event.Skip()
     
     def OnPropertiesMenu(self, event):
