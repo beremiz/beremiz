@@ -17,7 +17,7 @@ class Xenomai_target(toolchain_gcc):
     
     def getBuilderLDFLAGS(self):
         xeno_ldflags = self.getXenoConfig("ldflags")
-        return toolchain_gcc.getBuilderLDFLAGS(self) + xeno_ldlags + ["-shared", "-lnative"]
+        return toolchain_gcc.getBuilderLDFLAGS(self) + xeno_ldflags + ["-shared"]
 
     def getBuilderCFLAGS(self):
         xeno_cflags = self.getXenoConfig("cflags")
