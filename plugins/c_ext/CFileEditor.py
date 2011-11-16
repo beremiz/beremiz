@@ -429,6 +429,25 @@ class CppEditor(stc.StyledTextCtrl):
 
         return line
 
+    def Cut(self):
+        self.ResetBuffer()
+        self.DisableEvents = True
+        self.CmdKeyExecute(wx.stc.STC_CMD_CUT)
+        self.DisableEvents = False
+        self.RefreshModel()
+        self.RefreshBuffer()
+    
+    def Copy(self):
+        self.CmdKeyExecute(wx.stc.STC_CMD_COPY)
+    
+    def Paste(self):
+        self.ResetBuffer()
+        self.DisableEvents = True
+        self.CmdKeyExecute(wx.stc.STC_CMD_PASTE)
+        self.DisableEvents = False
+        self.RefreshModel()
+        self.RefreshBuffer()
+
 
 #-------------------------------------------------------------------------------
 #                         Helper for VariablesGrid values
