@@ -21,5 +21,5 @@ class Xenomai_target(toolchain_gcc):
 
     def getBuilderCFLAGS(self):
         xeno_cflags = self.getXenoConfig("cflags")
-        return toolchain_gcc.getBuilderCFLAGS(self) + xeno_cflags
+        return toolchain_gcc.getBuilderCFLAGS(self) + xeno_cflags + ["-fPIC"]
         
