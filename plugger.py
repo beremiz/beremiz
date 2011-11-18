@@ -1298,7 +1298,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(zip(VariablesListAttributeName,line.strip().split(';')))
                     # Truncate "C_path" to remove conf an ressources names
-                    attrs["C_path"] = '__'.join(attrs["C_path"].split(".",2)[1:])
+                    parts = attrs["C_path"].split(".",2)
+                    if len(parts) > 2:
+                        attrs["C_path"] = '__'.join(parts[1:])
+                    else:
+                        attrs["C_path"] = '__'.join(parts)
                     # Push this dictionnary into result.
                     self._VariablesList.append(attrs)
                     # Fill in IEC<->C translation dicts
