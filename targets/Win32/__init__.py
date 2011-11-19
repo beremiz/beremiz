@@ -1,4 +1,4 @@
-from .. import toolchain_gcc
+from ..toolchain_gcc import toolchain_gcc
 
 class Win32_target(toolchain_gcc):
     extension = ".dll"

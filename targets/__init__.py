@@ -34,8 +34,14 @@ from os import listdir, path
 
 _base_path = path.split(__file__)[0]
 
-targets = [name for name in listdir(_base_path) if path.isdir(path.join(_base_path, name)) and name.upper() != "CVS" and not name.startswith("__")]
-toolchains = [name for name in listdir(_base_path) if not path.isdir(path.join(_base_path, name)) and name.upper() != "CVS" and name.endswith(".py") and not name.startswith("__") and not name.endswith(".pyc")]
+targets = [name for name in listdir(_base_path) 
+                   if path.isdir(path.join(_base_path, name)) 
+                       and not name.startswith("__")]
+toolchains = [name for name in listdir(_base_path) 
+                       if not path.isdir(path.join(_base_path, name)) 
+                            and name.endswith(".py") 
+                            and not name.startswith("__") 
+                            and not name.endswith(".pyc")]
 
 DictXSD_toolchain = {}
 DictXSD_target = {}
@@ -74,5 +80,3 @@ def code(name):
     filename = path.join(path.split(__file__)[0],name + ".c")
     return open(filename).read()
 
-from toolchain_gcc import toolchain_gcc
-from toolchain_makefile import toolchain_makefile

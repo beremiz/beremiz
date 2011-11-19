@@ -1,7 +1,0 @@
-
-                  <xsd:element name="Rtai">
-                    <xsd:complexType>
-                      %(toolchain_gcc)s
-                      <xsd:attribute name="rtai_config" type="xsd:string" use="optional" default="/usr/realtime/"/>
-                    </xsd:complexType>
-                  </xsd:element>

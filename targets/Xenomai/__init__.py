@@ -1,5 +1,4 @@
-from .. import toolchain_gcc
-from wxPopen import ProcessLogger
+from ..toolchain_gcc import toolchain_gcc
 
 class Xenomai_target(toolchain_gcc):
     extension = ".so"
@@ -7,6 +6,7 @@ class Xenomai_target(toolchain_gcc):
         """ Get xeno-config from target parameters """
         xeno_config=self.PluginsRootInstance.GetTarget().getcontent()["value"].getXenoConfig()
         if xeno_config:
+            from wxPopen import ProcessLogger
             status, result, err_result = ProcessLogger(self.PluginsRootInstance.logger,
                                                        xeno_config + " --skin=native --"+flagsname,
                                                        no_stdout=True).spin()
