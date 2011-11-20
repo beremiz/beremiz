@@ -79,6 +79,6 @@ class ServicePublisher():
             s.close()
             if host != '0.0.0.0':
                 return host
-        except error:
+        except Exception,e:
             pass
         return socket.gethostbyname(socket.gethostname())
