@@ -174,6 +174,10 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         return self.URI
         
     def removeService(self, zeroconf, type, name):
+        wx.CallAfter(self._removeService, name)
+
+
+    def _removeService(self, name):
         '''
         called when a service with the desired type goes offline.
         '''
@@ -191,6 +195,9 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
                 break
         
     def addService(self, zeroconf, type, name):
+        wx.CallAfter(self._addService, type, name)
+
+    def _addService(self, type, name):
         '''
         called when a service with the desired type is discovered.
         '''

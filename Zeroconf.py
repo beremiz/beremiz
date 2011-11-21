@@ -861,7 +861,8 @@ class Engine(threading.Thread):
                         try:
                             self.readers[socket].handle_read()
                         except:
-                            traceback.print_exc()
+                            # Ignore errors that occur on shutdown
+                            pass
                 except:
                     pass
 

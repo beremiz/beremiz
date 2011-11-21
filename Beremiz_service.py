@@ -27,9 +27,9 @@ import os, sys, getopt
 def usage():
     print """
 Usage of Beremiz PLC execution service :\n
-%s {[-n servicename] [-i ip] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
+%s {[-n servicename] [-i IP] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
            -n        - zeroconf service name (default:disabled)
-           -i        - ip of interface to bind to (default:localhost)
+           -i        - IP address of interface to bind to (default:localhost)
            -p        - port number default:3000
            -h        - print this help text and quit
            -a        - autostart PLC (0:disable 1:enable) (default:0)
@@ -48,7 +48,7 @@ except getopt.GetoptError, err:
     sys.exit(2)
 
 # default values
-ip = ""
+given_ip = None
 port = 3000
 servicename = None
 autostart = False
@@ -63,7 +63,10 @@ for o, a in opts:
         sys.exit()
     elif o == "-i":
         if len(a.split(".")) == 4 or a == "localhost":
-            ip = a
+            given_ip = a
+        else:
+            usage()
+            sys.exit()
     elif o == "-p":
         # port: port that the service runs on
         port = int(a)
@@ -349,12 +352,12 @@ if enablewx:
                 evt.Skip()
             
             def OnTaskBarChangeInterface(self, evt):
-                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip)
+                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip_addr)
                 dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
-                               ( lambda ip :len([x for x in ip.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
+                               ( lambda x :len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
                                ])
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pyroserver.ip = dlg.GetValue()
+                    self.pyroserver.ip_addr = dlg.GetValue()
                     self.pyroserver.Stop()
                 evt.Skip()
             
@@ -430,11 +433,11 @@ def default_evaluator(callable, *args, **kwargs):
     return callable(*args,**kwargs)
 
 class Server():
-    def __init__(self, servicename, ip, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
+    def __init__(self, servicename, ip_addr, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
         self.continueloop = True
         self.daemon = None
         self.servicename = servicename
-        self.ip = ip
+        self.ip_addr = ip_addr
         self.port = port
         self.workdir = workdir
         self.argv = argv
@@ -458,7 +461,7 @@ class Server():
 
     def Start(self):
         pyro.initServer()
-        self.daemon=pyro.Daemon(host=self.ip, port=self.port)
+        self.daemon=pyro.Daemon(host=self.ip_addr, port=self.port)
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator, self.website)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
     
@@ -468,10 +471,10 @@ class Server():
         
         # Configure and publish service
         # Not publish service if localhost in address params
-        if self.servicename is not None and self.ip != "localhost" and self.ip != "127.0.0.1":    
+        if self.servicename is not None and self.ip_addr != "localhost" and self.ip_addr != "127.0.0.1":    
             print "Publishing service on local network"
             self.servicepublisher = ServicePublisher.ServicePublisher()
-            self.servicepublisher.RegisterService(self.servicename, self.ip, self.port)
+            self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
         
         if self.autostart:
             self.plcobj.StartPLC()
@@ -694,10 +697,10 @@ if havewx:
             wx_eval_lock.acquire()
         return eval_res
     
-    pyroserver = Server(servicename, ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
+    pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
     taskbar_instance = BeremizTaskBarIcon(pyroserver)
 else:
-    pyroserver = Server(servicename, ip, port, WorkingDir, argv, autostart, website=website)
+    pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, website=website)
 
 if havetwisted or havewx:
     pyro_thread=Thread(target=pyroserver.Loop)
