@@ -44,7 +44,7 @@ class ServicePublisher():
         self.name = name
         self.port = port
         # No ip params -> get host ip
-        if ip == "":
+        if ip is None:
             ip = self.gethostaddr()
 
         print "My IP is :"+ip
