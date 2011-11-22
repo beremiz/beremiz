@@ -22,7 +22,7 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import Zeroconf, socket
+import Zeroconf, socket, threading
 
 class ServicePublisher():
     def __init__(self):
@@ -36,9 +36,16 @@ class ServicePublisher():
         self.port = None
         self.server = None
         self.service_name = None
+        self.retrytimer = None
         
     def RegisterService(self, name, ip, port):
+        try:
+            self._RegisterService(name, ip, port)
+        except Exception,e:
+            self.retrytimer = threading.Timer(2,self.RegisterService,[name, ip, port])
+            self.retrytimer.start() 
 
+    def _RegisterService(self, name, ip, port):
         # name: fully qualified service name
         self.service_name = 'Beremiz_%s.%s'%(name,self.service_type)
         self.name = name
@@ -46,8 +53,6 @@ class ServicePublisher():
         # No ip params -> get host ip
         if ip is None:
             ip = self.gethostaddr()
-
-        print "My IP is :"+ip
 
         self.server = Zeroconf.Zeroconf(ip)
 
@@ -60,8 +65,13 @@ class ServicePublisher():
                                   self.ip_32b,
                                   self.port,
                                   properties = self.serviceproperties))
+        print "MDNS brodcasting on :"+ip
+        self.retrytimer=None
     
     def UnRegisterService(self):
+        if self.retrytimer is not None:
+            self.retrytimer.cancel()
+
         self.server.unregisterService(
                                       Zeroconf.ServiceInfo(self.service_type, 
                                                            self.service_name, 
