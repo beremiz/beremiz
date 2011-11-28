@@ -50,13 +50,13 @@ class ServicePublisher():
         self.service_name = 'Beremiz_%s.%s'%(name,self.service_type)
         self.name = name
         self.port = port
-        # No ip params -> get host ip
-        if ip is None:
-            ip = self.gethostaddr()
 
         self.server = Zeroconf.Zeroconf(ip)
+        print "MDNS brodcasting on :"+ip
 
-        # address: IP address as unsigned short, network byte order
+        if ip == "0.0.0.0":
+            ip = self.gethostaddr()
+        print "MDNS brodcasted service address :"+ip
         self.ip_32b = socket.inet_aton(ip)
 
         self.server.registerService(
@@ -65,7 +65,6 @@ class ServicePublisher():
                                   self.ip_32b,
                                   self.port,
                                   properties = self.serviceproperties))
-        print "MDNS brodcasting on :"+ip
         self.retrytimer=None
     
     def UnRegisterService(self):

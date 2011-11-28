@@ -471,7 +471,10 @@ class Server():
         
         # Configure and publish service
         # Not publish service if localhost in address params
-        if self.servicename is not None and self.ip_addr != "localhost" and self.ip_addr != "127.0.0.1":    
+        if (self.servicename is not None and 
+            self.ip_addr is not None and 
+            self.ip_addr != "localhost" and 
+            self.ip_addr != "127.0.0.1"):
             print "Publishing service on local network"
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)

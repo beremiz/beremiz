@@ -1,6 +1,6 @@
 import os
 from subprocess import Popen,PIPE
-from .. import toolchain_makefile
+from ..toolchain_makefile import toolchain_makefile
 import hashlib
 
 class LPC_target(toolchain_makefile):
