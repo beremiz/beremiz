@@ -159,7 +159,7 @@ inline void BufferIterator(void* varp, __IEC_types_enum vartype, int do_debug)
                 buffer_cursor = next_cursor;
             }
             /* re-force real value of outputs (M and Q)*/
-            if(flags & (__IEC_FORCE_FLAG | __IEC_OUTPUT_FLAG)){
+            if((flags & __IEC_FORCE_FLAG) && (flags & __IEC_OUTPUT_FLAG)){
                 memcpy(real_value_p, visible_value_p, size);
             }
         }
