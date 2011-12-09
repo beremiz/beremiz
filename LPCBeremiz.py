@@ -6,6 +6,7 @@ import socket
 __version__ = "$Revision$"
 
 import os, sys, getopt, wx, tempfile
+import __builtin__
 from types import TupleType, StringType, UnicodeType
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
@@ -43,9 +44,9 @@ if __name__ == '__main__':
             sys.exit()
 
     if os.path.exists("LPC_DEBUG"):
-        __builtins__.BMZ_DBG = True
+        __builtin__.__dict__["BMZ_DBG"] = True
     else :
-        __builtins__.BMZ_DBG = False
+        __builtin__.__dict__["BMZ_DBG"] = False
 
 app = wx.PySimpleApp(redirect=BMZ_DBG)
 app.SetAppName('beremiz')
@@ -53,7 +54,6 @@ wx.InitAllImageHandlers()
 
 # Import module for internationalization
 import gettext
-import __builtin__
 
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
@@ -1022,7 +1022,9 @@ class LPCBeremiz(Beremiz):
             plugin_locations = plugin_infos["children"]
             if not self.PluginInfos[plugin].has_key("locations_infos"):
                 self.PluginInfos[plugin]["locations_infos"] = {"root": {"expanded" : False}}
-                
+            
+            self.PluginInfos[plugin]["locations_infos"]["root"]["left"] = None
+            self.PluginInfos[plugin]["locations_infos"]["root"]["right"] = None
             self.PluginInfos[plugin]["locations_infos"]["root"]["children"] = []
         
         self.PluginTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
@@ -1077,8 +1079,10 @@ class LPCBeremiz(Beremiz):
         sb = wx.StaticBitmap(leftwindow, -1)
         icon = plugin_infos.get("icon", None)
         if icon is None:
-            icon = os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png' % self.LOCATION_BITMAP[plugin_infos["type"]])
-        sb.SetBitmap(wx.Bitmap(icon))
+            icon_bitmap = self.LocationImageList.GetBitmap(self.LocationImageDict[plugin_infos["type"]])
+        else: 
+            icon_bitmap = wx.Bitmap(icon)
+        sb.SetBitmap(icon_bitmap)
         leftwindowsizer.AddWindow(sb, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         st_id = wx.NewId()
@@ -1098,13 +1102,30 @@ class LPCBeremiz(Beremiz):
             self.GenerateTreeBranch(child)
             if not self.PluginInfos[child]["expanded"]:
                 self.CollapsePlugin(child)
+        
         if len(plugin_locations) > 0:
             locations_infos = self.PluginInfos[plugin]["locations_infos"]
+            treectrl = wx.TreeCtrl(self.PLCConfig, -1, size=wx.DefaultSize, 
+                                   style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.NO_BORDER|wx.TR_HIDE_ROOT|wx.TR_NO_LINES|wx.TR_LINES_AT_ROOT)
+            treectrl.SetImageList(self.LocationImageList)
+            treectrl.Bind(wx.EVT_TREE_BEGIN_DRAG, self.GenerateLocationBeginDragFunction(locations_infos))
+            treectrl.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.GenerateLocationExpandCollapseFunction(locations_infos, True))
+            treectrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.GenerateLocationExpandCollapseFunction(locations_infos, False))
+            
+            treectrl.AddRoot("")
+            self.PluginTreeSizer.AddWindow(treectrl, 0, border=0, flag=0)
+            
+            rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+            rightwindow.SetBackgroundColour(wx.WHITE)
+            self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
+            
+            locations_infos["root"]["left"] = treectrl
+            locations_infos["root"]["right"] = rightwindow
             for location in plugin_locations:
                 locations_infos["root"]["children"].append("root.%s" % location["name"])
-                self.GenerateLocationTreeBranch(locations_infos, "root", location)
-            if not locations_infos["root"]["expanded"]:
-                self.CollapseLocation(locations_infos, "root")
+                self.GenerateLocationTreeBranch(treectrl, treectrl.GetRootItem(), locations_infos, "root", location)
+            if locations_infos["root"]["expanded"]:
+                self.ExpandLocation(locations_infos, "root")
 
 class StdoutPseudoFile:
     

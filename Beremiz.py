@@ -26,6 +26,7 @@
 updateinfo_url = None
 
 import os, sys, getopt, wx
+import __builtin__
 from wx.lib.agw.advancedsplash import AdvancedSplash
 import tempfile
 import shutil
@@ -70,9 +71,9 @@ if __name__ == '__main__':
         buildpath = None
     
     if os.path.exists("BEREMIZ_DEBUG"):
-        __builtins__.BMZ_DBG = True
+        __builtin__.__dict__["BMZ_DBG"] = True
     else :
-        __builtins__.BMZ_DBG = False
+        __builtin__.__dict__["BMZ_DBG"] = False
 
     app = wx.PySimpleApp(redirect=BMZ_DBG)
     app.SetAppName('beremiz')
@@ -106,7 +107,6 @@ if __name__ == '__main__':
 
 # Import module for internationalization
 import gettext
-import __builtin__
 
 # Get folder containing translation files
 localedir = os.path.join(CWD,"locale")
@@ -148,7 +148,7 @@ from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 from docutils import *
-from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES
+from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 SCROLLBAR_UNIT = 10
@@ -423,7 +423,7 @@ class Beremiz(IDEFrame):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
         self.PLCConfig = wx.ScrolledWindow(id=ID_BEREMIZPLCCONFIG,
-              name='PLCConfig', parent=self.LeftNoteBook, pos=wx.Point(0, 0),
+              name='PLCConfig', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
               size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.PLCConfig.SetBackgroundColour(wx.WHITE)
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
@@ -436,7 +436,8 @@ class Beremiz(IDEFrame):
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
-        self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
+        if USE_AUI:
+            self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
         self._init_beremiz_sizers()
 
@@ -453,6 +454,23 @@ class Beremiz(IDEFrame):
         self.ScrollingEnabled = True
         
         self.PluginInfos = {}
+        
+        # Define Tree item icon list
+        self.LocationImageList = wx.ImageList(16, 16)
+        self.LocationImageDict = {}
+        
+        # Icons for location items
+        for imgname, itemtype in [
+            ("CONFIGURATION", LOCATION_PLUGIN),
+            ("RESOURCE",      LOCATION_MODULE),
+            ("PROGRAM",       LOCATION_GROUP),
+            ("VAR_INPUT",     LOCATION_VAR_INPUT),
+            ("VAR_OUTPUT",    LOCATION_VAR_OUTPUT),
+            ("VAR_LOCAL",     LOCATION_VAR_MEMORY)]:
+            self.LocationImageDict[itemtype]=self.LocationImageList.Add(wx.Bitmap(os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png'%imgname)))
+        
+        # Add beremiz's icon in top left corner of the frame
+        self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.PluginRoot = PluginsRoot(self, self.Log)
@@ -472,10 +490,6 @@ class Beremiz(IDEFrame):
                 self.RefreshAll()
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
-                
-        
-        # Add beremiz's icon in top left corner of the frame
-        self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
@@ -816,23 +830,36 @@ class Beremiz(IDEFrame):
             if force:
                 locations_infos["root"]["expanded"] = False
 
-    def ExpandLocation(self, locations_infos, group, force = False):
-        for child in locations_infos[group]["children"]:
-            locations_infos[child]["left"].Show()
-            locations_infos[child]["right"].Show()
-            if force or locations_infos[child]["expanded"]:
-                self.ExpandLocation(locations_infos, child, force)
-                if force:
-                    locations_infos[child]["expanded"] = True
-    
-    def CollapseLocation(self, locations_infos, group, force = False):
-        for child in locations_infos[group]["children"]:
-            locations_infos[child]["left"].Hide()
-            locations_infos[child]["right"].Hide()
-            self.CollapseLocation(locations_infos, child, force)
+    def ExpandLocation(self, locations_infos, group, force = False, refresh_size=True):
+        locations_infos[group]["expanded"] = True
+        if group == "root":
+            if locations_infos[group]["left"] is not None:
+                locations_infos[group]["left"].Show()
+            if locations_infos[group]["right"] is not None:
+                locations_infos[group]["right"].Show()
+        elif locations_infos["root"]["left"] is not None:
+            locations_infos["root"]["left"].Expand(locations_infos[group]["item"])
             if force:
-                locations_infos[child]["expanded"] = False
-
+                for child in locations_infos[group]["children"]:
+                    self.ExpandLocation(locations_infos, child, force, False)
+        if locations_infos["root"]["left"] is not None and refresh_size:
+            self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
+        
+    def CollapseLocation(self, locations_infos, group, force = False, refresh_size=True):
+        locations_infos[group]["expanded"] = False
+        if group == "root":
+            if locations_infos[group]["left"] is not None:
+                locations_infos[group]["left"].Hide()
+            if locations_infos[group]["right"] is not None:
+                locations_infos[group]["right"].Hide()
+        elif locations_infos["root"]["left"] is not None:
+            locations_infos["root"]["left"].Collapse(locations_infos[group]["item"])
+            if force:
+                for child in locations_infos[group]["children"]:
+                    self.CollapseLocation(locations_infos, child, force, False)
+        if locations_infos["root"]["left"] is not None and refresh_size:
+            self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
+                
     def GenerateTreeBranch(self, plugin):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
         if plugin.PlugTestModified():
@@ -851,7 +878,9 @@ class Beremiz(IDEFrame):
             plugin_locations = plugin.GetVariableLocationTree()["children"]
             if not self.PluginInfos[plugin].has_key("locations_infos"):
                 self.PluginInfos[plugin]["locations_infos"] = {"root": {"expanded" : False}}
-                
+            
+            self.PluginInfos[plugin]["locations_infos"]["root"]["left"] = None
+            self.PluginInfos[plugin]["locations_infos"]["root"]["right"] = None
             self.PluginInfos[plugin]["locations_infos"]["root"]["children"] = []
         
         self.PluginTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
@@ -1047,122 +1076,112 @@ class Beremiz(IDEFrame):
             self.GenerateTreeBranch(child)
             if not self.PluginInfos[child]["expanded"]:
                 self.CollapsePlugin(child)
+        
         if len(plugin_locations) > 0:
             locations_infos = self.PluginInfos[plugin]["locations_infos"]
+            treectrl = wx.TreeCtrl(self.PLCConfig, -1, size=wx.DefaultSize, 
+                                   style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.NO_BORDER|wx.TR_HIDE_ROOT|wx.TR_NO_LINES|wx.TR_LINES_AT_ROOT)
+            treectrl.SetImageList(self.LocationImageList)
+            treectrl.Bind(wx.EVT_TREE_BEGIN_DRAG, self.GenerateLocationBeginDragFunction(locations_infos))
+            treectrl.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.GenerateLocationExpandCollapseFunction(locations_infos, True))
+            treectrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.GenerateLocationExpandCollapseFunction(locations_infos, False))
+            
+            treectrl.AddRoot("")
+            self.PluginTreeSizer.AddWindow(treectrl, 0, border=0, flag=0)
+            
+            rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+            rightwindow.SetBackgroundColour(wx.WHITE)
+            self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
+            
+            locations_infos["root"]["left"] = treectrl
+            locations_infos["root"]["right"] = rightwindow
             for location in plugin_locations:
                 locations_infos["root"]["children"].append("root.%s" % location["name"])
-                self.GenerateLocationTreeBranch(locations_infos, "root", location)
-            if not locations_infos["root"]["expanded"]:
-                self.CollapseLocation(locations_infos, "root")
-        
-    LOCATION_BITMAP = {LOCATION_PLUGIN: "CONFIGURATION",
-                       LOCATION_MODULE: "RESOURCE",
-                       LOCATION_GROUP: "PROGRAM",
-                       LOCATION_VAR_INPUT: "VAR_INPUT",
-                       LOCATION_VAR_OUTPUT: "VAR_OUTPUT",
-                       LOCATION_VAR_MEMORY: "VAR_LOCAL"}
+                self.GenerateLocationTreeBranch(treectrl, treectrl.GetRootItem(), locations_infos, "root", location)
+                treectrl.Expand(treectrl.GetRootItem())
+            if locations_infos["root"]["expanded"]:
+                self.ExpandLocation(locations_infos, "root")
+            else:
+                self.RefreshTreeCtrlSize(treectrl)
     
-    def GenerateLocationTreeBranch(self, locations_infos, parent, location):
-        leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        self.PluginTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
-        
-        leftwindowsizer = wx.BoxSizer(wx.HORIZONTAL)
-        leftwindow.SetSizer(leftwindowsizer)
-        
-        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
-        
+    def GenerateLocationTreeBranch(self, treectrl, root, locations_infos, parent, location):
         location_name = "%s.%s" % (parent, location["name"])
         if not locations_infos.has_key(location_name):
             locations_infos[location_name] = {"expanded" : False}
         
-        if location["type"] in [LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP]:
-            if location["type"] == LOCATION_GROUP:
-                leftwindow.SetBackgroundColour(wx.WHITE)
-                rightwindow.SetBackgroundColour(wx.WHITE)
-            else:
-                leftwindow.SetBackgroundColour(WINDOW_COLOUR)
-                rightwindow.SetBackgroundColour(WINDOW_COLOUR)
-            
-            st = wx.StaticText(leftwindow, -1)
-            st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-            st.SetLabel(location["location"])
-            leftwindowsizer.AddWindow(st, 0, border=5, flag=wx.RIGHT)
-            
-            expandbutton_id = wx.NewId()
-            expandbutton = wx.lib.buttons.GenBitmapToggleButton(id=expandbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'plus.png')),
-                  name='ExpandButton', parent=leftwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(13, 13), style=wx.NO_BORDER)
-            expandbutton.labelDelta = 0
-            expandbutton.SetBezelWidth(0)
-            expandbutton.SetUseFocusIndicator(False)
-            expandbutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'minus.png')))
-            expandbutton.SetToggle(locations_infos[location_name]["expanded"])
-                
-            if len(location["children"]) > 0:
-                def togglebutton(event):
-                    if expandbutton.GetToggle():
-                        self.ExpandLocation(locations_infos, location_name)
-                    else:
-                        self.CollapseLocation(locations_infos, location_name)
-                    locations_infos[location_name]["expanded"] = expandbutton.GetToggle()
-                    self.PLCConfigMainSizer.Layout()
-                    self.RefreshScrollBars()
-                    event.Skip()
-                expandbutton.Bind(wx.EVT_BUTTON, togglebutton, id=expandbutton_id)
-            else:
-                expandbutton.Enable(False)
-            leftwindowsizer.AddWindow(expandbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-            
-        else:
-            leftwindow.SetBackgroundColour(wx.WHITE)
-            rightwindow.SetBackgroundColour(wx.WHITE)
-            
-            leftwindowsizer.Add(wx.Size(20, 16), 0)
-        
-        sb = wx.StaticBitmap(leftwindow, -1)
-        icon = location.get("icon")
-        if icon is None:
-            icon = os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png' % self.LOCATION_BITMAP[location["type"]])
-        sb.SetBitmap(wx.Bitmap(icon))
-        leftwindowsizer.AddWindow(sb, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        
-        st_id = wx.NewId()
-        st = wx.StaticText(leftwindow, st_id, size=wx.DefaultSize, style=wx.NO_BORDER)
-        label = location["name"]
         if location["type"] in [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]:
-            label += " (%s)" % location["location"]
-            infos = location.copy()
-            infos.pop("children")
-            st.SetFont(wx.Font(faces["size"] * 0.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
-            leftcallback = self.GenerateLocationLeftDownFunction(infos)
-            st.Bind(wx.EVT_LEFT_DOWN, leftcallback)
-            sb.Bind(wx.EVT_LEFT_DOWN, leftcallback)
-        elif location["type"] == LOCATION_GROUP:
-            st.SetFont(wx.Font(faces["size"] * 0.6, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
+            label = "%(name)s (%(location)s)" % location
+        elif location["location"] != "":
+            label = "%(location)s: %(name)s" % location
         else:
-            st.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-        st.SetLabel(label)
-        leftwindowsizer.AddWindow(st, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+            label = location["name"]
+        item = treectrl.AppendItem(root, label)
+        treectrl.SetPyData(item, location_name)
+        treectrl.SetItemImage(item, self.LocationImageDict[location["type"]])
         
-        locations_infos[location_name]["left"] = leftwindow
-        locations_infos[location_name]["right"] = rightwindow
+        locations_infos[location_name]["item"] = item
         locations_infos[location_name]["children"] = []
+        infos = location.copy()
+        infos.pop("children")
+        locations_infos[location_name]["infos"] = infos
         for child in location["children"]:
             child_name = "%s.%s" % (location_name, child["name"])
             locations_infos[location_name]["children"].append(child_name)
-            self.GenerateLocationTreeBranch(locations_infos, location_name, child)
-        if not locations_infos[location_name]["expanded"]:
-            self.CollapseLocation(locations_infos, location_name)
+            self.GenerateLocationTreeBranch(treectrl, item, locations_infos, location_name, child)
+        if locations_infos[location_name]["expanded"]:
+            self.ExpandLocation(locations_infos, location_name)
     
-    def GenerateLocationLeftDownFunction(self, infos):
-        def OnLocationLeftDownFunction(event):
-            data = wx.TextDataObject(str((infos["location"], "location", infos["IEC_type"], infos["name"], infos["description"])))
-            dragSource = wx.DropSource(self)
-            dragSource.SetData(data)
-            dragSource.DoDragDrop()
+    def GenerateLocationBeginDragFunction(self, locations_infos):
+        def OnLocationBeginDragFunction(event):
+            item = event.GetItem()
+            location_name = locations_infos["root"]["left"].GetPyData(item)
+            if location_name is not None:
+                infos = locations_infos[location_name]["infos"]
+                if infos["type"] in [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]:
+                    data = wx.TextDataObject(str((infos["location"], "location", infos["IEC_type"], infos["name"], infos["description"])))
+                    dragSource = wx.DropSource(self)
+                    dragSource.SetData(data)
+                    dragSource.DoDragDrop()
+        return OnLocationBeginDragFunction
+    
+    def RefreshTreeCtrlSize(self, treectrl):
+        rect = self.GetTreeCtrlItemRect(treectrl, treectrl.GetRootItem())
+        treectrl.SetMinSize(wx.Size(max(rect.width, rect.x + rect.width) + 20, max(rect.height, rect.y + rect.height) + 10))
+        self.PLCConfigMainSizer.Layout()
+        self.PLCConfig.Refresh()
+    
+    def GetTreeCtrlItemRect(self, treectrl, item):
+        item_rect = treectrl.GetBoundingRect(item, True)
+        if item_rect is not None:
+            minx, miny = item_rect.x, item_rect.y
+            maxx, maxy = item_rect.x + item_rect.width, item_rect.y + item_rect.height
+        else:
+            minx = miny = maxx = maxy = 0
+        
+        if treectrl.ItemHasChildren(item) and (item == treectrl.GetRootItem() or treectrl.IsExpanded(item)):
+            if wx.VERSION >= (2, 6, 0):
+                child, item_cookie = treectrl.GetFirstChild(item)
+            else:
+                child, item_cookie = treectrl.GetFirstChild(item, 0)
+            while child.IsOk():
+                child_rect = self.GetTreeCtrlItemRect(treectrl, child)
+                minx = min(minx, child_rect.x)
+                miny = min(miny, child_rect.y)
+                maxx = max(maxx, child_rect.x + child_rect.width)
+                maxy = max(maxy, child_rect.y + child_rect.height)
+                child, item_cookie = treectrl.GetNextChild(item, item_cookie)
+                
+        return wx.Rect(minx, miny, maxx - minx, maxy - miny)
+    
+    def GenerateLocationExpandCollapseFunction(self, locations_infos, expand):
+        def OnLocationExpandedFunction(event):
+            item = event.GetItem()
+            location_name = locations_infos["root"]["left"].GetPyData(item)
+            if location_name is not None:
+                locations_infos[location_name]["expanded"] = expand
+                self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
             event.Skip()
-        return OnLocationLeftDownFunction
+        return OnLocationExpandedFunction
     
     def RefreshAll(self):
         self.RefreshPLCParams()
