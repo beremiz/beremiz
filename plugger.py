@@ -137,6 +137,9 @@ class PlugTemplate:
         return os.path.join(self.PlugParent.PlugPath(),
                             PlugName + NameTypeSeparator + self.PlugType)
     
+    def GetIconPath(self, name):
+        return opjimg(name)
+    
     def PlugTestModified(self):
         return self.ChangesToSave
 
@@ -294,7 +297,7 @@ class PlugTemplate:
 
     def BlockTypesFactory(self):
         if self.LibraryControler is not None:
-            return [{"name" : "%s POUs" % self.PlugType, "list": self.LibraryControler.Project.GetCustomBlockTypes()}]
+            return [{"name" : _("%s POUs") % self.PlugType, "list": self.LibraryControler.Project.GetCustomBlockTypes()}]
         return []
 
     def ParentsBlockTypesFactory(self):
@@ -790,6 +793,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             ID_STATUSTIMER = wx.NewId()
             self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
             self.AppFrame.Bind(wx.EVT_TIMER, self.PullPLCStatusProc, self.StatusTimer)
+        
+            self.RefreshPluginsBlockLists()
 
     def ResetAppFrame(self, logger):
         if self.AppFrame is not None:

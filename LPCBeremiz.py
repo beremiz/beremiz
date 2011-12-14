@@ -364,7 +364,7 @@ def mycopytree(src, dst):
     @param dst: destination directory
     """
     for i in os.listdir(src):
-        if not i.startswith('.'):
+        if not i.startswith('.') and i != "pous.xml":
             srcpath = os.path.join(src,i)
             dstpath = os.path.join(dst,i)
             if os.path.isdir(srcpath):
@@ -405,11 +405,14 @@ class LPCPluginsRoot(PluginsRoot):
          "method" : "_Transfer"},
     ]
 
-    def __init__(self, frame, logger):
+    def __init__(self, frame, logger, buildpath):
+        self.OrigBuildPath = buildpath
+        
         PluginsRoot.__init__(self, frame, logger)
         
         self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
-
+        self.PlugType = "LPC"
+        
         self.OnlineMode = "OFF"
         self.LPCConnector = None
         
@@ -419,7 +422,13 @@ class LPCPluginsRoot(PluginsRoot):
         self.SimulationBuildPath = None
         
         self.AbortTransferTimer = None
-        
+    
+    def PluginLibraryFilePath(self):
+        if self.OrigBuildPath is not None:
+            return os.path.join(self.OrigBuildPath, "pous.xml")
+        else:
+            return PluginsRoot.PluginLibraryFilePath(self)
+    
     def GetProjectName(self):
         return self.Project.getname()
 
@@ -568,9 +577,8 @@ class LPCPluginsRoot(PluginsRoot):
         self.ProjectPath = ProjectPath
         
         self.BuildPath = self._getBuildPath()
-        self.OrigBuildPath = BuildPath
-        if BuildPath is not None:
-            mycopytree(BuildPath, self.BuildPath)
+        if self.OrigBuildPath is not None:
+            mycopytree(self.OrigBuildPath, self.BuildPath)
         
         # If dir have already be made, and file exist
         if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
@@ -1527,9 +1535,9 @@ if __name__ == '__main__':
 
     Log = StdoutPseudoFile(port)
 
-    PluginRoot = LPCPluginsRoot(None, Log)
+    PluginRoot = LPCPluginsRoot(None, Log, buildpath)
     if projectOpen is not None and os.path.isdir(projectOpen):
-        result = PluginRoot.LoadProject(projectOpen, buildpath)
+        result = PluginRoot.LoadProject(projectOpen)
         if result:
             Log.write("Error: Invalid project directory", result)
     else:
