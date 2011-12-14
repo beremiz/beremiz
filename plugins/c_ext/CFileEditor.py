@@ -5,7 +5,7 @@ import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
 
-from controls import CustomGrid, EditorPanel
+from controls import CustomGrid, CustomTable, EditorPanel
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
@@ -453,90 +453,15 @@ class CppEditor(stc.StyledTextCtrl):
 #                         Helper for VariablesGrid values
 #-------------------------------------------------------------------------------
 
-class VariablesTable(wx.grid.PyGridTableBase):
+class VariablesTable(CustomTable):
     
-    """
-    A custom wxGrid Table using user supplied data
-    """
-    def __init__(self, parent, data, colnames):
-        # The base class must be initialized *first*
-        wx.grid.PyGridTableBase.__init__(self)
-        self.data = data
-        self.colnames = colnames
-        self.Parent = parent
-        # XXX
-        # we need to store the row length and collength to
-        # see if the table has changed size
-        self._rows = self.GetNumberRows()
-        self._cols = self.GetNumberCols()
-    
-    def GetNumberCols(self):
-        return len(self.colnames)
-        
-    def GetNumberRows(self):
-        return len(self.data)
-
-    def GetColLabelValue(self, col):
-        if col < len(self.colnames):
-            return self.colnames[col]
-
-    def GetRowLabelValues(self, row):
-        return row
-
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             if col == 0:
                 return row + 1
             else:
-                return str(self.data[row].get(self.GetColLabelValue(col), ""))
+                return str(self.data[row].get(self.GetColLabelValue(col, False), ""))
     
-    def GetValueByName(self, row, colname):
-        if row < self.GetNumberRows():
-            return self.data[row].get(colname, None)
-        return None
-
-    def SetValue(self, row, col, value):
-        if col < len(self.colnames):
-            self.data[row][self.GetColLabelValue(col)] = value
-    
-    def SetValueByName(self, row, colname, value):
-        if row < self.GetNumberRows():
-            self.data[row][colname] = value
-        
-    def ResetView(self, grid):
-        """
-        (wxGrid) -> Reset the grid view.   Call this to
-        update the grid if rows and columns have been added or deleted
-        """
-        grid.BeginBatch()
-        for current, new, delmsg, addmsg in [
-            (self._rows, self.GetNumberRows(), wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED),
-            (self._cols, self.GetNumberCols(), wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED),
-        ]:
-            if new < current:
-                msg = wx.grid.GridTableMessage(self,delmsg,new,current-new)
-                grid.ProcessTableMessage(msg)
-            elif new > current:
-                msg = wx.grid.GridTableMessage(self,addmsg,new-current)
-                grid.ProcessTableMessage(msg)
-                self.UpdateValues(grid)
-        grid.EndBatch()
-
-        self._rows = self.GetNumberRows()
-        self._cols = self.GetNumberCols()
-        # update the column rendering scheme
-        self._updateColAttrs(grid)
-
-        # update the scrollbars and the displayed part of the grid
-        grid.AdjustScrollbars()
-        grid.ForceRefresh()
-
-    def UpdateValues(self, grid):
-        """Update all displayed values"""
-        # This sends an event to the grid table to update all of the values
-        msg = wx.grid.GridTableMessage(self, wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-        grid.ProcessTableMessage(msg)
-
     def _updateColAttrs(self, grid):
         """
         wxGrid -> update the column attributes to add the
@@ -568,41 +493,8 @@ class VariablesTable(wx.grid.PyGridTableBase):
                 grid.SetCellRenderer(row, col, renderer)
                 
                 grid.SetCellBackgroundColour(row, col, wx.WHITE)
+            self.ResizeRow(grid, row)
     
-    def SetData(self, data):
-        self.data = data
-    
-    def GetData(self):
-        return self.data
-    
-    def GetCurrentIndex(self):
-        return self.CurrentIndex
-    
-    def SetCurrentIndex(self, index):
-        self.CurrentIndex = index
-    
-    def AppendRow(self, row_content):
-        self.data.append(row_content)
-
-    def InsertRow(self, row_index, row_content):
-        self.data.insert(row_index, row_content)
-
-    def RemoveRow(self, row_index):
-        self.data.pop(row_index)
-
-    def MoveRow(self, row_index, move):
-        new_index = max(0, min(row_index + move, len(self.data) - 1))
-        if new_index != row_index:
-            self.data.insert(new_index, self.data.pop(row_index))
-        return new_index
-    
-    def GetRow(self, row_index):
-        return self.data[row_index]
-
-    def Empty(self):
-        self.data = []
-        self.editors = []
-
 
 [ID_VARIABLESEDITOR, ID_VARIABLESEDITORVARIABLESGRID,
  ID_VARIABLESEDITORADDVARIABLEBUTTON, ID_VARIABLESEDITORDELETEVARIABLEBUTTON, 

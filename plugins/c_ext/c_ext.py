@@ -31,7 +31,6 @@ class _Cfile:
         
         self.Buffering = False
         self.CFile = CFileClasses["CFile"]()
-        self.CFileBuffer = UndoBuffer(self.Copy(self.CFile), False)
         if os.path.isfile(filepath):
             xmlfile = open(filepath, 'r')
             tree = minidom.parse(xmlfile)
@@ -42,10 +41,8 @@ class _Cfile:
                     self.CFile.loadXMLTree(child, ["xmlns", "xmlns:xsi", "xsi:schemaLocation"])
                     self.CFileBuffer = UndoBuffer(self.Copy(self.CFile), True)
         else:
+            self.CFileBuffer = UndoBuffer(self.Copy(self.CFile), False)
             self.OnPlugSave()
-
-    def GetIconPath(self, name):
-        return opjimg(name)
 
     def CFileName(self):
         return os.path.join(self.PlugPath(), "cfile.xml")
@@ -174,7 +171,7 @@ class _Cfile:
         xmlfile.write(text.encode("utf-8"))
         xmlfile.close()
         
-        self.CFileBuffer.CurrentSaved()
+        self.MarkCFileAsSaved()
         return True
 
     def PlugGenerate_C(self, buildpath, locations):
@@ -276,34 +273,41 @@ class _Cfile:
 #-------------------------------------------------------------------------------
 
     """
-    Return a copy of the project
+    Return a copy of the cfile model
     """
     def Copy(self, model):
         return cPickle.loads(cPickle.dumps(model))
 
+    def CreateConfigBuffer(self, saved):
+        self.CFileBuffer = UndoBuffer(cPickle.dumps(self.CFile), saved)
+
     def BufferCFile(self):
-        self.CFileBuffer.Buffering(self.Copy(self.CFile))
+        self.CFileBuffer.Buffering(cPickle.dumps(self.CFile))
     
     def StartBuffering(self):
-        self.CFileBuffer.Buffering(self.CFile)
         self.Buffering = True
         
     def EndBuffering(self):
         if self.Buffering:
-            self.CFile = self.Copy(self.CFile)
+            self.CFileBuffer.Buffering(cPickle.dumps(self.CFile))
             self.Buffering = False
+    
+    def MarkCFileAsSaved(self):
+        self.EndBuffering()
+        self.CFileBuffer.CurrentSaved()
     
     def CFileIsSaved(self):
         if self.CFileBuffer:
-            return self.CFileBuffer.IsCurrentSaved()
+            return self.CFileBuffer.IsCurrentSaved() and not self.Buffering
         else:
             return True
 
     def LoadPrevious(self):
-        self.CFile = self.Copy(self.CFileBuffer.Previous())
+        self.EndBuffering()
+        self.CFile = cPickle.loads(self.CFileBuffer.Previous())
     
     def LoadNext(self):
-        self.CFile = self.Copy(self.CFileBuffer.Next())
+        self.CFile = cPickle.loads(self.CFileBuffer.Next())
     
     def GetBufferState(self):
         first = self.CFileBuffer.IsFirst()
