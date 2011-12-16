@@ -571,6 +571,9 @@ class PythonEditorFrame(wx.Frame):
 #                          Edit Project Menu Functions
 #-------------------------------------------------------------------------------
 
+    def RefreshFileMenu(self):
+        pass
+
     def RefreshEditMenu(self):
         undo, redo = self.Controler.GetBufferState()
         self.EditMenu.Enable(wx.ID_UNDO, undo)
