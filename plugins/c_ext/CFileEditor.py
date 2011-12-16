@@ -546,10 +546,6 @@ class VariablesEditor(wx.Panel):
         self.VariablesGrid = CustomGrid(id=ID_VARIABLESEDITORVARIABLESGRID,
               name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
               size=wx.Size(-1, -1), style=wx.VSCROLL)
-        self.VariablesGrid.SetFont(wx.Font(12, 77, wx.NORMAL, wx.NORMAL, False,
-              'Sans'))
-        self.VariablesGrid.SetLabelFont(wx.Font(10, 77, wx.NORMAL, wx.NORMAL,
-              False, 'Sans'))
         if wx.VERSION >= (2, 5, 0):
             self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
             self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
