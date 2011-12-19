@@ -75,7 +75,7 @@ class MiniTextControler:
 
 # helper func to get path to images
 def opjimg(imgname):
-    return os.path.join("images",imgname)
+    return os.path.join(base_folder, "beremiz", "images",imgname)
     
 # helper func to check path write permission
 def CheckPathPerm(path):
