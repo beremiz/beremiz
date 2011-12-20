@@ -5,7 +5,7 @@ from xml.dom import minidom
 import wx
 
 from xmlclass import *
-from PLCControler import UndoBuffer
+from PLCControler import UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigEditor import ConfigEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
@@ -82,6 +82,7 @@ class _EthercatPlug:
       </xsd:element>
     </xsd:schema>
     """
+    EditorType = ConfigEditor
     
     def __init__(self):
         filepath = self.ConfigFileName()
@@ -186,7 +187,6 @@ class _EthercatPlug:
             if device is not None:
                 infos = type_infos.copy()
                 infos.update({"physics": device.getPhysics(),
-                              "pdos": [],
                               "variables": []})
                 for TxPdo in device.getTxPdo():
                     ExtractPdoInfos(TxPdo, "Transmit", infos)
@@ -201,13 +201,64 @@ class _EthercatPlug:
     def GetSlaveTypesLibrary(self):
         return self.PlugParent.GetModulesLibrary()
     
-    def _OpenView(self):
-        app_frame = self.GetPlugRoot().AppFrame
+    def GetVariableLocationTree(self):
+        '''See PlugTemplate.GetVariableLocationTree() for a description.'''
+
+        current_location = self.GetCurrentLocation()
         
-        configeditor = ConfigEditor(app_frame.TabsOpened, self, app_frame)
-        
-        app_frame.EditProjectElement(configeditor, self.GetFilename())
+        groups = []
+        for slave_pos in self.GetSlaves():
+            
+            slave = self.GetSlave(slave_pos)
+            if slave is not None:
+                type_infos = slave.getType()
                 
+                device = self.GetModuleInfos(type_infos)
+                if device is not None:
+                    vars = []
+                    
+                    sync_managers = []
+                    for sync_manager in device.getSm():
+                        sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
+                        sync_manager_direction = sync_manager_control_byte & 0x0c
+                        if sync_manager_direction:
+                            sync_managers.append(LOCATION_VAR_OUTPUT)
+                        else:
+                            sync_managers.append(LOCATION_VAR_INPUT)
+                    
+                    for pdo in device.getTxPdo() + device.getRxPdo():
+                        var_class = sync_managers[pdo.getSm()]
+                        
+                        for entry in pdo.getEntry():
+                            index = ExtractHexDecValue(entry.getIndex().getcontent())
+                            subindex = ExtractHexDecValue(entry.getSubIndex())
+                            var_type = entry.getDataType().getcontent()
+                            var_size = self.GetSizeOfType(var_type)
+                            if var_class == LOCATION_VAR_INPUT:
+                                var_dir = "%I"
+                            else:
+                                var_dir = "%Q"    
+                            
+                            vars.append({"name": "%s - %s" % (ExtractName(pdo.getName()), ExtractName(entry.getName())),
+                                         "type": var_class,
+                                         "size": var_size,
+                                         "IEC_type": var_type,
+                                         "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
+                                                                                                    slave_pos + 
+                                                                                                    (index, subindex)))),
+                                         "description": "",
+                                         "children": []})
+                    
+                    groups.append({"name": "%s (%d,%d)" % ((type_infos["device_type"],) + slave_pos),
+                                   "type": LOCATION_GROUP,
+                                   "location": ".".join(map(str, current_location + slave_pos)) + ".x",
+                                   "children": vars})
+                
+        return  {"name": self.BaseParams.getName(),
+                 "type": LOCATION_PLUGIN,
+                 "location": self.GetFullIEC_Channel(),
+                 "children": groups}
+    
     PluginMethods = [
         {"bitmap" : os.path.join("images", "EditCfile"),
          "name" : _("Edit Config"), 
@@ -381,7 +432,7 @@ class _EthercatCFileGenerator:
                 type_infos = slave.getType()
                 
                 device = self.Controler.GetModuleInfos(type_infos)
-                if device is not None:                
+                if device is not None:
                     
                     pdos = device.getTxPdo() + device.getRxPdo()
                     if len(pdos) > 0:
@@ -425,20 +476,12 @@ class _EthercatCFileGenerator:
                         
                         entry_offset = 0
                         for pdo in pdos:
-                            sync_managers[pdo.getSm()]["pdos_number"] += 1
                             entries = pdo.getEntry()
                             
-                            pdo_infos = {
-                                "slave": slave_idx,
-                                "index": ExtractHexDecValue(pdo.getIndex().getcontent()),
-                                "name": ExtractName(pdo.getName()),
-                                "offset": entry_offset,
-                                "entries_number": len(entries)
-                            }
-                            pdos_infos["pdos_infos"].append("    {0x%(index).4x, %(entries_number)d, slave_%(slave)d_pdo_entries + %(offset)d}, /* %(name)s */" % pdo_infos)
-                            entry_offset += len(entries)
+                            pdo_needed = pdo.getMandatory()
+                            entries_infos = []
                             
-                            for entry in pdo.getEntry():
+                            for entry in entries:
                                 index = ExtractHexDecValue(entry.getIndex().getcontent())
                                 subindex = ExtractHexDecValue(entry.getSubIndex())
                                 entry_infos = {
@@ -448,10 +491,11 @@ class _EthercatCFileGenerator:
                                     "bitlen": entry.getBitLen(),
                                 }
                                 entry_infos.update(type_infos)
-                                pdos_infos["pdos_entries_infos"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                                entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                                 
                                 entry_declaration = slave_variables.get((index, subindex), None)
                                 if entry_declaration is not None:
+                                    pdo_needed = True
                                     entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration)))
                                     
                                     if entry_infos["var_type"] != entry.getDataType().getcontent():
@@ -465,35 +509,70 @@ class _EthercatCFileGenerator:
                                         entry_infos["dir"] == "Q" and sync_managers[pdo.getSm()]["sync_manager_type"] != "EC_DIR_OUTPUT"):
                                         raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
                                     
-                                    str_completion["located_variables_declaration"].extend(["IEC_%(var_type)s beremiz%(var_name)s;" % entry_infos,
-                                                                                            "IEC_%(var_type)s *%(var_name)s = &beremiz%(var_name)s;" % entry_infos])
+                                    str_completion["located_variables_declaration"].extend(
+                                        ["IEC_%(var_type)s beremiz%(var_name)s;" % entry_infos,
+                                         "IEC_%(var_type)s *%(var_name)s = &beremiz%(var_name)s;" % entry_infos])
+                                    
                                     if data_type == "BIT":
-                                        str_completion["used_pdo_entry_offset_variables_declaration"].extend(["static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos,
-                                                                                                              "static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos])
+                                        str_completion["used_pdo_entry_offset_variables_declaration"].extend(
+                                            ["static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos,
+                                             "static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos])
                                         
-                                        str_completion["used_pdo_entry_configuration"].append("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, 0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, &slave%(slave)d_%(index).4x_%(subindex).2x_bit}," % entry_infos)
+                                        str_completion["used_pdo_entry_configuration"].append(
+                                             ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, " + 
+                                              "0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+                                              "&slave%(slave)d_%(index).4x_%(subindex).2x_bit},") % entry_infos)
                                         
                                         if entry_infos["dir"] == "I":
-                                            str_completion["retrieve_variables"].append("    beremiz%(name)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, slave%(slave)d_%(index).4x_%(subindex).2x_bit);" % entry_infos)
+                                            str_completion["retrieve_variables"].append(
+                                              ("    beremiz%(name)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+                                               "slave%(slave)d_%(index).4x_%(subindex).2x_bit);") % entry_infos)
                                         elif entry_infos["dir"] == "Q":
-                                            str_completion["publish_variables"].append("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, slave%(slave)d_%(index).4x_%(subindex).2x_bit, beremiz%(var_name)s);" % entry_infos)
+                                            str_completion["publish_variables"].append(
+                                              ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+                                               "slave%(slave)d_%(index).4x_%(subindex).2x_bit, beremiz%(var_name)s);") % entry_infos)
                                     
                                     else:
                                         entry_infos["data_type"] = data_type
                                         
-                                        str_completion["used_pdo_entry_offset_variables_declaration"].append("static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
+                                        str_completion["used_pdo_entry_offset_variables_declaration"].append(
+                                            "static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
                                         
-                                        str_completion["used_pdo_entry_configuration"].append("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, 0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x}," % entry_infos)
+                                        str_completion["used_pdo_entry_configuration"].append(
+                                            ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, 0x%(index).4x, " + 
+                                             "%(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x},") % entry_infos)
                                         
                                         if entry_infos["dir"] == "I":
-                                            str_completion["retrieve_variables"].append("    beremiz%(name)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x);" % entry_infos)
+                                            str_completion["retrieve_variables"].append(
+                                                ("    beremiz%(name)s = EC_READ_BIT(domain1_pd + " + 
+                                                 "slave%(slave)d_%(index).4x_%(subindex).2x);") % entry_infos)
                                         elif entry_infos["dir"] == "Q":
-                                            str_completion["publish_variables"].append("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, beremiz%(var_name)s);" % entry_infos)
-                        
+                                            str_completion["publish_variables"].append(
+                                                ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+                                                 "beremiz%(var_name)s);") % entry_infos)
+                            
+                            if pdo_needed:
+                                sync_managers[pdo.getSm()]["pdos_number"] += 1
+                                pdo_infos = {
+                                    "slave": slave_idx,
+                                    "index": ExtractHexDecValue(pdo.getIndex().getcontent()),
+                                    "name": ExtractName(pdo.getName()),
+                                    "offset": entry_offset,
+                                    "entries_number": len(entries)
+                                }
+                                pdos_infos["pdos_infos"].append(
+                                    ("    {0x%(index).4x, %(entries_number)d, " + 
+                                     "slave_%(slave)d_pdo_entries + %(offset)d}, /* %(name)s */") % pdo_infos)
+                                entry_offset += len(entries)
+                                pdos_infos["pdos_entries_infos"].extend(entries_infos)
+                                
+                                
                         pdo_offset = 0
                         for sync_manager_infos in sync_managers:
                             sync_manager_infos["offset"] = pdo_offset
-                            pdos_infos["pdos_sync_infos"].append("    {%(index)d, %(sync_manager_type)s, %(pdos_number)d, slave_%(slave)d_pdos + %(offset)d, %(watchdog)s}," % sync_manager_infos)
+                            pdos_infos["pdos_sync_infos"].append(
+                                ("    {%(index)d, %(sync_manager_type)s, %(pdos_number)d, " + 
+                                 "slave_%(slave)d_pdos + %(offset)d, %(watchdog)s},") % sync_manager_infos)
                             pdo_offset += sync_manager_infos["pdos_number"]
                         
                         for element in ["pdos_entries_infos", "pdos_infos", "pdos_sync_infos"]:
@@ -501,7 +580,11 @@ class _EthercatCFileGenerator:
                         
                         str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
         
-        for element in ["used_pdo_entry_offset_variables_declaration", "used_pdo_entry_configuration", "located_variables_declaration", "retrieve_variables", "publish_variables"]:
+        for element in ["used_pdo_entry_offset_variables_declaration", 
+                        "used_pdo_entry_configuration", 
+                        "located_variables_declaration", 
+                        "retrieve_variables", 
+                        "publish_variables"]:
             str_completion[element] = "\n".join(str_completion[element])
         
         etherlabfile = open(self.FilePath,'w')
@@ -541,15 +624,14 @@ def ExtractName(names, default=None):
 
 def ExtractPdoInfos(pdo, pdo_type, infos):
     pdo_index = pdo.getIndex().getcontent()
-    infos["pdos"].append({"Index": pdo_index,
-                          "Name": ExtractName(pdo.getName()),
-                          "Type": pdo_type})
     for entry in pdo.getEntry():
         infos["variables"].append({"Index": entry.getIndex().getcontent(),
                                    "SubIndex": entry.getSubIndex(),
                                    "Name": ExtractName(entry.getName()),
                                    "Type": entry.getDataType().getcontent(),
-                                   "PDO": pdo_index})
+                                   "PDO index": pdo_index, 
+                                   "PDO name": ExtractName(pdo.getName()), 
+                                   "PDO type": pdo_type})
 
 class RootClass:
     
@@ -581,6 +663,9 @@ class RootClass:
          "tooltip" : _("Import module library"),
          "method" : "_ImportModuleLibrary"},
     ]
+    
+    def PlugGenerate_C(self, buildpath, locations):
+        return [],"",False
     
     def LoadModulesLibrary(self):
         self.ModulesLibrary = {}
