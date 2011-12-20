@@ -26,8 +26,12 @@ class _Cfile:
       </xsd:element>
     </xsd:schema>
     """
+    EditorType = CFileEditor
+    
     def __init__(self):
         filepath = self.CFileName()
+        
+        self._View = None
         
         self.Buffering = False
         self.CFile = CFileClasses["CFile"]()
@@ -140,13 +144,6 @@ class _Cfile:
         elif name == "Publish":
             return self.CFile.publishFunction.gettext()
         return ""
-    
-    def _OpenView(self):
-        app_frame = self.GetPlugRoot().AppFrame
-        
-        cfileeditor = CFileEditor(app_frame.TabsOpened, self, app_frame)
-        
-        app_frame.EditProjectElement(cfileeditor, self.GetFilename())
                 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "EditCfile"),
@@ -267,7 +264,8 @@ class _Cfile:
         matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_flags))],str(self.CExtension.getLDFLAGS()),True
-        
+
+
 #-------------------------------------------------------------------------------
 #                      Current Buffering Management Functions
 #-------------------------------------------------------------------------------

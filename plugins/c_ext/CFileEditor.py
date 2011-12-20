@@ -477,7 +477,6 @@ class VariablesTable(CustomTable):
                 editor = None
                 renderer = None
                 colname = self.GetColLabelValue(col)
-                grid.SetReadOnly(row, col, False)
                 
                 if colname == "Name":
                     editor = wx.grid.GridCellTextEditor()
@@ -618,6 +617,9 @@ class VariablesEditor(wx.Panel):
             self.VariablesGrid.SetColSize(col, self.ColSizes[col])
         self.Table.ResetView(self.VariablesGrid)
 
+    def __del__(self):
+        self.Controler.OnCloseEditor()
+
     def IsViewing(self, name):
         return name == "Variables"
 
@@ -646,7 +648,7 @@ class VariablesEditor(wx.Panel):
     
     def OnVariablesGridCellChange(self, event):
         self.RefreshModel()
-        self.RefreshView()
+        wx.CallAfter(self.RefreshView)
         event.Skip()
 
     def OnVariablesGridEditorShown(self, event):
@@ -891,10 +893,10 @@ class CFileEditor(EditorPanel):
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
         
     def GetTitle(self):
-        filename = self.Controler.GetFilename()
+        fullname = self.Controler.PlugFullName()
         if not self.Controler.CFileIsSaved():
-            return "~%s~" % filename
-        return filename
+            return "~%s~" % fullname
+        return fullname
     
     def GetBufferState(self):
         return self.Controler.GetBufferState()

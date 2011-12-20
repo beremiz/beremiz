@@ -97,6 +97,7 @@ class PlugTemplate:
     PlugMaxCount = None
     PluginMethods = []
     LibraryControler = None
+    EditorType = None
 
     def _AddParamsMembers(self):
         self.PlugParams = None
@@ -115,6 +116,7 @@ class PlugTemplate:
         self.MandatoryParams = ("BaseParams", self.BaseParams)
         self._AddParamsMembers()
         self.PluggedChilds = {}
+        self._View = None
         # copy PluginMethods so that it can be later customized
         self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
         self.LoadSTLibrary()
@@ -136,6 +138,12 @@ class PlugTemplate:
             PlugName = self.BaseParams.getName()
         return os.path.join(self.PlugParent.PlugPath(),
                             PlugName + NameTypeSeparator + self.PlugType)
+    
+    def PlugFullName(self):
+        parent = self.PlugParent.PlugFullName()
+        if parent != "":
+            return parent + "." + self.BaseParams.getName()
+        return self.BaseParams.getName()
     
     def GetIconPath(self, name):
         return opjimg(name)
@@ -484,7 +492,22 @@ class PlugTemplate:
             self.GetPlugRoot().logger.write_warning(_("A child with IEC channel %d already exist -> %d\n")%(DesiredChannel,res))
         return res
 
+    def _OpenView(self):
+        if self.EditorType is not None and self._View is None:
+            app_frame = self.GetPlugRoot().AppFrame
+            
+            self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
+            
+            app_frame.EditProjectElement(self._View, self.GetFilename())
+
+    def OnCloseEditor(self):
+        self._View = None
+
     def OnPlugClose(self):
+        if self._View is not None:
+            app_frame = self.GetPlugRoot().AppFrame
+            if app_frame is not None:
+                app_frame.DeletePage(self._View)
         return True
 
     def _doRemoveChild(self, PlugInstance):
@@ -809,6 +832,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def PlugTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
+
+    def PlugFullName(self):
+        return ""
 
     def GetPlugRoot(self):
         return self
