@@ -96,13 +96,9 @@ class SlaveTypeChoiceDialog(wx.Dialog):
             self.EndModal(wx.ID_OK)
 
 
-def GetPDOsTableColnames():
-    _ = lambda x : x
-    return ["#", _("Index"), _("Name"), _("Type")]
-
 def GetVariablesTableColnames():
     _ = lambda x : x
-    return ["#", _("Index"), _("SubIndex"), _("Name"), _("Type"), _("PDO")]
+    return ["#", _("Index"), _("SubIndex"), _("Name"), _("Type"), _("PDO index"), _("PDO name"), _("PDO type")]
 
 class PDOsTable(CustomTable):
     
@@ -177,16 +173,13 @@ class SlavePanel(wx.Panel):
     
     def _init_coll_SlaveInfosSizer_Items(self, parent):
         parent.AddSizer(self.SlaveInfosDetailsSizer, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.PDOsLabel, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.PDOsGrid, 0, border=0, flag=wx.GROW)
         parent.AddWindow(self.VariablesLabel, 0, border=0, flag=wx.GROW)
         parent.AddWindow(self.VariablesGrid, 0, border=0, flag=wx.GROW)
         
     def _init_coll_SlaveInfosSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(2)
-        parent.AddGrowableRow(4)
-    
+        
     def _init_coll_SlaveInfosDetailsSizer_Items(self, parent):
         parent.AddWindow(self.VendorLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
         parent.AddWindow(self.Vendor, 0, border=0, flag=wx.GROW)
@@ -206,7 +199,7 @@ class SlavePanel(wx.Panel):
         self.PositionSizer = wx.FlexGridSizer(cols=6, hgap=5, rows=1, vgap=0)
         self.TypeSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SlaveInfosBoxSizer = wx.StaticBoxSizer(self.SlaveInfosStaticBox, wx.VERTICAL)
-        self.SlaveInfosSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=5)
+        self.SlaveInfosSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=5)
         self.SlaveInfosDetailsSizer = wx.FlexGridSizer(cols=4, hgap=5, rows=2, vgap=5)
         
         self._init_coll_MainSizer_Growables(self.MainSizer)
@@ -293,14 +286,6 @@ class SlavePanel(wx.Panel):
               name='Physics', parent=self, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
-        self.PDOsLabel =  wx.StaticText(id=ID_SLAVEPANELPDOSLABEL,
-              label=_('PDO entries:'), name='PDOsLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.PDOsGrid = CustomGrid(id=ID_SLAVEPANELPDOSGRID,
-              name='PDOsGrid', parent=self, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 0), style=wx.VSCROLL)
-        
         self.VariablesLabel =  wx.StaticText(id=ID_SLAVEPANELVARIABLESLABEL,
               label=_('Variable entries:'), name='VariablesLabel', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
@@ -322,22 +307,12 @@ class SlavePanel(wx.Panel):
         self.ParentWindow = window
         self.Slave = slave
         
-        self.PDOsTable = PDOsTable(self, [], GetPDOsTableColnames())
-        self.PDOsGrid.SetTable(self.PDOsTable)
-        self.PDOsGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
-        self.PDOsGridColSizes = [40, 100, 150, 150]
-        self.PDOsGrid.SetRowLabelSize(0)
-        for col in range(self.PDOsTable.GetNumberCols()):
-            attr = wx.grid.GridCellAttr()
-            attr.SetAlignment(self.PDOsGridColAlignements[col], wx.ALIGN_CENTRE)
-            self.PDOsGrid.SetColAttr(col, attr)
-            self.PDOsGrid.SetColMinimalWidth(col, self.PDOsGridColSizes[col])
-            self.PDOsGrid.AutoSizeColumn(col, False)
-        
         self.VariablesTable = VariablesTable(self, [], GetVariablesTableColnames())
         self.VariablesGrid.SetTable(self.VariablesTable)
-        self.VariablesGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT]
-        self.VariablesGridColSizes = [40, 100, 100, 150, 150, 100]
+        self.VariablesGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, 
+                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
+                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT]
+        self.VariablesGridColSizes = [40, 100, 100, 150, 150, 100, 150, 100]
         self.VariablesGrid.SetRowLabelSize(0)
         for col in range(self.VariablesTable.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
@@ -347,6 +322,9 @@ class SlavePanel(wx.Panel):
             self.VariablesGrid.AutoSizeColumn(col, False)
         
         self.RefreshView()
+    
+    def __del__(self):
+        self.Controler.OnCloseEditor()
     
     def GetSlaveTitle(self):
         type_infos = self.Controler.GetSlaveType(self.Slave)
@@ -370,8 +348,6 @@ class SlavePanel(wx.Panel):
             self.ProductCode.SetValue(slave_infos["product_code"])
             self.RevisionNumber.SetValue(slave_infos["revision_number"])
             self.Physics.SetValue(slave_infos["physics"])
-            self.PDOsTable.SetData(slave_infos["pdos"])
-            self.PDOsTable.ResetView(self.PDOsGrid)
             self.VariablesTable.SetData(slave_infos["variables"])
             self.VariablesTable.ResetView(self.VariablesGrid)
         else:
@@ -426,14 +402,10 @@ class SlavePanel(wx.Panel):
             var_name = self.VariablesTable.GetValueByName(row, "Name")
             entry_index = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "Index"))
             entry_subindex = self.VariablesTable.GetValueByName(row, "SubIndex")
-            pdo_index = self.VariablesTable.GetValueByName(row, "PDO")
-            for pdo_row in xrange(self.PDOsTable.GetNumberRows()):
-                if self.PDOsTable.GetValueByName(row, "Index") == pdo_index:
-                    if self.PDOsTable.GetValueByName(row, "Type") == "Transmit":
-                        dir = "%I"
-                    else:
-                        dir = "%Q"
-                    break
+            if self.VariablesTable.GetValueByName(row, "PDO type") == "Transmit":
+                dir = "%I"
+            else:
+                dir = "%Q"
             location = "%s%s" % (dir, self.Controler.GetSizeOfType(data_type)) + \
                        ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + self.Slave + (entry_index, entry_subindex)))
             data = wx.TextDataObject(str((location, "location", data_type, var_name, "")))
@@ -499,10 +471,10 @@ class ConfigEditor(EditorPanel):
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
         
     def GetTitle(self):
-        filename = self.Controler.GetFilename()
+        fullname = self.Controler.PlugFullName()
         if not self.Controler.ConfigIsSaved():
-            return "~%s~" % filename
-        return filename
+            return "~%s~" % fullname
+        return fullname
     
     def GetBufferState(self):
         return self.Controler.GetBufferState()
