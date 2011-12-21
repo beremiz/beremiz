@@ -31,9 +31,6 @@ class _Cfile:
     def __init__(self):
         filepath = self.CFileName()
         
-        self._View = None
-        
-        self.Buffering = False
         self.CFile = CFileClasses["CFile"]()
         if os.path.isfile(filepath):
             xmlfile = open(filepath, 'r')
@@ -43,9 +40,9 @@ class _Cfile:
             for child in tree.childNodes:
                 if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "CFile":
                     self.CFile.loadXMLTree(child, ["xmlns", "xmlns:xsi", "xsi:schemaLocation"])
-                    self.CFileBuffer = UndoBuffer(self.Copy(self.CFile), True)
+                    self.CreateCFileBuffer(True)
         else:
-            self.CFileBuffer = UndoBuffer(self.Copy(self.CFile), False)
+            self.CreateCFileBuffer(False)
             self.OnPlugSave()
 
     def CFileName(self):
@@ -276,7 +273,8 @@ class _Cfile:
     def Copy(self, model):
         return cPickle.loads(cPickle.dumps(model))
 
-    def CreateConfigBuffer(self, saved):
+    def CreateCFileBuffer(self, saved):
+        self.Buffering = False
         self.CFileBuffer = UndoBuffer(cPickle.dumps(self.CFile), saved)
 
     def BufferCFile(self):
@@ -295,11 +293,8 @@ class _Cfile:
         self.CFileBuffer.CurrentSaved()
     
     def CFileIsSaved(self):
-        if self.CFileBuffer:
-            return self.CFileBuffer.IsCurrentSaved() and not self.Buffering
-        else:
-            return True
-
+        return self.CFileBuffer.IsCurrentSaved() and not self.Buffering
+        
     def LoadPrevious(self):
         self.EndBuffering()
         self.CFile = cPickle.loads(self.CFileBuffer.Previous())
@@ -308,7 +303,7 @@ class _Cfile:
         self.CFile = cPickle.loads(self.CFileBuffer.Next())
     
     def GetBufferState(self):
-        first = self.CFileBuffer.IsFirst()
+        first = self.CFileBuffer.IsFirst() and not self.Buffering
         last = self.CFileBuffer.IsLast()
         return not first, not last
 

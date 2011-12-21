@@ -210,6 +210,7 @@ class CppEditor(stc.StyledTextCtrl):
                         self.Controler.EndBuffering()
                         self.StartBuffering()
                     self.CurrentAction = ("Add", event.GetPosition())
+                    wx.CallAfter(self.RefreshModel)
                 elif mod_type&wx.stc.STC_MOD_BEFOREDELETE:
                     if self.CurrentAction == None:
                         self.StartBuffering()
@@ -217,6 +218,7 @@ class CppEditor(stc.StyledTextCtrl):
                         self.Controler.EndBuffering()
                         self.StartBuffering()
                     self.CurrentAction = ("Delete", event.GetPosition())
+                    wx.CallAfter(self.RefreshModel)
         event.Skip()
     
     def OnDoDrop(self, event):
@@ -224,13 +226,10 @@ class CppEditor(stc.StyledTextCtrl):
         wx.CallAfter(self.RefreshModel)
         event.Skip()
 
-    def IsViewing(self, name):
-        return self.Name == name
-
     # Buffer the last model state
     def RefreshBuffer(self):
         self.Controler.BufferCFile()
-        if self.ParentWindow:
+        if self.ParentWindow is not None:
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
@@ -238,7 +237,7 @@ class CppEditor(stc.StyledTextCtrl):
     
     def StartBuffering(self):
         self.Controler.StartBuffering()
-        if self.ParentWindow:
+        if self.ParentWindow is not None:
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
@@ -295,7 +294,6 @@ class CppEditor(stc.StyledTextCtrl):
                 # Images are specified with a appended "?type"
                 self.AutoCompShow(0, " ".join([word + "?1" for word in CPP_KEYWORDS]))
         else:
-            wx.CallAfter(self.RefreshModel)
             event.Skip()
 
     def OnKillFocus(self, event):
@@ -617,19 +615,10 @@ class VariablesEditor(wx.Panel):
             self.VariablesGrid.SetColSize(col, self.ColSizes[col])
         self.Table.ResetView(self.VariablesGrid)
 
-    def __del__(self):
-        self.Controler.OnCloseEditor()
-
-    def IsViewing(self, name):
-        return name == "Variables"
-
     def RefreshModel(self):
         self.Controler.SetVariables(self.Table.GetData())
         self.RefreshBuffer()
         
-    def ResetBuffer(self):
-        pass
-
     # Buffer the last model state
     def RefreshBuffer(self):
         self.Controler.BufferCFile()
@@ -853,7 +842,7 @@ class FoldPanelCaption(wx.lib.buttons.GenBitmapTextToggleButton):
 class CFileEditor(EditorPanel):
     
     def _init_Editor(self, prnt):
-        self.Editor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
+        self.Editor = wx.Panel(id=ID_CFILEEDITOR, parent=prnt, pos=wx.Point(0, 0), 
                 size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
         self.Panels = {}
@@ -892,6 +881,9 @@ class CFileEditor(EditorPanel):
         img = wx.Bitmap(self.Controler.GetIconPath("Cfile.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
         
+    def __del__(self):
+        self.Controler.OnCloseEditor()
+    
     def GetTitle(self):
         fullname = self.Controler.PlugFullName()
         if not self.Controler.CFileIsSaved():
