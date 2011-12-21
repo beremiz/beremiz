@@ -3,7 +3,7 @@ import os
 import modules
 from plugger import PlugTemplate, opjimg
 from PLCControler import UndoBuffer
-from PythonEditor import PythonEditorFrame
+from PythonEditor import PythonEditor
 
 from xml.dom import minidom
 from xmlclass import *
@@ -12,6 +12,8 @@ import cPickle
 PythonClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "python_xsd.xsd")) 
 
 class PythonCodeTemplate:
+    
+    EditorType = PythonEditor
     
     def __init__(self):
         
@@ -24,9 +26,7 @@ class PythonCodeTemplate:
 
         filepath = self.PythonFileName()
         
-        self.Buffering = False
         self.PythonCode = PythonClasses["Python"]()
-        self.PythonBuffer = UndoBuffer(self.Copy(self.PythonCode), False)
         if os.path.isfile(filepath):
             xmlfile = open(filepath, 'r')
             tree = minidom.parse(xmlfile)
@@ -35,8 +35,9 @@ class PythonCodeTemplate:
             for child in tree.childNodes:
                 if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "Python":
                     self.PythonCode.loadXMLTree(child, ["xmlns", "xmlns:xsi", "xsi:schemaLocation"])
-                    self.PythonBuffer = UndoBuffer(self.Copy(self.PythonCode), True)
+                    self.CreatePythonBuffer(True)
         else:
+            self.CreatePythonBuffer(False)
             self.OnPlugSave()
 
     def PluginPath(self):
@@ -57,31 +58,8 @@ class PythonCodeTemplate:
     def GetPythonCode(self):
         return self.PythonCode.gettext()
     
-    _View = None
-    def _OpenView(self):
-        if not self._View:
-            open_pyeditor = True
-            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
-            if not has_permissions:
-                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
-                                          _("You don't have write permissions.\nOpen PythonEditor anyway ?"),
-                                          _("Open PythonEditor"),
-                                          wx.YES_NO|wx.ICON_QUESTION)
-                open_pyeditor = dialog.ShowModal() == wx.ID_YES
-                dialog.Destroy()
-            if open_pyeditor:
-                def _onclose():
-                    self._View = None
-                if has_permissions:
-                    def _onsave():
-                        self.GetPlugRoot().SaveProject()
-                else:
-                    def _onsave():
-                        pass
-                self._View = PythonEditorFrame(self.GetPlugRoot().AppFrame, self)
-                self._View._onclose = _onclose
-                self._View._onsave = _onsave
-                self._View.Show()
+    def PlugTestModified(self):
+        return self.ChangesToSave or not self.PythonIsSaved()
     
     def OnPlugSave(self):
         filepath = self.PythonFileName()
@@ -96,7 +74,7 @@ class PythonCodeTemplate:
         xmlfile.write(text.encode("utf-8"))
         xmlfile.close()
         
-        self.PythonBuffer.CurrentSaved()
+        self.MarkPythonAsSaved()
         return True
         
 #-------------------------------------------------------------------------------
@@ -109,32 +87,37 @@ class PythonCodeTemplate:
     def Copy(self, model):
         return cPickle.loads(cPickle.dumps(model))
 
+    def CreatePythonBuffer(self, saved):
+        self.Buffering = False
+        self.PythonBuffer = UndoBuffer(cPickle.dumps(self.PythonCode), saved)
+
     def BufferPython(self):
-        self.PythonBuffer.Buffering(self.Copy(self.PythonCode))
+        self.PythonBuffer.Buffering(cPickle.dumps(self.PythonCode))
     
     def StartBuffering(self):
-        self.PythonBuffer.Buffering(self.PythonCode)
         self.Buffering = True
         
     def EndBuffering(self):
         if self.Buffering:
-            self.PythonCode = self.Copy(self.PythonCode)
+            self.PythonBuffer.Buffering(cPickle.dumps(self.PythonCode))
             self.Buffering = False
     
-    def PythonCodeIsSaved(self):
-        if self.PythonBuffer:
-            return self.PythonBuffer.IsCurrentSaved()
-        else:
-            return True
-
+    def MarkPythonAsSaved(self):
+        self.EndBuffering()
+        self.PythonBuffer.CurrentSaved()
+    
+    def PythonIsSaved(self):
+        return self.PythonBuffer.IsCurrentSaved() and not self.Buffering
+        
     def LoadPrevious(self):
-        self.PythonCode = self.Copy(self.PythonBuffer.Previous())
+        self.EndBuffering()
+        self.PythonCode = cPickle.loads(self.PythonBuffer.Previous())
     
     def LoadNext(self):
-        self.PythonCode = self.Copy(self.PythonBuffer.Next())
+        self.PythonCode = cPickle.loads(self.PythonBuffer.Next())
     
     def GetBufferState(self):
-        first = self.PythonBuffer.IsFirst()
+        first = self.PythonBuffer.IsFirst() and not self.Buffering
         last = self.PythonBuffer.IsLast()
         return not first, not last
 
