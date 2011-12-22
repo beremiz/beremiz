@@ -100,6 +100,7 @@ void __cleanup_%(location)s(void)
 	if (rt_fd >= 0) {
 		rt_dev_close(rt_fd);
 	}
+	ecrt_release_master(master);
 }
 
 void __retrieve_%(location)s(void)
