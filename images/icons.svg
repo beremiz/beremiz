@@ -26,7 +26,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -43,9 +43,9 @@
      pagecolor="#ffffff"
      id="base"
      showgrid="false"
-     inkscape:zoom="5.12"
-     inkscape:cx="117.87493"
-     inkscape:cy="750.29676"
+     inkscape:zoom="1.28"
+     inkscape:cx="404.16097"
+     inkscape:cy="720.27146"
      inkscape:window-x="0"
      inkscape:window-y="24"
      inkscape:current-layer="svg2"
@@ -84371,13 +84371,13 @@
   </defs>
   <g
      id="g19063"
-     transform="matrix(0.9968636,0,0,0.9968648,-6.725278,-132.08626)">
+     transform="matrix(0.9968636,0,0,0.9968648,-72.725278,-132.08626)">
     <rect
        width="24.075478"
        height="24.075478"
        x="511.32901"
        y="565.22052"
-       id="Minimize"
+       id="Maximize"
        style="fill:#000000;fill-opacity:0;fill-rule:evenodd;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
     <g
        transform="matrix(1.0031449,0,0,1.0031449,169.68654,327.63687)"
@@ -85840,13 +85840,13 @@
   </g>
   <g
      id="g19018"
-     transform="matrix(0.9968629,0,0,0.9968629,-119.72484,-118.08517)">
+     transform="matrix(0.9968629,0,0,0.9968629,-41.72484,-118.08517)">
     <rect
        width="24.075478"
        height="24.075478"
        x="541.4234"
        y="551.17645"
-       id="Maximize"
+       id="Minimize"
        style="fill:#000000;fill-opacity:0;fill-rule:evenodd;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
     <g
        transform="matrix(1.0031449,0,0,1.0031449,997.85428,225.15441)"
@@ -88125,7 +88125,7 @@
          height="42.097343"
          x="39.001949"
          y="314.42053" /></flowRegion><flowPara
-       id="flowPara17365"></flowPara></flowRoot>  <text
+       id="flowPara17365" /></flowRoot>  <text
      style="font-size:20px;font-style:normal;font-weight:normal;line-height:125%;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
      xml:space="preserve"
      id="text18383-9"
