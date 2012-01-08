@@ -239,10 +239,13 @@ class _EthercatPlug:
                             else:
                                 var_dir = "%Q"    
                             
-                            vars.append({"name": "%s - %s" % (ExtractName(pdo.getName()), ExtractName(entry.getName())),
+                            pdo_name = ExtractName(pdo.getName())
+                            entry_name = ExtractName(entry.getName())
+                            vars.append({"name": "%s - %s" % (pdo_name, entry_name),
                                          "type": var_class,
                                          "size": var_size,
                                          "IEC_type": var_type,
+                                         "var_name": "%s_%s" % (type_infos["device_type"], "_".join(pdo_name.split())),
                                          "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
                                                                                                     slave_pos + 
                                                                                                     (index, subindex)))),
