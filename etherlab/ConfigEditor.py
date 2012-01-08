@@ -1,4 +1,5 @@
 import wx
+import wx.grid
 
 from controls import CustomGrid, CustomTable, EditorPanel
 
@@ -323,9 +324,6 @@ class SlavePanel(wx.Panel):
         
         self.RefreshView()
     
-    def __del__(self):
-        self.Controler.OnCloseEditor()
-    
     def GetSlaveTitle(self):
         type_infos = self.Controler.GetSlaveType(self.Slave)
         return "%s (%d:%d)" % (type_infos["device_type"], self.Slave[0], self.Slave[1])
@@ -469,7 +467,10 @@ class ConfigEditor(EditorPanel):
         
         img = wx.Bitmap(self.Controler.GetIconPath("Cfile.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
-        
+    
+    def __del__(self):
+        self.Controler.OnCloseEditor()
+    
     def GetTitle(self):
         fullname = self.Controler.PlugFullName()
         if not self.Controler.ConfigIsSaved():
