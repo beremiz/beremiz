@@ -1193,6 +1193,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     f = open(self._getIECcodepath())
 
                     for i, line in enumerate(f.readlines()):
+                        i = i + 1
                         if line[0] not in '\t \r\n':
                             last_section = line
 
@@ -1533,6 +1534,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for infos, (start_row, start_col) in chunk_infos:
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
+            print from_location, to_location, start_row, start_col, start, end
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
 
