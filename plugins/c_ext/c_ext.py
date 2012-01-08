@@ -104,6 +104,7 @@ class _Cfile:
                          "type": var_class,
                          "size": var_size,
                          "IEC_type": var.gettype(),
+                         "var_name": var.getname(),
                          "location": var_location,
                          "description": "",
                          "children": []})

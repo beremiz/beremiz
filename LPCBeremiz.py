@@ -221,6 +221,7 @@ class LPCBus(object):
                     "type": infos["type"],
                     "size": size,
                     "IEC_type": infos["IEC_type"],
+                    "var_name": infos["name"],
                     "location": location,
                     "description": infos["description"],
                     "children": []}
