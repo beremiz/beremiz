@@ -649,10 +649,11 @@ class Beremiz(IDEFrame):
         sizer = self.PLCConfig.GetSizer()
         if sizer:
             maxx, maxy = sizer.GetMinSize()
+            posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
+            posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+            self.PLCConfig.Scroll(posx, posy)
             self.PLCConfig.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, 
-                max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT)), 
-                max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT)))
+                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
 
     def RefreshPLCParams(self):
         self.Freeze()
@@ -815,7 +816,6 @@ class Beremiz(IDEFrame):
                 self.ExpandLocation(locations_infos, "root", force)
                 if force:
                     locations_infos["root"]["expanded"] = True
-                
     
     def CollapsePlugin(self, plugin, force = False):
         for child in self.PluginInfos[plugin]["children"]:
@@ -1085,6 +1085,7 @@ class Beremiz(IDEFrame):
             treectrl.Bind(wx.EVT_TREE_BEGIN_DRAG, self.GenerateLocationBeginDragFunction(locations_infos))
             treectrl.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.GenerateLocationExpandCollapseFunction(locations_infos, True))
             treectrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.GenerateLocationExpandCollapseFunction(locations_infos, False))
+            treectrl.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheelTreeCtrl)
             
             treectrl.AddRoot("")
             self.PluginTreeSizer.AddWindow(treectrl, 0, border=0, flag=0)
@@ -1100,6 +1101,7 @@ class Beremiz(IDEFrame):
                 self.GenerateLocationTreeBranch(treectrl, treectrl.GetRootItem(), locations_infos, "root", location)
                 treectrl.Expand(treectrl.GetRootItem())
             if locations_infos["root"]["expanded"]:
+                self.PluginTreeSizer.Layout()
                 self.ExpandLocation(locations_infos, "root")
             else:
                 self.RefreshTreeCtrlSize(treectrl)
@@ -1138,7 +1140,7 @@ class Beremiz(IDEFrame):
             if location_name is not None:
                 infos = locations_infos[location_name]["infos"]
                 if infos["type"] in [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]:
-                    data = wx.TextDataObject(str((infos["location"], "location", infos["IEC_type"], infos["name"], infos["description"])))
+                    data = wx.TextDataObject(str((infos["location"], "location", infos["IEC_type"], infos["var_name"], infos["description"])))
                     dragSource = wx.DropSource(self)
                     dragSource.SetData(data)
                     dragSource.DoDragDrop()
@@ -1146,9 +1148,18 @@ class Beremiz(IDEFrame):
     
     def RefreshTreeCtrlSize(self, treectrl):
         rect = self.GetTreeCtrlItemRect(treectrl, treectrl.GetRootItem())
-        treectrl.SetMinSize(wx.Size(max(rect.width, rect.x + rect.width) + 20, max(rect.height, rect.y + rect.height) + 10))
+        treectrl.SetMinSize(wx.Size(max(rect.width, rect.x + rect.width) + 20, max(rect.height, rect.y + rect.height) + 20))
         self.PLCConfigMainSizer.Layout()
         self.PLCConfig.Refresh()
+        wx.CallAfter(self.RefreshScrollBars)
+    
+    def OnMouseWheelTreeCtrl(self, event):
+        x, y = self.PLCConfig.GetViewStart()
+        rotation = - (event.GetWheelRotation() / event.GetWheelDelta()) * 3
+        if event.ShiftDown():
+            self.PLCConfig.Scroll(x + rotation, y)
+        else:
+            self.PLCConfig.Scroll(x, y + rotation)
     
     def GetTreeCtrlItemRect(self, treectrl, item):
         item_rect = treectrl.GetBoundingRect(item, True)
