@@ -474,7 +474,7 @@ class VariablesTable(CustomTable):
             for col in range(self.GetNumberCols()):
                 editor = None
                 renderer = None
-                colname = self.GetColLabelValue(col)
+                colname = self.GetColLabelValue(col, False)
                 
                 if colname == "Name":
                     editor = wx.grid.GridCellTextEditor()
