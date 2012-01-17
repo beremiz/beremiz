@@ -1099,7 +1099,6 @@ class Beremiz(IDEFrame):
             for location in plugin_locations:
                 locations_infos["root"]["children"].append("root.%s" % location["name"])
                 self.GenerateLocationTreeBranch(treectrl, treectrl.GetRootItem(), locations_infos, "root", location)
-                treectrl.Expand(treectrl.GetRootItem())
             if locations_infos["root"]["expanded"]:
                 self.PluginTreeSizer.Layout()
                 self.ExpandLocation(locations_infos, "root")
