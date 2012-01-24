@@ -303,18 +303,18 @@ class PlugTemplate:
         
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
-    def BlockTypesFactory(self):
+    def PluginTypesFactory(self):
         if self.LibraryControler is not None:
-            return [{"name" : _("%s POUs") % self.PlugType, "list": self.LibraryControler.Project.GetCustomBlockTypes()}]
+            return [{"name" : self.PlugType, "types": self.LibraryControler.Project}]
         return []
 
-    def ParentsBlockTypesFactory(self):
-        return self.PlugParent.ParentsBlockTypesFactory() + self.BlockTypesFactory()
+    def ParentsTypesFactory(self):
+        return self.PlugParent.ParentsTypesFactory() + self.PluginTypesFactory()
 
-    def PluginsBlockTypesFactory(self):
-        list = self.BlockTypesFactory()
+    def PluginsTypesFactory(self):
+        list = self.PluginTypesFactory()
         for PlugChild in self.IterChilds():
-            list += PlugChild.PluginsBlockTypesFactory()
+            list += PlugChild.PluginsTypesFactory()
         return list
 
     def STLibraryFactory(self):
@@ -625,7 +625,7 @@ class PlugTemplate:
             self.LibraryControler = PLCControler()
             self.LibraryControler.OpenXMLFile(library_path)
             self.LibraryControler.ClearPluginTypes()
-            self.LibraryControler.AddPluginBlockList(self.ParentsBlockTypesFactory())
+            self.LibraryControler.AddPluginTypesList(self.ParentsTypesFactory())
 
     def LoadXMLParams(self, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
@@ -1017,7 +1017,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def RefreshPluginsBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
             self.ClearPluginTypes()
-            self.AddPluginBlockList(self.PluginsBlockTypesFactory())
+            self.AddPluginTypesList(self.PluginsTypesFactory())
         if self.AppFrame is not None:
             self.AppFrame.RefreshLibraryTree()
             self.AppFrame.RefreshEditor()
@@ -1056,8 +1056,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def PluginXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
 
-    def ParentsBlockTypesFactory(self):
-        return self.BlockTypesFactory()
+    def ParentsTypesFactory(self):
+        return self.PluginTypesFactory()
 
     def _setBuildPath(self, buildpath):
         if CheckPathPerm(buildpath):
