@@ -238,7 +238,7 @@ class PythonEditor(EditorPanel):
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
     
     def __del__(self):
-        self.Controler.OnCloseEditor()
+        self.Controler.OnCloseEditor(self)
     
     def GetTitle(self):
         fullname = self.Controler.PlugFullName()

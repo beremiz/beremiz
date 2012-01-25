@@ -1287,6 +1287,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self._ProgramList = None
         self._VariablesList = None
         self._IECPathToIdx = {}
+        self._Ticktime = 0
         self.TracedIECPath = []
 
     def GetIECProgramsAndVariables(self):
@@ -1341,6 +1342,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     IEC_path=attrs["IEC_path"]
                     Idx=int(attrs["num"])
                     self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
+                
+                # third section contains ticktime
+                if len(ListGroup) > 2:
+                    self._Ticktime = int(ListGroup[2][0]) 
+                
             except Exception,e:
                 self.logger.write_error(_("Cannot open/parse VARIABLES.csv!\n"))
                 self.logger.write_error(traceback.format_exc())
@@ -1762,6 +1768,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     else:
                         function(*(cargs + args), **kwargs)
                 # This will block thread if more than one call is waiting
+
+    def GetTicktime(self):
+        return self._Ticktime
 
     def DebugThreadProc(self):
         """
