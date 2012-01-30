@@ -775,7 +775,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         # Setup debug information
         self.IECdebug_datas = {}
-        self.IECdebug_display_lock = Semaphore(1) 
         self.IECdebug_lock = Lock()
 
         self.DebugTimer=None
@@ -1773,13 +1772,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def GetTicktime(self):
         return self._Ticktime
 
-    def DebugDispatch(self, TracedDebugVars, debug_tick):
-        for IECPath,value in TracedDebugVars:
-            if value is not None:
-                self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
-        self.CallWeakcallables("__tick__", "NewDataAvailable")
-        self.IECdebug_display_lock.release()
-
     def DebugThreadProc(self):
         """
         This thread waid PLC debug data, and dispatch them to subscribers
@@ -1797,8 +1789,10 @@ class PluginsRoot(PlugTemplate, PLCControler):
                         wx.CallAfter(self.logger.write, 
                                  _("... debugger recovered\n"))
                     debug_getvar_retry = 0
-                    if self.IECdebug_display_lock.acquire(False):
-                        wx.CallAfter(self.DebugDispatch, zip(self.TracedIECPath, debug_vars), debug_tick)
+                    for IECPath,value in zip(self.TracedIECPath, debug_vars):
+                        if value is not None:
+                            self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
+                    self.CallWeakcallables("__tick__", "NewDataAvailable")
                 self.IECdebug_lock.release()
                 if debug_getvar_retry == DEBUG_RETRIES_WARN:
                     wx.CallAfter(self.logger.write, 
