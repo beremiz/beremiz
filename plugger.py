@@ -1779,7 +1779,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.debug_break = False
         debug_getvar_retry = 0
         while (not self.debug_break) and (self._connector is not None):
-            plc_status, debug_tick, debug_vars = self._connector.GetTraceVariables()
+            Trace = self._connector.GetTraceVariables()
+            if(Trace):
+                plc_status, debug_tick, debug_vars = Trace
+            else:
+                plc_status = None
             debug_getvar_retry += 1
             #print debug_tick, debug_vars
             if plc_status == "Started":
