@@ -135,14 +135,20 @@ class PlugTemplate:
 
     def PlugPath(self,PlugName=None):
         if not PlugName:
-            PlugName = self.BaseParams.getName()
+            PlugName = self.PlugName()
         return os.path.join(self.PlugParent.PlugPath(),
                             PlugName + NameTypeSeparator + self.PlugType)
+    
+    def PlugName(self):
+        return self.BaseParams.getName()
+    
+    def PlugEnabled(self):
+        return self.BaseParams.getEnabled()
     
     def PlugFullName(self):
         parent = self.PlugParent.PlugFullName()
         if parent != "":
-            return parent + "." + self.BaseParams.getName()
+            return parent + "." + self.PlugName()
         return self.BaseParams.getName()
     
     def GetIconPath(self, name):
@@ -498,10 +504,11 @@ class PlugTemplate:
             
             self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
             
-            app_frame.EditProjectElement(self._View, self.GetFilename())
+            app_frame.EditProjectElement(self._View, self.PlugName())
 
-    def OnCloseEditor(self):
-        self._View = None
+    def OnCloseEditor(self, view):
+        if self._View == view:
+            self._View = None
 
     def OnPlugClose(self):
         if self._View is not None:
@@ -1840,7 +1847,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self._connect_debug()
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
-        self.UpdateMethodsFromPLCStatus()
+        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
 
 #    def _Do_Test_Debug(self):
@@ -1869,7 +1876,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         self.KillDebugThread()
         
-        self.UpdateMethodsFromPLCStatus()
+        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     def _Connect(self):
         # don't accept re-connetion is already connected
@@ -1963,7 +1970,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def _Disconnect(self):
         self._connector = None
         self.StatusTimer.Stop()
-        self.UpdateMethodsFromPLCStatus()
+        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
         
     def _Transfer(self):
         # Get the last build PLC's 
@@ -2003,7 +2010,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
 
-        self.UpdateMethodsFromPLCStatus()
+        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     PluginMethods = [
         {"bitmap" : opjimg("Build"),

@@ -32,6 +32,7 @@ import tempfile
 import shutil
 import random
 import time
+from types import ListType
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
@@ -171,6 +172,8 @@ else:
               'other': 'new century schoolbook',
               'size' : 18,
              }
+
+MAX_RECENT_PROJECTS = 10
 
 # Some helpers to tweak GenBitmapTextButtons
 # TODO: declare customized classes instead.
@@ -327,13 +330,32 @@ class LogPseudoFile:
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
  ID_BEREMIZINSPECTOR] = [wx.NewId() for _init_ctrls in range(5)]
 
+[ID_FILEMENURECENTPROJECTS,
+] = [wx.NewId() for _init_ctrls in range(1)]
+
+PLUGINMENU_POSITION = 3
+
 class Beremiz(IDEFrame):
 	
+    def _init_coll_MenuBar_Menus(self, parent):
+        IDEFrame._init_coll_MenuBar_Menus(self, parent)
+        
+        parent.Insert(pos=PLUGINMENU_POSITION, 
+                      menu=self.PluginMenu, title=_(u'&Plugin'))
+    
+    def _init_utils(self):
+        self.PluginMenu = wx.Menu(title='')
+        self.RecentProjectsMenu = wx.Menu(title='')
+        
+        IDEFrame._init_utils(self)
+        
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
               kind=wx.ITEM_NORMAL, text=_(u'New\tCTRL+N'))
         AppendMenu(parent, help='', id=wx.ID_OPEN,
               kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
+        parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("Recent Projects"), self.RecentProjectsMenu)
+        parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
@@ -453,6 +475,8 @@ class Beremiz(IDEFrame):
         # Variable allowing disabling of PLCConfig scroll when Popup shown 
         self.ScrollingEnabled = True
         
+        self.LastPanelSelected = None
+        
         self.PluginInfos = {}
         
         # Define Tree item icon list
@@ -494,6 +518,7 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
         self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
+        self.RefreshPluginMenu()
         self.LogConsole.SetFocus()
 
     def RiseLogConsole(self):
@@ -610,6 +635,8 @@ class Beremiz(IDEFrame):
         event.Skip()
     
     def RefreshFileMenu(self):
+        self.RefreshRecentProjectsMenu()
+        
         if self.PluginRoot is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
@@ -642,7 +669,67 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
+    
+    def RefreshRecentProjectsMenu(self):
+        for i in xrange(self.RecentProjectsMenu.GetMenuItemCount()):
+            item = self.RecentProjectsMenu.FindItemByPosition(0)
+            self.RecentProjectsMenu.Delete(item.GetId())
         
+        recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
+        self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
+        for idx, projectpath in enumerate(recent_projects):
+            id = wx.NewId()
+            AppendMenu(self.RecentProjectsMenu, help='', id=id, 
+                       kind=wx.ITEM_NORMAL, text="%d: %s" % (idx + 1, projectpath))
+            self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), id=id)
+    
+    def GenerateOpenRecentProjectFunction(self, projectpath):
+        def OpenRecentProject(event):
+            if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+                return
+            
+            self.OpenProject(projectpath)
+        return OpenRecentProject
+    
+    def GenerateMenuRecursive(self, items, menu):
+        for kind, infos in items:
+            if isinstance(kind, ListType):
+                text, id = infos
+                submenu = wx.Menu('')
+                self.GenerateMenuRecursive(kind, submenu)
+                menu.AppendMenu(id, text, submenu)
+            elif kind == wx.ITEM_SEPARATOR:
+                menu.AppendSeparator()
+            else:
+                text, id, help, callback = infos
+                AppendMenu(menu, help='', id=id, kind=kind, text=text)
+                if callback is not None:
+                    self.Bind(wx.EVT_MENU, callback, id=id)
+    
+    def RefreshPluginMenu(self):
+        if self.PluginRoot is not None:
+            selected = self.TabsOpened.GetSelection()
+            if selected >= 0:
+                panel = self.TabsOpened.GetPage(selected)
+            else:
+                panel = None
+            if panel != self.LastPanelSelected:
+                for i in xrange(self.PluginMenu.GetMenuItemCount()):
+                    item = self.PluginMenu.FindItemByPosition(0)
+                    self.PluginMenu.Delete(item.GetId())
+                self.LastPanelSelected = panel
+                if panel is not None:
+                    items = panel.GetPluginMenuItems()
+                else:
+                    items = []
+                self.MenuBar.EnableTop(PLUGINMENU_POSITION, len(items) > 0)
+                self.GenerateMenuRecursive(items, self.PluginMenu)
+            if panel is not None:
+                panel.RefreshPluginMenu(self.PluginMenu)
+        else:
+            self.MenuBar.EnableTop(PLUGINMENU_POSITION, False)
+        self.MenuBar.UpdateMenus()
+    
     def RefreshScrollBars(self):
         xstart, ystart = self.PLCConfig.GetViewStart()
         window_size = self.PLCConfig.GetClientSize()
@@ -741,6 +828,25 @@ class Beremiz(IDEFrame):
         self.RefreshScrollBars()
         self.Thaw()
 
+    def GenerateEnableButton(self, parent, sizer, plugin):
+        enabled = plugin.PlugEnabled()
+        if enabled is not None:
+            enablebutton_id = wx.NewId()
+            enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Disabled.png')),
+                  name='EnableButton', parent=parent, size=wx.Size(16, 16), pos=wx.Point(0, 0), style=0)#wx.NO_BORDER)
+            enablebutton.SetToolTipString(_("Enable/Disable this plugin"))
+            make_genbitmaptogglebutton_flat(enablebutton)
+            enablebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Enabled.png')))
+            enablebutton.SetToggle(enabled)
+            def toggleenablebutton(event):
+                res = self.SetPluginParamsAttribute(plugin, "BaseParams.Enabled", enablebutton.GetToggle())
+                enablebutton.SetToggle(res)
+                event.Skip()
+            enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
+            sizer.AddWindow(enablebutton, 0, border=0, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        else:
+            sizer.AddSpacer(wx.Size(16, 16))
+    
     def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
         normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
         mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, underline=True, faceName = faces["helv"])
@@ -772,6 +878,65 @@ class Beremiz(IDEFrame):
                     button.Disable()
                 msizer.AddWindow(button, 0, border=0, flag=wx.ALIGN_CENTER)
         return msizer
+
+    def GenerateParamsPanel(self, plugin, bkgdclr):
+        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+        rightwindow.SetBackgroundColour(bkgdclr)
+        
+        rightwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
+        rightwindow.SetSizer(rightwindowmainsizer)
+        
+        rightwindowsizer = wx.FlexGridSizer(cols=2, rows=1)
+        rightwindowsizer.AddGrowableCol(1)
+        rightwindowsizer.AddGrowableRow(0)
+        rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=0, flag=wx.GROW)
+        
+        msizer = self.GenerateMethodButtonSizer(plugin, rightwindow, not self.PluginInfos[plugin]["right_visible"])
+        rightwindowsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
+        
+        rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
+        rightwindowsizer.AddSizer(rightparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
+        
+        paramswindow = wx.Panel(rightwindow, -1, size=wx.Size(-1, -1))
+        paramswindow.SetBackgroundColour(bkgdclr)
+        
+        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        paramswindow.SetSizer(psizer)
+        self.PluginInfos[plugin]["params"] = paramswindow
+        
+        rightparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
+        
+        plugin_infos = plugin.GetParamsAttributes()
+        if len(plugin_infos) > 0:
+            self.RefreshSizerElement(paramswindow, psizer, plugin, plugin_infos, None, False)
+            
+            if not self.PluginInfos[plugin]["right_visible"]:
+                paramswindow.Hide()
+            
+            rightminimizebutton_id = wx.NewId()
+            rightminimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=rightminimizebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Maximize.png')),
+                  name='MinimizeButton', parent=rightwindow, pos=wx.Point(0, 0),
+                  size=wx.Size(24, 24), style=wx.NO_BORDER)
+            make_genbitmaptogglebutton_flat(rightminimizebutton)
+            rightminimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
+            rightminimizebutton.SetToggle(self.PluginInfos[plugin]["right_visible"])
+            rightparamssizer.AddWindow(rightminimizebutton, 0, border=5, flag=wx.ALL)
+                        
+            def togglerightwindow(event):
+                if rightminimizebutton.GetToggle():
+                    rightparamssizer.Show(0)
+                    msizer.SetCols(1)
+                else:
+                    rightparamssizer.Hide(0)
+                    msizer.SetCols(len(plugin.PluginMethods))
+                self.PluginInfos[plugin]["right_visible"] = rightminimizebutton.GetToggle()
+                self.PLCConfigMainSizer.Layout()
+                self.RefreshScrollBars()
+                event.Skip()
+            rightminimizebutton.Bind(wx.EVT_BUTTON, togglerightwindow, id=rightminimizebutton_id)
+        
+        return rightwindow
+    
 
     def RefreshPluginTree(self):
         self.Freeze()
@@ -859,7 +1024,7 @@ class Beremiz(IDEFrame):
                     self.CollapseLocation(locations_infos, child, force, False)
         if locations_infos["root"]["left"] is not None and refresh_size:
             self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
-                
+    
     def GenerateTreeBranch(self, plugin):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
         if plugin.PlugTestModified():
@@ -901,20 +1066,8 @@ class Beremiz(IDEFrame):
 
         rolesizer = wx.BoxSizer(wx.HORIZONTAL)
         leftsizer.AddSizer(rolesizer, 0, border=0, flag=wx.GROW|wx.RIGHT)
-
-        enablebutton_id = wx.NewId()
-        enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Disabled.png')),
-              name='EnableButton', parent=leftwindow, size=wx.Size(16, 16), pos=wx.Point(0, 0), style=0)#wx.NO_BORDER)
-        enablebutton.SetToolTipString(_("Enable/Disable this plugin"))
-        make_genbitmaptogglebutton_flat(enablebutton)
-        enablebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Enabled.png')))
-        enablebutton.SetToggle(plugin.MandatoryParams[1].getEnabled())
-        def toggleenablebutton(event):
-            res = self.SetPluginParamsAttribute(plugin, "BaseParams.Enabled", enablebutton.GetToggle())
-            enablebutton.SetToggle(res)
-            event.Skip()
-        enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
-        rolesizer.AddWindow(enablebutton, 0, border=0, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        
+        self.GenerateEnableButton(leftwindow, rolesizer, plugin)
 
         roletext = wx.StaticText(leftwindow, -1)
         roletext.SetLabel(plugin.PlugHelp)
@@ -1013,62 +1166,9 @@ class Beremiz(IDEFrame):
         tc.ChangeValue(plugin.MandatoryParams[1].getName())
         tc.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
         iecsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-       
-        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        rightwindow.SetBackgroundColour(bkgdclr)
         
-        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
-        
-        rightwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
-        rightwindow.SetSizer(rightwindowmainsizer)
-        
-        rightwindowsizer = wx.FlexGridSizer(cols=2, rows=1)
-        rightwindowsizer.AddGrowableCol(1)
-        rightwindowsizer.AddGrowableRow(0)
-        rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=8, flag=wx.TOP|wx.GROW)
-        
-        msizer = self.GenerateMethodButtonSizer(plugin, rightwindow, not self.PluginInfos[plugin]["right_visible"])
-        rightwindowsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
-        
-        rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
-        rightwindowsizer.AddSizer(rightparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
-        
-        paramswindow = wx.Panel(rightwindow, -1, size=wx.Size(-1, -1))
-        paramswindow.SetBackgroundColour(bkgdclr)
-        
-        psizer = wx.BoxSizer(wx.HORIZONTAL)
-        paramswindow.SetSizer(psizer)
-        self.PluginInfos[plugin]["params"] = paramswindow
-        
-        rightparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
-        
-        plugin_infos = plugin.GetParamsAttributes()
-        self.RefreshSizerElement(paramswindow, psizer, plugin, plugin_infos, None, False)
-        
-        if not self.PluginInfos[plugin]["right_visible"]:
-            paramswindow.Hide()
-        
-        rightminimizebutton_id = wx.NewId()
-        rightminimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=rightminimizebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Maximize.png')),
-              name='MinimizeButton', parent=rightwindow, pos=wx.Point(0, 0),
-              size=wx.Size(24, 24), style=wx.NO_BORDER)
-        make_genbitmaptogglebutton_flat(rightminimizebutton)
-        rightminimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
-        rightminimizebutton.SetToggle(self.PluginInfos[plugin]["right_visible"])
-        rightparamssizer.AddWindow(rightminimizebutton, 0, border=5, flag=wx.ALL)
-                    
-        def togglerightwindow(event):
-            if rightminimizebutton.GetToggle():
-                rightparamssizer.Show(0)
-                msizer.SetCols(1)
-            else:
-                rightparamssizer.Hide(0)
-                msizer.SetCols(len(plugin.PluginMethods))
-            self.PluginInfos[plugin]["right_visible"] = rightminimizebutton.GetToggle()
-            self.PLCConfigMainSizer.Layout()
-            self.RefreshScrollBars()
-            event.Skip()
-        rightminimizebutton.Bind(wx.EVT_BUTTON, togglerightwindow, id=rightminimizebutton_id)
+        rightwindow = self.GenerateParamsPanel(plugin, bkgdclr)
+        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=8, flag=wx.TOP|wx.GROW)
         
         self.PluginInfos[plugin]["left"] = leftwindow
         self.PluginInfos[plugin]["right"] = rightwindow
@@ -1385,7 +1485,7 @@ class Beremiz(IDEFrame):
                         spinctrl.SetValue(element_infos["value"])
                         spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                     else:
-                        choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))                           
+                        choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))
                         textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
                                                                      name=element_infos["name"], 
                                                                      parent=parent, 
@@ -1451,26 +1551,33 @@ class Beremiz(IDEFrame):
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
-            projectpath = dialog.GetPath()
-            if os.path.isdir(projectpath):
-                self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
-                self.Config.Flush()
-                self.ResetView()
-                self.PluginRoot = PluginsRoot(self, self.Log)
-                self.Controler = self.PluginRoot
-                result = self.PluginRoot.LoadProject(projectpath)
-                if not result:
-                    if self.EnableDebug:
-                        self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
-                    self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
-                    self.RefreshAll()
-                else:
-                    self.ResetView()
-                    self.ShowErrorMessage(result)
-            else:
-                self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
-            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+            self.OpenProject(dialog.GetPath())
         dialog.Destroy()
+    
+    def OpenProject(self, projectpath):
+        if os.path.isdir(projectpath):
+            self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
+            recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
+            if projectpath in recent_projects:
+                recent_projects.remove(projectpath)
+            recent_projects.insert(0, projectpath)
+            self.Config.Write("RecentProjects", cPickle.dumps(recent_projects[:MAX_RECENT_PROJECTS]))
+            self.Config.Flush()
+            self.ResetView()
+            self.PluginRoot = PluginsRoot(self, self.Log)
+            self.Controler = self.PluginRoot
+            result = self.PluginRoot.LoadProject(projectpath)
+            if not result:
+                if self.EnableDebug:
+                    self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self.RefreshAll()
+            else:
+                self.ResetView()
+                self.ShowErrorMessage(result)
+        else:
+            self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
+        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
     
     def OnCloseProjectMenu(self, event):
         if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
@@ -1504,6 +1611,14 @@ class Beremiz(IDEFrame):
     
     def OnAboutMenu(self, event):
         OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
+    
+    def OnPouSelectedChanged(self, event):
+        wx.CallAfter(self.RefreshPluginMenu)
+        IDEFrame.OnPouSelectedChanged(self, event)
+    
+    def OnPageClose(self, event):
+        wx.CallAfter(self.RefreshPluginMenu)
+        IDEFrame.OnPageClose(self, event)
     
     def GetAddButtonFunction(self, plugin, window):
         def AddButtonFunction(event):

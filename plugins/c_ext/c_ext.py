@@ -48,9 +48,6 @@ class _Cfile:
     def CFileName(self):
         return os.path.join(self.PlugPath(), "cfile.xml")
 
-    def GetFilename(self):
-        return self.MandatoryParams[1].getName()
-
     def GetBaseTypes(self):
         return self.GetPlugRoot().GetBaseTypes()
 
