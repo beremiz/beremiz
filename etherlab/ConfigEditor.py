@@ -472,51 +472,43 @@ class SlavePanel(wx.Panel):
  ID_CONFIGEDITORDELETESLAVEBUTTON, ID_CONFIGEDITORSLAVENODES,
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
+[ID_CONFIGEDITORPLUGINMENUADDSLAVE, ID_CONFIGEDITORPLUGINMENUDELETESLAVE,
+] = [wx.NewId() for _init_coll_PluginMenu_Items in range(2)]
+
 class ConfigEditor(EditorPanel):
     
     ID = ID_CONFIGEDITOR
     
     def _init_coll_MainSizer_Items(self, parent):
-        parent.AddSizer(self.ButtonSizer, 0, border=5, flag=wx.ALIGN_RIGHT|wx.TOP|wx.LEFT|wx.RIGHT)
-        parent.AddWindow(self.SlaveNodes, 0, border=5, flag=wx.GROW|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        parent.AddWindow(self.SlaveNodes, 0, border=5, flag=wx.GROW|wx.ALL)
 
     def _init_coll_MainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
-        parent.AddGrowableRow(1)
+        parent.AddGrowableRow(0)
     
-    def _init_coll_ButtonSizer_Items(self, parent):
-        parent.AddWindow(self.AddSlaveButton, 0, border=5, flag=wx.RIGHT)
-        parent.AddWindow(self.DeleteSlaveButton, 0, border=5, flag=0)
-        
     def _init_sizers(self):
-        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        self.ButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=0)
         
         self._init_coll_MainSizer_Items(self.MainSizer)
         self._init_coll_MainSizer_Growables(self.MainSizer)
-        self._init_coll_ButtonSizer_Items(self.ButtonSizer)
         
         self.Editor.SetSizer(self.MainSizer)
     
     def _init_Editor(self, prnt):
         self.Editor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
                 size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
-    
-        self.AddSlaveButton = wx.Button(id=ID_CONFIGEDITORADDSLAVEBUTTON, label=_('Add slave'),
-              name='AddSlaveButton', parent=self.Editor, pos=wx.Point(0, 0),
-              size=wx.DefaultSize, style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnAddSlaveButtonClick, id=ID_CONFIGEDITORADDSLAVEBUTTON)
-        
-        self.DeleteSlaveButton = wx.Button(id=ID_CONFIGEDITORDELETESLAVEBUTTON, label=_('Delete slave'),
-              name='DeleteSlaveButton', parent=self.Editor, pos=wx.Point(0, 0),
-              size=wx.DefaultSize, style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnDeleteSlaveButtonClick, id=ID_CONFIGEDITORDELETESLAVEBUTTON)
         
         self.SlaveNodes = wx.Notebook(id=ID_CONFIGEDITORSLAVENODES,
               name='SlaveNodes', parent=self.Editor, pos=wx.Point(0, 0),
               size=wx.Size(0, 0), style=wx.NB_LEFT)
         
         self._init_sizers()
+    
+    def _init_MenuItems(self):
+        self.MenuItems = [
+            (wx.ITEM_NORMAL, (_("Add slave"), ID_CONFIGEDITORPLUGINMENUADDSLAVE, '', self.OnAddSlaveMenu)),
+            (wx.ITEM_NORMAL, (_("Delete slave"), ID_CONFIGEDITORPLUGINMENUDELETESLAVE, '', self.OnDeleteSlaveMenu)),
+        ]
     
     def __init__(self, parent, controler, window):
         EditorPanel.__init__(self, parent, "", window, controler)
@@ -525,7 +517,7 @@ class ConfigEditor(EditorPanel):
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
     
     def __del__(self):
-        self.Controler.OnCloseEditor()
+        self.Controler.OnCloseEditor(self)
     
     def GetTitle(self):
         fullname = self.Controler.PlugFullName()
@@ -556,7 +548,6 @@ class ConfigEditor(EditorPanel):
         while self.SlaveNodes.GetPageCount() > len(slaves):
             self.SlaveNodes.RemovePage(len(slaves))
         self.RefreshSlaveNodesTitles()
-        self.RefreshButtons()
         if slave_pos is not None:
             self.SelectSlave(slave_pos)
     
@@ -564,6 +555,7 @@ class ConfigEditor(EditorPanel):
         self.ParentWindow.RefreshTitle()
         self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
+        self.ParentWindow.RefreshPluginMenu()
         self.ParentWindow.RefreshPageTitles()
     
     def RefreshSlaveNodesTitles(self):
@@ -571,8 +563,9 @@ class ConfigEditor(EditorPanel):
             panel = self.SlaveNodes.GetPage(idx)
             self.SlaveNodes.SetPageText(idx, panel.GetSlaveTitle())
             
-    def RefreshButtons(self):
-        self.DeleteSlaveButton.Enable(self.SlaveNodes.GetPageCount() > 0)
+    def RefreshPluginMenu(self, plugin_menu):
+        plugin_menu.Enable(ID_CONFIGEDITORPLUGINMENUDELETESLAVE, 
+                           self.SlaveNodes.GetPageCount() > 0)
     
     def SelectSlave(self, slave):
         for idx in xrange(self.SlaveNodes.GetPageCount()):
@@ -581,13 +574,12 @@ class ConfigEditor(EditorPanel):
                 self.SlaveNodes.SetSelection(idx)
                 return
     
-    def OnAddSlaveButtonClick(self, event):
+    def OnAddSlaveMenu(self, event):
         slave = self.Controler.AddSlave()
         self.RefreshParentWindow()
         wx.CallAfter(self.RefreshView, slave)
-        event.Skip()
-    
-    def OnDeleteSlaveButtonClick(self, event):
+        
+    def OnDeleteSlaveMenu(self, event):
         selected = self.SlaveNodes.GetSelection()
         if selected != -1:
             panel = self.SlaveNodes.GetPage(selected)

@@ -112,9 +112,6 @@ class _EthercatPlug:
     def ConfigFileName(self):
         return os.path.join(self.PlugPath(), "config.xml")
 
-    def GetFilename(self):
-        return self.MandatoryParams[1].getName()
-    
     def GetSlaves(self):
         slaves = []
         for slave in self.Config.getConfig().getSlave():
