@@ -1467,6 +1467,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # If IEC code gen fail, bail out.
         if not IECGenRes:
             self.logger.write_error(_("IEC-61131-3 code generation failed !\n"))
+            self.EnableMethod("_Transfer", False)
             return False
 
         # Reset variable and program list that are parsed from
@@ -1482,6 +1483,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         except Exception, exc:
             self.logger.write_error(_("Plugins code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
+            self.EnableMethod("_Transfer", False)
             return False
 
         # Get temporary directory path
@@ -1517,6 +1519,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             except Exception, exc:
                 self.logger.write_error(name+_(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
+                self.EnableMethod("_Transfer", False)
                 return False
 
         self.logger.write(_("C code generated successfully.\n"))
@@ -1525,6 +1528,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         builder = self.GetBuilder()
         if builder is None:
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
+            self.EnableMethod("_Transfer", False)
             return False
 
         # Build
@@ -1535,6 +1539,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         except Exception, exc:
             self.logger.write_error(_("C Build crashed !\n"))
             self.logger.write_error(traceback.format_exc())
+            self.EnableMethod("_Transfer", False)
             return False
 
         self.logger.write(_("Successfully built.\n"))
