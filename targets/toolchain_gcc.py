@@ -37,6 +37,13 @@ class toolchain_gcc():
     def _GetMD5FileName(self):
         return os.path.join(self.buildpath, "lastbuildPLC.md5")
 
+    def ResetBinaryCodeMD5(self):
+        self.md5key = None
+        try:
+            os.remove(self._GetMD5FileName())
+        except Exception, e:
+            pass
+    
     def GetBinaryCodeMD5(self):
         if self.md5key is not None:
             return self.md5key
@@ -150,18 +157,18 @@ class toolchain_gcc():
             
             if status :
                 return False
-            else :
-                # Calculate md5 key and get data for the new created PLC
-                data=self.GetBinaryCode()
-                self.md5key = hashlib.md5(data).hexdigest()
-    
-                # Store new PLC filename based on md5 key
-                f = open(self._GetMD5FileName(), "w")
-                f.write(self.md5key)
-                f.close()
+                
         else:
             self.PluginsRootInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.exe + "\n")
-            
+        
+        # Calculate md5 key and get data for the new created PLC
+        data=self.GetBinaryCode()
+        self.md5key = hashlib.md5(data).hexdigest()
+
+        # Store new PLC filename based on md5 key
+        f = open(self._GetMD5FileName(), "w")
+        f.write(self.md5key)
+        f.close()
         
         return True
 

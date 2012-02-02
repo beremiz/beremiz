@@ -24,6 +24,13 @@ class toolchain_makefile():
     def _GetMD5FileName(self):
         return os.path.join(self.buildpath, "lastbuildPLC.md5")
 
+    def ResetBinaryCodeMD5(self):
+        self.md5key = None
+        try:
+            os.remove(self._GetMD5FileName())
+        except Exception, e:
+            pass
+
     def GetBinaryCodeMD5(self):
         if self.md5key is not None:
             return self.md5key
