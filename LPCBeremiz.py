@@ -60,8 +60,6 @@ if __name__ == '__main__':
 
 from Beremiz import *
 from plugger import PluginsRoot, PlugTemplate, opjimg, connectors
-from plugins.canfestival import RootClass as CanOpenRootClass
-from plugins.canfestival.canfestival import _SlavePlug, _NodeListPlug, NodeManager
 from plcopen.structures import LOCATIONDATATYPES
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP,\
                          LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
@@ -189,9 +187,6 @@ class LPCBus(object):
         if key == "children":
             return self.VariableLocationTree
         raise KeyError, "Only 'children' key is available"
-    
-    def PlugEnabled(self):
-        return None
     
     def SetIcon(self, icon):
         self.Icon = icon
@@ -360,90 +355,6 @@ class LPCBus(object):
         return [(Gen_Module_path, matiec_flags)],"",True
 
 #-------------------------------------------------------------------------------
-#                          LPC CanFestival Plugin Class
-#-------------------------------------------------------------------------------
-
-DEFAULT_SETTINGS = {
-    "CAN_Baudrate": "125K",
-    "Slave_NodeId": 2,
-    "Master_NodeId": 1,
-}
-
-class LPCCanOpenSlave(_SlavePlug):
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="CanFestivalSlaveNode">
-        <xsd:complexType>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Slave_NodeId)d"/>
-          <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
-          <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:integer">
-                    <xsd:minInclusive value="1"/>
-                    <xsd:maxInclusive value="99"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-          </xsd:attribute>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:schema>
-    """ % DEFAULT_SETTINGS
-    
-    def __init__(self):
-        # TODO change netname when name change
-        NodeManager.__init__(self)
-        odfilepath = self.GetSlaveODPath()
-        if(os.path.isfile(odfilepath)):
-            self.OpenFileInCurrent(odfilepath)
-        else:
-            self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
-                               0x00,         # NodeID - will be changed at build time
-                               "slave",      # Type
-                               "",           # description 
-                               "None",       # profile
-                               "", # prfile filepath
-                               "heartbeat",  # NMT
-                               [])           # options
-            self.OnPlugSave()
-    
-    def GetCanDevice(self):
-        return str(self.BaseParams.getIEC_Channel())
-    
-class LPCCanOpenMaster(_NodeListPlug):
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="CanFestivalNode">
-        <xsd:complexType>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Master_NodeId)d"/>
-          <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:schema>
-    """ % DEFAULT_SETTINGS
-
-    def GetCanDevice(self):
-        return str(self.BaseParams.getIEC_Channel())
-
-class LPCCanOpen(CanOpenRootClass):
-    XSD = None
-    PlugChildsTypes = [("CanOpenNode",LPCCanOpenMaster, "CanOpen Master"),
-                       ("CanOpenSlave",LPCCanOpenSlave, "CanOpen Slave")]
-    
-    def LoadChilds(self):
-        PlugTemplate.LoadChilds(self)
-        
-        if self.GetChildByName("Master") is None:
-            master = self.PlugAddChild("Master", "CanOpenNode", 0)
-            master.BaseParams.setEnabled(False)
-        
-        if self.GetChildByName("Slave") is None:
-            slave = self.PlugAddChild("Slave", "CanOpenSlave", 1)
-            slave.BaseParams.setEnabled(False)
-    
-
-#-------------------------------------------------------------------------------
 #                              LPCPluginsRoot Class
 #-------------------------------------------------------------------------------
 
@@ -500,7 +411,7 @@ class LPCPluginsRoot(PluginsRoot):
         
         PluginsRoot.__init__(self, frame, logger)
         
-        self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus"), ("CanOpen", LPCCanOpen, "CanOpen bus")]
+        self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
         self.PlugType = "LPC"
         
         self.OnlineMode = "OFF"
@@ -678,11 +589,6 @@ class LPCPluginsRoot(PluginsRoot):
                 return result
             #Load and init all the childs
             self.LoadChilds()
-        
-        if self.GetChildByName("CanOpen") is None:
-            canopen = self.PlugAddChild("CanOpen", "CanOpen", 0)
-            canopen.BaseParams.setEnabled(False)
-            canopen.LoadChilds()
         
         if self.PlugTestModified():
             self.SaveProject()
@@ -1137,14 +1043,9 @@ class LPCBeremiz(Beremiz):
         
         self.PluginTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
         
-        leftwindowvsizer = wx.BoxSizer(wx.VERTICAL)
-        leftwindow.SetSizer(leftwindowvsizer)
-        
         leftwindowsizer = wx.BoxSizer(wx.HORIZONTAL)
-        leftwindowvsizer.AddSizer(leftwindowsizer, 0, border=0, flag=0)
-        
-        self.GenerateEnableButton(leftwindow, leftwindowsizer, plugin)
-        
+        leftwindow.SetSizer(leftwindowsizer)
+                
         st = wx.StaticText(leftwindow, -1)
         st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
         st.SetLabel(plugin.GetFullIEC_Channel())
@@ -1204,7 +1105,9 @@ class LPCBeremiz(Beremiz):
         st.SetLabel(plugin.MandatoryParams[1].getName())
         leftwindowsizer.AddWindow(st, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
-        rightwindow = self.GenerateParamsPanel(plugin, bkgdclr)
+        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
+        rightwindow.SetBackgroundColour(bkgdclr)
+        
         self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
 
         self.PluginInfos[plugin]["left"] = leftwindow

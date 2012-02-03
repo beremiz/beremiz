@@ -478,6 +478,7 @@ class Beremiz(IDEFrame):
         self.LastPanelSelected = None
         
         self.PluginInfos = {}
+        self.PluginRoot = None
         
         # Define Tree item icon list
         self.LocationImageList = wx.ImageList(16, 16)
@@ -497,27 +498,19 @@ class Beremiz(IDEFrame):
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         if projectOpen is not None and os.path.isdir(projectOpen):
-            self.PluginRoot = PluginsRoot(self, self.Log)
-            self.Controler = self.PluginRoot
-            result = self.PluginRoot.LoadProject(projectOpen, buildpath)
-            if not result:
-                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
-                self.RefreshAll()
-            else:
-                self.ResetView()
-                self.ShowErrorMessage(result)
+            self.OpenProject(os.path.abspath(projectOpen))
         else:
             self.PluginRoot = plugin_root
             self.Controler = plugin_root
             if plugin_root is not None:
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
+            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
-        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         self.RefreshPluginMenu()
         self.LogConsole.SetFocus()
 
