@@ -478,7 +478,6 @@ class Beremiz(IDEFrame):
         self.LastPanelSelected = None
         
         self.PluginInfos = {}
-        self.PluginRoot = None
         
         # Define Tree item icon list
         self.LocationImageList = wx.ImageList(16, 16)
@@ -498,19 +497,28 @@ class Beremiz(IDEFrame):
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         if projectOpen is not None and os.path.isdir(projectOpen):
-            self.OpenProject(os.path.abspath(projectOpen))
+            self.PluginRoot = PluginsRoot(self, self.Log)
+            self.Controler = self.PluginRoot
+            result = self.PluginRoot.LoadProject(projectOpen, buildpath)
+            if not result:
+                self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
+                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self.RefreshAll()
+            else:
+                self.ResetView()
+                self.ShowErrorMessage(result)
         else:
             self.PluginRoot = plugin_root
             self.Controler = plugin_root
             if plugin_root is not None:
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
-            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
+        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         self.RefreshPluginMenu()
         self.LogConsole.SetFocus()
 
@@ -1504,6 +1512,14 @@ class Beremiz(IDEFrame):
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(None)
     
+    def RefreshConfigRecentProjects(self, projectpath):
+        recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
+        if projectpath in recent_projects:
+            recent_projects.remove(projectpath)
+        recent_projects.insert(0, projectpath)
+        self.Config.Write("RecentProjects", cPickle.dumps(recent_projects[:MAX_RECENT_PROJECTS]))
+        self.Config.Flush()
+    
     def OnNewProjectMenu(self, event):
         if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
             return
@@ -1516,7 +1532,6 @@ class Beremiz(IDEFrame):
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
-            dialog.Destroy()
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
             self.ResetView()
@@ -1524,6 +1539,7 @@ class Beremiz(IDEFrame):
             self.Controler = self.PluginRoot
             result = self.PluginRoot.NewProject(projectpath)
             if not result:
+                self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
@@ -1532,6 +1548,7 @@ class Beremiz(IDEFrame):
                 self.ResetView()
                 self.ShowErrorMessage(result)
             self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+        dialog.Destroy()
     
     def OnOpenProjectMenu(self, event):
         if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
@@ -1550,17 +1567,13 @@ class Beremiz(IDEFrame):
     def OpenProject(self, projectpath):
         if os.path.isdir(projectpath):
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
-            recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
-            if projectpath in recent_projects:
-                recent_projects.remove(projectpath)
-            recent_projects.insert(0, projectpath)
-            self.Config.Write("RecentProjects", cPickle.dumps(recent_projects[:MAX_RECENT_PROJECTS]))
             self.Config.Flush()
             self.ResetView()
             self.PluginRoot = PluginsRoot(self, self.Log)
             self.Controler = self.PluginRoot
             result = self.PluginRoot.LoadProject(projectpath)
             if not result:
+                self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
