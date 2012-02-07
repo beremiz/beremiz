@@ -382,7 +382,7 @@ def ConfigureVariable(entry_infos, str_completion):
     data_type = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if data_type is None:
         raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
-                                
+    
     str_completion["located_variables_declaration"].extend(
         ["IEC_%(var_type)s beremiz%(var_name)s;" % entry_infos,
          "IEC_%(var_type)s *%(var_name)s = &beremiz%(var_name)s;" % entry_infos])
@@ -418,11 +418,11 @@ def ConfigureVariable(entry_infos, str_completion):
         
         if entry_infos["dir"] == "I":
             str_completion["retrieve_variables"].append(
-                ("    beremiz%(var_name)s = EC_READ_BIT(domain1_pd + " + 
+                ("    beremiz%(var_name)s = EC_READ_%(data_type)s(domain1_pd + " + 
                  "slave%(slave)d_%(index).4x_%(subindex).2x);") % entry_infos)
         elif entry_infos["dir"] == "Q":
             str_completion["publish_variables"].append(
-                ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+                ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
                  "beremiz%(var_name)s);") % entry_infos)
         
 
@@ -529,61 +529,65 @@ class _EthercatCFileGenerator:
                             sync_managers.append(sync_manager_infos)
                         
                         pdos_index = []
-                        for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                                              [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                            entries = pdo.getEntry()
-                            
-                            pdo_needed = pdo.getMandatory()
-                            pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
-                            pdos_index.append(pdo_index)
-                            entries_infos = []
-                            
-                            for entry in entries:
-                                index = ExtractHexDecValue(entry.getIndex().getcontent())
-                                subindex = ExtractHexDecValue(entry.getSubIndex())
-                                entry_infos = {
-                                    "index": index,
-                                    "subindex": subindex,
-                                    "name": ExtractName(entry.getName()),
-                                    "bitlen": entry.getBitLen(),
-                                }
-                                entry_infos.update(type_infos)
-                                entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                        for only_mandatory in [True, False]:
+                            for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
+                                                  [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                                entries = pdo.getEntry()
                                 
-                                entry_declaration = slave_variables.get((index, subindex), None)
-                                if entry_declaration is not None:
-                                    pdo_needed = True
+                                pdo_needed = pdo.getMandatory()
+                                if only_mandatory != pdo_needed:
+                                    continue
+                                
+                                pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
+                                pdos_index.append(pdo_index)
+                                entries_infos = []
+                                
+                                for entry in entries:
+                                    index = ExtractHexDecValue(entry.getIndex().getcontent())
+                                    subindex = ExtractHexDecValue(entry.getSubIndex())
+                                    entry_infos = {
+                                        "index": index,
+                                        "subindex": subindex,
+                                        "name": ExtractName(entry.getName()),
+                                        "bitlen": entry.getBitLen(),
+                                    }
+                                    entry_infos.update(type_infos)
+                                    entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                                     
-                                    entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
-                                    entry_declaration["mapped"] = True
-                                    
-                                    if entry_infos["var_type"] != entry.getDataType().getcontent():
-                                        raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                    
-                                    if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
-                                        entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
-                                        raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
-                                    
-                                    ConfigureVariable(entry_infos, str_completion)
-                            
-                            if pdo_needed:
-                                sm = pdo.getSm()
-                                if sm is None:
-                                    for sm_idx, sync_manager in enumerate(sync_managers):
-                                        if sync_manager["Name"] == pdo_type:
-                                            sm = sm_idx
-                                if sm is None:
-                                    raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
-                                    
-                                sync_managers[sm]["pdos_number"] += 1
-                                sync_managers[sm]["pdos"].append(
-                                    {"slave": slave_idx,
-                                     "index": pdo_index,
-                                     "name": ExtractName(pdo.getName()),
-                                     "type": pdo_type, 
-                                     "entries": entries_infos,
-                                     "entries_number": len(entries_infos),
-                                     "fixed": pdo.getFixed() == True})
+                                    entry_declaration = slave_variables.get((index, subindex), None)
+                                    if entry_declaration is not None and not entry_declaration["mapped"]:
+                                        pdo_needed = True
+                                        
+                                        entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
+                                        entry_declaration["mapped"] = True
+                                        
+                                        if entry_infos["var_type"] != entry.getDataType().getcontent():
+                                            raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                        
+                                        if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
+                                            entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
+                                            raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                                        
+                                        ConfigureVariable(entry_infos, str_completion)
+                                
+                                if pdo_needed:
+                                    sm = pdo.getSm()
+                                    if sm is None:
+                                        for sm_idx, sync_manager in enumerate(sync_managers):
+                                            if sync_manager["name"] == pdo_type:
+                                                sm = sm_idx
+                                    if sm is None:
+                                        raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
+                                        
+                                    sync_managers[sm]["pdos_number"] += 1
+                                    sync_managers[sm]["pdos"].append(
+                                        {"slave": slave_idx,
+                                         "index": pdo_index,
+                                         "name": ExtractName(pdo.getName()),
+                                         "type": pdo_type, 
+                                         "entries": entries_infos,
+                                         "entries_number": len(entries_infos),
+                                         "fixed": pdo.getFixed() == True})
                         
                         dynamic_pdos = {}
                         dynamic_pdos_number = 0
@@ -712,7 +716,7 @@ if cls:
         
             profile_content = profile.getcontent()
             if profile_content is None:
-                return None
+                continue
             
             for content_element in profile_content["value"]:
                 if content_element["name"] == "Dictionary":
@@ -824,9 +828,9 @@ if cls:
 def GroupItemCompare(x, y):
     if x["type"] == y["type"]:
         if x["type"] == ETHERCAT_GROUP:
-            return x["order"].__cmp__(y["order"])
+            return cmp(x["order"], y["order"])
         else:
-            return x["name"].__cmp__(y["name"])
+            return cmp(x["name"], y["name"])
     elif x["type"] == ETHERCAT_GROUP:
         return -1
     return 1
@@ -861,19 +865,21 @@ def ExtractPdoInfos(pdo, pdo_type, entries):
             entry["PDO name"] = pdo_name
             entry["PDO type"] = pdo_type
         else:
-            if pdo_type == "Transmit":
-                access = "ro"
-            else:
-                access = "wo"
-            entries[(index, subindex)] = {
-                "Index": entry_index,
-                "SubIndex": entry_subindex,
-                "Name": ExtractName(pdo_entry.getName()),
-                "Type": pdo_entry.getDataType().getcontent(),
-                "Access": access,
-                "PDO index": pdo_index, 
-                "PDO name": pdo_name, 
-                "PDO type": pdo_type}
+            entry_type = pdo_entry.getDataType()
+            if entry_type is not None:
+                if pdo_type == "Transmit":
+                    access = "ro"
+                else:
+                    access = "wo"
+                entries[(index, subindex)] = {
+                    "Index": entry_index,
+                    "SubIndex": entry_subindex,
+                    "Name": ExtractName(pdo_entry.getName()),
+                    "Type": entry_type.getcontent(),
+                    "Access": access,
+                    "PDO index": pdo_index, 
+                    "PDO name": pdo_name, 
+                    "PDO type": pdo_type}
 
 class RootClass:
     
@@ -931,8 +937,9 @@ class RootClass:
                 if modules_infos is not None:
                     vendor = modules_infos.getVendor()
                     
-                    vendor_category = self.ModulesLibrary.setdefault(vendor.getId(), {"name": ExtractName(vendor.getName(), _("Miscellaneous")), 
-                                                                                      "groups": {}})
+                    vendor_category = self.ModulesLibrary.setdefault(ExtractHexDecValue(vendor.getId()), 
+                                                                     {"name": ExtractName(vendor.getName(), _("Miscellaneous")), 
+                                                                      "groups": {}})
                     
                     for group in modules_infos.getDescriptions().getGroups().getGroup():
                         group_type = group.getType()
@@ -981,11 +988,11 @@ class RootClass:
                     if len(device_type_occurrences) > 1:
                         for occurrence in device_type_occurrences:
                             occurrence["name"] += _(" (rev. %s)") % occurrence["infos"]["revision_number"]
-        library.sort(lambda x, y: x["name"].__cmp__(y["name"]))
+        library.sort(lambda x, y: cmp(x["name"], y["name"]))
         return library
     
     def GetModuleInfos(self, type_infos):
-        vendor = self.ModulesLibrary.get(type_infos["vendor"], None)
+        vendor = self.ModulesLibrary.get(ExtractHexDecValue(type_infos["vendor"]), None)
         if vendor is not None:
             for group_name, group in vendor["groups"].iteritems():
                 for device_type, device in group["devices"]:
