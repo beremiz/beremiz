@@ -13,6 +13,9 @@ from plugger import PlugTemplate
 from commondialogs import CreateNodeDialog
 import wx
 
+from SlaveEditor import SlaveEditor
+from NetworkEditor import NetworkEditor
+
 from gnosis.xml.pickle import *
 from gnosis.xml.pickle.util import setParanoia
 setParanoia(0)
@@ -59,9 +62,8 @@ class _SlavePlug(NodeManager):
       </xsd:element>
     </xsd:schema>
     """ % DEFAULT_SETTINGS
-
-    def GetSlaveODPath(self):
-        return os.path.join(self.PlugPath(), 'slave.od')
+    
+    EditorType = SlaveEditor
 
     def __init__(self):
         # TODO change netname when name change
@@ -97,34 +99,18 @@ class _SlavePlug(NodeManager):
                                    "heartbeat",  # NMT
                                    [])           # options
             dialog.Destroy()
-    _View = None
+            self.OnPlugSave()
+
+    def GetSlaveODPath(self):
+        return os.path.join(self.PlugPath(), 'slave.od')
+
+    def GetCanDevice(self):
+        return self.CanFestivalSlaveNode.getCan_Device()
+
     def _OpenView(self):
-        if not self._View:
-            open_objdictedit = True
-            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
-            if not has_permissions:
-                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
-                                          _("You don't have write permissions.\nOpen ObjDictEdit anyway ?"),
-                                          _("Open ObjDictEdit"),
-                                          wx.YES_NO|wx.ICON_QUESTION)
-                open_objdictedit = dialog.ShowModal() == wx.ID_YES
-                dialog.Destroy()
-            if open_objdictedit:
-                def _onclose():
-                    self._View = None
-                if has_permissions:
-                    def _onsave():
-                        self.GetPlugRoot().SaveProject()
-                else:
-                    def _onsave():
-                        pass
-            
-                self._View = objdictedit(self.GetPlugRoot().AppFrame, self)
-                # TODO redefine BusId when IEC channel change
-                self._View.SetBusId(self.GetCurrentLocation())
-                self._View._onclose = _onclose
-                self._View._onsave = _onsave
-                self._View.Show()
+        PlugTemplate._OpenView(self)
+        if self._View is not None:
+            self._View.SetBusId(self.GetCurrentLocation())
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "NetworkEdit"),
@@ -143,6 +129,15 @@ class _SlavePlug(NodeManager):
     def OnPlugSave(self):
         return self.SaveCurrentInFile(self.GetSlaveODPath())
 
+    def SetParamsAttribute(self, path, value):
+        result = PlugTemplate.SetParamsAttribute(self, path, value)
+        
+        # Filter IEC_Channel and Name, that have specific behavior
+        if path == "BaseParams.IEC_Channel" and self._View is not None:
+            self._View.SetBusId(self.GetCurrentLocation())
+        
+        return result
+        
     def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
@@ -173,9 +168,37 @@ class _SlavePlug(NodeManager):
             raise Exception, res
         return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
 
+    def LoadPrevious(self):
+        self.LoadCurrentPrevious()
+    
+    def LoadNext(self):
+        self.LoadCurrentNext()
+    
+    def GetBufferState(self):
+        return self.GetCurrentBufferState()
+
 #--------------------------------------------------
 #                    MASTER
 #--------------------------------------------------
+
+class MiniNodeManager(NodeManager):
+    
+    def __init__(self, parent, filepath, fullname):
+        NodeManager.__init__(self)
+        
+        self.OpenFileInCurrent(filepath)
+            
+        self.Parent = parent
+        self.Fullname = fullname
+        
+    def OnCloseEditor(self, view):
+        self.Parent.OnCloseEditor(view)
+    
+    def PlugFullName(self):
+        return self.Fullname
+    
+    def GetBufferState(self):
+        return self.GetCurrentBufferState()
 
 class _NodeListPlug(NodeList):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -190,56 +213,61 @@ class _NodeListPlug(NodeList):
       </xsd:element>
     </xsd:schema>
     """ % DEFAULT_SETTINGS
-
+    
+    EditorType = NetworkEditor
+    
     def __init__(self):
         manager = NodeManager()
-        # TODO change netname when name change
-        NodeList.__init__(self, manager, self.BaseParams.getName())
+        NodeList.__init__(self, manager)
         self.LoadProject(self.PlugPath())
-
-    _View = None
+        self.SetNetworkName(self.BaseParams.getName())
+    
+    def GetCanDevice(self):
+        return self.CanFestivalNode.getCan_Device()
+    
+    def SetParamsAttribute(self, path, value):
+        result = PlugTemplate.SetParamsAttribute(self, path, value)
+        
+        # Filter IEC_Channel and Name, that have specific behavior
+        if path == "BaseParams.IEC_Channel" and self._View is not None:
+            self._View.SetBusId(self.GetCurrentLocation())
+        elif path == "BaseParams.Name":
+            self.SetNetworkName(value)
+        
+        return result
+    
     def _OpenView(self):
-        if not self._View:
-            open_networkedit = True
-            has_permissions = self.GetPlugRoot().CheckProjectPathPerm()
-            if not has_permissions:
-                dialog = wx.MessageDialog(self.GetPlugRoot().AppFrame,
-                                          _("You don't have write permissions.\nOpen NetworkEdit anyway ?"),
-                                          _("Open NetworkEdit"),
-                                          wx.YES_NO|wx.ICON_QUESTION)
-                open_networkedit = dialog.ShowModal() == wx.ID_YES
-                dialog.Destroy()
-            if open_networkedit:
-                def _onclose():
-                    self._View = None
-                if has_permissions:
-                    def _onsave():
-                        self.GetPlugRoot().SaveProject()
-                else:
-                    def _onsave():
-                        pass
-                self._View = networkedit(self.GetPlugRoot().AppFrame, self)
-                # TODO redefine BusId when IEC channel change
-                self._View.SetBusId(self.GetCurrentLocation())
-                self._View._onclose = _onclose
-                self._View._onsave = _onsave
-                self._View.Show()
-
+        PlugTemplate._OpenView(self)
+        if self._View is not None:
+            self._View.SetBusId(self.GetCurrentLocation())
+    
+    _GeneratedView = None
     def _ShowMasterGenerated(self):
-        buildpath = self._getBuildPath()
-        # Eventually create build dir
-        if not os.path.exists(buildpath):
-            self.GetPlugRoot().logger.write_error(_("Error: No PLC built\n"))
-            return
-        
-        masterpath = os.path.join(buildpath, "MasterGenerated.od")
-        if not os.path.exists(masterpath):
-            self.GetPlugRoot().logger.write_error(_("Error: No Master generated\n"))
-            return
-        
-        new_dialog = objdictedit(None, filesOpen=[masterpath])
-        new_dialog.Show()
-
+        if self._GeneratedView is None:
+            buildpath = self._getBuildPath()
+            # Eventually create build dir
+            if not os.path.exists(buildpath):
+                self.GetPlugRoot().logger.write_error(_("Error: No PLC built\n"))
+                return
+            
+            masterpath = os.path.join(buildpath, "MasterGenerated.od")
+            if not os.path.exists(masterpath):
+                self.GetPlugRoot().logger.write_error(_("Error: No Master generated\n"))
+                return
+            
+            app_frame = self.GetPlugRoot().AppFrame
+            
+            manager = MiniNodeManager(self, masterpath, self.PlugFullName() + ".generated_master")
+            self._GeneratedView = SlaveEditor(app_frame.TabsOpened, manager, app_frame, False)
+            
+            app_frame.EditProjectElement(self._GeneratedView, "MasterGenerated")
+    
+    def _CloseGenerateView(self):
+        if self._GeneratedView is not None:
+            app_frame = self.GetPlugRoot().AppFrame
+            if app_frame is not None:
+                app_frame.DeletePage(self._GeneratedView)
+    
     PluginMethods = [
         {"bitmap" : os.path.join("images", "NetworkEdit"),
          "name" : _("Edit network"), 
@@ -250,10 +278,16 @@ class _NodeListPlug(NodeList):
          "tooltip" : _("Show Master generated by config_utils"),
          "method" : "_ShowMasterGenerated"}
     ]
+    
+    def OnCloseEditor(self, view):
+        PlugTemplate.OnCloseEditor(self, view)
+        if self._GeneratedView == view:
+            self._GeneratedView = None
 
     def OnPlugClose(self):
-        if self._View:
-            self._View.Close()
+        PlugTemplate.OnPlugClose(self)
+        self._CloseGenerateView()
+        return True
 
     def PlugTestModified(self):
         return self.ChangesToSave or self.HasChanged()
@@ -275,6 +309,7 @@ class _NodeListPlug(NodeList):
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
+        self._CloseGenerateView()
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(str, current_location))
@@ -294,6 +329,15 @@ class _NodeListPlug(NodeList):
         file.close()
         
         return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
+    
+    def LoadPrevious(self):
+        self.Manager.LoadCurrentPrevious()
+    
+    def LoadNext(self):
+        self.Manager.LoadCurrentNext()
+    
+    def GetBufferState(self):
+        return self.Manager.GetCurrentBufferState()
     
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -317,14 +361,22 @@ class RootClass:
                     if child["name"] == "CAN_Driver":
                         DLL_LIST= getattr(local_canfestival_config,"DLL_LIST",None)
                         if DLL_LIST is not None:
-                            child["type"] = DLL_LIST
-                        return infos    
+                            child["type"] = DLL_LIST  
         return infos
-
+    
+    def GetCanDriver(self):
+        can_driver = self.CanFestivalInstance.getCAN_Driver()
+        if sys.platform == 'win32':
+            if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(can_driver + '_DEBUG.dll'))):
+                can_driver += '_DEBUG.dll'
+            else:
+                can_driver += '.dll'
+        return can_driver
+    
     def PlugGenerate_C(self, buildpath, locations):
         
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
-                       "candriver" : self.CanFestivalInstance.getCAN_Driver(),
+                       "candriver" : self.GetCanDriver(),
                        "nodes_includes" : "",
                        "board_decls" : "",
                        "nodes_init" : "",
@@ -357,29 +409,34 @@ class RootClass:
 
                 # initialize and declare node boot status variables for post_SlaveBootup lookup
                 SlaveIDs = child.GetSlaveIDs()
-                for id in SlaveIDs:
+                if len(SlaveIDs) == 0:
+                    # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
-                    "int %s_slave_%d_booted = 0;\n"%(nodename, id))
-                # define post_SlaveBootup lookup functions
-                format_dict["slavebootups"] += (
-                    "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
-                    "    switch(nodeId){\n")
-                # one case per declared node, mark node as booted
-                for id in SlaveIDs:
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n"%(nodename))
+                else:
+                    for id in SlaveIDs:
+                        format_dict["slavebootups"] += (
+                        "int %s_slave_%d_booted = 0;\n"%(nodename, id))
+                    # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
-                    "        case %d:\n"%(id)+
-                    "            %s_slave_%d_booted = 1;\n"%(nodename, id)+
-                    "            break;\n")
-                format_dict["slavebootups"] += (
-                    "        default:\n"+
-                    "            break;\n"+
-                    "    }\n"+
-                    "    if( ")
-                # expression to test if all declared nodes booted
-                format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
-                format_dict["slavebootups"] += " )\n" + (
-                    "        Master_post_SlaveBootup(d,nodeId);\n"+
-                    "}\n")
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
+                        "    switch(nodeId){\n")
+                    # one case per declared node, mark node as booted
+                    for id in SlaveIDs:
+                        format_dict["slavebootups"] += (
+                        "        case %d:\n"%(id)+
+                        "            %s_slave_%d_booted = 1;\n"%(nodename, id)+
+                        "            break;\n")
+                    format_dict["slavebootups"] += (
+                        "        default:\n"+
+                        "            break;\n"+
+                        "    }\n"+
+                        "    if( ")
+                    # expression to test if all declared nodes booted
+                    format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
+                    format_dict["slavebootups"] += " )\n" + (
+                        "        Master_post_SlaveBootup(d,nodeId);\n"+
+                        "}\n")
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
                     "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n"%(nodename,nodename))
@@ -409,16 +466,11 @@ class RootClass:
             # Declare CAN channels according user filled config
             format_dict["board_decls"] += 'BOARD_DECL(%s, "%s", "%s")\n'%(
                    nodename,
-                   child_data.getCAN_Device(),
+                   child.GetCanDevice(),
                    child_data.getCAN_Baudrate())
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
-            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)        
-        if sys.platform == 'win32':
-            if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(format_dict["candriver"] + '_DEBUG.dll'))):
-                    format_dict["candriver"] += '_DEBUG.dll'
-            else:
-                format_dict["candriver"] += '.dll'
+            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)
         
         filename = os.path.join(os.path.split(__file__)[0],"cf_runtime.c")
         cf_main = open(filename).read() % format_dict
