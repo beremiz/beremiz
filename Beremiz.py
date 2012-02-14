@@ -880,7 +880,7 @@ class Beremiz(IDEFrame):
                 msizer.AddWindow(button, 0, border=0, flag=wx.ALIGN_CENTER)
         return msizer
 
-    def GenerateParamsPanel(self, plugin, bkgdclr):
+    def GenerateParamsPanel(self, plugin, bkgdclr, top_offset=0):
         rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
         rightwindow.SetBackgroundColour(bkgdclr)
         
@@ -893,7 +893,7 @@ class Beremiz(IDEFrame):
         rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=0, flag=wx.GROW)
         
         msizer = self.GenerateMethodButtonSizer(plugin, rightwindow, not self.PluginInfos[plugin]["right_visible"])
-        rightwindowsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
+        rightwindowsizer.AddSizer(msizer, 0, border=top_offset, flag=wx.TOP|wx.GROW)
         
         rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
         rightwindowsizer.AddSizer(rightparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
@@ -1168,8 +1168,8 @@ class Beremiz(IDEFrame):
         tc.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
         iecsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
-        rightwindow = self.GenerateParamsPanel(plugin, bkgdclr)
-        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=8, flag=wx.TOP|wx.GROW)
+        rightwindow = self.GenerateParamsPanel(plugin, bkgdclr, 8)
+        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
         
         self.PluginInfos[plugin]["left"] = leftwindow
         self.PluginInfos[plugin]["right"] = rightwindow
