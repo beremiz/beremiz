@@ -5,8 +5,175 @@ from xml.dom import minidom
 import wx
 
 from xmlclass import *
+from plugger import PlugTemplate
 from PLCControler import UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigEditor import ConfigEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+
+#--------------------------------------------------
+#                 Ethercat DS402 Node
+#--------------------------------------------------
+
+NODE_VARIABLES = [
+    ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
+    ("StatusWord", 0x6041, 0x00, "UINT", "I"),
+    ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
+    ("ErrorCode", 0x603f, 0x00, "UINT", "I"),
+]
+
+class _EthercatDS402SlavePlug:
+    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="EtherlabDS402Slave">
+        <xsd:complexType>
+          <xsd:attribute name="Node_Type" type="xsd:string" use="optional"/>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+    """
+    
+    def _GetChildBySomething(self, something, toks):
+        return self
+    
+    def GetParamsAttributes(self, path = None):
+        infos = PlugTemplate.GetParamsAttributes(self, path = None)
+        for element in infos:
+            if element["name"] == "EtherlabDS402Slave":
+                for child in element["children"]:
+                    if child["name"] == "Node_Type":
+                        child["type"] = [module[0] for module in self.PlugParent.GetModulesByProfile(402)]
+        return infos
+    
+    def GetAllChannels(self):
+        AllChannels = PlugTemplate.GetAllChannels(self)
+        for slave_pos in self.PlugParent.GetSlaves():
+            if slave_pos[0] not in AllChannels:
+                AllChannels.append(slave_pos[0])
+        AllChannels.sort()
+        return AllChannels
+
+    def GetCurrentLocation(self):
+        """
+        @return:  Tupple containing plugin IEC location of current plugin : %I0.0.4.5 => (0,0,4,5)
+        """
+        return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(), 0)
+
+    def GetSlaveInfos(self):
+        slave_type = self.EtherlabDS402Slave.getNode_Type()
+        
+        for module_type, vendor_id, product_code, revision_number in self.PlugParent.GetModulesByProfile(402):
+            if module_type == slave_type:
+                return {"device_type": module_type,
+                        "vendor": GenerateHexDecValue(vendor_id),
+                        "product_code": GenerateHexDecValue(product_code, 16),
+                        "revision_number": GenerateHexDecValue(revision_number, 16)}
+        
+        return None
+
+    def GetVariableLocationTree(self):
+        slave_infos = self.GetSlaveInfos()
+        vars = []
+        if slave_infos is not None:
+            vars = self.PlugParent.GetDeviceLocationTree(self.GetCurrentLocation(), slave_infos) 
+
+        return  {"name": self.BaseParams.getName(),
+                 "type": LOCATION_PLUGIN,
+                 "location": self.GetFullIEC_Channel(),
+                 "children": vars}
+
+    def PlugGenerate_C(self, buildpath, locations):
+        """
+        Generate C code
+        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param locations: List of complete variables locations \
+            [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
+            "NAME" : name of the variable (generally "__IW0_1_2" style)
+            "DIR" : direction "Q","I" or "M"
+            "SIZE" : size "X", "B", "W", "D", "L"
+            "LOC" : tuple of interger for IEC location (0,1,2,...)
+            }, ...]
+        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
+        """
+        current_location = self.GetCurrentLocation()
+        
+        location_str = "_".join(map(lambda x:str(x), current_location))
+        
+        slave_pos = current_location[-2:]
+        
+        slave_infos = self.GetSlaveInfos()
+        device = None
+        if slave_infos is not None:
+            device = self.PlugParent.GetModuleInfos(slave_infos)
+        
+        if device is None:
+            raise (ValueError, 
+                   _("No information found for DS402 node \"%s\" at location %s!") % (
+                      slave_infos["device_type"], ".".join(current_location)))
+            
+        slave_idx = self.PlugParent.FileGenerator.DeclareSlave(slave_pos, slave_infos)
+        
+        plc_ds402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_ds402node.c")
+        plc_ds402node_file = open(plc_ds402node_filepath, 'r')
+        plc_ds402node_code = plc_ds402node_file.read()
+        plc_ds402node_file.close()
+        
+        str_completion = {
+            "location": location_str,
+            "MCL_includes": "",
+            "located_variables_declaration": [],
+            "entry_variables": [],
+            "extern_pdo_entry_configuration": [],
+            "retrieve_variables": [],
+            "publish_variables": [],
+        }
+        
+        variables = {}
+        for variable in NODE_VARIABLES:
+            var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
+            var_infos["location"] = location_str
+            var_infos["slave"] = slave_idx
+            var_infos["var_size"] = self.PlugParent.GetSizeOfType(var_infos["var_type"])
+            var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
+            var_infos["real_var"] = "__DS402Node_%(location)s.%(name)s" % var_infos
+            var_infos.update(slave_infos)
+            
+            variables[(var_infos["index"], var_infos["subindex"])] = var_infos["name"]
+            
+            str_completion["entry_variables"].append("    IEC_%(var_type)s %(name)s;" % var_infos)
+            
+            ConfigureVariable(var_infos, str_completion)
+            
+            str_completion["extern_pdo_entry_configuration"].append(
+                "extern unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % var_infos)
+                
+            if var_infos["var_type"] == "BOOL":
+                str_completion["extern_pdo_entry_configuration"].append(
+                    "extern unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % var_infos)
+            
+            self.PlugParent.FileGenerator.DeclareVariable(
+                    slave_pos, var_infos["index"], var_infos["subindex"], 
+                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"], False)
+        
+        for element in ["located_variables_declaration", 
+                        "entry_variables", 
+                        "extern_pdo_entry_configuration", 
+                        "retrieve_variables", 
+                        "publish_variables"]:
+            str_completion[element] = "\n".join(str_completion[element])
+        
+        Gen_DS402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
+        ds402nodefile = open(Gen_DS402Nodefile_path, 'w')
+        ds402nodefile.write(plc_ds402node_code % str_completion)
+        ds402nodefile.close()
+        
+        for location in locations:
+            loc = location["LOC"][len(current_location):]
+            if variables.get(loc, None) is None:
+                self.PlugParent.FileGenerator.DeclareVariable(
+                    slave_pos, loc[0], loc[1], location["IEC_TYPE"], location["DIR"], location["NAME"])
+        
+        return [(Gen_DS402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
+        
+
 
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
@@ -16,7 +183,7 @@ DATATYPECONVERSION = {"BOOL" : "BIT", "SINT" : "S8", "INT" : "S16", "DINT" : "S3
     "USINT" : "U8", "UINT" : "U16", "UDINT" : "U32", "ULINT" : "U64", 
     "BYTE" : "U8", "WORD" : "U16", "DWORD" : "U32", "LWORD" : "U64"}
 
-VARCLASSCONVERSION = {"ro": LOCATION_VAR_INPUT, "wo": LOCATION_VAR_OUTPUT, "rw": LOCATION_VAR_MEMORY}
+VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
 
 #--------------------------------------------------
 #                 Ethercat MASTER
@@ -86,6 +253,8 @@ class _EthercatPlug:
     """
     EditorType = ConfigEditor
     
+    PlugChildsTypes = [("EthercatDS402Slave", _EthercatDS402SlavePlug, "Ethercat DS402 Slave")]
+    
     def __init__(self):
         filepath = self.ConfigFileName()
         
@@ -128,6 +297,9 @@ class _EthercatPlug:
 
     def AddSlave(self):
         slaves = self.GetSlaves()
+        for PlugInstance in self.IterChilds():
+            slaves.append((PlugInstance.BaseParams.getIEC_Channel(), 0))
+        slaves.sort()
         if len(slaves) > 0:
             new_pos = (slaves[-1][0] + 1, 0)
         else:
@@ -151,6 +323,9 @@ class _EthercatPlug:
         return False
     
     def SetSlavePos(self, slave_pos, alias=None, position=None):
+        for PlugInstance in self.IterChilds():
+            if PlugInstance.BaseParams.getIEC_Channel() == alias:
+                return _("Slave with alias \"%d\" already exists!" % alias)
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave_info = slave.getInfo()
@@ -197,8 +372,49 @@ class _EthercatPlug:
     def GetModuleInfos(self, type_infos):
         return self.PlugParent.GetModuleInfos(type_infos)
     
+    def GetModulesByProfile(self, profile_type):
+        return self.PlugParent.GetModulesByProfile(profile_type)
+    
     def GetSlaveTypesLibrary(self):
         return self.PlugParent.GetModulesLibrary()
+    
+    def GetDeviceLocationTree(self, current_location, type_infos):
+        vars = []
+        
+        device = self.GetModuleInfos(type_infos)
+        if device is not None:
+            sync_managers = []
+            for sync_manager in device.getSm():
+                sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
+                sync_manager_direction = sync_manager_control_byte & 0x0c
+                if sync_manager_direction:
+                    sync_managers.append(LOCATION_VAR_OUTPUT)
+                else:
+                    sync_managers.append(LOCATION_VAR_INPUT)
+            
+            entries = device.GetEntriesList().items()
+            entries.sort()
+            for (index, subindex), entry in entries:
+                var_size = self.GetSizeOfType(entry["Type"])
+                if var_size is not None:
+                    var_class = VARCLASSCONVERSION.get(entry["PDOMapping"], None)
+                    if var_class is not None:
+                        if var_class == LOCATION_VAR_INPUT:
+                            var_dir = "%I"
+                        else:
+                            var_dir = "%Q"    
+                    
+                        vars.append({"name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
+                                     "type": var_class,
+                                     "size": var_size,
+                                     "IEC_type": entry["Type"],
+                                     "var_name": "%s_%4.4x_%2.2x" % (type_infos["device_type"], index, subindex),
+                                     "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
+                                                                                                (index, subindex)))),
+                                     "description": "",
+                                     "children": []})
+        
+        return vars
     
     def GetVariableLocationTree(self):
         '''See PlugTemplate.GetVariableLocationTree() for a description.'''
@@ -212,41 +428,8 @@ class _EthercatPlug:
             if slave is not None:
                 type_infos = slave.getType()
                 
-                device = self.GetModuleInfos(type_infos)
-                if device is not None:
-                    vars = []
-                    
-                    sync_managers = []
-                    for sync_manager in device.getSm():
-                        sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
-                        sync_manager_direction = sync_manager_control_byte & 0x0c
-                        if sync_manager_direction:
-                            sync_managers.append(LOCATION_VAR_OUTPUT)
-                        else:
-                            sync_managers.append(LOCATION_VAR_INPUT)
-                    
-                    entries = device.GetEntriesList().items()
-                    entries.sort()
-                    for (index, subindex), entry in entries:
-                        var_size = self.GetSizeOfType(entry["Type"])
-                        if var_size is not None:
-                            var_class = VARCLASSCONVERSION.get(entry["Access"], LOCATION_VAR_MEMORY)
-                            if var_class == LOCATION_VAR_INPUT:
-                                var_dir = "%I"
-                            else:
-                                var_dir = "%Q"    
-                            
-                            vars.append({"name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
-                                         "type": var_class,
-                                         "size": var_size,
-                                         "IEC_type": entry["Type"],
-                                         "var_name": "%s_%4.4x_%2.2x" % (type_infos["device_type"], index, subindex),
-                                         "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
-                                                                                                    slave_pos + 
-                                                                                                    (index, subindex)))),
-                                         "description": "",
-                                         "children": []})
-                    
+                vars = self.GetDeviceLocationTree(current_location + slave_pos, type_infos)
+                if len(vars) > 0:
                     groups.append({"name": "%s (%d,%d)" % ((type_infos["device_type"],) + slave_pos),
                                    "type": LOCATION_GROUP,
                                    "location": ".".join(map(str, current_location + slave_pos)) + ".x",
@@ -282,6 +465,27 @@ class _EthercatPlug:
         self.ConfigBuffer.CurrentSaved()
         return True
 
+    def _Generate_C(self, buildpath, locations):
+        current_location = self.GetCurrentLocation()
+        # define a unique name for the generated C file
+        location_str = "_".join(map(lambda x:str(x), current_location))
+        
+        Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c"%location_str)
+        
+        self.FileGenerator = _EthercatCFileGenerator(self)
+        
+        LocationCFilesAndCFLAGS, LDFLAGS, extra_files = PlugTemplate._Generate_C(self, buildpath, locations)
+        
+        self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.EtherlabNode)
+        
+        LocationCFilesAndCFLAGS.append(
+            (current_location, 
+             [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))], 
+             True))
+        LDFLAGS.append("-lethercat -lrtdm")
+        
+        return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
+
     def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
@@ -296,21 +500,22 @@ class _EthercatPlug:
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
         current_location = self.GetCurrentLocation()
-        # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x:str(x), current_location))
         
-        Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c"%location_str)
-        
-        file_generator = _EthercatCFileGenerator(self, Gen_Ethercatfile_path)
+        slaves = self.GetSlaves()
+        for slave_pos in slaves:
+            slave = self.GetSlave(slave_pos)
+            if slave is not None:
+                self.FileGenerator.DeclareSlave(slave_pos, slave.getType())
         
         for location in locations:
             loc = location["LOC"][len(current_location):]
-            file_generator.DeclareVariable(loc[:2], loc[2], loc[3], location["IEC_TYPE"], location["DIR"], location["NAME"])
+            slave_pos = loc[:2]
+            if slave_pos in slaves:
+                self.FileGenerator.DeclareVariable(
+                    slave_pos, loc[2], loc[3], location["IEC_TYPE"], location["DIR"], location["NAME"])
         
-        file_generator.GenerateCFile()
+        return [],"",False
         
-        return [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))], "-lethercat -lrtdm", True
-
 #-------------------------------------------------------------------------------
 #                      Current Buffering Management Functions
 #-------------------------------------------------------------------------------
@@ -378,81 +583,96 @@ SLAVE_CONFIGURATION_TEMPLATE = """
     }
 """
 
+SLAVE_INITIALIZATION_TEMPLATE = """
+    {
+        uint8_t value[] = {%(data)s};
+        if (ecrt_master_sdo_download(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &abort_code)) {
+            fprintf(stderr, "Failed to initialize slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%d\\n", abort_code);
+            return -1;
+        }
+    }
+"""
+
 def ConfigureVariable(entry_infos, str_completion):
-    data_type = DATATYPECONVERSION.get(entry_infos["var_type"], None)
-    if data_type is None:
+    entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
+    if entry_infos["data_type"] is None:
         raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
+
+    if not entry_infos.has_key("real_var"):
+        entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
+        str_completion["located_variables_declaration"].append(
+            "IEC_%(var_type)s %(real_var)s;" % entry_infos)
+    str_completion["located_variables_declaration"].append(
+         "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos)
     
-    str_completion["located_variables_declaration"].extend(
-        ["IEC_%(var_type)s beremiz%(var_name)s;" % entry_infos,
-         "IEC_%(var_type)s *%(var_name)s = &beremiz%(var_name)s;" % entry_infos])
+    if entry_infos["data_type"] == "BIT":
+        if entry_infos["dir"] == "I":
+            str_completion["retrieve_variables"].append(
+              ("    %(real_var)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+               "slave%(slave)d_%(index).4x_%(subindex).2x_bit);") % entry_infos)
+        elif entry_infos["dir"] == "Q":
+            str_completion["publish_variables"].append(
+              ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+               "slave%(slave)d_%(index).4x_%(subindex).2x_bit, %(real_var)s);") % entry_infos)
     
-    if data_type == "BIT":
-        str_completion["used_pdo_entry_offset_variables_declaration"].extend(
-            ["static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos,
-             "static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos])
+    else:
+        if entry_infos["dir"] == "I":
+            str_completion["retrieve_variables"].append(
+                ("    %(real_var)s = EC_READ_%(data_type)s(domain1_pd + " + 
+                 "slave%(slave)d_%(index).4x_%(subindex).2x);") % entry_infos)
+        elif entry_infos["dir"] == "Q":
+            str_completion["publish_variables"].append(
+                ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+                 "%(real_var)s);") % entry_infos)
+
+def ConfigurePDO(entry_infos, str_completion):
+    str_completion["used_pdo_entry_offset_variables_declaration"].append(
+        "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
+        
+    if entry_infos["var_type"] == "BOOL":
+        str_completion["used_pdo_entry_offset_variables_declaration"].append(
+            "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos)
         
         str_completion["used_pdo_entry_configuration"].append(
              ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, " + 
               "0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, " + 
               "&slave%(slave)d_%(index).4x_%(subindex).2x_bit},") % entry_infos)
         
-        if entry_infos["dir"] == "I":
-            str_completion["retrieve_variables"].append(
-              ("    beremiz%(name)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
-               "slave%(slave)d_%(index).4x_%(subindex).2x_bit);") % entry_infos)
-        elif entry_infos["dir"] == "Q":
-            str_completion["publish_variables"].append(
-              ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
-               "slave%(slave)d_%(index).4x_%(subindex).2x_bit, beremiz%(var_name)s);") % entry_infos)
-    
     else:
-        entry_infos["data_type"] = data_type
-        
-        str_completion["used_pdo_entry_offset_variables_declaration"].append(
-            "static unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
         
         str_completion["used_pdo_entry_configuration"].append(
             ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, 0x%(index).4x, " + 
              "%(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x},") % entry_infos)
-        
-        if entry_infos["dir"] == "I":
-            str_completion["retrieve_variables"].append(
-                ("    beremiz%(var_name)s = EC_READ_%(data_type)s(domain1_pd + " + 
-                 "slave%(slave)d_%(index).4x_%(subindex).2x);") % entry_infos)
-        elif entry_infos["dir"] == "Q":
-            str_completion["publish_variables"].append(
-                ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
-                 "beremiz%(var_name)s);") % entry_infos)
-        
 
 class _EthercatCFileGenerator:
     
-    def __init__(self, controler, filepath):
+    def __init__(self, controler):
         self.Controler = controler
-        self.FilePath = filepath
         
+        self.Slaves = []
         self.UsedVariables = {}
-        
-    def __del__(self):
-        self.Controler = None
 
-    def DeclareVariable(self, slave_identifier, index, subindex, iec_type, dir, name):
+    def __del__(self):
+        self.Controler = None            
+
+    def DeclareSlave(self, slave_identifier, slave):
+        self.Slaves.append((slave_identifier, slave))
+        self.Slaves.sort()
+        return self.Slaves.index((slave_identifier, slave))
+
+    def DeclareVariable(self, slave_identifier, index, subindex, iec_type, dir, name, configure=True):
         slave_variables = self.UsedVariables.setdefault(slave_identifier, {})
         
         entry_infos = slave_variables.get((index, subindex), None)
         if entry_infos is None:
             slave_variables[(index, subindex)] = {
                 "infos": (iec_type, dir, name),
+                "configure": configure,
                 "mapped": False}
         elif entry_infos["infos"] != (iec_type, dir, name):
             raise ValueError, _("Definition conflict for location \"%s\"") % name 
         
-    def GenerateCFile(self):
-        
-        current_location = self.Controler.GetCurrentLocation()
-        # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x:str(x), current_location))
+    def GenerateCFile(self, filepath, location_str, etherlab_node_infos):
         
         plc_etherlab_filepath = os.path.join(os.path.split(__file__)[0], "plc_etherlab.c")
         plc_etherlab_file = open(plc_etherlab_filepath, 'r')
@@ -461,14 +681,15 @@ class _EthercatCFileGenerator:
         
         str_completion = {
             "location": location_str,
-            "configure_pdos": int(self.Controler.EtherlabNode.getConfigurePDOs()),
-            "master_number": self.Controler.EtherlabNode.getMasterNumber(),
+            "configure_pdos": int(etherlab_node_infos.getConfigurePDOs()),
+            "master_number": etherlab_node_infos.getMasterNumber(),
             "located_variables_declaration": [],
             "used_pdo_entry_offset_variables_declaration": [],
             "used_pdo_entry_configuration": [],
             "pdos_configuration_declaration": "",
             "slaves_declaration": "",
             "slaves_configuration": "",
+            "slaves_initialization": "",
             "retrieve_variables": [],
             "publish_variables": [],
         }
@@ -477,216 +698,236 @@ class _EthercatCFileGenerator:
             for entry_infos in slave_entries.itervalues():
                 entry_infos["mapped"] = False
         
-        for slave_idx, slave_pos in enumerate(self.Controler.GetSlaves()):
+        for slave_idx, (slave_pos, type_infos) in enumerate(self.Slaves):
             
-            slave = self.Controler.GetSlave(slave_pos)
-            if slave is not None:
-                type_infos = slave.getType()
+            device = self.Controler.GetModuleInfos(type_infos)
+            if device is not None:
+            
+                slave_variables = self.UsedVariables.get(slave_pos, {})
+                device_entries = device.GetEntriesList()
                 
-                device = self.Controler.GetModuleInfos(type_infos)
-                if device is not None:
-                    slave_variables = self.UsedVariables.get(slave_pos, {})
-                    device_entries = device.GetEntriesList()
+                if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0:
                     
-                    if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0:
-                        
-                        for element in ["vendor", "product_code", "revision_number"]:
-                            type_infos[element] = ExtractHexDecValue(type_infos[element])
-                        type_infos.update(dict(zip(["slave", "alias", "position"], (slave_idx,) + slave_pos)))
-                    
-                        str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
-                        str_completion["slaves_configuration"] += SLAVE_CONFIGURATION_TEMPLATE % type_infos
+                    for element in ["vendor", "product_code", "revision_number"]:
+                        type_infos[element] = ExtractHexDecValue(type_infos[element])
+                    type_infos.update(dict(zip(["slave", "alias", "position"], (slave_idx,) + slave_pos)))
+                
+                    str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
+                    str_completion["slaves_configuration"] += SLAVE_CONFIGURATION_TEMPLATE % type_infos
     
-                        pdos_infos = {
-                            "pdos_entries_infos": [],
-                            "pdos_infos": [],
-                            "pdos_sync_infos": [], 
-                        }
-                        pdos_infos.update(type_infos)
-                        
-                        sync_managers = []
-                        for sync_manager_idx, sync_manager in enumerate(device.getSm()):
-                            sync_manager_infos = {
-                                "index": sync_manager_idx, 
-                                "name": sync_manager.getcontent(),
-                                "slave": slave_idx,
-                                "pdos": [], 
-                                "pdos_number": 0,
+                    for initCmd in device.getInitCmd():
+                        index = ExtractHexDecValue(initCmd.getIndex())
+                        subindex = ExtractHexDecValue(initCmd.getSubIndex())
+                        entry = device_entries.get((index, subindex), None)
+                        if entry is not None:
+                            data_size = entry["BitSize"] / 8
+                            data = ("%%.%dx" % (data_size * 2)) % initCmd.getData().getcontent()
+                            data_str = ",".join(["0x%s" % data[i:i+2] for i in xrange(0, data_size * 2, 2)])
+                            init_cmd_infos = {
+                                "index": index,
+                                "subindex": subindex,
+                                "data": data_str,
+                                "data_size": data_size
                             }
-                            
-                            sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
-                            sync_manager_direction = sync_manager_control_byte & 0x0c
-                            sync_manager_watchdog = sync_manager_control_byte & 0x40
-                            if sync_manager_direction:
-                                sync_manager_infos["sync_manager_type"] = "EC_DIR_OUTPUT"
-                            else:
-                                sync_manager_infos["sync_manager_type"] = "EC_DIR_INPUT"
-                            if sync_manager_watchdog:
-                                sync_manager_infos["watchdog"] = "EC_WD_ENABLE"
-                            else:
-                                sync_manager_infos["watchdog"] = "EC_WD_DISABLE"
-                            
-                            sync_managers.append(sync_manager_infos)
+                            init_cmd_infos.update(type_infos)
+                            str_completion["slaves_initialization"] += SLAVE_INITIALIZATION_TEMPLATE % init_cmd_infos
+
+                    pdos_infos = {
+                        "pdos_entries_infos": [],
+                        "pdos_infos": [],
+                        "pdos_sync_infos": [], 
+                    }
+                    pdos_infos.update(type_infos)
+                    
+                    sync_managers = []
+                    for sync_manager_idx, sync_manager in enumerate(device.getSm()):
+                        sync_manager_infos = {
+                            "index": sync_manager_idx, 
+                            "name": sync_manager.getcontent(),
+                            "slave": slave_idx,
+                            "pdos": [], 
+                            "pdos_number": 0,
+                        }
                         
-                        pdos_index = []
-                        for only_mandatory in [True, False]:
-                            for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                                                  [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                                entries = pdo.getEntry()
-                                
-                                pdo_needed = pdo.getMandatory()
-                                if only_mandatory != pdo_needed:
-                                    continue
-                                
-                                pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
-                                pdos_index.append(pdo_index)
-                                entries_infos = []
-                                
-                                for entry in entries:
-                                    index = ExtractHexDecValue(entry.getIndex().getcontent())
-                                    subindex = ExtractHexDecValue(entry.getSubIndex())
-                                    entry_infos = {
-                                        "index": index,
-                                        "subindex": subindex,
-                                        "name": ExtractName(entry.getName()),
-                                        "bitlen": entry.getBitLen(),
-                                    }
-                                    entry_infos.update(type_infos)
-                                    entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
-                                    
-                                    entry_declaration = slave_variables.get((index, subindex), None)
-                                    if entry_declaration is not None and not entry_declaration["mapped"]:
-                                        pdo_needed = True
-                                        
-                                        entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
-                                        entry_declaration["mapped"] = True
-                                        
-                                        if entry_infos["var_type"] != entry.getDataType().getcontent():
-                                            raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                        
-                                        if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
-                                            entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
-                                            raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
-                                        
-                                        ConfigureVariable(entry_infos, str_completion)
-                                
-                                if pdo_needed:
-                                    sm = pdo.getSm()
-                                    if sm is None:
-                                        for sm_idx, sync_manager in enumerate(sync_managers):
-                                            if sync_manager["name"] == pdo_type:
-                                                sm = sm_idx
-                                    if sm is None:
-                                        raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
-                                        
-                                    sync_managers[sm]["pdos_number"] += 1
-                                    sync_managers[sm]["pdos"].append(
-                                        {"slave": slave_idx,
-                                         "index": pdo_index,
-                                         "name": ExtractName(pdo.getName()),
-                                         "type": pdo_type, 
-                                         "entries": entries_infos,
-                                         "entries_number": len(entries_infos),
-                                         "fixed": pdo.getFixed() == True})
+                        sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
+                        sync_manager_direction = sync_manager_control_byte & 0x0c
+                        sync_manager_watchdog = sync_manager_control_byte & 0x40
+                        if sync_manager_direction:
+                            sync_manager_infos["sync_manager_type"] = "EC_DIR_OUTPUT"
+                        else:
+                            sync_manager_infos["sync_manager_type"] = "EC_DIR_INPUT"
+                        if sync_manager_watchdog:
+                            sync_manager_infos["watchdog"] = "EC_WD_ENABLE"
+                        else:
+                            sync_manager_infos["watchdog"] = "EC_WD_DISABLE"
                         
-                        dynamic_pdos = {}
-                        dynamic_pdos_number = 0
-                        for category, min_index, max_index in [("Inputs", 0x1600, 0x1800), 
-                                                               ("Outputs", 0x1a00, 0x1C00)]:
-                            for sync_manager in sync_managers:
-                                if sync_manager["name"] == category:
-                                    category_infos = dynamic_pdos.setdefault(category, {})
-                                    category_infos["sync_manager"] = sync_manager
-                                    category_infos["pdos"] = [pdo for pdo in category_infos["sync_manager"]["pdos"] 
-                                                              if not pdo["fixed"] and pdo["type"] == category]
-                                    category_infos["current_index"] = min_index
-                                    category_infos["max_index"] = max_index
-                                    break
-                        
-                        for (index, subindex), entry_declaration in slave_variables.iteritems():
+                        sync_managers.append(sync_manager_infos)
+                    
+                    pdos_index = []
+                    for only_mandatory in [True, False]:
+                        for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
+                                              [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                            entries = pdo.getEntry()
                             
-                            if not entry_declaration["mapped"]:
-                                entry = device_entries.get((index, subindex), None)
-                                if entry is None:
-                                    raise ValueError, _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") % \
-                                                     (index, subindex, type_infos["device_type"])
-                                
+                            pdo_needed = pdo.getMandatory()
+                            if pdo_needed is None:
+                                pdo_needed = False
+                            if only_mandatory != pdo_needed:
+                                continue
+                            
+                            pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
+                            pdos_index.append(pdo_index)
+                            entries_infos = []
+                            
+                            for entry in entries:
+                                index = ExtractHexDecValue(entry.getIndex().getcontent())
+                                subindex = ExtractHexDecValue(entry.getSubIndex())
                                 entry_infos = {
                                     "index": index,
                                     "subindex": subindex,
-                                    "name": entry["Name"],
-                                    "bitlen": entry["BitSize"],
+                                    "name": ExtractName(entry.getName()),
+                                    "bitlen": entry.getBitLen(),
                                 }
                                 entry_infos.update(type_infos)
+                                entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                                 
-                                entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
-                                entry_declaration["mapped"] = True
-                                
-                                if entry_infos["var_type"] != entry["Type"]:
-                                    raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                
-                                if entry_infos["dir"] == "I" and entry["Access"] in ["ro", "rw"]:
-                                    pdo_type = "Inputs"
-                                elif entry_infos["dir"] == "Q" and entry["Access"] in ["wo", "rw"]:
-                                    pdo_type = "Outputs"
-                                else:
-                                    raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
-                                
-                                if not dynamic_pdos.has_key(pdo_type):
-                                    raise ValueError, _("No Sync manager defined for %s!") % pdo_type
-                                
-                                ConfigureVariable(entry_infos, str_completion)
-                                
-                                if len(dynamic_pdos[pdo_type]["pdos"]) > 0:
-                                    pdo = dynamic_pdos[pdo_type]["pdos"][0]
-                                else:
-                                    while dynamic_pdos[pdo_type]["current_index"] in pdos_index:
-                                        dynamic_pdos[pdo_type]["current_index"] += 1
-                                    if dynamic_pdos[pdo_type]["current_index"] >= dynamic_pdos[pdo_type]["max_index"]:
-                                        raise ValueError, _("No more free PDO index available for %s!") % pdo_type
-                                    pdos_index.append(dynamic_pdos[pdo_type]["current_index"])
+                                entry_declaration = slave_variables.get((index, subindex), None)
+                                if entry_declaration is not None and not entry_declaration["mapped"]:
+                                    pdo_needed = True
                                     
-                                    dynamic_pdos_number += 1
-                                    pdo = {"slave": slave_idx,
-                                           "index": dynamic_pdos[pdo_type]["current_index"],
-                                           "name": "Dynamic PDO %d" % dynamic_pdos_number,
-                                           "type": pdo_type, 
-                                           "entries": [],
-                                           "entries_number": 0,
-                                           "fixed": False}
-                                    dynamic_pdos[pdo_type]["sync_manager"]["pdos_number"] += 1
-                                    dynamic_pdos[pdo_type]["sync_manager"]["pdos"].append(pdo)
-                                    dynamic_pdos[pdo_type]["pdos"].append(pdo)
-                                
-                                pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
-                                pdo["entries_number"] += 1
-                                
-                                if pdo["entries_number"] == 255:
-                                    dynamic_pdos[pdo_type]["pdos"].pop(0)
-                                
-                        pdo_offset = 0
-                        entry_offset = 0
-                        for sync_manager_infos in sync_managers:
+                                    entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
+                                    entry_declaration["mapped"] = True
+                                    
+                                    if entry_infos["var_type"] != entry.getDataType().getcontent():
+                                        raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                    
+                                    if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
+                                        entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
+                                        raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                                    
+                                    if entry_declaration["configure"]:
+                                        ConfigureVariable(entry_infos, str_completion)
+                                    ConfigurePDO(entry_infos, str_completion)
                             
-                            for pdo_infos in sync_manager_infos["pdos"]:
-                                pdo_infos["offset"] = entry_offset
-                                pdo_entries = pdo_infos["entries"]
-                                pdos_infos["pdos_infos"].append(
-                                    ("    {0x%(index).4x, %(entries_number)d, " + 
-                                     "slave_%(slave)d_pdo_entries + %(offset)d}, /* %(name)s */") % pdo_infos)
-                                entry_offset += len(pdo_entries)
-                                pdos_infos["pdos_entries_infos"].extend(pdo_entries)
+                            if pdo_needed:
+                                sm = pdo.getSm()
+                                if sm is None:
+                                    for sm_idx, sync_manager in enumerate(sync_managers):
+                                        if sync_manager["name"] == pdo_type:
+                                            sm = sm_idx
+                                if sm is None:
+                                    raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
+                                    
+                                sync_managers[sm]["pdos_number"] += 1
+                                sync_managers[sm]["pdos"].append(
+                                    {"slave": slave_idx,
+                                     "index": pdo_index,
+                                     "name": ExtractName(pdo.getName()),
+                                     "type": pdo_type, 
+                                     "entries": entries_infos,
+                                     "entries_number": len(entries_infos),
+                                     "fixed": pdo.getFixed() == True})
+                    
+                    dynamic_pdos = {}
+                    dynamic_pdos_number = 0
+                    for category, min_index, max_index in [("Inputs", 0x1600, 0x1800), 
+                                                           ("Outputs", 0x1a00, 0x1C00)]:
+                        for sync_manager in sync_managers:
+                            if sync_manager["name"] == category:
+                                category_infos = dynamic_pdos.setdefault(category, {})
+                                category_infos["sync_manager"] = sync_manager
+                                category_infos["pdos"] = [pdo for pdo in category_infos["sync_manager"]["pdos"] 
+                                                          if not pdo["fixed"] and pdo["type"] == category]
+                                category_infos["current_index"] = min_index
+                                category_infos["max_index"] = max_index
+                                break
+                    
+                    for (index, subindex), entry_declaration in slave_variables.iteritems():
+                        
+                        if not entry_declaration["mapped"]:
+                            entry = device_entries.get((index, subindex), None)
+                            if entry is None:
+                                raise ValueError, _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") % \
+                                                 (index, subindex, type_infos["device_type"])
                             
-                            sync_manager_infos["offset"] = pdo_offset
-                            pdos_infos["pdos_sync_infos"].append(
-                                ("    {%(index)d, %(sync_manager_type)s, %(pdos_number)d, " + 
-                                 "slave_%(slave)d_pdos + %(offset)d, %(watchdog)s},") % sync_manager_infos)
-                            pdo_offset += sync_manager_infos["pdos_number"]
+                            entry_infos = {
+                                "index": index,
+                                "subindex": subindex,
+                                "name": entry["Name"],
+                                "bitlen": entry["BitSize"],
+                            }
+                            entry_infos.update(type_infos)
+                            
+                            entry_infos.update(dict(zip(["var_type", "dir", "var_name", "real_var"], entry_declaration["infos"])))
+                            entry_declaration["mapped"] = True
+                            
+                            if entry_infos["var_type"] != entry["Type"]:
+                                raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                            
+                            if entry_infos["dir"] == "I" and entry["PDOMapping"] in ["T", "RT"]:
+                                pdo_type = "Inputs"
+                            elif entry_infos["dir"] == "Q" and entry["PDOMapping"] in ["R", "RT"]:
+                                pdo_type = "Outputs"
+                            else:
+                                raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                            
+                            if not dynamic_pdos.has_key(pdo_type):
+                                raise ValueError, _("No Sync manager defined for %s!") % pdo_type
+                            
+                            if entry_declaration["configure"]:
+                                ConfigureVariable(entry_infos, str_completion)
+                            ConfigurePDO(entry_infos, str_completion)
+                            
+                            if len(dynamic_pdos[pdo_type]["pdos"]) > 0:
+                                pdo = dynamic_pdos[pdo_type]["pdos"][0]
+                            else:
+                                while dynamic_pdos[pdo_type]["current_index"] in pdos_index:
+                                    dynamic_pdos[pdo_type]["current_index"] += 1
+                                if dynamic_pdos[pdo_type]["current_index"] >= dynamic_pdos[pdo_type]["max_index"]:
+                                    raise ValueError, _("No more free PDO index available for %s!") % pdo_type
+                                pdos_index.append(dynamic_pdos[pdo_type]["current_index"])
+                                
+                                dynamic_pdos_number += 1
+                                pdo = {"slave": slave_idx,
+                                       "index": dynamic_pdos[pdo_type]["current_index"],
+                                       "name": "Dynamic PDO %d" % dynamic_pdos_number,
+                                       "type": pdo_type, 
+                                       "entries": [],
+                                       "entries_number": 0,
+                                       "fixed": False}
+                                dynamic_pdos[pdo_type]["sync_manager"]["pdos_number"] += 1
+                                dynamic_pdos[pdo_type]["sync_manager"]["pdos"].append(pdo)
+                                dynamic_pdos[pdo_type]["pdos"].append(pdo)
+                            
+                            pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                            pdo["entries_number"] += 1
+                            
+                            if pdo["entries_number"] == 255:
+                                dynamic_pdos[pdo_type]["pdos"].pop(0)
+                            
+                    pdo_offset = 0
+                    entry_offset = 0
+                    for sync_manager_infos in sync_managers:
                         
-                        for element in ["pdos_entries_infos", "pdos_infos", "pdos_sync_infos"]:
-                            pdos_infos[element] = "\n".join(pdos_infos[element])
+                        for pdo_infos in sync_manager_infos["pdos"]:
+                            pdo_infos["offset"] = entry_offset
+                            pdo_entries = pdo_infos["entries"]
+                            pdos_infos["pdos_infos"].append(
+                                ("    {0x%(index).4x, %(entries_number)d, " + 
+                                 "slave_%(slave)d_pdo_entries + %(offset)d}, /* %(name)s */") % pdo_infos)
+                            entry_offset += len(pdo_entries)
+                            pdos_infos["pdos_entries_infos"].extend(pdo_entries)
                         
-                        str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
+                        sync_manager_infos["offset"] = pdo_offset
+                        pdos_infos["pdos_sync_infos"].append(
+                            ("    {%(index)d, %(sync_manager_type)s, %(pdos_number)d, " + 
+                             "slave_%(slave)d_pdos + %(offset)d, %(watchdog)s},") % sync_manager_infos)
+                        pdo_offset += sync_manager_infos["pdos_number"]
+                    
+                    for element in ["pdos_entries_infos", "pdos_infos", "pdos_sync_infos"]:
+                        pdos_infos[element] = "\n".join(pdos_infos[element])
+                    
+                    str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
         
         for element in ["used_pdo_entry_offset_variables_declaration", 
                         "used_pdo_entry_configuration", 
@@ -695,7 +936,7 @@ class _EthercatCFileGenerator:
                         "publish_variables"]:
             str_completion[element] = "\n".join(str_completion[element])
         
-        etherlabfile = open(self.FilePath,'w')
+        etherlabfile = open(filepath, 'w')
         etherlabfile.write(plc_etherlab_code % str_completion)
         etherlabfile.close()
 
@@ -708,6 +949,21 @@ EtherCATInfoClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file
 cls = EtherCATInfoClasses["EtherCATInfo.xsd"].get("DeviceType", None)
 if cls:
     cls.DataTypes = None
+    
+    def GetProfileNumbers(self):
+        profiles = []
+        
+        for profile in self.getProfile():
+            profile_content = profile.getcontent()
+            if profile_content is None:
+                continue
+            
+            for content_element in profile_content["value"]:
+                if content_element["name"] == "ProfileNo":
+                    profiles.append(content_element["value"])
+        
+        return profiles
+    setattr(cls, "GetProfileNumbers", GetProfileNumbers)
     
     def GetProfileDictionaries(self):
         dictionaries = []
@@ -742,6 +998,18 @@ if cls:
     
     setattr(cls, "ExtractDataTypes", ExtractDataTypes)
     
+    def getInitCmd(self):
+        mailbox = self.getMailbox()
+        if mailbox is None:
+            return []
+        
+        coe = mailbox.getCoE()
+        if coe is None:
+            return []
+
+        return coe.getInitCmd()
+    setattr(cls, "getInitCmd", getInitCmd)
+
     def GetEntriesList(self):
         if self.DataTypes is None:
             self.ExtractDataTypes()
@@ -765,11 +1033,15 @@ if cls:
                             entry_subidx = "0"
                         subidx = ExtractHexDecValue(entry_subidx)
                         subitem_access = ""
+                        subitem_pdomapping = ""
                         subitem_flags = subitem.getFlags()
                         if subitem_flags is not None:
                             access = subitem_flags.getAccess()
                             if access is not None:
                                 subitem_access = access.getcontent()
+                            pdomapping = subitem_flags.getPdoMapping()
+                            if pdomapping is not None:
+                                subitem_pdomapping = pdomapping.upper()
                         entries[(index, subidx)] = {
                             "Index": entry_index,
                             "SubIndex": entry_subidx,
@@ -780,16 +1052,21 @@ if cls:
                             "Type": subitem.getType(),
                             "BitSize": subitem.getBitSize(),
                             "Access": subitem_access, 
+                            "PDOMapping": subitem_pdomapping, 
                             "PDO index": "", 
                             "PDO name": "", 
                             "PDO type": ""}
                 else:
                     entry_access = ""
+                    entry_pdomapping = ""
                     entry_flags = object.getFlags()
                     if entry_flags is not None:
                         access = entry_flags.getAccess()
                         if access is not None:
                             entry_access = access.getcontent()
+                        pdomapping = entry_flags.getPdoMapping()
+                        if pdomapping is not None:
+                            entry_pdomapping = pdomapping.upper()
                     entries[(index, 0)] = {
                          "Index": entry_index,
                          "SubIndex": "0",
@@ -797,6 +1074,7 @@ if cls:
                          "Type": entry_type,
                          "BitSize": object.getBitSize(),
                          "Access": entry_access,
+                         "PDOMapping": entry_pdomapping, 
                          "PDO index": "", 
                          "PDO name": "", 
                          "PDO type": ""}
@@ -869,14 +1147,17 @@ def ExtractPdoInfos(pdo, pdo_type, entries):
             if entry_type is not None:
                 if pdo_type == "Transmit":
                     access = "ro"
+                    pdomapping = "T"
                 else:
                     access = "wo"
+                    pdomapping = "R"
                 entries[(index, subindex)] = {
                     "Index": entry_index,
                     "SubIndex": entry_subindex,
                     "Name": ExtractName(pdo_entry.getName()),
                     "Type": entry_type.getcontent(),
                     "Access": access,
+                    "PDOMapping": pdomapping,
                     "PDO index": pdo_index, 
                     "PDO name": pdo_name, 
                     "PDO type": pdo_type}
@@ -1004,3 +1285,15 @@ class RootClass:
                         return device
         return None
     
+    def GetModulesByProfile(self, profile_type):
+        modules = []
+        for vendor_id, vendor in self.ModulesLibrary.iteritems():
+            for group_type, group in vendor["groups"].iteritems():
+                for device_type, device in group["devices"]:
+                    if profile_type in device.GetProfileNumbers():
+                        product_code = ExtractHexDecValue(device.getType().getProductCode())
+                        revision_number = ExtractHexDecValue(device.getType().getRevisionNo())
+                        modules.append((device_type, vendor_id, product_code, revision_number))
+        return modules
+
+            

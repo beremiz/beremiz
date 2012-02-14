@@ -1,5 +1,5 @@
 /*
- * Etherlab Asynchronous execution code
+ * Etherlab execution code
  *
  * */
 
@@ -23,7 +23,7 @@
 #define CONFIGURE_PDOS  %(configure_pdos)d
 
 // process data
-static uint8_t *domain1_pd = NULL;
+uint8_t *domain1_pd = NULL;
 %(used_pdo_entry_offset_variables_declaration)s
 
 const static ec_pdo_entry_reg_t domain1_regs[] = {
@@ -49,8 +49,9 @@ static ec_domain_t *domain1 = NULL;
 /* Beremiz plugin functions */
 int __init_%(location)s(int argc,char **argv)
 {
-	int rtstatus;
-
+    uint32_t abort_code;
+    int rtstatus;
+    
 	MstrAttach.masterindex = %(master_number)d;
 
 	master = ecrt_request_master(MstrAttach.masterindex);
@@ -60,6 +61,7 @@ int __init_%(location)s(int argc,char **argv)
 	if (!domain1) return -1;
 
 #if CONFIGURE_PDOS
+    fprintf(stdout, "Configure PDOs...\n");
 	%(slaves_configuration)s
 #endif
 
@@ -68,10 +70,12 @@ int __init_%(location)s(int argc,char **argv)
         return -1;
     }
 
+%(slaves_initialization)s
+
     sprintf(&rt_dev_file[0],"%%s%%u",EC_RTDM_DEV_FILE_NAME,0);
     rt_fd = rt_dev_open( &rt_dev_file[0], 0);
     if (rt_fd < 0) {
-        printf("Can't open %%s\n", &rt_dev_file[0]);
+        fprintf(stderr, "Can't open %%s\n", &rt_dev_file[0]);
         return -1;
     }
 
@@ -79,7 +83,7 @@ int __init_%(location)s(int argc,char **argv)
     MstrAttach.domainindex = ecrt_domain_index(domain1);
     rtstatus = ecrt_rtdm_master_attach(rt_fd, &MstrAttach);
     if (rtstatus < 0) {
-        printf("Cannot attach to master over rtdm\n");
+        fprintf(stderr, "Cannot attach to master over rtdm\n");
         return -1;
     }
 
@@ -92,6 +96,7 @@ int __init_%(location)s(int argc,char **argv)
     }
 
     fprintf(stdout, "Master %(master_number)d activated...\n");
+     
     return 0;
 }
 
