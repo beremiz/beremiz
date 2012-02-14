@@ -244,10 +244,12 @@ void InValidateRetainBuffer(void)
 
 void Retain(unsigned int offset, unsigned int count, void * p)
 {
+    /*
     unsigned int position;
     for(position=0; position<count; position++ ){
         printf("%d : 0x%2.2x\n", offset+position, ((char*)p)[position]);
     }
+    */
 }
 
 void Remind(unsigned int offset, unsigned int count, void *p)
