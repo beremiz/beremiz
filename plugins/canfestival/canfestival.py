@@ -365,7 +365,13 @@ class RootClass:
         return infos
     
     def GetCanDriver(self):
-        return self.CanFestivalInstance.getCAN_Driver()
+        can_driver = self.CanFestivalInstance.getCAN_Driver()
+        if sys.platform == 'win32':
+            if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(can_driver + '_DEBUG.dll'))):
+                can_driver += '_DEBUG.dll'
+            else:
+                can_driver += '.dll'
+        return can_driver
     
     def PlugGenerate_C(self, buildpath, locations):
         
@@ -403,29 +409,34 @@ class RootClass:
 
                 # initialize and declare node boot status variables for post_SlaveBootup lookup
                 SlaveIDs = child.GetSlaveIDs()
-                for id in SlaveIDs:
+                if len(SlaveIDs) == 0:
+                    # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
-                    "int %s_slave_%d_booted = 0;\n"%(nodename, id))
-                # define post_SlaveBootup lookup functions
-                format_dict["slavebootups"] += (
-                    "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
-                    "    switch(nodeId){\n")
-                # one case per declared node, mark node as booted
-                for id in SlaveIDs:
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n"%(nodename))
+                else:
+                    for id in SlaveIDs:
+                        format_dict["slavebootups"] += (
+                        "int %s_slave_%d_booted = 0;\n"%(nodename, id))
+                    # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
-                    "        case %d:\n"%(id)+
-                    "            %s_slave_%d_booted = 1;\n"%(nodename, id)+
-                    "            break;\n")
-                format_dict["slavebootups"] += (
-                    "        default:\n"+
-                    "            break;\n"+
-                    "    }\n"+
-                    "    if( ")
-                # expression to test if all declared nodes booted
-                format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
-                format_dict["slavebootups"] += " )\n" + (
-                    "        Master_post_SlaveBootup(d,nodeId);\n"+
-                    "}\n")
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
+                        "    switch(nodeId){\n")
+                    # one case per declared node, mark node as booted
+                    for id in SlaveIDs:
+                        format_dict["slavebootups"] += (
+                        "        case %d:\n"%(id)+
+                        "            %s_slave_%d_booted = 1;\n"%(nodename, id)+
+                        "            break;\n")
+                    format_dict["slavebootups"] += (
+                        "        default:\n"+
+                        "            break;\n"+
+                        "    }\n"+
+                        "    if( ")
+                    # expression to test if all declared nodes booted
+                    format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
+                    format_dict["slavebootups"] += " )\n" + (
+                        "        Master_post_SlaveBootup(d,nodeId);\n"+
+                        "}\n")
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
                     "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n"%(nodename,nodename))
@@ -459,12 +470,7 @@ class RootClass:
                    child_data.getCAN_Baudrate())
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
-            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)        
-        if sys.platform == 'win32':
-            if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(format_dict["candriver"] + '_DEBUG.dll'))):
-                    format_dict["candriver"] += '_DEBUG.dll'
-            else:
-                format_dict["candriver"] += '.dll'
+            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)
         
         filename = os.path.join(os.path.split(__file__)[0],"cf_runtime.c")
         cf_main = open(filename).read() % format_dict

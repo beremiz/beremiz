@@ -466,6 +466,14 @@ class PlugTemplate:
             self.GetPlugRoot().logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
         return res
 
+    def GetAllChannels(self):
+        AllChannels=[]
+        for PlugInstance in self.PlugParent.IterChilds():
+            if PlugInstance != self:
+                AllChannels.append(PlugInstance.BaseParams.getIEC_Channel())
+        AllChannels.sort()
+        return AllChannels
+
     def FindNewIEC_Channel(self, DesiredChannel):
         """
         Changes IEC Channel number to DesiredChannel if available, nearest available if not.
@@ -476,12 +484,8 @@ class PlugTemplate:
         # Do nothing if no change
         #if CurrentChannel == DesiredChannel: return CurrentChannel
         # Build a list of used Channels out of parent's PluggedChilds
-        AllChannels=[]
-        for PlugInstance in self.PlugParent.IterChilds():
-            if PlugInstance != self:
-                AllChannels.append(PlugInstance.BaseParams.getIEC_Channel())
-        AllChannels.sort()
-
+        AllChannels = self.GetAllChannels()
+        
         # Now, try to guess the nearest available channel
         res = DesiredChannel
         while res in AllChannels: # While channel not free
