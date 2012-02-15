@@ -38,7 +38,7 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 	/* arg 2 of SetWaitableTimer take 100 ns interval*/
 	liDueTime.QuadPart =  next / (-100);
 
-	if (!SetWaitableTimer(PLC_timer, &liDueTime, period/1000000, NULL, NULL, 0))
+	if (!SetWaitableTimer(PLC_timer, &liDueTime, period<1000000?1:period/1000000, NULL, NULL, 0))
     {
         printf("SetWaitableTimer failed (%d)\n", GetLastError());
     }
@@ -116,6 +116,7 @@ int startPLC(int argc,char **argv)
 
 
     /* Create a waitable timer */
+    timeBeginPeriod(1);
     PLC_timer = CreateWaitableTimer(NULL, FALSE, "WaitableTimer");
     if(NULL == PLC_timer)
     {
