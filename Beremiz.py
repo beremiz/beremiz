@@ -283,6 +283,9 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
             dc.DrawBitmap(self._bitmap, 0, 0, True)
 
                         
+from threading import Lock
+REFRESH_PERIOD = 0.1
+from time import time as gettime
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output, risecall):
@@ -294,21 +297,39 @@ class LogPseudoFile:
         self.risecall = risecall
         # to prevent rapid fire on rising log panel
         self.rising_timer = 0
+        self.lock = Lock()
+        self.RefreshLock = Lock()
+        self.stack = []
+        self.LastRefreshTime = gettime()
 
     def write(self, s, style = None):
-        if style is None : style=self.black_white
+        if self.lock.acquire():
+            self.stack.append((s,style))
+            self.lock.release()
+            current_time = gettime()
+            if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
+                wx.CallAfter(self._write)
+
+    def _write(self):
         self.output.Freeze(); 
-        if self.default_style != style: 
-            self.output.SetDefaultStyle(style)
-            self.default_style = style
-        self.output.AppendText(s)
-        self.output.ScrollLines(s.count('\n')+1)
+        self.lock.acquire()
+        for s, style in self.stack:
+            if style is None : style=self.black_white
+            if self.default_style != style: 
+                self.output.SetDefaultStyle(style)
+                self.default_style = style
+            self.output.AppendText(s)
+            #self.output.ScrollLines(s.count('\n')+1)
+        self.stack = []
+        self.lock.release()
         self.output.ShowPosition(self.output.GetLastPosition())
         self.output.Thaw()
+        self.LastRefreshTime = gettime()
+        self.RefreshLock.release()
         newtime = time.time()
         if newtime - self.rising_timer > 1:
             self.risecall()
-        self.rising_timer = newtime 
+        self.rising_timer = newtime
 
     def write_warning(self, s):
         self.write(s,self.red_white)

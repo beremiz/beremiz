@@ -498,8 +498,6 @@ class PlugTemplate:
                 res +=  1 # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)
-        if DesiredChannel != res:
-            self.GetPlugRoot().logger.write_warning(_("A child with IEC channel %d already exist -> %d\n")%(DesiredChannel,res))
         return res
 
     def _OpenView(self):

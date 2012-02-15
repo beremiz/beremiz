@@ -126,19 +126,13 @@ class ProcessLogger:
         self.outdata += v
         self.outlen += 1
         if not self.no_stdout:
-            if wx.GetApp() is None:
-                self.logger.write(v)
-            else:
-                wx.CallAfter(self.logger.write,v)
+            self.logger.write(v)
             
     def errors(self,v):
         self.errdata += v
         self.errlen += 1
         if not self.no_stderr:
-            if wx.GetApp() is None:
-                self.logger.write_warning(v)
-            else:
-                wx.CallAfter(self.logger.write_warning,v)
+            self.logger.write_warning(v)
 
     def log_the_end(self,ecode,pid):
         self.logger.write(self.Command_str + "\n")
@@ -148,10 +142,7 @@ class ProcessLogger:
         self.finished = True
         self.exitcode = ecode
         if self.exitcode != 0:
-            if wx.GetApp() is None:
-                self.log_the_end(ecode,pid)
-            else:
-                wx.CallAfter(self.log_the_end,ecode,pid)
+            self.log_the_end(ecode,pid)
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
 
