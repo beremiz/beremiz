@@ -319,7 +319,7 @@ class LogPseudoFile:
                 self.output.SetDefaultStyle(style)
                 self.default_style = style
             self.output.AppendText(s)
-            #self.output.ScrollLines(s.count('\n')+1)
+            self.output.ScrollLines(s.count('\n')+1)
         self.stack = []
         self.lock.release()
         self.output.ShowPosition(self.output.GetLastPosition())
