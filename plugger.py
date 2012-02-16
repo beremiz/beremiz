@@ -420,16 +420,6 @@ class PlugTemplate:
                 "location": self.GetFullIEC_Channel(),
                 "children": children}
 
-    def GetPlugInfos(self):
-        childs = []
-        # reorder childs by IEC_channels
-        for child in self.IECSortedChilds():
-            childs.append(child.GetPlugInfos())
-        if wx.VERSION < (2, 8, 0):
-            return {"name" : "%d-%s"%(self.BaseParams.getIEC_Channel(),self.BaseParams.getName()), "type" : self.BaseParams.getName(), "values" : childs}
-        else:
-            return {"name" : self.BaseParams.getName(), "channel" : self.BaseParams.getIEC_Channel(), "enabled" : self.BaseParams.getEnabled(), "parent" : len(self.PlugChildsTypes) > 0, "type" : self.BaseParams.getName(), "values" : childs}
-    
     def FindNewName(self, DesiredName):
         """
         Changes Name to DesiredName if available, Name-N if not.
@@ -869,12 +859,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def GetProjectName(self):
         return os.path.split(self.ProjectPath)[1]
     
-    def GetPlugInfos(self):
-        childs = []
-        for child in self.IterChilds():
-            childs.append(child.GetPlugInfos())
-        return {"name" : "PLC (%s)"%self.GetProjectName(), "type" : None, "values" : childs}
-
     def GetDefaultTargetName(self):
         if wx.Platform == '__WXMSW__':
             return "Win32"
@@ -1994,11 +1978,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
             data = builder.GetBinaryCode()
             if data is not None :
                 if self._connector.NewPLC(MD5, data, extrafiles):
-                    if self.AppFrame is not None:
-                        self.AppFrame.CloseDebugTabs()
-                        self.AppFrame.RefreshInstancesTree()
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
+                    if self.AppFrame is not None:
+                        self.AppFrame.RefreshInstancesTree()
+                        self.AppFrame.CloseObsoleteDebugTabs()
                     self.logger.write(_("Transfer completed successfully.\n"))
                 else:
                     self.logger.write_error(_("Transfer failed\n"))

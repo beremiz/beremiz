@@ -1099,7 +1099,7 @@ class Beremiz(IDEFrame):
         rolesizer = wx.BoxSizer(wx.HORIZONTAL)
         leftsizer.AddSizer(rolesizer, 0, border=0, flag=wx.GROW|wx.RIGHT)
         
-        self.GenerateEnableButton(leftwindow, rolesizer, plugin)
+        #self.GenerateEnableButton(leftwindow, rolesizer, plugin)
 
         roletext = wx.StaticText(leftwindow, -1)
         roletext.SetLabel(plugin.PlugHelp)
