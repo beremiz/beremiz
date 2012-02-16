@@ -40,6 +40,16 @@ class LPC_target(toolchain_makefile):
             except IOError, e:
                 return None
 
+    def ResetBinaryCodeMD5(self, mode):
+        if mode == "BOOTLOADER":
+            self.binmd5key = None
+            try:
+                os.remove(self._GetBinMD5FileName())
+            except Exception, e:
+                pass
+        else:
+            return toolchain_makefile.ResetBinaryCodeMD5(self)
+
     def GetBinaryCodeMD5(self, mode):
         if mode == "BOOTLOADER":
             return self._get_cached_md5_header()
@@ -48,16 +58,17 @@ class LPC_target(toolchain_makefile):
 
     def build(self):
         res = toolchain_makefile.build(self)
-        self.binmd5key = self._get_md5_header()
-        f = open(self._GetBinMD5FileName(), "w")
-        f.write(self.binmd5key)
-        f.close()
-        try:
-            self.PluginsRootInstance.logger.write(
-                _("Binary is %s bytes long\n")%
-                    str(os.path.getsize(
-                        os.path.join(self.buildpath, "ArmPLC_rom.bin"))))
-        except Exception, e:
-            pass 
+        if res:
+            self.binmd5key = self._get_md5_header()
+            f = open(self._GetBinMD5FileName(), "w")
+            f.write(self.binmd5key)
+            f.close()
+            try:
+                self.PluginsRootInstance.logger.write(
+                    _("Binary is %s bytes long\n")%
+                        str(os.path.getsize(
+                            os.path.join(self.buildpath, "ArmPLC_rom.bin"))))
+            except Exception, e:
+                pass
         return res
 

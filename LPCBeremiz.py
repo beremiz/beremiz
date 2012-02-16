@@ -60,12 +60,19 @@ if __name__ == '__main__':
 
 from Beremiz import *
 from plugger import PluginsRoot, PlugTemplate, opjimg, connectors
-from plugins.canfestival import RootClass as CanOpenRootClass
-from plugins.canfestival.canfestival import _SlavePlug, _NodeListPlug, NodeManager
 from plcopen.structures import LOCATIONDATATYPES
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP,\
                          LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from PLCOpenEditor import IDEFrame, ProjectDialog
+
+havecanfestival = False
+try:
+    from plugins.canfestival import RootClass as CanOpenRootClass
+    from plugins.canfestival.canfestival import _SlavePlug, _NodeListPlug, NodeManager
+    havecanfestival = True
+except:
+    havecanfestival = False
+    
 
 #-------------------------------------------------------------------------------
 #                          CANFESTIVAL PLUGIN HACK
@@ -363,87 +370,89 @@ class LPCBus(object):
 #                          LPC CanFestival Plugin Class
 #-------------------------------------------------------------------------------
 
-DEFAULT_SETTINGS = {
-    "CAN_Baudrate": "125K",
-    "Slave_NodeId": 2,
-    "Master_NodeId": 1,
-}
+if havecanfestival:
 
-class LPCCanOpenSlave(_SlavePlug):
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="CanFestivalSlaveNode">
-        <xsd:complexType>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Slave_NodeId)d"/>
-          <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
-          <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:integer">
-                    <xsd:minInclusive value="1"/>
-                    <xsd:maxInclusive value="99"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-          </xsd:attribute>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:schema>
-    """ % DEFAULT_SETTINGS
+    DEFAULT_SETTINGS = {
+        "CAN_Baudrate": "125K",
+        "Slave_NodeId": 2,
+        "Master_NodeId": 1,
+    }
     
-    def __init__(self):
-        # TODO change netname when name change
-        NodeManager.__init__(self)
-        odfilepath = self.GetSlaveODPath()
-        if(os.path.isfile(odfilepath)):
-            self.OpenFileInCurrent(odfilepath)
-        else:
-            self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
-                               0x00,         # NodeID - will be changed at build time
-                               "slave",      # Type
-                               "",           # description 
-                               "None",       # profile
-                               "", # prfile filepath
-                               "heartbeat",  # NMT
-                               [])           # options
-            self.OnPlugSave()
-    
-    def GetCanDevice(self):
-        return str(self.BaseParams.getIEC_Channel())
-    
-class LPCCanOpenMaster(_NodeListPlug):
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="CanFestivalNode">
-        <xsd:complexType>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Master_NodeId)d"/>
-          <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:schema>
-    """ % DEFAULT_SETTINGS
-
-    def GetCanDevice(self):
-        return str(self.BaseParams.getIEC_Channel())
-
-class LPCCanOpen(CanOpenRootClass):
-    XSD = None
-    PlugChildsTypes = [("CanOpenNode",LPCCanOpenMaster, "CanOpen Master"),
-                       ("CanOpenSlave",LPCCanOpenSlave, "CanOpen Slave")]
-    
-    def GetCanDriver(self):
-        return ""
-    
-    def LoadChilds(self):
-        PlugTemplate.LoadChilds(self)
+    class LPCCanOpenSlave(_SlavePlug):
+        XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:element name="CanFestivalSlaveNode">
+            <xsd:complexType>
+              <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
+              <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Slave_NodeId)d"/>
+              <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
+              <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:integer">
+                        <xsd:minInclusive value="1"/>
+                        <xsd:maxInclusive value="99"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+              </xsd:attribute>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:schema>
+        """ % DEFAULT_SETTINGS
         
-        if self.GetChildByName("Master") is None:
-            master = self.PlugAddChild("Master", "CanOpenNode", 0)
-            master.BaseParams.setEnabled(False)
+        def __init__(self):
+            # TODO change netname when name change
+            NodeManager.__init__(self)
+            odfilepath = self.GetSlaveODPath()
+            if(os.path.isfile(odfilepath)):
+                self.OpenFileInCurrent(odfilepath)
+            else:
+                self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
+                                   0x00,         # NodeID - will be changed at build time
+                                   "slave",      # Type
+                                   "",           # description 
+                                   "None",       # profile
+                                   "", # prfile filepath
+                                   "heartbeat",  # NMT
+                                   [])           # options
+                self.OnPlugSave()
         
-        if self.GetChildByName("Slave") is None:
-            slave = self.PlugAddChild("Slave", "CanOpenSlave", 1)
-            slave.BaseParams.setEnabled(False)
+        def GetCanDevice(self):
+            return str(self.BaseParams.getIEC_Channel())
+        
+    class LPCCanOpenMaster(_NodeListPlug):
+        XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:element name="CanFestivalNode">
+            <xsd:complexType>
+              <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
+              <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Master_NodeId)d"/>
+              <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:schema>
+        """ % DEFAULT_SETTINGS
+    
+        def GetCanDevice(self):
+            return str(self.BaseParams.getIEC_Channel())
+    
+    class LPCCanOpen(CanOpenRootClass):
+        XSD = None
+        PlugChildsTypes = [("CanOpenNode",LPCCanOpenMaster, "CanOpen Master"),
+                           ("CanOpenSlave",LPCCanOpenSlave, "CanOpen Slave")]
+        
+        def GetCanDriver(self):
+            return ""
+        
+        def LoadChilds(self):
+            PlugTemplate.LoadChilds(self)
+            
+            if self.GetChildByName("Master") is None:
+                master = self.PlugAddChild("Master", "CanOpenNode", 0)
+                master.BaseParams.setEnabled(False)
+            
+            if self.GetChildByName("Slave") is None:
+                slave = self.PlugAddChild("Slave", "CanOpenSlave", 1)
+                slave.BaseParams.setEnabled(False)
     
 
 #-------------------------------------------------------------------------------
@@ -503,7 +512,10 @@ class LPCPluginsRoot(PluginsRoot):
         
         PluginsRoot.__init__(self, frame, logger)
         
-        self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus"), ("CanOpen", LPCCanOpen, "CanOpen bus")]
+        if havecanfestival:
+            self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus"), ("CanOpen", LPCCanOpen, "CanOpen bus")]
+        else:
+            self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
         self.PlugType = "LPC"
         
         self.OnlineMode = "OFF"
@@ -682,7 +694,7 @@ class LPCPluginsRoot(PluginsRoot):
             #Load and init all the childs
             self.LoadChilds()
         
-        if self.GetChildByName("CanOpen") is None:
+        if havecanfestival and self.GetChildByName("CanOpen") is None:
             canopen = self.PlugAddChild("CanOpen", "CanOpen", 0)
             canopen.BaseParams.setEnabled(False)
             canopen.LoadChilds()
@@ -900,7 +912,7 @@ type *name = &beremiz_##name;
     def ResetBuildMD5(self):
         builder=self.GetBuilder()
         if builder is not None:
-            builder.ResetBinaryCodeMD5()
+            builder.ResetBinaryCodeMD5(self.OnlineMode)
         
     def GetLastBuildMD5(self):
         builder=self.GetBuilder()
@@ -927,6 +939,9 @@ type *name = &beremiz_##name;
                     #self.StatusTimer.Stop()
                     self.LPCConnector.ResetPLC()
                     self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
+            
+            else:
+                self.CurrentMode = None
     
     def BeginTransfer(self):
         self.logger.write(_("Start PLC transfer\n"))
@@ -1367,7 +1382,7 @@ if __name__ == '__main__':
             new_properties["productVersion"] = productversion
             new_properties["companyName"] = companyname
             if new_properties != properties:
-                self.PluginRoot.SetProjectProperties(properties=new_properties)
+                self.PluginRoot.SetProjectProperties(properties=new_properties, buffer=False)
                 self.RestartTimer()
         
         def SetOnlineMode(self, mode, path=None):

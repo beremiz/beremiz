@@ -98,7 +98,8 @@ class toolchain_makefile():
             status, result, err_result = ProcessLogger(self.PluginsRootInstance.logger,
                                                        command).spin()
             if status :
-                self.PluginsRootInstance.logger.write_error(_("C compilation of %s failed.\n"))
+                self.md5key = None
+                self.PluginsRootInstance.logger.write_error(_("C compilation failed.\n"))
                 return False
             return True
         else :
