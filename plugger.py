@@ -1810,8 +1810,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self.IECdebug_lock.acquire()
                 if len(debug_vars) == len(self.TracedIECPath):
                     if debug_getvar_retry > DEBUG_RETRIES_WARN:
-                        wx.CallAfter(self.logger.write, 
-                                 _("... debugger recovered\n"))
+                        self.logger.write(_("... debugger recovered\n"))
                     debug_getvar_retry = 0
                     for IECPath,value in zip(self.TracedIECPath, debug_vars):
                         if value is not None:
@@ -1819,8 +1818,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     self.CallWeakcallables("__tick__", "NewDataAvailable")
                 self.IECdebug_lock.release()
                 if debug_getvar_retry == DEBUG_RETRIES_WARN:
-                    wx.CallAfter(self.logger.write, 
-                             _("Waiting debugger to recover...\n"))
+                    self.logger.write(_("Waiting debugger to recover...\n"))
                 if debug_getvar_retry == DEBUG_RETRIES_REREGISTER:
                     # re-register debug registry to PLC
                     wx.CallAfter(self.RegisterDebugVarToConnector)
@@ -1829,7 +1827,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
                     time.sleep(0.1)
             else:
                 self.debug_break = True
-        wx.CallAfter(self.logger.write, _("Debugger disabled\n"))
+        self.logger.write(_("Debugger disabled\n"))
+        self.DebugThread = None
 
     def KillDebugThread(self):
         self.debug_break = True
@@ -1861,24 +1860,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
-
-
-#    def _Do_Test_Debug(self):
-#        # debug code
-#        self.temporary_non_weak_callable_refs = []
-#        for IEC_Path, idx in self._IECPathToIdx.iteritems():
-#            class tmpcls:
-#                def __init__(_self):
-#                    _self.buf = None
-#                def setbuf(_self,buf):
-#                    _self.buf = buf
-#                def SetValue(_self, value, idx, name):
-#                    self.logger.write("debug call: %s %d %s\n"%(repr(value), idx, name))
-#                    #self.logger.write("debug call: %s %d %s %s\n"%(repr(value), idx, name, repr(self.buf)))
-#            a = tmpcls()
-#            res = self.SubscribeDebugIECVariable(IEC_Path, a, idx, IEC_Path)
-#            a.setbuf(res)
-#            self.temporary_non_weak_callable_refs.append(a)
        
     def _Stop(self):
         """
@@ -1887,7 +1868,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if self._connector is not None and not self._connector.StopPLC():
             self.logger.write_error(_("Couldn't stop PLC !\n"))
 
-        self.KillDebugThread()
+        # debugthread should die on his own
+        #self.KillDebugThread()
         
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
