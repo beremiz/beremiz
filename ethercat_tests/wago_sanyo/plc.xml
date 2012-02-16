@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
+  <fileHeader companyName="Laurent BESSARD"
+              productName="test_ethercat"
+              productVersion="1.0"
+              creationDateTime="2011-10-20T19:01:52"/>
+  <contentHeader name="test_ethercat"
+                 modificationDateTime="2012-02-15T00:53:41">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="0" y="0"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="Prog" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="CLOCK" address="%QX0.0.0.2.28672.1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="LED" address="%QX0.0.0.2.28688.1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="TRUE"/>
+              </initialValue>
+            </variable>
+            <variable name="ControlWord" address="%QW0.0.1.0.24640.0">
+              <type>
+                <UINT/>
+              </type>
+            </variable>
+            <variable name="StatusWord" address="%IW0.0.1.0.24641.0">
+              <type>
+                <UINT/>
+              </type>
+            </variable>
+            <variable name="ErrorCode" address="%IW0.0.1.0.24639.0">
+              <type>
+                <UINT/>
+              </type>
+            </variable>
+            <variable name="Mode" address="%IB0.0.1.0.24673.0">
+              <type>
+                <SINT/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[CLOCK := NOT CLOCK;]]>
+          </ST>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="conf">
+        <resource name="res">
+          <task name="main_task" interval="T#0.4ms" priority="0">
+            <pouInstance name="main_instance" typeName="Prog"/>
+          </task>
+        </resource>
+      </configuration>
+    </configurations>
+  </instances>
+</project>
