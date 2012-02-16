@@ -23,7 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import Pyro.core as pyro
-from threading import Timer, Thread, Lock
+from threading import Timer, Thread, Lock, Semaphore
 import ctypes, os, commands, types, sys
 from targets.typemapping import SameEndianessTypeTranslator as TypeTranslator
 
@@ -217,6 +217,7 @@ class PLCObject(pyro.ObjBase):
             if self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
                 self.PLCStatus = "Started"
                 self.StatusChange()
+                self.StartSem.release()
                 self.evaluator(self.PrepareRuntimePy)
                 res,cmd = "None","None"
                 while True:
@@ -240,14 +241,17 @@ class PLCObject(pyro.ObjBase):
         if error is not None:
             PLCprint("Problem %s PLC"%error)
             self.PLCStatus = "Broken"
+            self.StatusChange()
+            self.StartSem.release()
         self._FreePLC()
     
     def StartPLC(self):
         PLCprint("StartPLC")
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
-            self.PLCStatus = "Started"
+            self.StartSem=Semaphore(0)
             self.PythonThread = Thread(target=self.PythonThreadProc)
             self.PythonThread.start()
+            self.StartSem.acquire()
             
     def StopPLC(self):
         PLCprint("StopPLC")
