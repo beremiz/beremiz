@@ -106,32 +106,35 @@ class toolchain_gcc():
                 self.PluginsRootInstance.logger.write(_("PLC :\n"))
                 
             for CFile, CFLAGS in CFilesAndCFLAGS:
-                bn = os.path.basename(CFile)
-                obn = os.path.splitext(bn)[0]+".o"
-                objectfilename = os.path.splitext(CFile)[0]+".o"
+                if CFile.endswith(".c"):
+                    bn = os.path.basename(CFile)
+                    obn = os.path.splitext(bn)[0]+".o"
+                    objectfilename = os.path.splitext(CFile)[0]+".o"
 
-                match = self.check_and_update_hash_and_deps(bn)
-                
-                if match:
-                    self.PluginsRootInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
-                else:
-                    relink = True
-
-                    self.PluginsRootInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
+                    match = self.check_and_update_hash_and_deps(bn)
                     
-                    status, result, err_result = ProcessLogger(
-                           self.PluginsRootInstance.logger,
-                           "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
-                               (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
-                           ).spin()
+                    if match:
+                        self.PluginsRootInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
+                    else:
+                        relink = True
 
-                    if status :
-                        self.srcmd5.pop(bn)
-                        self.PluginsRootInstance.logger.write_error(_("C compilation of %s failed.\n")%bn)
-                        return False
+                        self.PluginsRootInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
+                        
+                        status, result, err_result = ProcessLogger(
+                               self.PluginsRootInstance.logger,
+                               "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
+                                   (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
+                               ).spin()
 
-                obns.append(obn)
-                objs.append(objectfilename)
+                        if status :
+                            self.srcmd5.pop(bn)
+                            self.PluginsRootInstance.logger.write_error(_("C compilation of %s failed.\n")%bn)
+                            return False
+                    obns.append(obn)
+                    objs.append(objectfilename)
+                elif CFile.endswith(".o"):
+                    obns.append(os.path.basename(CFile))
+                    objs.append(CFile)
 
         ######### GENERATE library FILE ########################################
         # Link all the object files into one binary file
