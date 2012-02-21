@@ -1410,9 +1410,9 @@ class PluginsRoot(PlugTemplate, PLCControler):
                       "void __retrieve_%(s)s(void);\n"+
                       "void __publish_%(s)s(void);")%{'s':locstr} for locstr in locstrs]),
                 "retrieve_calls":"\n    ".join([
-                      "__retrieve_%s();"%locstr for locstr in locstrs]),
+                      "__retrieve_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "publish_calls":"\n    ".join([ #Call publish in reverse order
-                      "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
+                      "__publish_%s();"%locstr for locstr in locstrs]),
                 "init_calls":"\n    ".join([
                       "init_level=%d; "%(i+1)+
                       "if((res = __init_%s(argc,argv))){"%locstr +
