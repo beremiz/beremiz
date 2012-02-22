@@ -11,10 +11,14 @@
   #include "iec_std_lib.h"
 #endif
 
-%(MCL_includes)s
+IEC_INT beremiz__IW%(location)s_0;
+IEC_INT *__IW%(location)s_0 = &beremiz__IW%(location)s_0;
+
+%(MCL_headers)s
 
 IEC_UINT __InactiveMask = 0x4f;
 IEC_UINT __ActiveMask = 0x6f;
+IEC_UINT __PowerMask = 0x10;
 
 typedef enum {
 	__Unknown,
@@ -31,17 +35,17 @@ typedef enum {
 typedef struct {
 %(entry_variables)s
 	__DS402NodeState state;
+	axis_s* axis;
 } __DS402Node;
 
 static __DS402Node __DS402Node_%(location)s;
 
-%(located_variables_declaration)s
-
-extern uint8_t *domain1_pd;
-%(extern_pdo_entry_configuration)s
+%(extern_located_variables_declaration)s
 
 int __init_%(location)s()
 {
+%(init_entry_variables)s;
+*__IW%(location)s_0 = __MK_AllocAxis(&(__DS402Node_%(location)s.axis));
 	return 0;
 }
 
@@ -51,11 +55,8 @@ void __cleanup_%(location)s()
 
 void __retrieve_%(location)s()
 {
-	IEC_UINT statusword_inactive = __DS402Node_%(location)s.StatusWord & __InactiveMask;
-	IEC_UINT statusword_active = __DS402Node_%(location)s.StatusWord & __ActiveMask;
-
-    // DS402 input entries extraction
-%(retrieve_variables)s
+	IEC_UINT statusword_inactive = *(__DS402Node_%(location)s.StatusWord) & __InactiveMask;
+	IEC_UINT statusword_active = *(__DS402Node_%(location)s.StatusWord) & __ActiveMask;
 
 	// DS402 node state computation
 	__DS402Node_%(location)s.state = __Unknown;
@@ -95,35 +96,40 @@ void __retrieve_%(location)s()
 		return;
 	}
 
+	__DS402Node_%(location)s.axis->PowerFeedback = __DS402Node_%(location)s.state != __OperationEnabled;
+	__DS402Node_%(location)s.axis->ActualPosition = (IEC_REAL)(*(__DS402Node_%(location)s.ActualPosition)) * __DS402Node_%(location)s.axis->RatioDenominator / __DS402Node_%(location)s.axis->RatioNumerator;
+
+	__MK_UpdateAxis(*__IW%(location)s_0);
 }
 
 void __publish_%(location)s()
 {
+	__MK_ComputeAxis(*__IW%(location)s_0);
+
+	IEC_BOOL power = ((*(__DS402Node_%(location)s.StatusWord) & __PowerMask) > 0) && __DS402Node_%(location)s.axis->Power;
+
 	// DS402 node state transition computation
 	switch (__DS402Node_%(location)s.state) {
 	    case __SwitchOnDisabled:
-	    	__DS402Node_%(location)s.ControlWord = (__DS402Node_%(location)s.ControlWord & ~0x87) | 0x06;
+	    	*(__DS402Node_%(location)s.ControlWord) = (*(__DS402Node_%(location)s.ControlWord) & ~0x87) | 0x06;
 	    	break;
 	    case __ReadyToSwitchOn:
-	    	__DS402Node_%(location)s.ControlWord = (__DS402Node_%(location)s.ControlWord & ~0x8f) | 0x07;
-	    	break;
-	    case __SwitchedOn:
-	    	// if (POWER) {
-	    	//      __DS402Node_%(location)s.ControlWord = (__DS402Node_%(location)s.ControlWord & ~0x8f) | 0x0f;
-	    	// }
-	    	break;
 	    case __OperationEnabled:
-	    	// if (!POWER) {
-	        //      __DS402Node_%(location)s.ControlWord = (__DS402Node_%(location)s.ControlWord & ~0x8f) | 0x07;
-	    	// }
+	    	if (!power) {
+	    		*(__DS402Node_%(location)s.ControlWord) = (*(__DS402Node_%(location)s.ControlWord) & ~0x8f) | 0x07;
+	    		break;
+	    	}
+	    case __SwitchedOn:
+	    	if (power) {
+	    	    *(__DS402Node_%(location)s.ControlWord) = (*(__DS402Node_%(location)s.ControlWord) & ~0x8f) | 0x0f;
+	    	}
 	    	break;
 	    case __Fault:
-	    	__DS402Node_%(location)s.ControlWord = (__DS402Node_%(location)s.ControlWord & ~0x8f) | 0x80;
+	    	*(__DS402Node_%(location)s.ControlWord) = (*(__DS402Node_%(location)s.ControlWord) & ~0x8f) | 0x80;
 	    	break;
 	    default:
 	    	break;
 	}
 
-	// DS402 output entries setting
-%(publish_variables)s
+	*(__DS402Node_%(location)s.TargetPosition) = (IEC_DINT)(__DS402Node_%(location)s.axis->PositionSetPoint * __DS402Node_%(location)s.axis->RatioNumerator / __DS402Node_%(location)s.axis->RatioDenominator);
 }

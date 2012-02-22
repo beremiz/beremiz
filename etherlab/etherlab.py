@@ -7,7 +7,7 @@ import wx
 from xmlclass import *
 from plugger import PlugTemplate
 from PLCControler import UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
-from ConfigEditor import ConfigEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from ConfigEditor import ConfigEditor, DS402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 #--------------------------------------------------
 #                 Ethercat DS402 Node
@@ -15,8 +15,10 @@ from ConfigEditor import ConfigEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT
 
 NODE_VARIABLES = [
     ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
+    ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
     ("StatusWord", 0x6041, 0x00, "UINT", "I"),
     ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
+    ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
     ("ErrorCode", 0x603f, 0x00, "UINT", "I"),
 ]
 
@@ -30,6 +32,13 @@ class _EthercatDS402SlavePlug:
       </xsd:element>
     </xsd:schema>
     """
+    EditorType = DS402NodeEditor
+    
+    def ExtractHexDecValue(self, value):
+        return ExtractHexDecValue(value)
+
+    def GetSizeOfType(self, type):
+        return TYPECONVERSION.get(self.GetPlugRoot().GetBaseType(type), None)
     
     def _GetChildBySomething(self, something, toks):
         return self
@@ -57,7 +66,7 @@ class _EthercatDS402SlavePlug:
         """
         return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(), 0)
 
-    def GetSlaveInfos(self):
+    def GetSlaveTypeInfos(self):
         slave_type = self.EtherlabDS402Slave.getNode_Type()
         
         for module_type, vendor_id, product_code, revision_number in self.PlugParent.GetModulesByProfile(402):
@@ -69,16 +78,39 @@ class _EthercatDS402SlavePlug:
         
         return None
 
+    def GetSlaveInfos(self):
+        slave_typeinfos = self.GetSlaveTypeInfos()
+        if slave_typeinfos is not None:
+            device = self.PlugParent.GetModuleInfos(slave_typeinfos)
+            if device is not None:
+                infos = slave_typeinfos.copy()
+                entries = device.GetEntriesList()
+                entries_list = entries.items()
+                entries_list.sort()
+                infos.update({"physics": device.getPhysics(),
+                              "sync_managers": device.GetSyncManagers(),
+                              "entries": [entry[1] for entry in entries_list]})
+                return infos
+        return None
+
     def GetVariableLocationTree(self):
-        slave_infos = self.GetSlaveInfos()
+        slave_typeinfos = self.GetSlaveTypeInfos()
         vars = []
-        if slave_infos is not None:
-            vars = self.PlugParent.GetDeviceLocationTree(self.GetCurrentLocation(), slave_infos) 
+        if slave_typeinfos is not None:
+            vars = self.PlugParent.GetDeviceLocationTree(self.GetCurrentLocation(), slave_typeinfos) 
 
         return  {"name": self.BaseParams.getName(),
                  "type": LOCATION_PLUGIN,
                  "location": self.GetFullIEC_Channel(),
                  "children": vars}
+
+    PluginMethods = [
+        {"bitmap" : os.path.join("images", "EditCfile"),
+         "name" : _("Edit Node"), 
+         "tooltip" : _("Edit Node"),
+         "method" : "_OpenView"},
+    ]
+
 
     def PlugGenerate_C(self, buildpath, locations):
         """
@@ -99,77 +131,59 @@ class _EthercatDS402SlavePlug:
         
         slave_pos = current_location[-2:]
         
-        slave_infos = self.GetSlaveInfos()
+        slave_typeinfos = self.GetSlaveTypeInfos()
         device = None
-        if slave_infos is not None:
-            device = self.PlugParent.GetModuleInfos(slave_infos)
+        if slave_typeinfos is not None:
+            device = self.PlugParent.GetModuleInfos(slave_typeinfos)
         
         if device is None:
             raise (ValueError, 
                    _("No information found for DS402 node \"%s\" at location %s!") % (
-                      slave_infos["device_type"], ".".join(current_location)))
+                      slave_typeinfos["device_type"], ".".join(current_location)))
             
-        slave_idx = self.PlugParent.FileGenerator.DeclareSlave(slave_pos, slave_infos)
+        self.PlugParent.FileGenerator.DeclareSlave(slave_pos, slave_typeinfos)
         
         plc_ds402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_ds402node.c")
         plc_ds402node_file = open(plc_ds402node_filepath, 'r')
         plc_ds402node_code = plc_ds402node_file.read()
         plc_ds402node_file.close()
         
+        from plugins.motion import Headers
+        
         str_completion = {
             "location": location_str,
-            "MCL_includes": "",
-            "located_variables_declaration": [],
+            "MCL_headers": Headers,
+            "extern_located_variables_declaration": [],
             "entry_variables": [],
-            "extern_pdo_entry_configuration": [],
-            "retrieve_variables": [],
-            "publish_variables": [],
+            "init_entry_variables": [],
         }
         
-        variables = {}
         for variable in NODE_VARIABLES:
             var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
             var_infos["location"] = location_str
-            var_infos["slave"] = slave_idx
             var_infos["var_size"] = self.PlugParent.GetSizeOfType(var_infos["var_type"])
             var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
-            var_infos["real_var"] = "__DS402Node_%(location)s.%(name)s" % var_infos
-            var_infos.update(slave_infos)
             
-            variables[(var_infos["index"], var_infos["subindex"])] = var_infos["name"]
-            
-            str_completion["entry_variables"].append("    IEC_%(var_type)s %(name)s;" % var_infos)
-            
-            ConfigureVariable(var_infos, str_completion)
-            
-            str_completion["extern_pdo_entry_configuration"].append(
-                "extern unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % var_infos)
-                
-            if var_infos["var_type"] == "BOOL":
-                str_completion["extern_pdo_entry_configuration"].append(
-                    "extern unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % var_infos)
+            str_completion["extern_located_variables_declaration"].append(
+                    "IEC_%(var_type)s *%(var_name)s;" % var_infos)
+            str_completion["entry_variables"].append(
+                    "    IEC_%(var_type)s *%(name)s;" % var_infos)
+            str_completion["init_entry_variables"].append(
+                    "    __DS402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
             
             self.PlugParent.FileGenerator.DeclareVariable(
                     slave_pos, var_infos["index"], var_infos["subindex"], 
-                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"], False)
+                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
         
-        for element in ["located_variables_declaration", 
+        for element in ["extern_located_variables_declaration", 
                         "entry_variables", 
-                        "extern_pdo_entry_configuration", 
-                        "retrieve_variables", 
-                        "publish_variables"]:
+                        "init_entry_variables"]:
             str_completion[element] = "\n".join(str_completion[element])
         
         Gen_DS402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
         ds402nodefile = open(Gen_DS402Nodefile_path, 'w')
         ds402nodefile.write(plc_ds402node_code % str_completion)
         ds402nodefile.close()
-        
-        for location in locations:
-            loc = location["LOC"][len(current_location):]
-            if variables.get(loc, None) is None:
-                self.PlugParent.FileGenerator.DeclareVariable(
-                    slave_pos, loc[0], loc[1], location["IEC_TYPE"], location["DIR"], location["NAME"])
         
         return [(Gen_DS402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
         
@@ -598,14 +612,23 @@ def ConfigureVariable(entry_infos, str_completion):
     if entry_infos["data_type"] is None:
         raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
 
-    if not entry_infos.has_key("real_var"):
-        entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
-        str_completion["located_variables_declaration"].append(
-            "IEC_%(var_type)s %(real_var)s;" % entry_infos)
-    str_completion["located_variables_declaration"].append(
-         "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos)
+    entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
+    str_completion["located_variables_declaration"].extend(
+        ["IEC_%(var_type)s %(real_var)s;" % entry_infos,
+         "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos])
+    
+    str_completion["used_pdo_entry_offset_variables_declaration"].append(
+        "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
     
     if entry_infos["data_type"] == "BIT":
+        str_completion["used_pdo_entry_offset_variables_declaration"].append(
+            "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos)
+        
+        str_completion["used_pdo_entry_configuration"].append(
+             ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, " + 
+              "0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, " + 
+              "&slave%(slave)d_%(index).4x_%(subindex).2x_bit},") % entry_infos)
+        
         if entry_infos["dir"] == "I":
             str_completion["retrieve_variables"].append(
               ("    %(real_var)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
@@ -616,6 +639,10 @@ def ConfigureVariable(entry_infos, str_completion):
                "slave%(slave)d_%(index).4x_%(subindex).2x_bit, %(real_var)s);") % entry_infos)
     
     else:
+        str_completion["used_pdo_entry_configuration"].append(
+            ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, 0x%(index).4x, " + 
+             "%(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x},") % entry_infos)
+        
         if entry_infos["dir"] == "I":
             str_completion["retrieve_variables"].append(
                 ("    %(real_var)s = EC_READ_%(data_type)s(domain1_pd + " + 
@@ -624,25 +651,6 @@ def ConfigureVariable(entry_infos, str_completion):
             str_completion["publish_variables"].append(
                 ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
                  "%(real_var)s);") % entry_infos)
-
-def ConfigurePDO(entry_infos, str_completion):
-    str_completion["used_pdo_entry_offset_variables_declaration"].append(
-        "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
-        
-    if entry_infos["var_type"] == "BOOL":
-        str_completion["used_pdo_entry_offset_variables_declaration"].append(
-            "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos)
-        
-        str_completion["used_pdo_entry_configuration"].append(
-             ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, " + 
-              "0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, " + 
-              "&slave%(slave)d_%(index).4x_%(subindex).2x_bit},") % entry_infos)
-        
-    else:
-        
-        str_completion["used_pdo_entry_configuration"].append(
-            ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, 0x%(index).4x, " + 
-             "%(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x},") % entry_infos)
 
 class _EthercatCFileGenerator:
     
@@ -660,14 +668,13 @@ class _EthercatCFileGenerator:
         self.Slaves.sort()
         return self.Slaves.index((slave_identifier, slave))
 
-    def DeclareVariable(self, slave_identifier, index, subindex, iec_type, dir, name, configure=True):
+    def DeclareVariable(self, slave_identifier, index, subindex, iec_type, dir, name):
         slave_variables = self.UsedVariables.setdefault(slave_identifier, {})
         
         entry_infos = slave_variables.get((index, subindex), None)
         if entry_infos is None:
             slave_variables[(index, subindex)] = {
                 "infos": (iec_type, dir, name),
-                "configure": configure,
                 "mapped": False}
         elif entry_infos["infos"] != (iec_type, dir, name):
             raise ValueError, _("Definition conflict for location \"%s\"") % name 
@@ -764,6 +771,7 @@ class _EthercatCFileGenerator:
                         sync_managers.append(sync_manager_infos)
                     
                     pdos_index = []
+                    excluded_pdos = []
                     for only_mandatory in [True, False]:
                         for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
                                               [(pdo, "Outputs") for pdo in device.getRxPdo()]):
@@ -777,6 +785,9 @@ class _EthercatCFileGenerator:
                             
                             pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
                             pdos_index.append(pdo_index)
+                            if pdo_index in excluded_pdos:
+                                continue
+                            
                             entries_infos = []
                             
                             for entry in entries:
@@ -805,11 +816,14 @@ class _EthercatCFileGenerator:
                                         entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
                                         raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
                                     
-                                    if entry_declaration["configure"]:
-                                        ConfigureVariable(entry_infos, str_completion)
-                                    ConfigurePDO(entry_infos, str_completion)
-                            
+                                    ConfigureVariable(entry_infos, str_completion)
+                                    
                             if pdo_needed:
+                                for excluded in pdo.getExclude():
+                                    excluded_index = ExtractHexDecValue(excluded.getcontent())
+                                    if excluded_index not in excluded_pdos:
+                                        excluded_pdos.append(excluded_index)
+                                
                                 sm = pdo.getSm()
                                 if sm is None:
                                     for sm_idx, sync_manager in enumerate(sync_managers):
@@ -874,9 +888,7 @@ class _EthercatCFileGenerator:
                             if not dynamic_pdos.has_key(pdo_type):
                                 raise ValueError, _("No Sync manager defined for %s!") % pdo_type
                             
-                            if entry_declaration["configure"]:
-                                ConfigureVariable(entry_infos, str_completion)
-                            ConfigurePDO(entry_infos, str_completion)
+                            ConfigureVariable(entry_infos, str_completion)
                             
                             if len(dynamic_pdos[pdo_type]["pdos"]) > 0:
                                 pdo = dynamic_pdos[pdo_type]["pdos"][0]
