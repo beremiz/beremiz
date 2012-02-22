@@ -145,18 +145,202 @@ class VariablesTable(CustomTable):
                 grid.SetCellTextColour(row, col, highlight_colours[1])
             self.ResizeRow(grid, row)
 
+[ID_SLAVEINFOSPANEL, ID_SLAVEINFOSPANELVENDORLABEL, 
+ ID_SLAVEINFOSPANELVENDOR, ID_SLAVEINFOSPANELPRODUCTCODELABEL, 
+ ID_SLAVEINFOSPANELPRODUCTCODE, ID_SLAVEINFOSPANELREVISIONNUMBERLABEL, 
+ ID_SLAVEINFOSPANELREVISIONNUMBER, ID_SLAVEINFOSPANELPHYSICSLABEL, 
+ ID_SLAVEINFOSPANELPHYSICS, ID_SLAVEINFOSPANELSYNCMANAGERSLABEL, 
+ ID_SLAVEINFOSPANELSYNCMANAGERSGRID, ID_SLAVEINFOSPANELVARIABLESLABEL, 
+ ID_SLAVEINFOSPANELVARIABLESGRID, 
+] = [wx.NewId() for _init_ctrls in range(13)]
+
+class SlaveInfosPanel(wx.Panel):
+    
+    if wx.VERSION < (2, 6, 0):
+        def Bind(self, event, function, id = None):
+            if id is not None:
+                event(self, id, function)
+            else:
+                event(self, function)
+    
+    def _init_coll_MainSizer_Items(self, parent):
+        parent.AddSizer(self.SlaveInfosDetailsSizer, 0, border=5, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
+        parent.AddWindow(self.SyncManagersLabel, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.GROW)
+        parent.AddWindow(self.SyncManagersGrid, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.GROW)
+        parent.AddWindow(self.VariablesLabel, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.GROW)
+        parent.AddWindow(self.VariablesGrid, 0, border=5, flag=wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.GROW)
+        
+    def _init_coll_MainSizer_Growables(self, parent):
+        parent.AddGrowableCol(0)
+        parent.AddGrowableRow(2, 1)
+        parent.AddGrowableRow(4, 2)
+        
+    def _init_coll_SlaveInfosDetailsSizer_Items(self, parent):
+        parent.AddWindow(self.VendorLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
+        parent.AddWindow(self.Vendor, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.ProductCodeLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
+        parent.AddWindow(self.ProductCode, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.RevisionNumberLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
+        parent.AddWindow(self.RevisionNumber, 0, border=0, flag=wx.GROW)
+        parent.AddWindow(self.PhysicsLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
+        parent.AddWindow(self.Physics, 0, border=0, flag=wx.GROW)
+        
+    def _init_coll_SlaveInfosDetailsSizer_Growables(self, parent):
+        parent.AddGrowableCol(1)
+        parent.AddGrowableCol(3)
+    
+    def _init_sizers(self):
+        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=5)
+        self.SlaveInfosDetailsSizer = wx.FlexGridSizer(cols=4, hgap=5, rows=2, vgap=5)
+        
+        self._init_coll_MainSizer_Growables(self.MainSizer)
+        self._init_coll_MainSizer_Items(self.MainSizer)
+        self._init_coll_SlaveInfosDetailsSizer_Growables(self.SlaveInfosDetailsSizer)
+        self._init_coll_SlaveInfosDetailsSizer_Items(self.SlaveInfosDetailsSizer)
+        
+        self.SetSizer(self.MainSizer)
+
+    def _init_ctrls(self, prnt):
+        wx.Panel.__init__(self, id=ID_SLAVEINFOSPANEL, name='SlavePanel', parent=prnt,
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        
+        self.VendorLabel = wx.StaticText(id=ID_SLAVEINFOSPANELVENDORLABEL,
+              label=_('Vendor:'), name='VendorLabel', parent=self,
+              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        
+        self.Vendor = wx.TextCtrl(id=ID_SLAVEINFOSPANELVENDOR, value='',
+              name='Vendor', parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=wx.TE_READONLY)
+        
+        self.ProductCodeLabel = wx.StaticText(id=ID_SLAVEINFOSPANELPRODUCTCODELABEL,
+              label=_('Product code:'), name='ProductCodeLabel', parent=self,
+              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        
+        self.ProductCode = wx.TextCtrl(id=ID_SLAVEINFOSPANELPRODUCTCODE, value='',
+              name='ProductCode', parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=wx.TE_READONLY)
+        
+        self.RevisionNumberLabel = wx.StaticText(id=ID_SLAVEINFOSPANELREVISIONNUMBERLABEL,
+              label=_('Revision number:'), name='RevisionNumberLabel', parent=self,
+              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        
+        self.RevisionNumber = wx.TextCtrl(id=ID_SLAVEINFOSPANELREVISIONNUMBER, value='',
+              name='RevisionNumber', parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=wx.TE_READONLY)
+        
+        self.PhysicsLabel = wx.StaticText(id=ID_SLAVEINFOSPANELPHYSICSLABEL,
+              label=_('Physics:'), name='PhysicsLabel', parent=self,
+              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        
+        self.Physics = wx.TextCtrl(id=ID_SLAVEINFOSPANELPHYSICS, value='',
+              name='Physics', parent=self, pos=wx.Point(0, 0),
+              size=wx.Size(0, 24), style=wx.TE_READONLY)
+        
+        self.SyncManagersLabel =  wx.StaticText(id=ID_SLAVEINFOSPANELSYNCMANAGERSLABEL,
+              label=_('Sync managers:'), name='SyncManagersLabel', parent=self,
+              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        
+        self.SyncManagersGrid = CustomGrid(id=ID_SLAVEINFOSPANELSYNCMANAGERSGRID,
+              name='SyncManagersGrid', parent=self, pos=wx.Point(0, 0), 
+              size=wx.Size(0, 0), style=wx.VSCROLL)
+        
+        self.VariablesLabel =  wx.StaticText(id=ID_SLAVEINFOSPANELVARIABLESLABEL,
+              label=_('Variable entries:'), name='VariablesLabel', parent=self,
+              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        
+        self.VariablesGrid = CustomGrid(id=ID_SLAVEINFOSPANELVARIABLESGRID,
+              name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
+              size=wx.Size(0, 0), style=wx.VSCROLL)
+        if wx.VERSION >= (2, 5, 0):
+            self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
+        else:
+            wx.grid.EVT_GRID_CELL_LEFT_CLICK(self.VariablesGrid, self.OnVariablesGridCellLeftClick)
+        
+        self._init_sizers()
+        
+    def __init__(self, parent, controler):
+        self._init_ctrls(parent)
+        
+        self.Controler = controler
+        
+        self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
+        self.SyncManagersGrid.SetTable(self.SyncManagersTable)
+        self.SyncManagersGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
+                                               wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT]
+        self.SyncManagersGridColSizes = [40, 150, 100, 100, 100, 100]
+        self.SyncManagersGrid.SetRowLabelSize(0)
+        for col in range(self.SyncManagersTable.GetNumberCols()):
+            attr = wx.grid.GridCellAttr()
+            attr.SetAlignment(self.SyncManagersGridColAlignements[col], wx.ALIGN_CENTRE)
+            self.SyncManagersGrid.SetColAttr(col, attr)
+            self.SyncManagersGrid.SetColMinimalWidth(col, self.SyncManagersGridColSizes[col])
+            self.SyncManagersGrid.AutoSizeColumn(col, False)
+        
+        self.VariablesTable = VariablesTable(self, [], GetVariablesTableColnames())
+        self.VariablesGrid.SetTable(self.VariablesTable)
+        self.VariablesGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, 
+                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
+                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT]
+        self.VariablesGridColSizes = [40, 100, 100, 150, 150, 100, 150, 100]
+        self.VariablesGrid.SetRowLabelSize(0)
+        for col in range(self.VariablesTable.GetNumberCols()):
+            attr = wx.grid.GridCellAttr()
+            attr.SetAlignment(self.VariablesGridColAlignements[col], wx.ALIGN_CENTRE)
+            self.VariablesGrid.SetColAttr(col, attr)
+            self.VariablesGrid.SetColMinimalWidth(col, self.VariablesGridColSizes[col])
+            self.VariablesGrid.AutoSizeColumn(col, False)
+    
+    def SetSlaveInfos(self, slave_infos):
+        if slave_infos is not None:
+            self.Vendor.SetValue(slave_infos["vendor"])
+            self.ProductCode.SetValue(slave_infos["product_code"])
+            self.RevisionNumber.SetValue(slave_infos["revision_number"])
+            self.Physics.SetValue(slave_infos["physics"])
+            self.SyncManagersTable.SetData(slave_infos["sync_managers"])
+            self.SyncManagersTable.ResetView(self.SyncManagersGrid)
+            self.VariablesTable.SetData(slave_infos["entries"])
+            self.VariablesTable.ResetView(self.VariablesGrid)
+        else:
+            self.Vendor.SetValue("")
+            self.ProductCode.SetValue("")
+            self.RevisionNumber.SetValue("")
+            self.Physics.SetValue("")
+            self.SyncManagersTable.SetData([])
+            self.SyncManagersTable.ResetView(self.SyncManagersGrid)
+            self.VariablesTable.SetData([])
+            self.VariablesTable.ResetView(self.VariablesGrid)
+
+    def OnVariablesGridCellLeftClick(self, event):
+        row = event.GetRow()
+        
+        data_type = self.VariablesTable.GetValueByName(row, "Type")
+        access = self.VariablesTable.GetValueByName(row, "Access")
+        if (event.GetCol() == 0 and access != "" and
+            self.Controler.GetSizeOfType(data_type) is not None):
+            
+            entry_index = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "Index"))
+            entry_subindex = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "SubIndex"))
+            var_name = "%s_%4.4x_%2.2x" % (self.Type.GetValue(), entry_index, entry_subindex)
+            if access in ["ro"]:
+                dir = "%I"
+            else:
+                dir = "%Q"
+            location = "%s%s" % (dir, self.Controler.GetSizeOfType(data_type)) + \
+                       ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + self.Slave + (entry_index, entry_subindex)))
+            
+            data = wx.TextDataObject(str((location, "location", data_type, var_name, "")))
+            dragSource = wx.DropSource(self.VariablesGrid)
+            dragSource.SetData(data)
+            dragSource.DoDragDrop()
+        
+        event.Skip()
+
 [ID_SLAVEPANEL, ID_SLAVEPANELTYPELABEL,
  ID_SLAVEPANELTYPE, ID_SLAVEPANELTYPEBROWSE, 
  ID_SLAVEPANELALIASLABEL, ID_SLAVEPANELALIAS, 
  ID_SLAVEPANELPOSLABEL, ID_SLAVEPANELPOS, 
- ID_SLAVEPANELSLAVEINFOSSTATICBOX, ID_SLAVEPANELVENDORLABEL, 
- ID_SLAVEPANELVENDOR, ID_SLAVEPANELPRODUCTCODELABEL, 
- ID_SLAVEPANELPRODUCTCODE, ID_SLAVEPANELREVISIONNUMBERLABEL, 
- ID_SLAVEPANELREVISIONNUMBER, ID_SLAVEPANELPHYSICSLABEL, 
- ID_SLAVEPANELPHYSICS, ID_SLAVEPANELSYNCMANAGERSLABEL, 
- ID_SLAVEPANELSYNCMANAGERSGRID, ID_SLAVEPANELVARIABLESLABEL, 
- ID_SLAVEPANELVARIABLESGRID, 
-] = [wx.NewId() for _init_ctrls in range(21)]
+ ID_SLAVEPANELSLAVEINFOSSTATICBOX, 
+] = [wx.NewId() for _init_ctrls in range(9)]
 
 class SlavePanel(wx.Panel):
     
@@ -194,41 +378,13 @@ class SlavePanel(wx.Panel):
         parent.AddWindow(self.TypeBrowse, 0, border=0, flag=0)
     
     def _init_coll_SlaveInfosBoxSizer_Items(self, parent):
-        parent.AddSizer(self.SlaveInfosSizer, 1, border=5, flag=wx.GROW|wx.ALL)
-    
-    def _init_coll_SlaveInfosSizer_Items(self, parent):
-        parent.AddSizer(self.SlaveInfosDetailsSizer, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.SyncManagersLabel, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.SyncManagersGrid, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.VariablesLabel, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.VariablesGrid, 0, border=0, flag=wx.GROW)
-        
-    def _init_coll_SlaveInfosSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(2, 1)
-        parent.AddGrowableRow(4, 2)
-        
-    def _init_coll_SlaveInfosDetailsSizer_Items(self, parent):
-        parent.AddWindow(self.VendorLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.Vendor, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.ProductCodeLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.ProductCode, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.RevisionNumberLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.RevisionNumber, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.PhysicsLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.Physics, 0, border=0, flag=wx.GROW)
-        
-    def _init_coll_SlaveInfosDetailsSizer_Growables(self, parent):
-        parent.AddGrowableCol(1)
-        parent.AddGrowableCol(3)
+        parent.AddWindow(self.SlaveInfosPanel, 1, border=0, flag=wx.GROW)
     
     def _init_sizers(self):
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
         self.PositionSizer = wx.FlexGridSizer(cols=6, hgap=5, rows=1, vgap=0)
         self.TypeSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SlaveInfosBoxSizer = wx.StaticBoxSizer(self.SlaveInfosStaticBox, wx.VERTICAL)
-        self.SlaveInfosSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=5)
-        self.SlaveInfosDetailsSizer = wx.FlexGridSizer(cols=4, hgap=5, rows=2, vgap=5)
         
         self._init_coll_MainSizer_Growables(self.MainSizer)
         self._init_coll_MainSizer_Items(self.MainSizer)
@@ -236,10 +392,6 @@ class SlavePanel(wx.Panel):
         self._init_coll_PositionSizer_Items(self.PositionSizer)
         self._init_coll_TypeSizer_Items(self.TypeSizer)
         self._init_coll_SlaveInfosBoxSizer_Items(self.SlaveInfosBoxSizer)
-        self._init_coll_SlaveInfosSizer_Growables(self.SlaveInfosSizer)
-        self._init_coll_SlaveInfosSizer_Items(self.SlaveInfosSizer)
-        self._init_coll_SlaveInfosDetailsSizer_Growables(self.SlaveInfosDetailsSizer)
-        self._init_coll_SlaveInfosDetailsSizer_Items(self.SlaveInfosDetailsSizer)
         
         self.SetSizer(self.MainSizer)
     
@@ -282,93 +434,16 @@ class SlavePanel(wx.Panel):
               label=_('Slave infos:'), name='SlaveInfosStaticBox', parent=self,
               pos=wx.Point(0, 0), size=wx.Size(0, 0), style=0)
         
-        self.VendorLabel = wx.StaticText(id=ID_SLAVEPANELVENDORLABEL,
-              label=_('Vendor:'), name='VendorLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.Vendor = wx.TextCtrl(id=ID_SLAVEPANELVENDOR, value='',
-              name='Vendor', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.ProductCodeLabel = wx.StaticText(id=ID_SLAVEPANELPRODUCTCODELABEL,
-              label=_('Product code:'), name='ProductCodeLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.ProductCode = wx.TextCtrl(id=ID_SLAVEPANELPRODUCTCODE, value='',
-              name='ProductCode', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.RevisionNumberLabel = wx.StaticText(id=ID_SLAVEPANELREVISIONNUMBERLABEL,
-              label=_('Revision number:'), name='RevisionNumberLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.RevisionNumber = wx.TextCtrl(id=ID_SLAVEPANELREVISIONNUMBER, value='',
-              name='RevisionNumber', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.PhysicsLabel = wx.StaticText(id=ID_SLAVEPANELPHYSICSLABEL,
-              label=_('Physics:'), name='PhysicsLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.Physics = wx.TextCtrl(id=ID_SLAVEPANELPHYSICS, value='',
-              name='Physics', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.SyncManagersLabel =  wx.StaticText(id=ID_SLAVEPANELSYNCMANAGERSLABEL,
-              label=_('Sync managers:'), name='SyncManagersLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.SyncManagersGrid = CustomGrid(id=ID_SLAVEPANELSYNCMANAGERSGRID,
-              name='SyncManagersGrid', parent=self, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 0), style=wx.VSCROLL)
-        
-        self.VariablesLabel =  wx.StaticText(id=ID_SLAVEPANELVARIABLESLABEL,
-              label=_('Variable entries:'), name='VariablesLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.VariablesGrid = CustomGrid(id=ID_SLAVEPANELVARIABLESGRID,
-              name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 0), style=wx.VSCROLL)
-        if wx.VERSION >= (2, 5, 0):
-            self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
-        else:
-            wx.grid.EVT_GRID_CELL_LEFT_CLICK(self.VariablesGrid, self.OnVariablesGridCellLeftClick)
+        self.SlaveInfosPanel = SlaveInfosPanel(self, self.Controler)
         
         self._init_sizers()
     
     def __init__(self, parent, controler, window, slave):
-        self._init_ctrls(parent)
-        
         self.Controler = controler
         self.ParentWindow = window
         self.Slave = slave
         
-        self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
-        self.SyncManagersGrid.SetTable(self.SyncManagersTable)
-        self.SyncManagersGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
-                                               wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT]
-        self.SyncManagersGridColSizes = [40, 150, 100, 100, 100, 100]
-        self.SyncManagersGrid.SetRowLabelSize(0)
-        for col in range(self.SyncManagersTable.GetNumberCols()):
-            attr = wx.grid.GridCellAttr()
-            attr.SetAlignment(self.SyncManagersGridColAlignements[col], wx.ALIGN_CENTRE)
-            self.SyncManagersGrid.SetColAttr(col, attr)
-            self.SyncManagersGrid.SetColMinimalWidth(col, self.SyncManagersGridColSizes[col])
-            self.SyncManagersGrid.AutoSizeColumn(col, False)
-        
-        self.VariablesTable = VariablesTable(self, [], GetVariablesTableColnames())
-        self.VariablesGrid.SetTable(self.VariablesTable)
-        self.VariablesGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, 
-                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
-                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT]
-        self.VariablesGridColSizes = [40, 100, 100, 150, 150, 100, 150, 100]
-        self.VariablesGrid.SetRowLabelSize(0)
-        for col in range(self.VariablesTable.GetNumberCols()):
-            attr = wx.grid.GridCellAttr()
-            attr.SetAlignment(self.VariablesGridColAlignements[col], wx.ALIGN_CENTRE)
-            self.VariablesGrid.SetColAttr(col, attr)
-            self.VariablesGrid.SetColMinimalWidth(col, self.VariablesGridColSizes[col])
-            self.VariablesGrid.AutoSizeColumn(col, False)
+        self._init_ctrls(parent)
         
         self.RefreshView()
     
@@ -390,17 +465,10 @@ class SlavePanel(wx.Panel):
         slave_infos = self.Controler.GetSlaveInfos(self.Slave)
         if slave_infos is not None:
             self.Type.SetValue(slave_infos["device_type"])
-            self.Vendor.SetValue(slave_infos["vendor"])
-            self.ProductCode.SetValue(slave_infos["product_code"])
-            self.RevisionNumber.SetValue(slave_infos["revision_number"])
-            self.Physics.SetValue(slave_infos["physics"])
-            self.SyncManagersTable.SetData(slave_infos["sync_managers"])
-            self.SyncManagersTable.ResetView(self.SyncManagersGrid)
-            self.VariablesTable.SetData(slave_infos["entries"])
-            self.VariablesTable.ResetView(self.VariablesGrid)
         else:
             type_infos = self.Controler.GetSlaveType(self.Slave)
             self.Type.SetValue(type_infos["device_type"])
+        self.SlaveInfosPanel.SetSlaveInfos(slave_infos)
         
     def OnAliasChanged(self, event):
         alias = self.Alias.GetValue()
@@ -443,34 +511,8 @@ class SlavePanel(wx.Panel):
         dialog.Destroy()
         event.Skip()
 
-    def OnVariablesGridCellLeftClick(self, event):
-        row = event.GetRow()
-        
-        data_type = self.VariablesTable.GetValueByName(row, "Type")
-        access = self.VariablesTable.GetValueByName(row, "Access")
-        if (event.GetCol() == 0 and access != "" and
-            self.Controler.GetSizeOfType(data_type) is not None):
-            
-            entry_index = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "Index"))
-            entry_subindex = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "SubIndex"))
-            var_name = "%s_%4.4x_%2.2x" % (self.Type.GetValue(), entry_index, entry_subindex)
-            if access in ["ro"]:
-                dir = "%I"
-            else:
-                dir = "%Q"
-            location = "%s%s" % (dir, self.Controler.GetSizeOfType(data_type)) + \
-                       ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + self.Slave + (entry_index, entry_subindex)))
-            
-            data = wx.TextDataObject(str((location, "location", data_type, var_name, "")))
-            dragSource = wx.DropSource(self.VariablesGrid)
-            dragSource.SetData(data)
-            dragSource.DoDragDrop()
-        
-        event.Skip()
-
-[ID_CONFIGEDITOR, ID_CONFIGEDITORADDSLAVEBUTTON,
- ID_CONFIGEDITORDELETESLAVEBUTTON, ID_CONFIGEDITORSLAVENODES,
-] = [wx.NewId() for _init_ctrls in range(4)]
+[ID_CONFIGEDITOR, ID_CONFIGEDITORSLAVENODES,
+] = [wx.NewId() for _init_ctrls in range(2)]
 
 [ID_CONFIGEDITORPLUGINMENUADDSLAVE, ID_CONFIGEDITORPLUGINMENUDELETESLAVE,
 ] = [wx.NewId() for _init_coll_PluginMenu_Items in range(2)]
@@ -586,4 +628,33 @@ class ConfigEditor(EditorPanel):
             if self.Controler.RemoveSlave(panel.GetSlave()[:2]):
                 self.RefreshParentWindow()
                 wx.CallAfter(self.RefreshView)
-            
+
+
+[ID_DS402NODEEDITOR,
+] = [wx.NewId() for _init_ctrls in range(1)]
+
+class DS402NodeEditor(EditorPanel):
+    
+    ID = ID_DS402NODEEDITOR
+    
+    def _init_Editor(self, prnt):
+        self.Editor = SlaveInfosPanel(prnt, self.Controler)
+        
+    def __init__(self, parent, controler, window):
+        EditorPanel.__init__(self, parent, "", window, controler)
+        
+        img = wx.Bitmap(self.Controler.GetIconPath("Cfile.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
+        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
+    
+    def __del__(self):
+        self.Controler.OnCloseEditor(self)
+    
+    def GetTitle(self):
+        return self.Controler.PlugFullName()
+    
+    def GetBufferState(self):
+        return False, False
+        
+    def RefreshView(self):
+        self.Editor.SetSlaveInfos(self.Controler.GetSlaveInfos())
+        
