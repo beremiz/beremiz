@@ -16,6 +16,8 @@
   #include "iec_std_lib.h"
 #endif
 
+extern unsigned long long common_ticktime__;
+
 // declaration of interface variables
 %(located_variables_declaration)s
 
@@ -70,6 +72,8 @@ int __init_%(location)s(int argc,char **argv)
         return -1;
     }
 
+	ecrt_master_set_send_interval(master, common_ticktime__);
+
 %(slaves_initialization)s
 
     sprintf(&rt_dev_file[0],"%%s%%u",EC_RTDM_DEV_FILE_NAME,0);
@@ -111,15 +115,15 @@ void __cleanup_%(location)s(void)
 
 void __retrieve_%(location)s(void)
 {
-    // receive ethercat
-    ecrt_rtdm_master_recieve(rt_fd);
-    ecrt_rtdm_domain_process(rt_fd);
-
-    rt_task_sleep(rt_timer_ns2tsc(wait_period_ns));
-
     // send process data
     ecrt_rtdm_domain_queque(rt_fd);
     ecrt_rtdm_master_send(rt_fd);
+
+    rt_task_sleep(rt_timer_ns2tsc(wait_period_ns));
+
+    // receive ethercat
+    ecrt_rtdm_master_recieve(rt_fd);
+    ecrt_rtdm_domain_process(rt_fd);
 
 %(retrieve_variables)s
 }

@@ -131,5 +131,10 @@ void __publish_%(location)s()
 	    	break;
 	}
 
-	*(__DS402Node_%(location)s.TargetPosition) = (IEC_DINT)(__DS402Node_%(location)s.axis->PositionSetPoint * __DS402Node_%(location)s.axis->RatioNumerator / __DS402Node_%(location)s.axis->RatioDenominator);
+	if (__DS402Node_%(location)s.axis->CSP && *(__DS402Node_%(location)s.ModesOfOperationDisplay) == 0x08) {
+		*(__DS402Node_%(location)s.TargetPosition) = (IEC_DINT)(__DS402Node_%(location)s.axis->PositionSetPoint * __DS402Node_%(location)s.axis->RatioNumerator / __DS402Node_%(location)s.axis->RatioDenominator);
+	}
+	else {
+		*(__DS402Node_%(location)s.TargetPosition) = *(__DS402Node_%(location)s.ActualPosition);
+	}
 }
