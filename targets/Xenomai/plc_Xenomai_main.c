@@ -75,7 +75,7 @@ void PLC_task_proc(void *arg)
 {
     PLC_SetTimer(Ttick, Ttick);
 
-    while (1) {
+    while (!PLC_shutdown) {
         PLC_GetTime(&__CURRENT_TIME);
         __run();
         if (PLC_shutdown) break;
