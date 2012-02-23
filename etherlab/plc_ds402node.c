@@ -96,7 +96,7 @@ void __retrieve_%(location)s()
 		return;
 	}
 
-	__DS402Node_%(location)s.axis->PowerFeedback = __DS402Node_%(location)s.state != __OperationEnabled;
+	__DS402Node_%(location)s.axis->PowerFeedback = __DS402Node_%(location)s.state == __OperationEnabled;
 	__DS402Node_%(location)s.axis->ActualPosition = (IEC_REAL)(*(__DS402Node_%(location)s.ActualPosition)) * __DS402Node_%(location)s.axis->RatioDenominator / __DS402Node_%(location)s.axis->RatioNumerator;
 
 	__MK_UpdateAxis(*__IW%(location)s_0);
