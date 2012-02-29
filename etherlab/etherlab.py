@@ -64,7 +64,10 @@ class _EthercatDS402SlavePlug:
         """
         @return:  Tupple containing plugin IEC location of current plugin : %I0.0.4.5 => (0,0,4,5)
         """
-        return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(), 0)
+        return self.PlugParent.GetCurrentLocation() + self.GetSlavePos()
+
+    def GetSlavePos(self):
+        return self.BaseParams.getIEC_Channel(), 0
 
     def GetSlaveTypeInfos(self):
         slave_type = self.EtherlabDS402Slave.getNode_Type()
@@ -312,7 +315,7 @@ class _EthercatPlug:
     def AddSlave(self):
         slaves = self.GetSlaves()
         for PlugInstance in self.IterChilds():
-            slaves.append((PlugInstance.BaseParams.getIEC_Channel(), 0))
+            slaves.append(PlugInstance.GetSlavePos())
         slaves.sort()
         if len(slaves) > 0:
             new_pos = (slaves[-1][0] + 1, 0)
@@ -422,7 +425,7 @@ class _EthercatPlug:
                                      "type": var_class,
                                      "size": var_size,
                                      "IEC_type": entry["Type"],
-                                     "var_name": "%s_%4.4x_%2.2x" % (type_infos["device_type"], index, subindex),
+                                     "var_name": "%s_%4.4x_%2.2x" % ("_".join(type_infos["device_type"].split()), index, subindex),
                                      "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
                                                                                                 (index, subindex)))),
                                      "description": "",

@@ -129,11 +129,11 @@ class VariablesTable(CustomTable):
         """
         for row in range(self.GetNumberRows()):
             row_highlights = self.Highlights.get(row, {})
-            access = self.GetValueByName(row, "Access")
+            pdo_mapping = self.GetValueByName(row, "PDOMapping")
             for col in range(self.GetNumberCols()):
                 colname = self.GetColLabelValue(col, False)
                 
-                if colname in ["PDO index", "PDO name", "PDO type"] and access == "":
+                if colname in ["PDO index", "PDO name", "PDO type"] and pdo_mapping == "":
                     highlight_colours = (wx.LIGHT_GREY, wx.WHITE)
                 else:
                     highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
@@ -262,6 +262,8 @@ class SlaveInfosPanel(wx.Panel):
         self._init_ctrls(parent)
         
         self.Controler = controler
+        self.Slave = None
+        self.Type = None
         
         self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
         self.SyncManagersGrid.SetTable(self.SyncManagersTable)
@@ -290,8 +292,10 @@ class SlaveInfosPanel(wx.Panel):
             self.VariablesGrid.SetColMinimalWidth(col, self.VariablesGridColSizes[col])
             self.VariablesGrid.AutoSizeColumn(col, False)
     
-    def SetSlaveInfos(self, slave_infos):
+    def SetSlaveInfos(self, slave_pos, slave_infos):
+        self.Slave = slave_pos
         if slave_infos is not None:
+            self.Type = slave_infos["device_type"]
             self.Vendor.SetValue(slave_infos["vendor"])
             self.ProductCode.SetValue(slave_infos["product_code"])
             self.RevisionNumber.SetValue(slave_infos["revision_number"])
@@ -301,6 +305,7 @@ class SlaveInfosPanel(wx.Panel):
             self.VariablesTable.SetData(slave_infos["entries"])
             self.VariablesTable.ResetView(self.VariablesGrid)
         else:
+            self.Type = None
             self.Vendor.SetValue("")
             self.ProductCode.SetValue("")
             self.RevisionNumber.SetValue("")
@@ -314,14 +319,14 @@ class SlaveInfosPanel(wx.Panel):
         row = event.GetRow()
         
         data_type = self.VariablesTable.GetValueByName(row, "Type")
-        access = self.VariablesTable.GetValueByName(row, "Access")
-        if (event.GetCol() == 0 and access != "" and
+        pdo_mapping = self.VariablesTable.GetValueByName(row, "PDOMapping")
+        if (event.GetCol() == 0 and pdo_mapping != "" and
             self.Controler.GetSizeOfType(data_type) is not None):
             
             entry_index = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "Index"))
             entry_subindex = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "SubIndex"))
-            var_name = "%s_%4.4x_%2.2x" % (self.Type.GetValue(), entry_index, entry_subindex)
-            if access in ["ro"]:
+            var_name = "%s_%4.4x_%2.2x" % (self.Type, entry_index, entry_subindex)
+            if pdo_mapping in ["R"]:
                 dir = "%I"
             else:
                 dir = "%Q"
@@ -468,7 +473,7 @@ class SlavePanel(wx.Panel):
         else:
             type_infos = self.Controler.GetSlaveType(self.Slave)
             self.Type.SetValue(type_infos["device_type"])
-        self.SlaveInfosPanel.SetSlaveInfos(slave_infos)
+        self.SlaveInfosPanel.SetSlaveInfos(self.Slave, slave_infos)
         
     def OnAliasChanged(self, event):
         alias = self.Alias.GetValue()
@@ -656,5 +661,5 @@ class DS402NodeEditor(EditorPanel):
         return False, False
         
     def RefreshView(self):
-        self.Editor.SetSlaveInfos(self.Controler.GetSlaveInfos())
+        self.Editor.SetSlaveInfos(self.Controler.GetSlavePos(), self.Controler.GetSlaveInfos())
         
