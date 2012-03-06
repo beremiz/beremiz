@@ -872,11 +872,11 @@ type *name = &beremiz_##name;
         data = builder.GetBinaryCode()
         if data is not None :
             if self._connector.NewPLC(builder.GetBinaryCodeMD5(), data, []):
-                if self.AppFrame is not None:
-                    self.AppFrame.CloseDebugTabs()
-                    self.AppFrame.RefreshInstancesTree()
                 self.UnsubscribeAllDebugIECVariable()
                 self.ProgramTransferred()
+                if self.AppFrame is not None:
+                    self.AppFrame.RefreshInstancesTree()
+                    self.AppFrame.CloseObsoleteDebugTabs()
                 self.logger.write(_("Transfer completed successfully.\n"))
             else:
                 self.logger.write_error(_("Transfer failed\n"))
