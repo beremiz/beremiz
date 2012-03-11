@@ -34,6 +34,10 @@ elif os.name == "posix":
     from _ctypes import dlopen, dlclose
 
 import traceback
+def get_last_traceback(tb):
+    while tb.tb_next:
+        tb = tb.tb_next
+    return tb
 
 lib_ext ={
      "linux2":".so",
@@ -389,3 +393,14 @@ class PLCObject(pyro.ObjBase):
                 #PLCprint("Debug error - wrong buffer unpack ! %d != %d"%(offset, size.value))
         return self.PLCStatus, None, []
 
+    def RemoteExec(self, script, **kwargs):
+        try:
+            exec script in kwargs
+        except:
+            e_type, e_value, e_traceback = sys.exc_info()
+            line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
+            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" % 
+                        (line_no, e_value, script.splitlines()[line_no - 1]))
+        return (0, kwargs.get("returnVal", None))
+    
+        
