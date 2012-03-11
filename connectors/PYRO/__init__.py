@@ -130,6 +130,10 @@ def PYRO_connector_factory(uri, pluginsroot):
             return RemotePLCObjectProxy.GetPLCstatus()
         GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, "Broken")
 
+        def _PyroRemoteExec(self, script, **kwargs):
+            return RemotePLCObjectProxy.RemoteExec(script, **kwargs)
+        RemoteExec = PyroCatcher(_PyroRemoteExec, (-1, "RemoteExec script failed!"))
+
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:
