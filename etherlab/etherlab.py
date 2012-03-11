@@ -636,15 +636,32 @@ SLAVE_INITIALIZATION_TEMPLATE = """
     }
 """
 
+SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
+    {
+        uint8_t value[%(data_size)d];
+        if (ecrt_master_sdo_upload(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &result_size, &abort_code)) {
+            fprintf(stderr, "Failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%d\\n", abort_code);
+            return -1;
+        }
+        for (i = 0; i < result_size; i++) {
+            %(real_var)s = (%(real_var)s << 8) + value[i];
+        }
+    }
+"""
+
 def ConfigureVariable(entry_infos, str_completion):
     entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if entry_infos["data_type"] is None:
         raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
-
-    entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
-    str_completion["located_variables_declaration"].extend(
-        ["IEC_%(var_type)s %(real_var)s;" % entry_infos,
-         "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos])
+    
+    if entry_infos.has_key("real_var"):
+        str_completion["located_variables_declaration"].append(
+            "IEC_%(var_type)s %(real_var)s;" % entry_infos)
+    else:
+        entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
+        str_completion["located_variables_declaration"].extend(
+            ["IEC_%(var_type)s %(real_var)s;" % entry_infos,
+             "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos])
     
     str_completion["used_pdo_entry_offset_variables_declaration"].append(
         "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
@@ -725,6 +742,7 @@ class _EthercatCFileGenerator:
             "pdos_configuration_declaration": "",
             "slaves_declaration": "",
             "slaves_configuration": "",
+            "slaves_output_pdos_default_values_extraction": "",
             "slaves_initialization": "",
             "retrieve_variables": [],
             "publish_variables": [],
@@ -846,6 +864,17 @@ class _EthercatCFileGenerator:
                                         raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
                                     
                                     ConfigureVariable(entry_infos, str_completion)
+                                
+                                elif pdo_type == "Outputs" and entry.getDataType() is not None:
+                                    entry_infos["dir"] = "Q"
+                                    entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
+                                    entry_infos["var_type"] = entry.getDataType().getcontent()
+                                    entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
+                                    
+                                    ConfigureVariable(entry_infos, str_completion)
+                                    
+                                    str_completion["slaves_output_pdos_default_values_extraction"] += \
+                                        SLAVE_OUTPUT_PDO_DEFAULT_VALUE % entry_infos
                                     
                             if pdo_needed:
                                 for excluded in pdo.getExclude():
