@@ -52,7 +52,8 @@ static ec_domain_t *domain1 = NULL;
 int __init_%(location)s(int argc,char **argv)
 {
     uint32_t abort_code;
-    int rtstatus;
+    size_t result_size;
+    int i, rtstatus;
     
 	MstrAttach.masterindex = %(master_number)d;
 
@@ -75,6 +76,8 @@ int __init_%(location)s(int argc,char **argv)
 	ecrt_master_set_send_interval(master, common_ticktime__);
 
 %(slaves_initialization)s
+
+%(slaves_output_pdos_default_values_extraction)s
 
     sprintf(&rt_dev_file[0],"%%s%%u",EC_RTDM_DEV_FILE_NAME,0);
     rt_fd = rt_dev_open( &rt_dev_file[0], 0);
