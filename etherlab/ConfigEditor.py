@@ -4,6 +4,32 @@ import wx.gizmos
 
 from controls import CustomGrid, CustomTable, EditorPanel
 
+SCAN_COMMAND = """
+import commands
+result = commands.getoutput("ethercat slaves")
+slaves = []
+for slave_line in result.splitlines():
+    chunks = slave_line.split()
+    idx, pos, state, flag = chunks[:4]
+    name = " ".join(chunks[4:])
+    alias, position = pos.split(":")
+    slave = {"idx": int(idx),
+             "alias": int(alias),
+             "position": int(position),
+             "name": name}
+    details = commands.getoutput("ethercat slaves -p %d -v" % slave["idx"])
+    for details_line in details.splitlines():
+        details_line = details_line.strip()
+        for header, param in [("Vendor Id:", "vendor_id"),
+                              ("Product code:", "product_code"),
+                              ("Revision number:", "revision_number")]:
+            if details_line.startswith(header):
+                slave[param] = int(details_line.split()[-1], 16)
+                break
+    slaves.append(slave)
+returnVal = slaves
+"""
+
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
 def AppendMenu(parent, help, id, kind, text):
@@ -521,8 +547,9 @@ class SlavePanel(wx.Panel):
 [ID_CONFIGEDITOR, ID_CONFIGEDITORSLAVENODES,
 ] = [wx.NewId() for _init_ctrls in range(2)]
 
-[ID_CONFIGEDITORPLUGINMENUADDSLAVE, ID_CONFIGEDITORPLUGINMENUDELETESLAVE,
-] = [wx.NewId() for _init_coll_PluginMenu_Items in range(2)]
+[ID_CONFIGEDITORPLUGINMENUSCANNETWORK, ID_CONFIGEDITORPLUGINMENUADDSLAVE, 
+ ID_CONFIGEDITORPLUGINMENUDELETESLAVE,
+] = [wx.NewId() for _init_coll_PluginMenu_Items in range(3)]
 
 class ConfigEditor(EditorPanel):
     
@@ -555,6 +582,8 @@ class ConfigEditor(EditorPanel):
     
     def _init_MenuItems(self):
         self.MenuItems = [
+            (wx.ITEM_NORMAL, (_("Scan network"), ID_CONFIGEDITORPLUGINMENUSCANNETWORK, '', self.OnScanNetworkMenu)),
+            (wx.ITEM_SEPARATOR, None),
             (wx.ITEM_NORMAL, (_("Add slave"), ID_CONFIGEDITORPLUGINMENUADDSLAVE, '', self.OnAddSlaveMenu)),
             (wx.ITEM_NORMAL, (_("Delete slave"), ID_CONFIGEDITORPLUGINMENUDELETESLAVE, '', self.OnDeleteSlaveMenu)),
         ]
@@ -623,6 +652,16 @@ class ConfigEditor(EditorPanel):
                 self.SlaveNodes.SetSelection(idx)
                 return
     
+    def OnScanNetworkMenu(self, event):
+        error, returnVal = self.Controler.RemoteExec(SCAN_COMMAND, returnVal = None)
+        if error != 0:
+            dialog = wx.MessageDialog(self, returnVal, "Error", wx.OK|wx.ICON_ERROR)
+            dialog.ShowModal()
+            dialog.Destroy()
+        elif returnVal is not None:
+            print returnVal
+            wx.CallAfter(self.RefreshView)
+
     def OnAddSlaveMenu(self, event):
         slave = self.Controler.AddSlave()
         self.RefreshParentWindow()
