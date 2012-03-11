@@ -1,5 +1,6 @@
 import wx
 import wx.grid
+import wx.gizmos
 
 from controls import CustomGrid, CustomTable, EditorPanel
 
@@ -110,40 +111,7 @@ class SyncManagersTable(CustomTable):
 
 def GetVariablesTableColnames():
     _ = lambda x : x
-    return ["#", _("Index"), _("SubIndex"), _("Name"), _("Type"), _("PDO index"), _("PDO name"), _("PDO type")]
-
-class VariablesTable(CustomTable):
-    
-    def GetValue(self, row, col):
-        if row < self.GetNumberRows():
-            if col == 0:
-                return row + 1
-            return self.data[row].get(self.GetColLabelValue(col, False), "")
-
-    def _updateColAttrs(self, grid):
-        """
-        wx.grid.Grid -> update the column attributes to add the
-        appropriate renderer given the column name.
-
-        Otherwise default to the default renderer.
-        """
-        for row in range(self.GetNumberRows()):
-            row_highlights = self.Highlights.get(row, {})
-            pdo_mapping = self.GetValueByName(row, "PDOMapping")
-            for col in range(self.GetNumberCols()):
-                colname = self.GetColLabelValue(col, False)
-                
-                if colname in ["PDO index", "PDO name", "PDO type"] and pdo_mapping == "":
-                    highlight_colours = (wx.LIGHT_GREY, wx.WHITE)
-                else:
-                    highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
-                grid.SetReadOnly(row, col, True)
-                grid.SetCellEditor(row, col, None)
-                grid.SetCellRenderer(row, col, None)
-                
-                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
-                grid.SetCellTextColour(row, col, highlight_colours[1])
-            self.ResizeRow(grid, row)
+    return ["#", _("Name"), _("Index"), _("SubIndex"), _("Type"), _("PDO index"), _("PDO name"), _("PDO type")]
 
 [ID_SLAVEINFOSPANEL, ID_SLAVEINFOSPANELVENDORLABEL, 
  ID_SLAVEINFOSPANELVENDOR, ID_SLAVEINFOSPANELPRODUCTCODELABEL, 
@@ -248,14 +216,15 @@ class SlaveInfosPanel(wx.Panel):
               label=_('Variable entries:'), name='VariablesLabel', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
-        self.VariablesGrid = CustomGrid(id=ID_SLAVEINFOSPANELVARIABLESGRID,
+        self.VariablesGrid = wx.gizmos.TreeListCtrl(id=ID_SLAVEINFOSPANELVARIABLESGRID,
               name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 0), style=wx.VSCROLL)
-        if wx.VERSION >= (2, 5, 0):
-            self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
-        else:
-            wx.grid.EVT_GRID_CELL_LEFT_CLICK(self.VariablesGrid, self.OnVariablesGridCellLeftClick)
-        
+              size=wx.Size(0, 0), style=wx.TR_DEFAULT_STYLE |
+                                        wx.TR_ROW_LINES |
+                                        wx.TR_COLUMN_LINES |
+                                        wx.TR_HIDE_ROOT |
+                                        wx.TR_FULL_ROW_HIGHLIGHT)
+        self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN, self.OnVariablesGridLeftClick)
+                
         self._init_sizers()
         
     def __init__(self, parent, controler):
@@ -277,21 +246,15 @@ class SlaveInfosPanel(wx.Panel):
             self.SyncManagersGrid.SetColAttr(col, attr)
             self.SyncManagersGrid.SetColMinimalWidth(col, self.SyncManagersGridColSizes[col])
             self.SyncManagersGrid.AutoSizeColumn(col, False)
+            
+        for colname, colsize, colalign in zip(GetVariablesTableColnames(),
+                                              [40, 150, 100, 100, 150, 100, 150, 100],
+                                              [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
+                                               wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
+                                               wx.ALIGN_LEFT, wx.ALIGN_LEFT]):
+            self.VariablesGrid.AddColumn(colname, colsize, colalign)
+        self.VariablesGrid.SetMainColumn(1)
         
-        self.VariablesTable = VariablesTable(self, [], GetVariablesTableColnames())
-        self.VariablesGrid.SetTable(self.VariablesTable)
-        self.VariablesGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, 
-                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
-                                            wx.ALIGN_LEFT, wx.ALIGN_LEFT]
-        self.VariablesGridColSizes = [40, 100, 100, 150, 150, 100, 150, 100]
-        self.VariablesGrid.SetRowLabelSize(0)
-        for col in range(self.VariablesTable.GetNumberCols()):
-            attr = wx.grid.GridCellAttr()
-            attr.SetAlignment(self.VariablesGridColAlignements[col], wx.ALIGN_CENTRE)
-            self.VariablesGrid.SetColAttr(col, attr)
-            self.VariablesGrid.SetColMinimalWidth(col, self.VariablesGridColSizes[col])
-            self.VariablesGrid.AutoSizeColumn(col, False)
-    
     def SetSlaveInfos(self, slave_pos, slave_infos):
         self.Slave = slave_pos
         if slave_infos is not None:
@@ -302,8 +265,7 @@ class SlaveInfosPanel(wx.Panel):
             self.Physics.SetValue(slave_infos["physics"])
             self.SyncManagersTable.SetData(slave_infos["sync_managers"])
             self.SyncManagersTable.ResetView(self.SyncManagersGrid)
-            self.VariablesTable.SetData(slave_infos["entries"])
-            self.VariablesTable.ResetView(self.VariablesGrid)
+            self.RefreshVariablesGrid(slave_infos["entries"])
         else:
             self.Type = None
             self.Vendor.SetValue("")
@@ -312,32 +274,72 @@ class SlaveInfosPanel(wx.Panel):
             self.Physics.SetValue("")
             self.SyncManagersTable.SetData([])
             self.SyncManagersTable.ResetView(self.SyncManagersGrid)
-            self.VariablesTable.SetData([])
-            self.VariablesTable.ResetView(self.VariablesGrid)
+            self.RefreshVariablesGrid([])
+            
+    def RefreshVariablesGrid(self, entries):
+        root = self.VariablesGrid.GetRootItem()
+        if not root.IsOk():
+            root = self.VariablesGrid.AddRoot("Slave entries")
+        self.GenerateVariablesGridBranch(root, entries, GetVariablesTableColnames())
+        self.VariablesGrid.Expand(root)
+        
+    def GenerateVariablesGridBranch(self, root, entries, colnames, idx=0):
+        if wx.VERSION >= (2, 6, 0):
+            item, root_cookie = self.VariablesGrid.GetFirstChild(root)
+        else:
+            item, root_cookie = self.VariablesGrid.GetFirstChild(root, 0)
+        
+        for entry in entries:
+            idx += 1
+            if not item.IsOk():
+                item = self.VariablesGrid.AppendItem(root, "")
+            for col, colname in enumerate(colnames):
+                if col == 0:
+                    self.VariablesGrid.SetItemText(item, str(idx), 0)
+                else:
+                    self.VariablesGrid.SetItemText(item, entry.get(colname, ""), col)
+            if entry["PDOMapping"] == "":
+                self.VariablesGrid.SetItemBackgroundColour(item, wx.LIGHT_GREY)
+            self.VariablesGrid.SetItemPyData(item, entry)
+            idx = self.GenerateVariablesGridBranch(item, entry["children"], colnames, idx)
+            if wx.Platform != '__WXMSW__':
+                item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
+            item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
+        
+        to_delete = []
+        while item.IsOk():
+            to_delete.append(item)
+            item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
+        for item in to_delete:
+            self.VariablesGrid.Delete(item)
+        
+        return idx
 
-    def OnVariablesGridCellLeftClick(self, event):
-        row = event.GetRow()
-        
-        data_type = self.VariablesTable.GetValueByName(row, "Type")
-        pdo_mapping = self.VariablesTable.GetValueByName(row, "PDOMapping")
-        if (event.GetCol() == 0 and pdo_mapping != "" and
-            self.Controler.GetSizeOfType(data_type) is not None):
+    def OnVariablesGridLeftClick(self, event):
+        item, flags, col = self.VariablesGrid.HitTest(event.GetPosition())
+        if item.IsOk():
+            entry = self.VariablesGrid.GetItemPyData(item)
+            data_type = entry.get("Type", "")
+            pdo_mapping = entry.get("PDOMapping", "")
             
-            entry_index = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "Index"))
-            entry_subindex = self.Controler.ExtractHexDecValue(self.VariablesTable.GetValueByName(row, "SubIndex"))
-            var_name = "%s_%4.4x_%2.2x" % (self.Type, entry_index, entry_subindex)
-            if pdo_mapping in ["R"]:
-                dir = "%I"
-            else:
-                dir = "%Q"
-            location = "%s%s" % (dir, self.Controler.GetSizeOfType(data_type)) + \
-                       ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + self.Slave + (entry_index, entry_subindex)))
+            if (col == -1 and pdo_mapping != "" and
+                self.Controler.GetSizeOfType(data_type) is not None):
+                
+                entry_index = self.Controler.ExtractHexDecValue(entry.get("Index", "0"))
+                entry_subindex = self.Controler.ExtractHexDecValue(entry.get("SubIndex", "0"))
+                var_name = "%s_%4.4x_%2.2x" % (self.Type, entry_index, entry_subindex)
+                if pdo_mapping == "R":
+                    dir = "%I"
+                else:
+                    dir = "%Q"
+                location = "%s%s" % (dir, self.Controler.GetSizeOfType(data_type)) + \
+                           ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + self.Slave + (entry_index, entry_subindex)))
+                
+                data = wx.TextDataObject(str((location, "location", data_type, var_name, "")))
+                dragSource = wx.DropSource(self.VariablesGrid)
+                dragSource.SetData(data)
+                dragSource.DoDragDrop()
             
-            data = wx.TextDataObject(str((location, "location", data_type, var_name, "")))
-            dragSource = wx.DropSource(self.VariablesGrid)
-            dragSource.SetData(data)
-            dragSource.DoDragDrop()
-        
         event.Skip()
 
 [ID_SLAVEPANEL, ID_SLAVEPANELTYPELABEL,
