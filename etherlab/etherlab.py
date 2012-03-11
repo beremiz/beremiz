@@ -90,9 +90,22 @@ class _EthercatDS402SlavePlug:
                 entries = device.GetEntriesList()
                 entries_list = entries.items()
                 entries_list.sort()
+                entries = []
+                current_index = None
+                current_entry = None
+                for (index, subindex), entry in entries_list:
+                    entry["children"] = []
+                    if index != current_index:
+                        current_index = index
+                        current_entry = entry
+                        entries.append(entry)
+                    elif current_entry is not None:
+                        current_entry["children"].append(entry)
+                    else:
+                        entries.append(entry)
                 infos.update({"physics": device.getPhysics(),
                               "sync_managers": device.GetSyncManagers(),
-                              "entries": [entry[1] for entry in entries_list]})
+                              "entries": entries})
                 return infos
         return None
 
@@ -380,9 +393,22 @@ class _EthercatPlug:
                 entries = device.GetEntriesList()
                 entries_list = entries.items()
                 entries_list.sort()
+                entries = []
+                current_index = None
+                current_entry = None
+                for (index, subindex), entry in entries_list:
+                    entry["children"] = []
+                    if index != current_index:
+                        current_index = index
+                        current_entry = entry
+                        entries.append(entry)
+                    elif current_entry is not None:
+                        current_entry["children"].append(entry)
+                    else:
+                        entries.append(entry)
                 infos.update({"physics": device.getPhysics(),
                               "sync_managers": device.GetSyncManagers(),
-                              "entries": [entry[1] for entry in entries_list]})
+                              "entries": entries})
                 return infos
         return None
     
