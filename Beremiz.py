@@ -144,6 +144,7 @@ sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 
 import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle
+from BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
 from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
@@ -933,7 +934,7 @@ class Beremiz(IDEFrame):
         paramswindow = wx.Panel(rightwindow, -1, size=wx.Size(-1, -1))
         paramswindow.SetBackgroundColour(bkgdclr)
         
-        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer = wx.BoxSizer(wx.VERTICAL)
         paramswindow.SetSizer(psizer)
         self.PluginInfos[plugin]["params"] = paramswindow
         
@@ -1004,7 +1005,7 @@ class Beremiz(IDEFrame):
         for child in self.PluginInfos[plugin]["children"]:
             self.PluginInfos[child]["left"].Show()
             self.PluginInfos[child]["right"].Show()
-            if force or not self.PluginInfos[child]["expanded"]:
+            if force or self.PluginInfos[child]["expanded"]:
                 self.ExpandPlugin(child, force)
                 if force:
                     self.PluginInfos[child]["expanded"] = True
@@ -1406,6 +1407,18 @@ class Beremiz(IDEFrame):
             event.Skip()
         return OnCheckBoxChanged
     
+    def GetBrowseCallBackFunction(self, name, textctrl, library, value_infos, plugin, path):
+        infos = [value_infos]
+        def OnBrowseButton(event):
+            dialog = BrowseValuesLibraryDialog(self, name, library, infos[0])
+            if dialog.ShowModal() == wx.ID_OK:
+                value, value_infos = self.SetPluginParamsAttribute(plugin, path, dialog.GetValueInfos())
+                textctrl.ChangeValue(value)
+                infos[0] = value_infos
+            dialog.Destroy()
+            event.Skip()
+        return OnBrowseButton
+    
     def ClearSizer(self, sizer):
         staticboxes = []
         for item in sizer.GetChildren():
@@ -1459,32 +1472,53 @@ class Beremiz(IDEFrame):
                 boxsizer.AddWindow(statictext, 0, border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT)
                 id = wx.NewId()
                 if isinstance(element_infos["type"], types.ListType):
-                    combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(300, 28), style=wx.CB_READONLY)
-                    boxsizer.AddWindow(combobox, 0, border=0, flag=0)
-                    if element_infos["use"] == "optional":
-                        combobox.Append("")
-                    if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
-                        for choice, xsdclass in element_infos["type"]:
-                            combobox.Append(choice)
-                        name = element_infos["name"]
-                        value = element_infos["value"]
-                        staticbox = wx.StaticBox(id=-1, label="%s - %s"%(_(name), _(value)), 
-                            name='%s_staticbox'%element_infos["name"], parent=parent,
-                            pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
-                        staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                        sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-                        self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
-                        callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, plugin, element_path)
+                    if isinstance(element_infos["value"], types.TupleType):
+                        browse_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+                        boxsizer.AddSizer(browse_boxsizer, 0, border=0, flag=0)
+                        
+                        textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
+                            pos=wx.Point(0, 0), size=wx.Size(275, 25), style=wx.TE_READONLY)
+                        if element_infos["value"] is not None:
+                            textctrl.SetValue(element_infos["value"][0])
+                            value_infos = element_infos["value"][1]
+                        else:
+                            value_infos = None
+                        browse_boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
+                        button_id = wx.NewId()
+                        button = wx.Button(id=button_id, name="browse_%s" % element_infos["name"], parent=parent, 
+                            label="...", pos=wx.Point(0, 0), size=wx.Size(25, 25))
+                        browse_boxsizer.AddWindow(button, 0, border=0, flag=0)
+                        button.Bind(wx.EVT_BUTTON, 
+                                    self.GetBrowseCallBackFunction(element_infos["name"], textctrl, element_infos["type"], 
+                                                                   value_infos, plugin, element_path), 
+                                    id=button_id)
                     else:
-                        for choice in element_infos["type"]:
-                            combobox.Append(choice)
-                        callback = self.GetChoiceCallBackFunction(combobox, plugin, element_path)
-                    if element_infos["value"] is None:
-                        combobox.SetStringSelection("")
-                    else:
-                        combobox.SetStringSelection(element_infos["value"])
-                    combobox.Bind(wx.EVT_COMBOBOX, callback, id=id)
+                        combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
+                            pos=wx.Point(0, 0), size=wx.Size(300, 28), style=wx.CB_READONLY)
+                        boxsizer.AddWindow(combobox, 0, border=0, flag=0)
+                        if element_infos["use"] == "optional":
+                            combobox.Append("")
+                        if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
+                            for choice, xsdclass in element_infos["type"]:
+                                combobox.Append(choice)
+                            name = element_infos["name"]
+                            value = element_infos["value"]
+                            staticbox = wx.StaticBox(id=-1, label="%s - %s"%(_(name), _(value)), 
+                                name='%s_staticbox'%element_infos["name"], parent=parent,
+                                pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
+                            staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                            sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
+                            self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
+                            callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, plugin, element_path)
+                        else:
+                            for choice in element_infos["type"]:
+                                combobox.Append(choice)
+                            callback = self.GetChoiceCallBackFunction(combobox, plugin, element_path)
+                        if element_infos["value"] is None:
+                            combobox.SetStringSelection("")
+                        else:
+                            combobox.SetStringSelection(element_infos["value"])
+                        combobox.Bind(wx.EVT_COMBOBOX, callback, id=id)
                 elif isinstance(element_infos["type"], types.DictType):
                     scmin = -(2**31)
                     scmax = 2**31-1
@@ -1496,14 +1530,16 @@ class Beremiz(IDEFrame):
                         pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                     spinctrl.SetRange(scmin,scmax)
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
-                    spinctrl.SetValue(element_infos["value"])
+                    if element_infos["value"] is not None:
+                        spinctrl.SetValue(element_infos["value"])
                     spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                 else:
                     if element_infos["type"] == "boolean":
                         checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=parent, 
                             pos=wx.Point(0, 0), size=wx.Size(17, 25), style=0)
                         boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
-                        checkbox.SetValue(element_infos["value"])
+                        if element_infos["value"] is not None:
+                            checkbox.SetValue(element_infos["value"])
                         checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, plugin, element_path), id=id)
                     elif element_infos["type"] in ["unsignedLong", "long","integer"]:
                         if element_infos["type"].startswith("unsigned"):
@@ -1515,7 +1551,8 @@ class Beremiz(IDEFrame):
                             pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                         spinctrl.SetRange(scmin, scmax)
                         boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
-                        spinctrl.SetValue(element_infos["value"])
+                        if element_infos["value"] is not None:
+                            spinctrl.SetValue(element_infos["value"])
                         spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
                     else:
                         choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))
@@ -1530,7 +1567,8 @@ class Beremiz(IDEFrame):
                                                                      style=0)
                         
                         boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
-                        textctrl.ChangeValue(str(element_infos["value"]))
+                        if element_infos["value"] is not None:
+                            textctrl.ChangeValue(str(element_infos["value"]))
                         textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
             first = False
     

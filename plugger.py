@@ -1781,7 +1781,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
     def RemoteExec(self, script, **kwargs):
         if self._connector is None:
-            return -1, "No runtime connected"
+            return -1, "No runtime connected!"
         return self._connector.RemoteExec(script, **kwargs)
 
     def DebugThreadProc(self):
@@ -1823,11 +1823,12 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.DebugThread = None
 
     def KillDebugThread(self):
+        tmp_debugthread = self.DebugThread
         self.debug_break = True
-        if self.DebugThread is not None:
+        if tmp_debugthread is not None:
             self.logger.writeyield(_("Stopping debugger...\n"))
-            self.DebugThread.join(timeout=5)
-            if self.DebugThread.isAlive() and self.logger:
+            tmp_debugthread.join(timeout=5)
+            if tmp_debugthread.isAlive() and self.logger:
                 self.logger.write_warning(_("Couldn't stop debugger.\n"))
             else:
                 self.logger.write(_("Debugger stopped.\n"))
