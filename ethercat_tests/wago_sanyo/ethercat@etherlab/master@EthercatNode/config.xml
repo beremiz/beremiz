@@ -23,8 +23,8 @@
     <Slave>
       <Info>
         <Name>EL1088</Name>
-        <PhysAddr>0</PhysAddr>
-        <AutoIncAddr>1</AutoIncAddr>
+        <PhysAddr>1</PhysAddr>
+        <AutoIncAddr>0</AutoIncAddr>
         <Physics></Physics>
         <VendorId>2</VendorId>
         <ProductCode>71315538</ProductCode>
@@ -35,12 +35,24 @@
     <Slave>
       <Info>
         <Name>EL2088</Name>
-        <PhysAddr>0</PhysAddr>
-        <AutoIncAddr>2</AutoIncAddr>
+        <PhysAddr>2</PhysAddr>
+        <AutoIncAddr>0</AutoIncAddr>
         <Physics></Physics>
         <VendorId>2</VendorId>
         <ProductCode>136851538</ProductCode>
         <RevisionNo>1048576</RevisionNo>
+        <SerialNo>0</SerialNo>
+      </Info>
+    </Slave>
+    <Slave>
+      <Info>
+        <Name>SanyoDenki RS2 EtherCAT</Name>
+        <PhysAddr>3</PhysAddr>
+        <AutoIncAddr>1</AutoIncAddr>
+        <Physics></Physics>
+        <VendorId>441</VendorId>
+        <ProductCode>2</ProductCode>
+        <RevisionNo>0</RevisionNo>
         <SerialNo>0</SerialNo>
       </Info>
     </Slave>

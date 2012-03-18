@@ -19,6 +19,7 @@ IEC_INT *__IW%(location)s_0 = &beremiz__IW%(location)s_0;
 IEC_UINT __InactiveMask = 0x4f;
 IEC_UINT __ActiveMask = 0x6f;
 IEC_UINT __PowerMask = 0x10;
+IEC_BOOL __FirstTick = 1;
 
 typedef enum {
 	__Unknown,
@@ -44,8 +45,8 @@ static __DS402Node __DS402Node_%(location)s;
 
 int __init_%(location)s()
 {
-%(init_entry_variables)s;
-*__IW%(location)s_0 = __MK_AllocAxis(&(__DS402Node_%(location)s.axis));
+%(init_entry_variables)s
+	*__IW%(location)s_0 = __MK_AllocAxis(&(__DS402Node_%(location)s.axis));
 	return 0;
 }
 
@@ -57,6 +58,11 @@ void __retrieve_%(location)s()
 {
 	IEC_UINT statusword_inactive = *(__DS402Node_%(location)s.StatusWord) & __InactiveMask;
 	IEC_UINT statusword_active = *(__DS402Node_%(location)s.StatusWord) & __ActiveMask;
+
+	if (__FirstTick) {
+%(init_axis_params)s
+		_FirstTick = 0;
+	}
 
 	// DS402 node state computation
 	__DS402Node_%(location)s.state = __Unknown;

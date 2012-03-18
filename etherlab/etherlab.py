@@ -7,118 +7,129 @@ import wx
 from xmlclass import *
 from plugger import PlugTemplate
 from PLCControler import UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
-from ConfigEditor import ConfigEditor, DS402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from ConfigEditor import NodeEditor, DS402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+
+try:
+    from plugins.motion import Headers, AxisXSD
+    HAS_MCL = True
+except:
+    HAS_MCL = False
+
+
+TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
+    "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
+    "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L"}
+
+DATATYPECONVERSION = {"BOOL" : "BIT", "SINT" : "S8", "INT" : "S16", "DINT" : "S32", "LINT" : "S64",
+    "USINT" : "U8", "UINT" : "U16", "UDINT" : "U32", "ULINT" : "U64", 
+    "BYTE" : "U8", "WORD" : "U16", "DWORD" : "U32", "LWORD" : "U64"}
+
+VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
 
 #--------------------------------------------------
-#                 Ethercat DS402 Node
+#         Remote Exec Etherlab Commands
 #--------------------------------------------------
 
-NODE_VARIABLES = [
-    ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
-    ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
-    ("StatusWord", 0x6041, 0x00, "UINT", "I"),
-    ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
-    ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
-    ("ErrorCode", 0x603f, 0x00, "UINT", "I"),
-]
+SCAN_COMMAND = """
+import commands
+result = commands.getoutput("ethercat slaves")
+slaves = []
+for slave_line in result.splitlines():
+    chunks = slave_line.split()
+    idx, pos, state, flag = chunks[:4]
+    name = " ".join(chunks[4:])
+    alias, position = pos.split(":")
+    slave = {"idx": int(idx),
+             "alias": int(alias),
+             "position": int(position),
+             "name": name}
+    details = commands.getoutput("ethercat slaves -p %d -v" % slave["idx"])
+    for details_line in details.splitlines():
+        details_line = details_line.strip()
+        for header, param in [("Vendor Id:", "vendor_id"),
+                              ("Product code:", "product_code"),
+                              ("Revision number:", "revision_number")]:
+            if details_line.startswith(header):
+                slave[param] = int(details_line.split()[-1], 16)
+                break
+    slaves.append(slave)
+returnVal = slaves
+"""
 
-class _EthercatDS402SlavePlug:
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="EtherlabDS402Slave">
-        <xsd:complexType>
-          <xsd:attribute name="Node_Type" type="xsd:string" use="optional"/>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:schema>
-    """
-    EditorType = DS402NodeEditor
+#--------------------------------------------------
+#                    Ethercat Node
+#--------------------------------------------------
+
+class _EthercatSlavePlug:
+
+    NODE_PROFILE = None
+    EditorType = NodeEditor
     
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
-
+    
     def GetSizeOfType(self, type):
         return TYPECONVERSION.get(self.GetPlugRoot().GetBaseType(type), None)
     
-    def _GetChildBySomething(self, something, toks):
-        return self
+    def GetSlavePos(self):
+        return self.BaseParams.getIEC_Channel()
     
     def GetParamsAttributes(self, path = None):
-        infos = PlugTemplate.GetParamsAttributes(self, path = None)
-        for element in infos:
-            if element["name"] == "EtherlabDS402Slave":
-                for child in element["children"]:
-                    if child["name"] == "Node_Type":
-                        child["type"] = [module[0] for module in self.PlugParent.GetModulesByProfile(402)]
-        return infos
-    
-    def GetAllChannels(self):
-        AllChannels = PlugTemplate.GetAllChannels(self)
-        for slave_pos in self.PlugParent.GetSlaves():
-            if slave_pos[0] not in AllChannels:
-                AllChannels.append(slave_pos[0])
-        AllChannels.sort()
-        return AllChannels
-
-    def GetCurrentLocation(self):
-        """
-        @return:  Tupple containing plugin IEC location of current plugin : %I0.0.4.5 => (0,0,4,5)
-        """
-        return self.PlugParent.GetCurrentLocation() + self.GetSlavePos()
-
-    def GetSlavePos(self):
-        return self.BaseParams.getIEC_Channel(), 0
-
-    def GetSlaveTypeInfos(self):
-        slave_type = self.EtherlabDS402Slave.getNode_Type()
+        if path:
+            parts = path.split(".", 1)
+            if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
+                return self.MandatoryParams[1].getElementInfos(parts[0], parts[1])
+            elif self.PlugParams and parts[0] == self.PlugParams[0]:
+                return self.PlugParams[1].getElementInfos(parts[0], parts[1])
+        else:
+            params = []
+            if wx.VERSION < (2, 8, 0) and self.MandatoryParams:
+                params.append(self.MandatoryParams[1].getElementInfos(self.MandatoryParams[0]))
+            slave_type = self.PlugParent.GetSlaveType(self.GetSlavePos())
+            params.append({
+                'use': 'required', 
+                'type': 'element', 
+                'name': 'SlaveParams', 
+                'value': None, 
+                'children': [{
+                    'use': 'optional', 
+                    'type': self.PlugParent.GetSlaveTypesLibrary(self.NODE_PROFILE), 
+                    'name': 'Type', 
+                    'value': (slave_type["device_type"], slave_type)}, 
+                   {'use': 'optional', 
+                    'type': 'unsignedLong', 
+                    'name': 'Alias', 
+                    'value': self.PlugParent.GetSlaveAlias(self.GetSlavePos())}]
+            })
+            if self.PlugParams:
+                params.append(self.PlugParams[1].getElementInfos(self.PlugParams[0]))
+            return params
         
-        for module_type, vendor_id, product_code, revision_number in self.PlugParent.GetModulesByProfile(402):
-            if module_type == slave_type:
-                return {"device_type": module_type,
-                        "vendor": GenerateHexDecValue(vendor_id),
-                        "product_code": GenerateHexDecValue(product_code, 16),
-                        "revision_number": GenerateHexDecValue(revision_number, 16)}
-        
-        return None
+    def SetParamsAttribute(self, path, value):
+        position = self.BaseParams.getIEC_Channel()
+        value, changed = PlugTemplate.SetParamsAttribute(self, path, value)
+        # Filter IEC_Channel, Slave_Type and Alias that have specific behavior
+        if path == "BaseParams.IEC_Channel":
+            self.PlugParent.SetSlavePosition(position, value)
+        elif path == "SlaveParams.Type":
+            self.PlugParent.SetSlaveType(position, value)
+            slave_type = self.PlugParent.GetSlaveType(self.GetSlavePos())
+            value = (slave_type["device_type"], slave_type)
+            changed = True
+        elif path == "SlaveParams.Alias":
+            self.PlugParent.SetSlaveAlias(position, value)
+            changed = True
+        return value, changed
 
     def GetSlaveInfos(self):
-        slave_typeinfos = self.GetSlaveTypeInfos()
-        if slave_typeinfos is not None:
-            device = self.PlugParent.GetModuleInfos(slave_typeinfos)
-            if device is not None:
-                infos = slave_typeinfos.copy()
-                entries = device.GetEntriesList()
-                entries_list = entries.items()
-                entries_list.sort()
-                entries = []
-                current_index = None
-                current_entry = None
-                for (index, subindex), entry in entries_list:
-                    entry["children"] = []
-                    if index != current_index:
-                        current_index = index
-                        current_entry = entry
-                        entries.append(entry)
-                    elif current_entry is not None:
-                        current_entry["children"].append(entry)
-                    else:
-                        entries.append(entry)
-                infos.update({"physics": device.getPhysics(),
-                              "sync_managers": device.GetSyncManagers(),
-                              "entries": entries})
-                return infos
-        return None
-
+        return self.PlugParent.GetSlaveInfos(self.GetSlavePos())
+    
     def GetVariableLocationTree(self):
-        slave_typeinfos = self.GetSlaveTypeInfos()
-        vars = []
-        if slave_typeinfos is not None:
-            vars = self.PlugParent.GetDeviceLocationTree(self.GetCurrentLocation(), slave_typeinfos) 
-
         return  {"name": self.BaseParams.getName(),
                  "type": LOCATION_PLUGIN,
                  "location": self.GetFullIEC_Channel(),
-                 "children": vars}
+                 "children": self.PlugParent.GetDeviceLocationTree(self.GetSlavePos(), self.GetCurrentLocation(), self.BaseParams.getName())
+        }
 
     PluginMethods = [
         {"bitmap" : os.path.join("images", "EditCfile"),
@@ -126,7 +137,6 @@ class _EthercatDS402SlavePlug:
          "tooltip" : _("Edit Node"),
          "method" : "_OpenView"},
     ]
-
 
     def PlugGenerate_C(self, buildpath, locations):
         """
@@ -141,79 +151,111 @@ class _EthercatDS402SlavePlug:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        current_location = self.GetCurrentLocation()
+        return [],"",False
+
+#--------------------------------------------------
+#                 Ethercat DS402 Node
+#--------------------------------------------------
+
+if HAS_MCL:
+    
+    NODE_VARIABLES = [
+        ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
+        ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
+        ("StatusWord", 0x6041, 0x00, "UINT", "I"),
+        ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
+        ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
+        ("ErrorCode", 0x603f, 0x00, "UINT", "I"),
+    ]
+    
+    class _EthercatDS402SlavePlug(_EthercatSlavePlug):
+        XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <xsd:element name="DS402SlaveParams">
+            <xsd:complexType>
+              %s
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:schema>
+        """ % AxisXSD
         
-        location_str = "_".join(map(lambda x:str(x), current_location))
+        NODE_PROFILE = 402
+        EditorType = DS402NodeEditor
         
-        slave_pos = current_location[-2:]
-        
-        slave_typeinfos = self.GetSlaveTypeInfos()
-        device = None
-        if slave_typeinfos is not None:
-            device = self.PlugParent.GetModuleInfos(slave_typeinfos)
-        
-        if device is None:
-            raise (ValueError, 
-                   _("No information found for DS402 node \"%s\" at location %s!") % (
-                      slave_typeinfos["device_type"], ".".join(current_location)))
+        def PlugGenerate_C(self, buildpath, locations):
+            """
+            Generate C code
+            @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+            @param locations: List of complete variables locations \
+                [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
+                "NAME" : name of the variable (generally "__IW0_1_2" style)
+                "DIR" : direction "Q","I" or "M"
+                "SIZE" : size "X", "B", "W", "D", "L"
+                "LOC" : tuple of interger for IEC location (0,1,2,...)
+                }, ...]
+            @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
+            """
+            current_location = self.GetCurrentLocation()
             
-        self.PlugParent.FileGenerator.DeclareSlave(slave_pos, slave_typeinfos)
-        
-        plc_ds402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_ds402node.c")
-        plc_ds402node_file = open(plc_ds402node_filepath, 'r')
-        plc_ds402node_code = plc_ds402node_file.read()
-        plc_ds402node_file.close()
-        
-        from plugins.motion import Headers
-        
-        str_completion = {
-            "location": location_str,
-            "MCL_headers": Headers,
-            "extern_located_variables_declaration": [],
-            "entry_variables": [],
-            "init_entry_variables": [],
-        }
-        
-        for variable in NODE_VARIABLES:
-            var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
-            var_infos["location"] = location_str
-            var_infos["var_size"] = self.PlugParent.GetSizeOfType(var_infos["var_type"])
-            var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
+            location_str = "_".join(map(lambda x:str(x), current_location))
             
-            str_completion["extern_located_variables_declaration"].append(
-                    "IEC_%(var_type)s *%(var_name)s;" % var_infos)
-            str_completion["entry_variables"].append(
-                    "    IEC_%(var_type)s *%(name)s;" % var_infos)
-            str_completion["init_entry_variables"].append(
-                    "    __DS402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+            plc_ds402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_ds402node.c")
+            plc_ds402node_file = open(plc_ds402node_filepath, 'r')
+            plc_ds402node_code = plc_ds402node_file.read()
+            plc_ds402node_file.close()
             
-            self.PlugParent.FileGenerator.DeclareVariable(
-                    slave_pos, var_infos["index"], var_infos["subindex"], 
-                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
-        
-        for element in ["extern_located_variables_declaration", 
-                        "entry_variables", 
-                        "init_entry_variables"]:
-            str_completion[element] = "\n".join(str_completion[element])
-        
-        Gen_DS402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
-        ds402nodefile = open(Gen_DS402Nodefile_path, 'w')
-        ds402nodefile.write(plc_ds402node_code % str_completion)
-        ds402nodefile.close()
-        
-        return [(Gen_DS402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
-        
-
-
-TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
-    "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
-    "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L"}
-
-DATATYPECONVERSION = {"BOOL" : "BIT", "SINT" : "S8", "INT" : "S16", "DINT" : "S32", "LINT" : "S64",
-    "USINT" : "U8", "UINT" : "U16", "UDINT" : "U32", "ULINT" : "U64", 
-    "BYTE" : "U8", "WORD" : "U16", "DWORD" : "U32", "LWORD" : "U64"}
-
-VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
+            str_completion = {
+                "location": location_str,
+                "MCL_headers": Headers,
+                "extern_located_variables_declaration": [],
+                "entry_variables": [],
+                "init_axis_params": [],
+                "init_entry_variables": [],
+            }
+            
+            for variable in NODE_VARIABLES:
+                var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
+                var_infos["location"] = location_str
+                var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
+                var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
+                
+                str_completion["extern_located_variables_declaration"].append(
+                        "IEC_%(var_type)s *%(var_name)s;" % var_infos)
+                str_completion["entry_variables"].append(
+                        "    IEC_%(var_type)s *%(name)s;" % var_infos)
+                str_completion["init_entry_variables"].append(
+                        "    __DS402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+                
+                self.PlugParent.FileGenerator.DeclareVariable(
+                        self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
+                        var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
+            
+            params = self.PlugParams[1].getElementInfos(self.PlugParams[0])
+            for param in params["children"]:
+                if param["value"] is not None:
+                    param_infos = {
+                        "location": location_str,
+                        "param_name": param["name"],
+                    }
+                    if param["type"] == "boolean":
+                        param_infos["param_value"] = {True: "true", False: "false"}[param["value"]]
+                    else:
+                        param_infos["param_value"] = str(param["value"])
+                    str_completion["init_axis_params"].append(
+                        "        __DS402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
+            
+            for element in ["extern_located_variables_declaration", 
+                            "entry_variables", 
+                            "init_axis_params", 
+                            "init_entry_variables"]:
+                str_completion[element] = "\n".join(str_completion[element])
+            
+            Gen_DS402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
+            ds402nodefile = open(Gen_DS402Nodefile_path, 'w')
+            ds402nodefile.write(plc_ds402node_code % str_completion)
+            ds402nodefile.close()
+            
+            return [(Gen_DS402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
 
 #--------------------------------------------------
 #                 Ethercat MASTER
@@ -257,18 +299,6 @@ if cls:
         slave_info.setProductCode(ExtractHexDecValue(type_infos["product_code"]))
         slave_info.setRevisionNo(ExtractHexDecValue(type_infos["revision_number"]))
     setattr(cls, "setType", setType)
-    
-cls = EtherCATConfigClasses.get("Slave_Info", None)
-if cls:
-
-    def getSlavePosition(self):
-        return self.getPhysAddr(), self.getAutoIncAddr()
-    setattr(cls, "getSlavePosition", getSlavePosition)
-
-    def setSlavePosition(self, alias, pos):
-        self.setPhysAddr(alias)
-        self.setAutoIncAddr(pos)
-    setattr(cls, "setSlavePosition", setSlavePosition)
 
 class _EthercatPlug:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -281,9 +311,10 @@ class _EthercatPlug:
       </xsd:element>
     </xsd:schema>
     """
-    EditorType = ConfigEditor
     
-    PlugChildsTypes = [("EthercatDS402Slave", _EthercatDS402SlavePlug, "Ethercat DS402 Slave")]
+    PlugChildsTypes = [("EthercatSlave", _EthercatSlavePlug, "Ethercat Slave")]
+    if HAS_MCL:
+        PlugChildsTypes.append(("EthercatDS402Slave", _EthercatDS402SlavePlug, "Ethercat DS402 Slave"))
     
     def __init__(self):
         filepath = self.ConfigFileName()
@@ -314,61 +345,69 @@ class _EthercatPlug:
     def GetSlaves(self):
         slaves = []
         for slave in self.Config.getConfig().getSlave():
-            slaves.append(slave.getInfo().getSlavePosition())
+            slaves.append(slave.getInfo().getPhysAddr())
         slaves.sort()
         return slaves
 
     def GetSlave(self, slave_pos):
         for slave in self.Config.getConfig().getSlave():
             slave_info = slave.getInfo()
-            if slave_info.getSlavePosition() == slave_pos:
+            if slave_info.getPhysAddr() == slave_pos:
                 return slave
         return None
 
-    def AddSlave(self):
-        slaves = self.GetSlaves()
-        for PlugInstance in self.IterChilds():
-            slaves.append(PlugInstance.GetSlavePos())
-        slaves.sort()
-        if len(slaves) > 0:
-            new_pos = (slaves[-1][0] + 1, 0)
-        else:
-            new_pos = (0, 0)
-        slave = EtherCATConfigClasses["Config_Slave"]()
-        slave_infos = slave.getInfo()
-        slave_infos.setName("undefined")
-        slave_infos.setSlavePosition(new_pos[0], new_pos[1])
-        self.Config.getConfig().appendSlave(slave)
-        self.BufferConfig()
-        return new_pos
-    
-    def RemoveSlave(self, slave_pos):
+    def PlugAddChild(self, PlugName, PlugType, IEC_Channel=0):
+        """
+        Create the plugins that may be added as child to this node self
+        @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
+        @param PlugName: string for the name of the plugin instance
+        """
+        newPluginOpj = PlugTemplate.PlugAddChild(self, PlugName, PlugType, IEC_Channel)
+        
+        slave = self.GetSlave(newPluginOpj.BaseParams.getIEC_Channel())
+        if slave is None:
+            slave = EtherCATConfigClasses["Config_Slave"]()
+            slave_infos = slave.getInfo()
+            slave_infos.setName("undefined")
+            slave_infos.setPhysAddr(newPluginOpj.BaseParams.getIEC_Channel())
+            slave_infos.setAutoIncAddr(0)
+            self.Config.getConfig().appendSlave(slave)
+            self.BufferConfig()
+            self.OnPlugSave()
+        
+        return newPluginOpj
+
+    def _doRemoveChild(self, PlugInstance):
+        slave_pos = PlugInstance.GetSlavePos()
         config = self.Config.getConfig()
         for idx, slave in enumerate(config.getSlave()):
             slave_infos = slave.getInfo()
-            if slave_infos.getSlavePosition() == slave_pos:
+            if slave_infos.getPhysAddr() == slave_pos:
                 config.removeSlave(idx)
                 self.BufferConfig()
-                return True
-        return False
-    
-    def SetSlavePos(self, slave_pos, alias=None, position=None):
-        for PlugInstance in self.IterChilds():
-            if PlugInstance.BaseParams.getIEC_Channel() == alias:
-                return _("Slave with alias \"%d\" already exists!" % alias)
+                self.OnPlugSave()
+        PlugTemplate._doRemoveChild(self, PlugInstance)
+
+    def SetSlavePosition(self, slave_pos, new_pos):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave_info = slave.getInfo()
-            new_pos = slave_pos
-            if alias is not None:
-                new_pos = (alias, new_pos[1])
-            if position is not None:
-                new_pos = (new_pos[0], position)
-            if self.GetSlave(new_pos) is not None:
-                return _("Slave with position \"%d:%d\" already exists!" % new_pos)
-            slave_info.setSlavePosition(*new_pos)
+            slave_info.setPhysAddr(new_pos)
             self.BufferConfig()
+    
+    def GetSlaveAlias(self, slave_pos):
+        slave = self.GetSlave(slave_pos)
+        if slave is not None:
+            slave_info = slave.getInfo()
+            return slave_info.getAutoIncAddr()
         return None
+    
+    def SetSlaveAlias(self, slave_pos, alias):
+        slave = self.GetSlave(slave_pos)
+        if slave is not None:
+            slave_info = slave.getInfo()
+            slave_info.setAutoIncAddr(alias)
+            self.BufferConfig()
     
     def GetSlaveType(self, slave_pos):
         slave = self.GetSlave(slave_pos)
@@ -381,7 +420,6 @@ class _EthercatPlug:
         if slave is not None:
             slave.setType(type_infos)
             self.BufferConfig()
-        return None
     
     def GetSlaveInfos(self, slave_pos):
         slave = self.GetSlave(slave_pos)
@@ -415,81 +453,51 @@ class _EthercatPlug:
     def GetModuleInfos(self, type_infos):
         return self.PlugParent.GetModuleInfos(type_infos)
     
-    def GetModulesByProfile(self, profile_type):
-        return self.PlugParent.GetModulesByProfile(profile_type)
+    def GetSlaveTypesLibrary(self, profile_filter=None):
+        return self.PlugParent.GetModulesLibrary(profile_filter)
     
-    def GetSlaveTypesLibrary(self):
-        return self.PlugParent.GetModulesLibrary()
-    
-    def GetDeviceLocationTree(self, current_location, type_infos):
-        vars = []
+    def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
+        slave = self.GetSlave(slave_pos)
+        if slave is not None:
+            type_infos = slave.getType()
         
-        device = self.GetModuleInfos(type_infos)
-        if device is not None:
-            sync_managers = []
-            for sync_manager in device.getSm():
-                sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
-                sync_manager_direction = sync_manager_control_byte & 0x0c
-                if sync_manager_direction:
-                    sync_managers.append(LOCATION_VAR_OUTPUT)
-                else:
-                    sync_managers.append(LOCATION_VAR_INPUT)
+            vars = []
             
-            entries = device.GetEntriesList().items()
-            entries.sort()
-            for (index, subindex), entry in entries:
-                var_size = self.GetSizeOfType(entry["Type"])
-                if var_size is not None:
-                    var_class = VARCLASSCONVERSION.get(entry["PDOMapping"], None)
-                    if var_class is not None:
-                        if var_class == LOCATION_VAR_INPUT:
-                            var_dir = "%I"
-                        else:
-                            var_dir = "%Q"    
-                    
-                        vars.append({"name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
-                                     "type": var_class,
-                                     "size": var_size,
-                                     "IEC_type": entry["Type"],
-                                     "var_name": "%s_%4.4x_%2.2x" % ("_".join(type_infos["device_type"].split()), index, subindex),
-                                     "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
-                                                                                                (index, subindex)))),
-                                     "description": "",
-                                     "children": []})
+            device = self.GetModuleInfos(type_infos)
+            if device is not None:
+                sync_managers = []
+                for sync_manager in device.getSm():
+                    sync_manager_control_byte = ExtractHexDecValue(sync_manager.getControlByte())
+                    sync_manager_direction = sync_manager_control_byte & 0x0c
+                    if sync_manager_direction:
+                        sync_managers.append(LOCATION_VAR_OUTPUT)
+                    else:
+                        sync_managers.append(LOCATION_VAR_INPUT)
+                
+                entries = device.GetEntriesList().items()
+                entries.sort()
+                for (index, subindex), entry in entries:
+                    var_size = self.GetSizeOfType(entry["Type"])
+                    if var_size is not None:
+                        var_class = VARCLASSCONVERSION.get(entry["PDOMapping"], None)
+                        if var_class is not None:
+                            if var_class == LOCATION_VAR_INPUT:
+                                var_dir = "%I"
+                            else:
+                                var_dir = "%Q"    
+                        
+                            vars.append({"name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
+                                         "type": var_class,
+                                         "size": var_size,
+                                         "IEC_type": entry["Type"],
+                                         "var_name": "%s_%4.4x_%2.2x" % ("_".join(device_name.split()), index, subindex),
+                                         "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
+                                                                                                    (index, subindex)))),
+                                         "description": "",
+                                         "children": []})
         
         return vars
     
-    def GetVariableLocationTree(self):
-        '''See PlugTemplate.GetVariableLocationTree() for a description.'''
-
-        current_location = self.GetCurrentLocation()
-        
-        groups = []
-        for slave_pos in self.GetSlaves():
-            
-            slave = self.GetSlave(slave_pos)
-            if slave is not None:
-                type_infos = slave.getType()
-                
-                vars = self.GetDeviceLocationTree(current_location + slave_pos, type_infos)
-                if len(vars) > 0:
-                    groups.append({"name": "%s (%d,%d)" % ((type_infos["device_type"],) + slave_pos),
-                                   "type": LOCATION_GROUP,
-                                   "location": ".".join(map(str, current_location + slave_pos)) + ".x",
-                                   "children": vars})
-                
-        return  {"name": self.BaseParams.getName(),
-                 "type": LOCATION_PLUGIN,
-                 "location": self.GetFullIEC_Channel(),
-                 "children": groups}
-    
-    PluginMethods = [
-        {"bitmap" : os.path.join("images", "EditCfile"),
-         "name" : _("Edit Config"), 
-         "tooltip" : _("Edit Config"),
-         "method" : "_OpenView"},
-    ]
-
     def PlugTestModified(self):
         return self.ChangesToSave or not self.ConfigIsSaved()    
 
@@ -548,14 +556,14 @@ class _EthercatPlug:
         for slave_pos in slaves:
             slave = self.GetSlave(slave_pos)
             if slave is not None:
-                self.FileGenerator.DeclareSlave(slave_pos, slave.getType())
+                self.FileGenerator.DeclareSlave(slave_pos, slave.getInfo().getAutoIncAddr(), slave.getType())
         
         for location in locations:
             loc = location["LOC"][len(current_location):]
-            slave_pos = loc[:2]
-            if slave_pos in slaves:
+            slave_pos = loc[0]
+            if slave_pos in slaves and len(loc) == 3:
                 self.FileGenerator.DeclareVariable(
-                    slave_pos, loc[2], loc[3], location["IEC_TYPE"], location["DIR"], location["NAME"])
+                    slave_pos, loc[1], loc[2], location["IEC_TYPE"], location["DIR"], location["NAME"])
         
         return [],"",False
         
@@ -709,13 +717,11 @@ class _EthercatCFileGenerator:
     def __del__(self):
         self.Controler = None            
 
-    def DeclareSlave(self, slave_identifier, slave):
-        self.Slaves.append((slave_identifier, slave))
-        self.Slaves.sort()
-        return self.Slaves.index((slave_identifier, slave))
+    def DeclareSlave(self, slave_index, slave_alias, slave):
+        self.Slaves.append((slave_index, slave_alias, slave))
 
-    def DeclareVariable(self, slave_identifier, index, subindex, iec_type, dir, name):
-        slave_variables = self.UsedVariables.setdefault(slave_identifier, {})
+    def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name):
+        slave_variables = self.UsedVariables.setdefault(slave_index, {})
         
         entry_infos = slave_variables.get((index, subindex), None)
         if entry_infos is None:
@@ -752,12 +758,19 @@ class _EthercatCFileGenerator:
             for entry_infos in slave_entries.itervalues():
                 entry_infos["mapped"] = False
         
-        for slave_idx, (slave_pos, type_infos) in enumerate(self.Slaves):
+        self.Slaves.sort()
+        alias = {}
+        for (slave_idx, slave_alias, type_infos) in self.Slaves:
+            if alias.get(slave_alias) is not None:
+                alias[slave_alias] += 1
+            else:
+                alias[slave_alias] = 0
+            slave_pos = (slave_alias, alias[slave_alias])
             
             device = self.Controler.GetModuleInfos(type_infos)
             if device is not None:
             
-                slave_variables = self.UsedVariables.get(slave_pos, {})
+                slave_variables = self.UsedVariables.get(slave_idx, {})
                 device_entries = device.GetEntriesList()
                 
                 if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0:
@@ -1306,39 +1319,45 @@ class RootClass:
                             raise ValueError, "Not such group \"%\"" % device_group
                         vendor_category["groups"][device_group]["devices"].append((device.getType().getcontent(), device))
     
-    def GetModulesLibrary(self):
+    def GetModulesLibrary(self, profile_filter=None):
         library = []
         children_dict = {}
         for vendor_id, vendor in self.ModulesLibrary.iteritems():
             groups = []
-            library.append({"name": vendor["name"],
-                            "type": ETHERCAT_VENDOR,
-                            "children": groups})
             for group_type, group in vendor["groups"].iteritems():
                 group_infos = {"name": group["name"],
                                "order": group["order"],
                                "type": ETHERCAT_GROUP,
+                               "infos": None,
                                "children": children_dict.setdefault(group_type, [])}
-                if group["parent"] is not None:
-                    parent_children = children_dict.setdefault(group["parent"], [])
-                    parent_children.append(group_infos)
-                else:
-                    groups.append(group_infos)
                 device_dict = {}
                 for device_type, device in group["devices"]:
-                    device_infos = {"name": ExtractName(device.getName()),
-                                    "type": ETHERCAT_DEVICE,
-                                    "infos": {"device_type": device_type,
-                                              "vendor": vendor_id,
-                                              "product_code": device.getType().getProductCode(),
-                                              "revision_number": device.getType().getRevisionNo()}}
-                    group_infos["children"].append(device_infos)
-                    device_type_occurrences = device_dict.setdefault(device_type, [])
-                    device_type_occurrences.append(device_infos)
+                    if profile_filter is None or profile_filter in device.GetProfileNumbers():
+                        device_infos = {"name": ExtractName(device.getName()),
+                                        "type": ETHERCAT_DEVICE,
+                                        "infos": {"device_type": device_type,
+                                                  "vendor": vendor_id,
+                                                  "product_code": device.getType().getProductCode(),
+                                                  "revision_number": device.getType().getRevisionNo()},
+                                        "children": []}
+                        group_infos["children"].append(device_infos)
+                        device_type_occurrences = device_dict.setdefault(device_type, [])
+                        device_type_occurrences.append(device_infos)
                 for device_type_occurrences in device_dict.itervalues():
                     if len(device_type_occurrences) > 1:
                         for occurrence in device_type_occurrences:
                             occurrence["name"] += _(" (rev. %s)") % occurrence["infos"]["revision_number"]
+                if len(group_infos["children"]) > 0:
+                    if group["parent"] is not None:
+                        parent_children = children_dict.setdefault(group["parent"], [])
+                        parent_children.append(group_infos)
+                    else:
+                        groups.append(group_infos)
+            if len(groups) > 0:
+                library.append({"name": vendor["name"],
+                                "type": ETHERCAT_VENDOR,
+                                "infos": None,
+                                "children": groups})
         library.sort(lambda x, y: cmp(x["name"], y["name"]))
         return library
     
@@ -1354,16 +1373,5 @@ class RootClass:
                         revision_number == ExtractHexDecValue(type_infos["revision_number"])):
                         return device
         return None
-    
-    def GetModulesByProfile(self, profile_type):
-        modules = []
-        for vendor_id, vendor in self.ModulesLibrary.iteritems():
-            for group_type, group in vendor["groups"].iteritems():
-                for device_type, device in group["devices"]:
-                    if profile_type in device.GetProfileNumbers():
-                        product_code = ExtractHexDecValue(device.getType().getProductCode())
-                        revision_number = ExtractHexDecValue(device.getType().getRevisionNo())
-                        modules.append((device_type, vendor_id, product_code, revision_number))
-        return modules
 
             
