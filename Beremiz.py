@@ -386,7 +386,7 @@ class Beremiz(IDEFrame):
               kind=wx.ITEM_NORMAL, text=_(u'New\tCTRL+N'))
         AppendMenu(parent, help='', id=wx.ID_OPEN,
               kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
-        parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("Recent Projects"), self.RecentProjectsMenu)
+        parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
               kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
@@ -395,17 +395,17 @@ class Beremiz(IDEFrame):
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
               kind=wx.ITEM_NORMAL, text=_(u'Close Tab\tCTRL+W'))
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Project'))
+              kind=wx.ITEM_NORMAL, text=_(u'Close Project\tCTRL+SHIFT+W'))
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
-              kind=wx.ITEM_NORMAL, text=_(u'Page Setup'))
+              kind=wx.ITEM_NORMAL, text=_(u'Page Setup\tCTRL+ALT+P'))
         AppendMenu(parent, help='', id=wx.ID_PREVIEW,
-              kind=wx.ITEM_NORMAL, text=_(u'Preview'))
+              kind=wx.ITEM_NORMAL, text=_(u'Preview\tCTRL+SHIFT+P'))
         AppendMenu(parent, help='', id=wx.ID_PRINT,
-              kind=wx.ITEM_NORMAL, text=_(u'Print'))
+              kind=wx.ITEM_NORMAL, text=_(u'Print\tCTRL+P'))
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PROPERTIES,
-              kind=wx.ITEM_NORMAL, text=_(u'Properties'))
+              kind=wx.ITEM_NORMAL, text=_(u'&Properties'))
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
               kind=wx.ITEM_NORMAL, text=_(u'Quit\tCTRL+Q'))
