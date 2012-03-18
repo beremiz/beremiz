@@ -50,7 +50,7 @@ for slave_line in result.splitlines():
                               ("Product code:", "product_code"),
                               ("Revision number:", "revision_number")]:
             if details_line.startswith(header):
-                slave[param] = int(details_line.split()[-1], 16)
+                slave[param] = details_line.split()[-1]
                 break
     slaves.append(slave)
 returnVal = slaves
@@ -356,6 +356,45 @@ class _EthercatPlug:
                 return slave
         return None
 
+    def _ScanNetwork(self):
+        app_frame = self.GetPlugRoot().AppFrame
+        
+        execute = True
+        if len(self.PluggedChilds) > 0:
+            dialog = wx.MessageDialog(app_frame, 
+                _("The current network configuration will be deleted.\nDo you want to continue?"), 
+                _("Scan Network"), 
+                wx.YES_NO|wx.ICON_QUESTION)
+            execute = dialog.ShowModal() == wx.ID_YES
+            dialog.Destroy()
+        
+        if execute:
+            error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal = None)
+            if error != 0:
+                dialog = wx.MessageDialog(app_frame, returnVal, "Error", wx.OK|wx.ICON_ERROR)
+                dialog.ShowModal()
+                dialog.Destroy()
+            elif returnVal is not None:
+                for child in self.IECSortedChilds():
+                    self._doRemoveChild(child)
+                
+                for slave in returnVal:
+                    type_infos = {
+                        "vendor": slave["vendor_id"],
+                        "product_code": slave["product_code"],
+                        "revision_number":slave["revision_number"],
+                    }
+                    device = self.GetModuleInfos(type_infos)
+                    if device is not None:
+                        if HAS_MCL and _EthercatDS402SlavePlug.NODE_PROFILE in device.GetProfileNumbers():
+                            PlugType = "EthercatDS402Slave"
+                        else:
+                            PlugType = "EthercatSlave"
+                        self.PlugAddChild("slave%s" % slave["idx"], PlugType, slave["idx"])
+                        self.SetSlaveAlias(slave["idx"], slave["alias"])
+                        type_infos["device_type"] = device.getType().getcontent()
+                        self.SetSlaveType(slave["idx"], type_infos)
+
     def PlugAddChild(self, PlugName, PlugType, IEC_Channel=0):
         """
         Create the plugins that may be added as child to this node self
@@ -536,6 +575,13 @@ class _EthercatPlug:
         LDFLAGS.append("-lethercat -lrtdm")
         
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
+
+    PluginMethods = [
+        {"bitmap" : os.path.join("images", "Compiler"),
+         "name" : _("Scan Network"), 
+         "tooltip" : _("Scan Network"),
+         "method" : "_ScanNetwork"},
+    ]
 
     def PlugGenerate_C(self, buildpath, locations):
         """
@@ -1368,8 +1414,7 @@ class RootClass:
                 for device_type, device in group["devices"]:
                     product_code = ExtractHexDecValue(device.getType().getProductCode())
                     revision_number = ExtractHexDecValue(device.getType().getRevisionNo())
-                    if (device_type == type_infos["device_type"] and
-                        product_code == ExtractHexDecValue(type_infos["product_code"]) and
+                    if (product_code == ExtractHexDecValue(type_infos["product_code"]) and
                         revision_number == ExtractHexDecValue(type_infos["revision_number"])):
                         return device
         return None
