@@ -318,28 +318,29 @@ class LogPseudoFile:
                 self.LastRefreshTimer.start()
 
     def _write(self):
-        self.output.Freeze(); 
-        self.lock.acquire()
-        for s, style in self.stack:
-            if style is None : style=self.black_white
-            if self.default_style != style: 
-                self.output.SetDefaultStyle(style)
-                self.default_style = style
-            self.output.AppendText(s)
-            self.output.ScrollLines(s.count('\n')+1)
-        self.stack = []
-        self.lock.release()
-        self.output.ShowPosition(self.output.GetLastPosition())
-        self.output.Thaw()
-        self.LastRefreshTime = gettime()
-        try:
-            self.RefreshLock.release()
-        except:
-            pass
-        newtime = time.time()
-        if newtime - self.rising_timer > 1:
-            self.risecall()
-        self.rising_timer = newtime
+        if self.output :
+            self.output.Freeze(); 
+            self.lock.acquire()
+            for s, style in self.stack:
+                if style is None : style=self.black_white
+                if self.default_style != style: 
+                    self.output.SetDefaultStyle(style)
+                    self.default_style = style
+                self.output.AppendText(s)
+                self.output.ScrollLines(s.count('\n')+1)
+            self.stack = []
+            self.lock.release()
+            self.output.ShowPosition(self.output.GetLastPosition())
+            self.output.Thaw()
+            self.LastRefreshTime = gettime()
+            try:
+                self.RefreshLock.release()
+            except:
+                pass
+            newtime = time.time()
+            if newtime - self.rising_timer > 1:
+                self.risecall()
+            self.rising_timer = newtime
 
     def write_warning(self, s):
         self.write(s,self.red_white)
@@ -1743,11 +1744,6 @@ Traceback:
 
     return res
 
-def Display_Error_Dialog(e_value):
-    message = wxMessageDialog(None, str(e_value), _("Error"), wxOK|wxICON_ERROR)
-    message.ShowModal()
-    message.Destroy()
-
 def get_last_traceback(tb):
     while tb.tb_next:
         tb = tb.tb_next
@@ -1766,9 +1762,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
         traceback.print_exception(e_type, e_value, e_traceback) # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
-        if str(e_value).startswith("!!!"):
-            Display_Error_Dialog(e_value)
-        elif ex not in ignored_exceptions:
+        if ex not in ignored_exceptions:
             date = time.ctime()
             bug_report_path = path+os.sep+"bug_report_"+date.replace(':','-').replace(' ','_')+".txt"
             result = Display_Exception_Dialog(e_type,e_value,e_traceback,bug_report_path)
