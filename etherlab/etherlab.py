@@ -7,7 +7,7 @@ import wx
 from xmlclass import *
 from plugger import PlugTemplate
 from PLCControler import UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
-from ConfigEditor import NodeEditor, DS402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from ConfigEditor import NodeEditor, CIA402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 try:
     from plugins.motion import Headers, AxisXSD
@@ -15,6 +15,7 @@ try:
 except:
     HAS_MCL = False
 
+PLUGINFOLDER = os.path.split(os.path.realpath(__file__))[0]
 
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
@@ -64,6 +65,9 @@ class _EthercatSlavePlug:
 
     NODE_PROFILE = None
     EditorType = NodeEditor
+    
+    def GetIconPath(self, icon):
+        return os.path.join(PLUGINFOLDER, "images", icon)
     
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
@@ -132,9 +136,9 @@ class _EthercatSlavePlug:
         }
 
     PluginMethods = [
-        {"bitmap" : os.path.join("images", "EditCfile"),
-         "name" : _("Edit Node"), 
-         "tooltip" : _("Edit Node"),
+        {"bitmap" : os.path.join(PLUGINFOLDER, "images", "editSlave"),
+         "name" : _("Edit Slave"), 
+         "tooltip" : _("Edit Slave"),
          "method" : "_OpenView"},
     ]
 
@@ -154,7 +158,7 @@ class _EthercatSlavePlug:
         return [],"",False
 
 #--------------------------------------------------
-#                 Ethercat DS402 Node
+#                 Ethercat CIA402 Node
 #--------------------------------------------------
 
 if HAS_MCL:
@@ -168,10 +172,10 @@ if HAS_MCL:
         ("ErrorCode", 0x603f, 0x00, "UINT", "I"),
     ]
     
-    class _EthercatDS402SlavePlug(_EthercatSlavePlug):
+    class _EthercatCIA402SlavePlug(_EthercatSlavePlug):
         XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-          <xsd:element name="DS402SlaveParams">
+          <xsd:element name="CIA402SlaveParams">
             <xsd:complexType>
               %s
             </xsd:complexType>
@@ -180,7 +184,14 @@ if HAS_MCL:
         """ % AxisXSD
         
         NODE_PROFILE = 402
-        EditorType = DS402NodeEditor
+        EditorType = CIA402NodeEditor
+        
+        PluginMethods = [
+            {"bitmap" : os.path.join(PLUGINFOLDER, "images", "editCIA402Slave"),
+             "name" : _("Edit CIA402 Slave"), 
+             "tooltip" : _("Edit CIA402 Slave"),
+             "method" : "_OpenView"},
+        ]
         
         def PlugGenerate_C(self, buildpath, locations):
             """
@@ -224,7 +235,7 @@ if HAS_MCL:
                 str_completion["entry_variables"].append(
                         "    IEC_%(var_type)s *%(name)s;" % var_infos)
                 str_completion["init_entry_variables"].append(
-                        "    __DS402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+                        "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
                 
                 self.PlugParent.FileGenerator.DeclareVariable(
                         self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
@@ -242,7 +253,7 @@ if HAS_MCL:
                     else:
                         param_infos["param_value"] = str(param["value"])
                     str_completion["init_axis_params"].append(
-                        "        __DS402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
+                        "        __CIA402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
             
             for element in ["extern_located_variables_declaration", 
                             "entry_variables", 
@@ -250,12 +261,12 @@ if HAS_MCL:
                             "init_entry_variables"]:
                 str_completion[element] = "\n".join(str_completion[element])
             
-            Gen_DS402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
-            ds402nodefile = open(Gen_DS402Nodefile_path, 'w')
+            Gen_CIA402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
+            ds402nodefile = open(Gen_CIA402Nodefile_path, 'w')
             ds402nodefile.write(plc_ds402node_code % str_completion)
             ds402nodefile.close()
             
-            return [(Gen_DS402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
+            return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
 
 #--------------------------------------------------
 #                 Ethercat MASTER
@@ -314,7 +325,7 @@ class _EthercatPlug:
     
     PlugChildsTypes = [("EthercatSlave", _EthercatSlavePlug, "Ethercat Slave")]
     if HAS_MCL:
-        PlugChildsTypes.append(("EthercatDS402Slave", _EthercatDS402SlavePlug, "Ethercat DS402 Slave"))
+        PlugChildsTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlavePlug, "Ethercat CIA402 Slave"))
     
     def __init__(self):
         filepath = self.ConfigFileName()
@@ -386,8 +397,8 @@ class _EthercatPlug:
                     }
                     device = self.GetModuleInfos(type_infos)
                     if device is not None:
-                        if HAS_MCL and _EthercatDS402SlavePlug.NODE_PROFILE in device.GetProfileNumbers():
-                            PlugType = "EthercatDS402Slave"
+                        if HAS_MCL and _EthercatCIA402SlavePlug.NODE_PROFILE in device.GetProfileNumbers():
+                            PlugType = "EthercatCIA402Slave"
                         else:
                             PlugType = "EthercatSlave"
                         self.PlugAddChild("slave%s" % slave["idx"], PlugType, slave["idx"])
@@ -577,7 +588,7 @@ class _EthercatPlug:
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     PluginMethods = [
-        {"bitmap" : os.path.join("images", "Compiler"),
+        {"bitmap" : os.path.join(PLUGINFOLDER, "images", "ScanNetwork"),
          "name" : _("Scan Network"), 
          "tooltip" : _("Scan Network"),
          "method" : "_ScanNetwork"},
@@ -1316,7 +1327,7 @@ class RootClass:
         dialog.Destroy()  
     
     PluginMethods = [
-        {"bitmap" : os.path.join("images", "ImportDEF"),
+        {"bitmap" : os.path.join(PLUGINFOLDER, "images", "ImportESI"),
          "name" : _("Import module library"), 
          "tooltip" : _("Import module library"),
          "method" : "_ImportModuleLibrary"},
