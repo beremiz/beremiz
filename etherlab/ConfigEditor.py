@@ -161,7 +161,7 @@ class NodeEditor(EditorPanel):
             self.VariablesGrid.AddColumn(colname, colsize, colalign)
         self.VariablesGrid.SetMainColumn(1)
         
-        img = wx.Bitmap(self.Controler.GetIconPath("Cfile.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
+        img = wx.Bitmap(self.Controler.GetIconPath("Slave.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
     
     def __del__(self):
@@ -259,4 +259,10 @@ class NodeEditor(EditorPanel):
             
         event.Skip()
 
-DS402NodeEditor = NodeEditor
+class CIA402NodeEditor(NodeEditor):
+    
+    def __init__(self, parent, controler, window):
+        NodeEditor.__init__(self, parent, controler, window)
+        
+        img = wx.Bitmap(self.Controler.GetIconPath("CIA402Slave.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
+        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
