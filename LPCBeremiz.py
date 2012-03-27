@@ -1004,6 +1004,9 @@ class LPCBeremiz(Beremiz):
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
     
+        self.AddToMenuToolBar([(wx.ID_SAVE, wx.ART_FILE_SAVE, _(u'Save'), None),
+                               (wx.ID_PRINT, wx.ART_PRINT, _(u'Print'), None)])
+    
     def _init_ctrls(self, prnt):
         IDEFrame._init_ctrls(self, prnt)
         
@@ -1056,7 +1059,7 @@ class LPCBeremiz(Beremiz):
             new_values["creationDateTime"] = old_values["creationDateTime"]
             if new_values != old_values:
                 self.Controler.SetProjectProperties(None, new_values)
-                self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, 
+                self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, 
                               TYPESTREE, INSTANCESTREE, SCALING)
         dialog.Destroy()
 
@@ -1072,22 +1075,29 @@ class LPCBeremiz(Beremiz):
                 if graphic_viewer:
                     self.FileMenu.Enable(wx.ID_PREVIEW, True)
                     self.FileMenu.Enable(wx.ID_PRINT, True)
+                    MenuToolBar.EnableTool(wx.ID_PRINT, True)
                 else:
                     self.FileMenu.Enable(wx.ID_PREVIEW, False)
                     self.FileMenu.Enable(wx.ID_PRINT, False)
+                    MenuToolBar.EnableTool(wx.ID_PRINT, False)
             else:
                 self.FileMenu.Enable(wx.ID_CLOSE, False)
                 self.FileMenu.Enable(wx.ID_PREVIEW, False)
                 self.FileMenu.Enable(wx.ID_PRINT, False)
+                MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            self.FileMenu.Enable(wx.ID_SAVE, self.PluginRoot.PlugTestModified())
+            project_modified = self.PluginRoot.ProjectTestModified()
+            self.FileMenu.Enable(wx.ID_SAVE, project_modified)
+            MenuToolBar.EnableTool(wx.ID_SAVE, project_modified)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
         else:
             self.FileMenu.Enable(wx.ID_CLOSE, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, False)
             self.FileMenu.Enable(wx.ID_PREVIEW, False)
             self.FileMenu.Enable(wx.ID_PRINT, False)
+            MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
+            MenuToolBar.EnableTool(wx.ID_SAVE, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
         
     def RefreshPLCParams(self):

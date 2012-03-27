@@ -150,7 +150,7 @@ from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 from docutils import *
-from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
+from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 SCROLLBAR_UNIT = 10
@@ -423,6 +423,12 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
     
+        self.AddToMenuToolBar([(wx.ID_NEW, wx.ART_NEW, _(u'New'), None),
+                               (wx.ID_OPEN, wx.ART_FILE_OPEN, _(u'Open'), None),
+                               (wx.ID_SAVE, wx.ART_FILE_SAVE, _(u'Save'), None),
+                               (wx.ID_SAVEAS, wx.ART_FILE_SAVE_AS, _(u'Save As...'), None),
+                               (wx.ID_PRINT, wx.ART_PRINT, _(u'Print'), None)])
+    
     def _init_coll_HelpMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_HELP,
               kind=wx.ITEM_NORMAL, text=_(u'Beremiz\tF1'))
@@ -551,7 +557,7 @@ class Beremiz(IDEFrame):
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
-        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
+        self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         self.RefreshPluginMenu()
         self.LogConsole.SetFocus()
 
@@ -671,6 +677,7 @@ class Beremiz(IDEFrame):
     def RefreshFileMenu(self):
         self.RefreshRecentProjectsMenu()
         
+        MenuToolBar = self.Panes["MenuToolBar"]
         if self.PluginRoot is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
@@ -682,16 +689,22 @@ class Beremiz(IDEFrame):
                 if graphic_viewer:
                     self.FileMenu.Enable(wx.ID_PREVIEW, True)
                     self.FileMenu.Enable(wx.ID_PRINT, True)
+                    MenuToolBar.EnableTool(wx.ID_PRINT, True)
                 else:
                     self.FileMenu.Enable(wx.ID_PREVIEW, False)
                     self.FileMenu.Enable(wx.ID_PRINT, False)
+                    MenuToolBar.EnableTool(wx.ID_PRINT, False)
             else:
                 self.FileMenu.Enable(wx.ID_CLOSE, False)
                 self.FileMenu.Enable(wx.ID_PREVIEW, False)
                 self.FileMenu.Enable(wx.ID_PRINT, False)
+                MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            self.FileMenu.Enable(wx.ID_SAVE, self.PluginRoot.ProjectTestModified())
+            project_modified = self.PluginRoot.ProjectTestModified()
+            self.FileMenu.Enable(wx.ID_SAVE, project_modified)
+            MenuToolBar.EnableTool(wx.ID_SAVE, project_modified)
             self.FileMenu.Enable(wx.ID_SAVEAS, True)
+            MenuToolBar.EnableTool(wx.ID_SAVEAS, True)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
         else:
@@ -699,8 +712,11 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, False)
             self.FileMenu.Enable(wx.ID_PREVIEW, False)
             self.FileMenu.Enable(wx.ID_PRINT, False)
+            MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
+            MenuToolBar.EnableTool(wx.ID_SAVE, False)
             self.FileMenu.Enable(wx.ID_SAVEAS, False)
+            MenuToolBar.EnableTool(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
     
@@ -1617,7 +1633,7 @@ class Beremiz(IDEFrame):
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
-            self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+            self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
     
     def OnOpenProjectMenu(self, event):
@@ -1653,14 +1669,14 @@ class Beremiz(IDEFrame):
                 self.ShowErrorMessage(result)
         else:
             self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
-        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+        self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
     
     def OnCloseProjectMenu(self, event):
         if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
             return
         
         self.ResetView()
-        self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU)
+        self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         self.RefreshAll()
     
     def OnSaveProjectMenu(self, event):
