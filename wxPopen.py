@@ -26,18 +26,18 @@
 import time
 import wx
 import subprocess, ctypes
-import threading
+from threading import Timer, Lock, Thread, Semaphore
 import os
 if os.name == 'posix':
     from signal import SIGTERM, SIGKILL
 
     
-class outputThread(threading.Thread):
+class outputThread(Thread):
     """
     Thread is used to print the output of a command to the stdout
     """
     def __init__(self, Proc, fd, callback=None, endcallback=None):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.killed = False
         self.finished = False
         self.retval = None
@@ -58,6 +58,7 @@ class outputThread(threading.Thread):
             if self.callback : self.callback(outchunk)
         while outchunk != '' and not self.killed :
             outchunk = self.fd.readline()
+            if self.callback : self.callback(outchunk)
         if self.endcallback:
             try:
                 err = self.Proc.wait()
@@ -67,7 +68,10 @@ class outputThread(threading.Thread):
             self.endcallback(self.Proc.pid, err)
         
 class ProcessLogger:
-    def __init__(self, logger, Command, finish_callback=None, no_stdout=False, no_stderr=False, no_gui=True):
+    def __init__(self, logger, Command, finish_callback = None, 
+                 no_stdout = False, no_stderr = False, no_gui = True, 
+                 timeout = None, outlimit = None, errlimit = None,
+                 endlog = None, keyword = None, kill_it = False):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -89,10 +93,15 @@ class ProcessLogger:
         self.startupinfo = None
         self.errlen = 0
         self.outlen = 0
+        self.errlimit = errlimit
+        self.outlimit = outlimit
         self.exitcode = None
-        self.outdata = ""
-        self.errdata = ""
-        self.finished = False
+        self.outdata = []
+        self.errdata = []
+        self.keyword = keyword
+        self.kill_it = kill_it
+        self.finishsem = Semaphore(0)
+        self.endlock = Lock()
         
         popenargs= {
                "cwd":os.getcwd(),
@@ -105,7 +114,7 @@ class ProcessLogger:
             self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             popenargs["startupinfo"] = self.startupinfo
         elif wx.Platform == '__WXGTK__':
-            popenargs["shell"] = False  #True
+            popenargs["shell"] = False
         
         self.Proc = subprocess.Popen( self.Command, **popenargs )
 
@@ -122,29 +131,35 @@ class ProcessLogger:
                       self.errors)
         self.errt.start()
 
+        Timer(timeout,self.endlog).start()
+
     def output(self,v):
-        self.outdata += v
+        self.outdata.append(v)
         self.outlen += 1
         if not self.no_stdout:
             self.logger.write(v)
+        if (self.keyword and v.find(self.keyword)!=-1) or (self.outlimit and self.outlen > self.outlimit):
+            self.endlog()
             
     def errors(self,v):
-        self.errdata += v
+        self.errdata.append(v)
         self.errlen += 1
         if not self.no_stderr:
             self.logger.write_warning(v)
+        if self.errlimit and self.errlen > self.errlimit:
+            self.endlog()
 
     def log_the_end(self,ecode,pid):
         self.logger.write(self.Command_str + "\n")
         self.logger.write_warning(_("exited with status %s (pid %s)\n")%(str(ecode),str(pid)))
 
     def finish(self, pid,ecode):
-        self.finished = True
         self.exitcode = ecode
         if self.exitcode != 0:
             self.log_the_end(ecode,pid)
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
+        self.finishsem.release()
 
     def kill(self,gently=True):
         self.outt.killed = True
@@ -166,26 +181,14 @@ class ProcessLogger:
         self.outt.join()
         self.errt.join()
 
-    def spin(self, timeout=None, out_limit=None, err_limit=None, keyword = None, kill_it = True):
-        count = 0
-        while not self.finished:
-            if err_limit and self.errlen > err_limit:
-                break
-            if out_limit and self.outlen > out_limit:
-                break
-            if timeout:
-                if count > timeout:
-                    break
-                count += 1
-            if keyword and self.outdata.find(keyword)!=-1:
-                    break
-            app = wx.GetApp()
-            if app is not None:
-                app.Yield()
-            time.sleep(0.01)
+    def endlog(self):
+        if self.endlock.acquire(False):
+            self.finishsem.release()
+            if not self.outt.finished and self.kill_it:
+               self.kill()
 
-        if not self.outt.finished and kill_it:
-            self.kill()
-
-        return [self.exitcode, self.outdata, self.errdata]
+        
+    def spin(self):
+        self.finishsem.acquire()
+        return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]
 

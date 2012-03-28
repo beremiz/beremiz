@@ -581,8 +581,9 @@ class Beremiz(IDEFrame):
                                                            self.runtime_port,
                                                            {False : "-x 0", True :"-x 1"}[taskbaricon],
                                                            self.local_runtime_tmpdir),
-                                                           no_gui=False)
-            self.local_runtime.spin(timeout=500, keyword = "working", kill_it = False)
+                                                           no_gui=False,
+                                                           timeout=500, keyword = "working")
+            self.local_runtime.spin()
         return self.runtime_port
     
     def KillLocalRuntime(self):
