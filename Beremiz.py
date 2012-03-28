@@ -284,7 +284,8 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
             dc.DrawBitmap(self._bitmap, 0, 0, True)
 
                         
-from threading import Lock,Timer
+from threading import Lock,Timer,currentThread
+MainThread = currentThread().ident
 REFRESH_PERIOD = 0.1
 from time import time as gettime
 class LogPseudoFile:
@@ -299,6 +300,7 @@ class LogPseudoFile:
         # to prevent rapid fire on rising log panel
         self.rising_timer = 0
         self.lock = Lock()
+        self.YieldLock = Lock()
         self.RefreshLock = Lock()
         self.stack = []
         self.LastRefreshTime = gettime()
@@ -313,10 +315,19 @@ class LogPseudoFile:
                 self.LastRefreshTimer.cancel()
                 self.LastRefreshTimer=None
             if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
-                wx.CallAfter(self._write)
+                self._should_write()
             else:
-                self.LastRefreshTimer = Timer(REFRESH_PERIOD, wx.CallAfter, [self._write])
+                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._should_write)
                 self.LastRefreshTimer.start()
+
+    def _should_write(self):
+        wx.CallAfter(self._write)
+        if MainThread == currentThread().ident:
+            app = wx.GetApp()
+            if app is not None:
+                if self.YieldLock.acquire(0):
+                    app.Yield()
+                    self.YieldLock.release()
 
     def _write(self):
         if self.output :
