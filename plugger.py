@@ -1547,7 +1547,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         for infos, (start_row, start_col) in chunk_infos:
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
-            print from_location, to_location, start_row, start_col, start, end
+            #print from_location, to_location, start_row, start_col, start, end
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
 
@@ -1986,7 +1986,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         if builder is not None:
             data = builder.GetBinaryCode()
             if data is not None :
-                if self._connector.NewPLC(MD5, data, extrafiles):
+                if self._connector.NewPLC(MD5, data, extrafiles) and self.GetIECProgramsAndVariables():
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
                     if self.AppFrame is not None:

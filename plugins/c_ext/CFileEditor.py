@@ -657,7 +657,9 @@ class VariablesEditor(wx.Panel):
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
             type_menu.AppendMenu(wx.NewId(), "User Data Types", datatype_menu)
             rect = self.VariablesGrid.BlockToDeviceRect((row, col), (row, col))
+            
             self.VariablesGrid.PopupMenuXY(type_menu, rect.x + rect.width, rect.y + self.VariablesGrid.GetColLabelSize())
+            type_menu.Destroy()
             event.Veto()
         else:
             event.Skip()

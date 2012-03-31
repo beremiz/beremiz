@@ -768,6 +768,80 @@ type *name = &beremiz_##name;
 
 """
 
+    def Generate_lpc_retain_array_sim(self):
+        """
+        Support for retain array in Simulation
+        """
+        return """/* Support for retain array */
+#define USER_RETAIN_ARRAY_SIZE 2000
+#define NUM_OF_COLS    3
+unsigned char readOK = 0;
+unsigned int foundIndex = USER_RETAIN_ARRAY_SIZE;
+unsigned int retainArray[USER_RETAIN_ARRAY_SIZE][NUM_OF_COLS];
+
+unsigned int __GetRetainData(unsigned char READ, unsigned int INDEX, unsigned int COLUMN)
+{
+    if(READ == 1)
+    {
+        if((0<=INDEX) && (INDEX<USER_RETAIN_ARRAY_SIZE) && (0<=COLUMN) && (COLUMN<NUM_OF_COLS))
+        {
+            readOK = 1;
+            return retainArray[INDEX][COLUMN];
+        }
+    }
+
+    readOK = 0;
+    return 0;
+}
+
+unsigned char __SetRetainData(unsigned char WRITE, unsigned int INDEX, unsigned int WORD1, unsigned int WORD2, unsigned int WORD3)
+{
+    if(WRITE == 1)
+    {
+        if((0<=INDEX) && (INDEX<USER_RETAIN_ARRAY_SIZE))
+        {
+            retainArray[INDEX][0] = WORD1;
+            retainArray[INDEX][1] = WORD2;
+            retainArray[INDEX][2] = WORD3;
+            return 1;
+        }
+    }
+    
+    return 0;
+}
+
+unsigned char __FindRetainData(unsigned char SEARCH, unsigned int START_IDX, unsigned int END_IDX, unsigned int WORD1, unsigned int WORD2, unsigned int WORD3)
+{
+    unsigned int i;
+
+    if((SEARCH==1) && (0<=START_IDX) && (START_IDX<USER_RETAIN_ARRAY_SIZE) && (START_IDX<=END_IDX) && (END_IDX<USER_RETAIN_ARRAY_SIZE))
+    {
+        for(i=START_IDX;i<=END_IDX;i++)
+        {
+            if((retainArray[i][0] == WORD1) && (retainArray[i][1] == WORD2) && (retainArray[i][2] == WORD3))
+            {
+                foundIndex = i;
+                return 1;
+            }
+        }
+    }
+
+    foundIndex = USER_RETAIN_ARRAY_SIZE;    /* Data not found => return index that is out of array bounds */
+    return 0;
+}
+
+/* Since Beremiz debugger doesn't like pointer-by-reference stuff or global varibles, separate function is a must */
+unsigned char __GetReadStatus(unsigned char dummy)
+{
+    return readOK;
+}
+
+unsigned int __GetFoundIndex(unsigned char dummy)
+{
+    return foundIndex;
+}
+"""
+
     def _Simulate(self):
         """
         Method called by user to Simulate PLC
@@ -834,7 +908,9 @@ type *name = &beremiz_##name;
            # init/cleanup/retrieve/publish, run and align code
            (self.Generate_plc_common_main,"plc_common_main.c","Common runtime"),
            # declare located variables for simulate in a black box
-           (self.Generate_plc_declare_locations,"plc_declare_locations.c","Declare Locations")]:
+           (self.Generate_plc_declare_locations,"plc_declare_locations.c","Declare Locations"),
+           # declare located variables for simulate in a black box
+           (self.Generate_lpc_retain_array_sim,"lpc_retain_array_sim.c","Retain Array for Simulation")]:
             try:
                 # Do generate
                 code = generator()
@@ -1004,6 +1080,9 @@ class LPCBeremiz(Beremiz):
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
     
+        self.AddToMenuToolBar([(wx.ID_SAVE, "save.png", _(u'Save'), None),
+                               (wx.ID_PRINT, "print.png", _(u'Print'), None)])
+    
     def _init_ctrls(self, prnt):
         IDEFrame._init_ctrls(self, prnt)
         
@@ -1056,11 +1135,12 @@ class LPCBeremiz(Beremiz):
             new_values["creationDateTime"] = old_values["creationDateTime"]
             if new_values != old_values:
                 self.Controler.SetProjectProperties(None, new_values)
-                self._Refresh(TITLE, TOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, 
+                self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, 
                               TYPESTREE, INSTANCESTREE, SCALING)
         dialog.Destroy()
 
     def RefreshFileMenu(self):
+        MenuToolBar = self.Panes["MenuToolBar"]
         if self.PluginRoot is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
@@ -1072,22 +1152,29 @@ class LPCBeremiz(Beremiz):
                 if graphic_viewer:
                     self.FileMenu.Enable(wx.ID_PREVIEW, True)
                     self.FileMenu.Enable(wx.ID_PRINT, True)
+                    MenuToolBar.EnableTool(wx.ID_PRINT, True)
                 else:
                     self.FileMenu.Enable(wx.ID_PREVIEW, False)
                     self.FileMenu.Enable(wx.ID_PRINT, False)
+                    MenuToolBar.EnableTool(wx.ID_PRINT, False)
             else:
                 self.FileMenu.Enable(wx.ID_CLOSE, False)
                 self.FileMenu.Enable(wx.ID_PREVIEW, False)
                 self.FileMenu.Enable(wx.ID_PRINT, False)
+                MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            self.FileMenu.Enable(wx.ID_SAVE, self.PluginRoot.PlugTestModified())
+            project_modified = self.PluginRoot.ProjectTestModified()
+            self.FileMenu.Enable(wx.ID_SAVE, project_modified)
+            MenuToolBar.EnableTool(wx.ID_SAVE, project_modified)
             self.FileMenu.Enable(wx.ID_PROPERTIES, True)
         else:
             self.FileMenu.Enable(wx.ID_CLOSE, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, False)
             self.FileMenu.Enable(wx.ID_PREVIEW, False)
             self.FileMenu.Enable(wx.ID_PRINT, False)
+            MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_SAVE, False)
+            MenuToolBar.EnableTool(wx.ID_SAVE, False)
             self.FileMenu.Enable(wx.ID_PROPERTIES, False)
         
     def RefreshPLCParams(self):
