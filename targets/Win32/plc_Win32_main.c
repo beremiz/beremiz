@@ -169,9 +169,11 @@ int stopPLC()
 /* from plc_debugger.c */
 int WaitDebugData(unsigned long *tick)
 {
+	DWORD res;
+	res = WaitForSingleObject(debug_wait_sem, INFINITE);
     *tick = __debug_tick;
     /* Wait signal from PLC thread */
-	return WaitForSingleObject(debug_wait_sem, INFINITE) != WAIT_OBJECT_0;
+	return res != WAIT_OBJECT_0;
 }
 
 /* Called by PLC thread when debug_publish finished
