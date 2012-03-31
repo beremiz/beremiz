@@ -423,11 +423,11 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
     
-        self.AddToMenuToolBar([(wx.ID_NEW, wx.ART_NEW, _(u'New'), None),
-                               (wx.ID_OPEN, wx.ART_FILE_OPEN, _(u'Open'), None),
-                               (wx.ID_SAVE, wx.ART_FILE_SAVE, _(u'Save'), None),
-                               (wx.ID_SAVEAS, wx.ART_FILE_SAVE_AS, _(u'Save As...'), None),
-                               (wx.ID_PRINT, wx.ART_PRINT, _(u'Print'), None)])
+        self.AddToMenuToolBar([(wx.ID_NEW, "new.png", _(u'New'), None),
+                               (wx.ID_OPEN, "open.png", _(u'Open'), None),
+                               (wx.ID_SAVE, "save.png", _(u'Save'), None),
+                               (wx.ID_SAVEAS, "saveas.png", _(u'Save As...'), None),
+                               (wx.ID_PRINT, "print.png", _(u'Print'), None)])
     
     def _init_coll_HelpMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_HELP,
@@ -1367,6 +1367,7 @@ class Beremiz(IDEFrame):
                     main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Append ")+help)
                     self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, plugin), id=new_id)
             self.PopupMenuXY(main_menu)
+            main_menu.Destroy()
         return AddPluginMenu
     
     def GetButtonCallBackFunction(self, plugin, method):
