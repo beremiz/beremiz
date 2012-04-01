@@ -31,8 +31,8 @@
     </rdf:RDF>
   </metadata>
   <sodipodi:namedview
-     inkscape:window-height="1056"
-     inkscape:window-width="1920"
+     inkscape:window-height="1000"
+     inkscape:window-width="1280"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      guidetolerance="10.0"
@@ -46,7 +46,7 @@
      inkscape:zoom="0.90509668"
      inkscape:cx="574.84342"
      inkscape:cy="238.35742"
-     inkscape:window-x="0"
+     inkscape:window-x="1920"
      inkscape:window-y="24"
      inkscape:current-layer="svg2"
      showguides="true"
@@ -86415,7 +86415,7 @@
          style="font-size:35.50580597px;font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke:none;font-family:Purisa;-inkscape-font-specification:Purisa Light"
          x="-793.12799"
          y="1077.5087"
-         id="tspan16413">January 2012</tspan></text>
+         id="tspan16413">April 2012</tspan></text>
     <text
        sodipodi:linespacing="125%"
        style="font-size:21.80060768px;font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill-opacity:1;stroke:none;font-family:Purisa;-inkscape-font-specification:Purisa Light"
@@ -86426,7 +86426,7 @@
          id="tspan17033"
          y="1111.0403"
          x="-793.12335"
-         style="font-size:21.80060768px;font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke:none;font-family:Purisa;-inkscape-font-specification:Purisa Light">1.03 bugfix release</tspan></text>
+         style="font-size:21.80060768px;font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;stroke:none;font-family:Purisa;-inkscape-font-specification:Purisa Light">1.04 bugfix release</tspan></text>
   </g>
   <text
      style="font-size:51.04000092px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
