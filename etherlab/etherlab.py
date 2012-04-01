@@ -166,10 +166,10 @@ if HAS_MCL:
     NODE_VARIABLES = [
         ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
         ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
+        ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
         ("StatusWord", 0x6041, 0x00, "UINT", "I"),
         ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
-        ("ErrorCode", 0x603f, 0x00, "UINT", "I"),
     ]
     
     class _EthercatCIA402SlavePlug(_EthercatSlavePlug):
@@ -210,10 +210,10 @@ if HAS_MCL:
             
             location_str = "_".join(map(lambda x:str(x), current_location))
             
-            plc_ds402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_ds402node.c")
-            plc_ds402node_file = open(plc_ds402node_filepath, 'r')
-            plc_ds402node_code = plc_ds402node_file.read()
-            plc_ds402node_file.close()
+            plc_cia402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_cia402node.c")
+            plc_cia402node_file = open(plc_cia402node_filepath, 'r')
+            plc_cia402node_code = plc_cia402node_file.read()
+            plc_cia402node_file.close()
             
             str_completion = {
                 "location": location_str,
@@ -261,10 +261,10 @@ if HAS_MCL:
                             "init_entry_variables"]:
                 str_completion[element] = "\n".join(str_completion[element])
             
-            Gen_CIA402Nodefile_path = os.path.join(buildpath, "ds402node_%s.c"%location_str)
-            ds402nodefile = open(Gen_CIA402Nodefile_path, 'w')
-            ds402nodefile.write(plc_ds402node_code % str_completion)
-            ds402nodefile.close()
+            Gen_CIA402Nodefile_path = os.path.join(buildpath, "cia402node_%s.c"%location_str)
+            cia402nodefile = open(Gen_CIA402Nodefile_path, 'w')
+            cia402nodefile.write(plc_cia402node_code % str_completion)
+            cia402nodefile.close()
             
             return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
 
@@ -926,8 +926,14 @@ class _EthercatCFileGenerator:
                                     entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
                                     entry_declaration["mapped"] = True
                                     
-                                    if entry_infos["var_type"] != entry.getDataType().getcontent():
-                                        raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                    entry_type = entry.getDataType().getcontent()
+                                    if entry_infos["var_type"] != entry_type:
+                                        message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                        if (self.Controler.GetSizeOfType(entry_infos["var_type"]) != 
+                                            self.Controler.GetSizeOfType(entry_type)):
+                                            raise ValueError, message
+                                        else:
+                                            self.Controler.GetPlugRoot().logger.write_warning(message + "\n")
                                     
                                     if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
                                         entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
@@ -1004,7 +1010,12 @@ class _EthercatCFileGenerator:
                             entry_declaration["mapped"] = True
                             
                             if entry_infos["var_type"] != entry["Type"]:
-                                raise ValueError, _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                if (self.Controler.GetSizeOfType(entry_infos["var_type"]) != 
+                                    self.Controler.GetSizeOfType(entry["Type"])):
+                                    raise ValueError, message
+                                else:
+                                    self.Controler.GetPlugRoot().logger.write_warning(message + "\n")
                             
                             if entry_infos["dir"] == "I" and entry["PDOMapping"] in ["T", "RT"]:
                                 pdo_type = "Inputs"
