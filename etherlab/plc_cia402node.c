@@ -61,7 +61,7 @@ void __retrieve_%(location)s()
 
 	if (__FirstTick) {
 %(init_axis_params)s
-		_FirstTick = 0;
+		__FirstTick = 0;
 	}
 
 	// CIA402 node state computation
