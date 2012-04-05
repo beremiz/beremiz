@@ -1634,10 +1634,11 @@ class Beremiz(IDEFrame):
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
             self.ResetView()
-            self.PluginRoot = PluginsRoot(self, self.Log)
-            self.Controler = self.PluginRoot
-            result = self.PluginRoot.NewProject(projectpath)
+            plugin_root = PluginsRoot(self, self.Log)
+            result = plugin_root.NewProject(projectpath)
             if not result:
+                self.PluginRoot = plugin_root
+                self.Controler = self.PluginRoot
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
