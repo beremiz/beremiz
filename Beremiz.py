@@ -586,7 +586,7 @@ class Beremiz(IDEFrame):
             self.SetTitle(name)
 
     def StartLocalRuntime(self, taskbaricon = True):
-        if self.local_runtime is None or self.local_runtime.finished:
+        if (self.local_runtime is None) or (self.local_runtime.exitcode is not None):
             # create temporary directory for runtime working directory
             self.local_runtime_tmpdir = tempfile.mkdtemp()
             # choose an arbitrary random port for runtime
@@ -1870,6 +1870,6 @@ if __name__ == '__main__':
     
     frame = Beremiz(None, projectOpen, buildpath)
     splash.Close()
-    wx.Yield()
+    #wx.Yield()
     frame.Show()
     app.MainLoop()
