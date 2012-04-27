@@ -500,6 +500,9 @@ class PlugTemplate:
             self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
             
             app_frame.EditProjectElement(self._View, self.PlugName())
+            
+            return self._View
+        return None
 
     def OnCloseEditor(self, view):
         if self._View == view:
@@ -1568,8 +1571,6 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.AppFrame.EditProjectElement(IEC_code_viewer, "IEC code")
         
     def _editIECrawcode(self):
-        new_dialog = wx.Frame(self.AppFrame)
-        
         controler = MiniTextControler(self._getIECrawcodepath())
         IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath="IEC raw code")
         #IEC_raw_code_viewer.Enable(False)

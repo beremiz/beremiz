@@ -150,7 +150,8 @@ from plugger import PluginsRoot, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 from docutils import *
-from PLCOpenEditor import IDEFrame, Viewer, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
+from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
+from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
 from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 SCROLLBAR_UNIT = 10
@@ -501,13 +502,15 @@ class Beremiz(IDEFrame):
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
         self.PLCConfig.Bind(wx.EVT_MOUSEWHEEL, self.OnPLCConfigScroll)
+        self.MainTabs["PLCConfig"] = (self.PLCConfig, _("Topology"))
         self.BottomNoteBook.InsertPage(0, self.PLCConfig, _("Topology"), True)
         
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
-        self.BottomNoteBook.AddPage(self.LogConsole, _("Log Console"))
+        self.MainTabs["LogConsole"] = (self.LogConsole, _("Log Console"))
+        self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
         if USE_AUI:
             self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
@@ -545,6 +548,11 @@ class Beremiz(IDEFrame):
         
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
+        
+        if projectOpen is None and self.Config.HasEntry("currenteditedproject"):
+            projectOpen = str(self.Config.Read("currenteditedproject"))
+            if projectOpen == "":
+                projectOpen = None
         
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.PluginRoot = PluginsRoot(self, self.Log)
@@ -656,13 +664,39 @@ class Beremiz(IDEFrame):
                 return False
         return True
     
+    def GetTabInfos(self, tab):
+        if (isinstance(tab, EditorPanel) and 
+            not isinstance(tab, (Viewer, 
+                                 TextViewer, 
+                                 GraphicViewer, 
+                                 ResourceEditor, 
+                                 ConfigurationEditor, 
+                                 DataTypeEditor))):
+            return ("plugin", tab.Controler.PlugFullName())
+        else:
+            return IDEFrame.GetTabInfos(self, tab)
+    
+    def LoadTab(self, notebook, page_infos):
+        if page_infos[0] == "plugin":
+            plugin = self.PluginRoot.GetChildByName(page_infos[1])
+            return notebook.GetPageIndex(plugin._OpenView())
+        else:
+            return IDEFrame.LoadTab(self, notebook, page_infos)
+    
     def OnCloseFrame(self, event):
         if self.PluginRoot is None or self.CheckSaveBeforeClosing(_("Close Application")):
             if self.PluginRoot is not None:
                 self.PluginRoot.KillDebugThread()
             self.KillLocalRuntime()
             
-            self.SaveFrameSize()
+            self.SaveLastState()
+            
+            if self.PluginRoot is not None:
+                project_path = os.path.realpath(self.PluginRoot.GetProjectPath())
+            else:
+                project_path = ""
+            self.Config.Write("currenteditedproject", project_path)    
+            self.Config.Flush()
             
             event.Skip()
         else:
@@ -1676,6 +1710,7 @@ class Beremiz(IDEFrame):
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                self.LoadProjectOrganization()
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
             else:
@@ -1689,6 +1724,7 @@ class Beremiz(IDEFrame):
         if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
             return
         
+        self.SaveProjectOrganization()
         self.ResetView()
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         self.RefreshAll()
