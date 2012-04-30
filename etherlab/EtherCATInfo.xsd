@@ -652,13 +652,13 @@
 				</xs:complexType>
 			</xs:element>
 			<xs:choice minOccurs="0">
-				<xs:element name="Image16x14" type="xs:string">
+				<xs:element name="Image16x14" type="xs:string" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>obsolete</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="ImageFile16x14" type="xs:string"/>
-				<xs:element name="ImageData16x14" type="xs:hexBinary"/>
+				<xs:element name="ImageFile16x14" type="xs:string" minOccurs="0"/>
+				<xs:element name="ImageData16x14" type="xs:hexBinary" minOccurs="0"/>
 			</xs:choice>
 			<xs:element name="VendorSpecific" type="VendorSpecificType" minOccurs="0"/>
 		</xs:sequence>
@@ -669,13 +669,13 @@
 			<xs:element name="Name" type="NameType" maxOccurs="unbounded"/>
 			<xs:element name="Comment" type="NameType" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:choice>
-				<xs:element name="Image16x14" type="xs:string">
+				<xs:element name="Image16x14" type="xs:string" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>obsolete</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="ImageFile16x14" type="xs:string"/>
-				<xs:element name="ImageData16x14" type="xs:hexBinary"/>
+				<xs:element name="ImageFile16x14" type="xs:string" minOccurs="0"/>
+				<xs:element name="ImageData16x14" type="xs:hexBinary" minOccurs="0"/>
 			</xs:choice>
 			<xs:element name="VendorSpecific" type="VendorSpecificType" minOccurs="0"/>
 		</xs:sequence>
@@ -913,26 +913,26 @@ in bytes</xs:documentation>
 							<xs:element name="VendorId" type="HexDecValue" minOccurs="0"/>
 							<xs:element name="Name" type="NameType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:choice minOccurs="0">
-								<xs:element name="Image16x14" type="xs:string">
+								<xs:element name="Image16x14" type="xs:string" minOccurs="0">
 									<xs:annotation>
 										<xs:documentation>obsolete</xs:documentation>
 									</xs:annotation>
 								</xs:element>
-								<xs:element name="ImageFile16x14" type="xs:string"/>
-								<xs:element name="ImageData16x14" type="xs:hexBinary"/>
+								<xs:element name="ImageFile16x14" type="xs:string" minOccurs="0"/>
+								<xs:element name="ImageData16x14" type="xs:hexBinary" minOccurs="0"/>
 							</xs:choice>
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
 			</xs:choice>
 			<xs:choice minOccurs="0">
-				<xs:element name="Image16x14" type="xs:string">
+				<xs:element name="Image16x14" type="xs:string" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>obsolete</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="ImageFile16x14" type="xs:string"/>
-				<xs:element name="ImageData16x14" type="xs:hexBinary"/>
+				<xs:element name="ImageFile16x14" type="xs:string" minOccurs="0"/>
+				<xs:element name="ImageData16x14" type="xs:hexBinary" minOccurs="0"/>
 			</xs:choice>
 		</xs:sequence>
 		<xs:attribute name="SlotGroup" type="HexDecValue" use="optional"/>
