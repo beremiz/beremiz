@@ -349,20 +349,20 @@
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ObjectInfoType">
-		<xs:sequence>
-			<xs:choice minOccurs="0">
-				<xs:element name="DefaultString" type="xs:string"/>
-				<xs:sequence>
+		<xs:sequence minOccurs="0">
+			<xs:choice>
+				<xs:element name="DefaultString" type="xs:string" minOccurs="0"/>
+				<xs:sequence minOccurs="0">
 					<xs:element name="MinData" type="xs:hexBinary" minOccurs="0"/>
 					<xs:element name="MaxData" type="xs:hexBinary" minOccurs="0"/>
 					<xs:element name="DefaultData" type="xs:hexBinary" minOccurs="0"/>
 				</xs:sequence>
-				<xs:sequence>
+				<xs:sequence minOccurs="0">
 					<xs:element name="MinValue" type="HexDecValue" minOccurs="0"/>
 					<xs:element name="MaxValue" type="HexDecValue" minOccurs="0"/>
 					<xs:element name="DefaultValue" type="HexDecValue" minOccurs="0"/>
 				</xs:sequence>
-				<xs:element name="SubItem" maxOccurs="unbounded">
+				<xs:element name="SubItem" minOccurs="0" maxOccurs="unbounded">
 					<xs:complexType>
 						<xs:sequence>
 							<xs:element name="Name" type="xs:string"/>
@@ -544,13 +544,13 @@
 			<xs:element name="URL" type="NameType" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="DescriptionURL" type="xs:string" minOccurs="0"/>
 			<xs:choice>
-				<xs:element name="Image16x14" type="xs:string">
+				<xs:element name="Image16x14" type="xs:string" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>obsolete</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="ImageFile16x14" type="xs:string"/>
-				<xs:element name="ImageData16x14" type="xs:hexBinary"/>
+				<xs:element name="ImageFile16x14" type="xs:string" minOccurs="0"/>
+				<xs:element name="ImageData16x14" type="xs:hexBinary" minOccurs="0"/>
 			</xs:choice>
 			<xs:element name="VendorSpecific" type="VendorSpecificType" minOccurs="0"/>
 		</xs:sequence>
@@ -640,13 +640,13 @@
 			<xs:element name="Profile" type="ProfileType" minOccurs="0"/>
 			<xs:element name="DcOpModeName" type="xs:string" minOccurs="0"/>
 			<xs:choice minOccurs="0">
-				<xs:element name="Image16x14" type="xs:string">
+				<xs:element name="Image16x14" type="xs:string" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>obsolete</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="ImageFile16x14" type="xs:string"/>
-				<xs:element name="ImageData16x14" type="xs:hexBinary"/>
+				<xs:element name="ImageFile16x14" type="xs:string" minOccurs="0"/>
+				<xs:element name="ImageData16x14" type="xs:hexBinary" minOccurs="0"/>
 			</xs:choice>
 			<xs:element name="VendorSpecific" type="VendorSpecificType" minOccurs="0"/>
 		</xs:sequence>
