@@ -146,7 +146,7 @@ import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle
 from BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
-from plugger import PluginsRoot, MATIEC_ERROR_MODEL
+from plugger import PluginsRoot, MiniTextControler, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 from docutils import *
@@ -559,6 +559,7 @@ class Beremiz(IDEFrame):
             self.Controler = self.PluginRoot
             result = self.PluginRoot.LoadProject(projectOpen, buildpath)
             if not result:
+                self.LibraryPanel.SetControler(self.Controler)
                 self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
@@ -569,6 +570,7 @@ class Beremiz(IDEFrame):
             self.PluginRoot = plugin_root
             self.Controler = plugin_root
             if plugin_root is not None:
+                self.LibraryPanel.SetControler(self.Controler)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
         if self.EnableDebug:
@@ -673,13 +675,19 @@ class Beremiz(IDEFrame):
                                  ConfigurationEditor, 
                                  DataTypeEditor))):
             return ("plugin", tab.Controler.PlugFullName())
+        elif (isinstance(tab, TextViewer) and 
+              (tab.Controler is None or isinstance(tab.Controler, MiniTextControler))):
+            return ("plugin", None, tab.GetInstancePath())
         else:
             return IDEFrame.GetTabInfos(self, tab)
     
     def LoadTab(self, notebook, page_infos):
         if page_infos[0] == "plugin":
-            plugin = self.PluginRoot.GetChildByName(page_infos[1])
-            return notebook.GetPageIndex(plugin._OpenView())
+            if page_infos[1] is None:
+                plugin = self.PluginRoot
+            else:
+                plugin = self.PluginRoot.GetChildByName(page_infos[1])
+            return notebook.GetPageIndex(plugin._OpenView(*page_infos[2:]))
         else:
             return IDEFrame.LoadTab(self, notebook, page_infos)
     
@@ -1673,6 +1681,7 @@ class Beremiz(IDEFrame):
             if not result:
                 self.PluginRoot = plugin_root
                 self.Controler = self.PluginRoot
+                self.LibraryPanel.SetControler(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
@@ -1707,6 +1716,7 @@ class Beremiz(IDEFrame):
             self.Controler = self.PluginRoot
             result = self.PluginRoot.LoadProject(projectpath)
             if not result:
+                self.LibraryPanel.SetControler(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.PluginRoot)

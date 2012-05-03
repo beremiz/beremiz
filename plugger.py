@@ -35,7 +35,10 @@ class MiniTextControler:
     
     def __init__(self, filepath):
         self.FilePath = filepath
-        
+    
+    def PlugFullName(self):
+        return ""
+    
     def SetEditedElementText(self, tagname, text):
         file = open(self.FilePath, "w")
         file.write(text)
@@ -493,7 +496,7 @@ class PlugTemplate:
         self.BaseParams.setIEC_Channel(res)
         return res
 
-    def _OpenView(self):
+    def _OpenView(self, name=None):
         if self.EditorType is not None and self._View is None:
             app_frame = self.GetPlugRoot().AppFrame
             
@@ -1018,7 +1021,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.ClearPluginTypes()
             self.AddPluginTypesList(self.PluginsTypesFactory())
         if self.AppFrame is not None:
-            self.AppFrame.RefreshLibraryTree()
+            self.AppFrame.RefreshLibraryPanel()
             self.AppFrame.RefreshEditor()
     
     # Update a PLCOpenEditor Pou variable location
@@ -1555,31 +1558,44 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 self.AppFrame.ShowError(infos, start, end)
 
     def _showIECcode(self):
-        plc_file = self._getIECcodepath()
-        
-        IEC_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath="IEC code")
-        #IEC_code_viewer.Enable(False)
-        IEC_code_viewer.SetTextSyntax("ALL")
-        IEC_code_viewer.SetKeywords(IEC_KEYWORDS)
-        try:
-            text = file(plc_file).read()
-        except:
-            text = '(* No IEC code have been generated at that time ! *)'
-        IEC_code_viewer.SetText(text = text)
-        IEC_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
-            
-        self.AppFrame.EditProjectElement(IEC_code_viewer, "IEC code")
-        
+        self._OpenView("IEC code")
+
     def _editIECrawcode(self):
-        controler = MiniTextControler(self._getIECrawcodepath())
-        IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath="IEC raw code")
-        #IEC_raw_code_viewer.Enable(False)
-        IEC_raw_code_viewer.SetTextSyntax("ALL")
-        IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
-        IEC_raw_code_viewer.RefreshView()
-        IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+        self._OpenView("IEC raw code")
+
+    def _OpenView(self, name=None):
+        if name == "IEC code":
+            plc_file = self._getIECcodepath()
+        
+            IEC_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
+            #IEC_code_viewer.Enable(False)
+            IEC_code_viewer.SetTextSyntax("ALL")
+            IEC_code_viewer.SetKeywords(IEC_KEYWORDS)
+            try:
+                text = file(plc_file).read()
+            except:
+                text = '(* No IEC code have been generated at that time ! *)'
+            IEC_code_viewer.SetText(text = text)
+            IEC_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+                
+            self.AppFrame.EditProjectElement(IEC_code_viewer, name)
             
-        self.AppFrame.EditProjectElement(IEC_raw_code_viewer, "IEC raw code")
+            return IEC_code_viewer
+        
+        elif name == "IEC raw code":
+            controler = MiniTextControler(self._getIECrawcodepath())
+            IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
+            #IEC_raw_code_viewer.Enable(False)
+            IEC_raw_code_viewer.SetTextSyntax("ALL")
+            IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
+            IEC_raw_code_viewer.RefreshView()
+            IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+                
+            self.AppFrame.EditProjectElement(IEC_raw_code_viewer, name)
+
+            return IEC_raw_code_viewer
+        
+        return None
 
     def _Clean(self):
         if os.path.isdir(os.path.join(self._getBuildPath())):
