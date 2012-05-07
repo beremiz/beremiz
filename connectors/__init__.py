@@ -46,7 +46,7 @@ for t in connector_types:
         for st in new_module.supported_dnssd_services:
             dnssd_connectors[st] = new_module
 
-def ConnectorFactory(uri, pluginsroot):
+def ConnectorFactory(uri, confnodesroot):
     """
     Return a connector corresponding to the URI
     or None if cannot connect to URI
@@ -56,12 +56,12 @@ def ConnectorFactory(uri, pluginsroot):
         # import module according to uri type
         connectormodule = connector_modules[servicetype]
         factoryname = servicetype + "_connector_factory"
-        return getattr(connectormodule, factoryname)(uri, pluginsroot)
+        return getattr(connectormodule, factoryname)(uri, confnodesroot)
     elif servicetype == "LOCAL":
-        runtime_port = pluginsroot.AppFrame.StartLocalRuntime(taskbaricon=True)
+        runtime_port = confnodesroot.AppFrame.StartLocalRuntime(taskbaricon=True)
         return PYRO.PYRO_connector_factory(
                        "PYRO://127.0.0.1:"+str(runtime_port), 
-                       pluginsroot)
+                       confnodesroot)
     else :
         return None    
 

@@ -1,7 +1,7 @@
 import wx
 import os
 import modules
-from plugger import PlugTemplate, opjimg
+from ConfigTree import ConfigTreeNode, opjimg
 from PLCControler import UndoBuffer
 from PythonEditor import PythonEditor
 
@@ -17,7 +17,7 @@ class PythonCodeTemplate:
     
     def __init__(self):
         
-        self.PluginMethods.insert(0, 
+        self.ConfNodeMethods.insert(0, 
                 {"bitmap" : opjimg("editPYTHONcode"),
                  "name" : _("Edit Python File"), 
                  "tooltip" : _("Edit Python File"),
@@ -40,8 +40,8 @@ class PythonCodeTemplate:
             self.CreatePythonBuffer(False)
             self.OnPlugSave()
 
-    def PluginPath(self):
-        return os.path.join(self.PlugParent.PluginPath(), "modules", self.PlugType)
+    def ConfNodePath(self):
+        return os.path.join(self.PlugParent.ConfNodePath(), "modules", self.PlugType)
 
     def PythonFileName(self):
         return os.path.join(self.PlugPath(), "python.xml")
@@ -123,7 +123,7 @@ class PythonCodeTemplate:
 
 def _GetClassFunction(name):
     def GetRootClass():
-        __import__("plugins.python.modules." + name)
+        __import__("confnodes.python.modules." + name)
         return getattr(modules, name).RootClass
     return GetRootClass
 
@@ -132,13 +132,13 @@ class RootClass(PythonCodeTemplate):
     # For root object, available Childs Types are modules of the modules packages.
     PlugChildsTypes = [(name, _GetClassFunction(name), help) for name, help in zip(modules.__all__,modules.helps)]
     
-    def PluginPath(self):
-        return os.path.join(self.PlugParent.PluginPath(), self.PlugType)
+    def ConfNodePath(self):
+        return os.path.join(self.PlugParent.ConfNodePath(), self.PlugType)
     
     def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -152,15 +152,15 @@ class RootClass(PythonCodeTemplate):
         # define a unique name for the generated C file
         location_str = "_".join(map(lambda x:str(x), current_location))
         
-        plugin_root = self.GetPlugRoot()
-        plugin_root.GetIECProgramsAndVariables()
+        ctr = self.GetPlugRoot()
+        ctr.GetIECProgramsAndVariables()
         
         plc_python_filepath = os.path.join(os.path.split(__file__)[0], "plc_python.c")
         plc_python_file = open(plc_python_filepath, 'r')
         plc_python_code = plc_python_file.read()
         plc_python_file.close()
         python_eval_fb_list = []
-        for v in plugin_root._VariablesList:
+        for v in ctr._VariablesList:
             if v["vartype"] == "FB" and v["type"] in ["PYTHON_EVAL","PYTHON_POLL"]:
                 python_eval_fb_list.append(v)
         python_eval_fb_count = max(1, len(python_eval_fb_list))

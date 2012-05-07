@@ -146,13 +146,13 @@ import wx.lib.buttons, wx.lib.statbmp
 import TextCtrlAutoComplete, cPickle
 from BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
-from plugger import PluginsRoot, MiniTextControler, MATIEC_ERROR_MODEL
+from ConfigTree import ConfigTreeRoot, MiniTextControler, MATIEC_ERROR_MODEL
 from wxPopen import ProcessLogger
 
 from docutils import *
 from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
-from PLCControler import LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 SCROLLBAR_UNIT = 10
 WINDOW_COLOUR = wx.Colour(240,240,240)
@@ -378,18 +378,18 @@ class LogPseudoFile:
 [ID_FILEMENURECENTPROJECTS,
 ] = [wx.NewId() for _init_ctrls in range(1)]
 
-PLUGINMENU_POSITION = 3
+CONFNODEMENU_POSITION = 3
 
 class Beremiz(IDEFrame):
 	
     def _init_coll_MenuBar_Menus(self, parent):
         IDEFrame._init_coll_MenuBar_Menus(self, parent)
         
-        parent.Insert(pos=PLUGINMENU_POSITION, 
-                      menu=self.PluginMenu, title=_(u'&Plugin'))
+        parent.Insert(pos=CONFNODEMENU_POSITION, 
+                      menu=self.ConfNodeMenu, title=_(u'&ConfNode'))
     
     def _init_utils(self):
-        self.PluginMenu = wx.Menu(title='')
+        self.ConfNodeMenu = wx.Menu(title='')
         self.RecentProjectsMenu = wx.Menu(title='')
         
         IDEFrame._init_utils(self)
@@ -451,25 +451,25 @@ class Beremiz(IDEFrame):
     
     def _init_coll_PLCConfigMainSizer_Items(self, parent):
         parent.AddSizer(self.PLCParamsSizer, 0, border=10, flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        parent.AddSizer(self.PluginTreeSizer, 0, border=10, flag=wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        parent.AddSizer(self.ConfNodeTreeSizer, 0, border=10, flag=wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
     def _init_coll_PLCConfigMainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(1)
     
-    def _init_coll_PluginTreeSizer_Growables(self, parent):
+    def _init_coll_ConfNodeTreeSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableCol(1)
         
     def _init_beremiz_sizers(self):
         self.PLCConfigMainSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
         self.PLCParamsSizer = wx.BoxSizer(wx.VERTICAL)
-        #self.PluginTreeSizer = wx.FlexGridSizer(cols=3, hgap=0, rows=0, vgap=2)
-        self.PluginTreeSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=0, vgap=2)
+        #self.ConfNodeTreeSizer = wx.FlexGridSizer(cols=3, hgap=0, rows=0, vgap=2)
+        self.ConfNodeTreeSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=0, vgap=2)
         
         self._init_coll_PLCConfigMainSizer_Items(self.PLCConfigMainSizer)
         self._init_coll_PLCConfigMainSizer_Growables(self.PLCConfigMainSizer)
-        self._init_coll_PluginTreeSizer_Growables(self.PluginTreeSizer)
+        self._init_coll_ConfNodeTreeSizer_Growables(self.ConfNodeTreeSizer)
         
         self.PLCConfig.SetSizer(self.PLCConfigMainSizer)
         
@@ -485,8 +485,8 @@ class Beremiz(IDEFrame):
                                 ("Build",    wx.WXK_F11)]:
             def OnMethodGen(obj,meth):
                 def OnMethod(evt):
-                    if obj.PluginRoot is not None:
-                       obj.PluginRoot.CallMethod('_'+meth)
+                    if obj.CTR is not None:
+                       obj.CTR.CallMethod('_'+meth)
                     wx.CallAfter(self.RefreshAll)
                 return OnMethod
             newid = wx.NewId()
@@ -516,7 +516,7 @@ class Beremiz(IDEFrame):
         
         self._init_beremiz_sizers()
 
-    def __init__(self, parent, projectOpen=None, buildpath=None, plugin_root=None, debug=True):
+    def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
         IDEFrame.__init__(self, parent, debug)
         self.Log = LogPseudoFile(self.LogConsole,self.RiseLogConsole)
         
@@ -530,7 +530,7 @@ class Beremiz(IDEFrame):
         
         self.LastPanelSelected = None
         
-        self.PluginInfos = {}
+        self.ConfNodeInfos = {}
         
         # Define Tree item icon list
         self.LocationImageList = wx.ImageList(16, 16)
@@ -538,7 +538,7 @@ class Beremiz(IDEFrame):
         
         # Icons for location items
         for imgname, itemtype in [
-            ("CONFIGURATION", LOCATION_PLUGIN),
+            ("CONFIGURATION", LOCATION_CONFNODE),
             ("RESOURCE",      LOCATION_MODULE),
             ("PROGRAM",       LOCATION_GROUP),
             ("VAR_INPUT",     LOCATION_VAR_INPUT),
@@ -555,9 +555,9 @@ class Beremiz(IDEFrame):
                 projectOpen = None
         
         if projectOpen is not None and os.path.isdir(projectOpen):
-            self.PluginRoot = PluginsRoot(self, self.Log)
-            self.Controler = self.PluginRoot
-            result = self.PluginRoot.LoadProject(projectOpen, buildpath)
+            self.CTR = ConfigTreeRoot(self, self.Log)
+            self.Controler = self.CTR
+            result = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
                 self.LibraryPanel.SetControler(self.Controler)
                 self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
@@ -567,19 +567,19 @@ class Beremiz(IDEFrame):
                 self.ResetView()
                 self.ShowErrorMessage(result)
         else:
-            self.PluginRoot = plugin_root
-            self.Controler = plugin_root
-            if plugin_root is not None:
+            self.CTR = ctr
+            self.Controler = ctr
+            if ctr is not None:
                 self.LibraryPanel.SetControler(self.Controler)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
         if self.EnableDebug:
-            self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+            self.DebugVariablePanel.SetDataProducer(self.CTR)
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
-        self.RefreshPluginMenu()
+        self.RefreshConfNodeMenu()
         self.LogConsole.SetFocus()
 
     def RiseLogConsole(self):
@@ -587,9 +587,9 @@ class Beremiz(IDEFrame):
         
     def RefreshTitle(self):
         name = _("Beremiz")
-        if self.PluginRoot is not None:
-            projectname = self.PluginRoot.GetProjectName()
-            if self.PluginRoot.ProjectTestModified():
+        if self.CTR is not None:
+            projectname = self.CTR.GetProjectName()
+            if self.CTR.ProjectTestModified():
                 projectname = "~%s~" % projectname
             self.SetTitle("%s - %s" % (name, projectname))
         else:
@@ -640,20 +640,20 @@ class Beremiz(IDEFrame):
         event.Skip()
 
     def SearchLineForError(self):
-        if self.PluginRoot is not None:
+        if self.CTR is not None:
             text = self.LogConsole.GetRange(0, self.LogConsole.GetInsertionPoint())
             line = self.LogConsole.GetLineText(len(text.splitlines()) - 1)
             result = MATIEC_ERROR_MODEL.match(line)
             if result is not None:
                 first_line, first_column, last_line, last_column, error = result.groups()
-                infos = self.PluginRoot.ShowError(self.Log,
+                infos = self.CTR.ShowError(self.Log,
                                                   (int(first_line), int(first_column)), 
                                                   (int(last_line), int(last_column)))
 	
     ## Function displaying an Error dialog in PLCOpenEditor.
     #  @return False if closing cancelled.
     def CheckSaveBeforeClosing(self, title=_("Close Project")):
-        if self.PluginRoot.ProjectTestModified():
+        if self.CTR.ProjectTestModified():
             dialog = wx.MessageDialog(self,
                                       _("There are changes, do you want to save?"),
                                       title,
@@ -661,7 +661,7 @@ class Beremiz(IDEFrame):
             answer = dialog.ShowModal()
             dialog.Destroy()
             if answer == wx.ID_YES:
-                self.PluginRoot.SaveProject()
+                self.CTR.SaveProject()
             elif answer == wx.ID_CANCEL:
                 return False
         return True
@@ -674,33 +674,33 @@ class Beremiz(IDEFrame):
                                  ResourceEditor, 
                                  ConfigurationEditor, 
                                  DataTypeEditor))):
-            return ("plugin", tab.Controler.PlugFullName())
+            return ("confnode", tab.Controler.PlugFullName())
         elif (isinstance(tab, TextViewer) and 
               (tab.Controler is None or isinstance(tab.Controler, MiniTextControler))):
-            return ("plugin", None, tab.GetInstancePath())
+            return ("confnode", None, tab.GetInstancePath())
         else:
             return IDEFrame.GetTabInfos(self, tab)
     
     def LoadTab(self, notebook, page_infos):
-        if page_infos[0] == "plugin":
+        if page_infos[0] == "confnode":
             if page_infos[1] is None:
-                plugin = self.PluginRoot
+                confnode = self.CTR
             else:
-                plugin = self.PluginRoot.GetChildByName(page_infos[1])
-            return notebook.GetPageIndex(plugin._OpenView(*page_infos[2:]))
+                confnode = self.CTR.GetChildByName(page_infos[1])
+            return notebook.GetPageIndex(confnode._OpenView(*page_infos[2:]))
         else:
             return IDEFrame.LoadTab(self, notebook, page_infos)
     
     def OnCloseFrame(self, event):
-        if self.PluginRoot is None or self.CheckSaveBeforeClosing(_("Close Application")):
-            if self.PluginRoot is not None:
-                self.PluginRoot.KillDebugThread()
+        if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
+            if self.CTR is not None:
+                self.CTR.KillDebugThread()
             self.KillLocalRuntime()
             
             self.SaveLastState()
             
-            if self.PluginRoot is not None:
-                project_path = os.path.realpath(self.PluginRoot.GetProjectPath())
+            if self.CTR is not None:
+                project_path = os.path.realpath(self.CTR.GetProjectPath())
             else:
                 project_path = ""
             self.Config.Write("currenteditedproject", project_path)    
@@ -732,7 +732,7 @@ class Beremiz(IDEFrame):
         self.RefreshRecentProjectsMenu()
         
         MenuToolBar = self.Panes["MenuToolBar"]
-        if self.PluginRoot is not None:
+        if self.CTR is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
                 graphic_viewer = isinstance(self.TabsOpened.GetPage(selected), Viewer)
@@ -754,7 +754,7 @@ class Beremiz(IDEFrame):
                 self.FileMenu.Enable(wx.ID_PRINT, False)
                 MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            project_modified = self.PluginRoot.ProjectTestModified()
+            project_modified = self.CTR.ProjectTestModified()
             self.FileMenu.Enable(wx.ID_SAVE, project_modified)
             MenuToolBar.EnableTool(wx.ID_SAVE, project_modified)
             self.FileMenu.Enable(wx.ID_SAVEAS, True)
@@ -789,7 +789,7 @@ class Beremiz(IDEFrame):
     
     def GenerateOpenRecentProjectFunction(self, projectpath):
         def OpenRecentProject(event):
-            if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+            if self.CTR is not None and not self.CheckSaveBeforeClosing():
                 return
             
             self.OpenProject(projectpath)
@@ -810,28 +810,28 @@ class Beremiz(IDEFrame):
                 if callback is not None:
                     self.Bind(wx.EVT_MENU, callback, id=id)
     
-    def RefreshPluginMenu(self):
-        if self.PluginRoot is not None:
+    def RefreshConfNodeMenu(self):
+        if self.CTR is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
                 panel = self.TabsOpened.GetPage(selected)
             else:
                 panel = None
             if panel != self.LastPanelSelected:
-                for i in xrange(self.PluginMenu.GetMenuItemCount()):
-                    item = self.PluginMenu.FindItemByPosition(0)
-                    self.PluginMenu.Delete(item.GetId())
+                for i in xrange(self.ConfNodeMenu.GetMenuItemCount()):
+                    item = self.ConfNodeMenu.FindItemByPosition(0)
+                    self.ConfNodeMenu.Delete(item.GetId())
                 self.LastPanelSelected = panel
                 if panel is not None:
-                    items = panel.GetPluginMenuItems()
+                    items = panel.GetConfNodeMenuItems()
                 else:
                     items = []
-                self.MenuBar.EnableTop(PLUGINMENU_POSITION, len(items) > 0)
-                self.GenerateMenuRecursive(items, self.PluginMenu)
+                self.MenuBar.EnableTop(CONFNODEMENU_POSITION, len(items) > 0)
+                self.GenerateMenuRecursive(items, self.ConfNodeMenu)
             if panel is not None:
-                panel.RefreshPluginMenu(self.PluginMenu)
+                panel.RefreshConfNodeMenu(self.ConfNodeMenu)
         else:
-            self.MenuBar.EnableTop(PLUGINMENU_POSITION, False)
+            self.MenuBar.EnableTop(CONFNODEMENU_POSITION, False)
         self.MenuBar.UpdateMenus()
     
     def RefreshScrollBars(self):
@@ -850,15 +850,15 @@ class Beremiz(IDEFrame):
         self.Freeze()
         self.ClearSizer(self.PLCParamsSizer)
         
-        if self.PluginRoot is not None:    
+        if self.CTR is not None:    
             plcwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-            if self.PluginRoot.PlugTestModified():
+            if self.CTR.PlugTestModified():
                 bkgdclr = CHANGED_TITLE_COLOUR
             else:
                 bkgdclr = TITLE_COLOUR
                 
-            if self.PluginRoot not in self.PluginInfos:
-                self.PluginInfos[self.PluginRoot] = {"right_visible" : False}
+            if self.CTR not in self.ConfNodeInfos:
+                self.ConfNodeInfos[self.CTR] = {"right_visible" : False}
             
             plcwindow.SetBackgroundColour(TITLE_COLOUR)
             plcwindow.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
@@ -869,15 +869,15 @@ class Beremiz(IDEFrame):
             
             st = wx.StaticText(plcwindow, -1)
             st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-            st.SetLabel(self.PluginRoot.GetProjectName())
+            st.SetLabel(self.CTR.GetProjectName())
             plcwindowsizer.AddWindow(st, 0, border=5, flag=wx.ALL|wx.ALIGN_CENTER)
             
             addbutton_id = wx.NewId()
             addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
-                  name='AddPluginButton', parent=plcwindow, pos=wx.Point(0, 0),
+                  name='AddConfNodeButton', parent=plcwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
-            addbutton.SetToolTipString(_("Add a sub plugin"))
-            addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(self.PluginRoot), id=addbutton_id)
+            addbutton.SetToolTipString(_("Add a sub confnode"))
+            addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddConfNodeMenu(self.CTR), id=addbutton_id)
             plcwindowsizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
     
             plcwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
@@ -886,7 +886,7 @@ class Beremiz(IDEFrame):
             plcwindowbuttonsizer = wx.BoxSizer(wx.HORIZONTAL)
             plcwindowmainsizer.AddSizer(plcwindowbuttonsizer, 0, border=0, flag=wx.ALIGN_CENTER)
             
-            msizer = self.GenerateMethodButtonSizer(self.PluginRoot, plcwindow, not self.PluginInfos[self.PluginRoot]["right_visible"])
+            msizer = self.GenerateMethodButtonSizer(self.CTR, plcwindow, not self.ConfNodeInfos[self.CTR]["right_visible"])
             plcwindowbuttonsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
             
             paramswindow = wx.Panel(plcwindow, -1, size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL)
@@ -897,10 +897,10 @@ class Beremiz(IDEFrame):
             psizer = wx.BoxSizer(wx.HORIZONTAL)
             paramswindow.SetSizer(psizer)
             
-            plugin_infos = self.PluginRoot.GetParamsAttributes()
-            self.RefreshSizerElement(paramswindow, psizer, self.PluginRoot, plugin_infos, None, False)
+            confnode_infos = self.CTR.GetParamsAttributes()
+            self.RefreshSizerElement(paramswindow, psizer, self.CTR, confnode_infos, None, False)
             
-            if not self.PluginInfos[self.PluginRoot]["right_visible"]:
+            if not self.ConfNodeInfos[self.CTR]["right_visible"]:
                 paramswindow.Hide()
             
             minimizebutton_id = wx.NewId()
@@ -909,7 +909,7 @@ class Beremiz(IDEFrame):
                   size=wx.Size(24, 24), style=wx.NO_BORDER)
             make_genbitmaptogglebutton_flat(minimizebutton)
             minimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
-            minimizebutton.SetToggle(self.PluginInfos[self.PluginRoot]["right_visible"])
+            minimizebutton.SetToggle(self.ConfNodeInfos[self.CTR]["right_visible"])
             plcwindowbuttonsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
             
             def togglewindow(event):
@@ -918,32 +918,32 @@ class Beremiz(IDEFrame):
                     msizer.SetCols(1)
                 else:
                     paramswindow.Hide()
-                    msizer.SetCols(len(self.PluginRoot.PluginMethods))
-                self.PluginInfos[self.PluginRoot]["right_visible"] = minimizebutton.GetToggle()
+                    msizer.SetCols(len(self.CTR.ConfNodeMethods))
+                self.ConfNodeInfos[self.CTR]["right_visible"] = minimizebutton.GetToggle()
                 self.PLCConfigMainSizer.Layout()
                 self.RefreshScrollBars()
                 event.Skip()
             minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
         
-            self.PluginInfos[self.PluginRoot]["main"] = plcwindow
-            self.PluginInfos[self.PluginRoot]["params"] = paramswindow
+            self.ConfNodeInfos[self.CTR]["main"] = plcwindow
+            self.ConfNodeInfos[self.CTR]["params"] = paramswindow
             
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
         self.Thaw()
 
-    def GenerateEnableButton(self, parent, sizer, plugin):
-        enabled = plugin.PlugEnabled()
+    def GenerateEnableButton(self, parent, sizer, confnode):
+        enabled = confnode.PlugEnabled()
         if enabled is not None:
             enablebutton_id = wx.NewId()
             enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Disabled.png')),
                   name='EnableButton', parent=parent, size=wx.Size(16, 16), pos=wx.Point(0, 0), style=0)#wx.NO_BORDER)
-            enablebutton.SetToolTipString(_("Enable/Disable this plugin"))
+            enablebutton.SetToolTipString(_("Enable/Disable this confnode"))
             make_genbitmaptogglebutton_flat(enablebutton)
             enablebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Enabled.png')))
             enablebutton.SetToggle(enabled)
             def toggleenablebutton(event):
-                res = self.SetPluginParamsAttribute(plugin, "BaseParams.Enabled", enablebutton.GetToggle())
+                res = self.SetConfNodeParamsAttribute(confnode, "BaseParams.Enabled", enablebutton.GetToggle())
                 enablebutton.SetToggle(res)
                 event.Skip()
             enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
@@ -951,23 +951,23 @@ class Beremiz(IDEFrame):
         else:
             sizer.AddSpacer(wx.Size(16, 16))
     
-    def GenerateMethodButtonSizer(self, plugin, parent, horizontal = True):
+    def GenerateMethodButtonSizer(self, confnode, parent, horizontal = True):
         normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
         mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, underline=True, faceName = faces["helv"])
         if horizontal:
-            msizer = wx.FlexGridSizer(cols=len(plugin.PluginMethods))
+            msizer = wx.FlexGridSizer(cols=len(confnode.ConfNodeMethods))
         else:
             msizer = wx.FlexGridSizer(cols=1)
-        for plugin_method in plugin.PluginMethods:
-            if "method" in plugin_method and plugin_method.get("shown",True):
+        for confnode_method in confnode.ConfNodeMethods:
+            if "method" in confnode_method and confnode_method.get("shown",True):
                 id = wx.NewId()
-                label = plugin_method["name"]
+                label = confnode_method["name"]
                 button = GenBitmapTextButton(id=id, parent=parent,
-                    bitmap=wx.Bitmap(Bpath( "%s.png"%plugin_method.get("bitmap", os.path.join("images", "Unknown")))), label=label, 
+                    bitmap=wx.Bitmap(Bpath( "%s.png"%confnode_method.get("bitmap", os.path.join("images", "Unknown")))), label=label, 
                     name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
                 button.SetFont(normal_bt_font)
-                button.SetToolTipString(plugin_method["tooltip"])
-                button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(plugin, plugin_method["method"]), id=id)
+                button.SetToolTipString(confnode_method["tooltip"])
+                button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(confnode, confnode_method["method"]), id=id)
                 # a fancy underline on mouseover
                 def setFontStyle(b, s):
                     def fn(event):
@@ -978,12 +978,12 @@ class Beremiz(IDEFrame):
                 button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, mouseover_bt_font))
                 button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, normal_bt_font))
                 #hack to force size to mini
-                if not plugin_method.get("enabled",True):
+                if not confnode_method.get("enabled",True):
                     button.Disable()
                 msizer.AddWindow(button, 0, border=0, flag=wx.ALIGN_CENTER)
         return msizer
 
-    def GenerateParamsPanel(self, plugin, bkgdclr, top_offset=0):
+    def GenerateParamsPanel(self, confnode, bkgdclr, top_offset=0):
         rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
         rightwindow.SetBackgroundColour(bkgdclr)
         
@@ -995,7 +995,7 @@ class Beremiz(IDEFrame):
         rightwindowsizer.AddGrowableRow(0)
         rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=0, flag=wx.GROW)
         
-        msizer = self.GenerateMethodButtonSizer(plugin, rightwindow, not self.PluginInfos[plugin]["right_visible"])
+        msizer = self.GenerateMethodButtonSizer(confnode, rightwindow, not self.ConfNodeInfos[confnode]["right_visible"])
         rightwindowsizer.AddSizer(msizer, 0, border=top_offset, flag=wx.TOP|wx.GROW)
         
         rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1006,15 +1006,15 @@ class Beremiz(IDEFrame):
         
         psizer = wx.BoxSizer(wx.VERTICAL)
         paramswindow.SetSizer(psizer)
-        self.PluginInfos[plugin]["params"] = paramswindow
+        self.ConfNodeInfos[confnode]["params"] = paramswindow
         
         rightparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
         
-        plugin_infos = plugin.GetParamsAttributes()
-        if len(plugin_infos) > 0:
-            self.RefreshSizerElement(paramswindow, psizer, plugin, plugin_infos, None, False)
+        confnode_infos = confnode.GetParamsAttributes()
+        if len(confnode_infos) > 0:
+            self.RefreshSizerElement(paramswindow, psizer, confnode, confnode_infos, None, False)
             
-            if not self.PluginInfos[plugin]["right_visible"]:
+            if not self.ConfNodeInfos[confnode]["right_visible"]:
                 paramswindow.Hide()
             
             rightminimizebutton_id = wx.NewId()
@@ -1023,7 +1023,7 @@ class Beremiz(IDEFrame):
                   size=wx.Size(24, 24), style=wx.NO_BORDER)
             make_genbitmaptogglebutton_flat(rightminimizebutton)
             rightminimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
-            rightminimizebutton.SetToggle(self.PluginInfos[plugin]["right_visible"])
+            rightminimizebutton.SetToggle(self.ConfNodeInfos[confnode]["right_visible"])
             rightparamssizer.AddWindow(rightminimizebutton, 0, border=5, flag=wx.ALL)
                         
             def togglerightwindow(event):
@@ -1032,8 +1032,8 @@ class Beremiz(IDEFrame):
                     msizer.SetCols(1)
                 else:
                     rightparamssizer.Hide(0)
-                    msizer.SetCols(len(plugin.PluginMethods))
-                self.PluginInfos[plugin]["right_visible"] = rightminimizebutton.GetToggle()
+                    msizer.SetCols(len(confnode.ConfNodeMethods))
+                self.ConfNodeInfos[confnode]["right_visible"] = rightminimizebutton.GetToggle()
                 self.PLCConfigMainSizer.Layout()
                 self.RefreshScrollBars()
                 event.Skip()
@@ -1042,58 +1042,58 @@ class Beremiz(IDEFrame):
         return rightwindow
     
 
-    def RefreshPluginTree(self):
+    def RefreshConfNodeTree(self):
         self.Freeze()
-        self.ClearSizer(self.PluginTreeSizer)
-        if self.PluginRoot is not None:
-            for child in self.PluginRoot.IECSortedChilds():
+        self.ClearSizer(self.ConfNodeTreeSizer)
+        if self.CTR is not None:
+            for child in self.CTR.IECSortedChilds():
                 self.GenerateTreeBranch(child)
-                if not self.PluginInfos[child]["expanded"]:
-                    self.CollapsePlugin(child)
+                if not self.ConfNodeInfos[child]["expanded"]:
+                    self.CollapseConfNode(child)
         self.PLCConfigMainSizer.Layout()
         self.RefreshScrollBars()
         self.Thaw()
 
-    def SetPluginParamsAttribute(self, plugin, *args, **kwargs):
-        res, StructChanged = plugin.SetParamsAttribute(*args, **kwargs)
+    def SetConfNodeParamsAttribute(self, confnode, *args, **kwargs):
+        res, StructChanged = confnode.SetParamsAttribute(*args, **kwargs)
         if StructChanged:
-            wx.CallAfter(self.RefreshPluginTree)
+            wx.CallAfter(self.RefreshConfNodeTree)
         else:
-            if plugin == self.PluginRoot:
+            if confnode == self.CTR:
                 bkgdclr = CHANGED_TITLE_COLOUR
                 items = ["main", "params"]
             else:
                 bkgdclr = CHANGED_WINDOW_COLOUR
                 items = ["left", "right", "params"]
             for i in items:
-                self.PluginInfos[plugin][i].SetBackgroundColour(bkgdclr)
-                self.PluginInfos[plugin][i].Refresh()
+                self.ConfNodeInfos[confnode][i].SetBackgroundColour(bkgdclr)
+                self.ConfNodeInfos[confnode][i].Refresh()
         self._Refresh(TITLE, FILEMENU)
         return res
 
-    def ExpandPlugin(self, plugin, force = False):
-        for child in self.PluginInfos[plugin]["children"]:
-            self.PluginInfos[child]["left"].Show()
-            self.PluginInfos[child]["right"].Show()
-            if force or self.PluginInfos[child]["expanded"]:
-                self.ExpandPlugin(child, force)
+    def ExpandConfNode(self, confnode, force = False):
+        for child in self.ConfNodeInfos[confnode]["children"]:
+            self.ConfNodeInfos[child]["left"].Show()
+            self.ConfNodeInfos[child]["right"].Show()
+            if force or self.ConfNodeInfos[child]["expanded"]:
+                self.ExpandConfNode(child, force)
                 if force:
-                    self.PluginInfos[child]["expanded"] = True
-        locations_infos = self.PluginInfos[plugin].get("locations_infos", None)
+                    self.ConfNodeInfos[child]["expanded"] = True
+        locations_infos = self.ConfNodeInfos[confnode].get("locations_infos", None)
         if locations_infos is not None:
             if force or locations_infos["root"]["expanded"]:
                 self.ExpandLocation(locations_infos, "root", force)
                 if force:
                     locations_infos["root"]["expanded"] = True
     
-    def CollapsePlugin(self, plugin, force = False):
-        for child in self.PluginInfos[plugin]["children"]:
-            self.PluginInfos[child]["left"].Hide()
-            self.PluginInfos[child]["right"].Hide()
-            self.CollapsePlugin(child, force)
+    def CollapseConfNode(self, confnode, force = False):
+        for child in self.ConfNodeInfos[confnode]["children"]:
+            self.ConfNodeInfos[child]["left"].Hide()
+            self.ConfNodeInfos[child]["right"].Hide()
+            self.CollapseConfNode(child, force)
             if force:
-                self.PluginInfos[child]["expanded"] = False
-        locations_infos = self.PluginInfos[plugin].get("locations_infos", None)
+                self.ConfNodeInfos[child]["expanded"] = False
+        locations_infos = self.ConfNodeInfos[confnode].get("locations_infos", None)
         if locations_infos is not None:
             self.CollapseLocation(locations_infos, "root", force)
             if force:
@@ -1129,30 +1129,30 @@ class Beremiz(IDEFrame):
         if locations_infos["root"]["left"] is not None and refresh_size:
             self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
     
-    def GenerateTreeBranch(self, plugin):
+    def GenerateTreeBranch(self, confnode):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        if plugin.PlugTestModified():
+        if confnode.PlugTestModified():
             bkgdclr=CHANGED_WINDOW_COLOUR
         else:
             bkgdclr=WINDOW_COLOUR
 
         leftwindow.SetBackgroundColour(bkgdclr)
         
-        if not self.PluginInfos.has_key(plugin):
-            self.PluginInfos[plugin] = {"expanded" : False, "right_visible" : False}
+        if not self.ConfNodeInfos.has_key(confnode):
+            self.ConfNodeInfos[confnode] = {"expanded" : False, "right_visible" : False}
             
-        self.PluginInfos[plugin]["children"] = plugin.IECSortedChilds()
-        plugin_locations = []
-        if len(self.PluginInfos[plugin]["children"]) == 0:
-            plugin_locations = plugin.GetVariableLocationTree()["children"]
-            if not self.PluginInfos[plugin].has_key("locations_infos"):
-                self.PluginInfos[plugin]["locations_infos"] = {"root": {"expanded" : False}}
+        self.ConfNodeInfos[confnode]["children"] = confnode.IECSortedChilds()
+        confnode_locations = []
+        if len(self.ConfNodeInfos[confnode]["children"]) == 0:
+            confnode_locations = confnode.GetVariableLocationTree()["children"]
+            if not self.ConfNodeInfos[confnode].has_key("locations_infos"):
+                self.ConfNodeInfos[confnode]["locations_infos"] = {"root": {"expanded" : False}}
             
-            self.PluginInfos[plugin]["locations_infos"]["root"]["left"] = None
-            self.PluginInfos[plugin]["locations_infos"]["root"]["right"] = None
-            self.PluginInfos[plugin]["locations_infos"]["root"]["children"] = []
+            self.ConfNodeInfos[confnode]["locations_infos"]["root"]["left"] = None
+            self.ConfNodeInfos[confnode]["locations_infos"]["root"]["right"] = None
+            self.ConfNodeInfos[confnode]["locations_infos"]["root"]["children"] = []
         
-        self.PluginTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
+        self.ConfNodeTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
         
         leftwindowsizer = wx.FlexGridSizer(cols=1, rows=2)
         leftwindowsizer.AddGrowableCol(0)
@@ -1171,38 +1171,38 @@ class Beremiz(IDEFrame):
         rolesizer = wx.BoxSizer(wx.HORIZONTAL)
         leftsizer.AddSizer(rolesizer, 0, border=0, flag=wx.GROW|wx.RIGHT)
         
-        #self.GenerateEnableButton(leftwindow, rolesizer, plugin)
+        #self.GenerateEnableButton(leftwindow, rolesizer, confnode)
 
         roletext = wx.StaticText(leftwindow, -1)
-        roletext.SetLabel(plugin.PlugHelp)
+        roletext.SetLabel(confnode.PlugHelp)
         rolesizer.AddWindow(roletext, 0, border=5, flag=wx.RIGHT|wx.ALIGN_LEFT)
         
-        plugin_IECChannel = plugin.BaseParams.getIEC_Channel()
+        confnode_IECChannel = confnode.BaseParams.getIEC_Channel()
         
         iecsizer = wx.BoxSizer(wx.HORIZONTAL)
         leftsizer.AddSizer(iecsizer, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
 
         st = wx.StaticText(leftwindow, -1)
         st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-        st.SetLabel(plugin.GetFullIEC_Channel())
+        st.SetLabel(confnode.GetFullIEC_Channel())
         iecsizer.AddWindow(st, 0, border=0, flag=0)
 
         updownsizer = wx.BoxSizer(wx.VERTICAL)
         iecsizer.AddSizer(updownsizer, 0, border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
 
-        if plugin_IECChannel > 0:
+        if confnode_IECChannel > 0:
             ieccdownbutton_id = wx.NewId()
             ieccdownbutton = wx.lib.buttons.GenBitmapButton(id=ieccdownbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'IECCDown.png')),
                   name='IECCDownButton', parent=leftwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
-            ieccdownbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(plugin, plugin_IECChannel - 1), id=ieccdownbutton_id)
+            ieccdownbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(confnode, confnode_IECChannel - 1), id=ieccdownbutton_id)
             updownsizer.AddWindow(ieccdownbutton, 0, border=0, flag=wx.ALIGN_LEFT)
 
         ieccupbutton_id = wx.NewId()
         ieccupbutton = wx.lib.buttons.GenBitmapTextButton(id=ieccupbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'IECCUp.png')),
               name='IECCUpButton', parent=leftwindow, pos=wx.Point(0, 0),
               size=wx.Size(16, 16), style=wx.NO_BORDER)
-        ieccupbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(plugin, plugin_IECChannel + 1), id=ieccupbutton_id)
+        ieccupbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(confnode, confnode_IECChannel + 1), id=ieccupbutton_id)
         updownsizer.AddWindow(ieccupbutton, 0, border=0, flag=wx.ALIGN_LEFT)
 
         adddeletesizer = wx.BoxSizer(wx.VERTICAL)
@@ -1210,19 +1210,19 @@ class Beremiz(IDEFrame):
 
         deletebutton_id = wx.NewId()
         deletebutton = wx.lib.buttons.GenBitmapButton(id=deletebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Delete.png')),
-              name='DeletePluginButton', parent=leftwindow, pos=wx.Point(0, 0),
+              name='DeleteConfNodeButton', parent=leftwindow, pos=wx.Point(0, 0),
               size=wx.Size(16, 16), style=wx.NO_BORDER)
-        deletebutton.SetToolTipString(_("Delete this plugin"))
-        deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(plugin), id=deletebutton_id)
+        deletebutton.SetToolTipString(_("Delete this confnode"))
+        deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(confnode), id=deletebutton_id)
         adddeletesizer.AddWindow(deletebutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
 
-        if len(plugin.PlugChildsTypes) > 0:
+        if len(confnode.PlugChildsTypes) > 0:
             addbutton_id = wx.NewId()
             addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
-                  name='AddPluginButton', parent=leftwindow, pos=wx.Point(0, 0),
+                  name='AddConfNodeButton', parent=leftwindow, pos=wx.Point(0, 0),
                   size=wx.Size(16, 16), style=wx.NO_BORDER)
-            addbutton.SetToolTipString(_("Add a sub plugin"))
-            addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddPluginMenu(plugin), id=addbutton_id)
+            addbutton.SetToolTipString(_("Add a sub confnode"))
+            addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddConfNodeMenu(confnode), id=addbutton_id)
             adddeletesizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
         
         expandbutton_id = wx.NewId()
@@ -1234,27 +1234,27 @@ class Beremiz(IDEFrame):
         expandbutton.SetUseFocusIndicator(False)
         expandbutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'minus.png')))
             
-        if len(self.PluginInfos[plugin]["children"]) > 0:
-            expandbutton.SetToggle(self.PluginInfos[plugin]["expanded"])
+        if len(self.ConfNodeInfos[confnode]["children"]) > 0:
+            expandbutton.SetToggle(self.ConfNodeInfos[confnode]["expanded"])
             def togglebutton(event):
                 if expandbutton.GetToggle():
-                    self.ExpandPlugin(plugin)
+                    self.ExpandConfNode(confnode)
                 else:
-                    self.CollapsePlugin(plugin)
-                self.PluginInfos[plugin]["expanded"] = expandbutton.GetToggle()
+                    self.CollapseConfNode(confnode)
+                self.ConfNodeInfos[confnode]["expanded"] = expandbutton.GetToggle()
                 self.PLCConfigMainSizer.Layout()
                 self.RefreshScrollBars()
                 event.Skip()
             expandbutton.Bind(wx.EVT_BUTTON, togglebutton, id=expandbutton_id)
-        elif len(plugin_locations) > 0:
-            locations_infos = self.PluginInfos[plugin]["locations_infos"]
+        elif len(confnode_locations) > 0:
+            locations_infos = self.ConfNodeInfos[confnode]["locations_infos"]
             expandbutton.SetToggle(locations_infos["root"]["expanded"])
             def togglebutton(event):
                 if expandbutton.GetToggle():
                     self.ExpandLocation(locations_infos, "root")
                 else:
                     self.CollapseLocation(locations_infos, "root")
-                self.PluginInfos[plugin]["expanded"] = expandbutton.GetToggle()
+                self.ConfNodeInfos[confnode]["expanded"] = expandbutton.GetToggle()
                 locations_infos["root"]["expanded"] = expandbutton.GetToggle()
                 self.PLCConfigMainSizer.Layout()
                 self.RefreshScrollBars()
@@ -1267,22 +1267,22 @@ class Beremiz(IDEFrame):
         tc_id = wx.NewId()
         tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 25), style=wx.NO_BORDER)
         tc.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-        tc.ChangeValue(plugin.MandatoryParams[1].getName())
-        tc.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(tc, plugin, "BaseParams.Name"), id=tc_id)
+        tc.ChangeValue(confnode.MandatoryParams[1].getName())
+        tc.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(tc, confnode, "BaseParams.Name"), id=tc_id)
         iecsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
-        rightwindow = self.GenerateParamsPanel(plugin, bkgdclr, 8)
-        self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
+        rightwindow = self.GenerateParamsPanel(confnode, bkgdclr, 8)
+        self.ConfNodeTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
         
-        self.PluginInfos[plugin]["left"] = leftwindow
-        self.PluginInfos[plugin]["right"] = rightwindow
-        for child in self.PluginInfos[plugin]["children"]:
+        self.ConfNodeInfos[confnode]["left"] = leftwindow
+        self.ConfNodeInfos[confnode]["right"] = rightwindow
+        for child in self.ConfNodeInfos[confnode]["children"]:
             self.GenerateTreeBranch(child)
-            if not self.PluginInfos[child]["expanded"]:
-                self.CollapsePlugin(child)
+            if not self.ConfNodeInfos[child]["expanded"]:
+                self.CollapseConfNode(child)
         
-        if len(plugin_locations) > 0:
-            locations_infos = self.PluginInfos[plugin]["locations_infos"]
+        if len(confnode_locations) > 0:
+            locations_infos = self.ConfNodeInfos[confnode]["locations_infos"]
             treectrl = wx.TreeCtrl(self.PLCConfig, -1, size=wx.DefaultSize, 
                                    style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.NO_BORDER|wx.TR_HIDE_ROOT|wx.TR_NO_LINES|wx.TR_LINES_AT_ROOT)
             treectrl.SetImageList(self.LocationImageList)
@@ -1292,19 +1292,19 @@ class Beremiz(IDEFrame):
             treectrl.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheelTreeCtrl)
             
             treectrl.AddRoot("")
-            self.PluginTreeSizer.AddWindow(treectrl, 0, border=0, flag=0)
+            self.ConfNodeTreeSizer.AddWindow(treectrl, 0, border=0, flag=0)
             
             rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
             rightwindow.SetBackgroundColour(wx.WHITE)
-            self.PluginTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
+            self.ConfNodeTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
             
             locations_infos["root"]["left"] = treectrl
             locations_infos["root"]["right"] = rightwindow
-            for location in plugin_locations:
+            for location in confnode_locations:
                 locations_infos["root"]["children"].append("root.%s" % location["name"])
                 self.GenerateLocationTreeBranch(treectrl, treectrl.GetRootItem(), locations_infos, "root", location)
             if locations_infos["root"]["expanded"]:
-                self.PluginTreeSizer.Layout()
+                self.ConfNodeTreeSizer.Layout()
                 self.ExpandLocation(locations_infos, "root")
             else:
                 self.RefreshTreeCtrlSize(treectrl)
@@ -1399,38 +1399,38 @@ class Beremiz(IDEFrame):
     
     def RefreshAll(self):
         self.RefreshPLCParams()
-        self.RefreshPluginTree()
+        self.RefreshConfNodeTree()
         
-    def GetItemChannelChangedFunction(self, plugin, value):
-        def OnPluginTreeItemChannelChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, "BaseParams.IEC_Channel", value)
+    def GetItemChannelChangedFunction(self, confnode, value):
+        def OnConfNodeTreeItemChannelChanged(event):
+            res = self.SetConfNodeParamsAttribute(confnode, "BaseParams.IEC_Channel", value)
             event.Skip()
-        return OnPluginTreeItemChannelChanged
+        return OnConfNodeTreeItemChannelChanged
     
-    def _GetAddPluginFunction(self, name, plugin):
-        def OnPluginMenu(event):
-            wx.CallAfter(self.AddPlugin, name, plugin)
-        return OnPluginMenu
+    def _GetAddConfNodeFunction(self, name, confnode):
+        def OnConfNodeMenu(event):
+            wx.CallAfter(self.AddConfNode, name, confnode)
+        return OnConfNodeMenu
     
-    def Gen_AddPluginMenu(self, plugin):
-        def AddPluginMenu(event):
+    def Gen_AddConfNodeMenu(self, confnode):
+        def AddConfNodeMenu(event):
             main_menu = wx.Menu(title='')
-            if len(plugin.PlugChildsTypes) > 0:
-                for name, XSDClass, help in plugin.PlugChildsTypes:
+            if len(confnode.PlugChildsTypes) > 0:
+                for name, XSDClass, help in confnode.PlugChildsTypes:
                     new_id = wx.NewId()
                     main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Append ")+help)
-                    self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, plugin), id=new_id)
+                    self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
             self.PopupMenuXY(main_menu)
             main_menu.Destroy()
-        return AddPluginMenu
+        return AddConfNodeMenu
     
-    def GetButtonCallBackFunction(self, plugin, method):
-        """ Generate the callbackfunc for a given plugin method"""
+    def GetButtonCallBackFunction(self, confnode, method):
+        """ Generate the callbackfunc for a given confnode method"""
         def OnButtonClick(event):
             # Disable button to prevent re-entrant call 
             event.GetEventObject().Disable()
             # Call
-            getattr(plugin,method)()
+            getattr(confnode,method)()
             # Re-enable button 
             event.GetEventObject().Enable()
             # Trigger refresh on Idle
@@ -1438,20 +1438,20 @@ class Beremiz(IDEFrame):
             event.Skip()
         return OnButtonClick
     
-    def GetChoiceCallBackFunction(self, choicectrl, plugin, path):
+    def GetChoiceCallBackFunction(self, choicectrl, confnode, path):
         def OnChoiceChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection())
+            res = self.SetConfNodeParamsAttribute(confnode, path, choicectrl.GetStringSelection())
             choicectrl.SetStringSelection(res)
             event.Skip()
         return OnChoiceChanged
     
-    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, plugin, path):
+    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, confnode, path):
         def OnChoiceContentChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, choicectrl.GetStringSelection())
+            res = self.SetConfNodeParamsAttribute(confnode, path, choicectrl.GetStringSelection())
             if wx.VERSION < (2, 8, 0):
                 self.ParamsPanel.Freeze()
                 choicectrl.SetStringSelection(res)
-                infos = self.PluginRoot.GetParamsAttributes(path)
+                infos = self.CTR.GetParamsAttributes(path)
                 staticbox = staticboxsizer.GetStaticBox()
                 staticbox.SetLabel("%(name)s - %(value)s"%infos)
                 self.RefreshSizerElement(self.ParamsPanel, staticboxsizer, infos["children"], "%s.%s"%(path, infos["name"]), selected=selected)
@@ -1463,27 +1463,27 @@ class Beremiz(IDEFrame):
             event.Skip()
         return OnChoiceContentChanged
     
-    def GetTextCtrlCallBackFunction(self, textctrl, plugin, path):
+    def GetTextCtrlCallBackFunction(self, textctrl, confnode, path):
         def OnTextCtrlChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, textctrl.GetValue())
+            res = self.SetConfNodeParamsAttribute(confnode, path, textctrl.GetValue())
             if res != textctrl.GetValue():
                 textctrl.ChangeValue(res)
             event.Skip()
         return OnTextCtrlChanged
     
-    def GetCheckBoxCallBackFunction(self, chkbx, plugin, path):
+    def GetCheckBoxCallBackFunction(self, chkbx, confnode, path):
         def OnCheckBoxChanged(event):
-            res = self.SetPluginParamsAttribute(plugin, path, chkbx.IsChecked())
+            res = self.SetConfNodeParamsAttribute(confnode, path, chkbx.IsChecked())
             chkbx.SetValue(res)
             event.Skip()
         return OnCheckBoxChanged
     
-    def GetBrowseCallBackFunction(self, name, textctrl, library, value_infos, plugin, path):
+    def GetBrowseCallBackFunction(self, name, textctrl, library, value_infos, confnode, path):
         infos = [value_infos]
         def OnBrowseButton(event):
             dialog = BrowseValuesLibraryDialog(self, name, library, infos[0])
             if dialog.ShowModal() == wx.ID_OK:
-                value, value_infos = self.SetPluginParamsAttribute(plugin, path, dialog.GetValueInfos())
+                value, value_infos = self.SetConfNodeParamsAttribute(confnode, path, dialog.GetValueInfos())
                 textctrl.ChangeValue(value)
                 infos[0] = value_infos
             dialog.Destroy()
@@ -1502,7 +1502,7 @@ class Beremiz(IDEFrame):
         for staticbox in staticboxes:
             staticbox.Destroy()
                 
-    def RefreshSizerElement(self, parent, sizer, plugin, elements, path, clean = True):
+    def RefreshSizerElement(self, parent, sizer, confnode, elements, path, clean = True):
         if clean:
             if wx.VERSION < (2, 8, 0):
                 self.ClearSizer(sizer)
@@ -1524,7 +1524,7 @@ class Beremiz(IDEFrame):
                     sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW|wx.TOP)
                 else:
                     sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
-                self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
+                self.RefreshSizerElement(parent, staticboxsizer, confnode, element_infos["children"], element_path)
             else:
                 boxsizer = wx.FlexGridSizer(cols=3, rows=1)
                 boxsizer.AddGrowableCol(1)
@@ -1561,7 +1561,7 @@ class Beremiz(IDEFrame):
                         browse_boxsizer.AddWindow(button, 0, border=0, flag=0)
                         button.Bind(wx.EVT_BUTTON, 
                                     self.GetBrowseCallBackFunction(element_infos["name"], textctrl, element_infos["type"], 
-                                                                   value_infos, plugin, element_path), 
+                                                                   value_infos, confnode, element_path), 
                                     id=button_id)
                     else:
                         combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
@@ -1579,12 +1579,12 @@ class Beremiz(IDEFrame):
                                 pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                             staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                             sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-                            self.RefreshSizerElement(parent, staticboxsizer, plugin, element_infos["children"], element_path)
-                            callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, plugin, element_path)
+                            self.RefreshSizerElement(parent, staticboxsizer, confnode, element_infos["children"], element_path)
+                            callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, confnode, element_path)
                         else:
                             for choice in element_infos["type"]:
                                 combobox.Append(choice)
-                            callback = self.GetChoiceCallBackFunction(combobox, plugin, element_path)
+                            callback = self.GetChoiceCallBackFunction(combobox, confnode, element_path)
                         if element_infos["value"] is None:
                             combobox.SetStringSelection("")
                         else:
@@ -1603,7 +1603,7 @@ class Beremiz(IDEFrame):
                     boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                     if element_infos["value"] is not None:
                         spinctrl.SetValue(element_infos["value"])
-                    spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
+                    spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, confnode, element_path), id=id)
                 else:
                     if element_infos["type"] == "boolean":
                         checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=parent, 
@@ -1611,7 +1611,7 @@ class Beremiz(IDEFrame):
                         boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
                         if element_infos["value"] is not None:
                             checkbox.SetValue(element_infos["value"])
-                        checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, plugin, element_path), id=id)
+                        checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, confnode, element_path), id=id)
                     elif element_infos["type"] in ["unsignedLong", "long","integer"]:
                         if element_infos["type"].startswith("unsigned"):
                             scmin = 0
@@ -1624,7 +1624,7 @@ class Beremiz(IDEFrame):
                         boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
                         if element_infos["value"] is not None:
                             spinctrl.SetValue(element_infos["value"])
-                        spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, plugin, element_path), id=id)
+                        spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, confnode, element_path), id=id)
                     else:
                         choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))
                         textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
@@ -1640,15 +1640,15 @@ class Beremiz(IDEFrame):
                         boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
                         if element_infos["value"] is not None:
                             textctrl.ChangeValue(str(element_infos["value"]))
-                        textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, plugin, element_path))
+                        textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, confnode, element_path))
             first = False
     
     def ResetView(self):
         IDEFrame.ResetView(self)
-        self.PluginInfos = {}
-        if self.PluginRoot is not None:
-            self.PluginRoot.CloseProject()
-        self.PluginRoot = None
+        self.ConfNodeInfos = {}
+        if self.CTR is not None:
+            self.CTR.CloseProject()
+        self.CTR = None
         self.Log.flush()
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(None)
@@ -1662,7 +1662,7 @@ class Beremiz(IDEFrame):
         self.Config.Flush()
     
     def OnNewProjectMenu(self, event):
-        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+        if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
         if not self.Config.HasEntry("lastopenedfolder"):
@@ -1676,15 +1676,15 @@ class Beremiz(IDEFrame):
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
             self.ResetView()
-            plugin_root = PluginsRoot(self, self.Log)
-            result = plugin_root.NewProject(projectpath)
+            ctr = ConfigTreeRoot(self, self.Log)
+            result = ctr.NewProject(projectpath)
             if not result:
-                self.PluginRoot = plugin_root
-                self.Controler = self.PluginRoot
+                self.CTR = ctr
+                self.Controler = self.CTR
                 self.LibraryPanel.SetControler(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
-                    self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                    self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
             else:
@@ -1694,7 +1694,7 @@ class Beremiz(IDEFrame):
         dialog.Destroy()
     
     def OnOpenProjectMenu(self, event):
-        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+        if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
         if not self.Config.HasEntry("lastopenedfolder"):
@@ -1712,14 +1712,14 @@ class Beremiz(IDEFrame):
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
             self.ResetView()
-            self.PluginRoot = PluginsRoot(self, self.Log)
-            self.Controler = self.PluginRoot
-            result = self.PluginRoot.LoadProject(projectpath)
+            self.CTR = ConfigTreeRoot(self, self.Log)
+            self.Controler = self.CTR
+            result = self.CTR.LoadProject(projectpath)
             if not result:
                 self.LibraryPanel.SetControler(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
-                    self.DebugVariablePanel.SetDataProducer(self.PluginRoot)
+                    self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self.LoadProjectOrganization()
                 self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
                 self.RefreshAll()
@@ -1731,7 +1731,7 @@ class Beremiz(IDEFrame):
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
     
     def OnCloseProjectMenu(self, event):
-        if self.PluginRoot is not None and not self.CheckSaveBeforeClosing():
+        if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
         self.SaveProjectOrganization()
@@ -1740,14 +1740,14 @@ class Beremiz(IDEFrame):
         self.RefreshAll()
     
     def OnSaveProjectMenu(self, event):
-        if self.PluginRoot is not None:
-            self.PluginRoot.SaveProject()
+        if self.CTR is not None:
+            self.CTR.SaveProject()
             self.RefreshAll()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
     
     def OnSaveProjectAsMenu(self, event):
-        if self.PluginRoot is not None:
-            self.PluginRoot.SaveProjectAs()
+        if self.CTR is not None:
+            self.CTR.SaveProjectAs()
             self.RefreshAll()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
         event.Skip()
@@ -1765,53 +1765,53 @@ class Beremiz(IDEFrame):
         OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
     
     def OnPouSelectedChanged(self, event):
-        wx.CallAfter(self.RefreshPluginMenu)
+        wx.CallAfter(self.RefreshConfNodeMenu)
         IDEFrame.OnPouSelectedChanged(self, event)
     
     def OnPageClose(self, event):
-        wx.CallAfter(self.RefreshPluginMenu)
+        wx.CallAfter(self.RefreshConfNodeMenu)
         IDEFrame.OnPageClose(self, event)
     
-    def GetAddButtonFunction(self, plugin, window):
+    def GetAddButtonFunction(self, confnode, window):
         def AddButtonFunction(event):
-            if plugin and len(plugin.PlugChildsTypes) > 0:
-                plugin_menu = wx.Menu(title='')
-                for name, XSDClass, help in plugin.PlugChildsTypes:
+            if confnode and len(confnode.PlugChildsTypes) > 0:
+                confnode_menu = wx.Menu(title='')
+                for name, XSDClass, help in confnode.PlugChildsTypes:
                     new_id = wx.NewId()
-                    plugin_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=name)
-                    self.Bind(wx.EVT_MENU, self._GetAddPluginFunction(name, plugin), id=new_id)
+                    confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=name)
+                    self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
                 window_pos = window.GetPosition()
-                wx.CallAfter(self.PLCConfig.PopupMenu, plugin_menu)
+                wx.CallAfter(self.PLCConfig.PopupMenu, confnode_menu)
             event.Skip()
         return AddButtonFunction
     
-    def GetDeleteButtonFunction(self, plugin):
+    def GetDeleteButtonFunction(self, confnode):
         def DeleteButtonFunction(event):
-            wx.CallAfter(self.DeletePlugin, plugin)
+            wx.CallAfter(self.DeleteConfNode, confnode)
             event.Skip()
         return DeleteButtonFunction
     
-    def AddPlugin(self, PluginType, plugin):
-        if self.PluginRoot.CheckProjectPathPerm():
-            dialog = wx.TextEntryDialog(self, _("Please enter a name for plugin:"), _("Add Plugin"), "", wx.OK|wx.CANCEL)
+    def AddConfNode(self, ConfNodeType, confnode):
+        if self.CTR.CheckProjectPathPerm():
+            dialog = wx.TextEntryDialog(self, _("Please enter a name for confnode:"), _("Add ConfNode"), "", wx.OK|wx.CANCEL)
             if dialog.ShowModal() == wx.ID_OK:
-                PluginName = dialog.GetValue()
-                plugin.PlugAddChild(PluginName, PluginType)
-                self.PluginRoot.RefreshPluginsBlockLists()
+                ConfNodeName = dialog.GetValue()
+                confnode.PlugAddChild(ConfNodeName, ConfNodeType)
+                self.CTR.RefreshConfNodesBlockLists()
                 self._Refresh(TITLE, FILEMENU)
-                self.RefreshPluginTree()
+                self.RefreshConfNodeTree()
             dialog.Destroy()
     
-    def DeletePlugin(self, plugin):
-        if self.PluginRoot.CheckProjectPathPerm():
-            dialog = wx.MessageDialog(self, _("Really delete plugin ?"), _("Remove plugin"), wx.YES_NO|wx.NO_DEFAULT)
+    def DeleteConfNode(self, confnode):
+        if self.CTR.CheckProjectPathPerm():
+            dialog = wx.MessageDialog(self, _("Really delete confnode ?"), _("Remove confnode"), wx.YES_NO|wx.NO_DEFAULT)
             if dialog.ShowModal() == wx.ID_YES:
-                self.PluginInfos.pop(plugin)
-                plugin.PlugRemove()
-                del plugin
-                self.PluginRoot.RefreshPluginsBlockLists()
+                self.ConfNodeInfos.pop(confnode)
+                confnode.PlugRemove()
+                del confnode
+                self.CTR.RefreshConfNodesBlockLists()
                 self._Refresh(TITLE, FILEMENU)
-                self.RefreshPluginTree()
+                self.RefreshConfNodeTree()
             dialog.Destroy()
     
 #-------------------------------------------------------------------------------

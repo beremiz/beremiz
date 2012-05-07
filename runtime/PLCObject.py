@@ -109,7 +109,7 @@ class PLCObject(pyro.ObjBase):
                 
                 self._stopPLC = self._stopPLC_real
             else:
-                # If python plugin is not enabled, we reuse _PythonIterator
+                # If python confnode is not enabled, we reuse _PythonIterator
                 # as a call that block pythonthread until StopPLC 
                 self.PythonIteratorLock = Lock()
                 self.PythonIteratorLock.acquire()

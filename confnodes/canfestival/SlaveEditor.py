@@ -8,10 +8,10 @@ from subindextable import EditingPanel
 from nodeeditor import NodeEditorTemplate
 from controls import EditorPanel
 
-[ID_SLAVEEDITORPLUGINMENUNODEINFOS, ID_SLAVEEDITORPLUGINMENUDS301PROFILE,
- ID_SLAVEEDITORPLUGINMENUDS302PROFILE, ID_SLAVEEDITORPLUGINMENUDSOTHERPROFILE,
- ID_SLAVEEDITORPLUGINMENUADD, 
-] = [wx.NewId() for _init_coll_PluginMenu_Items in range(5)]
+[ID_SLAVEEDITORCONFNODEMENUNODEINFOS, ID_SLAVEEDITORCONFNODEMENUDS301PROFILE,
+ ID_SLAVEEDITORCONFNODEMENUDS302PROFILE, ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE,
+ ID_SLAVEEDITORCONFNODEMENUADD, 
+] = [wx.NewId() for _init_coll_ConfNodeMenu_Items in range(5)]
 
 [ID_SLAVEEDITORADDMENUSDOSERVER, ID_SLAVEEDITORADDMENUSDOCLIENT,
  ID_SLAVEEDITORADDMENUPDOTRANSMIT, ID_SLAVEEDITORADDMENUPDORECEIVE,
@@ -34,7 +34,7 @@ class SlaveEditor(EditorPanel, NodeEditorTemplate):
     def __del__(self):
         self.Controler.OnCloseEditor(self)
     
-    def GetPluginMenuItems(self):
+    def GetConfNodeMenuItems(self):
         if self.Editable:
             add_menu = [(wx.ITEM_NORMAL, (_('SDO Server'), ID_SLAVEEDITORADDMENUSDOSERVER, '', self.OnAddSDOServerMenu)),
                         (wx.ITEM_NORMAL, (_('SDO Client'), ID_SLAVEEDITORADDMENUSDOCLIENT, '', self.OnAddSDOClientMenu)),
@@ -52,16 +52,16 @@ class SlaveEditor(EditorPanel, NodeEditorTemplate):
             else:
                 other_profile_text = _('Other Profile')
             
-            return [(wx.ITEM_NORMAL, (_('Node infos'), ID_SLAVEEDITORPLUGINMENUNODEINFOS, '', self.OnNodeInfosMenu)),
-                    (wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_SLAVEEDITORPLUGINMENUDS301PROFILE, '', self.OnCommunicationMenu)),
-                    (wx.ITEM_NORMAL, (_('DS-302 Profile'), ID_SLAVEEDITORPLUGINMENUDS302PROFILE, '', self.OnOtherCommunicationMenu)),
-                    (wx.ITEM_NORMAL, (other_profile_text, ID_SLAVEEDITORPLUGINMENUDSOTHERPROFILE, '', self.OnEditProfileMenu)),
+            return [(wx.ITEM_NORMAL, (_('Node infos'), ID_SLAVEEDITORCONFNODEMENUNODEINFOS, '', self.OnNodeInfosMenu)),
+                    (wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_SLAVEEDITORCONFNODEMENUDS301PROFILE, '', self.OnCommunicationMenu)),
+                    (wx.ITEM_NORMAL, (_('DS-302 Profile'), ID_SLAVEEDITORCONFNODEMENUDS302PROFILE, '', self.OnOtherCommunicationMenu)),
+                    (wx.ITEM_NORMAL, (other_profile_text, ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, '', self.OnEditProfileMenu)),
                     (wx.ITEM_SEPARATOR, None),
-                    (add_menu, (_('Add'), ID_SLAVEEDITORPLUGINMENUADD))]
+                    (add_menu, (_('Add'), ID_SLAVEEDITORCONFNODEMENUADD))]
         return []
     
-    def RefreshPluginMenu(self, plugin_menu):
-        plugin_menu.Enable(ID_SLAVEEDITORPLUGINMENUDSOTHERPROFILE, False)
+    def RefreshConfNodeMenu(self, confnode_menu):
+        confnode_menu.Enable(ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, False)
     
     def GetTitle(self):
         fullname = self.Controler.PlugFullName()

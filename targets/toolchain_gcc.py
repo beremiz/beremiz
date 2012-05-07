@@ -10,23 +10,23 @@ class toolchain_gcc():
     It cannot be used as this and should be inherited in a target specific
     class such as target_linux or target_win32
     """
-    def __init__(self, PluginsRootInstance):
-        self.PluginsRootInstance = PluginsRootInstance
+    def __init__(self, ConfigTreeRootInstance):
+        self.ConfigTreeRootInstance = ConfigTreeRootInstance
         self.buildpath = None
-        self.SetBuildPath(self.PluginsRootInstance._getBuildPath())
+        self.SetBuildPath(self.ConfigTreeRootInstance._getBuildPath())
     
     def getBuilderCFLAGS(self):
         """
         Returns list of builder specific CFLAGS
         """
-        return [self.PluginsRootInstance.GetTarget().getcontent()["value"].getCFLAGS()]
+        return [self.ConfigTreeRootInstance.GetTarget().getcontent()["value"].getCFLAGS()]
 
     def getBuilderLDFLAGS(self):
         """
         Returns list of builder specific LDFLAGS
         """
-        return self.PluginsRootInstance.LDFLAGS + \
-               [self.PluginsRootInstance.GetTarget().getcontent()["value"].getLDFLAGS()]
+        return self.ConfigTreeRootInstance.LDFLAGS + \
+               [self.ConfigTreeRootInstance.GetTarget().getcontent()["value"].getLDFLAGS()]
 
     def GetBinaryCode(self):
         try:
@@ -56,7 +56,7 @@ class toolchain_gcc():
     def SetBuildPath(self, buildpath):
         if self.buildpath != buildpath:
             self.buildpath = buildpath
-            self.exe = self.PluginsRootInstance.GetProjectName() + self.extension
+            self.exe = self.ConfigTreeRootInstance.GetProjectName() + self.extension
             self.exe_path = os.path.join(self.buildpath, self.exe)
             self.md5key = None
             self.srcmd5 = {}
@@ -89,7 +89,7 @@ class toolchain_gcc():
                 
     def build(self):
         # Retrieve toolchain user parameters
-        toolchain_params = self.PluginsRootInstance.GetTarget().getcontent()["value"]
+        toolchain_params = self.ConfigTreeRootInstance.GetTarget().getcontent()["value"]
         self.compiler = toolchain_params.getCompiler()
         self.linker = toolchain_params.getLinker()
 
@@ -99,11 +99,11 @@ class toolchain_gcc():
         obns = []
         objs = []
         relink = False
-        for Location, CFilesAndCFLAGS, DoCalls in self.PluginsRootInstance.LocationCFilesAndCFLAGS:
+        for Location, CFilesAndCFLAGS, DoCalls in self.ConfigTreeRootInstance.LocationCFilesAndCFLAGS:
             if Location:
-                self.PluginsRootInstance.logger.write(_("Plugin : ") + self.PluginsRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
+                self.ConfigTreeRootInstance.logger.write(_("ConfNode : ") + self.ConfigTreeRootInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
             else:
-                self.PluginsRootInstance.logger.write(_("PLC :\n"))
+                self.ConfigTreeRootInstance.logger.write(_("PLC :\n"))
                 
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 if CFile.endswith(".c"):
@@ -114,21 +114,21 @@ class toolchain_gcc():
                     match = self.check_and_update_hash_and_deps(bn)
                     
                     if match:
-                        self.PluginsRootInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
+                        self.ConfigTreeRootInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
                     else:
                         relink = True
 
-                        self.PluginsRootInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
+                        self.ConfigTreeRootInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
                         
                         status, result, err_result = ProcessLogger(
-                               self.PluginsRootInstance.logger,
+                               self.ConfigTreeRootInstance.logger,
                                "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
                                    (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
                                ).spin()
 
                         if status :
                             self.srcmd5.pop(bn)
-                            self.PluginsRootInstance.logger.write_error(_("C compilation of %s failed.\n")%bn)
+                            self.ConfigTreeRootInstance.logger.write_error(_("C compilation of %s failed.\n")%bn)
                             return False
                     obns.append(obn)
                     objs.append(objectfilename)
@@ -138,7 +138,7 @@ class toolchain_gcc():
 
         ######### GENERATE library FILE ########################################
         # Link all the object files into one binary file
-        self.PluginsRootInstance.logger.write(_("Linking :\n"))
+        self.ConfigTreeRootInstance.logger.write(_("Linking :\n"))
         if relink:
             objstring = []
     
@@ -147,10 +147,10 @@ class toolchain_gcc():
     
             ALLldflags = ' '.join(self.getBuilderLDFLAGS())
     
-            self.PluginsRootInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
+            self.ConfigTreeRootInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
     
             status, result, err_result = ProcessLogger(
-                   self.PluginsRootInstance.logger,
+                   self.ConfigTreeRootInstance.logger,
                    "\"%s\" %s -o \"%s\" %s"%
                        (self.linker,
                         listobjstring,
@@ -162,7 +162,7 @@ class toolchain_gcc():
                 return False
                 
         else:
-            self.PluginsRootInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.exe + "\n")
+            self.ConfigTreeRootInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.exe + "\n")
         
         # Calculate md5 key and get data for the new created PLC
         data=self.GetBinaryCode()

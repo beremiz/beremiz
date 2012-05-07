@@ -19,7 +19,7 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-def LPC_connector_factory(uri, pluginsroot):
+def LPC_connector_factory(uri, confnodesroot):
     """
     This returns the connector to LPC style PLCobject
     """
@@ -27,9 +27,9 @@ def LPC_connector_factory(uri, pluginsroot):
     mode,comportstr = location.split('/')
     if mode=="APPLICATION":
         from LPCAppObject import LPCAppObject 
-        return LPCAppObject(pluginsroot,comportstr)
+        return LPCAppObject(confnodesroot,comportstr)
     elif mode=="BOOTLOADER":
         from LPCBootObject import LPCBootObject 
-        return LPCBootObject(pluginsroot,comportstr)
+        return LPCBootObject(confnodesroot,comportstr)
 
 

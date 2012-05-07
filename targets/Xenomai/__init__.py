@@ -4,14 +4,14 @@ class Xenomai_target(toolchain_gcc):
     extension = ".so"
     def getXenoConfig(self, flagsname):
         """ Get xeno-config from target parameters """
-        xeno_config=self.PluginsRootInstance.GetTarget().getcontent()["value"].getXenoConfig()
+        xeno_config=self.ConfigTreeRootInstance.GetTarget().getcontent()["value"].getXenoConfig()
         if xeno_config:
             from wxPopen import ProcessLogger
-            status, result, err_result = ProcessLogger(self.PluginsRootInstance.logger,
+            status, result, err_result = ProcessLogger(self.ConfigTreeRootInstance.logger,
                                                        xeno_config + " --skin=native --"+flagsname,
                                                        no_stdout=True).spin()
             if status:
-                self.PluginsRootInstance.logger.write_error(_("Unable to get Xenomai's %s \n")%flagsname)
+                self.ConfigTreeRootInstance.logger.write_error(_("Unable to get Xenomai's %s \n")%flagsname)
             return [result.strip()]
         return []
     

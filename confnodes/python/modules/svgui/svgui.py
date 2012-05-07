@@ -1,8 +1,8 @@
 import wx
 import os, sys, shutil
 
-from plugger import opjimg
-from plugins.python import PythonCodeTemplate
+from ConfigTree import opjimg
+from confnodes.python import PythonCodeTemplate
 
 from pyjs import translate
 
@@ -10,7 +10,7 @@ from docutils import *
 
 class RootClass:
 
-    PluginMethods = [
+    ConfNodeMethods = [
         {"bitmap" : os.path.join("images","ImportSVG"),
          "name" : _("Import SVG"),
          "tooltip" : _("Import SVG"),
@@ -21,8 +21,8 @@ class RootClass:
          "method" : "_StartInkscape"},
     ]
 
-    def PluginPath(self):
-        return os.path.join(self.PlugParent.PluginPath(), "modules", self.PlugType)
+    def ConfNodePath(self):
+        return os.path.join(self.PlugParent.ConfNodePath(), "modules", self.PlugType)
 
     def _getSVGpath(self):
         # define name for IEC raw code file

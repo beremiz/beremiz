@@ -26,17 +26,17 @@ from time import sleep
 import copy
 
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
-# supported by this connector plugin.
+# supported by this connector confnode.
 #
 # for connectors that do not support DNS-SD, this attribute can be omitted
 # or set to an empty list.
 supported_dnssd_services = ["_PYRO._tcp.local."]
 
-def PYRO_connector_factory(uri, pluginsroot):
+def PYRO_connector_factory(uri, confnodesroot):
     """
     This returns the connector to Pyro style PLCobject
     """
-    pluginsroot.logger.write(_("Connecting to URI : %s\n")%uri)
+    confnodesroot.logger.write(_("Connecting to URI : %s\n")%uri)
 
     servicetype, location = uri.split("://")
     
@@ -44,8 +44,8 @@ def PYRO_connector_factory(uri, pluginsroot):
     try :
         RemotePLCObjectProxy = pyro.getAttrProxyForURI("PYROLOC://"+location+"/PLCObject")
     except Exception, msg:
-        pluginsroot.logger.write_error(_("Wrong URI, please check it !\n"))
-        pluginsroot.logger.write_error(traceback.format_exc())
+        confnodesroot.logger.write_error(_("Wrong URI, please check it !\n"))
+        confnodesroot.logger.write_error(traceback.format_exc())
         return None
 
     def PyroCatcher(func, default=None):
@@ -59,21 +59,21 @@ def PYRO_connector_factory(uri, pluginsroot):
             except Pyro.errors.ProtocolError, e:
                 pass
             except Pyro.errors.ConnectionClosedError, e:
-                pluginsroot.logger.write_error("Connection lost!\n")
-                pluginsroot._connector = None
+                confnodesroot.logger.write_error("Connection lost!\n")
+                confnodesroot._connector = None
             except Exception,e:
-                #pluginsroot.logger.write_error(traceback.format_exc())
+                #confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
-                pluginsroot.logger.write_error(errmess+"\n")
+                confnodesroot.logger.write_error(errmess+"\n")
                 print errmess
-                pluginsroot._connector = None
+                confnodesroot._connector = None
                 return default
         return catcher_func
 
     # Check connection is effective. 
     # lambda is for getattr of GetPLCstatus to happen inside catcher
     if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() == None:
-        pluginsroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
+        confnodesroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
         return None
 
 
@@ -95,25 +95,25 @@ def PYRO_connector_factory(uri, pluginsroot):
 
         def _PyroStartPLC(self, *args, **kwargs):
             """
-            pluginsroot._connector.GetPyroProxy() is used 
+            confnodesroot._connector.GetPyroProxy() is used 
             rather than RemotePLCObjectProxy because
             object is recreated meanwhile, 
             so we must not keep ref to it here
             """
-            current_status = pluginsroot._connector.GetPyroProxy().GetPLCstatus()
+            current_status = confnodesroot._connector.GetPyroProxy().GetPLCstatus()
             if current_status == "Dirty":
                 """
                 Some bad libs with static symbols may polute PLC
                 ask runtime to suicide and come back again
                 """
-                pluginsroot.logger.write(_("Force runtime reload\n"))
-                pluginsroot._connector.GetPyroProxy().ForceReload()
-                pluginsroot._Disconnect()
+                confnodesroot.logger.write(_("Force runtime reload\n"))
+                confnodesroot._connector.GetPyroProxy().ForceReload()
+                confnodesroot._Disconnect()
                 # let remote PLC time to resurect.(freeze app)
                 sleep(0.5)
-                pluginsroot._Connect()
-            self.RemotePLCObjectProxyCopy = copy.copy(pluginsroot._connector.GetPyroProxy())
-            return pluginsroot._connector.GetPyroProxy().StartPLC(*args, **kwargs)
+                confnodesroot._Connect()
+            self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
+            return confnodesroot._connector.GetPyroProxy().StartPLC(*args, **kwargs)
         StartPLC = PyroCatcher(_PyroStartPLC, False)
 
 
@@ -122,7 +122,7 @@ def PYRO_connector_factory(uri, pluginsroot):
             for safe use in from debug thread, must use the copy
             """
             if self.RemotePLCObjectProxyCopy is None:
-                self.RemotePLCObjectProxyCopy = copy.copy(pluginsroot._connector.GetPyroProxy())
+                self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
             return self.RemotePLCObjectProxyCopy.GetTraceVariables()
         GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",None,None))
 

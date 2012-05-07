@@ -7,11 +7,11 @@ import time
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
 class toolchain_makefile():
-    def __init__(self, PluginsRootInstance):
-        self.PluginsRootInstance = PluginsRootInstance
+    def __init__(self, ConfigTreeRootInstance):
+        self.ConfigTreeRootInstance = ConfigTreeRootInstance
         self.md5key = None 
         self.buildpath = None
-        self.SetBuildPath(self.PluginsRootInstance._getBuildPath())
+        self.SetBuildPath(self.ConfigTreeRootInstance._getBuildPath())
 
     def SetBuildPath(self, buildpath):
         if self.buildpath != buildpath:
@@ -60,7 +60,7 @@ class toolchain_makefile():
         srcfiles= []
         cflags = []
         wholesrcdata = "" 
-        for Location, CFilesAndCFLAGS, DoCalls in self.PluginsRootInstance.LocationCFilesAndCFLAGS:
+        for Location, CFilesAndCFLAGS, DoCalls in self.ConfigTreeRootInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 CFileName = os.path.basename(CFile)
@@ -72,7 +72,7 @@ class toolchain_makefile():
                         
         oldmd5 = self.md5key
         self.md5key = hashlib.md5(wholesrcdata).hexdigest()
-        props = self.PluginsRootInstance.GetProjectProperties()
+        props = self.ConfigTreeRootInstance.GetProjectProperties()
         self.md5key += '#'.join([props[key] for key in ['companyName',
                                                         'projectName',
                                                         'productName']])
@@ -88,21 +88,21 @@ class toolchain_makefile():
                               "md5": '"'+self.md5key+'"'
                              }
             
-            target = self.PluginsRootInstance.GetTarget().getcontent()["value"]
+            target = self.ConfigTreeRootInstance.GetTarget().getcontent()["value"]
             command = target.getCommand().split(' ') +\
                       [target.getBuildPath()] +\
                       [arg % beremizcommand for arg in target.getArguments().split(' ')] +\
                       target.getRule().split(' ')
             
             # Call Makefile to build PLC code and link it with target specific code
-            status, result, err_result = ProcessLogger(self.PluginsRootInstance.logger,
+            status, result, err_result = ProcessLogger(self.ConfigTreeRootInstance.logger,
                                                        command).spin()
             if status :
                 self.md5key = None
-                self.PluginsRootInstance.logger.write_error(_("C compilation failed.\n"))
+                self.ConfigTreeRootInstance.logger.write_error(_("C compilation failed.\n"))
                 return False
             return True
         else :
-            self.PluginsRootInstance.logger.write(_("Source didn't change, no build.\n"))
+            self.ConfigTreeRootInstance.logger.write(_("Source didn't change, no build.\n"))
             return True
 

@@ -26,8 +26,8 @@ from LPCBootProto import *
 from LPCObject import *
 
 class LPCBootObject(LPCObject):
-    def __init__(self, pluginsroot, comportstr):
-        LPCObject.__init__(self, pluginsroot, comportstr)
+    def __init__(self, confnodesroot, comportstr):
+        LPCObject.__init__(self, confnodesroot, comportstr)
         self.successfully_transfered = False
     
     def connect(self,comport):

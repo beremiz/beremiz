@@ -9,7 +9,7 @@ import config_utils, gen_cfile, eds_utils
 from networkedit import networkedit
 from objdictedit import objdictedit
 import canfestival_config as local_canfestival_config
-from plugger import PlugTemplate
+from ConfigTree import ConfigTreeNode
 from commondialogs import CreateNodeDialog
 import wx
 
@@ -108,11 +108,11 @@ class _SlavePlug(NodeManager):
         return self.CanFestivalSlaveNode.getCan_Device()
 
     def _OpenView(self):
-        PlugTemplate._OpenView(self)
+        ConfigTreeNode._OpenView(self)
         if self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
 
-    PluginMethods = [
+    ConfNodeMethods = [
         {"bitmap" : os.path.join("images", "NetworkEdit"),
          "name" : "Edit slave", 
          "tooltip" : "Edit CanOpen slave with ObjdictEdit",
@@ -130,7 +130,7 @@ class _SlavePlug(NodeManager):
         return self.SaveCurrentInFile(self.GetSlaveODPath())
 
     def SetParamsAttribute(self, path, value):
-        result = PlugTemplate.SetParamsAttribute(self, path, value)
+        result = ConfigTreeNode.SetParamsAttribute(self, path, value)
         
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel" and self._View is not None:
@@ -141,7 +141,7 @@ class _SlavePlug(NodeManager):
     def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -226,7 +226,7 @@ class _NodeListPlug(NodeList):
         return self.CanFestivalNode.getCan_Device()
     
     def SetParamsAttribute(self, path, value):
-        result = PlugTemplate.SetParamsAttribute(self, path, value)
+        result = ConfigTreeNode.SetParamsAttribute(self, path, value)
         
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel" and self._View is not None:
@@ -237,7 +237,7 @@ class _NodeListPlug(NodeList):
         return result
     
     def _OpenView(self):
-        PlugTemplate._OpenView(self)
+        ConfigTreeNode._OpenView(self)
         if self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
     
@@ -268,7 +268,7 @@ class _NodeListPlug(NodeList):
             if app_frame is not None:
                 app_frame.DeletePage(self._GeneratedView)
     
-    PluginMethods = [
+    ConfNodeMethods = [
         {"bitmap" : os.path.join("images", "NetworkEdit"),
          "name" : _("Edit network"), 
          "tooltip" : _("Edit CanOpen Network with NetworkEdit"),
@@ -280,12 +280,12 @@ class _NodeListPlug(NodeList):
     ]
     
     def OnCloseEditor(self, view):
-        PlugTemplate.OnCloseEditor(self, view)
+        ConfigTreeNode.OnCloseEditor(self, view)
         if self._GeneratedView == view:
             self._GeneratedView = None
 
     def OnPlugClose(self):
-        PlugTemplate.OnPlugClose(self)
+        ConfigTreeNode.OnPlugClose(self)
         self._CloseGenerateView()
         return True
 
@@ -299,7 +299,7 @@ class _NodeListPlug(NodeList):
     def PlugGenerate_C(self, buildpath, locations):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -354,7 +354,7 @@ class RootClass:
     PlugChildsTypes = [("CanOpenNode",_NodeListPlug, "CanOpen Master"),
                        ("CanOpenSlave",_SlavePlug, "CanOpen Slave")]
     def GetParamsAttributes(self, path = None):
-        infos = PlugTemplate.GetParamsAttributes(self, path = None)
+        infos = ConfigTreeNode.GetParamsAttributes(self, path = None)
         for element in infos:
             if element["name"] == "CanFestivalInstance":
                 for child in element["children"]:

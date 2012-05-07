@@ -11,9 +11,9 @@ from controls import EditorPanel
 [ID_NETWORKEDITOR, 
 ] = [wx.NewId() for _init_ctrls in range(1)]
 
-[ID_NETWORKEDITORPLUGINMENUADDSLAVE, ID_NETWORKEDITORPLUGINMENUREMOVESLAVE, 
- ID_NETWORKEDITORPLUGINMENUMASTER, 
-] = [wx.NewId() for _init_coll_PluginMenu_Items in range(3)]
+[ID_NETWORKEDITORCONFNODEMENUADDSLAVE, ID_NETWORKEDITORCONFNODEMENUREMOVESLAVE, 
+ ID_NETWORKEDITORCONFNODEMENUMASTER, 
+] = [wx.NewId() for _init_coll_ConfNodeMenu_Items in range(3)]
 
 [ID_NETWORKEDITORMASTERMENUNODEINFOS, ID_NETWORKEDITORMASTERMENUDS301PROFILE,
  ID_NETWORKEDITORMASTERMENUDS302PROFILE, ID_NETWORKEDITORMASTERMENUDSOTHERPROFILE,
@@ -65,7 +65,7 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
     def __del__(self):
         self.Controler.OnCloseEditor(self)
     
-    def GetPluginMenuItems(self):
+    def GetConfNodeMenuItems(self):
         add_menu = [(wx.ITEM_NORMAL, (_('SDO Server'), ID_NETWORKEDITORADDMENUSDOSERVER, '', self.OnAddSDOServerMenu)),
                     (wx.ITEM_NORMAL, (_('SDO Client'), ID_NETWORKEDITORADDMENUSDOCLIENT, '', self.OnAddSDOClientMenu)),
                     (wx.ITEM_NORMAL, (_('PDO Transmit'), ID_NETWORKEDITORADDMENUPDOTRANSMIT, '', self.OnAddPDOTransmitMenu)),
@@ -89,16 +89,16 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
                        (wx.ITEM_SEPARATOR, None),
                        (add_menu, (_('Add'), ID_NETWORKEDITORMASTERMENUADD))]
         
-        return [(wx.ITEM_NORMAL, (_('Add slave'), ID_NETWORKEDITORPLUGINMENUADDSLAVE, '', self.OnAddSlaveMenu)),
-                (wx.ITEM_NORMAL, (_('Remove slave'), ID_NETWORKEDITORPLUGINMENUREMOVESLAVE, '', self.OnRemoveSlaveMenu)),
+        return [(wx.ITEM_NORMAL, (_('Add slave'), ID_NETWORKEDITORCONFNODEMENUADDSLAVE, '', self.OnAddSlaveMenu)),
+                (wx.ITEM_NORMAL, (_('Remove slave'), ID_NETWORKEDITORCONFNODEMENUREMOVESLAVE, '', self.OnRemoveSlaveMenu)),
                 (wx.ITEM_SEPARATOR, None),
-                (master_menu, (_('Master'), ID_NETWORKEDITORPLUGINMENUMASTER))]
+                (master_menu, (_('Master'), ID_NETWORKEDITORCONFNODEMENUMASTER))]
     
     def RefreshMainMenu(self):
         pass
     
-    def RefreshPluginMenu(self, plugin_menu):
-        plugin_menu.Enable(ID_NETWORKEDITORPLUGINMENUMASTER, self.NetworkNodes.GetSelection() == 0)
+    def RefreshConfNodeMenu(self, confnode_menu):
+        confnode_menu.Enable(ID_NETWORKEDITORCONFNODEMENUMASTER, self.NetworkNodes.GetSelection() == 0)
     
     def GetTitle(self):
         fullname = self.Controler.PlugFullName()
@@ -118,5 +118,5 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
     
     def OnNodeSelectedChanged(self, event):
         NetworkEditorTemplate.OnNodeSelectedChanged(self, event)
-        wx.CallAfter(self.ParentWindow.RefreshPluginMenu)
+        wx.CallAfter(self.ParentWindow.RefreshConfNodeMenu)
         

@@ -1,10 +1,10 @@
 """
-Base definitions for beremiz plugins
+Base definitions for beremiz confnodes
 """
 
 import os,sys,traceback
 import time
-import plugins
+import confnodes
 import types
 import shutil
 from xml.dom import minidom
@@ -16,7 +16,7 @@ base_folder = os.path.split(sys.path[0])[0]
 from xmlclass import GenerateClassesFromXSDstring
 from wxPopen import ProcessLogger
 
-from PLCControler import PLCControler, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import PLCControler, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -90,15 +90,15 @@ def CheckPathPerm(path):
                  return False
     return True
     
-class PlugTemplate:
+class ConfigTreeNode:
     """
-    This class is the one that define plugins.
+    This class is the one that define confnodes.
     """
 
     XSD = None
     PlugChildsTypes = []
     PlugMaxCount = None
-    PluginMethods = []
+    ConfNodeMethods = []
     LibraryControler = None
     EditorType = None
 
@@ -120,21 +120,21 @@ class PlugTemplate:
         self._AddParamsMembers()
         self.PluggedChilds = {}
         self._View = None
-        # copy PluginMethods so that it can be later customized
-        self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
+        # copy ConfNodeMethods so that it can be later customized
+        self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
         self.LoadSTLibrary()
         
-    def PluginBaseXmlFilePath(self, PlugName=None):
-        return os.path.join(self.PlugPath(PlugName), "baseplugin.xml")
+    def ConfNodeBaseXmlFilePath(self, PlugName=None):
+        return os.path.join(self.PlugPath(PlugName), "baseconfnode.xml")
     
-    def PluginXmlFilePath(self, PlugName=None):
-        return os.path.join(self.PlugPath(PlugName), "plugin.xml")
+    def ConfNodeXmlFilePath(self, PlugName=None):
+        return os.path.join(self.PlugPath(PlugName), "confnode.xml")
 
-    def PluginLibraryFilePath(self):
-        return os.path.join(self.PluginPath(), "pous.xml")
+    def ConfNodeLibraryFilePath(self):
+        return os.path.join(self.ConfNodePath(), "pous.xml")
 
-    def PluginPath(self):
-        return os.path.join(self.PlugParent.PluginPath(), self.PlugType)
+    def ConfNodePath(self):
+        return os.path.join(self.PlugParent.ConfNodePath(), self.PlugType)
 
     def PlugPath(self,PlugName=None):
         if not PlugName:
@@ -221,32 +221,32 @@ class PlugTemplate:
 
     def PlugRequestSave(self):
         if self.GetPlugRoot().CheckProjectPathPerm(False):
-            # If plugin do not have corresponding directory
+            # If confnode do not have corresponding directory
             plugpath = self.PlugPath()
             if not os.path.isdir(plugpath):
                 # Create it
                 os.mkdir(plugpath)
     
-            # generate XML for base XML parameters controller of the plugin
+            # generate XML for base XML parameters controller of the confnode
             if self.MandatoryParams:
-                BaseXMLFile = open(self.PluginBaseXmlFilePath(),'w')
+                BaseXMLFile = open(self.ConfNodeBaseXmlFilePath(),'w')
                 BaseXMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
                 BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0).encode("utf-8"))
                 BaseXMLFile.close()
             
-            # generate XML for XML parameters controller of the plugin
+            # generate XML for XML parameters controller of the confnode
             if self.PlugParams:
-                XMLFile = open(self.PluginXmlFilePath(),'w')
+                XMLFile = open(self.ConfNodeXmlFilePath(),'w')
                 XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
                 XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0).encode("utf-8"))
                 XMLFile.close()
             
-            # Call the plugin specific OnPlugSave method
+            # Call the confnode specific OnPlugSave method
             result = self.OnPlugSave()
             if not result:
                 return _("Error while saving \"%s\"\n")%self.PlugPath()
     
-            # mark plugin as saved
+            # mark confnode as saved
             self.ChangesToSave = False
             # go through all childs and do the same
             for PlugChild in self.IterChilds():
@@ -275,7 +275,7 @@ class PlugTemplate:
         return [],"",False
     
     def _Generate_C(self, buildpath, locations):
-        # Generate plugins [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
+        # Generate confnodes [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
         # extra_files = [(fname,fobject), ...]
         gen_result = self.PlugGenerate_C(buildpath, locations)
         PlugCFilesAndCFLAGS, PlugLDFLAGS, DoCalls = gen_result[:3]
@@ -286,7 +286,7 @@ class PlugTemplate:
         else:
             LocationCFilesAndCFLAGS = []
 
-        # plugin asks for some LDFLAGS
+        # confnode asks for some LDFLAGS
         if PlugLDFLAGS:
             # LDFLAGS can be either string
             if type(PlugLDFLAGS)==type(str()):
@@ -315,18 +315,18 @@ class PlugTemplate:
         
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
-    def PluginTypesFactory(self):
+    def ConfNodeTypesFactory(self):
         if self.LibraryControler is not None:
             return [{"name" : self.PlugType, "types": self.LibraryControler.Project}]
         return []
 
     def ParentsTypesFactory(self):
-        return self.PlugParent.ParentsTypesFactory() + self.PluginTypesFactory()
+        return self.PlugParent.ParentsTypesFactory() + self.ConfNodeTypesFactory()
 
-    def PluginsTypesFactory(self):
-        list = self.PluginTypesFactory()
+    def ConfNodesTypesFactory(self):
+        list = self.ConfNodeTypesFactory()
         for PlugChild in self.IterChilds():
-            list += PlugChild.PluginsTypesFactory()
+            list += PlugChild.ConfNodesTypesFactory()
         return list
 
     def STLibraryFactory(self):
@@ -335,10 +335,10 @@ class PlugTemplate:
             return program + "\n"
         return ""
 
-    def PluginsSTLibraryFactory(self):
+    def ConfNodesSTLibraryFactory(self):
         program = self.STLibraryFactory()
         for PlugChild in self.IECSortedChilds():
-            program += PlugChild.PluginsSTLibraryFactory()
+            program += PlugChild.ConfNodesSTLibraryFactory()
         return program
         
     def IterChilds(self):
@@ -383,7 +383,7 @@ class PlugTemplate:
     
     def GetCurrentLocation(self):
         """
-        @return:  Tupple containing plugin IEC location of current plugin : %I0.0.4.5 => (0,0,4,5)
+        @return:  Tupple containing confnode IEC location of current confnode : %I0.0.4.5 => (0,0,4,5)
         """
         return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(),)
 
@@ -411,7 +411,7 @@ class PlugTemplate:
 
     def GetVariableLocationTree(self):
         '''
-        This function is meant to be overridden by plugins.
+        This function is meant to be overridden by confnodes.
 
         It should returns an list of dictionaries
         
@@ -422,7 +422,7 @@ class PlugTemplate:
         for child in self.IECSortedChilds():
             children.append(child.GetVariableLocationTree())
         return {"name": self.BaseParams.getName(),
-                "type": LOCATION_PLUGIN,
+                "type": LOCATION_CONFNODE,
                 "location": self.GetFullIEC_Channel(),
                 "children": children}
 
@@ -450,11 +450,11 @@ class PlugTemplate:
         
         # Get old path
         oldname = self.PlugPath()
-        # Check previous plugin existance
+        # Check previous confnode existance
         dontexist = self.BaseParams.getName() == "__unnamed__"
         # Set the new name
         self.BaseParams.setName(res)
-        # Rename plugin dir if exist
+        # Rename confnode dir if exist
         if not dontexist:
             shutil.move(oldname, self.PlugPath())
         # warn user he has two left hands
@@ -524,29 +524,29 @@ class PlugTemplate:
             PlugInstance._doRemoveChild(SubPlugInstance)
         # Call the OnCloseMethod
         PlugInstance.OnPlugClose()
-        # Delete plugin dir
+        # Delete confnode dir
         shutil.rmtree(PlugInstance.PlugPath())
         # Remove child of PluggedChilds
         self.PluggedChilds[PlugInstance.PlugType].remove(PlugInstance)
         # Forget it... (View have to refresh)
 
     def PlugRemove(self):
-        # Fetch the plugin
+        # Fetch the confnode
         #PlugInstance = self.GetChildByName(PlugName)
         # Ask to his parent to remove it
         self.PlugParent._doRemoveChild(self)
 
     def PlugAddChild(self, PlugName, PlugType, IEC_Channel=0):
         """
-        Create the plugins that may be added as child to this node self
-        @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
-        @param PlugName: string for the name of the plugin instance
+        Create the confnodes that may be added as child to this node self
+        @param PlugType: string desining the confnode class name (get name from PlugChildsTypes)
+        @param PlugName: string for the name of the confnode instance
         """
         # reorgabize self.PlugChildsTypes tuples from (name, PlugClass, Help)
         # to ( name, (PlugClass, Help)), an make a dict
         transpose = zip(*self.PlugChildsTypes)
         PlugChildsTypes = dict(zip(transpose[0],zip(transpose[1],transpose[2])))
-        # Check that adding this plugin is allowed
+        # Check that adding this confnode is allowed
         try:
             PlugClass, PlugHelp = PlugChildsTypes[PlugType]
         except KeyError:
@@ -556,43 +556,43 @@ class PlugTemplate:
         if type(PlugClass) == types.FunctionType:
             PlugClass = PlugClass()
         
-        # Eventualy Initialize child instance list for this class of plugin
+        # Eventualy Initialize child instance list for this class of confnode
         PluggedChildsWithSameClass = self.PluggedChilds.setdefault(PlugType, list())
         # Check count
         if getattr(PlugClass, "PlugMaxCount", None) and len(PluggedChildsWithSameClass) >= PlugClass.PlugMaxCount:
-            raise Exception, _("Max count (%d) reached for this plugin of type %s ")%(PlugClass.PlugMaxCount, PlugType)
+            raise Exception, _("Max count (%d) reached for this confnode of type %s ")%(PlugClass.PlugMaxCount, PlugType)
         
-        # create the final class, derived of provided plugin and template
-        class FinalPlugClass(PlugClass, PlugTemplate):
+        # create the final class, derived of provided confnode and template
+        class FinalPlugClass(PlugClass, ConfigTreeNode):
             """
-            Plugin class is derivated into FinalPlugClass before being instanciated
-            This way __init__ is overloaded to ensure PlugTemplate.__init__ is called 
+            ConfNode class is derivated into FinalPlugClass before being instanciated
+            This way __init__ is overloaded to ensure ConfigTreeNode.__init__ is called 
             before PlugClass.__init__, and to do the file related stuff.
             """
             def __init__(_self):
                 # self is the parent
                 _self.PlugParent = self
-                # Keep track of the plugin type name
+                # Keep track of the confnode type name
                 _self.PlugType = PlugType
                 # remind the help string, for more fancy display
                 _self.PlugHelp = PlugHelp
-                # Call the base plugin template init - change XSD into class members
-                PlugTemplate.__init__(_self)
+                # Call the base confnode template init - change XSD into class members
+                ConfigTreeNode.__init__(_self)
                 # check name is unique
                 NewPlugName = _self.FindNewName(PlugName)
                 # If dir have already be made, and file exist
-                if os.path.isdir(_self.PlugPath(NewPlugName)): #and os.path.isfile(_self.PluginXmlFilePath(PlugName)):
-                    #Load the plugin.xml file into parameters members
+                if os.path.isdir(_self.PlugPath(NewPlugName)): #and os.path.isfile(_self.ConfNodeXmlFilePath(PlugName)):
+                    #Load the confnode.xml file into parameters members
                     _self.LoadXMLParams(NewPlugName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewPlugName):
-                        raise Exception, _("Project tree layout do not match plugin.xml %s!=%s ")%(NewPlugName, _self.BaseParams.getName())
+                        raise Exception, _("Project tree layout do not match confnode.xml %s!=%s ")%(NewPlugName, _self.BaseParams.getName())
 
                     # Now, self.PlugPath() should be OK
                     
                     # Check that IEC_Channel is not already in use.
                     _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel())
-                    # Call the plugin real __init__
+                    # Call the confnode real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
                     #Load and init all the childs
@@ -600,11 +600,11 @@ class PlugTemplate:
                     #just loaded, nothing to saved
                     _self.ChangesToSave = False
                 else:
-                    # If plugin do not have corresponding file/dirs - they will be created on Save
+                    # If confnode do not have corresponding file/dirs - they will be created on Save
                     _self.PlugMakeDir()
                     # Find an IEC number
                     _self.FindNewIEC_Channel(IEC_Channel)
-                    # Call the plugin real __init__
+                    # Call the confnode real __init__
                     if getattr(PlugClass, "__init__", None):
                         PlugClass.__init__(_self)
                     _self.PlugRequestSave()
@@ -615,11 +615,11 @@ class PlugTemplate:
                 return self._getBuildPath()
             
         # Create the object out of the resulting class
-        newPluginOpj = FinalPlugClass()
+        newConfNodeOpj = FinalPlugClass()
         # Store it in PluggedChils
-        PluggedChildsWithSameClass.append(newPluginOpj)
+        PluggedChildsWithSameClass.append(newConfNodeOpj)
         
-        return newPluginOpj
+        return newConfNodeOpj
     
     def ClearPluggedChilds(self):
         for child in self.IterChilds():
@@ -628,12 +628,12 @@ class PlugTemplate:
     
     def LoadSTLibrary(self):
         # Get library blocks if plcopen library exist
-        library_path = self.PluginLibraryFilePath()
+        library_path = self.ConfNodeLibraryFilePath()
         if os.path.isfile(library_path):
             self.LibraryControler = PLCControler()
             self.LibraryControler.OpenXMLFile(library_path)
-            self.LibraryControler.ClearPluginTypes()
-            self.LibraryControler.AddPluginTypesList(self.ParentsTypesFactory())
+            self.LibraryControler.ClearConfNodeTypes()
+            self.LibraryControler.AddConfNodeTypesList(self.ParentsTypesFactory())
 
     def LoadXMLParams(self, PlugName = None):
         methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
@@ -643,27 +643,27 @@ class PlugTemplate:
         # Get the base xml tree
         if self.MandatoryParams:
             try:
-                basexmlfile = open(self.PluginBaseXmlFilePath(PlugName), 'r')
+                basexmlfile = open(self.ConfNodeBaseXmlFilePath(PlugName), 'r')
                 basetree = minidom.parse(basexmlfile)
                 self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
                 basexmlfile.close()
             except Exception, exc:
-                self.GetPlugRoot().logger.write_error(_("Couldn't load plugin base parameters %s :\n %s") % (PlugName, str(exc)))
+                self.GetPlugRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (PlugName, str(exc)))
                 self.GetPlugRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
         if self.PlugParams:
             try:
-                xmlfile = open(self.PluginXmlFilePath(PlugName), 'r')
+                xmlfile = open(self.ConfNodeXmlFilePath(PlugName), 'r')
                 tree = minidom.parse(xmlfile)
                 self.PlugParams[1].loadXMLTree(tree.childNodes[0])
                 xmlfile.close()
             except Exception, exc:
-                self.GetPlugRoot().logger.write_error(_("Couldn't load plugin parameters %s :\n %s") % (PlugName, str(exc)))
+                self.GetPlugRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (PlugName, str(exc)))
                 self.GetPlugRoot().logger.write_error(traceback.format_exc())
         
     def LoadChilds(self):
-        # Iterate over all PlugName@PlugType in plugin directory, and try to open them
+        # Iterate over all PlugName@PlugType in confnode directory, and try to open them
         for PlugDir in os.listdir(self.PlugPath()):
             if os.path.isdir(os.path.join(self.PlugPath(), PlugDir)) and \
                PlugDir.count(NameTypeSeparator) == 1:
@@ -675,27 +675,27 @@ class PlugTemplate:
                     self.GetPlugRoot().logger.write_error(traceback.format_exc())
 
     def EnableMethod(self, method, value):
-        for d in self.PluginMethods:
+        for d in self.ConfNodeMethods:
             if d["method"]==method:
                 d["enabled"]=value
                 return True
         return False
 
     def ShowMethod(self, method, value):
-        for d in self.PluginMethods:
+        for d in self.ConfNodeMethods:
             if d["method"]==method:
                 d["shown"]=value
                 return True
         return False
 
     def CallMethod(self, method):
-        for d in self.PluginMethods:
+        for d in self.ConfNodeMethods:
             if d["method"]==method and d.get("enabled", True) and d.get("shown", True):
                 getattr(self, method)()
 
 def _GetClassFunction(name):
     def GetRootClass():
-        return getattr(__import__("plugins." + name), name).RootClass
+        return getattr(__import__("confnodes." + name), name).RootClass
     return GetRootClass
 
 
@@ -735,20 +735,20 @@ MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)
 DEBUG_RETRIES_WARN = 3
 DEBUG_RETRIES_REREGISTER = 4
 
-class PluginsRoot(PlugTemplate, PLCControler):
+class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     """
-    This class define Root object of the plugin tree. 
+    This class define Root object of the confnode tree. 
     It is responsible of :
     - Managing project directory
     - Building project
     - Handling PLCOpenEditor controler and view
-    - Loading user plugins and instanciante them as childs
+    - Loading user confnodes and instanciante them as childs
     - ...
     
     """
 
-    # For root object, available Childs Types are modules of the plugin packages.
-    PlugChildsTypes = [(name, _GetClassFunction(name), help) for name, help in zip(plugins.__all__,plugins.helps)]
+    # For root object, available Childs Types are modules of the confnode packages.
+    PlugChildsTypes = [(name, _GetClassFunction(name), help) for name, help in zip(confnodes.__all__,confnodes.helps)]
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -764,7 +764,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
-          <xsd:attribute name="Enable_Plugins" type="xsd:boolean" use="optional" default="true"/>
+          <xsd:attribute name="Enable_ConfNodes" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -796,17 +796,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
         self.ChangesToSave = False
         # root have no parent
         self.PlugParent = None
-        # Keep track of the plugin type name
+        # Keep track of the confnode type name
         self.PlugType = "Beremiz"
         self.PluggedChilds = {}
-        # After __init__ root plugin is not valid
+        # After __init__ root confnode is not valid
         self.ProjectPath = None
         self._setBuildPath(None)
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
-        # copy PluginMethods so that it can be later customized
-        self.PluginMethods = [dic.copy() for dic in self.PluginMethods]
+        # copy ConfNodeMethods so that it can be later customized
+        self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
         self.LoadSTLibrary()
 
     def __del__(self):
@@ -825,7 +825,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
             self.AppFrame.Bind(wx.EVT_TIMER, self.PullPLCStatusProc, self.StatusTimer)
         
-            self.RefreshPluginsBlockLists()
+            self.RefreshConfNodesBlockLists()
 
     def ResetAppFrame(self, logger):
         if self.AppFrame is not None:
@@ -835,7 +835,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
         self.logger = logger
 
-    def PluginLibraryFilePath(self):
+    def ConfNodeLibraryFilePath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml")
 
     def PlugTestModified(self):
@@ -883,7 +883,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         return target
     
     def GetParamsAttributes(self, path = None):
-        params = PlugTemplate.GetParamsAttributes(self, path)
+        params = ConfigTreeNode.GetParamsAttributes(self, path)
         if params[0]["name"] == "BeremizRoot":
             for child in params[0]["children"]:
                 if child["name"] == "TargetType" and child["value"] == '':
@@ -893,7 +893,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     def SetParamsAttribute(self, path, value):
         if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
             self.BeremizRoot.setTargetType(self.GetTarget())
-        return PlugTemplate.SetParamsAttribute(self, path, value)
+        return ConfigTreeNode.SetParamsAttribute(self, path, value)
         
     # helper func to check project path write permission
     def CheckProjectPathPerm(self, dosave=True):
@@ -937,11 +937,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
-        # Keep track of the root plugin (i.e. project path)
+        # Keep track of the root confnode (i.e. project path)
         self.ProjectPath = ProjectPath
         self._setBuildPath(BuildPath)
-        # get plugins bloclist (is that usefull at project creation?)
-        self.RefreshPluginsBlockLists()
+        # get confnodes bloclist (is that usefull at project creation?)
+        self.RefreshConfNodesBlockLists()
         # this will create files base XML files
         self.SaveProject()
         return None
@@ -964,18 +964,18 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # Change XSD into class members
         self._AddParamsMembers()
         self.PluggedChilds = {}
-        # Keep track of the root plugin (i.e. project path)
+        # Keep track of the root confnode (i.e. project path)
         self.ProjectPath = ProjectPath
         self._setBuildPath(BuildPath)
         # If dir have already be made, and file exist
-        if os.path.isdir(self.PlugPath()) and os.path.isfile(self.PluginXmlFilePath()):
-            #Load the plugin.xml file into parameters members
+        if os.path.isdir(self.PlugPath()) and os.path.isfile(self.ConfNodeXmlFilePath()):
+            #Load the confnode.xml file into parameters members
             result = self.LoadXMLParams()
             if result:
                 return result
             #Load and init all the childs
             self.LoadChilds()
-        self.RefreshPluginsBlockLists()
+        self.RefreshConfNodesBlockLists()
         
         if os.path.exists(self._getBuildPath()):
             self.EnableMethod("_Clean", True)
@@ -1015,11 +1015,11 @@ class PluginsRoot(PlugTemplate, PLCControler):
                 return True
         return False
     
-    # Update PLCOpenEditor Plugin Block types from loaded plugins
-    def RefreshPluginsBlockLists(self):
+    # Update PLCOpenEditor ConfNode Block types from loaded confnodes
+    def RefreshConfNodesBlockLists(self):
         if getattr(self, "PluggedChilds", None) is not None:
-            self.ClearPluginTypes()
-            self.AddPluginTypesList(self.PluginsTypesFactory())
+            self.ClearConfNodeTypes()
+            self.AddConfNodeTypesList(self.ConfNodesTypesFactory())
         if self.AppFrame is not None:
             self.AppFrame.RefreshLibraryPanel()
             self.AppFrame.RefreshEditor()
@@ -1037,7 +1037,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
     
     def GetVariableLocationTree(self):
         '''
-        This function is meant to be overridden by plugins.
+        This function is meant to be overridden by confnodes.
 
         It should returns an list of dictionaries
         
@@ -1049,17 +1049,17 @@ class PluginsRoot(PlugTemplate, PLCControler):
             children.append(child.GetVariableLocationTree())
         return children
     
-    def PluginPath(self):
-        return os.path.join(os.path.split(__file__)[0], "plugins")
+    def ConfNodePath(self):
+        return os.path.join(os.path.split(__file__)[0], "confnodes")
     
     def PlugPath(self, PlugName=None):
         return self.ProjectPath
     
-    def PluginXmlFilePath(self, PlugName=None):
+    def ConfNodeXmlFilePath(self, PlugName=None):
         return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
 
     def ParentsTypesFactory(self):
-        return self.PluginTypesFactory()
+        return self.ConfNodeTypesFactory()
 
     def _setBuildPath(self, buildpath):
         if CheckPathPerm(buildpath):
@@ -1135,8 +1135,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         @param buildpath: path where files should be created
         """
 
-        # Update PLCOpenEditor Plugin Block types before generate ST code
-        self.RefreshPluginsBlockLists()
+        # Update PLCOpenEditor ConfNode Block types before generate ST code
+        self.RefreshConfNodesBlockLists()
         
         self.logger.write(_("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"))
         buildpath = self._getBuildPath()
@@ -1151,8 +1151,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
             self.logger.write_error(_("Error in ST/IL/SFC code generator :\n%s\n")%errors[0])
             return False
         plc_file = open(self._getIECcodepath(), "w")
-        # Add ST Library from plugins
-        plc_file.write(self.PluginsSTLibraryFactory())
+        # Add ST Library from confnodes
+        plc_file.write(self.ConfNodesSTLibraryFactory())
         if os.path.isfile(self._getIECrawcodepath()):
             plc_file.write(open(self._getIECrawcodepath(), "r").read())
             plc_file.write("\n")
@@ -1402,8 +1402,8 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
     def Generate_plc_common_main(self):
         """
-        Use plugins layout given in LocationCFilesAndCFLAGS to
-        generate glue code that dispatch calls to all plugins
+        Use confnodes layout given in LocationCFilesAndCFLAGS to
+        generate glue code that dispatch calls to all confnodes
         """
         # filter location that are related to code that will be called
         # in retreive, publish, init, cleanup
@@ -1411,7 +1411,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
            [loc for loc,Cfiles,DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
 
         # Generate main, based on template
-        if self.BeremizRoot.getEnable_Plugins():
+        if self.BeremizRoot.getEnable_ConfNodes():
             plc_main_code = targets.code("plc_common_main") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
@@ -1445,7 +1445,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         
     def _Build(self):
         """
-        Method called by user to (re)build SoftPLC and plugin tree
+        Method called by user to (re)build SoftPLC and confnode tree
         """
         if self.AppFrame is not None:
             self.AppFrame.ClearErrors()
@@ -1475,14 +1475,14 @@ class PluginsRoot(PlugTemplate, PLCControler):
         # CSV file generated by IEC2C compiler.
         self.ResetIECProgramsAndVariables()
         
-        # Generate C code and compilation params from plugin hierarchy
-        self.logger.write(_("Generating plugins C code\n"))
+        # Generate C code and compilation params from confnode hierarchy
+        self.logger.write(_("Generating confnodes C code\n"))
         try:
             self.LocationCFilesAndCFLAGS, self.LDFLAGS, ExtraFiles = self._Generate_C(
                 buildpath, 
                 self.PLCGeneratedLocatedVars)
         except Exception, exc:
-            self.logger.write_error(_("Plugins code generation failed !\n"))
+            self.logger.write_error(_("ConfNodes code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             self.ResetBuildMD5()
             return False
@@ -1502,7 +1502,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
         del ExtraFiles
         
         # Template based part of C code generation
-        # files are stacked at the beginning, as files of plugin tree root
+        # files are stacked at the beginning, as files of confnode tree root
         for generator, filename, name in [
            # debugger code
            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
@@ -1515,7 +1515,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
                      raise
                 code_path = os.path.join(buildpath,filename)
                 open(code_path, "w").write(code)
-                # Insert this file as first file to be compiled at root plugin
+                # Insert this file as first file to be compiled at root confnode
                 self.LocationCFilesAndCFLAGS[0][1].insert(0,(code_path, self.plcCFLAGS))
             except Exception, exc:
                 self.logger.write_error(name+_(" generation failed !\n"))
@@ -2017,7 +2017,7 @@ class PluginsRoot(PlugTemplate, PLCControler):
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
-    PluginMethods = [
+    ConfNodeMethods = [
         {"bitmap" : opjimg("Build"),
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),

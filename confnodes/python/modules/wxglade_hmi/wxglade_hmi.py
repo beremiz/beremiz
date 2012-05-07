@@ -2,12 +2,12 @@ import wx
 import os, sys
 from xml.dom import minidom
 
-from plugger import opjimg
-from plugins.python import PythonCodeTemplate
+from ConfigTree import opjimg
+from confnodes.python import PythonCodeTemplate
 
 class RootClass(PythonCodeTemplate):
 
-    PluginMethods = [
+    ConfNodeMethods = [
         {"bitmap" : opjimg("editWXGLADE"),
          "name" : _("WXGLADE GUI"),
          "tooltip" : _("Edit a WxWidgets GUI with WXGlade"),

@@ -27,16 +27,16 @@ from LPCProto import *
 
 
 class LPCObject():
-    def __init__(self, pluginsroot, comportstr):
+    def __init__(self, confnodesroot, comportstr):
         self.PLCStatus = "Disconnected"
-        self.pluginsroot = pluginsroot
-        self.PLCprint = pluginsroot.logger.writeyield
+        self.confnodesroot = confnodesroot
+        self.PLCprint = confnodesroot.logger.writeyield
         self._Idxs = []
         comport = int(comportstr[3:]) - 1
         try:
             self.connect(comportstr)
         except Exception,e:
-            self.pluginsroot.logger.write_error(str(e)+"\n")
+            self.confnodesroot.logger.write_error(str(e)+"\n")
             self.SerialConnection = None
             self.PLCStatus = "Disconnected"
 
@@ -46,14 +46,14 @@ class LPCObject():
                 self.PLCStatus, res = self.SerialConnection.HandleTransaction(transaction)
                 return res
             except LPCProtoError,e:
-                self.pluginsroot.logger.write(_("PLC disconnected\n"))
+                self.confnodesroot.logger.write(_("PLC disconnected\n"))
                 if self.SerialConnection is not None:
                     self.SerialConnection.close()
                     self.SerialConnection = None
                 self.PLCStatus = "Disconnected"
                 return None
             except Exception,e:
-                self.pluginsroot.logger.write_warning(str(e)+"\n")
+                self.confnodesroot.logger.write_warning(str(e)+"\n")
         
     def StartPLC(self, debug=False):
         raise LPCProtoError("Not implemented")
