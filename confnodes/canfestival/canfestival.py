@@ -41,7 +41,7 @@ else:
 #                    SLAVE
 #--------------------------------------------------
 
-class _SlavePlug(NodeManager):
+class _SlaveCTN(NodeManager):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalSlaveNode">
@@ -99,10 +99,10 @@ class _SlavePlug(NodeManager):
                                    "heartbeat",  # NMT
                                    [])           # options
             dialog.Destroy()
-            self.OnPlugSave()
+            self.OnCTNSave()
 
     def GetSlaveODPath(self):
-        return os.path.join(self.PlugPath(), 'slave.od')
+        return os.path.join(self.CTNPath(), 'slave.od')
 
     def GetCanDevice(self):
         return self.CanFestivalSlaveNode.getCan_Device()
@@ -119,14 +119,14 @@ class _SlavePlug(NodeManager):
          "method" : "_OpenView"},
     ]
 
-    def OnPlugClose(self):
+    def OnCTNClose(self):
         if self._View:
             self._View.Close()
 
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return self.ChangesToSave or self.OneFileHasChanged()
         
-    def OnPlugSave(self):
+    def OnCTNSave(self):
         return self.SaveCurrentInFile(self.GetSlaveODPath())
 
     def SetParamsAttribute(self, path, value):
@@ -138,7 +138,7 @@ class _SlavePlug(NodeManager):
         
         return result
         
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -194,13 +194,13 @@ class MiniNodeManager(NodeManager):
     def OnCloseEditor(self, view):
         self.Parent.OnCloseEditor(view)
     
-    def PlugFullName(self):
+    def CTNFullName(self):
         return self.Fullname
     
     def GetBufferState(self):
         return self.GetCurrentBufferState()
 
-class _NodeListPlug(NodeList):
+class _NodeListCTN(NodeList):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalNode">
@@ -219,7 +219,7 @@ class _NodeListPlug(NodeList):
     def __init__(self):
         manager = NodeManager()
         NodeList.__init__(self, manager)
-        self.LoadProject(self.PlugPath())
+        self.LoadProject(self.CTNPath())
         self.SetNetworkName(self.BaseParams.getName())
     
     def GetCanDevice(self):
@@ -247,24 +247,24 @@ class _NodeListPlug(NodeList):
             buildpath = self._getBuildPath()
             # Eventually create build dir
             if not os.path.exists(buildpath):
-                self.GetPlugRoot().logger.write_error(_("Error: No PLC built\n"))
+                self.GetCTRoot().logger.write_error(_("Error: No PLC built\n"))
                 return
             
             masterpath = os.path.join(buildpath, "MasterGenerated.od")
             if not os.path.exists(masterpath):
-                self.GetPlugRoot().logger.write_error(_("Error: No Master generated\n"))
+                self.GetCTRoot().logger.write_error(_("Error: No Master generated\n"))
                 return
             
-            app_frame = self.GetPlugRoot().AppFrame
+            app_frame = self.GetCTRoot().AppFrame
             
-            manager = MiniNodeManager(self, masterpath, self.PlugFullName() + ".generated_master")
+            manager = MiniNodeManager(self, masterpath, self.CTNFullName() + ".generated_master")
             self._GeneratedView = SlaveEditor(app_frame.TabsOpened, manager, app_frame, False)
             
             app_frame.EditProjectElement(self._GeneratedView, "MasterGenerated")
     
     def _CloseGenerateView(self):
         if self._GeneratedView is not None:
-            app_frame = self.GetPlugRoot().AppFrame
+            app_frame = self.GetCTRoot().AppFrame
             if app_frame is not None:
                 app_frame.DeletePage(self._GeneratedView)
     
@@ -284,19 +284,19 @@ class _NodeListPlug(NodeList):
         if self._GeneratedView == view:
             self._GeneratedView = None
 
-    def OnPlugClose(self):
-        ConfigTreeNode.OnPlugClose(self)
+    def OnCTNClose(self):
+        ConfigTreeNode.OnCTNClose(self)
         self._CloseGenerateView()
         return True
 
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return self.ChangesToSave or self.HasChanged()
         
-    def OnPlugSave(self):
-        self.SetRoot(self.PlugPath())
+    def OnCTNSave(self):
+        self.SetRoot(self.CTNPath())
         return self.SaveProject() is None
 
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -351,8 +351,8 @@ class RootClass:
     </xsd:schema>
     """ % DEFAULT_SETTINGS
     
-    PlugChildsTypes = [("CanOpenNode",_NodeListPlug, "CanOpen Master"),
-                       ("CanOpenSlave",_SlavePlug, "CanOpen Slave")]
+    CTNChildrenTypes = [("CanOpenNode",_NodeListCTN, "CanOpen Master"),
+                       ("CanOpenSlave",_SlaveCTN, "CanOpen Slave")]
     def GetParamsAttributes(self, path = None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path = None)
         for element in infos:
@@ -373,7 +373,7 @@ class RootClass:
                 can_driver += '.dll'
         return can_driver
     
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
                        "candriver" : self.GetCanDriver(),
@@ -390,7 +390,7 @@ class RootClass:
                        "post_sync" : "",
                        "post_sync_register" : "",
                        }
-        for child in self.IECSortedChilds():
+        for child in self.IECSortedChildren():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
             

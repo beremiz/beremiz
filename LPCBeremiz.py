@@ -68,7 +68,7 @@ from PLCOpenEditor import IDEFrame, ProjectDialog
 havecanfestival = False
 try:
     from confnodes.canfestival import RootClass as CanOpenRootClass
-    from confnodes.canfestival.canfestival import _SlavePlug, _NodeListPlug, NodeManager
+    from confnodes.canfestival.canfestival import _SlaveCTN, _NodeListCTN, NodeManager
     havecanfestival = True
 except:
     havecanfestival = False
@@ -197,7 +197,7 @@ class LPCBus(object):
             return self.VariableLocationTree
         raise KeyError, "Only 'children' key is available"
     
-    def PlugEnabled(self):
+    def CTNEnabled(self):
         return None
     
     def SetIcon(self, icon):
@@ -207,10 +207,10 @@ class LPCBus(object):
         return _GetModuleBySomething({"children" : self.VariableLocationTree}, something, toks)
     
     def GetBaseTypes(self):
-        return self.GetPlugRoot().GetBaseTypes()
+        return self.GetCTRoot().GetBaseTypes()
 
     def GetSizeOfType(self, type):
-        return LOCATION_SIZES[self.GetPlugRoot().GetBaseType(type)]
+        return LOCATION_SIZES[self.GetCTRoot().GetBaseType(type)]
     
     def _GetVariableLocationTree(self, current_location, infos):
         if infos["type"] == LOCATION_MODULE:
@@ -246,13 +246,13 @@ class LPCBus(object):
                 "children": [self._GetVariableLocationTree(self.GetCurrentLocation(), child) 
                              for child in self.VariableLocationTree]}
     
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return False
 
-    def PlugMakeDir(self):
+    def CTNMakeDir(self):
         pass
 
-    def PlugRequestSave(self):
+    def CTNRequestSave(self):
         return None
 
     def ResetUsedLocations(self):
@@ -288,7 +288,7 @@ class LPCBus(object):
             return self._CheckLocationConflicts(self.UsedLocations, list(location))
         return False
 
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -346,7 +346,7 @@ class LPCBus(object):
                                  "Publish": variable["publish"],
                                 })
                     break
-        base_types = self.GetPlugRoot().GetBaseTypes()
+        base_types = self.GetCTRoot().GetBaseTypes()
         for var in vars:
             prefix = ""
             if var["Type"] in base_types:
@@ -363,7 +363,7 @@ class LPCBus(object):
         module.write(BUS_TEXT % code_str)
         module.close()
         
-        matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
+        matiec_flags = '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath())
         return [(Gen_Module_path, matiec_flags)],"",True
 
 #-------------------------------------------------------------------------------
@@ -378,7 +378,7 @@ if havecanfestival:
         "Master_NodeId": 1,
     }
     
-    class LPCCanOpenSlave(_SlavePlug):
+    class LPCCanOpenSlave(_SlaveCTN):
         XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="CanFestivalSlaveNode">
@@ -414,12 +414,12 @@ if havecanfestival:
                                    "", # prfile filepath
                                    "heartbeat",  # NMT
                                    [])           # options
-                self.OnPlugSave()
+                self.OnCTNSave()
         
         def GetCanDevice(self):
             return str(self.BaseParams.getIEC_Channel())
         
-    class LPCCanOpenMaster(_NodeListPlug):
+    class LPCCanOpenMaster(_NodeListCTN):
         XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="CanFestivalNode">
@@ -437,21 +437,21 @@ if havecanfestival:
     
     class LPCCanOpen(CanOpenRootClass):
         XSD = None
-        PlugChildsTypes = [("CanOpenNode",LPCCanOpenMaster, "CanOpen Master"),
+        CTNChildrenTypes = [("CanOpenNode",LPCCanOpenMaster, "CanOpen Master"),
                            ("CanOpenSlave",LPCCanOpenSlave, "CanOpen Slave")]
         
         def GetCanDriver(self):
             return ""
         
-        def LoadChilds(self):
-            ConfigTreeNode.LoadChilds(self)
+        def LoadChildren(self):
+            ConfigTreeNode.LoadChildren(self)
             
             if self.GetChildByName("Master") is None:
-                master = self.PlugAddChild("Master", "CanOpenNode", 0)
+                master = self.CTNAddChild("Master", "CanOpenNode", 0)
                 master.BaseParams.setEnabled(False)
             
             if self.GetChildByName("Slave") is None:
-                slave = self.PlugAddChild("Slave", "CanOpenSlave", 1)
+                slave = self.CTNAddChild("Slave", "CanOpenSlave", 1)
                 slave.BaseParams.setEnabled(False)
     
 
@@ -513,10 +513,10 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
         ConfigTreeRoot.__init__(self, frame, logger)
         
         if havecanfestival:
-            self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus"), ("CanOpen", LPCCanOpen, "CanOpen bus")]
+            self.CTNChildrenTypes += [("LPCBus", LPCBus, "LPC bus"), ("CanOpen", LPCCanOpen, "CanOpen bus")]
         else:
-            self.PlugChildsTypes += [("LPCBus", LPCBus, "LPC bus")]
-        self.PlugType = "LPC"
+            self.CTNChildrenTypes += [("LPCBus", LPCBus, "LPC bus")]
+        self.CTNType = "LPC"
         
         self.OnlineMode = "OFF"
         self.LPCConnector = None
@@ -676,7 +676,7 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
         
         # Change XSD into class members
         self._AddParamsMembers()
-        self.PluggedChilds = {}
+        self.Children = {}
         
         # Keep track of the root confnode (i.e. project path)
         self.ProjectPath = ProjectPath
@@ -686,20 +686,20 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
             mycopytree(self.OrigBuildPath, self.BuildPath)
         
         # If dir have already be made, and file exist
-        if os.path.isdir(self.PlugPath()) and os.path.isfile(self.ConfNodeXmlFilePath()):
+        if os.path.isdir(self.CTNPath()) and os.path.isfile(self.ConfNodeXmlFilePath()):
             #Load the confnode.xml file into parameters members
             result = self.LoadXMLParams()
             if result:
                 return result
-            #Load and init all the childs
-            self.LoadChilds()
+            #Load and init all the children
+            self.LoadChildren()
         
         if havecanfestival and self.GetChildByName("CanOpen") is None:
-            canopen = self.PlugAddChild("CanOpen", "CanOpen", 0)
+            canopen = self.CTNAddChild("CanOpen", "CanOpen", 0)
             canopen.BaseParams.setEnabled(False)
-            canopen.LoadChilds()
+            canopen.LoadChildren()
         
-        if self.PlugTestModified():
+        if self.CTNTestModified():
             self.SaveProject()
         
         if wx.GetApp() is None:
@@ -881,22 +881,22 @@ unsigned int __GetFoundIndex(unsigned char dummy)
         # CSV file generated by IEC2C compiler.
         self.ResetIECProgramsAndVariables()
         
-        gen_result = self.PlugGenerate_C(buildpath, self.PLCGeneratedLocatedVars)
-        PlugCFilesAndCFLAGS, PlugLDFLAGS, DoCalls = gen_result[:3]
+        gen_result = self.CTNGenerate_C(buildpath, self.PLCGeneratedLocatedVars)
+        CTNCFilesAndCFLAGS, CTNLDFLAGS, DoCalls = gen_result[:3]
         # if some files have been generated put them in the list with their location
-        if PlugCFilesAndCFLAGS:
-            self.LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), PlugCFilesAndCFLAGS, DoCalls)]
+        if CTNCFilesAndCFLAGS:
+            self.LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), CTNCFilesAndCFLAGS, DoCalls)]
         else:
             self.LocationCFilesAndCFLAGS = []
 
         # confnode asks for some LDFLAGS
-        if PlugLDFLAGS:
+        if CTNLDFLAGS:
             # LDFLAGS can be either string
-            if type(PlugLDFLAGS)==type(str()):
-                self.LDFLAGS=[PlugLDFLAGS]
+            if type(CTNLDFLAGS)==type(str()):
+                self.LDFLAGS=[CTNLDFLAGS]
             #or list of strings
-            elif type(PlugLDFLAGS)==type(list()):
-                self.LDFLAGS=PlugLDFLAGS[:]
+            elif type(CTNLDFLAGS)==type(list()):
+                self.LDFLAGS=CTNLDFLAGS[:]
         else:
             self.LDFLAGS=[]
         
@@ -1183,7 +1183,7 @@ class LPCBeremiz(Beremiz):
         
         if self.CTR is not None:    
             plcwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-            if self.CTR.PlugTestModified():
+            if self.CTR.CTNTestModified():
                 bkgdclr = CHANGED_TITLE_COLOUR
             else:
                 bkgdclr = TITLE_COLOUR
@@ -1218,7 +1218,7 @@ class LPCBeremiz(Beremiz):
 
     def GenerateTreeBranch(self, confnode):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        if confnode.PlugTestModified():
+        if confnode.CTNTestModified():
             bkgdclr=CHANGED_WINDOW_COLOUR
         else:
             bkgdclr=WINDOW_COLOUR
@@ -1228,7 +1228,7 @@ class LPCBeremiz(Beremiz):
         if confnode not in self.ConfNodeInfos:
             self.ConfNodeInfos[confnode] = {"expanded" : False, "left_visible" : False, "right_visible" : False}
             
-        self.ConfNodeInfos[confnode]["children"] = confnode.IECSortedChilds()
+        self.ConfNodeInfos[confnode]["children"] = confnode.IECSortedChildren()
         confnode_infos = confnode.GetVariableLocationTree()
         confnode_locations = []
         if len(self.ConfNodeInfos[confnode]["children"]) == 0:
@@ -1477,12 +1477,12 @@ if __name__ == '__main__':
             self.RestartTimer()
         
         def AddBus(self, iec_channel, name, icon=None):
-            for child in self.CTR.IterChilds():
+            for child in self.CTR.IterChildren():
                 if child.BaseParams.getName() == name:
                     return "Error: A bus named %s already exists\n" % name
                 elif child.BaseParams.getIEC_Channel() == iec_channel:
                     return "Error: A bus with IEC_channel %d already exists\n" % iec_channel
-            bus = self.CTR.PlugAddChild(name, "LPCBus", iec_channel)
+            bus = self.CTR.CTNAddChild(name, "LPCBus", iec_channel)
             if bus is None:
                 return "Error: Unable to create bus\n"
             bus.SetIcon(icon)
@@ -1492,7 +1492,7 @@ if __name__ == '__main__':
             bus = self.CTR.GetChildByIECLocation((iec_channel,))
             if bus is None:
                 return "Error: No bus found\n"
-            for child in self.CTR.IterChilds():
+            for child in self.CTR.IterChildren():
                 if child != bus and child.BaseParams.getName() == name:
                     return "Error: A bus named %s already exists\n" % name
             bus.BaseParams.setName(name)
@@ -1502,7 +1502,7 @@ if __name__ == '__main__':
             bus = self.CTR.GetChildByIECLocation((old_iec_channel,))
             if bus is None:
                 return "Error: No bus found\n"
-            for child in self.CTR.IterChilds():
+            for child in self.CTR.IterChildren():
                 if child != bus and child.BaseParams.getIEC_Channel() == new_iec_channel:
                     return "Error: A bus with IEC_channel %d already exists\n" % new_iec_channel
             if wx.GetApp() is None:
@@ -1520,7 +1520,7 @@ if __name__ == '__main__':
             if bus is None:
                 return "Error: No bus found\n"
             self.CTR.RemoveProjectVariableByFilter(str(iec_channel))
-            self.CTR.PluggedChilds["LPCBus"].remove(bus)
+            self.CTR.Children["LPCBus"].remove(bus)
             self.RestartTimer()
     
         def AddModule(self, parent, iec_channel, name, icode, icon=None):

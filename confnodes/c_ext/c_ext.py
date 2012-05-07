@@ -43,19 +43,19 @@ class _Cfile:
                     self.CreateCFileBuffer(True)
         else:
             self.CreateCFileBuffer(False)
-            self.OnPlugSave()
+            self.OnCTNSave()
 
     def CFileName(self):
-        return os.path.join(self.PlugPath(), "cfile.xml")
+        return os.path.join(self.CTNPath(), "cfile.xml")
 
     def GetBaseTypes(self):
-        return self.GetPlugRoot().GetBaseTypes()
+        return self.GetCTRoot().GetBaseTypes()
 
     def GetDataTypes(self, basetypes = False, only_locatables = False):
-        return self.GetPlugRoot().GetDataTypes(basetypes=basetypes, only_locatables=only_locatables)
+        return self.GetCTRoot().GetDataTypes(basetypes=basetypes, only_locatables=only_locatables)
 
     def GetSizeOfType(self, type):
-        return TYPECONVERSION.get(self.GetPlugRoot().GetBaseType(type), None)
+        return TYPECONVERSION.get(self.GetCTRoot().GetBaseType(type), None)
 
     def SetVariables(self, variables):
         self.CFile.variables.setvariable([])
@@ -147,10 +147,10 @@ class _Cfile:
          "method" : "_OpenView"},
     ]
 
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return self.ChangesToSave or not self.CFileIsSaved()    
 
-    def OnPlugSave(self):
+    def OnCTNSave(self):
         filepath = self.CFileName()
         
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
@@ -166,7 +166,7 @@ class _Cfile:
         self.MarkCFileAsSaved()
         return True
 
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -215,7 +215,7 @@ class _Cfile:
                 outputs += 1
             vars.append(var)
         text += "/* Beremiz c_ext confnode user variables definition */\n"
-        base_types = self.GetPlugRoot().GetBaseTypes()
+        base_types = self.GetCTRoot().GetBaseTypes()
         for var in vars:
             if var["Type"] in base_types:
                 prefix = "IEC_"
@@ -256,7 +256,7 @@ class _Cfile:
         cfile.write(text)
         cfile.close()
         
-        matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
+        matiec_flags = '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_flags))],str(self.CExtension.getLDFLAGS()),True
 
@@ -307,9 +307,9 @@ class _Cfile:
 
 class RootClass:
 
-    PlugChildsTypes = [("C_File",_Cfile, "C file")]
+    CTNChildrenTypes = [("C_File",_Cfile, "C file")]
     
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         return [],"",False
 
 

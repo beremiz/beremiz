@@ -674,7 +674,7 @@ class Beremiz(IDEFrame):
                                  ResourceEditor, 
                                  ConfigurationEditor, 
                                  DataTypeEditor))):
-            return ("confnode", tab.Controler.PlugFullName())
+            return ("confnode", tab.Controler.CTNFullName())
         elif (isinstance(tab, TextViewer) and 
               (tab.Controler is None or isinstance(tab.Controler, MiniTextControler))):
             return ("confnode", None, tab.GetInstancePath())
@@ -852,7 +852,7 @@ class Beremiz(IDEFrame):
         
         if self.CTR is not None:    
             plcwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-            if self.CTR.PlugTestModified():
+            if self.CTR.CTNTestModified():
                 bkgdclr = CHANGED_TITLE_COLOUR
             else:
                 bkgdclr = TITLE_COLOUR
@@ -933,7 +933,7 @@ class Beremiz(IDEFrame):
         self.Thaw()
 
     def GenerateEnableButton(self, parent, sizer, confnode):
-        enabled = confnode.PlugEnabled()
+        enabled = confnode.CTNEnabled()
         if enabled is not None:
             enablebutton_id = wx.NewId()
             enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Disabled.png')),
@@ -1046,7 +1046,7 @@ class Beremiz(IDEFrame):
         self.Freeze()
         self.ClearSizer(self.ConfNodeTreeSizer)
         if self.CTR is not None:
-            for child in self.CTR.IECSortedChilds():
+            for child in self.CTR.IECSortedChildren():
                 self.GenerateTreeBranch(child)
                 if not self.ConfNodeInfos[child]["expanded"]:
                     self.CollapseConfNode(child)
@@ -1131,7 +1131,7 @@ class Beremiz(IDEFrame):
     
     def GenerateTreeBranch(self, confnode):
         leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        if confnode.PlugTestModified():
+        if confnode.CTNTestModified():
             bkgdclr=CHANGED_WINDOW_COLOUR
         else:
             bkgdclr=WINDOW_COLOUR
@@ -1141,7 +1141,7 @@ class Beremiz(IDEFrame):
         if not self.ConfNodeInfos.has_key(confnode):
             self.ConfNodeInfos[confnode] = {"expanded" : False, "right_visible" : False}
             
-        self.ConfNodeInfos[confnode]["children"] = confnode.IECSortedChilds()
+        self.ConfNodeInfos[confnode]["children"] = confnode.IECSortedChildren()
         confnode_locations = []
         if len(self.ConfNodeInfos[confnode]["children"]) == 0:
             confnode_locations = confnode.GetVariableLocationTree()["children"]
@@ -1174,7 +1174,7 @@ class Beremiz(IDEFrame):
         #self.GenerateEnableButton(leftwindow, rolesizer, confnode)
 
         roletext = wx.StaticText(leftwindow, -1)
-        roletext.SetLabel(confnode.PlugHelp)
+        roletext.SetLabel(confnode.CTNHelp)
         rolesizer.AddWindow(roletext, 0, border=5, flag=wx.RIGHT|wx.ALIGN_LEFT)
         
         confnode_IECChannel = confnode.BaseParams.getIEC_Channel()
@@ -1216,7 +1216,7 @@ class Beremiz(IDEFrame):
         deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(confnode), id=deletebutton_id)
         adddeletesizer.AddWindow(deletebutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
 
-        if len(confnode.PlugChildsTypes) > 0:
+        if len(confnode.CTNChildrenTypes) > 0:
             addbutton_id = wx.NewId()
             addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
                   name='AddConfNodeButton', parent=leftwindow, pos=wx.Point(0, 0),
@@ -1415,8 +1415,8 @@ class Beremiz(IDEFrame):
     def Gen_AddConfNodeMenu(self, confnode):
         def AddConfNodeMenu(event):
             main_menu = wx.Menu(title='')
-            if len(confnode.PlugChildsTypes) > 0:
-                for name, XSDClass, help in confnode.PlugChildsTypes:
+            if len(confnode.CTNChildrenTypes) > 0:
+                for name, XSDClass, help in confnode.CTNChildrenTypes:
                     new_id = wx.NewId()
                     main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Append ")+help)
                     self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
@@ -1774,9 +1774,9 @@ class Beremiz(IDEFrame):
     
     def GetAddButtonFunction(self, confnode, window):
         def AddButtonFunction(event):
-            if confnode and len(confnode.PlugChildsTypes) > 0:
+            if confnode and len(confnode.CTNChildrenTypes) > 0:
                 confnode_menu = wx.Menu(title='')
-                for name, XSDClass, help in confnode.PlugChildsTypes:
+                for name, XSDClass, help in confnode.CTNChildrenTypes:
                     new_id = wx.NewId()
                     confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=name)
                     self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
@@ -1796,7 +1796,7 @@ class Beremiz(IDEFrame):
             dialog = wx.TextEntryDialog(self, _("Please enter a name for confnode:"), _("Add ConfNode"), "", wx.OK|wx.CANCEL)
             if dialog.ShowModal() == wx.ID_OK:
                 ConfNodeName = dialog.GetValue()
-                confnode.PlugAddChild(ConfNodeName, ConfNodeType)
+                confnode.CTNAddChild(ConfNodeName, ConfNodeType)
                 self.CTR.RefreshConfNodesBlockLists()
                 self._Refresh(TITLE, FILEMENU)
                 self.RefreshConfNodeTree()
@@ -1807,7 +1807,7 @@ class Beremiz(IDEFrame):
             dialog = wx.MessageDialog(self, _("Really delete confnode ?"), _("Remove confnode"), wx.YES_NO|wx.NO_DEFAULT)
             if dialog.ShowModal() == wx.ID_YES:
                 self.ConfNodeInfos.pop(confnode)
-                confnode.PlugRemove()
+                confnode.CTNRemove()
                 del confnode
                 self.CTR.RefreshConfNodesBlockLists()
                 self._Refresh(TITLE, FILEMENU)

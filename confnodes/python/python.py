@@ -38,13 +38,13 @@ class PythonCodeTemplate:
                     self.CreatePythonBuffer(True)
         else:
             self.CreatePythonBuffer(False)
-            self.OnPlugSave()
+            self.OnCTNSave()
 
     def ConfNodePath(self):
-        return os.path.join(self.PlugParent.ConfNodePath(), "modules", self.PlugType)
+        return os.path.join(self.CTNParent.ConfNodePath(), "modules", self.CTNType)
 
     def PythonFileName(self):
-        return os.path.join(self.PlugPath(), "python.xml")
+        return os.path.join(self.CTNPath(), "python.xml")
 
     def GetFilename(self):
         if self.PythonBuffer.IsCurrentSaved():
@@ -58,10 +58,10 @@ class PythonCodeTemplate:
     def GetPythonCode(self):
         return self.PythonCode.gettext()
     
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return self.ChangesToSave or not self.PythonIsSaved()
     
-    def OnPlugSave(self):
+    def OnCTNSave(self):
         filepath = self.PythonFileName()
         
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
@@ -129,13 +129,13 @@ def _GetClassFunction(name):
 
 class RootClass(PythonCodeTemplate):
 
-    # For root object, available Childs Types are modules of the modules packages.
-    PlugChildsTypes = [(name, _GetClassFunction(name), help) for name, help in zip(modules.__all__,modules.helps)]
+    # For root object, available Children Types are modules of the modules packages.
+    CTNChildrenTypes = [(name, _GetClassFunction(name), help) for name, help in zip(modules.__all__,modules.helps)]
     
     def ConfNodePath(self):
-        return os.path.join(self.PlugParent.ConfNodePath(), self.PlugType)
+        return os.path.join(self.CTNParent.ConfNodePath(), self.CTNType)
     
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
@@ -152,7 +152,7 @@ class RootClass(PythonCodeTemplate):
         # define a unique name for the generated C file
         location_str = "_".join(map(lambda x:str(x), current_location))
         
-        ctr = self.GetPlugRoot()
+        ctr = self.GetCTRoot()
         ctr.GetIECProgramsAndVariables()
         
         plc_python_filepath = os.path.join(os.path.split(__file__)[0], "plc_python.c")
@@ -180,6 +180,6 @@ class RootClass(PythonCodeTemplate):
         runtimefile.write(self.GetPythonCode())
         runtimefile.close()
         
-        matiec_flags = '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath())
+        matiec_flags = '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath())
         
         return [(Gen_Pythonfile_path, matiec_flags)], "", True, ("runtime_%s.py"%location_str, file(runtimefile_path,"rb"))

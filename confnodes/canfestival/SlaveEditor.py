@@ -64,7 +64,7 @@ class SlaveEditor(EditorPanel, NodeEditorTemplate):
         confnode_menu.Enable(ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, False)
     
     def GetTitle(self):
-        fullname = self.Controler.PlugFullName()
+        fullname = self.Controler.CTNFullName()
         if not self.Controler.CurrentIsSaved():
             return "~%s~" % fullname
         return fullname

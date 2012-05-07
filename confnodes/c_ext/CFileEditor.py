@@ -887,7 +887,7 @@ class CFileEditor(EditorPanel):
         self.Controler.OnCloseEditor(self)
     
     def GetTitle(self):
-        fullname = self.Controler.PlugFullName()
+        fullname = self.Controler.CTNFullName()
         if not self.Controler.CFileIsSaved():
             return "~%s~" % fullname
         return fullname

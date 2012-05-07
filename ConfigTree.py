@@ -36,7 +36,7 @@ class MiniTextControler:
     def __init__(self, filepath):
         self.FilePath = filepath
     
-    def PlugFullName(self):
+    def CTNFullName(self):
         return ""
     
     def SetEditedElementText(self, tagname, text):
@@ -96,21 +96,21 @@ class ConfigTreeNode:
     """
 
     XSD = None
-    PlugChildsTypes = []
-    PlugMaxCount = None
+    CTNChildrenTypes = []
+    CTNMaxCount = None
     ConfNodeMethods = []
     LibraryControler = None
     EditorType = None
 
     def _AddParamsMembers(self):
-        self.PlugParams = None
+        self.CTNParams = None
         if self.XSD:
             self.Classes = GenerateClassesFromXSDstring(self.XSD)
             Classes = [(name, XSDclass) for name, XSDclass in self.Classes.items() if XSDclass.IsBaseClass]
             if len(Classes) == 1:
                 name, XSDclass = Classes[0]
                 obj = XSDclass()
-                self.PlugParams = (name, obj)
+                self.CTNParams = (name, obj)
                 setattr(self, name, obj)
 
     def __init__(self):
@@ -118,65 +118,65 @@ class ConfigTreeNode:
         self.BaseParams = _BaseParamsClass()
         self.MandatoryParams = ("BaseParams", self.BaseParams)
         self._AddParamsMembers()
-        self.PluggedChilds = {}
+        self.Children = {}
         self._View = None
         # copy ConfNodeMethods so that it can be later customized
         self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
         self.LoadSTLibrary()
         
-    def ConfNodeBaseXmlFilePath(self, PlugName=None):
-        return os.path.join(self.PlugPath(PlugName), "baseconfnode.xml")
+    def ConfNodeBaseXmlFilePath(self, CTNName=None):
+        return os.path.join(self.CTNPath(CTNName), "baseconfnode.xml")
     
-    def ConfNodeXmlFilePath(self, PlugName=None):
-        return os.path.join(self.PlugPath(PlugName), "confnode.xml")
+    def ConfNodeXmlFilePath(self, CTNName=None):
+        return os.path.join(self.CTNPath(CTNName), "confnode.xml")
 
     def ConfNodeLibraryFilePath(self):
         return os.path.join(self.ConfNodePath(), "pous.xml")
 
     def ConfNodePath(self):
-        return os.path.join(self.PlugParent.ConfNodePath(), self.PlugType)
+        return os.path.join(self.CTNParent.ConfNodePath(), self.CTNType)
 
-    def PlugPath(self,PlugName=None):
-        if not PlugName:
-            PlugName = self.PlugName()
-        return os.path.join(self.PlugParent.PlugPath(),
-                            PlugName + NameTypeSeparator + self.PlugType)
+    def CTNPath(self,CTNName=None):
+        if not CTNName:
+            CTNName = self.CTNName()
+        return os.path.join(self.CTNParent.CTNPath(),
+                            CTNName + NameTypeSeparator + self.CTNType)
     
-    def PlugName(self):
+    def CTNName(self):
         return self.BaseParams.getName()
     
-    def PlugEnabled(self):
+    def CTNEnabled(self):
         return self.BaseParams.getEnabled()
     
-    def PlugFullName(self):
-        parent = self.PlugParent.PlugFullName()
+    def CTNFullName(self):
+        parent = self.CTNParent.CTNFullName()
         if parent != "":
-            return parent + "." + self.PlugName()
+            return parent + "." + self.CTNName()
         return self.BaseParams.getName()
     
     def GetIconPath(self, name):
         return opjimg(name)
     
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return self.ChangesToSave
 
     def ProjectTestModified(self):
         """
         recursively check modified status
         """
-        if self.PlugTestModified():
+        if self.CTNTestModified():
             return True
 
-        for PlugChild in self.IterChilds():
-            if PlugChild.ProjectTestModified():
+        for CTNChild in self.IterChildren():
+            if CTNChild.ProjectTestModified():
                 return True
 
         return False
     
     def RemoteExec(self, script, **kwargs):
-        return self.PlugParent.RemoteExec(script, **kwargs)
+        return self.CTNParent.RemoteExec(script, **kwargs)
     
-    def OnPlugSave(self):
+    def OnCTNSave(self):
         #Default, do nothing and return success
         return True
 
@@ -185,14 +185,14 @@ class ConfigTreeNode:
             parts = path.split(".", 1)
             if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
                 return self.MandatoryParams[1].getElementInfos(parts[0], parts[1])
-            elif self.PlugParams and parts[0] == self.PlugParams[0]:
-                return self.PlugParams[1].getElementInfos(parts[0], parts[1])
+            elif self.CTNParams and parts[0] == self.CTNParams[0]:
+                return self.CTNParams[1].getElementInfos(parts[0], parts[1])
         else:
             params = []
             if wx.VERSION < (2, 8, 0) and self.MandatoryParams:
                 params.append(self.MandatoryParams[1].getElementInfos(self.MandatoryParams[0]))
-            if self.PlugParams:
-                params.append(self.PlugParams[1].getElementInfos(self.PlugParams[0]))
+            if self.CTNParams:
+                params.append(self.CTNParams[1].getElementInfos(self.CTNParams[0]))
             return params
         
     def SetParamsAttribute(self, path, value):
@@ -201,31 +201,31 @@ class ConfigTreeNode:
         if path == "BaseParams.IEC_Channel":
             old_leading = ".".join(map(str, self.GetCurrentLocation()))
             new_value = self.FindNewIEC_Channel(value)
-            new_leading = ".".join(map(str, self.PlugParent.GetCurrentLocation() + (new_value,)))
-            self.GetPlugRoot().UpdateProjectVariableLocation(old_leading, new_leading)
+            new_leading = ".".join(map(str, self.CTNParent.GetCurrentLocation() + (new_value,)))
+            self.GetCTRoot().UpdateProjectVariableLocation(old_leading, new_leading)
             return new_value, True
         elif path == "BaseParams.Name":
             res = self.FindNewName(value)
-            self.PlugRequestSave()
+            self.CTNRequestSave()
             return res, True
         
         parts = path.split(".", 1)
         if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
             self.MandatoryParams[1].setElementValue(parts[1], value)
-        elif self.PlugParams and parts[0] == self.PlugParams[0]:
-            self.PlugParams[1].setElementValue(parts[1], value)
+        elif self.CTNParams and parts[0] == self.CTNParams[0]:
+            self.CTNParams[1].setElementValue(parts[1], value)
         return value, False
 
-    def PlugMakeDir(self):
-        os.mkdir(self.PlugPath())
+    def CTNMakeDir(self):
+        os.mkdir(self.CTNPath())
 
-    def PlugRequestSave(self):
-        if self.GetPlugRoot().CheckProjectPathPerm(False):
+    def CTNRequestSave(self):
+        if self.GetCTRoot().CheckProjectPathPerm(False):
             # If confnode do not have corresponding directory
-            plugpath = self.PlugPath()
-            if not os.path.isdir(plugpath):
+            ctnpath = self.CTNPath()
+            if not os.path.isdir(ctnpath):
                 # Create it
-                os.mkdir(plugpath)
+                os.mkdir(ctnpath)
     
             # generate XML for base XML parameters controller of the confnode
             if self.MandatoryParams:
@@ -235,31 +235,31 @@ class ConfigTreeNode:
                 BaseXMLFile.close()
             
             # generate XML for XML parameters controller of the confnode
-            if self.PlugParams:
+            if self.CTNParams:
                 XMLFile = open(self.ConfNodeXmlFilePath(),'w')
                 XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                XMLFile.write(self.PlugParams[1].generateXMLText(self.PlugParams[0], 0).encode("utf-8"))
+                XMLFile.write(self.CTNParams[1].generateXMLText(self.CTNParams[0], 0).encode("utf-8"))
                 XMLFile.close()
             
-            # Call the confnode specific OnPlugSave method
-            result = self.OnPlugSave()
+            # Call the confnode specific OnCTNSave method
+            result = self.OnCTNSave()
             if not result:
-                return _("Error while saving \"%s\"\n")%self.PlugPath()
+                return _("Error while saving \"%s\"\n")%self.CTNPath()
     
             # mark confnode as saved
             self.ChangesToSave = False
-            # go through all childs and do the same
-            for PlugChild in self.IterChilds():
-                result = PlugChild.PlugRequestSave()
+            # go through all children and do the same
+            for CTNChild in self.IterChildren():
+                result = CTNChild.CTNRequestSave()
                 if result:
                     return result
         return None
     
-    def PlugImport(self, src_PlugPath):
-        shutil.copytree(src_PlugPath, self.PlugPath)
+    def CTNImport(self, src_CTNPath):
+        shutil.copytree(src_CTNPath, self.CTNPath)
         return True
 
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
         @param locations: List of complete variables locations \
@@ -271,39 +271,39 @@ class ConfigTreeNode:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        self.GetPlugRoot().logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
+        self.GetCTRoot().logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
         return [],"",False
     
     def _Generate_C(self, buildpath, locations):
         # Generate confnodes [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
         # extra_files = [(fname,fobject), ...]
-        gen_result = self.PlugGenerate_C(buildpath, locations)
-        PlugCFilesAndCFLAGS, PlugLDFLAGS, DoCalls = gen_result[:3]
+        gen_result = self.CTNGenerate_C(buildpath, locations)
+        CTNCFilesAndCFLAGS, CTNLDFLAGS, DoCalls = gen_result[:3]
         extra_files = gen_result[3:]
         # if some files have been generated put them in the list with their location
-        if PlugCFilesAndCFLAGS:
-            LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), PlugCFilesAndCFLAGS, DoCalls)]
+        if CTNCFilesAndCFLAGS:
+            LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), CTNCFilesAndCFLAGS, DoCalls)]
         else:
             LocationCFilesAndCFLAGS = []
 
         # confnode asks for some LDFLAGS
-        if PlugLDFLAGS:
+        if CTNLDFLAGS:
             # LDFLAGS can be either string
-            if type(PlugLDFLAGS)==type(str()):
-                LDFLAGS=[PlugLDFLAGS]
+            if type(CTNLDFLAGS)==type(str()):
+                LDFLAGS=[CTNLDFLAGS]
             #or list of strings
-            elif type(PlugLDFLAGS)==type(list()):
-                LDFLAGS=PlugLDFLAGS[:]
+            elif type(CTNLDFLAGS)==type(list()):
+                LDFLAGS=CTNLDFLAGS[:]
         else:
             LDFLAGS=[]
         
-        # recurse through all childs, and stack their results
-        for PlugChild in self.IECSortedChilds():
-            new_location = PlugChild.GetCurrentLocation()
+        # recurse through all children, and stack their results
+        for CTNChild in self.IECSortedChildren():
+            new_location = CTNChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth=len(new_location)
             _LocationCFilesAndCFLAGS, _LDFLAGS, _extra_files = \
-                PlugChild._Generate_C(
+                CTNChild._Generate_C(
                     #keep the same path
                     buildpath,
                     # filter locations that start with current IEC location
@@ -317,16 +317,16 @@ class ConfigTreeNode:
 
     def ConfNodeTypesFactory(self):
         if self.LibraryControler is not None:
-            return [{"name" : self.PlugType, "types": self.LibraryControler.Project}]
+            return [{"name" : self.CTNType, "types": self.LibraryControler.Project}]
         return []
 
     def ParentsTypesFactory(self):
-        return self.PlugParent.ParentsTypesFactory() + self.ConfNodeTypesFactory()
+        return self.CTNParent.ParentsTypesFactory() + self.ConfNodeTypesFactory()
 
     def ConfNodesTypesFactory(self):
         list = self.ConfNodeTypesFactory()
-        for PlugChild in self.IterChilds():
-            list += PlugChild.ConfNodesTypesFactory()
+        for CTNChild in self.IterChildren():
+            list += CTNChild.ConfNodesTypesFactory()
         return list
 
     def STLibraryFactory(self):
@@ -337,18 +337,18 @@ class ConfigTreeNode:
 
     def ConfNodesSTLibraryFactory(self):
         program = self.STLibraryFactory()
-        for PlugChild in self.IECSortedChilds():
-            program += PlugChild.ConfNodesSTLibraryFactory()
+        for CTNChild in self.IECSortedChildren():
+            program += CTNChild.ConfNodesSTLibraryFactory()
         return program
         
-    def IterChilds(self):
-        for PlugType, PluggedChilds in self.PluggedChilds.items():
-            for PlugInstance in PluggedChilds:
-                yield PlugInstance
+    def IterChildren(self):
+        for CTNType, Children in self.Children.items():
+            for CTNInstance in Children:
+                yield CTNInstance
     
-    def IECSortedChilds(self):
-        # reorder childs by IEC_channels
-        ordered = [(chld.BaseParams.getIEC_Channel(),chld) for chld in self.IterChilds()]
+    def IECSortedChildren(self):
+        # reorder children by IEC_channels
+        ordered = [(chld.BaseParams.getIEC_Channel(),chld) for chld in self.IterChildren()]
         if ordered:
             ordered.sort()
             return zip(*ordered)[1]
@@ -356,15 +356,15 @@ class ConfigTreeNode:
             return []
     
     def _GetChildBySomething(self, something, toks):
-        for PlugInstance in self.IterChilds():
+        for CTNInstance in self.IterChildren():
             # if match component of the name
-            if getattr(PlugInstance.BaseParams, something) == toks[0]:
+            if getattr(CTNInstance.BaseParams, something) == toks[0]:
                 # if Name have other components
                 if len(toks) >= 2:
                     # Recurse in order to find the latest object
-                    return PlugInstance._GetChildBySomething( something, toks[1:])
+                    return CTNInstance._GetChildBySomething( something, toks[1:])
                 # No sub name -> found
-                return PlugInstance
+                return CTNInstance
         # Not found
         return None
 
@@ -385,29 +385,29 @@ class ConfigTreeNode:
         """
         @return:  Tupple containing confnode IEC location of current confnode : %I0.0.4.5 => (0,0,4,5)
         """
-        return self.PlugParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(),)
+        return self.CTNParent.GetCurrentLocation() + (self.BaseParams.getIEC_Channel(),)
 
     def GetCurrentName(self):
         """
         @return:  String "ParentParentName.ParentName.Name"
         """
-        return  self.PlugParent._GetCurrentName() + self.BaseParams.getName()
+        return  self.CTNParent._GetCurrentName() + self.BaseParams.getName()
 
     def _GetCurrentName(self):
         """
         @return:  String "ParentParentName.ParentName.Name."
         """
-        return  self.PlugParent._GetCurrentName() + self.BaseParams.getName() + "."
+        return  self.CTNParent._GetCurrentName() + self.BaseParams.getName() + "."
 
-    def GetPlugRoot(self):
-        return self.PlugParent.GetPlugRoot()
+    def GetCTRoot(self):
+        return self.CTNParent.GetCTRoot()
 
     def GetFullIEC_Channel(self):
         return ".".join([str(i) for i in self.GetCurrentLocation()]) + ".x"
 
     def GetLocations(self):
         location = self.GetCurrentLocation()
-        return [loc for loc in self.PlugParent.GetLocations() if loc["LOC"][0:len(location)] == location]
+        return [loc for loc in self.CTNParent.GetLocations() if loc["LOC"][0:len(location)] == location]
 
     def GetVariableLocationTree(self):
         '''
@@ -419,7 +419,7 @@ class ConfigTreeNode:
         - location is a string of this variable's location, like "%IX0.0.0"
         '''
         children = []
-        for child in self.IECSortedChilds():
+        for child in self.IECSortedChildren():
             children.append(child.GetVariableLocationTree())
         return {"name": self.BaseParams.getName(),
                 "type": LOCATION_CONFNODE,
@@ -435,11 +435,11 @@ class ConfigTreeNode:
         CurrentName = self.BaseParams.getName()
         # Do nothing if no change
         #if CurrentName == DesiredName: return CurrentName
-        # Build a list of used Name out of parent's PluggedChilds
+        # Build a list of used Name out of parent's Children
         AllNames=[]
-        for PlugInstance in self.PlugParent.IterChilds():
-            if PlugInstance != self:
-                AllNames.append(PlugInstance.BaseParams.getName())
+        for CTNInstance in self.CTNParent.IterChildren():
+            if CTNInstance != self:
+                AllNames.append(CTNInstance.BaseParams.getName())
 
         # Find a free name, eventually appending digit
         res = DesiredName
@@ -449,24 +449,24 @@ class ConfigTreeNode:
             suffix += 1
         
         # Get old path
-        oldname = self.PlugPath()
+        oldname = self.CTNPath()
         # Check previous confnode existance
         dontexist = self.BaseParams.getName() == "__unnamed__"
         # Set the new name
         self.BaseParams.setName(res)
         # Rename confnode dir if exist
         if not dontexist:
-            shutil.move(oldname, self.PlugPath())
+            shutil.move(oldname, self.CTNPath())
         # warn user he has two left hands
         if DesiredName != res:
-            self.GetPlugRoot().logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
+            self.GetCTRoot().logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
         return res
 
     def GetAllChannels(self):
         AllChannels=[]
-        for PlugInstance in self.PlugParent.IterChilds():
-            if PlugInstance != self:
-                AllChannels.append(PlugInstance.BaseParams.getIEC_Channel())
+        for CTNInstance in self.CTNParent.IterChildren():
+            if CTNInstance != self:
+                AllChannels.append(CTNInstance.BaseParams.getIEC_Channel())
         AllChannels.sort()
         return AllChannels
 
@@ -479,7 +479,7 @@ class ConfigTreeNode:
         CurrentChannel = self.BaseParams.getIEC_Channel()
         # Do nothing if no change
         #if CurrentChannel == DesiredChannel: return CurrentChannel
-        # Build a list of used Channels out of parent's PluggedChilds
+        # Build a list of used Channels out of parent's Children
         AllChannels = self.GetAllChannels()
         
         # Now, try to guess the nearest available channel
@@ -488,7 +488,7 @@ class ConfigTreeNode:
             if res < CurrentChannel: # Want to go down ?
                 res -=  1 # Test for n-1
                 if res < 0 :
-                    self.GetPlugRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n")%CurrentChannel)
+                    self.GetCTRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n")%CurrentChannel)
                     return CurrentChannel # Can't go bellow 0, do nothing
             else : # Want to go up ?
                 res +=  1 # Test for n-1
@@ -498,11 +498,11 @@ class ConfigTreeNode:
 
     def _OpenView(self, name=None):
         if self.EditorType is not None and self._View is None:
-            app_frame = self.GetPlugRoot().AppFrame
+            app_frame = self.GetCTRoot().AppFrame
             
             self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
             
-            app_frame.EditProjectElement(self._View, self.PlugName())
+            app_frame.EditProjectElement(self._View, self.CTNName())
             
             return self._View
         return None
@@ -511,103 +511,103 @@ class ConfigTreeNode:
         if self._View == view:
             self._View = None
 
-    def OnPlugClose(self):
+    def OnCTNClose(self):
         if self._View is not None:
-            app_frame = self.GetPlugRoot().AppFrame
+            app_frame = self.GetCTRoot().AppFrame
             if app_frame is not None:
                 app_frame.DeletePage(self._View)
         return True
 
-    def _doRemoveChild(self, PlugInstance):
-        # Remove all childs of child
-        for SubPlugInstance in PlugInstance.IterChilds():
-            PlugInstance._doRemoveChild(SubPlugInstance)
+    def _doRemoveChild(self, CTNInstance):
+        # Remove all children of child
+        for SubCTNInstance in CTNInstance.IterChildren():
+            CTNInstance._doRemoveChild(SubCTNInstance)
         # Call the OnCloseMethod
-        PlugInstance.OnPlugClose()
+        CTNInstance.OnCTNClose()
         # Delete confnode dir
-        shutil.rmtree(PlugInstance.PlugPath())
-        # Remove child of PluggedChilds
-        self.PluggedChilds[PlugInstance.PlugType].remove(PlugInstance)
+        shutil.rmtree(CTNInstance.CTNPath())
+        # Remove child of Children
+        self.Children[CTNInstance.CTNType].remove(CTNInstance)
         # Forget it... (View have to refresh)
 
-    def PlugRemove(self):
+    def CTNRemove(self):
         # Fetch the confnode
-        #PlugInstance = self.GetChildByName(PlugName)
+        #CTNInstance = self.GetChildByName(CTNName)
         # Ask to his parent to remove it
-        self.PlugParent._doRemoveChild(self)
+        self.CTNParent._doRemoveChild(self)
 
-    def PlugAddChild(self, PlugName, PlugType, IEC_Channel=0):
+    def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """
         Create the confnodes that may be added as child to this node self
-        @param PlugType: string desining the confnode class name (get name from PlugChildsTypes)
-        @param PlugName: string for the name of the confnode instance
+        @param CTNType: string desining the confnode class name (get name from CTNChildrenTypes)
+        @param CTNName: string for the name of the confnode instance
         """
-        # reorgabize self.PlugChildsTypes tuples from (name, PlugClass, Help)
-        # to ( name, (PlugClass, Help)), an make a dict
-        transpose = zip(*self.PlugChildsTypes)
-        PlugChildsTypes = dict(zip(transpose[0],zip(transpose[1],transpose[2])))
+        # reorgabize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
+        # to ( name, (CTNClass, Help)), an make a dict
+        transpose = zip(*self.CTNChildrenTypes)
+        CTNChildrenTypes = dict(zip(transpose[0],zip(transpose[1],transpose[2])))
         # Check that adding this confnode is allowed
         try:
-            PlugClass, PlugHelp = PlugChildsTypes[PlugType]
+            CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
         except KeyError:
-            raise Exception, _("Cannot create child %s of type %s ")%(PlugName, PlugType)
+            raise Exception, _("Cannot create child %s of type %s ")%(CTNName, CTNType)
         
-        # if PlugClass is a class factory, call it. (prevent unneeded imports)
-        if type(PlugClass) == types.FunctionType:
-            PlugClass = PlugClass()
+        # if CTNClass is a class factory, call it. (prevent unneeded imports)
+        if type(CTNClass) == types.FunctionType:
+            CTNClass = CTNClass()
         
         # Eventualy Initialize child instance list for this class of confnode
-        PluggedChildsWithSameClass = self.PluggedChilds.setdefault(PlugType, list())
+        ChildrenWithSameClass = self.Children.setdefault(CTNType, list())
         # Check count
-        if getattr(PlugClass, "PlugMaxCount", None) and len(PluggedChildsWithSameClass) >= PlugClass.PlugMaxCount:
-            raise Exception, _("Max count (%d) reached for this confnode of type %s ")%(PlugClass.PlugMaxCount, PlugType)
+        if getattr(CTNClass, "CTNMaxCount", None) and len(ChildrenWithSameClass) >= CTNClass.CTNMaxCount:
+            raise Exception, _("Max count (%d) reached for this confnode of type %s ")%(CTNClass.CTNMaxCount, CTNType)
         
         # create the final class, derived of provided confnode and template
-        class FinalPlugClass(PlugClass, ConfigTreeNode):
+        class FinalCTNClass(CTNClass, ConfigTreeNode):
             """
-            ConfNode class is derivated into FinalPlugClass before being instanciated
+            ConfNode class is derivated into FinalCTNClass before being instanciated
             This way __init__ is overloaded to ensure ConfigTreeNode.__init__ is called 
-            before PlugClass.__init__, and to do the file related stuff.
+            before CTNClass.__init__, and to do the file related stuff.
             """
             def __init__(_self):
                 # self is the parent
-                _self.PlugParent = self
+                _self.CTNParent = self
                 # Keep track of the confnode type name
-                _self.PlugType = PlugType
+                _self.CTNType = CTNType
                 # remind the help string, for more fancy display
-                _self.PlugHelp = PlugHelp
+                _self.CTNHelp = CTNHelp
                 # Call the base confnode template init - change XSD into class members
                 ConfigTreeNode.__init__(_self)
                 # check name is unique
-                NewPlugName = _self.FindNewName(PlugName)
+                NewCTNName = _self.FindNewName(CTNName)
                 # If dir have already be made, and file exist
-                if os.path.isdir(_self.PlugPath(NewPlugName)): #and os.path.isfile(_self.ConfNodeXmlFilePath(PlugName)):
+                if os.path.isdir(_self.CTNPath(NewCTNName)): #and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
                     #Load the confnode.xml file into parameters members
-                    _self.LoadXMLParams(NewPlugName)
+                    _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
-                    if (_self.BaseParams.getName() != NewPlugName):
-                        raise Exception, _("Project tree layout do not match confnode.xml %s!=%s ")%(NewPlugName, _self.BaseParams.getName())
+                    if (_self.BaseParams.getName() != NewCTNName):
+                        raise Exception, _("Project tree layout do not match confnode.xml %s!=%s ")%(NewCTNName, _self.BaseParams.getName())
 
-                    # Now, self.PlugPath() should be OK
+                    # Now, self.CTNPath() should be OK
                     
                     # Check that IEC_Channel is not already in use.
                     _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel())
                     # Call the confnode real __init__
-                    if getattr(PlugClass, "__init__", None):
-                        PlugClass.__init__(_self)
-                    #Load and init all the childs
-                    _self.LoadChilds()
+                    if getattr(CTNClass, "__init__", None):
+                        CTNClass.__init__(_self)
+                    #Load and init all the children
+                    _self.LoadChildren()
                     #just loaded, nothing to saved
                     _self.ChangesToSave = False
                 else:
                     # If confnode do not have corresponding file/dirs - they will be created on Save
-                    _self.PlugMakeDir()
+                    _self.CTNMakeDir()
                     # Find an IEC number
                     _self.FindNewIEC_Channel(IEC_Channel)
                     # Call the confnode real __init__
-                    if getattr(PlugClass, "__init__", None):
-                        PlugClass.__init__(_self)
-                    _self.PlugRequestSave()
+                    if getattr(CTNClass, "__init__", None):
+                        CTNClass.__init__(_self)
+                    _self.CTNRequestSave()
                     #just created, must be saved
                     _self.ChangesToSave = True
                 
@@ -615,16 +615,16 @@ class ConfigTreeNode:
                 return self._getBuildPath()
             
         # Create the object out of the resulting class
-        newConfNodeOpj = FinalPlugClass()
-        # Store it in PluggedChils
-        PluggedChildsWithSameClass.append(newConfNodeOpj)
+        newConfNodeOpj = FinalCTNClass()
+        # Store it in CTNgedChils
+        ChildrenWithSameClass.append(newConfNodeOpj)
         
         return newConfNodeOpj
     
-    def ClearPluggedChilds(self):
-        for child in self.IterChilds():
-            child.ClearPluggedChilds()
-        self.PluggedChilds = {}
+    def ClearChildren(self):
+        for child in self.IterChildren():
+            child.ClearChildren()
+        self.Children = {}
     
     def LoadSTLibrary(self):
         # Get library blocks if plcopen library exist
@@ -635,44 +635,44 @@ class ConfigTreeNode:
             self.LibraryControler.ClearConfNodeTypes()
             self.LibraryControler.AddConfNodeTypesList(self.ParentsTypesFactory())
 
-    def LoadXMLParams(self, PlugName = None):
-        methode_name = os.path.join(self.PlugPath(PlugName), "methods.py")
+    def LoadXMLParams(self, CTNName = None):
+        methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):
             execfile(methode_name)
         
         # Get the base xml tree
         if self.MandatoryParams:
             try:
-                basexmlfile = open(self.ConfNodeBaseXmlFilePath(PlugName), 'r')
+                basexmlfile = open(self.ConfNodeBaseXmlFilePath(CTNName), 'r')
                 basetree = minidom.parse(basexmlfile)
                 self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
                 basexmlfile.close()
             except Exception, exc:
-                self.GetPlugRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (PlugName, str(exc)))
-                self.GetPlugRoot().logger.write_error(traceback.format_exc())
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (CTNName, str(exc)))
+                self.GetCTRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
-        if self.PlugParams:
+        if self.CTNParams:
             try:
-                xmlfile = open(self.ConfNodeXmlFilePath(PlugName), 'r')
+                xmlfile = open(self.ConfNodeXmlFilePath(CTNName), 'r')
                 tree = minidom.parse(xmlfile)
-                self.PlugParams[1].loadXMLTree(tree.childNodes[0])
+                self.CTNParams[1].loadXMLTree(tree.childNodes[0])
                 xmlfile.close()
             except Exception, exc:
-                self.GetPlugRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (PlugName, str(exc)))
-                self.GetPlugRoot().logger.write_error(traceback.format_exc())
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, str(exc)))
+                self.GetCTRoot().logger.write_error(traceback.format_exc())
         
-    def LoadChilds(self):
-        # Iterate over all PlugName@PlugType in confnode directory, and try to open them
-        for PlugDir in os.listdir(self.PlugPath()):
-            if os.path.isdir(os.path.join(self.PlugPath(), PlugDir)) and \
-               PlugDir.count(NameTypeSeparator) == 1:
-                pname, ptype = PlugDir.split(NameTypeSeparator)
+    def LoadChildren(self):
+        # Iterate over all CTNName@CTNType in confnode directory, and try to open them
+        for CTNDir in os.listdir(self.CTNPath()):
+            if os.path.isdir(os.path.join(self.CTNPath(), CTNDir)) and \
+               CTNDir.count(NameTypeSeparator) == 1:
+                pname, ptype = CTNDir.split(NameTypeSeparator)
                 try:
-                    self.PlugAddChild(pname, ptype)
+                    self.CTNAddChild(pname, ptype)
                 except Exception, exc:
-                    self.GetPlugRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
-                    self.GetPlugRoot().logger.write_error(traceback.format_exc())
+                    self.GetCTRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
+                    self.GetCTRoot().logger.write_error(traceback.format_exc())
 
     def EnableMethod(self, method, value):
         for d in self.ConfNodeMethods:
@@ -742,13 +742,13 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     - Managing project directory
     - Building project
     - Handling PLCOpenEditor controler and view
-    - Loading user confnodes and instanciante them as childs
+    - Loading user confnodes and instanciante them as children
     - ...
     
     """
 
-    # For root object, available Childs Types are modules of the confnode packages.
-    PlugChildsTypes = [(name, _GetClassFunction(name), help) for name, help in zip(confnodes.__all__,confnodes.helps)]
+    # For root object, available Children Types are modules of the confnode packages.
+    CTNChildrenTypes = [(name, _GetClassFunction(name), help) for name, help in zip(confnodes.__all__,confnodes.helps)]
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -790,15 +790,15 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         
         #This method are not called here... but in NewProject and OpenProject
         #self._AddParamsMembers()
-        #self.PluggedChilds = {}
+        #self.Children = {}
 
         # In both new or load scenario, no need to save
         self.ChangesToSave = False
         # root have no parent
-        self.PlugParent = None
+        self.CTNParent = None
         # Keep track of the confnode type name
-        self.PlugType = "Beremiz"
-        self.PluggedChilds = {}
+        self.CTNType = "Beremiz"
+        self.Children = {}
         # After __init__ root confnode is not valid
         self.ProjectPath = None
         self._setBuildPath(None)
@@ -838,13 +838,13 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     def ConfNodeLibraryFilePath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml")
 
-    def PlugTestModified(self):
+    def CTNTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
 
-    def PlugFullName(self):
+    def CTNFullName(self):
         return ""
 
-    def GetPlugRoot(self):
+    def GetCTRoot(self):
         return self
 
     def GetIECLibPath(self):
@@ -936,7 +936,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         self.CreateNewProject(values)
         # Change XSD into class members
         self._AddParamsMembers()
-        self.PluggedChilds = {}
+        self.Children = {}
         # Keep track of the root confnode (i.e. project path)
         self.ProjectPath = ProjectPath
         self._setBuildPath(BuildPath)
@@ -963,18 +963,18 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
             return result
         # Change XSD into class members
         self._AddParamsMembers()
-        self.PluggedChilds = {}
+        self.Children = {}
         # Keep track of the root confnode (i.e. project path)
         self.ProjectPath = ProjectPath
         self._setBuildPath(BuildPath)
         # If dir have already be made, and file exist
-        if os.path.isdir(self.PlugPath()) and os.path.isfile(self.ConfNodeXmlFilePath()):
+        if os.path.isdir(self.CTNPath()) and os.path.isfile(self.ConfNodeXmlFilePath()):
             #Load the confnode.xml file into parameters members
             result = self.LoadXMLParams()
             if result:
                 return result
-            #Load and init all the childs
-            self.LoadChilds()
+            #Load and init all the children
+            self.LoadChildren()
         self.RefreshConfNodesBlockLists()
         
         if os.path.exists(self._getBuildPath()):
@@ -986,13 +986,13 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         return None
     
     def CloseProject(self):
-        self.ClearPluggedChilds()
+        self.ClearChildren()
         self.ResetAppFrame(None)
         
     def SaveProject(self):
         if self.CheckProjectPathPerm(False):
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
-            result = self.PlugRequestSave()
+            result = self.CTNRequestSave()
             if result:
                 self.logger.write_error(result)
     
@@ -1017,7 +1017,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
-        if getattr(self, "PluggedChilds", None) is not None:
+        if getattr(self, "Children", None) is not None:
             self.ClearConfNodeTypes()
             self.AddConfNodeTypesList(self.ConfNodesTypesFactory())
         if self.AppFrame is not None:
@@ -1045,18 +1045,18 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         - location is a string of this variable's location, like "%IX0.0.0"
         '''
         children = []
-        for child in self.IECSortedChilds():
+        for child in self.IECSortedChildren():
             children.append(child.GetVariableLocationTree())
         return children
     
     def ConfNodePath(self):
         return os.path.join(os.path.split(__file__)[0], "confnodes")
     
-    def PlugPath(self, PlugName=None):
+    def CTNPath(self, CTNName=None):
         return self.ProjectPath
     
-    def ConfNodeXmlFilePath(self, PlugName=None):
-        return os.path.join(self.PlugPath(PlugName), "beremiz.xml")
+    def ConfNodeXmlFilePath(self, CTNName=None):
+        return os.path.join(self.CTNPath(CTNName), "beremiz.xml")
 
     def ParentsTypesFactory(self):
         return self.ConfNodeTypesFactory()
@@ -1102,7 +1102,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     
     def _getIECrawcodepath(self):
         # define name for IEC raw code file
-        return os.path.join(self.PlugPath(), "raw_plc.st")
+        return os.path.join(self.CTNPath(), "raw_plc.st")
     
     def GetLocations(self):
         locations = []
@@ -1222,7 +1222,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         self.logger.write(_("Extracting Located Variables...\n"))
         # Keep track of generated located variables for later use by self._Generate_C
         self.PLCGeneratedLocatedVars = self.GetLocations()
-        # Keep track of generated C files for later use by self.PlugGenerate_C
+        # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
         self.plcCFLAGS = "\"-I"+self.ieclib_path+"\""
@@ -1274,7 +1274,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     #
     #######################################################################
     
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Return C code generated by iec2c compiler 
         when _generate_softPLC have been called

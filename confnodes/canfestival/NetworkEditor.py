@@ -101,7 +101,7 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
         confnode_menu.Enable(ID_NETWORKEDITORCONFNODEMENUMASTER, self.NetworkNodes.GetSelection() == 0)
     
     def GetTitle(self):
-        fullname = self.Controler.PlugFullName()
+        fullname = self.Controler.CTNFullName()
         if not self.Manager.CurrentIsSaved():
             return "~%s~" % fullname
         return fullname

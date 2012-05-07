@@ -241,7 +241,7 @@ class PythonEditor(EditorPanel):
         self.Controler.OnCloseEditor(self)
     
     def GetTitle(self):
-        fullname = self.Controler.PlugFullName()
+        fullname = self.Controler.CTNFullName()
         if not self.Controler.PythonIsSaved():
             return "~%s~" % fullname
         return fullname
