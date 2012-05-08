@@ -16,13 +16,13 @@ from weakref import WeakKeyDictionary
 import targets
 import connectors
 from util import MiniTextControler, opjimg, CheckPathPerm, GetClassImporter
-from ProcessLogger import ProcessLogger
+from util.ProcessLogger import ProcessLogger
 from PLCControler import PLCControler 
 from PLCOpenEditor import ProjectDialog
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize
-from discovery import DiscoveryDialog
+from util.discovery import DiscoveryDialog
 from ConfigTreeNode import ConfigTreeNode
 
 base_folder = os.path.split(sys.path[0])[0]

@@ -149,7 +149,7 @@ from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
 from ProjectController import ProjectController, MATIEC_ERROR_MODEL
 from util import MiniTextControler
-from ProcessLogger import ProcessLogger
+from util.ProcessLogger import ProcessLogger
 
 from docutils import *
 from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI

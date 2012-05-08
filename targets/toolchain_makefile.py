@@ -1,5 +1,5 @@
 import os, re, operator
-from ProcessLogger import ProcessLogger
+from util.ProcessLogger import ProcessLogger
 import hashlib
 
 import time
