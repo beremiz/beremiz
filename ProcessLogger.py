@@ -131,7 +131,11 @@ class ProcessLogger:
                       self.errors)
         self.errt.start()
 
-        Timer(timeout,self.endlog).start()
+        if timeout:
+            self.timeout = Timer(timeout,self.endlog)
+            self.timeout.start()
+        else:
+            self.timeout = None
 
     def output(self,v):
         self.outdata.append(v)
@@ -154,6 +158,7 @@ class ProcessLogger:
         self.logger.write_warning(_("exited with status %s (pid %s)\n")%(str(ecode),str(pid)))
 
     def finish(self, pid,ecode):
+        if self.timeout: self.timeout.cancel()
         self.exitcode = ecode
         if self.exitcode != 0:
             self.log_the_end(ecode,pid)
