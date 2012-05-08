@@ -1,13 +1,10 @@
 from os import listdir, path
 
-_base_path = path.split(__file__)[0]
+catalog = [
+    ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'confnodes.canfestival.canfestival.RootClass'),
+    ('c_ext', _('C extention'), _('Extend project with C code accessing located variables'), 'confnodes.c_ext.c_ext.RootClass'),
+    ('python', _('Python extention'), _('Extend project with Pyhon code executed asynchronously'), 'confnodes.python.python.RootClass')]
+#    ('ethercat_master', _('Ethercat master'), _('Map located variables over EtherCat, as a master'), 'ethercat.EthercatPlug')]
 
-__all__ = [name for name in listdir(_base_path) if path.isdir(path.join(_base_path, name)) and name.upper() != "CVS" or name.endswith(".py") and not name.startswith("__")]
 
-helps = []
-for name in __all__:
-    helpfilename = path.join(_base_path, name, "README")
-    if path.isfile(helpfilename):
-        helps.append(open(helpfilename).readline().strip())
-    else:
-        helps.append(name)
+

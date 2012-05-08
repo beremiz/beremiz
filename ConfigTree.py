@@ -542,7 +542,7 @@ class ConfigTreeNode:
         @param CTNType: string desining the confnode class name (get name from CTNChildrenTypes)
         @param CTNName: string for the name of the confnode instance
         """
-        # reorgabize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
+        # reorganize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
         # to ( name, (CTNClass, Help)), an make a dict
         transpose = zip(*self.CTNChildrenTypes)
         CTNChildrenTypes = dict(zip(transpose[0],zip(transpose[1],transpose[2])))
@@ -693,11 +693,6 @@ class ConfigTreeNode:
             if d["method"]==method and d.get("enabled", True) and d.get("shown", True):
                 getattr(self, method)()
 
-def _GetClassFunction(name):
-    def GetRootClass():
-        return getattr(__import__("confnodes." + name), name).RootClass
-    return GetRootClass
-
 
 ####################################################################################
 ####################################################################################
@@ -735,6 +730,15 @@ MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)
 DEBUG_RETRIES_WARN = 3
 DEBUG_RETRIES_REREGISTER = 4
 
+def CTNClassFactory(classpath):
+    if type(classpath)==str:
+        def fac():
+            mod=__import__(classpath.rsplit('.',1)[0])
+            return reduce(getattr, classpath.split('.')[1:], mod)
+        return fac
+    else:
+        return lambda:classpath
+
 class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     """
     This class define Root object of the confnode tree. 
@@ -748,7 +752,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     """
 
     # For root object, available Children Types are modules of the confnode packages.
-    CTNChildrenTypes = [(name, _GetClassFunction(name), help) for name, help in zip(confnodes.__all__,confnodes.helps)]
+    CTNChildrenTypes =  [(n, CTNClassFactory(c), d) for n,d,h,c in confnodes.catalog]
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
