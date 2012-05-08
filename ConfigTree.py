@@ -4,7 +4,7 @@ Base definitions for beremiz confnodes
 
 import os,sys,traceback
 import time
-import confnodes
+import features
 import types
 import shutil
 from xml.dom import minidom
@@ -752,7 +752,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
     """
 
     # For root object, available Children Types are modules of the confnode packages.
-    CTNChildrenTypes =  [(n, CTNClassFactory(c), d) for n,d,h,c in confnodes.catalog]
+    CTNChildrenTypes =  [(n, CTNClassFactory(c), d) for n,d,h,c in features.catalog]
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -1054,7 +1054,7 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         return children
     
     def ConfNodePath(self):
-        return os.path.join(os.path.split(__file__)[0], "confnodes")
+        return os.path.split(__file__)[0]
     
     def CTNPath(self, CTNName=None):
         return self.ProjectPath
@@ -1480,13 +1480,12 @@ class ConfigTreeRoot(ConfigTreeNode, PLCControler):
         self.ResetIECProgramsAndVariables()
         
         # Generate C code and compilation params from confnode hierarchy
-        self.logger.write(_("Generating confnodes C code\n"))
         try:
             self.LocationCFilesAndCFLAGS, self.LDFLAGS, ExtraFiles = self._Generate_C(
                 buildpath, 
                 self.PLCGeneratedLocatedVars)
         except Exception, exc:
-            self.logger.write_error(_("ConfNodes code generation failed !\n"))
+            self.logger.write_error(_("Runtime extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             self.ResetBuildMD5()
             return False

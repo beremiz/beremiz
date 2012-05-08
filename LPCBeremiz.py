@@ -67,8 +67,8 @@ from PLCOpenEditor import IDEFrame, ProjectDialog
 
 havecanfestival = False
 try:
-    from confnodes.canfestival import RootClass as CanOpenRootClass
-    from confnodes.canfestival.canfestival import _SlaveCTN, _NodeListCTN, NodeManager
+    from canfestival import RootClass as CanOpenRootClass
+    from canfestival.canfestival import _SlaveCTN, _NodeListCTN, NodeManager
     havecanfestival = True
 except:
     havecanfestival = False
@@ -77,7 +77,7 @@ except:
 #-------------------------------------------------------------------------------
 #                          CANFESTIVAL CONFNODE HACK
 #-------------------------------------------------------------------------------
-# from confnodes.canfestival import canfestival
+# from canfestival import canfestival
 # class LPC_canfestival_config:
 #     def getCFLAGS(self, *args):
 #         return ""

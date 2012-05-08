@@ -3,7 +3,7 @@ import os, sys
 from xml.dom import minidom
 
 from ConfigTree import opjimg
-from confnodes.python import PythonCodeTemplate
+from py_ext import PythonCodeTemplate
 
 class RootClass(PythonCodeTemplate):
 

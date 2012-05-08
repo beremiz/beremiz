@@ -9,7 +9,7 @@ from xml.dom import minidom
 from xmlclass import *
 import cPickle
 
-PythonClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "python_xsd.xsd")) 
+PythonClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "py_ext_xsd.xsd")) 
 
 class PythonCodeTemplate:
     
@@ -44,13 +44,13 @@ class PythonCodeTemplate:
         return os.path.join(self.CTNParent.ConfNodePath(), "modules", self.CTNType)
 
     def PythonFileName(self):
-        return os.path.join(self.CTNPath(), "python.xml")
+        return os.path.join(self.CTNPath(), "py_ext.xml")
 
     def GetFilename(self):
         if self.PythonBuffer.IsCurrentSaved():
-            return "python"
+            return "py_ext"
         else:
-            return "~python~"
+            return "~py_ext~"
 
     def SetPythonCode(self, text):
         self.PythonCode.settext(text)
@@ -67,7 +67,7 @@ class PythonCodeTemplate:
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
         extras = {"xmlns":"http://www.w3.org/2001/XMLSchema",
                   "xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
-                  "xsi:schemaLocation" : "python_xsd.xsd"}
+                  "xsi:schemaLocation" : "py_ext_xsd.xsd"}
         text += self.PythonCode.generateXMLText("Python", 0, extras)
 
         xmlfile = open(filepath,"w")
@@ -123,7 +123,7 @@ class PythonCodeTemplate:
 
 def _GetClassFunction(name):
     def GetRootClass():
-        __import__("confnodes.python.modules." + name)
+        __import__("py_ext.modules." + name)
         return getattr(modules, name).RootClass
     return GetRootClass
 
