@@ -9,7 +9,7 @@ import config_utils, gen_cfile, eds_utils
 from networkedit import networkedit
 from objdictedit import objdictedit
 import canfestival_config as local_canfestival_config
-from ConfigTree import ConfigTreeNode
+from ConfigTreeNode import ConfigTreeNode
 from commondialogs import CreateNodeDialog
 import wx
 

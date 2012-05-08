@@ -1,7 +1,7 @@
 import wx
 import os
 import modules
-from ConfigTree import ConfigTreeNode, opjimg
+from ConfigTreeNode import ConfigTreeNode, opjimg
 from PLCControler import UndoBuffer
 from PythonEditor import PythonEditor
 

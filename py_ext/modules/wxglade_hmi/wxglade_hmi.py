@@ -2,7 +2,7 @@ import wx
 import os, sys
 from xml.dom import minidom
 
-from ConfigTree import opjimg
+from ConfigTreeNode import opjimg
 from py_ext import PythonCodeTemplate
 
 class RootClass(PythonCodeTemplate):

@@ -6,9 +6,9 @@ import hashlib
 class LPC_target(toolchain_makefile):
     #extension = ".ld"
     #DebugEnabled = False
-    def __init__(self, ConfigTreeRootInstance):
+    def __init__(self, CTRInstance):
         self.binmd5key = None
-        toolchain_makefile.__init__(self, ConfigTreeRootInstance)
+        toolchain_makefile.__init__(self, CTRInstance)
 
     def _GetBinMD5FileName(self):
         return os.path.join(self.buildpath, "lastbuildPLCbin.md5")
@@ -64,7 +64,7 @@ class LPC_target(toolchain_makefile):
             f.write(self.binmd5key)
             f.close()
             try:
-                self.ConfigTreeRootInstance.logger.write(
+                self.CTRInstance.logger.write(
                     _("Binary is %s bytes long\n")%
                         str(os.path.getsize(
                             os.path.join(self.buildpath, "ArmPLC_rom.bin"))))

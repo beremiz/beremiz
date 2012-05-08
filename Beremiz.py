@@ -147,7 +147,8 @@ from util.TextCtrlAutoComplete import TextCtrlAutoComplete
 import cPickle
 from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
-from ConfigTree import ConfigTreeRoot, MiniTextControler, MATIEC_ERROR_MODEL
+from ProjectController import ProjectController, MATIEC_ERROR_MODEL
+from util import MiniTextControler
 from ProcessLogger import ProcessLogger
 
 from docutils import *
@@ -556,7 +557,7 @@ class Beremiz(IDEFrame):
                 projectOpen = None
         
         if projectOpen is not None and os.path.isdir(projectOpen):
-            self.CTR = ConfigTreeRoot(self, self.Log)
+            self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
             result = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
@@ -1677,7 +1678,7 @@ class Beremiz(IDEFrame):
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
             self.ResetView()
-            ctr = ConfigTreeRoot(self, self.Log)
+            ctr = ProjectController(self, self.Log)
             result = ctr.NewProject(projectpath)
             if not result:
                 self.CTR = ctr
@@ -1713,7 +1714,7 @@ class Beremiz(IDEFrame):
             self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
             self.Config.Flush()
             self.ResetView()
-            self.CTR = ConfigTreeRoot(self, self.Log)
+            self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
             result = self.CTR.LoadProject(projectpath)
             if not result:

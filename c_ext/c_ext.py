@@ -5,7 +5,7 @@ import cPickle
 
 from xmlclass import *
 
-from ConfigTree import ConfigTreeNode, opjimg
+from ConfigTreeNode import ConfigTreeNode, opjimg
 from CFileEditor import CFileEditor
 from PLCControler import PLCControler, UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 

@@ -1,7 +1,7 @@
 import wx
 import os, sys, shutil
 
-from ConfigTree import opjimg
+from ConfigTreeNode import opjimg
 from py_ext import PythonCodeTemplate
 
 from pyjs import translate

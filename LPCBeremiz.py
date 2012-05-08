@@ -59,7 +59,10 @@ if __name__ == '__main__':
     __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
 
 from Beremiz import *
-from ConfigTree import ConfigTreeRoot, ConfigTreeNode, opjimg, connectors
+from ProjectController import ProjectController
+from ConfigTreeNode import ConfigTreeNode
+import connectors
+from util import opjimg
 from plcopen.structures import LOCATIONDATATYPES
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP,\
                          LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
@@ -456,7 +459,7 @@ if havecanfestival:
     
 
 #-------------------------------------------------------------------------------
-#                              LPCConfigTreeRoot Class
+#                              LPCProjectController Class
 #-------------------------------------------------------------------------------
 
 def mycopytree(src, dst):
@@ -479,7 +482,7 @@ def mycopytree(src, dst):
 
 [SIMULATION_MODE, TRANSFER_MODE] = range(2)
 
-class LPCConfigTreeRoot(ConfigTreeRoot):
+class LPCProjectController(ProjectController):
 
     ConfNodeMethods = [
         {"bitmap" : opjimg("Debug"),
@@ -510,7 +513,7 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
     def __init__(self, frame, logger, buildpath):
         self.OrigBuildPath = buildpath
         
-        ConfigTreeRoot.__init__(self, frame, logger)
+        ProjectController.__init__(self, frame, logger)
         
         if havecanfestival:
             self.CTNChildrenTypes += [("LPCBus", LPCBus, "LPC bus"), ("CanOpen", LPCCanOpen, "CanOpen bus")]
@@ -532,19 +535,19 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
         if self.OrigBuildPath is not None:
             return os.path.join(self.OrigBuildPath, "pous.xml")
         else:
-            return ConfigTreeRoot.ConfNodeLibraryFilePath(self)
+            return ProjectController.ConfNodeLibraryFilePath(self)
     
     def GetProjectName(self):
         return self.Project.getname()
 
     def GetDefaultTargetName(self):
         if self.CurrentMode == SIMULATION_MODE:
-            return ConfigTreeRoot.GetDefaultTargetName(self)
+            return ProjectController.GetDefaultTargetName(self)
         else:
             return "LPC"
 
     def GetTarget(self):
-        target = ConfigTreeRoot.GetTarget(self)
+        target = ProjectController.GetTarget(self)
         if self.CurrentMode != SIMULATION_MODE:
             target.getcontent()["value"].setBuildPath(self.BuildPath)
         return target
@@ -555,7 +558,7 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
                 self.SimulationBuildPath = os.path.join(tempfile.mkdtemp(), os.path.basename(self.ProjectPath), "build")
             return self.SimulationBuildPath
         else:
-            return ConfigTreeRoot._getBuildPath(self)
+            return ProjectController._getBuildPath(self)
 
     def _Build(self):
         save = self.ProjectTestModified()
@@ -564,7 +567,7 @@ class LPCConfigTreeRoot(ConfigTreeRoot):
             self.AppFrame._Refresh(TITLE, FILEMENU)
         if self.BuildPath is not None:
             mycopytree(self.OrigBuildPath, self.BuildPath)
-        ConfigTreeRoot._Build(self)
+        ProjectController._Build(self)
         if save:
             wx.CallAfter(self.AppFrame.RefreshAll)
     
@@ -970,7 +973,7 @@ unsigned int __GetFoundIndex(unsigned char dummy)
         self.ApplyOnlineMode()
     
     def _Stop(self):
-        ConfigTreeRoot._Stop(self)
+        ProjectController._Stop(self)
         
         if self.CurrentMode == SIMULATION_MODE:
             self.StopSimulation()
@@ -1001,7 +1004,7 @@ unsigned int __GetFoundIndex(unsigned char dummy)
         if self.CurrentMode is None and self.OnlineMode != "OFF":
             self.CurrentMode = TRANSFER_MODE
             
-            if ConfigTreeRoot._Build(self):
+            if ProjectController._Build(self):
             
                 ID_ABORTTRANSFERTIMER = wx.NewId()
                 self.AbortTransferTimer = wx.Timer(self.AppFrame, ID_ABORTTRANSFERTIMER)
@@ -1023,7 +1026,7 @@ unsigned int __GetFoundIndex(unsigned char dummy)
         self.logger.write(_("Start PLC transfer\n"))
         
         self.AbortTransferTimer.Stop()
-        ConfigTreeRoot._Transfer(self)
+        ProjectController._Transfer(self)
         self.AbortTransferTimer.Start(milliseconds=5000, oneShot=True)
     
     def AbortTransfer(self, event):
@@ -1743,7 +1746,7 @@ if __name__ == '__main__':
 
     Log = StdoutPseudoFile(port)
 
-    CTR = LPCConfigTreeRoot(None, Log, buildpath)
+    CTR = LPCProjectController(None, Log, buildpath)
     if projectOpen is not None and os.path.isdir(projectOpen):
         result = CTR.LoadProject(projectOpen)
         if result:
