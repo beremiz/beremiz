@@ -143,8 +143,9 @@ sys.path.append(base_folder)
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 
 import wx.lib.buttons, wx.lib.statbmp
-import TextCtrlAutoComplete, cPickle
-from BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
+from util.TextCtrlAutoComplete import TextCtrlAutoComplete
+import cPickle
+from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
 from ConfigTree import ConfigTreeRoot, MiniTextControler, MATIEC_ERROR_MODEL
 from ProcessLogger import ProcessLogger
@@ -724,7 +725,7 @@ class Beremiz(IDEFrame):
 
     def OnPanelLeftDown(self, event):
         focused = self.FindFocus()
-        if isinstance(focused, TextCtrlAutoComplete.TextCtrlAutoComplete):
+        if isinstance(focused, TextCtrlAutoComplete):
             focused.DismissListBox()
         event.Skip()
     
@@ -1627,7 +1628,7 @@ class Beremiz(IDEFrame):
                         spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, confnode, element_path), id=id)
                     else:
                         choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))
-                        textctrl = TextCtrlAutoComplete.TextCtrlAutoComplete(id=id, 
+                        textctrl = TextCtrlAutoComplete(id=id, 
                                                                      name=element_infos["name"], 
                                                                      parent=parent, 
                                                                      appframe=self, 
