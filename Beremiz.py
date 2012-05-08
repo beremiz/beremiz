@@ -137,7 +137,6 @@ def unicode_translation(message):
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
 
-#Quick hack to be able to find Beremiz IEC tools. Should be config params.
 base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(base_folder)
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
@@ -151,7 +150,7 @@ from ProjectController import ProjectController, MATIEC_ERROR_MODEL
 from util import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 
-from docutils import *
+from docutil import OpenHtmlFrame
 from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
@@ -444,11 +443,8 @@ class Beremiz(IDEFrame):
                                (wx.ID_PRINT, "print.png", _(u'Print'), None)])
     
     def _init_coll_HelpMenu_Items(self, parent):
-        parent.Append(help='', id=wx.ID_HELP,
-              kind=wx.ITEM_NORMAL, text=_(u'Beremiz\tF1'))
         parent.Append(help='', id=wx.ID_ABOUT,
               kind=wx.ITEM_NORMAL, text=_(u'About'))
-        self.Bind(wx.EVT_MENU, self.OnBeremizMenu, id=wx.ID_HELP)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
     
     def _init_coll_PLCConfigMainSizer_Items(self, parent):
@@ -1760,9 +1756,6 @@ class Beremiz(IDEFrame):
     def OnQuitMenu(self, event):
         self.Close()
         
-    def OnBeremizMenu(self, event):
-        open_pdf(Bpath( "doc", "manual_beremiz.pdf"))
-    
     def OnAboutMenu(self, event):
         OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
     
