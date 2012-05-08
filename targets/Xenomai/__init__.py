@@ -6,7 +6,7 @@ class Xenomai_target(toolchain_gcc):
         """ Get xeno-config from target parameters """
         xeno_config=self.ConfigTreeRootInstance.GetTarget().getcontent()["value"].getXenoConfig()
         if xeno_config:
-            from wxPopen import ProcessLogger
+            from ProcessLogger import ProcessLogger
             status, result, err_result = ProcessLogger(self.ConfigTreeRootInstance.logger,
                                                        xeno_config + " --skin=native --"+flagsname,
                                                        no_stdout=True).spin()

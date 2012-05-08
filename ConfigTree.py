@@ -14,7 +14,7 @@ import wx
 base_folder = os.path.split(sys.path[0])[0]
 
 from xmlclass import GenerateClassesFromXSDstring
-from wxPopen import ProcessLogger
+from ProcessLogger import ProcessLogger
 
 from PLCControler import PLCControler, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 

@@ -1,5 +1,5 @@
 import os, re, operator
-from wxPopen import ProcessLogger
+from ProcessLogger import ProcessLogger
 import hashlib
 
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
