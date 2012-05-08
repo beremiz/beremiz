@@ -607,7 +607,7 @@ if havetwisted:
         
         def __init__(self, plcState=False, *a, **kw):
             super(WebInterface, self).__init__(*a, **kw)
-            self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, 'webinterface.js')
+            self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, os.path.join('runtime', 'webinterface.js'))
             self.plcState = plcState
             self.MainPage.setPLCState(plcState)
 
