@@ -1,14 +1,18 @@
 import wx
 import os, sys, shutil
 
-from ConfigTreeNode import opjimg
-from py_ext import PythonCodeTemplate
-
 from pyjs import translate
 
+from POULibrary import POULibrary
 from docutils import *
 
-class RootClass:
+class SVGUILibrary(POULibrary):
+    def GetName(self):
+        return "SVGUI"
+    def GetLibraryPath(self):
+        return os.path.join(os.path.split(__file__)[0], "pous.xml") 
+
+class SVGUI:
 
     ConfNodeMethods = [
         {"bitmap" : os.path.join("images","ImportSVG"),
@@ -22,7 +26,7 @@ class RootClass:
     ]
 
     def ConfNodePath(self):
-        return os.path.join(self.CTNParent.ConfNodePath(), "modules", self.CTNType)
+        return os.path.join(os.path.dirname(__file__))
 
     def _getSVGpath(self):
         # define name for IEC raw code file

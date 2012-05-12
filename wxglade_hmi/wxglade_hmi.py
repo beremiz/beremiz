@@ -2,10 +2,10 @@ import wx
 import os, sys
 from xml.dom import minidom
 
-from ConfigTreeNode import opjimg
-from py_ext import PythonCodeTemplate
+from util import opjimg
+from py_ext import PythonFileCTNMixin
 
-class RootClass(PythonCodeTemplate):
+class WxGladeHMI(PythonFileCTNMixin):
 
     ConfNodeMethods = [
         {"bitmap" : opjimg("editWXGLADE"),
@@ -13,6 +13,9 @@ class RootClass(PythonCodeTemplate):
          "tooltip" : _("Edit a WxWidgets GUI with WXGlade"),
          "method" : "_editWXGLADE"},
     ]
+
+    def ConfNodePath(self):
+        return os.path.join(os.path.dirname(__file__))
 
     def _getWXGLADEpath(self):
         # define name for IEC raw code file

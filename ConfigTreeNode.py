@@ -61,16 +61,12 @@ class ConfigTreeNode:
         self._View = None
         # copy ConfNodeMethods so that it can be later customized
         self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
-        self.LoadSTLibrary()
         
     def ConfNodeBaseXmlFilePath(self, CTNName=None):
         return os.path.join(self.CTNPath(CTNName), "baseconfnode.xml")
     
     def ConfNodeXmlFilePath(self, CTNName=None):
         return os.path.join(self.CTNPath(CTNName), "confnode.xml")
-
-    def ConfNodeLibraryFilePath(self):
-        return os.path.join(self.ConfNodePath(), "pous.xml")
 
     def ConfNodePath(self):
         return os.path.join(self.CTNParent.ConfNodePath(), self.CTNType)
@@ -252,32 +248,6 @@ class ConfigTreeNode:
         
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
-    def ConfNodeTypesFactory(self):
-        if self.LibraryControler is not None:
-            return [{"name" : self.CTNType, "types": self.LibraryControler.Project}]
-        return []
-
-    def ParentsTypesFactory(self):
-        return self.CTNParent.ParentsTypesFactory() + self.ConfNodeTypesFactory()
-
-    def ConfNodesTypesFactory(self):
-        list = self.ConfNodeTypesFactory()
-        for CTNChild in self.IterChildren():
-            list += CTNChild.ConfNodesTypesFactory()
-        return list
-
-    def STLibraryFactory(self):
-        if self.LibraryControler is not None:
-            program, errors, warnings = self.LibraryControler.GenerateProgram()
-            return program + "\n"
-        return ""
-
-    def ConfNodesSTLibraryFactory(self):
-        program = self.STLibraryFactory()
-        for CTNChild in self.IECSortedChildren():
-            program += CTNChild.ConfNodesSTLibraryFactory()
-        return program
-        
     def IterChildren(self):
         for CTNType, Children in self.Children.items():
             for CTNInstance in Children:
@@ -563,15 +533,6 @@ class ConfigTreeNode:
             child.ClearChildren()
         self.Children = {}
     
-    def LoadSTLibrary(self):
-        # Get library blocks if plcopen library exist
-        library_path = self.ConfNodeLibraryFilePath()
-        if os.path.isfile(library_path):
-            self.LibraryControler = PLCControler()
-            self.LibraryControler.OpenXMLFile(library_path)
-            self.LibraryControler.ClearConfNodeTypes()
-            self.LibraryControler.AddConfNodeTypesList(self.ParentsTypesFactory())
-
     def LoadXMLParams(self, CTNName = None):
         methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):

@@ -1,5 +1,5 @@
 """
-Base definitions for beremiz confnodes
+Beremiz Project Controller 
 """
 
 import os,sys,traceback
@@ -61,7 +61,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
-          <xsd:attribute name="Enable_ConfNodes" type="xsd:boolean" use="optional" default="true"/>
+          <xsd:attribute name="Disable_Extensions" type="xsd:boolean" use="optional" default="false"/>
+          """+"\n".join(['<xsd:attribute name="Enable_'+lib.rsplit('.',1)[-1]+'" type="xsd:boolean" use="optional" default="true"/>' for lib in features.libraries])+"""
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -84,10 +85,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         self.DebugTimer=None
         self.ResetIECProgramsAndVariables()
-        
-        #This method are not called here... but in NewProject and OpenProject
-        #self._AddParamsMembers()
-        #self.Children = {}
 
         # In both new or load scenario, no need to save
         self.ChangesToSave = False
@@ -104,7 +101,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.previous_plcstate = None
         # copy ConfNodeMethods so that it can be later customized
         self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
-        self.LoadSTLibrary()
+
+    def LoadLibraries(self):
+        self.Libraries = []
+        TypeStack=[]
+        for clsname in features.libraries:
+            if getattr(self.BeremizRoot, "Enable_"+clsname.rsplit('.',1)[-1]):
+                Lib = GetClassImporter(clsname)()(TypeStack)
+                TypeStack.append(Lib.GetTypes())
+                self.Libraries.append(Lib)
 
     def __del__(self):
         if self.DebugTimer:
@@ -131,9 +136,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.AppFrame = None
         
         self.logger = logger
-
-    def ConfNodeLibraryFilePath(self):
-        return os.path.join(os.path.split(__file__)[0], "pous.xml")
 
     def CTNTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
@@ -311,12 +313,31 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._setBuildPath(self.BuildPath)
                 return True
         return False
+
+    def GetLibrariesTypes(self):
+        self.LoadLibraries()
+        return [ lib.GetTypes() for lib in self.Libraries ]
+
+    def GetLibrariesSTCode(self):
+        return "\n".join([ lib.GetSTCode() for lib in self.Libraries ])
+
+    def GetLibrariesCCode(self, buildpath):
+        self.GetIECProgramsAndVariables()
+        LibIECCflags = '"-I%s"'%os.path.abspath(self.GetIECLibPath())
+        LocatedCCodeAndFlags=[]
+        Extras=[]
+        for lib in self.Libraries:
+            res=lib.Generate_C(buildpath,self._VariablesList,LibIECCflags)  
+            LocatedCCodeAndFlags.append(res[:2])
+            if len(res)>2:
+                Extras.append(res[2:])
+        return map(list,zip(*LocatedCCodeAndFlags))+[tuple(Extras)]
     
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
         if getattr(self, "Children", None) is not None:
             self.ClearConfNodeTypes()
-            self.AddConfNodeTypesList(self.ConfNodesTypesFactory())
+            self.AddConfNodeTypesList(self.GetLibrariesTypes())
         if self.AppFrame is not None:
             self.AppFrame.RefreshLibraryPanel()
             self.AppFrame.RefreshEditor()
@@ -449,7 +470,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return False
         plc_file = open(self._getIECcodepath(), "w")
         # Add ST Library from confnodes
-        plc_file.write(self.ConfNodesSTLibraryFactory())
+        plc_file.write(self.GetLibrariesSTCode())
         if os.path.isfile(self._getIECrawcodepath()):
             plc_file.write(open(self._getIECrawcodepath(), "r").read())
             plc_file.write("\n")
@@ -708,7 +729,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
            [loc for loc,Cfiles,DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
 
         # Generate main, based on template
-        if self.BeremizRoot.getEnable_ConfNodes():
+        if not self.BeremizRoot.getDisable_Extensions():
             plc_main_code = targets.code("plc_common_main") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
@@ -774,7 +795,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         
         # Generate C code and compilation params from confnode hierarchy
         try:
-            self.LocationCFilesAndCFLAGS, self.LDFLAGS, ExtraFiles = self._Generate_C(
+            CTNLocationCFilesAndCFLAGS, CTNLDFLAGS, CTNExtraFiles = self._Generate_C(
                 buildpath, 
                 self.PLCGeneratedLocatedVars)
         except Exception, exc:
@@ -782,6 +803,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(traceback.format_exc())
             self.ResetBuildMD5()
             return False
+
+        # Generate C code and compilation params from liraries
+        try:
+            LibCFilesAndCFLAGS, LibLDFLAGS, LibExtraFiles = self.GetLibrariesCCode(buildpath)
+        except Exception, exc:
+            self.logger.write_error(_("Runtime extensions C code generation failed !\n"))
+            self.logger.write_error(traceback.format_exc())
+            self.ResetBuildMD5()
+            return False
+
+        self.LocationCFilesAndCFLAGS =  CTNLocationCFilesAndCFLAGS + LibCFilesAndCFLAGS
+        self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
+        ExtraFiles = CTNExtraFiles + LibExtraFiles
 
         # Get temporary directory path
         extrafilespath = self._getExtraFilesPath()

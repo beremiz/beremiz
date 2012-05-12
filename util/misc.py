@@ -25,5 +25,5 @@ def GetClassImporter(classpath):
             return reduce(getattr, classpath.split('.')[1:], mod)
         return fac
     else:
-        return lambda:classpath
+        return  lambda:classpath
 

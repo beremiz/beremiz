@@ -100,10 +100,11 @@ class toolchain_gcc():
         objs = []
         relink = False
         for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
-            if Location:
-                self.CTRInstance.logger.write(_("ConfNode : ") + self.CTRInstance.GetChildByIECLocation(Location).GetCurrentName() + " " + str(Location)+"\n")
-            else:
-                self.CTRInstance.logger.write(_("PLC :\n"))
+            if CFilesAndCFLAGS:
+                if Location :
+                    self.CTRInstance.logger.write(".".join(map(str,Location))+" :\n")
+                else:
+                    self.CTRInstance.logger.write(_("PLC :\n"))
                 
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 if CFile.endswith(".c"):
