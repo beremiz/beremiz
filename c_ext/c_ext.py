@@ -1,13 +1,11 @@
-import wx
 import os
 from xml.dom import minidom
 import cPickle
 
 from xmlclass import *
 
-from ConfigTreeNode import ConfigTreeNode, opjimg
 from CFileEditor import CFileEditor
-from PLCControler import PLCControler, UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT 
 
 CFileClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "cext_xsd.xsd"))
 
@@ -15,7 +13,7 @@ TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" 
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", "REAL" : "D", "LREAL" : "L",
     "STRING" : "B", "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L", "WSTRING" : "W"}
 
-class _Cfile:
+class CFile:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CExtension">
@@ -304,12 +302,4 @@ class _Cfile:
         first = self.CFileBuffer.IsFirst() and not self.Buffering
         last = self.CFileBuffer.IsLast()
         return not first, not last
-
-class RootClass:
-
-    CTNChildrenTypes = [("C_File",_Cfile, "C file")]
-    
-    def CTNGenerate_C(self, buildpath, locations):
-        return [],"",False
-
 
