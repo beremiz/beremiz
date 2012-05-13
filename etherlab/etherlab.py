@@ -1070,10 +1070,12 @@ class _EthercatCFileGenerator:
                             pdos_infos["pdos_entries_infos"].extend(pdo_entries)
                         
                         sync_manager_infos["offset"] = pdo_offset
+                        pdo_offset_shift = sync_manager_infos["pdos_number"]
                         pdos_infos["pdos_sync_infos"].append(
                             ("    {%(index)d, %(sync_manager_type)s, %(pdos_number)d, " + 
-                             "slave_%(slave)d_pdos + %(offset)d, %(watchdog)s},") % sync_manager_infos)
-                        pdo_offset += sync_manager_infos["pdos_number"]
+                             ("slave_%(slave)d_pdos + %(offset)d" if pdo_offset_shift else "NULL") +
+                             ", %(watchdog)s},") % sync_manager_infos)
+                        pdo_offset += pdo_offset_shift  
                     
                     for element in ["pdos_entries_infos", "pdos_infos", "pdos_sync_infos"]:
                         pdos_infos[element] = "\n".join(pdos_infos[element])
