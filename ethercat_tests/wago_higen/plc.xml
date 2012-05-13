@@ -8,7 +8,7 @@
               productVersion="1.0"
               creationDateTime="2011-10-20T19:01:52"/>
   <contentHeader name="test_ethercat"
-                 modificationDateTime="2012-03-31T16:16:33">
+                 modificationDateTime="2012-05-13T14:57:09">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -46,11 +46,6 @@
               </type>
             </variable>
             <variable name="StatusWord" address="%IW0.0.3.24641.0">
-              <type>
-                <UINT/>
-              </type>
-            </variable>
-            <variable name="ErrorCode" address="%IW0.0.3.24639.0">
               <type>
                 <UINT/>
               </type>

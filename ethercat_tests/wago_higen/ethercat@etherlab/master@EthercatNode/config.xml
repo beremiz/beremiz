@@ -48,7 +48,7 @@
       <Info>
         <Name>EDA7001 CoE Drive</Name>
         <PhysAddr>3</PhysAddr>
-        <AutoIncAddr>1</AutoIncAddr>
+        <AutoIncAddr>0</AutoIncAddr>
         <Physics></Physics>
         <VendorId>1573</VendorId>
         <ProductCode>1768449365</ProductCode>

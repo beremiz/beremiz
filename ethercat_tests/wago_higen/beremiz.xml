@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeremizRoot URI_location="PYRO://127.0.1.1:3000">
+<BeremizRoot URI_location="PYRO://192.168.42.101:3000">
   <TargetType>
-    <Xenomai CFLAGS="" LDFLAGS=""/>
+    <Xenomai/>
   </TargetType>
 </BeremizRoot>
