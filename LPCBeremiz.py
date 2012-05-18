@@ -954,7 +954,6 @@ unsigned int __GetFoundIndex(unsigned char dummy)
                 self.UnsubscribeAllDebugIECVariable()
                 self.ProgramTransferred()
                 if self.AppFrame is not None:
-                    self.AppFrame.RefreshInstancesTree()
                     self.AppFrame.CloseObsoleteDebugTabs()
                 self.logger.write(_("Transfer completed successfully.\n"))
             else:
@@ -1139,7 +1138,7 @@ class LPCBeremiz(Beremiz):
             if new_values != old_values:
                 self.Controler.SetProjectProperties(None, new_values)
                 self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, 
-                              TYPESTREE, INSTANCESTREE, SCALING)
+                              PROJECTTREE, POUINSTANCEVARIABLESPANEL, SCALING)
         dialog.Destroy()
 
     def RefreshFileMenu(self):
@@ -1450,7 +1449,7 @@ if __name__ == '__main__':
         def Refresh(self):
             global frame
             if frame is not None:
-                frame._Refresh(TITLE, INSTANCESTREE, FILEMENU, EDITMENU)
+                frame._Refresh(TITLE, POUINSTANCEVARIABLESPANEL, FILEMENU, EDITMENU)
                 frame.RefreshEditor()
                 frame.RefreshAll()
         

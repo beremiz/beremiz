@@ -147,11 +147,11 @@ import cPickle
 from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
 from ProjectController import ProjectController, MATIEC_ERROR_MODEL
-from util import MiniTextControler
+from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 
 from docutil import OpenHtmlFrame
-from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, TYPESTREE, INSTANCESTREE, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
+from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
@@ -558,8 +558,9 @@ class Beremiz(IDEFrame):
             result = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
                 self.LibraryPanel.SetControler(self.Controler)
+                self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
-                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
                 self.RefreshAll()
             else:
                 self.ResetView()
@@ -569,7 +570,8 @@ class Beremiz(IDEFrame):
             self.Controler = ctr
             if ctr is not None:
                 self.LibraryPanel.SetControler(self.Controler)
-                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self.PouInstanceVariablesPanel.SetController(self.Controler)
+                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
                 self.RefreshAll()
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.CTR)
@@ -773,18 +775,22 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
     
     def RefreshRecentProjectsMenu(self):
-        for i in xrange(self.RecentProjectsMenu.GetMenuItemCount()):
-            item = self.RecentProjectsMenu.FindItemByPosition(0)
-            self.RecentProjectsMenu.Delete(item.GetId())
-        
         recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
-            id = wx.NewId()
-            AppendMenu(self.RecentProjectsMenu, help='', id=id, 
-                       kind=wx.ITEM_NORMAL, text="%d: %s" % (idx + 1, projectpath))
+            text = u'%d: %s' % (idx + 1, projectpath)
+            
+            if idx < self.RecentProjectsMenu.GetMenuItemCount():
+                item = self.RecentProjectsMenu.FindItemByPosition(idx)
+                id = item.GetId()
+                item.SetItemLabel(text)
+                self.Disconnect(id, id, wx.EVT_BUTTON._getEvtType())
+            else:
+                id = wx.NewId()
+                AppendMenu(self.RecentProjectsMenu, help='', id=id, 
+                           kind=wx.ITEM_NORMAL, text=text)
             self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), id=id)
-    
+        
     def GenerateOpenRecentProjectFunction(self, projectpath):
         def OpenRecentProject(event):
             if self.CTR is not None and not self.CheckSaveBeforeClosing():
@@ -1680,10 +1686,11 @@ class Beremiz(IDEFrame):
                 self.CTR = ctr
                 self.Controler = self.CTR
                 self.LibraryPanel.SetControler(self.Controler)
+                self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
-                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
                 self.RefreshAll()
             else:
                 self.ResetView()
@@ -1715,11 +1722,12 @@ class Beremiz(IDEFrame):
             result = self.CTR.LoadProject(projectpath)
             if not result:
                 self.LibraryPanel.SetControler(self.Controler)
+                self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self.LoadProjectOrganization()
-                self._Refresh(TYPESTREE, INSTANCESTREE, LIBRARYTREE)
+                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
                 self.RefreshAll()
             else:
                 self.ResetView()

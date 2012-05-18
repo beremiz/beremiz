@@ -59,10 +59,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 </xsd:choice>
               </xsd:complexType>
             </xsd:element>
+            <xsd:element name="Libraries" minOccurs="0">
+              <xsd:complexType>
+              """+"\n".join(['<xsd:attribute name="Enable_'+
+                             lib.rsplit('.',1)[-1]+
+                             '" type="xsd:boolean" use="optional" default="true"/>' 
+                             for lib in features.libraries])+"""
+              </xsd:complexType>
+            </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Disable_Extensions" type="xsd:boolean" use="optional" default="false"/>
-          """+"\n".join(['<xsd:attribute name="Enable_'+lib.rsplit('.',1)[-1]+'" type="xsd:boolean" use="optional" default="true"/>' for lib in features.libraries])+"""
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -106,7 +113,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.Libraries = []
         TypeStack=[]
         for clsname in features.libraries:
-            if getattr(self.BeremizRoot, "Enable_"+clsname.rsplit('.',1)[-1]):
+            if self.BeremizRoot.Libraries is None or getattr(self.BeremizRoot.Libraries, "Enable_"+clsname.rsplit('.',1)[-1]):
                 Lib = GetClassImporter(clsname)()(TypeStack)
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries.append(Lib)
@@ -348,7 +355,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.BufferProject()
         if self.AppFrame is not None:
             self.AppFrame.RefreshTitle()
-            self.AppFrame.RefreshInstancesTree()
+            self.AppFrame.RefreshPouInstanceVariablesPanel()
             self.AppFrame.RefreshFileMenu()
             self.AppFrame.RefreshEditMenu()
             self.AppFrame.RefreshEditor()
@@ -1337,7 +1344,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
                     if self.AppFrame is not None:
-                        self.AppFrame.RefreshInstancesTree()
                         self.AppFrame.CloseObsoleteDebugTabs()
                     self.logger.write(_("Transfer completed successfully.\n"))
                 else:
