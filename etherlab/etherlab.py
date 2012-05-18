@@ -338,7 +338,7 @@ class _EthercatPlug:
             
             for child in tree.childNodes:
                 if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "EtherCATConfig":
-                    self.Config.loadXMLTree(child, ["xmlns:xsi", "xsi:noNamespaceSchemaLocation"])
+                    self.Config.loadXMLTree(child)
                     self.CreateConfigBuffer(True)
         else:
             self.CreateConfigBuffer(False)
@@ -1366,7 +1366,7 @@ class RootClass:
                 for child in xml_tree.childNodes:
                     if child.nodeType == xml_tree.ELEMENT_NODE and child.nodeName == "EtherCATInfo":
                         modules_infos = EtherCATInfoClasses["EtherCATInfo.xsd"]["EtherCATInfo"]()
-                        modules_infos.loadXMLTree(child, ["xmlns:xsi", "xsi:noNamespaceSchemaLocation"])
+                        modules_infos.loadXMLTree(child)
                 
                 if modules_infos is not None:
                     vendor = modules_infos.getVendor()
