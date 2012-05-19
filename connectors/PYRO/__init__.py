@@ -30,7 +30,6 @@ import copy
 #
 # for connectors that do not support DNS-SD, this attribute can be omitted
 # or set to an empty list.
-supported_dnssd_services = ["_PYRO._tcp.local."]
 
 def PYRO_connector_factory(uri, confnodesroot):
     """

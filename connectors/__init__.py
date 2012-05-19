@@ -23,28 +23,20 @@
 
 from os import listdir, path
 
-import PYRO
 
 _base_path = path.split(__file__)[0]
 
-connector_types = [name for name in listdir(_base_path)
-                        if path.isdir(path.join(_base_path, name))
-                            and name.lower() != ".hg"
-                            and not name.startswith("__")]
-
-# a dict from a URI scheme (connector name) to connector module
-connector_modules = {}
 
 # a dict from a DNS-SD service type to a connector module that support it
-dnssd_connectors = {}
+dnssd_connectors = {"_PYRO._tcp.local.":"PYRO"}
 
-for t in connector_types:
-    new_module = getattr(__import__("connectors." + t), t)
-    connector_modules[t] = new_module
-    
-    if hasattr(new_module, "supported_dnssd_services"):
-        for st in new_module.supported_dnssd_services:
-            dnssd_connectors[st] = new_module
+def _GetLocalConnectorClassFactory(name):
+    return lambda:getattr(__import__(name,globals(),locals()), name + "_connector_factory")
+
+connectors = {name:_GetLocalConnectorClassFactory(name) 
+                  for name in listdir(_base_path) 
+                      if path.isdir(path.join(_base_path, name)) 
+                          and not name.startswith("__")}
 
 def ConnectorFactory(uri, confnodesroot):
     """
@@ -52,16 +44,14 @@ def ConnectorFactory(uri, confnodesroot):
     or None if cannot connect to URI
     """
     servicetype = uri.split("://")[0]
-    if servicetype in connector_types:
+    if servicetype in connectors:
         # import module according to uri type
-        connectormodule = connector_modules[servicetype]
-        factoryname = servicetype + "_connector_factory"
-        return getattr(connectormodule, factoryname)(uri, confnodesroot)
+        connectorclass = connectors[servicetype]()
     elif servicetype == "LOCAL":
+        from PYRO import PYRO_connector_factory as connectorclass
         runtime_port = confnodesroot.AppFrame.StartLocalRuntime(taskbaricon=True)
-        return PYRO.PYRO_connector_factory(
-                       "PYRO://127.0.0.1:"+str(runtime_port), 
-                       confnodesroot)
+        uri="PYRO://127.0.0.1:"+str(runtime_port)
     else :
         return None    
+    return connectorclass(uri, confnodesroot)
 

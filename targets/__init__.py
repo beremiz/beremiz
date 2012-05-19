@@ -33,50 +33,49 @@ Beremiz Targets
 from os import listdir, path
 
 _base_path = path.split(__file__)[0]
+def _GetLocalTargetClassFactory(name):
+    return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
-targets = [name for name in listdir(_base_path) 
-                   if path.isdir(path.join(_base_path, name)) 
-                       and not name.startswith("__")]
+targets = {name: {"xsd":path.join(_base_path, name, "XSD"), 
+                  "class":_GetLocalTargetClassFactory(name),
+                  "code": path.join(path.split(__file__)[0],name,"plc_%s_main.c"%name)}
+                for name in listdir(_base_path) 
+                    if path.isdir(path.join(_base_path, name)) 
+                       and not name.startswith("__")}
+
 toolchains = [name for name in listdir(_base_path) 
                        if not path.isdir(path.join(_base_path, name)) 
-                            and name.endswith(".py") 
-                            and not name.startswith("__") 
-                            and not name.endswith(".pyc")]
+                          and name.endswith(".py") 
+                          and not name.startswith("__")]
 
-DictXSD_toolchain = {}
-DictXSD_target = {}
+def GetBuilder(targetname):
+    return targets[targetname]["class"]()
 
-targetchoices = ""
+def GetTargetChoices():
+    DictXSD_toolchain = {}
+    targetchoices = ""
 
-# Get all xsd toolchains
-for toolchain in toolchains :
-     toolchainname = path.splitext(toolchain)[0]
-     xsdfilename = path.join(_base_path, "XSD_%s"%(toolchainname))
-     if path.isfile(xsdfilename):
-         xsd_toolchain_string = ""
-         for line in open(xsdfilename).readlines():
-             xsd_toolchain_string += line
-         DictXSD_toolchain[toolchainname] = xsd_toolchain_string
+    # Get all xsd toolchains
+    for toolchain in toolchains :
+         toolchainname = path.splitext(toolchain)[0]
+         xsdfilename = path.join(_base_path, "XSD_%s"%(toolchainname))
+         if path.isfile(xsdfilename):
+             xsd_toolchain_string = ""
+             for line in open(xsdfilename).readlines():
+                 xsd_toolchain_string += line
+             DictXSD_toolchain[toolchainname] = xsd_toolchain_string
 
-# Get all xsd targets 
-for targetname in targets:
-    xsdfilename = path.join(_base_path, targetname, "XSD")
-    if path.isfile(xsdfilename):
-        xsd_target_string = ""
-        for line in open(xsdfilename).readlines():
-            xsd_target_string += line
-        DictXSD_target[targetname] = xsd_target_string%DictXSD_toolchain
+    # Get all xsd targets 
+    for targetname,nfo in targets.iteritems():
+        xsd_string = open(nfo["xsd"]).read()
+        targetchoices +=  xsd_string%DictXSD_toolchain
 
-for target in DictXSD_target.keys():
-    targetchoices += DictXSD_target[target]
+    return targetchoices
 
-def targetcode(target_name, code_name=None):
-    if code_name is None:
-        code_name="plc_%s_main.c"%target_name
-    filename = path.join(path.split(__file__)[0], target_name, code_name)
-    return open(filename).read()
+def GetTargetCode(targetname):
+    return open(targets[targetname]["code"]).read()
 
-def code(name):
+def GetCode(name):
     filename = path.join(path.split(__file__)[0],name + ".c")
     return open(filename).read()
 

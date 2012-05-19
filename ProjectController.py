@@ -55,7 +55,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             <xsd:element name="TargetType">
               <xsd:complexType>
                 <xsd:choice minOccurs="0">
-                """+targets.targetchoices+"""
+                """+targets.GetTargetChoices()+"""
                 </xsd:choice>
               </xsd:complexType>
             </xsd:element>
@@ -559,20 +559,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         # Get target, module and class name
         targetname = self.GetTarget().getcontent()["name"]
-        modulename = "targets." + targetname
-        classname = targetname + "_target"
-
-        # Get module reference
-        try :
-            targetmodule = getattr(__import__(modulename), targetname)
-
-        except Exception, msg:
-            self.logger.write_error(_("Can't find module for target %s!\n")%targetname)
-            self.logger.write_error(str(msg))
-            return None
-        
-        # Get target class
-        targetclass = getattr(targetmodule, classname)
+        targetclass = targets.GetBuilder(targetname)
 
         # if target already 
         if self._builder is None or not isinstance(self._builder,targetclass):
@@ -695,7 +682,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.GetIECProgramsAndVariables()
 
         # prepare debug code
-        debug_code = targets.code("plc_debug") % {
+        debug_code = targets.GetCode("plc_debug") % {
            "buffer_size": reduce(lambda x, y: x + y, [DebugTypesSize.get(v["type"], 0) for v in self._VariablesList], 0),
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
@@ -737,7 +724,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Generate main, based on template
         if not self.BeremizRoot.getDisable_Extensions():
-            plc_main_code = targets.code("plc_common_main") % {
+            plc_main_code = targets.GetCode("plc_common_main") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
                       "void __cleanup_%(s)s(void);\n"+
@@ -757,14 +744,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
-            plc_main_code = targets.code("plc_common_main") % {
+            plc_main_code = targets.GetCode("plc_common_main") % {
                 "calls_prototypes":"\n",
                 "retrieve_calls":"\n",
                 "publish_calls":"\n",
                 "init_calls":"\n",
                 "cleanup_calls":"\n"
                 }
-        plc_main_code += targets.targetcode(self.GetTarget().getcontent()["name"])
+        plc_main_code += targets.GetTargetCode(self.GetTarget().getcontent()["name"])
         return plc_main_code
 
         
