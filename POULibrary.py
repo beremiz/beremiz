@@ -1,7 +1,9 @@
 from PLCControler import PLCControler
+from weakref import ref
 
 class POULibrary:
-    def __init__(self, LibName, TypeStack):
+    def __init__(self, CTR, LibName, TypeStack):
+        self.CTR = ref(CTR)
         self.LibName = LibName
         self.LibraryControler = PLCControler()
         self.LibraryControler.OpenXMLFile(self.GetLibraryPath())
@@ -16,6 +18,9 @@ class POULibrary:
 
     def GetName(self):
         return self.LibName
+
+    def GetCTR(self):
+        return self.CTR()
         
     def GetTypes(self):
         return {"name" : self.GetName(), "types": self.LibraryControler.Project}

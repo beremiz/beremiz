@@ -114,7 +114,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         TypeStack=[]
         for libname,clsname in features.libraries:
             if self.BeremizRoot.Libraries is None or getattr(self.BeremizRoot.Libraries, "Enable_"+libname+"_Library"):
-                Lib = GetClassImporter(clsname)()(libname, TypeStack)
+                Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries.append(Lib)
 
