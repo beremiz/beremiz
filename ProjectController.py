@@ -62,9 +62,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
             <xsd:element name="Libraries" minOccurs="0">
               <xsd:complexType>
               """+"\n".join(['<xsd:attribute name="Enable_'+
-                             lib.rsplit('.',1)[-1]+
-                             '" type="xsd:boolean" use="optional" default="true"/>' 
-                             for lib in features.libraries])+"""
+                             libname+
+                             '_Library" type="xsd:boolean" use="optional" default="true"/>' 
+                             for libname,lib in features.libraries])+"""
               </xsd:complexType>
             </xsd:element>
           </xsd:sequence>
@@ -112,9 +112,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def LoadLibraries(self):
         self.Libraries = []
         TypeStack=[]
-        for clsname in features.libraries:
-            if self.BeremizRoot.Libraries is None or getattr(self.BeremizRoot.Libraries, "Enable_"+clsname.rsplit('.',1)[-1]):
-                Lib = GetClassImporter(clsname)()(TypeStack)
+        for libname,clsname in features.libraries:
+            if self.BeremizRoot.Libraries is None or getattr(self.BeremizRoot.Libraries, "Enable_"+libname+"_Library"):
+                Lib = GetClassImporter(clsname)()(libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries.append(Lib)
 

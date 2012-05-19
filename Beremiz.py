@@ -45,18 +45,22 @@ if __name__ == '__main__':
         print "\n   %s [Projectpath] [Buildpath]\n"%sys.argv[0]
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hu:", ["help", "updatecheck="])
+        opts, args = getopt.getopt(sys.argv[1:], "hue:", ["help", "updatecheck=", "extend="])
     except getopt.GetoptError:
         # print help information and exit:
         usage()
         sys.exit(2)
-    
+
+    extensions=[]
+        
     for o, a in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit()
         if o in ("-u", "--updatecheck"):
             updateinfo_url = a
+        if o in ("-e", "--extend"):
+            extensions.append(a)
     
     if len(args) > 2:
         usage()
@@ -151,7 +155,7 @@ from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 
 from docutil import OpenHtmlFrame
-from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES, USE_AUI
+from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES 
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
@@ -509,8 +513,7 @@ class Beremiz(IDEFrame):
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.MainTabs["LogConsole"] = (self.LogConsole, _("Log Console"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
-        if USE_AUI:
-            self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
+        self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
         self._init_beremiz_sizers()
 
@@ -1918,8 +1921,12 @@ if __name__ == '__main__':
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),updateinfo_url)
     
+    # Load extensions
+    for extfilename in extensions:
+        sys.path.append(os.path.split(os.path.realpath(extfilename))[0])
+        execfile(a, locals())
+
     frame = Beremiz(None, projectOpen, buildpath)
     splash.Close()
-    #wx.Yield()
     frame.Show()
     app.MainLoop()

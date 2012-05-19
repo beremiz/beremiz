@@ -3,9 +3,6 @@ from POULibrary import POULibrary
 from PythonFileCTNMixin import PythonFileCTNMixin
 
 class PythonLibrary(POULibrary):
-    def GetName(self):
-        return "Python"
-
     def GetLibraryPath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml") 
 

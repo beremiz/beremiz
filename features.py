@@ -1,5 +1,5 @@
-libraries = ['py_ext.PythonLibrary',
-             'svgui.SVGUILibrary']
+libraries = [('Python','py_ext.PythonLibrary'),
+             ('SVGUI','svgui.SVGUILibrary')]
 
 catalog = [
     ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),

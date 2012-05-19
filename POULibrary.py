@@ -1,7 +1,8 @@
 from PLCControler import PLCControler
 
 class POULibrary:
-    def __init__(self, TypeStack):
+    def __init__(self, LibName, TypeStack):
+        self.LibName = LibName
         self.LibraryControler = PLCControler()
         self.LibraryControler.OpenXMLFile(self.GetLibraryPath())
         self.LibraryControler.ClearConfNodeTypes()
@@ -13,8 +14,8 @@ class POULibrary:
             self.program = self.LibraryControler.GenerateProgram()[0]+"\n"
         return self.program 
 
-    def GetName():
-        raise Exception("Not implemented")
+    def GetName(self):
+        return self.LibName
         
     def GetTypes(self):
         return {"name" : self.GetName(), "types": self.LibraryControler.Project}

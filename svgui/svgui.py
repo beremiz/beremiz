@@ -7,8 +7,6 @@ from POULibrary import POULibrary
 from docutils import *
 
 class SVGUILibrary(POULibrary):
-    def GetName(self):
-        return "SVGUI"
     def GetLibraryPath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml") 
 
