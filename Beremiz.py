@@ -145,6 +145,12 @@ base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(base_folder)
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 
+if __name__ == '__main__':
+    # Load extensions
+    for extfilename in extensions:
+        sys.path.append(os.path.split(os.path.realpath(extfilename))[0])
+        execfile(a, locals())
+
 import wx.lib.buttons, wx.lib.statbmp
 from util.TextCtrlAutoComplete import TextCtrlAutoComplete
 import cPickle
@@ -1921,11 +1927,6 @@ if __name__ == '__main__':
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),updateinfo_url)
     
-    # Load extensions
-    for extfilename in extensions:
-        sys.path.append(os.path.split(os.path.realpath(extfilename))[0])
-        execfile(a, locals())
-
     frame = Beremiz(None, projectOpen, buildpath)
     splash.Close()
     frame.Show()
