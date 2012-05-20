@@ -5,17 +5,17 @@ from xml.dom import minidom
 import wx
 
 from xmlclass import *
-from plugger import PlugTemplate
-from PLCControler import UndoBuffer, LOCATION_PLUGIN, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from ConfigTreeNode import ConfigTreeNode
+from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigEditor import NodeEditor, CIA402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 try:
-    from plugins.motion import Headers, AxisXSD
+    from confnodes.motion import Headers, AxisXSD
     HAS_MCL = True
 except:
     HAS_MCL = False
 
-PLUGINFOLDER = os.path.split(os.path.realpath(__file__))[0]
+CONFNODEFOLDER = os.path.split(os.path.realpath(__file__))[0]
 
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
@@ -61,19 +61,19 @@ returnVal = slaves
 #                    Ethercat Node
 #--------------------------------------------------
 
-class _EthercatSlavePlug:
+class _EthercatSlaveCTN:
 
     NODE_PROFILE = None
     EditorType = NodeEditor
     
     def GetIconPath(self, icon):
-        return os.path.join(PLUGINFOLDER, "images", icon)
+        return os.path.join(CONFNODEFOLDER, "images", icon)
     
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
     
     def GetSizeOfType(self, type):
-        return TYPECONVERSION.get(self.GetPlugRoot().GetBaseType(type), None)
+        return TYPECONVERSION.get(self.GetCTRoot().GetBaseType(type), None)
     
     def GetSlavePos(self):
         return self.BaseParams.getIEC_Channel()
@@ -83,13 +83,13 @@ class _EthercatSlavePlug:
             parts = path.split(".", 1)
             if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
                 return self.MandatoryParams[1].getElementInfos(parts[0], parts[1])
-            elif self.PlugParams and parts[0] == self.PlugParams[0]:
-                return self.PlugParams[1].getElementInfos(parts[0], parts[1])
+            elif self.CTNParams and parts[0] == self.CTNParams[0]:
+                return self.CTNParams[1].getElementInfos(parts[0], parts[1])
         else:
             params = []
             if wx.VERSION < (2, 8, 0) and self.MandatoryParams:
                 params.append(self.MandatoryParams[1].getElementInfos(self.MandatoryParams[0]))
-            slave_type = self.PlugParent.GetSlaveType(self.GetSlavePos())
+            slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             params.append({
                 'use': 'required', 
                 'type': 'element', 
@@ -97,55 +97,55 @@ class _EthercatSlavePlug:
                 'value': None, 
                 'children': [{
                     'use': 'optional', 
-                    'type': self.PlugParent.GetSlaveTypesLibrary(self.NODE_PROFILE), 
+                    'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE), 
                     'name': 'Type', 
                     'value': (slave_type["device_type"], slave_type)}, 
                    {'use': 'optional', 
                     'type': 'unsignedLong', 
                     'name': 'Alias', 
-                    'value': self.PlugParent.GetSlaveAlias(self.GetSlavePos())}]
+                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())}]
             })
-            if self.PlugParams:
-                params.append(self.PlugParams[1].getElementInfos(self.PlugParams[0]))
+            if self.CTNParams:
+                params.append(self.CTNParams[1].getElementInfos(self.CTNParams[0]))
             return params
         
     def SetParamsAttribute(self, path, value):
         position = self.BaseParams.getIEC_Channel()
-        value, changed = PlugTemplate.SetParamsAttribute(self, path, value)
+        value, changed = ConfigTreeNode.SetParamsAttribute(self, path, value)
         # Filter IEC_Channel, Slave_Type and Alias that have specific behavior
         if path == "BaseParams.IEC_Channel":
-            self.PlugParent.SetSlavePosition(position, value)
+            self.CTNParent.SetSlavePosition(position, value)
         elif path == "SlaveParams.Type":
-            self.PlugParent.SetSlaveType(position, value)
-            slave_type = self.PlugParent.GetSlaveType(self.GetSlavePos())
+            self.CTNParent.SetSlaveType(position, value)
+            slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             value = (slave_type["device_type"], slave_type)
             changed = True
         elif path == "SlaveParams.Alias":
-            self.PlugParent.SetSlaveAlias(position, value)
+            self.CTNParent.SetSlaveAlias(position, value)
             changed = True
         return value, changed
 
     def GetSlaveInfos(self):
-        return self.PlugParent.GetSlaveInfos(self.GetSlavePos())
+        return self.CTNParent.GetSlaveInfos(self.GetSlavePos())
     
     def GetVariableLocationTree(self):
         return  {"name": self.BaseParams.getName(),
-                 "type": LOCATION_PLUGIN,
+                 "type": LOCATION_CONFNODE,
                  "location": self.GetFullIEC_Channel(),
-                 "children": self.PlugParent.GetDeviceLocationTree(self.GetSlavePos(), self.GetCurrentLocation(), self.BaseParams.getName())
+                 "children": self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), self.GetCurrentLocation(), self.BaseParams.getName())
         }
 
-    PluginMethods = [
-        {"bitmap" : os.path.join(PLUGINFOLDER, "images", "editSlave"),
+    ConfNodeMethods = [
+        {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "editSlave"),
          "name" : _("Edit Slave"), 
          "tooltip" : _("Edit Slave"),
          "method" : "_OpenView"},
     ]
 
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -172,7 +172,7 @@ if HAS_MCL:
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
     ]
     
-    class _EthercatCIA402SlavePlug(_EthercatSlavePlug):
+    class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="CIA402SlaveParams">
@@ -186,17 +186,17 @@ if HAS_MCL:
         NODE_PROFILE = 402
         EditorType = CIA402NodeEditor
         
-        PluginMethods = [
-            {"bitmap" : os.path.join(PLUGINFOLDER, "images", "editCIA402Slave"),
+        ConfNodeMethods = [
+            {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "editCIA402Slave"),
              "name" : _("Edit CIA402 Slave"), 
              "tooltip" : _("Edit CIA402 Slave"),
              "method" : "_OpenView"},
         ]
         
-        def PlugGenerate_C(self, buildpath, locations):
+        def CTNGenerate_C(self, buildpath, locations):
             """
             Generate C code
-            @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+            @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
             @param locations: List of complete variables locations \
                 [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
                 "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -237,11 +237,11 @@ if HAS_MCL:
                 str_completion["init_entry_variables"].append(
                         "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
                 
-                self.PlugParent.FileGenerator.DeclareVariable(
+                self.CTNParent.FileGenerator.DeclareVariable(
                         self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
                         var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
             
-            params = self.PlugParams[1].getElementInfos(self.PlugParams[0])
+            params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
             for param in params["children"]:
                 if param["value"] is not None:
                     param_infos = {
@@ -266,7 +266,7 @@ if HAS_MCL:
             cia402nodefile.write(plc_cia402node_code % str_completion)
             cia402nodefile.close()
             
-            return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))],"",True
+            return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))],"",True
 
 #--------------------------------------------------
 #                 Ethercat MASTER
@@ -311,7 +311,7 @@ if cls:
         slave_info.setRevisionNo(ExtractHexDecValue(type_infos["revision_number"]))
     setattr(cls, "setType", setType)
 
-class _EthercatPlug:
+class _EthercatCTN:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="EtherlabNode">
@@ -323,9 +323,9 @@ class _EthercatPlug:
     </xsd:schema>
     """
     
-    PlugChildsTypes = [("EthercatSlave", _EthercatSlavePlug, "Ethercat Slave")]
+    CTNChildrenTypes = [("EthercatSlave", _EthercatSlaveCTN, "Ethercat Slave")]
     if HAS_MCL:
-        PlugChildsTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlavePlug, "Ethercat CIA402 Slave"))
+        CTNChildrenTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlaveCTN, "Ethercat CIA402 Slave"))
     
     def __init__(self):
         filepath = self.ConfigFileName()
@@ -342,16 +342,16 @@ class _EthercatPlug:
                     self.CreateConfigBuffer(True)
         else:
             self.CreateConfigBuffer(False)
-            self.OnPlugSave()
+            self.OnCTNSave()
 
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
 
     def GetSizeOfType(self, type):
-        return TYPECONVERSION.get(self.GetPlugRoot().GetBaseType(type), None)
+        return TYPECONVERSION.get(self.GetCTRoot().GetBaseType(type), None)
 
     def ConfigFileName(self):
-        return os.path.join(self.PlugPath(), "config.xml")
+        return os.path.join(self.CTNPath(), "config.xml")
 
     def GetSlaves(self):
         slaves = []
@@ -368,10 +368,10 @@ class _EthercatPlug:
         return None
 
     def _ScanNetwork(self):
-        app_frame = self.GetPlugRoot().AppFrame
+        app_frame = self.GetCTRoot().AppFrame
         
         execute = True
-        if len(self.PluggedChilds) > 0:
+        if len(self.Children) > 0:
             dialog = wx.MessageDialog(app_frame, 
                 _("The current network configuration will be deleted.\nDo you want to continue?"), 
                 _("Scan Network"), 
@@ -386,7 +386,7 @@ class _EthercatPlug:
                 dialog.ShowModal()
                 dialog.Destroy()
             elif returnVal is not None:
-                for child in self.IECSortedChilds():
+                for child in self.IECSortedChildren():
                     self._doRemoveChild(child)
                 
                 for slave in returnVal:
@@ -397,46 +397,46 @@ class _EthercatPlug:
                     }
                     device = self.GetModuleInfos(type_infos)
                     if device is not None:
-                        if HAS_MCL and _EthercatCIA402SlavePlug.NODE_PROFILE in device.GetProfileNumbers():
-                            PlugType = "EthercatCIA402Slave"
+                        if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
+                            CTNType = "EthercatCIA402Slave"
                         else:
-                            PlugType = "EthercatSlave"
-                        self.PlugAddChild("slave%s" % slave["idx"], PlugType, slave["idx"])
+                            CTNType = "EthercatSlave"
+                        self.CTNAddChild("slave%s" % slave["idx"], CTNType, slave["idx"])
                         self.SetSlaveAlias(slave["idx"], slave["alias"])
                         type_infos["device_type"] = device.getType().getcontent()
                         self.SetSlaveType(slave["idx"], type_infos)
 
-    def PlugAddChild(self, PlugName, PlugType, IEC_Channel=0):
+    def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """
-        Create the plugins that may be added as child to this node self
-        @param PlugType: string desining the plugin class name (get name from PlugChildsTypes)
-        @param PlugName: string for the name of the plugin instance
+        Create the confnodes that may be added as child to this node self
+        @param CTNType: string desining the confnode class name (get name from CTNChildrenTypes)
+        @param CTNName: string for the name of the confnode instance
         """
-        newPluginOpj = PlugTemplate.PlugAddChild(self, PlugName, PlugType, IEC_Channel)
+        newConfNodeOpj = ConfigTreeNode.CTNAddChild(self, CTNName, CTNType, IEC_Channel)
         
-        slave = self.GetSlave(newPluginOpj.BaseParams.getIEC_Channel())
+        slave = self.GetSlave(newConfNodeOpj.BaseParams.getIEC_Channel())
         if slave is None:
             slave = EtherCATConfigClasses["Config_Slave"]()
             slave_infos = slave.getInfo()
             slave_infos.setName("undefined")
-            slave_infos.setPhysAddr(newPluginOpj.BaseParams.getIEC_Channel())
+            slave_infos.setPhysAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
             slave_infos.setAutoIncAddr(0)
             self.Config.getConfig().appendSlave(slave)
             self.BufferConfig()
-            self.OnPlugSave()
+            self.OnCTNSave()
         
-        return newPluginOpj
+        return newConfNodeOpj
 
-    def _doRemoveChild(self, PlugInstance):
-        slave_pos = PlugInstance.GetSlavePos()
+    def _doRemoveChild(self, CTNInstance):
+        slave_pos = CTNInstance.GetSlavePos()
         config = self.Config.getConfig()
         for idx, slave in enumerate(config.getSlave()):
             slave_infos = slave.getInfo()
             if slave_infos.getPhysAddr() == slave_pos:
                 config.removeSlave(idx)
                 self.BufferConfig()
-                self.OnPlugSave()
-        PlugTemplate._doRemoveChild(self, PlugInstance)
+                self.OnCTNSave()
+        ConfigTreeNode._doRemoveChild(self, CTNInstance)
 
     def SetSlavePosition(self, slave_pos, new_pos):
         slave = self.GetSlave(slave_pos)
@@ -501,10 +501,10 @@ class _EthercatPlug:
         return None
     
     def GetModuleInfos(self, type_infos):
-        return self.PlugParent.GetModuleInfos(type_infos)
+        return self.CTNParent.GetModuleInfos(type_infos)
     
     def GetSlaveTypesLibrary(self, profile_filter=None):
-        return self.PlugParent.GetModulesLibrary(profile_filter)
+        return self.CTNParent.GetModulesLibrary(profile_filter)
     
     def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
         slave = self.GetSlave(slave_pos)
@@ -548,10 +548,10 @@ class _EthercatPlug:
         
         return vars
     
-    def PlugTestModified(self):
+    def CTNTestModified(self):
         return self.ChangesToSave or not self.ConfigIsSaved()    
 
-    def OnPlugSave(self):
+    def OnCTNSave(self):
         filepath = self.ConfigFileName()
         
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
@@ -575,29 +575,29 @@ class _EthercatPlug:
         
         self.FileGenerator = _EthercatCFileGenerator(self)
         
-        LocationCFilesAndCFLAGS, LDFLAGS, extra_files = PlugTemplate._Generate_C(self, buildpath, locations)
+        LocationCFilesAndCFLAGS, LDFLAGS, extra_files = ConfigTreeNode._Generate_C(self, buildpath, locations)
         
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.EtherlabNode)
         
         LocationCFilesAndCFLAGS.append(
             (current_location, 
-             [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetPlugRoot().GetIECLibPath()))], 
+             [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))], 
              True))
         LDFLAGS.append("-lethercat -lrtdm")
         
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
-    PluginMethods = [
-        {"bitmap" : os.path.join(PLUGINFOLDER, "images", "ScanNetwork"),
+    ConfNodeMethods = [
+        {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "ScanNetwork"),
          "name" : _("Scan Network"), 
          "tooltip" : _("Scan Network"),
          "method" : "_ScanNetwork"},
     ]
 
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
-        @param current_location: Tupple containing plugin IEC location : %I0.0.4.5 => (0,0,4,5)
+        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -933,7 +933,7 @@ class _EthercatCFileGenerator:
                                             self.Controler.GetSizeOfType(entry_type)):
                                             raise ValueError, message
                                         else:
-                                            self.Controler.GetPlugRoot().logger.write_warning(message + "\n")
+                                            self.Controler.GetCTRoot().logger.write_warning(message + "\n")
                                     
                                     if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
                                         entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
@@ -1015,7 +1015,7 @@ class _EthercatCFileGenerator:
                                     self.Controler.GetSizeOfType(entry["Type"])):
                                     raise ValueError, message
                                 else:
-                                    self.Controler.GetPlugRoot().logger.write_warning(message + "\n")
+                                    self.Controler.GetCTRoot().logger.write_warning(message + "\n")
                             
                             if entry_infos["dir"] == "I" and entry["PDOMapping"] in ["T", "RT"]:
                                 pdo_type = "Inputs"
@@ -1094,7 +1094,7 @@ class _EthercatCFileGenerator:
         etherlabfile.close()
 
 #--------------------------------------------------
-#                 Ethercat Plugin
+#                 Ethercat ConfNode
 #--------------------------------------------------
 
 EtherCATInfoClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd")) 
@@ -1317,36 +1317,36 @@ def ExtractPdoInfos(pdo, pdo_type, entries):
 
 class RootClass:
     
-    PlugChildsTypes = [("EthercatNode",_EthercatPlug,"Ethercat Master")]
+    CTNChildrenTypes = [("EthercatNode",_EthercatCTN,"Ethercat Master")]
     
     def __init__(self):
         self.LoadModulesLibrary()
     
     def GetModulesLibraryPath(self):
-        library_path = os.path.join(self.PlugPath(), "modules")
+        library_path = os.path.join(self.CTNPath(), "modules")
         if not os.path.exists(library_path):
             os.mkdir(library_path)
         return library_path
     
     def _ImportModuleLibrary(self):
-        dialog = wx.FileDialog(self.GetPlugRoot().AppFrame, _("Choose an XML file"), os.getcwd(), "",  _("XML files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose an XML file"), os.getcwd(), "",  _("XML files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             if os.path.isfile(filepath):
                 shutil.copy(filepath, self.GetModulesLibraryPath())
                 self.LoadModulesLibrary()
             else:
-                self.GetPlugRoot().logger.write_error(_("No such XML file: %s\n") % filepath)
+                self.GetCTRoot().logger.write_error(_("No such XML file: %s\n") % filepath)
         dialog.Destroy()  
     
-    PluginMethods = [
-        {"bitmap" : os.path.join(PLUGINFOLDER, "images", "ImportESI"),
+    ConfNodeMethods = [
+        {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "ImportESI"),
          "name" : _("Import module library"), 
          "tooltip" : _("Import module library"),
          "method" : "_ImportModuleLibrary"},
     ]
     
-    def PlugGenerate_C(self, buildpath, locations):
+    def CTNGenerate_C(self, buildpath, locations):
         return [],"",False
     
     def LoadModulesLibrary(self):
