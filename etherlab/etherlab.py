@@ -10,7 +10,7 @@ from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATIO
 from ConfigEditor import NodeEditor, CIA402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 try:
-    from confnodes.motion import Headers, AxisXSD
+    from MotionLibrary import Headers, AxisXSD
     HAS_MCL = True
 except:
     HAS_MCL = False
