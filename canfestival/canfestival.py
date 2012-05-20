@@ -113,7 +113,7 @@ class _SlaveCTN(NodeManager):
             self._View.SetBusId(self.GetCurrentLocation())
 
     ConfNodeMethods = [
-        {"bitmap" : os.path.join("images", "NetworkEdit"),
+        {"bitmap" : "NetworkEdit",
          "name" : "Edit slave", 
          "tooltip" : "Edit CanOpen slave with ObjdictEdit",
          "method" : "_OpenView"},

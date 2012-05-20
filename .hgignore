@@ -12,5 +12,3 @@ syntax: regexp
 ^tests/wxGlade/build$
 syntax: regexp
 ^.*\.pyc$
-syntax: regexp
-^\.settings/org.eclipse.core.resources.prefs$

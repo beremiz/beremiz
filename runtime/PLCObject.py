@@ -183,6 +183,8 @@ class PLCObject(pyro.ObjBase):
         self.python_threads_vars["website"] = self.website
         self.python_threads_vars["_runtime_begin"] = []
         self.python_threads_vars["_runtime_cleanup"] = []
+        self.python_threads_vars["PLCObject"] = self
+        self.python_threads_vars["PLCBinary"] = self.PLClibraryHandle
         
         for filename in os.listdir(self.workingdir):
             name, ext = os.path.splitext(filename)

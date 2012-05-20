@@ -13,11 +13,11 @@ class SVGUILibrary(POULibrary):
 class SVGUI:
 
     ConfNodeMethods = [
-        {"bitmap" : os.path.join("images","ImportSVG"),
+        {"bitmap" : "ImportSVG",
          "name" : _("Import SVG"),
          "tooltip" : _("Import SVG"),
          "method" : "_ImportSVG"},
-        {"bitmap" : os.path.join("images","ImportSVG"),
+        {"bitmap" : "ImportSVG", # should be something different
          "name" : _("Inkscape"),
          "tooltip" : _("Create HMI"),
          "method" : "_StartInkscape"},

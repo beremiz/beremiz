@@ -139,7 +139,7 @@ class CFile:
         return ""
                 
     ConfNodeMethods = [
-        {"bitmap" : os.path.join("images", "EditCfile"),
+        {"bitmap" : "EditCfile",
          "name" : _("Edit C File"), 
          "tooltip" : _("Edit C File"),
          "method" : "_OpenView"},

@@ -2,13 +2,12 @@ import wx
 import os, sys
 from xml.dom import minidom
 
-from util import opjimg
 from py_ext import PythonFileCTNMixin
 
 class WxGladeHMI(PythonFileCTNMixin):
 
     ConfNodeMethods = [
-        {"bitmap" : opjimg("editWXGLADE"),
+        {"bitmap" : "editWXGLADE",
          "name" : _("WXGLADE GUI"),
          "tooltip" : _("Edit a WxWidgets GUI with WXGlade"),
          "method" : "_editWXGLADE"},

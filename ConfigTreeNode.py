@@ -89,8 +89,8 @@ class ConfigTreeNode:
             return parent + "." + self.CTNName()
         return self.BaseParams.getName()
     
-    def GetIconPath(self, name):
-        return opjimg(name)
+    def GetIconPath(self):
+        return None
     
     def CTNTestModified(self):
         return self.ChangesToSave

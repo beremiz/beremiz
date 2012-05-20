@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://www.plcopen.org/xml/tc6.xsd"
-         xmlns:xhtml="http://www.w3.org/1999/xhtml"
-         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
+<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <fileHeader companyName="beremiz"
               productName="Beremiz"
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2012-05-12T11:55:53">
+                 modificationDateTime="2012-05-20T18:14:50">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -202,7 +202,7 @@
               <connectionPointOut>
                 <relPosition x="290" y="15"/>
               </connectionPointOut>
-              <expression>'sys.stdout.write("5678\n")'</expression>
+              <expression>'PLCBinary.Python_to_C_Call(5678)'</expression>
             </inVariable>
             <block localId="12" width="125" height="80" typeName="python_eval" instanceName="Block2">
               <position x="650" y="417"/>
@@ -247,7 +247,7 @@
               <connectionPointOut>
                 <relPosition x="290" y="15"/>
               </connectionPointOut>
-              <expression>'myprintfunc("90AB\n")'</expression>
+              <expression>'MyPythonFunc(42)'</expression>
             </inVariable>
             <block localId="15" width="125" height="80" typeName="python_eval" instanceName="Block3">
               <position x="650" y="542"/>

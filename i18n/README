@@ -5,4 +5,8 @@ To generate message.pot file:
 To generate .mo files for all languages:
 
 	python mki18n.py -m --moTarget=../locale --domain=Beremiz
+
+
+To generate app.fil:
 	
+    find .. -name "*.py" -exec grep -q '_(' {} ';' -print -o -name "*XSD*" -print | grep -v '/build/' | grep -v '/pyjs/' > app.fil

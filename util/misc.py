@@ -6,7 +6,7 @@ import os,sys
 
 # helper func to get path to images
 def opjimg(imgname):
-    return os.path.join(sys.path[0], "images",imgname)
+    return os.path.join(sys.path[0], "images", imgname+".png")
     
 # helper func to check path write permission
 def CheckPathPerm(path):

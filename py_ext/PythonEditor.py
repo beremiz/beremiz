@@ -2,6 +2,8 @@ import  wx, wx.grid
 import  wx.stc  as  stc
 import keyword
 
+from util import opjimg
+
 from controls import EditorPanel
 
 if wx.Platform == '__WXMSW__':
@@ -234,8 +236,7 @@ class PythonEditor(EditorPanel):
         self.DisableEvents = False
         self.CurrentAction = None
         
-        img = wx.Bitmap(self.Controler.GetIconPath("Cfile.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
-        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
+        self.SetIcon(wx.Bitmap(opjimg("Cfile")))
     
     def __del__(self):
         self.Controler.OnCloseEditor(self)

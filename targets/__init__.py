@@ -43,10 +43,7 @@ targets = {name: {"xsd":path.join(_base_path, name, "XSD"),
                     if path.isdir(path.join(_base_path, name)) 
                        and not name.startswith("__")}
 
-toolchains = [name for name in listdir(_base_path) 
-                       if not path.isdir(path.join(_base_path, name)) 
-                          and name.endswith(".py") 
-                          and not name.startswith("__")]
+toolchains = {"gcc":  path.join(_base_path, "XSD_toolchain_gcc")}
 
 def GetBuilder(targetname):
     return targets[targetname]["class"]()
@@ -56,14 +53,12 @@ def GetTargetChoices():
     targetchoices = ""
 
     # Get all xsd toolchains
-    for toolchain in toolchains :
-         toolchainname = path.splitext(toolchain)[0]
-         xsdfilename = path.join(_base_path, "XSD_%s"%(toolchainname))
+    for toolchainname,xsdfilename in toolchains.iteritems() :
          if path.isfile(xsdfilename):
              xsd_toolchain_string = ""
              for line in open(xsdfilename).readlines():
                  xsd_toolchain_string += line
-             DictXSD_toolchain[toolchainname] = xsd_toolchain_string
+             DictXSD_toolchain["toolchain_"+toolchainname] = xsd_toolchain_string
 
     # Get all xsd targets 
     for targetname,nfo in targets.iteritems():

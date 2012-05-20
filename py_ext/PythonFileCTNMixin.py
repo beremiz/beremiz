@@ -1,5 +1,4 @@
 import os
-from util import opjimg
 from PLCControler import UndoBuffer
 from PythonEditor import PythonEditor
 
@@ -16,7 +15,7 @@ class PythonFileCTNMixin:
     def __init__(self):
         
         self.ConfNodeMethods.insert(0, 
-                {"bitmap" : opjimg("editPYTHONcode"),
+                {"bitmap" : "editPYTHONcode",
                  "name" : _("Edit Python File"), 
                  "tooltip" : _("Edit Python File"),
                  "method" : "_OpenView"},

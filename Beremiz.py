@@ -970,7 +970,7 @@ class Beremiz(IDEFrame):
                 id = wx.NewId()
                 label = confnode_method["name"]
                 button = GenBitmapTextButton(id=id, parent=parent,
-                    bitmap=wx.Bitmap(Bpath( "%s.png"%confnode_method.get("bitmap", os.path.join("images", "Unknown")))), label=label, 
+                    bitmap=wx.Bitmap(Bpath("images", "%s.png"%confnode_method.get("bitmap", "Unknown"))), label=label, 
                     name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
                 button.SetFont(normal_bt_font)
                 button.SetToolTipString(confnode_method["tooltip"])
@@ -1829,12 +1829,12 @@ Max_Traceback_List_Size = 20
 def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     trcbck_lst = []
     for i,line in enumerate(traceback.extract_tb(e_tb)):
-        trcbck = " " + str(i+1) + _(". ")
+        trcbck = " " + str(i+1) + ". "
         if line[0].find(os.getcwd()) == -1:
-            trcbck += _("file : ") + str(line[0]) + _(",   ")
+            trcbck += "file : " + str(line[0]) + ",   "
         else:
-            trcbck += _("file : ") + str(line[0][len(os.getcwd()):]) + _(",   ")
-        trcbck += _("line : ") + str(line[1]) + _(",   ") + _("function : ") + str(line[2])
+            trcbck += "file : " + str(line[0][len(os.getcwd()):]) + ",   "
+        trcbck += "line : " + str(line[1]) + ",   " + "function : " + str(line[2])
         trcbck_lst.append(trcbck)
         
     # Allow clicking....
@@ -1848,7 +1848,7 @@ An unhandled exception (bug) occured. Bug report saved at :
 (%s)
 
 Please be kind enough to send this file to:
-dev@automforge.net
+beremiz-devel@lists.sourceforge.net
 
 You should now restart Beremiz.
 

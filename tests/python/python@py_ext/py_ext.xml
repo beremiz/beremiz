@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Python xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="py_ext_xsd.xsd">
 <![CDATA[import time,sys
-def myprintfunc(arg):
+
+def MyPythonFunc(arg):
     print arg
+    PLCBinary.Python_to_C_Call(arg)
     sys.stdout.flush()
-    return arg]]>
+    return arg
+]]>
 </Python>

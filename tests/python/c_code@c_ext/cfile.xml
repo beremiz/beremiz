@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<CFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="cext_xsd.xsd">
+  <includes>
+<![CDATA[]]>
+  </includes>
+  <variables/>
+  <globals>
+<![CDATA[void Python_to_C_Call(int value){
+  /* That code should never touch to 
+     variables modified by PLC thread */
+  printf("C code called by Python: %d\n",value);
+}
+]]>
+  </globals>
+  <initFunction>
+<![CDATA[]]>
+  </initFunction>
+  <cleanUpFunction>
+<![CDATA[]]>
+  </cleanUpFunction>
+  <retrieveFunction>
+<![CDATA[]]>
+  </retrieveFunction>
+  <publishFunction>
+<![CDATA[]]>
+  </publishFunction>
+</CFile>
