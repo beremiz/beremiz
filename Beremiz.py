@@ -1835,7 +1835,7 @@ class Beremiz(IDEFrame):
         event.Skip()
     
     def OnPropertiesMenu(self, event):
-        self.ShowProperties()
+        self.EditProjectSettings()
     
     def OnQuitMenu(self, event):
         self.Close()
