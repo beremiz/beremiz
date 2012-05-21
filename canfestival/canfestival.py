@@ -64,6 +64,7 @@ class _SlaveCTN(NodeManager):
     """ % DEFAULT_SETTINGS
     
     EditorType = SlaveEditor
+    IconPath = os.path.join(CanFestivalPath, "objdictgen", "networkedit.png")
 
     def __init__(self):
         # TODO change netname when name change
@@ -215,6 +216,7 @@ class _NodeListCTN(NodeList):
     """ % DEFAULT_SETTINGS
     
     EditorType = NetworkEditor
+    IconPath = os.path.join(CanFestivalPath, "objdictgen", "networkedit.png")
     
     def __init__(self):
         manager = NodeManager()

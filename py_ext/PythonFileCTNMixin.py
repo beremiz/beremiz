@@ -14,13 +14,6 @@ class PythonFileCTNMixin:
     
     def __init__(self):
         
-        self.ConfNodeMethods.insert(0, 
-                {"bitmap" : "editPYTHONcode",
-                 "name" : _("Edit Python File"), 
-                 "tooltip" : _("Edit Python File"),
-                 "method" : "_OpenView"},
-        )
-
         filepath = self.PythonFileName()
         
         self.PythonCode = PythonClasses["Python"]()

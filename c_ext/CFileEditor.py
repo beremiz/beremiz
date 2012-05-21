@@ -6,7 +6,8 @@ import wx.stc as stc
 import wx.lib.buttons
 from util import opjimg
 
-from controls import CustomGrid, CustomTable, EditorPanel
+from controls import CustomGrid, CustomTable
+from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
@@ -776,10 +777,10 @@ class FoldPanelCaption(wx.lib.buttons.GenBitmapTextToggleButton):
  ID_CFILEEDITORCFILETREE, ID_CFILEEDITORPARTSOPENED, 
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
-class CFileEditor(EditorPanel):
+class CFileEditor(ConfTreeNodeEditor):
     
-    def _init_Editor(self, prnt):
-        self.Editor = wx.Panel(id=ID_CFILEEDITOR, parent=prnt, pos=wx.Point(0, 0), 
+    def _init_ConfNodeEditor(self, prnt):
+        self.ConfNodeEditor = wx.Panel(id=ID_CFILEEDITOR, parent=prnt, pos=wx.Point(0, 0), 
                 size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
         self.Panels = {}
@@ -790,41 +791,31 @@ class CFileEditor(EditorPanel):
             button_id = wx.NewId()
             button = FoldPanelCaption(id=button_id, name='FoldPanelCaption_%s' % name, 
                   label=name, bitmap=wx.Bitmap(opjimg("CollapsedIconData")), 
-                  parent=self.Editor, pos=wx.Point(0, 0),
+                  parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
                   size=wx.Size(0, 20), style=wx.NO_BORDER|wx.ALIGN_LEFT)
             button.SetBitmapSelected(wx.Bitmap(opjimg("ExpandedIconData")))
             button.Bind(wx.EVT_BUTTON, self.GenPanelButtonCallback(name), id=button_id)
             self.MainSizer.AddWindow(button, 0, border=0, flag=wx.TOP|wx.GROW)
             
             if panel_class == VariablesEditor:
-                panel = VariablesEditor(self.Editor, self.ParentWindow, self.Controler)
+                panel = VariablesEditor(self.ConfNodeEditor, self.ParentWindow, self.Controler)
             else:
-                panel = panel_class(self.Editor, name, self.ParentWindow, self.Controler)
+                panel = panel_class(self.ConfNodeEditor, name, self.ParentWindow, self.Controler)
             self.MainSizer.AddWindow(panel, 0, border=0, flag=wx.BOTTOM|wx.GROW)
             panel.Hide()
             
             self.Panels[name] = {"button": button, "panel": panel, "expanded": False, "row": 2 * idx + 1}
         
-        self.Spacer = wx.Panel(self.Editor, -1)
+        self.Spacer = wx.Panel(self.ConfNodeEditor, -1)
         self.SpacerExpanded = True
         self.MainSizer.AddWindow(self.Spacer, 0, border=0, flag=wx.GROW)
         
         self.MainSizer.AddGrowableRow(2 * len(CFILE_PARTS))
         
-        self.Editor.SetSizer(self.MainSizer)
-        
-    def __init__(self, parent, controler, window):
-        EditorPanel.__init__(self, parent, "", window, controler)
-        self.SetIcon(wx.Bitmap(opjimg("Cfile")))
-        
-    def __del__(self):
-        self.Controler.OnCloseEditor(self)
+        self.ConfNodeEditor.SetSizer(self.MainSizer)
     
-    def GetTitle(self):
-        fullname = self.Controler.CTNFullName()
-        if not self.Controler.CFileIsSaved():
-            return "~%s~" % fullname
-        return fullname
+    def __init__(self, parent, controler, window):
+        ConfTreeNodeEditor.__init__(self, parent, "", controler, window)
     
     def GetBufferState(self):
         return self.Controler.GetBufferState()
@@ -837,9 +828,6 @@ class CFileEditor(EditorPanel):
         self.Controler.LoadNext()
         self.RefreshView()
     
-    def HasNoModel(self):
-        return False
-
     def RefreshView(self):
         for infos in self.Panels.itervalues():
             infos["panel"].RefreshView()

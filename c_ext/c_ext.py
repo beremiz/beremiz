@@ -4,6 +4,7 @@ import cPickle
 
 from xmlclass import *
 
+from util import opjimg
 from CFileEditor import CFileEditor
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT 
 
@@ -42,6 +43,9 @@ class CFile:
         else:
             self.CreateCFileBuffer(False)
             self.OnCTNSave()
+
+    def GetIconPath(self):
+        return opjimg("Cfile")
 
     def CFileName(self):
         return os.path.join(self.CTNPath(), "cfile.xml")
@@ -138,13 +142,6 @@ class CFile:
             return self.CFile.publishFunction.gettext()
         return ""
                 
-    ConfNodeMethods = [
-        {"bitmap" : "EditCfile",
-         "name" : _("Edit C File"), 
-         "tooltip" : _("Edit C File"),
-         "method" : "_OpenView"},
-    ]
-
     def CTNTestModified(self):
         return self.ChangesToSave or not self.CFileIsSaved()    
 

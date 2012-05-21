@@ -1,6 +1,3 @@
-import os, sys
-base_folder = os.path.split(sys.path[0])[0]
-CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
 
 import wx
 
@@ -56,7 +53,7 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
         EditorPanel.__init__(self, parent, "", window, controler)
         NetworkEditorTemplate.__init__(self, controler, window, False)
     
-        img = wx.Bitmap(os.path.join(CanFestivalPath, "objdictgen", "networkedit.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
+        img = wx.Bitmap(controler.GetIconPath(), wx.BITMAP_TYPE_PNG).ConvertToImage()
         self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
         
         self.RefreshNetworkNodes()

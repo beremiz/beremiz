@@ -1,6 +1,7 @@
 import os
 from POULibrary import POULibrary
 from PythonFileCTNMixin import PythonFileCTNMixin
+from util import opjimg
 
 class PythonLibrary(POULibrary):
     def GetLibraryPath(self):
@@ -29,6 +30,10 @@ class PythonLibrary(POULibrary):
         return (["py_ext"], [(Gen_Pythonfile_path, IECCFLAGS)], True), ""
 
 class PythonFile(PythonFileCTNMixin):
+    
+    def GetIconPath(self):
+        return opjimg("Pyfile")
+    
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file

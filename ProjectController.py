@@ -16,13 +16,14 @@ import targets
 import connectors
 from util import MiniTextControler, opjimg, CheckPathPerm, GetClassImporter
 from util.ProcessLogger import ProcessLogger
-from PLCControler import PLCControler 
-from PLCOpenEditor import ProjectDialog
+from PLCControler import PLCControler
+from PLCOpenEditor import CWD
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize
 from util.discovery import DiscoveryDialog
 from ConfigTreeNode import ConfigTreeNode
+from ProjectNodeEditor import ProjectNodeEditor
 
 base_folder = os.path.split(sys.path[0])[0]
 
@@ -30,6 +31,8 @@ MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)
 
 DEBUG_RETRIES_WARN = 3
 DEBUG_RETRIES_REREGISTER = 4
+
+ITEM_CONFNODE = 25
 
 class ProjectController(ConfigTreeNode, PLCControler):
     """
@@ -73,7 +76,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
       </xsd:element>
     </xsd:schema>
     """
-
+    EditorType = ProjectNodeEditor
+    
     def __init__(self, frame, logger):
         PLCControler.__init__(self)
 
@@ -99,6 +103,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of the confnode type name
         self.CTNType = "Beremiz"
         self.Children = {}
+        self._View = None
         # After __init__ root confnode is not valid
         self.ProjectPath = None
         self._setBuildPath(None)
@@ -121,7 +126,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self.DebugTimer:
             self.DebugTimer.cancel()
         self.KillDebugThread()
-
+    
     def SetAppFrame(self, frame, logger):
         self.AppFrame = frame
         self.logger = logger
@@ -142,6 +147,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.AppFrame = None
         
         self.logger = logger
+
+    def CTNName(self):
+        return "Project"
 
     def CTNTestModified(self):
          return self.ChangesToSave or not self.ProjectIsSaved()
@@ -172,6 +180,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetProjectName(self):
         return os.path.split(self.ProjectPath)[1]
+    
+    def GetIconPath(self):
+        return os.path.join(CWD, "Images", "PROJECT.png")
     
     def GetDefaultTargetName(self):
         if wx.Platform == '__WXMSW__':
@@ -212,9 +223,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         dialog.Destroy()
         if answer == wx.ID_YES:
             if self.SaveProjectAs():
-                self.AppFrame.RefreshAll()
                 self.AppFrame.RefreshTitle()
                 self.AppFrame.RefreshFileMenu()
+                self.AppFrame.RefreshPageTitles()
                 return True
         return False
     
@@ -228,17 +239,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if not os.path.isdir(ProjectPath) or len(os.listdir(ProjectPath)) > 0:
             return _("Chosen folder isn't empty. You can't use it for a new project!")
         
-        dialog = ProjectDialog(self.AppFrame)
-        if dialog.ShowModal() == wx.ID_OK:
-            values = dialog.GetValues()
-            values["creationDateTime"] = datetime(*localtime()[:6])
-            dialog.Destroy()
-        else:
-            dialog.Destroy()
-            return _("Project not created")
-        
         # Create PLCOpen program
-        self.CreateNewProject(values)
+        self.CreateNewProject(
+            {"projectName": _("Unnamed"),
+             "productName": _("Unnamed"),
+             "productVersion": _("1"),
+             "companyName": _("Unknown"),
+             "creationDateTime": datetime(*localtime()[:6])})
+        self.ProjectAddConfiguration("config")
+        self.ProjectAddConfigurationResource("config", "resource1")
+        
         # Change XSD into class members
         self._AddParamsMembers()
         self.Children = {}
@@ -289,6 +299,32 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.ShowMethod("_showIECcode", True)
 
         return None
+    
+    def RecursiveConfNodeInfos(self, confnode):
+        values = []
+        for CTNChild in confnode.IECSortedChildren():
+            values.append(
+                {"name": "%s: %s" % (CTNChild.GetFullIEC_Channel(),
+                                     CTNChild.CTNName()), 
+                 "type": ITEM_CONFNODE, 
+                 "confnode": CTNChild,
+                 "icon": CTNChild.GetIconPath(),
+                 "values": self.RecursiveConfNodeInfos(CTNChild)})
+        return values
+    
+    def GetProjectInfos(self):
+        infos = PLCControler.GetProjectInfos(self)
+        configurations = infos["values"].pop(-1)
+        resources = None
+        for config_infos in configurations["values"]:
+            if resources is None:
+                resources = config_infos["values"][0]
+            else:
+                resources["values"].extend(config_infos["values"][0]["values"])
+        if resources is not None:
+            infos["values"].append(resources)
+        infos["values"].extend(self.RecursiveConfNodeInfos(self))
+        return infos
     
     def CloseProject(self):
         self.ClearChildren()
@@ -906,7 +942,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return IEC_code_viewer
         
         elif name == "IEC raw code":
-            controler = MiniTextControler(self._getIECrawcodepath())
+            controler = MiniTextControler.MiniTextControler(self._getIECrawcodepath())
             IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
             #IEC_raw_code_viewer.Enable(False)
             IEC_raw_code_viewer.SetTextSyntax("ALL")
@@ -918,7 +954,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             return IEC_raw_code_viewer
         
-        return None
+        else:
+            return ConfigTreeNode._OpenView(self, name)
 
     def _Clean(self):
         if os.path.isdir(os.path.join(self._getBuildPath())):
@@ -971,7 +1008,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             {"Broken": self.logger.write_error,
              None: lambda x: None}.get(
                 self.previous_plcstate, self.logger.write)(_("PLC is %s\n")%status)
-            self.AppFrame.RefreshAll()
+            self.AppFrame.RefreshStatusToolBar()
         
     def RegisterDebugVarToConnector(self):
         self.DebugTimer=None
@@ -1339,7 +1376,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
-    ConfNodeMethods = [
+    StatusMethods = [
         {"bitmap" : "Build",
          "name" : _("Build"),
          "tooltip" : _("Build project into build folder"),
@@ -1378,8 +1415,31 @@ class ProjectController(ConfigTreeNode, PLCControler):
          "shown" : False,
          "tooltip" : _("Show IEC code generated by PLCGenerator"),
          "method" : "_showIECcode"},
+    ]
+
+    ConfNodeMethods = [
         {"bitmap" : "editIECrawcode",
          "name" : _("Raw IEC code"),
          "tooltip" : _("Edit raw IEC code added to code generated by PLCGenerator"),
          "method" : "_editIECrawcode"},
     ]
+
+
+    def EnableMethod(self, method, value):
+        for d in self.StatusMethods:
+            if d["method"]==method:
+                d["enabled"]=value
+                return True
+        return False
+
+    def ShowMethod(self, method, value):
+        for d in self.StatusMethods:
+            if d["method"]==method:
+                d["shown"]=value
+                return True
+        return False
+
+    def CallMethod(self, method):
+        for d in self.StatusMethods:
+            if d["method"]==method and d.get("enabled", True) and d.get("shown", True):
+                getattr(self, method)()

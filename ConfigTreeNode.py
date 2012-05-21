@@ -12,7 +12,7 @@ import shutil
 from xml.dom import minidom
 
 from xmlclass import GenerateClassesFromXSDstring
-from util import opjimg, GetClassImporter
+from util import GetClassImporter
 
 from PLCControler import PLCControler, LOCATION_CONFNODE
 
@@ -40,7 +40,8 @@ class ConfigTreeNode:
     ConfNodeMethods = []
     LibraryControler = None
     EditorType = None
-
+    IconPath = None
+    
     def _AddParamsMembers(self):
         self.CTNParams = None
         if self.XSD:
@@ -571,23 +572,4 @@ class ConfigTreeNode:
                 except Exception, exc:
                     self.GetCTRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
                     self.GetCTRoot().logger.write_error(traceback.format_exc())
-
-    def EnableMethod(self, method, value):
-        for d in self.ConfNodeMethods:
-            if d["method"]==method:
-                d["enabled"]=value
-                return True
-        return False
-
-    def ShowMethod(self, method, value):
-        for d in self.ConfNodeMethods:
-            if d["method"]==method:
-                d["shown"]=value
-                return True
-        return False
-
-    def CallMethod(self, method):
-        for d in self.ConfNodeMethods:
-            if d["method"]==method and d.get("enabled", True) and d.get("shown", True):
-                getattr(self, method)()
 
