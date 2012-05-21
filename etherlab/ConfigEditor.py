@@ -168,7 +168,7 @@ class NodeEditor(EditorPanel):
         self.Controler.OnCloseEditor(self)
     
     def GetTitle(self):
-        return self.Controler.PlugFullName()
+        return self.Controler.CTNFullName()
     
     def GetBufferState(self):
         return False, False
@@ -244,7 +244,7 @@ class NodeEditor(EditorPanel):
                 
                 entry_index = self.Controler.ExtractHexDecValue(entry.get("Index", "0"))
                 entry_subindex = self.Controler.ExtractHexDecValue(entry.get("SubIndex", "0"))
-                var_name = "%s_%4.4x_%2.2x" % (self.Controler.PlugName(), entry_index, entry_subindex)
+                var_name = "%s_%4.4x_%2.2x" % (self.Controler.CTNName(), entry_index, entry_subindex)
                 if pdo_mapping == "R":
                     dir = "%I"
                 else:
