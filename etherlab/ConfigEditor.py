@@ -77,50 +77,50 @@ class NodeEditor(ConfTreeNodeEditor):
         self._init_coll_SlaveInfosDetailsSizer_Growables(self.SlaveInfosDetailsSizer)
         self._init_coll_SlaveInfosDetailsSizer_Items(self.SlaveInfosDetailsSizer)
         
-        self.Editor.SetSizer(self.MainSizer)
+        self.ConfNodeEditor.SetSizer(self.MainSizer)
 
-    def _init_Editor(self, prnt):
-        self.Editor = wx.Panel(id=-1, name='SlavePanel', parent=prnt,
+    def _init_ConfNodeEditor(self, prnt):
+        self.ConfNodeEditor = wx.Panel(id=-1, name='SlavePanel', parent=prnt,
               size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
         self.VendorLabel = wx.StaticText(id=ID_NODEEDITORVENDORLABEL,
-              label=_('Vendor:'), name='VendorLabel', parent=self.Editor,
+              label=_('Vendor:'), name='VendorLabel', parent=self.ConfNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.Vendor = wx.TextCtrl(id=ID_NODEEDITORVENDOR, value='',
-              name='Vendor', parent=self.Editor, pos=wx.Point(0, 0),
+              name='Vendor', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.ProductCodeLabel = wx.StaticText(id=ID_NODEEDITORPRODUCTCODELABEL,
-              label=_('Product code:'), name='ProductCodeLabel', parent=self.Editor,
+              label=_('Product code:'), name='ProductCodeLabel', parent=self.ConfNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.ProductCode = wx.TextCtrl(id=ID_NODEEDITORPRODUCTCODE, value='',
-              name='ProductCode', parent=self.Editor, pos=wx.Point(0, 0),
+              name='ProductCode', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.RevisionNumberLabel = wx.StaticText(id=ID_NODEEDITORREVISIONNUMBERLABEL,
-              label=_('Revision number:'), name='RevisionNumberLabel', parent=self.Editor,
+              label=_('Revision number:'), name='RevisionNumberLabel', parent=self.ConfNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.RevisionNumber = wx.TextCtrl(id=ID_NODEEDITORREVISIONNUMBER, value='',
-              name='RevisionNumber', parent=self.Editor, pos=wx.Point(0, 0),
+              name='RevisionNumber', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.PhysicsLabel = wx.StaticText(id=ID_NODEEDITORPHYSICSLABEL,
-              label=_('Physics:'), name='PhysicsLabel', parent=self.Editor,
+              label=_('Physics:'), name='PhysicsLabel', parent=self.ConfNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.Physics = wx.TextCtrl(id=ID_NODEEDITORPHYSICS, value='',
-              name='Physics', parent=self.Editor, pos=wx.Point(0, 0),
+              name='Physics', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.SyncManagersLabel =  wx.StaticText(id=ID_NODEEDITORSYNCMANAGERSLABEL,
-              label=_('Sync managers:'), name='SyncManagersLabel', parent=self.Editor,
+              label=_('Sync managers:'), name='SyncManagersLabel', parent=self.ConfNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.SyncManagersGrid = CustomGrid(id=ID_NODEEDITORSYNCMANAGERSGRID,
-              name='SyncManagersGrid', parent=self.Editor, pos=wx.Point(0, 0), 
+              name='SyncManagersGrid', parent=self.ConfNodeEditor, pos=wx.Point(0, 0), 
               size=wx.Size(0, 0), style=wx.VSCROLL)
         
         self.VariablesLabel =  wx.StaticText(id=ID_NODEEDITORVARIABLESLABEL,
@@ -128,7 +128,7 @@ class NodeEditor(ConfTreeNodeEditor):
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.VariablesGrid = wx.gizmos.TreeListCtrl(id=ID_NODEEDITORVARIABLESGRID,
-              name='VariablesGrid', parent=self.Editor, pos=wx.Point(0, 0), 
+              name='VariablesGrid', parent=self.ConfNodeEditor, pos=wx.Point(0, 0), 
               size=wx.Size(0, 0), style=wx.TR_DEFAULT_STYLE |
                                         wx.TR_ROW_LINES |
                                         wx.TR_COLUMN_LINES |
@@ -139,7 +139,7 @@ class NodeEditor(ConfTreeNodeEditor):
         self._init_sizers()
     
     def __init__(self, parent, controler, window):
-        ConfTreeNodeEditor.__init__(self, parent, "", window, controler)
+        ConfTreeNodeEditor.__init__(self, parent, "", controler, window)
     
         self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
         self.SyncManagersGrid.SetTable(self.SyncManagersTable)
