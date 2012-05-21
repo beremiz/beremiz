@@ -1257,11 +1257,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # if uri is empty launch discovery dialog
         if uri == "":
-            # Launch Service Discovery dialog
-            dialog = DiscoveryDialog(self.AppFrame)
-            answer = dialog.ShowModal()
-            uri = dialog.GetURI()
-            dialog.Destroy()
+            try:
+                # Launch Service Discovery dialog
+                dialog = DiscoveryDialog(self.AppFrame)
+                answer = dialog.ShowModal()
+                uri = dialog.GetURI()
+                dialog.Destroy()
+            except:
+                uri = None
             
             # Nothing choosed or cancel button
             if uri is None or answer == wx.ID_CANCEL:
