@@ -66,8 +66,8 @@ class _EthercatSlaveCTN:
     NODE_PROFILE = None
     EditorType = NodeEditor
     
-    def GetIconPath(self, icon):
-        return os.path.join(CONFNODEFOLDER, "images", icon)
+    def GetIconPath(self):
+        return os.path.join(CONFNODEFOLDER, "images", "Slave.png")
     
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
@@ -135,13 +135,6 @@ class _EthercatSlaveCTN:
                  "children": self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), self.GetCurrentLocation(), self.BaseParams.getName())
         }
 
-    ConfNodeMethods = [
-        {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "editSlave"),
-         "name" : _("Edit Slave"), 
-         "tooltip" : _("Edit Slave"),
-         "method" : "_OpenView"},
-    ]
-
     def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
@@ -186,12 +179,8 @@ if HAS_MCL:
         NODE_PROFILE = 402
         EditorType = CIA402NodeEditor
         
-        ConfNodeMethods = [
-            {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "editCIA402Slave"),
-             "name" : _("Edit CIA402 Slave"), 
-             "tooltip" : _("Edit CIA402 Slave"),
-             "method" : "_OpenView"},
-        ]
+        def GetIconPath(self):
+            return os.path.join(CONFNODEFOLDER, "images", "CIA402Slave.png")
         
         def CTNGenerate_C(self, buildpath, locations):
             """
