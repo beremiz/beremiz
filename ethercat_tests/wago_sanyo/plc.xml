@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://www.plcopen.org/xml/tc6.xsd"
-         xmlns:xhtml="http://www.w3.org/1999/xhtml"
-         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
+<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <fileHeader companyName="Laurent BESSARD"
               productName="test_ethercat"
               productVersion="1.0"
               creationDateTime="2011-10-20T19:01:52"/>
   <contentHeader name="test_ethercat"
-                 modificationDateTime="2012-03-18T23:04:07">
+                 modificationDateTime="2012-05-20T19:26:53">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -32,7 +32,7 @@
                 <BOOL/>
               </type>
             </variable>
-            <variable name="LED" address="%QX0.0.2.28688.1">
+            <variable name="GREENLED" address="%QX0.0.2.28688.1">
               <type>
                 <BOOL/>
               </type>
