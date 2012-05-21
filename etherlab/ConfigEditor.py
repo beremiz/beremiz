@@ -124,7 +124,7 @@ class NodeEditor(ConfTreeNodeEditor):
               size=wx.Size(0, 0), style=wx.VSCROLL)
         
         self.VariablesLabel =  wx.StaticText(id=ID_NODEEDITORVARIABLESLABEL,
-              label=_('Variable entries:'), name='VariablesLabel', parent=self,
+              label=_('Variable entries:'), name='VariablesLabel', parent=self.ConfNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.VariablesGrid = wx.gizmos.TreeListCtrl(id=ID_NODEEDITORVARIABLESGRID,
@@ -139,7 +139,7 @@ class NodeEditor(ConfTreeNodeEditor):
         self._init_sizers()
     
     def __init__(self, parent, controler, window):
-        ConfTreeNodeEditor.__init__(self, parent, "", controler, window)
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
     
         self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
         self.SyncManagersGrid.SetTable(self.SyncManagersTable)
@@ -153,7 +153,7 @@ class NodeEditor(ConfTreeNodeEditor):
             self.SyncManagersGrid.SetColAttr(col, attr)
             self.SyncManagersGrid.SetColMinimalWidth(col, self.SyncManagersGridColSizes[col])
             self.SyncManagersGrid.AutoSizeColumn(col, False)
-            
+        
         for colname, colsize, colalign in zip(GetVariablesTableColnames(),
                                               [40, 150, 100, 100, 150, 100, 150, 100],
                                               [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
@@ -197,10 +197,10 @@ class NodeEditor(ConfTreeNodeEditor):
         else:
             item, root_cookie = self.VariablesGrid.GetFirstChild(root, 0)
         
+        no_more_items = not item.IsOk()
         for entry in entries:
             idx += 1
-            create_new = not item.IsOk()
-            if create_new:
+            if no_more_items:
                 item = self.VariablesGrid.AppendItem(root, "")
             for col, colname in enumerate(colnames):
                 if col == 0:
@@ -210,17 +210,18 @@ class NodeEditor(ConfTreeNodeEditor):
             if entry["PDOMapping"] == "":
                 self.VariablesGrid.SetItemBackgroundColour(item, wx.LIGHT_GREY)
             self.VariablesGrid.SetItemPyData(item, entry)
-            if create_new and wx.Platform != '__WXMSW__':
-                item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
             idx = self.GenerateVariablesGridBranch(item, entry["children"], colnames, idx)
-            item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
+            if not no_more_items:
+                item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
+                no_more_items = not item.IsOk()
         
-        to_delete = []
-        while item.IsOk():
-            to_delete.append(item)
-            item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
-        for item in to_delete:
-            self.VariablesGrid.Delete(item)
+        if not no_more_items:
+            to_delete = []
+            while item.IsOk():
+                to_delete.append(item)
+                item, root_cookie = self.VariablesGrid.GetNextChild(root, root_cookie)
+            for item in to_delete:
+                self.VariablesGrid.Delete(item)
         
         return idx
 
