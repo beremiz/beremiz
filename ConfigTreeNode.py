@@ -15,6 +15,7 @@ from xmlclass import GenerateClassesFromXSDstring
 from util import GetClassImporter
 
 from PLCControler import PLCControler, LOCATION_CONFNODE
+from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -39,7 +40,7 @@ class ConfigTreeNode:
     CTNMaxCount = None
     ConfNodeMethods = []
     LibraryControler = None
-    EditorType = None
+    EditorType = ConfTreeNodeEditor
     IconPath = None
     
     def _AddParamsMembers(self):

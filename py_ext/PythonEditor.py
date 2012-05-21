@@ -230,7 +230,7 @@ class PythonEditor(ConfTreeNodeEditor):
 
 
     def __init__(self, parent, controler, window):
-        ConfTreeNodeEditor.__init__(self, parent, "", controler, window)
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
         
         self.DisableEvents = False
         self.CurrentAction = None

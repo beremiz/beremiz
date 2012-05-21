@@ -237,10 +237,13 @@ class ConfTreeNodeEditor(EditorPanel):
         else:
             self.Editor.Initialize(self.ParamsEditor)
     
-    def __init__(self, parent, tagname, controler, window):
+    def __init__(self, parent, controler, window, tagname=""):
         EditorPanel.__init__(self, parent, tagname, window, controler)
-    
-        self.SetIcon(wx.Bitmap(self.Controler.GetIconPath(), wx.BITMAP_TYPE_PNG))
+        
+        icon_path = self.Controler.GetIconPath()
+        if icon_path is None:
+            icon_path = opjimg("Extension")
+        self.SetIcon(wx.Bitmap(icon_path, wx.BITMAP_TYPE_PNG))
     
     def __del__(self):
         self.Controler.OnCloseEditor(self)
@@ -256,6 +259,15 @@ class ConfTreeNodeEditor(EditorPanel):
     
     def HasNoModel(self):
         return False
+    
+    def GetBufferState(self):
+        return False, False
+    
+    def Undo(self):
+        pass
+    
+    def Redo(self):
+        pass
     
     def EnableScrolling(self, enable):
         self.ScrollingEnabled = enable
