@@ -4,7 +4,7 @@ import os, sys, shutil
 from pyjs import translate
 
 from POULibrary import POULibrary
-from docutils import *
+from docutil import open_svg
 
 class SVGUILibrary(POULibrary):
     def GetLibraryPath(self):

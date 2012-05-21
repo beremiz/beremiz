@@ -149,7 +149,7 @@ if __name__ == '__main__':
     # Load extensions
     for extfilename in extensions:
         sys.path.append(os.path.split(os.path.realpath(extfilename))[0])
-        execfile(a, locals())
+        execfile(extfilename, locals())
 
 import wx.lib.buttons, wx.lib.statbmp
 from util.TextCtrlAutoComplete import TextCtrlAutoComplete

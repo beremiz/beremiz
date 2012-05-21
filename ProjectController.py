@@ -1,7 +1,6 @@
 """
 Beremiz Project Controller 
 """
-
 import os,sys,traceback
 import time
 import features
