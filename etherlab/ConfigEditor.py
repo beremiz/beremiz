@@ -2,7 +2,8 @@ import wx
 import wx.grid
 import wx.gizmos
 
-from controls import CustomGrid, CustomTable, EditorPanel
+from controls import CustomGrid, CustomTable
+from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
@@ -37,7 +38,7 @@ def GetVariablesTableColnames():
  ID_NODEEDITORVARIABLESGRID, 
 ] = [wx.NewId() for _init_ctrls in range(13)]
 
-class NodeEditor(EditorPanel):
+class NodeEditor(ConfTreeNodeEditor):
     
     ID = ID_NODEEDITOR
     
@@ -138,7 +139,7 @@ class NodeEditor(EditorPanel):
         self._init_sizers()
     
     def __init__(self, parent, controler, window):
-        EditorPanel.__init__(self, parent, "", window, controler)
+        ConfTreeNodeEditor.__init__(self, parent, "", window, controler)
     
         self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
         self.SyncManagersGrid.SetTable(self.SyncManagersTable)
@@ -160,15 +161,6 @@ class NodeEditor(EditorPanel):
                                                wx.ALIGN_LEFT, wx.ALIGN_LEFT]):
             self.VariablesGrid.AddColumn(colname, colsize, colalign)
         self.VariablesGrid.SetMainColumn(1)
-        
-        img = wx.Bitmap(self.Controler.GetIconPath("Slave.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
-        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
-    
-    def __del__(self):
-        self.Controler.OnCloseEditor(self)
-    
-    def GetTitle(self):
-        return self.Controler.CTNFullName()
     
     def GetBufferState(self):
         return False, False
@@ -259,10 +251,4 @@ class NodeEditor(EditorPanel):
             
         event.Skip()
 
-class CIA402NodeEditor(NodeEditor):
-    
-    def __init__(self, parent, controler, window):
-        NodeEditor.__init__(self, parent, controler, window)
-        
-        img = wx.Bitmap(self.Controler.GetIconPath("CIA402Slave.png"), wx.BITMAP_TYPE_PNG).ConvertToImage()
-        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
+CIA402NodeEditor = NodeEditor
