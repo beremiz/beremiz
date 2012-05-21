@@ -45,7 +45,7 @@ if __name__ == '__main__':
         print "\n   %s [Projectpath] [Buildpath]\n"%sys.argv[0]
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hue:", ["help", "updatecheck=", "extend="])
+        opts, args = getopt.getopt(sys.argv[1:], "hu:e:", ["help", "updatecheck=", "extend="])
     except getopt.GetoptError:
         # print help information and exit:
         usage()
