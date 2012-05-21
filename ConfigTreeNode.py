@@ -547,7 +547,7 @@ class ConfigTreeNode:
                 self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
                 basexmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (CTNName, str(exc)))
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (CTNName, unicode(exc)))
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
@@ -558,7 +558,7 @@ class ConfigTreeNode:
                 self.CTNParams[1].loadXMLTree(tree.childNodes[0])
                 xmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, str(exc)))
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
     def LoadChildren(self):
@@ -570,6 +570,6 @@ class ConfigTreeNode:
                 try:
                     self.CTNAddChild(pname, ptype)
                 except Exception, exc:
-                    self.GetCTRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, str(exc)))
+                    self.GetCTRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, unicode(exc)))
                     self.GetCTRoot().logger.write_error(traceback.format_exc())
 
