@@ -159,7 +159,7 @@ if HAS_MCL:
     NODE_VARIABLES = [
         ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
         ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
-        ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
+#        ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
         ("StatusWord", 0x6041, 0x00, "UINT", "I"),
         ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
