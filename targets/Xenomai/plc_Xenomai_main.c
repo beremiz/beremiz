@@ -104,10 +104,10 @@ void PLC_cleanup_all(void)
 
     if (PLC_state & PLC_STATE_WAITPYTHON_PIPE_CREATED) {
         rt_pipe_delete(&WaitPython_pipe);
-        PLC_state &= ~PLC_STATE_WAITDEBUG_PIPE_CREATED;
+        PLC_state &= ~PLC_STATE_WAITPYTHON_PIPE_CREATED;
     }
 
-    if (PLC_state & PLC_STATE_WAITPYTHON_PIPE_CREATED) {
+    if (PLC_state & PLC_STATE_WAITPYTHON_FILE_OPENED) {
         close(WaitPython_pipe_fd);
         PLC_state &= ~PLC_STATE_WAITPYTHON_FILE_OPENED;
     }
@@ -124,10 +124,10 @@ void PLC_cleanup_all(void)
 
     if (PLC_state & PLC_STATE_PYTHON_PIPE_CREATED) {
         rt_pipe_delete(&Python_pipe);
-        PLC_state &= ~PLC_STATE_DEBUG_PIPE_CREATED;
+        PLC_state &= ~PLC_STATE_PYTHON_PIPE_CREATED;
     }
 
-    if (PLC_state & PLC_STATE_PYTHON_PIPE_CREATED) {
+    if (PLC_state & PLC_STATE_PYTHON_FILE_OPENED) {
         close(Python_pipe_fd);
         PLC_state &= ~PLC_STATE_PYTHON_FILE_OPENED;
     }
@@ -136,11 +136,14 @@ void PLC_cleanup_all(void)
 
 int stopPLC()
 {
-    PLC_shutdown = 1;
     /* Stop the PLC */
-    PLC_SetTimer(0, 0);
-    __cleanup();
+    PLC_shutdown = 1;
+
+    /* Wait until PLC task stops */
+    rt_task_join(&PLC_task);
+
     PLC_cleanup_all();
+    __cleanup();
     __debug_tick = -1;
     return 0;
 }
@@ -165,6 +168,8 @@ int startPLC(int argc,char **argv)
 
     /* Define Ttick to 1ms if common_ticktime not defined */
     Ttick = common_ticktime__?common_ticktime__:1000000;
+
+    PLC_shutdown = 0;
 
     /*** RT Pipes creation and opening ***/
     /* create Debug_pipe */
@@ -204,7 +209,7 @@ int startPLC(int argc,char **argv)
     PLC_state |= PLC_STATE_WAITPYTHON_FILE_OPENED;
 
     /*** create PLC task ***/
-    if(rt_task_create(&PLC_task, "PLC_task", 0, 50, 0)) goto error;
+    if(rt_task_create(&PLC_task, "PLC_task", 0, 50, T_JOINABLE)) goto error;
     PLC_state |= PLC_STATE_TASK_CREATED;
 
     if(__init(argc,argv)) goto error;
@@ -256,6 +261,7 @@ int WaitDebugData(unsigned long *tick)
 {
     char cmd;
     int res;
+    if (PLC_shutdown) return -1;
     /* Wait signal from PLC thread */
     res = read(WaitDebug_pipe_fd, &cmd, sizeof(cmd));
     if (res == sizeof(cmd) && cmd == DEBUG_PENDING_DATA){
@@ -279,6 +285,7 @@ void InitiateDebugTransfer()
 int suspendDebug(int disable)
 {
     char cmd = DEBUG_UNLOCK;
+    if (PLC_shutdown) return -1;
     while(AtomicCompareExchange(
             &debug_state,
             DEBUG_FREE,
@@ -308,6 +315,7 @@ static long python_state = PYTHON_FREE;
 int WaitPythonCommands(void)
 { 
     char cmd;
+    if (PLC_shutdown) return -1;
     /* Wait signal from PLC thread */
     if(read(WaitPython_pipe_fd, &cmd, sizeof(cmd))==sizeof(cmd) && cmd==PYTHON_PENDING_COMMAND){
         return 0;
@@ -334,6 +342,7 @@ int TryLockPython(void)
 void LockPython(void)
 {
     char cmd = UNLOCK_PYTHON;
+    if (PLC_shutdown) return;
     while(AtomicCompareExchange(
             &python_state,
             PYTHON_FREE,
@@ -376,4 +385,3 @@ void Retain(unsigned int offset, unsigned int count, void *p)
 void Remind(unsigned int offset, unsigned int count, void *p)
 {
 }
-
