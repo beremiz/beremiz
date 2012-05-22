@@ -36,12 +36,12 @@ _base_path = path.split(__file__)[0]
 def _GetLocalTargetClassFactory(name):
     return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
-targets = {name: {"xsd":path.join(_base_path, name, "XSD"), 
+targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"), 
                   "class":_GetLocalTargetClassFactory(name),
-                  "code": path.join(path.split(__file__)[0],name,"plc_%s_main.c"%name)}
+                  "code": path.join(path.split(__file__)[0],name,"plc_%s_main.c"%name)})
                 for name in listdir(_base_path) 
                     if path.isdir(path.join(_base_path, name)) 
-                       and not name.startswith("__")}
+                       and not name.startswith("__")])
 
 toolchains = {"gcc":  path.join(_base_path, "XSD_toolchain_gcc")}
 

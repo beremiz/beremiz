@@ -1,7 +1,7 @@
 import os
 from POULibrary import POULibrary
 from PythonFileCTNMixin import PythonFileCTNMixin
-from util import opjimg
+from util.misc import opjimg
 
 class PythonLibrary(POULibrary):
     def GetLibraryPath(self):

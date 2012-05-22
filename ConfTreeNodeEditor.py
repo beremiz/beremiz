@@ -9,7 +9,7 @@ from controls import EditorPanel
 
 from PLCOpenEditor import TITLE, FILEMENU, PROJECTTREE, PAGETITLES
 
-from util import opjimg
+from util.misc import opjimg
 from util.TextCtrlAutoComplete import TextCtrlAutoComplete
 from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 

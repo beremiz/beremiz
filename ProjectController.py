@@ -14,7 +14,8 @@ from weakref import WeakKeyDictionary
 
 import targets
 import connectors
-from util import MiniTextControler, opjimg, CheckPathPerm, GetClassImporter
+from util.misc import opjimg, CheckPathPerm, GetClassImporter
+from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from PLCControler import PLCControler
 from PLCOpenEditor import CWD
@@ -942,7 +943,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return IEC_code_viewer
         
         elif name == "IEC raw code":
-            controler = MiniTextControler.MiniTextControler(self._getIECrawcodepath())
+            controler = MiniTextControler(self._getIECrawcodepath())
             IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
             #IEC_raw_code_viewer.Enable(False)
             IEC_raw_code_viewer.SetTextSyntax("ALL")

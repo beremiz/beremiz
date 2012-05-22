@@ -12,7 +12,7 @@ import shutil
 from xml.dom import minidom
 
 from xmlclass import GenerateClassesFromXSDstring
-from util import GetClassImporter
+from util.misc import GetClassImporter
 
 from PLCControler import PLCControler, LOCATION_CONFNODE
 

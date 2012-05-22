@@ -4,7 +4,7 @@ import cPickle
 
 from xmlclass import *
 
-from util import opjimg
+from util.misc import opjimg
 from CFileEditor import CFileEditor
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT 
 

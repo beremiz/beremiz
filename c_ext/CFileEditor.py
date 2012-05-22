@@ -4,7 +4,7 @@ import wx
 import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
-from util import opjimg
+from util.misc import opjimg
 
 from controls import CustomGrid, CustomTable
 from ConfTreeNodeEditor import ConfTreeNodeEditor
