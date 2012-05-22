@@ -815,7 +815,7 @@ class CFileEditor(ConfTreeNodeEditor):
         self.ConfNodeEditor.SetSizer(self.MainSizer)
     
     def __init__(self, parent, controler, window):
-        ConfTreeNodeEditor.__init__(self, parent, "", controler, window)
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
     
     def GetBufferState(self):
         return self.Controler.GetBufferState()

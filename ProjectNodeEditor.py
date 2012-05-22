@@ -11,6 +11,8 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         self.Editor = wx.ScrolledWindow(prnt, -1, size=wx.Size(-1, -1),
                 style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.Editor.SetBackgroundColour(WINDOW_COLOUR)
+        self.Editor.Bind(wx.EVT_SIZE, self.OnWindowResize)
+        self.Editor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
         self.ParamsEditor = self.Editor
         
         # Variable allowing disabling of Editor scroll when Popup shown 
@@ -40,7 +42,7 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         else:
             tagname = ""
         
-        ConfTreeNodeEditor.__init__(self, parent, tagname, controler, window)
+        ConfTreeNodeEditor.__init__(self, parent, controler, window, tagname)
 
     def GetTagName(self):
         return self.Controler.CTNName()

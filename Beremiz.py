@@ -1741,6 +1741,14 @@ class Beremiz(IDEFrame):
         self.Config.Write("RecentProjects", cPickle.dumps(recent_projects[:MAX_RECENT_PROJECTS]))
         self.Config.Flush()
     
+    def ResetPerspective(self):
+        IDEFrame.ResetPerspective(self)
+        self.RefreshStatusToolBar()
+    
+    def RestoreLastLayout(self):
+        IDEFrame.RestoreLastLayout(self)
+        self.RefreshStatusToolBar()
+    
     def OnNewProjectMenu(self, event):
         if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
@@ -1804,7 +1812,7 @@ class Beremiz(IDEFrame):
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
-                self.LoadProjectOrganization()
+                self.LoadProjectLayout()
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
                 self.RefreshStatusToolBar()
             else:
@@ -1818,7 +1826,7 @@ class Beremiz(IDEFrame):
         if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
-        self.SaveProjectOrganization()
+        self.SaveProjectLayout()
         self.ResetView()
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         self.RefreshStatusToolBar()
