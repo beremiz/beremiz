@@ -167,6 +167,8 @@ class NodeEditor(ConfTreeNodeEditor):
         return False, False
         
     def RefreshView(self):
+        ConfTreeNodeEditor.RefreshView(self)
+        
         slave_infos = self.Controler.GetSlaveInfos()
         if slave_infos is not None:
             self.Vendor.SetValue(slave_infos["vendor"])
