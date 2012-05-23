@@ -185,23 +185,23 @@ class ConfTreeNodeEditor(EditorPanel):
         baseparamseditor_sizer.AddSizer(updownsizer, 0, border=5, 
                                     flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
         
-        ieccdownbutton_id = wx.NewId()
-        self.IECCDownButton = wx.lib.buttons.GenBitmapButton(
-              id=ieccdownbutton_id, bitmap=wx.Bitmap(opjimg('IECCDown')),
-              name='IECDownButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
-              size=wx.Size(16, 16), style=wx.NO_BORDER)
-        self.IECCDownButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(-1), 
-                                id=ieccdownbutton_id)
-        updownsizer.AddWindow(self.IECCDownButton, 0, border=0, flag=wx.ALIGN_LEFT)
-
         ieccupbutton_id = wx.NewId()
         self.IECCUpButton = wx.lib.buttons.GenBitmapTextButton(
-              id=ieccupbutton_id, bitmap=wx.Bitmap(opjimg('IECCUp')),
+              id=ieccupbutton_id, bitmap=wx.Bitmap(opjimg('IECCDown')),
               name='IECUpButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
               size=wx.Size(16, 16), style=wx.NO_BORDER)
         self.IECCUpButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(1), 
                               id=ieccupbutton_id)
         updownsizer.AddWindow(self.IECCUpButton, 0, border=0, flag=wx.ALIGN_LEFT)
+        
+        ieccdownbutton_id = wx.NewId()
+        self.IECCDownButton = wx.lib.buttons.GenBitmapButton(
+              id=ieccdownbutton_id, bitmap=wx.Bitmap(opjimg('IECCUp')),
+              name='IECDownButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
+              size=wx.Size(16, 16), style=wx.NO_BORDER)
+        self.IECCDownButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(-1), 
+                                id=ieccdownbutton_id)
+        updownsizer.AddWindow(self.IECCDownButton, 0, border=0, flag=wx.ALIGN_LEFT)
         
         confnodename_id = wx.NewId()
         self.ConfNodeName = wx.TextCtrl(

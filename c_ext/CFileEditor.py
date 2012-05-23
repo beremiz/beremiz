@@ -829,6 +829,8 @@ class CFileEditor(ConfTreeNodeEditor):
         self.RefreshView()
     
     def RefreshView(self):
+        ConfTreeNodeEditor.RefreshView(self)
+        
         for infos in self.Panels.itervalues():
             infos["panel"].RefreshView()
 

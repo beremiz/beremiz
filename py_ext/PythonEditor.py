@@ -296,6 +296,8 @@ class PythonEditor(ConfTreeNodeEditor):
             self.CurrentAction = None
 
     def RefreshView(self):
+        ConfTreeNodeEditor.RefreshView(self)
+        
         self.ResetBuffer()
         self.DisableEvents = True
         old_cursor_pos = self.ConfNodeEditor.GetCurrentPos()
