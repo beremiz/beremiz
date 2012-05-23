@@ -3,7 +3,7 @@ import wx.grid
 import wx.gizmos
 
 from controls import CustomGrid, CustomTable
-from ConfTreeNodeEditor import ConfTreeNodeEditor
+from ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
@@ -80,8 +80,9 @@ class NodeEditor(ConfTreeNodeEditor):
         self.ConfNodeEditor.SetSizer(self.MainSizer)
 
     def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = wx.Panel(id=-1, name='SlavePanel', parent=prnt,
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        self.ConfNodeEditor = wx.ScrolledWindow(id=-1, name='SlavePanel', parent=prnt,
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.ConfNodeEditor.Bind(wx.EVT_SIZE, self.OnConfNodeEditorResize)
         
         self.VendorLabel = wx.StaticText(id=ID_NODEEDITORVENDORLABEL,
               label=_('Vendor:'), name='VendorLabel', parent=self.ConfNodeEditor,
@@ -121,7 +122,7 @@ class NodeEditor(ConfTreeNodeEditor):
         
         self.SyncManagersGrid = CustomGrid(id=ID_NODEEDITORSYNCMANAGERSGRID,
               name='SyncManagersGrid', parent=self.ConfNodeEditor, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 0), style=wx.VSCROLL)
+              size=wx.Size(0, 200), style=wx.VSCROLL)
         
         self.VariablesLabel =  wx.StaticText(id=ID_NODEEDITORVARIABLESLABEL,
               label=_('Variable entries:'), name='VariablesLabel', parent=self.ConfNodeEditor,
@@ -129,11 +130,11 @@ class NodeEditor(ConfTreeNodeEditor):
         
         self.VariablesGrid = wx.gizmos.TreeListCtrl(id=ID_NODEEDITORVARIABLESGRID,
               name='VariablesGrid', parent=self.ConfNodeEditor, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 0), style=wx.TR_DEFAULT_STYLE |
-                                        wx.TR_ROW_LINES |
-                                        wx.TR_COLUMN_LINES |
-                                        wx.TR_HIDE_ROOT |
-                                        wx.TR_FULL_ROW_HIGHLIGHT)
+              size=wx.Size(0, 400), style=wx.TR_DEFAULT_STYLE |
+                                          wx.TR_ROW_LINES |
+                                          wx.TR_COLUMN_LINES |
+                                          wx.TR_HIDE_ROOT |
+                                          wx.TR_FULL_ROW_HIGHLIGHT)
         self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN, self.OnVariablesGridLeftClick)
                 
         self._init_sizers()
@@ -250,6 +251,18 @@ class NodeEditor(ConfTreeNodeEditor):
                 dragSource.SetData(data)
                 dragSource.DoDragDrop()
             
+        event.Skip()
+
+    def OnConfNodeEditorResize(self, event):
+        self.ConfNodeEditor.GetBestSize()
+        xstart, ystart = self.ConfNodeEditor.GetViewStart()
+        window_size = self.ConfNodeEditor.GetClientSize()
+        maxx, maxy = self.ConfNodeEditor.GetMinSize()
+        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        self.ConfNodeEditor.Scroll(posx, posy)
+        self.ConfNodeEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
+                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
 
 CIA402NodeEditor = NodeEditor
