@@ -16,10 +16,10 @@ IEC_INT *__IW%(location)s_0 = &beremiz__IW%(location)s_0;
 
 %(MCL_headers)s
 
-IEC_UINT __InactiveMask = 0x4f;
-IEC_UINT __ActiveMask = 0x6f;
-IEC_UINT __PowerMask = 0x10;
-IEC_BOOL __FirstTick = 1;
+static IEC_UINT __InactiveMask = 0x4f;
+static IEC_UINT __ActiveMask = 0x6f;
+static IEC_UINT __PowerMask = 0x10;
+static IEC_BOOL __FirstTick = 1;
 
 typedef enum {
 	__Unknown,
