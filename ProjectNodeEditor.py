@@ -1,6 +1,7 @@
 
 import wx
 
+from controls import EditorPanel
 from ConfTreeNodeEditor import ConfTreeNodeEditor, WINDOW_COLOUR
 
 class ProjectNodeEditor(ConfTreeNodeEditor):
@@ -33,8 +34,6 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         self.ParamsEditorSizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
                                         flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
         
-        self.RefreshConfNodeParamsSizer()
-        
     def __init__(self, parent, controler, window):
         configuration = controler.GetProjectMainConfigurationName()
         if configuration is not None:
@@ -52,5 +51,9 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         if self.Controler.CTNTestModified():
             return "~%s~" % fullname
         return fullname
+    
+    def RefreshView(self):
+        EditorPanel.RefreshView(self)
+        self.RefreshConfNodeParamsSizer()
 
         

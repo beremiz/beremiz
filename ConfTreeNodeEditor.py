@@ -29,7 +29,7 @@ else:
              }
 
 SCROLLBAR_UNIT = 10
-WINDOW_COLOUR = wx.Colour(240,240,240)        
+WINDOW_COLOUR = wx.Colour(240, 240, 240)
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
@@ -203,8 +203,6 @@ class ConfTreeNodeEditor(EditorPanel):
                               id=ieccupbutton_id)
         updownsizer.AddWindow(self.IECCUpButton, 0, border=0, flag=wx.ALIGN_LEFT)
         
-        self.RefreshIECChannelControlsState()
-        
         confnodename_id = wx.NewId()
         self.ConfNodeName = wx.TextCtrl(
               self.ParamsEditor, confnodename_id, 
@@ -212,9 +210,8 @@ class ConfTreeNodeEditor(EditorPanel):
         self.ConfNodeName.SetFont(
             wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, 
                     wx.BOLD, faceName = faces["helv"]))
-        self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
         self.ConfNodeName.Bind(wx.EVT_TEXT, 
-            self.GetTextCtrlCallBackFunction(self.ConfNodeName, "BaseParams.Name"), 
+            self.GetTextCtrlCallBackFunction(self.ConfNodeName, "BaseParams.Name", True), 
             id=confnodename_id)
         baseparamseditor_sizer.AddWindow(self.ConfNodeName, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
@@ -224,8 +221,6 @@ class ConfTreeNodeEditor(EditorPanel):
         self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
         self.ParamsEditorSizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
                                         flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
-        
-        self.RefreshConfNodeParamsSizer()
         
         self._init_ConfNodeEditor(self.Editor)
             
@@ -268,6 +263,12 @@ class ConfTreeNodeEditor(EditorPanel):
     
     def Redo(self):
         pass
+    
+    def RefreshView(self):
+        EditorPanel.RefreshView(self)
+        self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
+        self.RefreshIECChannelControlsState()
+        self.RefreshConfNodeParamsSizer()
     
     def EnableScrolling(self, enable):
         self.ScrollingEnabled = enable
@@ -334,9 +335,9 @@ class ConfTreeNodeEditor(EditorPanel):
                     pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
                 staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                 if first:
-                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW|wx.TOP)
+                    sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.TOP|wx.BOTTOM)
                 else:
-                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
+                    sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
                 self.GenerateSizerElements(staticboxsizer, element_infos["children"], element_path)
             else:
                 boxsizer = wx.FlexGridSizer(cols=3, rows=1)
@@ -497,15 +498,16 @@ class ConfTreeNodeEditor(EditorPanel):
     def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, path):
         def OnChoiceContentChanged(event):
             res = self.SetConfNodeParamsAttribute(path, choicectrl.GetStringSelection())
+            wx.CallAfter(self.RefreshConfNodeParamsSizer)
             event.Skip()
         return OnChoiceContentChanged
     
-    def GetTextCtrlCallBackFunction(self, textctrl, path):
+    def GetTextCtrlCallBackFunction(self, textctrl, path, refresh=False):
         def OnTextCtrlChanged(event):
             res = self.SetConfNodeParamsAttribute(path, textctrl.GetValue())
             if res != textctrl.GetValue():
                 textctrl.ChangeValue(res)
-            if textctrl == self.ConfNodeName:
+            if refresh:
                 wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU, PROJECTTREE, PAGETITLES)
                 wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, self.GetTagName())
             event.Skip()
@@ -531,7 +533,7 @@ class ConfTreeNodeEditor(EditorPanel):
         return OnBrowseButton
     
     def OnWindowResize(self, event):
-        self.GetBestSize()
+        self.ParamsEditor.GetBestSize()
         xstart, ystart = self.ParamsEditor.GetViewStart()
         window_size = self.ParamsEditor.GetClientSize()
         maxx, maxy = self.ParamsEditorSizer.GetMinSize()

@@ -1275,6 +1275,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.\
                 BeremizRoot.\
                 setURI_location(uri)
+                if self._View is not None:
+                    self._View.RefreshView()
        
         # Get connector from uri
         try:
@@ -1372,6 +1374,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.ProgramTransferred()
                     if self.AppFrame is not None:
                         self.AppFrame.CloseObsoleteDebugTabs()
+                        self.AppFrame.RefreshPouInstanceVariablesPanel()
                     self.logger.write(_("Transfer completed successfully.\n"))
                 else:
                     self.logger.write_error(_("Transfer failed\n"))
