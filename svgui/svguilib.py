@@ -48,7 +48,8 @@ class button:
         if values.state != self.state:
             self.state = values.state
             self.up = not self.state
-            updateAttr(self.id, 'state', self.state)
+            if self.toggle:
+                updateAttr(self.id, 'state', self.state)
             self.updateElements()
 
     def handleEvent(self, evt):
@@ -115,3 +116,4 @@ class textControl:
     def handleEvent(self, evt):
         pass
     
+
