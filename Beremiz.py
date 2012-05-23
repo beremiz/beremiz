@@ -1861,7 +1861,7 @@ class Beremiz(IDEFrame):
     
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()
-        if self.ProjectTree.GetPyData(selected)["type"] in ITEM_CONFNODE:
+        if self.ProjectTree.GetPyData(selected)["type"] == ITEM_CONFNODE:
             event.Veto()
         else:
             IDEFrame.OnProjectTreeItemBeginEdit(self, event)
