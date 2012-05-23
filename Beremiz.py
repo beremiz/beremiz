@@ -521,6 +521,7 @@ class Beremiz(IDEFrame):
         self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
         self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
         self.PLCConfig.Bind(wx.EVT_MOUSEWHEEL, self.OnPLCConfigScroll)
+        self.PLCConfig.Hide()
         #self.MainTabs["PLCConfig"] = (self.PLCConfig, _("Topology"))
         #self.BottomNoteBook.InsertPage(0, self.PLCConfig, _("Topology"), True)
         
