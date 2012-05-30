@@ -62,7 +62,8 @@ class PythonEditor(ConfTreeNodeEditor):
         self.ConfNodeEditor = stc.StyledTextCtrl(id=ID_PYTHONEDITOR, parent=prnt,
                  name="TextViewer", pos=wx.DefaultPosition, 
                  size=wx.DefaultSize, style=0)
-
+        self.ConfNodeEditor.ParentWindow = self
+        
         self.ConfNodeEditor.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
         self.ConfNodeEditor.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
 
