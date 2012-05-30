@@ -112,7 +112,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.debug_break = False
         self.previous_plcstate = None
         # copy ConfNodeMethods so that it can be later customized
-        self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
+        self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
     def LoadLibraries(self):
         self.Libraries = []
