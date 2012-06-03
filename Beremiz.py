@@ -165,108 +165,7 @@ from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, 
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 
-SCROLLBAR_UNIT = 10
-WINDOW_COLOUR = wx.Colour(240,240,240)
-TITLE_COLOUR = wx.Colour(200,200,220)
-CHANGED_TITLE_COLOUR = wx.Colour(220,200,220)
-CHANGED_WINDOW_COLOUR = wx.Colour(255,240,240)
-
-if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 16,
-             }
-else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 18,
-             }
-
 MAX_RECENT_PROJECTS = 10
-
-# Some helpers to tweak GenBitmapTextButtons
-# TODO: declare customized classes instead.
-gen_mini_GetBackgroundBrush = lambda obj:lambda dc: wx.Brush(obj.GetParent().GetBackgroundColour(), wx.SOLID)
-gen_textbutton_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenButton._GetLabelSize(obj)[:-1] + (False,))
-
-def make_genbitmaptogglebutton_flat(button):
-    button.GetBackgroundBrush = gen_mini_GetBackgroundBrush(button)
-    button.labelDelta = 0
-    button.SetBezelWidth(0)
-    button.SetUseFocusIndicator(False)
-
-# Patch wx.lib.imageutils so that gray is supported on alpha images
-import wx.lib.imageutils
-from wx.lib.imageutils import grayOut as old_grayOut
-def grayOut(anImage):
-    if anImage.HasAlpha():
-        AlphaData = anImage.GetAlphaData()
-    else :
-        AlphaData = None
-
-    old_grayOut(anImage)
-
-    if AlphaData is not None:
-        anImage.SetAlphaData(AlphaData)
-
-wx.lib.imageutils.grayOut = grayOut
-
-class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
-    def _GetLabelSize(self):
-        """ used internally """
-        w, h = self.GetTextExtent(self.GetLabel())
-        if not self.bmpLabel:
-            return w, h, False       # if there isn't a bitmap use the size of the text
-
-        w_bmp = self.bmpLabel.GetWidth()+2
-        h_bmp = self.bmpLabel.GetHeight()+2
-        height = h + h_bmp
-        if w_bmp > w:
-            width = w_bmp
-        else:
-            width = w
-        return width, height, False
-
-    def DrawLabel(self, dc, width, height, dw=0, dy=0):
-        bmp = self.bmpLabel
-        if bmp != None:     # if the bitmap is used
-            if self.bmpDisabled and not self.IsEnabled():
-                bmp = self.bmpDisabled
-            if self.bmpFocus and self.hasFocus:
-                bmp = self.bmpFocus
-            if self.bmpSelected and not self.up:
-                bmp = self.bmpSelected
-            bw,bh = bmp.GetWidth(), bmp.GetHeight()
-            if not self.up:
-                dw = dy = self.labelDelta
-            hasMask = bmp.GetMask() != None
-        else:
-            bw = bh = 0     # no bitmap -> size is zero
-
-        dc.SetFont(self.GetFont())
-        if self.IsEnabled():
-            dc.SetTextForeground(self.GetForegroundColour())
-        else:
-            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
-
-        label = self.GetLabel()
-        tw, th = dc.GetTextExtent(label)        # size of text
-        if not self.up:
-            dw = dy = self.labelDelta
-
-        pos_x = (width-bw)/2+dw      # adjust for bitmap and text to centre
-        pos_y = (height-bh-th)/2+dy
-        if bmp !=None:
-            dc.DrawBitmap(bmp, pos_x, pos_y, hasMask) # draw bitmap if available
-            pos_x = (width-tw)/2+dw      # adjust for bitmap and text to centre
-            pos_y += bh + 2
-
-        dc.DrawText(label, pos_x, pos_y)      # draw the text
-
 
 class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
     """ Customized GenStaticBitmap, fix transparency redraw bug on wx2.8/win32, 
@@ -428,9 +327,6 @@ class Beremiz(IDEFrame):
         AppendMenu(parent, help='', id=wx.ID_PRINT,
               kind=wx.ITEM_NORMAL, text=_(u'Print\tCTRL+P'))
         parent.AppendSeparator()
-        AppendMenu(parent, help='', id=wx.ID_PROPERTIES,
-              kind=wx.ITEM_NORMAL, text=_(u'&Properties'))
-        parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
               kind=wx.ITEM_NORMAL, text=_(u'Quit\tCTRL+Q'))
         
@@ -443,7 +339,6 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPageSetupMenu, id=wx.ID_PAGE_SETUP)
         self.Bind(wx.EVT_MENU, self.OnPreviewMenu, id=wx.ID_PREVIEW)
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
-        self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
     
         self.AddToMenuToolBar([(wx.ID_NEW, "new.png", _(u'New'), None),
@@ -468,30 +363,6 @@ class Beremiz(IDEFrame):
               kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
     
-    def _init_coll_PLCConfigMainSizer_Items(self, parent):
-        parent.AddSizer(self.PLCParamsSizer, 0, border=10, flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        parent.AddSizer(self.ConfNodeTreeSizer, 0, border=10, flag=wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-    def _init_coll_PLCConfigMainSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(1)
-    
-    def _init_coll_ConfNodeTreeSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableCol(1)
-        
-    def _init_beremiz_sizers(self):
-        self.PLCConfigMainSizer = wx.FlexGridSizer(cols=1, hgap=2, rows=2, vgap=2)
-        self.PLCParamsSizer = wx.BoxSizer(wx.VERTICAL)
-        #self.ConfNodeTreeSizer = wx.FlexGridSizer(cols=3, hgap=0, rows=0, vgap=2)
-        self.ConfNodeTreeSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=0, vgap=2)
-        
-        self._init_coll_PLCConfigMainSizer_Items(self.PLCConfigMainSizer)
-        self._init_coll_PLCConfigMainSizer_Growables(self.PLCConfigMainSizer)
-        self._init_coll_ConfNodeTreeSizer_Growables(self.ConfNodeTreeSizer)
-        
-        self.PLCConfig.SetSizer(self.PLCConfigMainSizer)
-        
     def _init_ctrls(self, prnt):
         IDEFrame._init_ctrls(self, prnt)
         
@@ -514,17 +385,6 @@ class Beremiz(IDEFrame):
         
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
-        self.PLCConfig = wx.ScrolledWindow(id=ID_BEREMIZPLCCONFIG,
-              name='PLCConfig', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
-              size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
-        self.PLCConfig.SetBackgroundColour(wx.WHITE)
-        self.PLCConfig.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
-        self.PLCConfig.Bind(wx.EVT_SIZE, self.OnMoveWindow)
-        self.PLCConfig.Bind(wx.EVT_MOUSEWHEEL, self.OnPLCConfigScroll)
-        self.PLCConfig.Hide()
-        #self.MainTabs["PLCConfig"] = (self.PLCConfig, _("Topology"))
-        #self.BottomNoteBook.InsertPage(0, self.PLCConfig, _("Topology"), True)
-        
         self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
@@ -543,8 +403,6 @@ class Beremiz(IDEFrame):
                   ToolbarPane().Top().Position(2).
                   LeftDockable(False).RightDockable(False))
         
-        self._init_beremiz_sizers()
-
         self.AUIManager.Update()
         
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
@@ -555,13 +413,7 @@ class Beremiz(IDEFrame):
         self.runtime_port = None
         self.local_runtime_tmpdir = None
         
-        self.DisableEvents = False
-        # Variable allowing disabling of PLCConfig scroll when Popup shown 
-        self.ScrollingEnabled = True
-        
         self.LastPanelSelected = None
-        
-        self.ConfNodeInfos = {}
         
         # Define Tree item icon list
         self.LocationImageList = wx.ImageList(16, 16)
@@ -600,7 +452,6 @@ class Beremiz(IDEFrame):
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-                self.RefreshStatusToolBar()
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
@@ -612,7 +463,6 @@ class Beremiz(IDEFrame):
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-                self.RefreshStatusToolBar()
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.CTR)
         
@@ -620,7 +470,7 @@ class Beremiz(IDEFrame):
         
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         self.RefreshConfNodeMenu()
-        self.RefreshStatusToolBar()
+        self.RefreshAll()
         self.LogConsole.SetFocus()
 
     def RiseLogConsole(self):
@@ -750,24 +600,6 @@ class Beremiz(IDEFrame):
             event.Skip()
         else:
             event.Veto()
-    
-    def OnMoveWindow(self, event):
-        self.GetBestSize()
-        self.RefreshScrollBars()
-        event.Skip()
-    
-    def EnableScrolling(self, enable):
-        self.ScrollingEnabled = enable
-    
-    def OnPLCConfigScroll(self, event):
-        if self.ScrollingEnabled:
-            event.Skip()
-
-    def OnPanelLeftDown(self, event):
-        focused = self.FindFocus()
-        if isinstance(focused, TextCtrlAutoComplete):
-            focused.DismissListBox()
-        event.Skip()
     
     def RefreshFileMenu(self):
         self.RefreshRecentProjectsMenu()
@@ -899,595 +731,13 @@ class Beremiz(IDEFrame):
             self.MenuBar.EnableTop(CONFNODEMENU_POSITION, False)
         self.MenuBar.UpdateMenus()
     
-    def RefreshScrollBars(self):
-        xstart, ystart = self.PLCConfig.GetViewStart()
-        window_size = self.PLCConfig.GetClientSize()
-        sizer = self.PLCConfig.GetSizer()
-        if sizer:
-            maxx, maxy = sizer.GetMinSize()
-            posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-            posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
-            self.PLCConfig.Scroll(posx, posy)
-            self.PLCConfig.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
-
-    def RefreshPLCParams(self):
-        self.Freeze()
-        self.ClearSizer(self.PLCParamsSizer)
-        
-        if self.CTR is not None:    
-            plcwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-            if self.CTR.CTNTestModified():
-                bkgdclr = CHANGED_TITLE_COLOUR
-            else:
-                bkgdclr = TITLE_COLOUR
-                
-            if self.CTR not in self.ConfNodeInfos:
-                self.ConfNodeInfos[self.CTR] = {"right_visible" : False}
-            
-            plcwindow.SetBackgroundColour(TITLE_COLOUR)
-            plcwindow.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
-            self.PLCParamsSizer.AddWindow(plcwindow, 0, border=0, flag=wx.GROW)
-            
-            plcwindowsizer = wx.BoxSizer(wx.HORIZONTAL)
-            plcwindow.SetSizer(plcwindowsizer)
-            
-            st = wx.StaticText(plcwindow, -1)
-            st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-            st.SetLabel(self.CTR.GetProjectName())
-            plcwindowsizer.AddWindow(st, 0, border=5, flag=wx.ALL|wx.ALIGN_CENTER)
-            
-            addbutton_id = wx.NewId()
-            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
-                  name='AddConfNodeButton', parent=plcwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(16, 16), style=wx.NO_BORDER)
-            addbutton.SetToolTipString(_("Add a sub confnode"))
-            addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddConfNodeMenu(self.CTR), id=addbutton_id)
-            plcwindowsizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
-    
-            plcwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
-            plcwindowsizer.AddSizer(plcwindowmainsizer, 0, border=5, flag=wx.ALL)
-            
-            plcwindowbuttonsizer = wx.BoxSizer(wx.HORIZONTAL)
-            plcwindowmainsizer.AddSizer(plcwindowbuttonsizer, 0, border=0, flag=wx.ALIGN_CENTER)
-            
-            msizer = self.GenerateMethodButtonSizer(self.CTR, plcwindow, not self.ConfNodeInfos[self.CTR]["right_visible"])
-            plcwindowbuttonsizer.AddSizer(msizer, 0, border=0, flag=wx.GROW)
-            
-            paramswindow = wx.Panel(plcwindow, -1, size=wx.Size(-1, -1), style=wx.TAB_TRAVERSAL)
-            paramswindow.SetBackgroundColour(TITLE_COLOUR)
-            paramswindow.Bind(wx.EVT_LEFT_DOWN, self.OnPanelLeftDown)
-            plcwindowbuttonsizer.AddWindow(paramswindow, 0, border=0, flag=0)
-            
-            psizer = wx.BoxSizer(wx.HORIZONTAL)
-            paramswindow.SetSizer(psizer)
-            
-            confnode_infos = self.CTR.GetParamsAttributes()
-            self.RefreshSizerElement(paramswindow, psizer, self.CTR, confnode_infos, None, False)
-            
-            if not self.ConfNodeInfos[self.CTR]["right_visible"]:
-                paramswindow.Hide()
-            
-            minimizebutton_id = wx.NewId()
-            minimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=minimizebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Maximize.png')),
-                  name='MinimizeButton', parent=plcwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(24, 24), style=wx.NO_BORDER)
-            make_genbitmaptogglebutton_flat(minimizebutton)
-            minimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
-            minimizebutton.SetToggle(self.ConfNodeInfos[self.CTR]["right_visible"])
-            plcwindowbuttonsizer.AddWindow(minimizebutton, 0, border=5, flag=wx.ALL)
-            
-            def togglewindow(event):
-                if minimizebutton.GetToggle():
-                    paramswindow.Show()
-                    msizer.SetCols(1)
-                else:
-                    paramswindow.Hide()
-                    msizer.SetCols(len(self.CTR.ConfNodeMethods))
-                self.ConfNodeInfos[self.CTR]["right_visible"] = minimizebutton.GetToggle()
-                self.PLCConfigMainSizer.Layout()
-                self.RefreshScrollBars()
-                event.Skip()
-            minimizebutton.Bind(wx.EVT_BUTTON, togglewindow, id=minimizebutton_id)
-        
-            self.ConfNodeInfos[self.CTR]["main"] = plcwindow
-            self.ConfNodeInfos[self.CTR]["params"] = paramswindow
-            
-        self.PLCConfigMainSizer.Layout()
-        self.RefreshScrollBars()
-        self.Thaw()
-
-    def GenerateEnableButton(self, parent, sizer, confnode):
-        enabled = confnode.CTNEnabled()
-        if enabled is not None:
-            enablebutton_id = wx.NewId()
-            enablebutton = wx.lib.buttons.GenBitmapToggleButton(id=enablebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Disabled.png')),
-                  name='EnableButton', parent=parent, size=wx.Size(16, 16), pos=wx.Point(0, 0), style=0)#wx.NO_BORDER)
-            enablebutton.SetToolTipString(_("Enable/Disable this confnode"))
-            make_genbitmaptogglebutton_flat(enablebutton)
-            enablebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Enabled.png')))
-            enablebutton.SetToggle(enabled)
-            def toggleenablebutton(event):
-                res = self.SetConfNodeParamsAttribute(confnode, "BaseParams.Enabled", enablebutton.GetToggle())
-                enablebutton.SetToggle(res)
-                event.Skip()
-            enablebutton.Bind(wx.EVT_BUTTON, toggleenablebutton, id=enablebutton_id)
-            sizer.AddWindow(enablebutton, 0, border=0, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        else:
-            sizer.AddSpacer(wx.Size(16, 16))
-    
-    def GenerateMethodButtonSizer(self, confnode, parent, horizontal = True):
-        normal_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
-        mouseover_bt_font=wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, underline=True, faceName = faces["helv"])
-        if horizontal:
-            msizer = wx.FlexGridSizer(cols=len(confnode.ConfNodeMethods))
-        else:
-            msizer = wx.FlexGridSizer(cols=1)
-        for confnode_method in confnode.ConfNodeMethods:
-            if "method" in confnode_method and confnode_method.get("shown",True):
-                id = wx.NewId()
-                label = confnode_method["name"]
-                button = GenBitmapTextButton(id=id, parent=parent,
-                    bitmap=wx.Bitmap(Bpath("images", "%s.png"%confnode_method.get("bitmap", "Unknown"))), label=label, 
-                    name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
-                button.SetFont(normal_bt_font)
-                button.SetToolTipString(confnode_method["tooltip"])
-                button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(confnode, confnode_method["method"]), id=id)
-                # a fancy underline on mouseover
-                def setFontStyle(b, s):
-                    def fn(event):
-                        b.SetFont(s)
-                        b.Refresh()
-                        event.Skip()
-                    return fn
-                button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, mouseover_bt_font))
-                button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, normal_bt_font))
-                #hack to force size to mini
-                if not confnode_method.get("enabled",True):
-                    button.Disable()
-                msizer.AddWindow(button, 0, border=0, flag=wx.ALIGN_CENTER)
-        return msizer
-
-    def GenerateParamsPanel(self, confnode, bkgdclr, top_offset=0):
-        rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        rightwindow.SetBackgroundColour(bkgdclr)
-        
-        rightwindowmainsizer = wx.BoxSizer(wx.VERTICAL)
-        rightwindow.SetSizer(rightwindowmainsizer)
-        
-        rightwindowsizer = wx.FlexGridSizer(cols=2, rows=1)
-        rightwindowsizer.AddGrowableCol(1)
-        rightwindowsizer.AddGrowableRow(0)
-        rightwindowmainsizer.AddSizer(rightwindowsizer, 0, border=0, flag=wx.GROW)
-        
-        msizer = self.GenerateMethodButtonSizer(confnode, rightwindow, not self.ConfNodeInfos[confnode]["right_visible"])
-        rightwindowsizer.AddSizer(msizer, 0, border=top_offset, flag=wx.TOP|wx.GROW)
-        
-        rightparamssizer = wx.BoxSizer(wx.HORIZONTAL)
-        rightwindowsizer.AddSizer(rightparamssizer, 0, border=0, flag=wx.ALIGN_RIGHT)
-        
-        paramswindow = wx.Panel(rightwindow, -1, size=wx.Size(-1, -1))
-        paramswindow.SetBackgroundColour(bkgdclr)
-        
-        psizer = wx.BoxSizer(wx.VERTICAL)
-        paramswindow.SetSizer(psizer)
-        self.ConfNodeInfos[confnode]["params"] = paramswindow
-        
-        rightparamssizer.AddWindow(paramswindow, 0, border=5, flag=wx.ALL)
-        
-        confnode_infos = confnode.GetParamsAttributes()
-        if len(confnode_infos) > 0:
-            self.RefreshSizerElement(paramswindow, psizer, confnode, confnode_infos, None, False)
-            
-            if not self.ConfNodeInfos[confnode]["right_visible"]:
-                paramswindow.Hide()
-            
-            rightminimizebutton_id = wx.NewId()
-            rightminimizebutton = wx.lib.buttons.GenBitmapToggleButton(id=rightminimizebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Maximize.png')),
-                  name='MinimizeButton', parent=rightwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(24, 24), style=wx.NO_BORDER)
-            make_genbitmaptogglebutton_flat(rightminimizebutton)
-            rightminimizebutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'Minimize.png')))
-            rightminimizebutton.SetToggle(self.ConfNodeInfos[confnode]["right_visible"])
-            rightparamssizer.AddWindow(rightminimizebutton, 0, border=5, flag=wx.ALL)
-                        
-            def togglerightwindow(event):
-                if rightminimizebutton.GetToggle():
-                    rightparamssizer.Show(0)
-                    msizer.SetCols(1)
-                else:
-                    rightparamssizer.Hide(0)
-                    msizer.SetCols(len(confnode.ConfNodeMethods))
-                self.ConfNodeInfos[confnode]["right_visible"] = rightminimizebutton.GetToggle()
-                self.PLCConfigMainSizer.Layout()
-                self.RefreshScrollBars()
-                event.Skip()
-            rightminimizebutton.Bind(wx.EVT_BUTTON, togglerightwindow, id=rightminimizebutton_id)
-        
-        return rightwindow
-    
-
-    def RefreshConfNodeTree(self):
-        self.Freeze()
-        self.ClearSizer(self.ConfNodeTreeSizer)
-        if self.CTR is not None:
-            for child in self.CTR.IECSortedChildren():
-                self.GenerateTreeBranch(child)
-                if not self.ConfNodeInfos[child]["expanded"]:
-                    self.CollapseConfNode(child)
-        self.PLCConfigMainSizer.Layout()
-        self.RefreshScrollBars()
-        self.Thaw()
-
-    def SetConfNodeParamsAttribute(self, confnode, *args, **kwargs):
-        res, StructChanged = confnode.SetParamsAttribute(*args, **kwargs)
-        if StructChanged:
-            wx.CallAfter(self.RefreshConfNodeTree)
-        else:
-            if confnode == self.CTR:
-                bkgdclr = CHANGED_TITLE_COLOUR
-                items = ["main", "params"]
-            else:
-                bkgdclr = CHANGED_WINDOW_COLOUR
-                items = ["left", "right", "params"]
-            for i in items:
-                self.ConfNodeInfos[confnode][i].SetBackgroundColour(bkgdclr)
-                self.ConfNodeInfos[confnode][i].Refresh()
-        self._Refresh(TITLE, FILEMENU)
-        return res
-
-    def ExpandConfNode(self, confnode, force = False):
-        for child in self.ConfNodeInfos[confnode]["children"]:
-            self.ConfNodeInfos[child]["left"].Show()
-            self.ConfNodeInfos[child]["right"].Show()
-            if force or self.ConfNodeInfos[child]["expanded"]:
-                self.ExpandConfNode(child, force)
-                if force:
-                    self.ConfNodeInfos[child]["expanded"] = True
-        locations_infos = self.ConfNodeInfos[confnode].get("locations_infos", None)
-        if locations_infos is not None:
-            if force or locations_infos["root"]["expanded"]:
-                self.ExpandLocation(locations_infos, "root", force)
-                if force:
-                    locations_infos["root"]["expanded"] = True
-    
-    def CollapseConfNode(self, confnode, force = False):
-        for child in self.ConfNodeInfos[confnode]["children"]:
-            self.ConfNodeInfos[child]["left"].Hide()
-            self.ConfNodeInfos[child]["right"].Hide()
-            self.CollapseConfNode(child, force)
-            if force:
-                self.ConfNodeInfos[child]["expanded"] = False
-        locations_infos = self.ConfNodeInfos[confnode].get("locations_infos", None)
-        if locations_infos is not None:
-            self.CollapseLocation(locations_infos, "root", force)
-            if force:
-                locations_infos["root"]["expanded"] = False
-
-    def ExpandLocation(self, locations_infos, group, force = False, refresh_size=True):
-        locations_infos[group]["expanded"] = True
-        if group == "root":
-            if locations_infos[group]["left"] is not None:
-                locations_infos[group]["left"].Show()
-            if locations_infos[group]["right"] is not None:
-                locations_infos[group]["right"].Show()
-        elif locations_infos["root"]["left"] is not None:
-            locations_infos["root"]["left"].Expand(locations_infos[group]["item"])
-            if force:
-                for child in locations_infos[group]["children"]:
-                    self.ExpandLocation(locations_infos, child, force, False)
-        if locations_infos["root"]["left"] is not None and refresh_size:
-            self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
-        
-    def CollapseLocation(self, locations_infos, group, force = False, refresh_size=True):
-        locations_infos[group]["expanded"] = False
-        if group == "root":
-            if locations_infos[group]["left"] is not None:
-                locations_infos[group]["left"].Hide()
-            if locations_infos[group]["right"] is not None:
-                locations_infos[group]["right"].Hide()
-        elif locations_infos["root"]["left"] is not None:
-            locations_infos["root"]["left"].Collapse(locations_infos[group]["item"])
-            if force:
-                for child in locations_infos[group]["children"]:
-                    self.CollapseLocation(locations_infos, child, force, False)
-        if locations_infos["root"]["left"] is not None and refresh_size:
-            self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
-    
-    def GenerateTreeBranch(self, confnode):
-        leftwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-        if confnode.CTNTestModified():
-            bkgdclr=CHANGED_WINDOW_COLOUR
-        else:
-            bkgdclr=WINDOW_COLOUR
-
-        leftwindow.SetBackgroundColour(bkgdclr)
-        
-        if not self.ConfNodeInfos.has_key(confnode):
-            self.ConfNodeInfos[confnode] = {"expanded" : False, "right_visible" : False}
-            
-        self.ConfNodeInfos[confnode]["children"] = confnode.IECSortedChildren()
-        confnode_locations = []
-        if len(self.ConfNodeInfos[confnode]["children"]) == 0:
-            confnode_locations = confnode.GetVariableLocationTree()["children"]
-            if not self.ConfNodeInfos[confnode].has_key("locations_infos"):
-                self.ConfNodeInfos[confnode]["locations_infos"] = {"root": {"expanded" : False}}
-            
-            self.ConfNodeInfos[confnode]["locations_infos"]["root"]["left"] = None
-            self.ConfNodeInfos[confnode]["locations_infos"]["root"]["right"] = None
-            self.ConfNodeInfos[confnode]["locations_infos"]["root"]["children"] = []
-        
-        self.ConfNodeTreeSizer.AddWindow(leftwindow, 0, border=0, flag=wx.GROW)
-        
-        leftwindowsizer = wx.FlexGridSizer(cols=1, rows=2)
-        leftwindowsizer.AddGrowableCol(0)
-        leftwindow.SetSizer(leftwindowsizer)
-        
-        leftbuttonmainsizer = wx.FlexGridSizer(cols=3, rows=1)
-        leftbuttonmainsizer.AddGrowableCol(0)
-        leftwindowsizer.AddSizer(leftbuttonmainsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT) #|wx.TOP
-        
-        leftbuttonsizer = wx.BoxSizer(wx.HORIZONTAL)
-        leftbuttonmainsizer.AddSizer(leftbuttonsizer, 0, border=5, flag=wx.GROW|wx.RIGHT)
-        
-        leftsizer = wx.BoxSizer(wx.VERTICAL)
-        leftbuttonsizer.AddSizer(leftsizer, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-
-        rolesizer = wx.BoxSizer(wx.HORIZONTAL)
-        leftsizer.AddSizer(rolesizer, 0, border=0, flag=wx.GROW|wx.RIGHT)
-        
-        #self.GenerateEnableButton(leftwindow, rolesizer, confnode)
-
-        roletext = wx.StaticText(leftwindow, -1)
-        roletext.SetLabel(confnode.CTNHelp)
-        rolesizer.AddWindow(roletext, 0, border=5, flag=wx.RIGHT|wx.ALIGN_LEFT)
-        
-        confnode_IECChannel = confnode.BaseParams.getIEC_Channel()
-        
-        iecsizer = wx.BoxSizer(wx.HORIZONTAL)
-        leftsizer.AddSizer(iecsizer, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-
-        st = wx.StaticText(leftwindow, -1)
-        st.SetFont(wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-        st.SetLabel(confnode.GetFullIEC_Channel())
-        iecsizer.AddWindow(st, 0, border=0, flag=0)
-
-        updownsizer = wx.BoxSizer(wx.VERTICAL)
-        iecsizer.AddSizer(updownsizer, 0, border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
-
-        if confnode_IECChannel > 0:
-            ieccdownbutton_id = wx.NewId()
-            ieccdownbutton = wx.lib.buttons.GenBitmapButton(id=ieccdownbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'IECCDown.png')),
-                  name='IECCDownButton', parent=leftwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(16, 16), style=wx.NO_BORDER)
-            ieccdownbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(confnode, confnode_IECChannel - 1), id=ieccdownbutton_id)
-            updownsizer.AddWindow(ieccdownbutton, 0, border=0, flag=wx.ALIGN_LEFT)
-
-        ieccupbutton_id = wx.NewId()
-        ieccupbutton = wx.lib.buttons.GenBitmapTextButton(id=ieccupbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'IECCUp.png')),
-              name='IECCUpButton', parent=leftwindow, pos=wx.Point(0, 0),
-              size=wx.Size(16, 16), style=wx.NO_BORDER)
-        ieccupbutton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(confnode, confnode_IECChannel + 1), id=ieccupbutton_id)
-        updownsizer.AddWindow(ieccupbutton, 0, border=0, flag=wx.ALIGN_LEFT)
-
-        adddeletesizer = wx.BoxSizer(wx.VERTICAL)
-        iecsizer.AddSizer(adddeletesizer, 0, border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
-
-        deletebutton_id = wx.NewId()
-        deletebutton = wx.lib.buttons.GenBitmapButton(id=deletebutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Delete.png')),
-              name='DeleteConfNodeButton', parent=leftwindow, pos=wx.Point(0, 0),
-              size=wx.Size(16, 16), style=wx.NO_BORDER)
-        deletebutton.SetToolTipString(_("Delete this confnode"))
-        deletebutton.Bind(wx.EVT_BUTTON, self.GetDeleteButtonFunction(confnode), id=deletebutton_id)
-        adddeletesizer.AddWindow(deletebutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
-
-        if len(confnode.CTNChildrenTypes) > 0:
-            addbutton_id = wx.NewId()
-            addbutton = wx.lib.buttons.GenBitmapButton(id=addbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'Add.png')),
-                  name='AddConfNodeButton', parent=leftwindow, pos=wx.Point(0, 0),
-                  size=wx.Size(16, 16), style=wx.NO_BORDER)
-            addbutton.SetToolTipString(_("Add a sub confnode"))
-            addbutton.Bind(wx.EVT_BUTTON, self.Gen_AddConfNodeMenu(confnode), id=addbutton_id)
-            adddeletesizer.AddWindow(addbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER)
-        
-        expandbutton_id = wx.NewId()
-        expandbutton = wx.lib.buttons.GenBitmapToggleButton(id=expandbutton_id, bitmap=wx.Bitmap(Bpath( 'images', 'plus.png')),
-              name='ExpandButton', parent=leftwindow, pos=wx.Point(0, 0),
-              size=wx.Size(13, 13), style=wx.NO_BORDER)
-        expandbutton.labelDelta = 0
-        expandbutton.SetBezelWidth(0)
-        expandbutton.SetUseFocusIndicator(False)
-        expandbutton.SetBitmapSelected(wx.Bitmap(Bpath( 'images', 'minus.png')))
-            
-        if len(self.ConfNodeInfos[confnode]["children"]) > 0:
-            expandbutton.SetToggle(self.ConfNodeInfos[confnode]["expanded"])
-            def togglebutton(event):
-                if expandbutton.GetToggle():
-                    self.ExpandConfNode(confnode)
-                else:
-                    self.CollapseConfNode(confnode)
-                self.ConfNodeInfos[confnode]["expanded"] = expandbutton.GetToggle()
-                self.PLCConfigMainSizer.Layout()
-                self.RefreshScrollBars()
-                event.Skip()
-            expandbutton.Bind(wx.EVT_BUTTON, togglebutton, id=expandbutton_id)
-        elif len(confnode_locations) > 0:
-            locations_infos = self.ConfNodeInfos[confnode]["locations_infos"]
-            expandbutton.SetToggle(locations_infos["root"]["expanded"])
-            def togglebutton(event):
-                if expandbutton.GetToggle():
-                    self.ExpandLocation(locations_infos, "root")
-                else:
-                    self.CollapseLocation(locations_infos, "root")
-                self.ConfNodeInfos[confnode]["expanded"] = expandbutton.GetToggle()
-                locations_infos["root"]["expanded"] = expandbutton.GetToggle()
-                self.PLCConfigMainSizer.Layout()
-                self.RefreshScrollBars()
-                event.Skip()
-            expandbutton.Bind(wx.EVT_BUTTON, togglebutton, id=expandbutton_id)
-        else:
-            expandbutton.Enable(False)
-        iecsizer.AddWindow(expandbutton, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        
-        tc_id = wx.NewId()
-        tc = wx.TextCtrl(leftwindow, tc_id, size=wx.Size(150, 25), style=wx.NO_BORDER)
-        tc.SetFont(wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, wx.BOLD, faceName = faces["helv"]))
-        tc.ChangeValue(confnode.MandatoryParams[1].getName())
-        tc.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(tc, confnode, "BaseParams.Name"), id=tc_id)
-        iecsizer.AddWindow(tc, 0, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-        
-        rightwindow = self.GenerateParamsPanel(confnode, bkgdclr, 8)
-        self.ConfNodeTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
-        
-        self.ConfNodeInfos[confnode]["left"] = leftwindow
-        self.ConfNodeInfos[confnode]["right"] = rightwindow
-        for child in self.ConfNodeInfos[confnode]["children"]:
-            self.GenerateTreeBranch(child)
-            if not self.ConfNodeInfos[child]["expanded"]:
-                self.CollapseConfNode(child)
-        
-        if len(confnode_locations) > 0:
-            locations_infos = self.ConfNodeInfos[confnode]["locations_infos"]
-            treectrl = wx.TreeCtrl(self.PLCConfig, -1, size=wx.DefaultSize, 
-                                   style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.NO_BORDER|wx.TR_HIDE_ROOT|wx.TR_NO_LINES|wx.TR_LINES_AT_ROOT)
-            treectrl.SetImageList(self.LocationImageList)
-            treectrl.Bind(wx.EVT_TREE_BEGIN_DRAG, self.GenerateLocationBeginDragFunction(locations_infos))
-            treectrl.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.GenerateLocationExpandCollapseFunction(locations_infos, True))
-            treectrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.GenerateLocationExpandCollapseFunction(locations_infos, False))
-            treectrl.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheelTreeCtrl)
-            
-            treectrl.AddRoot("")
-            self.ConfNodeTreeSizer.AddWindow(treectrl, 0, border=0, flag=0)
-            
-            rightwindow = wx.Panel(self.PLCConfig, -1, size=wx.Size(-1, -1))
-            rightwindow.SetBackgroundColour(wx.WHITE)
-            self.ConfNodeTreeSizer.AddWindow(rightwindow, 0, border=0, flag=wx.GROW)
-            
-            locations_infos["root"]["left"] = treectrl
-            locations_infos["root"]["right"] = rightwindow
-            for location in confnode_locations:
-                locations_infos["root"]["children"].append("root.%s" % location["name"])
-                self.GenerateLocationTreeBranch(treectrl, treectrl.GetRootItem(), locations_infos, "root", location)
-            if locations_infos["root"]["expanded"]:
-                self.ConfNodeTreeSizer.Layout()
-                self.ExpandLocation(locations_infos, "root")
-            else:
-                self.RefreshTreeCtrlSize(treectrl)
-    
-    def GenerateLocationTreeBranch(self, treectrl, root, locations_infos, parent, location):
-        location_name = "%s.%s" % (parent, location["name"])
-        if not locations_infos.has_key(location_name):
-            locations_infos[location_name] = {"expanded" : False}
-        
-        if location["type"] in [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]:
-            label = "%(name)s (%(location)s)" % location
-        elif location["location"] != "":
-            label = "%(location)s: %(name)s" % location
-        else:
-            label = location["name"]
-        item = treectrl.AppendItem(root, label)
-        treectrl.SetPyData(item, location_name)
-        treectrl.SetItemImage(item, self.LocationImageDict[location["type"]])
-        
-        locations_infos[location_name]["item"] = item
-        locations_infos[location_name]["children"] = []
-        infos = location.copy()
-        infos.pop("children")
-        locations_infos[location_name]["infos"] = infos
-        for child in location["children"]:
-            child_name = "%s.%s" % (location_name, child["name"])
-            locations_infos[location_name]["children"].append(child_name)
-            self.GenerateLocationTreeBranch(treectrl, item, locations_infos, location_name, child)
-        if locations_infos[location_name]["expanded"]:
-            self.ExpandLocation(locations_infos, location_name)
-    
-    def GenerateLocationBeginDragFunction(self, locations_infos):
-        def OnLocationBeginDragFunction(event):
-            item = event.GetItem()
-            location_name = locations_infos["root"]["left"].GetPyData(item)
-            if location_name is not None:
-                infos = locations_infos[location_name]["infos"]
-                if infos["type"] in [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]:
-                    data = wx.TextDataObject(str((infos["location"], "location", infos["IEC_type"], infos["var_name"], infos["description"])))
-                    dragSource = wx.DropSource(self)
-                    dragSource.SetData(data)
-                    dragSource.DoDragDrop()
-        return OnLocationBeginDragFunction
-    
-    def RefreshTreeCtrlSize(self, treectrl):
-        rect = self.GetTreeCtrlItemRect(treectrl, treectrl.GetRootItem())
-        treectrl.SetMinSize(wx.Size(max(rect.width, rect.x + rect.width) + 20, max(rect.height, rect.y + rect.height) + 20))
-        self.PLCConfigMainSizer.Layout()
-        self.PLCConfig.Refresh()
-        wx.CallAfter(self.RefreshScrollBars)
-    
-    def OnMouseWheelTreeCtrl(self, event):
-        x, y = self.PLCConfig.GetViewStart()
-        rotation = - (event.GetWheelRotation() / event.GetWheelDelta()) * 3
-        if event.ShiftDown():
-            self.PLCConfig.Scroll(x + rotation, y)
-        else:
-            self.PLCConfig.Scroll(x, y + rotation)
-    
-    def GetTreeCtrlItemRect(self, treectrl, item):
-        item_rect = treectrl.GetBoundingRect(item, True)
-        if item_rect is not None:
-            minx, miny = item_rect.x, item_rect.y
-            maxx, maxy = item_rect.x + item_rect.width, item_rect.y + item_rect.height
-        else:
-            minx = miny = maxx = maxy = 0
-        
-        if treectrl.ItemHasChildren(item) and (item == treectrl.GetRootItem() or treectrl.IsExpanded(item)):
-            if wx.VERSION >= (2, 6, 0):
-                child, item_cookie = treectrl.GetFirstChild(item)
-            else:
-                child, item_cookie = treectrl.GetFirstChild(item, 0)
-            while child.IsOk():
-                child_rect = self.GetTreeCtrlItemRect(treectrl, child)
-                minx = min(minx, child_rect.x)
-                miny = min(miny, child_rect.y)
-                maxx = max(maxx, child_rect.x + child_rect.width)
-                maxy = max(maxy, child_rect.y + child_rect.height)
-                child, item_cookie = treectrl.GetNextChild(item, item_cookie)
-                
-        return wx.Rect(minx, miny, maxx - minx, maxy - miny)
-    
-    def GenerateLocationExpandCollapseFunction(self, locations_infos, expand):
-        def OnLocationExpandedFunction(event):
-            item = event.GetItem()
-            location_name = locations_infos["root"]["left"].GetPyData(item)
-            if location_name is not None:
-                locations_infos[location_name]["expanded"] = expand
-                self.RefreshTreeCtrlSize(locations_infos["root"]["left"])
-            event.Skip()
-        return OnLocationExpandedFunction
-    
     def RefreshAll(self):
-        self.RefreshPLCParams()
-        self.RefreshConfNodeTree()
-        
-    def GetItemChannelChangedFunction(self, confnode, value):
-        def OnConfNodeTreeItemChannelChanged(event):
-            res = self.SetConfNodeParamsAttribute(confnode, "BaseParams.IEC_Channel", value)
-            event.Skip()
-        return OnConfNodeTreeItemChannelChanged
+        self.RefreshStatusToolBar()
     
     def _GetAddConfNodeFunction(self, name, confnode=None):
         def OnConfNodeMenu(event):
             wx.CallAfter(self.AddConfNode, name, confnode)
         return OnConfNodeMenu
-    
-    def Gen_AddConfNodeMenu(self, confnode):
-        def AddConfNodeMenu(event):
-            main_menu = wx.Menu(title='')
-            if len(confnode.CTNChildrenTypes) > 0:
-                for name, XSDClass, help in confnode.CTNChildrenTypes:
-                    new_id = wx.NewId()
-                    main_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Append ")+help)
-                    self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
-            self.PopupMenuXY(main_menu)
-            main_menu.Destroy()
-        return AddConfNodeMenu
     
     def GetMenuCallBackFunction(self, method):
         """ Generate the callbackfunc for a given CTR method"""
@@ -1501,225 +751,6 @@ class Beremiz(IDEFrame):
             # Trigger refresh on Idle
             wx.CallAfter(self.RefreshStatusToolBar)
         return OnMenu
-    
-    def GetButtonCallBackFunction(self, confnode, method):
-        """ Generate the callbackfunc for a given confnode method"""
-        def OnButtonClick(event):
-            # Disable button to prevent re-entrant call 
-            event.GetEventObject().Disable()
-            # Call
-            getattr(confnode,method)()
-            # Re-enable button 
-            event.GetEventObject().Enable()
-            # Trigger refresh on Idle
-            wx.CallAfter(self.RefreshAll)
-            event.Skip()
-        return OnButtonClick
-    
-    def GetChoiceCallBackFunction(self, choicectrl, confnode, path):
-        def OnChoiceChanged(event):
-            res = self.SetConfNodeParamsAttribute(confnode, path, choicectrl.GetStringSelection())
-            choicectrl.SetStringSelection(res)
-            event.Skip()
-        return OnChoiceChanged
-    
-    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, confnode, path):
-        def OnChoiceContentChanged(event):
-            res = self.SetConfNodeParamsAttribute(confnode, path, choicectrl.GetStringSelection())
-            if wx.VERSION < (2, 8, 0):
-                self.ParamsPanel.Freeze()
-                choicectrl.SetStringSelection(res)
-                infos = self.CTR.GetParamsAttributes(path)
-                staticbox = staticboxsizer.GetStaticBox()
-                staticbox.SetLabel("%(name)s - %(value)s"%infos)
-                self.RefreshSizerElement(self.ParamsPanel, staticboxsizer, infos["children"], "%s.%s"%(path, infos["name"]), selected=selected)
-                self.ParamsPanelMainSizer.Layout()
-                self.ParamsPanel.Thaw()
-                self.ParamsPanel.Refresh()
-            else:
-                wx.CallAfter(self.RefreshAll)
-            event.Skip()
-        return OnChoiceContentChanged
-    
-    def GetTextCtrlCallBackFunction(self, textctrl, confnode, path):
-        def OnTextCtrlChanged(event):
-            res = self.SetConfNodeParamsAttribute(confnode, path, textctrl.GetValue())
-            if res != textctrl.GetValue():
-                textctrl.ChangeValue(res)
-            event.Skip()
-        return OnTextCtrlChanged
-    
-    def GetCheckBoxCallBackFunction(self, chkbx, confnode, path):
-        def OnCheckBoxChanged(event):
-            res = self.SetConfNodeParamsAttribute(confnode, path, chkbx.IsChecked())
-            chkbx.SetValue(res)
-            event.Skip()
-        return OnCheckBoxChanged
-    
-    def GetBrowseCallBackFunction(self, name, textctrl, library, value_infos, confnode, path):
-        infos = [value_infos]
-        def OnBrowseButton(event):
-            dialog = BrowseValuesLibraryDialog(self, name, library, infos[0])
-            if dialog.ShowModal() == wx.ID_OK:
-                value, value_infos = self.SetConfNodeParamsAttribute(confnode, path, dialog.GetValueInfos())
-                textctrl.ChangeValue(value)
-                infos[0] = value_infos
-            dialog.Destroy()
-            event.Skip()
-        return OnBrowseButton
-    
-    def ClearSizer(self, sizer):
-        staticboxes = []
-        for item in sizer.GetChildren():
-            if item.IsSizer():
-                item_sizer = item.GetSizer()
-                self.ClearSizer(item_sizer)
-                if isinstance(item_sizer, wx.StaticBoxSizer):
-                    staticboxes.append(item_sizer.GetStaticBox())
-        sizer.Clear(True)
-        for staticbox in staticboxes:
-            staticbox.Destroy()
-                
-    def RefreshSizerElement(self, parent, sizer, confnode, elements, path, clean = True):
-        if clean:
-            if wx.VERSION < (2, 8, 0):
-                self.ClearSizer(sizer)
-            else:
-                sizer.Clear(True)
-        first = True
-        for element_infos in elements:
-            if path:
-                element_path = "%s.%s"%(path, element_infos["name"])
-            else:
-                element_path = element_infos["name"]
-            if element_infos["type"] == "element":
-                label = element_infos["name"]
-                staticbox = wx.StaticBox(id=-1, label=_(label), 
-                    name='%s_staticbox'%element_infos["name"], parent=parent,
-                    pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
-                staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                if first:
-                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW|wx.TOP)
-                else:
-                    sizer.AddSizer(staticboxsizer, 0, border=0, flag=wx.GROW)
-                self.RefreshSizerElement(parent, staticboxsizer, confnode, element_infos["children"], element_path)
-            else:
-                boxsizer = wx.FlexGridSizer(cols=3, rows=1)
-                boxsizer.AddGrowableCol(1)
-                if first:
-                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.ALL)
-                else:
-                    sizer.AddSizer(boxsizer, 0, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
-                staticbitmap = GenStaticBitmap(ID=-1, bitmapname="%s.png"%element_infos["name"],
-                    name="%s_bitmap"%element_infos["name"], parent=parent,
-                    pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
-                boxsizer.AddWindow(staticbitmap, 0, border=5, flag=wx.RIGHT)
-                label = element_infos["name"]
-                statictext = wx.StaticText(id=-1, label="%s:"%_(label), 
-                    name="%s_label"%element_infos["name"], parent=parent, 
-                    pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-                boxsizer.AddWindow(statictext, 0, border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT)
-                id = wx.NewId()
-                if isinstance(element_infos["type"], types.ListType):
-                    if isinstance(element_infos["value"], types.TupleType):
-                        browse_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
-                        boxsizer.AddSizer(browse_boxsizer, 0, border=0, flag=0)
-                        
-                        textctrl = wx.TextCtrl(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(275, 25), style=wx.TE_READONLY)
-                        if element_infos["value"] is not None:
-                            textctrl.SetValue(element_infos["value"][0])
-                            value_infos = element_infos["value"][1]
-                        else:
-                            value_infos = None
-                        browse_boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
-                        button_id = wx.NewId()
-                        button = wx.Button(id=button_id, name="browse_%s" % element_infos["name"], parent=parent, 
-                            label="...", pos=wx.Point(0, 0), size=wx.Size(25, 25))
-                        browse_boxsizer.AddWindow(button, 0, border=0, flag=0)
-                        button.Bind(wx.EVT_BUTTON, 
-                                    self.GetBrowseCallBackFunction(element_infos["name"], textctrl, element_infos["type"], 
-                                                                   value_infos, confnode, element_path), 
-                                    id=button_id)
-                    else:
-                        combobox = wx.ComboBox(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(300, 28), style=wx.CB_READONLY)
-                        boxsizer.AddWindow(combobox, 0, border=0, flag=0)
-                        if element_infos["use"] == "optional":
-                            combobox.Append("")
-                        if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
-                            for choice, xsdclass in element_infos["type"]:
-                                combobox.Append(choice)
-                            name = element_infos["name"]
-                            value = element_infos["value"]
-                            staticbox = wx.StaticBox(id=-1, label="%s - %s"%(_(name), _(value)), 
-                                name='%s_staticbox'%element_infos["name"], parent=parent,
-                                pos=wx.Point(0, 0), size=wx.Size(10, 0), style=0)
-                            staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                            sizer.AddSizer(staticboxsizer, 0, border=5, flag=wx.GROW|wx.BOTTOM)
-                            self.RefreshSizerElement(parent, staticboxsizer, confnode, element_infos["children"], element_path)
-                            callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, confnode, element_path)
-                        else:
-                            for choice in element_infos["type"]:
-                                combobox.Append(choice)
-                            callback = self.GetChoiceCallBackFunction(combobox, confnode, element_path)
-                        if element_infos["value"] is None:
-                            combobox.SetStringSelection("")
-                        else:
-                            combobox.SetStringSelection(element_infos["value"])
-                        combobox.Bind(wx.EVT_COMBOBOX, callback, id=id)
-                elif isinstance(element_infos["type"], types.DictType):
-                    scmin = -(2**31)
-                    scmax = 2**31-1
-                    if "min" in element_infos["type"]:
-                        scmin = element_infos["type"]["min"]
-                    if "max" in element_infos["type"]:
-                        scmax = element_infos["type"]["max"]
-                    spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                        pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
-                    spinctrl.SetRange(scmin,scmax)
-                    boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
-                    if element_infos["value"] is not None:
-                        spinctrl.SetValue(element_infos["value"])
-                    spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, confnode, element_path), id=id)
-                else:
-                    if element_infos["type"] == "boolean":
-                        checkbox = wx.CheckBox(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(17, 25), style=0)
-                        boxsizer.AddWindow(checkbox, 0, border=0, flag=0)
-                        if element_infos["value"] is not None:
-                            checkbox.SetValue(element_infos["value"])
-                        checkbox.Bind(wx.EVT_CHECKBOX, self.GetCheckBoxCallBackFunction(checkbox, confnode, element_path), id=id)
-                    elif element_infos["type"] in ["unsignedLong", "long","integer"]:
-                        if element_infos["type"].startswith("unsigned"):
-                            scmin = 0
-                        else:
-                            scmin = -(2**31)
-                        scmax = 2**31-1
-                        spinctrl = wx.SpinCtrl(id=id, name=element_infos["name"], parent=parent, 
-                            pos=wx.Point(0, 0), size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
-                        spinctrl.SetRange(scmin, scmax)
-                        boxsizer.AddWindow(spinctrl, 0, border=0, flag=0)
-                        if element_infos["value"] is not None:
-                            spinctrl.SetValue(element_infos["value"])
-                        spinctrl.Bind(wx.EVT_SPINCTRL, self.GetTextCtrlCallBackFunction(spinctrl, confnode, element_path), id=id)
-                    else:
-                        choices = cPickle.loads(str(self.Config.Read(element_path, cPickle.dumps([""]))))
-                        textctrl = TextCtrlAutoComplete(id=id, 
-                                                                     name=element_infos["name"], 
-                                                                     parent=parent, 
-                                                                     appframe=self, 
-                                                                     choices=choices, 
-                                                                     element_path=element_path,
-                                                                     pos=wx.Point(0, 0), 
-                                                                     size=wx.Size(300, 25), 
-                                                                     style=0)
-                        
-                        boxsizer.AddWindow(textctrl, 0, border=0, flag=0)
-                        if element_infos["value"] is not None:
-                            textctrl.ChangeValue(str(element_infos["value"]))
-                        textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, confnode, element_path))
-            first = False
     
     def GetConfigEntry(self, entry_name, default):
         return cPickle.loads(str(self.Config.Read(entry_name, cPickle.dumps(default))))
@@ -1777,10 +808,10 @@ class Beremiz(IDEFrame):
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-                self.RefreshStatusToolBar()
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
+            self.RefreshAll()
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
     
@@ -1815,10 +846,10 @@ class Beremiz(IDEFrame):
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self.LoadProjectLayout()
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-                self.RefreshStatusToolBar()
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
+            self.RefreshAll()
         else:
             self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
@@ -1830,7 +861,7 @@ class Beremiz(IDEFrame):
         self.SaveProjectLayout()
         self.ResetView()
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
-        self.RefreshStatusToolBar()
+        self.RefreshAll()
     
     def OnSaveProjectMenu(self, event):
         if self.CTR is not None:
@@ -1842,9 +873,6 @@ class Beremiz(IDEFrame):
             self.CTR.SaveProjectAs()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
         event.Skip()
-    
-    def OnPropertiesMenu(self, event):
-        self.EditProjectSettings()
     
     def OnQuitMenu(self, event):
         self.Close()
@@ -1886,7 +914,7 @@ class Beremiz(IDEFrame):
 
             new_id = wx.NewId()
             AppendMenu(confnode_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Delete"))
-            self.Bind(wx.EVT_MENU, self.GetDeleteButtonFunction(confnode), id=new_id)
+            self.Bind(wx.EVT_MENU, self.GetDeleteMenuFunction(confnode), id=new_id)
                 
             self.PopupMenu(confnode_menu)
             confnode_menu.Destroy()
@@ -1925,24 +953,10 @@ class Beremiz(IDEFrame):
                 else:
                     IDEFrame.SelectProjectTreeItem(self, tagname)
             
-    def GetAddButtonFunction(self, confnode, window):
-        def AddButtonFunction(event):
-            if confnode and len(confnode.CTNChildrenTypes) > 0:
-                confnode_menu = wx.Menu(title='')
-                for name, XSDClass, help in confnode.CTNChildrenTypes:
-                    new_id = wx.NewId()
-                    confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=name)
-                    self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
-                window_pos = window.GetPosition()
-                wx.CallAfter(self.PLCConfig.PopupMenu, confnode_menu)
-            event.Skip()
-        return AddButtonFunction
-    
-    def GetDeleteButtonFunction(self, confnode):
-        def DeleteButtonFunction(event):
+    def GetDeleteMenuFunction(self, confnode):
+        def DeleteMenuFunction(event):
             wx.CallAfter(self.DeleteConfNode, confnode)
-            event.Skip()
-        return DeleteButtonFunction
+        return DeleteMenuFunction
     
     def AddConfNode(self, ConfNodeType, confnode=None):
         if self.CTR.CheckProjectPathPerm():
@@ -1953,21 +967,16 @@ class Beremiz(IDEFrame):
                     confnode.CTNAddChild(ConfNodeName, ConfNodeType)
                 else:
                     self.CTR.CTNAddChild(ConfNodeName, ConfNodeType)
-                self.CTR.RefreshConfNodesBlockLists()
                 self._Refresh(TITLE, FILEMENU, PROJECTTREE)
-                self.RefreshConfNodeTree()
             dialog.Destroy()
     
     def DeleteConfNode(self, confnode):
         if self.CTR.CheckProjectPathPerm():
             dialog = wx.MessageDialog(self, _("Really delete confnode ?"), _("Remove confnode"), wx.YES_NO|wx.NO_DEFAULT)
             if dialog.ShowModal() == wx.ID_YES:
-                self.ConfNodeInfos.pop(confnode)
                 confnode.CTNRemove()
                 del confnode
-                self.CTR.RefreshConfNodesBlockLists()
                 self._Refresh(TITLE, FILEMENU, PROJECTTREE)
-                self.RefreshConfNodeTree()
             dialog.Destroy()
     
 #-------------------------------------------------------------------------------
