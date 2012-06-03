@@ -1,7 +1,7 @@
 
 import wx
 
-from controls import EditorPanel
+from controls import EditorPanel, ProjectPropertiesPanel
 from ConfTreeNodeEditor import ConfTreeNodeEditor, WINDOW_COLOUR
 
 class ProjectNodeEditor(ConfTreeNodeEditor):
@@ -30,9 +30,16 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         self.ParamsEditorSizer.AddSizer(buttons_sizer, 0, border=5, 
                                         flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.TOP)
         
-        self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
-        self.ParamsEditorSizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
+        projectproperties_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.ParamsEditorSizer.AddSizer(projectproperties_sizer, 0, border=5, 
                                         flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
+        
+        self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
+        projectproperties_sizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
+                                         flag=wx.RIGHT)
+        
+        self.ProjectProperties = ProjectPropertiesPanel(self.Editor, self.Controler, self.ParentWindow)
+        projectproperties_sizer.AddWindow(self.ProjectProperties, 0, border=0, flag=0)
         
     def __init__(self, parent, controler, window):
         configuration = controler.GetProjectMainConfigurationName()
@@ -55,5 +62,16 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
     def RefreshView(self):
         EditorPanel.RefreshView(self)
         self.RefreshConfNodeParamsSizer()
+        self.ProjectProperties.RefreshView()
 
+    def GetBufferState(self):
+        return self.Controler.GetBufferState()
         
+    def Undo(self):
+        self.Controler.LoadPrevious()
+        self.ParentWindow.CloseTabsWithoutModel()
+            
+    def Redo(self):
+        self.Controler.LoadNext()
+        self.ParentWindow.CloseTabsWithoutModel()
+    
