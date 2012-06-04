@@ -380,7 +380,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             LocatedCCodeAndFlags.append(res[:2])
             if len(res)>2:
                 Extras.append(res[2:])
-        return map(list,zip(*LocatedCCodeAndFlags))+[tuple(Extras)]
+        return map(list,zip(*LocatedCCodeAndFlags))+[tuple(*Extras)]
     
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
