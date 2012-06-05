@@ -632,7 +632,6 @@ class Beremiz(IDEFrame):
             MenuToolBar.EnableTool(wx.ID_SAVE, project_modified)
             self.FileMenu.Enable(wx.ID_SAVEAS, True)
             MenuToolBar.EnableTool(wx.ID_SAVEAS, True)
-            self.FileMenu.Enable(wx.ID_PROPERTIES, True)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, True)
         else:
             self.FileMenu.Enable(wx.ID_CLOSE, False)
@@ -644,7 +643,6 @@ class Beremiz(IDEFrame):
             MenuToolBar.EnableTool(wx.ID_SAVE, False)
             self.FileMenu.Enable(wx.ID_SAVEAS, False)
             MenuToolBar.EnableTool(wx.ID_SAVEAS, False)
-            self.FileMenu.Enable(wx.ID_PROPERTIES, False)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
     
     def RefreshRecentProjectsMenu(self):
