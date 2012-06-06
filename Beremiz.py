@@ -352,11 +352,12 @@ class Beremiz(IDEFrame):
         new_id = wx.NewId()
         AppendMenu(parent, help='', id=new_id,
                   kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
+        self.Bind(wx.EVT_MENU, self.AddResourceMenu, id=new_id)
         for name, XSDClass, help in ProjectController.CTNChildrenTypes:
             new_id = wx.NewId()
             AppendMenu(parent, help='', id=new_id, 
                        kind=wx.ITEM_NORMAL, text=help)
-            self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name), id=new_id)
+            self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name), id=new_id)
     
     def _init_coll_HelpMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_ABOUT,
@@ -734,11 +735,6 @@ class Beremiz(IDEFrame):
     def RefreshAll(self):
         self.RefreshStatusToolBar()
     
-    def _GetAddConfNodeFunction(self, name, confnode=None):
-        def OnConfNodeMenu(event):
-            wx.CallAfter(self.AddConfNode, name, confnode)
-        return OnConfNodeMenu
-    
     def GetMenuCallBackFunction(self, method):
         """ Generate the callbackfunc for a given CTR method"""
         def OnMenu(event):
@@ -910,7 +906,7 @@ class Beremiz(IDEFrame):
                 for name, XSDClass, help in confnode.CTNChildrenTypes:
                     new_id = wx.NewId()
                     confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=name)
-                    self.Bind(wx.EVT_MENU, self._GetAddConfNodeFunction(name, confnode), id=new_id)
+                    self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
 
             new_id = wx.NewId()
             AppendMenu(confnode_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Delete"))
@@ -953,23 +949,33 @@ class Beremiz(IDEFrame):
                 else:
                     IDEFrame.SelectProjectTreeItem(self, tagname)
             
+    def GetAddConfNodeFunction(self, name, confnode=None):
+        def AddConfNodeMenuFunction(event):
+            wx.CallAfter(self.AddConfNode, name, confnode)
+        return AddConfNodeMenuFunction
+    
     def GetDeleteMenuFunction(self, confnode):
         def DeleteMenuFunction(event):
             wx.CallAfter(self.DeleteConfNode, confnode)
         return DeleteMenuFunction
     
+    def AddResourceMenu(self, event):
+        config_names = self.CTR.GetProjectConfigNames()
+        if len(config_names) > 0:
+            tagname = self.Controler.ProjectAddConfigurationResource(config_names[0])
+            if tagname is not None:
+                self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL)
+                self.EditProjectElement(ITEM_RESOURCE, tagname)
+        
     def AddConfNode(self, ConfNodeType, confnode=None):
         if self.CTR.CheckProjectPathPerm():
-            dialog = wx.TextEntryDialog(self, _("Please enter a name for confnode:"), _("Add ConfNode"), "", wx.OK|wx.CANCEL)
-            if dialog.ShowModal() == wx.ID_OK:
-                ConfNodeName = dialog.GetValue()
-                if confnode is not None:
-                    confnode.CTNAddChild(ConfNodeName, ConfNodeType)
-                else:
-                    self.CTR.CTNAddChild(ConfNodeName, ConfNodeType)
-                self._Refresh(TITLE, FILEMENU, PROJECTTREE)
-            dialog.Destroy()
-    
+            ConfNodeName = "%s-0" % ConfNodeType
+            if confnode is not None:
+                confnode.CTNAddChild(ConfNodeName, ConfNodeType)
+            else:
+                self.CTR.CTNAddChild(ConfNodeName, ConfNodeType)
+            self._Refresh(TITLE, FILEMENU, PROJECTTREE)
+            
     def DeleteConfNode(self, confnode):
         if self.CTR.CheckProjectPathPerm():
             dialog = wx.MessageDialog(self, _("Really delete confnode ?"), _("Remove confnode"), wx.YES_NO|wx.NO_DEFAULT)
