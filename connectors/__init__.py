@@ -27,9 +27,6 @@ from os import listdir, path
 _base_path = path.split(__file__)[0]
 
 
-# a dict from a DNS-SD service type to a connector module that support it
-dnssd_connectors = {"_PYRO._tcp.local.":"PYRO"}
-
 def _GetLocalConnectorClassFactory(name):
     return lambda:getattr(__import__(name,globals(),locals()), name + "_connector_factory")
 

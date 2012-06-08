@@ -1271,6 +1271,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 uri = dialog.GetURI()
                 dialog.Destroy()
             except:
+                self.logger.write_error(_("Local service discovery failed !\n"))
+                self.logger.write_error(traceback.format_exc())
                 uri = None
             
             # Nothing choosed or cancel button
