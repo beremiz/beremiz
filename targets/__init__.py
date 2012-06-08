@@ -37,8 +37,8 @@ def _GetLocalTargetClassFactory(name):
     return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
 targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"), 
-                  "class":_GetLocalTargetClassFactory(name),
-                  "code": path.join(path.split(__file__)[0],name,"plc_%s_main.c"%name)})
+                        "class":_GetLocalTargetClassFactory(name),
+                        "code": path.join(path.split(__file__)[0],name,"plc_%s_main.c"%name)})
                 for name in listdir(_base_path) 
                     if path.isdir(path.join(_base_path, name)) 
                        and not name.startswith("__")])

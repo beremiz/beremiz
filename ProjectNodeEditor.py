@@ -7,6 +7,7 @@ from ConfTreeNodeEditor import ConfTreeNodeEditor, WINDOW_COLOUR
 class ProjectNodeEditor(ConfTreeNodeEditor):
     
     VARIABLE_PANEL_TYPE = "config"
+    ENABLE_REQUIRED = True
     
     def _init_Editor(self, prnt):
         self.Editor = wx.ScrolledWindow(prnt, -1, size=wx.Size(-1, -1),
@@ -34,11 +35,14 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         self.ParamsEditorSizer.AddSizer(projectproperties_sizer, 0, border=5, 
                                         flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
         
-        self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
-        projectproperties_sizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
-                                         flag=wx.RIGHT)
+        if self.SHOW_PARAMS:
+            self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
+            projectproperties_sizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
+                                             flag=wx.RIGHT)
+        else:
+            self.ConfNodeParamsSizer = None
         
-        self.ProjectProperties = ProjectPropertiesPanel(self.Editor, self.Controler, self.ParentWindow)
+        self.ProjectProperties = ProjectPropertiesPanel(self.Editor, self.Controler, self.ParentWindow, self.ENABLE_REQUIRED)
         projectproperties_sizer.AddWindow(self.ProjectProperties, 0, border=0, flag=0)
         
     def __init__(self, parent, controler, window):
@@ -61,7 +65,8 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
     
     def RefreshView(self):
         EditorPanel.RefreshView(self)
-        self.RefreshConfNodeParamsSizer()
+        if self.ConfNodeParamsSizer is not None:
+            self.RefreshConfNodeParamsSizer()
         self.ProjectProperties.RefreshView()
 
     def GetBufferState(self):

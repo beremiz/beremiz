@@ -3,7 +3,7 @@ import wx
 
 from subindextable import EditingPanel
 from networkedit import NetworkEditorTemplate
-from controls import EditorPanel
+from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 [ID_NETWORKEDITOR, 
 ] = [wx.NewId() for _init_ctrls in range(1)]
@@ -22,7 +22,7 @@ from controls import EditorPanel
  ID_NETWORKEDITORADDMENUMAPVARIABLE, ID_NETWORKEDITORADDMENUUSERTYPE,
 ] = [wx.NewId() for _init_coll_AddMenu_Items in range(6)]
 
-class NetworkEditor(EditorPanel, NetworkEditorTemplate):
+class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
     
     ID = ID_NETWORKEDITOR
     
@@ -39,23 +39,20 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
         self._init_coll_MainSizer_Items(self.MainSizer)
         self._init_coll_MainSizer_Growables(self.MainSizer)
         
-        self.Editor.SetSizer(self.MainSizer)
+        self.ConfNodeEditor.SetSizer(self.MainSizer)
     
-    def _init_Editor(self, prnt):
-        self.Editor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
+    def _init_ConfNodeEditor(self, prnt):
+        self.ConfNodeEditor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
                 size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
-        NetworkEditorTemplate._init_ctrls(self, self.Editor)
+        NetworkEditorTemplate._init_ctrls(self, self.ConfNodeEditor)
         
         self._init_sizers()
         
     def __init__(self, parent, controler, window):
-        EditorPanel.__init__(self, parent, "", window, controler)
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
         NetworkEditorTemplate.__init__(self, controler, window, False)
     
-        img = wx.Bitmap(controler.GetIconPath(), wx.BITMAP_TYPE_PNG).ConvertToImage()
-        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
-        
         self.RefreshNetworkNodes()
         self.RefreshBufferState()
     
@@ -97,13 +94,8 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
     def RefreshConfNodeMenu(self, confnode_menu):
         confnode_menu.Enable(ID_NETWORKEDITORCONFNODEMENUMASTER, self.NetworkNodes.GetSelection() == 0)
     
-    def GetTitle(self):
-        fullname = self.Controler.CTNFullName()
-        if not self.Manager.CurrentIsSaved():
-            return "~%s~" % fullname
-        return fullname
-
     def RefreshView(self):
+        ConfTreeNodeEditor.RefreshView(self)
         self.RefreshCurrentIndexList()
     
     def RefreshBufferState(self):
@@ -116,4 +108,3 @@ class NetworkEditor(EditorPanel, NetworkEditorTemplate):
     def OnNodeSelectedChanged(self, event):
         NetworkEditorTemplate.OnNodeSelectedChanged(self, event)
         wx.CallAfter(self.ParentWindow.RefreshConfNodeMenu)
-        

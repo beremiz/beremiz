@@ -438,7 +438,7 @@ class Beremiz(IDEFrame):
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
-        if projectOpen is None and self.Config.HasEntry("currenteditedproject"):
+        if ctr is None and projectOpen is None and self.Config.HasEntry("currenteditedproject"):
             projectOpen = str(self.Config.Read("currenteditedproject"))
             if projectOpen == "":
                 projectOpen = None

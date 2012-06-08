@@ -3,7 +3,7 @@ import wx
 
 from subindextable import EditingPanel
 from nodeeditor import NodeEditorTemplate
-from controls import EditorPanel
+from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 [ID_SLAVEEDITORCONFNODEMENUNODEINFOS, ID_SLAVEEDITORCONFNODEMENUDS301PROFILE,
  ID_SLAVEEDITORCONFNODEMENUDS302PROFILE, ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE,
@@ -15,18 +15,15 @@ from controls import EditorPanel
  ID_SLAVEEDITORADDMENUMAPVARIABLE, ID_SLAVEEDITORADDMENUUSERTYPE,
 ] = [wx.NewId() for _init_coll_AddMenu_Items in range(6)]
 
-class SlaveEditor(EditorPanel, NodeEditorTemplate):
+class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
     
-    def _init_Editor(self, prnt):
-        self.Editor = EditingPanel(prnt, self, self.Controler, self.Editable)
+    def _init_ConfNodeEditor(self, prnt):
+        self.ConfNodeEditor = EditingPanel(prnt, self, self.Controler, self.Editable)
         
     def __init__(self, parent, controler, window, editable=True):
         self.Editable = editable
-        EditorPanel.__init__(self, parent, "", window, controler)
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
         NodeEditorTemplate.__init__(self, controler, window, False)
-        
-        img = wx.Bitmap(controler.GetIconPath(), wx.BITMAP_TYPE_PNG).ConvertToImage()
-        self.SetIcon(wx.BitmapFromImage(img.Rescale(16, 16)))
     
     def __del__(self):
         self.Controler.OnCloseEditor(self)
@@ -59,15 +56,10 @@ class SlaveEditor(EditorPanel, NodeEditorTemplate):
     
     def RefreshConfNodeMenu(self, confnode_menu):
         confnode_menu.Enable(ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, False)
-    
-    def GetTitle(self):
-        fullname = self.Controler.CTNFullName()
-        if not self.Controler.CurrentIsSaved():
-            return "~%s~" % fullname
-        return fullname
 
     def RefreshView(self):
-        self.Editor.RefreshIndexList()
+        ConfTreeNodeEditor.RefreshView(self)
+        self.ConfNodeEditor.RefreshIndexList()
 
     def RefreshCurrentIndexList(self):
         self.RefreshView()
