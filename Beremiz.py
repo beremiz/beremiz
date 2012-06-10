@@ -686,6 +686,12 @@ class Beremiz(IDEFrame):
                 if callback is not None:
                     self.Bind(wx.EVT_MENU, callback, id=id)
     
+    def RefreshEditorToolBar(self):
+        IDEFrame.RefreshEditorToolBar(self)
+        self.AUIManager.GetPane("EditorToolBar").Position(2)
+        self.AUIManager.GetPane("StatusToolBar").Position(1)
+        self.AUIManager.Update()
+    
     def RefreshStatusToolBar(self):
         StatusToolBar = self.Panes["StatusToolBar"]
         StatusToolBar.ClearTools()
@@ -704,7 +710,7 @@ class Beremiz(IDEFrame):
             self.AUIManager.GetPane("StatusToolBar").BestSize(StatusToolBar.GetBestSize()).Show()
         else:
             self.AUIManager.GetPane("StatusToolBar").Hide()
-        self.AUIManager.GetPane("EditorToolBar").Position(1)
+        self.AUIManager.GetPane("EditorToolBar").Position(2)
         self.AUIManager.GetPane("StatusToolBar").Position(1)
         self.AUIManager.Update()
     
