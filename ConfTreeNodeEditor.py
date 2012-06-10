@@ -306,12 +306,18 @@ class ConfTreeNodeEditor(EditorPanel):
             if "method" in confnode_method and confnode_method.get("shown",True):
                 id = wx.NewId()
                 label = confnode_method["name"]
+                bitmap_path = confnode_method.get("bitmap", "Unknown")
+                if os.path.splitext(bitmap_path)[1] == "":
+                    bitmap_path = Bpath("images", "%s.png" % bitmap_path)
                 button = GenBitmapTextButton(id=id, parent=self.ParamsEditor,
-                    bitmap=wx.Bitmap(Bpath("images", "%s.png"%confnode_method.get("bitmap", "Unknown"))), label=label, 
+                    bitmap=wx.Bitmap(bitmap_path), label=label, 
                     name=label, pos=wx.DefaultPosition, style=wx.NO_BORDER)
                 button.SetFont(normal_bt_font)
                 button.SetToolTipString(confnode_method["tooltip"])
-                button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(confnode_method["method"]), id=id)
+                if confnode_method.get("push", False):
+                    button.Bind(wx.EVT_LEFT_DOWN, self.GetButtonCallBackFunction(confnode_method["method"], True))
+                else:
+                    button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(confnode_method["method"]), id=id)
                 # a fancy underline on mouseover
                 def setFontStyle(b, s):
                     def fn(event):
@@ -483,7 +489,7 @@ class ConfTreeNodeEditor(EditorPanel):
         wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU)
         return res
     
-    def GetButtonCallBackFunction(self, method):
+    def GetButtonCallBackFunction(self, method, push=False):
         """ Generate the callbackfunc for a given confnode method"""
         def OnButtonClick(event):
             # Disable button to prevent re-entrant call 
@@ -493,7 +499,8 @@ class ConfTreeNodeEditor(EditorPanel):
             # Re-enable button 
             event.GetEventObject().Enable()
             
-            event.Skip()
+            if not push:
+                event.Skip()
         return OnButtonClick
     
     def GetChoiceCallBackFunction(self, choicectrl, path):
