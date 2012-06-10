@@ -159,7 +159,7 @@ if HAS_MCL:
     NODE_VARIABLES = [
         ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
         ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
-#        ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
+        ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
         ("StatusWord", 0x6041, 0x00, "UINT", "I"),
         ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
@@ -179,8 +179,35 @@ if HAS_MCL:
         NODE_PROFILE = 402
         EditorType = CIA402NodeEditor
         
+        ConfNodeMethods = [
+            {"bitmap" : "CIA402AxisRef",
+             "name" : _("Axis Ref"),
+             "tooltip" : _("Initiate Drag'n drop of Axis ref located variable"),
+             "method" : "_getCIA402AxisRef"},
+        ]
+        
         def GetIconPath(self):
             return os.path.join(CONFNODEFOLDER, "images", "CIA402Slave.png")
+        
+        def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
+            axis_name = self.CTNName()
+            vars = [{"name": "%s Axis Ref" % (axis_name),
+                     "type": LOCATION_VAR_INPUT,
+                     "size": "W",
+                     "IEC_type": "AXIS_REF",
+                     "var_name": axis_name,
+                     "location": "%IW%s.0" % (".".join(map(str, current_location))),
+                     "description": "",
+                     "children": []}]
+            vars.extend(_EthercatSlaveCTN.GetDeviceLocationTree(self, slave_pos, current_location, device_name))
+            return vars
+        
+        def _getCIA402AxisRef(self):
+            data = wx.TextDataObject(str(("%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
+                                          "location", "AXIS_REF", self.CTNName(), "")))
+            dragSource = wx.DropSource(self.GetCTRoot().AppFrame)
+            dragSource.SetData(data)
+            dragSource.DoDragDrop()
         
         def CTNGenerate_C(self, buildpath, locations):
             """
@@ -307,6 +334,7 @@ class _EthercatCTN:
         <xsd:complexType>
           <xsd:attribute name="MasterNumber" type="xsd:integer" use="optional" default="0"/>
           <xsd:attribute name="ConfigurePDOs" type="xsd:boolean" use="optional" default="true"/>
+          <xsd:attribute name="DynamicPDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -497,11 +525,10 @@ class _EthercatCTN:
     
     def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
         slave = self.GetSlave(slave_pos)
+        vars = []    
         if slave is not None:
             type_infos = slave.getType()
         
-            vars = []
-            
             device = self.GetModuleInfos(type_infos)
             if device is not None:
                 sync_managers = []
@@ -965,85 +992,86 @@ class _EthercatCFileGenerator:
                                      "entries_number": len(entries_infos),
                                      "fixed": pdo.getFixed() == True})
                     
-                    dynamic_pdos = {}
-                    dynamic_pdos_number = 0
-                    for category, min_index, max_index in [("Inputs", 0x1600, 0x1800), 
-                                                           ("Outputs", 0x1a00, 0x1C00)]:
-                        for sync_manager in sync_managers:
-                            if sync_manager["name"] == category:
-                                category_infos = dynamic_pdos.setdefault(category, {})
-                                category_infos["sync_manager"] = sync_manager
-                                category_infos["pdos"] = [pdo for pdo in category_infos["sync_manager"]["pdos"] 
-                                                          if not pdo["fixed"] and pdo["type"] == category]
-                                category_infos["current_index"] = min_index
-                                category_infos["max_index"] = max_index
-                                break
-                    
-                    for (index, subindex), entry_declaration in slave_variables.iteritems():
+                    if etherlab_node_infos.getDynamicPDOs():
+                        dynamic_pdos = {}
+                        dynamic_pdos_number = 0
+                        for category, min_index, max_index in [("Inputs", 0x1600, 0x1800), 
+                                                               ("Outputs", 0x1a00, 0x1C00)]:
+                            for sync_manager in sync_managers:
+                                if sync_manager["name"] == category:
+                                    category_infos = dynamic_pdos.setdefault(category, {})
+                                    category_infos["sync_manager"] = sync_manager
+                                    category_infos["pdos"] = [pdo for pdo in category_infos["sync_manager"]["pdos"] 
+                                                              if not pdo["fixed"] and pdo["type"] == category]
+                                    category_infos["current_index"] = min_index
+                                    category_infos["max_index"] = max_index
+                                    break
                         
-                        if not entry_declaration["mapped"]:
-                            entry = device_entries.get((index, subindex), None)
-                            if entry is None:
-                                raise ValueError, _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") % \
-                                                 (index, subindex, type_infos["device_type"])
+                        for (index, subindex), entry_declaration in slave_variables.iteritems():
                             
-                            entry_infos = {
-                                "index": index,
-                                "subindex": subindex,
-                                "name": entry["Name"],
-                                "bitlen": entry["BitSize"],
-                            }
-                            entry_infos.update(type_infos)
-                            
-                            entry_infos.update(dict(zip(["var_type", "dir", "var_name", "real_var"], entry_declaration["infos"])))
-                            entry_declaration["mapped"] = True
-                            
-                            if entry_infos["var_type"] != entry["Type"]:
-                                message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                if (self.Controler.GetSizeOfType(entry_infos["var_type"]) != 
-                                    self.Controler.GetSizeOfType(entry["Type"])):
-                                    raise ValueError, message
-                                else:
-                                    self.Controler.GetCTRoot().logger.write_warning(message + "\n")
-                            
-                            if entry_infos["dir"] == "I" and entry["PDOMapping"] in ["T", "RT"]:
-                                pdo_type = "Inputs"
-                            elif entry_infos["dir"] == "Q" and entry["PDOMapping"] in ["R", "RT"]:
-                                pdo_type = "Outputs"
-                            else:
-                                raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
-                            
-                            if not dynamic_pdos.has_key(pdo_type):
-                                raise ValueError, _("No Sync manager defined for %s!") % pdo_type
-                            
-                            ConfigureVariable(entry_infos, str_completion)
-                            
-                            if len(dynamic_pdos[pdo_type]["pdos"]) > 0:
-                                pdo = dynamic_pdos[pdo_type]["pdos"][0]
-                            else:
-                                while dynamic_pdos[pdo_type]["current_index"] in pdos_index:
-                                    dynamic_pdos[pdo_type]["current_index"] += 1
-                                if dynamic_pdos[pdo_type]["current_index"] >= dynamic_pdos[pdo_type]["max_index"]:
-                                    raise ValueError, _("No more free PDO index available for %s!") % pdo_type
-                                pdos_index.append(dynamic_pdos[pdo_type]["current_index"])
+                            if not entry_declaration["mapped"]:
+                                entry = device_entries.get((index, subindex), None)
+                                if entry is None:
+                                    raise ValueError, _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") % \
+                                                     (index, subindex, type_infos["device_type"])
                                 
-                                dynamic_pdos_number += 1
-                                pdo = {"slave": slave_idx,
-                                       "index": dynamic_pdos[pdo_type]["current_index"],
-                                       "name": "Dynamic PDO %d" % dynamic_pdos_number,
-                                       "type": pdo_type, 
-                                       "entries": [],
-                                       "entries_number": 0,
-                                       "fixed": False}
-                                dynamic_pdos[pdo_type]["sync_manager"]["pdos_number"] += 1
-                                dynamic_pdos[pdo_type]["sync_manager"]["pdos"].append(pdo)
-                                dynamic_pdos[pdo_type]["pdos"].append(pdo)
-                            
-                            pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
-                            pdo["entries_number"] += 1
-                            
-                            if pdo["entries_number"] == 255:
-                                dynamic_pdos[pdo_type]["pdos"].pop(0)
+                                entry_infos = {
+                                    "index": index,
+                                    "subindex": subindex,
+                                    "name": entry["Name"],
+                                    "bitlen": entry["BitSize"],
+                                }
+                                entry_infos.update(type_infos)
+                                
+                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "real_var"], entry_declaration["infos"])))
+                                entry_declaration["mapped"] = True
+                                
+                                if entry_infos["var_type"] != entry["Type"]:
+                                    message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                    if (self.Controler.GetSizeOfType(entry_infos["var_type"]) != 
+                                        self.Controler.GetSizeOfType(entry["Type"])):
+                                        raise ValueError, message
+                                    else:
+                                        self.Controler.GetCTRoot().logger.write_warning(message + "\n")
+                                
+                                if entry_infos["dir"] == "I" and entry["PDOMapping"] in ["T", "RT"]:
+                                    pdo_type = "Inputs"
+                                elif entry_infos["dir"] == "Q" and entry["PDOMapping"] in ["R", "RT"]:
+                                    pdo_type = "Outputs"
+                                else:
+                                    raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                                
+                                if not dynamic_pdos.has_key(pdo_type):
+                                    raise ValueError, _("No Sync manager defined for %s!") % pdo_type
+                                
+                                ConfigureVariable(entry_infos, str_completion)
+                                
+                                if len(dynamic_pdos[pdo_type]["pdos"]) > 0:
+                                    pdo = dynamic_pdos[pdo_type]["pdos"][0]
+                                else:
+                                    while dynamic_pdos[pdo_type]["current_index"] in pdos_index:
+                                        dynamic_pdos[pdo_type]["current_index"] += 1
+                                    if dynamic_pdos[pdo_type]["current_index"] >= dynamic_pdos[pdo_type]["max_index"]:
+                                        raise ValueError, _("No more free PDO index available for %s!") % pdo_type
+                                    pdos_index.append(dynamic_pdos[pdo_type]["current_index"])
+                                    
+                                    dynamic_pdos_number += 1
+                                    pdo = {"slave": slave_idx,
+                                           "index": dynamic_pdos[pdo_type]["current_index"],
+                                           "name": "Dynamic PDO %d" % dynamic_pdos_number,
+                                           "type": pdo_type, 
+                                           "entries": [],
+                                           "entries_number": 0,
+                                           "fixed": False}
+                                    dynamic_pdos[pdo_type]["sync_manager"]["pdos_number"] += 1
+                                    dynamic_pdos[pdo_type]["sync_manager"]["pdos"].append(pdo)
+                                    dynamic_pdos[pdo_type]["pdos"].append(pdo)
+                                
+                                pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                                pdo["entries_number"] += 1
+                                
+                                if pdo["entries_number"] == 255:
+                                    dynamic_pdos[pdo_type]["pdos"].pop(0)
                             
                     pdo_offset = 0
                     entry_offset = 0
