@@ -1281,9 +1281,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.\
                 BeremizRoot.\
                 setURI_location(uri)
+                self.ChangesToSave = True
                 if self._View is not None:
                     self._View.RefreshView()
-       
+                    self.AppFrame.RefreshTitle()
+                    self.AppFrame.RefreshFileMenu()
+                    self.AppFrame.RefreshEditMenu()
+                    self.AppFrame.RefreshPageTitles()
+                           
         # Get connector from uri
         try:
             self._connector = connectors.ConnectorFactory(uri, self)
