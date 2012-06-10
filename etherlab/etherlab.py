@@ -62,7 +62,17 @@ returnVal = slaves
 #--------------------------------------------------
 
 class _EthercatSlaveCTN:
-
+    
+    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="SlaveParams">
+        <xsd:complexType>
+          <xsd:attribute name="DynamicPDOs" type="xsd:boolean" use="optional" default="true"/>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+    """
+    
     NODE_PROFILE = None
     EditorType = NodeEditor
     
@@ -87,42 +97,46 @@ class _EthercatSlaveCTN:
                 return self.CTNParams[1].getElementInfos(parts[0], parts[1])
         else:
             params = []
-            if wx.VERSION < (2, 8, 0) and self.MandatoryParams:
-                params.append(self.MandatoryParams[1].getElementInfos(self.MandatoryParams[0]))
+            if self.CTNParams:
+                params.append(self.CTNParams[1].getElementInfos(self.CTNParams[0]))
+            else:
+                params.append({
+                    'use': 'required', 
+                    'type': 'element', 
+                    'name': 'SlaveParams', 
+                    'value': None, 
+                    'children': []
+                })
+            
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
-            params.append({
-                'use': 'required', 
-                'type': 'element', 
-                'name': 'SlaveParams', 
-                'value': None, 
-                'children': [{
-                    'use': 'optional', 
+            params[0]['children'].insert(0,
+                   {'use': 'optional', 
                     'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE), 
                     'name': 'Type', 
-                    'value': (slave_type["device_type"], slave_type)}, 
+                    'value': (slave_type["device_type"], slave_type)}) 
+            params[0]['children'].insert(1,
                    {'use': 'optional', 
                     'type': 'unsignedLong', 
                     'name': 'Alias', 
-                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())}]
-            })
-            if self.CTNParams:
-                params.append(self.CTNParams[1].getElementInfos(self.CTNParams[0]))
+                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())})
             return params
         
     def SetParamsAttribute(self, path, value):
+        if path == "SlaveParams.Type":
+            self.CTNParent.SetSlaveType(position, value)
+            slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
+            value = (slave_type["device_type"], slave_type)
+            return value, True
+        elif path == "SlaveParams.Alias":
+            self.CTNParent.SetSlaveAlias(position, value)
+            return value, True
+        
         position = self.BaseParams.getIEC_Channel()
         value, changed = ConfigTreeNode.SetParamsAttribute(self, path, value)
         # Filter IEC_Channel, Slave_Type and Alias that have specific behavior
         if path == "BaseParams.IEC_Channel":
             self.CTNParent.SetSlavePosition(position, value)
-        elif path == "SlaveParams.Type":
-            self.CTNParent.SetSlaveType(position, value)
-            slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
-            value = (slave_type["device_type"], slave_type)
-            changed = True
-        elif path == "SlaveParams.Alias":
-            self.CTNParent.SetSlaveAlias(position, value)
-            changed = True
+        
         return value, changed
 
     def GetSlaveInfos(self):
@@ -170,6 +184,7 @@ if HAS_MCL:
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="CIA402SlaveParams">
             <xsd:complexType>
+              <xsd:attribute name="DynamicPDOs" type="xsd:boolean" use="optional" default="true"/>
               %s
             </xsd:complexType>
           </xsd:element>
@@ -180,27 +195,40 @@ if HAS_MCL:
         EditorType = CIA402NodeEditor
         
         ConfNodeMethods = [
-            {"bitmap" : "CIA402AxisRef",
+            {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "CIA402AxisRef.png"),
              "name" : _("Axis Ref"),
              "tooltip" : _("Initiate Drag'n drop of Axis ref located variable"),
-             "method" : "_getCIA402AxisRef"},
+             "method" : "_getCIA402AxisRef",
+             "push": True},
         ]
         
         def GetIconPath(self):
             return os.path.join(CONFNODEFOLDER, "images", "CIA402Slave.png")
         
-        def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
+        def SetParamsAttribute(self, path, value):
+            if path == "CIA402SlaveParams.Type":
+                path = "SlaveParams.Type"
+            elif path == "CIA402SlaveParams.Alias":
+                path = "SlaveParams.Alias"
+            return _EthercatSlaveCTN.SetParamsAttribute(self, path, value)
+        
+        def GetVariableLocationTree(self):
             axis_name = self.CTNName()
-            vars = [{"name": "%s Axis Ref" % (axis_name),
-                     "type": LOCATION_VAR_INPUT,
-                     "size": "W",
-                     "IEC_type": "AXIS_REF",
-                     "var_name": axis_name,
-                     "location": "%IW%s.0" % (".".join(map(str, current_location))),
-                     "description": "",
-                     "children": []}]
-            vars.extend(_EthercatSlaveCTN.GetDeviceLocationTree(self, slave_pos, current_location, device_name))
-            return vars
+            current_location = self.GetCurrentLocation()
+            children = [{"name": "%s Axis Ref" % (axis_name),
+                         "type": LOCATION_VAR_INPUT,
+                         "size": "W",
+                         "IEC_type": "INT",
+                         "var_name": axis_name,
+                         "location": "%%IW%s.0" % (".".join(map(str, current_location))),
+                         "description": "",
+                         "children": []}]
+            children.extend(self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), current_location, axis_name))
+            return  {"name": axis_name,
+                     "type": LOCATION_CONFNODE,
+                     "location": self.GetFullIEC_Channel(),
+                     "children": children,
+            }
         
         def _getCIA402AxisRef(self):
             data = wx.TextDataObject(str(("%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
@@ -334,7 +362,6 @@ class _EthercatCTN:
         <xsd:complexType>
           <xsd:attribute name="MasterNumber" type="xsd:integer" use="optional" default="0"/>
           <xsd:attribute name="ConfigurePDOs" type="xsd:boolean" use="optional" default="true"/>
-          <xsd:attribute name="DynamicPDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
