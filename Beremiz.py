@@ -401,7 +401,7 @@ class Beremiz(IDEFrame):
         self.Panes["StatusToolBar"] = StatusToolBar
         self.AUIManager.AddPane(StatusToolBar, wx.aui.AuiPaneInfo().
                   Name("StatusToolBar").Caption(_("Status ToolBar")).
-                  ToolbarPane().Top().Position(2).
+                  ToolbarPane().Top().Position(1).
                   LeftDockable(False).RightDockable(False))
         
         self.AUIManager.Update()
@@ -704,6 +704,8 @@ class Beremiz(IDEFrame):
             self.AUIManager.GetPane("StatusToolBar").BestSize(StatusToolBar.GetBestSize()).Show()
         else:
             self.AUIManager.GetPane("StatusToolBar").Hide()
+        self.AUIManager.GetPane("EditorToolBar").Position(1)
+        self.AUIManager.GetPane("StatusToolBar").Position(1)
         self.AUIManager.Update()
     
     def RefreshConfNodeMenu(self):
