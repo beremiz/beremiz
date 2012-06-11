@@ -287,7 +287,7 @@ if HAS_MCL:
             
             params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
             for param in params["children"]:
-                if param["value"] is not None:
+                if param["value"] is not None and param["name"] != "DynamicPDOs":
                     param_infos = {
                         "location": location_str,
                         "param_name": param["name"],
@@ -655,8 +655,13 @@ class _EthercatCTN:
         slaves = self.GetSlaves()
         for slave_pos in slaves:
             slave = self.GetSlave(slave_pos)
+            slave_node = self.GetChildByIECLocation([slave_pos])
+            if slave_node.CTNParams is not None:
+                slave_infos = slave_node.CTNParams[1]
+            else:
+                slave_infos = None
             if slave is not None:
-                self.FileGenerator.DeclareSlave(slave_pos, slave.getInfo().getAutoIncAddr(), slave.getType())
+                self.FileGenerator.DeclareSlave(slave_pos, slave.getInfo().getAutoIncAddr(), slave.getType(), slave_infos)
         
         for location in locations:
             loc = location["LOC"][len(current_location):]
@@ -817,8 +822,8 @@ class _EthercatCFileGenerator:
     def __del__(self):
         self.Controler = None            
 
-    def DeclareSlave(self, slave_index, slave_alias, slave):
-        self.Slaves.append((slave_index, slave_alias, slave))
+    def DeclareSlave(self, slave_index, slave_alias, slave, slave_infos):
+        self.Slaves.append((slave_index, slave_alias, slave, slave_infos))
 
     def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name):
         slave_variables = self.UsedVariables.setdefault(slave_index, {})
@@ -860,7 +865,7 @@ class _EthercatCFileGenerator:
         
         self.Slaves.sort()
         alias = {}
-        for (slave_idx, slave_alias, type_infos) in self.Slaves:
+        for (slave_idx, slave_alias, type_infos, slave_infos) in self.Slaves:
             if alias.get(slave_alias) is not None:
                 alias[slave_alias] += 1
             else:
@@ -1019,7 +1024,7 @@ class _EthercatCFileGenerator:
                                      "entries_number": len(entries_infos),
                                      "fixed": pdo.getFixed() == True})
                     
-                    if etherlab_node_infos.getDynamicPDOs():
+                    if slave_infos is None or slave_infos.getDynamicPDOs():
                         dynamic_pdos = {}
                         dynamic_pdos_number = 0
                         for category, min_index, max_index in [("Inputs", 0x1600, 0x1800), 
