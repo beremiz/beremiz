@@ -25,11 +25,11 @@
 import socket, threading
 from util import Zeroconf
 
+service_type = '_PYRO._tcp.local.'
+
 class ServicePublisher():
     def __init__(self):
         # type: fully qualified service type name
-        self.service_type = '_PYRO._tcp.local.'
-        # properties: dictionary of properties (or a string holding the bytes for the text field)
         self.serviceproperties = {'description':'Beremiz remote PLC'}
         
         self.name = None
@@ -48,7 +48,7 @@ class ServicePublisher():
 
     def _RegisterService(self, name, ip, port):
         # name: fully qualified service name
-        self.service_name = 'Beremiz_%s.%s'%(name,self.service_type)
+        self.service_name = 'Beremiz_%s.%s'%(name,service_type)
         self.name = name
         self.port = port
 
@@ -61,7 +61,7 @@ class ServicePublisher():
         self.ip_32b = socket.inet_aton(ip)
 
         self.server.registerService(
-             Zeroconf.ServiceInfo(self.service_type,
+             Zeroconf.ServiceInfo(service_type,
                                   self.service_name,
                                   self.ip_32b,
                                   self.port,
@@ -73,7 +73,7 @@ class ServicePublisher():
             self.retrytimer.cancel()
 
         self.server.unregisterService(
-                                      Zeroconf.ServiceInfo(self.service_type, 
+                                      Zeroconf.ServiceInfo(service_type, 
                                                            self.service_name, 
                                                            self.ip_32b, 
                                                            self.port, 

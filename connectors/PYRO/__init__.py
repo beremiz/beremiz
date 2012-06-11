@@ -24,6 +24,8 @@ import Pyro.util
 import traceback
 from time import sleep
 import copy
+import socket
+service_type = '_PYRO._tcp.local.'
 
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
@@ -38,12 +40,27 @@ def PYRO_connector_factory(uri, confnodesroot):
     confnodesroot.logger.write(_("Connecting to URI : %s\n")%uri)
 
     servicetype, location = uri.split("://")
+    if location.find(service_type) != -1:
+        try :
+            from util.Zeroconf import Zeroconf
+            r = Zeroconf()
+            i=r.getServiceInfo(service_type, location)
+            ip = str(socket.inet_ntoa(i.getAddress()))
+            port = str(i.getPort())
+            newlocation = ip+':'+port
+            confnodesroot.logger.write(_("'%s' is located at %s\n")%(location, newlocation))
+            location = newlocation
+            r.close()
+        except Exception, msg:
+            confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n")%location)
+            confnodesroot.logger.write_error(traceback.format_exc())
+            return None
     
     # Try to get the proxy object
     try :
         RemotePLCObjectProxy = pyro.getAttrProxyForURI("PYROLOC://"+location+"/PLCObject")
     except Exception, msg:
-        confnodesroot.logger.write_error(_("Wrong URI, please check it !\n"))
+        confnodesroot.logger.write_error(_("Connection to '%s' failed.\n")%location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None
 
