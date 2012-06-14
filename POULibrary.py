@@ -1,8 +1,8 @@
-from PLCControler import PLCControler
 from weakref import ref
 
 class POULibrary:
     def __init__(self, CTR, LibName, TypeStack):
+        from PLCControler import PLCControler
         self.CTR = ref(CTR)
         self.LibName = LibName
         self.LibraryControler = PLCControler()
