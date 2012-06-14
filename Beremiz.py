@@ -292,12 +292,6 @@ CONFNODEMENU_POSITION = 3
 
 class Beremiz(IDEFrame):
 	
-    def _init_coll_MenuBar_Menus(self, parent):
-        IDEFrame._init_coll_MenuBar_Menus(self, parent)
-        
-        parent.Insert(pos=CONFNODEMENU_POSITION, 
-                      menu=self.ConfNodeMenu, title=_(u'&ConfNode'))
-    
     def _init_utils(self):
         self.ConfNodeMenu = wx.Menu(title='')
         self.RecentProjectsMenu = wx.Menu(title='')
@@ -366,6 +360,8 @@ class Beremiz(IDEFrame):
     
     def _init_ctrls(self, prnt):
         IDEFrame._init_ctrls(self, prnt)
+        
+        self.EditMenuSize = self.EditMenu.GetMenuItemCount()
         
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR)]
@@ -470,7 +466,6 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
-        self.RefreshConfNodeMenu()
         self.RefreshAll()
         self.LogConsole.SetFocus()
 
@@ -714,7 +709,9 @@ class Beremiz(IDEFrame):
         self.AUIManager.GetPane("StatusToolBar").Position(1)
         self.AUIManager.Update()
     
-    def RefreshConfNodeMenu(self):
+    def RefreshEditMenu(self):
+        IDEFrame.RefreshEditMenu(self)
+        
         if self.CTR is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
@@ -722,20 +719,27 @@ class Beremiz(IDEFrame):
             else:
                 panel = None
             if panel != self.LastPanelSelected:
-                for i in xrange(self.ConfNodeMenu.GetMenuItemCount()):
-                    item = self.ConfNodeMenu.FindItemByPosition(0)
-                    self.ConfNodeMenu.Delete(item.GetId())
+                for i in xrange(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
+                    item = self.EditMenu.FindItemByPosition(self.EditMenuSize)
+                    if item.IsSeparator():
+                        self.EditMenu.RemoveItem(item)
+                    else:
+                        self.EditMenu.Delete(item.GetId())
                 self.LastPanelSelected = panel
                 if panel is not None:
                     items = panel.GetConfNodeMenuItems()
                 else:
                     items = []
-                self.MenuBar.EnableTop(CONFNODEMENU_POSITION, len(items) > 0)
-                self.GenerateMenuRecursive(items, self.ConfNodeMenu)
+                if len(items) > 0:
+                    self.EditMenu.AppendSeparator()
+                    self.GenerateMenuRecursive(items, self.EditMenu)
             if panel is not None:
-                panel.RefreshConfNodeMenu(self.ConfNodeMenu)
+                panel.RefreshConfNodeMenu(self.EditMenu)
         else:
-            self.MenuBar.EnableTop(CONFNODEMENU_POSITION, False)
+            for i in xrange(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
+                item = self.EditMenu.FindItemByPosition(i)
+                self.EditMenu.Delete(item.GetId())
+            self.LastPanelSelected = None
         self.MenuBar.UpdateMenus()
     
     def RefreshAll(self):
@@ -881,14 +885,6 @@ class Beremiz(IDEFrame):
         
     def OnAboutMenu(self, event):
         OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
-    
-    def OnPouSelectedChanged(self, event):
-        wx.CallAfter(self.RefreshConfNodeMenu)
-        IDEFrame.OnPouSelectedChanged(self, event)
-    
-    def OnPageClose(self, event):
-        wx.CallAfter(self.RefreshConfNodeMenu)
-        IDEFrame.OnPageClose(self, event)
     
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()

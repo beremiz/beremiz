@@ -107,4 +107,4 @@ class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
     
     def OnNodeSelectedChanged(self, event):
         NetworkEditorTemplate.OnNodeSelectedChanged(self, event)
-        wx.CallAfter(self.ParentWindow.RefreshConfNodeMenu)
+        wx.CallAfter(self.ParentWindow.RefreshEditMenu)
