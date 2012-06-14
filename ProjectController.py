@@ -61,15 +61,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 """+targets.GetTargetChoices()+"""
                 </xsd:choice>
               </xsd:complexType>
-            </xsd:element>"""+(("""
-            <xsd:element name="Libraries" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="Libraries" minOccurs="0">"""+(("""
               <xsd:complexType>
               """+"\n".join(['<xsd:attribute name='+
                              '"Enable_'+ libname + '_Library" '+
                              'type="xsd:boolean" use="optional" default="true"/>' 
                              for libname,lib in features.libraries])+"""
-              </xsd:complexType>
-            </xsd:element>""") if len(features.libraries)>0 else '') + """
+              </xsd:complexType>""") if len(features.libraries)>0 else '<xsd:complexType/>') + """
+            </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Disable_Extensions" type="xsd:boolean" use="optional" default="false"/>
@@ -371,6 +371,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "\n".join([ lib.GetSTCode() for lib in self.Libraries ])
 
     def GetLibrariesCCode(self, buildpath):
+        if len(self.Libraries)==0:
+            return [],[],()
         self.GetIECProgramsAndVariables()
         LibIECCflags = '"-I%s"'%os.path.abspath(self.GetIECLibPath())
         LocatedCCodeAndFlags=[]
