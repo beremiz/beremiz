@@ -61,7 +61,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 """+targets.GetTargetChoices()+"""
                 </xsd:choice>
               </xsd:complexType>
-            </xsd:element>
+            </xsd:element>"""+(("""
             <xsd:element name="Libraries" minOccurs="0">
               <xsd:complexType>
               """+"\n".join(['<xsd:attribute name='+
@@ -69,7 +69,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                              'type="xsd:boolean" use="optional" default="true"/>' 
                              for libname,lib in features.libraries])+"""
               </xsd:complexType>
-            </xsd:element>
+            </xsd:element>""") if len(features.libraries)>0 else '') + """
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Disable_Extensions" type="xsd:boolean" use="optional" default="false"/>
