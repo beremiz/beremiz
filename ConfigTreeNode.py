@@ -406,15 +406,21 @@ class ConfigTreeNode:
         return res
 
     def _OpenView(self, name=None):
-        if self.EditorType is not None and self._View is None:
-            app_frame = self.GetCTRoot().AppFrame
-            
-            self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
-            
-            app_frame.EditProjectElement(self._View, self.CTNName())
-            
+        if self.EditorType is not None:
+            if self._View is None:
+                app_frame = self.GetCTRoot().AppFrame
+                
+                self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
+                
+                app_frame.EditProjectElement(self._View, self.CTNName())
+                
             return self._View
         return None
+
+    def _CloseView(self, view):
+        app_frame = self.GetCTRoot().AppFrame
+        if app_frame is not None:
+            app_frame.DeletePage(view)
 
     def OnCloseEditor(self, view):
         if self._View == view:
@@ -422,9 +428,8 @@ class ConfigTreeNode:
 
     def OnCTNClose(self):
         if self._View is not None:
-            app_frame = self.GetCTRoot().AppFrame
-            if app_frame is not None:
-                app_frame.DeletePage(self._View)
+            self._CloseView(self.View)
+            self._View = None
         return True
 
     def _doRemoveChild(self, CTNInstance):

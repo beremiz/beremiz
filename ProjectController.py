@@ -805,6 +805,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         if self.AppFrame is not None:
             self.AppFrame.ClearErrors()
+        self._CloseView(self._IECCodeView)
         
         buildpath = self._getBuildPath()
 
@@ -924,49 +925,62 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #print from_location, to_location, start_row, start_col, start, end
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
-
+    
+    _IECCodeView = None
     def _showIECcode(self):
         self._OpenView("IEC code")
 
+    _IECRawCodeView = None
     def _editIECrawcode(self):
         self._OpenView("IEC raw code")
 
     def _OpenView(self, name=None):
         if name == "IEC code":
-            plc_file = self._getIECcodepath()
-        
-            IEC_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
-            #IEC_code_viewer.Enable(False)
-            IEC_code_viewer.SetTextSyntax("ALL")
-            IEC_code_viewer.SetKeywords(IEC_KEYWORDS)
-            try:
-                text = file(plc_file).read()
-            except:
-                text = '(* No IEC code have been generated at that time ! *)'
-            IEC_code_viewer.SetText(text = text)
-            IEC_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
-                
-            self.AppFrame.EditProjectElement(IEC_code_viewer, name)
+            if self._IEC_code_viewer is None:
+                plc_file = self._getIECcodepath()
             
-            return IEC_code_viewer
+                self._IECCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
+                #self._IECCodeViewr.Enable(False)
+                self._IECCodeView.SetTextSyntax("ALL")
+                self._IECCodeView.SetKeywords(IEC_KEYWORDS)
+                try:
+                    text = file(plc_file).read()
+                except:
+                    text = '(* No IEC code have been generated at that time ! *)'
+                self._IECCodeView.SetText(text = text)
+                self._IECCodeView.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+                    
+                self.AppFrame.EditProjectElement(self._IECCodeView, name)
+                
+            return self._IECCodeView
         
         elif name == "IEC raw code":
-            controler = MiniTextControler(self._getIECrawcodepath())
-            IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
-            #IEC_raw_code_viewer.Enable(False)
-            IEC_raw_code_viewer.SetTextSyntax("ALL")
-            IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
-            IEC_raw_code_viewer.RefreshView()
-            IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+            if self.IEC_raw_code_viewer is None:
+                controler = MiniTextControler(self._getIECrawcodepath())
                 
-            self.AppFrame.EditProjectElement(IEC_raw_code_viewer, name)
+                self.IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
+                #self.IEC_raw_code_viewer.Enable(False)
+                self.IEC_raw_code_viewer.SetTextSyntax("ALL")
+                self.IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
+                self.IEC_raw_code_viewer.RefreshView()
+                self.IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+                    
+                self.AppFrame.EditProjectElement(self.IEC_raw_code_viewer, name)
 
-            return IEC_raw_code_viewer
+            return self.IEC_raw_code_viewer
         
         else:
             return ConfigTreeNode._OpenView(self, name)
 
+    def OnCloseEditor(self, view):
+        ConfigTreeNode.OnCloseEditor(self, view)
+        if self._IECCodeView == view:
+            self._IECCodeView = None
+        if self._IECRawCodeView == view:
+            self._IECRawCodeView = None
+
     def _Clean(self):
+        self._CloseView(self._IECCodeView)
         if os.path.isdir(os.path.join(self._getBuildPath())):
             self.logger.write(_("Cleaning the build directory\n"))
             shutil.rmtree(os.path.join(self._getBuildPath()))
