@@ -145,7 +145,7 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
 
 class ConfTreeNodeEditor(EditorPanel):
     
-    HAS_BASE_PARAMS = True
+    SHOW_BASE_PARAMS = True
     SHOW_PARAMS = True
     
     def _init_ConfNodeEditor(self, prnt):
@@ -167,62 +167,70 @@ class ConfTreeNodeEditor(EditorPanel):
             # Variable allowing disabling of ParamsEditor scroll when Popup shown 
             self.ScrollingEnabled = True
             
-            self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-            self.ParamsEditorSizer.AddGrowableCol(0)
-            self.ParamsEditorSizer.AddGrowableRow(1)
+            if self.SHOW_BASE_PARAMS:
+                self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
+                self.ParamsEditorSizer.AddGrowableCol(0)
+                self.ParamsEditorSizer.AddGrowableRow(1)
+                
+                self.ParamsEditor.SetSizer(self.ParamsEditorSizer)
+                
+                baseparamseditor_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                self.ParamsEditorSizer.AddSizer(baseparamseditor_sizer, 0, border=5, 
+                                                flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.TOP)
+                
+                self.FullIECChannel = wx.StaticText(self.ParamsEditor, -1)
+                self.FullIECChannel.SetFont(
+                    wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, 
+                            wx.BOLD, faceName = faces["helv"]))
+                baseparamseditor_sizer.AddWindow(self.FullIECChannel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL)
+                
+                updownsizer = wx.BoxSizer(wx.VERTICAL)
+                baseparamseditor_sizer.AddSizer(updownsizer, 0, border=5, 
+                                            flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
+                
+                ieccupbutton_id = wx.NewId()
+                self.IECCUpButton = wx.lib.buttons.GenBitmapTextButton(
+                      id=ieccupbutton_id, bitmap=wx.Bitmap(opjimg('IECCDown')),
+                      name='IECUpButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
+                      size=wx.Size(16, 16), style=wx.NO_BORDER)
+                self.IECCUpButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(1), 
+                                      id=ieccupbutton_id)
+                updownsizer.AddWindow(self.IECCUpButton, 0, border=0, flag=wx.ALIGN_LEFT)
+                
+                ieccdownbutton_id = wx.NewId()
+                self.IECCDownButton = wx.lib.buttons.GenBitmapButton(
+                      id=ieccdownbutton_id, bitmap=wx.Bitmap(opjimg('IECCUp')),
+                      name='IECDownButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
+                      size=wx.Size(16, 16), style=wx.NO_BORDER)
+                self.IECCDownButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(-1), 
+                                        id=ieccdownbutton_id)
+                updownsizer.AddWindow(self.IECCDownButton, 0, border=0, flag=wx.ALIGN_LEFT)
+                
+                confnodename_id = wx.NewId()
+                self.ConfNodeName = wx.TextCtrl(
+                      self.ParamsEditor, confnodename_id, 
+                      size=wx.Size(150, 25), style=wx.NO_BORDER)
+                self.ConfNodeName.SetFont(
+                    wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, 
+                            wx.BOLD, faceName = faces["helv"]))
+                self.ConfNodeName.Bind(wx.EVT_TEXT, 
+                    self.GetTextCtrlCallBackFunction(self.ConfNodeName, "BaseParams.Name", True), 
+                    id=confnodename_id)
+                baseparamseditor_sizer.AddWindow(self.ConfNodeName, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+                
+                buttons_sizer = self.GenerateMethodButtonSizer()
+                baseparamseditor_sizer.AddSizer(buttons_sizer, 0, border=0, flag=wx.ALIGN_CENTER)
             
-            self.ParamsEditor.SetSizer(self.ParamsEditorSizer)
-            
-            baseparamseditor_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            self.ParamsEditorSizer.AddSizer(baseparamseditor_sizer, 0, border=5, 
-                                            flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.TOP)
-            
-            self.FullIECChannel = wx.StaticText(self.ParamsEditor, -1)
-            self.FullIECChannel.SetFont(
-                wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, 
-                        wx.BOLD, faceName = faces["helv"]))
-            baseparamseditor_sizer.AddWindow(self.FullIECChannel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL)
-            
-            updownsizer = wx.BoxSizer(wx.VERTICAL)
-            baseparamseditor_sizer.AddSizer(updownsizer, 0, border=5, 
-                                        flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
-            
-            ieccupbutton_id = wx.NewId()
-            self.IECCUpButton = wx.lib.buttons.GenBitmapTextButton(
-                  id=ieccupbutton_id, bitmap=wx.Bitmap(opjimg('IECCDown')),
-                  name='IECUpButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
-                  size=wx.Size(16, 16), style=wx.NO_BORDER)
-            self.IECCUpButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(1), 
-                                  id=ieccupbutton_id)
-            updownsizer.AddWindow(self.IECCUpButton, 0, border=0, flag=wx.ALIGN_LEFT)
-            
-            ieccdownbutton_id = wx.NewId()
-            self.IECCDownButton = wx.lib.buttons.GenBitmapButton(
-                  id=ieccdownbutton_id, bitmap=wx.Bitmap(opjimg('IECCUp')),
-                  name='IECDownButton', parent=self.ParamsEditor, pos=wx.Point(0, 0),
-                  size=wx.Size(16, 16), style=wx.NO_BORDER)
-            self.IECCDownButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(-1), 
-                                    id=ieccdownbutton_id)
-            updownsizer.AddWindow(self.IECCDownButton, 0, border=0, flag=wx.ALIGN_LEFT)
-            
-            confnodename_id = wx.NewId()
-            self.ConfNodeName = wx.TextCtrl(
-                  self.ParamsEditor, confnodename_id, 
-                  size=wx.Size(150, 25), style=wx.NO_BORDER)
-            self.ConfNodeName.SetFont(
-                wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, 
-                        wx.BOLD, faceName = faces["helv"]))
-            self.ConfNodeName.Bind(wx.EVT_TEXT, 
-                self.GetTextCtrlCallBackFunction(self.ConfNodeName, "BaseParams.Name", True), 
-                id=confnodename_id)
-            baseparamseditor_sizer.AddWindow(self.ConfNodeName, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
-            
-            buttons_sizer = self.GenerateMethodButtonSizer()
-            baseparamseditor_sizer.AddSizer(buttons_sizer, 0, border=0, flag=wx.ALIGN_CENTER)
+            else:
+                self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=5)
+                self.ParamsEditorSizer.AddGrowableCol(0)
+                self.ParamsEditorSizer.AddGrowableRow(0)
             
             self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
             self.ParamsEditorSizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
                                             flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
+            
+            self.RefreshConfNodeParamsSizer()
         else:
             self.ParamsEditor = None
         
@@ -274,8 +282,9 @@ class ConfTreeNodeEditor(EditorPanel):
     def RefreshView(self):
         EditorPanel.RefreshView(self)
         if self.ParamsEditor is not None:
-            self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
-            self.RefreshIECChannelControlsState()
+            if self.SHOW_BASE_PARAMS:
+                self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
+                self.RefreshIECChannelControlsState()
             self.RefreshConfNodeParamsSizer()
     
     def EnableScrolling(self, enable):
