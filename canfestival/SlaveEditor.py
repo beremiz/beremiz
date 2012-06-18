@@ -69,4 +69,10 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
         self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
         self.ParentWindow.RefreshPageTitles()
-            
+
+class MasterViewer(SlaveEditor):
+    SHOW_PARAMS = False
+
+    def __init__(self, parent, controler, window):
+        SlaveEditor.__init__(self, parent, controler, window, False)
+
