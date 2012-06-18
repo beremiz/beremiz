@@ -1,5 +1,6 @@
 
 #include "canfestival.h"
+#include "dcf.h"
 
 /* CanFestival nodes generated OD headers*/
 %(nodes_includes)s
@@ -14,16 +15,6 @@
 static int init_level=0;
 /* Retrieve PLC cycle time */
 extern int common_ticktime__;
-
-/* Called once all NetworkEdit declares slaves have booted*/
-static void Master_post_SlaveBootup(CO_Data* d, UNS8 nodeId)
-{
-    /* Put the master in operational mode */
-    setState(d, Operational);
-
-    /* Ask slave node to go in operational mode */
-    masterSendNMTstateChange (d, 0, NMT_Start_Node);
-}
 
 /* Per master node slavebootup callbacks. Checks that
  * every node have booted before calling Master_post_SlaveBootup */
@@ -126,7 +117,9 @@ int __init_%(locstr)s(int argc,char **argv)
 }
 
 #define NODE_SEND_SYNC(nodename)\
-    sendSYNCMessage(&nodename##_Data);
+    if(getState(&nodename##_Data)==Operational){\
+        sendSYNCMessage(&nodename##_Data);\
+    }
 
 void __retrieve_%(locstr)s(void)
 {

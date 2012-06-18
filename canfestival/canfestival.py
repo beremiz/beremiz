@@ -415,28 +415,13 @@ class RootClass:
                     format_dict["slavebootups"] += (
                         "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n"%(nodename))
                 else:
-                    for id in SlaveIDs:
-                        format_dict["slavebootups"] += (
-                        "int %s_slave_%d_booted = 0;\n"%(nodename, id))
+                    # for id in SlaveIDs:
+                    #     format_dict["slavebootups"] += (
+                    #     "int %s_slave_%d_booted = 0;\n"%(nodename, id))
                     # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
                         "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
-                        "    switch(nodeId){\n")
-                    # one case per declared node, mark node as booted
-                    for id in SlaveIDs:
-                        format_dict["slavebootups"] += (
-                        "        case %d:\n"%(id)+
-                        "            %s_slave_%d_booted = 1;\n"%(nodename, id)+
-                        "            break;\n")
-                    format_dict["slavebootups"] += (
-                        "        default:\n"+
-                        "            break;\n"+
-                        "    }\n"+
-                        "    if( ")
-                    # expression to test if all declared nodes booted
-                    format_dict["slavebootups"] += " && ".join(["%s_slave_%d_booted"%(nodename, id) for id in SlaveIDs])
-                    format_dict["slavebootups"] += " )\n" + (
-                        "        Master_post_SlaveBootup(d,nodeId);\n"+
+                        "    check_and_start_node(d, nodeId);\n"+
                         "}\n")
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
