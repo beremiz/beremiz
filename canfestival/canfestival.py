@@ -400,6 +400,8 @@ class RootClass:
                        "slavebootup_register" : "",
                        "post_sync" : "",
                        "post_sync_register" : "",
+                       "pre_op" : "",
+                       "pre_op_register" : "",
                        }
         for child in self.IECSortedChildren():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
@@ -425,10 +427,6 @@ class RootClass:
                     format_dict["slavebootups"] += (
                         "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n"%(nodename))
                 else:
-                    # for id in SlaveIDs:
-                    #     format_dict["slavebootups"] += (
-                    #     "int %s_slave_%d_booted = 0;\n"%(nodename, id))
-                    # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
                         "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
                         "    check_and_start_node(d, nodeId);\n"+
@@ -453,6 +451,12 @@ class RootClass:
                         "}\n")
                     format_dict["post_sync_register"] += (
                         "%s_Data.post_sync = %s_post_sync;\n"%(nodename,nodename))
+                    format_dict["pre_op"] += (
+                        "static void %s_preOperational(CO_Data* d){\n    "%(nodename)+
+                        "".join(["    if(check_and_start_node(d, %d)!=1) return;\n"%NdId for NdId in SlaveIDs])+
+                        "}\n")
+                    format_dict["pre_op_register"] += (
+                        "%s_Data.preOperational = %s_pre_op;\n"%(nodename,nodename))
                 format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    '%(
                        nodename,
                        child_data.getNodeId())

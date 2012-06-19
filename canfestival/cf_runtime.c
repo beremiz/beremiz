@@ -25,6 +25,10 @@ extern int common_ticktime__;
  */
 %(post_sync)s
 
+/* Triggers DCF transission
+ */
+%(pre_op)s
+
 #define NODE_FORCE_SYNC(nodename) \
     /* Artificially force sync state to 1 so that it is not started */\
     nodename##_Data.CurrentCommunicationState.csSYNC = -1;\
@@ -49,6 +53,7 @@ void InitNodes(CO_Data* d, UNS32 id)
 {
     %(slavebootup_register)s
     %(post_sync_register)s
+    %(pre_op_register)s
     %(nodes_init)s
 }
 
