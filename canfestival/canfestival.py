@@ -434,6 +434,12 @@ class RootClass:
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
                     "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n"%(nodename,nodename))
+                format_dict["pre_op"] += (
+                    "static void %s_preOperational(CO_Data* d){\n    "%(nodename)+
+                    "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n"%NdId for NdId in SlaveIDs])+
+                    "}\n")
+                format_dict["pre_op_register"] += (
+                    "%s_Data.preOperational = %s_preOperational;\n"%(nodename,nodename))
             else:
                 # Slave node
                 align = child_data.getSync_Align()
@@ -451,12 +457,6 @@ class RootClass:
                         "}\n")
                     format_dict["post_sync_register"] += (
                         "%s_Data.post_sync = %s_post_sync;\n"%(nodename,nodename))
-                    format_dict["pre_op"] += (
-                        "static void %s_preOperational(CO_Data* d){\n    "%(nodename)+
-                        "".join(["    if(check_and_start_node(d, %d)!=1) return;\n"%NdId for NdId in SlaveIDs])+
-                        "}\n")
-                    format_dict["pre_op_register"] += (
-                        "%s_Data.preOperational = %s_pre_op;\n"%(nodename,nodename))
                 format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    '%(
                        nodename,
                        child_data.getNodeId())
