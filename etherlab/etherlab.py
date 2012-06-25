@@ -15,8 +15,6 @@ try:
 except:
     HAS_MCL = False
 
-CONFNODEFOLDER = os.path.split(os.path.realpath(__file__))[0]
-
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
     "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L"}
@@ -76,8 +74,8 @@ class _EthercatSlaveCTN:
     NODE_PROFILE = None
     EditorType = NodeEditor
     
-    def GetIconPath(self):
-        return os.path.join(CONFNODEFOLDER, "images", "Slave.png")
+    def GetIconName(self):
+        return "Slave"
     
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
@@ -198,15 +196,15 @@ if HAS_MCL:
         EditorType = CIA402NodeEditor
         
         ConfNodeMethods = [
-            {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "CIA402AxisRef.png"),
+            {"bitmap" : "CIA402AxisRef",
              "name" : _("Axis Ref"),
              "tooltip" : _("Initiate Drag'n drop of Axis ref located variable"),
              "method" : "_getCIA402AxisRef",
              "push": True},
         ]
         
-        def GetIconPath(self):
-            return os.path.join(CONFNODEFOLDER, "images", "CIA402Slave.png")
+        def GetIconName(self):
+            return "CIA402Slave"
         
         def SetParamsAttribute(self, path, value):
             if path == "CIA402SlaveParams.Type":
@@ -634,7 +632,7 @@ class _EthercatCTN:
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     ConfNodeMethods = [
-        {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "ScanNetwork"),
+        {"bitmap" : "ScanNetwork",
          "name" : _("Scan Network"), 
          "tooltip" : _("Scan Network"),
          "method" : "_ScanNetwork"},
@@ -1392,7 +1390,7 @@ class RootClass:
         dialog.Destroy()  
     
     ConfNodeMethods = [
-        {"bitmap" : os.path.join(CONFNODEFOLDER, "images", "ImportESI"),
+        {"bitmap" : "ImportESI",
          "name" : _("Import module library"), 
          "tooltip" : _("Import module library"),
          "method" : "_ImportModuleLibrary"},
