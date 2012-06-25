@@ -14,11 +14,10 @@ from weakref import WeakKeyDictionary
 
 import targets
 import connectors
-from util.misc import opjimg, CheckPathPerm, GetClassImporter
+from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from PLCControler import PLCControler
-from PLCOpenEditor import CWD
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize
@@ -182,8 +181,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def GetProjectName(self):
         return os.path.split(self.ProjectPath)[1]
     
-    def GetIconPath(self):
-        return os.path.join(CWD, "Images", "PROJECT.png")
+    def GetIconName(self):
+        return "PROJECT"
     
     def GetDefaultTargetName(self):
         if wx.Platform == '__WXMSW__':
@@ -315,7 +314,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                      CTNChild.CTNName()), 
                  "type": ITEM_CONFNODE, 
                  "confnode": CTNChild,
-                 "icon": CTNChild.GetIconPath(),
+                 "icon": CTNChild.GetIconName(),
                  "values": self.RecursiveConfNodeInfos(CTNChild)})
         return values
     

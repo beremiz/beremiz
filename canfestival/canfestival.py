@@ -197,7 +197,7 @@ class MiniNodeManager(NodeManager):
         self.Parent = parent
         self.Fullname = fullname
     
-    def GetIconPath(self):
+    def GetIconName(self):
         return None
     
     def OnCloseEditor(self, view):

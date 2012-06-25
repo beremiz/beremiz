@@ -85,7 +85,7 @@ if __name__ == '__main__':
     wx.InitAllImageHandlers()
     
     # popup splash
-    bmp = wx.Image(Bpath("images","splash.png")).ConvertToBitmap()
+    bmp = wx.Image(Bpath("images", "splash.png")).ConvertToBitmap()
     #splash=AdvancedSplash(None, bitmap=bmp, style=wx.SPLASH_CENTRE_ON_SCREEN, timeout=4000)
     splash=AdvancedSplash(None, bitmap=bmp)
     wx.Yield()
@@ -145,10 +145,15 @@ base_folder = os.path.split(sys.path[0])[0]
 sys.path.append(base_folder)
 sys.path.append(os.path.join(base_folder, "plcopeneditor"))
 
+from utils.BitmapLibrary import AddBitmapFolder, GetBitmap
+AddBitmapFolder(os.path.join(CWD, "images"))
+
 if __name__ == '__main__':
     # Load extensions
     for extfilename in extensions:
-        sys.path.append(os.path.split(os.path.realpath(extfilename))[0])
+        extension_folder = os.path.split(os.path.realpath(extfilename))[0]
+        sys.path.append(extension_folder)
+        AddBitmapFolder(os.path.join(extension_folder, "images"))
         execfile(extfilename, locals())
 
 import wx.lib.buttons, wx.lib.statbmp
@@ -175,12 +180,8 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
                  style = 0,
                  name = "genstatbmp"):
         
-        bitmappath = Bpath( "images", bitmapname)
-        if os.path.isfile(bitmappath):
-            bitmap = wx.Bitmap(bitmappath)
-        else:
-            bitmap = None
-        wx.lib.statbmp.GenStaticBitmap.__init__(self, parent, ID, bitmap,
+        wx.lib.statbmp.GenStaticBitmap.__init__(self, parent, ID, 
+                 GetBitmap(bitmapname),
                  pos, size,
                  style,
                  name)
@@ -335,11 +336,11 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
     
-        self.AddToMenuToolBar([(wx.ID_NEW, "new.png", _(u'New'), None),
-                               (wx.ID_OPEN, "open.png", _(u'Open'), None),
-                               (wx.ID_SAVE, "save.png", _(u'Save'), None),
-                               (wx.ID_SAVEAS, "saveas.png", _(u'Save As...'), None),
-                               (wx.ID_PRINT, "print.png", _(u'Print'), None)])
+        self.AddToMenuToolBar([(wx.ID_NEW, "new", _(u'New'), None),
+                               (wx.ID_OPEN, "open", _(u'Open'), None),
+                               (wx.ID_SAVE, "save", _(u'Save'), None),
+                               (wx.ID_SAVEAS, "saveas", _(u'Save As...'), None),
+                               (wx.ID_PRINT, "print", _(u'Print'), None)])
     
     def _init_coll_AddMenu_Items(self, parent):
         IDEFrame._init_coll_AddMenu_Items(self, parent, False)
@@ -424,15 +425,15 @@ class Beremiz(IDEFrame):
             ("VAR_INPUT",     LOCATION_VAR_INPUT),
             ("VAR_OUTPUT",    LOCATION_VAR_OUTPUT),
             ("VAR_LOCAL",     LOCATION_VAR_MEMORY)]:
-            self.LocationImageDict[itemtype]=self.LocationImageList.Add(wx.Bitmap(os.path.join(base_folder, "plcopeneditor", 'Images', '%s.png'%imgname)))
+            self.LocationImageDict[itemtype] = self.LocationImageList.Add(GetBitmap(imgname))
         
         # Icons for other items
         for imgname, itemtype in [
             ("Extension", ITEM_CONFNODE)]:
-            self.TreeImageDict[itemtype]=self.TreeImageList.Add(wx.Bitmap(os.path.join(CWD, 'images', '%s.png'%imgname)))
+            self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
         
         # Add beremiz's icon in top left corner of the frame
-        self.SetIcon(wx.Icon(Bpath( "images", "brz.ico"), wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
         if ctr is None and projectOpen is None and self.Config.HasEntry("currenteditedproject"):
             projectOpen = str(self.Config.Read("currenteditedproject"))
@@ -444,7 +445,7 @@ class Beremiz(IDEFrame):
             self.Controler = self.CTR
             result = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
-                self.LibraryPanel.SetControler(self.Controler)
+                self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
@@ -456,7 +457,7 @@ class Beremiz(IDEFrame):
             self.CTR = ctr
             self.Controler = ctr
             if ctr is not None:
-                self.LibraryPanel.SetControler(self.Controler)
+                self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
@@ -697,7 +698,7 @@ class Beremiz(IDEFrame):
                 if "method" in confnode_method and confnode_method.get("shown",True):
                     id = wx.NewId()
                     StatusToolBar.AddSimpleTool(id, 
-                        wx.Bitmap(Bpath("images", "%s.png"%confnode_method.get("bitmap", "Unknown"))), 
+                        GetBitmap(confnode_method.get("bitmap", "Unknown")), 
                         confnode_method["tooltip"])
                     self.Bind(wx.EVT_MENU, self.GetMenuCallBackFunction(confnode_method["method"]), id=id)
             
@@ -721,10 +722,11 @@ class Beremiz(IDEFrame):
             if panel != self.LastPanelSelected:
                 for i in xrange(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
                     item = self.EditMenu.FindItemByPosition(self.EditMenuSize)
-                    if item.IsSeparator():
-                        self.EditMenu.RemoveItem(item)
-                    else:
-                        self.EditMenu.Delete(item.GetId())
+                    if item is not None:
+                        if item.IsSeparator():
+                            self.EditMenu.RemoveItem(item)
+                        else:
+                            self.EditMenu.Delete(item.GetId())
                 self.LastPanelSelected = panel
                 if panel is not None:
                     items = panel.GetConfNodeMenuItems()
@@ -738,7 +740,11 @@ class Beremiz(IDEFrame):
         else:
             for i in xrange(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
                 item = self.EditMenu.FindItemByPosition(i)
-                self.EditMenu.Delete(item.GetId())
+                if item is not None:
+                    if item.IsSeparator():
+                        self.EditMenu.RemoveItem(item)
+                    else:
+                        self.EditMenu.Delete(item.GetId())
             self.LastPanelSelected = None
         self.MenuBar.UpdateMenus()
     
@@ -807,7 +813,7 @@ class Beremiz(IDEFrame):
             if not result:
                 self.CTR = ctr
                 self.Controler = self.CTR
-                self.LibraryPanel.SetControler(self.Controler)
+                self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
@@ -844,7 +850,7 @@ class Beremiz(IDEFrame):
             self.Controler = self.CTR
             result = self.CTR.LoadProject(projectpath)
             if not result:
-                self.LibraryPanel.SetControler(self.Controler)
+                self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
@@ -872,11 +878,13 @@ class Beremiz(IDEFrame):
     def OnSaveProjectMenu(self, event):
         if self.CTR is not None:
             self.CTR.SaveProject()
+            self.RefreshAll()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
     
     def OnSaveProjectAsMenu(self, event):
         if self.CTR is not None:
             self.CTR.SaveProjectAs()
+            self.RefreshAll()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
         event.Skip()
     

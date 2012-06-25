@@ -4,7 +4,6 @@ import cPickle
 
 from xmlclass import *
 
-from util.misc import opjimg
 from CFileEditor import CFileEditor
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT 
 
@@ -44,8 +43,8 @@ class CFile:
             self.CreateCFileBuffer(False)
             self.OnCTNSave()
 
-    def GetIconPath(self):
-        return opjimg("Cfile")
+    def GetIconName(self):
+        return "Cfile"
 
     def CFileName(self):
         return os.path.join(self.CTNPath(), "cfile.xml")
