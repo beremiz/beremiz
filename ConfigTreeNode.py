@@ -428,7 +428,7 @@ class ConfigTreeNode:
 
     def OnCTNClose(self):
         if self._View is not None:
-            self._CloseView(self.View)
+            self._CloseView(self._View)
             self._View = None
         return True
 
