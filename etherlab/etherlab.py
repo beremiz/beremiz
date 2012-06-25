@@ -128,6 +128,8 @@ class _EthercatSlaveCTN:
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             value = (slave_type["device_type"], slave_type)
+            if self._View is not None:
+                wx.CallAfter(self._View.RefreshSlaveInfos)
             return value, True
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)
