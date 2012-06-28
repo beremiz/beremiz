@@ -17,6 +17,7 @@ import connectors
 from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
+from util.FileManagementPanel import FileManagementPanel
 from PLCControler import PLCControler
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
@@ -24,6 +25,7 @@ from targets.typemapping import DebugTypesSize
 from util.discovery import DiscoveryDialog
 from ConfigTreeNode import ConfigTreeNode
 from ProjectNodeEditor import ProjectNodeEditor
+from utils.BitmapLibrary import GetBitmap
 
 base_folder = os.path.split(sys.path[0])[0]
 
@@ -932,14 +934,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
     _IECRawCodeView = None
     def _editIECrawcode(self):
         self._OpenView("IEC raw code")
-
-    def _OpenView(self, name=None):
+    
+    _ProjectFilesView = None
+    def _OpenProjectFiles(self):
+        self._OpenView("Project files")
+    
+    def _OpenView(self, name=None, onlyopened=False):
         if name == "IEC code":
-            if self._IEC_code_viewer is None:
+            if self._IECCodeView is None:
                 plc_file = self._getIECcodepath()
             
                 self._IECCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
-                #self._IECCodeViewr.Enable(False)
+                #self._IECCodeView.Enable(False)
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
@@ -947,29 +953,46 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 except:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text = text)
-                self._IECCodeView.SetIcon(self.AppFrame.GenerateBitmap("ST"))
-                    
+                self._IECCodeView.SetIcon(GetBitmap("ST"))
+            
                 self.AppFrame.EditProjectElement(self._IECCodeView, name)
-                
+            
+            elif onlyopened:
+                self.AppFrame.EditProjectElement(self._IECCodeView, name, onlyopened)
+            
             return self._IECCodeView
         
         elif name == "IEC raw code":
-            if self.IEC_raw_code_viewer is None:
+            if self._IECRawCodeView is None:
                 controler = MiniTextControler(self._getIECrawcodepath())
                 
-                self.IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
-                #self.IEC_raw_code_viewer.Enable(False)
-                self.IEC_raw_code_viewer.SetTextSyntax("ALL")
-                self.IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
-                self.IEC_raw_code_viewer.RefreshView()
-                self.IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
+                self._IECRawCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
+                #self._IECRawCodeView.Enable(False)
+                self._IECRawCodeView.SetTextSyntax("ALL")
+                self._IECRawCodeView.SetKeywords(IEC_KEYWORDS)
+                self._IECRawCodeView.RefreshView()
+                self._IECRawCodeView.SetIcon(GetBitmap("ST"))
                     
-                self.AppFrame.EditProjectElement(self.IEC_raw_code_viewer, name)
-
-            return self.IEC_raw_code_viewer
+                self.AppFrame.EditProjectElement(self._IECRawCodeView, name)
+            
+            elif onlyopened:
+                self.AppFrame.EditProjectElement(self._IECRawCodeView, name, onlyopened)
+            
+            return self._IECRawCodeView
         
+        elif name == "Project files":
+            if self._ProjectFilesView is None:
+                self._ProjectFilesView = FileManagementPanel(self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
+                
+                self.AppFrame.EditProjectElement(self._ProjectFilesView, name)
+            
+            elif onlyopened:
+                self.AppFrame.EditProjectElement(self._ProjectFilesView, name, onlyopened)
+            
+            return self._ProjectFilesView
+           
         else:
-            return ConfigTreeNode._OpenView(self, name)
+            return ConfigTreeNode._OpenView(self, name, onlyopened)
 
     def OnCloseEditor(self, view):
         ConfigTreeNode.OnCloseEditor(self, view)
@@ -977,6 +1000,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._IECCodeView = None
         if self._IECRawCodeView == view:
             self._IECRawCodeView = None
+        if self._ProjectFilesView == view:
+            self._ProjectFilesView = None
 
     def _Clean(self):
         self._CloseView(self._IECCodeView)
@@ -1414,16 +1439,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
-    def _ImportProjectFile(self):
-        dialog = wx.FileDialog(self.AppFrame, _("Choose a file"), os.getcwd(), "",  _("All files|*.*"), wx.OPEN)
-        if dialog.ShowModal() == wx.ID_OK:
-            filepath = dialog.GetPath()
-            if os.path.isfile(filepath):
-                shutil.copy(filepath, self._getProjectFilesPath())
-            else:
-                self.logger.write_error(_("No such file: %s\n") % filepath)
-        dialog.Destroy()  
-
     StatusMethods = [
         {"bitmap" : "Build",
          "name" : _("Build"),
@@ -1470,10 +1485,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
          "name" : _("Raw IEC code"),
          "tooltip" : _("Edit raw IEC code added to code generated by PLCGenerator"),
          "method" : "_editIECrawcode"},
-        {"bitmap" : "ImportFile",
-         "name" : _("Import file"),
-         "tooltip" : _("Import into project a file to be transfered with PLC"),
-         "method" : "_ImportProjectFile"},
+        {"bitmap" : "ManageFolder",
+         "name" : _("Project Files"),
+         "tooltip" : _("Open a file explorer to manage project files"),
+         "method" : "_OpenProjectFiles"},
     ]
 
 

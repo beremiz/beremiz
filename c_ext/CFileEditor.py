@@ -4,10 +4,10 @@ import wx
 import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
-from util.misc import opjimg
 
 from controls import CustomGrid, CustomTable
 from ConfTreeNodeEditor import ConfTreeNodeEditor
+from utils.BitmapLibrary import GetBitmap
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
@@ -790,10 +790,10 @@ class CFileEditor(ConfTreeNodeEditor):
         for idx, (name, panel_class) in enumerate(CFILE_PARTS):
             button_id = wx.NewId()
             button = FoldPanelCaption(id=button_id, name='FoldPanelCaption_%s' % name, 
-                  label=name, bitmap=wx.Bitmap(opjimg("CollapsedIconData")), 
+                  label=name, bitmap=GetBitmap("CollapsedIconData"), 
                   parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
                   size=wx.Size(0, 20), style=wx.NO_BORDER|wx.ALIGN_LEFT)
-            button.SetBitmapSelected(wx.Bitmap(opjimg("ExpandedIconData")))
+            button.SetBitmapSelected(GetBitmap("ExpandedIconData"))
             button.Bind(wx.EVT_BUTTON, self.GenPanelButtonCallback(name), id=button_id)
             self.MainSizer.AddWindow(button, 0, border=0, flag=wx.TOP|wx.GROW)
             

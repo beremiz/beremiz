@@ -405,15 +405,18 @@ class ConfigTreeNode:
         self.BaseParams.setIEC_Channel(res)
         return res
 
-    def _OpenView(self, name=None):
+    def _OpenView(self, name=None, onlyopened=False):
         if self.EditorType is not None:
+            app_frame = self.GetCTRoot().AppFrame
             if self._View is None:
-                app_frame = self.GetCTRoot().AppFrame
                 
                 self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
                 
                 app_frame.EditProjectElement(self._View, self.CTNName())
-                
+            
+            elif onlyopened:
+                app_frame.EditProjectElement(self._View, self.CTNName(), onlyopened)
+            
             return self._View
         return None
 

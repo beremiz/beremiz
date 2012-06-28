@@ -562,7 +562,7 @@ class Beremiz(IDEFrame):
                                  ResourceEditor, 
                                  ConfigurationEditor, 
                                  DataTypeEditor))):
-            return ("confnode", tab.Controler.CTNFullName())
+            return ("confnode", tab.Controler.CTNFullName(), tab.GetTagName())
         elif (isinstance(tab, TextViewer) and 
               (tab.Controler is None or isinstance(tab.Controler, MiniTextControler))):
             return ("confnode", None, tab.GetInstancePath())
@@ -940,6 +940,17 @@ class Beremiz(IDEFrame):
             self.CTR._OpenView()
         else:
             IDEFrame.OnProjectTreeItemActivated(self, event)
+    
+    def ProjectTreeItemSelect(self, select_item):
+        name = self.ProjectTree.GetItemText(select_item)
+        item_infos = self.ProjectTree.GetPyData(select_item)
+        if item_infos["type"] == ITEM_CONFNODE:
+            item_infos["confnode"]._OpenView(onlyopened=True)
+        elif item_infos["type"] == ITEM_PROJECT:
+            self.CTR._OpenView(onlyopened=True)
+        else:
+            IDEFrame.ProjectTreeItemSelect(self, select_item)
+            
     
     def SelectProjectTreeItem(self, tagname):
         if self.ProjectTree is not None:
