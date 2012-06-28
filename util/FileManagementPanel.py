@@ -30,12 +30,14 @@ import wx
 from controls import EditorPanel
 from utils.BitmapLibrary import GetBitmap
 
+DRIVE, FOLDER, FILE = range(3)
+
 FILTER = _("All files (*.*)|*.*|CSV files (*.csv)|*.csv")
 
 def sort_folder(x, y):
     if x[1] == y[1]:
         return cmp(x[0], y[0])
-    elif x[1]:
+    elif x[1] != FILE:
         return -1
     else:
         return 1
@@ -62,7 +64,11 @@ class FolderTree(wx.Panel):
                     wx.TR_HIDE_ROOT|
                     wx.TR_LINES_AT_ROOT|
                     wx.TR_EDIT_LABELS)
-        self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnTreeItemExpanded, self.Tree)
+        if wx.Platform == '__WXMSW__':
+            self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemExpanded, self.Tree)
+            self.Tree.Bind(wx.EVT_LEFT_DOWN, self.OnTreeLeftDown)
+        else:
+            self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnTreeItemExpanded, self.Tree)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnTreeItemCollapsed, self.Tree)
         self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnTreeBeginLabelEdit, self.Tree)
         self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnTreeEndLabelEdit, self.Tree)
@@ -78,8 +84,11 @@ class FolderTree(wx.Panel):
         self.Editable = editable
         
         self.TreeImageList = wx.ImageList(16, 16)
-        self.FOLDER_IMAGE = self.TreeImageList.Add(GetBitmap("tree_folder"))
-        self.FILE_IMAGE = self.TreeImageList.Add(GetBitmap("tree_file"))
+        self.TreeImageDict = {}
+        for item_type, bitmap in [(DRIVE, "tree_drive"),
+                                  (FOLDER, "tree_folder"),
+                                  (FILE, "tree_file")]:
+            self.TreeImageDict[item_type] = self.TreeImageList.Add(GetBitmap(bitmap))
         self.Tree.SetImageList(self.TreeImageList)
         
         self.Filters = {}
@@ -97,18 +106,28 @@ class FolderTree(wx.Panel):
     
     def _GetFolderChildren(self, folderpath, recursive=True):
         items = []
-        for filename in os.listdir(folderpath):
-            if not filename.startswith("."):
-                filepath = os.path.join(folderpath, filename)
-                if os.path.isdir(filepath):
-                    if recursive:
-                        children = len(self._GetFolderChildren(filepath, False))
-                    else:
-                        children = 0
-                    items.append((filename, True, children))
-                elif (self.CurrentFilter == "" or 
-                      os.path.splitext(filename)[1] == self.CurrentFilter):
-                    items.append((filename, False, None))
+        if wx.Platform == '__WXMSW__' and folderpath == "/":
+            for c in xrange(ord('a'), ord('z')):
+                drive = os.path.join("%s:\\" % chr(c))
+                if os.path.exists(drive):
+                    items.append((drive, DRIVE, self._GetFolderChildren(drive, False)))
+        else:
+            try:
+                files = os.listdir(folderpath)
+            except:
+                return []
+            for filename in files:
+                if not filename.startswith("."):
+                    filepath = os.path.join(folderpath, filename)
+                    if os.path.isdir(filepath):
+                        if recursive:
+                            children = len(self._GetFolderChildren(filepath, False))
+                        else:
+                            children = 0
+                        items.append((filename, FOLDER, children))
+                    elif (self.CurrentFilter == "" or 
+                          os.path.splitext(filename)[1] == self.CurrentFilter):
+                        items.append((filename, FILE, None))
         if recursive:
             items.sort(sort_folder)
         return items
@@ -124,26 +143,19 @@ class FolderTree(wx.Panel):
         
     def GenerateTreeBranch(self, root, folderpath):
         item, item_cookie = self.Tree.GetFirstChild(root)
-        for idx, (filename, isdir, children) in enumerate(self._GetFolderChildren(folderpath)):
-            new = False
+        for idx, (filename, item_type, children) in enumerate(self._GetFolderChildren(folderpath)):
             if not item.IsOk():
-                item = self.Tree.AppendItem(root, filename)
+                item = self.Tree.AppendItem(root, filename, self.TreeImageDict[item_type])
                 if wx.Platform != '__WXMSW__':
                     item, item_cookie = self.Tree.GetNextChild(root, item_cookie)
-                new = True
             elif self.Tree.GetItemText(item) != filename:
-                item = self.Tree.InsertItemBefore(root, idx, filename)
-                new = True
+                item = self.Tree.InsertItemBefore(root, idx, filename, self.TreeImageDict[item_type])
             filepath = os.path.join(folderpath, filename)
-            if isdir:
-                if new:
-                    self.Tree.SetItemImage(item, self.FOLDER_IMAGE)
-                    if children > 0:
-                        self.Tree.SetItemHasChildren(item)
-                elif self.Tree.IsExpanded(item):
+            if item_type != FILE:
+                if self.Tree.IsExpanded(item):
                     self.GenerateTreeBranch(item, filepath)
-            elif new:
-                self.Tree.SetItemImage(item, self.FILE_IMAGE)
+                elif children > 0:
+                    self.Tree.SetItemHasChildren(item)
             item, item_cookie = self.Tree.GetNextChild(root, item_cookie)
         to_delete = []
         while item.IsOk():
@@ -152,6 +164,21 @@ class FolderTree(wx.Panel):
         for item in to_delete:
             self.Tree.Delete(item)
 
+    def ExpandItem(self, item):
+        self.GenerateTreeBranch(item, self.GetPath(item))
+        self.Tree.Expand(item)
+    
+    def OnTreeItemActivated(self, event):
+        self.ExpandItem(event.GetItem())
+        event.Skip()
+    
+    def OnTreeLeftDown(self, event):
+        item, flags = self.Tree.HitTest(event.GetPosition())
+        if flags & wx.TREE_HITTEST_ONITEMBUTTON and not self.Tree.IsExpanded(item):
+            self.ExpandItem(item)
+        else:
+            event.Skip()
+    
     def OnTreeItemExpanded(self, event):
         item = event.GetItem()
         self.GenerateTreeBranch(item, self.GetPath(item))
@@ -274,7 +301,11 @@ class FileManagementPanel(EditorPanel):
     def __init__(self, parent, controler, name, folder, enable_dragndrop=False):
         self.Folder = os.path.realpath(folder)
         self.EnableDragNDrop = enable_dragndrop
-        self.HomeDirectory = os.path.expanduser("~")
+        
+        if wx.Platform == '__WXMSW__':
+            self.HomeDirectory = "/"
+        else:
+            self.HomeDirectory = os.path.expanduser("~")
         
         EditorPanel.__init__(self, parent, name, None, None)
         
