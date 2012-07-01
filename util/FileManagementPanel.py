@@ -268,7 +268,8 @@ class FileManagementPanel(EditorPanel):
         for idx, (name, bitmap, help) in enumerate([
                 ("DeleteButton", "remove_element", _("Remove file from left folder")),
                 ("LeftCopyButton", "LeftCopy", _("Copy file from right folder to left")),
-                ("RightCopyButton", "RightCopy", _("copy file from left folder to right"))]):
+                ("RightCopyButton", "RightCopy", _("copy file from left folder to right")),
+                ("EditButton", "edit", _("Edit file"))]):
             button = wx.lib.buttons.GenBitmapButton(self.Editor, 
                   bitmap=GetBitmap(bitmap), 
                   size=wx.Size(28, 28), style=wx.NO_BORDER)
@@ -311,6 +312,9 @@ class FileManagementPanel(EditorPanel):
         
         self.Controler = controler
         
+        self.EditableFileExtensions = []
+        self.EditButton.Hide()
+        
         self.SetIcon(GetBitmap("FOLDER"))
     
     def __del__(self):
@@ -318,6 +322,11 @@ class FileManagementPanel(EditorPanel):
     
     def GetTitle(self):
         return self.TagName
+    
+    def SetEditableFileExtensions(self, extensions):
+        self.EditableFileExtensions = extensions
+        if len(self.EditableFileExtensions) > 0:
+            self.EditButton.Show()
     
     def RefreshView(self):
         self.ManagedDir.RefreshTree()
@@ -331,6 +340,10 @@ class FileManagementPanel(EditorPanel):
         self.DeleteButton.Enable(os.path.isfile(managed_filepath))
         self.LeftCopyButton.Enable(os.path.isfile(system_filepath))
         self.RightCopyButton.Enable(os.path.isfile(managed_filepath))
+        if len(self.EditableFileExtensions) > 0:
+            self.EditButton.Enable(
+                os.path.isfile(managed_filepath) and
+                os.path.splitext(managed_filepath)[1] in self.EditableFileExtensions)
     
     def OnTreeItemChanged(self, event):
         self.RefreshButtonsState()
@@ -352,6 +365,13 @@ class FileManagementPanel(EditorPanel):
                 self.ManagedDir.RefreshTree()
         event.Skip()
 
+    def OnEditButton(self, event):
+        filepath = self.ManagedDir.GetPath()
+        if (os.path.isfile(filepath) and 
+            os.path.splitext(filepath)[1] in self.EditableFileExtensions):
+            self.Controler._OpenView(filepath)
+        event.Skip()
+        
     def CopyFile(self, src, dst):
         if os.path.isfile(src):
             src_folder, src_filename = os.path.split(src)

@@ -939,6 +939,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _OpenProjectFiles(self):
         self._OpenView("Project files")
     
+    _FileEditors = {}
+    def _OpenFileEditor(self, filepath):
+        self._OpenView(filepath)
+    
     def _OpenView(self, name=None, onlyopened=False):
         if name == "IEC code":
             if self._IECCodeView is None:
@@ -955,10 +959,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECCodeView.SetText(text = text)
                 self._IECCodeView.SetIcon(GetBitmap("ST"))
             
+            if self._IECCodeView is not None:
                 self.AppFrame.EditProjectElement(self._IECCodeView, name)
-            
-            elif onlyopened:
-                self.AppFrame.EditProjectElement(self._IECCodeView, name, onlyopened)
             
             return self._IECCodeView
         
@@ -972,11 +974,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECRawCodeView.SetKeywords(IEC_KEYWORDS)
                 self._IECRawCodeView.RefreshView()
                 self._IECRawCodeView.SetIcon(GetBitmap("ST"))
-                    
-                self.AppFrame.EditProjectElement(self._IECRawCodeView, name)
             
-            elif onlyopened:
-                self.AppFrame.EditProjectElement(self._IECRawCodeView, name, onlyopened)
+            if self._IECRawCodeView is not None:
+                self.AppFrame.EditProjectElement(self._IECRawCodeView, name)
             
             return self._IECRawCodeView
         
@@ -984,13 +984,46 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self._ProjectFilesView is None:
                 self._ProjectFilesView = FileManagementPanel(self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
                 
+                extensions = []
+                for extension, name, editor in features.file_editors:
+                    if extension not in extensions:
+                        extensions.append(extension)
+                self._ProjectFilesView.SetEditableFileExtensions(extensions)
+                
+            if self._ProjectFilesView is not None:
                 self.AppFrame.EditProjectElement(self._ProjectFilesView, name)
             
-            elif onlyopened:
-                self.AppFrame.EditProjectElement(self._ProjectFilesView, name, onlyopened)
-            
             return self._ProjectFilesView
-           
+        
+        elif name is not None and os.path.isfile(name):
+            if not self._FileEditors.has_key(name):
+                file_extension = os.path.splitext(name)[1]
+                
+                editors = dict([(editor_name, editor)
+                                for extension, editor_name, editor in features.file_editors
+                                if extension == file_extension])
+                
+                editor_name = None
+                if len(editors) == 1:
+                    editor_name = editors.keys()[0]
+                elif len(editors) > 0:
+                    names = editors.keys()
+                    dialog = wx.SingleChoiceDialog(self.ParentWindow, 
+                          _("Select an editor:"), _("Editor selection"), 
+                          names, wx.OK|wx.CANCEL)
+                    if dialog.ShowModal() == wx.ID_OK:
+                        editor_name = names[dialog.GetSelection()]
+                    dialog.Destroy()
+                
+                if editor_name is not None:
+                    editor = editors[editor_name]()
+                    self._FileEditors[name] = editor(self.AppFrame.TabsOpened, self, name, self.AppFrame)
+                    self._FileEditors[name].SetIcon(GetBitmap("FILE"))
+                    
+            if self._FileEditors.has_key(name):
+                self.AppFrame.EditProjectElement(self._FileEditors[name], name)
+            
+            return self._FileEditors[name]
         else:
             return ConfigTreeNode._OpenView(self, name, onlyopened)
 
@@ -1002,6 +1035,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._IECRawCodeView = None
         if self._ProjectFilesView == view:
             self._ProjectFilesView = None
+        if view in self._FileEditors.values():
+            self._FileEditors.pop(view.GetTagName())
 
     def _Clean(self):
         self._CloseView(self._IECCodeView)

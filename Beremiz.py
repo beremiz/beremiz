@@ -605,12 +605,14 @@ class Beremiz(IDEFrame):
         if self.CTR is not None:
             selected = self.TabsOpened.GetSelection()
             if selected >= 0:
-                graphic_viewer = isinstance(self.TabsOpened.GetPage(selected), Viewer)
+                window = self.TabsOpened.GetPage(selected)
+                viewer_is_modified = window.IsModified()
+                is_viewer = isinstance(window, Viewer)
             else:
-                graphic_viewer = False
+                viewer_is_modified = is_viewer = False
             if self.TabsOpened.GetPageCount() > 0:
                 self.FileMenu.Enable(wx.ID_CLOSE, True)
-                if graphic_viewer:
+                if is_viewer:
                     self.FileMenu.Enable(wx.ID_PREVIEW, True)
                     self.FileMenu.Enable(wx.ID_PRINT, True)
                     MenuToolBar.EnableTool(wx.ID_PRINT, True)
@@ -624,7 +626,7 @@ class Beremiz(IDEFrame):
                 self.FileMenu.Enable(wx.ID_PRINT, False)
                 MenuToolBar.EnableTool(wx.ID_PRINT, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, True)
-            project_modified = self.CTR.ProjectTestModified()
+            project_modified = self.CTR.ProjectTestModified() or viewer_is_modified
             self.FileMenu.Enable(wx.ID_SAVE, project_modified)
             MenuToolBar.EnableTool(wx.ID_SAVE, project_modified)
             self.FileMenu.Enable(wx.ID_SAVEAS, True)
@@ -876,12 +878,20 @@ class Beremiz(IDEFrame):
         self.RefreshAll()
     
     def OnSaveProjectMenu(self, event):
+        selected = self.TabsOpened.GetSelection()
+        if selected != -1:
+            window = self.TabsOpened.GetPage(selected)
+            window.Save()
         if self.CTR is not None:
             self.CTR.SaveProject()
             self.RefreshAll()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
     
     def OnSaveProjectAsMenu(self, event):
+        selected = self.TabsOpened.GetSelection()
+        if selected != -1:
+            window = self.TabsOpened.GetPage(selected)
+            window.SaveAs()
         if self.CTR is not None:
             self.CTR.SaveProjectAs()
             self.RefreshAll()

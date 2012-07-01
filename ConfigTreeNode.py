@@ -408,14 +408,12 @@ class ConfigTreeNode:
     def _OpenView(self, name=None, onlyopened=False):
         if self.EditorType is not None:
             app_frame = self.GetCTRoot().AppFrame
-            if self._View is None:
+            if self._View is None and not onlyopened:
                 
                 self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
-                
-                app_frame.EditProjectElement(self._View, self.CTNName())
             
-            elif onlyopened:
-                app_frame.EditProjectElement(self._View, self.CTNName(), onlyopened)
+            if self._View is not None:
+                app_frame.EditProjectElement(self._View, self.CTNName())
             
             return self._View
         return None
