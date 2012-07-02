@@ -1025,7 +1025,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             
             return self._FileEditors[name]
         else:
-            return ConfigTreeNode._OpenView(self, name, onlyopened)
+            return ConfigTreeNode._OpenView(self, self.CTNName(), onlyopened)
 
     def OnCloseEditor(self, view):
         ConfigTreeNode.OnCloseEditor(self, view)

@@ -413,7 +413,9 @@ class ConfigTreeNode:
                 self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
             
             if self._View is not None:
-                app_frame.EditProjectElement(self._View, self.CTNFullName())
+                if name is None:
+                    name = self.CTNFullName()
+                app_frame.EditProjectElement(self._View, name)
             
             return self._View
         return None
