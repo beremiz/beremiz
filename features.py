@@ -1,5 +1,6 @@
-libraries = [('Python','py_ext.PythonLibrary'),
-             ('SVGUI','svgui.SVGUILibrary')]
+libraries = [
+    ('Python', 'py_ext.PythonLibrary'),
+    ('SVGUI', 'svgui.SVGUILibrary')]
 
 catalog = [
     ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),
@@ -8,3 +9,4 @@ catalog = [
     ('wxglade_hmi', _('WxGlade GUI'), _('Add a simple WxGlade based GUI.'), 'wxglade_hmi.WxGladeHMI'),
     ('svgui', _('SVGUI'), _('Experimental web based HMI'), 'svgui.SVGUI')]
 
+file_editors = []

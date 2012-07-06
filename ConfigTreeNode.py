@@ -91,7 +91,7 @@ class ConfigTreeNode:
             return parent + "." + self.CTNName()
         return self.BaseParams.getName()
     
-    def GetIconPath(self):
+    def GetIconName(self):
         return None
     
     def CTNTestModified(self):
@@ -405,15 +405,18 @@ class ConfigTreeNode:
         self.BaseParams.setIEC_Channel(res)
         return res
 
-    def _OpenView(self, name=None):
+    def _OpenView(self, name=None, onlyopened=False):
         if self.EditorType is not None:
-            if self._View is None:
-                app_frame = self.GetCTRoot().AppFrame
+            app_frame = self.GetCTRoot().AppFrame
+            if self._View is None and not onlyopened:
                 
                 self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
-                
-                app_frame.EditProjectElement(self._View, self.CTNName())
-                
+            
+            if self._View is not None:
+                if name is None:
+                    name = self.CTNFullName()
+                app_frame.EditProjectElement(self._View, name)
+            
             return self._View
         return None
 
@@ -428,7 +431,7 @@ class ConfigTreeNode:
 
     def OnCTNClose(self):
         if self._View is not None:
-            self._CloseView(self.View)
+            self._CloseView(self._View)
             self._View = None
         return True
 

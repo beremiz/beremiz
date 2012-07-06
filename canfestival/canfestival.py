@@ -108,8 +108,8 @@ class _SlaveCTN(NodeManager):
     def GetCanDevice(self):
         return self.CanFestivalSlaveNode.getCan_Device()
 
-    def _OpenView(self):
-        ConfigTreeNode._OpenView(self)
+    def _OpenView(self, name=None, onlyopened=False):
+        ConfigTreeNode._OpenView(self, name, onlyopened)
         if self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
         return self._View
@@ -197,7 +197,7 @@ class MiniNodeManager(NodeManager):
         self.Parent = parent
         self.Fullname = fullname
     
-    def GetIconPath(self):
+    def GetIconName(self):
         return None
     
     def OnCloseEditor(self, view):
@@ -255,8 +255,9 @@ class _NodeListCTN(NodeList):
     def _ShowGeneratedMaster(self):
         self._OpenView("Generated master")
         
-    def _OpenView(self, name=None):
+    def _OpenView(self, name=None, onlyopened=False):
         if name == "Generated master":
+            app_frame = self.GetCTRoot().AppFrame
             if self._GeneratedMasterView is None:
                 buildpath = self._getBuildPath()
                 # Eventually create build dir
@@ -269,16 +270,15 @@ class _NodeListCTN(NodeList):
                     self.GetCTRoot().logger.write_error(_("Error: No Master generated\n"))
                     return
                 
-                app_frame = self.GetCTRoot().AppFrame
-                
                 manager = MiniNodeManager(self, masterpath, self.CTNFullName() + ".generated_master")
                 self._GeneratedMasterView = MasterViewer(app_frame.TabsOpened, manager, app_frame)
                 
-                app_frame.EditProjectElement(self._GeneratedMasterView, name)
+            if self._GeneratedMasterView is not None:
+                app_frame.EditProjectElement(self._IECCodeView, name)
             
             return self._GeneratedMasterView
         else:
-            ConfigTreeNode._OpenView(self)
+            ConfigTreeNode._OpenView(self, name, onlyopened)
             if self._View is not None:
                 self._View.SetBusId(self.GetCurrentLocation())
             return self._View

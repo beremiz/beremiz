@@ -14,17 +14,18 @@ from weakref import WeakKeyDictionary
 
 import targets
 import connectors
-from util.misc import opjimg, CheckPathPerm, GetClassImporter
+from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
+from util.FileManagementPanel import FileManagementPanel
 from PLCControler import PLCControler
-from PLCOpenEditor import CWD
 from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize
 from util.discovery import DiscoveryDialog
 from ConfigTreeNode import ConfigTreeNode
 from ProjectNodeEditor import ProjectNodeEditor
+from utils.BitmapLibrary import GetBitmap
 
 base_folder = os.path.split(sys.path[0])[0]
 
@@ -182,8 +183,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def GetProjectName(self):
         return os.path.split(self.ProjectPath)[1]
     
-    def GetIconPath(self):
-        return os.path.join(CWD, "Images", "PROJECT.png")
+    def GetIconName(self):
+        return "PROJECT"
     
     def GetDefaultTargetName(self):
         if wx.Platform == '__WXMSW__':
@@ -315,7 +316,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                      CTNChild.CTNName()), 
                  "type": ITEM_CONFNODE, 
                  "confnode": CTNChild,
-                 "icon": CTNChild.GetIconPath(),
+                 "icon": CTNChild.GetIconName(),
                  "values": self.RecursiveConfNodeInfos(CTNChild)})
         return values
     
@@ -933,14 +934,22 @@ class ProjectController(ConfigTreeNode, PLCControler):
     _IECRawCodeView = None
     def _editIECrawcode(self):
         self._OpenView("IEC raw code")
-
-    def _OpenView(self, name=None):
+    
+    _ProjectFilesView = None
+    def _OpenProjectFiles(self):
+        self._OpenView("Project files")
+    
+    _FileEditors = {}
+    def _OpenFileEditor(self, filepath):
+        self._OpenView(filepath)
+    
+    def _OpenView(self, name=None, onlyopened=False):
         if name == "IEC code":
-            if self._IEC_code_viewer is None:
+            if self._IECCodeView is None:
                 plc_file = self._getIECcodepath()
             
                 self._IECCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
-                #self._IECCodeViewr.Enable(False)
+                #self._IECCodeView.Enable(False)
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
@@ -948,29 +957,75 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 except:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text = text)
-                self._IECCodeView.SetIcon(self.AppFrame.GenerateBitmap("ST"))
-                    
+                self._IECCodeView.SetIcon(GetBitmap("ST"))
+            
+            if self._IECCodeView is not None:
                 self.AppFrame.EditProjectElement(self._IECCodeView, name)
-                
+            
             return self._IECCodeView
         
         elif name == "IEC raw code":
-            if self.IEC_raw_code_viewer is None:
+            if self._IECRawCodeView is None:
                 controler = MiniTextControler(self._getIECrawcodepath())
                 
-                self.IEC_raw_code_viewer = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
-                #self.IEC_raw_code_viewer.Enable(False)
-                self.IEC_raw_code_viewer.SetTextSyntax("ALL")
-                self.IEC_raw_code_viewer.SetKeywords(IEC_KEYWORDS)
-                self.IEC_raw_code_viewer.RefreshView()
-                self.IEC_raw_code_viewer.SetIcon(self.AppFrame.GenerateBitmap("ST"))
-                    
-                self.AppFrame.EditProjectElement(self.IEC_raw_code_viewer, name)
-
-            return self.IEC_raw_code_viewer
+                self._IECRawCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
+                #self._IECRawCodeView.Enable(False)
+                self._IECRawCodeView.SetTextSyntax("ALL")
+                self._IECRawCodeView.SetKeywords(IEC_KEYWORDS)
+                self._IECRawCodeView.RefreshView()
+                self._IECRawCodeView.SetIcon(GetBitmap("ST"))
+            
+            if self._IECRawCodeView is not None:
+                self.AppFrame.EditProjectElement(self._IECRawCodeView, name)
+            
+            return self._IECRawCodeView
         
+        elif name == "Project files":
+            if self._ProjectFilesView is None:
+                self._ProjectFilesView = FileManagementPanel(self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
+                
+                extensions = []
+                for extension, name, editor in features.file_editors:
+                    if extension not in extensions:
+                        extensions.append(extension)
+                self._ProjectFilesView.SetEditableFileExtensions(extensions)
+                
+            if self._ProjectFilesView is not None:
+                self.AppFrame.EditProjectElement(self._ProjectFilesView, name)
+            
+            return self._ProjectFilesView
+        
+        elif name is not None and os.path.isfile(name):
+            if not self._FileEditors.has_key(name):
+                file_extension = os.path.splitext(name)[1]
+                
+                editors = dict([(editor_name, editor)
+                                for extension, editor_name, editor in features.file_editors
+                                if extension == file_extension])
+                
+                editor_name = None
+                if len(editors) == 1:
+                    editor_name = editors.keys()[0]
+                elif len(editors) > 0:
+                    names = editors.keys()
+                    dialog = wx.SingleChoiceDialog(self.ParentWindow, 
+                          _("Select an editor:"), _("Editor selection"), 
+                          names, wx.OK|wx.CANCEL)
+                    if dialog.ShowModal() == wx.ID_OK:
+                        editor_name = names[dialog.GetSelection()]
+                    dialog.Destroy()
+                
+                if editor_name is not None:
+                    editor = editors[editor_name]()
+                    self._FileEditors[name] = editor(self.AppFrame.TabsOpened, self, name, self.AppFrame)
+                    self._FileEditors[name].SetIcon(GetBitmap("FILE"))
+                    
+            if self._FileEditors.has_key(name):
+                self.AppFrame.EditProjectElement(self._FileEditors[name], name)
+            
+            return self._FileEditors[name]
         else:
-            return ConfigTreeNode._OpenView(self, name)
+            return ConfigTreeNode._OpenView(self, self.CTNName(), onlyopened)
 
     def OnCloseEditor(self, view):
         ConfigTreeNode.OnCloseEditor(self, view)
@@ -978,6 +1033,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._IECCodeView = None
         if self._IECRawCodeView == view:
             self._IECRawCodeView = None
+        if self._ProjectFilesView == view:
+            self._ProjectFilesView = None
+        if view in self._FileEditors.values():
+            self._FileEditors.pop(view.GetTagName())
 
     def _Clean(self):
         self._CloseView(self._IECCodeView)
@@ -1415,16 +1474,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
-    def _ImportProjectFile(self):
-        dialog = wx.FileDialog(self.AppFrame, _("Choose a file"), os.getcwd(), "",  _("All files|*.*"), wx.OPEN)
-        if dialog.ShowModal() == wx.ID_OK:
-            filepath = dialog.GetPath()
-            if os.path.isfile(filepath):
-                shutil.copy(filepath, self._getProjectFilesPath())
-            else:
-                self.logger.write_error(_("No such file: %s\n") % filepath)
-        dialog.Destroy()  
-
     StatusMethods = [
         {"bitmap" : "Build",
          "name" : _("Build"),
@@ -1471,10 +1520,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
          "name" : _("Raw IEC code"),
          "tooltip" : _("Edit raw IEC code added to code generated by PLCGenerator"),
          "method" : "_editIECrawcode"},
-        {"bitmap" : "ImportFile",
-         "name" : _("Import file"),
-         "tooltip" : _("Import into project a file to be transfered with PLC"),
-         "method" : "_ImportProjectFile"},
+        {"bitmap" : "ManageFolder",
+         "name" : _("Project Files"),
+         "tooltip" : _("Open a file explorer to manage project files"),
+         "method" : "_OpenProjectFiles"},
     ]
 
 
