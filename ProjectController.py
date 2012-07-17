@@ -995,35 +995,40 @@ class ProjectController(ConfigTreeNode, PLCControler):
             
             return self._ProjectFilesView
         
-        elif name is not None and os.path.isfile(name):
-            if not self._FileEditors.has_key(name):
-                file_extension = os.path.splitext(name)[1]
-                
-                editors = dict([(editor_name, editor)
-                                for extension, editor_name, editor in features.file_editors
-                                if extension == file_extension])
-                
-                editor_name = None
-                if len(editors) == 1:
-                    editor_name = editors.keys()[0]
-                elif len(editors) > 0:
-                    names = editors.keys()
-                    dialog = wx.SingleChoiceDialog(self.ParentWindow, 
-                          _("Select an editor:"), _("Editor selection"), 
-                          names, wx.OK|wx.CANCEL)
-                    if dialog.ShowModal() == wx.ID_OK:
-                        editor_name = names[dialog.GetSelection()]
-                    dialog.Destroy()
-                
-                if editor_name is not None:
-                    editor = editors[editor_name]()
-                    self._FileEditors[name] = editor(self.AppFrame.TabsOpened, self, name, self.AppFrame)
-                    self._FileEditors[name].SetIcon(GetBitmap("FILE"))
+        elif name is not None and name.find("::") != -1:
+            filepath, editor_name = name.split("::")
+            if not self._FileEditors.has_key(filepath):
+                if os.path.isfile(filepath):
+                    file_extension = os.path.splitext(filepath)[1]
+                        
+                    editors = dict([(editor_name, editor)
+                                    for extension, editor_name, editor in features.file_editors
+                                    if extension == file_extension])
                     
-            if self._FileEditors.has_key(name):
-                self.AppFrame.EditProjectElement(self._FileEditors[name], name)
+                    if editor_name == "":
+                        if len(editors) == 1:
+                            editor_name = editors.keys()[0]
+                        elif len(editors) > 0:
+                            names = editors.keys()
+                            dialog = wx.SingleChoiceDialog(self.AppFrame, 
+                                  _("Select an editor:"), _("Editor selection"), 
+                                  names, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                            if dialog.ShowModal() == wx.ID_OK:
+                                editor_name = names[dialog.GetSelection()]
+                            dialog.Destroy()
+                        
+                    if editor_name != "":
+                        name = "::".join([filepath, editor_name])
+                        
+                        editor = editors[editor_name]()
+                        self._FileEditors[filepath] = editor(self.AppFrame.TabsOpened, self, name, self.AppFrame)
+                        self._FileEditors[filepath].SetIcon(GetBitmap("FILE"))
             
-            return self._FileEditors[name]
+            if self._FileEditors.has_key(filepath):
+                editor = self._FileEditors[filepath]
+                self.AppFrame.EditProjectElement(editor, editor.GetTagName())
+                
+            return self._FileEditors.get(filepath)
         else:
             return ConfigTreeNode._OpenView(self, self.CTNName(), onlyopened)
 
@@ -1361,6 +1366,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ChangesToSave = True
                 if self._View is not None:
                     self._View.RefreshView()
+                if self.AppFrame is not None:
                     self.AppFrame.RefreshTitle()
                     self.AppFrame.RefreshFileMenu()
                     self.AppFrame.RefreshEditMenu()

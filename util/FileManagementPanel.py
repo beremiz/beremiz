@@ -369,7 +369,7 @@ class FileManagementPanel(EditorPanel):
         filepath = self.ManagedDir.GetPath()
         if (os.path.isfile(filepath) and 
             os.path.splitext(filepath)[1] in self.EditableFileExtensions):
-            self.Controler._OpenView(filepath)
+            self.Controler._OpenView(filepath + "::")
         event.Skip()
         
     def CopyFile(self, src, dst):
