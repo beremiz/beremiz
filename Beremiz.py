@@ -440,8 +440,11 @@ class Beremiz(IDEFrame):
             projectOpen = DecodeFileSystemPath(projectOpen, False)
         
         if ctr is None and projectOpen is None and self.Config.HasEntry("currenteditedproject"):
-            projectOpen = DecodeFileSystemPath(self.Config.Read("currenteditedproject"))
-            if projectOpen == "":
+            try:
+                projectOpen = DecodeFileSystemPath(self.Config.Read("currenteditedproject"))
+                if projectOpen == "":
+                    projectOpen = None
+            except:
                 projectOpen = None
         
         if projectOpen is not None and os.path.isdir(projectOpen):
@@ -806,10 +809,10 @@ class Beremiz(IDEFrame):
         if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
-        if not self.Config.HasEntry("lastopenedfolder"):
-            defaultpath = os.path.expanduser("~")
-        else:
+        try:
             defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
+        except:
+            defaultpath = os.path.expanduser("~")
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
@@ -841,10 +844,10 @@ class Beremiz(IDEFrame):
         if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
-        if not self.Config.HasEntry("lastopenedfolder"):
-            defaultpath = os.path.expanduser("~")
-        else:
+        try:
             defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
+        except:
+            defaultpath = os.path.expanduser("~")
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
