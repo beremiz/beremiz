@@ -27,7 +27,7 @@ import time
 import wx
 import subprocess, ctypes
 from threading import Timer, Lock, Thread, Semaphore
-import os
+import os, sys
 if os.name == 'posix':
     from signal import SIGTERM, SIGKILL
 
@@ -86,7 +86,10 @@ class ProcessLogger:
         else:
             self.Command = Command
             self.Command_str = subprocess.list2cmdline(self.Command)
-            
+        
+        self.Command = map(lambda x: x.encode(sys.getfilesystemencoding()),
+                           self.Command)
+        
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
         self.no_stderr = no_stderr

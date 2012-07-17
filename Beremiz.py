@@ -168,6 +168,7 @@ from util.ProcessLogger import ProcessLogger
 from docutil import OpenHtmlFrame
 from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES 
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
+from PLCOpenEditor import EncodeFileSystemPath, DecodeFileSystemPath
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 
 MAX_RECENT_PROJECTS = 10
@@ -435,8 +436,11 @@ class Beremiz(IDEFrame):
         # Add beremiz's icon in top left corner of the frame
         self.SetIcon(wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO))
         
+        if projectOpen is not None:
+            projectOpen = DecodeFileSystemPath(projectOpen, False)
+        
         if ctr is None and projectOpen is None and self.Config.HasEntry("currenteditedproject"):
-            projectOpen = str(self.Config.Read("currenteditedproject"))
+            projectOpen = DecodeFileSystemPath(self.Config.Read("currenteditedproject"))
             if projectOpen == "":
                 projectOpen = None
         
@@ -591,7 +595,7 @@ class Beremiz(IDEFrame):
                 project_path = os.path.realpath(self.CTR.GetProjectPath())
             else:
                 project_path = ""
-            self.Config.Write("currenteditedproject", project_path)    
+            self.Config.Write("currenteditedproject", EncodeFileSystemPath(project_path))    
             self.Config.Flush()
             
             event.Skip()
@@ -645,7 +649,8 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
     
     def RefreshRecentProjectsMenu(self):
-        recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
+        recent_projects = map(DecodeFileSystemPath, 
+                              self.GetConfigEntry("RecentProjects", []))
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
             text = u'%d: %s' % (idx + 1, projectpath)
@@ -780,11 +785,13 @@ class Beremiz(IDEFrame):
             self.DebugVariablePanel.SetDataProducer(None)
     
     def RefreshConfigRecentProjects(self, projectpath):
-        recent_projects = cPickle.loads(str(self.Config.Read("RecentProjects", cPickle.dumps([]))))
+        recent_projects = map(DecodeFileSystemPath, 
+                              self.GetConfigEntry("RecentProjects", []))
         if projectpath in recent_projects:
             recent_projects.remove(projectpath)
         recent_projects.insert(0, projectpath)
-        self.Config.Write("RecentProjects", cPickle.dumps(recent_projects[:MAX_RECENT_PROJECTS]))
+        self.Config.Write("RecentProjects", cPickle.dumps(
+            map(EncodeFileSystemPath, recent_projects[:MAX_RECENT_PROJECTS])))
         self.Config.Flush()
     
     def ResetPerspective(self):
@@ -802,12 +809,13 @@ class Beremiz(IDEFrame):
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
-            defaultpath = self.Config.Read("lastopenedfolder")
+            defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
-            self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
+            self.Config.Write("lastopenedfolder", 
+                              EncodeFileSystemPath(os.path.dirname(projectpath)))
             self.Config.Flush()
             self.ResetView()
             ctr = ProjectController(self, self.Log)
@@ -836,7 +844,7 @@ class Beremiz(IDEFrame):
         if not self.Config.HasEntry("lastopenedfolder"):
             defaultpath = os.path.expanduser("~")
         else:
-            defaultpath = self.Config.Read("lastopenedfolder")
+            defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
         
         dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
         if dialog.ShowModal() == wx.ID_OK:
@@ -845,7 +853,8 @@ class Beremiz(IDEFrame):
     
     def OpenProject(self, projectpath):
         if os.path.isdir(projectpath):
-            self.Config.Write("lastopenedfolder", os.path.dirname(projectpath))
+            self.Config.Write("lastopenedfolder", 
+                              EncodeFileSystemPath(os.path.dirname(projectpath)))
             self.Config.Flush()
             self.ResetView()
             self.CTR = ProjectController(self, self.Log)
