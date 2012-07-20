@@ -982,7 +982,7 @@ class _EthercatCFileGenerator:
                                             self.Controler.GetSizeOfType(entry_type)):
                                             raise ValueError, message
                                         else:
-                                            self.Controler.GetCTRoot().logger.write_warning(message + "\n")
+                                            self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
                                     
                                     if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
                                         entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
