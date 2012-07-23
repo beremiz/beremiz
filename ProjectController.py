@@ -1041,7 +1041,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self._ProjectFilesView == view:
             self._ProjectFilesView = None
         if view in self._FileEditors.values():
-            self._FileEditors.pop(view.GetTagName())
+            self._FileEditors.pop(view.GetFilePath())
 
     def _Clean(self):
         self._CloseView(self._IECCodeView)
