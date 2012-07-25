@@ -652,8 +652,11 @@ class Beremiz(IDEFrame):
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
     
     def RefreshRecentProjectsMenu(self):
-        recent_projects = map(DecodeFileSystemPath, 
-                              self.GetConfigEntry("RecentProjects", []))
+        try:
+            recent_projects = map(DecodeFileSystemPath, 
+                                  self.GetConfigEntry("RecentProjects", []))
+        except:
+            recent_projects = []
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
             text = u'%d: %s' % (idx + 1, projectpath)
@@ -788,8 +791,11 @@ class Beremiz(IDEFrame):
             self.DebugVariablePanel.SetDataProducer(None)
     
     def RefreshConfigRecentProjects(self, projectpath):
-        recent_projects = map(DecodeFileSystemPath, 
-                              self.GetConfigEntry("RecentProjects", []))
+        try:
+            recent_projects = map(DecodeFileSystemPath, 
+                                  self.GetConfigEntry("RecentProjects", []))
+        except:
+            recent_projects = []
         if projectpath in recent_projects:
             recent_projects.remove(projectpath)
         recent_projects.insert(0, projectpath)
