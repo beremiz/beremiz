@@ -198,7 +198,19 @@ class FolderTree(wx.Panel):
             event.Veto()
     
     def OnTreeEndLabelEdit(self, event):
-        event.Veto()
+        old_filepath = self.GetPath(event.GetItem())
+        new_filepath = os.path.join(os.path.split(old_filepath)[0], event.GetLabel())
+        if new_filepath != old_filepath:
+            if not os.path.exists(new_filepath):
+                os.rename(old_filepath, new_filepath)
+                event.Skip()
+            else:
+                message =  wx.MessageDialog(self, 
+                    _("File '%s' already exists!") % event.GetLabel(), 
+                    _("Error"), wx.OK|wx.ICON_ERROR)
+                message.ShowModal()
+                message.Destroy()
+                event.Veto()
     
     def OnFilterChanged(self, event):
         self.CurrentFilter = self.Filters[self.Filter.GetStringSelection()]
