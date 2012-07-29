@@ -365,29 +365,29 @@ class PLCObject(pyro.ObjBase):
             size = ctypes.c_uint32()
             buffer = ctypes.c_void_p()
             offset = 0
-            if self.PLClibraryLock.acquire(False) and \
-               self._GetDebugData(ctypes.byref(tick),
-                                  ctypes.byref(size),
-                                  ctypes.byref(buffer)) == 0 :
-                if size.value:
-                    for idx, iectype, forced in self._Idxs:
-                        cursor = ctypes.c_void_p(buffer.value + offset)
-                        c_type,unpack_func, pack_func = \
-                            TypeTranslator.get(iectype,
-                                                    (None,None,None))
-                        if c_type is not None and offset < size.value:
-                            res.append(unpack_func(
-                                        ctypes.cast(cursor,
-                                         ctypes.POINTER(c_type)).contents))
-                            offset += ctypes.sizeof(c_type)
-                        else:
-                            if c_type is None:
-                                PLCprint("Debug error - " + iectype +
-                                         " not supported !")
-                            #if offset >= size.value:
-                                #PLCprint("Debug error - buffer too small ! %d != %d"%(offset, size.value))
-                            break
-                self._FreeDebugData()
+            if self.PLClibraryLock.acquire(False):
+                if self._GetDebugData(ctypes.byref(tick),
+                                      ctypes.byref(size),
+                                      ctypes.byref(buffer)) == 0:
+                    if size.value:
+                        for idx, iectype, forced in self._Idxs:
+                            cursor = ctypes.c_void_p(buffer.value + offset)
+                            c_type,unpack_func, pack_func = \
+                                TypeTranslator.get(iectype,
+                                                        (None,None,None))
+                            if c_type is not None and offset < size.value:
+                                res.append(unpack_func(
+                                            ctypes.cast(cursor,
+                                             ctypes.POINTER(c_type)).contents))
+                                offset += ctypes.sizeof(c_type)
+                            else:
+                                if c_type is None:
+                                    PLCprint("Debug error - " + iectype +
+                                             " not supported !")
+                                #if offset >= size.value:
+                                    #PLCprint("Debug error - buffer too small ! %d != %d"%(offset, size.value))
+                                break
+                    self._FreeDebugData()
                 self.PLClibraryLock.release()
             if offset and offset == size.value:
                 return self.PLCStatus, tick.value, res
