@@ -1001,8 +1001,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 if os.path.isfile(filepath):
                     file_extension = os.path.splitext(filepath)[1]
                         
-                    editors = dict([(editor_name, editor)
-                                    for extension, editor_name, editor in features.file_editors
+                    editors = dict([(edit_name, edit_class)
+                                    for extension, edit_name, edit_class in features.file_editors
                                     if extension == file_extension])
                     
                     if editor_name == "":
