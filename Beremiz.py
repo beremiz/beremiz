@@ -559,6 +559,12 @@ class Beremiz(IDEFrame):
                 self.CTR.SaveProject()
             elif answer == wx.ID_CANCEL:
                 return False
+        
+        for idx in xrange(self.TabsOpened.GetPageCount()):
+            window = self.TabsOpened.GetPage(idx)
+            if not window.CheckSaveBeforeClosing():
+                return False
+        
         return True
     
     def GetTabInfos(self, tab):
