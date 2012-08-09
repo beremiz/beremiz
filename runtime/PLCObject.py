@@ -217,53 +217,53 @@ class PLCObject(pyro.ObjBase):
         self.python_threads_vars = None
 
     def PythonThreadProc(self):
-        c_argv = ctypes.c_char_p * len(self.argv)
-        error = None
-        if self._LoadNewPLC():
-            if self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
-                self.PLCStatus = "Started"
-                self.StatusChange()
-                self.StartSem.release()
-                self.evaluator(self.PrepareRuntimePy)
-                res,cmd = "None","None"
-                while True:
-                    #print "_PythonIterator(", res, ")",
-                    cmd = self._PythonIterator(res)
-                    #print " -> ", cmd
-                    if cmd is None:
-                        break
-                    try :
-                        res = str(self.evaluator(eval,cmd,self.python_threads_vars))
-                    except Exception,e:
-                        res = "#EXCEPTION : "+str(e)
-                        PLCprint(res)
-                self.PLCStatus = "Stopped"
-                self.StatusChange()
-                self.evaluator(self.FinishRuntimePy)
-            else:
-                error = "starting"
-        else:
-            error = "loading"
-        if error is not None:
-            PLCprint("Problem %s PLC"%error)
-            self.PLCStatus = "Broken"
-            self.StatusChange()
-            self.StartSem.release()
-        self._FreePLC()
+        self.PLCStatus = "Started"
+        self.StatusChange()
+        self.StartSem.release()
+        self.evaluator(self.PrepareRuntimePy)
+        res,cmd = "None","None"
+        while True:
+            #print "_PythonIterator(", res, ")",
+            cmd = self._PythonIterator(res)
+            #print " -> ", cmd
+            if cmd is None:
+                break
+            try :
+                res = str(self.evaluator(eval,cmd,self.python_threads_vars))
+            except Exception,e:
+                res = "#EXCEPTION : "+str(e)
+                PLCprint(res)
+        self.PLCStatus = "Stopped"
+        self.StatusChange()
+        self.evaluator(self.FinishRuntimePy)
     
     def StartPLC(self):
         PLCprint("StartPLC")
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
-            self.StartSem=Semaphore(0)
-            self.PythonThread = Thread(target=self.PythonThreadProc)
-            self.PythonThread.start()
-            self.StartSem.acquire()
+            c_argv = ctypes.c_char_p * len(self.argv)
+            error = None
+            if self._LoadNewPLC():
+                if self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
+                    self.StartSem=Semaphore(0)
+                    self.PythonThread = Thread(target=self.PythonThreadProc)
+                    self.PythonThread.start()
+                    self.StartSem.acquire()
+                else:
+                    error = "starting"
+            else:
+                error = "loading"
+            if error is not None:
+                PLCprint("Problem %s PLC"%error)
+                self.PLCStatus = "Broken"
+                self.StatusChange()
+                self._FreePLC()
             
     def StopPLC(self):
         PLCprint("StopPLC")
         if self.PLCStatus == "Started":
-            self.PLCStatus = "Stopped"
             self._stopPLC()
+            self.PythonThread.join()
+            self._FreePLC()
             return True
         return False
 
