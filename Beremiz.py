@@ -336,7 +336,7 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPreviewMenu, id=wx.ID_PREVIEW)
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
-    
+        
         self.AddToMenuToolBar([(wx.ID_NEW, "new", _(u'New'), None),
                                (wx.ID_OPEN, "open", _(u'Open'), None),
                                (wx.ID_SAVE, "save", _(u'Save'), None),
@@ -390,7 +390,7 @@ class Beremiz(IDEFrame):
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
         self.MainTabs["LogConsole"] = (self.LogConsole, _("Log Console"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
-        self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
+        #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
 
         StatusToolBar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
                 wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
