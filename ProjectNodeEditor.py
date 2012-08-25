@@ -63,8 +63,8 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
             return "~%s~" % fullname
         return fullname
     
-    def RefreshView(self):
-        EditorPanel.RefreshView(self)
+    def RefreshView(self, variablepanel=True):
+        EditorPanel.RefreshView(self, variablepanel)
         if self.ConfNodeParamsSizer is not None:
             self.RefreshConfNodeParamsSizer()
         self.ProjectProperties.RefreshView()
