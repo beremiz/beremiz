@@ -368,7 +368,7 @@ class ConfigTreeNode:
             shutil.move(oldname, self.CTNPath())
         # warn user he has two left hands
         if DesiredName != res:
-            self.GetCTRoot().logger.write_warning(_("A child names \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
+            self.GetCTRoot().logger.write_warning(_("A child named \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
         return res
 
     def GetAllChannels(self):

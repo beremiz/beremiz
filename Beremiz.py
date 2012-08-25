@@ -1033,7 +1033,10 @@ class Beremiz(IDEFrame):
             
     def DeleteConfNode(self, confnode):
         if self.CTR.CheckProjectPathPerm():
-            dialog = wx.MessageDialog(self, _("Really delete confnode ?"), _("Remove confnode"), wx.YES_NO|wx.NO_DEFAULT)
+            dialog = wx.MessageDialog(self, 
+                _("Really delete node '%s'?") % confnode.CTNName(), 
+                _("Remove %s node") % confnode.CTNType, 
+                wx.YES_NO|wx.NO_DEFAULT)
             if dialog.ShowModal() == wx.ID_YES:
                 confnode.CTNRemove()
                 del confnode

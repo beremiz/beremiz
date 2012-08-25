@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-05-20 18:25+0200\n"
+"POT-Creation-Date: 2012-08-24 18:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../Beremiz.py:1846
+#: ../Beremiz.py:1069
 #, python-format
 msgid ""
 "\n"
@@ -32,91 +32,80 @@ msgid ""
 "Traceback:\n"
 msgstr ""
 
-#: ../ProjectController.py:845
+#: ../ProjectController.py:891
 msgid " generation failed !\n"
 msgstr ""
 
-#: ../Beremiz.py:1739
+#: ../Beremiz.py:892
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:78 ../canfestival/SlaveEditor.py:48
+#: ../canfestival/SlaveEditor.py:42 ../canfestival/NetworkEditor.py:72
 #, python-format
 msgid "%s Profile"
 msgstr ""
 
-#: ../Beremiz.py:394
-msgid "&ConfNode"
-msgstr ""
-
-#: ../Beremiz.py:426
-msgid "&Properties"
-msgstr ""
-
-#: ../Beremiz.py:407
+#: ../Beremiz.py:308
 msgid "&Recent Projects"
 msgstr ""
 
-#: ../Beremiz.py:1834 ../Beremiz.py:1836 ../Beremiz.py:1837
-msgid ",   "
+#: ../Beremiz.py:350
+msgid "&Resource"
 msgstr ""
 
-#: ../Beremiz.py:1832
-msgid ". "
+#: ../connectors/PYRO/__init__.py:51
+#, python-format
+msgid "'%s' is located at %s\n"
 msgstr ""
 
-#: ../ProjectController.py:1146
+#: ../ProjectController.py:1269
 msgid "... debugger recovered\n"
 msgstr ""
 
-#: ../ConfigTreeNode.py:369
+#: ../ConfigTreeNode.py:371
 #, python-format
-msgid "A child names \"%s\" already exist -> \"%s\"\n"
+msgid "A child named \"%s\" already exist -> \"%s\"\n"
 msgstr ""
 
-#: ../Beremiz.py:451
+#: ../Beremiz.py:360
 msgid "About"
 msgstr ""
 
-#: ../Beremiz.py:1771
+#: ../Beremiz.py:929
 msgid "About Beremiz"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:90 ../canfestival/SlaveEditor.py:60
+#: ../canfestival/SlaveEditor.py:54 ../canfestival/NetworkEditor.py:84
 msgid "Add"
 msgstr ""
 
-#: ../features.py:6
+#: ../features.py:7
 msgid "Add C code accessing located variables synchronously"
 msgstr ""
 
-#: ../Beremiz.py:1802
-msgid "Add ConfNode"
-msgstr ""
-
-#: ../features.py:7
-msgid "Add Python code executed asynchronously"
+#: ../util/discovery.py:115
+msgid "Add IP"
 msgstr ""
 
 #: ../features.py:8
+msgid "Add Python code executed asynchronously"
+msgstr ""
+
+#: ../features.py:9
 msgid "Add a simple WxGlade based GUI."
 msgstr ""
 
-#: ../Beremiz.py:886 ../Beremiz.py:1231
-msgid "Add a sub confnode"
-msgstr ""
-
-#: ../canfestival/NetworkEditor.py:92
+#: ../canfestival/NetworkEditor.py:86
 msgid "Add slave"
 msgstr ""
 
-#: ../ProjectController.py:1213
-msgid "Already connected. Please disconnect\n"
+#: ../util/FileManagementPanel.py:35
+msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
 msgstr ""
 
-#: ../Beremiz.py:1428
-msgid "Append "
+#: ../ProjectController.py:1336
+msgid "Already connected. Please disconnect\n"
 msgstr ""
 
 #: ../util/Zeroconf.py:599
@@ -132,36 +121,36 @@ msgstr ""
 msgid "Bad location size : %s"
 msgstr ""
 
-#: ../Beremiz.py:592
+#: ../Beremiz.py:484
 msgid "Beremiz"
 msgstr ""
 
 #: ../util/BrowseValuesLibraryDialog.py:37
 #, python-format
-msgid "Browse %s library"
+msgid "Browse %s values library"
 msgstr ""
 
-#: ../ProjectController.py:1345
+#: ../ProjectController.py:1485
 msgid "Build"
 msgstr ""
 
-#: ../ProjectController.py:929
+#: ../ProjectController.py:1052
 msgid "Build directory already clean\n"
 msgstr ""
 
-#: ../ProjectController.py:1346
+#: ../ProjectController.py:1486
 msgid "Build project into build folder"
 msgstr ""
 
-#: ../ProjectController.py:865
+#: ../ProjectController.py:911
 msgid "C Build crashed !\n"
 msgstr ""
 
-#: ../ProjectController.py:862
+#: ../ProjectController.py:908
 msgid "C Build failed.\n"
 msgstr ""
 
-#: ../ProjectController.py:850
+#: ../ProjectController.py:896
 msgid "C code generated successfully.\n"
 msgstr ""
 
@@ -170,29 +159,29 @@ msgstr ""
 msgid "C compilation of %s failed.\n"
 msgstr ""
 
-#: ../features.py:6
+#: ../features.py:7
 msgid "C extension"
 msgstr ""
 
-#: ../features.py:5
+#: ../features.py:6
 msgid "CANopen support"
 msgstr ""
 
-#: ../ConfigTreeNode.py:460
+#: ../ConfigTreeNode.py:470
 #, python-format
 msgid "Cannot create child %s of type %s "
 msgstr ""
 
-#: ../ConfigTreeNode.py:398
+#: ../ConfigTreeNode.py:400
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
 msgstr ""
 
-#: ../connectors/PYRO/__init__.py:75
+#: ../connectors/PYRO/__init__.py:92
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr ""
 
-#: ../ProjectController.py:671
+#: ../ProjectController.py:716
 msgid "Cannot open/parse VARIABLES.csv!\n"
 msgstr ""
 
@@ -217,119 +206,136 @@ msgstr ""
 msgid "Change working directory"
 msgstr ""
 
-#: ../util/BrowseValuesLibraryDialog.py:42
-#, python-format
-msgid "Choose a %s:"
-msgstr ""
-
 #: ../svgui/svgui.py:92
 msgid "Choose a SVG file"
 msgstr ""
 
-#: ../ProjectController.py:311
+#: ../ProjectController.py:354
 msgid "Choose a directory to save project"
 msgstr ""
 
-#: ../Beremiz.py:1680 ../Beremiz.py:1713
+#: ../canfestival/canfestival.py:118
+msgid "Choose a file"
+msgstr ""
+
+#: ../Beremiz.py:829 ../Beremiz.py:864
 msgid "Choose a project"
+msgstr ""
+
+#: ../util/BrowseValuesLibraryDialog.py:42
+#, python-format
+msgid "Choose a value for %s:"
 msgstr ""
 
 #: ../Beremiz_service.py:373
 msgid "Choose a working directory "
 msgstr ""
 
-#: ../ProjectController.py:265
+#: ../ProjectController.py:282
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
 msgstr ""
 
-#: ../ProjectController.py:230
+#: ../ProjectController.py:248
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr ""
 
-#: ../ProjectController.py:1349
+#: ../ProjectController.py:1489
 msgid "Clean"
 msgstr ""
 
-#: ../ProjectController.py:1351
+#: ../ProjectController.py:1491
 msgid "Clean project build folder"
 msgstr ""
 
-#: ../ProjectController.py:926
+#: ../ProjectController.py:1049
 msgid "Cleaning the build directory\n"
 msgstr ""
 
-#: ../Beremiz.py:698
+#: ../Beremiz.py:596
 msgid "Close Application"
 msgstr ""
 
-#: ../Beremiz.py:658
+#: ../Beremiz.py:550
 msgid "Close Project"
 msgstr ""
 
-#: ../Beremiz.py:416
+#: ../Beremiz.py:317
 msgid "Close Project\tCTRL+SHIFT+W"
 msgstr ""
 
-#: ../Beremiz.py:414
+#: ../Beremiz.py:315
 msgid "Close Tab\tCTRL+W"
 msgstr ""
 
-#: ../ProjectController.py:494
+#: ../ProjectController.py:539
 msgid "Compiling IEC Program into C code...\n"
 msgstr ""
 
-#: ../ProjectController.py:1364
+#: ../ProjectController.py:1504
 msgid "Connect"
 msgstr ""
 
-#: ../ProjectController.py:1365
+#: ../ProjectController.py:1505
 msgid "Connect to the target PLC"
 msgstr ""
 
-#: ../connectors/PYRO/__init__.py:38
+#: ../connectors/PYRO/__init__.py:40
 #, python-format
 msgid "Connecting to URI : %s\n"
 msgstr ""
 
-#: ../ProjectController.py:1232
+#: ../ProjectController.py:1360
 msgid "Connection canceled!\n"
 msgstr ""
 
-#: ../ProjectController.py:1249
+#: ../ProjectController.py:1385
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr ""
 
-#: ../ConfigTreeNode.py:572
+#: ../connectors/PYRO/__init__.py:63
+#, python-format
+msgid "Connection to '%s' failed.\n"
+msgstr ""
+
+#: ../util/FileManagementPanel.py:283
+msgid "Copy file from left folder to right"
+msgstr ""
+
+#: ../util/FileManagementPanel.py:282
+msgid "Copy file from right folder to left"
+msgstr ""
+
+#: ../ConfigTreeNode.py:582
 #, python-format
 msgid ""
 "Could not add child \"%s\", type %s :\n"
 "%s\n"
 msgstr ""
 
-#: ../ConfigTreeNode.py:549
+#: ../ConfigTreeNode.py:559
 #, python-format
 msgid ""
 "Couldn't load confnode base parameters %s :\n"
 " %s"
 msgstr ""
 
-#: ../ConfigTreeNode.py:560
+#: ../ConfigTreeNode.py:570
 #, python-format
 msgid ""
 "Couldn't load confnode parameters %s :\n"
 " %s"
 msgstr ""
 
-#: ../ProjectController.py:1195
+#: ../ProjectController.py:1318
 msgid "Couldn't start PLC !\n"
 msgstr ""
 
-#: ../ProjectController.py:1203
+#: ../ProjectController.py:1326
 msgid "Couldn't stop PLC !\n"
 msgstr ""
 
-#: ../ProjectController.py:1173
+#: ../ProjectController.py:1296
 msgid "Couldn't stop debugger.\n"
 msgstr ""
 
@@ -337,78 +343,79 @@ msgstr ""
 msgid "Create HMI"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:86 ../canfestival/SlaveEditor.py:56
+#: ../canfestival/SlaveEditor.py:50 ../canfestival/NetworkEditor.py:80
 msgid "DS-301 Profile"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:87 ../canfestival/SlaveEditor.py:57
+#: ../canfestival/SlaveEditor.py:51 ../canfestival/NetworkEditor.py:81
 msgid "DS-302 Profile"
 msgstr ""
 
-#: ../ProjectController.py:1000
-#, python-format
-msgid "Debug : Unknown variable %s\n"
-msgstr ""
-
-#: ../ProjectController.py:998
-#, python-format
-msgid "Debug : Unsuppoted type to debug %s\n"
-msgstr ""
-
-#: ../ProjectController.py:1270
+#: ../ProjectController.py:1406
 msgid "Debug connect matching running PLC\n"
 msgstr ""
 
-#: ../ProjectController.py:1273
+#: ../ProjectController.py:1409
 msgid "Debug do not match PLC - stop/transfert/start to re-enable\n"
 msgstr ""
 
-#: ../ProjectController.py:1163
+#: ../ProjectController.py:1123
+#, python-format
+msgid "Debug: Unknown variable '%s'\n"
+msgstr ""
+
+#: ../ProjectController.py:1121
+#, python-format
+msgid "Debug: Unsupported type to debug '%s'\n"
+msgstr ""
+
+#: ../ProjectController.py:1286
 msgid "Debugger disabled\n"
 msgstr ""
 
-#: ../ProjectController.py:1175
+#: ../ProjectController.py:1298
 msgid "Debugger stopped.\n"
 msgstr ""
 
-#: ../Beremiz.py:1222
-msgid "Delete this confnode"
+#: ../Beremiz.py:956
+msgid "Delete"
 msgstr ""
 
-#: ../ProjectController.py:1373
+#: ../util/FileManagementPanel.py:371
+msgid "Delete File"
+msgstr ""
+
+#: ../ProjectController.py:1513
 msgid "Disconnect"
 msgstr ""
 
-#: ../ProjectController.py:1375
+#: ../ProjectController.py:1515
 msgid "Disconnect from PLC"
 msgstr ""
 
-#: ../c_ext/c_ext.py:143 ../c_ext/c_ext.py:144
-msgid "Edit C File"
+#: ../util/FileManagementPanel.py:370
+#, python-format
+msgid "Do you really want to delete the file '%s'?"
 msgstr ""
 
-#: ../canfestival/canfestival.py:274
-msgid "Edit CanOpen Network with NetworkEdit"
-msgstr ""
-
-#: ../py_ext/PythonFileCTNMixin.py:19 ../py_ext/PythonFileCTNMixin.py:20
-msgid "Edit Python File"
+#: ../canfestival/canfestival.py:118
+msgid "EDS files (*.eds)|*.eds|All files|*.*"
 msgstr ""
 
 #: ../wxglade_hmi/wxglade_hmi.py:12
 msgid "Edit a WxWidgets GUI with WXGlade"
 msgstr ""
 
-#: ../canfestival/canfestival.py:273
-msgid "Edit network"
+#: ../util/FileManagementPanel.py:284
+msgid "Edit file"
 msgstr ""
 
-#: ../ProjectController.py:1384
+#: ../ProjectController.py:1527
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr ""
 
-#: ../Beremiz.py:948
-msgid "Enable/Disable this confnode"
+#: ../ProjectController.py:1014
+msgid "Editor selection"
 msgstr ""
 
 #: ../Beremiz_service.py:380
@@ -423,71 +430,92 @@ msgstr ""
 msgid "Enter the IP of the interface to bind"
 msgstr ""
 
-#: ../util/BrowseValuesLibraryDialog.py:83 ../Beremiz.py:1858
-#: ../ProjectController.py:210 ../Beremiz_service.py:270
-#: ../Beremiz_service.py:394
+#: ../Beremiz_service.py:270 ../Beremiz_service.py:394 ../Beremiz.py:1081
+#: ../ProjectController.py:222 ../util/BrowseValuesLibraryDialog.py:83
+#: ../util/FileManagementPanel.py:210
 msgid "Error"
 msgstr ""
 
-#: ../ProjectController.py:543
+#: ../ProjectController.py:588
 msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
 msgstr ""
 
-#: ../ProjectController.py:535
+#: ../ProjectController.py:580
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr ""
 
-#: ../ProjectController.py:476
+#: ../ProjectController.py:521
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
 "%s\n"
 msgstr ""
 
-#: ../ConfigTreeNode.py:180
+#: ../ConfigTreeNode.py:182
 #, python-format
 msgid "Error while saving \"%s\"\n"
 msgstr ""
 
-#: ../canfestival/canfestival.py:255
+#: ../canfestival/canfestival.py:122
+msgid "Error: Export slave failed\n"
+msgstr ""
+
+#: ../canfestival/canfestival.py:270
 msgid "Error: No Master generated\n"
 msgstr ""
 
-#: ../canfestival/canfestival.py:250
+#: ../canfestival/canfestival.py:265
 msgid "Error: No PLC built\n"
 msgstr ""
 
-#: ../ProjectController.py:1243
+#: ../ProjectController.py:1379
 #, python-format
 msgid "Exception while connecting %s!\n"
 msgstr ""
 
-#: ../features.py:9
+#: ../features.py:10
 msgid "Experimental web based HMI"
 msgstr ""
 
-#: ../ProjectController.py:547
+#: ../canfestival/canfestival.py:128
+msgid "Export CanOpen slave to EDS file"
+msgstr ""
+
+#: ../canfestival/canfestival.py:127
+msgid "Export slave"
+msgstr ""
+
+#: ../ProjectController.py:592
 msgid "Extracting Located Variables...\n"
 msgstr ""
 
-#: ../ProjectController.py:1310
+#: ../ProjectController.py:1446
 msgid "Failed : Must build before transfer.\n"
 msgstr ""
 
-#: ../ProjectController.py:855
+#: ../ProjectController.py:901
 msgid "Fatal : cannot get builder.\n"
 msgstr ""
 
-#: ../connectors/PYRO/__init__.py:108
+#: ../util/FileManagementPanel.py:209
+#, python-format
+msgid "File '%s' already exists!"
+msgstr ""
+
+#: ../connectors/PYRO/__init__.py:125
 msgid "Force runtime reload\n"
 msgstr ""
 
-#: ../ProjectController.py:466
+#: ../ProjectController.py:511
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr ""
 
-#: ../ProjectController.py:782
+#: ../util/FileManagementPanel.py:303
+msgid "Home Directory:"
+msgstr ""
+
+#: ../ProjectController.py:828
 msgid "IEC-61131-3 code generation failed !\n"
 msgstr ""
 
@@ -508,7 +536,7 @@ msgstr ""
 msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
 msgstr ""
 
-#: ../ProjectController.py:1316
+#: ../ProjectController.py:1452
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr ""
 
@@ -524,44 +552,57 @@ msgstr ""
 msgid "Linking :\n"
 msgstr ""
 
-#: ../util/discovery.py:107
+#: ../util/discovery.py:110
 msgid "Local"
 msgstr ""
 
-#: ../Beremiz.py:514
+#: ../ProjectController.py:1354
+msgid "Local service discovery failed!\n"
+msgstr ""
+
+#: ../Beremiz.py:391
 msgid "Log Console"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:73 ../canfestival/SlaveEditor.py:43
+#: ../connectors/PYRO/__init__.py:55
+#, python-format
+msgid "MDNS resolution failure for '%s'\n"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:37 ../canfestival/NetworkEditor.py:67
 msgid "Map Variable"
 msgstr ""
 
-#: ../features.py:5
+#: ../features.py:6
 msgid "Map located variables over CANopen"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:95
+#: ../canfestival/NetworkEditor.py:89
 msgid "Master"
 msgstr ""
 
-#: ../ConfigTreeNode.py:470
+#: ../ConfigTreeNode.py:480
 #, python-format
 msgid "Max count (%d) reached for this confnode of type %s "
+msgstr ""
+
+#: ../util/FileManagementPanel.py:301
+msgid "My Computer:"
 msgstr ""
 
 #: ../Beremiz_service.py:381
 msgid "Name must not be null!"
 msgstr ""
 
-#: ../Beremiz.py:443
+#: ../Beremiz.py:340
 msgid "New"
 msgstr ""
 
-#: ../Beremiz.py:404
+#: ../Beremiz.py:305
 msgid "New\tCTRL+N"
 msgstr ""
 
-#: ../ProjectController.py:1339
+#: ../ProjectController.py:1479
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr ""
 
@@ -588,7 +629,7 @@ msgstr ""
 msgid "No valid value selected!"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:85 ../canfestival/SlaveEditor.py:55
+#: ../canfestival/SlaveEditor.py:49 ../canfestival/NetworkEditor.py:79
 msgid "Node infos"
 msgstr ""
 
@@ -602,11 +643,11 @@ msgstr ""
 msgid "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
 msgstr ""
 
-#: ../Beremiz.py:444
+#: ../Beremiz.py:341
 msgid "Open"
 msgstr ""
 
-#: ../Beremiz.py:406
+#: ../Beremiz.py:307
 msgid "Open\tCTRL+O"
 msgstr ""
 
@@ -614,19 +655,23 @@ msgstr ""
 msgid "Open Inkscape"
 msgstr ""
 
+#: ../ProjectController.py:1531
+msgid "Open a file explorer to manage project files"
+msgstr ""
+
 #: ../wxglade_hmi/wxglade_hmi.py:109
 msgid "Open wxGlade"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:83 ../canfestival/SlaveEditor.py:53
+#: ../canfestival/SlaveEditor.py:47 ../canfestival/NetworkEditor.py:77
 msgid "Other Profile"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:72 ../canfestival/SlaveEditor.py:42
+#: ../canfestival/SlaveEditor.py:36 ../canfestival/NetworkEditor.py:66
 msgid "PDO Receive"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:71 ../canfestival/SlaveEditor.py:41
+#: ../canfestival/SlaveEditor.py:35 ../canfestival/NetworkEditor.py:65
 msgid "PDO Transmit"
 msgstr ""
 
@@ -634,17 +679,13 @@ msgstr ""
 msgid "PLC :\n"
 msgstr ""
 
-#: ../ProjectController.py:974 ../ProjectController.py:1263
+#: ../ProjectController.py:1097 ../ProjectController.py:1399
 #, python-format
 msgid "PLC is %s\n"
 msgstr ""
 
-#: ../Beremiz.py:419
+#: ../Beremiz.py:320
 msgid "Page Setup\tCTRL+ALT+P"
-msgstr ""
-
-#: ../Beremiz.py:1802
-msgid "Please enter a name for confnode:"
 msgstr ""
 
 #: ../Beremiz_service.py:366
@@ -655,28 +696,28 @@ msgstr ""
 msgid "Port number must be an integer!"
 msgstr ""
 
-#: ../Beremiz.py:421
+#: ../Beremiz.py:322
 msgid "Preview\tCTRL+SHIFT+P"
 msgstr ""
 
-#: ../Beremiz.py:447
+#: ../Beremiz.py:344
 msgid "Print"
 msgstr ""
 
-#: ../Beremiz.py:423
+#: ../Beremiz.py:324
 msgid "Print\tCTRL+P"
 msgstr ""
 
-#: ../ProjectController.py:239
-msgid "Project not created"
+#: ../ProjectController.py:1530
+msgid "Project Files"
 msgstr ""
 
-#: ../ConfigTreeNode.py:496
+#: ../ConfigTreeNode.py:506
 #, python-format
 msgid "Project tree layout do not match confnode.xml %s!=%s "
 msgstr ""
 
-#: ../features.py:7
+#: ../features.py:8
 msgid "Python file"
 msgstr ""
 
@@ -684,43 +725,53 @@ msgstr ""
 msgid "Quit"
 msgstr ""
 
-#: ../Beremiz.py:429
+#: ../Beremiz.py:327
 msgid "Quit\tCTRL+Q"
 msgstr ""
 
-#: ../ProjectController.py:1383
+#: ../ProjectController.py:1526
 msgid "Raw IEC code"
 msgstr ""
 
-#: ../Beremiz.py:1813
-msgid "Really delete confnode ?"
+#: ../Beremiz.py:1037
+#, python-format
+msgid "Really delete node '%s'?"
 msgstr ""
 
-#: ../util/discovery.py:102
+#: ../util/discovery.py:105
 msgid "Refresh"
 msgstr ""
 
-#: ../Beremiz.py:1813
-msgid "Remove confnode"
+#: ../Beremiz.py:1038
+#, python-format
+msgid "Remove %s node"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:93
+#: ../util/FileManagementPanel.py:281
+msgid "Remove file from left folder"
+msgstr ""
+
+#: ../canfestival/NetworkEditor.py:87
 msgid "Remove slave"
 msgstr ""
 
-#: ../ProjectController.py:1354
+#: ../util/FileManagementPanel.py:399
+msgid "Replace File"
+msgstr ""
+
+#: ../ProjectController.py:1494
 msgid "Run"
 msgstr ""
 
-#: ../ProjectController.py:796 ../ProjectController.py:805
+#: ../ProjectController.py:842 ../ProjectController.py:851
 msgid "Runtime extensions C code generation failed !\n"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:70 ../canfestival/SlaveEditor.py:40
+#: ../canfestival/SlaveEditor.py:34 ../canfestival/NetworkEditor.py:64
 msgid "SDO Client"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:69 ../canfestival/SlaveEditor.py:39
+#: ../canfestival/SlaveEditor.py:33 ../canfestival/NetworkEditor.py:63
 msgid "SDO Server"
 msgstr ""
 
@@ -728,60 +779,68 @@ msgstr ""
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
 msgstr ""
 
-#: ../features.py:9
+#: ../features.py:10
 msgid "SVGUI"
 msgstr ""
 
-#: ../Beremiz.py:445
+#: ../Beremiz.py:342
 msgid "Save"
 msgstr ""
 
-#: ../Beremiz.py:410
+#: ../Beremiz.py:311
 msgid "Save\tCTRL+S"
 msgstr ""
 
-#: ../Beremiz.py:446
+#: ../Beremiz.py:343
 msgid "Save As..."
 msgstr ""
 
-#: ../Beremiz.py:412
+#: ../Beremiz.py:313
 msgid "Save as\tCTRL+SHIFT+S"
 msgstr ""
 
-#: ../util/discovery.py:81
+#: ../ProjectController.py:1014
+msgid "Select an editor:"
+msgstr ""
+
+#: ../util/discovery.py:84
 msgid "Services available:"
 msgstr ""
 
-#: ../ProjectController.py:1380
+#: ../ProjectController.py:1520
 msgid "Show IEC code generated by PLCGenerator"
 msgstr ""
 
-#: ../canfestival/canfestival.py:277
+#: ../canfestival/canfestival.py:288
 msgid "Show Master"
 msgstr ""
 
-#: ../canfestival/canfestival.py:278
+#: ../canfestival/canfestival.py:289
 msgid "Show Master generated by config_utils"
 msgstr ""
 
-#: ../ProjectController.py:1378
+#: ../ProjectController.py:1518
 msgid "Show code"
 msgstr ""
 
-#: ../ProjectController.py:1356 ../Beremiz_service.py:319
+#: ../Beremiz_service.py:319 ../ProjectController.py:1496
 msgid "Start PLC"
 msgstr ""
 
-#: ../ProjectController.py:774
+#: ../ProjectController.py:820
 #, python-format
 msgid "Start build in %s\n"
 msgstr ""
 
-#: ../ProjectController.py:1192
+#: ../ProjectController.py:1315
 msgid "Starting PLC\n"
 msgstr ""
 
-#: ../ProjectController.py:1359
+#: ../Beremiz.py:401
+msgid "Status ToolBar"
+msgstr ""
+
+#: ../ProjectController.py:1499
 msgid "Stop"
 msgstr ""
 
@@ -789,39 +848,42 @@ msgstr ""
 msgid "Stop PLC"
 msgstr ""
 
-#: ../ProjectController.py:1361
+#: ../ProjectController.py:1501
 msgid "Stop Running PLC"
 msgstr ""
 
-#: ../ProjectController.py:1170
+#: ../ProjectController.py:1293
 msgid "Stopping debugger...\n"
 msgstr ""
 
-#: ../ProjectController.py:870
+#: ../ProjectController.py:916
 msgid "Successfully built.\n"
 msgstr ""
 
-#: ../Beremiz.py:661
+#: ../util/FileManagementPanel.py:398
+#, python-format
+msgid ""
+"The file '%s' already exist.\n"
+"Do you want to replace it?"
+msgstr ""
+
+#: ../Beremiz.py:553
 msgid "There are changes, do you want to save?"
 msgstr ""
 
-#: ../Beremiz.py:507 ../Beremiz.py:508
-msgid "Topology"
-msgstr ""
-
-#: ../ProjectController.py:1368
+#: ../ProjectController.py:1508
 msgid "Transfer"
 msgstr ""
 
-#: ../ProjectController.py:1370
+#: ../ProjectController.py:1510
 msgid "Transfer PLC"
 msgstr ""
 
-#: ../ProjectController.py:1335
+#: ../ProjectController.py:1475
 msgid "Transfer completed successfully.\n"
 msgstr ""
 
-#: ../ProjectController.py:1337
+#: ../ProjectController.py:1477
 msgid "Transfer failed\n"
 msgstr ""
 
@@ -840,7 +902,15 @@ msgstr ""
 msgid "Unable to get Xenomai's %s \n"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:74 ../canfestival/SlaveEditor.py:44
+#: ../ProjectController.py:255
+msgid "Unknown"
+msgstr ""
+
+#: ../ProjectController.py:252 ../ProjectController.py:253
+msgid "Unnamed"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:38 ../canfestival/NetworkEditor.py:68
 msgid "User Type"
 msgstr ""
 
@@ -848,19 +918,15 @@ msgstr ""
 msgid "WXGLADE GUI"
 msgstr ""
 
-#: ../ProjectController.py:1154
+#: ../ProjectController.py:1277
 msgid "Waiting debugger to recover...\n"
 msgstr ""
 
-#: ../ProjectController.py:471
+#: ../ProjectController.py:516
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr ""
 
-#: ../connectors/PYRO/__init__.py:46
-msgid "Wrong URI, please check it !\n"
-msgstr ""
-
-#: ../features.py:8
+#: ../features.py:9
 msgid "WxGlade GUI"
 msgstr ""
 
@@ -876,69 +942,18 @@ msgid ""
 "Open wxGlade anyway ?"
 msgstr ""
 
-#: ../ProjectController.py:209
+#: ../ProjectController.py:221
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
 msgstr ""
 
-#: ../util/ProcessLogger.py:158
+#: ../util/ProcessLogger.py:161
 #, python-format
 msgid "exited with status %s (pid %s)\n"
 msgstr ""
 
-#: ../Beremiz.py:1834 ../Beremiz.py:1836
-msgid "file : "
-msgstr ""
-
-#: ../Beremiz.py:1837
-msgid "function : "
-msgstr ""
-
-#: ../Beremiz.py:1837
-msgid "line : "
-msgstr ""
-
 #: Extra XSD strings
-
-msgid "CExtension"
-msgstr ""
-
-msgid "CFLAGS"
-msgstr ""
-
-msgid "LDFLAGS"
-msgstr ""
-
-msgid "BaseParams"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "IEC_Channel"
-msgstr ""
-
-msgid "Enabled"
-msgstr ""
-
-msgid "Xenomai"
-msgstr ""
-
-msgid "XenoConfig"
-msgstr ""
-
-msgid "Win32"
-msgstr ""
-
-msgid "Linux"
-msgstr ""
-
-msgid "Compiler"
-msgstr ""
-
-msgid "Linker"
-msgstr ""
 
 msgid "CanFestivalSlaveNode"
 msgstr ""
@@ -971,6 +986,45 @@ msgid "CAN_Driver"
 msgstr ""
 
 msgid "Debug_mode"
+msgstr ""
+
+msgid "CExtension"
+msgstr ""
+
+msgid "CFLAGS"
+msgstr ""
+
+msgid "LDFLAGS"
+msgstr ""
+
+msgid "BaseParams"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "IEC_Channel"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Linux"
+msgstr ""
+
+msgid "Compiler"
+msgstr ""
+
+msgid "Linker"
+msgstr ""
+
+msgid "Win32"
+msgstr ""
+
+msgid "Xenomai"
+msgstr ""
+
+msgid "XenoConfig"
 msgstr ""
 
 msgid "BeremizRoot"

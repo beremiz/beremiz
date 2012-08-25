@@ -27,19 +27,19 @@ import wx
 
 class BrowseValuesLibraryDialog(wx.Dialog):
     """
-    Modal dialog that helps in selecting predefined XML attributes sets out of hierarchicaly organized list
+    Modal dialog that helps in selecting predefined XML attributes sets out of hierarchically organized list
     """    
 
     def __init__(self, parent, name, library, default=None):
         wx.Dialog.__init__(self,
               name='BrowseValueDialog', parent=parent,
               size=wx.Size(600, 400), style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-              title=_('Browse %s library') % name)
+              title=_('Browse %s values library') % name)
 
         self.SetClientSize(wx.Size(600, 400))
 
         self.staticText1 = wx.StaticText(
-              label=_('Choose a %s:') % name, name='staticText1', parent=self,
+              label=_('Choose a value for %s:') % name, name='staticText1', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.ValuesLibrary = wx.TreeCtrl(

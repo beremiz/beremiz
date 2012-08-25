@@ -280,7 +280,7 @@ class FileManagementPanel(EditorPanel):
         for idx, (name, bitmap, help) in enumerate([
                 ("DeleteButton", "remove_element", _("Remove file from left folder")),
                 ("LeftCopyButton", "LeftCopy", _("Copy file from right folder to left")),
-                ("RightCopyButton", "RightCopy", _("copy file from left folder to right")),
+                ("RightCopyButton", "RightCopy", _("Copy file from left folder to right")),
                 ("EditButton", "edit", _("Edit file"))]):
             button = wx.lib.buttons.GenBitmapButton(self.Editor, 
                   bitmap=GetBitmap(bitmap), 

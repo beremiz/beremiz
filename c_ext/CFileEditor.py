@@ -644,7 +644,7 @@ class VariablesEditor(wx.Panel):
 
     def OnVariablesGridEditorShown(self, event):
         row, col = event.GetRow(), event.GetCol() 
-        if self.Table.GetColLabelValue(col) == "Type":
+        if self.Table.GetColLabelValue(col, False) == "Type":
             type_menu = wx.Menu(title='')
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():

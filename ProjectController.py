@@ -251,7 +251,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.CreateNewProject(
             {"projectName": _("Unnamed"),
              "productName": _("Unnamed"),
-             "productVersion": _("1"),
+             "productVersion": "1",
              "companyName": _("Unknown"),
              "creationDateTime": datetime(*localtime()[:6])})
         self.ProjectAddConfiguration("config")
@@ -1118,9 +1118,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         if IEC_Type in DebugTypesSize: 
                             Idxs.append((Idx, IEC_Type, fvalue, IECPath))
                         else:
-                            self.logger.write_warning(_("Debug : Unsuppoted type to debug %s\n")%IEC_Type)
+                            self.logger.write_warning(_("Debug: Unsupported type to debug '%s'\n")%IEC_Type)
                     else:
-                        self.logger.write_warning(_("Debug : Unknown variable %s\n")%IECPath)
+                        self.logger.write_warning(_("Debug: Unknown variable '%s'\n")%IECPath)
             for IECPathToPop in IECPathsToPop:
                 self.IECdebug_datas.pop(IECPathToPop)
 
@@ -1351,7 +1351,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 uri = dialog.GetURI()
                 dialog.Destroy()
             except:
-                self.logger.write_error(_("Local service discovery failed !\n"))
+                self.logger.write_error(_("Local service discovery failed!\n"))
                 self.logger.write_error(traceback.format_exc())
                 uri = None
             
