@@ -274,7 +274,7 @@ class _NodeListCTN(NodeList):
                 self._GeneratedMasterView = MasterViewer(app_frame.TabsOpened, manager, app_frame)
                 
             if self._GeneratedMasterView is not None:
-                app_frame.EditProjectElement(self._IECCodeView, name)
+                app_frame.EditProjectElement(self._GeneratedMasterView, name)
             
             return self._GeneratedMasterView
         else:
