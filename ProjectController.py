@@ -14,7 +14,7 @@ from weakref import WeakKeyDictionary
 
 import targets
 import connectors
-from util.misc import CheckPathPerm, GetClassImporter
+from util.misc import CheckPathPerm, GetClassImporter, IECCodeViewer
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from util.FileManagementPanel import FileManagementPanel
@@ -948,8 +948,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self._IECCodeView is None:
                 plc_file = self._getIECcodepath()
             
-                self._IECCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
-                #self._IECCodeView.Enable(False)
+                self._IECCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
@@ -958,6 +957,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text = text)
                 self._IECCodeView.SetIcon(GetBitmap("ST"))
+                setattr(self._IECCodeView, "_OnClose", self.OnCloseEditor)
             
             if self._IECCodeView is not None:
                 self.AppFrame.EditProjectElement(self._IECCodeView, name)
@@ -966,14 +966,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
         
         elif name == "IEC raw code":
             if self._IECRawCodeView is None:
-                controler = MiniTextControler(self._getIECrawcodepath())
+                controler = MiniTextControler(self._getIECrawcodepath(), self)
                 
-                self._IECRawCodeView = TextViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
-                #self._IECRawCodeView.Enable(False)
+                self._IECRawCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
                 self._IECRawCodeView.SetTextSyntax("ALL")
                 self._IECRawCodeView.SetKeywords(IEC_KEYWORDS)
                 self._IECRawCodeView.RefreshView()
                 self._IECRawCodeView.SetIcon(GetBitmap("ST"))
+                setattr(self._IECRawCodeView, "_OnClose", self.OnCloseEditor)
             
             if self._IECRawCodeView is not None:
                 self.AppFrame.EditProjectElement(self._IECRawCodeView, name)
