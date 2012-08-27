@@ -5,19 +5,21 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: LinuxIT\n"
+"Project-Id-Version: Beremiz_Korean_Version\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-16 12:32+0100\n"
-"PO-Revision-Date: 2012-08-20 19:18+0900\n"
-"Last-Translator: Reinhard Lee <lij3105@gmail.com>\n"
-"Language-Team: LinuxIT\n"
+"POT-Creation-Date: 2012-05-20 18:25+0200\n"
+"PO-Revision-Date: 2012-08-24 14:03+0900\n"
+"Last-Translator: Reinhard.Lee <lij3105@gmail.com>\n"
+"Language-Team: LinuxIT <lij3105@gmail.com>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ko_KR\n"
-"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-Language: Korean\n"
+"X-Poedit-Country: KOREA, REPUBLIC OF\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
-#: ../Beremiz.py:1487
+#: ../Beremiz.py:1846
 #, python-format
 msgid ""
 "\n"
@@ -25,7 +27,7 @@ msgid ""
 "(%s)\n"
 "\n"
 "Please be kind enough to send this file to:\n"
-"edouard.tisserant@gmail.com\n"
+"beremiz-devel@lists.sourceforge.net\n"
 "\n"
 "You should now restart Beremiz.\n"
 "\n"
@@ -38,272 +40,286 @@ msgstr ""
 "버그 리포트 파일을 beremiz-devel@lists.sourceforge.net으로\n"
 "전송해주시면 감사하겠습니다.\n"
 "\n"
-"Traceback:\n"
+"베레미즈를 다시 시작해주세요.\n"
+"\n"
+"에러 위치:\n"
 
-#: ../Beremiz.py:1794
-#, python-format
-msgid ""
-"\n"
-"An unhandled exception (bug) occured. Bug report saved at :\n"
-"(%s)\n"
-"\n"
-"Please be kind enough to send this file to:\n"
-"dev@automforge.net\n"
-"\n"
-"You should now restart Beremiz.\n"
-"\n"
-"Traceback:\n"
-msgstr ""
-"\n"
-"원인을 알 수 없는 에러(버그)가 발생하였습니다. 버그 리포트 저장 위치 :\n"
-"(%s)\n"
-"\n"
-"버그 리포트 파일을 dev@automforge.net으로\n"
-"전송해 주시면 감사하겠습니다.\n"
-"\n"
-"에러 상세 내용:\n"
-
-#: ../Beremiz.py:401
-msgid "&Recent Projects"
-msgstr "&최근 열어본 프로젝트"
-
-#: ../plugins/python/python.py:22
-msgid "Edit Python File"
-msgstr "파이썬 파일 수정"
-
-#: ../Beremiz.py:388
-msgid "&Plugin"
-msgstr "&플러그인"
-
-#: ../runtime/PLCObject.py:246
-msgid "Problem %s PLC"
-msgstr "PLC %s 문제 발생"
-
-#: ../LPCBeremiz.py:695 ../plugger.py:1473
+#: ../ProjectController.py:845
 msgid " generation failed !\n"
 msgstr "생성 실패!\n"
 
-#: ../Beremiz.py:1385
+#: ../Beremiz.py:1739
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr "\"%s\" 베레미즈 프로젝트 폴더가 아닙니다\n"
 
-#: ../plugins/python/PythonEditor.py:500
-msgid "&Edit"
-msgstr "&수정"
+#: ../canfestival/NetworkEditor.py:78
+#: ../canfestival/SlaveEditor.py:48
+#, python-format
+msgid "%s Profile"
+msgstr "%s 프로필"
 
-#: ../Beremiz.py:1475 ../Beremiz.py:1477 ../Beremiz.py:1478
+#: ../Beremiz.py:394
+msgid "&ConfNode"
+msgstr "&플러그인"
+
+#: ../Beremiz.py:426
+msgid "&Properties"
+msgstr "&속성"
+
+#: ../Beremiz.py:407
+msgid "&Recent Projects"
+msgstr "&최근 프로젝트"
+
+#: ../Beremiz.py:1834
+#: ../Beremiz.py:1836
+#: ../Beremiz.py:1837
 msgid ",   "
 msgstr ",   "
 
-#: ../Beremiz.py:1473
+#: ../Beremiz.py:1832
 msgid ". "
 msgstr ". "
 
-#: ../plugger.py:447
+#: ../ProjectController.py:1146
+msgid "... debugger recovered\n"
+msgstr "... 디버거 복구\n"
+
+#: ../ConfigTreeNode.py:369
 #, python-format
 msgid "A child names \"%s\" already exist -> \"%s\"\n"
 msgstr "입력 하신 \"%s\" 이 중복 되는 이름입니다. -> \"%s\"\n"
 
-#: ../plugger.py:479
-#, python-format
-msgid "A child with IEC channel %d already exist -> %d\n"
-msgstr "입력하신 %d IEC 채널은 중복 되는 이름입니다. -> %d\n"
-
-#: ../Beremiz.py:340
+#: ../Beremiz.py:451
 msgid "About"
 msgstr "베레미즈는..."
 
-#: ../Beremiz.py:1420
+#: ../Beremiz.py:1771
 msgid "About Beremiz"
 msgstr "베레미즈"
 
-#: ../Beremiz.py:1443
-msgid "Add Plugin"
+#: ../canfestival/NetworkEditor.py:90
+#: ../canfestival/SlaveEditor.py:60
+msgid "Add"
+msgstr "추가"
+
+#: ../features.py:6
+msgid "Add C code accessing located variables synchronously"
+msgstr "동기적으로 위치한 변수를 액세스하는 C 코드를 추가합니다"
+
+#: ../Beremiz.py:1802
+msgid "Add ConfNode"
 msgstr "플러그인 추가"
 
-#: ../Beremiz.py:618 ../Beremiz.py:883
-msgid "Add a sub plugin"
-msgstr "보조 플러그인 추가"
+#: ../features.py:7
+msgid "Add Python code executed asynchronously"
+msgstr "비동기적으로 실행되는 파이썬 코드를 추가합니다"
 
-#: ../plugger.py:1822
+#: ../features.py:8
+msgid "Add a simple WxGlade based GUI."
+msgstr "간단 WxGlade GUI를 추가합니다"
+
+#: ../Beremiz.py:886
+#: ../Beremiz.py:1231
+msgid "Add a sub confnode"
+msgstr "서브 플러그인 추가"
+
+#: ../canfestival/NetworkEditor.py:92
+msgid "Add slave"
+msgstr "슬레이브 추가"
+
+#: ../ProjectController.py:1213
 msgid "Already connected. Please disconnect\n"
-msgstr "이미 접속중입니다. 연결을 해제 하세요\n"
+msgstr "이미 접속된 상태입니다. 접속을 끊어 주세요\n"
 
-#: ../Beremiz.py:1131
+#: ../Beremiz.py:1428
 msgid "Append "
-msgstr "플러그인 확장 "
+msgstr "확장"
 
-#: ../plugins/canfestival/config_utils.py:341
-#: ../plugins/canfestival/config_utils.py:623
+#: ../util/Zeroconf.py:599
+msgid "Bad domain name (circular) at "
+msgstr "도메인 이름이 올바르지 않습니다(circular 네임):"
+
+#: ../util/Zeroconf.py:602
+msgid "Bad domain name at "
+msgstr "도메인 이름이 올바르지 않습니다:"
+
+#: ../canfestival/config_utils.py:341
+#: ../canfestival/config_utils.py:623
 #, python-format
 msgid "Bad location size : %s"
-msgstr "로케이션 사이즈가 다릅니다 : %s"
+msgstr "올바르지 않는 로케이션 크기 : %s"
 
-#: ../Beremiz.py:439
+#: ../Beremiz.py:592
 msgid "Beremiz"
 msgstr "베레미즈"
 
-#: ../Beremiz.py:338
-msgid "Beremiz\tF1"
-msgstr "베레미즈\tF1"
+#: ../util/BrowseValuesLibraryDialog.py:37
+#, python-format
+msgid "Browse %s library"
+msgstr "%s 라이브러리 탐색"
 
-#: ../LPCBeremiz.py:388 ../plugger.py:1955
+#: ../ProjectController.py:1345
 msgid "Build"
 msgstr "빌드"
 
-#: ../plugger.py:1537
+#: ../ProjectController.py:929
 msgid "Build directory already clean\n"
 msgstr "빌드 디렉토리가 이미 비어 있습니다\n"
 
-#: ../LPCBeremiz.py:389 ../plugger.py:1956
+#: ../ProjectController.py:1346
 msgid "Build project into build folder"
-msgstr "현재 작성된 프로젝트를 빌드 폴더에 생성합니다"
+msgstr "프로젝트가 빌드 폴더에 생성되었습니다"
 
-#: ../LPCBeremiz.py:714 ../plugger.py:1491
+#: ../ProjectController.py:865
 msgid "C Build crashed !\n"
-msgstr "C 파일 빌드 과정에 문제가 있습니다!\n"
+msgstr "C 빌드 치명적인 오류 발생 ! \n"
 
-#: ../LPCBeremiz.py:710 ../plugger.py:1488
+#: ../ProjectController.py:862
 msgid "C Build failed.\n"
-msgstr "C 파일 빌드에 실패 했습니다\n"
+msgstr "C 빌드 실패.\n"
 
-#: ../plugger.py:1477
+#: ../ProjectController.py:850
 msgid "C code generated successfully.\n"
 msgstr "C 코드가 성공적으로 생성되었습니다\n"
 
-#: ../targets/toolchain_gcc.py:123
+#: ../targets/toolchain_gcc.py:132
 #, python-format
 msgid "C compilation of %s failed.\n"
-msgstr "%s 의 C 컴파일 작업이 실패 했습니다\n"
+msgstr "%s의 C 컴파일이 실패했습니다.\n"
 
-#: ../plugger.py:1214
-#, python-format
-msgid "Can't find module for target %s!\n"
-msgstr "타겟에 적용될 %s 모듈을 찾지 못했습니다!\n"
+#: ../features.py:6
+msgid "C extension"
+msgstr "C 확장"
 
-#: ../plugger.py:1904
-msgid "Cannot compare latest build to target. Please build.\n"
-msgstr ""
-"이전에 빌드되어 타겟에 전송된 파일과 비교 할 수 없습니다. 다시 빌드하세요\n"
+#: ../features.py:5
+msgid "CANopen support"
+msgstr "CANopen 지원"
 
-#: ../plugger.py:517
+#: ../ConfigTreeNode.py:460
 #, python-format
 msgid "Cannot create child %s of type %s "
 msgstr "%s로 (%s 타입) 차일드를 생성 할 수 없습니다"
 
-#: ../plugger.py:472
+#: ../ConfigTreeNode.py:398
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
 msgstr "IEC 채널을 검색하는데 실패했습니다 : %d\n"
 
-#: ../connectors/PYRO/__init__.py:76
+#: ../connectors/PYRO/__init__.py:75
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr "현재 PLC 상태를 알 수 없습니다 - 접속 실패.\n"
 
-#: ../plugger.py:1312
+#: ../ProjectController.py:671
 msgid "Cannot open/parse VARIABLES.csv!\n"
-msgstr "VARIABLES.csv 파일을 /parse 열 수 없습니다!\n"
+msgstr "VARIABLES.csv 파일을 열거나 분석 할 수 없습니다!\n"
 
-#: ../plugins/canfestival/config_utils.py:371
+#: ../canfestival/config_utils.py:371
 #, python-format
-msgid ""
-"Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))"
+msgid "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))"
 msgstr "'%s' 변수의 비트 옵셋 설정 실패 (ID:%d,ldx:%x,sldx:%x))"
 
-#: ../Beremiz_service.py:320
+#: ../Beremiz_service.py:322
 msgid "Change IP of interface to bind"
 msgstr "바인드 인터페이스 IP 변경"
 
-#: ../Beremiz_service.py:319
+#: ../Beremiz_service.py:321
 msgid "Change Name"
 msgstr "이름 변경"
 
-#: ../Beremiz_service.py:323
+#: ../Beremiz_service.py:325
 msgid "Change Port Number"
 msgstr "포트 번호 변경"
 
-#: ../Beremiz_service.py:325
+#: ../Beremiz_service.py:327
 msgid "Change working directory"
 msgstr "작업 디렉토리 변경"
 
-#: ../plugins/python/modules/svgui/svgui.py:90
+#: ../util/BrowseValuesLibraryDialog.py:42
+#, python-format
+msgid "Choose a %s:"
+msgstr "%s 선택:"
+
+#: ../svgui/svgui.py:92
 msgid "Choose a SVG file"
 msgstr "SVG 파일 선택"
 
-#: ../plugger.py:975
+#: ../ProjectController.py:311
 msgid "Choose a directory to save project"
 msgstr "프로젝트 저장 디렉토리 선택"
 
-#: ../Beremiz.py:1337 ../Beremiz.py:1366
+#: ../Beremiz.py:1680
+#: ../Beremiz.py:1713
 msgid "Choose a project"
 msgstr "프로젝트 선택"
 
-#: ../Beremiz_service.py:371
+#: ../Beremiz_service.py:373
 msgid "Choose a working directory "
 msgstr "작업 디렉토리 선택"
 
-#: ../plugger.py:933
+#: ../ProjectController.py:265
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
-msgstr ""
-"베레미즈 프로젝트 폴더를 선택해 주세요. 선택하신 폴더는 프로젝트 폴더가 아닙"
-"니다!"
+msgstr "베레미즈 프로젝트 폴더를 선택해 주세요. 선택하신 폴더는 프로젝트 폴더가 아닙니다!"
 
-#: ../plugger.py:898
+#: ../ProjectController.py:230
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr "빈 디렉토리 입니다. 새 프로젝트 폴더로 사용 할 수 있습니다!"
 
-#: ../plugger.py:1959
+#: ../ProjectController.py:1349
 msgid "Clean"
 msgstr "클린"
 
-#: ../plugger.py:1961
+#: ../ProjectController.py:1351
 msgid "Clean project build folder"
 msgstr "프로젝트 빌드 폴더를 삭제합니다"
 
-#: ../plugger.py:1534
+#: ../ProjectController.py:926
 msgid "Cleaning the build directory\n"
 msgstr "빌드 폴더 삭제중\n"
 
-#: ../Beremiz.py:517
+#: ../Beremiz.py:698
 msgid "Close Application"
 msgstr "어플리케이션 닫기"
 
-#: ../Beremiz.py:309 ../Beremiz.py:502
+#: ../Beremiz.py:658
 msgid "Close Project"
 msgstr "프로젝트 닫기"
 
-#: ../Beremiz.py:307 ../LPCBeremiz.py:750
+#: ../Beremiz.py:416
+msgid "Close Project\tCTRL+SHIFT+W"
+msgstr "프로젝트 닫기\tCTRL+SHIFT+W"
+
+#: ../Beremiz.py:414
 msgid "Close Tab\tCTRL+W"
 msgstr "탭 닫기\tCTRL+W"
 
-#: ../plugger.py:1139
+#: ../ProjectController.py:494
 msgid "Compiling IEC Program into C code...\n"
 msgstr "C 코드를 IEC 프로그램을 컴파일링 중입니다...\n"
 
-#: ../plugger.py:1974
+#: ../ProjectController.py:1364
 msgid "Connect"
 msgstr "연결하기"
 
-#: ../plugger.py:1975
+#: ../ProjectController.py:1365
 msgid "Connect to the target PLC"
 msgstr "타겟 PLC와 연결"
 
-#: ../connectors/PYRO/__init__.py:39
+#: ../connectors/PYRO/__init__.py:38
 #, python-format
 msgid "Connecting to URI : %s\n"
 msgstr "URI 주소로 연결중 : %s\n"
 
-#: ../plugger.py:1841
+#: ../ProjectController.py:1232
 msgid "Connection canceled!\n"
 msgstr "연결 취소!\n"
 
-#: ../LPCBeremiz.py:459 ../LPCBeremiz.py:632 ../plugger.py:1858
+#: ../ProjectController.py:1249
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr "%s 연결에 실패 하였습니다!\n"
 
-#: ../plugger.py:638
+#: ../ConfigTreeNode.py:572
 #, python-format
 msgid ""
 "Could not add child \"%s\", type %s :\n"
@@ -312,129 +328,148 @@ msgstr ""
 "\"%s\" child 추가 할 수 없습니다, type %s:\n"
 "%s\n"
 
-#: ../plugger.py:615
+#: ../ConfigTreeNode.py:549
 #, python-format
 msgid ""
-"Couldn't load plugin base parameters %s :\n"
+"Couldn't load confnode base parameters %s :\n"
 " %s"
 msgstr ""
 "플러그인 베이스 파라메터를 불러 올 수 없습니다 %s:\n"
 "%s"
 
-#: ../plugger.py:626
+#: ../ConfigTreeNode.py:560
 #, python-format
 msgid ""
-"Couldn't load plugin parameters %s :\n"
+"Couldn't load confnode parameters %s :\n"
 " %s"
 msgstr ""
 "플러그인 파라메터를 불러 올 수 없습니다 %s:\n"
 "%s"
 
-#: ../plugger.py:1785
+#: ../ProjectController.py:1195
 msgid "Couldn't start PLC !\n"
 msgstr "PLC 를 시작 할 수 없습니다!\n"
 
-#: ../plugger.py:1811
+#: ../ProjectController.py:1203
 msgid "Couldn't stop PLC !\n"
 msgstr "PLC 를 정지 할 수 없습니다!\n"
 
-#: ../plugins/python/modules/svgui/svgui.py:20
+#: ../ProjectController.py:1173
+msgid "Couldn't stop debugger.\n"
+msgstr "디버거를 정지 할 수 없습니다.\n"
+
+#: ../svgui/svgui.py:22
 msgid "Create HMI"
 msgstr "HMI 생성"
 
-#: ../plugger.py:1605
+#: ../canfestival/NetworkEditor.py:86
+#: ../canfestival/SlaveEditor.py:56
+msgid "DS-301 Profile"
+msgstr "DS-301 프로필"
+
+#: ../canfestival/NetworkEditor.py:87
+#: ../canfestival/SlaveEditor.py:57
+msgid "DS-302 Profile"
+msgstr "DS-302 프로필"
+
+#: ../ProjectController.py:1000
 #, python-format
 msgid "Debug : Unknown variable %s\n"
 msgstr "디버그 : 알 수 없는 변수 %s\n"
 
-#: ../plugger.py:1766
-msgid "Debug Thread couldn't be killed"
-msgstr "디버그 스레드를 정지 할 수 없습니다"
+#: ../ProjectController.py:998
+#, python-format
+msgid "Debug : Unsuppoted type to debug %s\n"
+msgstr "디버그 : 지원하지 않는 타입 %s\n"
 
-#: ../LPCBeremiz.py:479 ../plugger.py:1879
+#: ../ProjectController.py:1270
 msgid "Debug connect matching running PLC\n"
 msgstr "디버그 작동중인 PLC와 매칭 되었습니다\n"
 
-#: ../plugger.py:1745
-#, python-format
-msgid "Debug data do not match requested variable count %d != %d\n"
-msgstr "요청한 변수 카운트와 디버그 데이터가 일치 하지 않습니다 %d != %d\n"
-
-#: ../LPCBeremiz.py:482 ../plugger.py:1882
+#: ../ProjectController.py:1273
 msgid "Debug do not match PLC - stop/transfert/start to re-enable\n"
-msgstr ""
-"PLC와 디버거가 연결되지 않았습니다 - 정지/전송/시작을 다시 시도하세요\n"
+msgstr "PLC와 디버거가 연결되지 않았습니다 - 정지/전송/시작을 다시 시도하세요\n"
 
-#: ../plugger.py:1757
+#: ../ProjectController.py:1163
 msgid "Debugger disabled\n"
 msgstr "디버거 사용 불가\n"
 
-#: ../Beremiz.py:874
-msgid "Delete this plugin"
-msgstr "플러그인 삭제"
+#: ../ProjectController.py:1175
+msgid "Debugger stopped.\n"
+msgstr "디버거 정지.\n"
 
-#: ../plugger.py:1983
+#: ../Beremiz.py:1222
+msgid "Delete this confnode"
+msgstr "해당 플러그인 삭제"
+
+#: ../ProjectController.py:1373
 msgid "Disconnect"
 msgstr "연결 해제"
 
-#: ../plugger.py:1985
+#: ../ProjectController.py:1375
 msgid "Disconnect from PLC"
 msgstr "PLC 연결 해제"
 
-#: ../plugins/c_ext/c_ext.py:250 ../plugins/c_ext/c_ext.py:251
+#: ../c_ext/c_ext.py:143
+#: ../c_ext/c_ext.py:144
 msgid "Edit C File"
 msgstr "C 파일 수정"
 
-#: ../plugins/canfestival/canfestival.py:246
+#: ../canfestival/canfestival.py:274
 msgid "Edit CanOpen Network with NetworkEdit"
 msgstr "네트워크 에디터를 이용하여 CanOpen 네트워크 수정"
 
-#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:13
-msgid "Edit a WxWidgets GUI with WXGlade"
-msgstr "WXGlade를 이용하여 GUI 수정"
+#: ../py_ext/PythonFileCTNMixin.py:19
+#: ../py_ext/PythonFileCTNMixin.py:20
+msgid "Edit Python File"
+msgstr "파이썬 파일 수정"
 
-#: ../plugins/canfestival/canfestival.py:245
+#: ../wxglade_hmi/wxglade_hmi.py:12
+msgid "Edit a WxWidgets GUI with WXGlade"
+msgstr "WxGlase GUI, 위젯 수정"
+
+#: ../canfestival/canfestival.py:273
 msgid "Edit network"
 msgstr "네트워크 수정"
 
-#: ../plugger.py:1994
+#: ../ProjectController.py:1384
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr "PLCGenerator로 생성된 IEC 코드 수정"
 
-#: ../Beremiz.py:824
-msgid "Enable/Disable this plugin"
+#: ../Beremiz.py:948
+msgid "Enable/Disable this confnode"
 msgstr "플러그인 사용/정지"
 
-#: ../Beremiz_service.py:378
+#: ../Beremiz_service.py:380
 msgid "Enter a name "
 msgstr "이름 입력"
 
-#: ../Beremiz_service.py:363
+#: ../Beremiz_service.py:365
 msgid "Enter a port number "
 msgstr "포트 번호 입력"
 
-#: ../Beremiz_service.py:353
+#: ../Beremiz_service.py:355
 msgid "Enter the IP of the interface to bind"
 msgstr "바인드 인터페이스 IP 입력"
 
-#: ../Beremiz.py:1499 ../Beremiz.py:1509 ../plugger.py:879
-#: ../Beremiz_service.py:268 ../Beremiz_service.py:392
+#: ../util/BrowseValuesLibraryDialog.py:83
+#: ../Beremiz.py:1858
+#: ../ProjectController.py:210
+#: ../Beremiz_service.py:270
+#: ../Beremiz_service.py:394
 msgid "Error"
 msgstr "에러"
 
-#: ../plugger.py:1187
-msgid ""
-"Error : At least one configuration and one resource must be declared in "
-"PLC !\n"
-msgstr ""
-"에러 : PLC 프로그램은 하나 이상의 설정과 리소스가 반드시 선언되어야 합니다!\n"
+#: ../ProjectController.py:543
+msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
+msgstr "에러 : PLC 프로그램은 하나 이상의 설정과 리소스가 반드시 선언되어야 합니다!\n"
 
-#: ../plugger.py:1179
+#: ../ProjectController.py:535
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr "에러 : IEC C 컴파일러 %d\n"
 
-#: ../plugger.py:1121
+#: ../ProjectController.py:476
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
@@ -443,411 +478,443 @@ msgstr ""
 "ST/IL/SFC 코드 생성기 에러 : \n"
 "%s\n"
 
-#: ../plugger.py:222
+#: ../ConfigTreeNode.py:180
 #, python-format
 msgid "Error while saving \"%s\"\n"
 msgstr "저장 중 에러 발생 \"%s\"\n"
 
-#: ../plugins/canfestival/canfestival.py:237
+#: ../canfestival/canfestival.py:255
 msgid "Error: No Master generated\n"
-msgstr "에러 : 마스터 미생성 \"%s\"\n"
+msgstr "에러 : CAN 마스터 미생성 \"%s\"\n"
 
-#: ../plugins/canfestival/canfestival.py:232
+#: ../canfestival/canfestival.py:250
 msgid "Error: No PLC built\n"
 msgstr "에러 : PLC 빌드 미생성\n"
 
-#: ../LPCBeremiz.py:453 ../LPCBeremiz.py:626 ../plugger.py:1852
+#: ../ProjectController.py:1243
 #, python-format
 msgid "Exception while connecting %s!\n"
-msgstr "%s접속중 예외 상황이 발생했습니다!\n"
+msgstr "%s 접속중 예외 상황이 발생했습니다!\n"
 
-#: ../plugger.py:1191
+#: ../features.py:9
+msgid "Experimental web based HMI"
+msgstr "웹 기반의 HMI(실험중)"
+
+#: ../ProjectController.py:547
 msgid "Extracting Located Variables...\n"
 msgstr "변수 위치 추출 중...\n"
 
-#: ../plugger.py:1919
+#: ../ProjectController.py:1310
 msgid "Failed : Must build before transfer.\n"
 msgstr "실패 : 빌드 후에 전송 하세요.\n"
 
-#: ../LPCBeremiz.py:703 ../plugger.py:1482
+#: ../ProjectController.py:855
 msgid "Fatal : cannot get builder.\n"
 msgstr "치명적 오류 : 빌드 파일 생성 프로그램을 찾을 수 없습니다.\n"
 
-#: ../connectors/PYRO/__init__.py:109
+#: ../connectors/PYRO/__init__.py:108
 msgid "Force runtime reload\n"
 msgstr "실행환경 강제 리로딩\n"
 
-#: ../plugger.py:1111
+#: ../ProjectController.py:466
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr "IEC-61131 기반의 ST/IL/SFC 코드 생성중...\n"
 
-#: ../plugger.py:1432
-msgid "Generating plugins C code\n"
-msgstr "플러그인 C 코드 생성중\n"
-
-#: ../LPCBeremiz.py:649 ../plugger.py:1424
+#: ../ProjectController.py:782
 msgid "IEC-61131-3 code generation failed !\n"
 msgstr "IEC-61131-3 코드 생성 실패!\n"
 
-#: ../Beremiz_service.py:354 ../Beremiz_service.py:355
+#: ../Beremiz_service.py:356
+#: ../Beremiz_service.py:357
 msgid "IP is not valid!"
 msgstr "IP를 정확히 입력하세요!"
 
-#: ../plugins/python/modules/svgui/svgui.py:15
-#: ../plugins/python/modules/svgui/svgui.py:16
+#: ../svgui/svgui.py:17
+#: ../svgui/svgui.py:18
 msgid "Import SVG"
 msgstr "SVG 가져오기"
 
-#: ../plugins/python/modules/svgui/svgui.py:19
+#: ../svgui/svgui.py:21
 msgid "Inkscape"
 msgstr "잉크스케이프"
 
-#: ../plugins/canfestival/config_utils.py:376
-#: ../plugins/canfestival/config_utils.py:637
+#: ../canfestival/config_utils.py:376
+#: ../canfestival/config_utils.py:637
 #, python-format
 msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
 msgstr "타입 에러 \"%s\" -> %d != %d 위치 \"%s\""
 
-#: ../plugger.py:1925
+#: ../ProjectController.py:1316
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr "타겟에 이미 동일한 파일이 존재합니다. 전송합니다...\n"
 
-#: ../plugger.py:1893
-msgid "Latest build does not match with target, please transfer.\n"
-msgstr "최근 빌드와 타겟 간의 버젼이 일치 하지 않습니다, 다시 전송해 주세요.\n"
-
-#: ../plugger.py:1897
-msgid "Latest build matches target, no transfer needed.\n"
-msgstr "최근 빌드와 타겟 간의 버젼이 동일합니다. 전송이 필요하지 않습니다.\n"
-
-#: ../Beremiz_service.py:322
+#: ../Beremiz_service.py:324
 msgid "Launch WX GUI inspector"
 msgstr "WX GUI Inspector 실행"
 
-#: ../Beremiz_service.py:321
+#: ../Beremiz_service.py:323
 msgid "Launch a live Python shell"
 msgstr "Live Python Shell 실행"
 
-#: ../targets/toolchain_gcc.py:131
+#: ../targets/toolchain_gcc.py:142
 msgid "Linking :\n"
 msgstr "링크 중 : \n"
 
-#: ../discovery.py:107
+#: ../util/discovery.py:107
 msgid "Local"
 msgstr "로컬"
 
-#: ../Beremiz.py:388 ../LPCBeremiz.py:792
+#: ../Beremiz.py:514
 msgid "Log Console"
 msgstr "로그 콘솔"
 
-#: ../plugger.py:527
+#: ../canfestival/NetworkEditor.py:73
+#: ../canfestival/SlaveEditor.py:43
+msgid "Map Variable"
+msgstr "변수 맵"
+
+#: ../features.py:5
+msgid "Map located variables over CANopen"
+msgstr "CANopen 변수 맵"
+
+#: ../canfestival/NetworkEditor.py:95
+msgid "Master"
+msgstr "CAN 마스터"
+
+#: ../ConfigTreeNode.py:470
 #, python-format
-msgid "Max count (%d) reached for this plugin of type %s "
+msgid "Max count (%d) reached for this confnode of type %s "
 msgstr "플러그인 최대 카운트 (%d)에 도달했습니다. %s"
 
-#: ../Beremiz_service.py:379
+#: ../Beremiz_service.py:381
 msgid "Name must not be null!"
 msgstr "이름을 입력하세요!"
 
-#: ../Beremiz.py:299
+#: ../Beremiz.py:443
+msgid "New"
+msgstr "새로 만들기"
+
+#: ../Beremiz.py:404
 msgid "New\tCTRL+N"
 msgstr "새로 만들기\tCTRL+N"
 
-#: ../plugger.py:1949
+#: ../ProjectController.py:1339
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr "전송할 PLC 파일이 없습니다 (빌드 여부를 확인하세요)\n"
 
-#: ../Beremiz_service.py:392
+#: ../Beremiz_service.py:394
 msgid "No running PLC"
 msgstr "실행중인 PLC가 없습니다"
 
-#: ../plugins/python/modules/svgui/svgui.py:96
+#: ../svgui/svgui.py:98
 #, python-format
 msgid "No such SVG file: %s\n"
 msgstr "선택하신 %s파일은 없습니다\n"
 
-#: ../plugins/canfestival/config_utils.py:632
+#: ../canfestival/config_utils.py:632
 #, python-format
 msgid "No such index/subindex (%x,%x) (variable %s)"
 msgstr "인덱스/서브 인덱스 (%x,%x)(변수 %s) 에러"
 
-#: ../plugins/canfestival/config_utils.py:361
+#: ../canfestival/config_utils.py:361
 #, python-format
 msgid "No such index/subindex (%x,%x) in ID : %d (variable %s)"
 msgstr "인덱스/서브 인덱스 (%x,%x) ID 위치: %d (변수 %s)"
 
-#: ../plugins/canfestival/config_utils.py:354
+#: ../util/BrowseValuesLibraryDialog.py:83
+msgid "No valid value selected!"
+msgstr "유효한 데이터 값을 선택하세요!"
+
+#: ../canfestival/NetworkEditor.py:85
+#: ../canfestival/SlaveEditor.py:55
+msgid "Node infos"
+msgstr "노드 정보"
+
+#: ../canfestival/config_utils.py:354
 #, python-format
 msgid "Non existing node ID : %d (variable %s)"
 msgstr "Node ID : %d(변수%s)를 찾을 수 없습니다"
 
-#: ../plugins/canfestival/config_utils.py:383
+#: ../canfestival/config_utils.py:383
 #, python-format
 msgid "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
 msgstr "PDO 맵핑 변수가 아닙니다 : '%s'(ID:%d,ldx:%x,sldx:%x))"
 
-#: ../Beremiz.py:301
+#: ../Beremiz.py:444
+msgid "Open"
+msgstr "프로젝트 열기"
+
+#: ../Beremiz.py:406
 msgid "Open\tCTRL+O"
 msgstr "프로젝트 열기\tCTRL+O"
 
-#: ../plugins/c_ext/c_ext.py:230
-msgid "Open CFileEditor"
-msgstr "C 파일 에디터 열기"
-
-#: ../plugins/python/modules/svgui/svgui.py:105
+#: ../svgui/svgui.py:107
 msgid "Open Inkscape"
 msgstr "잉크스케이프 열기"
 
-#: ../plugins/canfestival/canfestival.py:208
-msgid "Open NetworkEdit"
-msgstr "네트워크 에디터 열기"
-
-#: ../plugins/canfestival/canfestival.py:108
-msgid "Open ObjDictEdit"
-msgstr "객체사전 에디터 열기"
-
-#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:107
+#: ../wxglade_hmi/wxglade_hmi.py:109
 msgid "Open wxGlade"
 msgstr "WxGlade 열기"
 
-#: ../targets/toolchain_gcc.py:99
+#: ../canfestival/NetworkEditor.py:83
+#: ../canfestival/SlaveEditor.py:53
+msgid "Other Profile"
+msgstr "다른 프로필"
+
+#: ../canfestival/NetworkEditor.py:72
+#: ../canfestival/SlaveEditor.py:42
+msgid "PDO Receive"
+msgstr "수신 PDO"
+
+#: ../canfestival/NetworkEditor.py:71
+#: ../canfestival/SlaveEditor.py:41
+msgid "PDO Transmit"
+msgstr "전송 PDO"
+
+#: ../targets/toolchain_gcc.py:107
 msgid "PLC :\n"
 msgstr "PLC :\n"
 
-#: ../LPCBeremiz.py:472 ../plugger.py:1582 ../plugger.py:1872
+#: ../ProjectController.py:974
+#: ../ProjectController.py:1263
 #, python-format
 msgid "PLC is %s\n"
 msgstr "현재 PLC %s\n"
 
-#: ../Beremiz.py:312 ../LPCBeremiz.py:753
-msgid "Page Setup"
+#: ../Beremiz.py:419
+msgid "Page Setup\tCTRL+ALT+P"
 msgstr "인쇄 페이지 설정\tCTRL+ALT+P"
 
-#: ../Beremiz.py:1443
-msgid "Please enter a name for plugin:"
+#: ../Beremiz.py:1802
+msgid "Please enter a name for confnode:"
 msgstr "플러그인 이름을 입력하세요:"
 
-#: ../targets/toolchain_gcc.py:97
-msgid "Plugin : "
-msgstr "플러그인:"
-
-#: ../plugger.py:1438
-msgid "Plugins code generation failed !\n"
-msgstr "플러그인 코드 생성에 실패했습니다!\n"
-
-#: ../Beremiz_service.py:364
+#: ../Beremiz_service.py:366
 msgid "Port number must be 0 <= port <= 65535!"
 msgstr "포트 번호는 0~65535까지 유효합니다!"
 
-#: ../Beremiz_service.py:364
+#: ../Beremiz_service.py:366
 msgid "Port number must be an integer!"
 msgstr "포트 번호는 숫자로만 입력하세요!"
 
-#: ../Beremiz.py:314 ../LPCBeremiz.py:755
-msgid "Preview"
+#: ../Beremiz.py:421
+msgid "Preview\tCTRL+SHIFT+P"
 msgstr "인쇄 미리보기\tnCTRL+SHIFT+P"
 
-#: ../Beremiz.py:316 ../LPCBeremiz.py:757
+#: ../Beremiz.py:447
 msgid "Print"
 msgstr "인쇄"
 
-#: ../plugger.py:907
+#: ../Beremiz.py:423
+msgid "Print\tCTRL+P"
+msgstr "인쇄\tCTRL+P"
+
+#: ../ProjectController.py:239
 msgid "Project not created"
 msgstr "프로젝트가 생성되지 않았습니다"
 
-#: ../plugger.py:553
+#: ../ConfigTreeNode.py:496
 #, python-format
-msgid "Project tree layout do not match plugin.xml %s!=%s "
-msgstr ""
-"프로젝트 레이아웃이 포함된 %s!=%s plugin.xml파일이 손상되거나 일치 하지 않습"
-"니다"
+msgid "Project tree layout do not match confnode.xml %s!=%s "
+msgstr "프로젝트 레이아웃이 포함된 %s!=%s confnode.xml파일이 손상되거나 일치 하지 않습니다"
 
-#: ../Beremiz.py:319 ../LPCBeremiz.py:760
-msgid "Properties"
-msgstr "속성"
+#: ../features.py:7
+msgid "Python file"
+msgstr "파이썬 파일"
 
-#: ../plugins/python/PythonEditor.py:513 ../plugins/python/PythonEditor.py:565
-msgid "PythonEditor"
-msgstr "파이썬 에디터"
-
-#: ../Beremiz_service.py:326
+#: ../Beremiz_service.py:328
 msgid "Quit"
 msgstr "프로그램 종료"
 
-#: ../Beremiz.py:322 ../LPCBeremiz.py:763
+#: ../Beremiz.py:429
 msgid "Quit\tCTRL+Q"
 msgstr "프로그램 종료\tCTRL+Q"
 
-#: ../plugger.py:1993
+#: ../ProjectController.py:1383
 msgid "Raw IEC code"
 msgstr "IEC 코드"
 
-#: ../Beremiz.py:1454
-msgid "Really delete plugin ?"
+#: ../Beremiz.py:1813
+msgid "Really delete confnode ?"
 msgstr "플러그인을 삭제하시겠습니까?"
 
-#: ../plugins/python/PythonEditor.py:494
-msgid "Redo\tCTRL+Y"
-msgstr "되돌리기 취소\tCTRL+Y"
-
-#: ../discovery.py:102
+#: ../util/discovery.py:102
 msgid "Refresh"
 msgstr "새로고침"
 
-#: ../plugins/python/PythonEditor.py:490
-msgid "Refresh\tCTRL+R"
-msgstr "새로고침\tCTRL+R"
-
-#: ../Beremiz.py:1454
-msgid "Remove plugin"
+#: ../Beremiz.py:1813
+msgid "Remove confnode"
 msgstr "플러그인 제거"
 
-#: ../LPCBeremiz.py:378 ../plugger.py:1964
+#: ../canfestival/NetworkEditor.py:93
+msgid "Remove slave"
+msgstr "슬레이브 제거"
+
+#: ../ProjectController.py:1354
 msgid "Run"
 msgstr "실행"
 
-#: ../plugins/python/modules/svgui/svgui.py:90
+#: ../ProjectController.py:796
+#: ../ProjectController.py:805
+msgid "Runtime extensions C code generation failed !\n"
+msgstr "확장 C 코드의 생성에 실패하였습니다 ! \n"
+
+#: ../canfestival/NetworkEditor.py:70
+#: ../canfestival/SlaveEditor.py:40
+msgid "SDO Client"
+msgstr "SDO 클라이언트"
+
+#: ../canfestival/NetworkEditor.py:69
+#: ../canfestival/SlaveEditor.py:39
+msgid "SDO Server"
+msgstr "SDO 서버"
+
+#: ../svgui/svgui.py:92
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
 msgstr "SVG 파일 (*.svg)|*svg|모든 파일|*.*"
 
-#: ../Beremiz.py:303 ../LPCBeremiz.py:748
+#: ../features.py:9
+msgid "SVGUI"
+msgstr "SVGUI"
+
+#: ../Beremiz.py:445
+msgid "Save"
+msgstr "프로젝트 저장"
+
+#: ../Beremiz.py:410
 msgid "Save\tCTRL+S"
 msgstr "프로젝트 저장\tCTRL+S"
 
-#: ../Beremiz.py:305
+#: ../Beremiz.py:446
+msgid "Save As..."
+msgstr "다른 이름으로 저장"
+
+#: ../Beremiz.py:412
 msgid "Save as\tCTRL+SHIFT+S"
 msgstr "다른 이름으로 저장\tCTRL+SHIFT+S"
 
-#: ../discovery.py:81
+#: ../util/discovery.py:81
 msgid "Services available:"
 msgstr "서비스 이용 가능:"
 
-#: ../plugger.py:1990
+#: ../ProjectController.py:1380
 msgid "Show IEC code generated by PLCGenerator"
 msgstr "PLCGenerator가 생성한 IEC 코드 보기"
 
-#: ../plugins/canfestival/canfestival.py:249
+#: ../canfestival/canfestival.py:277
 msgid "Show Master"
 msgstr "CAN 마스터 보기"
 
-#: ../plugins/canfestival/canfestival.py:250
+#: ../canfestival/canfestival.py:278
 msgid "Show Master generated by config_utils"
-msgstr "설정 장치에 의해 생성된 CAN 마스터 보기"
+msgstr "생성된 CAN 마스터 보기(코드)"
 
-#: ../plugger.py:1988
+#: ../ProjectController.py:1378
 msgid "Show code"
 msgstr "코드 보기"
 
-#: ../LPCBeremiz.py:374
-msgid "Simulate"
-msgstr "시뮬레이트"
-
-#: ../LPCBeremiz.py:375
-msgid "Simulate PLC"
-msgstr "PLC 시뮬레이트"
-
-#: ../LPCBeremiz.py:380 ../plugger.py:1966 ../Beremiz_service.py:317
+#: ../ProjectController.py:1356
+#: ../Beremiz_service.py:319
 msgid "Start PLC"
 msgstr "PLC 시작"
 
-#: ../plugger.py:1416
+#: ../ProjectController.py:774
 #, python-format
 msgid "Start build in %s\n"
 msgstr "%s 빌드를 시작합니다\n"
 
-#: ../plugger.py:1782
+#: ../ProjectController.py:1192
 msgid "Starting PLC\n"
 msgstr "PLC 시작중\n"
 
-#: ../LPCBeremiz.py:383 ../plugger.py:1969
+#: ../ProjectController.py:1359
 msgid "Stop"
 msgstr "정지"
 
-#: ../Beremiz_service.py:318
+#: ../Beremiz_service.py:320
 msgid "Stop PLC"
 msgstr "PLC 정지"
 
-#: ../LPCBeremiz.py:385 ../plugger.py:1971
+#: ../ProjectController.py:1361
 msgid "Stop Running PLC"
 msgstr "작동중인 PLC 정지"
 
-#: ../plugger.py:1814
-msgid "Stopping debug\n"
-msgstr "디버그 정지중\n"
+#: ../ProjectController.py:1170
+msgid "Stopping debugger...\n"
+msgstr "디버거 정지중...\n"
 
-#: ../Beremiz.py:505
+#: ../ProjectController.py:870
+msgid "Successfully built.\n"
+msgstr "성공적으로 빌드 완료 되었습니다\n"
+
+#: ../Beremiz.py:661
 msgid "There are changes, do you want to save?"
 msgstr "프로젝트가 수정되었습니다. 저장 하시겠습니까?"
 
-#: ../Beremiz.py:382 ../LPCBeremiz.py:786
+#: ../Beremiz.py:507
+#: ../Beremiz.py:508
 msgid "Topology"
 msgstr "토폴로지"
 
-#: ../LPCBeremiz.py:392 ../plugger.py:1978
+#: ../ProjectController.py:1368
 msgid "Transfer"
 msgstr "전송"
 
-#: ../LPCBeremiz.py:394 ../plugger.py:1980
+#: ../ProjectController.py:1370
 msgid "Transfer PLC"
 msgstr "PLC에 전송"
 
-#: ../LPCBeremiz.py:727 ../plugger.py:1945
+#: ../ProjectController.py:1335
 msgid "Transfer completed successfully.\n"
 msgstr "전송이 성공적으로 완료되었습니다\n"
 
-#: ../LPCBeremiz.py:729 ../plugger.py:1947
+#: ../ProjectController.py:1337
 msgid "Transfer failed\n"
 msgstr "전송 실패\n"
 
-#: ../plugins/canfestival/config_utils.py:335
-#: ../plugins/canfestival/config_utils.py:617
+#: ../canfestival/config_utils.py:335
+#: ../canfestival/config_utils.py:617
 #, python-format
 msgid "Type conflict for location \"%s\""
 msgstr "\"%s\" 타입 에러"
 
-#: ../plugins/canfestival/config_utils.py:455
-#: ../plugins/canfestival/config_utils.py:469
+#: ../canfestival/config_utils.py:455
+#: ../canfestival/config_utils.py:469
 #, python-format
 msgid "Unable to define PDO mapping for node %02x"
 msgstr "PDO 매핑 정의 에러:%02x"
 
-#: ../targets/Xenomai/__init__.py:27
-msgid "Unable to get Xenomai's CFLAGS\n"
-msgstr "Xenomai의 CFLAGS를 가져 올 수 없습니다\n"
+#: ../targets/Xenomai/__init__.py:14
+#, python-format
+msgid "Unable to get Xenomai's %s \n"
+msgstr "Xenomai의 %s 를 가져 올 수 없습니다\n"
 
-#: ../targets/Xenomai/__init__.py:16
-msgid "Unable to get Xenomai's LDFLAGS\n"
-msgstr "Xenomai의 LDFLAGS를 가져 올 수 없습니다\n"
+#: ../canfestival/NetworkEditor.py:74
+#: ../canfestival/SlaveEditor.py:44
+msgid "User Type"
+msgstr "사용자 타입"
 
-#: ../plugins/python/PythonEditor.py:492
-msgid "Undo\tCTRL+Z"
-msgstr "되돌리기\tCTRL+Z"
-
-#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:12
+#: ../wxglade_hmi/wxglade_hmi.py:11
 msgid "WXGLADE GUI"
 msgstr "WXGLADE GUI"
 
-#: ../plugger.py:1752
+#: ../ProjectController.py:1154
 msgid "Waiting debugger to recover...\n"
 msgstr "디버거 복구 대기중...\n"
 
-#: ../plugger.py:1116
+#: ../ProjectController.py:471
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr "ST/IL/SFC 코드 생성기 경고:\n"
 
-#: ../connectors/PYRO/__init__.py:47
+#: ../connectors/PYRO/__init__.py:46
 msgid "Wrong URI, please check it !\n"
 msgstr "URI 타입 주소를 확인하세요!\n"
 
-#: ../plugins/c_ext/c_ext.py:229
-msgid ""
-"You don't have write permissions.\n"
-"Open CFileEditor anyway ?"
-msgstr ""
-"현재 쓰기 권한이 없습니다\n"
-"C 파일 에디터를 열까요?"
+#: ../features.py:8
+msgid "WxGlade GUI"
+msgstr "WxGlade GUI"
 
-#: ../plugins/python/modules/svgui/svgui.py:104
+#: ../svgui/svgui.py:106
 msgid ""
 "You don't have write permissions.\n"
 "Open Inkscape anyway ?"
@@ -855,23 +922,7 @@ msgstr ""
 "현재 쓰기 권한이 없습니다\n"
 "잉크스케이를 열까요?"
 
-#: ../plugins/canfestival/canfestival.py:207
-msgid ""
-"You don't have write permissions.\n"
-"Open NetworkEdit anyway ?"
-msgstr ""
-"현재 쓰기 권한이 없습니다\n"
-"네트워크 에디터를 열까요?"
-
-#: ../plugins/canfestival/canfestival.py:107
-msgid ""
-"You don't have write permissions.\n"
-"Open ObjDictEdit anyway ?"
-msgstr ""
-"현재 쓰기 권한이 없습니다\n"
-"객체 사전 에디터를 열까요?"
-
-#: ../plugins/python/modules/wxglade_hmi/wxglade_hmi.py:106
+#: ../wxglade_hmi/wxglade_hmi.py:108
 msgid ""
 "You don't have write permissions.\n"
 "Open wxGlade anyway ?"
@@ -879,7 +930,7 @@ msgstr ""
 "현재 쓰기 권한이 없습니다\n"
 "WxGlade를 열까요?"
 
-#: ../plugger.py:878
+#: ../ProjectController.py:209
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
@@ -887,24 +938,34 @@ msgstr ""
 "프로젝트 작업에는 권한이 필요합니다\n"
 "사본으로 작업하시겠습니까?"
 
-#: ../wxPopen.py:145
+#: ../util/ProcessLogger.py:158
 #, python-format
 msgid "exited with status %s (pid %s)\n"
-msgstr "비정상 종료 상태 번호 %s(PID %s)\n"
+msgstr "종료 상태 번호 %s (pid %s)\n"
 
-#: ../Beremiz.py:1475 ../Beremiz.py:1477
+#: ../Beremiz.py:1834
+#: ../Beremiz.py:1836
 msgid "file : "
-msgstr "파일 :"
+msgstr "파일 : "
 
-#: ../Beremiz.py:1478
+#: ../Beremiz.py:1837
 msgid "function : "
-msgstr "펑션 :"
+msgstr "펑션 : "
 
-#: ../Beremiz.py:1478
+#: ../Beremiz.py:1837
 msgid "line : "
-msgstr "라인 :"
+msgstr "라인 : "
 
 #: Extra XSD strings
+msgid "CExtension"
+msgstr "C 확장"
+
+msgid "CFLAGS"
+msgstr "CFLAGS"
+
+msgid "LDFLAGS"
+msgstr "LDFLAGS"
+
 msgid "BaseParams"
 msgstr "베이스 파라메터"
 
@@ -917,26 +978,23 @@ msgstr "IEC_Channel"
 msgid "Enabled"
 msgstr "가능"
 
-msgid "BeremizRoot"
-msgstr "베레미즈 루트"
+msgid "Xenomai"
+msgstr "제노마이(Xenomai)"
 
-msgid "TargetType"
-msgstr "타겟 타입"
+msgid "XenoConfig"
+msgstr "제노마이 설정(XenoConfig)"
 
-msgid "URI_location"
-msgstr "URI 주소"
+msgid "Win32"
+msgstr "윈도우"
 
-msgid "Enable_Plugins"
-msgstr "플러그인 가능"
+msgid "Linux"
+msgstr "리눅스"
 
-msgid "CExtension"
-msgstr "C 확장"
+msgid "Compiler"
+msgstr "컴파일러"
 
-msgid "CFLAGS"
-msgstr "CFLAGS"
-
-msgid "LDFLAGS"
-msgstr "LDFLAGS"
+msgid "Linker"
+msgstr "링커"
 
 msgid "CanFestivalSlaveNode"
 msgstr "CAN Festival 슬레이브 노드"
@@ -971,26 +1029,18 @@ msgstr "CAN 드라이버"
 msgid "Debug_mode"
 msgstr "디버그 모드"
 
-msgid "Compiler"
-msgstr "컴파일러"
+msgid "BeremizRoot"
+msgstr "베레미즈 루트"
 
-msgid "Linker"
-msgstr "링커"
+msgid "TargetType"
+msgstr "타겟 타입"
 
-msgid "Linux"
-msgstr "리눅스"
+msgid "Libraries"
+msgstr "라이브러리"
 
-msgid "Rtai"
-msgstr "Rtai"
+msgid "URI_location"
+msgstr "URI 주소"
 
-msgid "rtai_config"
-msgstr "Rtai 설정"
+msgid "Disable_Extensions"
+msgstr "확장 모듈 제거 (Extension 제거)"
 
-msgid "Win32"
-msgstr "윈도우"
-
-msgid "Xenomai"
-msgstr "Xenomai"
-
-msgid "XenoConfig"
-msgstr "Xenomai 설정"
