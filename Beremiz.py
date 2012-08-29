@@ -157,19 +157,20 @@ if __name__ == '__main__':
         execfile(extfilename, locals())
 
 import wx.lib.buttons, wx.lib.statbmp
-from util.TextCtrlAutoComplete import TextCtrlAutoComplete
 import cPickle
-from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 import types, time, re, platform, time, traceback, commands
-from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNODE
-from util.MiniTextControler import MiniTextControler
-from util.ProcessLogger import ProcessLogger
 
 from docutil import OpenHtmlFrame
 from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES 
 from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
 from PLCOpenEditor import EncodeFileSystemPath, DecodeFileSystemPath
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
+
+from util.TextCtrlAutoComplete import TextCtrlAutoComplete
+from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
+from util.MiniTextControler import MiniTextControler
+from util.ProcessLogger import ProcessLogger
+from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNODE
 
 MAX_RECENT_PROJECTS = 10
 
