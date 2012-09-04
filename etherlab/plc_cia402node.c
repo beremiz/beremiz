@@ -105,14 +105,10 @@ void __retrieve_%(location)s()
 
 	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
 	__CIA402Node_%(location)s.axis->ActualPosition = (IEC_REAL)(*(__CIA402Node_%(location)s.ActualPosition)) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator;
-
-	__MK_UpdateAxis(*__IW%(location)s_0);
 }
 
 void __publish_%(location)s()
 {
-	__MK_ComputeAxis(*__IW%(location)s_0);
-
 	IEC_BOOL power = ((*(__CIA402Node_%(location)s.StatusWord) & __PowerMask) > 0) && __CIA402Node_%(location)s.axis->Power;
 
 	// CIA402 node state transition computation
