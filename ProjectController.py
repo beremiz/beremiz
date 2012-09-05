@@ -29,7 +29,7 @@ from utils.BitmapLibrary import GetBitmap
 
 base_folder = os.path.split(sys.path[0])[0]
 
-MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)$")
+MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
 DEBUG_RETRIES_WARN = 3
 DEBUG_RETRIES_REREGISTER = 4
