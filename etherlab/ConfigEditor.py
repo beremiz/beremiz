@@ -3,7 +3,7 @@ import wx.grid
 import wx.gizmos
 
 from controls import CustomGrid, CustomTable
-from ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
