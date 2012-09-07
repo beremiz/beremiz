@@ -16,6 +16,23 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
+mofiles :=
+langs = fr kr
+rstfiles = $(shell find * -name '*.rst')
+define by_lang
+mos = $$(rstfiles:%.rst=locale/$(1)/LC_MESSAGES/%.mo)
+$$(mos):locale/$(1)/LC_MESSAGES/%.mo: %_$(1).po
+	mkdir -p `dirname $$@`
+	msgfmt $$^ -o $$@
+mofiles += $$(mos)
+pos = $$(rstfiles:%.rst=%_$(1).po)
+$$(pos):%_$(1).po: $(BUILDDIR)/locale/%.pot 
+	if [ -e $$@ ] ; then msgmerge -U $$@ $$<; else cat $$< > $$@; fi
+endef
+$(foreach lang, $(langs), $(eval $(call by_lang,$(lang))))
+
+mofiles: $(mofiles)
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
@@ -135,6 +152,7 @@ gettext:
 	$(SPHINXBUILD) -b gettext $(I18NSPHINXOPTS) $(BUILDDIR)/locale
 	@echo
 	@echo "Build finished. The message catalogs are in $(BUILDDIR)/locale."
+
 
 changes:
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes

@@ -1,5 +1,5 @@
-IEC 61131
-=========
+IEC 61131-3
+===========
 
     IEC-61131 is a normative document provided by the standards organization IEC
     (International Electrotechnical Commission) and describing a standard for
