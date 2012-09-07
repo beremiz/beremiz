@@ -1,7 +1,8 @@
 
 import wx
 
-from controls import EditorPanel, ProjectPropertiesPanel
+from controls import ProjectPropertiesPanel
+from EditorPanel import EditorPanel
 from ConfTreeNodeEditor import ConfTreeNodeEditor, WINDOW_COLOUR
 
 class ProjectNodeEditor(ConfTreeNodeEditor):

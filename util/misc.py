@@ -4,7 +4,7 @@ Misc definitions
 
 import os,sys
 
-from TextViewer import TextViewer
+from editors.TextViewer import TextViewer
 
 # helper func to check path write permission
 def CheckPathPerm(path):

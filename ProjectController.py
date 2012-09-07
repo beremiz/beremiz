@@ -17,15 +17,14 @@ import connectors
 from util.misc import CheckPathPerm, GetClassImporter, IECCodeViewer
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
-from util.FileManagementPanel import FileManagementPanel
+from util.BitmapLibrary import GetBitmap
+from editors.FileManagementPanel import FileManagementPanel
+from editors.ProjectNodeEditor import ProjectNodeEditor
+from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
-from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize
-from util.discovery import DiscoveryDialog
 from ConfigTreeNode import ConfigTreeNode
-from ProjectNodeEditor import ProjectNodeEditor
-from utils.BitmapLibrary import GetBitmap
 
 base_folder = os.path.split(sys.path[0])[0]
 

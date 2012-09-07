@@ -27,8 +27,8 @@ import shutil
 
 import wx
 
-from controls import EditorPanel
-from utils.BitmapLibrary import GetBitmap
+from EditorPanel import EditorPanel
+from util.BitmapLibrary import GetBitmap
 
 DRIVE, FOLDER, FILE = range(3)
 

@@ -6,8 +6,8 @@ import wx.stc as stc
 import wx.lib.buttons
 
 from controls import CustomGrid, CustomTable
-from ConfTreeNodeEditor import ConfTreeNodeEditor
-from utils.BitmapLibrary import GetBitmap
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from util.BitmapLibrary import GetBitmap
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
