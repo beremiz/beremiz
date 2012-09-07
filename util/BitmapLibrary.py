@@ -38,7 +38,7 @@ BitmapFolders = []
 #-------------------------------------------------------------------------------
 
 def AddBitmapFolder(path):
-    if path not in BitmapFolders:
+    if os.path.exists(path) and os.path.isdir(path) and path not in BitmapFolders:
         BitmapFolders.append(path)
 
 def SearchBitmap(bmp_name):

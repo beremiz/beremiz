@@ -24,7 +24,7 @@
 
 import wx
 
-from controls import ProjectPropertiesPanel
+from controls.ProjectPropertiesPanel import ProjectPropertiesPanel
 
 class ProjectDialog(wx.Dialog):
     

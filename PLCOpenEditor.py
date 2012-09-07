@@ -27,11 +27,6 @@ import os, sys, platform, time, traceback, getopt
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
-from util.BitmapLibrary import AddBitmapFolder, GetBitmap
-AddBitmapFolder(os.path.join(CWD, "images"))
-
-from docutil import *
-
 __version__ = "$Revision: 1.130 $"
 
 if __name__ == '__main__':
@@ -67,33 +62,20 @@ if __name__ == '__main__':
     # Windows) 
     app = wx.PySimpleApp()
 
-# Import module for internationalization
-import gettext
-import __builtin__
+from docutil import *
 
-# Get folder containing translation files
-localedir = os.path.join(CWD,"locale")
-# Get the default language
-langid = wx.LANGUAGE_DEFAULT
-# Define translation domain (name of translation files)
-domain = "Beremiz"
+from util.TranslationCatalogs import AddCatalog, locale
+from util.BitmapLibrary import AddBitmapFolder, GetBitmap
 
-# Define locale for wx
-loc = __builtin__.__dict__.get('loc', None)
-if loc is None:
-    test_loc = wx.Locale(langid)
-    test_loc.AddCatalogLookupPathPrefix(localedir)
-    if test_loc.AddCatalog(domain):
-        loc = wx.Locale(langid)
-    else:
-        loc = wx.Locale(wx.LANGUAGE_ENGLISH)
-    __builtin__.__dict__['loc'] = loc
-# Define location for searching translation files
-loc.AddCatalogLookupPathPrefix(localedir)
-# Define locale domain
-loc.AddCatalog(domain)
+AddCatalog(os.path.join(CWD, "locale"))
+AddBitmapFolder(os.path.join(CWD, "images"))
 
 if __name__ == '__main__':
+    # Import module for internationalization
+    import gettext
+    import __builtin__
+    
+    __builtin__.__dict__['loc'] = locale
     __builtin__.__dict__['_'] = wx.GetTranslation
 
 from IDEFrame import IDEFrame, AppendMenu
