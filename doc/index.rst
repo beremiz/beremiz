@@ -9,15 +9,6 @@ Contents:
    :maxdepth: 2
 
    overview
-   install
+   manual/index
    standards
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
