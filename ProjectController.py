@@ -14,12 +14,13 @@ from weakref import WeakKeyDictionary
 
 import targets
 import connectors
-from util.misc import CheckPathPerm, GetClassImporter, IECCodeViewer
+from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from util.BitmapLibrary import GetBitmap
 from editors.FileManagementPanel import FileManagementPanel
 from editors.ProjectNodeEditor import ProjectNodeEditor
+from editors.IECCodeViewer import IECCodeViewer
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
@@ -936,7 +937,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     
     _ProjectFilesView = None
     def _OpenProjectFiles(self):
-        self._OpenView("Project files")
+        self._OpenView("Project Files")
     
     _FileEditors = {}
     def _OpenFileEditor(self, filepath):
@@ -979,7 +980,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             
             return self._IECRawCodeView
         
-        elif name == "Project files":
+        elif name == "Project Files":
             if self._ProjectFilesView is None:
                 self._ProjectFilesView = FileManagementPanel(self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
                 

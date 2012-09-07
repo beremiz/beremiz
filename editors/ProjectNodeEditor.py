@@ -59,7 +59,7 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         return self.Controler.CTNName()
     
     def GetTitle(self):
-        fullname = self.Controler.CTNName()
+        fullname = _(self.Controler.CTNName())
         if self.Controler.CTNTestModified():
             return "~%s~" % fullname
         return fullname

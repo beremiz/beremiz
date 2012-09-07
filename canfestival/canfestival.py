@@ -1,7 +1,10 @@
 import os, sys
+
 base_folder = os.path.split(sys.path[0])[0]
 CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
+
+import wx
 
 from nodelist import NodeList
 from nodemanager import NodeManager
@@ -11,7 +14,6 @@ from objdictedit import objdictedit
 import canfestival_config as local_canfestival_config
 from ConfigTreeNode import ConfigTreeNode
 from commondialogs import CreateNodeDialog
-import wx
 
 from SlaveEditor import SlaveEditor, MasterViewer
 from NetworkEditor import NetworkEditor
@@ -19,6 +21,9 @@ from NetworkEditor import NetworkEditor
 from gnosis.xml.pickle import *
 from gnosis.xml.pickle.util import setParanoia
 setParanoia(0)
+
+from util.TranslationCatalogs import AddCatalog
+AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))
 
 if wx.Platform == '__WXMSW__':
     DEFAULT_SETTINGS = {

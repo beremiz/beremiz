@@ -110,45 +110,24 @@ if __name__ == '__main__':
         splash.SetText(text=updateinfo)
         wx.Yield()
 
-# Import module for internationalization
-import gettext
-
-# Get folder containing translation files
-localedir = os.path.join(CWD,"locale")
-# Get the default language
-langid = wx.LANGUAGE_DEFAULT
-# Define translation domain (name of translation files)
-domain = "Beremiz"
-
-# Define locale for wx
-loc = __builtin__.__dict__.get('loc', None)
-if loc is None:
-    test_loc = wx.Locale(langid)
-    test_loc.AddCatalogLookupPathPrefix(localedir)
-    if test_loc.AddCatalog(domain):
-        loc = wx.Locale(langid)
-    else:
-        loc = wx.Locale(wx.LANGUAGE_ENGLISH)
-    __builtin__.__dict__['loc'] = loc
-# Define location for searching translation files
-loc.AddCatalogLookupPathPrefix(localedir)
-# Define locale domain
-loc.AddCatalog(domain)
-
-def unicode_translation(message):
-    return wx.GetTranslation(message).encode("utf-8")
-
-if __name__ == '__main__':
-    __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
-
+from util.TranslationCatalogs import AddCatalog, locale
 from util.BitmapLibrary import AddBitmapFolder, GetBitmap
+
+AddCatalog(os.path.join(CWD, "locale"))
 AddBitmapFolder(os.path.join(CWD, "images"))
 
 if __name__ == '__main__':
+    # Import module for internationalization
+    import gettext
+    
+    __builtin__.__dict__['loc'] = locale
+    __builtin__.__dict__['_'] = wx.GetTranslation
+    
     # Load extensions
     for extfilename in extensions:
         extension_folder = os.path.split(os.path.realpath(extfilename))[0]
         sys.path.append(extension_folder)
+        AddCatalog(os.path.join(extension_folder, "locale"))
         AddBitmapFolder(os.path.join(extension_folder, "images"))
         execfile(extfilename, locals())
 
