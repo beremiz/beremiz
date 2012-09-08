@@ -17,6 +17,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
 mofiles :=
+sitelist := dirhtml
 langs = fr kr
 rstfiles = $(shell find * -name '*.rst')
 define by_lang
@@ -28,8 +29,19 @@ mofiles += $$(mos)
 pos = $$(rstfiles:%.rst=%_$(1).po)
 $$(pos):%_$(1).po: $(BUILDDIR)/locale/%.pot 
 	if [ -e $$@ ] ; then msgmerge -U $$@ $$<; else cat $$< > $$@; fi
+
+site_$(1): $$(mos)
+	$(SPHINXBUILD) -D language=$(1) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml_$(1)
+	find $(BUILDDIR)/dirhtml_$(1) -name "index.html" -print -exec mv {} {}.$(1) ';'
+sitelist += site_$(1)
+
 endef
 $(foreach lang, $(langs), $(eval $(call by_lang,$(lang))))
+
+
+all: $(sitelist)
+	mkdir -p $(BUILDDIR)/final
+	#cp -av $(BUILDDIR)/dirhtml*/* $(BUILDDIR)/final || true
 
 mofiles: $(mofiles)
 
