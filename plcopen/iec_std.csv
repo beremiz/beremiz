@@ -1,0 +1,90 @@
+Standard_functions_variables_types;name;type;comment;;;;;
+;N;ANY_INT;Number of bits to be shifted;;;;;
+;L;ANY_INT;Left position within character string;;;;;
+;P;ANY_INT;Position within character string;;;;;
+;G;BOOL;Selection out of 2 inputs (gate);;;;;
+;K;ANY_INT;Selection out of n inputs;;;;;
+;MN;ANY;Minimum value for limitation;;;;;
+;MX;ANY;Maximum value for limitation;;;;;
+;;;;;;;;
+;;;;;;;;
+;;;;;;;;
+;;;;;;;;
+;;;;;;;;
+;;;;;;;;
+Standard_functions_type;name;baseinputnumber;inputs;outputs;comment;extensible;python_eval_c_code_format;return_type_rule
+_("Type conversion");*_TO_**;1;(ANY);ANY;_("Data type conversion");no;ANY_TO_ANY_FORMAT_GEN(ANY_TO_ANY_LIST,fdecl);defined
+;TRUNC;1;(ANY_REAL);ANY_INT;_("Rounding up/down");no;("int", "__move_", None);&search_constant_type_c::integer
+;BCD_TO_**;1;(ANY_BIT);ANY_INT;_("Conversion from BCD");no;ANY_TO_ANY_FORMAT_GEN(BCD_TO_ANY_LIST,fdecl);defined
+;*_TO_BCD;1;(ANY_INT);ANY_BIT;_("Conversion to BCD");no;ANY_TO_ANY_FORMAT_GEN(ANY_TO_BCD_LIST,fdecl);&search_constant_type_c::integer
+;DATE_AND_TIME_TO_TIME_OF_DAY;1;(DT);TOD;_("Conversion to time-of-day");no;(None, "__date_and_time_to_time_of_day", None);defined
+;DATE_AND_TIME_TO_DATE;1;(DT);DATE;_("Conversion to date");no;(None, "__date_and_time_to_date", None);defined
+_("Numerical");ABS;1;(ANY_NUM);ANY_NUM;_("Absolute number");no;(None, "__abs_", "IN_type");IN_type_symbol
+;SQRT;1;(ANY_REAL);ANY_REAL;_("Square root (base 2)");no;(None, "__sqrt_", "IN_type");IN_type_symbol
+;LN;1;(ANY_REAL);ANY_REAL;_("Natural logarithm");no;(None, "__ln_", "IN_type");IN_type_symbol
+;LOG;1;(ANY_REAL);ANY_REAL;_("Logarithm to base 10");no;(None, "__log_", "IN_type");IN_type_symbol
+;EXP;1;(ANY_REAL);ANY_REAL;_("Exponentiation");no;(None, "__exp_", "IN_type");IN_type_symbol
+;SIN;1;(ANY_REAL);ANY_REAL;_("Sine");no;(None, "__sin_", "IN_type");IN_type_symbol
+;COS;1;(ANY_REAL);ANY_REAL;_("Cosine");no;(None, "__cos_", "IN_type");IN_type_symbol
+;TAN;1;(ANY_REAL);ANY_REAL;_("Tangent");no;(None, "__tan_", "IN_type");IN_type_symbol
+;ASIN;1;(ANY_REAL);ANY_REAL;_("Arc sine");no;(None, "__asin_", "IN_type");IN_type_symbol
+;ACOS;1;(ANY_REAL);ANY_REAL;_("Arc cosine");no;(None, "__acos_", "IN_type");IN_type_symbol
+;ATAN;1;(ANY_REAL);ANY_REAL;_("Arc tangent");no;(None, "__atan_", "IN_type");IN_type_symbol
+_("Arithmetic");ADD;1;(ANY_NUM, ANY_NUM);ANY_NUM;_("Addition");yes;(None, "__add_", "return_type");copy_input
+;MUL;1;(ANY_NUM, ANY_NUM);ANY_NUM;_("Multiplication");yes;(None, "__mul_", "return_type");copy_input
+;SUB;1;(ANY_NUM, ANY_NUM);ANY_NUM;_("Subtraction");no;(None, "__sub_", "return_type");copy_input
+;DIV;1;(ANY_NUM, ANY_NUM);ANY_NUM;_("Division");no;(None, "__div_", "return_type");copy_input
+;MOD;1;(ANY_INT, ANY_INT);ANY_INT;_("Remainder (modulo)");no;(None, "__mod_", "return_type");copy_input
+;EXPT;1;(ANY_REAL, ANY_NUM);ANY_REAL;_("Exponent");no;(None, "__expt_", "IN1_type");IN1_type_symbol
+;MOVE;1;(ANY);ANY;_("Assignment");no;(None, "__move_", "return_type");copy_input
+_("Time");ADD;1;(TIME, TIME);TIME;_("Time addition");no;(None, "__time_add", None);defined
+;ADD_TIME;1;(TIME, TIME);TIME;_("Time addition");no;(None, "__time_add", None);defined
+;ADD;1;(TOD, TIME);TOD;_("Time-of-day addition")+" "+_("DEPRECATED");no;(None, "__time_add", None);defined
+;ADD_TOD_TIME;1;(TOD, TIME);TOD;_("Time-of-day addition");no;(None, "__time_add", None);defined
+;ADD;1;(DT, TIME);DT;_("Date addition")+" "+_("DEPRECATED");no;(None, "__time_add", None);defined
+;ADD_DT_TIME;1;(DT, TIME);DT;_("Date addition");no;(None, "__time_add", None);defined
+;MUL;1;(TIME, ANY_NUM);TIME;_("Time multiplication")+" "+_("DEPRECATED");no;(None, "__time_mul", None);defined
+;MULTIME;1;(TIME, ANY_NUM);TIME;_("Time multiplication");no;(None, "__time_mul", None);defined
+;SUB_TIME;1;(TIME, TIME);TIME;_("Time subtraction");no;(None, "__time_sub", None);defined
+;SUB;1;(TIME, TIME);TIME;_("Time subtraction");no;(None, "__time_sub", None);defined
+;SUB;1;(DATE, DATE);TIME;_("Date subtraction")+" "+_("DEPRECATED");no;(None, "__time_sub", None);defined
+;SUB_DATE_DATE;1;(DATE, DATE);TIME;_("Date subtraction");no;(None, "__time_sub", None);defined
+;SUB;1;(TOD, TIME);TOD;_("Time-of-day subtraction")+" "+_("DEPRECATED");no;(None, "__time_sub", None);defined
+;SUB_TOD_TIME;1;(TOD, TIME);TOD;_("Time-of-day subtraction");no;(None, "__time_sub", None);defined
+;SUB;1;(TOD, TOD);TIME;_("Time-of-day subtraction")+" "+_("DEPRECATED");no;(None, "__time_sub", None);defined
+;SUB_TOD_TOD;1;(TOD, TOD);TIME;_("Time-of-day subtraction");no;(None, "__time_sub", None);defined
+;SUB;1;(DT, TIME);DT;_("Date and time subtraction")+" "+_("DEPRECATED");no;(None, "__time_sub", None);defined
+;SUB_DT_TIME;1;(DT, TIME);DT;_("Date and time subtraction");no;(None, "__time_sub", None);defined
+;SUB;1;(DT, DT);TIME;_("Date and time subtraction")+" "+_("DEPRECATED");no;(None, "__time_sub", None);defined
+;SUB_DT_TIME;1;(DT, DT);TIME;_("Date and time subtraction");no;(None, "__time_sub", None);defined
+;DIV;1;(TIME, ANY_NUM);TIME;_("Time division")+" "+_("DEPRECATED");no;(None, "__time_div", None);defined
+;DIVTIME;1;(TIME, ANY_NUM);TIME;_("Time division");no;(None, "__time_div", None);defined
+_("Bit-shift");SHL;1;(ANY_BIT, N);ANY_BIT;_("Shift left");no;(None, "__shl_", "IN_type");IN_type_symbol
+;SHR;1;(ANY_BIT, N);ANY_BIT;_("Shift right");no;(None, "__shr_", "IN_type");IN_type_symbol
+;ROR;1;(ANY_NBIT, N);ANY_NBIT;_("Rotate right");no;(None, "__ror_", "IN_type");IN_type_symbol
+;ROL;1;(ANY_NBIT, N);ANY_NBIT;_("Rotate left");no;(None, "__rol_", "IN_type");IN_type_symbol
+_("Bitwise");AND;1;(ANY_BIT, ANY_BIT);ANY_BIT;_("Bitwise AND");yes;(None, "__and_", "return_type");copy_input
+;OR;1;(ANY_BIT, ANY_BIT);ANY_BIT;_("Bitwise OR");yes;(None, "__or_", "return_type");copy_input
+;XOR;1;(ANY_BIT, ANY_BIT);ANY_BIT;_("Bitwise XOR");yes;(None, "__xor_", "return_type");copy_input
+;NOT;1;(ANY_BIT);ANY_BIT;_("Bitwise inverting");no;(None, "__not_", "return_type");IN_type_symbol
+_("Selection");SEL;0;(G, ANY, ANY);ANY;_("Binary selection (1 of 2)");no;(None, "__sel_", "IN0_type");copy_input
+;MAX;1;(ANY, ANY);ANY;_("Maximum");yes;(None, "__max_", "return_type");copy_input
+;MIN;1;(ANY, ANY);ANY;_("Minimum");yes;(None, "__min_", "return_type");copy_input
+;LIMIT;1;(MN, ANY, MX);ANY;_("Limitation");no;(None, "__limit_", "IN_type");IN_type_symbol
+;MUX;0;(K, ANY, ANY);ANY;_("Multiplexer (select 1 of N)");yes;(None, "__mux_", "return_type");copy_input
+_("Comparison");GT;1;(ANY, ANY);BOOL;_("Greater than");yes;(None, "__gt_", "common_type");defined
+;GE;1;(ANY, ANY);BOOL;_("Greater than or equal to");yes;(None, "__ge_", "common_type");defined
+;EQ;1;(ANY, ANY);BOOL;_("Equal to");yes;(None, "__eq_", "common_type");defined
+;LT;1;(ANY, ANY);BOOL;_("Less than");yes;(None, "__lt_", "common_type");defined
+;LE;1;(ANY, ANY);BOOL;_("Less than or equal to");yes;(None, "__le_", "common_type");defined
+;NE;1;(ANY, ANY);BOOL;_("Not equal to");no;(None, "__ne_", "common_type");defined
+_("Character string");LEN;1;(STRING);INT;_("Length of string");no;(None, "__len", None);defined
+;LEFT;1;(STRING, L);STRING;_("string left of");no;(None, "__left", None);defined
+;RIGHT;1;(STRING, L);STRING;_("string right of");no;(None, "__right", None);defined
+;MID;1;(STRING, L, P);STRING;_("string from the middle");no;(None, "__mid", None);defined
+;CONCAT;1;(STRING, STRING);STRING;_("Concatenation");yes;(None, "__concat", None);defined
+;CONCAT_DAT_TOD;1;(DATE, TOD);DT;_("Time concatenation");no;(None, "__time_add", None);defined
+;INSERT;1;(STRING, STRING, P);STRING;_("Insertion (into)");no;(None, "__insert", None);defined
+;DELETE;1;(STRING, L, P);STRING;_("Deletion (within)");no;(None, "__delete", None);defined
+;REPLACE;1;(STRING, STRING, L, P);STRING;_("Replacement (within)");no;(None, "__replace", None);defined
+;FIND;1;(STRING, STRING);INT;_("Find position");no;(None, "__find", None);defined

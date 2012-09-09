@@ -154,6 +154,9 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     os.system(cmd)                                                
 
     appfil_file = open("app.fil", 'r')
+    messages_file = open("messages.pot", 'r')
+    messages = messages_file.read()
+    messages_file.close()
     messages_file = open("messages.pot", 'a')
     messages_file.write("""
 #: Extra XSD strings
@@ -162,10 +165,10 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     for filepath in appfil_file.xreadlines():
         code_file = open(filepath.strip(), 'r')
         for match in XSD_STRING_MODEL.finditer(code_file.read()):
-				    word = match.group(1)
-				    if not words_found.get(word, False):
-				        words_found[word] = True
-				        messages_file.write("""
+            word = match.group(1)
+            if not words_found.get(word, False) and messages.find("msgid \"%s\"\nmsgstr \"\"" % word) == -1:
+                words_found[word] = True
+                messages_file.write("""
 msgid "%s"
 msgstr ""
 """%word)

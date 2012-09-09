@@ -1,7 +1,8 @@
 
 import wx
 
-from controls import EditorPanel, ProjectPropertiesPanel
+from controls import ProjectPropertiesPanel
+from EditorPanel import EditorPanel
 from ConfTreeNodeEditor import ConfTreeNodeEditor, WINDOW_COLOUR
 
 class ProjectNodeEditor(ConfTreeNodeEditor):
@@ -58,7 +59,7 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         return self.Controler.CTNName()
     
     def GetTitle(self):
-        fullname = self.Controler.CTNName()
+        fullname = _(self.Controler.CTNName())
         if self.Controler.CTNTestModified():
             return "~%s~" % fullname
         return fullname

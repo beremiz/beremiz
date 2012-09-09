@@ -5,13 +5,13 @@ import types
 import wx
 import wx.lib.buttons
 
-from controls import EditorPanel
+from EditorPanel import EditorPanel
 
-from PLCOpenEditor import TITLE, FILEMENU, PROJECTTREE, PAGETITLES
+from IDEFrame import TITLE, FILEMENU, PROJECTTREE, PAGETITLES
 
-from util.TextCtrlAutoComplete import TextCtrlAutoComplete
-from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
-from utils.BitmapLibrary import GetBitmap
+from controls import TextCtrlAutoComplete
+from dialogs import BrowseValuesLibraryDialog
+from util.BitmapLibrary import GetBitmap
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',

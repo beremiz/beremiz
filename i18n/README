@@ -9,4 +9,4 @@ To generate .mo files for all languages:
 
 To generate app.fil:
 	
-    find .. -name "*.py" -exec grep -q '_(' {} ';' -print -o -name "*XSD*" -print | grep -v '/build/' | grep -v '/pyjs/' > app.fil
+    find .. -name "*.py" -exec grep -q '_(' {} ';' -print -o -name "*XSD*" -print -o -name "*.csv" -print | grep -v '/build/' | grep -v '/pyjs/' > app.fil

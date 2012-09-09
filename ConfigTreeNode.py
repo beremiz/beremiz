@@ -15,7 +15,7 @@ from xmlclass import GenerateClassesFromXSDstring
 from util.misc import GetClassImporter
 
 from PLCControler import PLCControler, LOCATION_CONFNODE
-from ConfTreeNodeEditor import ConfTreeNodeEditor
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
