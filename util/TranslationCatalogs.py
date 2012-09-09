@@ -6,7 +6,7 @@ import os
 import wx
 
 # Get the default language
-langid = wx.LANGUAGE_FRENCH
+langid = wx.LANGUAGE_DEFAULT
 
 # Define locale for wx
 locale = wx.Locale(langid)
