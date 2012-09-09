@@ -160,7 +160,7 @@ class NodeEditor(ConfTreeNodeEditor):
                                               [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
                                                wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
                                                wx.ALIGN_LEFT, wx.ALIGN_LEFT]):
-            self.VariablesGrid.AddColumn(colname, colsize, colalign)
+            self.VariablesGrid.AddColumn(_(colname), colsize, colalign)
         self.VariablesGrid.SetMainColumn(1)
     
     def GetBufferState(self):
