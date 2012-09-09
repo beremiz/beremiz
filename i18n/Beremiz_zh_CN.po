@@ -7,23 +7,48 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-24 18:44+0200\n"
-"PO-Revision-Date: 2009-07-02 18:27+0100\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2012-09-07 01:17+0200\n"
+"PO-Revision-Date: 2012-09-09 18:36+0100\n"
+"Last-Translator: Laurent BESSARD <laurent.bessard@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Beremiz.py:1429
-#, python-format
+#: ../PLCOpenEditor.py:520
+#, fuzzy
+msgid ""
+"\n"
+"An error has occurred.\n"
+"\n"
+"Click OK to save an error report.\n"
+"\n"
+"Please be kind enough to send this file to:\n"
+"edouard.tisserant@gmail.com\n"
+"\n"
+"Error:\n"
+msgstr ""
+"\n"
+"一个未处理的异常（漏洞）出现。漏洞报告存为：\n"
+"(%s)\n"
+"\n"
+"或者请将文件发送至下列邮箱：\n"
+"edouard.tisserant@gmail.com\n"
+"\n"
+"你现在必须重新启动Beremiz。\n"
+"\n"
+"回溯：\n"
+
+#: ../Beremiz.py:1071
+#, fuzzy, python-format
 msgid ""
 "\n"
 "An unhandled exception (bug) occured. Bug report saved at :\n"
 "(%s)\n"
 "\n"
 "Please be kind enough to send this file to:\n"
-"edouard.tisserant@gmail.com\n"
+"beremiz-devel@lists.sourceforge.net\n"
 "\n"
 "You should now restart Beremiz.\n"
 "\n"
@@ -40,228 +65,1077 @@ msgstr ""
 "\n"
 "回溯：\n"
 
-#: plugger.py:1332
+#: ../controls/VariablePanel.py:77
+msgid "   External"
+msgstr "   外部"
+
+#: ../controls/VariablePanel.py:76
+msgid "   InOut"
+msgstr "   输入"
+
+#: ../controls/VariablePanel.py:76
+msgid "   Input"
+msgstr "   输入"
+
+#: ../controls/VariablePanel.py:77
+msgid "   Local"
+msgstr "   本地"
+
+#: ../controls/VariablePanel.py:76
+msgid "   Output"
+msgstr "   输出"
+
+#: ../controls/VariablePanel.py:78
+msgid "   Temp"
+msgstr "   缓冲"
+
+#: ../PLCOpenEditor.py:530
+msgid " : "
+msgstr "："
+
+#: ../dialogs/PouTransitionDialog.py:94
+#: ../dialogs/PouActionDialog.py:91
+#: ../dialogs/PouDialog.py:111
+#: ../dialogs/SFCTransitionDialog.py:144
+#, python-format
+msgid " and %s"
+msgstr "和 %s"
+
+#: ../ProjectController.py:890
 msgid " generation failed !\n"
 msgstr "生成失败！\n"
 
-#: Beremiz.py:1288
+#: ../plcopen/plcopen.py:1051
+#, python-format
+msgid "\"%s\" Data Type doesn't exist !!!"
+msgstr "\"%s\" 数据类型尚不存在！！！"
+
+#: ../plcopen/plcopen.py:1069
+#, python-format
+msgid "\"%s\" POU already exists !!!"
+msgstr "\"%s\"编程组织单元已经存在！！！"
+
+#: ../plcopen/plcopen.py:1090
+#, python-format
+msgid "\"%s\" POU doesn't exist !!!"
+msgstr "\"%s\" POU不存在！！！"
+
+#: ../editors/Viewer.py:234
+#, python-format
+msgid "\"%s\" can't use itself!"
+msgstr "\"%s\" 不能自己使用！"
+
+#: ../IDEFrame.py:1706
+#: ../IDEFrame.py:1725
+#, python-format
+msgid "\"%s\" config already exists!"
+msgstr "\"%s\" 配置已存在！"
+
+#: ../plcopen/plcopen.py:315
+#, python-format
+msgid "\"%s\" configuration already exists !!!"
+msgstr "\"%s\" 配置已存在！！！"
+
+#: ../IDEFrame.py:1660
+#, python-format
+msgid "\"%s\" data type already exists!"
+msgstr "\"%s\" 数据类型已存在！"
+
+#: ../PLCControler.py:2040
+#: ../PLCControler.py:2044
+#, python-format
+msgid "\"%s\" element can't be pasted here!!!"
+msgstr "\"%s\" 元素不能粘贴在这里！！！"
+
+#: ../editors/TextViewer.py:305
+#: ../editors/TextViewer.py:325
+#: ../editors/Viewer.py:252
+#: ../dialogs/PouTransitionDialog.py:105
+#: ../dialogs/ConnectionDialog.py:150
+#: ../dialogs/PouActionDialog.py:102
+#: ../dialogs/FBDBlockDialog.py:162
+#, python-format
+msgid "\"%s\" element for this pou already exists!"
+msgstr "\"%s\" "
+
+#: ../Beremiz.py:894
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr "\"%s\" 文件夹不是有效的Beremiz项目\n"
 
-#: Beremiz_service.py:467
-#: runtime/PLCObject.py:269
-msgid "#EXCEPTION : "
-msgstr "#异常："
+#: ../plcopen/structures.py:106
+#, python-format
+msgid "\"%s\" function cancelled in \"%s\" POU: No input connected"
+msgstr "\"%s\" 功能被取消 \"%s\" 在POU中：没有输入连接"
 
-#: Beremiz.py:1417
-#: Beremiz.py:1419
-#: Beremiz.py:1420
+#: ../controls/VariablePanel.py:656
+#: ../IDEFrame.py:1651
+#: ../editors/DataTypeEditor.py:548
+#: ../editors/DataTypeEditor.py:577
+#: ../dialogs/PouNameDialog.py:49
+#: ../dialogs/PouTransitionDialog.py:101
+#: ../dialogs/SFCStepNameDialog.py:51
+#: ../dialogs/ConnectionDialog.py:146
+#: ../dialogs/FBDVariableDialog.py:199
+#: ../dialogs/PouActionDialog.py:98
+#: ../dialogs/PouDialog.py:118
+#: ../dialogs/SFCStepDialog.py:122
+#: ../dialogs/FBDBlockDialog.py:158
+#, python-format
+msgid "\"%s\" is a keyword. It can't be used!"
+msgstr "\"%s\" 是一个关键词。它不能被使用！"
+
+#: ../editors/Viewer.py:240
+#, python-format
+msgid "\"%s\" is already used by \"%s\"!"
+msgstr "\"%s\" 已被 \"%s\" 使用！"
+
+#: ../plcopen/plcopen.py:2786
+#, python-format
+msgid "\"%s\" is an invalid value!"
+msgstr "\"%s\"不是有效值！"
+
+#: ../PLCOpenEditor.py:362
+#: ../PLCOpenEditor.py:399
+#, python-format
+msgid "\"%s\" is not a valid folder!"
+msgstr "\"%s\"不是有效文件夹！"
+
+#: ../controls/VariablePanel.py:654
+#: ../IDEFrame.py:1649
+#: ../editors/DataTypeEditor.py:572
+#: ../dialogs/PouNameDialog.py:47
+#: ../dialogs/PouTransitionDialog.py:99
+#: ../dialogs/SFCStepNameDialog.py:49
+#: ../dialogs/ConnectionDialog.py:144
+#: ../dialogs/PouActionDialog.py:96
+#: ../dialogs/PouDialog.py:116
+#: ../dialogs/SFCStepDialog.py:120
+#: ../dialogs/FBDBlockDialog.py:156
+#, python-format
+msgid "\"%s\" is not a valid identifier!"
+msgstr "\"%s\"不是有效标识符！"
+
+#: ../IDEFrame.py:214
+#: ../IDEFrame.py:2445
+#: ../IDEFrame.py:2464
+#, python-format
+msgid "\"%s\" is used by one or more POUs. It can't be removed!"
+msgstr "%s 正在被一个或多个POU使用。不能被删除！"
+
+#: ../controls/VariablePanel.py:311
+#: ../IDEFrame.py:1669
+#: ../editors/TextViewer.py:303
+#: ../editors/TextViewer.py:323
+#: ../editors/TextViewer.py:360
+#: ../editors/Viewer.py:250
+#: ../editors/Viewer.py:295
+#: ../editors/Viewer.py:312
+#: ../dialogs/ConnectionDialog.py:148
+#: ../dialogs/PouDialog.py:120
+#: ../dialogs/FBDBlockDialog.py:160
+#, python-format
+msgid "\"%s\" pou already exists!"
+msgstr "\"%s\"编程组织单元已经存在！"
+
+#: ../plcopen/plcopen.py:346
+#, python-format
+msgid "\"%s\" resource already exists in \"%s\" configuration !!!"
+msgstr "\"%s\" 资源已经存在于 \"%s\" 配置中！！！"
+
+#: ../plcopen/plcopen.py:362
+#, python-format
+msgid "\"%s\" resource doesn't exist in \"%s\" configuration !!!"
+msgstr "\"%s\" 资源不存在于 \"%s\" 配置之内！！！"
+
+#: ../dialogs/SFCStepNameDialog.py:57
+#: ../dialogs/SFCStepDialog.py:128
+#, python-format
+msgid "\"%s\" step already exists!"
+msgstr "\"%s\"步骤已经存在！"
+
+#: ../editors/DataTypeEditor.py:543
+#, python-format
+msgid "\"%s\" value already defined!"
+msgstr "\"%s\" 值已经被定义！"
+
+#: ../editors/DataTypeEditor.py:719
+#: ../dialogs/ArrayTypeDialog.py:97
+#, python-format
+msgid "\"%s\" value isn't a valid array dimension!"
+msgstr "\"%s\" 值不是有效数组维数！"
+
+#: ../editors/DataTypeEditor.py:726
+#: ../dialogs/ArrayTypeDialog.py:103
+#, python-format
+msgid ""
+"\"%s\" value isn't a valid array dimension!\n"
+"Right value must be greater than left value."
+msgstr ""
+"\"%s\" 不是一个有效的数组维数值！\n"
+"右边的数值必须大于左边的数值。"
+
+#: ../PLCControler.py:793
+#, fuzzy, python-format
+msgid "%s \"%s\" can't be pasted as a %s."
+msgstr "\"%s\" 元素不能粘贴在这里！！！"
+
+#: ../PLCControler.py:1422
+#, fuzzy, python-format
+msgid "%s Data Types"
+msgstr "数据类型 "
+
+#: ../editors/GraphicViewer.py:278
+#, python-format
+msgid "%s Graphics"
+msgstr "%s 图形"
+
+#: ../PLCControler.py:1417
+#, python-format
+msgid "%s POUs"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:42
+#: ../canfestival/NetworkEditor.py:72
+#, python-format
+msgid "%s Profile"
+msgstr ""
+
+#: ../plcopen/plcopen.py:1780
+#: ../plcopen/plcopen.py:1790
+#: ../plcopen/plcopen.py:1800
+#: ../plcopen/plcopen.py:1810
+#: ../plcopen/plcopen.py:1819
+#, python-format
+msgid "%s body don't have instances!"
+msgstr "%s 未包含实例！"
+
+#: ../plcopen/plcopen.py:1842
+#: ../plcopen/plcopen.py:1849
+#, python-format
+msgid "%s body don't have text!"
+msgstr "%s 未包含文本！"
+
+#: ../IDEFrame.py:364
+#, fuzzy
+msgid "&Add Element"
+msgstr "插入"
+
+#: ../IDEFrame.py:334
+#, fuzzy
+msgid "&Configuration"
+msgstr "配置"
+
+#: ../IDEFrame.py:325
+#, fuzzy
+msgid "&Data Type"
+msgstr "数据类型"
+
+#: ../IDEFrame.py:368
+#, fuzzy
+msgid "&Delete"
+msgstr "删除"
+
+#: ../IDEFrame.py:317
+#, fuzzy
+msgid "&Display"
+msgstr "显示"
+
+#: ../IDEFrame.py:316
+#, fuzzy
+msgid "&Edit"
+msgstr "编辑"
+
+#: ../IDEFrame.py:315
+#, fuzzy
+msgid "&File"
+msgstr "文件"
+
+#: ../IDEFrame.py:327
+#, fuzzy
+msgid "&Function"
+msgstr "功能"
+
+#: ../IDEFrame.py:318
+#, fuzzy
+msgid "&Help"
+msgstr "帮助"
+
+#: ../IDEFrame.py:331
+#, fuzzy
+msgid "&Program"
+msgstr "程序"
+
+#: ../PLCOpenEditor.py:148
+#, fuzzy
+msgid "&Properties"
+msgstr "属性"
+
+#: ../Beremiz.py:310
+#, fuzzy
+msgid "&Recent Projects"
+msgstr ""
+"#-#-#-#-#  Beremiz_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭项目\n"
+"#-#-#-#-#  PLCOpenEditor_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭程序"
+
+#: ../Beremiz.py:352
+#, fuzzy
+msgid "&Resource"
+msgstr "资源"
+
+#: ../controls/SearchResultPanel.py:237
+#, python-format
+msgid "'%s' - %d match in project"
+msgstr ""
+
+#: ../controls/SearchResultPanel.py:239
+#, python-format
+msgid "'%s' - %d matches in project"
+msgstr ""
+
+#: ../connectors/PYRO/__init__.py:51
+#, python-format
+msgid "'%s' is located at %s\n"
+msgstr ""
+
+#: ../controls/SearchResultPanel.py:289
+#, python-format
+msgid "(%d matches)"
+msgstr ""
+
+#: ../PLCOpenEditor.py:508
+#: ../PLCOpenEditor.py:510
+#: ../PLCOpenEditor.py:511
 msgid ",   "
 msgstr "，"
 
-#: Beremiz.py:1415
+#: ../dialogs/PouTransitionDialog.py:96
+#: ../dialogs/PouActionDialog.py:93
+#: ../dialogs/PouDialog.py:113
+#: ../dialogs/SFCTransitionDialog.py:146
+#, python-format
+msgid ", %s"
+msgstr "， %s"
+
+#: ../PLCOpenEditor.py:506
 msgid ". "
 msgstr "。"
 
-#: plugger.py:395
+#: ../ProjectController.py:1268
+msgid "... debugger recovered\n"
+msgstr ""
+
+#: ../IDEFrame.py:1672
+#: ../IDEFrame.py:1714
+#: ../IDEFrame.py:1733
+#: ../dialogs/PouDialog.py:122
 #, python-format
-msgid "A child names \"%s\" already exist -> \"%s\"\n"
+msgid "A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?"
+msgstr "一个编程组织单元的成员被命名为\"%s\"。这可能会产生冲突。你希望继续吗？"
+
+#: ../controls/VariablePanel.py:658
+#: ../IDEFrame.py:1684
+#: ../IDEFrame.py:1695
+#: ../dialogs/PouNameDialog.py:51
+#: ../dialogs/PouTransitionDialog.py:103
+#: ../dialogs/SFCStepNameDialog.py:53
+#: ../dialogs/PouActionDialog.py:100
+#: ../dialogs/SFCStepDialog.py:124
+#, python-format
+msgid "A POU named \"%s\" already exists!"
+msgstr "一个以\"%s\"命名的的编程组织单元已经存在！"
+
+#: ../ConfigTreeNode.py:371
+#, fuzzy, python-format
+msgid "A child named \"%s\" already exist -> \"%s\"\n"
 msgstr "分支名字 \"%s\" 已经存在 -> \"%s\"\n"
 
-#: plugger.py:427
-#, python-format
-msgid "A child with IEC channel %d already exist -> %d\n"
-msgstr "一个IEC通道的分支 %d 已经存在 -> %d\n"
+#: ../dialogs/BrowseLocationsDialog.py:175
+#, fuzzy
+msgid "A location must be selected!"
+msgstr "至少选择一个变量或者表达式！"
 
-#: Beremiz.py:342
+#: ../controls/VariablePanel.py:660
+#: ../IDEFrame.py:1686
+#: ../IDEFrame.py:1697
+#: ../dialogs/SFCStepNameDialog.py:55
+#: ../dialogs/SFCStepDialog.py:126
+#, python-format
+msgid "A variable with \"%s\" as name already exists in this pou!"
+msgstr "一个以\"%s\"命名的变量在这个编程组织单元中已经存在！"
+
+#: ../Beremiz.py:362
+#: ../PLCOpenEditor.py:181
 msgid "About"
 msgstr "关于"
 
-#: Beremiz.py:1357
+#: ../Beremiz.py:931
 msgid "About Beremiz"
 msgstr "关于Beremiz"
 
-#: Beremiz.py:311
-#: Beremiz.py:1390
-msgid "Add Plugin"
-msgstr "添加插件"
+#: ../PLCOpenEditor.py:376
+msgid "About PLCOpenEditor"
+msgstr "关于PLCOpen编辑器"
 
-#: Beremiz.py:612
-#: Beremiz.py:874
-msgid "Add a sub plugin"
-msgstr "添加一个子插件"
+#: ../plcopen/iec_std.csv:22
+msgid "Absolute number"
+msgstr "绝对值"
 
-#: plugger.py:1680
+#: ../dialogs/ActionBlockDialog.py:41
+#: ../dialogs/SFCStepDialog.py:69
+msgid "Action"
+msgstr "行动"
+
+#: ../editors/Viewer.py:495
+#, fuzzy
+msgid "Action Block"
+msgstr "功能块"
+
+#: ../dialogs/PouActionDialog.py:81
+msgid "Action Name"
+msgstr "行动名字"
+
+#: ../dialogs/PouActionDialog.py:49
+msgid "Action Name:"
+msgstr "行动名字："
+
+#: ../plcopen/plcopen.py:1480
+#, python-format
+msgid "Action with name %s doesn't exist!"
+msgstr "一个以\"%s\"命名的的行动不存在！"
+
+#: ../PLCControler.py:95
+msgid "Actions"
+msgstr "行动"
+
+#: ../dialogs/ActionBlockDialog.py:134
+msgid "Actions:"
+msgstr "行动："
+
+#: ../canfestival/SlaveEditor.py:54
+#: ../canfestival/NetworkEditor.py:84
+#: ../editors/Viewer.py:527
+msgid "Add"
+msgstr "添加"
+
+#: ../IDEFrame.py:1925
+#: ../IDEFrame.py:1956
+msgid "Add Action"
+msgstr "添加行动"
+
+#: ../features.py:7
+msgid "Add C code accessing located variables synchronously"
+msgstr ""
+
+#: ../IDEFrame.py:1908
+msgid "Add Configuration"
+msgstr "添加配置"
+
+#: ../IDEFrame.py:1888
+msgid "Add DataType"
+msgstr "添加数据类型"
+
+#: ../editors/Viewer.py:453
+msgid "Add Divergence Branch"
+msgstr "添加发散分支"
+
+#: ../dialogs/DiscoveryDialog.py:115
+#, fuzzy
+msgid "Add IP"
+msgstr "添加Pou"
+
+#: ../IDEFrame.py:1896
+#, fuzzy
+msgid "Add POU"
+msgstr "添加Pou"
+
+#: ../features.py:8
+msgid "Add Python code executed asynchronously"
+msgstr ""
+
+#: ../IDEFrame.py:1936
+#: ../IDEFrame.py:1982
+msgid "Add Resource"
+msgstr "添加源"
+
+#: ../IDEFrame.py:1914
+#: ../IDEFrame.py:1953
+msgid "Add Transition"
+msgstr "添加跃迁"
+
+#: ../editors/Viewer.py:442
+msgid "Add Wire Segment"
+msgstr "添加布线段"
+
+#: ../editors/SFCViewer.py:359
+msgid "Add a new initial step"
+msgstr "新建一个初始步骤"
+
+#: ../editors/Viewer.py:2289
+#: ../editors/SFCViewer.py:696
+msgid "Add a new jump"
+msgstr "新建一个跳跃"
+
+#: ../editors/SFCViewer.py:381
+msgid "Add a new step"
+msgstr "添加一个新步骤"
+
+#: ../features.py:9
+msgid "Add a simple WxGlade based GUI."
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:138
+#, fuzzy
+msgid "Add action"
+msgstr "添加行动"
+
+#: ../editors/DataTypeEditor.py:345
+#, fuzzy
+msgid "Add element"
+msgstr "插入"
+
+#: ../editors/ResourceEditor.py:251
+#, fuzzy
+msgid "Add instance"
+msgstr "添加实例"
+
+#: ../canfestival/NetworkEditor.py:86
+#, fuzzy
+msgid "Add slave"
+msgstr "添加实例"
+
+#: ../editors/ResourceEditor.py:222
+#, fuzzy
+msgid "Add task"
+msgstr "添加任务"
+
+#: ../controls/VariablePanel.py:378
+#, fuzzy
+msgid "Add variable"
+msgstr "变量"
+
+#: ../plcopen/iec_std.csv:33
+msgid "Addition"
+msgstr "加法"
+
+#: ../plcopen/structures.py:250
+msgid "Additional function blocks"
+msgstr "附加功能类型"
+
+#: ../editors/Viewer.py:1395
+msgid "Alignment"
+msgstr "对准"
+
+#: ../controls/VariablePanel.py:75
+#: ../dialogs/BrowseLocationsDialog.py:35
+#: ../dialogs/BrowseLocationsDialog.py:116
+msgid "All"
+msgstr "所有"
+
+#: ../editors/FileManagementPanel.py:35
+#, fuzzy
+msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
+msgstr "ST 文件 (*.st)|*.st|所有文件|*.*"
+
+#: ../ProjectController.py:1335
 msgid "Already connected. Please disconnect\n"
 msgstr "已经连接。请断开连接\n"
 
-#: Beremiz.py:1056
-msgid "Append "
-msgstr "追加"
+#: ../editors/DataTypeEditor.py:587
+#, python-format
+msgid "An element named \"%s\" already exists in this structure!"
+msgstr "一个以\"%s\"命名的元素已经在这个结构中存在！"
 
-#: plugins/canfestival/config_utils.py:341
-#: plugins/canfestival/config_utils.py:623
+#: ../plcopen/iec_std.csv:31
+msgid "Arc cosine"
+msgstr "反余弦"
+
+#: ../plcopen/iec_std.csv:30
+msgid "Arc sine"
+msgstr "反正弦"
+
+#: ../plcopen/iec_std.csv:32
+msgid "Arc tangent"
+msgstr "反正切"
+
+#: ../plcopen/iec_std.csv:33
+msgid "Arithmetic"
+msgstr "运算"
+
+#: ../controls/VariablePanel.py:729
+#: ../editors/DataTypeEditor.py:52
+msgid "Array"
+msgstr "阵列的"
+
+#: ../plcopen/iec_std.csv:39
+msgid "Assignment"
+msgstr "分配"
+
+#: ../dialogs/FBDVariableDialog.py:197
+msgid "At least a variable or an expression must be selected!"
+msgstr "至少选择一个变量或者表达式！"
+
+#: ../controls/ProjectPropertiesPanel.py:99
+msgid "Author"
+msgstr "作者"
+
+#: ../controls/ProjectPropertiesPanel.py:96
+msgid "Author Name (optional):"
+msgstr "作者姓名（选填）："
+
+#: ../dialogs/FindInPouDialog.py:72
+msgid "Backward"
+msgstr ""
+
+#: ../util/Zeroconf.py:599
+msgid "Bad domain name (circular) at "
+msgstr ""
+
+#: ../util/Zeroconf.py:602
+msgid "Bad domain name at "
+msgstr ""
+
+#: ../canfestival/config_utils.py:341
+#: ../canfestival/config_utils.py:623
 #, python-format
 msgid "Bad location size : %s"
 msgstr "不好的位置大小：%s"
 
-#: Beremiz.py:392
+#: ../editors/DataTypeEditor.py:168
+#: ../editors/DataTypeEditor.py:198
+#: ../editors/DataTypeEditor.py:290
+#: ../dialogs/ArrayTypeDialog.py:55
+msgid "Base Type:"
+msgstr "基类型："
+
+#: ../controls/VariablePanel.py:699
+#: ../editors/DataTypeEditor.py:617
+msgid "Base Types"
+msgstr "基类型"
+
+#: ../Beremiz.py:486
 msgid "Beremiz"
 msgstr "Beremiz"
 
-#: Beremiz.py:340
-msgid "Beremiz\tF1"
-msgstr "Beremiz\tF1"
+#: ../plcopen/iec_std.csv:70
+msgid "Binary selection (1 of 2)"
+msgstr "二进制选取（二选一）"
 
-#: plugger.py:1464
-msgid "Broken"
-msgstr "损坏"
+#: ../plcopen/iec_std.csv:62
+msgid "Bit-shift"
+msgstr "位移"
 
-#: plugger.py:1800
+#: ../plcopen/iec_std.csv:66
+msgid "Bitwise"
+msgstr "位操作"
+
+#: ../plcopen/iec_std.csv:66
+msgid "Bitwise AND"
+msgstr "按位”与“"
+
+#: ../plcopen/iec_std.csv:67
+msgid "Bitwise OR"
+msgstr "按位”或“"
+
+#: ../plcopen/iec_std.csv:68
+msgid "Bitwise XOR"
+msgstr "按位”异或“"
+
+#: ../plcopen/iec_std.csv:69
+msgid "Bitwise inverting"
+msgstr "按位“反向”"
+
+#: ../editors/Viewer.py:465
+#, fuzzy
+msgid "Block"
+msgstr "编辑块"
+
+#: ../dialogs/FBDBlockDialog.py:38
+msgid "Block Properties"
+msgstr "块属性"
+
+#: ../editors/Viewer.py:434
+msgid "Bottom"
+msgstr "底部"
+
+#: ../dialogs/BrowseValuesLibraryDialog.py:37
+#, python-format
+msgid "Browse %s values library"
+msgstr ""
+
+#: ../dialogs/BrowseLocationsDialog.py:55
+#, fuzzy
+msgid "Browse Locations"
+msgstr "位置"
+
+#: ../ProjectController.py:1484
 msgid "Build"
 msgstr "构建"
 
-#: Beremiz.py:320
-msgid "Build\tCTRL+R"
-msgstr "建立\tCTRL+R"
-
-#: plugger.py:1434
+#: ../ProjectController.py:1051
 msgid "Build directory already clean\n"
 msgstr "构建目录已经清除\n"
 
-#: plugger.py:1801
+#: ../ProjectController.py:1485
 msgid "Build project into build folder"
 msgstr "在构建文件夹中构建项目"
 
-#: plugger.py:1350
+#: ../ProjectController.py:910
 msgid "C Build crashed !\n"
 msgstr "C构建损坏！\n"
 
-#: plugger.py:1347
+#: ../ProjectController.py:907
 msgid "C Build failed.\n"
 msgstr "C构建失败。\n"
 
-#: plugger.py:1336
+#: ../ProjectController.py:895
 msgid "C code generated successfully.\n"
 msgstr "C代码生成成功。\n"
 
-#: targets/toolchain_gcc.py:119
+#: ../targets/toolchain_gcc.py:132
 #, python-format
 msgid "C compilation of %s failed.\n"
 msgstr " %s 的C编译失败。\n"
 
-#: plugger.py:1037
+#: ../features.py:7
+#, fuzzy
+msgid "C extension"
+msgstr "C扩展"
+
+#: ../features.py:6
+msgid "CANopen support"
+msgstr ""
+
+#: ../plcopen/plcopen.py:1722
+#: ../plcopen/plcopen.py:1736
+#: ../plcopen/plcopen.py:1757
+#: ../plcopen/plcopen.py:1773
+msgid "Can only generate execution order on FBD networks!"
+msgstr "在功能块网络，只能生成执行命令！"
+
+#: ../controls/VariablePanel.py:256
+msgid "Can only give a location to local or global variables"
+msgstr "只能影响本地或全局变量的位置"
+
+#: ../PLCOpenEditor.py:357
 #, python-format
-msgid "Can't find module for target %s!\n"
-msgstr "无法为目标找到模型 %s!\n"
+msgid "Can't generate program to file %s!"
+msgstr "这个编程生成文件失败 %s！"
 
-#: discovery.py:79
-msgid "Cancel"
-msgstr "取消"
+#: ../controls/VariablePanel.py:254
+msgid "Can't give a location to a function block instance"
+msgstr "不能影响功能块实例的位置"
 
-#: plugger.py:1746
-msgid "Cannot compare latest build to target. Please build.\n"
-msgstr "无法与目标比较最新的建立。\n"
+#: ../PLCOpenEditor.py:397
+#, python-format
+msgid "Can't save project to file %s!"
+msgstr "这个项目保存为文件失败 %s！"
 
-#: plugger.py:465
+#: ../controls/VariablePanel.py:298
+#, fuzzy
+msgid "Can't set an initial value to a function block instance"
+msgstr "不能影响功能块实例的位置"
+
+#: ../ConfigTreeNode.py:470
 #, python-format
 msgid "Cannot create child %s of type %s "
 msgstr "无法新建分支 %s 类型 %s "
 
-#: plugger.py:420
+#: ../ConfigTreeNode.py:400
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
 msgstr "无法找到比 %d 更低的自由的IEC通道\n"
 
-#: connectors/PYRO/__init__.py:61
+#: ../connectors/PYRO/__init__.py:92
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr "无法获取PLC的状态 - 连接失败。\n"
 
-#: plugger.py:1161
+#: ../ProjectController.py:715
 msgid "Cannot open/parse VARIABLES.csv!\n"
 msgstr "无法打开／解析 VARIABLES.csv！\n"
 
-#: plugins/canfestival/config_utils.py:371
+#: ../canfestival/config_utils.py:371
 #, python-format
 msgid "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))"
 msgstr "无法设定位抵消非布尔 '%s' variable (ID:%d,Idx:%x,sIdx:%x)) "
 
-#: Beremiz_service.py:281
+#: ../dialogs/FindInPouDialog.py:81
+#: ../dialogs/SearchInProjectDialog.py:67
+msgid "Case sensitive"
+msgstr ""
+
+#: ../editors/Viewer.py:429
+msgid "Center"
+msgstr "中"
+
+#: ../Beremiz_service.py:322
 msgid "Change IP of interface to bind"
 msgstr "更改界面的ip用以绑定"
 
-#: Beremiz_service.py:280
+#: ../Beremiz_service.py:321
 msgid "Change Name"
 msgstr "更改名字"
 
-#: Beremiz_service.py:284
+#: ../IDEFrame.py:1974
+msgid "Change POU Type To"
+msgstr "将POU类型转换为"
+
+#: ../Beremiz_service.py:325
 msgid "Change Port Number"
 msgstr "更改端口号"
 
-#: Beremiz_service.py:286
+#: ../Beremiz_service.py:327
 msgid "Change working directory"
 msgstr "更改工作目录"
 
-#: Beremiz.py:1249
-#: Beremiz.py:1272
+#: ../plcopen/iec_std.csv:81
+msgid "Character string"
+msgstr "字符串"
+
+#: ../svgui/svgui.py:92
+msgid "Choose a SVG file"
+msgstr "选择一个SVG文件"
+
+#: ../ProjectController.py:353
+#, fuzzy
+msgid "Choose a directory to save project"
+msgstr "选择一个项目"
+
+#: ../canfestival/canfestival.py:118
+#: ../PLCOpenEditor.py:313
+#: ../PLCOpenEditor.py:347
+#: ../PLCOpenEditor.py:391
+msgid "Choose a file"
+msgstr "选择一个文件"
+
+#: ../Beremiz.py:831
+#: ../Beremiz.py:866
 msgid "Choose a project"
 msgstr "选择一个项目"
 
-#: Beremiz_service.py:332
+#: ../dialogs/BrowseValuesLibraryDialog.py:42
+#, fuzzy, python-format
+msgid "Choose a value for %s:"
+msgstr "选择一个文件"
+
+#: ../Beremiz_service.py:373
 msgid "Choose a working directory "
 msgstr "选择一个工作目录"
 
-#: plugger.py:1804
+#: ../ProjectController.py:281
+msgid "Chosen folder doesn't contain a program. It's not a valid project!"
+msgstr "被选中的文件夹未包含一个程序。它不是一个有效项目！"
+
+#: ../ProjectController.py:247
+msgid "Chosen folder isn't empty. You can't use it for a new project!"
+msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
+
+#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:59
+msgid "Class"
+msgstr "分类"
+
+#: ../controls/VariablePanel.py:369
+msgid "Class Filter:"
+msgstr "类过滤器："
+
+#: ../dialogs/FBDVariableDialog.py:62
+msgid "Class:"
+msgstr "分类："
+
+#: ../ProjectController.py:1488
 msgid "Clean"
 msgstr "清除"
 
-#: plugger.py:1806
+#: ../ProjectController.py:1490
 msgid "Clean project build folder"
 msgstr "清除项目构建目录"
 
-#: plugger.py:1431
+#: ../ProjectController.py:1048
 msgid "Cleaning the build directory\n"
 msgstr "清除构建目录\n"
 
-#: Beremiz.py:524
-#: Beremiz.py:1299
+#: ../IDEFrame.py:411
+#, fuzzy
+msgid "Clear Errors"
+msgstr "清除错误\tCTRL+K"
+
+#: ../editors/Viewer.py:520
+msgid "Clear Execution Order"
+msgstr "清空执行命令"
+
+#: ../editors/GraphicViewer.py:125
+msgid "Clear the graph values"
+msgstr ""
+
+#: ../Beremiz.py:598
+#: ../PLCOpenEditor.py:221
+#, fuzzy
 msgid "Close Application"
-msgstr "关闭应用"
+msgstr ""
+"#-#-#-#-#  Beremiz_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭应用\n"
+"#-#-#-#-#  PLCOpenEditor_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭应用程序"
 
-#: Beremiz.py:292
+#: ../IDEFrame.py:1089
+#: ../Beremiz.py:319
+#: ../Beremiz.py:552
+#: ../PLCOpenEditor.py:131
+#, fuzzy
 msgid "Close Project"
-msgstr "关闭项目"
+msgstr ""
+"#-#-#-#-#  Beremiz_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭项目\n"
+"#-#-#-#-#  PLCOpenEditor_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭程序"
 
-#: plugger.py:963
+#: ../Beremiz.py:317
+#: ../PLCOpenEditor.py:129
+#, fuzzy
+msgid "Close Tab"
+msgstr "关闭当前"
+
+#: ../editors/Viewer.py:481
+msgid "Coil"
+msgstr ""
+
+#: ../editors/Viewer.py:501
+#: ../editors/LDViewer.py:503
+msgid "Comment"
+msgstr "注释"
+
+#: ../controls/ProjectPropertiesPanel.py:94
+msgid "Company Name (required):"
+msgstr "公司名字（必须）："
+
+#: ../controls/ProjectPropertiesPanel.py:95
+msgid "Company URL (optional):"
+msgstr "公司网址（选填）："
+
+#: ../plcopen/iec_std.csv:75
+msgid "Comparison"
+msgstr "比较"
+
+#: ../ProjectController.py:538
 msgid "Compiling IEC Program into C code...\n"
 msgstr "正在将IEC程序编译成C代码...\n"
 
-#: plugins/canfestival/config_utils.py:335
-#: plugins/canfestival/config_utils.py:617
-#, python-format
-msgid "Type conflict for location \"%s\""
-msgstr "位置的冲突类型 \"%s\""
+#: ../plcopen/iec_std.csv:85
+msgid "Concatenation"
+msgstr "级联"
 
-#: plugger.py:1828
+#: ../dialogs/SearchInProjectDialog.py:47
+msgid "Configuration"
+msgstr "配置"
+
+#: ../PLCControler.py:96
+msgid "Configurations"
+msgstr "配置"
+
+#: ../ProjectController.py:1503
 msgid "Connect"
 msgstr "连接"
 
-#: plugger.py:1829
+#: ../ProjectController.py:1504
 msgid "Connect to the target PLC"
 msgstr "连接到PLC目标"
 
-#: connectors/PYRO/__init__.py:31
+#: ../connectors/PYRO/__init__.py:40
 #, python-format
 msgid "Connecting to URI : %s\n"
 msgstr "连接到URI： %s!\n"
 
-#: plugger.py:1713
+#: ../editors/Viewer.py:467
+#: ../dialogs/SFCTransitionDialog.py:76
+msgid "Connection"
+msgstr "连接"
+
+#: ../dialogs/ConnectionDialog.py:37
+msgid "Connection Properties"
+msgstr "连接属性"
+
+#: ../ProjectController.py:1359
+#, fuzzy
+msgid "Connection canceled!\n"
+msgstr "连接失败 %s!\n"
+
+#: ../ProjectController.py:1384
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr "连接失败 %s!\n"
 
-#: plugger.py:581
+#: ../connectors/PYRO/__init__.py:63
+#, fuzzy, python-format
+msgid "Connection to '%s' failed.\n"
+msgstr " %s 的C编译失败。\n"
+
+#: ../dialogs/ConnectionDialog.py:56
+msgid "Connector"
+msgstr "连接"
+
+#: ../dialogs/SFCStepDialog.py:58
+msgid "Connectors:"
+msgstr "连接："
+
+#: ../controls/VariablePanel.py:65
+msgid "Constant"
+msgstr "常量"
+
+#: ../editors/Viewer.py:477
+#, fuzzy
+msgid "Contact"
+msgstr "连续"
+
+#: ../controls/ProjectPropertiesPanel.py:197
+msgid "Content Description (optional):"
+msgstr "内容描述（选填）："
+
+#: ../dialogs/ConnectionDialog.py:61
+msgid "Continuation"
+msgstr "连续"
+
+#: ../plcopen/iec_std.csv:18
+msgid "Conversion from BCD"
+msgstr "由BCD码转换"
+
+#: ../plcopen/iec_std.csv:19
+msgid "Conversion to BCD"
+msgstr "转换为BCD码"
+
+#: ../plcopen/iec_std.csv:21
+msgid "Conversion to date"
+msgstr "转换为日期"
+
+#: ../plcopen/iec_std.csv:20
+msgid "Conversion to time-of-day"
+msgstr "转换为日期时间"
+
+#: ../IDEFrame.py:348
+#: ../IDEFrame.py:401
+#: ../editors/Viewer.py:536
+msgid "Copy"
+msgstr ""
+
+#: ../IDEFrame.py:1961
+msgid "Copy POU"
+msgstr ""
+
+#: ../editors/FileManagementPanel.py:283
+msgid "Copy file from left folder to right"
+msgstr ""
+
+#: ../editors/FileManagementPanel.py:282
+msgid "Copy file from right folder to left"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:28
+msgid "Cosine"
+msgstr "余弦"
+
+#: ../ConfigTreeNode.py:582
 #, python-format
 msgid ""
 "Could not add child \"%s\", type %s :\n"
@@ -270,163 +1144,515 @@ msgstr ""
 "无法添加分支 \"%s\", type %s :\n"
 "%s\n"
 
-#: plugger.py:558
-#, python-format
+#: ../ConfigTreeNode.py:559
+#, fuzzy, python-format
 msgid ""
-"Couldn't load plugin base parameters %s :\n"
+"Couldn't load confnode base parameters %s :\n"
 " %s"
 msgstr ""
 "无法下载插件基本参数 %s :\n"
 " %s"
 
-#: plugger.py:569
-#, python-format
+#: ../ConfigTreeNode.py:570
+#, fuzzy, python-format
 msgid ""
-"Couldn't load plugin parameters %s :\n"
+"Couldn't load confnode parameters %s :\n"
 " %s"
 msgstr ""
 "无法下载插件参数  %s :\n"
 " %s"
 
-#: plugger.py:1644
-msgid "Couldn't start PLC debug !\n"
-msgstr "无法开始PLC调试！\n"
+#: ../PLCControler.py:765
+#: ../PLCControler.py:802
+msgid "Couldn't paste non-POU object."
+msgstr ""
 
-#: plugger.py:1674
+#: ../ProjectController.py:1317
+msgid "Couldn't start PLC !\n"
+msgstr "无法开始PLC！\n"
+
+#: ../ProjectController.py:1325
 msgid "Couldn't stop PLC !\n"
 msgstr "无法停止PLC！\n"
 
-#: plugger.py:1814
-msgid "Debug"
+#: ../ProjectController.py:1295
+#, fuzzy
+msgid "Couldn't stop debugger.\n"
+msgstr "无法开始PLC调试！\n"
+
+#: ../svgui/svgui.py:22
+msgid "Create HMI"
+msgstr ""
+
+#: ../dialogs/PouDialog.py:43
+msgid "Create a new POU"
+msgstr "新建一个POU"
+
+#: ../dialogs/PouActionDialog.py:38
+msgid "Create a new action"
+msgstr "新建一个行动"
+
+#: ../IDEFrame.py:135
+msgid "Create a new action block"
+msgstr "新建一个作用块"
+
+#: ../IDEFrame.py:84
+#: ../IDEFrame.py:114
+#: ../IDEFrame.py:147
+msgid "Create a new block"
+msgstr "新建一个块"
+
+#: ../IDEFrame.py:108
+msgid "Create a new branch"
+msgstr "新建一个支流"
+
+#: ../IDEFrame.py:102
+msgid "Create a new coil"
+msgstr "新建一个线圈"
+
+#: ../IDEFrame.py:78
+#: ../IDEFrame.py:93
+#: ../IDEFrame.py:123
+msgid "Create a new comment"
+msgstr "新建一个备注"
+
+#: ../IDEFrame.py:87
+#: ../IDEFrame.py:117
+#: ../IDEFrame.py:150
+msgid "Create a new connection"
+msgstr "新建一个连接"
+
+#: ../IDEFrame.py:105
+#: ../IDEFrame.py:156
+msgid "Create a new contact"
+msgstr "新建一个接触点"
+
+#: ../IDEFrame.py:138
+msgid "Create a new divergence"
+msgstr "新建一个发散"
+
+#: ../dialogs/SFCDivergenceDialog.py:36
+msgid "Create a new divergence or convergence"
+msgstr "新建一个发散或者收敛"
+
+#: ../IDEFrame.py:126
+msgid "Create a new initial step"
+msgstr "新建一个初始步骤"
+
+#: ../IDEFrame.py:141
+msgid "Create a new jump"
+msgstr "新建一个跳跃"
+
+#: ../IDEFrame.py:96
+#: ../IDEFrame.py:153
+msgid "Create a new power rail"
+msgstr "新建一个电源导轨"
+
+#: ../IDEFrame.py:99
+msgid "Create a new rung"
+msgstr "新建一个梯级"
+
+#: ../IDEFrame.py:129
+msgid "Create a new step"
+msgstr "新建一个步骤"
+
+#: ../IDEFrame.py:132
+#: ../dialogs/PouTransitionDialog.py:42
+msgid "Create a new transition"
+msgstr "新建一个跃迁"
+
+#: ../IDEFrame.py:81
+#: ../IDEFrame.py:111
+#: ../IDEFrame.py:144
+msgid "Create a new variable"
+msgstr "新建一个变量"
+
+#: ../IDEFrame.py:346
+#: ../IDEFrame.py:400
+#: ../editors/Viewer.py:535
+msgid "Cut"
+msgstr ""
+
+#: ../editors/ResourceEditor.py:71
+msgid "Cyclic"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:42
+#: ../plcopen/iec_std.csv:44
+#: ../plcopen/iec_std.csv:46
+#: ../plcopen/iec_std.csv:50
+#: ../plcopen/iec_std.csv:52
+#: ../plcopen/iec_std.csv:54
+#: ../plcopen/iec_std.csv:56
+#: ../plcopen/iec_std.csv:58
+#: ../plcopen/iec_std.csv:60
+msgid "DEPRECATED"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:50
+#: ../canfestival/NetworkEditor.py:80
+msgid "DS-301 Profile"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:51
+#: ../canfestival/NetworkEditor.py:81
+msgid "DS-302 Profile"
+msgstr ""
+
+#: ../dialogs/SearchInProjectDialog.py:43
+msgid "Data Type"
+msgstr "数据类型"
+
+#: ../PLCControler.py:95
+msgid "Data Types"
+msgstr "数据类型 "
+
+#: ../plcopen/iec_std.csv:16
+msgid "Data type conversion"
+msgstr "日期类型转换"
+
+#: ../plcopen/iec_std.csv:44
+#: ../plcopen/iec_std.csv:45
+msgid "Date addition"
+msgstr "日期加法"
+
+#: ../plcopen/iec_std.csv:56
+#: ../plcopen/iec_std.csv:57
+#: ../plcopen/iec_std.csv:58
+#: ../plcopen/iec_std.csv:59
+msgid "Date and time subtraction"
+msgstr "日期和时间减法"
+
+#: ../plcopen/iec_std.csv:50
+#: ../plcopen/iec_std.csv:51
+msgid "Date subtraction"
+msgstr "日期减法"
+
+#: ../dialogs/DurationEditorDialog.py:43
+msgid "Days:"
+msgstr ""
+
+#: ../ProjectController.py:1405
+msgid "Debug connect matching running PLC\n"
+msgstr ""
+
+#: ../ProjectController.py:1408
+msgid "Debug do not match PLC - stop/transfert/start to re-enable\n"
+msgstr ""
+
+#: ../controls/PouInstanceVariablesPanel.py:52
+#, fuzzy
+msgid "Debug instance"
+msgstr "删除实例"
+
+#: ../editors/Viewer.py:3222
+#, fuzzy, python-format
+msgid "Debug: %s"
 msgstr "调试"
 
-#: plugger.py:1514
-#, python-format
-msgid "Debug : Unknown variable %s\n"
+#: ../ProjectController.py:1122
+#, fuzzy, python-format
+msgid "Debug: Unknown variable '%s'\n"
 msgstr "调试 ：未知变量 %s\n"
 
-#: plugger.py:1622
-msgid "Debug Thread couldn't be killed"
-msgstr "调试线程不能结束"
-
-#: plugger.py:1609
+#: ../ProjectController.py:1120
 #, python-format
-msgid "Debug data not coherent %d != %d\n"
-msgstr "调试不和谐的数据 %d != %d\n"
+msgid "Debug: Unsupported type to debug '%s'\n"
+msgstr ""
 
-#: runtime/PLCObject.py:424
-#, python-format
-msgid "Debug error idx : %d, expected_idx %d, type : %s"
-msgstr "调试错误 idx : %d， expected_idx %d, 类型 ： %s"
+#: ../IDEFrame.py:608
+#, fuzzy
+msgid "Debugger"
+msgstr "调试"
 
-#: plugger.py:1614
+#: ../ProjectController.py:1285
 msgid "Debugger disabled\n"
 msgstr "调试器禁用\n"
 
-#: Beremiz.py:313
-msgid "Delete Plugin"
-msgstr "删除插件"
+#: ../ProjectController.py:1297
+#, fuzzy
+msgid "Debugger stopped.\n"
+msgstr "调试器禁用\n"
 
-#: Beremiz.py:865
-msgid "Delete this plugin"
-msgstr "删除这个插件"
+#: ../IDEFrame.py:1990
+#: ../Beremiz.py:958
+#: ../editors/Viewer.py:511
+msgid "Delete"
+msgstr "删除"
 
-#: plugger.py:1461
-msgid "Dirty"
-msgstr "变质"
+#: ../editors/Viewer.py:454
+msgid "Delete Divergence Branch"
+msgstr "删除发散分支"
 
-#: plugger.py:1837
+#: ../editors/FileManagementPanel.py:371
+#, fuzzy
+msgid "Delete File"
+msgstr "删除项目"
+
+#: ../editors/Viewer.py:443
+msgid "Delete Wire Segment"
+msgstr "删除布线段"
+
+#: ../controls/CustomEditableListBox.py:41
+msgid "Delete item"
+msgstr "删除项目"
+
+#: ../plcopen/iec_std.csv:88
+msgid "Deletion (within)"
+msgstr "删除"
+
+#: ../editors/DataTypeEditor.py:146
+msgid "Derivation Type:"
+msgstr "推导类型："
+
+#: ../plcopen/structures.py:264
+msgid ""
+"Derivative\n"
+"The derivative function block produces an output XOUT proportional to the rate of change of the input XIN."
+msgstr ""
+"导数\n"
+"导数功能块根据输入XIN的速率的变化而按比例的生产输出XOUT。"
+
+#: ../controls/VariablePanel.py:360
+#, fuzzy
+msgid "Description:"
+msgstr "定位："
+
+#: ../editors/DataTypeEditor.py:314
+#: ../dialogs/ArrayTypeDialog.py:61
+msgid "Dimensions:"
+msgstr "维数："
+
+#: ../dialogs/FindInPouDialog.py:61
+#, fuzzy
+msgid "Direction"
+msgstr "直接的"
+
+#: ../dialogs/BrowseLocationsDialog.py:78
+#, fuzzy
+msgid "Direction:"
+msgstr "直接的"
+
+#: ../editors/DataTypeEditor.py:52
+msgid "Directly"
+msgstr "直接的"
+
+#: ../ProjectController.py:1512
 msgid "Disconnect"
 msgstr "断开"
 
-#: plugger.py:1839
+#: ../ProjectController.py:1514
 msgid "Disconnect from PLC"
 msgstr "从PLC断开"
 
-#: plugger.py:1467
-msgid "Disconnected"
-msgstr "已断开"
+#: ../editors/Viewer.py:496
+#, fuzzy
+msgid "Divergence"
+msgstr "选择发散"
 
-#: PythonSTC.py:576
-msgid "Do you want to continue?"
-msgstr "你希望继续吗？"
+#: ../plcopen/iec_std.csv:36
+msgid "Division"
+msgstr "除法"
 
-#: Beremiz.py:1261
-msgid "ERROR"
-msgstr "错误"
+#: ../editors/FileManagementPanel.py:370
+#, python-format
+msgid "Do you really want to delete the file '%s'?"
+msgstr ""
 
-#: plugins/c_ext/c_ext.py:204
-#: plugins/c_ext/c_ext.py:205
-msgid "Edit C File"
-msgstr "编辑C文件"
+#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:59
+#, fuzzy
+msgid "Documentation"
+msgstr "级联"
 
-#: plugins/canfestival/canfestival.py:200
-msgid "Edit CanOpen Network with NetworkEdit"
-msgstr "用网络编辑器编辑CanOpen网络"
+#: ../PLCOpenEditor.py:351
+msgid "Done"
+msgstr "完成"
 
-#: plugger.py:1796
-msgid "Edit PLC"
-msgstr "编辑PLC"
+#: ../plcopen/structures.py:227
+msgid ""
+"Down-counter\n"
+"The down-counter can be used to signal when a count has reached zero, on counting down from a preset value."
+msgstr ""
+"倒计时器\n"
+"倒计时器用于当计数到达 0的时候，从当前值开始倒计时。"
 
-#: Beremiz.py:308
-msgid "Edit PLC\tCTRL+R"
-msgstr "编辑PLC\tCTRL+R"
+#: ../dialogs/ActionBlockDialog.py:37
+msgid "Duration"
+msgstr "时间"
 
-#: plugger.py:1797
-msgid "Edit PLC program with PLCOpenEditor"
-msgstr "使用PLCOpen编辑器编辑PLC程序"
+#: ../canfestival/canfestival.py:118
+#, fuzzy
+msgid "EDS files (*.eds)|*.eds|All files|*.*"
+msgstr "ST 文件 (*.st)|*.st|所有文件|*.*"
 
-#: plugger.py:1856
+#: ../editors/Viewer.py:510
+msgid "Edit Block"
+msgstr "编辑块"
+
+#: ../dialogs/LDElementDialog.py:41
+msgid "Edit Coil Values"
+msgstr "编辑线圈值"
+
+#: ../dialogs/LDElementDialog.py:38
+msgid "Edit Contact Values"
+msgstr "编辑接触点值"
+
+#: ../dialogs/DurationEditorDialog.py:59
+#, fuzzy
+msgid "Edit Duration"
+msgstr "编辑跃迁"
+
+#: ../dialogs/SFCStepDialog.py:35
+msgid "Edit Step"
+msgstr "编辑步骤"
+
+#: ../wxglade_hmi/wxglade_hmi.py:12
 msgid "Edit a WxWidgets GUI with WXGlade"
 msgstr "用 WXGlade 编辑一个 WxWidgets 用户图形界面"
 
-#: plugins/canfestival/canfestival.py:199
-msgid "Edit network"
-msgstr "编辑网络"
+#: ../dialogs/ActionBlockDialog.py:122
+msgid "Edit action block properties"
+msgstr "编辑行动块属性"
 
-#: plugger.py:1848
+#: ../dialogs/ArrayTypeDialog.py:45
+#, fuzzy
+msgid "Edit array type properties"
+msgstr "编辑行动块属性"
+
+#: ../editors/Viewer.py:2112
+#: ../editors/Viewer.py:2114
+#: ../editors/Viewer.py:2630
+#: ../editors/Viewer.py:2632
+msgid "Edit comment"
+msgstr "编辑注释"
+
+#: ../editors/FileManagementPanel.py:284
+#, fuzzy
+msgid "Edit file"
+msgstr "编辑C文件"
+
+#: ../controls/CustomEditableListBox.py:39
+msgid "Edit item"
+msgstr "编辑项目"
+
+#: ../editors/Viewer.py:2594
+msgid "Edit jump target"
+msgstr "编辑跳跃目标"
+
+#: ../ProjectController.py:1526
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr "编辑原始的IEC代码添加至PLCGenerator生成的代码"
 
-#: plugger.py:1458
-msgid "Empty"
-msgstr "空的"
+#: ../editors/SFCViewer.py:725
+msgid "Edit step name"
+msgstr "编辑步骤名称"
 
-#: Beremiz.py:815
-msgid "Enable/Disable this plugin"
-msgstr "激活／禁用这个插件"
+#: ../dialogs/SFCTransitionDialog.py:38
+msgid "Edit transition"
+msgstr "编辑跃迁"
 
-#: Beremiz_service.py:339
+#: ../IDEFrame.py:580
+msgid "Editor ToolBar"
+msgstr ""
+
+#: ../ProjectController.py:1013
+#, fuzzy
+msgid "Editor selection"
+msgstr "编辑跃迁"
+
+#: ../editors/DataTypeEditor.py:341
+msgid "Elements :"
+msgstr "元素："
+
+#: ../IDEFrame.py:343
+#, fuzzy
+msgid "Enable Undo/Redo"
+msgstr "启用"
+
+#: ../Beremiz_service.py:380
 msgid "Enter a name "
 msgstr "输入一个名字"
 
-#: Beremiz_service.py:324
+#: ../Beremiz_service.py:365
 msgid "Enter a port number "
 msgstr "输入一个端口号"
 
-#: Beremiz_service.py:314
+#: ../Beremiz_service.py:355
 msgid "Enter the IP of the interface to bind"
 msgstr "输入界面的ip用以绑定"
 
-#: Beremiz.py:1284
-#: Beremiz.py:1288
-#: Beremiz.py:1443
-#: Beremiz.py:1453
-#: Beremiz_service.py:229
-#: Beremiz_service.py:353
+#: ../editors/DataTypeEditor.py:52
+msgid "Enumerated"
+msgstr "列举的"
+
+#: ../plcopen/iec_std.csv:77
+msgid "Equal to"
+msgstr "等于"
+
+#: ../Beremiz_service.py:270
+#: ../Beremiz_service.py:394
+#: ../controls/VariablePanel.py:330
+#: ../controls/VariablePanel.py:678
+#: ../controls/DebugVariablePanel.py:164
+#: ../IDEFrame.py:1083
+#: ../IDEFrame.py:1672
+#: ../IDEFrame.py:1709
+#: ../IDEFrame.py:1714
+#: ../IDEFrame.py:1728
+#: ../IDEFrame.py:1733
+#: ../IDEFrame.py:2422
+#: ../Beremiz.py:1083
+#: ../PLCOpenEditor.py:358
+#: ../PLCOpenEditor.py:363
+#: ../PLCOpenEditor.py:531
+#: ../PLCOpenEditor.py:541
+#: ../editors/TextViewer.py:376
+#: ../editors/DataTypeEditor.py:543
+#: ../editors/DataTypeEditor.py:548
+#: ../editors/DataTypeEditor.py:572
+#: ../editors/DataTypeEditor.py:577
+#: ../editors/DataTypeEditor.py:587
+#: ../editors/DataTypeEditor.py:719
+#: ../editors/DataTypeEditor.py:726
+#: ../editors/Viewer.py:366
+#: ../editors/LDViewer.py:663
+#: ../editors/LDViewer.py:879
+#: ../editors/LDViewer.py:883
+#: ../editors/FileManagementPanel.py:210
+#: ../ProjectController.py:221
+#: ../dialogs/PouNameDialog.py:53
+#: ../dialogs/PouTransitionDialog.py:107
+#: ../dialogs/BrowseLocationsDialog.py:175
+#: ../dialogs/ProjectDialog.py:71
+#: ../dialogs/SFCStepNameDialog.py:59
+#: ../dialogs/ConnectionDialog.py:152
+#: ../dialogs/FBDVariableDialog.py:201
+#: ../dialogs/PouActionDialog.py:104
+#: ../dialogs/BrowseValuesLibraryDialog.py:83
+#: ../dialogs/PouDialog.py:132
+#: ../dialogs/SFCTransitionDialog.py:147
+#: ../dialogs/DurationEditorDialog.py:121
+#: ../dialogs/DurationEditorDialog.py:163
+#: ../dialogs/SearchInProjectDialog.py:157
+#: ../dialogs/SFCStepDialog.py:130
+#: ../dialogs/ArrayTypeDialog.py:97
+#: ../dialogs/ArrayTypeDialog.py:103
+#: ../dialogs/FBDBlockDialog.py:164
+#: ../dialogs/ForceVariableDialog.py:169
 msgid "Error"
 msgstr "错误"
 
-#: plugger.py:1010
+#: ../ProjectController.py:587
 msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
 msgstr "错误：在PLC中，必须申明至少一个配置和一个资源！\n"
 
-#: plugger.py:1002
+#: ../ProjectController.py:579
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr "错误：IEC到C编译器返回 %d\n"
 
-#: plugger.py:941
+#: ../ProjectController.py:520
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
@@ -435,464 +1661,2086 @@ msgstr ""
 "错误在ST/IL/SFC代码生成器中：\n"
 "%s\n"
 
-#: plugger.py:202
+#: ../ConfigTreeNode.py:182
 #, python-format
 msgid "Error while saving \"%s\"\n"
 msgstr "存储时有错误 \"%s\"\n"
 
-#: plugins/canfestival/canfestival.py:191
+#: ../canfestival/canfestival.py:122
+msgid "Error: Export slave failed\n"
+msgstr ""
+
+#: ../canfestival/canfestival.py:270
 msgid "Error: No Master generated\n"
 msgstr "错误：没有主控生成\n"
 
-#: plugins/canfestival/canfestival.py:186
+#: ../canfestival/canfestival.py:265
 msgid "Error: No PLC built\n"
 msgstr "错误：没有PLC构建\n"
 
-#: plugger.py:1707
+#: ../ProjectController.py:1378
 #, python-format
 msgid "Exception while connecting %s!\n"
 msgstr "连接时存在异常 %s!\n"
 
-#: plugger.py:1014
+#: ../dialogs/FBDBlockDialog.py:95
+msgid "Execution Control:"
+msgstr "执行控制："
+
+#: ../dialogs/FBDVariableDialog.py:76
+#: ../dialogs/FBDBlockDialog.py:87
+msgid "Execution Order:"
+msgstr "执行命令："
+
+#: ../features.py:10
+msgid "Experimental web based HMI"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:38
+msgid "Exponent"
+msgstr "指数"
+
+#: ../plcopen/iec_std.csv:26
+msgid "Exponentiation"
+msgstr "幂"
+
+#: ../canfestival/canfestival.py:128
+msgid "Export CanOpen slave to EDS file"
+msgstr ""
+
+#: ../editors/GraphicViewer.py:144
+msgid "Export graph values to clipboard"
+msgstr ""
+
+#: ../canfestival/canfestival.py:127
+msgid "Export slave"
+msgstr ""
+
+#: ../dialogs/FBDVariableDialog.py:69
+msgid "Expression:"
+msgstr "表达式："
+
+#: ../controls/VariablePanel.py:77
+msgid "External"
+msgstr "外部的"
+
+#: ../ProjectController.py:591
 msgid "Extracting Located Variables...\n"
 msgstr "正在提取位置变量......\n"
 
-#: plugger.py:1761
+#: ../controls/ProjectPropertiesPanel.py:143
+#: ../dialogs/PouTransitionDialog.py:35
+#: ../dialogs/PouActionDialog.py:31
+#: ../dialogs/PouDialog.py:36
+msgid "FBD"
+msgstr "功能区块图"
+
+#: ../ProjectController.py:1445
 msgid "Failed : Must build before transfer.\n"
 msgstr "失败：传输之前必须构建。\n"
 
-#: plugger.py:1341
+#: ../editors/Viewer.py:405
+#: ../dialogs/LDElementDialog.py:84
+msgid "Falling Edge"
+msgstr "下降沿"
+
+#: ../plcopen/structures.py:217
+msgid ""
+"Falling edge detector\n"
+"The output produces a single pulse when a falling edge is detected."
+msgstr ""
+"下降沿检测\n"
+"当下降沿被检测到时，输出便产生一个单脉冲。"
+
+#: ../ProjectController.py:900
 msgid "Fatal : cannot get builder.\n"
 msgstr "致命错误：无法获取构建者。\n"
 
-#: Beremiz.py:347
-msgid "File"
-msgstr "文件"
+#: ../dialogs/DurationEditorDialog.py:160
+#, fuzzy, python-format
+msgid "Field %s hasn't a valid value!"
+msgstr "\"%s\"不是有效值！"
 
-#: plugger.py:815
-msgid "Chosen folder doesn't contain a program. It's not a valid project!"
-msgstr "被选中的文件夹未包含一个程序。它不是一个有效项目！"
+#: ../dialogs/DurationEditorDialog.py:162
+#, fuzzy, python-format
+msgid "Fields %s haven't a valid value!"
+msgstr "\"%s\"不是有效值！"
 
-#: plugger.py:780
-msgid "Chosen folder isn't empty. You can't use it for a new project!"
-msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
+#: ../editors/FileManagementPanel.py:209
+#, fuzzy, python-format
+msgid "File '%s' already exists!"
+msgstr "\"%s\"编程组织单元已经存在！"
 
-#: connectors/PYRO/__init__.py:93
+#: ../IDEFrame.py:353
+#: ../dialogs/FindInPouDialog.py:30
+#: ../dialogs/FindInPouDialog.py:99
+msgid "Find"
+msgstr ""
+
+#: ../IDEFrame.py:355
+msgid "Find Next"
+msgstr ""
+
+#: ../IDEFrame.py:357
+msgid "Find Previous"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:90
+msgid "Find position"
+msgstr "定位"
+
+#: ../dialogs/FindInPouDialog.py:51
+msgid "Find:"
+msgstr ""
+
+#: ../connectors/PYRO/__init__.py:125
 msgid "Force runtime reload\n"
 msgstr "强制重新运行\n"
 
-#: plugger.py:931
+#: ../controls/DebugVariablePanel.py:295
+#: ../editors/Viewer.py:1353
+msgid "Force value"
+msgstr ""
+
+#: ../dialogs/ForceVariableDialog.py:152
+msgid "Forcing Variable Value"
+msgstr ""
+
+#: ../dialogs/PouTransitionDialog.py:97
+#: ../dialogs/ProjectDialog.py:70
+#: ../dialogs/PouActionDialog.py:94
+#: ../dialogs/PouDialog.py:114
+#: ../dialogs/SFCTransitionDialog.py:147
+#, python-format
+msgid "Form isn't complete. %s must be filled!"
+msgstr "形式不完整。%s 必须被填补完整！"
+
+#: ../dialogs/ConnectionDialog.py:142
+#: ../dialogs/FBDBlockDialog.py:154
+msgid "Form isn't complete. Name must be filled!"
+msgstr "形式不完整。%s 名字必须填！"
+
+#: ../dialogs/SearchInProjectDialog.py:145
+#, fuzzy
+msgid "Form isn't complete. Pattern to search must be filled!"
+msgstr "形式不完整。%s 名字必须填！"
+
+#: ../dialogs/FBDBlockDialog.py:152
+msgid "Form isn't complete. Valid block type must be selected!"
+msgstr "形式不完整。%s 有效的块类型必须被选择！"
+
+#: ../dialogs/FindInPouDialog.py:67
+msgid "Forward"
+msgstr ""
+
+#: ../dialogs/SearchInProjectDialog.py:44
+msgid "Function"
+msgstr "功能"
+
+#: ../IDEFrame.py:329
+#, fuzzy
+msgid "Function &Block"
+msgstr "功能块"
+
+#: ../IDEFrame.py:1969
+#: ../dialogs/SearchInProjectDialog.py:45
+msgid "Function Block"
+msgstr "功能块"
+
+#: ../controls/VariablePanel.py:741
+msgid "Function Block Types"
+msgstr "功能块类型"
+
+#: ../PLCControler.py:94
+msgid "Function Blocks"
+msgstr "功能块"
+
+#: ../editors/Viewer.py:236
+msgid "Function Blocks can't be used in Functions!"
+msgstr "功能块不能用于功能中！"
+
+#: ../editors/Viewer.py:238
+msgid "Function Blocks can't be used in Transitions!"
+msgstr "功能块不能用于跃迁中"
+
+#: ../PLCControler.py:2055
+#, python-format
+msgid "FunctionBlock \"%s\" can't be pasted in a Function!!!"
+msgstr "功能块 \"%s\" 不能用于功能中！"
+
+#: ../PLCControler.py:94
+msgid "Functions"
+msgstr "功能"
+
+#: ../PLCOpenEditor.py:138
+#, fuzzy
+msgid "Generate Program"
+msgstr "生成程序\tCTRL+G"
+
+#: ../ProjectController.py:510
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr "生成软PLC IEC-61131 ST/IL/SFC 代码......\n"
 
-#: plugger.py:1289
-msgid "Generating plugins C code\n"
-msgstr "生成C代码插件\n"
+#: ../controls/VariablePanel.py:78
+msgid "Global"
+msgstr "全球的"
 
-#: Beremiz.py:350
-msgid "Help"
-msgstr "帮助"
+#: ../editors/GraphicViewer.py:131
+msgid "Go to current value"
+msgstr ""
 
-#: plugger.py:1281
+#: ../controls/ProjectPropertiesPanel.py:173
+msgid "Graphics"
+msgstr "图形"
+
+#: ../plcopen/iec_std.csv:75
+msgid "Greater than"
+msgstr "大于"
+
+#: ../plcopen/iec_std.csv:76
+msgid "Greater than or equal to"
+msgstr "大于或等于"
+
+#: ../controls/ProjectPropertiesPanel.py:134
+msgid "Grid Resolution:"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:120
+msgid "Height:"
+msgstr "高度："
+
+#: ../editors/FileManagementPanel.py:303
+#, fuzzy
+msgid "Home Directory:"
+msgstr "直接的"
+
+#: ../controls/ProjectPropertiesPanel.py:150
+msgid "Horizontal:"
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:44
+msgid "Hours:"
+msgstr ""
+
+#: ../plcopen/structures.py:279
+msgid ""
+"Hysteresis\n"
+"The hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."
+msgstr ""
+"滞后\n"
+"滞后功能块提供一个被2个浮点（REAL）的差异所驱动的布尔型滞后输出，2个浮点即输入的XIN1和XIN2。"
+
+#: ../ProjectController.py:827
 msgid "IEC-61131-3 code generation failed !\n"
 msgstr "IEC-61131-3代码生成失败！\n"
 
-#: plugins/canfestival/config_utils.py:376
-#: plugins/canfestival/config_utils.py:637
+#: ../dialogs/PouTransitionDialog.py:35
+#: ../dialogs/PouActionDialog.py:31
+#: ../dialogs/PouDialog.py:36
+msgid "IL"
+msgstr "指令集"
+
+#: ../Beremiz_service.py:356
+#: ../Beremiz_service.py:357
+msgid "IP is not valid!"
+msgstr "Ip无效！"
+
+#: ../svgui/svgui.py:17
+#: ../svgui/svgui.py:18
+msgid "Import SVG"
+msgstr ""
+
+#: ../controls/VariablePanel.py:76
+#: ../dialogs/FBDVariableDialog.py:34
+msgid "InOut"
+msgstr "输入输出"
+
+#: ../controls/VariablePanel.py:263
+#, python-format
+msgid "Incompatible data types between \"%s\" and \"%s\""
+msgstr " \"%s\" 和  \"%s\" 数据类型不相容"
+
+#: ../controls/VariablePanel.py:274
+#, python-format
+msgid "Incompatible size of data between \"%s\" and \"%s\""
+msgstr " \"%s\" 和  \"%s\" 数据大小不相容"
+
+#: ../controls/VariablePanel.py:270
+#, python-format
+msgid "Incompatible size of data between \"%s\" and \"BOOL\""
+msgstr " \"%s\" 和  \"BOOL\" 数据类型不相容"
+
+#: ../dialogs/ActionBlockDialog.py:37
+msgid "Indicator"
+msgstr "指示器"
+
+#: ../editors/Viewer.py:492
+#, fuzzy
+msgid "Initial Step"
+msgstr "初始值"
+
+#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:59
+#: ../editors/DataTypeEditor.py:48
+msgid "Initial Value"
+msgstr "初始值"
+
+#: ../editors/DataTypeEditor.py:178
+#: ../editors/DataTypeEditor.py:209
+#: ../editors/DataTypeEditor.py:265
+#: ../editors/DataTypeEditor.py:303
+msgid "Initial Value:"
+msgstr "初始值："
+
+#: ../svgui/svgui.py:21
+msgid "Inkscape"
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:41
+#: ../dialogs/SFCTransitionDialog.py:66
+#: ../dialogs/SFCTransitionDialog.py:137
+msgid "Inline"
+msgstr "在线"
+
+#: ../controls/VariablePanel.py:76
+#: ../dialogs/BrowseLocationsDialog.py:36
+#: ../dialogs/FBDVariableDialog.py:33
+#: ../dialogs/SFCStepDialog.py:61
+msgid "Input"
+msgstr "输入"
+
+#: ../dialogs/FBDBlockDialog.py:78
+msgid "Inputs:"
+msgstr "输入："
+
+#: ../plcopen/iec_std.csv:87
+msgid "Insertion (into)"
+msgstr "插入"
+
+#: ../plcopen/plcopen.py:1833
+#, python-format
+msgid "Instance with id %d doesn't exist!"
+msgstr "有id的实例 %d 尚不存在！"
+
+#: ../editors/ResourceEditor.py:247
+msgid "Instances:"
+msgstr "实例："
+
+#: ../plcopen/structures.py:259
+msgid ""
+"Integral\n"
+"The integral function block integrates the value of input XIN over time."
+msgstr ""
+"积分\n"
+"积分功能随着时间推移而集成输入的XIN的值。"
+
+#: ../controls/VariablePanel.py:75
+msgid "Interface"
+msgstr "界面"
+
+#: ../editors/ResourceEditor.py:71
+msgid "Interrupt"
+msgstr ""
+
+#: ../editors/ResourceEditor.py:67
+msgid "Interval"
+msgstr "区间"
+
+#: ../PLCControler.py:2032
+#: ../PLCControler.py:2070
+msgid "Invalid plcopen element(s)!!!"
+msgstr "无效的plcopen元素！！！"
+
+#: ../canfestival/config_utils.py:376
+#: ../canfestival/config_utils.py:637
 #, python-format
 msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
 msgstr "无效类型 \"%s\"-> %d != %d  用于位置 \"%s\""
 
-#: Beremiz_service.py:315
-#: Beremiz_service.py:316
-msgid "IP is not valid!"
-msgstr "Ip无效！"
+#: ../dialogs/ForceVariableDialog.py:167
+#, fuzzy, python-format
+msgid "Invalid value \"%s\" for \"%s\" variable!"
+msgstr "无效值 \"%s\" 为调试变量"
 
-#: plugger.py:1767
+#: ../controls/DebugVariablePanel.py:153
+#: ../controls/DebugVariablePanel.py:156
+#, python-format
+msgid "Invalid value \"%s\" for debug variable"
+msgstr "无效值 \"%s\" 为调试变量"
+
+#: ../controls/VariablePanel.py:244
+#: ../controls/VariablePanel.py:247
+#, fuzzy, python-format
+msgid "Invalid value \"%s\" for variable grid element"
+msgstr "无效值 \"%s\" 为调试变量"
+
+#: ../editors/Viewer.py:221
+#: ../editors/Viewer.py:224
+#, python-format
+msgid "Invalid value \"%s\" for viewer block"
+msgstr "无效值 \"%s\" 在视窗块"
+
+#: ../dialogs/DurationEditorDialog.py:121
+msgid ""
+"Invalid value!\n"
+"You must fill a numeric value."
+msgstr ""
+
+#: ../editors/Viewer.py:497
+msgid "Jump"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:143
+#: ../dialogs/PouTransitionDialog.py:35
+#: ../dialogs/PouActionDialog.py:31
+#: ../dialogs/PouDialog.py:36
+msgid "LD"
+msgstr "梯级图"
+
+#: ../editors/LDViewer.py:215
+#: ../editors/LDViewer.py:231
+#, python-format
+msgid "Ladder element with id %d is on more than one rung."
+msgstr "有id的梯形元素 %d  不止在一个梯级上。"
+
+#: ../dialogs/PouTransitionDialog.py:86
+#: ../dialogs/PouActionDialog.py:83
+#: ../dialogs/PouDialog.py:102
+msgid "Language"
+msgstr "语言"
+
+#: ../controls/ProjectPropertiesPanel.py:186
+msgid "Language (optional):"
+msgstr "语言（选填）："
+
+#: ../dialogs/PouTransitionDialog.py:60
+#: ../dialogs/PouActionDialog.py:56
+#: ../dialogs/PouDialog.py:71
+msgid "Language:"
+msgstr "语言："
+
+#: ../ProjectController.py:1451
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr "最新构建已经与当前目标匹配。正在传输中......\n"
 
-#: plugger.py:1737
-msgid "Latest build does not match with target, please transfer.\n"
-msgstr "最新构建与目标不匹配，请传输。\n"
-
-#: plugger.py:1741
-msgid "Latest build matches target, no transfer needed.\n"
-msgstr "最新构建与目标匹配，不需要传输。\n"
-
-#: Beremiz_service.py:283
+#: ../Beremiz_service.py:324
 msgid "Launch WX GUI inspector"
 msgstr "启动 WX GUI 检查员"
 
-#: Beremiz_service.py:282
+#: ../Beremiz_service.py:323
 msgid "Launch a live Python shell"
 msgstr "启动一个活的Python Shell"
 
-#: targets/toolchain_gcc.py:127
+#: ../editors/Viewer.py:428
+msgid "Left"
+msgstr "左"
+
+#: ../dialogs/LDPowerRailDialog.py:55
+msgid "Left PowerRail"
+msgstr "左电源导轨"
+
+#: ../plcopen/iec_std.csv:81
+msgid "Length of string"
+msgstr "字符串长度"
+
+#: ../plcopen/iec_std.csv:78
+msgid "Less than"
+msgstr "小于"
+
+#: ../plcopen/iec_std.csv:79
+msgid "Less than or equal to"
+msgstr "小于或等于"
+
+#: ../IDEFrame.py:600
+msgid "Library"
+msgstr "图书馆"
+
+#: ../plcopen/iec_std.csv:73
+msgid "Limitation"
+msgstr "限制"
+
+#: ../targets/toolchain_gcc.py:142
 msgid "Linking :\n"
 msgstr "链接：\n"
 
-#: discovery.py:72
+#: ../controls/VariablePanel.py:77
+#: ../dialogs/DiscoveryDialog.py:110
+#, fuzzy
 msgid "Local"
-msgstr "本地"
+msgstr ""
+"#-#-#-#-#  Beremiz_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"本地\n"
+"#-#-#-#-#  PLCOpenEditor_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"位置"
 
-#: Beremiz.py:435
+#: ../ProjectController.py:1353
+#, fuzzy
+msgid "Local service discovery failed!\n"
+msgstr "服务探索"
+
+#: ../controls/VariablePanel.py:58
+msgid "Location"
+msgstr "位置"
+
+#: ../dialogs/BrowseLocationsDialog.py:61
+#, fuzzy
+msgid "Locations available:"
+msgstr "该选项尚未可用！"
+
+#: ../Beremiz.py:393
 msgid "Log Console"
 msgstr "控制台日志"
 
-#: plugger.py:475
+#: ../plcopen/iec_std.csv:25
+msgid "Logarithm to base 10"
+msgstr "底数10的对数"
+
+#: ../connectors/PYRO/__init__.py:55
 #, python-format
-msgid "Max count (%d) reached for this plugin of type %s "
+msgid "MDNS resolution failure for '%s'\n"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:37
+#: ../canfestival/NetworkEditor.py:67
+#, fuzzy
+msgid "Map Variable"
+msgstr "变量"
+
+#: ../features.py:6
+msgid "Map located variables over CANopen"
+msgstr ""
+
+#: ../canfestival/NetworkEditor.py:89
+#, fuzzy
+msgid "Master"
+msgstr "显示主控"
+
+#: ../ConfigTreeNode.py:480
+#, fuzzy, python-format
+msgid "Max count (%d) reached for this confnode of type %s "
 msgstr "最大计数 (%d) 到达"
 
-#: runtime/ServicePublisher.py:50
-msgid "My IP is :"
-msgstr "我的IP是："
+#: ../plcopen/iec_std.csv:71
+msgid "Maximum"
+msgstr "最大值"
 
-#: Beremiz_service.py:340
+#: ../editors/DataTypeEditor.py:232
+msgid "Maximum:"
+msgstr "最大值："
+
+#: ../dialogs/BrowseLocationsDialog.py:38
+msgid "Memory"
+msgstr ""
+
+#: ../IDEFrame.py:568
+#, fuzzy
+msgid "Menu ToolBar"
+msgstr "工具条"
+
+#: ../dialogs/DurationEditorDialog.py:48
+msgid "Microseconds:"
+msgstr ""
+
+#: ../editors/Viewer.py:433
+msgid "Middle"
+msgstr "中间"
+
+#: ../dialogs/DurationEditorDialog.py:47
+msgid "Milliseconds:"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:72
+msgid "Minimum"
+msgstr "最小值"
+
+#: ../editors/DataTypeEditor.py:219
+msgid "Minimum:"
+msgstr "最小值："
+
+#: ../dialogs/DurationEditorDialog.py:45
+msgid "Minutes:"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:210
+msgid "Miscellaneous"
+msgstr "其他"
+
+#: ../dialogs/LDElementDialog.py:59
+msgid "Modifier:"
+msgstr "改动："
+
+#: ../PLCGenerator.py:703
+#: ../PLCGenerator.py:936
+#, python-format
+msgid "More than one connector found corresponding to \"%s\" continuation in \"%s\" POU"
+msgstr "发现不止一个连接器符合 \"%s\" 延续在 \"%s\" POU中"
+
+#: ../dialogs/ActionBlockDialog.py:141
+#, fuzzy
+msgid "Move action down"
+msgstr "下移"
+
+#: ../dialogs/ActionBlockDialog.py:140
+#, fuzzy
+msgid "Move action up"
+msgstr "上移"
+
+#: ../controls/DebugVariablePanel.py:185
+#, fuzzy
+msgid "Move debug variable down"
+msgstr "未找到输出值"
+
+#: ../controls/DebugVariablePanel.py:184
+#, fuzzy
+msgid "Move debug variable up"
+msgstr "未找到输出值"
+
+#: ../controls/CustomEditableListBox.py:43
+msgid "Move down"
+msgstr "下移"
+
+#: ../editors/DataTypeEditor.py:348
+#, fuzzy
+msgid "Move element down"
+msgstr "下移"
+
+#: ../editors/DataTypeEditor.py:347
+#, fuzzy
+msgid "Move element up"
+msgstr "上移"
+
+#: ../editors/ResourceEditor.py:254
+#, fuzzy
+msgid "Move instance down"
+msgstr "下移"
+
+#: ../editors/ResourceEditor.py:253
+#, fuzzy
+msgid "Move instance up"
+msgstr "上移"
+
+#: ../editors/ResourceEditor.py:225
+#, fuzzy
+msgid "Move task down"
+msgstr "下移"
+
+#: ../editors/ResourceEditor.py:224
+#, fuzzy
+msgid "Move task up"
+msgstr "上移"
+
+#: ../IDEFrame.py:75
+#: ../IDEFrame.py:90
+#: ../IDEFrame.py:120
+#: ../IDEFrame.py:161
+msgid "Move the view"
+msgstr ""
+
+#: ../controls/CustomEditableListBox.py:42
+msgid "Move up"
+msgstr "上移"
+
+#: ../controls/VariablePanel.py:381
+#, fuzzy
+msgid "Move variable down"
+msgstr "下移"
+
+#: ../controls/VariablePanel.py:380
+#, fuzzy
+msgid "Move variable up"
+msgstr "上移"
+
+#: ../plcopen/iec_std.csv:74
+msgid "Multiplexer (select 1 of N)"
+msgstr "多路器（多选一）"
+
+#: ../plcopen/iec_std.csv:34
+msgid "Multiplication"
+msgstr "乘法"
+
+#: ../editors/FileManagementPanel.py:301
+#, fuzzy
+msgid "My Computer:"
+msgstr "编译"
+
+#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:59
+#: ../editors/DataTypeEditor.py:48
+#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:76
+msgid "Name"
+msgstr "名字"
+
+#: ../Beremiz_service.py:381
 msgid "Name must not be null!"
 msgstr "名称不能为空！"
 
-#: Beremiz.py:286
-msgid "New\tCTRL+N"
-msgstr "新建\tCTRL+N"
+#: ../dialogs/ConnectionDialog.py:65
+#: ../dialogs/FBDVariableDialog.py:89
+#: ../dialogs/LDElementDialog.py:88
+#: ../dialogs/SFCStepDialog.py:51
+#: ../dialogs/FBDBlockDialog.py:70
+msgid "Name:"
+msgstr "名字："
 
-#: runtime/PLCObject.py:313
-#, python-format
-msgid "NewPLC (%s)"
-msgstr "新的PLC(%s)"
+#: ../plcopen/iec_std.csv:24
+msgid "Natural logarithm"
+msgstr "自然对数"
 
-#: plugger.py:1791
+#: ../editors/Viewer.py:403
+#: ../dialogs/LDElementDialog.py:67
+msgid "Negated"
+msgstr "否定"
+
+#: ../Beremiz.py:307
+#: ../Beremiz.py:342
+#: ../PLCOpenEditor.py:125
+#: ../PLCOpenEditor.py:167
+msgid "New"
+msgstr ""
+
+#: ../controls/CustomEditableListBox.py:40
+msgid "New item"
+msgstr "建立项目"
+
+#: ../editors/Viewer.py:402
+msgid "No Modifier"
+msgstr "无改动"
+
+#: ../PLCControler.py:2929
+msgid "No PLC project found"
+msgstr "未找到PLC项目"
+
+#: ../ProjectController.py:1478
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr "没有PLC可传输（构建是否成功？）\n"
 
-#: Beremiz_service.py:353
+#: ../PLCGenerator.py:1321
+#, python-format
+msgid "No body defined in \"%s\" POU"
+msgstr "在 \"%s\" POU 中没有任何东西被定义"
+
+#: ../PLCGenerator.py:722
+#: ../PLCGenerator.py:945
+#, python-format
+msgid "No connector found corresponding to \"%s\" continuation in \"%s\" POU"
+msgstr "未发现连接器符合 \"%s\" 连续在  \"%s\" POU中"
+
+#: ../PLCOpenEditor.py:370
+msgid ""
+"No documentation available.\n"
+"Coming soon."
+msgstr ""
+"没有文件可用。\n"
+"稍候"
+
+#: ../PLCGenerator.py:744
+#, python-format
+msgid "No informations found for \"%s\" block"
+msgstr ""
+
+#: ../plcopen/structures.py:167
+msgid "No output variable found"
+msgstr "未找到输出值"
+
+#: ../Beremiz_service.py:394
 msgid "No running PLC"
 msgstr "没有正在运行的PLC"
 
-#: plugins/canfestival/config_utils.py:632
+#: ../controls/SearchResultPanel.py:169
+msgid "No search results available."
+msgstr ""
+
+#: ../svgui/svgui.py:98
+#, python-format
+msgid "No such SVG file: %s\n"
+msgstr "没有这样的SVG文件：%s\n"
+
+#: ../canfestival/config_utils.py:632
 #, python-format
 msgid "No such index/subindex (%x,%x) (variable %s)"
 msgstr "没有这样的索引／子索引 (%x,%x) (variable %s)"
 
-#: plugins/canfestival/config_utils.py:361
+#: ../canfestival/config_utils.py:361
 #, python-format
 msgid "No such index/subindex (%x,%x) in ID : %d (variable %s)"
 msgstr "没有这样的索引／子索引 (%x,%x) in ID : %d (variable %s)"
 
-#: plugins/canfestival/config_utils.py:354
+#: ../dialogs/BrowseValuesLibraryDialog.py:83
+msgid "No valid value selected!"
+msgstr ""
+
+#: ../PLCGenerator.py:1319
+#, python-format
+msgid "No variable defined in \"%s\" POU"
+msgstr "无变量被定义在 \"%s\" POU"
+
+#: ../canfestival/SlaveEditor.py:49
+#: ../canfestival/NetworkEditor.py:79
+#, fuzzy
+msgid "Node infos"
+msgstr "类型信息："
+
+#: ../canfestival/config_utils.py:354
 #, python-format
 msgid "Non existing node ID : %d (variable %s)"
 msgstr "不存在节点ID：%d (variable %s)"
 
-#: plugins/canfestival/config_utils.py:383
+#: ../controls/VariablePanel.py:69
+#, fuzzy
+msgid "Non-Retain"
+msgstr "保持"
+
+#: ../dialogs/LDElementDialog.py:62
+msgid "Normal"
+msgstr "正常"
+
+#: ../canfestival/config_utils.py:383
 #, python-format
 msgid "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
 msgstr "不是PDO填图变量： '%s' (ID:%d,Idx:%x,sIdx:%x))"
 
-#: discovery.py:83
-msgid "OK"
-msgstr "确定"
+#: ../plcopen/iec_std.csv:80
+msgid "Not equal to"
+msgstr "不等于"
 
-#: Beremiz.py:288
-msgid "Open\tCTRL+O"
-msgstr "打开\tCTRL+O"
+#: ../dialogs/SFCDivergenceDialog.py:80
+msgid "Number of sequences:"
+msgstr "序列号："
 
-#: targets/toolchain_gcc.py:95
+#: ../plcopen/iec_std.csv:22
+msgid "Numerical"
+msgstr "数学式"
+
+#: ../plcopen/structures.py:247
+msgid ""
+"Off-delay timer\n"
+"The off-delay timer can be used to delay setting an output false, for fixed period after input goes false."
+msgstr ""
+"关闭延迟计时器\n"
+"关闭延迟计时器可用于延迟设置一个假性输出，固定期限后一个输入变成假。"
+
+#: ../plcopen/structures.py:242
+msgid ""
+"On-delay timer\n"
+"The on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."
+msgstr ""
+"开启延迟计时器\n"
+"开启延时计时器可用于延迟设置一个真性输出，固定期限后一个输入成为真。"
+
+#: ../dialogs/SearchInProjectDialog.py:93
+#, fuzzy
+msgid "Only Elements"
+msgstr "元素："
+
+#: ../Beremiz.py:309
+#: ../Beremiz.py:343
+#: ../PLCOpenEditor.py:127
+#: ../PLCOpenEditor.py:168
+msgid "Open"
+msgstr ""
+
+#: ../svgui/svgui.py:107
+msgid "Open Inkscape"
+msgstr ""
+
+#: ../ProjectController.py:1530
+msgid "Open a file explorer to manage project files"
+msgstr ""
+
+#: ../wxglade_hmi/wxglade_hmi.py:109
+msgid "Open wxGlade"
+msgstr ""
+
+#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:59
+#, fuzzy
+msgid "Option"
+msgstr "行动"
+
+#: ../dialogs/FindInPouDialog.py:76
+#, fuzzy
+msgid "Options"
+msgstr "行动"
+
+#: ../controls/ProjectPropertiesPanel.py:97
+msgid "Organization (optional):"
+msgstr "组织（选填）："
+
+#: ../canfestival/SlaveEditor.py:47
+#: ../canfestival/NetworkEditor.py:77
+msgid "Other Profile"
+msgstr ""
+
+#: ../controls/VariablePanel.py:76
+#: ../dialogs/BrowseLocationsDialog.py:37
+#: ../dialogs/FBDVariableDialog.py:35
+#: ../dialogs/SFCStepDialog.py:65
+msgid "Output"
+msgstr "输出"
+
+#: ../canfestival/SlaveEditor.py:36
+#: ../canfestival/NetworkEditor.py:66
+msgid "PDO Receive"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:35
+#: ../canfestival/NetworkEditor.py:65
+#, fuzzy
+msgid "PDO Transmit"
+msgstr "添加跃迁"
+
+#: ../plcopen/structures.py:269
+msgid ""
+"PID\n"
+"The PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."
+msgstr ""
+"PID\n"
+"PID（比例，积分，导数）功能块为闭循环控制提供经典的三阶段控制器。"
+
+#: ../targets/toolchain_gcc.py:107
 msgid "PLC :\n"
 msgstr "PLC：\n"
 
-#: plugger.py:1447
-#: plugger.py:1483
-#: plugger.py:1723
+#: ../ProjectController.py:1096
+#: ../ProjectController.py:1398
 #, python-format
 msgid "PLC is %s\n"
 msgstr "PLC 是 %s\n"
 
-#: Beremiz.py:1390
-msgid "Please enter a name for plugin:"
+#: ../PLCOpenEditor.py:313
+#: ../PLCOpenEditor.py:391
+msgid "PLCOpen files (*.xml)|*.xml|All files|*.*"
+msgstr "PLCOpen 文件 (*.xml)|*.xml|所有文件|*.*"
+
+#: ../PLCOpenEditor.py:175
+#: ../PLCOpenEditor.py:231
+msgid "PLCOpenEditor"
+msgstr "PLCOpen编辑器"
+
+#: ../dialogs/PouDialog.py:98
+msgid "POU Name"
+msgstr "POU 名字"
+
+#: ../dialogs/PouDialog.py:56
+msgid "POU Name:"
+msgstr "POU 名字："
+
+#: ../dialogs/PouDialog.py:100
+msgid "POU Type"
+msgstr "POU类型"
+
+#: ../dialogs/PouDialog.py:63
+msgid "POU Type:"
+msgstr "POU 类型："
+
+#: ../Beremiz.py:322
+#: ../PLCOpenEditor.py:141
+msgid "Page Setup"
+msgstr "页面设置"
+
+#: ../controls/ProjectPropertiesPanel.py:110
+msgid "Page Size (optional):"
+msgstr "页面大小（选填）："
+
+#: ../PLCOpenEditor.py:476
+#, python-format
+msgid "Page: %d"
+msgstr "页：%d"
+
+#: ../controls/PouInstanceVariablesPanel.py:41
+#, fuzzy
+msgid "Parent instance"
+msgstr "删除实例"
+
+#: ../IDEFrame.py:350
+#: ../IDEFrame.py:402
+#: ../editors/Viewer.py:537
+msgid "Paste"
+msgstr ""
+
+#: ../IDEFrame.py:1900
+#, fuzzy
+msgid "Paste POU"
+msgstr "请输入POU名"
+
+#: ../dialogs/SearchInProjectDialog.py:64
+msgid "Pattern to search:"
+msgstr ""
+
+#: ../dialogs/LDPowerRailDialog.py:64
+msgid "Pin number:"
+msgstr "插脚数："
+
+#: ../editors/Viewer.py:2289
+#: ../editors/Viewer.py:2594
+#: ../editors/SFCViewer.py:696
+msgid "Please choose a target"
+msgstr "请选择一个目标"
+
+#: ../editors/Viewer.py:2112
+#: ../editors/Viewer.py:2114
+#: ../editors/Viewer.py:2630
+#: ../editors/Viewer.py:2632
+msgid "Please enter comment text"
+msgstr "请输入注释文本"
+
+#: ../editors/SFCViewer.py:359
+#: ../editors/SFCViewer.py:381
+#: ../editors/SFCViewer.py:725
+msgid "Please enter step name"
+msgstr "请输入步骤名称"
+
+#: ../dialogs/ForceVariableDialog.py:153
+#, fuzzy, python-format
+msgid "Please enter value for a \"%s\" variable:"
 msgstr "请为插件输入一个名字："
 
-#: runtime/PLCObject.py:219
-msgid "Please stop PLC to close"
-msgstr "请停止PLC以便关闭"
-
-#: targets/toolchain_gcc.py:93
-msgid "Plugin : "
-msgstr "插件："
-
-#: plugger.py:1295
-msgid "Plugins code generation failed !\n"
-msgstr "插件代码生成失败！\n"
-
-#: Beremiz_service.py:325
+#: ../Beremiz_service.py:366
 msgid "Port number must be 0 <= port <= 65535!"
 msgstr "端口号必须为 0 <= 端口号 <= 65535！"
 
-#: Beremiz_service.py:325
+#: ../Beremiz_service.py:366
 msgid "Port number must be an integer!"
 msgstr "端口号必须是整数！"
 
-#: runtime/PLCObject.py:279
-#, python-format
-msgid "Problem %s PLC"
-msgstr "问题  %s PLC"
+#: ../editors/GraphicViewer.py:105
+msgid "Position:"
+msgstr "定位："
 
-#: plugger.py:789
-msgid "Project not created"
-msgstr "项目未创建"
+#: ../editors/Viewer.py:476
+#, fuzzy
+msgid "Power Rail"
+msgstr "左电源导轨"
 
-#: plugger.py:503
-#, python-format
-msgid "Project tree layout do not match plugin.xml %s!=%s "
+#: ../dialogs/LDPowerRailDialog.py:36
+msgid "Power Rail Properties"
+msgstr "电源导轨属性"
+
+#: ../Beremiz.py:324
+#: ../PLCOpenEditor.py:143
+msgid "Preview"
+msgstr "打印预览"
+
+#: ../dialogs/SFCDivergenceDialog.py:93
+#: ../dialogs/LDPowerRailDialog.py:78
+#: ../dialogs/ConnectionDialog.py:78
+#: ../dialogs/FBDVariableDialog.py:97
+#: ../dialogs/SFCTransitionDialog.py:96
+#: ../dialogs/LDElementDialog.py:101
+#: ../dialogs/SFCStepDialog.py:79
+#: ../dialogs/FBDBlockDialog.py:103
+msgid "Preview:"
+msgstr "预览："
+
+#: ../Beremiz.py:326
+#: ../Beremiz.py:346
+#: ../PLCOpenEditor.py:145
+#: ../PLCOpenEditor.py:171
+msgid "Print"
+msgstr "打印"
+
+#: ../IDEFrame.py:1155
+msgid "Print preview"
+msgstr "打印预览"
+
+#: ../editors/ResourceEditor.py:67
+msgid "Priority"
+msgstr "优先"
+
+#: ../dialogs/SFCTransitionDialog.py:83
+msgid "Priority:"
+msgstr "优先："
+
+#: ../controls/ProjectPropertiesPanel.py:80
+msgid "Product Name (required):"
+msgstr "产品名字（必填）："
+
+#: ../controls/ProjectPropertiesPanel.py:82
+msgid "Product Release (optional):"
+msgstr "产品发布（选填）："
+
+#: ../controls/ProjectPropertiesPanel.py:81
+msgid "Product Version (required):"
+msgstr "产品版本（必填）："
+
+#: ../IDEFrame.py:1972
+#: ../dialogs/SearchInProjectDialog.py:46
+msgid "Program"
+msgstr "程序"
+
+#: ../PLCOpenEditor.py:360
+msgid "Program was successfully generated!"
+msgstr "该编程成功生成文件！"
+
+#: ../PLCControler.py:95
+msgid "Programs"
+msgstr "程序"
+
+#: ../editors/Viewer.py:230
+msgid "Programs can't be used by other POUs!"
+msgstr "程序不能被其它POU使用！"
+
+#: ../controls/ProjectPropertiesPanel.py:84
+#: ../IDEFrame.py:553
+msgid "Project"
+msgstr "项目"
+
+#: ../controls/SearchResultPanel.py:173
+#, fuzzy, python-format
+msgid "Project '%s':"
+msgstr "项目"
+
+#: ../ProjectController.py:1529
+#, fuzzy
+msgid "Project Files"
+msgstr "项目属性"
+
+#: ../controls/ProjectPropertiesPanel.py:78
+msgid "Project Name (required):"
+msgstr "项目名称（必填）："
+
+#: ../controls/ProjectPropertiesPanel.py:79
+msgid "Project Version (optional):"
+msgstr "项目版本（选填）："
+
+#: ../PLCControler.py:2916
+msgid ""
+"Project file syntax error:\n"
+"\n"
+msgstr ""
+
+#: ../dialogs/ProjectDialog.py:32
+msgid "Project properties"
+msgstr "项目属性"
+
+#: ../ConfigTreeNode.py:506
+#, fuzzy, python-format
+msgid "Project tree layout do not match confnode.xml %s!=%s "
 msgstr "项目树型布局与 plugin.xml 不匹配 %s!=%s "
 
-#: Beremiz.py:295
+#: ../PLCControler.py:96
 msgid "Properties"
 msgstr "属性"
 
-#: Beremiz_service.py:433
-msgid "Publish service on local network"
-msgstr "在本地网络发布服务"
+#: ../plcopen/structures.py:237
+msgid ""
+"Pulse timer\n"
+"The pulse timer can be used to generate output pulses of a given time duration."
+msgstr ""
+"脉冲计时器\n"
+"脉冲计时器可用于产生给定时间限制的输出的脉冲。"
 
-#: plugger.py:1851
-msgid "Python code"
+#: ../features.py:8
+#, fuzzy
+msgid "Python file"
 msgstr "Python代码"
 
-#: runtime/PLCObject.py:282
-msgid "PythonThreadProc interrupted"
-msgstr "Python线程处理被中断"
+#: ../dialogs/ActionBlockDialog.py:37
+msgid "Qualifier"
+msgstr "合格验证"
 
-#: PythonSTC.py:577
-msgid "Question"
-msgstr "问题"
-
-#: Beremiz_service.py:287
+#: ../Beremiz_service.py:328
+#: ../Beremiz.py:329
+#: ../PLCOpenEditor.py:151
 msgid "Quit"
 msgstr "退出"
 
-#: Beremiz.py:298
-msgid "Quit\tCTRL+Q"
-msgstr "退出\tCTRL+Q"
+#: ../plcopen/structures.py:202
+msgid ""
+"RS bistable\n"
+"The RS bistable is a latch where the Reset dominates."
+msgstr ""
+"RS双稳\n"
+"RS双稳是一个重置支配的锁存器。"
 
-#: plugger.py:1847
+#: ../plcopen/structures.py:274
+#, fuzzy
+msgid ""
+"Ramp\n"
+"The RAMP function block is modelled on example given in the standard."
+msgstr ""
+"匝道\n"
+"匝道功能块模拟给定标准的例子，但增加了一个' 阻碍 '功能。"
+
+#: ../editors/GraphicViewer.py:89
+msgid "Range:"
+msgstr "范围："
+
+#: ../ProjectController.py:1525
 msgid "Raw IEC code"
 msgstr "原始的IEC代码"
 
-#: Beremiz.py:1398
-msgid "Really delete plugin ?"
+#: ../plcopen/structures.py:254
+msgid ""
+"Real time clock\n"
+"The real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."
+msgstr ""
+"实时时钟\n"
+"实时时钟有很多用途，包括时间冲压，设置日期和批量报告日期时间，报警信息等。"
+
+#: ../Beremiz.py:1039
+#, fuzzy, python-format
+msgid "Really delete node '%s'?"
 msgstr "确定删除插件？"
 
-#: discovery.py:64
+#: ../IDEFrame.py:340
+#: ../IDEFrame.py:398
+msgid "Redo"
+msgstr ""
+
+#: ../dialogs/SFCTransitionDialog.py:57
+#: ../dialogs/SFCTransitionDialog.py:135
+msgid "Reference"
+msgstr "参照"
+
+#: ../IDEFrame.py:408
+#: ../dialogs/DiscoveryDialog.py:105
 msgid "Refresh"
 msgstr "刷新"
 
-#: Beremiz.py:1398
-msgid "Remove plugin"
+#: ../dialogs/SearchInProjectDialog.py:73
+#, fuzzy
+msgid "Regular expression"
+msgstr "表达式："
+
+#: ../dialogs/FindInPouDialog.py:91
+#, fuzzy
+msgid "Regular expressions"
+msgstr "表达式："
+
+#: ../controls/DebugVariablePanel.py:299
+#: ../editors/Viewer.py:1356
+msgid "Release value"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:37
+msgid "Remainder (modulo)"
+msgstr "余数（模）"
+
+#: ../Beremiz.py:1040
+#, python-format
+msgid "Remove %s node"
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:139
+#, fuzzy
+msgid "Remove action"
 msgstr "移除这个插件"
 
-#: Beremiz.py:325
-#: plugger.py:1809
+#: ../controls/DebugVariablePanel.py:183
+#, fuzzy
+msgid "Remove debug variable"
+msgstr "新建一个变量"
+
+#: ../editors/DataTypeEditor.py:346
+#, fuzzy
+msgid "Remove element"
+msgstr "移除这个插件"
+
+#: ../editors/FileManagementPanel.py:281
+msgid "Remove file from left folder"
+msgstr ""
+
+#: ../editors/ResourceEditor.py:252
+#, fuzzy
+msgid "Remove instance"
+msgstr "删除实例"
+
+#: ../canfestival/NetworkEditor.py:87
+#, fuzzy
+msgid "Remove slave"
+msgstr "移除这个插件"
+
+#: ../editors/ResourceEditor.py:223
+msgid "Remove task"
+msgstr ""
+
+#: ../controls/VariablePanel.py:379
+#, fuzzy
+msgid "Remove variable"
+msgstr "新建一个变量"
+
+#: ../IDEFrame.py:1976
+msgid "Rename"
+msgstr "重命名"
+
+#: ../editors/FileManagementPanel.py:399
+msgid "Replace File"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:89
+msgid "Replacement (within)"
+msgstr "替换"
+
+#: ../dialogs/LDElementDialog.py:76
+msgid "Reset"
+msgstr "重置"
+
+#: ../editors/Viewer.py:521
+msgid "Reset Execution Order"
+msgstr "重置执行命令"
+
+#: ../IDEFrame.py:423
+msgid "Reset Perspective"
+msgstr ""
+
+#: ../controls/SearchResultPanel.py:105
+msgid "Reset search result"
+msgstr ""
+
+#: ../editors/GraphicViewer.py:137
+msgid "Reset zoom and offset"
+msgstr ""
+
+#: ../PLCControler.py:96
+msgid "Resources"
+msgstr "资源"
+
+#: ../controls/VariablePanel.py:67
+msgid "Retain"
+msgstr "保持"
+
+#: ../controls/VariablePanel.py:352
+msgid "Return Type:"
+msgstr "返回类型："
+
+#: ../editors/Viewer.py:430
+msgid "Right"
+msgstr "右"
+
+#: ../dialogs/LDPowerRailDialog.py:60
+msgid "Right PowerRail"
+msgstr "右电源导轨"
+
+#: ../editors/Viewer.py:404
+#: ../dialogs/LDElementDialog.py:80
+msgid "Rising Edge"
+msgstr "上升沿"
+
+#: ../plcopen/structures.py:212
+msgid ""
+"Rising edge detector\n"
+"The output produces a single pulse when a rising edge is detected."
+msgstr ""
+"上升沿检测\n"
+"当上升沿被检测到时，输出便产生一个单脉冲。"
+
+#: ../plcopen/iec_std.csv:65
+msgid "Rotate left"
+msgstr "循环左移"
+
+#: ../plcopen/iec_std.csv:64
+msgid "Rotate right"
+msgstr "循环右移"
+
+#: ../plcopen/iec_std.csv:17
+msgid "Rounding up/down"
+msgstr "四舍五入"
+
+#: ../ProjectController.py:1493
 msgid "Run"
 msgstr "运行"
 
-#: Beremiz.py:290
-msgid "Save\tCTRL+S"
-msgstr "保存\tCTRL+S"
+#: ../ProjectController.py:841
+#: ../ProjectController.py:850
+#, fuzzy
+msgid "Runtime extensions C code generation failed !\n"
+msgstr "插件代码生成失败！\n"
 
-#: Beremiz.py:328
-msgid "Save Log"
+#: ../canfestival/SlaveEditor.py:34
+#: ../canfestival/NetworkEditor.py:64
+msgid "SDO Client"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:33
+#: ../canfestival/NetworkEditor.py:63
+msgid "SDO Server"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:143
+#: ../dialogs/PouDialog.py:36
+msgid "SFC"
+msgstr "顺序功能流程图"
+
+#: ../plcopen/structures.py:197
+msgid ""
+"SR bistable\n"
+"The SR bistable is a latch where the Set dominates."
+msgstr ""
+"SR双稳态\n"
+"SR双稳态是一个设置支配的锁存器。"
+
+#: ../dialogs/PouTransitionDialog.py:35
+#: ../dialogs/PouActionDialog.py:31
+#: ../dialogs/PouDialog.py:36
+msgid "ST"
+msgstr "结构化文字"
+
+#: ../PLCOpenEditor.py:347
+msgid "ST files (*.st)|*.st|All files|*.*"
+msgstr "ST 文件 (*.st)|*.st|所有文件|*.*"
+
+#: ../svgui/svgui.py:92
+#, fuzzy
+msgid "SVG files (*.svg)|*.svg|All files|*.*"
+msgstr "ST 文件 (*.st)|*.st|所有文件|*.*"
+
+#: ../features.py:10
+msgid "SVGUI"
+msgstr ""
+
+#: ../Beremiz.py:313
+#: ../Beremiz.py:344
+#: ../PLCOpenEditor.py:134
+#: ../PLCOpenEditor.py:169
+#, fuzzy
+msgid "Save"
 msgstr "保存日志"
 
-#: Beremiz.py:523
-#: Beremiz.py:1298
-msgid "Save changes ?"
-msgstr "保存修改？"
+#: ../Beremiz.py:345
+#: ../PLCOpenEditor.py:136
+#: ../PLCOpenEditor.py:170
+#, fuzzy
+msgid "Save As..."
+msgstr "另存为...\tCTRL+SHIFT+S"
 
-#: discovery.py:37
-msgid "Service Discovery"
-msgstr "服务探索"
+#: ../Beremiz.py:315
+#, fuzzy
+msgid "Save as"
+msgstr "保存日志"
 
-#: plugger.py:1844
+#: ../dialogs/SearchInProjectDialog.py:76
+msgid "Scope"
+msgstr ""
+
+#: ../IDEFrame.py:592
+#: ../dialogs/SearchInProjectDialog.py:105
+msgid "Search"
+msgstr ""
+
+#: ../IDEFrame.py:360
+#: ../IDEFrame.py:404
+#: ../dialogs/SearchInProjectDialog.py:52
+#, fuzzy
+msgid "Search in Project"
+msgstr "选择一个对象"
+
+#: ../dialogs/DurationEditorDialog.py:46
+msgid "Seconds:"
+msgstr ""
+
+#: ../IDEFrame.py:366
+#, fuzzy
+msgid "Select All"
+msgstr "全部选中\tCTRL+A"
+
+#: ../controls/VariablePanel.py:277
+#: ../editors/TextViewer.py:330
+#: ../editors/Viewer.py:277
+msgid "Select a variable class:"
+msgstr "选择一个变量种类："
+
+#: ../ProjectController.py:1013
+#, fuzzy
+msgid "Select an editor:"
+msgstr "选择一个对象"
+
+#: ../controls/PouInstanceVariablesPanel.py:197
+#, fuzzy
+msgid "Select an instance"
+msgstr "删除实例"
+
+#: ../IDEFrame.py:576
+msgid "Select an object"
+msgstr "选择一个对象"
+
+#: ../plcopen/iec_std.csv:70
+msgid "Selection"
+msgstr "选择"
+
+#: ../dialogs/SFCDivergenceDialog.py:62
+msgid "Selection Convergence"
+msgstr "选择收敛"
+
+#: ../dialogs/SFCDivergenceDialog.py:55
+msgid "Selection Divergence"
+msgstr "选择发散"
+
+#: ../plcopen/structures.py:207
+msgid ""
+"Semaphore\n"
+"The semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."
+msgstr ""
+"信号\n"
+"信号提供一个机制，使软件元素相互排斥的进入一定资源。"
+
+#: ../dialogs/DiscoveryDialog.py:84
+#, fuzzy
+msgid "Services available:"
+msgstr "选择一个变量种类："
+
+#: ../dialogs/LDElementDialog.py:72
+msgid "Set"
+msgstr "设置"
+
+#: ../plcopen/iec_std.csv:62
+msgid "Shift left"
+msgstr "左移"
+
+#: ../plcopen/iec_std.csv:63
+msgid "Shift right"
+msgstr "右移"
+
+#: ../ProjectController.py:1519
 msgid "Show IEC code generated by PLCGenerator"
 msgstr "显示由PLCGenerator生成的IEC代码"
 
-#: plugins/canfestival/canfestival.py:202
+#: ../canfestival/canfestival.py:288
 msgid "Show Master"
 msgstr "显示主控"
 
-#: plugins/canfestival/canfestival.py:203
+#: ../canfestival/canfestival.py:289
 msgid "Show Master generated by config_utils"
 msgstr "显示由config_utils生成的主控"
 
-#: plugger.py:1842
+#: ../ProjectController.py:1517
 msgid "Show code"
 msgstr "显示代码"
 
-#: Beremiz.py:323
-msgid "Simulate"
-msgstr "模拟"
+#: ../dialogs/SFCDivergenceDialog.py:74
+msgid "Simultaneous Convergence"
+msgstr "同步收敛"
 
-#: plugger.py:1811
-#: Beremiz_service.py:278
-#: runtime/PLCObject.py:285
+#: ../dialogs/SFCDivergenceDialog.py:68
+msgid "Simultaneous Divergence"
+msgstr "同步发散"
+
+#: ../plcopen/iec_std.csv:27
+msgid "Sine"
+msgstr "正弦"
+
+#: ../editors/ResourceEditor.py:67
+msgid "Single"
+msgstr "单"
+
+#: ../plcopen/iec_std.csv:23
+msgid "Square root (base 2)"
+msgstr "平方根（底数2）"
+
+#: ../plcopen/structures.py:193
+msgid "Standard function blocks"
+msgstr "标准功能类型"
+
+#: ../Beremiz_service.py:319
+#: ../ProjectController.py:1495
 msgid "Start PLC"
 msgstr "开始PLC"
 
-#: plugger.py:1816
-msgid "Start PLC (debug mode)"
-msgstr "开始PLC（调试模式）"
-
-#: plugger.py:1273
+#: ../ProjectController.py:819
 #, python-format
 msgid "Start build in %s\n"
 msgstr "开始建立 %s\n"
 
-#: plugger.py:1452
-msgid "Started"
-msgstr "已开始"
+#: ../ProjectController.py:1314
+#, fuzzy
+msgid "Starting PLC\n"
+msgstr "开始PLC"
 
-#: plugger.py:1631
-msgid "Starting PLC (debug mode)\n"
-msgstr "正在开始PLC（调试模式）\n"
+#: ../Beremiz.py:403
+msgid "Status ToolBar"
+msgstr ""
 
-#: plugger.py:1823
+#: ../editors/Viewer.py:493
+#, fuzzy
+msgid "Step"
+msgstr "编辑步骤"
+
+#: ../ProjectController.py:1498
 msgid "Stop"
 msgstr "停止"
 
-#: Beremiz_service.py:279
-#: runtime/PLCObject.py:291
+#: ../Beremiz_service.py:320
 msgid "Stop PLC"
 msgstr "停止PLC"
 
-#: plugger.py:1825
+#: ../ProjectController.py:1500
 msgid "Stop Running PLC"
 msgstr "停止运行PLC"
 
-#: plugger.py:1455
-msgid "Stopped"
-msgstr "已停止"
-
-#: plugger.py:1670
-msgid "Stopping debug\n"
+#: ../ProjectController.py:1292
+#, fuzzy
+msgid "Stopping debugger...\n"
 msgstr "正在停止调试\n"
 
-#: Beremiz_service.py:426
-msgid "The daemon runs on port :"
-msgstr "守护进程在端口运行："
+#: ../editors/DataTypeEditor.py:52
+msgid "Structure"
+msgstr "结构的"
 
-#: Beremiz_service.py:427
-msgid "The object's uri is :"
-msgstr "对象的uri是："
+#: ../editors/DataTypeEditor.py:52
+msgid "Subrange"
+msgstr "子集的"
 
-#: Beremiz_service.py:428
-msgid "The working directory :"
-msgstr "工作目录："
+#: ../plcopen/iec_std.csv:35
+msgid "Subtraction"
+msgstr "减法"
 
-#: plugger.py:1832
+#: ../ProjectController.py:915
+msgid "Successfully built.\n"
+msgstr ""
+
+#: ../dialogs/SearchInProjectDialog.py:154
+msgid "Syntax error in regular expression of pattern to search!"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:29
+msgid "Tangent"
+msgstr "正切"
+
+#: ../editors/ResourceEditor.py:76
+msgid "Task"
+msgstr "任务 "
+
+#: ../editors/ResourceEditor.py:218
+msgid "Tasks:"
+msgstr "任务："
+
+#: ../controls/VariablePanel.py:78
+msgid "Temp"
+msgstr "缓冲"
+
+#: ../editors/FileManagementPanel.py:398
+#, python-format
+msgid ""
+"The file '%s' already exist.\n"
+"Do you want to replace it?"
+msgstr ""
+
+#: ../editors/LDViewer.py:879
+msgid "The group of block must be coherent!"
+msgstr "块的组必须是连贯的！"
+
+#: ../IDEFrame.py:1091
+#: ../Beremiz.py:555
+msgid "There are changes, do you want to save?"
+msgstr "文件已被改动。你希望保存吗？"
+
+#: ../IDEFrame.py:1709
+#: ../IDEFrame.py:1728
+#, python-format
+msgid "There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?"
+msgstr "一个编程组织单元被命名为\"%s\"。这可能会产生冲突。你希望继续吗？"
+
+#: ../IDEFrame.py:1178
+msgid ""
+"There was a problem printing.\n"
+"Perhaps your current printer is not set correctly?"
+msgstr ""
+"打印出现问题。\n"
+"请检查你当前打印机设置。"
+
+#: ../editors/LDViewer.py:888
+msgid "This option isn't available yet!"
+msgstr "该选项尚未可用！"
+
+#: ../editors/GraphicViewer.py:278
+msgid "Tick"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:40
+msgid "Time"
+msgstr ""
+
+#: ../plcopen/iec_std.csv:40
+#: ../plcopen/iec_std.csv:41
+msgid "Time addition"
+msgstr "时间加法"
+
+#: ../plcopen/iec_std.csv:86
+msgid "Time concatenation"
+msgstr "时间级联"
+
+#: ../plcopen/iec_std.csv:60
+#: ../plcopen/iec_std.csv:61
+msgid "Time division"
+msgstr "时间除法"
+
+#: ../plcopen/iec_std.csv:46
+#: ../plcopen/iec_std.csv:47
+msgid "Time multiplication"
+msgstr "时间乘法"
+
+#: ../plcopen/iec_std.csv:48
+#: ../plcopen/iec_std.csv:49
+msgid "Time subtraction"
+msgstr "时间减法"
+
+#: ../plcopen/iec_std.csv:42
+#: ../plcopen/iec_std.csv:43
+msgid "Time-of-day addition"
+msgstr "日期时间加法"
+
+#: ../plcopen/iec_std.csv:52
+#: ../plcopen/iec_std.csv:53
+#: ../plcopen/iec_std.csv:54
+#: ../plcopen/iec_std.csv:55
+msgid "Time-of-day subtraction"
+msgstr "日期时间减法"
+
+#: ../editors/Viewer.py:432
+msgid "Top"
+msgstr "顶部"
+
+#: ../ProjectController.py:1507
 msgid "Transfer"
 msgstr "传输"
 
-#: plugger.py:1834
+#: ../ProjectController.py:1509
 msgid "Transfer PLC"
 msgstr "传输PLC"
 
-#: plugger.py:1787
+#: ../ProjectController.py:1474
 msgid "Transfer completed successfully.\n"
 msgstr "传输成功\n"
 
-#: plugger.py:1789
+#: ../ProjectController.py:1476
 msgid "Transfer failed\n"
 msgstr "传输失败\n"
 
-#: targets/Xenomai/__init__.py:27
-msgid "Unable to get Xenomai's CFLAGS\n"
+#: ../editors/Viewer.py:494
+#, fuzzy
+msgid "Transition"
+msgstr "跃迁"
+
+#: ../PLCGenerator.py:1212
+#, python-format
+msgid "Transition \"%s\" body must contain an output variable or coil referring to its name"
+msgstr ""
+
+#: ../dialogs/PouTransitionDialog.py:84
+msgid "Transition Name"
+msgstr "跃迁名字"
+
+#: ../dialogs/PouTransitionDialog.py:53
+msgid "Transition Name:"
+msgstr "跃迁名字："
+
+#: ../PLCGenerator.py:1301
+#, python-format
+msgid "Transition with content \"%s\" not connected to a next step in \"%s\" POU"
+msgstr "跃迁的内容 \"%s\" 与后一步骤没有关联在 \"%s\" 中"
+
+#: ../PLCGenerator.py:1292
+#, python-format
+msgid "Transition with content \"%s\" not connected to a previous step in \"%s\" POU"
+msgstr "跃迁的内容 \"%s\" 与前一步骤没有关联在 \"%s\" 中"
+
+#: ../plcopen/plcopen.py:1442
+#, python-format
+msgid "Transition with name %s doesn't exist!"
+msgstr "已命名的跃迁 %s 尚不存在！"
+
+#: ../PLCControler.py:95
+msgid "Transitions"
+msgstr "跃迁"
+
+#: ../editors/ResourceEditor.py:67
+msgid "Triggering"
+msgstr ""
+
+#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:59
+#: ../editors/DataTypeEditor.py:48
+#: ../editors/ResourceEditor.py:76
+#: ../dialogs/ActionBlockDialog.py:37
+msgid "Type"
+msgstr "类型"
+
+#: ../canfestival/config_utils.py:335
+#: ../canfestival/config_utils.py:617
+#, python-format
+msgid "Type conflict for location \"%s\""
+msgstr "位置的冲突类型 \"%s\""
+
+#: ../plcopen/iec_std.csv:16
+msgid "Type conversion"
+msgstr "类型转换"
+
+#: ../editors/DataTypeEditor.py:155
+msgid "Type infos:"
+msgstr "类型信息："
+
+#: ../dialogs/SFCDivergenceDialog.py:51
+#: ../dialogs/LDPowerRailDialog.py:51
+#: ../dialogs/ConnectionDialog.py:52
+#: ../dialogs/SFCTransitionDialog.py:53
+#: ../dialogs/FBDBlockDialog.py:48
+msgid "Type:"
+msgstr "类型："
+
+#: ../canfestival/config_utils.py:455
+#: ../canfestival/config_utils.py:469
+#, python-format
+msgid "Unable to define PDO mapping for node %02x"
+msgstr ""
+
+#: ../targets/Xenomai/__init__.py:14
+#, fuzzy, python-format
+msgid "Unable to get Xenomai's %s \n"
 msgstr "无法获取Xenomai的CFLAGS\n"
 
-#: targets/Xenomai/__init__.py:16
-msgid "Unable to get Xenomai's LDFLAGS\n"
-msgstr "无法获取Xenomai的LDFLAGS\n"
+#: ../PLCGenerator.py:865
+#: ../PLCGenerator.py:924
+#, fuzzy, python-format
+msgid "Undefined block type \"%s\" in \"%s\" POU"
+msgstr "未定义的pou类型"
 
-#: plugger.py:1855
+#: ../PLCGenerator.py:240
+#, python-format
+msgid "Undefined pou type \"%s\""
+msgstr "未定义的pou类型"
+
+#: ../IDEFrame.py:338
+#: ../IDEFrame.py:397
+msgid "Undo"
+msgstr ""
+
+#: ../ProjectController.py:254
+msgid "Unknown"
+msgstr ""
+
+#: ../editors/Viewer.py:336
+#, python-format
+msgid "Unknown variable \"%s\" for this POU!"
+msgstr "未知的变量 \"%s\" 这个POU！"
+
+#: ../ProjectController.py:251
+#: ../ProjectController.py:252
+#, fuzzy
+msgid "Unnamed"
+msgstr "未命名%d"
+
+#: ../PLCControler.py:305
+#, python-format
+msgid "Unnamed%d"
+msgstr "未命名%d"
+
+#: ../controls/VariablePanel.py:272
+#, python-format
+msgid "Unrecognized data size \"%s\""
+msgstr "无法识别数据大小 \"%s\""
+
+#: ../plcopen/structures.py:222
+msgid ""
+"Up-counter\n"
+"The up-counter can be used to signal when a count has reached a maximum value."
+msgstr ""
+"顺计时器\n"
+"当计数到达最大值时，顺计时器给出信号。"
+
+#: ../plcopen/structures.py:232
+msgid ""
+"Up-down counter\n"
+"The up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."
+msgstr ""
+"顺逆计数器\n"
+"顺逆计数器有两个输入：CU和CD。可用于顺计时和倒计时的输入。"
+
+#: ../controls/VariablePanel.py:709
+#: ../editors/DataTypeEditor.py:623
+msgid "User Data Types"
+msgstr "用户数据类型"
+
+#: ../canfestival/SlaveEditor.py:38
+#: ../canfestival/NetworkEditor.py:68
+#, fuzzy
+msgid "User Type"
+msgstr "用户数据类型"
+
+#: ../PLCControler.py:94
+msgid "User-defined POUs"
+msgstr "用户 - 定义POUs"
+
+#: ../controls/DebugVariablePanel.py:40
+#: ../dialogs/ActionBlockDialog.py:37
+msgid "Value"
+msgstr "值"
+
+#: ../editors/GraphicViewer.py:278
+msgid "Values"
+msgstr "值"
+
+#: ../editors/DataTypeEditor.py:252
+msgid "Values:"
+msgstr "值："
+
+#: ../controls/DebugVariablePanel.py:40
+#: ../editors/Viewer.py:466
+#: ../dialogs/ActionBlockDialog.py:41
+msgid "Variable"
+msgstr "变量"
+
+#: ../dialogs/FBDVariableDialog.py:47
+msgid "Variable Properties"
+msgstr "变量属性"
+
+#: ../controls/VariablePanel.py:277
+#: ../editors/TextViewer.py:330
+#: ../editors/Viewer.py:277
+msgid "Variable class"
+msgstr "变量种类"
+
+#: ../editors/TextViewer.py:374
+#: ../editors/Viewer.py:338
+msgid "Variable don't belong to this POU!"
+msgstr "变量不属于这个POU！"
+
+#: ../controls/VariablePanel.py:77
+msgid "Variables"
+msgstr "变量"
+
+#: ../controls/ProjectPropertiesPanel.py:151
+#, fuzzy
+msgid "Vertical:"
+msgstr "数学式"
+
+#: ../wxglade_hmi/wxglade_hmi.py:11
 msgid "WXGLADE GUI"
 msgstr "WXGLADE 用户图形界面"
 
-#: plugger.py:936
+#: ../ProjectController.py:1276
+msgid "Waiting debugger to recover...\n"
+msgstr ""
+
+#: ../editors/LDViewer.py:888
+#: ../dialogs/PouDialog.py:126
+msgid "Warning"
+msgstr "警告"
+
+#: ../ProjectController.py:515
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr "警告在ST/IL/SFC代码生成器中：\n"
 
-#: plugger.py:1852
-msgid "Write Python runtime code, for use with python_eval FBs"
-msgstr "编辑Python运行时间代码，与python_eval FBs一起使用"
+#: ../dialogs/SearchInProjectDialog.py:85
+#, fuzzy
+msgid "Whole Project"
+msgstr ""
+"#-#-#-#-#  Beremiz_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭项目\n"
+"#-#-#-#-#  PLCOpenEditor_zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"关闭程序"
 
-#: connectors/PYRO/__init__.py:39
-msgid "Wrong URI, please check it !\n"
-msgstr "错误的URI，请检查！\n"
+#: ../controls/ProjectPropertiesPanel.py:119
+msgid "Width:"
+msgstr "宽度："
 
-#: PythonSTC.py:575
-msgid "You are about to overwrite that file\n"
-msgstr "你即将要覆盖该文件\n"
+#: ../dialogs/FindInPouDialog.py:86
+msgid "Wrap search"
+msgstr ""
 
-#: wxPopen.py:134
+#: ../features.py:9
+msgid "WxGlade GUI"
+msgstr ""
+
+#: ../svgui/svgui.py:106
+msgid ""
+"You don't have write permissions.\n"
+"Open Inkscape anyway ?"
+msgstr ""
+
+#: ../wxglade_hmi/wxglade_hmi.py:108
+msgid ""
+"You don't have write permissions.\n"
+"Open wxGlade anyway ?"
+msgstr ""
+
+#: ../ProjectController.py:220
+msgid ""
+"You must have permission to work on the project\n"
+"Work on a project copy ?"
+msgstr ""
+
+#: ../editors/LDViewer.py:883
+msgid "You must select the block or group of blocks around which a branch should be added!"
+msgstr "你必须选择一个块或块的组围绕着需被添加的分支！"
+
+#: ../editors/LDViewer.py:663
+msgid "You must select the wire where a contact should be added!"
+msgstr "你必须选择一条线连接需被添加的接触点！"
+
+#: ../dialogs/PouNameDialog.py:45
+#: ../dialogs/SFCStepNameDialog.py:47
+#: ../dialogs/SFCStepDialog.py:118
+msgid "You must type a name!"
+msgstr "你必须输入一个名字！"
+
+#: ../dialogs/ForceVariableDialog.py:165
+#, fuzzy
+msgid "You must type a value!"
+msgstr "你必须输入一个名字！"
+
+#: ../IDEFrame.py:414
+msgid "Zoom"
+msgstr "显示比例"
+
+#: ../editors/GraphicViewer.py:97
+#, fuzzy
+msgid "Zoom:"
+msgstr "显示比例"
+
+#: ../PLCOpenEditor.py:356
+#, python-format
+msgid "error: %s\n"
+msgstr "错误：%s\n"
+
+#: ../util/ProcessLogger.py:161
 #, python-format
 msgid "exited with status %s (pid %s)\n"
 msgstr "退出并保持现状 %s (pid %s)\n"
 
-#: Beremiz.py:1417
-#: Beremiz.py:1419
+#: ../PLCOpenEditor.py:508
+#: ../PLCOpenEditor.py:510
 msgid "file : "
 msgstr "文件："
 
-#: Beremiz.py:1420
+#: ../dialogs/PouDialog.py:31
+msgid "function"
+msgstr "功能"
+
+#: ../PLCOpenEditor.py:511
 msgid "function : "
 msgstr "功能："
 
-#: Beremiz.py:1420
+#: ../dialogs/PouDialog.py:31
+msgid "functionBlock"
+msgstr "功能块"
+
+#: ../PLCOpenEditor.py:511
 msgid "line : "
 msgstr "在线："
 
-#: runtime/PLCObject.py:277
-msgid "loading"
-msgstr "载入"
+#: ../dialogs/PouDialog.py:31
+msgid "program"
+msgstr "程序"
 
-#: runtime/PLCObject.py:275
-msgid "starting"
-msgstr "正在开始"
+#: ../plcopen/iec_std.csv:84
+msgid "string from the middle"
+msgstr "从中间取字符串"
+
+#: ../plcopen/iec_std.csv:82
+msgid "string left of"
+msgstr "从左取字符串"
+
+#: ../plcopen/iec_std.csv:83
+msgid "string right of"
+msgstr "从右取字符串"
+
+#: ../PLCOpenEditor.py:354
+#, python-format
+msgid "warning: %s\n"
+msgstr "警告：%s\n"
 
 #: Extra XSD strings
-msgid "BaseParams"
-msgstr "基本参照 "
-
-msgid "Name"
-msgstr "名字"
-
-msgid "IEC_Channel"
-msgstr "IEC_频道"
-
-msgid "Enabled"
-msgstr "启用"
-
-msgid "BeremizRoot"
-msgstr "Beremiz根"
-
-msgid "TargetType"
-msgstr "目标类型"
-
-msgid "URI_location"
-msgstr "URI_位置"
-
-msgid "Enable_Plugins"
-msgstr "启用_插件"
-
-msgid "CExtension"
-msgstr "C扩展"
-
-msgid "CFLAGS"
-msgstr "CFLAGS"
-
-msgid "LDFLAGS"
-msgstr "LDFLAGS"
-
 msgid "CanFestivalSlaveNode"
 msgstr "CanFestival从节点"
 
@@ -926,20 +3774,32 @@ msgstr "CAN_驱动"
 msgid "Debug_mode"
 msgstr "调试_模式"
 
+msgid "CExtension"
+msgstr "C扩展"
+
+msgid "CFLAGS"
+msgstr "CFLAGS"
+
+msgid "LDFLAGS"
+msgstr "LDFLAGS"
+
+msgid "BaseParams"
+msgstr "基本参照 "
+
+msgid "IEC_Channel"
+msgstr "IEC_频道"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "Linux"
+msgstr "Linux"
+
 msgid "Compiler"
 msgstr "编译"
 
 msgid "Linker"
 msgstr "链接 "
-
-msgid "Linux"
-msgstr "Linux"
-
-msgid "Rtai"
-msgstr "Rtai"
-
-msgid "rtai_config"
-msgstr "rtai_config"
 
 msgid "Win32"
 msgstr "Win32"
@@ -950,36 +3810,394 @@ msgstr "Xenomai"
 msgid "XenoConfig"
 msgstr "XenoConfig"
 
+msgid "BeremizRoot"
+msgstr "Beremiz根"
+
+msgid "TargetType"
+msgstr "目标类型"
+
+#, fuzzy
+msgid "Libraries"
+msgstr "图书馆"
+
+msgid "URI_location"
+msgstr "URI_位置"
+
+#, fuzzy
+msgid "Disable_Extensions"
+msgstr "C扩展"
+
+#~ msgid "#EXCEPTION : "
+#~ msgstr "#异常："
+
+#~ msgid "A child with IEC channel %d already exist -> %d\n"
+#~ msgstr "一个IEC通道的分支 %d 已经存在 -> %d\n"
+
+#~ msgid "Add Plugin"
+#~ msgstr "添加插件"
+
+#~ msgid "Add a sub plugin"
+#~ msgstr "添加一个子插件"
+
+#~ msgid "Append "
+#~ msgstr "追加"
+
+#~ msgid "Beremiz\tF1"
+#~ msgstr "Beremiz\tF1"
+
+#~ msgid "Broken"
+#~ msgstr "损坏"
+
+#~ msgid "Build\tCTRL+R"
+#~ msgstr "建立\tCTRL+R"
+
+#~ msgid "Can't find module for target %s!\n"
+#~ msgstr "无法为目标找到模型 %s!\n"
+
+#~ msgid "Cancel"
+#~ msgstr "取消"
+
+#~ msgid "Cannot compare latest build to target. Please build.\n"
+#~ msgstr "无法与目标比较最新的建立。\n"
+
+#~ msgid "Debug Thread couldn't be killed"
+#~ msgstr "调试线程不能结束"
+
+#~ msgid "Debug data not coherent %d != %d\n"
+#~ msgstr "调试不和谐的数据 %d != %d\n"
+
+#~ msgid "Debug error idx : %d, expected_idx %d, type : %s"
+#~ msgstr "调试错误 idx : %d， expected_idx %d, 类型 ： %s"
+
+#~ msgid "Delete Plugin"
+#~ msgstr "删除插件"
+
+#~ msgid "Delete this plugin"
+#~ msgstr "删除这个插件"
+
+#~ msgid "Dirty"
+#~ msgstr "变质"
+
+#~ msgid "Disconnected"
+#~ msgstr "已断开"
+
+#~ msgid "Do you want to continue?"
+#~ msgstr "你希望继续吗？"
+
+#~ msgid "ERROR"
+#~ msgstr "错误"
+
+#~ msgid "Edit CanOpen Network with NetworkEdit"
+#~ msgstr "用网络编辑器编辑CanOpen网络"
+
+#~ msgid "Edit PLC"
+#~ msgstr "编辑PLC"
+
+#~ msgid "Edit PLC\tCTRL+R"
+#~ msgstr "编辑PLC\tCTRL+R"
+
+#~ msgid "Edit PLC program with PLCOpenEditor"
+#~ msgstr "使用PLCOpen编辑器编辑PLC程序"
+
+#~ msgid "Edit network"
+#~ msgstr "编辑网络"
+
+#~ msgid "Empty"
+#~ msgstr "空的"
+
+#~ msgid "Enable/Disable this plugin"
+#~ msgstr "激活／禁用这个插件"
+
+#~ msgid "Generating plugins C code\n"
+#~ msgstr "生成C代码插件\n"
+
+#~ msgid "Latest build does not match with target, please transfer.\n"
+#~ msgstr "最新构建与目标不匹配，请传输。\n"
+
+#~ msgid "Latest build matches target, no transfer needed.\n"
+#~ msgstr "最新构建与目标匹配，不需要传输。\n"
+
+#~ msgid "My IP is :"
+#~ msgstr "我的IP是："
+
+#~ msgid "New\tCTRL+N"
+#~ msgstr "新建\tCTRL+N"
+
+#~ msgid "NewPLC (%s)"
+#~ msgstr "新的PLC(%s)"
+
+#~ msgid "OK"
+#~ msgstr "确定"
+
+#~ msgid "Open\tCTRL+O"
+#~ msgstr "打开\tCTRL+O"
+
+#~ msgid "Please stop PLC to close"
+#~ msgstr "请停止PLC以便关闭"
+
+#~ msgid "Plugin : "
+#~ msgstr "插件："
+
+#~ msgid "Problem %s PLC"
+#~ msgstr "问题  %s PLC"
+
+#~ msgid "Project not created"
+#~ msgstr "项目未创建"
+
+#~ msgid "Publish service on local network"
+#~ msgstr "在本地网络发布服务"
+
+#~ msgid "PythonThreadProc interrupted"
+#~ msgstr "Python线程处理被中断"
+
+#~ msgid "Question"
+#~ msgstr "问题"
+
+#~ msgid "Quit\tCTRL+Q"
+#~ msgstr "退出\tCTRL+Q"
+
+#~ msgid "Save\tCTRL+S"
+#~ msgstr "保存\tCTRL+S"
+
+#~ msgid "Save changes ?"
+#~ msgstr "保存修改？"
+
+#~ msgid "Simulate"
+#~ msgstr "模拟"
+
+#~ msgid "Start PLC (debug mode)"
+#~ msgstr "开始PLC（调试模式）"
+
+#~ msgid "Started"
+#~ msgstr "已开始"
+
+#~ msgid "Starting PLC (debug mode)\n"
+#~ msgstr "正在开始PLC（调试模式）\n"
+
+#~ msgid "Stopped"
+#~ msgstr "已停止"
+
+#~ msgid "The daemon runs on port :"
+#~ msgstr "守护进程在端口运行："
+
+#~ msgid "The object's uri is :"
+#~ msgstr "对象的uri是："
+
+#~ msgid "The working directory :"
+#~ msgstr "工作目录："
+
+#~ msgid "Unable to get Xenomai's LDFLAGS\n"
+#~ msgstr "无法获取Xenomai的LDFLAGS\n"
+
+#~ msgid "Write Python runtime code, for use with python_eval FBs"
+#~ msgstr "编辑Python运行时间代码，与python_eval FBs一起使用"
+
+#~ msgid "Wrong URI, please check it !\n"
+#~ msgstr "错误的URI，请检查！\n"
+
+#~ msgid "You are about to overwrite that file\n"
+#~ msgstr "你即将要覆盖该文件\n"
+
+#~ msgid "loading"
+#~ msgstr "载入"
+
+#~ msgid "starting"
+#~ msgstr "正在开始"
+
+#~ msgid "Enable_Plugins"
+#~ msgstr "启用_插件"
+
+#~ msgid "Rtai"
+#~ msgstr "Rtai"
+
+#~ msgid "rtai_config"
+#~ msgstr "rtai_config"
+
+#~ msgid ""
+#~ "\n"
+#~ "An error has occurred.\n"
+#~ "\n"
+#~ "Click OK to save an error report.\n"
+#~ "\n"
+#~ "Please contact LOLITech at:\n"
+#~ "+33 (0)3 29 57 60 42\n"
+#~ "bugs_PLCOpenEditor@lolitech.fr\n"
+#~ "\n"
+#~ "\n"
+#~ "Error:\n"
+#~ msgstr ""
+#~ "\n"
+#~ "一个错误发生了。\n"
+#~ "\n"
+#~ "点击确定以保存一个错误报告。\n"
+#~ "\n"
+#~ "edouard.tisserant@gmail.com\n"
+#~ "\n"
+#~ "\n"
+#~ "错误：\n"
+
+#~ msgid " (Debug)"
+#~ msgstr " (调试)"
+
+#~ msgid "Add a new data type"
+#~ msgstr "添加一个新的数据类型"
+
+#~ msgid "Add new configuration"
+#~ msgstr "添加新配置"
+
+#~ msgid "Add new resource"
+#~ msgstr "添加新源"
+
+#~ msgid "Block Types"
+#~ msgstr "块类型"
+
+#~ msgid "CSV Log"
+#~ msgstr "逗号分隔值文件日志"
+
+#~ msgid "Close\tCTRL+Q"
+#~ msgstr "关闭\tCTRL+Q"
+
+#~ msgid "Copy\tCTRL+C"
+#~ msgstr "复制\tCTRL+C"
+
+#~ msgid "Create a new POU from"
+#~ msgstr "新建一个POU从"
+
+#~ msgid "Cut\tCTRL+X"
+#~ msgstr "剪切\tCTRL+X"
+
+#~ msgid "Delete Task"
+#~ msgstr "删除任务"
+
+#~ msgid "Graphic Panel"
+#~ msgstr "图形面板"
+
+#~ msgid "Instances"
+#~ msgstr "实例"
+
+#~ msgid "Invalid value \"%s\" for location"
+#~ msgstr "因地点而无效\"%s\""
+
+#~ msgid "No"
+#~ msgstr "否"
+
+#~ msgid "PLCOpenEditor\tF1"
+#~ msgstr "PLCOpen编辑器\tF1"
+
+#~ msgid "Paste\tCTRL+V"
+#~ msgstr "粘贴\tCTRL+V"
+
+#~ msgid "Please enter configuration name"
+#~ msgstr "请输入配置名"
+
+#~ msgid "Please enter data type name"
+#~ msgstr "请输入数据类型名"
+
+#~ msgid "Please enter resource name"
+#~ msgstr "请输入源名"
+
+#~ msgid "Please enter text"
+#~ msgstr "请输入文本"
+
+#~ msgid "Redo\tCTRL+Y"
+#~ msgstr "重做\tCTRL+Y"
+
+#~ msgid "Refresh\tCTRL+R"
+#~ msgstr "重新载入\tCTRL+R"
+
+#~ msgid "Scaling:"
+#~ msgstr "比例："
+
+#~ msgid "Types"
+#~ msgstr "类型"
+
+#~ msgid "Undo\tCTRL+Z"
+#~ msgstr "撤消\tCTRL+Z"
+
+#~ msgid "X Scale:"
+#~ msgstr "X 坐标："
+
+#~ msgid "Y Scale:"
+#~ msgstr "Y 坐标："
+
+#~ msgid "Yes"
+#~ msgstr "是"
+
 #~ msgid "#define %s beremiz%s\n"
 #~ msgstr "#定义 %s beremiz%s\n"
+
 #~ msgid "/* Beremiz c_ext plugin user variables definition */\n"
 #~ msgstr "/* Beremiz c_ext 插件的用户变量定义  */\n"
+
 #~ msgid "/* Beremiz plugin functions */\n"
 #~ msgstr "/* Beremiz插件功能 */\n"
+
 #~ msgid ""
 #~ "/* Code generated by Beremiz c_ext plugin */\n"
 #~ "\n"
 #~ msgstr ""
 #~ "/* 代码由Beremiz c_ext插件生成 */\n"
 #~ "\n"
+
 #~ msgid "/* User includes */\n"
 #~ msgstr "/* 用户包含 */\n"
+
 #~ msgid "/* User internal user variables and routines */\n"
 #~ msgstr "/* 用户内部用户变量和例程 */\n"
+
 #~ msgid "/* User variables reference */\n"
 #~ msgstr "/* 用户变量参照 */\n"
-#~ msgid "Choose a SVG file"
-#~ msgstr "选择一个SVG文件"
+
 #~ msgid "Choose a XML file"
 #~ msgstr "选择一个XML文件"
-#~ msgid "Couldn't start PLC !\n"
-#~ msgstr "无法开始PLC！\n"
+
 #~ msgid "No corresponding output variable found on SVGUI Block \"%s\""
 #~ msgstr "没有相应的输出变量"
-#~ msgid "No such SVG file: %s\n"
-#~ msgstr "没有这样的SVG文件：%s\n"
+
 #~ msgid "No such XML file: %s\n"
 #~ msgstr "没有这样的XML文件：%s\n"
+
 #~ msgid "Shortcuts created."
 #~ msgstr "快捷方式已被建立。"
 
+#~ msgid "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+#~ msgstr "<?xml 版本=\"1.0\" 编码=\"UTF-8\"?>\n"
+
+#~ msgid "A pou with \"%s\" for name exists!"
+#~ msgstr "一个以\"%s\"命名的的编程组织单元已经存在！"
+
+#~ msgid ""
+#~ "A variable is defined with \"%s\" as name. It can generate a conflict. Do "
+#~ "you wish to continue?"
+#~ msgstr "一个变量被定义 \"%s\" 为名称。它会导致冲突。你希望继续吗？"
+
+#~ msgid "A variable with \"%s\" as name exists in this pou!"
+#~ msgstr "一个以\"%s\"命名的变量在这个编程组织单元中已经存在！"
+
+#~ msgid "A variable with \"%s\" as name exists!"
+#~ msgstr "一个以\"%s\"命名的变量已经存在！"
+
+#~ msgid "Create A New POU From"
+#~ msgstr "新建一个POU从"
+
+#~ msgid "Create a new project"
+#~ msgstr "新建一个项目"
+
+#~ msgid "Printing"
+#~ msgstr "打印"
+
+#~ msgid ""
+#~ "Ratio monitor\n"
+#~ "The ratio_monitor function block checks that one process value PV1 is "
+#~ "always a given ratio (defined by input RATIO) of a second process value "
+#~ "PV2."
+#~ msgstr ""
+#~ "比监视器\n"
+#~ "比监视器功能块检查一个步骤值PV1总是被比较于（被输入的比定义）第二个步骤"
+#~ "值。"
+
+#~ msgid "ValueError"
+#~ msgstr "值错误"
+
+#~ msgid "You can't paste the element in buffer here!"
+#~ msgstr "你不能在这缓冲区中粘贴元素！"
