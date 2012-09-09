@@ -3,7 +3,7 @@ import wx.grid
 import wx.stc  as  stc
 import keyword
 
-from ConfTreeNodeEditor import ConfTreeNodeEditor
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',

@@ -27,8 +27,8 @@ import shutil
 
 import wx
 
-from controls import EditorPanel
-from utils.BitmapLibrary import GetBitmap
+from EditorPanel import EditorPanel
+from util.BitmapLibrary import GetBitmap
 
 DRIVE, FOLDER, FILE = range(3)
 
@@ -262,7 +262,7 @@ class FileManagementPanel(EditorPanel):
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.AddSizer(left_sizer, 1, border=5, flag=wx.GROW|wx.ALL)
         
-        managed_dir_label = wx.StaticText(self.Editor, label=self.TagName + ":")
+        managed_dir_label = wx.StaticText(self.Editor, label=_(self.TagName) + ":")
         left_sizer.AddWindow(managed_dir_label, border=5, flag=wx.GROW|wx.BOTTOM)
         
         self.ManagedDir = FolderTree(self.Editor, self.Folder, FILTER)
@@ -333,7 +333,7 @@ class FileManagementPanel(EditorPanel):
         self.Controler.OnCloseEditor(self)
     
     def GetTitle(self):
-        return self.TagName
+        return _(self.TagName)
     
     def SetEditableFileExtensions(self, extensions):
         self.EditableFileExtensions = extensions

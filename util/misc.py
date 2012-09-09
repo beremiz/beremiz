@@ -4,8 +4,6 @@ Misc definitions
 
 import os,sys
 
-from TextViewer import TextViewer
-
 # helper func to check path write permission
 def CheckPathPerm(path):
     if path is None or not os.path.isdir(path):
@@ -24,10 +22,3 @@ def GetClassImporter(classpath):
         return fac
     else:
         return classpath
-
-class IECCodeViewer(TextViewer):
-    
-    def __del__(self):
-        TextViewer.__del__(self)
-        if getattr(self, "_OnClose"):
-            self._OnClose(self)

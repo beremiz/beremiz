@@ -3,7 +3,7 @@ import wx
 
 from subindextable import EditingPanel
 from networkedit import NetworkEditorTemplate
-from ConfTreeNodeEditor import ConfTreeNodeEditor
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 [ID_NETWORKEDITOR, 
 ] = [wx.NewId() for _init_ctrls in range(1)]

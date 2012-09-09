@@ -14,22 +14,22 @@ from weakref import WeakKeyDictionary
 
 import targets
 import connectors
-from util.misc import CheckPathPerm, GetClassImporter, IECCodeViewer
+from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
-from util.FileManagementPanel import FileManagementPanel
+from util.BitmapLibrary import GetBitmap
+from editors.FileManagementPanel import FileManagementPanel
+from editors.ProjectNodeEditor import ProjectNodeEditor
+from editors.IECCodeViewer import IECCodeViewer
+from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
-from TextViewer import TextViewer
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize
-from util.discovery import DiscoveryDialog
 from ConfigTreeNode import ConfigTreeNode
-from ProjectNodeEditor import ProjectNodeEditor
-from utils.BitmapLibrary import GetBitmap
 
 base_folder = os.path.split(sys.path[0])[0]
 
-MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): error : (.*)$")
+MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
 DEBUG_RETRIES_WARN = 3
 DEBUG_RETRIES_REREGISTER = 4
@@ -937,7 +937,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     
     _ProjectFilesView = None
     def _OpenProjectFiles(self):
-        self._OpenView("Project files")
+        self._OpenView("Project Files")
     
     _FileEditors = {}
     def _OpenFileEditor(self, filepath):
@@ -980,7 +980,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             
             return self._IECRawCodeView
         
-        elif name == "Project files":
+        elif name == "Project Files":
             if self._ProjectFilesView is None:
                 self._ProjectFilesView = FileManagementPanel(self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
                 

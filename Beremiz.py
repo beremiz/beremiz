@@ -110,49 +110,24 @@ if __name__ == '__main__':
         splash.SetText(text=updateinfo)
         wx.Yield()
 
-# Import module for internationalization
-import gettext
+from util.TranslationCatalogs import AddCatalog, locale
+from util.BitmapLibrary import AddBitmapFolder, GetBitmap
 
-# Get folder containing translation files
-localedir = os.path.join(CWD,"locale")
-# Get the default language
-langid = wx.LANGUAGE_DEFAULT
-# Define translation domain (name of translation files)
-domain = "Beremiz"
-
-# Define locale for wx
-loc = __builtin__.__dict__.get('loc', None)
-if loc is None:
-    test_loc = wx.Locale(langid)
-    test_loc.AddCatalogLookupPathPrefix(localedir)
-    if test_loc.AddCatalog(domain):
-        loc = wx.Locale(langid)
-    else:
-        loc = wx.Locale(wx.LANGUAGE_ENGLISH)
-    __builtin__.__dict__['loc'] = loc
-# Define location for searching translation files
-loc.AddCatalogLookupPathPrefix(localedir)
-# Define locale domain
-loc.AddCatalog(domain)
-
-def unicode_translation(message):
-    return wx.GetTranslation(message).encode("utf-8")
-
-if __name__ == '__main__':
-    __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
-
-base_folder = os.path.split(sys.path[0])[0]
-sys.path.append(base_folder)
-sys.path.append(os.path.join(base_folder, "plcopeneditor"))
-
-from utils.BitmapLibrary import AddBitmapFolder, GetBitmap
+AddCatalog(os.path.join(CWD, "locale"))
 AddBitmapFolder(os.path.join(CWD, "images"))
 
 if __name__ == '__main__':
+    # Import module for internationalization
+    import gettext
+    
+    __builtin__.__dict__['loc'] = locale
+    __builtin__.__dict__['_'] = wx.GetTranslation
+    
     # Load extensions
     for extfilename in extensions:
         extension_folder = os.path.split(os.path.realpath(extfilename))[0]
         sys.path.append(extension_folder)
+        AddCatalog(os.path.join(extension_folder, "locale"))
         AddBitmapFolder(os.path.join(extension_folder, "images"))
         execfile(extfilename, locals())
 
@@ -161,16 +136,21 @@ import cPickle
 import types, time, re, platform, time, traceback, commands
 
 from docutil import OpenHtmlFrame
-from PLCOpenEditor import IDEFrame, AppendMenu, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES 
-from PLCOpenEditor import EditorPanel, Viewer, TextViewer, GraphicViewer, ResourceEditor, ConfigurationEditor, DataTypeEditor
-from PLCOpenEditor import EncodeFileSystemPath, DecodeFileSystemPath
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
-
-from util.TextCtrlAutoComplete import TextCtrlAutoComplete
-from util.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
+from IDEFrame import IDEFrame, AppendMenu
+from IDEFrame import TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES 
+from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
+from editors.EditorPanel import EditorPanel
+from editors.Viewer import Viewer
+from editors.TextViewer import TextViewer
+from editors.GraphicViewer import GraphicViewer
+from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
+from editors.DataTypeEditor import DataTypeEditor
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
+
+from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNODE
+
 
 MAX_RECENT_PROJECTS = 10
 
@@ -303,29 +283,29 @@ class Beremiz(IDEFrame):
         
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
-              kind=wx.ITEM_NORMAL, text=_(u'New\tCTRL+N'))
+              kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
-              kind=wx.ITEM_NORMAL, text=_(u'Open\tCTRL+O'))
+              kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
         parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
-              kind=wx.ITEM_NORMAL, text=_(u'Save\tCTRL+S'))
+              kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
-              kind=wx.ITEM_NORMAL, text=_(u'Save as\tCTRL+SHIFT+S'))
+              kind=wx.ITEM_NORMAL, text=_(u'Save as') + '\tCTRL+SHIFT+S')
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Tab\tCTRL+W'))
+              kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Project\tCTRL+SHIFT+W'))
+              kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
-              kind=wx.ITEM_NORMAL, text=_(u'Page Setup\tCTRL+ALT+P'))
+              kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
         AppendMenu(parent, help='', id=wx.ID_PREVIEW,
-              kind=wx.ITEM_NORMAL, text=_(u'Preview\tCTRL+SHIFT+P'))
+              kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
         AppendMenu(parent, help='', id=wx.ID_PRINT,
-              kind=wx.ITEM_NORMAL, text=_(u'Print\tCTRL+P'))
+              kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
-              kind=wx.ITEM_NORMAL, text=_(u'Quit\tCTRL+Q'))
+              kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
         
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
@@ -927,7 +907,7 @@ class Beremiz(IDEFrame):
         self.Close()
         
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc","about.html"), wx.Size(550, 500))
+        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc", "about.html"), wx.Size(550, 500))
     
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()

@@ -3,7 +3,7 @@ import wx
 
 from subindextable import EditingPanel
 from nodeeditor import NodeEditorTemplate
-from ConfTreeNodeEditor import ConfTreeNodeEditor
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 [ID_SLAVEEDITORCONFNODEMENUNODEINFOS, ID_SLAVEEDITORCONFNODEMENUDS301PROFILE,
  ID_SLAVEEDITORCONFNODEMENUDS302PROFILE, ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE,
@@ -55,7 +55,8 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
         return []
     
     def RefreshConfNodeMenu(self, confnode_menu):
-        confnode_menu.Enable(ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, False)
+        if self.Editable:
+            confnode_menu.Enable(ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, False)
 
     def RefreshView(self):
         ConfTreeNodeEditor.RefreshView(self)
