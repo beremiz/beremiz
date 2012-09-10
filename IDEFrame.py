@@ -16,7 +16,7 @@ from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
 from PLCControler import *
 from controls import CustomTree, LibraryPanel, PouInstanceVariablesPanel, DebugVariablePanel, SearchResultPanel
-from dialogs import ProjectDialog, PouTransitionDialog, PouActionDialog, FindInPouDialog
+from dialogs import ProjectDialog, PouDialog, PouTransitionDialog, PouActionDialog, FindInPouDialog, SearchInProjectDialog
 from util.BitmapLibrary import GetBitmap
 
 # Define PLCOpenEditor controls id
