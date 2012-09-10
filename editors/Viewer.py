@@ -1783,7 +1783,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.SelectedElement.SetHighlighted(True)
             
             if self.Debug:
-                if self.IsBlock(self.SelectedElement):
+                if isinstance(self.SelectedElement, FBD_Block):
                     instance_type = self.SelectedElement.GetType()
                     pou_type = {
                         "program": ITEM_PROGRAM,
