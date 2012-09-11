@@ -637,7 +637,10 @@ class PouProgramGenerator:
                 if isinstance(instance, (plcopen.fbdObjects_inVariable, plcopen.fbdObjects_outVariable, plcopen.fbdObjects_inOutVariable)):
                     expression = instance.getexpression()
                     var_type = self.GetVariableType(expression)
-                    if pou.getpouType() == "function" and expression == pou.getname():
+                    if isinstance(pou, plcopen.transitions_transition) and expression == pou.getname():
+                        var_type = "BOOL"
+                    elif (not isinstance(pou, (plcopen.transitions_transition, plcopen.actions_action)) and
+                          pou.getpouType() == "function" and expression == pou.getname()):
                         returntype_content = pou.interface.getreturnType().getcontent()
                         if returntype_content["name"] == "derived":
                             var_type = returntype_content["value"].getname()
@@ -742,6 +745,15 @@ class PouProgramGenerator:
                     self.ComputeBlockInputTypes(instance, block_infos, body)
                 else:
                     raise PLCGenException, _("No informations found for \"%s\" block")%(instance.gettypeName())
+            if body_type == "SFC":
+                previous_tagname = self.TagName
+                for action in pou.getactionList():
+                    self.TagName = self.ParentGenerator.Controler.ComputePouActionName(self.Name, action.getname())
+                    self.ComputeConnectionTypes(action)
+                for transition in pou.gettransitionList():
+                    self.TagName = self.ParentGenerator.Controler.ComputePouTransitionName(self.Name, transition.getname())
+                    self.ComputeConnectionTypes(transition)
+                self.TagName = previous_tagname
                 
     def ComputeBlockInputTypes(self, instance, block_infos, body):
         undefined = {}
