@@ -1468,7 +1468,7 @@ class PLCControler:
             if words[0] in ["P","T","A"]:
                 name = words[1]
                 type = self.GetPouType(name, debug)
-        if type == "function" or words[0] == "T":
+        if type == "function":
             blocktypes = []
             for category in BlockTypes + self.GetConfNodeBlockTypes():
                 cat = {"name" : category["name"], "list" : []}

@@ -234,8 +234,6 @@ class ViewerDropTarget(wx.TextDropTarget):
                     message = _("\"%s\" can't use itself!")%pou_name
                 elif pou_type == "function" and values[1] != "function":
                     message = _("Function Blocks can't be used in Functions!")
-                elif words[0] == "T" and values[1] != "function":
-                    message = _("Function Blocks can't be used in Transitions!")
                 elif self.ParentWindow.Controler.PouIsUsedBy(pou_name, values[0], self.ParentWindow.Debug):
                     message = _("\"%s\" is already used by \"%s\"!")%(pou_name, values[0])
                 else:
