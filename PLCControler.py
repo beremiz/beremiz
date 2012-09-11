@@ -454,6 +454,21 @@ class PLCControler:
                                 var_infos = self.GetPouVariableInfos(project, variable, var_class, debug)
                                 if var_infos is not None:
                                     vars.append(var_infos)
+                        if pou.getbodyType() == "SFC":
+                            for transition in pou.gettransitionList():
+                                vars.append({
+                                    "name": transition.getname(),
+                                    "type": None, 
+                                    "class": ITEM_TRANSITION,
+                                    "edit": True,
+                                    "debug": True})
+                            for action in pou.getactionList():
+                                vars.append({
+                                    "name": action.getname(),
+                                    "type": None, 
+                                    "class": ITEM_ACTION,
+                                    "edit": True,
+                                    "debug": True})
                         return {"class": POU_TYPES[pou_type],
                                 "type": words[1],
                                 "variables": vars,
@@ -480,6 +495,19 @@ class PLCControler:
                                 "variables": vars,
                                 "edit": False,
                                 "debug": False}
+            elif words[0] in ['A', 'T']:
+                pou_vars = self.GetPouVariables(self.ComputePouName(words[1]), debug)
+                if pou_vars is not None:
+                    if words[0] == 'A':
+                        element_type = ITEM_ACTION
+                    elif words[0] == 'T':
+                        element_type = ITEM_TRANSITION
+                    return {"class": element_type,
+                            "type": None,
+                            "variables": [var for var in pou_vars["variables"] 
+                                          if var["class"] not in [ITEM_ACTION, ITEM_TRANSITION]],
+                            "edit": True,
+                            "debug": True}
             elif words[0] in ['C', 'R']:
                 if words[0] == 'C':
                     element_type = ITEM_CONFIGURATION
@@ -579,6 +607,10 @@ class PLCControler:
                 return [words[1]]
             elif words[0] == 'R':
                 return ["%s.%s" % (words[1], words[2])]
+            elif words[0] in ['T', 'A']:
+                return ["%s.%s" % (instance, words[2])
+                        for instance in self.SearchPouInstances(
+                            self.ComputePouName(words[1]), debug)]
         return []
     
     def RecursiveGetPouInstanceTagName(self, project, pou_type, parts):
