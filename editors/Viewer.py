@@ -370,7 +370,7 @@ Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
 manipulating graphic elements
 """
 
-class Viewer(EditorPanel, DebugViewer):
+class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
     
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id = None):
@@ -550,6 +550,7 @@ class Viewer(EditorPanel, DebugViewer):
         
         EditorPanel.__init__(self, parent, tagname, window, controler, debug)
         DebugViewer.__init__(self, controler, debug)
+        DebugDataConsumer.__init__(self)
         
         # Adding a rubberband to Viewer
         self.rubberBand = RubberBand(viewer=self)
@@ -661,7 +662,11 @@ class Viewer(EditorPanel, DebugViewer):
     def GetScaling(self):
         return self.Scaling
     
-    def GetInstancePath(self):
+    def GetInstancePath(self, variable_base=False):
+        if variable_base:
+            words = self.TagName.split("::")
+            if words[0] in ["A", "T"]:
+                return ".".join(self.InstancePath.split(".")[:-1])
         return self.InstancePath
     
     def IsViewing(self, tagname):
@@ -840,20 +845,21 @@ class Viewer(EditorPanel, DebugViewer):
     
     def GetElementIECPath(self, element):
         iec_path = None
+        instance_path = self.GetInstancePath(True)
         if isinstance(element, Wire) and element.EndConnected is not None:
             block = element.EndConnected.GetParentBlock()
             if isinstance(block, FBD_Block):
                 blockname = block.GetName()
                 connectorname = element.EndConnected.GetName()
                 if blockname != "":
-                    iec_path = "%s.%s.%s"%(self.InstancePath, blockname, connectorname)
+                    iec_path = "%s.%s.%s"%(instance_path, blockname, connectorname)
                 else:
                     if connectorname == "":
-                        iec_path = "%s.%s%d"%(self.InstancePath, block.GetType(), block.GetId())
+                        iec_path = "%s.%s%d"%(instance_path, block.GetType(), block.GetId())
                     else:
-                        iec_path = "%s.%s%d_%s"%(self.InstancePath, block.GetType(), block.GetId(), connectorname)
+                        iec_path = "%s.%s%d_%s"%(instance_path, block.GetType(), block.GetId(), connectorname)
             elif isinstance(block, FBD_Variable):
-                iec_path = "%s.%s"%(self.InstancePath, block.GetName())
+                iec_path = "%s.%s"%(instance_path, block.GetName())
             elif isinstance(block, FBD_Connector):
                 connection = self.GetConnectorByName(block.GetName())
                 if connection is not None:
@@ -861,14 +867,14 @@ class Viewer(EditorPanel, DebugViewer):
                     if len(connector.Wires) == 1:
                         iec_path = self.GetElementIECPath(connector.Wires[0][0])
         elif isinstance(element, LD_Contact):
-            iec_path = "%s.%s"%(self.InstancePath, element.GetName())
+            iec_path = "%s.%s"%(instance_path, element.GetName())
         elif isinstance(element, SFC_Step):
-            iec_path = "%s.%s.X"%(self.InstancePath, element.GetName())
+            iec_path = "%s.%s.X"%(instance_path, element.GetName())
         elif isinstance(element, SFC_Transition):
             connectors = element.GetConnectors()
             previous_steps = self.GetPreviousSteps(connectors["inputs"])
             next_steps = self.GetNextSteps(connectors["outputs"])
-            iec_path = "%s.%s->%s"%(self.InstancePath, ",".join(previous_steps), ",".join(next_steps))
+            iec_path = "%s.%s->%s"%(instance_path, ",".join(previous_steps), ",".join(next_steps))
         return iec_path
        
 #-------------------------------------------------------------------------------
@@ -995,7 +1001,32 @@ class Viewer(EditorPanel, DebugViewer):
 #-------------------------------------------------------------------------------
 #                          Refresh functions
 #-------------------------------------------------------------------------------
+    
+    VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
 
+    def SetValue(self, value):
+        if self.Value != value:
+            self.Value = value
+            
+            xstart, ystart = self.GetViewStart()
+            window_size = self.Editor.GetClientSize()
+            refresh_rect = self.GetRedrawRect()
+            if (xstart * SCROLLBAR_UNIT <= refresh_rect.x + refresh_rect.width and 
+                xstart * SCROLLBAR_UNIT + window_size[0] >= refresh_rect.x and
+                ystart * SCROLLBAR_UNIT <= refresh_rect.y + refresh_rect.height and 
+                ystart * SCROLLBAR_UNIT + window_size[1] >= refresh_rect.y):
+                self.ElementNeedRefresh(self)
+    
+    def GetRedrawRect(self):
+        dc = self.GetLogicalDC()
+        ipw, iph = dc.GetTextExtent(_("Debug: %s") % self.InstancePath)
+        vw, vh = 0, 0
+        for value in self.VALUE_TRANSLATION.itervalues():
+            w, h = dc.GetTextExtent("(%s)" % value)
+            vw = max(vw, w)
+            vh = max(vh, h)
+        return wx.Rect(ipw + 4, 2, vw, vh)
+    
     def ElementNeedRefresh(self, element):
         self.ElementRefreshList_lock.acquire()
         self.ElementRefreshList.append(element)
@@ -1020,6 +1051,9 @@ class Viewer(EditorPanel, DebugViewer):
     # Refresh Viewer elements
     def RefreshView(self, variablepanel=True, selection=None):
         EditorPanel.RefreshView(self, variablepanel)
+        
+        if self.TagName.split("::")[0] == "A":
+            self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self)
         
         if self.ToolTipElement is not None:
             self.ToolTipElement.ClearToolTip()
@@ -1789,7 +1823,7 @@ class Viewer(EditorPanel, DebugViewer):
                     }.get(self.Controler.GetPouType(instance_type))
                     if pou_type is not None and instance_type in self.Controler.GetProjectPouNames(self.Debug):
                         self.ParentWindow.OpenDebugViewer(pou_type, 
-                            "%s.%s"%(self.InstancePath, self.SelectedElement.GetName()),
+                            "%s.%s"%(self.GetInstancePath(True), self.SelectedElement.GetName()),
                             self.Controler.ComputePouName(instance_type))
                 else:
                     iec_path = self.GetElementIECPath(self.SelectedElement)
@@ -3216,8 +3250,21 @@ class Viewer(EditorPanel, DebugViewer):
         
         if not printing:
             if self.Debug:
-                xstart, ystart = self.GetViewStart()
-                dc.DrawText(_("Debug: %s") % self.InstancePath, 2, 2)
+                is_action = self.TagName.split("::")[0] == "A"
+                text = _("Debug: %s") % self.InstancePath
+                if is_action and self.Value is not None:
+                    text += " ("
+                dc.DrawText(text, 2, 2)
+                if is_action and self.Value is not None:
+                    value_text = self.VALUE_TRANSLATION[self.Value]
+                    tw, th = dc.GetTextExtent(text)
+                    if self.Value:
+                        dc.SetTextForeground(wx.GREEN)
+                    dc.DrawText(value_text, tw + 2, 2)
+                    if self.Value:
+                        dc.SetTextForeground(wx.BLACK)
+                    vw, vh = dc.GetTextExtent(value_text)
+                    dc.DrawText(")", tw + vw + 4, 2)
             if self.rubberBand.IsShown():
                 self.rubberBand.Draw(dc)
             dc.EndDrawing()
