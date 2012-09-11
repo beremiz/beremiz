@@ -1435,6 +1435,11 @@ if cls:
             removed = False
             while i < len(transitions) and not removed:
                 if transitions[i].getname() == name:
+                    if transitions[i].getbodyType() in ["FBD", "LD", "SFC"]:
+                        for instance in transitions[i].getinstances():
+                            if isinstance(instance, PLCOpenClasses["fbdObjects_block"]):
+                                self.removepouVar(instance.gettypeName(), 
+                                                  instance.getinstanceName())
                     transitions.pop(i)
                     removed = True
                 i += 1
@@ -1465,7 +1470,7 @@ if cls:
             return self.actions.getaction()
         return []
     setattr(cls, "getactionList", getactionList)
-        
+    
     def removeaction(self, name):
         if self.actions:
             actions = self.actions.getaction()
@@ -1473,6 +1478,11 @@ if cls:
             removed = False
             while i < len(actions) and not removed:
                 if actions[i].getname() == name:
+                    if actions[i].getbodyType() in ["FBD", "LD", "SFC"]:
+                        for instance in actions[i].getinstances():
+                            if isinstance(instance, PLCOpenClasses["fbdObjects_block"]):
+                                self.removepouVar(instance.gettypeName(), 
+                                                  instance.getinstanceName())
                     actions.pop(i)
                     removed = True
                 i += 1
