@@ -621,12 +621,21 @@ class PLCControler:
             
             for varlist_type, varlist in pou.getvars():
                 for variable in varlist.getvariable():
-                    vartype_content = variable.gettype().getcontent()
-                    if vartype_content["name"] == "derived":
-                        return self.RecursiveGetPouInstanceTagName(
-                                        project, 
-                                        vartype_content["value"].getname(),
-                                        parts[1:])
+                    if variable.getname() == parts[0]:
+                        vartype_content = variable.gettype().getcontent()
+                        if vartype_content["name"] == "derived":
+                            return self.RecursiveGetPouInstanceTagName(
+                                            project, 
+                                            vartype_content["value"].getname(),
+                                            parts[1:])
+            
+            if pou.getbodyType() == "SFC" and len(parts) == 1:
+                for action in pou.getactionList():
+                    if action.getname() == parts[0]:
+                        return self.ComputePouActionName(pou_type, parts[0])
+                for transition in pou.gettransitionList():
+                    if transition.getname() == parts[0]:
+                        return self.ComputePouTransitionName(pou_type, parts[0])
         return None
     
     def GetPouInstanceTagName(self, instance_path, debug = False):
@@ -659,7 +668,9 @@ class PLCControler:
     def GetInstanceInfos(self, instance_path, debug = False):
         tagname = self.GetPouInstanceTagName(instance_path)
         if tagname is not None:
-            return self.GetPouVariables(tagname, debug)
+            infos = self.GetPouVariables(tagname, debug)
+            infos["type"] = tagname
+            return infos
         else:
             pou_path, var_name = instance_path.rsplit(".", 1)
             tagname = self.GetPouInstanceTagName(pou_path)
