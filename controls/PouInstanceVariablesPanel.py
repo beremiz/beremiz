@@ -26,7 +26,7 @@ import wx
 import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 
-from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM_POU
+from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM_POU, ITEM_TRANSITION, ITEM_ACTION
 from util.BitmapLibrary import GetBitmap
 
 class PouInstanceVariablesPanel(wx.Panel):
@@ -221,6 +221,14 @@ class PouInstanceVariablesPanel(wx.Panel):
                 tagname = self.Controller.ComputeConfigurationResourceName(
                     self.InstanceChoice.GetStringSelection(), 
                     infos["name"])
+            elif var_class == ITEM_TRANSITION:
+                tagname = self.Controller.ComputePouTransitionName(
+                    self.PouTagName.split("::")[1],
+                    infos["name"])
+            elif var_class == ITEM_ACTION:
+                tagname = self.Controller.ComputePouActionName(
+                    self.PouTagName.split("::")[1],
+                    infos["name"])
             else:
                 var_class = ITEM_POU
                 tagname = self.Controller.ComputePouName(infos["type"])
@@ -236,9 +244,23 @@ class PouInstanceVariablesPanel(wx.Panel):
                                       infos["name"])
                 if var_class in ITEMS_VARIABLE:
                     self.ParentWindow.AddDebugVariable(var_path, force=True)
+                elif var_class == ITEM_TRANSITION:
+                    self.ParentWindow.OpenDebugViewer(
+                        var_class,
+                        var_path,
+                        self.Controller.ComputePouTransitionName(
+                            self.PouTagName.split("::")[1],
+                            infos["name"]))
+                elif var_class == ITEM_ACTION:
+                    self.ParentWindow.OpenDebugViewer(
+                        var_class,
+                        var_path,
+                        self.Controller.ComputePouActionName(
+                            self.PouTagName.split("::")[1],
+                            infos["name"]))
                 else:
                     self.ParentWindow.OpenDebugViewer(
-                        infos["class"],
+                        var_class,
                         var_path,
                         self.Controller.ComputePouName(infos["type"]))
             event.Skip()
