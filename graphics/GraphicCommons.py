@@ -1345,7 +1345,20 @@ class Graphic_Group(Graphic_Element):
         pass
     
     # Returns the position of this group
-    def GetPosition(self):
+    def GetPosition(self, exclude_wires=False):
+        if exclude_wires:
+            posx = posy = None
+            for element in self.Elements:
+                if not isinstance(element, Wire) or element in self.WireExcluded:
+                    bbox = element.GetBoundingBox()
+                    if posx is None and posy is None:
+                        posx, posy = bbox.x, bbox.y
+                    else:
+                        posx = min(posx, bbox.x)
+                        posy = min(posy, bbox.y)
+            if posx is None and posy is None:
+                return 0, 0
+            return posx, posy
         return self.BoundingBox.x, self.BoundingBox.y
     
     # Forbids to change the group size
@@ -1378,12 +1391,13 @@ class Graphic_Group(Graphic_Element):
             if event.ControlDown():
                 self.CurrentDrag.x = self.CurrentDrag.x + movex
                 self.CurrentDrag.y = self.CurrentDrag.y + movey
+                posx, posy = self.GetPosition(True)
                 if abs(self.CurrentDrag.x) > abs(self.CurrentDrag.y):
-                    movex = self.StartPos.x + self.CurrentDrag.x - self.Pos.x
-                    movey = self.StartPos.y - self.Pos.y
+                    movex = self.StartPos.x + self.CurrentDrag.x - posx
+                    movey = self.StartPos.y - posy
                 else:
-                    movex = self.StartPos.x - self.Pos.x
-                    movey = self.StartPos.y + self.CurrentDrag.y - self.Pos.y
+                    movex = self.StartPos.x - posx
+                    movey = self.StartPos.y + self.CurrentDrag.y - posy
             self.Move(movex, movey)
             return movex, movey
         return 0, 0
@@ -1401,6 +1415,7 @@ class Graphic_Group(Graphic_Element):
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
         Graphic_Element.OnLeftDown(self, event, dc, scaling)
+        self.StartPos = wx.Point(*self.GetPosition(True))
         for element in self.Elements:
             element.Handle = self.Handle
 
