@@ -42,7 +42,7 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnParentButtonClick, 
                 self.ParentButton)
         
-        self.InstanceChoice = wx.ComboBox(self, style=wx.CB_READONLY)
+        self.InstanceChoice = wx.ComboBox(self, size=wx.Size(0, 0), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnInstanceChoiceChanged,
                 self.InstanceChoice)
         self.InstanceChoice.Bind(wx.EVT_LEFT_DOWN, self.OnInstanceChoiceLeftDown)
