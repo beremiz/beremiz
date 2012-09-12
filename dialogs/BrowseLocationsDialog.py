@@ -23,12 +23,11 @@ import wx
 
 from plcopen.structures import LOCATIONDATATYPES
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from util.BitmapLibrary import GetBitmap
 
 #-------------------------------------------------------------------------------
 #                                   Helpers
 #-------------------------------------------------------------------------------
-
-CWD = os.path.split(os.path.split(os.path.realpath(__file__))[0])[0]
 
 def GetDirChoiceOptions():
     _ = lambda x : x
@@ -105,7 +104,7 @@ class BrowseLocationsDialog(wx.Dialog):
             ("VAR_INPUT",     LOCATION_VAR_INPUT), 
             ("VAR_OUTPUT",    LOCATION_VAR_OUTPUT), 
             ("VAR_LOCAL",     LOCATION_VAR_MEMORY)]:
-            self.TreeImageDict[itemtype]=self.TreeImageList.Add(wx.Bitmap(os.path.join(CWD, 'Images', '%s.png'%imgname)))
+            self.TreeImageDict[itemtype]=self.TreeImageList.Add(GetBitmap(imgname))
         
         # Assign icon list to TreeCtrls
         self.LocationsTree.SetImageList(self.TreeImageList)
