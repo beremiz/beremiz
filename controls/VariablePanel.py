@@ -258,38 +258,40 @@ class VariableDropTarget(wx.TextDropTarget):
                         location = values[0]
                         variable_type = self.ParentWindow.Table.GetValueByName(row, "Type")
                         base_type = self.ParentWindow.Controler.GetBaseType(variable_type)
-                        if location.startswith("%"):
-                            if base_type != values[2]:
+                        
+                        if values[2] is not None:
+                            base_location_type = self.ParentWindow.Controler.GetBaseType(values[2])
+                            if values[2] != variable_type and base_type != base_location_type:
                                 message = _("Incompatible data types between \"%s\" and \"%s\"")%(values[2], variable_type)
-                            else:
-                                self.ParentWindow.Table.SetValue(row, col, location)
-                                self.ParentWindow.Table.ResetView(self.ParentWindow.VariablesGrid)
-                                self.ParentWindow.SaveValues()
-                        else:
-                            if location[0].isdigit() and base_type != "BOOL":
-                                message = _("Incompatible size of data between \"%s\" and \"BOOL\"")%location
-                            elif location[0] not in LOCATIONDATATYPES:
-                                message = _("Unrecognized data size \"%s\"")%location[0]
-                            elif base_type not in LOCATIONDATATYPES[location[0]]:
-                                message = _("Incompatible size of data between \"%s\" and \"%s\"")%(location, variable_type)
-                            else:
-                                dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow, 
-                                      _("Select a variable class:"), _("Variable class"), 
-                                      ["Input", "Output", "Memory"], 
-                                      wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
-                                if dialog.ShowModal() == wx.ID_OK:
-                                    selected = dialog.GetSelection()
+                        
+                        if message is None:
+                            if not location.startswith("%"):
+                                if location[0].isdigit() and base_type != "BOOL":
+                                    message = _("Incompatible size of data between \"%s\" and \"BOOL\"")%location
+                                elif location[0] not in LOCATIONDATATYPES:
+                                    message = _("Unrecognized data size \"%s\"")%location[0]
+                                elif base_type not in LOCATIONDATATYPES[location[0]]:
+                                    message = _("Incompatible size of data between \"%s\" and \"%s\"")%(location, variable_type)
                                 else:
-                                    selected = None
-                                dialog.Destroy()
-                                if selected is None:
-                                    return
-                                if selected == 0:
-                                    location = "%I" + location
-                                elif selected == 1:
-                                    location = "%Q" + location
-                                else:
-                                    location = "%M" + location
+                                    dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow, 
+                                          _("Select a variable class:"), _("Variable class"), 
+                                          ["Input", "Output", "Memory"], 
+                                          wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                    if dialog.ShowModal() == wx.ID_OK:
+                                        selected = dialog.GetSelection()
+                                    else:
+                                        selected = None
+                                    dialog.Destroy()
+                                    if selected is None:
+                                        return
+                                    if selected == 0:
+                                        location = "%I" + location
+                                    elif selected == 1:
+                                        location = "%Q" + location
+                                    else:
+                                        location = "%M" + location
+                                        
+                            if message is None:
                                 self.ParentWindow.Table.SetValue(row, col, location)
                                 self.ParentWindow.Table.ResetView(self.ParentWindow.VariablesGrid)
                                 self.ParentWindow.SaveValues()
