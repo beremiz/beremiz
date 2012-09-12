@@ -1441,9 +1441,9 @@ class RootClass:
     
     def GetModulesLibrary(self, profile_filter=None):
         library = []
-        children_dict = {}
         for vendor_id, vendor in self.ModulesLibrary.iteritems():
             groups = []
+            children_dict = {}
             for group_type, group in vendor["groups"].iteritems():
                 group_infos = {"name": group["name"],
                                "order": group["order"],
