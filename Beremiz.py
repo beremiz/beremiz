@@ -807,7 +807,7 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
         
-        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
+        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             self.Config.Write("lastopenedfolder", 
@@ -842,7 +842,8 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
         
-        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, wx.DD_NEW_DIR_BUTTON)
+        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, style=wx.DEFAULT_DIALOG_STYLE|
+                                                                               wx.RESIZE_BORDER)
         if dialog.ShowModal() == wx.ID_OK:
             self.OpenProject(dialog.GetPath())
         dialog.Destroy()
@@ -1005,7 +1006,7 @@ class Beremiz(IDEFrame):
         
     def AddConfNode(self, ConfNodeType, confnode=None):
         if self.CTR.CheckProjectPathPerm():
-            ConfNodeName = "%s-0" % ConfNodeType
+            ConfNodeName = "%s_0" % ConfNodeType
             if confnode is not None:
                 confnode.CTNAddChild(ConfNodeName, ConfNodeType)
             else:
