@@ -26,8 +26,9 @@ import wx
 import wx.lib.buttons
 import wx.grid
 
-from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD
+from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
 from controls import CustomGrid, CustomTable, DurationCellEditor
+from dialogs.DurationEditorDialog import IEC_TIME_MODEL
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 
@@ -163,7 +164,10 @@ class ResourceTable(CustomTable):
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
                 
-                highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
+                if colname == "Interval" and IEC_TIME_MODEL.match(self.GetValueByName(row, colname)) is None:
+                    highlight_colours = ERROR_HIGHLIGHT
+                else:
+                    highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
                 grid.SetCellBackgroundColour(row, col, highlight_colours[0])
                 grid.SetCellTextColour(row, col, highlight_colours[1])
             self.ResizeRow(grid, row)
@@ -431,7 +435,7 @@ class ResourceEditor(EditorPanel):
                         self.InstancesTable.SetValueByName(i, "Task", new_name)
         self.RefreshModel()
         colname = self.TasksTable.GetColLabelValue(col, False)
-        if colname in ["Triggering", "Name"]:
+        if colname in ["Triggering", "Name", "Interval"]:
             wx.CallAfter(self.RefreshView, False)
         event.Skip()
 
