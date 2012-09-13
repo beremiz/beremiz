@@ -118,6 +118,10 @@ def _runtime_%(location)s_cleanup():
         <object class="%(class)s" name="%(name)s" base="EditFrame">
             <style>wxDEFAULT_FRAME_STYLE</style>
             <title>frame_1</title>
+            <object class="wxBoxSizer" name="sizer_1" base="EditBoxSizer">
+                <orient>wxVERTICAL</orient>
+            <object class="sizerslot" />
+        </object>
         </object>
     </application>
     """ % {"name": hmi_name, "class": "Class_%s" % hmi_name})
