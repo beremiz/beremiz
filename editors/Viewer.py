@@ -1236,9 +1236,17 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         else:
             self.AddBlock(element)
             connectors = element.GetConnectors()
+        element.SetPosition(instance["x"], instance["y"])
         if isinstance(element, SFC_Divergence):
-            element.SetPosition(instance["x"], instance["y"])
             element.SetSize(instance["width"], instance["height"])
+        for i, output_connector in enumerate(instance["outputs"]):
+            if i < len(connectors["outputs"]):
+                connector = connectors["outputs"][i]
+                if output_connector.get("negated", False):
+                    connector.SetNegated(True)
+                if output_connector.get("edge", "none") != "none":
+                    connector.SetEdge(output_connector["edge"])
+                connector.SetPosition(wx.Point(*output_connector["position"]))
         for i, input_connector in enumerate(instance["inputs"]):
             if i < len(connectors["inputs"]):
                 connector = connectors["inputs"][i]
@@ -1248,16 +1256,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                 if input_connector.get("edge", "none") != "none":
                     connector.SetEdge(input_connector["edge"])
                 self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection)
-        for i, output_connector in enumerate(instance["outputs"]):
-            if i < len(connectors["outputs"]):
-                connector = connectors["outputs"][i]
-                if output_connector.get("negated", False):
-                    connector.SetNegated(True)
-                if output_connector.get("edge", "none") != "none":
-                    connector.SetEdge(output_connector["edge"])
-                connector.SetPosition(wx.Point(*output_connector["position"]))
         if not isinstance(element, SFC_Divergence):
-            element.SetPosition(instance["x"], instance["y"])
             element.SetSize(instance["width"], instance["height"])
         if selection is not None and selection[0].get(instance["id"], False):
             self.SelectInGroup(element)
