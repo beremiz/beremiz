@@ -232,7 +232,7 @@ if HAS_MCL:
             }
         
         def _getCIA402AxisRef(self):
-            data = wx.TextDataObject(str(("%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
+            data = wx.TextDataObject(str(("%%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
                                           "location", "AXIS_REF", self.CTNName(), "")))
             dragSource = wx.DropSource(self.GetCTRoot().AppFrame)
             dragSource.SetData(data)
@@ -1149,6 +1149,22 @@ class _EthercatCFileGenerator:
 
 EtherCATInfoClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd")) 
 
+cls = EtherCATInfoClasses["EtherCATBase.xsd"].get("DictionaryType", None)
+if cls:
+    cls.loadXMLTreeArgs = None
+    
+    setattr(cls, "_loadXMLTree", getattr(cls, "loadXMLTree"))
+    
+    def loadXMLTree(self, *args):
+        self.loadXMLTreeArgs = args
+    setattr(cls, "loadXMLTree", loadXMLTree)
+
+    def load(self):
+        if self.loadXMLTreeArgs is not None:
+            self._loadXMLTree(*self.loadXMLTreeArgs)
+            self.loadXMLTreeArgs = None
+    setattr(cls, "load", load)
+
 cls = EtherCATInfoClasses["EtherCATInfo.xsd"].get("DeviceType", None)
 if cls:
     cls.DataTypes = None
@@ -1220,6 +1236,7 @@ if cls:
         entries = {}
         
         for dictionary in self.GetProfileDictionaries():
+            dictionary.load()
             
             for object in dictionary.getObjects().getObject():
                 entry_index = object.getIndex().getcontent()
