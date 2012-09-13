@@ -352,9 +352,11 @@ class ConfigTreeNode:
 
         # Find a free name, eventually appending digit
         res = DesiredName
+        if DesiredName.endswith("_0"):
+            DesiredName = DesiredName[:-2]
         suffix = 1
         while res in AllNames:
-            res = "%s-%d"%(DesiredName, suffix)
+            res = "%s_%d"%(DesiredName, suffix)
             suffix += 1
         
         # Get old path
