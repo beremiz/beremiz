@@ -204,7 +204,7 @@ class VariableTable(CustomTable):
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
                 
-                if colname == "Location" and LOCATION_MODEL.match(self.GetValueByName(row, "Location")) is None:
+                if colname == "Location" and LOCATION_MODEL.match(self.GetValueByName(row, colname)) is None:
                     highlight_colours = ERROR_HIGHLIGHT
                 else:
                     highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
