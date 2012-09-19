@@ -46,6 +46,7 @@ long long wait_period_ns = 100000LL;
 // EtherCAT
 static ec_master_t *master = NULL;
 static ec_domain_t *domain1 = NULL;
+static int first_sent=0;
 %(slaves_declaration)s
 
 /* Beremiz plugin functions */
@@ -103,7 +104,9 @@ int __init_%(location)s(int argc,char **argv)
     }
 
     fprintf(stdout, "Master %(master_number)d activated...\n");
-     
+    
+    first_sent = 0;
+
     return 0;
 }
 
@@ -114,24 +117,45 @@ void __cleanup_%(location)s(void)
 	}
 	//release master
 	ecrt_release_master(master);
+    first_sent = 0;
 }
 
 void __retrieve_%(location)s(void)
 {
-    // send process data
-    ecrt_rtdm_domain_queque(rt_fd);
-    ecrt_rtdm_master_send(rt_fd);
-
-    rt_task_sleep(rt_timer_ns2tsc(wait_period_ns));
+//    // send process data
+//    ecrt_rtdm_domain_queque(rt_fd);
+//    ecrt_rtdm_master_send(rt_fd);
+//
+//    rt_task_sleep(rt_timer_ns2tsc(wait_period_ns));
 
     // receive ethercat
-    ecrt_rtdm_master_recieve(rt_fd);
-    ecrt_rtdm_domain_process(rt_fd);
-
+    if(first_sent){
+        ecrt_rtdm_master_recieve(rt_fd);
+        ecrt_rtdm_domain_process(rt_fd);
 %(retrieve_variables)s
+    }
+
 }
+
+static RTIME _last_occur=0;
+RTIME _current_lag=0;
 
 void __publish_%(location)s(void)
 {
 %(publish_variables)s
+    ecrt_rtdm_domain_queque(rt_fd);
+    {
+        RTIME _current_time = rt_timer_read();
+        RTIME deadline = _last_occur ?
+            _last_occur + common_ticktime__:
+            _current_time; 
+        _last_occur = _current_time;
+        _current_lag = deadline - _current_time;
+        while(_current_time < deadline) {
+            _last_occur = _current_time;
+            _current_time = rt_timer_read();
+        }
+    }
+    ecrt_rtdm_master_send(rt_fd);
+    first_sent = 1;
 }
