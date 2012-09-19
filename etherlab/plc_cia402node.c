@@ -29,14 +29,14 @@ typedef enum {
 	__SwitchedOn,
 	__OperationEnabled,
 	__QuickStopActive,
-	__FaultReactionActive,
-	__Fault,
+    __FaultReactionActive,
+    __Fault,
 } __CIA402NodeState;
 
 typedef struct {
 %(entry_variables)s
-	__CIA402NodeState state;
-	axis_s* axis;
+    __CIA402NodeState state;
+    axis_s* axis;
 } __CIA402Node;
 
 static __CIA402Node __CIA402Node_%(location)s;
