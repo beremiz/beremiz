@@ -23,6 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os, sys, getopt
+from threading import Thread
 
 def usage():
     print """
@@ -291,11 +292,12 @@ if enablewx:
             TBMENU_CHANGE_WD = wx.NewId()
             TBMENU_QUIT = wx.NewId()
             
-            def __init__(self, pyroserver):
+            def __init__(self, pyroserver, level):
                 wx.TaskBarIcon.__init__(self)
                 self.pyroserver = pyroserver
                 # Set the image
                 self.UpdateIcon(None)
+                self.level = level
                 
                 # bind some events
                 self.Bind(wx.EVT_MENU, self.OnTaskBarStartPLC, id=self.TBMENU_START)
@@ -318,13 +320,16 @@ if enablewx:
                 menu = wx.Menu()
                 menu.Append(self.TBMENU_START, _("Start PLC"))
                 menu.Append(self.TBMENU_STOP, _("Stop PLC"))
-                menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
-                menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
-                menu.Append(self.TBMENU_LIVE_SHELL, _("Launch a live Python shell"))
-                menu.Append(self.TBMENU_WXINSPECTOR, _("Launch WX GUI inspector"))
-                menu.Append(self.TBMENU_CHANGE_PORT, _("Change Port Number"))
+                if self.level==1:
+                    menu.AppendSeparator()
+                    menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
+                    menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
+                    menu.Append(self.TBMENU_CHANGE_PORT, _("Change Port Number"))
+                    menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
+                    menu.AppendSeparator()
+                    menu.Append(self.TBMENU_LIVE_SHELL, _("Launch a live Python shell"))
+                    menu.Append(self.TBMENU_WXINSPECTOR, _("Launch WX GUI inspector"))
                 menu.AppendSeparator()
-                menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
                 menu.Append(self.TBMENU_QUIT, _("Quit"))
                 return menu
             
@@ -348,7 +353,7 @@ if enablewx:
             
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
-                    self.pyroserver.plcobj.StopPLC()
+                    Thread(target=self.pyroserver.plcobj.StopPLC).start()
                 evt.Skip()
             
             def OnTaskBarChangeInterface(self, evt):
@@ -677,7 +682,7 @@ if havewx:
     from threading import Semaphore
     wx_eval_lock = Semaphore(0)
     mythread = currentThread()
-    
+
     def statuschange(status):
         wx.CallAfter(taskbar_instance.UpdateIcon,status)
         
@@ -701,7 +706,7 @@ if havewx:
         return eval_res
     
     pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
-    taskbar_instance = BeremizTaskBarIcon(pyroserver)
+    taskbar_instance = BeremizTaskBarIcon(pyroserver, enablewx)
 else:
     pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, website=website)
 
