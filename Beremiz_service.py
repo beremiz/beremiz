@@ -414,7 +414,7 @@ if enablewx:
                 evt.Skip()
             
             def OnTaskBarQuit(self, evt):
-                self.pyroserver.Quit()
+                Thread(target=self.pyroserver.Quit).start()
                 self.RemoveIcon()
                 wx.CallAfter(wx.GetApp().Exit)
                 evt.Skip()
