@@ -122,12 +122,6 @@ void __cleanup_%(location)s(void)
 
 void __retrieve_%(location)s(void)
 {
-//    // send process data
-//    ecrt_rtdm_domain_queque(rt_fd);
-//    ecrt_rtdm_master_send(rt_fd);
-//
-//    rt_task_sleep(rt_timer_ns2tsc(wait_period_ns));
-
     // receive ethercat
     if(first_sent){
         ecrt_rtdm_master_recieve(rt_fd);
@@ -138,22 +132,40 @@ void __retrieve_%(location)s(void)
 }
 
 static RTIME _last_occur=0;
+static RTIME _last_publish=0;
 RTIME _current_lag=0;
+RTIME _max_jitter=0;
+static inline RTIME max(RTIME a,RTIME b){return a>b?a:b;}
 
 void __publish_%(location)s(void)
 {
 %(publish_variables)s
     ecrt_rtdm_domain_queque(rt_fd);
     {
-        RTIME _current_time = rt_timer_read();
-        RTIME deadline = _last_occur ?
-            _last_occur + common_ticktime__:
-            _current_time; 
-        _last_occur = _current_time;
-        _current_lag = deadline - _current_time;
-        while(_current_time < deadline) {
-            _last_occur = _current_time;
-            _current_time = rt_timer_read();
+        RTIME current_time = rt_timer_read();
+        // Limit spining max 1/5 of common_ticktime
+        RTIME maxdeadline = current_time + (common_ticktime__ / 5);
+        RTIME deadline = _last_occur ? 
+            _last_occur + common_ticktime__ : 
+            current_time + _max_jitter; 
+        if(deadline > maxdeadline) deadline = maxdeadline;
+        _current_lag = deadline - current_time;
+        if(_last_publish != 0){
+            RTIME period = current_time - _last_publish;
+            if(period > common_ticktime__ )
+                _max_jitter = max(_max_jitter, period - common_ticktime__);
+            else
+                _max_jitter = max(_max_jitter, common_ticktime__ - period);
+        }
+        _last_publish = current_time;
+        _last_occur = current_time;
+        while(current_time < deadline) {
+            _last_occur = current_time; //Drift backward by default
+            current_time = rt_timer_read();
+        }
+        if( _max_jitter * 10 < common_ticktime__ && _current_lag < _max_jitter){
+            //Consuming security margin ?
+            _last_occur = current_time; //Drift forward
         }
     }
     ecrt_rtdm_master_send(rt_fd);
