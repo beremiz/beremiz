@@ -23,7 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os, sys, getopt
-from threading import Thread
+from threading import Thread,Timer
 
 def usage():
     print """
@@ -416,7 +416,7 @@ if enablewx:
             def OnTaskBarQuit(self, evt):
                 Thread(target=self.pyroserver.Quit).start()
                 self.RemoveIcon()
-                wx.CallAfter(wx.GetApp().Exit)
+                Timer(1, wx.CallAfter(wx.GetApp().Exit)).start()
                 evt.Skip()
             
             def UpdateIcon(self, plcstatus):
