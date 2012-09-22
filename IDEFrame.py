@@ -2551,3 +2551,94 @@ class IDEFrame(wx.Frame):
 
     def ClearSearchResults(self):
         self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
+
+#-------------------------------------------------------------------------------
+#                               Viewer Printout
+#-------------------------------------------------------------------------------
+
+UPPER_DIV = lambda x, y: (x / y) + {True : 0, False : 1}[(x % y) == 0]
+
+class GraphicPrintout(wx.Printout):
+    def __init__(self, viewer, page_size, margins, preview = False):
+        wx.Printout.__init__(self)
+        self.Viewer = viewer
+        self.PageSize = page_size
+        if self.PageSize[0] == 0 or self.PageSize[1] == 0:
+            self.PageSize = (1050, 1485)
+        self.Preview = preview
+        self.Margins = margins
+        self.FontSize = 5
+        self.TextMargin = 3
+        
+        maxx, maxy = viewer.GetMaxSize()
+        self.PageGrid = (UPPER_DIV(maxx, self.PageSize[0]), 
+                         UPPER_DIV(maxy, self.PageSize[1]))
+        
+    def GetPageNumber(self):
+        return self.PageGrid[0] * self.PageGrid[1]
+    
+    def HasPage(self, page):
+        return page <= self.GetPageNumber()
+        
+    def GetPageInfo(self):
+        page_number = self.GetPageNumber()
+        return (1, page_number, 1, page_number)
+
+    def OnBeginDocument(self, startPage, endPage):
+        dc = self.GetDC()
+        if not self.Preview and isinstance(dc, wx.PostScriptDC):
+            dc.SetResolution(720)
+        super(GraphicPrintout, self).OnBeginDocument(startPage, endPage)
+
+    def OnPrintPage(self, page):
+        dc = self.GetDC()
+        dc.SetUserScale(1.0, 1.0)
+        dc.SetDeviceOrigin(0, 0)
+        dc.printing = not self.Preview
+        
+        # Get the size of the DC in pixels
+        ppiPrinterX, ppiPrinterY = self.GetPPIPrinter()
+        ppiScreenX, ppiScreenY = self.GetPPIScreen()
+        pw, ph = self.GetPageSizePixels()
+        dw, dh = dc.GetSizeTuple()
+        Xscale = (float(dw) * float(ppiPrinterX)) / (float(pw) * 25.4)
+        Yscale = (float(dh) * float(ppiPrinterY)) / (float(ph) * 25.4)
+        
+        fontsize = self.FontSize * Yscale
+        text_margin = self.TextMargin * Yscale
+        
+        margin_left = self.Margins[0].x * Xscale
+        margin_top = self.Margins[0].y * Yscale
+        area_width = dw - self.Margins[1].x * Xscale - margin_left
+        area_height = dh - self.Margins[1].y * Yscale - margin_top
+        
+        dc.SetPen(MiterPen(wx.BLACK))
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)    
+        dc.DrawRectangle(margin_left, margin_top, area_width, area_height)
+        
+        dc.SetFont(wx.Font(fontsize, wx.DEFAULT, wx.NORMAL, wx.NORMAL))
+        dc.SetTextForeground(wx.BLACK)
+        block_name = " - ".join(self.Viewer.GetTagName().split("::")[1:])
+        text_width, text_height = dc.GetTextExtent(block_name)
+        dc.DrawText(block_name, margin_left, margin_top - text_height - self.TextMargin)
+        dc.DrawText(_("Page: %d") % page, margin_left, margin_top + area_height + self.TextMargin)
+        
+        # Calculate the position on the DC for centering the graphic
+        posX = area_width * ((page - 1) % self.PageGrid[0])
+        posY = area_height * ((page - 1) / self.PageGrid[0])
+
+        scaleX = float(area_width) / float(self.PageSize[0])
+        scaleY = float(area_height) / float(self.PageSize[1])
+        scale = min(scaleX, scaleY)
+
+        # Set the scale and origin
+        dc.SetDeviceOrigin(-posX + margin_left, -posY + margin_top)
+        dc.SetClippingRegion(posX, posY, self.PageSize[0] * scale, self.PageSize[1] * scale)
+        dc.SetUserScale(scale, scale)
+        
+        #-------------------------------------------
+        
+        self.Viewer.DoDrawing(dc, True)
+        
+        return True
+
