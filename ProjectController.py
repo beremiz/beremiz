@@ -237,6 +237,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
             os.mkdir(projectfiles_path)
         return projectfiles_path
     
+    def AddProjectDefaultConfiguration(self, config_name="config", res_name="resource1"):
+        self.ProjectAddConfiguration(config_name)
+        self.ProjectAddConfigurationResource(config_name, res_name)
+
     def NewProject(self, ProjectPath, BuildPath=None):
         """
         Create a new project in an empty folder
@@ -254,8 +258,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
              "productVersion": "1",
              "companyName": _("Unknown"),
              "creationDateTime": datetime(*localtime()[:6])})
-        self.ProjectAddConfiguration("config")
-        self.ProjectAddConfigurationResource("config", "resource1")
+        self.AddProjectDefaultConfiguration()
         
         # Change XSD into class members
         self._AddParamsMembers()
@@ -284,6 +287,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         result = self.OpenXMLFile(plc_file)
         if result:
             return result
+        if len(self.GetProjectConfigNames()) == 0:
+            self.AddProjectDefaultConfiguration()
         # Change XSD into class members
         self._AddParamsMembers()
         self.Children = {}
