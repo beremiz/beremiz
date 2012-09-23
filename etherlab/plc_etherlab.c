@@ -21,9 +21,6 @@ extern unsigned long long common_ticktime__;
 // declaration of interface variables
 %(located_variables_declaration)s
 
-// Optional features
-#define CONFIGURE_PDOS  %(configure_pdos)d
-
 // process data
 uint8_t *domain1_pd = NULL;
 %(used_pdo_entry_offset_variables_declaration)s
@@ -34,9 +31,7 @@ const static ec_pdo_entry_reg_t domain1_regs[] = {
 };
 /*****************************************************************************/
 
-#if CONFIGURE_PDOS
 %(pdos_configuration_declaration)s
-#endif
 
 int rt_fd = -1;
 CstructMstrAttach MstrAttach;
@@ -64,10 +59,8 @@ int __init_%(location)s(int argc,char **argv)
 	domain1 = ecrt_master_create_domain(master);
 	if (!domain1) return -1;
 
-#if CONFIGURE_PDOS
-    fprintf(stdout, "Configure PDOs...\n");
-	%(slaves_configuration)s
-#endif
+    // slaves PDO configuration
+%(slaves_configuration)s
 
     if (ecrt_domain_reg_pdo_entry_list(domain1, domain1_regs)) {
         fprintf(stderr, "PDO entry registration failed!\n");
@@ -76,8 +69,10 @@ int __init_%(location)s(int argc,char **argv)
 
 	ecrt_master_set_send_interval(master, common_ticktime__);
 
+    // slaves initialization
 %(slaves_initialization)s
 
+    // extracting default value for not mapped entry in output PDOs
 %(slaves_output_pdos_default_values_extraction)s
 
     sprintf(&rt_dev_file[0],"%%s%%u",EC_RTDM_DEV_FILE_NAME,0);
