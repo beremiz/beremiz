@@ -277,6 +277,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
                 self.RefreshIECChannelControlsState()
             self.RefreshConfNodeParamsSizer()
+            self.RefreshScrollbars()
     
     def EnableScrolling(self, enable):
         self.ScrollingEnabled = enable
@@ -555,7 +556,7 @@ class ConfTreeNodeEditor(EditorPanel):
             event.Skip()
         return OnBrowseButton
     
-    def OnWindowResize(self, event):
+    def RefreshScrollbars(self):
         self.ParamsEditor.GetBestSize()
         xstart, ystart = self.ParamsEditor.GetViewStart()
         window_size = self.ParamsEditor.GetClientSize()
@@ -565,6 +566,9 @@ class ConfTreeNodeEditor(EditorPanel):
         self.ParamsEditor.Scroll(posx, posy)
         self.ParamsEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+    
+    def OnWindowResize(self, event):
+        self.RefreshScrollbars()
         event.Skip()
     
     def OnMouseWheel(self, event):
