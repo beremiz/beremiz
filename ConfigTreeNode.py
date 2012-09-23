@@ -136,8 +136,9 @@ class ConfigTreeNode:
         if path == "BaseParams.IEC_Channel":
             old_leading = ".".join(map(str, self.GetCurrentLocation()))
             new_value = self.FindNewIEC_Channel(value)
-            new_leading = ".".join(map(str, self.CTNParent.GetCurrentLocation() + (new_value,)))
-            self.GetCTRoot().UpdateProjectVariableLocation(old_leading, new_leading)
+            if new_value != value:
+                new_leading = ".".join(map(str, self.CTNParent.GetCurrentLocation() + (new_value,)))
+                self.GetCTRoot().UpdateProjectVariableLocation(old_leading, new_leading)
             return new_value, True
         elif path == "BaseParams.Name":
             res = self.FindNewName(value)

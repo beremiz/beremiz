@@ -408,7 +408,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.AppFrame.RefreshPouInstanceVariablesPanel()
             self.AppFrame.RefreshFileMenu()
             self.AppFrame.RefreshEditMenu()
-            self.AppFrame.RefreshEditor()
+            wx.CallAfter(self.AppFrame.RefreshEditor)
     
     def GetVariableLocationTree(self):
         '''
