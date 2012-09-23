@@ -61,16 +61,6 @@ returnVal = slaves
 
 class _EthercatSlaveCTN:
     
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="SlaveParams">
-        <xsd:complexType>
-          <xsd:attribute name="DynamicPDOs" type="xsd:boolean" use="optional" default="true"/>
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:schema>
-    """
-    
     NODE_PROFILE = None
     EditorType = NodeEditor
     
@@ -184,7 +174,6 @@ if HAS_MCL:
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="CIA402SlaveParams">
             <xsd:complexType>
-              <xsd:attribute name="DynamicPDOs" type="xsd:boolean" use="optional" default="true"/>
               %s
             </xsd:complexType>
           </xsd:element>
@@ -361,7 +350,6 @@ class _EthercatCTN:
       <xsd:element name="EtherlabNode">
         <xsd:complexType>
           <xsd:attribute name="MasterNumber" type="xsd:integer" use="optional" default="0"/>
-          <xsd:attribute name="ConfigurePDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -655,13 +643,8 @@ class _EthercatCTN:
         slaves = self.GetSlaves()
         for slave_pos in slaves:
             slave = self.GetSlave(slave_pos)
-            slave_node = self.GetChildByIECLocation([slave_pos])
-            if slave_node.CTNParams is not None:
-                slave_infos = slave_node.CTNParams[1]
-            else:
-                slave_infos = None
             if slave is not None:
-                self.FileGenerator.DeclareSlave(slave_pos, slave.getInfo().getAutoIncAddr(), slave.getType(), slave_infos)
+                self.FileGenerator.DeclareSlave(slave_pos, slave.getInfo().getAutoIncAddr(), slave.getType())
         
         for location in locations:
             loc = location["LOC"][len(current_location):]
@@ -821,9 +804,9 @@ class _EthercatCFileGenerator:
 
     def __del__(self):
         self.Controler = None            
-
-    def DeclareSlave(self, slave_index, slave_alias, slave, slave_infos):
-        self.Slaves.append((slave_index, slave_alias, slave, slave_infos))
+    
+    def DeclareSlave(self, slave_index, slave_alias, slave):
+        self.Slaves.append((slave_index, slave_alias, slave))
 
     def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name):
         slave_variables = self.UsedVariables.setdefault(slave_index, {})
@@ -838,14 +821,15 @@ class _EthercatCFileGenerator:
         
     def GenerateCFile(self, filepath, location_str, etherlab_node_infos):
         
+        # Extract etherlab master code template
         plc_etherlab_filepath = os.path.join(os.path.split(__file__)[0], "plc_etherlab.c")
         plc_etherlab_file = open(plc_etherlab_filepath, 'r')
         plc_etherlab_code = plc_etherlab_file.read()
         plc_etherlab_file.close()
         
+        # Initialize strings for formatting master code template
         str_completion = {
             "location": location_str,
-            "configure_pdos": int(etherlab_node_infos.getConfigurePDOs()),
             "master_number": etherlab_node_infos.getMasterNumber(),
             "located_variables_declaration": [],
             "used_pdo_entry_offset_variables_declaration": [],
@@ -859,35 +843,48 @@ class _EthercatCFileGenerator:
             "publish_variables": [],
         }
         
+        # Initialize variable storing variable mapping state
         for slave_entries in self.UsedVariables.itervalues():
             for entry_infos in slave_entries.itervalues():
                 entry_infos["mapped"] = False
         
+        # Sort slaves by position (IEC_Channel)
         self.Slaves.sort()
+        # Initialize dictionary storing alias auto-increment position values
         alias = {}
-        for (slave_idx, slave_alias, type_infos, slave_infos) in self.Slaves:
+        
+        # Generating code for each slave
+        for (slave_idx, slave_alias, type_infos) in self.Slaves:
+            
+            # Defining slave alias and auto-increment position
             if alias.get(slave_alias) is not None:
                 alias[slave_alias] += 1
             else:
                 alias[slave_alias] = 0
             slave_pos = (slave_alias, alias[slave_alias])
             
+            # Extract slave device informations
             device = self.Controler.GetModuleInfos(type_infos)
             if device is not None:
-            
+                
+                # Extract slaves variables to be mapped
                 slave_variables = self.UsedVariables.get(slave_idx, {})
+                
+                # Extract slave device object dictionary entries
                 device_entries = device.GetEntriesList()
                 
-                if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0:
-                    
-                    for element in ["vendor", "product_code", "revision_number"]:
-                        type_infos[element] = ExtractHexDecValue(type_infos[element])
-                    type_infos.update(dict(zip(["slave", "alias", "position"], (slave_idx,) + slave_pos)))
+                # Adding code for declaring slave in master code template strings
+                for element in ["vendor", "product_code", "revision_number"]:
+                    type_infos[element] = ExtractHexDecValue(type_infos[element])
+                type_infos.update(dict(zip(["slave", "alias", "position"], (slave_idx,) + slave_pos)))
                 
-                    str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
-                    str_completion["slaves_configuration"] += SLAVE_CONFIGURATION_TEMPLATE % type_infos
-    
-                    for initCmd in device.getInitCmd():
+                # Extract slave device CoE informations
+                device_coe = device.getCoE()
+                if device_coe is not None:
+                    
+                    # If device support CanOpen over Ethernet, adding code for calling 
+                    # init commands when initializing slave in master code template strings
+                    for initCmd in device_coe.getInitCmd():
                         index = ExtractHexDecValue(initCmd.getIndex())
                         subindex = ExtractHexDecValue(initCmd.getSubIndex())
                         entry = device_entries.get((index, subindex), None)
@@ -903,7 +900,20 @@ class _EthercatCFileGenerator:
                             }
                             init_cmd_infos.update(type_infos)
                             str_completion["slaves_initialization"] += SLAVE_INITIALIZATION_TEMPLATE % init_cmd_infos
-
+                
+                    # Extract slave device PDO configuration capabilities
+                    PdoAssign = device_coe.getPdoAssign()
+                    PdoConfig = device_coe.getPdoConfig()
+                else:
+                    PdoAssign = PdoConfig = False
+                
+                # Test if slave has a configuration or need one
+                if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 and PdoConfig and PdoAssign:
+                    
+                    str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
+                    str_completion["slaves_configuration"] += SLAVE_CONFIGURATION_TEMPLATE % type_infos
+                    
+                    # Initializing 
                     pdos_infos = {
                         "pdos_entries_infos": [],
                         "pdos_infos": [],
@@ -989,7 +999,7 @@ class _EthercatCFileGenerator:
                                     
                                     ConfigureVariable(entry_infos, str_completion)
                                 
-                                elif pdo_type == "Outputs" and entry.getDataType() is not None:
+                                elif pdo_type == "Outputs" and entry.getDataType() is not None and device_coe is not None:
                                     entry_infos["dir"] = "Q"
                                     entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
                                     entry_infos["var_type"] = entry.getDataType().getcontent()
@@ -1024,7 +1034,7 @@ class _EthercatCFileGenerator:
                                      "entries_number": len(entries_infos),
                                      "fixed": pdo.getFixed() == True})
                     
-                    if slave_infos is None or slave_infos.getDynamicPDOs():
+                    if PdoConfig and PdoAssign:
                         dynamic_pdos = {}
                         dynamic_pdos_number = 0
                         for category, min_index, max_index in [("Inputs", 0x1600, 0x1800), 
@@ -1104,11 +1114,11 @@ class _EthercatCFileGenerator:
                                 
                                 if pdo["entries_number"] == 255:
                                     dynamic_pdos[pdo_type]["pdos"].pop(0)
-                            
+                    
                     pdo_offset = 0
                     entry_offset = 0
                     for sync_manager_infos in sync_managers:
-                        
+                    
                         for pdo_infos in sync_manager_infos["pdos"]:
                             pdo_infos["offset"] = entry_offset
                             pdo_entries = pdo_infos["entries"]
@@ -1130,7 +1140,13 @@ class _EthercatCFileGenerator:
                         pdos_infos[element] = "\n".join(pdos_infos[element])
                     
                     str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
-        
+                
+                for (index, subindex), entry_declaration in slave_variables.iteritems():
+                    if not entry_declaration["mapped"]:
+                        message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
+                                        (index, subindex, type_infos["device_type"])
+                        self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
+                    
         for element in ["used_pdo_entry_offset_variables_declaration", 
                         "used_pdo_entry_configuration", 
                         "located_variables_declaration", 
@@ -1216,17 +1232,12 @@ if cls:
     
     setattr(cls, "ExtractDataTypes", ExtractDataTypes)
     
-    def getInitCmd(self):
+    def getCoE(self):
         mailbox = self.getMailbox()
-        if mailbox is None:
-            return []
-        
-        coe = mailbox.getCoE()
-        if coe is None:
-            return []
-
-        return coe.getInitCmd()
-    setattr(cls, "getInitCmd", getInitCmd)
+        if mailbox is not None:
+            return mailbox.getCoE()
+        return None
+    setattr(cls, "getCoE", getCoE)
 
     def GetEntriesList(self):
         if self.DataTypes is None:
