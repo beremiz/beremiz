@@ -123,12 +123,14 @@ class _EthercatSlaveCTN:
             self.CTNParent.SetSlaveAlias(position, value)
             return value, True
         
+        value, refresh = ConfigTreeNode.SetParamsAttribute(self, path, value)
+        
         # Filter IEC_Channel, Slave_Type and Alias that have specific behavior
-        if path == "BaseParams.IEC_Channel":
+        if path == "BaseParams.IEC_Channel" and value != position:
             self.CTNParent.SetSlavePosition(position, value)
         
-        return ConfigTreeNode.SetParamsAttribute(self, path, value)
-    
+        return value, refresh
+        
     def GetSlaveInfos(self):
         return self.CTNParent.GetSlaveInfos(self.GetSlavePos())
     
