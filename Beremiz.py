@@ -931,7 +931,7 @@ class Beremiz(IDEFrame):
             if confnode is not None and len(confnode.CTNChildrenTypes) > 0:
                 for name, XSDClass, help in confnode.CTNChildrenTypes:
                     new_id = wx.NewId()
-                    confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=name)
+                    confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Add") + " " + name)
                     self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
 
             new_id = wx.NewId()
