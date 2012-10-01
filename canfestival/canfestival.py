@@ -53,7 +53,7 @@ class _SlaveCTN(NodeManager):
         <xsd:complexType>
           <xsd:attribute name="CAN_Device" type="xsd:string" use="optional" default="%(CAN_Device)s"/>
           <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Slave_NodeId)d"/>
+          <xsd:attribute name="NodeId" type="xsd:integer" use="optional" default="%(Slave_NodeId)d"/>
           <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
           <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
             <xsd:simpleType>
@@ -106,6 +106,9 @@ class _SlaveCTN(NodeManager):
                                    [])           # options
             dialog.Destroy()
             self.OnCTNSave()
+
+    def GetCurrentNodeName(self):
+        return self.CTNName()
 
     def GetSlaveODPath(self):
         return os.path.join(self.CTNPath(), 'slave.od')
@@ -169,6 +172,7 @@ class _SlaveCTN(NodeManager):
         # Create a new copy of the model
         slave = self.GetCurrentNodeCopy()
         slave.SetNodeName("OD_%s"%prefix)
+        slave.SetNodeID(self.CanFestivalSlaveNode.getNodeId())
         # allow access to local OD from Slave PLC
         pointers = config_utils.LocalODPointers(locations, current_location, slave)
         res = gen_cfile.GenerateFile(Gen_OD_path, slave, pointers)
@@ -219,6 +223,21 @@ class MiniNodeManager(NodeManager):
     
     ConfNodeMethods = []
 
+class _NodeManager(NodeManager):
+
+    def __init__(self, parent, *args, **kwargs):
+        NodeManager.__init__(self, *args, **kwargs)
+        self.Parent = parent
+        
+    def __del__(self):
+        self.Parent = None
+        
+    def GetCurrentNodeName(self):
+        return self.Parent.CTNName()
+    
+    def GetCurrentNodeID(self):
+        return self.Parent.CanFestivalNode.getNodeId()
+    
 class _NodeListCTN(NodeList):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -226,7 +245,7 @@ class _NodeListCTN(NodeList):
         <xsd:complexType>
           <xsd:attribute name="CAN_Device" type="xsd:string" use="optional" default="%(CAN_Device)s"/>
           <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="%(CAN_Baudrate)s"/>
-          <xsd:attribute name="NodeId" type="xsd:string" use="optional" default="%(Master_NodeId)d"/>
+          <xsd:attribute name="NodeId" type="xsd:integer" use="optional" default="%(Master_NodeId)d"/>
           <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
       </xsd:element>
@@ -237,7 +256,7 @@ class _NodeListCTN(NodeList):
     IconPath = os.path.join(CanFestivalPath, "objdictgen", "networkedit.png")
     
     def __init__(self):
-        manager = NodeManager()
+        manager = _NodeManager(self)
         NodeList.__init__(self, manager)
         self.LoadProject(self.CTNPath())
         self.SetNetworkName(self.BaseParams.getName())
@@ -246,16 +265,32 @@ class _NodeListCTN(NodeList):
         return self.CanFestivalNode.getCan_Device()
     
     def SetParamsAttribute(self, path, value):
-        result = ConfigTreeNode.SetParamsAttribute(self, path, value)
+        if path == "CanFestivalNode.NodeId":
+            nodeid = self.CanFestivalNode.getNodeId()
+            if value != nodeid:
+                slaves = self.GetSlaveIDs()
+                dir = (value - nodeid) / abs(value - nodeid)
+                while value in slaves and value >= 0:
+                    value += dir
+                if value < 0:
+                    value = nodeid
+        
+        value, refresh = ConfigTreeNode.SetParamsAttribute(self, path, value)
+        refresh_network = False
         
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel" and self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
         elif path == "BaseParams.Name":
             self.SetNetworkName(value)
+            refresh_network = True
+        elif path == "CanFestivalNode.NodeId":
+            refresh_network = True
+            
+        if refresh_network and self._View is not None:
+            wx.CallAfter(self._View.RefreshBufferState)
+        return value, refresh
         
-        return result
-    
     _GeneratedMasterView = None
     def _ShowGeneratedMaster(self):
         self._OpenView("Generated master")
@@ -335,6 +370,7 @@ class _NodeListCTN(NodeList):
             master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
         except config_utils.PDOmappingException, e:
             raise Exception, e.message
+        master.SetNodeID(self.CanFestivalNode.getNodeId())
         # Do generate C file.
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)
         if res :

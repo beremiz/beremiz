@@ -46,8 +46,7 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
             else:
                 other_profile_text = _('Other Profile')
             
-            return [(wx.ITEM_NORMAL, (_('Node infos'), ID_SLAVEEDITORCONFNODEMENUNODEINFOS, '', self.OnNodeInfosMenu)),
-                    (wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_SLAVEEDITORCONFNODEMENUDS301PROFILE, '', self.OnCommunicationMenu)),
+            return [(wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_SLAVEEDITORCONFNODEMENUDS301PROFILE, '', self.OnCommunicationMenu)),
                     (wx.ITEM_NORMAL, (_('DS-302 Profile'), ID_SLAVEEDITORCONFNODEMENUDS302PROFILE, '', self.OnOtherCommunicationMenu)),
                     (wx.ITEM_NORMAL, (other_profile_text, ID_SLAVEEDITORCONFNODEMENUDSOTHERPROFILE, '', self.OnEditProfileMenu)),
                     (wx.ITEM_SEPARATOR, None),
