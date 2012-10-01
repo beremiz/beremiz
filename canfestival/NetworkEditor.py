@@ -76,8 +76,7 @@ class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
         else:
             other_profile_text = _('Other Profile')
         
-        master_menu = [(wx.ITEM_NORMAL, (_('Node infos'), ID_NETWORKEDITORMASTERMENUNODEINFOS, '', self.OnNodeInfosMenu)),
-                       (wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_NETWORKEDITORMASTERMENUDS301PROFILE, '', self.OnCommunicationMenu)),
+        master_menu = [(wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_NETWORKEDITORMASTERMENUDS301PROFILE, '', self.OnCommunicationMenu)),
                        (wx.ITEM_NORMAL, (_('DS-302 Profile'), ID_NETWORKEDITORMASTERMENUDS302PROFILE, '', self.OnOtherCommunicationMenu)),
                        (wx.ITEM_NORMAL, (other_profile_text, ID_NETWORKEDITORMASTERMENUDSOTHERPROFILE, '', self.OnEditProfileMenu)),
                        (wx.ITEM_SEPARATOR, None),
