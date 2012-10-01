@@ -530,7 +530,10 @@ class ConfTreeNodeEditor(EditorPanel):
         def OnTextCtrlChanged(event):
             res = self.SetConfNodeParamsAttribute(path, textctrl.GetValue())
             if res != textctrl.GetValue():
-                textctrl.ChangeValue(res)
+                if isinstance(textctrl, wx.SpinCtrl):
+                    textctrl.SetValue(res)
+                else:
+                    textctrl.ChangeValue(res)
             if refresh:
                 wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU, PROJECTTREE, PAGETITLES)
                 wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, self.GetTagName())
