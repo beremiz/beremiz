@@ -709,11 +709,6 @@ class IDEFrame(wx.Frame):
     def OnResize(self, event):
         if self.Starting:
             self.RestoreLastLayout()
-            if wx.Platform == '__WXMSW__':
-                wx.CallAfter(self.ResetStarting)
-            else:
-                self.ResetStarting()
-            wx.CallAfter(self.RefreshEditor)
         event.Skip()
     
     def GetProjectConfiguration(self):
@@ -854,6 +849,7 @@ class IDEFrame(wx.Frame):
             self.Maximize()
         else:
             self.SetClientSize(frame_size)
+            wx.CallAfter(self.RestoreLastLayout)
         
     def RestoreLastLayout(self):
         notebooks = {}
@@ -887,6 +883,12 @@ class IDEFrame(wx.Frame):
         self.LoadProjectLayout()
         
         self._Refresh(EDITORTOOLBAR)
+        
+        if wx.Platform == '__WXMSW__':
+            wx.CallAfter(self.ResetStarting)
+        else:
+            self.ResetStarting()
+        wx.CallAfter(self.RefreshEditor)
     
     def SaveLastState(self):
         if not self.IsMaximized():
