@@ -378,7 +378,7 @@ class ConfTreeNodeEditor(EditorPanel):
                         boxsizer.AddSizer(browse_boxsizer)
                         
                         textctrl = wx.TextCtrl(self.ParamsEditor, 
-                              size=wx.Size(275, 25), style=wx.TE_READONLY)
+                              size=wx.Size(275, -1), style=wx.TE_READONLY)
                         if element_infos["value"] is not None:
                             textctrl.SetValue(element_infos["value"][0])
                             value_infos = element_infos["value"][1]
@@ -395,7 +395,7 @@ class ConfTreeNodeEditor(EditorPanel):
                                     button)
                     else:
                         combobox = wx.ComboBox(self.ParamsEditor, 
-                              size=wx.Size(300, 28), style=wx.CB_READONLY)
+                              size=wx.Size(300, -1), style=wx.CB_READONLY)
                         boxsizer.AddWindow(combobox)
                         
                         if element_infos["use"] == "optional":
@@ -430,7 +430,7 @@ class ConfTreeNodeEditor(EditorPanel):
                     if "max" in element_infos["type"]:
                         scmax = element_infos["type"]["max"]
                     spinctrl = wx.SpinCtrl(self.ParamsEditor, 
-                          size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                          size=wx.Size(300, -1), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                     spinctrl.SetRange(scmin, scmax)
                     boxsizer.AddWindow(spinctrl)
                     if element_infos["value"] is not None:
@@ -456,7 +456,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             scmin = -(2**31)
                         scmax = 2**31-1
                         spinctrl = wx.SpinCtrl(self.ParamsEditor, 
-                              size=wx.Size(300, 25), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                              size=wx.Size(300, -1), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
                         spinctrl.SetRange(scmin, scmax)
                         boxsizer.AddWindow(spinctrl)
                         if element_infos["value"] is not None:
@@ -472,7 +472,7 @@ class ConfTreeNodeEditor(EditorPanel):
                                                         appframe=self, 
                                                         choices=choices, 
                                                         element_path=element_path,
-                                                        size=wx.Size(300, 25))
+                                                        size=wx.Size(300, -1))
                         
                         boxsizer.AddWindow(textctrl)
                         if element_infos["value"] is not None:
