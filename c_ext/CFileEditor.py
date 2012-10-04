@@ -493,88 +493,39 @@ class VariablesTable(CustomTable):
                 
                 grid.SetCellBackgroundColour(row, col, wx.WHITE)
             self.ResizeRow(grid, row)
-    
 
-[ID_VARIABLESEDITOR, ID_VARIABLESEDITORVARIABLESGRID,
- ID_VARIABLESEDITORADDVARIABLEBUTTON, ID_VARIABLESEDITORDELETEVARIABLEBUTTON, 
- ID_VARIABLESEDITORUPVARIABLEBUTTON, ID_VARIABLESEDITORDOWNVARIABLEBUTTON
-] = [wx.NewId() for _init_ctrls in range(6)]
 
 class VariablesEditor(wx.Panel):
     
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
-    
-    def _init_coll_MainSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(0)
-
-    def _init_coll_MainSizer_Items(self, parent):
-        parent.AddWindow(self.VariablesGrid, 0, border=0, flag=wx.GROW)
-        parent.AddSizer(self.ButtonsSizer, 0, border=0, flag=wx.GROW)
-
-    def _init_coll_ButtonsSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(0)
-
-    def _init_coll_ButtonsSizer_Items(self, parent):
-        parent.AddWindow(self.AddVariableButton, 0, border=0, flag=wx.ALIGN_RIGHT)
-        parent.AddWindow(self.DeleteVariableButton, 0, border=0, flag=0)
-        parent.AddWindow(self.UpVariableButton, 0, border=0, flag=0)
-        parent.AddWindow(self.DownVariableButton, 0, border=0, flag=0)
-
-    def _init_sizers(self):
-        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=4)
-        self.ButtonsSizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
-        
-        self._init_coll_MainSizer_Growables(self.MainSizer)
-        self._init_coll_MainSizer_Items(self.MainSizer)
-        self._init_coll_ButtonsSizer_Growables(self.ButtonsSizer)
-        self._init_coll_ButtonsSizer_Items(self.ButtonsSizer)
-        
-        self.SetSizer(self.MainSizer)
-
-    def _init_ctrls(self, prnt):
-        wx.Panel.__init__(self, id=ID_VARIABLESEDITOR, name='', parent=prnt,
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
-        
-        self.VariablesGrid = CustomGrid(id=ID_VARIABLESEDITORVARIABLESGRID,
-              name='VariablesGrid', parent=self, pos=wx.Point(0, 0), 
-              size=wx.Size(-1, -1), style=wx.VSCROLL)
-        if wx.VERSION >= (2, 5, 0):
-            self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
-            self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
-            self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
-        else:
-            wx.grid.EVT_GRID_CELL_CHANGE(self.VariablesGrid, self.OnVariablesGridCellChange)
-            wx.grid.EVT_GRID_CELL_LEFT_CLICK(self.VariablesGrid, self.OnVariablesGridCellLeftClick)
-            wx.grid.EVT_GRID_EDITOR_SHOWN(self.VariablesGrid, self.OnVariablesGridEditorShown)
-        
-        self.AddVariableButton = wx.Button(id=ID_VARIABLESEDITORADDVARIABLEBUTTON, label='Add Variable',
-              name='AddVariableButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(122, 32), style=0)
-        
-        self.DeleteVariableButton = wx.Button(id=ID_VARIABLESEDITORDELETEVARIABLEBUTTON, label='Delete Variable',
-              name='DeleteVariableButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(122, 32), style=0)
-        
-        self.UpVariableButton = wx.Button(id=ID_VARIABLESEDITORUPVARIABLEBUTTON, label='^',
-              name='UpVariableButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(32, 32), style=0)
-        
-        self.DownVariableButton = wx.Button(id=ID_VARIABLESEDITORDOWNVARIABLEBUTTON, label='v',
-              name='DownVariableButton', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(32, 32), style=0)
-        
-        self._init_sizers()
-
     def __init__(self, parent, window, controler):
-        self._init_ctrls(parent)
+        wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
         
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=4)
+        main_sizer.AddGrowableCol(0)
+        main_sizer.AddGrowableRow(0)
+        
+        self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
+        main_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
+        
+        controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer.AddSizer(controls_sizer, border=5, flag=wx.TOP|wx.ALIGN_RIGHT)
+        
+        for name, bitmap, help in [
+                ("AddVariableButton", "add_element", _("Add variable")),
+                ("DeleteVariableButton", "remove_element", _("Remove variable")),
+                ("UpVariableButton", "up", _("Move variable up")),
+                ("DownVariableButton", "down", _("Move variable down"))]:
+            button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap), 
+                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button.SetToolTipString(help)
+            setattr(self, name, button)
+            controls_sizer.AddWindow(button, border=5, flag=wx.LEFT)
+        
+        self.SetSizer(main_sizer)
+                
         self.ParentWindow = window
         self.Controler = controler
         
@@ -773,15 +724,10 @@ class FoldPanelCaption(wx.lib.buttons.GenBitmapTextToggleButton):
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
         dc.DrawRectangle(0, 0, width, height)
 
-[ID_CFILEEDITOR, ID_CFILEEDITORMAINSPLITTER, 
- ID_CFILEEDITORCFILETREE, ID_CFILEEDITORPARTSOPENED, 
-] = [wx.NewId() for _init_ctrls in range(4)]
-
 class CFileEditor(ConfTreeNodeEditor):
     
     def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = wx.Panel(id=ID_CFILEEDITOR, parent=prnt, pos=wx.Point(0, 0), 
-                size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        self.ConfNodeEditor = wx.Panel(prnt, style=wx.TAB_TRAVERSAL)
         
         self.Panels = {}
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2 * len(CFILE_PARTS) + 1, vgap=0)
