@@ -73,6 +73,22 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
 class MasterViewer(SlaveEditor):
     SHOW_PARAMS = False
 
-    def __init__(self, parent, controler, window):
+    def __init__(self, parent, controler, window, tagname):
         SlaveEditor.__init__(self, parent, controler, window, False)
-
+    
+        self.TagName = tagname
+    
+    def GetTagName(self):
+        return self.TagName
+    
+    def GetCurrentNodeId(self):
+        return None
+    
+    def GetInstancePath(self):
+        return self.Controler.CTNFullName() + ".generated_master"
+    
+    def GetTitle(self):
+        return self.GetInstancePath()
+        
+    def IsViewing(self, tagname):
+        return self.GetInstancePath() == tagname

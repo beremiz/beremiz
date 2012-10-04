@@ -123,7 +123,12 @@ class _SlaveCTN(NodeManager):
         return self._View
     
     def _ExportSlave(self):
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a file"), os.getcwd(), "",  _("EDS files (*.eds)|*.eds|All files|*.*"), wx.SAVE|wx.OVERWRITE_PROMPT)
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, 
+                               _("Choose a file"), 
+                               os.path.expanduser("~"), 
+                               "%s.eds" % self.CTNName(),  
+                               _("EDS files (*.eds)|*.eds|All files|*.*"),
+                               wx.SAVE|wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             result = eds_utils.GenerateEDSFile(dialog.GetPath(), self.GetCurrentNodeCopy())
             if result:
@@ -172,7 +177,6 @@ class _SlaveCTN(NodeManager):
         # Create a new copy of the model
         slave = self.GetCurrentNodeCopy()
         slave.SetNodeName("OD_%s"%prefix)
-        slave.SetNodeID(self.CanFestivalSlaveNode.getNodeId())
         # allow access to local OD from Slave PLC
         pointers = config_utils.LocalODPointers(locations, current_location, slave)
         res = gen_cfile.GenerateFile(Gen_OD_path, slave, pointers)
@@ -310,11 +314,11 @@ class _NodeListCTN(NodeList):
                     self.GetCTRoot().logger.write_error(_("Error: No Master generated\n"))
                     return
                 
-                manager = MiniNodeManager(self, masterpath, self.CTNFullName() + ".generated_master")
-                self._GeneratedMasterView = MasterViewer(app_frame.TabsOpened, manager, app_frame)
+                manager = MiniNodeManager(self, masterpath, self.CTNFullName())
+                self._GeneratedMasterView = MasterViewer(app_frame.TabsOpened, manager, app_frame, name)
                 
             if self._GeneratedMasterView is not None:
-                app_frame.EditProjectElement(self._GeneratedMasterView, name)
+                app_frame.EditProjectElement(self._GeneratedMasterView, self._GeneratedMasterView.GetInstancePath())
             
             return self._GeneratedMasterView
         else:
@@ -370,7 +374,6 @@ class _NodeListCTN(NodeList):
             master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
         except config_utils.PDOmappingException, e:
             raise Exception, e.message
-        master.SetNodeID(self.CanFestivalNode.getNodeId())
         # Do generate C file.
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)
         if res :
