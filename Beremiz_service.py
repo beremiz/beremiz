@@ -416,7 +416,7 @@ if enablewx:
             def OnTaskBarQuit(self, evt):
                 Thread(target=self.pyroserver.Quit).start()
                 self.RemoveIcon()
-                Timer(1, wx.CallAfter(wx.GetApp().Exit)).start()
+                wx.CallAfter(wx.GetApp().Exit)
                 evt.Skip()
             
             def UpdateIcon(self, plcstatus):
