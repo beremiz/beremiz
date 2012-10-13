@@ -726,7 +726,8 @@ SLAVE_CONFIGURATION_TEMPLATE = """
 
 SLAVE_INITIALIZATION_TEMPLATE = """
     {
-        uint8_t value[] = {%(data)s};
+        uint8_t value[%(data_size)d];
+        EC_WRITE_%(data_type)s((uint8_t *)value, %(data)s);
         if (ecrt_master_sdo_download(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &abort_code)) {
             fprintf(stderr, "Failed to initialize slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%d\\n", abort_code);
             return -1;
@@ -741,9 +742,7 @@ SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
             fprintf(stderr, "Failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%d\\n", abort_code);
             return -1;
         }
-        for (i = 0; i < result_size; i++) {
-            %(real_var)s = (%(real_var)s << 8) + value[i];
-        }
+        %(real_var)s = EC_READ_%(data_type)s((uint8_t *)value);
     }
 """
 
@@ -892,12 +891,12 @@ class _EthercatCFileGenerator:
                         entry = device_entries.get((index, subindex), None)
                         if entry is not None:
                             data_size = entry["BitSize"] / 8
-                            data = ("%%.%dx" % (data_size * 2)) % initCmd.getData().getcontent()
-                            data_str = ",".join(["0x%s" % data[i:i+2] for i in xrange(0, data_size * 2, 2)])
+                            data_str = ("0x%%.%dx" % (data_size * 2)) % initCmd.getData().getcontent()
                             init_cmd_infos = {
                                 "index": index,
                                 "subindex": subindex,
                                 "data": data_str,
+                                "data_type": DATATYPECONVERSION.get(entry["Type"]),
                                 "data_size": data_size
                             }
                             init_cmd_infos.update(type_infos)
@@ -1002,9 +1001,11 @@ class _EthercatCFileGenerator:
                                     ConfigureVariable(entry_infos, str_completion)
                                 
                                 elif pdo_type == "Outputs" and entry.getDataType() is not None and device_coe is not None:
+                                    data_type = entry.getDataType().getcontent()
                                     entry_infos["dir"] = "Q"
                                     entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
-                                    entry_infos["var_type"] = entry.getDataType().getcontent()
+                                    entry_infos["data_type"] = DATATYPECONVERSION.get(data_type)
+                                    entry_infos["var_type"] = data_type
                                     entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
                                     
                                     ConfigureVariable(entry_infos, str_completion)

@@ -49,7 +49,7 @@ int __init_%(location)s(int argc,char **argv)
 {
     uint32_t abort_code;
     size_t result_size;
-    int i, rtstatus;
+    int rtstatus;
     
 	MstrAttach.masterindex = %(master_number)d;
 
