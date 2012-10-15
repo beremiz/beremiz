@@ -152,7 +152,7 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 	}
 }
 
-char* PythonIterator(char* result)
+char* PythonIterator(char* result, void** id)
 {
 	char* next_command;
 	PYTHON_EVAL* data__;
@@ -163,6 +163,7 @@ char* PythonIterator(char* result)
 	LockPython();
 	/* Get current FB */
 	data__ = EvalFBs[Current_Python_EvalFB];
+	*id=data__;
 	if(data__ && /* may be null at first run */
 	    __GET_VAR(data__->STATE) == PYTHON_FB_PROCESSING){ /* some answer awaited*/
 	   	/* If result not None */
