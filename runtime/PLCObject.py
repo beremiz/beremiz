@@ -105,7 +105,7 @@ class PLCObject(pyro.ObjBase):
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
             if self._PythonIterator is not None:
                 self._PythonIterator.restype = ctypes.c_char_p
-                self._PythonIterator.argtypes = [ctypes.c_char_p]
+                self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
                 
                 self._stopPLC = self._stopPLC_real
             else:
@@ -221,14 +221,15 @@ class PLCObject(pyro.ObjBase):
         self.StatusChange()
         self.StartSem.release()
         self.evaluator(self.PrepareRuntimePy)
-        res,cmd = "None","None"
+        res,cmd,blkid = "None","None",ctypes.c_void_p()
         while True:
-            #print "_PythonIterator(", res, ")",
-            cmd = self._PythonIterator(res)
-            #print " -> ", cmd
+            # print "_PythonIterator(", res, ")",
+            cmd = self._PythonIterator(res,blkid)
+            # print " -> ", cmd, blkid
             if cmd is None:
                 break
             try :
+                self.python_threads_vars["FBID"]=blkid.value
                 res = str(self.evaluator(eval,cmd,self.python_threads_vars))
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
