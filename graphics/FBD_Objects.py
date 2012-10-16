@@ -690,37 +690,18 @@ class FBD_Variable(Graphic_Element):
     def GetExecutionOrder(self):
         return self.ExecutionOrder
     
-    # Changes the element size
-    def SetSize(self, width, height):
-        scaling = self.Parent.GetScaling()
-        min_width, min_height = self.GetMinSize()
-        if width < min_width:
-            if self.Type == INPUT:
-                posx = max(0, self.Pos.x + width - min_width)
-                if scaling is not None:
-                    posx = round_scaling(posx, scaling[0])
-                self.Pos.x = posx
-            elif self.Type == OUTPUT:
-                posx = max(0, self.Pos.x + (width - min_width) / 2)
-                if scaling is not None:
-                    posx = round_scaling(posx, scaling[0])
-                self.Pos.x = posx
-            width = min_width
-            if scaling is not None:
-                width = round_scaling(width, scaling[0], 1)
-        if height < min_height:
-            posy = max(0, self.Pos.y + (height - min_height) / 2)
-            if scaling is not None:
-                posy = round_scaling(posy, scaling[1])
-            self.Pos.y = posy
-            height = min_height
-            if scaling is not None:
-                height = round_scaling(height, scaling[1], 1)
-        Graphic_Element.SetSize(self, width, height)
-    
     # Returns the variable minimum size
     def GetMinSize(self):
         return self.NameSize[0] + 10, self.NameSize[1] + 10
+    
+    # Set size of the variable to the minimum size
+    def SetBestSize(self, scaling):
+        if self.Type == INPUT:
+            return Graphic_Element.SetBestSize(self, scaling, x_factor=1.)
+        elif self.Type == OUTPUT:
+            return Graphic_Element.SetBestSize(self, scaling, x_factor=0.)
+        else:
+            return Graphic_Element.SetBestSize(self, scaling)
     
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
@@ -930,28 +911,12 @@ class FBD_Connector(Graphic_Element):
     def GetName(self):
         return self.Name
     
-    # Changes the element size
-    def SetSize(self, width, height):
-        scaling = self.Parent.GetScaling()
-        min_width, min_height = self.GetMinSize()
-        if width < min_width:
-            if self.Type == CONTINUATION:
-                posx = max(0, self.Pos.x + width - min_width)
-                if scaling is not None:
-                    posx = round_scaling(posx, scaling[0])
-                self.Pos.x = posx
-            width = min_width
-            if scaling is not None:
-                width = round_scaling(width, scaling[0], 1)
-        if height < min_height:
-            posy = max(0, self.Pos.y + (height - min_height) / 2)
-            if scaling is not None:
-                posy = round_scaling(posy, scaling[1])
-            self.Pos.y = posy
-            height = min_height
-            if scaling is not None:
-                height = round_scaling(height, scaling[1], 1)
-        Graphic_Element.SetSize(self, width, height)
+    # Set size of the variable to the minimum size
+    def SetBestSize(self, scaling):
+        if self.Type == CONTINUATION:
+            return Graphic_Element.SetBestSize(self, scaling, x_factor=1.)
+        else:
+            return Graphic_Element.SetBestSize(self, scaling, x_factor=0.)
     
     # Returns the connection minimum size
     def GetMinSize(self):
