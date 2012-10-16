@@ -448,11 +448,11 @@ if cls:
             if return_type:
                 var_type = return_type.getcontent()
                 if var_type["name"] == "derived":
-                    block_infos["outputs"].append(("", var_type["value"].getname(), "none"))
+                    block_infos["outputs"].append(("OUT", var_type["value"].getname(), "none"))
                 elif var_type["name"] in ["string", "wstring"]:
-                    block_infos["outputs"].append(("", var_type["name"].upper(), "none"))
+                    block_infos["outputs"].append(("OUT", var_type["name"].upper(), "none"))
                 else:
-                    block_infos["outputs"].append(("", var_type["name"], "none"))
+                    block_infos["outputs"].append(("OUT", var_type["name"], "none"))
             for type, varlist in pou.getvars():
                 if type == "InOut":
                     for var in varlist.getvariable():

@@ -795,8 +795,9 @@ class PouProgramGenerator:
         for var_type, connections in undefined.items():
             related = []
             for connection in connections:
-                if self.ConnectionTypes.has_key(connection):
-                    var_type = self.ConnectionTypes[connection]
+                connection_type = self.ConnectionTypes.get(connection)
+                if connection_type and not connection_type.startswith("ANY"):
+                    var_type = connection_type
                 else:
                     related.extend(self.ExtractRelatedConnections(connection))
             if var_type.startswith("ANY") and len(related) > 0:
