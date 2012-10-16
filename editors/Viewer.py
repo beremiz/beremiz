@@ -501,11 +501,12 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
     # Add Default Menu items to the given menu
     def AddDefaultMenuItems(self, menu, edit=False, block=False):
         if block:
-            [ID_EDIT_BLOCK, ID_DELETE] = [wx.NewId() for i in xrange(2)]
+            [ID_EDIT_BLOCK, ID_DELETE, ID_ADJUST_BLOCK_SIZE] = [wx.NewId() for i in xrange(3)]
         
             # Create menu items
             self.AddMenuItems(menu, [
                  (ID_EDIT_BLOCK, wx.ITEM_NORMAL, _(u'Edit Block'), '', self.OnEditBlockMenu),
+                 (ID_ADJUST_BLOCK_SIZE, wx.ITEM_NORMAL, _(u'Adjust Block Size'), '', self.OnAdjustBlockSizeMenu),
                  (ID_DELETE, wx.ITEM_NORMAL, _(u'Delete'), '', self.OnDeleteMenu)])
         
             menu.Enable(ID_EDIT_BLOCK, edit)
@@ -790,13 +791,17 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         self.Comments[comment.GetId()] = comment
 
     def IsBlock(self, block):
-        return self.Blocks.get(block.GetId(), False)
+        if block is not None:
+            return self.Blocks.get(block.GetId(), False)
+        return False
         
     def IsWire(self, wire):
         return self.Wires.get(wire, False)
         
     def IsComment(self, comment):
-        return self.Comments.get(comment.GetId(), False)
+        if comment is not None:
+            return self.Comments.get(comment.GetId(), False)
+        return False
 
     def RemoveBlock(self, block):
         self.Blocks.pop(block.GetId())
@@ -1237,8 +1242,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             self.AddBlock(element)
             connectors = element.GetConnectors()
         element.SetPosition(instance["x"], instance["y"])
-        if isinstance(element, SFC_Divergence):
-            element.SetSize(instance["width"], instance["height"])
+        element.SetSize(instance["width"], instance["height"])
         for i, output_connector in enumerate(instance["outputs"]):
             if i < len(connectors["outputs"]):
                 connector = connectors["outputs"][i]
@@ -1256,8 +1260,6 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                 if input_connector.get("edge", "none") != "none":
                     connector.SetEdge(input_connector["edge"])
                 self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection)
-        if not isinstance(element, SFC_Divergence):
-            element.SetSize(instance["width"], instance["height"])
         if selection is not None and selection[0].get(instance["id"], False):
             self.SelectInGroup(element)
 
@@ -1520,6 +1522,14 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
     def OnEditBlockMenu(self, event):
         if self.SelectedElement is not None:
             self.ParentWindow.EditProjectElement(ITEM_POU, "P::%s"%self.SelectedElement.GetType())
+
+    def OnAdjustBlockSizeMenu(self, event):
+        if self.SelectedElement is not None:
+            movex, movey = self.SelectedElement.SetBestSize(self.Scaling)
+            self.SelectedElement.RefreshModel()
+            self.RefreshBuffer()
+            if movex != 0 or movey != 0:
+                self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
 
     def OnDeleteMenu(self, event):
         if self.SelectedElement is not None:
@@ -1836,14 +1846,15 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         else:
                             self.ParentWindow.OpenGraphicViewer(iec_path)
             elif event.ControlDown() and not event.ShiftDown():
-                instance_type = self.SelectedElement.GetType()
-                if self.IsBlock(self.SelectedElement) and instance_type in self.Controler.GetProjectPouNames(self.Debug):
-                    self.ParentWindow.EditProjectElement(ITEM_POU, 
-                        self.Controler.ComputePouName(instance_type))
-                else:
-                    self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
+                if not isinstance(self.SelectedElement, Group_Element):
+                    instance_type = self.SelectedElement.GetType()
+                    if self.IsBlock(self.SelectedElement) and instance_type in self.Controler.GetProjectPouNames(self.Debug):
+                        self.ParentWindow.EditProjectElement(ITEM_POU, 
+                            self.Controler.ComputePouName(instance_type))
+                    else:
+                        self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():
-                movex, movey = self.SelectedElement.AdjustToScaling(self.Scaling)
+                movex, movey = self.SelectedElement.SetBestSize(self.Scaling)
                 self.SelectedElement.RefreshModel()
                 self.RefreshBuffer()
                 if movex != 0 or movey != 0:
@@ -2468,6 +2479,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             self.RefreshBuffer()
             if old_name != values["name"]:
                 self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_name, values["name"])
+                self.RefreshBuffer()
                 self.RefreshView(selection=({connection.GetId(): True}, {}))
             else:
                 self.RefreshScrollBars()

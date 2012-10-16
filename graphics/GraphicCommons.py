@@ -118,13 +118,13 @@ HANDLE_CURSORS = {
 
 def round_scaling(x, n, constraint=0):
     fraction = float(x) / float(n)
-    if constraint == - 1:
+    if constraint == -1:
         xround = int(fraction)
     else:
         xround = round(fraction)
-        if constraint == 1 and int(fraction) == xround:
-            xround += 1
-    return xround * n
+        if constraint == 1 and xround < fraction:
+            xround += 1 
+    return int(xround * n)
 
 """
 Basic vector operations for calculate wire points
@@ -675,7 +675,7 @@ class Graphic_Element:
         return [self.Id], []
     
     def TestVisible(self, screen):
-        self.Visible = self.GetRedrawRect().Intersects(screen)
+        self.Visible = self.Selected or self.GetRedrawRect().Intersects(screen)
     
     def IsVisible(self):
         return self.Visible
@@ -736,6 +736,25 @@ class Graphic_Element:
     # Returns the minimum element size
     def GetMinSize(self):
         return 0, 0
+    
+    # Set size of the element to the minimum size
+    def SetBestSize(self, scaling, x_factor=0.5, y_factor=0.5):
+        width, height = self.GetSize()
+        posx, posy = self.GetPosition()
+        min_width, min_height = self.GetMinSize()
+        if width < min_width:
+            self.Pos.x = max(0, self.Pos.x - (width - min_width) * x_factor)
+            width = min_width
+        if height < min_height:
+            self.Pos.y = max(0, self.Pos.y - (height - min_height) * y_factor)
+            height = min_height
+        if scaling is not None:
+            self.Pos.x = round_scaling(self.Pos.x, scaling[0])
+            self.Pos.y = round_scaling(self.Pos.y, scaling[1])
+            width = round_scaling(width, scaling[0], 1)
+            height = round_scaling(height, scaling[1], 1)
+        self.SetSize(width, height)
+        return self.Pos.x - posx, self.Pos.y - posy
     
     # Refresh the element Bounding Box
     def RefreshBoundingBox(self):
@@ -942,20 +961,6 @@ class Graphic_Element:
     def Resize(self, x, y, width, height):
         self.Move(x, y)
         self.SetSize(width, height)
-    
-    # Moves and Resizes the element for fitting scaling
-    def AdjustToScaling(self, scaling):
-        if scaling is not None:
-            movex = round_scaling(self.Pos.x, scaling[0]) - self.Pos.x
-            movey = round_scaling(self.Pos.y, scaling[1]) - self.Pos.y
-            min_width, min_height = self.GetMinSize()
-            width = max(round_scaling(min_width, scaling[0], 1),
-                        round_scaling(self.Size.width, scaling[0]))
-            height = max(round_scaling(min_height, scaling[1], 1),
-                         round_scaling(self.Size.height, scaling[1]))
-            self.Resize(movex, movey, width, height)
-            return movex, movey
-        return 0, 0
     
     # Refreshes the element state according to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling, width_fac = 1, height_fac = 1):
@@ -1176,7 +1181,7 @@ class Graphic_Group(Graphic_Element):
                         new_element = element.Clone(parent, newid, name, pos = new_pos)
                     else:
                         new_element = element.Clone(parent, newid, pos = new_pos)
-                    new_element.AdjustToScaling(parent.Scaling)
+                    new_element.SetBestSize(parent.Scaling)
                 else:
                     new_element = element.Clone(parent)
                 connectors.update(element.GetConnectorTranslation(new_element))
@@ -1368,15 +1373,15 @@ class Graphic_Group(Graphic_Element):
     # Returns the size of this group
     def GetSize(self):
         return self.BoundingBox.width, self.BoundingBox.height
-
-    # Moves and Resizes the group elements for fitting scaling
-    def AdjustToScaling(self, scaling):
-        movex_max = movey_max = 0
+    
+    # Set size of the group elements to their minimum size
+    def SetBestSize(self, scaling):
+        max_movex = max_movey = 0
         for element in self.Elements:
-            movex, movey = element.AdjustToScaling(scaling)
-            movex_max = max(movex_max, abs(movex))
-            movey_max = max(movey_max, abs(movey))
-        return movex_max, movey_max
+            movex, movey = element.SetBestSize(scaling)
+            max_movex = max(max_movex, movex)
+            max_movey = max(max_movey, movey)
+        return max_movex, max_movey
     
     # Refreshes the group elements to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
@@ -1986,8 +1991,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def SetSize(width, height):
         pass
     
+    # Forbids to et size of the group elements to their minimum size
+        pass
+    
     # Moves and Resizes the element for fitting scaling
-    def AdjustToScaling(self, scaling):
+    def SetBestSize(self, scaling):
         if scaling is not None:
             movex_max = movey_max = 0
             for idx, point in enumerate(self.Points):
