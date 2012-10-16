@@ -1568,6 +1568,8 @@ class PLCControler:
             if words[0] in ["D"]:
                 name = words[1]
             datatypes.extend([datatype["name"] for datatype in project.GetCustomDataTypes(name, only_locatables)])
+        for category in self.GetConfNodeDataTypes():
+            datatypes.extend(category["list"])
         return datatypes
 
     # Return Base Type of given possible derived type

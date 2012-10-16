@@ -580,8 +580,8 @@ class VariablePanel(wx.Panel):
         else:
             if self.ElementType == "function":
                 self.ReturnType.Clear()
-                for base_type in self.Controler.GetDataTypes(self.TagName, True, debug=self.Debug):
-                    self.ReturnType.Append(base_type)
+                for data_type in self.Controler.GetDataTypes(self.TagName, debug=self.Debug):
+                    self.ReturnType.Append(data_type)
                 returnType = self.Controler.GetEditedElementInterfaceReturnType(self.TagName)
             description = self.Controler.GetPouDescription(words[1])
             self.PouIsUsed = self.Controler.PouIsUsed(words[1])
