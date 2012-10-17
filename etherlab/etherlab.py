@@ -795,6 +795,15 @@ def ConfigureVariable(entry_infos, str_completion):
                 ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " + 
                  "%(real_var)s);") % entry_infos)
 
+def ExclusionSortFunction(x, y):
+    if x["matching"] == y["matching"]:
+        if x["assigned"] and not y["assigned"]:
+            return -1
+        elif not x["assigned"] and y["assigned"]:
+            return 1
+        return cmp(x["count"], y["count"])
+    return -cmp(x["matching"], y["matching"])
+
 class _EthercatCFileGenerator:
     
     def __init__(self, controler):
@@ -947,96 +956,133 @@ class _EthercatCFileGenerator:
                         sync_managers.append(sync_manager_infos)
                     
                     pdos_index = []
-                    excluded_pdos = []
-                    for only_mandatory in [True, False]:
-                        for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                                              [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                    exclusive_pdos = {}
+                    selected_pdos = []
+                    for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
+                                          [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                        
+                        pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
+                        pdos_index.append(pdo_index)
+                        
+                        excluded_list = pdo.getExclude()
+                        if len(excluded_list) > 0:
+                            exclusion_list = [pdo_index]
+                            for excluded in excluded_list:
+                                exclusion_list.append(ExtractHexDecValue(excluded.getcontent()))
+                            exclusion_list.sort()
+                            
+                            exclusion_scope = exclusive_pdos.setdefault(tuple(exclusion_list), [])
+                            
                             entries = pdo.getEntry()
-                            
-                            pdo_needed = pdo.getMandatory()
-                            if pdo_needed is None:
-                                pdo_needed = False
-                            if only_mandatory != pdo_needed:
-                                continue
-                            
-                            pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
-                            pdos_index.append(pdo_index)
-                            if pdo_index in excluded_pdos:
-                                continue
-                            
-                            entries_infos = []
+                            pdo_mapping_match = {
+                                "index": pdo_index, 
+                                "matching": 0, 
+                                "count": len(entries), 
+                                "assigned": pdo.getSm() is not None
+                            }
+                            exclusion_scope.append(pdo_mapping_match)
                             
                             for entry in entries:
                                 index = ExtractHexDecValue(entry.getIndex().getcontent())
                                 subindex = ExtractHexDecValue(entry.getSubIndex())
-                                entry_infos = {
-                                    "index": index,
-                                    "subindex": subindex,
-                                    "name": ExtractName(entry.getName()),
-                                    "bitlen": entry.getBitLen(),
-                                }
-                                entry_infos.update(type_infos)
-                                entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
-                                
-                                entry_declaration = slave_variables.get((index, subindex), None)
-                                if entry_declaration is not None and not entry_declaration["mapped"]:
-                                    pdo_needed = True
-                                    
-                                    entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
-                                    entry_declaration["mapped"] = True
-                                    
-                                    entry_type = entry.getDataType().getcontent()
-                                    if entry_infos["var_type"] != entry_type:
-                                        message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                        if (self.Controler.GetSizeOfType(entry_infos["var_type"]) != 
-                                            self.Controler.GetSizeOfType(entry_type)):
-                                            raise ValueError, message
-                                        else:
-                                            self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
-                                    
-                                    if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
-                                        entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
-                                        raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
-                                    
-                                    ConfigureVariable(entry_infos, str_completion)
-                                
-                                elif pdo_type == "Outputs" and entry.getDataType() is not None and device_coe is not None:
-                                    data_type = entry.getDataType().getcontent()
-                                    entry_infos["dir"] = "Q"
-                                    entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
-                                    entry_infos["data_type"] = DATATYPECONVERSION.get(data_type)
-                                    entry_infos["var_type"] = data_type
-                                    entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
-                                    
-                                    ConfigureVariable(entry_infos, str_completion)
-                                    
-                                    str_completion["slaves_output_pdos_default_values_extraction"] += \
-                                        SLAVE_OUTPUT_PDO_DEFAULT_VALUE % entry_infos
-                                    
-                            if pdo_needed:
-                                for excluded in pdo.getExclude():
-                                    excluded_index = ExtractHexDecValue(excluded.getcontent())
-                                    if excluded_index not in excluded_pdos:
-                                        excluded_pdos.append(excluded_index)
-                                
-                                sm = pdo.getSm()
-                                if sm is None:
-                                    for sm_idx, sync_manager in enumerate(sync_managers):
-                                        if sync_manager["name"] == pdo_type:
-                                            sm = sm_idx
-                                if sm is None:
-                                    raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
-                                    
-                                sync_managers[sm]["pdos_number"] += 1
-                                sync_managers[sm]["pdos"].append(
-                                    {"slave": slave_idx,
-                                     "index": pdo_index,
-                                     "name": ExtractName(pdo.getName()),
-                                     "type": pdo_type, 
-                                     "entries": entries_infos,
-                                     "entries_number": len(entries_infos),
-                                     "fixed": pdo.getFixed() == True})
+                                if slave_variables.get((index, subindex), None) is not None:
+                                    pdo_mapping_match["matching"] += 1
+                        
+                        elif pdo.getMandatory():
+                            selected_pdos.append(pdo_index)
                     
+                    excluded_pdos = []
+                    for exclusion_scope in exclusive_pdos.itervalues():
+                        exclusion_scope.sort(ExclusionSortFunction)
+                        start_excluding_index = 0
+                        if exclusion_scope[0]["matching"] > 0:
+                            selected_pdos.append(exclusion_scope[0]["index"])
+                            start_excluding_index = 1
+                        excluded_pdos.extend([pdo["index"] for pdo in exclusion_scope[start_excluding_index:] if PdoAssign or not pdo["assigned"]])
+                    
+                    for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
+                                          [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                        entries = pdo.getEntry()
+                        
+                        pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
+                        if pdo_index in excluded_pdos:
+                            continue
+                        
+                        pdo_needed = pdo_index in selected_pdos
+                        
+                        entries_infos = []
+                        
+                        for entry in entries:
+                            index = ExtractHexDecValue(entry.getIndex().getcontent())
+                            subindex = ExtractHexDecValue(entry.getSubIndex())
+                            entry_infos = {
+                                "index": index,
+                                "subindex": subindex,
+                                "name": ExtractName(entry.getName()),
+                                "bitlen": entry.getBitLen(),
+                            }
+                            entry_infos.update(type_infos)
+                            entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                            
+                            entry_declaration = slave_variables.get((index, subindex), None)
+                            if entry_declaration is not None and not entry_declaration["mapped"]:
+                                pdo_needed = True
+                                
+                                entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
+                                entry_declaration["mapped"] = True
+                                
+                                entry_type = entry.getDataType().getcontent()
+                                if entry_infos["var_type"] != entry_type:
+                                    message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
+                                    if (self.Controler.GetSizeOfType(entry_infos["var_type"]) != 
+                                        self.Controler.GetSizeOfType(entry_type)):
+                                        raise ValueError, message
+                                    else:
+                                        self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
+                                
+                                if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or 
+                                    entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
+                                    raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                                
+                                ConfigureVariable(entry_infos, str_completion)
+                            
+                            elif pdo_type == "Outputs" and entry.getDataType() is not None and device_coe is not None:
+                                data_type = entry.getDataType().getcontent()
+                                entry_infos["dir"] = "Q"
+                                entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
+                                entry_infos["data_type"] = DATATYPECONVERSION.get(data_type)
+                                entry_infos["var_type"] = data_type
+                                entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
+                                
+                                ConfigureVariable(entry_infos, str_completion)
+                                
+                                str_completion["slaves_output_pdos_default_values_extraction"] += \
+                                    SLAVE_OUTPUT_PDO_DEFAULT_VALUE % entry_infos
+                                
+                        if pdo_needed:
+                            for excluded in pdo.getExclude():
+                                excluded_index = ExtractHexDecValue(excluded.getcontent())
+                                if excluded_index not in excluded_pdos:
+                                    excluded_pdos.append(excluded_index)
+                            
+                            sm = pdo.getSm()
+                            if sm is None:
+                                for sm_idx, sync_manager in enumerate(sync_managers):
+                                    if sync_manager["name"] == pdo_type:
+                                        sm = sm_idx
+                            if sm is None:
+                                raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
+                                
+                            sync_managers[sm]["pdos_number"] += 1
+                            sync_managers[sm]["pdos"].append(
+                                {"slave": slave_idx,
+                                 "index": pdo_index,
+                                 "name": ExtractName(pdo.getName()),
+                                 "type": pdo_type, 
+                                 "entries": entries_infos,
+                                 "entries_number": len(entries_infos),
+                                 "fixed": pdo.getFixed() == True})
+                
                     if PdoConfig and PdoAssign:
                         dynamic_pdos = {}
                         dynamic_pdos_number = 0

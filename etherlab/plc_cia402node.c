@@ -105,7 +105,7 @@ void __retrieve_%(location)s()
 	}
 
 	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
-	__CIA402Node_%(location)s.axis->ActualPosition = (IEC_REAL)(*(__CIA402Node_%(location)s.ActualPosition)) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator;
+	__CIA402Node_%(location)s.axis->ActualPosition = (IEC_LREAL)(*(__CIA402Node_%(location)s.ActualPosition)) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator;
 }
 
 void __publish_%(location)s()
