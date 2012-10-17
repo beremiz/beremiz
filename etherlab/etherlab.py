@@ -209,7 +209,7 @@ if HAS_MCL:
             children = [{"name": "%s Axis Ref" % (axis_name),
                          "type": LOCATION_VAR_INPUT,
                          "size": "W",
-                         "IEC_type": "INT",
+                         "IEC_type": "AXIS_REF",
                          "var_name": axis_name,
                          "location": "%%IW%s.0" % (".".join(map(str, current_location))),
                          "description": "",
