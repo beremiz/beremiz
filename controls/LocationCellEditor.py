@@ -54,15 +54,21 @@ class LocationCellControl(wx.PyControl):
         
         self.SetSizer(main_sizer)
 
-        self.Locations = None
+        self.Controller = None
         self.VarType = None
         self.Default = False
 
-    def SetLocations(self, locations):
-        self.Locations = locations
+    def __del__(self):
+        self.Controller = None
+
+    def SetController(self, controller):
+        self.Controller = controller
 
     def SetVarType(self, vartype):
         self.VarType = vartype
+
+    def GetVarType(self):
+        return self.VarType
 
     def SetValue(self, value):
         self.Default = value
@@ -76,12 +82,13 @@ class LocationCellControl(wx.PyControl):
 
     def OnBrowseButtonClick(self, event):
         # pop up the location browser dialog
-        dialog = BrowseLocationsDialog(self, self.VarType, self.Locations)
+        dialog = BrowseLocationsDialog(self, self.VarType, self.Controller)
         if dialog.ShowModal() == wx.ID_OK:
             infos = dialog.GetValues()
 
             # set the location
             self.Location.SetValue(infos["location"])
+            self.VarType = infos["IEC_type"]
 
         dialog.Destroy()
 
@@ -115,6 +122,7 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
 
     def __del__(self):
         self.CellControl = None
+        self.Controller = None
     
     def Create(self, parent, id, evt_handler):
         self.CellControl = LocationCellControl(parent)
@@ -124,10 +132,10 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
 
     def BeginEdit(self, row, col, grid):
         self.CellControl.Enable()
-        self.CellControl.SetLocations(self.Controller.GetVariableLocationTree())
+        self.CellControl.SetController(self.Controller)
         self.CellControl.SetValue(self.Table.GetValueByName(row, 'Location'))
         if isinstance(self.CellControl, LocationCellControl):
-            self.CellControl.SetVarType(self.Controller.GetBaseType(self.Table.GetValueByName(row, 'Type')))
+            self.CellControl.SetVarType(self.Table.GetValueByName(row, 'Type'))
         self.CellControl.SetFocus()
 
     def EndEdit(self, row, col, grid):
@@ -136,6 +144,7 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
         changed = loc != old_loc
         if changed:
             self.Table.SetValueByName(row, 'Location', loc)
+            self.Table.SetValueByName(row, 'Type', self.CellControl.GetVarType())
         self.CellControl.Disable()
         return changed
     
