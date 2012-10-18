@@ -596,7 +596,7 @@ class TextViewer(EditorPanel):
                     current_context = self.Variables
                 state = COMMENT
             elif line.endswith("{") and state != PRAGMA:
-                self.SetStyling(current_pos - last_styled_pos - 1, 31)
+                self.SetStyling(current_pos - last_styled_pos, 31)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
