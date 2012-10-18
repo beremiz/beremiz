@@ -3,14 +3,48 @@
   <includes>
 <![CDATA[]]>
   </includes>
-  <variables/>
+  <variables>
+    <variable name="TestInput" type="SINT" class="input"/>
+    <variable name="TestOutput" type="SINT" class="input"/>
+  </variables>
   <globals>
-<![CDATA[void Python_to_C_Call(int value){
-  /* That code should never touch to 
-     variables modified by PLC thread */
-  printf("C code called by Python: %d\n",value);
+<![CDATA[volatile long Lock=0;
+volatile char PtoC=1,CtoP=2;
+
+int Simple_C_Call(int val){
+  return val+1;
 }
-]]>
+
+int Python_to_C_Call(int toC, int *fromC){
+  /* Code called by python should never touch to 
+     variables modified by PLC thread directly
+
+     AtomicCompareExchange comes from 
+     beremiz' runtime implementation */
+
+  int res = 0;
+  if(!AtomicCompareExchange(&Lock, 0, 1)){
+    PtoC=toC;
+    *fromC=CtoP;
+    AtomicCompareExchange(&Lock, 1, 0);
+    res=1;
+  }
+  printf("C code called by Python: toC %d fromC %d\n",toC,*fromC);
+  return res;
+}
+
+int PLC_C_Call(int fromPLC, int *toPLC){
+  /* PLC also have to be realy carefull not to 
+     conflict with asynchronous python access */
+  int res;
+  if(!AtomicCompareExchange(&Lock, 0, 1)){
+      CtoP = fromPLC;
+      *toPLC = PtoC;
+      AtomicCompareExchange(&Lock, 1, 0);
+      return 1;
+  }
+  return 0;
+}]]>
   </globals>
   <initFunction>
 <![CDATA[]]>
