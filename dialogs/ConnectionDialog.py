@@ -32,7 +32,7 @@ from graphics import *
 
 class ConnectionDialog(wx.Dialog):
     
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, apply_button=False):
         wx.Dialog.__init__(self, parent,
               size=wx.Size(350, 220), title=_('Connection Properties'))
         
@@ -92,6 +92,13 @@ class ConnectionDialog(wx.Dialog):
         main_sizer.AddSizer(button_sizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
+        if apply_button:
+            self.ApplyToAllButton = wx.Button(self, label=_("Propagate Name"))
+            self.ApplyToAllButton.SetToolTipString(
+                _("Apply name modification to all continuations with the same name"))
+            self.Bind(wx.EVT_BUTTON, self.OnApplyToAll, self.ApplyToAllButton)
+            button_sizer.AddWindow(self.ApplyToAllButton)
+        
         self.SetSizer(main_sizer)
         
         self.Connection = None
@@ -135,7 +142,7 @@ class ConnectionDialog(wx.Dialog):
     def SetPouElementNames(self, element_names):
         self.PouElementNames = [element_name.upper() for element_name in element_names]
     
-    def OnOK(self, event):
+    def TestName(self):
         message = None
         connection_name = self.ConnectionName.GetValue()
         if connection_name == "":
@@ -152,8 +159,16 @@ class ConnectionDialog(wx.Dialog):
             dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
-        else:
+            return False
+        return True
+        
+    def OnOK(self, event):
+        if self.TestName():
             self.EndModal(wx.ID_OK)
+
+    def OnApplyToAll(self, event):
+        if self.TestName():
+            self.EndModal(wx.ID_YESTOALL)
 
     def OnTypeChanged(self, event):
         self.RefreshPreview()

@@ -2455,14 +2455,16 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         dialog.Destroy()
 
     def EditConnectionContent(self, connection):
-        dialog = ConnectionDialog(self.ParentWindow, self.Controler)
+        dialog = ConnectionDialog(self.ParentWindow, self.Controler, True)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
         dialog.SetPouElementNames(self.Controler.GetEditedElementVariables(self.TagName, self.Debug))
         dialog.SetMinConnectionSize(connection.GetSize())
         values = {"name" : connection.GetName(), "type" : connection.GetType()}
         dialog.SetValues(values)
-        if dialog.ShowModal() == wx.ID_OK:
+        result = dialog.ShowModal()
+        dialog.Destroy()
+        if result in [wx.ID_OK, wx.ID_YESTOALL]:
             old_type = connection.GetType()
             old_name = connection.GetName()
             values = dialog.GetValues()
@@ -2476,17 +2478,16 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                 self.Controler.RemoveEditedElementInstance(self.TagName, id)
                 self.Controler.AddEditedElementConnection(self.TagName, id, values["type"])
             self.RefreshConnectionModel(connection)
-            self.RefreshBuffer()
-            if old_name != values["name"]:
+            if old_name != values["name"] and result == wx.ID_YESTOALL:
                 self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_name, values["name"])
                 self.RefreshBuffer()
                 self.RefreshView(selection=({connection.GetId(): True}, {}))
             else:
+                self.RefreshBuffer()
                 self.RefreshScrollBars()
                 self.RefreshVisibleElements()
                 connection.Refresh(rect)
-        dialog.Destroy()
-
+        
     def EditContactContent(self, contact):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, "contact")
         dialog.SetPreviewFont(self.GetFont())
