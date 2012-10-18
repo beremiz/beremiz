@@ -5,7 +5,7 @@
   </includes>
   <variables>
     <variable name="TestInput" type="SINT" class="input"/>
-    <variable name="TestOutput" type="SINT" class="input"/>
+    <variable name="TestOutput" type="SINT" class="output"/>
   </variables>
   <globals>
 <![CDATA[volatile long Lock=0;
@@ -56,6 +56,9 @@ int PLC_C_Call(int fromPLC, int *toPLC){
 <![CDATA[]]>
   </retrieveFunction>
   <publishFunction>
-<![CDATA[]]>
+<![CDATA[if(!AtomicCompareExchange(&Lock, 0, 1)){
+    TestInput = CtoP + PtoC + TestOutput;
+    AtomicCompareExchange(&Lock, 1, 0);
+}]]>
   </publishFunction>
 </CFile>

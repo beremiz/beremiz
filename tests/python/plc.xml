@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2012-10-18T20:21:28">
+                 modificationDateTime="2012-10-18T20:37:52">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -71,6 +71,25 @@
             <variable name="C_Pragma0">
               <type>
                 <derived name="C_Pragma"/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
+            <variable name="TestInput" address="%IB1.0">
+              <type>
+                <SINT/>
+              </type>
+            </variable>
+            <variable name="TestOutput" address="%QB1.0">
+              <type>
+                <SINT/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
+            <variable name="FromInput">
+              <type>
+                <SINT/>
               </type>
             </variable>
           </localVars>
@@ -468,32 +487,32 @@
               <expression>pytest_var3</expression>
             </outVariable>
             <outVariable localId="25" height="30" width="60">
-              <position x="820" y="750"/>
+              <position x="520" y="655"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="26" formalParameter="OUT">
-                  <position x="820" y="765"/>
-                  <position x="765" y="765"/>
+                  <position x="520" y="670"/>
+                  <position x="465" y="670"/>
                 </connection>
               </connectionPointIn>
               <expression>FromC</expression>
             </outVariable>
             <inVariable localId="1" height="30" width="30">
-              <position x="605" y="750"/>
+              <position x="305" y="655"/>
               <connectionPointOut>
                 <relPosition x="30" y="15"/>
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
             <block localId="26" width="80" height="45" typeName="C_Pragma" instanceName="C_Pragma0">
-              <position x="685" y="735"/>
+              <position x="385" y="640"/>
               <inputVariables>
                 <variable formalParameter="IN">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="1">
-                      <position x="685" y="765"/>
-                      <position x="635" y="765"/>
+                      <position x="385" y="670"/>
+                      <position x="335" y="670"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -507,6 +526,49 @@
                 </variable>
               </outputVariables>
             </block>
+            <inVariable localId="27" height="30" width="75">
+              <position x="305" y="770"/>
+              <connectionPointOut>
+                <relPosition x="75" y="15"/>
+              </connectionPointOut>
+              <expression>TestInput</expression>
+            </inVariable>
+            <outVariable localId="28" height="30" width="90">
+              <position x="395" y="705"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="2">
+                  <position x="395" y="720"/>
+                  <position x="340" y="720"/>
+                </connection>
+              </connectionPointIn>
+              <expression>TestOutput</expression>
+            </outVariable>
+            <outVariable localId="29" height="30" width="85">
+              <position x="415" y="770"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="27">
+                  <position x="415" y="785"/>
+                  <position x="380" y="785"/>
+                </connection>
+              </connectionPointIn>
+              <expression>FromInput</expression>
+            </outVariable>
+            <inVariable localId="2" height="30" width="30">
+              <position x="310" y="705"/>
+              <connectionPointOut>
+                <relPosition x="30" y="15"/>
+              </connectionPointOut>
+              <expression>10</expression>
+            </inVariable>
+            <comment localId="30" height="90" width="405">
+              <position x="245" y="825"/>
+              <content>
+<![CDATA[You will be ready to use beremiz with C and Python when you will understand why "FromInput" is equal  to 75.
+Enjoy. ]]>
+              </content>
+            </comment>
           </FBD>
         </body>
       </pou>
