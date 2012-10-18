@@ -1378,6 +1378,16 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             self.ReleaseDataValue(iec_path)
         return ReleaseVariableFunction
 
+    def GetChangeVariableTypeMenuFunction(self, type):
+        def ChangeVariableTypeMenu(event):
+            self.ChangeVariableType(self.SelectedElement, type)
+        return ChangeVariableTypeMenu
+
+    def GetChangeConnectionTypeMenuFunction(self, type):
+        def ChangeConnectionTypeMenu(event):
+            self.ChangeConnectionType(self.SelectedElement, type)
+        return ChangeConnectionTypeMenu
+
     def PopupForceMenu(self):
         iec_path = self.GetElementIECPath(self.SelectedElement)
         if iec_path is not None:
@@ -1402,6 +1412,37 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         else:
             edit = self.SelectedElement.GetType() in self.Controler.GetProjectPouNames(self.Debug)
             self.AddDefaultMenuItems(menu, block=True, edit=edit)
+        self.Editor.PopupMenu(menu)
+        menu.Destroy()
+    
+    def PopupVariableMenu(self):
+        menu = wx.Menu(title='')
+        variable_type = self.SelectedElement.GetType()
+        for type_label, type in [(_("Input"), INPUT),
+                                 (_("Output"), OUTPUT),
+                                 (_("InOut"), INOUT)]:
+            new_id = wx.NewId()
+            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_RADIO, text=type_label)
+            self.Bind(wx.EVT_MENU, self.GetChangeVariableTypeMenuFunction(type), id=new_id)
+            if type == variable_type:
+                menu.Check(new_id, True)
+        menu.AppendSeparator()
+        self.AddDefaultMenuItems(menu, block=True)
+        self.Editor.PopupMenu(menu)
+        menu.Destroy()
+    
+    def PopupConnectionMenu(self):
+        menu = wx.Menu(title='')
+        connection_type = self.SelectedElement.GetType()
+        for type_label, type in [(_("Connector"), CONNECTOR),
+                                 (_("Continuation"), CONTINUATION)]:
+            new_id = wx.NewId()
+            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_RADIO, text=type_label)
+            self.Bind(wx.EVT_MENU, self.GetChangeConnectionTypeMenuFunction(type), id=new_id)
+            if type == connection_type:
+                menu.Check(new_id, True)
+        menu.AppendSeparator()
+        self.AddDefaultMenuItems(menu, block=True)
         self.Editor.PopupMenu(menu)
         menu.Destroy()
     
@@ -1846,7 +1887,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         else:
                             self.ParentWindow.OpenGraphicViewer(iec_path)
             elif event.ControlDown() and not event.ShiftDown():
-                if not isinstance(self.SelectedElement, Group_Element):
+                if not isinstance(self.SelectedElement, Graphic_Group):
                     instance_type = self.SelectedElement.GetType()
                     if self.IsBlock(self.SelectedElement) and instance_type in self.Controler.GetProjectPouNames(self.Debug):
                         self.ParentWindow.EditProjectElement(ITEM_POU, 
@@ -1855,9 +1896,9 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():
                 movex, movey = self.SelectedElement.SetBestSize(self.Scaling)
-                self.SelectedElement.RefreshModel()
-                self.RefreshBuffer()
                 if movex != 0 or movey != 0:
+                    self.SelectedElement.RefreshModel()
+                    self.RefreshBuffer()
                     self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
             else:
                 self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
@@ -2704,6 +2745,20 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         infos["connectors"] = block.GetConnectors()
         self.Controler.SetEditedElementBlockInfos(self.TagName, blockid, infos)
     
+    def ChangeVariableType(self, variable, new_type):
+        old_type = variable.GetType()
+        rect = variable.GetRedrawRect(1, 1)
+        if old_type != new_type:
+            variable.SetType(new_type, variable.GetValueType())
+            id = variable.GetId()
+            self.Controler.RemoveEditedElementInstance(self.TagName, id)
+            self.Controler.AddEditedElementVariable(self.TagName, id, new_type)
+            self.RefreshVariableModel(variable)
+            self.RefreshBuffer()
+            self.RefreshVisibleElements()
+            self.RefreshScrollBars()
+            variable.Refresh(rect.Union(variable.GetRedrawRect()))
+    
     def RefreshVariableModel(self, variable):
         variableid = variable.GetId()
         infos = {}
@@ -2714,6 +2769,20 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         infos["width"], infos["height"] = variable.GetSize()
         infos["connectors"] = variable.GetConnectors()
         self.Controler.SetEditedElementVariableInfos(self.TagName, variableid, infos)
+
+    def ChangeConnectionType(self, connection, new_type):
+        old_type = connection.GetType()
+        rect = connection.GetRedrawRect(1, 1)
+        if old_type != new_type:
+            connection.SetType(new_type)
+            id = connection.GetId()
+            self.Controler.RemoveEditedElementInstance(self.TagName, id)
+            self.Controler.AddEditedElementConnection(self.TagName, id, new_type)
+            self.RefreshConnectionModel(connection)
+            self.RefreshBuffer()
+            self.RefreshScrollBars()
+            self.RefreshVisibleElements()
+            connection.Refresh(rect.Union(connection.GetRedrawRect()))
 
     def RefreshConnectionModel(self, connection):
         connectionid = connection.GetId()

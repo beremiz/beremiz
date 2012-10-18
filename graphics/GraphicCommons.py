@@ -1667,8 +1667,9 @@ class Connector:
         # If no wire defined, unconnect all wires
         if not wire:
             self.Wires = []
-        self.RefreshValid()
-        self.ParentBlock.RefreshModel(False)
+        if not delete:
+            self.RefreshValid()
+            self.ParentBlock.RefreshModel(False)
     
     # Returns if connector has one or more wire connected
     def IsConnected(self):

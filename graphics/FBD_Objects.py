@@ -652,25 +652,33 @@ class FBD_Variable(Graphic_Element):
     def SetType(self, type, value_type):
         if type != self.Type:
             self.Type = type
-            self.Clean()
-            self.Input = None
-            self.Output = None
             # Create an input or output connector according to variable type
             if self.Type != INPUT:
-                self.Input = Connector(self, "", value_type, wx.Point(0, 0), WEST, onlyone = True)
+                if self.Input is None:
+                    self.Input = Connector(self, "", value_type, wx.Point(0, 0), WEST, onlyone = True)
+            elif self.Input:
+                self.Input.UnConnect(delete = True)
+                self.Input = None
             if self.Type != OUTPUT:
-                self.Output = Connector(self, "", value_type, wx.Point(0, 0), EAST)
+                if self.Output is None:
+                    self.Output = Connector(self, "", value_type, wx.Point(0, 0), EAST)
+            elif self.Output:
+                self.Output.UnConnect(delete = True)
+                self.Output = None
             self.RefreshConnectors()
         elif value_type != self.ValueType:
             if self.Input:
                 self.Input.SetType(value_type)
             if self.Output:
                 self.Output.SetType(value_type)            
-        self.RefreshConnectors()
-    
+        
     # Returns the variable type
     def GetType(self):
         return self.Type
+    
+    # Returns the variable value type
+    def GetValueType(self):
+        return self.ValueType
     
     # Changes the variable name
     def SetName(self, name):
@@ -705,12 +713,18 @@ class FBD_Variable(Graphic_Element):
     
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
-        # Edit the variable properties
-        self.Parent.EditVariableContent(self)
+        if event.ControlDown():
+            # Change variable type 
+            types = [INPUT, OUTPUT, INOUT]
+            self.Parent.ChangeVariableType(self,
+                types[(types.index(self.Type) + 1) % len(types)])
+        else:
+            # Edit the variable properties
+            self.Parent.EditVariableContent(self)
     
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
-        self.Parent.PopupDefaultMenu()
+        self.Parent.PopupVariableMenu()
     
     # Refreshes the variable model
     def RefreshModel(self, move=True):
@@ -927,13 +941,20 @@ class FBD_Connector(Graphic_Element):
     
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
-        # Edit the connection properties
-        self.Parent.EditConnectionContent(self)
+        if event.ControlDown():
+            # Change connection type 
+            if self.Type == CONNECTOR:
+                self.Parent.ChangeConnectionType(self, CONTINUATION)
+            else:
+                self.Parent.ChangeConnectionType(self, CONNECTOR)
+        else:
+            # Edit the connection properties
+            self.Parent.EditConnectionContent(self)
     
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
         # Popup the default menu
-        self.Parent.PopupDefaultMenu()
+        self.Parent.PopupConnectionMenu()
     
     # Refreshes the connection model
     def RefreshModel(self, move=True):
