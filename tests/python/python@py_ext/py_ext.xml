@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Python xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="py_ext_xsd.xsd">
-<![CDATA[import time,sys
+<![CDATA[import time,sys,ctypes
+Python_to_C_Call = PLCBinary.Python_to_C_Call
+Python_to_C_Call.restype = ctypes.c_int
+Python_to_C_Call.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
 
 def MyPythonFunc(arg):
-    print arg
-    PLCBinary.Python_to_C_Call(arg)
+    i = ctypes.c_int()
+    if(Python_to_C_Call(arg, i)):
+        res = i.value
+        print "toC:", arg, "from C:", res
+    else:
+        print "Failed Python_to_C_Call failed"
+        res = None
     sys.stdout.flush()
-    return arg
+    return res
 ]]>
 </Python>
