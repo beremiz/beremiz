@@ -1461,9 +1461,9 @@ class PLCControler:
                  "list": confnodetypes["types"].GetCustomBlockTypes()}
                 for confnodetypes in self.ConfNodeTypes]
         
-    def GetConfNodeDataTypes(self, exclude = ""):
+    def GetConfNodeDataTypes(self, exclude = "", only_locatables = False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
-                 "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude)]}
+                 "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude, only_locatables)]}
                 for confnodetypes in self.ConfNodeTypes]
     
     def GetConfNodeDataType(self, type):
@@ -1556,7 +1556,7 @@ class PLCControler:
         return blocktypes
 
     # Return Data Types checking for recursion
-    def GetDataTypes(self, tagname = "", basetypes = True, only_locatables = False, debug = False):
+    def GetDataTypes(self, tagname = "", basetypes = True, confnodetypes = True, only_locatables = False, debug = False):
         if basetypes:
             datatypes = self.GetBaseTypes()
         else:
@@ -1568,8 +1568,9 @@ class PLCControler:
             if words[0] in ["D"]:
                 name = words[1]
             datatypes.extend([datatype["name"] for datatype in project.GetCustomDataTypes(name, only_locatables)])
-        for category in self.GetConfNodeDataTypes():
-            datatypes.extend(category["list"])
+        if confnodetypes:
+            for category in self.GetConfNodeDataTypes(name, only_locatables):
+                datatypes.extend(category["list"])
         return datatypes
 
     # Return Base Type of given possible derived type
