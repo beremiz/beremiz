@@ -171,8 +171,8 @@ if HAS_MCL:
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
     ]
     
-    DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = __CIA402Node_%(location)s.%(name)s;"
-    DEFAULT_PUBLISH = "    __CIA402Node_%(location)s.%(name)s = __CIA402Node_%(location)s.axis->%(name)s;"
+    DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"
+    DEFAULT_PUBLISH = "    *(__CIA402Node_%(location)s.%(name)s) = __CIA402Node_%(location)s.axis->%(name)s;"
     
     EXTRA_NODE_VARIABLES = [
         ("DigitalInputs", [
