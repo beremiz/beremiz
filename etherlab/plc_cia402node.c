@@ -104,8 +104,12 @@ void __retrieve_%(location)s()
 		return;
 	}
 
+	// Default variables retrieve
 	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
 	__CIA402Node_%(location)s.axis->ActualPosition = (IEC_LREAL)(*(__CIA402Node_%(location)s.ActualPosition)) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator;
+
+	// Extra variables retrieve
+%(extra_variables_retrieve)s
 }
 
 void __publish_%(location)s()
@@ -135,10 +139,14 @@ void __publish_%(location)s()
 	    	break;
 	}
 
+	// Default variables publish
 	if (__CIA402Node_%(location)s.axis->CSP && *(__CIA402Node_%(location)s.ModesOfOperationDisplay) == 0x08) {
 		*(__CIA402Node_%(location)s.TargetPosition) = (IEC_DINT)(__CIA402Node_%(location)s.axis->PositionSetPoint * __CIA402Node_%(location)s.axis->RatioNumerator / __CIA402Node_%(location)s.axis->RatioDenominator);
 	}
 	else {
 		*(__CIA402Node_%(location)s.TargetPosition) = *(__CIA402Node_%(location)s.ActualPosition);
 	}
+
+	// Extra variables publish
+%(extra_variables_publish)s
 }

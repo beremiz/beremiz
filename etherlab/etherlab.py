@@ -171,6 +171,17 @@ if HAS_MCL:
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
     ]
     
+    DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = __CIA402Node_%(location)s.%(name)s;"
+    DEFAULT_PUBLISH = "    __CIA402Node_%(location)s.%(name)s = __CIA402Node_%(location)s.axis->%(name)s;"
+    
+    EXTRA_NODE_VARIABLES = [
+        ("DigitalInputs", [
+            {"description": ("DigitalInputs", 0x60FD, 0x00, "UDINT", "I"),
+             "publish": None}
+            ])
+    ]
+    EXTRA_NODE_VARIABLES_DICT = dict([("Enable" + name, value) for name, value in EXTRA_NODE_VARIABLES])
+    
     class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -180,7 +191,8 @@ if HAS_MCL:
             </xsd:complexType>
           </xsd:element>
         </xsd:schema>
-        """ % AxisXSD
+        """ % ("\n".join(['<xsd:attribute name="Enable%s" type="xsd:boolean" use="optional" default="false"/>' % category 
+                          for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
         
         NODE_PROFILE = 402
         EditorType = CIA402NodeEditor
@@ -257,9 +269,45 @@ if HAS_MCL:
                 "entry_variables": [],
                 "init_axis_params": [],
                 "init_entry_variables": [],
+                "extra_variables_retrieve": [],
+                "extra_variables_publish": []
             }
             
-            for variable in NODE_VARIABLES:
+            variables = NODE_VARIABLES[:]
+            
+            params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
+            for param in params["children"]:
+                if param["name"] in EXTRA_NODE_VARIABLES_DICT:
+                    if param["value"]:
+                        extra_variables = EXTRA_NODE_VARIABLES_DICT.get(param["name"])
+                        for variable_infos in extra_variables:
+                            var_infos = {
+                                "location": location_str,
+                                "name": variable_infos["description"][0]
+                            }
+                            variables.append(variable_infos["description"])
+                            retrieve_template = variable_infos.get("retrieve", DEFAULT_RETRIEVE)
+                            publish_template = variable_infos.get("publish", DEFAULT_PUBLISH)
+                            
+                            if retrieve_template is not None:
+                                str_completion["extra_variables_retrieve"].append(
+                                    retrieve_template % var_infos)
+                            if publish_template is not None:
+                                str_completion["extra_variables_publish"].append(
+                                    publish_template % var_infos)
+                elif param["value"] is not None:
+                    param_infos = {
+                        "location": location_str,
+                        "param_name": param["name"],
+                    }
+                    if param["type"] == "boolean":
+                        param_infos["param_value"] = {True: "true", False: "false"}[param["value"]]
+                    else:
+                        param_infos["param_value"] = str(param["value"])
+                    str_completion["init_axis_params"].append(
+                        "        __CIA402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
+            
+            for variable in variables:
                 var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
                 var_infos["location"] = location_str
                 var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
@@ -276,24 +324,12 @@ if HAS_MCL:
                         self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
                         var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
             
-            params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
-            for param in params["children"]:
-                if param["value"] is not None and param["name"] != "DynamicPDOs":
-                    param_infos = {
-                        "location": location_str,
-                        "param_name": param["name"],
-                    }
-                    if param["type"] == "boolean":
-                        param_infos["param_value"] = {True: "true", False: "false"}[param["value"]]
-                    else:
-                        param_infos["param_value"] = str(param["value"])
-                    str_completion["init_axis_params"].append(
-                        "        __CIA402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
-            
             for element in ["extern_located_variables_declaration", 
                             "entry_variables", 
                             "init_axis_params", 
-                            "init_entry_variables"]:
+                            "init_entry_variables",
+                            "extra_variables_retrieve",
+                            "extra_variables_publish"]:
                 str_completion[element] = "\n".join(str_completion[element])
             
             Gen_CIA402Nodefile_path = os.path.join(buildpath, "cia402node_%s.c"%location_str)
