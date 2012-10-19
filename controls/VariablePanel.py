@@ -417,10 +417,10 @@ class VariablePanel(wx.Panel):
              "Class" : "", 
              "Type" : "INT", 
              "Location" : "",
-              "Initial Value" : "", 
-              "Option" : "",
-              "Documentation" : "", 
-              "Edit" : True
+             "Initial Value" : "", 
+             "Option" : "",
+             "Documentation" : "", 
+             "Edit" : True
         }
 
         if element_type in ["config", "resource"]:
@@ -702,7 +702,7 @@ class VariablePanel(wx.Panel):
 
             # build a submenu containing user-defined types
             datatype_menu = wx.Menu(title='')
-            datatypes = self.Controler.GetDataTypes(basetypes = False)
+            datatypes = self.Controler.GetDataTypes(basetypes = False, confnodetypes = False)
             for datatype in datatypes:
                 new_id = wx.NewId()
                 AppendMenu(datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
