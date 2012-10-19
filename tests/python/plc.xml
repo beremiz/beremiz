@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2012-10-18T20:37:52">
+                 modificationDateTime="2012-10-19T11:54:13">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -23,7 +23,24 @@
     </coordinateInfo>
   </contentHeader>
   <types>
-    <dataTypes/>
+    <dataTypes>
+      <dataType name="CPLX_TYPE">
+        <baseType>
+          <struct>
+            <variable name="FIRSTBYTE">
+              <type>
+                <SINT/>
+              </type>
+            </variable>
+            <variable name="SECONDBYTE">
+              <type>
+                <SINT/>
+              </type>
+            </variable>
+          </struct>
+        </baseType>
+      </dataType>
+    </dataTypes>
     <pous>
       <pou name="main_pytest" pouType="program">
         <interface>
@@ -588,15 +605,62 @@ Enjoy. ]]>
               </type>
             </variable>
           </inputVars>
+          <localVars>
+            <variable name="COORDS">
+              <type>
+                <array>
+                  <dimension lower="0" upper="5"/>
+                  <baseType>
+                    <SINT/>
+                  </baseType>
+                </array>
+              </type>
+              <initialValue>
+                <arrayValue>
+                  <value>
+                    <simpleValue value="54"/>
+                  </value>
+                  <value>
+                    <simpleValue value="55"/>
+                  </value>
+                  <value>
+                    <simpleValue value="56"/>
+                  </value>
+                  <value>
+                    <simpleValue value="57"/>
+                  </value>
+                  <value>
+                    <simpleValue value="58"/>
+                  </value>
+                  <value>
+                    <simpleValue value="59"/>
+                  </value>
+                </arrayValue>
+              </initialValue>
+            </variable>
+            <variable name="SMURF">
+              <type>
+                <derived name="CPLX_TYPE"/>
+              </type>
+            </variable>
+          </localVars>
         </interface>
         <body>
           <ST>
 <![CDATA[(* hereafter is a C pragma accessing FB interface in a clean way *)
-{
-  int toPLC;
-  int fromPLC = __GET_VAR(data__->IN);
-  if(PLC_C_Call(fromPLC, &toPLC))__SET_VAR(data__->,OUT,toPLC);
-}
+{{
+  char toPLC;
+  char fromPLC = GetFbVar(IN);
+  if(PLC_C_Call(fromPLC, &toPLC)){
+    SetFbVar(OUT, toPLC);
+  }
+  if(0){
+    /* that code demonstrate C access to complex types */
+    char somebyte = GetFbVar(COORDS, .table[3]);
+    SetFbVar(SMURF, somebyte, .FIRSTBYTE);
+    SetFbVar(COORDS, somebyte, .table[4]);
+  }
+}}
 (* If you do not use __GET_VAR and _SET_VAR macro, expect unexpected *)
 ]]>
           </ST>
