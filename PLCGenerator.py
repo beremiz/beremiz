@@ -192,6 +192,21 @@ class ProgramGenerator:
                     if element_type["name"] == "derived":
                         elementtype_name = element_type["value"].getname()
                         self.GenerateDataType(elementtype_name)
+                    elif element_type["name"] == "array":
+                        base_type = element_type["value"].baseType.getcontent()
+                        # Array derived directly from a user defined type 
+                        if base_type["name"] == "derived":
+                            basetype_name = base_type["value"].getname()
+                            self.GenerateDataType(basetype_name)
+                        # Array derived directly from a string type 
+                        elif base_type["name"] in ["string", "wstring"]:
+                            basetype_name = base_type["name"].upper()
+                        # Array derived directly from an elementary type 
+                        else:
+                            basetype_name = base_type["name"]
+                        dimensions = ["%s..%s" % (dimension.getlower(), dimension.getupper())
+                                      for dimension in element_type["value"].getdimension()]
+                        elementtype_name = "ARRAY [%s] OF %s" % (",".join(dimensions), basetype_name)
                     # Structure element derived directly from a string type 
                     elif element_type["name"] in ["string", "wstring"]:
                         elementtype_name = element_type["name"].upper()

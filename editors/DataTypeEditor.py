@@ -23,6 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
+from types import TupleType
 
 import wx
 import wx.grid
@@ -31,6 +32,7 @@ import wx.lib.buttons
 from plcopen.structures import IEC_KEYWORDS, TestIdentifier
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD
 from controls import CustomEditableListBox, CustomGrid, CustomTable
+from dialogs import ArrayTypeDialog
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 
@@ -70,8 +72,12 @@ class ElementsTable(CustomTable):
         if row < self.GetNumberRows():
             if col == 0:
                 return row + 1
-            name = str(self.data[row].get(self.GetColLabelValue(col, False), ""))
-            return name
+            colname = self.GetColLabelValue(col, False)
+            value = self.data[row].get(colname, "")
+            if colname == "Type" and isinstance(value, TupleType):
+                if value[0] == "array":
+                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "..".join(x), value[2])), value[1])
+            return str(value)
     
     def SetValue(self, row, col, value):
         if col < len(self.colnames):
@@ -609,18 +615,25 @@ class DataTypeEditor(EditorPanel):
         row, col = event.GetRow(), event.GetCol() 
         if self.StructureElementsTable.GetColLabelValue(col) == "Type":
             type_menu = wx.Menu(title='')
+            
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():
                 new_id = wx.NewId()
                 AppendMenu(base_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=base_type)
                 self.Bind(wx.EVT_MENU, self.GetElementTypeFunction(base_type), id=new_id)
             type_menu.AppendMenu(wx.NewId(), _("Base Types"), base_menu)
+            
             datatype_menu = wx.Menu(title='')
             for datatype in self.Controler.GetDataTypes(self.TagName, False):
                 new_id = wx.NewId()
                 AppendMenu(datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
                 self.Bind(wx.EVT_MENU, self.GetElementTypeFunction(datatype), id=new_id)
             type_menu.AppendMenu(wx.NewId(), _("User Data Types"), datatype_menu)
+            
+            new_id = wx.NewId()
+            AppendMenu(type_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Array"))
+            self.Bind(wx.EVT_MENU, self.ElementArrayTypeFunction, id=new_id)
+            
 ##            functionblock_menu = wx.Menu(title='')
 ##            bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
 ##            pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
@@ -630,6 +643,7 @@ class DataTypeEditor(EditorPanel):
 ##                    AppendMenu(functionblock_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=functionblock_type)
 ##                    self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(functionblock_type), id=new_id)
 ##                type_menu.AppendMenu(wx.NewId(), _("Function Block Types"), functionblock_menu)
+
             rect = self.StructureElementsGrid.BlockToDeviceRect((row, col), (row, col))
             self.StructureElementsGrid.PopupMenuXY(type_menu, rect.x + rect.width, rect.y + self.StructureElementsGrid.GetColLabelSize())
             type_menu.Destroy()
@@ -644,6 +658,17 @@ class DataTypeEditor(EditorPanel):
             self.RefreshTypeInfos()
             self.StructureElementsTable.ResetView(self.StructureElementsGrid)
         return ElementTypeFunction
+
+    def ElementArrayTypeFunction(self, event):
+        row = self.StructureElementsGrid.GetGridCursorRow()
+        dialog = ArrayTypeDialog(self, 
+                                 self.Controler.GetDataTypes(self.TagName), 
+                                 self.StructureElementsTable.GetValueByName(row, "Type"))
+        if dialog.ShowModal() == wx.ID_OK:
+            self.StructureElementsTable.SetValueByName(row, "Type", dialog.GetValue())
+            self.RefreshTypeInfos()
+            self.StructureElementsTable.ResetView(self.StructureElementsGrid)
+        dialog.Destroy()
 
     def RefreshDisplayedInfos(self):
         selected = DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]

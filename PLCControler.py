@@ -1210,8 +1210,8 @@ class PLCControler:
             for dimension in vartype_content["value"].getdimension():
                 dimensions.append((dimension.getlower(), dimension.getupper()))
             base_type = vartype_content["value"].baseType.getcontent()
-            if base_type["value"] is None:
-                base_type_name = base_type["name"]
+            if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
+                base_type_name = base_type["name"].upper()
             else:
                 base_type_name = base_type["value"].getname()
             tempvar["Type"] = ("array", base_type_name, dimensions)
@@ -1461,9 +1461,9 @@ class PLCControler:
                  "list": confnodetypes["types"].GetCustomBlockTypes()}
                 for confnodetypes in self.ConfNodeTypes]
         
-    def GetConfNodeDataTypes(self, exclude = ""):
+    def GetConfNodeDataTypes(self, exclude = "", only_locatables = False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
-                 "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude)]}
+                 "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude, only_locatables)]}
                 for confnodetypes in self.ConfNodeTypes]
     
     def GetConfNodeDataType(self, type):
@@ -1556,7 +1556,7 @@ class PLCControler:
         return blocktypes
 
     # Return Data Types checking for recursion
-    def GetDataTypes(self, tagname = "", basetypes = True, only_locatables = False, debug = False):
+    def GetDataTypes(self, tagname = "", basetypes = True, confnodetypes = True, only_locatables = False, debug = False):
         if basetypes:
             datatypes = self.GetBaseTypes()
         else:
@@ -1568,8 +1568,9 @@ class PLCControler:
             if words[0] in ["D"]:
                 name = words[1]
             datatypes.extend([datatype["name"] for datatype in project.GetCustomDataTypes(name, only_locatables)])
-        for category in self.GetConfNodeDataTypes():
-            datatypes.extend(category["list"])
+        if confnodetypes:
+            for category in self.GetConfNodeDataTypes(name, only_locatables):
+                datatypes.extend(category["list"])
         return datatypes
 
     # Return Base Type of given possible derived type
@@ -1762,6 +1763,16 @@ class PLCControler:
                         element_type = element.type.getcontent()
                         if element_type["value"] is None or element_type["name"] in ["string", "wstring"]:
                             element_infos["Type"] = element_type["name"].upper()
+                        elif element_type["name"] == "array":
+                            dimensions = []
+                            for dimension in element_type["value"].getdimension():
+                                dimensions.append((dimension.getlower(), dimension.getupper()))
+                            base_type = element_type["value"].baseType.getcontent()
+                            if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
+                                base_type_name = base_type["name"].upper()
+                            else:
+                                base_type_name = base_type["value"].getname()
+                            element_infos["Type"] = ("array", base_type_name, dimensions)
                         else:
                             element_infos["Type"] = element_type["value"].getname()
                         if element.initialValue is not None:
@@ -1845,7 +1856,31 @@ class PLCControler:
                 for i, element_infos in enumerate(infos["elements"]):
                     element = plcopen.varListPlain_variable()
                     element.setname(element_infos["Name"])
-                    if element_infos["Type"] in self.GetBaseTypes():
+                    if isinstance(element_infos["Type"], TupleType):
+                        if element_infos["Type"][0] == "array":
+                            array_type, base_type_name, dimensions = element_infos["Type"]
+                            array = plcopen.derivedTypes_array()
+                            for j, dimension in enumerate(dimensions):
+                                dimension_range = plcopen.rangeSigned()
+                                dimension_range.setlower(dimension[0])
+                                dimension_range.setupper(dimension[1])
+                                if j == 0:
+                                    array.setdimension([dimension_range])
+                                else:
+                                    array.appenddimension(dimension_range)
+                            if base_type_name in self.GetBaseTypes():
+                                if base_type_name == "STRING":
+                                    array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
+                                elif base_type_name == "WSTRING":
+                                    array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
+                                else:
+                                    array.baseType.setcontent({"name" : base_type_name, "value" : None})
+                            else:
+                                derived_datatype = plcopen.derivedTypes_derived()
+                                derived_datatype.setname(base_type_name)
+                                array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
+                            element.type.setcontent({"name" : "array", "value" : array})
+                    elif element_infos["Type"] in self.GetBaseTypes():
                         if element_infos["Type"] == "STRING":
                             element.type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
                         elif element_infos["Type"] == "WSTRING":
