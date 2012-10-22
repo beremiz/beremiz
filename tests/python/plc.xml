@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2012-10-19T11:54:13">
+                 modificationDateTime="2012-10-23T00:54:38">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -114,21 +114,21 @@
         <body>
           <FBD>
             <inVariable localId="4" height="30" width="160">
-              <position x="295" y="235"/>
+              <position x="295" y="230"/>
               <connectionPointOut>
                 <relPosition x="160" y="15"/>
               </connectionPointOut>
               <expression>'time.sleep(1)'</expression>
             </inVariable>
             <block localId="5" width="125" height="80" typeName="python_eval" instanceName="py1">
-              <position x="650" y="185"/>
+              <position x="650" y="180"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
                   <connectionPointIn>
                     <relPosition x="0" y="35"/>
                     <connection refLocalId="7" formalParameter="OUT">
-                      <position x="650" y="220"/>
-                      <position x="285" y="220"/>
+                      <position x="650" y="215"/>
+                      <position x="285" y="215"/>
                       <position x="285" y="260"/>
                       <position x="250" y="260"/>
                     </connection>
@@ -138,8 +138,8 @@
                   <connectionPointIn>
                     <relPosition x="0" y="65"/>
                     <connection refLocalId="4">
-                      <position x="650" y="250"/>
-                      <position x="455" y="250"/>
+                      <position x="650" y="245"/>
+                      <position x="455" y="245"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -241,10 +241,10 @@
               <connectionPointOut>
                 <relPosition x="290" y="15"/>
               </connectionPointOut>
-              <expression>'sys.stdout.write("1234\n")'</expression>
+              <expression>'sys.stdout.write("FBID :"+str(FBID)+"\n")'</expression>
             </inVariable>
             <inVariable localId="11" height="30" width="290">
-              <position x="290" y="465"/>
+              <position x="295" y="465"/>
               <connectionPointOut>
                 <relPosition x="290" y="15"/>
               </connectionPointOut>
@@ -269,7 +269,7 @@
                     <relPosition x="0" y="63"/>
                     <connection refLocalId="11">
                       <position x="650" y="480"/>
-                      <position x="580" y="480"/>
+                      <position x="585" y="480"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -357,8 +357,8 @@
                     <connection refLocalId="5" formalParameter="RESULT">
                       <position x="1065" y="545"/>
                       <position x="905" y="545"/>
-                      <position x="905" y="250"/>
-                      <position x="775" y="250"/>
+                      <position x="905" y="245"/>
+                      <position x="775" y="245"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -422,14 +422,14 @@
               <expression>pytest_var1</expression>
             </outVariable>
             <block localId="21" width="80" height="120" typeName="MUX">
-              <position x="985" y="170"/>
+              <position x="985" y="165"/>
               <inputVariables>
                 <variable formalParameter="K">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="22">
-                      <position x="985" y="200"/>
-                      <position x="950" y="200"/>
+                      <position x="985" y="195"/>
+                      <position x="950" y="195"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -437,8 +437,8 @@
                   <connectionPointIn>
                     <relPosition x="0" y="50"/>
                     <connection refLocalId="5" formalParameter="ACK">
-                      <position x="985" y="220"/>
-                      <position x="775" y="220"/>
+                      <position x="985" y="215"/>
+                      <position x="775" y="215"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -446,8 +446,8 @@
                   <connectionPointIn>
                     <relPosition x="0" y="70"/>
                     <connection refLocalId="8" formalParameter="ACK">
-                      <position x="985" y="240"/>
-                      <position x="805" y="240"/>
+                      <position x="985" y="235"/>
+                      <position x="805" y="235"/>
                       <position x="805" y="330"/>
                       <position x="775" y="330"/>
                     </connection>
@@ -457,8 +457,8 @@
                   <connectionPointIn>
                     <relPosition x="0" y="90"/>
                     <connection refLocalId="12" formalParameter="ACK">
-                      <position x="985" y="260"/>
-                      <position x="820" y="260"/>
+                      <position x="985" y="255"/>
+                      <position x="820" y="255"/>
                       <position x="820" y="450"/>
                       <position x="775" y="450"/>
                     </connection>
@@ -468,8 +468,8 @@
                   <connectionPointIn>
                     <relPosition x="0" y="110"/>
                     <connection refLocalId="15" formalParameter="ACK">
-                      <position x="985" y="280"/>
-                      <position x="835" y="280"/>
+                      <position x="985" y="275"/>
+                      <position x="835" y="275"/>
                       <position x="835" y="575"/>
                       <position x="775" y="575"/>
                     </connection>
@@ -486,19 +486,19 @@
               </outputVariables>
             </block>
             <inVariable localId="22" height="30" width="20">
-              <position x="930" y="185"/>
+              <position x="930" y="180"/>
               <connectionPointOut>
                 <relPosition x="20" y="15"/>
               </connectionPointOut>
               <expression>3</expression>
             </inVariable>
             <outVariable localId="23" height="35" width="125">
-              <position x="1150" y="185"/>
+              <position x="1150" y="180"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="21" formalParameter="OUT">
-                  <position x="1150" y="200"/>
-                  <position x="1065" y="200"/>
+                  <position x="1150" y="195"/>
+                  <position x="1065" y="195"/>
                 </connection>
               </connectionPointIn>
               <expression>pytest_var3</expression>
@@ -584,6 +584,30 @@
               <content>
 <![CDATA[You will be ready to use beremiz with C and Python when you will understand why "FromInput" is equal  to 75.
 Enjoy. ]]>
+              </content>
+            </comment>
+            <comment localId="31" height="60" width="345">
+              <position x="295" y="265"/>
+              <content>
+<![CDATA[Sleep here is bad. It blocks other py_eval instances. Whith a wxGlade GUI, GUI freeze for a second.]]>
+              </content>
+            </comment>
+            <comment localId="6" height="60" width="345">
+              <position x="295" y="380"/>
+              <content>
+<![CDATA[Prints FBID to stdout of PLC runtime. FBID is a unique reference to py_eval instance.]]>
+              </content>
+            </comment>
+            <comment localId="10" height="60" width="345">
+              <position x="295" y="500"/>
+              <content>
+<![CDATA[Simple_C_Call is declared in C_File "1.x:c_code". See python ctypes manual for details on typing.]]>
+              </content>
+            </comment>
+            <comment localId="32" height="105" width="235">
+              <position x="25" y="285"/>
+              <content>
+<![CDATA[Fast clock, at least faster that sleep(1). See what happens when python takes time to answer : PLC continues.]]>
               </content>
             </comment>
           </FBD>

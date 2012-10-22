@@ -15,7 +15,7 @@ int Simple_C_Call(int val){
   return val+1;
 }
 
-int Python_to_C_Call(int toC, int *fromC){
+int Python_to_C_Call(char toC, char *fromC){
   /* Code called by python should never touch to 
      variables modified by PLC thread directly
 
@@ -33,7 +33,7 @@ int Python_to_C_Call(int toC, int *fromC){
   return res;
 }
 
-int PLC_C_Call(int fromPLC, int *toPLC){
+int PLC_C_Call(char fromPLC, char *toPLC){
   /* PLC also have to be realy carefull not to 
      conflict with asynchronous python access */
   int res;
