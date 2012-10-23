@@ -9,7 +9,7 @@ def MyPythonFunc(arg):
     i = ctypes.c_int()
     if(Python_to_C_Call(arg, i)):
         res = i.value
-        print "toC:", arg, "from C:", res
+        print "toC:", arg, "from C:", res, "FBID:", FBID
     else:
         print "Failed Python_to_C_Call failed"
         res = None
