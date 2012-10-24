@@ -434,8 +434,12 @@ import Pyro.core as pyro
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
 
-def default_evaluator(callable, *args, **kwargs):
-    return callable(*args,**kwargs)
+def default_evaluator(tocall, *args, **kwargs):
+    try:
+        res=(tocall(*args,**kwargs), None)
+    except Exception,exp:
+        res=(None, exp)
+    return res
 
 class Server():
     def __init__(self, servicename, ip_addr, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
@@ -681,29 +685,26 @@ else:
 if havewx:
     from threading import Semaphore
     wx_eval_lock = Semaphore(0)
-    mythread = currentThread()
+    main_thread = currentThread()
 
     def statuschange(status):
         wx.CallAfter(taskbar_instance.UpdateIcon,status)
         
-    eval_res = None
-    def wx_evaluator(callable, *args, **kwargs):
-        global eval_res
-        try:
-            eval_res=callable(*args,**kwargs)
-        except Exception,e:
-            PLCprint("#EXCEPTION : "+str(e))
-        finally:
-            wx_eval_lock.release()
+    def wx_evaluator(obj, *args, **kwargs):
+        tocall,args,kwargs = obj.call
+        obj.res = default_evaluator(tocall, *args, **kwargs)
+        wx_eval_lock.release()
         
-    def evaluator(callable, *args, **kwargs):
-        # call directly the callable function if call from the wx mainloop (avoid dead lock) 
-        if(mythread == currentThread()):
-            callable(*args,**kwargs)
+    def evaluator(tocall, *args, **kwargs):
+        global main_thread
+        if(main_thread == currentThread()):
+            # avoid dead lock if called from the wx mainloop 
+            return default_evaluator(tocall, *args, **kwargs)
         else:
-            wx.CallAfter(wx_evaluator,callable,*args,**kwargs)
+            o=type('',(object,),dict(call=(tocall, args, kwargs), res=None))
+            wx.CallAfter(wx_evaluator,o)
             wx_eval_lock.acquire()
-        return eval_res
+            return o.res
     
     pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
     taskbar_instance = BeremizTaskBarIcon(pyroserver, enablewx)

@@ -222,18 +222,32 @@ class PLCObject(pyro.ObjBase):
         self.StartSem.release()
         self.evaluator(self.PrepareRuntimePy)
         res,cmd,blkid = "None","None",ctypes.c_void_p()
+        compile_cache={}
         while True:
             # print "_PythonIterator(", res, ")",
             cmd = self._PythonIterator(res,blkid)
+            FBID = blkid.value 
             # print " -> ", cmd, blkid
             if cmd is None:
                 break
             try :
-                self.python_threads_vars["FBID"]=blkid.value
-                res = str(self.evaluator(eval,cmd,self.python_threads_vars))
+                self.python_threads_vars["FBID"]=FBID
+                ccmd,AST =compile_cache.get(FBID, (None,None))
+                if ccmd is None or ccmd!=cmd:
+                    AST = compile(cmd, '<plc>', 'eval')
+                    compile_cache[FBID]=(cmd,AST)
+                result,exp = self.evaluator(eval,cmd,self.python_threads_vars)
+                if exp is not None: 
+                    raise(exp)
+                else:
+                    res=str(result)
+                self.python_threads_vars["FBID"]=None
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
-                PLCprint(res)
+                PLCprint(('*** Python eval EXCEPTION ***\n'+
+                          '| Function Block ID: %d\n'+
+                          '| Command : "%s"\n'+
+                          '| Exception : "%s"')%(FBID,cmd,str(e)))
         self.PLCStatus = "Stopped"
         self.StatusChange()
         self.evaluator(self.FinishRuntimePy)
