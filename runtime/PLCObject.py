@@ -113,7 +113,7 @@ class PLCObject(pyro.ObjBase):
                 # as a call that block pythonthread until StopPLC 
                 self.PythonIteratorLock = Lock()
                 self.PythonIteratorLock.acquire()
-                def PythonIterator(res):
+                def PythonIterator(res, blkid):
                     self.PythonIteratorLock.acquire()
                     self.PythonIteratorLock.release()
                     return None
