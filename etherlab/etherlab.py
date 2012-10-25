@@ -5,6 +5,7 @@ from xml.dom import minidom
 import wx
 
 from xmlclass import *
+from POULibrary import POULibrary
 from ConfigTreeNode import ConfigTreeNode
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigEditor import NodeEditor, CIA402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
@@ -54,6 +55,31 @@ for slave_line in result.splitlines():
     slaves.append(slave)
 returnVal = slaves
 """
+
+#--------------------------------------------------
+#      Etherlab Specific Blocks Library
+#--------------------------------------------------
+
+def GetLocalPath(filename):
+    return os.path.join(os.path.split(__file__)[0], filename)
+
+class EtherlabLibrary(POULibrary):
+    def GetLibraryPath(self):
+        return GetLocalPath("pous.xml")
+
+    def Generate_C(self, buildpath, varlist, IECCFLAGS):
+        etherlab_ext_file = open(GetLocalPath("etherlab_ext.c"), 'r')
+        etherlab_ext_code = etherlab_ext_file.read()
+        etherlab_ext_file.close()
+        
+        Gen_etherlabfile_path = os.path.join(buildpath, "etherlab_ext.c")
+        ethelabfile = open(Gen_etherlabfile_path,'w')
+        ethelabfile.write(etherlab_ext_code)
+        ethelabfile.close()
+        
+        runtimefile_path = os.path.join(os.path.split(__file__)[0], "runtime_etherlab.py")
+        return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "", 
+                ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
 
 #--------------------------------------------------
 #                    Ethercat Node
