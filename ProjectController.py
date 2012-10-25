@@ -387,8 +387,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             res=lib.Generate_C(buildpath,self._VariablesList,LibIECCflags)  
             LocatedCCodeAndFlags.append(res[:2])
             if len(res)>2:
-                Extras.append(res[2:])
-        return map(list,zip(*LocatedCCodeAndFlags))+[tuple(*Extras)]
+                Extras.extend(res[2:])
+        return map(list,zip(*LocatedCCodeAndFlags))+[tuple(Extras)]
     
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
@@ -861,7 +861,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.LocationCFilesAndCFLAGS =  CTNLocationCFilesAndCFLAGS + LibCFilesAndCFLAGS
         self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
         ExtraFiles = CTNExtraFiles + LibExtraFiles
-
+        
         # Get temporary directory path
         extrafilespath = self._getExtraFilesPath()
         # Remove old directory
