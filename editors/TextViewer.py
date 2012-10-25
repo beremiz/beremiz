@@ -47,7 +47,7 @@ for i in xrange(26):
 [STC_PLC_WORD, STC_PLC_COMMENT, STC_PLC_NUMBER, STC_PLC_STRING, 
  STC_PLC_VARIABLE, STC_PLC_PARAMETER, STC_PLC_FUNCTION, STC_PLC_JUMP, 
  STC_PLC_ERROR, STC_PLC_SEARCH_RESULT] = range(10)
-[SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA] = range(7)
+[SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
 
 [ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
 ] = [wx.NewId() for _init_ctrls in range(2)]
@@ -595,12 +595,16 @@ class TextViewer(EditorPanel):
                 if state == WORD:
                     current_context = self.Variables
                 state = COMMENT
-            elif line.endswith("{") and state != PRAGMA:
+            elif line.endswith("{") and state not in [PRAGMA, DPRAGMA]:
                 self.SetStyling(current_pos - last_styled_pos, 31)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
                 state = PRAGMA
+            elif line.endswith("{{") and state == PRAGMA:
+                self.SetStyling(current_pos - last_styled_pos, 31)
+                last_styled_pos = current_pos
+                state = DPRAGMA
             elif state == COMMENT:
                 if line.endswith("*)"):
                     self.SetStyling(current_pos - last_styled_pos + 2, STC_PLC_COMMENT)
@@ -608,6 +612,11 @@ class TextViewer(EditorPanel):
                     state = SPACE
             elif state == PRAGMA:
                 if line.endswith("}"):
+                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    last_styled_pos = current_pos
+                    state = SPACE
+            elif state == DPRAGMA:
+                if line.endswith("}}"):
                     self.SetStyling(current_pos - last_styled_pos + 2, 31)
                     last_styled_pos = current_pos + 1
                     state = SPACE
@@ -838,7 +847,7 @@ class TextViewer(EditorPanel):
                         else:
                             kw = self.Variables.keys()
                 else:
-                    kw = self.Keywords + self.Variables.keys() + self.Functions
+                    kw = self.Keywords + self.Variables.keys() + self.Functions.keys()
                 if len(kw) > 0:
                     if len(words[-1]) > 0:
                         kw = [keyword for keyword in kw if keyword.startswith(words[-1])]
