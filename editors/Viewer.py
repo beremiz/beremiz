@@ -1567,10 +1567,9 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
     def OnAdjustBlockSizeMenu(self, event):
         if self.SelectedElement is not None:
             movex, movey = self.SelectedElement.SetBestSize(self.Scaling)
-            self.SelectedElement.RefreshModel()
+            self.SelectedElement.RefreshModel(True)
             self.RefreshBuffer()
-            if movex != 0 or movey != 0:
-                self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
+            self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
 
     def OnDeleteMenu(self, event):
         if self.SelectedElement is not None:
@@ -1896,10 +1895,9 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():
                 movex, movey = self.SelectedElement.SetBestSize(self.Scaling)
-                if movex != 0 or movey != 0:
-                    self.SelectedElement.RefreshModel()
-                    self.RefreshBuffer()
-                    self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
+                self.SelectedElement.RefreshModel()
+                self.RefreshBuffer()
+                self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
             else:
                 self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
         event.Skip()
