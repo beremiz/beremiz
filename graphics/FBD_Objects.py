@@ -666,6 +666,7 @@ class FBD_Variable(Graphic_Element):
                 self.Output.UnConnect(delete = True)
                 self.Output = None
             self.RefreshConnectors()
+            self.RefreshBoundingBox()
         elif value_type != self.ValueType:
             if self.Input:
                 self.Input.SetType(value_type)
@@ -904,6 +905,7 @@ class FBD_Connector(Graphic_Element):
             else:
                 self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), EAST)
             self.RefreshConnectors()
+            self.RefreshBoundingBox()
     
     # Returns the connection type
     def GetType(self):
