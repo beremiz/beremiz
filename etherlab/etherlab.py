@@ -289,6 +289,7 @@ if HAS_MCL:
             plc_cia402node_file.close()
             
             str_completion = {
+                "slave_pos": self.GetSlavePos(),
                 "location": location_str,
                 "MCL_headers": Headers,
                 "extern_located_variables_declaration": [],
