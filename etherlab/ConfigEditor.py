@@ -255,6 +255,7 @@ class NodeEditor(ConfTreeNodeEditor):
                 dragSource = wx.DropSource(self.VariablesGrid)
                 dragSource.SetData(data)
                 dragSource.DoDragDrop()
+                return
             
         event.Skip()
 
