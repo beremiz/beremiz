@@ -211,8 +211,15 @@ class LogPseudoFile:
             if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
                 self._should_write()
             else:
-                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._should_write)
+                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._timer_expired)
                 self.LastRefreshTimer.start()
+
+    def _timer_expired(self):
+        if self.RefreshLock.acquire(False):
+            self._should_write()
+        else:
+            self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._timer_expired)
+            self.LastRefreshTimer.start()
 
     def _should_write(self):
         wx.CallAfter(self._write)
@@ -225,7 +232,7 @@ class LogPseudoFile:
 
     def _write(self):
         if self.output :
-            self.output.Freeze(); 
+            self.output.Freeze()
             self.lock.acquire()
             for s, style in self.stack:
                 if style is None : style=self.black_white
@@ -247,7 +254,7 @@ class LogPseudoFile:
             if newtime - self.rising_timer > 1:
                 self.risecall()
             self.rising_timer = newtime
-
+        
     def write_warning(self, s):
         self.write(s,self.red_white)
 
