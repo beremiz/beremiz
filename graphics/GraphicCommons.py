@@ -27,7 +27,7 @@ from time import time as gettime
 from math import *
 from types import *
 import datetime
-from threading import Semaphore
+from threading import Lock,Timer
 
 #-------------------------------------------------------------------------------
 #                               Common constants
@@ -293,6 +293,7 @@ class DebugDataConsumer:
 #-------------------------------------------------------------------------------
 
 REFRESH_PERIOD = 0.1
+DEBUG_REFRESH_LOCK = Lock()
 
 class DebugViewer:
     
@@ -305,10 +306,10 @@ class DebugViewer:
         self.DataConsumers = {}
         
         self.LastRefreshTime = gettime()
-        self.RefreshLock = Semaphore()
+        self.HasAcquiredLock = False
+        self.AccessLock = Lock()
         
-        self.RefreshTimer = wx.Timer(self, -1)
-        self.Bind(wx.EVT_TIMER, self.OnRefreshTimer, self.RefreshTimer)
+        self.LastRefreshTimer = None
         
         self.SetDataProducer(producer)
         
@@ -366,15 +367,26 @@ class DebugViewer:
                 self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
         self.DataConsumers = {}
     
-    def OnRefreshTimer(self, event):
-        self.RefreshNewData()
-        event.Skip()
+    def ShouldRefresh(self):
+        if DEBUG_REFRESH_LOCK.acquire(False):
+            self.AccessLock.acquire()
+            self.HasAcquiredLock = True
+            self.AccessLock.release()
+            self.RefreshNewData()
+        else:
+            self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
+            self.LastRefreshTimer.start()
     
     def NewDataAvailable(self, *args, **kwargs):
-        self.RefreshTimer.Stop()
+        if self.LastRefreshTimer is not None:
+            self.LastRefreshTimer.cancel()
+            self.LastRefreshTimer=None
         if not self.Inhibited:
             current_time = gettime()
-            if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
+            if current_time - self.LastRefreshTime > REFRESH_PERIOD and DEBUG_REFRESH_LOCK.acquire(False):
+                self.AccessLock.acquire()
+                self.HasAcquiredLock = True
+                self.AccessLock.release()
                 self.LastRefreshTime = gettime()
                 self.Inhibit(True)
                 wx.CallAfter(self.RefreshViewOnNewData, *args, **kwargs)
@@ -382,12 +394,17 @@ class DebugViewer:
     def RefreshViewOnNewData(self, *args, **kwargs):
         if self:
             self.RefreshNewData(*args, **kwargs)
-            self.RefreshTimer.Start(int(REFRESH_PERIOD * 1000), oneShot=True)
+            self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
+            self.LastRefreshTimer.start()
     
     def RefreshNewData(self, *args, **kwargs):
         self.Inhibit(False)
-        self.RefreshLock.release()
-        
+        self.AccessLock.acquire()
+        if self.HasAcquiredLock:
+            DEBUG_REFRESH_LOCK.release()
+            self.HasAcquiredLock = False
+        self.AccessLock.release()
+
 #-------------------------------------------------------------------------------
 #                               Viewer Rubberband
 #-------------------------------------------------------------------------------
