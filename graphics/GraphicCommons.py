@@ -308,6 +308,7 @@ class DebugViewer:
         self.LastRefreshTime = gettime()
         self.HasAcquiredLock = False
         self.AccessLock = Lock()
+        self.TimerAccessLock = Lock()
         
         self.LastRefreshTimer = None
         
@@ -316,7 +317,8 @@ class DebugViewer:
     def __del__(self):
         self.DataProducer = None
         self.DeleteDataConsumers()
-        self.RefreshTimer.Stop()
+        if self.LastRefreshTimer is not None:
+            self.LastRefreshTimer.Stop()
     
     def SetDataProducer(self, producer):
         if self.RegisterTick and self.Debug:
@@ -374,13 +376,17 @@ class DebugViewer:
             self.AccessLock.release()
             self.RefreshNewData()
         else:
+            self.TimerAccessLock.acquire()
             self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
             self.LastRefreshTimer.start()
+            self.TimerAccessLock.release()
     
     def NewDataAvailable(self, *args, **kwargs):
+        self.TimerAccessLock.acquire()
         if self.LastRefreshTimer is not None:
             self.LastRefreshTimer.cancel()
             self.LastRefreshTimer=None
+        self.TimerAccessLock.release()
         if not self.Inhibited:
             current_time = gettime()
             if current_time - self.LastRefreshTime > REFRESH_PERIOD and DEBUG_REFRESH_LOCK.acquire(False):
@@ -390,12 +396,16 @@ class DebugViewer:
                 self.LastRefreshTime = gettime()
                 self.Inhibit(True)
                 wx.CallAfter(self.RefreshViewOnNewData, *args, **kwargs)
+        elif not self.IsShown() and self.HasAcquiredLock:
+            DebugViewer.RefreshNewData(self)
             
     def RefreshViewOnNewData(self, *args, **kwargs):
         if self:
             self.RefreshNewData(*args, **kwargs)
+            self.TimerAccessLock.acquire()
             self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
             self.LastRefreshTimer.start()
+            self.TimerAccessLock.release()
     
     def RefreshNewData(self, *args, **kwargs):
         self.Inhibit(False)
