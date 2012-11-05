@@ -9,8 +9,10 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <locale.h>
+#include <semaphore.h>
 
 extern unsigned long long common_ticktime__;
+static sem_t Run_PLC;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
@@ -28,7 +30,7 @@ void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 void PLC_timer_notify(sigval_t val)
 {
     PLC_GetTime(&__CURRENT_TIME);
-    __run();
+    sem_post(&Run_PLC);
 }
 
 timer_t PLC_timer;
@@ -69,10 +71,22 @@ void catch_signal(int sig)
 
 static unsigned long __debug_tick;
 
+pthread_t PLC_thread;
 static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t python_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t debug_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+int PLC_shutdown = 0;
+
+void PLC_thread_proc(void *arg)
+{
+    while (!PLC_shutdown) {
+        sem_wait(&Run_PLC);
+        __run();
+    }
+    pthread_exit(0);
+}
 
 #define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
@@ -81,6 +95,12 @@ int startPLC(int argc,char **argv)
     setlocale(LC_NUMERIC, "C");
     /* Define Ttick to 1ms if common_ticktime not defined */
     Ttick = common_ticktime__?common_ticktime__:1000000;
+
+    PLC_shutdown = 0;
+
+    sem_init(&Run_PLC, 0, 0);
+
+    pthread_create(&PLC_thread, NULL, (void*) &PLC_thread_proc, NULL);
 
     memset (&sigev, 0, sizeof (struct sigevent));
     sigev.sigev_value.sival_int = 0;
@@ -128,7 +148,11 @@ void LeaveDebugSection(void)
 int stopPLC()
 {
     /* Stop the PLC */
+    PLC_shutdown = 1;
+    sem_post(&Run_PLC);
     PLC_SetTimer(0,0);
+	pthread_join(PLC_thread, NULL);
+	sem_destroy(&Run_PLC);
     timer_delete (PLC_timer);
     __cleanup();
     pthread_mutex_destroy(&debug_wait_mutex);
@@ -143,6 +167,7 @@ extern unsigned long __tick;
 int WaitDebugData(unsigned long *tick)
 {
     int res;
+    if (PLC_shutdown) return 1;
     /* Wait signal from PLC thread */
     res = pthread_mutex_lock(&debug_wait_mutex);
     *tick = __debug_tick;
