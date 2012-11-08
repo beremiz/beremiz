@@ -133,6 +133,7 @@ class ResourceTable(CustomTable):
             for col in range(self.GetNumberCols()):
                 editor = None
                 renderer = None
+                error = False
                 colname = self.GetColLabelValue(col, False)
                 grid.SetReadOnly(row, col, False)
                 if colname == "Name":
@@ -143,6 +144,9 @@ class ResourceTable(CustomTable):
                     renderer = wx.grid.GridCellStringRenderer()
                     if self.GetValueByName(row, "Triggering") != "Cyclic":
                         grid.SetReadOnly(row, col, True)
+                    interval = self.GetValueByName(row, colname)
+                    if interval != "" and IEC_TIME_MODEL.match(interval.upper()) is None:
+                        error = True
                 elif colname == "Single":
                     editor = wx.grid.GridCellChoiceEditor()
                     editor.SetParameters(self.Parent.VariableList)
@@ -164,7 +168,7 @@ class ResourceTable(CustomTable):
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
                 
-                if colname == "Interval" and IEC_TIME_MODEL.match(self.GetValueByName(row, colname)) is None:
+                if error:
                     highlight_colours = ERROR_HIGHLIGHT
                 else:
                     highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
