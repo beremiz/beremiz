@@ -1964,7 +1964,10 @@ class Wire(Graphic_Element, DebugDataConsumer):
     
     def GetToolTipValue(self):
         if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
-            if isinstance(self.Value, StringType) and self.Value.find("#") == -1:
+            wire_type = self.GetEndConnectedType()
+            if wire_type == "STRING":
+                return "'%s'"%self.Value
+            elif wire_type == "WSTRING":
                 return "\"%s\""%self.Value
             else:
                 return str(self.Value)
@@ -2131,7 +2134,10 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if self.Value != value:
             self.Value = value
             if value is not None and not isinstance(value, BooleanType):
-                if isinstance(value, StringType) and value.find('#') == -1:
+                wire_type = self.GetEndConnectedType()
+                if wire_type == "STRING":
+                    self.ComputedValue = "'%s'"%value
+                elif wire_type == "WSTRING":
                     self.ComputedValue = "\"%s\""%value
                 else:
                     self.ComputedValue = str(value)

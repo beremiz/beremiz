@@ -69,6 +69,11 @@ class VariableTableItem(DebugDataConsumer):
             self.Parent.HasNewData = True
             
     def GetValue(self):
+        variable_type = self.Parent.GetDataType(self.Variable.upper())
+        if variable_type == "STRING":
+            return "'%s'" % self.Value
+        elif variable_type == "WSTRING":
+            return "\"%s\"" % self.Value
         return self.Value
 
 class DebugVariableTable(CustomTable):
