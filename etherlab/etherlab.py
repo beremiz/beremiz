@@ -195,6 +195,7 @@ if HAS_MCL:
         ("StatusWord", 0x6041, 0x00, "UINT", "I"),
         ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
         ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
+        ("ActualVelocity", 0x606C, 0x00, "DINT", "I"),
     ]
     
     DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"

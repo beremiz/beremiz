@@ -39,6 +39,11 @@ typedef struct {
     axis_s* axis;
 } __CIA402Node;
 
+#define AXIS_UNIT_TO_USER_UNIT(param)\
+(IEC_LREAL)(param) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator
+#define USER_UNIT_TO_AXIS_UNIT(param)\
+(IEC_DINT)(param * __CIA402Node_%(location)s.axis->RatioNumerator / __CIA402Node_%(location)s.axis->RatioDenominator)
+
 static __CIA402Node __CIA402Node_%(location)s;
 
 %(extern_located_variables_declaration)s
@@ -107,7 +112,8 @@ void __retrieve_%(location)s()
 
 	// Default variables retrieve
 	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
-	__CIA402Node_%(location)s.axis->ActualPosition = (IEC_LREAL)(*(__CIA402Node_%(location)s.ActualPosition)) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator;
+	__CIA402Node_%(location)s.axis->ActualPosition = AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualPosition));
+	__CIA402Node_%(location)s.axis->ActualVelocity = AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualVelocity));
 
 	// Extra variables retrieve
 %(extra_variables_retrieve)s
@@ -142,7 +148,7 @@ void __publish_%(location)s()
 
 	// Default variables publish
 	if (__CIA402Node_%(location)s.axis->CSP && *(__CIA402Node_%(location)s.ModesOfOperationDisplay) == 0x08) {
-		*(__CIA402Node_%(location)s.TargetPosition) = (IEC_DINT)(__CIA402Node_%(location)s.axis->PositionSetPoint * __CIA402Node_%(location)s.axis->RatioNumerator / __CIA402Node_%(location)s.axis->RatioDenominator);
+		*(__CIA402Node_%(location)s.TargetPosition) = USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->PositionSetPoint);
 	}
 	else {
 		*(__CIA402Node_%(location)s.TargetPosition) = *(__CIA402Node_%(location)s.ActualPosition);
