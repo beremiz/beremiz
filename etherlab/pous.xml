@@ -241,7 +241,6 @@ CASE STATE OF
   4:
     IF PY1.ACK THEN
       ACK := 1;
-      VALUE := PY1.RESULT;
       ERROR := EQ(PY1.RESULT, 'False');
       STATE := 0;
       {ReleaseSDOLock();}
