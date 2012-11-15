@@ -11,6 +11,8 @@
   #include "iec_std_lib.h"
 #endif
 
+#include "POUS.h"
+
 IEC_INT beremiz__IW%(location)s_0;
 IEC_INT *__IW%(location)s_0 = &beremiz__IW%(location)s_0;
 
@@ -48,11 +50,14 @@ static __CIA402Node __CIA402Node_%(location)s;
 
 %(extern_located_variables_declaration)s
 
+%(fieldbus_interface_declaration)s
+
 int __init_%(location)s()
 {
 %(init_entry_variables)s
 	*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
 	__CIA402Node_%(location)s.axis = __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
+%(fieldbus_interface_definition)s
 	__MK_Set_AXIS_REF_Pos(*__IW%(location)s_0, %(slave_pos)d);
 	*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
     return 0;
