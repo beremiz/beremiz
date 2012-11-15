@@ -196,6 +196,7 @@ class LogPseudoFile:
         self.lock = Lock()
         self.YieldLock = Lock()
         self.RefreshLock = Lock()
+        self.TimerAccessLock = Lock()
         self.stack = []
         self.LastRefreshTime = gettime()
         self.LastRefreshTimer = None
@@ -205,21 +206,27 @@ class LogPseudoFile:
             self.stack.append((s,style))
             self.lock.release()
             current_time = gettime()
+            self.TimerAccessLock.acquire()
             if self.LastRefreshTimer:
                 self.LastRefreshTimer.cancel()
                 self.LastRefreshTimer=None
+            self.TimerAccessLock.release()
             if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
                 self._should_write()
             else:
+                self.TimerAccessLock.acquire()
                 self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._timer_expired)
                 self.LastRefreshTimer.start()
+                self.TimerAccessLock.release()
 
     def _timer_expired(self):
         if self.RefreshLock.acquire(False):
             self._should_write()
         else:
+            self.TimerAccessLock.acquire()
             self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._timer_expired)
             self.LastRefreshTimer.start()
+            self.TimerAccessLock.release()
 
     def _should_write(self):
         wx.CallAfter(self._write)
