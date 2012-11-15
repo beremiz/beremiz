@@ -613,7 +613,7 @@ class PLCControler:
                             self.ComputePouName(words[1]), debug)]
         return []
     
-    def RecursiveGetPouInstanceTagName(self, project, pou_type, parts):
+    def RecursiveGetPouInstanceTagName(self, project, pou_type, parts, debug = False):
         pou = project.getpou(pou_type)
         if pou is not None:
             if len(parts) == 0:
@@ -627,7 +627,7 @@ class PLCControler:
                             return self.RecursiveGetPouInstanceTagName(
                                             project, 
                                             vartype_content["value"].getname(),
-                                            parts[1:])
+                                            parts[1:], debug)
             
             if pou.getbodyType() == "SFC" and len(parts) == 1:
                 for action in pou.getactionList():
@@ -636,6 +636,17 @@ class PLCControler:
                 for transition in pou.gettransitionList():
                     if transition.getname() == parts[0]:
                         return self.ComputePouTransitionName(pou_type, parts[0])
+        else:
+            block_infos = self.GetBlockType(pou_type, debug=debug)
+            if (block_infos is not None and 
+                block_infos["type"] in ["program", "functionBlock"]):
+                
+                if len(parts) == 0:
+                    return self.ComputePouName(pou_type)
+                
+                for varname, vartype, varmodifier in block_infos["inputs"] + block_infos["outputs"]:
+                    if varname == parts[0]:
+                        return self.RecursiveGetPouInstanceTagName(project, vartype, parts[1:], debug)
         return None
     
     def GetPouInstanceTagName(self, instance_path, debug = False):
@@ -662,7 +673,7 @@ class PLCControler:
                                         return self.RecursiveGetPouInstanceTagName(
                                                     project,
                                                     pou_instance.gettypeName(),
-                                                    parts[3:])
+                                                    parts[3:], debug)
         return None
     
     def GetInstanceInfos(self, instance_path, debug = False):
