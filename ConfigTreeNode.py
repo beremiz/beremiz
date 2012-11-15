@@ -195,6 +195,18 @@ class ConfigTreeNode:
         shutil.copytree(src_CTNPath, self.CTNPath)
         return True
 
+    def CTNGlobalInstances(self):
+        """
+        @return: [(instance_name, instance_type),...]
+        """
+        return []
+    
+    def _GlobalInstances(self):
+        instances = self.CTNGlobalInstances()
+        for CTNChild in self.IECSortedChildren():
+            instances.extend(CTNChild._GlobalInstances())
+        return instances
+    
     def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code

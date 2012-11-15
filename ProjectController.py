@@ -503,7 +503,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     # finally store into located variable list
                     locations.append(resdict)
         return locations
-        
+    
+    def GetConfNodeGlobalInstances(self):
+        return self._GlobalInstances()
+    
     def _Generate_SoftPLC(self):
         """
         Generate SoftPLC ST/IL/SFC code out of PLCOpenEditor controller, and compile it with IEC2C
@@ -697,15 +700,23 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self._ProgramList.append(attrs)
         
                 # second section contains all variables
+                config_FBs = {}
                 for line in ListGroup[1]:
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(zip(VariablesListAttributeName,line.strip().split(';')))
                     # Truncate "C_path" to remove conf an ressources names
                     parts = attrs["C_path"].split(".",2)
                     if len(parts) > 2:
-                        attrs["C_path"] = '__'.join(parts[1:])
+                        config_FB = config_FBs.get(tuple(parts[:2]))
+                        if config_FB:
+                            parts = [config_FB] + parts[2:]
+                            attrs["C_path"] = '.'.join(parts)
+                        else: 
+                            attrs["C_path"] = '__'.join(parts[1:])
                     else:
                         attrs["C_path"] = '__'.join(parts)
+                        if attrs["vartype"] == "FB":
+                            config_FBs[tuple(parts)] = attrs["C_path"]
                     # Push this dictionnary into result.
                     self._VariablesList.append(attrs)
                     # Fill in IEC<->C translation dicts
@@ -741,18 +752,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
                "IN":"extern __IEC_%(type)s_p %(C_path)s;",
                "MEM":"extern __IEC_%(type)s_p %(C_path)s;",
                "OUT":"extern __IEC_%(type)s_p %(C_path)s;",
-               "VAR":"extern __IEC_%(type)s_t %(C_path)s;"}[v["vartype"]]%v 
-               for v in self._VariablesList if v["vartype"] != "FB" and v["C_path"].find('.')<0]),
+               "VAR":"extern __IEC_%(type)s_t %(C_path)s;",
+               "FB":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v 
+               for v in self._VariablesList if v["C_path"].find('.')<0]),
            "for_each_variable_do_code":"\n".join([
-               {"EXT":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
-                "IN":"    (*fp)((void*)&%(C_path)s,%(type)s_P_ENUM);\n",
-                "MEM":"    (*fp)((void*)&%(C_path)s,%(type)s_O_ENUM);\n",
-                "OUT":"    (*fp)((void*)&%(C_path)s,%(type)s_O_ENUM);\n",
-                "VAR":"    (*fp)((void*)&%(C_path)s,%(type)s_ENUM);\n"}[v["vartype"]]%v
+               {"EXT":"    (*fp)((void*)&(%(C_path)s),%(type)s_P_ENUM);\n",
+                "IN":"    (*fp)((void*)&(%(C_path)s),%(type)s_P_ENUM);\n",
+                "MEM":"    (*fp)((void*)&(%(C_path)s),%(type)s_O_ENUM);\n",
+                "OUT":"    (*fp)((void*)&(%(C_path)s),%(type)s_O_ENUM);\n",
+                "VAR":"    (*fp)((void*)&(%(C_path)s),%(type)s_ENUM);\n"}[v["vartype"]]%v
                 for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ]),
            "find_variable_case_code":"\n".join([
                "    case %(num)s:\n"%v+
-               "        *varp = (void*)&%(C_path)s;\n"%v+
+               "        *varp = (void*)&(%(C_path)s);\n"%v+
                {"EXT":"        return %(type)s_P_ENUM;\n",
                 "IN":"        return %(type)s_P_ENUM;\n",
                 "MEM":"        return %(type)s_O_ENUM;\n",
