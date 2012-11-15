@@ -2023,7 +2023,8 @@ class IDEFrame(wx.Frame):
             if self.Controler.IsOfType(instance_type, "ANY_NUM", True) or\
                self.Controler.IsOfType(instance_type, "ANY_BIT", True):
                 
-                return self.OpenGraphicViewer(instance_path)
+                new_window = GraphicViewer(self.TabsOpened, self, self.Controler, instance_path)
+                icon = GetBitmap("GRAPH")
         
         else:
             bodytype = self.Controler.GetEditedElementBodyType(instance_type, True)
@@ -2044,13 +2045,8 @@ class IDEFrame(wx.Frame):
                     new_window.SetKeywords(IL_KEYWORDS)
                 else:
                     new_window.SetKeywords(ST_KEYWORDS)
+            
             if new_window is not None:
-                project_infos = self.GetProjectConfiguration()
-                if project_infos.has_key("editors_state"):
-                    state = project_infos["editors_state"].get(instance_path)
-                    if state is not None:
-                        wx.CallAfter(new_window.SetState, state)
-                
                 if instance_category in [ITEM_FUNCTIONBLOCK, ITEM_PROGRAM]:
                     pou_type = self.Controler.GetEditedElementType(instance_type, True)[1].upper()
                     icon = GetBitmap(pou_type, bodytype)
@@ -2058,22 +2054,19 @@ class IDEFrame(wx.Frame):
                     icon = GetBitmap("TRANSITION", bodytype)
                 elif instance_category == ITEM_ACTION:
                     icon = GetBitmap("ACTION", bodytype)
-                new_window.SetIcon(icon)
-                self.AddPage(new_window, "")
-                new_window.RefreshView()
-                new_window.SetFocus()
-                self.RefreshPageTitles()
-            return new_window
         
-        return None
-
-    def OpenGraphicViewer(self, var_path):
-        new_window = GraphicViewer(self.TabsOpened, self, self.Controler, var_path)
-        new_window.SetIcon(GetBitmap("GRAPH"))
-        self.AddPage(new_window, "")
-        new_window.RefreshView()
-        new_window.SetFocus()
-        self.RefreshPageTitles()
+        if new_window is not None:
+            project_infos = self.GetProjectConfiguration()
+            if project_infos.has_key("editors_state"):
+                state = project_infos["editors_state"].get(instance_path)
+                if state is not None:
+                    wx.CallAfter(new_window.SetState, state)
+            
+            new_window.SetIcon(icon)
+            self.AddPage(new_window, "")
+            new_window.RefreshView()
+            new_window.SetFocus()
+            self.RefreshPageTitles()
         return new_window
 
     def ResetGraphicViewers(self):
