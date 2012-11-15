@@ -1644,6 +1644,8 @@ class PLCControler:
     def IsLocatableType(self, type, debug = False):
         if isinstance(type, TupleType):
             return False 
+        if self.GetBlockType(type) is not None:
+            return False
         project = self.GetProject(debug)
         if project is not None:
             datatype = project.getdataType(type)
