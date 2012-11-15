@@ -1887,10 +1887,13 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                             self.ParentWindow.OpenGraphicViewer(iec_path)
             elif event.ControlDown() and not event.ShiftDown():
                 if not isinstance(self.SelectedElement, Graphic_Group):
-                    instance_type = self.SelectedElement.GetType()
-                    if self.IsBlock(self.SelectedElement) and instance_type in self.Controler.GetProjectPouNames(self.Debug):
+                    if isinstance(self.SelectedElement, FBD_Block):
+                        instance_type = self.SelectedElement.GetType()
+                    else:
+                        instance_type = None
+                    if instance_type in self.Controler.GetProjectPouNames(self.Debug):
                         self.ParentWindow.EditProjectElement(ITEM_POU, 
-                            self.Controler.ComputePouName(instance_type))
+                                self.Controler.ComputePouName(instance_type))
                     else:
                         self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():
