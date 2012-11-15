@@ -272,7 +272,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                 if infos["class"] in ITEMS_VARIABLE:
                     var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
                                           infos["name"])
-                    self.ParentWindow.OpenGraphicViewer(var_path)
+                    self.ParentWindow.OpenDebugViewer(infos["class"], var_path, infos["type"])
             event.Skip()
         return GraphButtonCallback
     

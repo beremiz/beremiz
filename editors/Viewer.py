@@ -31,7 +31,7 @@ from threading import Lock
 import wx
 
 from plcopen.structures import *
-from PLCControler import ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
+from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
 
 from dialogs import *
 from graphics import *
@@ -1879,12 +1879,10 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                     if iec_path is not None:
                         if isinstance(self.SelectedElement, Wire):
                             if self.SelectedElement.EndConnected is not None:
-                                var_type = self.SelectedElement.EndConnected.GetType()
-                                if self.Controler.IsOfType(var_type, "ANY_NUM", self.Debug) or\
-                                   self.Controler.IsOfType(var_type, "ANY_BIT", self.Debug):
-                                    self.ParentWindow.OpenGraphicViewer(iec_path)
+                                self.ParentWindow.OpenDebugViewer(ITEM_VAR_LOCAL, iec_path, 
+                                        self.SelectedElement.EndConnected.GetType())
                         else:
-                            self.ParentWindow.OpenGraphicViewer(iec_path)
+                            self.ParentWindow.OpenDebugViewer(ITEM_VAR_LOCAL, iec_path, "BOOL")
             elif event.ControlDown() and not event.ShiftDown():
                 if not isinstance(self.SelectedElement, Graphic_Group):
                     if isinstance(self.SelectedElement, FBD_Block):
