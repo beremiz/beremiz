@@ -208,6 +208,31 @@ if HAS_MCL:
             ])
     ]
     EXTRA_NODE_VARIABLES_DICT = dict([("Enable" + name, value) for name, value in EXTRA_NODE_VARIABLES])
+
+    BLOCK_INPUT_TEMPLATE = "    __SET_VAR(%(blockname)s.,%(input_name)s, %(input_value)s);"
+    BLOCK_OUTPUT_TEMPLATE = "    __SET_VAR(data__->,%(output_name)s, __GET_VAR(%(blockname)s.%(output_name)s));"
+    
+    BLOCK_FUNCTION_TEMPLATE = """
+void __%(blocktype)s_%(location)s(MCL_%(ucase_blocktype)s *data__) {
+    extern ETHERLAB%(ucase_blocktype)s %(blockname)s;
+%(extract_inputs)s
+    ETHERLAB%(ucase_blocktype)s_body__(&%(blockname)s);
+%(return_outputs)s
+}
+"""
+    
+    BLOCK_FUNTION_DEFINITION_TEMPLATE = "    __CIA402Node_%(location)s.axis->__mcl_func_%(blocktype)s = &(__%(blocktype)s_%(location)s);"
+    
+    GLOBAL_INSTANCES = [
+        {"blocktype": "GetTorqueLimit", 
+         "inputs": [],
+         "outputs": [{"name": "TorqueLimitPos", "type": "UINT"},
+                     {"name": "TorqueLimitNeg", "type": "UINT"}]},
+        {"blocktype": "SetTorqueLimit", 
+         "inputs": [{"name": "TorqueLimitPos", "type": "UINT"},
+                    {"name": "TorqueLimitNeg", "type": "UINT"}],
+         "outputs": []},
+    ]
     
     class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -260,6 +285,11 @@ if HAS_MCL:
                      "children": children,
             }
         
+        def CTNGlobalInstances(self):
+            current_location = self.GetCurrentLocation()
+            return [("%s_%s" % (block_infos["blocktype"], "_".join(map(str, current_location))),
+                     "EtherLab%s" % block_infos["blocktype"]) for block_infos in GLOBAL_INSTANCES]
+        
         def _getCIA402AxisRef(self):
             data = wx.TextDataObject(str(("%%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
                                           "location", "AXIS_REF", self.CTNName(), "")))
@@ -294,6 +324,8 @@ if HAS_MCL:
                 "location": location_str,
                 "MCL_headers": Headers,
                 "extern_located_variables_declaration": [],
+                "fieldbus_interface_declaration": [],
+                "fieldbus_interface_definition": [],
                 "entry_variables": [],
                 "init_axis_params": [],
                 "init_entry_variables": [],
@@ -301,6 +333,39 @@ if HAS_MCL:
                 "extra_variables_publish": []
             }
             
+            for blocktype_infos in GLOBAL_INSTANCES:
+                texts = {
+                    "blocktype": blocktype_infos["blocktype"],
+                    "ucase_blocktype": blocktype_infos["blocktype"].upper(),
+                    "location": "_".join(map(str, current_location))
+                }
+                texts["blockname"] = "%(ucase_blocktype)s_%(location)s" % texts
+                
+                inputs = [{"input_name": "POS", "input_value": str(self.GetSlavePos())},
+                          {"input_name": "EXECUTE", "input_value": "__GET_VAR(data__->EXECUTE)"}] +\
+                         [{"input_name": input["name"].upper(), 
+                           "input_value": "__GET_VAR(data__->%s)" % input["name"].upper()}
+                          for input in blocktype_infos["inputs"]]
+                input_texts = []
+                for input_infos in inputs:
+                    input_infos.update(texts)
+                    input_texts.append(BLOCK_INPUT_TEMPLATE % input_infos)
+                texts["extract_inputs"] = "\n".join(input_texts)
+                
+                outputs = [{"output_name": output} for output in ["DONE", "BUSY", "ERROR"]] + \
+                          [{"output_name": output["name"].upper()} for output in blocktype_infos["outputs"]]
+                output_texts = []
+                for output_infos in outputs:
+                    output_infos.update(texts)
+                    output_texts.append(BLOCK_OUTPUT_TEMPLATE % output_infos)
+                texts["return_outputs"] = "\n".join(output_texts)
+                
+                str_completion["fieldbus_interface_declaration"].append(
+                        BLOCK_FUNCTION_TEMPLATE % texts)
+                
+                str_completion["fieldbus_interface_definition"].append(
+                        BLOCK_FUNTION_DEFINITION_TEMPLATE % texts)
+                
             variables = NODE_VARIABLES[:]
             
             params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
@@ -353,6 +418,8 @@ if HAS_MCL:
                         var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
             
             for element in ["extern_located_variables_declaration", 
+                            "fieldbus_interface_declaration",
+                            "fieldbus_interface_definition",
                             "entry_variables", 
                             "init_axis_params", 
                             "init_entry_variables",
