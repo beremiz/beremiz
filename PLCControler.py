@@ -1476,6 +1476,32 @@ class PLCControler:
     def GetVariableLocationTree(self):
         return []
 
+    def GetConfNodeGlobalInstances(self):
+        return []
+
+    def GetConfigurationExtraVariables(self):
+        global_vars = []
+        for var_name, var_type in self.GetConfNodeGlobalInstances():
+            tempvar = plcopen.varListPlain_variable()
+            tempvar.setname(var_name)
+            
+            tempvartype = plcopen.dataType()
+            if var_type in self.GetBaseTypes():
+                if var_type == "STRING":
+                    var_type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
+                elif var_type == "WSTRING":
+                    var_type.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
+                else:
+                    var_type.setcontent({"name" : var_type, "value" : None})
+            else:
+                tempderivedtype = plcopen.derivedTypes_derived()
+                tempderivedtype.setname(var_type)
+                tempvartype.setcontent({"name" : "derived", "value" : tempderivedtype})
+            tempvar.settype(tempvartype)
+            
+            global_vars.append(tempvar)
+        return global_vars
+
     # Function that returns the block definition associated to the block type given
     def GetBlockType(self, type, inputs = None, debug = False):
         result_blocktype = None
@@ -1723,6 +1749,8 @@ class PLCControler:
             if words[0] == "D":
                 infos = {}
                 datatype = project.getdataType(words[1])
+                if datatype is None:
+                    return None
                 basetype_content = datatype.baseType.getcontent()
                 if basetype_content["value"] is None or basetype_content["name"] in ["string", "wstring"]:
                     infos["type"] = "Directly"

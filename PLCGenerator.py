@@ -268,8 +268,17 @@ class ProgramGenerator:
                   (configuration.getname(), (tagname, "name")),
                   ("\n", ())]
         var_number = 0
+        
+        varlists = [(varlist, varlist.getvariable()[:]) for varlist in configuration.getglobalVars()]
+        
+        extra_variables = self.Controler.GetConfigurationExtraVariables()
+        if len(extra_variables) > 0:
+            if len(varlists) == 0:
+                varlists = [(plcopen.interface_globalVars(), [])]
+            varlists[-1][1].extend(extra_variables)
+            
         # Generate any global variable in configuration
-        for varlist in configuration.getglobalVars():
+        for varlist, varlist_variables in varlists:
             variable_type = errorVarTypes.get("VAR_GLOBAL", "var_local")
             # Generate variable block with modifier
             config += [("  VAR_GLOBAL", ())]
@@ -281,7 +290,7 @@ class ProgramGenerator:
                 config += [(" NON_RETAIN", (tagname, variable_type, (var_number, var_number + len(varlist.getvariable())), "non_retain"))]
             config += [("\n", ())]
             # Generate any variable of this block
-            for var in varlist.getvariable():
+            for var in varlist_variables:
                 vartype_content = var.gettype().getcontent()
                 if vartype_content["name"] == "derived":
                     var_type = vartype_content["value"].getname()
@@ -512,15 +521,24 @@ class PouProgramGenerator:
                         current_type = var_type
                         break
             while current_type is not None and len(parts) > 0:
-                tagname = self.ParentGenerator.Controler.ComputeDataTypeName(current_type)
-                infos = self.ParentGenerator.Controler.GetDataTypeInfos(tagname)
-                name = parts.pop(0)
-                current_type = None
-                if infos is not None and infos["type"] == "Structure":
-                    for element in infos["elements"]:
-                        if element["Name"] == name:
-                            current_type = element["Type"]
+                blocktype = self.ParentGenerator.Controler.GetBlockType(current_type)
+                if blocktype is not None:
+                    name = parts.pop(0)
+                    current_type = None
+                    for var_name, var_type, var_modifier in blocktype["inputs"] + blocktype["outputs"]:
+                        if var_name == name:
+                            current_type = var_type
                             break
+                else:
+                    tagname = self.ParentGenerator.Controler.ComputeDataTypeName(current_type)
+                    infos = self.ParentGenerator.Controler.GetDataTypeInfos(tagname)
+                    if infos is not None and infos["type"] == "Structure":
+                        name = parts.pop(0)
+                        current_type = None
+                        for element in infos["elements"]:
+                            if element["Name"] == name:
+                                current_type = element["Type"]
+                                break
         return current_type
     
     # Return connectors linked by a connection to the given connector
