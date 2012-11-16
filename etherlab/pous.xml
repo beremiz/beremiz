@@ -516,7 +516,7 @@ PY1(TRIG := STATE = 4,
               <connectionPointOut>
                 <relPosition x="68" y="13"/>
               </connectionPointOut>
-              <expression>16#60E0</expression>
+              <expression>16#60E1</expression>
             </inVariable>
             <inVariable localId="8" height="27" width="33">
               <position x="390" y="203"/>
@@ -1025,7 +1025,7 @@ PY1(TRIG := STATE = 4,
               <connectionPointOut>
                 <relPosition x="68" y="13"/>
               </connectionPointOut>
-              <expression>16#60E0</expression>
+              <expression>16#60E1</expression>
             </inVariable>
             <inVariable localId="8" height="27" width="33">
               <position x="186" y="203"/>

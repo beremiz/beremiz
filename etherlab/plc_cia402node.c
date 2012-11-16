@@ -11,6 +11,7 @@
   #include "iec_std_lib.h"
 #endif
 
+#include "accessor.h"
 #include "POUS.h"
 
 IEC_INT beremiz__IW%(location)s_0;
@@ -57,7 +58,6 @@ int __init_%(location)s()
 %(init_entry_variables)s
 	*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
 	__CIA402Node_%(location)s.axis = __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
-%(fieldbus_interface_definition)s
 	__MK_Set_AXIS_REF_Pos(*__IW%(location)s_0, %(slave_pos)d);
 	*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
     return 0;
@@ -69,6 +69,8 @@ void __cleanup_%(location)s()
 
 void __retrieve_%(location)s()
 {
+%(fieldbus_interface_definition)s
+
 	IEC_UINT statusword_inactive = *(__CIA402Node_%(location)s.StatusWord) & __InactiveMask;
 	IEC_UINT statusword_active = *(__CIA402Node_%(location)s.StatusWord) & __ActiveMask;
 
