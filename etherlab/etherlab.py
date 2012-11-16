@@ -209,20 +209,22 @@ if HAS_MCL:
     ]
     EXTRA_NODE_VARIABLES_DICT = dict([("Enable" + name, value) for name, value in EXTRA_NODE_VARIABLES])
 
-    BLOCK_INPUT_TEMPLATE = "    __SET_VAR(%(blockname)s.,%(input_name)s, %(input_value)s);"
-    BLOCK_OUTPUT_TEMPLATE = "    __SET_VAR(data__->,%(output_name)s, __GET_VAR(%(blockname)s.%(output_name)s));"
+    BLOCK_INPUT_TEMPLATE = "    __SET_VAR(%(blockname)s->,%(input_name)s, %(input_value)s);"
+    BLOCK_OUTPUT_TEMPLATE = "    __SET_VAR(data__->,%(output_name)s, __GET_VAR(%(blockname)s->%(output_name)s));"
     
     BLOCK_FUNCTION_TEMPLATE = """
 extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s* data__);
 void __%(blocktype)s_%(location)s(MC_%(ucase_blocktype)s *data__) {
-    extern ETHERLAB%(ucase_blocktype)s %(blockname)s;
+    __DECLARE_GLOBAL_PROTOTYPE(ETHERLAB%(ucase_blocktype)s, %(blockname)s);
+    ETHERLAB%(ucase_blocktype)s* %(blockname)s = __GET_GLOBAL_%(blockname)s();
 %(extract_inputs)s
-    ETHERLAB%(ucase_blocktype)s_body__(&%(blockname)s);
+    ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
 %(return_outputs)s
 }
 """
     
-    BLOCK_FUNTION_DEFINITION_TEMPLATE = "    __CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = &(__%(blocktype)s_%(location)s);"
+    BLOCK_FUNTION_DEFINITION_TEMPLATE = """    if (!__CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s)
+    __CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location)s;"""
     
     GLOBAL_INSTANCES = [
         {"blocktype": "GetTorqueLimit", 
