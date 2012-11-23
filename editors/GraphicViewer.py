@@ -165,7 +165,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
         # Initialize Viewer mode to Selection mode
         self.Mode = MODE_SELECTION
         
-        self.Datas = []
+        self.Data = numpy.array([]).reshape(0, 2)
         self.StartTick = 0
         self.StartIdx = 0
         self.EndIdx = 0
@@ -202,7 +202,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
             wx.CallAfter(self.Canvas.canvas.SetCursor, wx.StockCursor(wx.CURSOR_HAND))
         
     def ResetView(self, register=False):
-        self.Datas = []
+        self.Data = numpy.array([]).reshape(0, 2)
         self.StartTick = 0
         self.StartIdx = 0
         self.EndIdx = 0
@@ -222,11 +222,11 @@ class GraphicViewer(EditorPanel, DebugViewer):
         DebugViewer.RefreshNewData(self)
     
     def GetNearestData(self, tick, adjust):
-        ticks = numpy.array(zip(*self.Datas)[0])
+        ticks = self.Data[:, 0]
         new_cursor = numpy.argmin(abs(ticks - tick))
         if adjust == -1 and ticks[new_cursor] > tick and new_cursor > 0:
             new_cursor -= 1
-        elif adjust == 1 and ticks[new_cursor] < tick and new_cursor < len(self.Datas):
+        elif adjust == 1 and ticks[new_cursor] < tick and new_cursor < len(ticks):
             new_cursor += 1
         return new_cursor
     
@@ -257,7 +257,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
         
     def RefreshView(self, force=False):
         self.Freeze()
-        if force or not self.Fixed or (len(self.Datas) > 0 and self.StartTick + self.CurrentRange > self.Datas[-1][0]):
+        if force or not self.Fixed or (len(self.Data) > 0 and self.StartTick + self.CurrentRange > self.Data[-1, 0]):
             if (self.MinValue is not None and 
                 self.MaxValue is not None and 
                 self.MinValue != self.MaxValue):
@@ -265,15 +265,15 @@ class GraphicViewer(EditorPanel, DebugViewer):
             else:
                 Yrange = 2. / self.CurrentZoom
             
-            if not force and not self.Fixed and len(self.Datas) > 0:
-                self.YCenter = max(self.Datas[-1][1] - Yrange / 2, 
+            if not force and not self.Fixed and len(self.Data) > 0:
+                self.YCenter = max(self.Data[-1, 1] - Yrange / 2, 
                                min(self.YCenter, 
-                                   self.Datas[-1][1] + Yrange / 2))
+                                   self.Data[-1, 1] + Yrange / 2))
             
             var_name = self.InstancePath.split(".")[-1]
             
             self.GetBounds()
-            self.VariableGraphic = plot.PolyLine(self.Datas[self.StartIdx:self.EndIdx + 1], 
+            self.VariableGraphic = plot.PolyLine(self.Data[self.StartIdx:self.EndIdx + 1], 
                                                  legend=var_name, colour=colours[0])
             self.GraphicsObject = plot.PlotGraphics([self.VariableGraphic], _("%s Graphics") % var_name, _("Tick"), _("Values"))
             self.Canvas.Draw(self.GraphicsObject, 
@@ -296,7 +296,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
     
     def NewValue(self, tick, value, forced=False):
         value = {True:1., False:0.}.get(value, float(value))
-        self.Datas.append((float(tick), value))
+        self.Data = numpy.append(self.Data, [[float(tick), value]], axis=0)
         if self.MinValue is None:
             self.MinValue = value
         else:
@@ -307,31 +307,31 @@ class GraphicViewer(EditorPanel, DebugViewer):
             self.MaxValue = max(self.MaxValue, value)
         if not self.Fixed or tick < self.StartTick + self.CurrentRange:
             self.GetBounds()
-            while int(self.Datas[self.StartIdx][0]) < tick - self.CurrentRange:
+            while int(self.Data[self.StartIdx, 0]) < tick - self.CurrentRange:
                 self.StartIdx += 1
             self.EndIdx += 1
-            self.StartTick = self.Datas[self.StartIdx][0]
+            self.StartTick = self.Data[self.StartIdx, 0]
         self.NewDataAvailable()
     
     def RefreshScrollBar(self):
-        if len(self.Datas) > 0:
+        if len(self.Data) > 0:
             self.GetBounds()
-            pos = int(self.Datas[self.StartIdx][0] - self.Datas[0][0])
-            range = int(self.Datas[-1][0] - self.Datas[0][0])
+            pos = int(self.Data[self.StartIdx, 0] - self.Data[0, 0])
+            range = int(self.Data[-1, 0] - self.Data[0, 0])
         else:
             pos = 0
             range = 0
         self.CanvasPosition.SetScrollbar(pos, self.CurrentRange, range, self.CurrentRange)
 
     def RefreshRange(self):
-        if len(self.Datas) > 0:
-            if self.Fixed and self.Datas[-1][0] - self.Datas[0][0] < self.CurrentRange:
+        if len(self.Data) > 0:
+            if self.Fixed and self.Data[-1, 0] - self.Data[0, 0] < self.CurrentRange:
                 self.Fixed = False
             self.ResetBounds()
             if self.Fixed:
-                self.StartTick = min(self.StartTick, self.Datas[-1][0] - self.CurrentRange)
+                self.StartTick = min(self.StartTick, self.Data[-1, 0] - self.CurrentRange)
             else:
-                self.StartTick = max(self.Datas[0][0], self.Datas[-1][0] - self.CurrentRange)
+                self.StartTick = max(self.Data[0, 0], self.Data[-1, 0] - self.CurrentRange)
         self.RefreshView(True)
 
     def OnRangeChanged(self, event):
@@ -351,9 +351,9 @@ class GraphicViewer(EditorPanel, DebugViewer):
         event.Skip()
     
     def OnPositionChanging(self, event):
-        if len(self.Datas) > 0:
+        if len(self.Data) > 0:
             self.ResetBounds()
-            self.StartTick = self.Datas[0][0] + event.GetPosition()
+            self.StartTick = self.Data[0, 0] + event.GetPosition()
             self.Fixed = True
             self.NewDataAvailable(True)
         event.Skip()
@@ -364,15 +364,15 @@ class GraphicViewer(EditorPanel, DebugViewer):
         event.Skip()
 
     def OnCurrentButton(self, event):
-        if len(self.Datas) > 0:
+        if len(self.Data) > 0:
             self.ResetBounds()
-            self.StartTick = max(self.Datas[0][0], self.Datas[-1][0] - self.CurrentRange)
+            self.StartTick = max(self.Data[0, 0], self.Data[-1, 0] - self.CurrentRange)
             self.Fixed = False
             self.NewDataAvailable(True)
         event.Skip()
     
     def OnResetZoomOffsetButton(self, event):
-        if len(self.Datas) > 0:
+        if len(self.Data) > 0:
             self.YCenter = (self.MaxValue + self.MinValue) / 2
         else:
             self.YCenter = 0.0
@@ -382,7 +382,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
         event.Skip()
     
     def OnExportGraphButtonClick(self, event):
-        data_copy = self.Datas[:]
+        data_copy = self.Data[:]
         text = "tick;%s;\n" % self.InstancePath
         for tick, value in data_copy:
             text += "%d;%.3f;\n" % (tick, value)
@@ -392,7 +392,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
     def OnCanvasLeftDown(self, event):
         self.Fixed = True
         self.Canvas.canvas.CaptureMouse()
-        if len(self.Datas) > 0:
+        if len(self.Data) > 0:
             if self.Mode == MODE_SELECTION:
                 self.Dragging = True
                 pos = self.Canvas.PositionScreenToUser(event.GetPosition())
@@ -401,7 +401,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
             elif self.Mode == MODE_MOTION:
                 self.GetBounds()
                 self.CurrentMousePos = event.GetPosition()
-                self.CurrentMotionValue = self.Datas[self.StartIdx][0]
+                self.CurrentMotionValue = self.Data[self.StartIdx, 0]
         event.Skip()
     
     def OnCanvasLeftUp(self, event):
@@ -416,10 +416,10 @@ class GraphicViewer(EditorPanel, DebugViewer):
     def OnCanvasMiddleDown(self, event):
         self.Fixed = True
         self.Canvas.canvas.CaptureMouse()
-        if len(self.Datas) > 0:
+        if len(self.Data) > 0:
             self.GetBounds()
             self.CurrentMousePos = event.GetPosition()
-            self.CurrentMotionValue = self.Datas[self.StartIdx][0]
+            self.CurrentMotionValue = self.Data[self.StartIdx, 0]
         event.Skip()
         
     def OnCanvasMiddleUp(self, event):
@@ -435,13 +435,13 @@ class GraphicViewer(EditorPanel, DebugViewer):
             graphics, xAxis, yAxis = self.Canvas.last_draw
             self.CursorIdx = self.GetNearestData(max(xAxis[0], min(pos[0], xAxis[1])), -1)
             self.RefreshCursor()
-        elif self.CurrentMousePos is not None and len(self.Datas) > 0:
+        elif self.CurrentMousePos is not None and len(self.Data) > 0:
             oldpos = self.Canvas.PositionScreenToUser(self.CurrentMousePos)
             newpos = self.Canvas.PositionScreenToUser(event.GetPosition())
             self.CurrentMotionValue += oldpos[0] - newpos[0]
             self.YCenter += oldpos[1] - newpos[1]
             self.ResetBounds()
-            self.StartTick = max(self.Datas[0][0], min(self.CurrentMotionValue, self.Datas[-1][0] - self.CurrentRange))
+            self.StartTick = max(self.Data[0, 0], min(self.CurrentMotionValue, self.Data[-1, 0] - self.CurrentRange))
             self.CurrentMousePos = event.GetPosition()
             self.NewDataAvailable(True)
         event.Skip()
@@ -538,5 +538,5 @@ class GraphicViewer(EditorPanel, DebugViewer):
             
             # Draw new time cursor
             if self.CursorIdx is not None:
-                self.LastCursor = self.Datas[self.CursorIdx]
+                self.LastCursor = self.Data[self.CursorIdx]
                 self.DrawCursor(dc, *self.LastCursor)

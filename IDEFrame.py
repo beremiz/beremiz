@@ -931,6 +931,7 @@ class IDEFrame(wx.Frame):
             project_infos["tabs"] = self.SaveTabLayout(self.TabsOpened)
             if self.EnableDebug:
                 project_infos["debug_vars"] = self.DebugVariablePanel.GetDebugVariables()
+                project_infos["debug_axis3D"] = self.DebugVariablePanel.GetAxis3D()
             
             self.Config.Write("projects", cPickle.dumps(projects))
             self.Config.Flush()
@@ -947,8 +948,9 @@ class IDEFrame(wx.Frame):
                 
             if self.EnableDebug:
                 try:
+                    axis3D = project.get("debug_axis3D", [])
                     for variable in project.get("debug_vars", []):
-                        self.DebugVariablePanel.InsertValue(variable, force=True)
+                        self.DebugVariablePanel.InsertValue(variable, force=True, axis3D=variable in axis3D)
                 except:
                     self.DebugVariablePanel.ResetGrid()
             
@@ -2020,9 +2022,7 @@ class IDEFrame(wx.Frame):
                 self.TabsOpened.SetSelection(openedidx)
         
         elif instance_category in ITEMS_VARIABLE:
-            if self.Controler.IsOfType(instance_type, "ANY_NUM", True) or\
-               self.Controler.IsOfType(instance_type, "ANY_BIT", True):
-                
+            if self.Controler.IsNumType(instance_type, True):
                 new_window = GraphicViewer(self.TabsOpened, self, self.Controler, instance_path)
                 icon = GetBitmap("GRAPH")
         
@@ -2070,10 +2070,12 @@ class IDEFrame(wx.Frame):
         return new_window
 
     def ResetGraphicViewers(self):
-        for i in xrange(self.TabsOpened.GetPageCount()):
-            editor = self.TabsOpened.GetPage(i)
-            if isinstance(editor, GraphicViewer):
-                editor.ResetView()
+        if self.EnableDebug:
+            for i in xrange(self.TabsOpened.GetPageCount()):
+                editor = self.TabsOpened.GetPage(i)
+                if isinstance(editor, GraphicViewer):
+                    editor.ResetView()
+            self.DebugVariablePanel.ResetGraphicsValues()
 
     def CloseObsoleteDebugTabs(self):
         if self.EnableDebug:

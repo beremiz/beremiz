@@ -319,6 +319,8 @@ class DebugViewer:
         self.DeleteDataConsumers()
         if self.LastRefreshTimer is not None:
             self.LastRefreshTimer.Stop()
+        if self.HasAcquiredLock:
+            DEBUG_REFRESH_LOCK.release()
     
     def SetDataProducer(self, producer):
         if self.RegisterTick and self.Debug:
@@ -352,8 +354,14 @@ class DebugViewer:
     
     def GetDataType(self, iec_path):
         if self.DataProducer is not None:
-            return self.DataProducer.GetDebugIECVariableType(iec_path)
+            infos = self.DataProducer.GetInstanceInfos(iec_path)
+            if infos is not None:
+                return infos["type"]
+            return self.DataProducer.GetDebugIECVariableType(iec_path.upper())
         return None
+    
+    def IsNumType(self, data_type):
+        return self.DataProducer.IsNumType(data_type)
     
     def ForceDataValue(self, iec_path, value):
         if self.DataProducer is not None:
@@ -390,7 +398,7 @@ class DebugViewer:
             self.LastRefreshTimer.cancel()
             self.LastRefreshTimer=None
         self.TimerAccessLock.release()
-        if not self.Inhibited:
+        if self.IsShown() and not self.Inhibited:
             current_time = gettime()
             if current_time - self.LastRefreshTime > REFRESH_PERIOD and DEBUG_REFRESH_LOCK.acquire(False):
                 self.AccessLock.acquire()

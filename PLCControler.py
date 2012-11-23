@@ -1677,6 +1677,10 @@ class PLCControler:
                 return basetype_content["name"] == "enum"
         return False
 
+    def IsNumType(self, type, debug = False):
+        return self.IsOfType(type, "ANY_NUM", debug) or\
+               self.IsOfType(type, "ANY_BIT", debug)
+            
     def GetDataTypeRange(self, type, debug = False):
         if type in DataTypeRange:
             return DataTypeRange[type]
