@@ -28,11 +28,16 @@ import numpy
 
 import wx
 import wx.lib.buttons
-import matplotlib
-matplotlib.use('WX')
-import matplotlib.pyplot
-from matplotlib.backends.backend_wx import FigureCanvasWx as FigureCanvas
-from mpl_toolkits.mplot3d import Axes3D
+
+try:
+    import matplotlib
+    matplotlib.use('WX')
+    import matplotlib.pyplot
+    from matplotlib.backends.backend_wx import FigureCanvasWx as FigureCanvas
+    from mpl_toolkits.mplot3d import Axes3D
+    USE_MPL = True
+except:
+    USE_MPL = False
 
 from graphics import DebugDataConsumer, DebugViewer, REFRESH_PERIOD
 from controls import CustomGrid, CustomTable
@@ -44,7 +49,10 @@ def AppendMenu(parent, help, id, kind, text):
 
 def GetDebugVariablesTableColnames():
     _ = lambda x : x
-    return [_("Variable"), _("Value"), _("3DAxis")]
+    cols = [_("Variable"), _("Value")]
+    if USE_MPL:
+        cols.append(_("3DAxis"))
+    return cols
 
 class VariableTableItem(DebugDataConsumer):
     
@@ -319,42 +327,46 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         self.Table.ResetView(self.VariablesGrid)
         self.VariablesGrid.RefreshButtons()
         
-        self.GraphicsPanel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
+        if USE_MPL:
+            self.GraphicsPanel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
+            
+            graphics_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+            
+            self.GraphicsCanvasWindow = wx.ScrolledWindow(self.GraphicsPanel, style=wx.HSCROLL|wx.VSCROLL)
+            self.GraphicsCanvasWindow.Bind(wx.EVT_SIZE, self.OnGraphicsCanvasWindowResize)
+            graphics_panel_sizer.AddWindow(self.GraphicsCanvasWindow, 1, flag=wx.GROW)
+            
+            graphics_canvas_window_sizer = wx.BoxSizer(wx.VERTICAL)
+            
+            self.GraphicsFigure = matplotlib.figure.Figure()
+            self.GraphicsFigure.subplots_adjust(hspace=0)
+            self.GraphicsAxes = []
+            
+            self.GraphicsCanvas = FigureCanvas(self.GraphicsCanvasWindow, -1, self.GraphicsFigure)
+            graphics_canvas_window_sizer.AddWindow(self.GraphicsCanvas, 1, flag=wx.GROW)
+            
+            self.GraphicsCanvasWindow.SetSizer(graphics_canvas_window_sizer)
+            
+            self.Graphics3DFigure = matplotlib.figure.Figure()
+            self.Graphics3DFigure.subplotpars.update(left=0.0, right=1.0, bottom=0.0, top=1.0)
+            
+            self.LastMotionTime = gettime()
+            self.Graphics3DAxes = self.Graphics3DFigure.gca(projection='3d')
+            self.Graphics3DAxes.set_color_cycle(['b'])
+            setattr(self.Graphics3DAxes, "_on_move", self.OnGraphics3DMotion)
+            
+            self.Graphics3DCanvas = FigureCanvas(self.GraphicsPanel, -1, self.Graphics3DFigure)
+            self.Graphics3DCanvas.SetMinSize(wx.Size(0, 0))
+            graphics_panel_sizer.AddWindow(self.Graphics3DCanvas, 1, flag=wx.GROW)
+            
+            self.Graphics3DAxes.mouse_init()
+            
+            self.GraphicsPanel.SetSizer(graphics_panel_sizer)
+            
+            self.SplitHorizontally(self.MainPanel, self.GraphicsPanel, -200)
         
-        graphics_panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        
-        self.GraphicsCanvasWindow = wx.ScrolledWindow(self.GraphicsPanel, style=wx.HSCROLL|wx.VSCROLL)
-        self.GraphicsCanvasWindow.Bind(wx.EVT_SIZE, self.OnGraphicsCanvasWindowResize)
-        graphics_panel_sizer.AddWindow(self.GraphicsCanvasWindow, 1, flag=wx.GROW)
-        
-        graphics_canvas_window_sizer = wx.BoxSizer(wx.VERTICAL)
-        
-        self.GraphicsFigure = matplotlib.figure.Figure()
-        self.GraphicsFigure.subplots_adjust(hspace=0)
-        self.GraphicsAxes = []
-        
-        self.GraphicsCanvas = FigureCanvas(self.GraphicsCanvasWindow, -1, self.GraphicsFigure)
-        graphics_canvas_window_sizer.AddWindow(self.GraphicsCanvas, 1, flag=wx.GROW)
-        
-        self.GraphicsCanvasWindow.SetSizer(graphics_canvas_window_sizer)
-        
-        self.Graphics3DFigure = matplotlib.figure.Figure()
-        self.Graphics3DFigure.subplotpars.update(left=0.0, right=1.0, bottom=0.0, top=1.0)
-        
-        self.LastMotionTime = gettime()
-        self.Graphics3DAxes = self.Graphics3DFigure.gca(projection='3d')
-        self.Graphics3DAxes.set_color_cycle(['b'])
-        setattr(self.Graphics3DAxes, "_on_move", self.OnGraphics3DMotion)
-        
-        self.Graphics3DCanvas = FigureCanvas(self.GraphicsPanel, -1, self.Graphics3DFigure)
-        self.Graphics3DCanvas.SetMinSize(wx.Size(0, 0))
-        graphics_panel_sizer.AddWindow(self.Graphics3DCanvas, 1, flag=wx.GROW)
-        
-        self.Graphics3DAxes.mouse_init()
-        
-        self.GraphicsPanel.SetSizer(graphics_panel_sizer)
-        
-        self.SplitHorizontally(self.MainPanel, self.GraphicsPanel, -200)
+        else:
+            self.Initialize(self.MainPanel)
         
         self.ResetGraphics()
     
@@ -375,25 +387,26 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             self.Table.ResetView(self.VariablesGrid)
         self.VariablesGrid.RefreshButtons()
         
-        # Refresh graphics
-        idx = 0
-        for item in self.Table.GetData():
-            data = item.GetData()
-            if data is not None:
-                self.GraphicsAxes[idx].clear()
-                self.GraphicsAxes[idx].plot(data[:, 0], data[:, 1])
-                idx += 1
-        self.GraphicsCanvas.draw()
-                
-        # Refresh 3D graphics
-        while len(self.Graphics3DAxes.lines) > 0:
-            self.Graphics3DAxes.lines.pop()
-        if self.Axis3DValues is not None:
-            self.Graphics3DAxes.plot(
-                self.Axis3DValues[0][1].GetData()[self.Axis3DValues[0][0]:, 1],
-                self.Axis3DValues[1][1].GetData()[self.Axis3DValues[1][0]:, 1],
-                zs = self.Axis3DValues[2][1].GetData()[self.Axis3DValues[2][0]:, 1])
-        self.Graphics3DCanvas.draw()
+        if USE_MPL:
+            # Refresh graphics
+            idx = 0
+            for item in self.Table.GetData():
+                data = item.GetData()
+                if data is not None:
+                    self.GraphicsAxes[idx].clear()
+                    self.GraphicsAxes[idx].plot(data[:, 0], data[:, 1])
+                    idx += 1
+            self.GraphicsCanvas.draw()
+                    
+            # Refresh 3D graphics
+            while len(self.Graphics3DAxes.lines) > 0:
+                self.Graphics3DAxes.lines.pop()
+            if self.Axis3DValues is not None:
+                self.Graphics3DAxes.plot(
+                    self.Axis3DValues[0][1].GetData()[self.Axis3DValues[0][0]:, 1],
+                    self.Axis3DValues[1][1].GetData()[self.Axis3DValues[1][0]:, 1],
+                    zs = self.Axis3DValues[2][1].GetData()[self.Axis3DValues[2][0]:, 1])
+            self.Graphics3DCanvas.draw()
         
         self.Thaw()
         
@@ -492,25 +505,26 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             item.ResetData()
     
     def ResetGraphics(self):
-        self.GraphicsFigure.clear()
-        self.GraphicsAxes = []
-        
-        axes_num = 0
-        for item in self.Table.GetData():    
-            if item.IsNumVariable():
-                axes_num += 1
-        
-        for idx in xrange(axes_num):
-            if idx == 0:
-                axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1)
-            else:
-                axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1, sharex=self.GraphicsAxes[0])
-            self.GraphicsAxes.append(axes)
-        
-        self.RefreshGraphicsCanvasWindowScrollbars()
-        self.GraphicsCanvas.draw()
-        
-        self.Reset3DGraphics()
+        if USE_MPL:
+            self.GraphicsFigure.clear()
+            self.GraphicsAxes = []
+            
+            axes_num = 0
+            for item in self.Table.GetData():    
+                if item.IsNumVariable():
+                    axes_num += 1
+            
+            for idx in xrange(axes_num):
+                if idx == 0:
+                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1)
+                else:
+                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1, sharex=self.GraphicsAxes[0])
+                self.GraphicsAxes.append(axes)
+            
+            self.RefreshGraphicsCanvasWindowScrollbars()
+            self.GraphicsCanvas.draw()
+            
+            self.Reset3DGraphics()
     
     def Reset3DGraphics(self):
         axis = [item for item in self.Table.GetData() if item.GetAxis3D()]
