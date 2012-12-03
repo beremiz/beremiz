@@ -2330,7 +2330,7 @@ if cls:
             tree.childNodes = [node]
     setattr(cls, "compatibility", compatibility)
 
-cls = _initElementClass("transition", "sfcObjects_transition", "single")
+cls = _initElementClass("transition", "sfcObjects_transition")
 if cls:
     def getinfos(self):
         infos = _getelementinfos(self)
@@ -2382,6 +2382,46 @@ if cls:
         return ""
     setattr(cls, "getconditionContent", getconditionContent)
 
+    def getconditionConnection(self):
+        if self.condition:
+            content = self.condition.getcontent()
+            if content["name"] == "connectionPointIn":
+                return content["value"]
+        return None
+    setattr(cls, "getconditionConnection", getconditionConnection)
+
+    def getBoundingBox(self):
+        bbox = _getBoundingBoxSingle(self)
+        condition_connection = self.getconditionConnection()
+        if condition_connection:
+            bbox.union(_getConnectionsBoundingBox(condition_connection))
+        return bbox
+    setattr(cls, "getBoundingBox", getBoundingBox)
+    
+    def translate(self, dx, dy):
+        _translateSingle(self, dx, dy)
+        condition_connection = self.getconditionConnection()
+        if condition_connection:
+            _translateConnections(condition_connection, dx, dy)
+    setattr(cls, "translate", translate)
+    
+    def filterConnections(self, connections):
+        _filterConnectionsSingle(self, connections)
+        condition_connection = self.getconditionConnection()
+        if condition_connection:
+            _filterConnections(condition_connection, self.localId, connections)
+    setattr(cls, "filterConnections", filterConnections)
+    
+    def updateConnectionsId(self, translation):
+        connections_end = []
+        if self.connectionPointIn is not None:
+            connections_end = _updateConnectionsId(self.connectionPointIn, translation)
+        condition_connection = self.getconditionConnection()
+        if condition_connection:
+            connections_end.extend(_updateConnectionsId(condition_connection, translation))
+        return _getconnectionsdefinition(self, connections_end)
+    setattr(cls, "updateConnectionsId", updateConnectionsId)
+
     def updateElementName(self, old_name, new_name):
         if self.condition:
             content = self.condition.getcontent()
@@ -2402,10 +2442,10 @@ if cls:
     setattr(cls, "updateElementAddress", updateElementAddress)
 
     def getconnections(self):
-        if self.condition:
-            content = self.condition.getcontent()
-            if content["name"] == "connectionPointIn":
-                return content["value"].getconnections()
+        condition_connection = self.getconditionConnection()
+        if condition_connection:
+            return condition_connection.getconnections()
+        return None
     setattr(cls, "getconnections", getconnections)
     
     def Search(self, criteria, parent_infos=[]):

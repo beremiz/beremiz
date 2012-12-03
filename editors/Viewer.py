@@ -3093,16 +3093,16 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         return isinstance(element, FBD_Block) and element.GetName() != "" or isinstance(element, SFC_Step)
 
     def CopyBlock(self, element, pos):
-        id = self.GetNewId()
         if isinstance(element, Graphic_Group):
             block = element.Clone(self, pos=pos)
         else:
+            new_id = self.GetNewId()
             if self.IsNamedElement(element):
                 name = self.GenerateNewName(element)
-                block = element.Clone(self, id, name, pos)
+                block = element.Clone(self, new_id, name, pos)
             else:
                 name = None
-                block = element.Clone(self, id, pos=pos)
+                block = element.Clone(self, new_id, pos=pos)
             self.AddBlockInModel(block)
         return block
     
