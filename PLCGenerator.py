@@ -1105,6 +1105,7 @@ class PouProgramGenerator:
                           "initial" : step.getinitialStep(), 
                           "transitions" : [], 
                           "actions" : []}
+            self.SFCNetworks["Steps"][step_name] = step_infos
             if step.connectionPointIn:
                 instances = []
                 connections = step.connectionPointIn.getconnections()
@@ -1130,7 +1131,6 @@ class PouProgramGenerator:
                     if instance in self.SFCNetworks["Transitions"].keys():
                         target_info = (self.TagName, "transition", instance.getlocalId(), "to", step_infos["id"])
                         self.SFCNetworks["Transitions"][instance]["to"].append([(step_name, target_info)])
-            self.SFCNetworks["Steps"][step_name] = step_infos
     
     def GenerateSFCJump(self, jump, pou):
         jump_target = jump.gettargetName()
@@ -1227,6 +1227,7 @@ class PouProgramGenerator:
                                 "priority": transition.getpriority(), 
                                 "from": [], 
                                 "to" : []}
+            self.SFCNetworks["Transitions"][transition] = transition_infos
             transitionValues = transition.getconditionContent()
             if transitionValues["type"] == "inline":
                 transition_infos["content"] = [("\n%s:= "%self.CurrentIndent, ()),
@@ -1273,7 +1274,6 @@ class PouProgramGenerator:
                 if step_name in self.SFCNetworks["Steps"].keys():
                     transition_infos["from"].append([(step_name, (self.TagName, "transition", transition.getlocalId(), "from", step.getlocalId()))])
                     self.SFCNetworks["Steps"][step_name]["transitions"].append(transition)
-            self.SFCNetworks["Transitions"][transition] = transition_infos
 
     def ComputeSFCStep(self, step_name):
         if step_name in self.SFCNetworks["Steps"].keys():
