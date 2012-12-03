@@ -108,6 +108,9 @@ class VariableTableItem(DebugDataConsumer):
             self.Parent.HasNewData = True
     
     def SetValue(self, value):
+        if (self.VariableType == "STRING" and value.startswith("'") and value.endswith("'") or
+            self.VariableType == "WSTRING" and value.startswith('"') and value.endswith('"')):
+            value = value[1:-1]
         if self.Value != value:
             self.Value = value
             self.Parent.HasNewData = True
@@ -278,6 +281,8 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         self.VariablesGrid.SetDropTarget(DebugVariableDropTarget(self))
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, 
               self.OnVariablesGridCellRightClick)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, 
+              self.OnVariablesGridCellLeftClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, 
               self.OnVariablesGridCellChange)
         main_panel_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
@@ -356,7 +361,7 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             setattr(self.Graphics3DAxes, "_on_move", self.OnGraphics3DMotion)
             
             self.Graphics3DCanvas = FigureCanvas(self.GraphicsPanel, -1, self.Graphics3DFigure)
-            self.Graphics3DCanvas.SetMinSize(wx.Size(0, 0))
+            self.Graphics3DCanvas.SetMinSize(wx.Size(1, 1))
             graphics_panel_sizer.AddWindow(self.Graphics3DCanvas, 1, flag=wx.GROW)
             
             self.Graphics3DAxes.mouse_init()
@@ -448,6 +453,15 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         def ReleaseVariableFunction(event):
             self.ReleaseDataValue(iec_path)
         return ReleaseVariableFunction
+    
+    def OnVariablesGridCellLeftClick(self, event):
+        if event.GetCol() == 0:
+            row = event.GetRow()
+            data = wx.TextDataObject(str(self.Table.GetValueByName(row, "Variable")))
+            dragSource = wx.DropSource(self.VariablesGrid)
+            dragSource.SetData(data)
+            dragSource.DoDragDrop()
+        event.Skip()
     
     def OnVariablesGridCellRightClick(self, event):
         row, col = event.GetRow(), event.GetCol()
