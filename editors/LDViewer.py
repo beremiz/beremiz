@@ -284,6 +284,9 @@ class LD_Viewer(Viewer):
         return None
 
     def SearchElements(self, bbox):
+        if self.GetDrawingMode() == FREEDRAWING_MODE:
+            return Viewer.SearchElements(self, bbox)
+        
         elements = []
         for element in self.Blocks.values() + self.Comments.values():
             if element.IsInSelection(bbox):
