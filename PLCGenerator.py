@@ -75,9 +75,6 @@ def SortInstances(a, b):
     else:
         return cmp(ay, by)
 
-REAL_MODEL = re.compile("[0-9]+\.[0-9]+$")
-INTEGER_MODEL = re.compile("[0-9]+$")
-
 #-------------------------------------------------------------------------------
 #                  Specific exception for PLC generating errors
 #-------------------------------------------------------------------------------
@@ -685,10 +682,6 @@ class PouProgramGenerator:
                         parts = expression.split("#")
                         if len(parts) > 1:
                             var_type = parts[0]
-                        elif REAL_MODEL.match(expression):
-                            var_type = "ANY_REAL"
-                        elif INTEGER_MODEL.match(expression):
-                            var_type = "ANY_NUM"
                         elif expression.startswith("'"):
                             var_type = "STRING"
                         elif expression.startswith('"'):
