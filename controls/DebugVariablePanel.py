@@ -97,8 +97,8 @@ class VariableTableItem(DebugDataConsumer):
     
     def NewValue(self, tick, value, forced=False):
         if self.IsNumVariable():
-            value = {True:1., False:0.}.get(value, float(value))
-            self.Data = numpy.append(self.Data, [[float(tick), value]], axis=0)
+            num_value = {True:1., False:0.}.get(value, float(value))
+            self.Data = numpy.append(self.Data, [[float(tick), num_value]], axis=0)
             self.Parent.HasNewData = True
         DebugDataConsumer.NewValue(self, tick, value, forced)
     
