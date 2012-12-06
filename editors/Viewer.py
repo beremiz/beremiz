@@ -1207,7 +1207,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                     element.AddOutput()
             if isinstance(element, SFC_Transition) and specific_values["condition_type"] == "connection":
                 connector = element.GetConditionConnector()
-                self.CreateWires(connector, id, specific_values["connection"]["links"], ids, selection)
+                self.CreateWires(connector, instance["id"], specific_values["connection"]["links"], ids, selection)
         else:
             executionControl = False
             for input in instance["inputs"]:
