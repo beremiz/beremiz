@@ -781,7 +781,6 @@ class VariablePanel(wx.Panel):
     def OnVariablesGridCellLeftClick(self, event):
         row = event.GetRow()
         if not self.Debug and (event.GetCol() == 0 and self.Table.GetValueByName(row, "Edit")):
-            row = event.GetRow()
             var_name = self.Table.GetValueByName(row, "Name")
             var_class = self.Table.GetValueByName(row, "Class")
             var_type = self.Table.GetValueByName(row, "Type")

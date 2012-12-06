@@ -694,7 +694,7 @@ class TextViewer(EditorPanel):
                                             "extensible": False}
                         current_context = self.Variables
                     else:
-                        if char == '[':
+                        if char == '[' and current_context is not None:
                             self.ContextStack.append(current_context.get(word, None))
                         current_context = self.Variables
                     
