@@ -21,6 +21,7 @@ from util.BitmapLibrary import GetBitmap
 from editors.FileManagementPanel import FileManagementPanel
 from editors.ProjectNodeEditor import ProjectNodeEditor
 from editors.IECCodeViewer import IECCodeViewer
+from graphics import DebugViewer
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
@@ -1005,7 +1006,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 for extension, name, editor in features.file_editors:
                     if extension not in extensions:
                         extensions.append(extension)
-                self._ProjectFilesView.SetEditableFileExtensions(extensions)
+                self._ProjectFilesView.SetEditableFileExtensions(extensions) 
                 
             if self._ProjectFilesView is not None:
                 self.AppFrame.EditProjectElement(self._ProjectFilesView, name)
@@ -1040,6 +1041,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         editor = editors[editor_name]()
                         self._FileEditors[filepath] = editor(self.AppFrame.TabsOpened, self, name, self.AppFrame)
                         self._FileEditors[filepath].SetIcon(GetBitmap("FILE"))
+                        if isinstance(self._FileEditors[filepath], DebugViewer):
+                            self._FileEditors[filepath].SetDataProducer(self)
             
             if self._FileEditors.has_key(filepath):
                 editor = self._FileEditors[filepath]
