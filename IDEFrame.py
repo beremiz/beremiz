@@ -1853,7 +1853,10 @@ class IDEFrame(wx.Frame):
             if new_window is not None:
                 project_infos = self.GetProjectConfiguration()
                 if project_infos.has_key("editors_state"):
-                    state = project_infos["editors_state"].get(tagname)
+                    if new_window.IsDebugging():
+                        state = project_infos["editors_state"].get(new_window.GetInstancePath())
+                    else:
+                        state = project_infos["editors_state"].get(tagname)
                     if state is not None:
                         wx.CallAfter(new_window.SetState, state)
                 
@@ -2083,7 +2086,7 @@ class IDEFrame(wx.Frame):
             idxs.reverse()
             for idx in idxs:
                 editor = self.TabsOpened.GetPage(idx)
-                if editor.IsDebugging():
+                if isinstance(editor, (Viewer, GraphicViewer)) and editor.IsDebugging():
                     instance_infos = self.Controler.GetInstanceInfos(editor.GetInstancePath(), self.EnableDebug)
                     if instance_infos is None:
                         self.TabsOpened.DeletePage(idx)
@@ -2091,6 +2094,8 @@ class IDEFrame(wx.Frame):
                         editor.ResetView(True)
                     else:
                         editor.RefreshView()
+                elif editor.IsDebugging():
+                    editor.RegisterVariables()
             self.DebugVariablePanel.UnregisterObsoleteData()
     
     def AddDebugVariable(self, iec_path, force=False):
