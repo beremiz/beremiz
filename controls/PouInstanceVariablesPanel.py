@@ -329,6 +329,17 @@ class PouInstanceVariablesPanel(wx.Panel):
     def OnVariablesListLeftDown(self, event):
         if self.InstanceChoice.GetSelection() == -1:
             wx.CallAfter(self.ShowInstanceChoicePopup)
+        else:
+            instance_path = self.InstanceChoice.GetStringSelection()
+            item, flags = self.VariablesList.HitTest(event.GetPosition())
+            if item is not None and flags & CT.TREE_HITTEST_ONITEMLABEL:
+                item_infos = self.VariablesList.GetPyData(item)
+                if item_infos is not None and item_infos["class"] in ITEMS_VARIABLE:
+                    item_path = "%s.%s" % (instance_path, item_infos["name"])
+                    data = wx.TextDataObject(str((item_path, "debug")))
+                    dragSource = wx.DropSource(self.VariablesList)
+                    dragSource.SetData(data)
+                    dragSource.DoDragDrop()
         event.Skip()
         
     def OnInstanceChoiceLeftDown(self, event):

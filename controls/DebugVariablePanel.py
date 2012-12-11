@@ -457,7 +457,7 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
     def OnVariablesGridCellLeftClick(self, event):
         if event.GetCol() == 0:
             row = event.GetRow()
-            data = wx.TextDataObject(str(self.Table.GetValueByName(row, "Variable")))
+            data = wx.TextDataObject(str((self.Table.GetValueByName(row, "Variable"), "debug")))
             dragSource = wx.DropSource(self.VariablesGrid)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
