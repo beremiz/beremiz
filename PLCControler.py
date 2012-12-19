@@ -720,7 +720,7 @@ class PLCControler:
             try:
                 self.ProgramChunks = GenerateCurrentProgram(self, self.Project, errors, warnings)
                 self.NextCompiledProject = self.Copy(self.Project)
-                program_text = "".join([item[0].decode("utf-8") for item in self.ProgramChunks])
+                program_text = "".join([item[0] for item in self.ProgramChunks])
                 if filepath is not None:
                     programfile = open(filepath, "w")
                     programfile.write(program_text.encode("utf-8"))
