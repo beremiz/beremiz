@@ -458,6 +458,8 @@ class ResourceEditor(EditorPanel):
         event.Skip()
     
     def AddHighlight(self, infos, start, end, highlight_type):
+        EditorPanel.AddHighlight(self, infos, start, end, highlight_type)
+        
         if infos[0] == "task":
             self.TasksTable.AddHighlight(infos[1:], highlight_type)
         elif infos[0] == "instance":
