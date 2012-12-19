@@ -1038,7 +1038,22 @@ class Beremiz(IDEFrame):
                 del confnode
                 self._Refresh(TITLE, FILEMENU, PROJECTTREE)
             dialog.Destroy()
-    
+
+#-------------------------------------------------------------------------------
+#                        Highlights showing functions
+#-------------------------------------------------------------------------------
+
+    def ShowHighlight(self, infos, start, end, highlight_type):
+        config_name = self.Controler.GetProjectMainConfigurationName()
+        if config_name is not None and infos[0] == self.Controler.ComputeConfigurationName(config_name):
+            self.CTR._OpenView()
+            selected = self.TabsOpened.GetSelection()
+            if selected != -1:
+                viewer = self.TabsOpened.GetPage(selected)
+                viewer.AddHighlight(infos[1:], start, end, highlight_type)
+        else:
+            IDEFrame.ShowHighlight(self, infos, start, end, highlight_type)
+
 #-------------------------------------------------------------------------------
 #                               Exception Handler
 #-------------------------------------------------------------------------------
