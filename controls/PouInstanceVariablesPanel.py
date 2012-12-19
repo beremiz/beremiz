@@ -106,6 +106,10 @@ class PouInstanceVariablesPanel(wx.Panel):
     
     def SetPouType(self, tagname, pou_instance=None):
         self.PouTagName = tagname
+        if self.PouTagName == "Project":
+            config_name = self.Controller.GetProjectMainConfigurationName()
+            if config_name is not None:
+                self.PouTagName = self.Controller.ComputeConfigurationName(config_name)
         if pou_instance is not None:
             self.PouInstance = pou_instance
         
