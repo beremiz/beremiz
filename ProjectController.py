@@ -1291,7 +1291,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     for IECPath,value in zip(self.TracedIECPath, debug_vars):
                         if value is not None:
                             self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
-                    self.CallWeakcallables("__tick__", "NewDataAvailable")
+                    self.CallWeakcallables("__tick__", "NewDataAvailable", debug_tick)
                 self.IECdebug_lock.release()
                 if debug_getvar_retry == DEBUG_RETRIES_WARN:
                     self.logger.write(_("Waiting debugger to recover...\n"))
