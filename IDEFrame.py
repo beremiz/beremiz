@@ -604,7 +604,7 @@ class IDEFrame(wx.Frame):
         self.SetMenuBar(self.MenuBar)
                 
         if self.EnableDebug:
-            self.DebugVariablePanel = DebugVariablePanel(self.RightNoteBook, self.Controler)
+            self.DebugVariablePanel = DebugVariablePanel(self.RightNoteBook, self.Controler, self)
             self.MainTabs["DebugVariablePanel"] = (self.DebugVariablePanel, _("Debugger"))
             self.RightNoteBook.AddPage(*self.MainTabs["DebugVariablePanel"])
         

@@ -24,6 +24,7 @@
 
 from types import TupleType, FloatType
 from time import time as gettime
+import math
 import numpy
 
 import wx
@@ -33,7 +34,8 @@ try:
     import matplotlib
     matplotlib.use('WX')
     import matplotlib.pyplot
-    from matplotlib.backends.backend_wx import FigureCanvasWx as FigureCanvas
+    from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+    #from matplotlib.backends.backend_wx import FigureCanvasWx as FigureCanvas
     from mpl_toolkits.mplot3d import Axes3D
     USE_MPL = True
 except:
@@ -43,6 +45,16 @@ from graphics import DebugDataConsumer, DebugViewer, REFRESH_PERIOD
 from controls import CustomGrid, CustomTable
 from dialogs.ForceVariableDialog import ForceVariableDialog
 from util.BitmapLibrary import GetBitmap
+
+SECOND = 1000000000
+MINUTE = 60 * SECOND
+HOUR = 60 * MINUTE
+
+ZOOM_VALUES = map(lambda x:("x %.1f" % x, x), [math.sqrt(2) ** i for i in xrange(8)])
+RANGE_VALUES = map(lambda x: (str(x), x), [25 * 2 ** i for i in xrange(6)])
+TIME_RANGE_VALUES = [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
+                    [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
+                    [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
 
 def AppendMenu(parent, help, id, kind, text):
     parent.Append(help=help, id=id, kind=kind, text=text)
@@ -83,12 +95,33 @@ class VariableTableItem(DebugDataConsumer):
     def GetVariableType(self):
         return self.VariableType
     
-    def GetData(self):
-        return self.Data
+    def GetData(self, start_tick=None, end_tick=None):
+        if self.IsNumVariable():
+            if len(self.Data) == 0:
+                return self.Data
+            
+            start_idx = end_idx = None
+            if start_tick is not None:
+                start_idx = self.GetNearestData(start_tick, -1)
+            if end_tick is not None:
+                end_idx = self.GetNearestData(end_tick, 1)
+            if start_idx is None:
+                start_idx = 0
+            if end_idx is not None:
+                return self.Data[start_idx:end_idx + 1]
+            else:
+                return self.Data[start_idx:]
+            
+        return None
+    
+    def GetRange(self):
+        return self.MinValue, self.MaxValue
     
     def ResetData(self):
         if self.IsNumVariable():
             self.Data = numpy.array([]).reshape(0, 2)
+            self.MinValue = None
+            self.MaxValue = None
         else:
             self.Data = None
     
@@ -98,6 +131,14 @@ class VariableTableItem(DebugDataConsumer):
     def NewValue(self, tick, value, forced=False):
         if self.IsNumVariable():
             num_value = {True:1., False:0.}.get(value, float(value))
+            if self.MinValue is None:
+                self.MinValue = num_value
+            else:
+                self.MinValue = min(self.MinValue, num_value)
+            if self.MaxValue is None:
+                self.MaxValue = num_value
+            else:
+                self.MaxValue = max(self.MaxValue, num_value)
             self.Data = numpy.append(self.Data, [[float(tick), num_value]], axis=0)
             self.Parent.HasNewData = True
         DebugDataConsumer.NewValue(self, tick, value, forced)
@@ -132,6 +173,17 @@ class VariableTableItem(DebugDataConsumer):
         if self.IsNumVariable():
             return self.Axis3D
         return ""
+
+    def GetNearestData(self, tick, adjust):
+        if self.IsNumVariable():
+            ticks = self.Data[:, 0]
+            new_cursor = numpy.argmin(abs(ticks - tick))
+            if adjust == -1 and ticks[new_cursor] > tick and new_cursor > 0:
+                new_cursor -= 1
+            elif adjust == 1 and ticks[new_cursor] < tick and new_cursor < len(ticks):
+                new_cursor += 1
+            return new_cursor
+        return None
 
 class DebugVariableTable(CustomTable):
     
@@ -247,10 +299,23 @@ class DebugVariableDropTarget(wx.TextDropTarget):
 
 SCROLLBAR_UNIT = 10
 
+def NextTick(variables):
+    next_tick = None
+    for var_name, data in variables:
+        if len(data) > 0:
+            if next_tick is None:
+                next_tick = data[0][0]
+            else:
+                next_tick = min(next_tick, data[0][0])
+    return next_tick
+
 class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
     
-    def __init__(self, parent, producer):
+    def __init__(self, parent, producer, window):
         wx.SplitterWindow.__init__(self, parent, style=wx.SP_3D)
+        
+        self.ParentWindow = window
+        
         DebugViewer.__init__(self, producer, True)
         
         self.SetSashGravity(0.5)
@@ -290,6 +355,11 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         self.MainPanel.SetSizer(main_panel_sizer)
         
         self.HasNewData = False
+        self.Ticks = numpy.array([])
+        self.RangeValues = None
+        self.StartTick = 0
+        self.Fixed = False
+        self.Force = False
         
         self.Table = DebugVariableTable(self, [], GetDebugVariablesTableColnames())
         self.VariablesGrid.SetTable(self.Table)
@@ -337,6 +407,43 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             
             graphics_panel_sizer = wx.BoxSizer(wx.VERTICAL)
             
+            graphics_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            graphics_panel_sizer.AddSizer(graphics_button_sizer, border=5, flag=wx.GROW|wx.ALL)
+            
+            range_label = wx.StaticText(self.GraphicsPanel, label=_('Range:'))
+            graphics_button_sizer.AddWindow(range_label, flag=wx.ALIGN_CENTER_VERTICAL)
+            
+            self.CanvasRange = wx.ComboBox(self.GraphicsPanel, 
+                  size=wx.Size(100, 28), style=wx.CB_READONLY)
+            self.Bind(wx.EVT_COMBOBOX, self.OnRangeChanged, self.CanvasRange)
+            graphics_button_sizer.AddWindow(self.CanvasRange, 1, flag=wx.ALIGN_CENTER_VERTICAL)
+            
+            for name, bitmap, help in [
+                ("ResetButton", "reset", _("Clear the graph values")),
+                ("CurrentButton", "current", _("Go to current value")),
+                ("ExportGraphButton", "export_graph", _("Export graph values to clipboard"))]:
+                button = wx.lib.buttons.GenBitmapButton(self.GraphicsPanel, 
+                      bitmap=GetBitmap(bitmap), 
+                      size=wx.Size(28, 28), style=wx.NO_BORDER)
+                button.SetToolTipString(help)
+                setattr(self, name, button)
+                self.Bind(wx.EVT_BUTTON, getattr(self, "On" + name), button)
+                graphics_button_sizer.AddWindow(button, border=5, flag=wx.LEFT)
+            
+            self.CanvasPosition = wx.ScrollBar(self.GraphicsPanel, 
+                  size=wx.Size(0, 16), style=wx.SB_HORIZONTAL)
+            self.CanvasPosition.Bind(wx.EVT_SCROLL_THUMBTRACK, 
+                  self.OnPositionChanging, self.CanvasPosition)
+            self.CanvasPosition.Bind(wx.EVT_SCROLL_LINEUP, 
+                  self.OnPositionChanging, self.CanvasPosition)
+            self.CanvasPosition.Bind(wx.EVT_SCROLL_LINEDOWN, 
+                  self.OnPositionChanging, self.CanvasPosition)
+            self.CanvasPosition.Bind(wx.EVT_SCROLL_PAGEUP, 
+                  self.OnPositionChanging, self.CanvasPosition)
+            self.CanvasPosition.Bind(wx.EVT_SCROLL_PAGEDOWN, 
+                  self.OnPositionChanging, self.CanvasPosition)
+            graphics_panel_sizer.AddWindow(self.CanvasPosition, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+            
             self.GraphicsCanvasWindow = wx.ScrolledWindow(self.GraphicsPanel, style=wx.HSCROLL|wx.VSCROLL)
             self.GraphicsCanvasWindow.Bind(wx.EVT_SIZE, self.OnGraphicsCanvasWindowResize)
             graphics_panel_sizer.AddWindow(self.GraphicsCanvasWindow, 1, flag=wx.GROW)
@@ -374,12 +481,30 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             self.Initialize(self.MainPanel)
         
         self.ResetGraphics()
+        self.RefreshCanvasRange()
+        self.RefreshScrollBar()
+        
+    def SetDataProducer(self, producer):
+        DebugViewer.SetDataProducer(self, producer)
+        
+        if self.DataProducer is not None:
+            self.Ticktime = self.DataProducer.GetTicktime()
+            self.RefreshCanvasRange()
+        else:
+            self.Ticktime = 0
     
-    def RefreshNewData(self):
-        if self.HasNewData:
+    def RefreshNewData(self, *args, **kwargs):
+        if self.HasNewData or self.Force:
             self.HasNewData = False
             self.RefreshGrid(only_values=True)
-        DebugViewer.RefreshNewData(self)
+        DebugViewer.RefreshNewData(self, *args, **kwargs)
+    
+    def NewDataAvailable(self, tick, *args, **kwargs):
+        if tick is not None:
+            self.Ticks = numpy.append(self.Ticks, [tick])
+            if not self.Fixed or tick < self.StartTick + self.CurrentRange:
+                self.StartTick = max(self.StartTick, tick - self.CurrentRange)
+        DebugViewer.NewDataAvailable(self, tick, *args, **kwargs)
     
     def RefreshGrid(self, only_values=False):
         self.Freeze()
@@ -392,29 +517,49 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             self.Table.ResetView(self.VariablesGrid)
         self.VariablesGrid.RefreshButtons()
         
-        if USE_MPL:
+        self.RefreshScrollBar()
+        
+        self.Thaw()
+        
+        if USE_MPL and (not self.Fixed or self.Force):
+            self.Force = False
+            
             # Refresh graphics
             idx = 0
+            start_tick, end_tick = self.StartTick, self.StartTick + self.CurrentRange
             for item in self.Table.GetData():
-                data = item.GetData()
+                data = item.GetData(start_tick, end_tick)
                 if data is not None:
+                    min_value, max_value = item.GetRange()
+                    if min_value is not None and max_value is not None:
+                        y_center = (min_value + max_value) / 2.
+                        y_range = max(1.0, max_value - min_value)
+                    else:
+                        y_center = 0.5
+                        y_range = 1.0
                     self.GraphicsAxes[idx].clear()
                     self.GraphicsAxes[idx].plot(data[:, 0], data[:, 1])
+                    self.GraphicsAxes[idx].set_xlim(start_tick, end_tick)
+                    self.GraphicsAxes[idx].set_ylim(
+                        y_center - y_range * 0.55, y_center + y_range * 0.55)
                     idx += 1
-            self.GraphicsCanvas.draw()
+            if idx > 0:
+                self.GraphicsCanvas.draw()
                     
             # Refresh 3D graphics
             while len(self.Graphics3DAxes.lines) > 0:
                 self.Graphics3DAxes.lines.pop()
             if self.Axis3DValues is not None:
-                self.Graphics3DAxes.plot(
-                    self.Axis3DValues[0][1].GetData()[self.Axis3DValues[0][0]:, 1],
-                    self.Axis3DValues[1][1].GetData()[self.Axis3DValues[1][0]:, 1],
-                    zs = self.Axis3DValues[2][1].GetData()[self.Axis3DValues[2][0]:, 1])
-            self.Graphics3DCanvas.draw()
-        
-        self.Thaw()
-        
+                axis = self.Axis3DValues[0]
+                start_tick = max(self.StartTick, self.Axis3DValues[1])
+                end_tick = max(self.StartTick + self.CurrentRange, self.Axis3DValues[1])
+                xyz_data = [axe.GetData(start_tick, end_tick)[:, 1] for axe in axis]
+                length = reduce(min, [len(data) for data in xyz_data])
+                self.Graphics3DAxes.plot(xyz_data[0][:length],
+                    xyz_data[1][:length],
+                    zs = xyz_data[2][:length])
+                self.Graphics3DCanvas.draw()
+            
     def UnregisterObsoleteData(self):
         items = [(idx, item) for idx, item in enumerate(self.Table.GetData())]
         items.reverse()
@@ -430,6 +575,9 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         self.Table.ResetView(self.VariablesGrid)
         self.VariablesGrid.RefreshButtons()
         self.Thaw()
+        if self.DataProducer is not None:
+            self.Ticktime = self.DataProducer.GetTicktime()
+            self.RefreshCanvasRange()
     
     def ResetGrid(self):
         self.DeleteDataConsumers()
@@ -439,6 +587,33 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         self.VariablesGrid.RefreshButtons()
         self.Thaw()
         self.ResetGraphics()
+    
+    def RefreshCanvasRange(self):
+        if self.Ticktime == 0 and self.RangeValues != RANGE_VALUES:
+            self.RangeValues = RANGE_VALUES
+            self.CanvasRange.Clear()
+            for text, value in RANGE_VALUES:
+                self.CanvasRange.Append(text)
+            self.CanvasRange.SetStringSelection(RANGE_VALUES[0][0])
+            self.CurrentRange = RANGE_VALUES[0][1]
+            self.RefreshGrid(True)
+        elif self.Ticktime != 0 and self.RangeValues != TIME_RANGE_VALUES:
+            self.RangeValues = TIME_RANGE_VALUES
+            self.CanvasRange.Clear()
+            for text, value in TIME_RANGE_VALUES:
+                self.CanvasRange.Append(text)
+            self.CanvasRange.SetStringSelection(TIME_RANGE_VALUES[0][0])
+            self.CurrentRange = TIME_RANGE_VALUES[0][1] / self.Ticktime
+            self.RefreshGrid(True)
+    
+    def RefreshScrollBar(self):
+        if len(self.Ticks) > 0:
+            pos = int(self.StartTick - self.Ticks[0])
+            range = int(self.Ticks[-1] - self.Ticks[0])
+        else:
+            pos = 0
+            range = 0
+        self.CanvasPosition.SetScrollbar(pos, self.CurrentRange, range, self.CurrentRange)
     
     def GetForceVariableMenuFunction(self, iec_path, item):
         iec_type = self.GetDataType(iec_path)
@@ -494,6 +669,77 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             wx.CallAfter(self.Reset3DGraphics)
         event.Skip()
     
+    def RefreshRange(self):
+        if len(self.Ticks) > 0:
+            if self.Fixed and self.Ticks[-1] - self.Ticks[0] < self.CurrentRange:
+                self.Fixed = False
+            if self.Fixed:
+                self.StartTick = min(self.StartTick, self.Ticks[-1] - self.CurrentRange)
+            else:
+                self.StartTick = max(self.Ticks[0], self.Ticks[-1] - self.CurrentRange)
+        self.Force = True
+        self.RefreshGrid(True)
+    
+    def OnRangeChanged(self, event):
+        try:
+            if self.Ticktime == 0:
+                self.CurrentRange = self.RangeValues[self.CanvasRange.GetSelection()][1]
+            else:
+                self.CurrentRange = self.RangeValues[self.CanvasRange.GetSelection()][1] / self.Ticktime
+        except ValueError, e:
+            self.CanvasRange.SetValue(str(self.CurrentRange))
+        wx.CallAfter(self.RefreshRange)
+        event.Skip()
+    
+    def OnResetButton(self, event):
+        self.StartTick = 0
+        self.Fixed = False
+        for item in self.Table.GetData():
+            item.ResetData()
+        self.RefreshGrid(True)
+        event.Skip()
+
+    def OnCurrentButton(self, event):
+        if len(self.Ticks) > 0:
+            self.StartTick = max(self.Ticks[0], self.Ticks[-1] - self.CurrentRange)
+            self.Fixed = False
+            self.Force = True
+            self.RefreshGrid(True)
+        event.Skip()
+    
+    def CopyDataToClipboard(self, variables):
+        text = "tick;%s;\n" % ";".join([var_name for var_name, data in variables])
+        next_tick = NextTick(variables)
+        while next_tick is not None:
+            values = []
+            for var_name, data in variables:
+                if len(data) > 0:
+                    if next_tick == data[0][0]:
+                        values.append("%.3f" % data.pop(0)[1])
+                    else:
+                        values.append("")
+                else:
+                    values.append("")
+            text += "%d;%s;\n" % (next_tick, ";".join(values))
+            next_tick = NextTick(variables)
+        self.ParentWindow.SetCopyBuffer(text)
+    
+    def OnExportGraphButton(self, event):
+        variables = []
+        for item in self.Table.GetData():
+            if item.IsNumVariable():
+                variables.append((item.GetVariable(), [entry for entry in item.GetData()]))
+        wx.CallAfter(self.CopyDataToClipboard, variables)
+        event.Skip()
+    
+    def OnPositionChanging(self, event):
+        if len(self.Ticks) > 0:
+            self.StartTick = self.Ticks[0] + event.GetPosition()
+            self.Fixed = True
+            self.Force = True
+            wx.CallAfter(self.NewDataAvailable, None, True)
+        event.Skip()
+    
     def InsertValue(self, iec_path, idx = None, force=False, axis3D=False):
         if idx is None:
             idx = self.Table.GetNumberRows()
@@ -541,6 +787,7 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             self.Reset3DGraphics()
     
     def Reset3DGraphics(self):
+        self.Axis3DValues = None
         axis = [item for item in self.Table.GetData() if item.GetAxis3D()]
         if len(axis) == 3:
             max_tick = None
@@ -548,19 +795,16 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             if len(xaxis) > 0 and len(yaxis) > 0 and len(zaxis) > 0:
                 max_tick = max(xaxis[0, 0], yaxis[0, 0], zaxis[0, 0])
             if max_tick is not None:
-                self.Axis3DValues = [(numpy.argmin(abs(item.GetData()[:, 0] - max_tick)), item)
-                                     for item in axis]
+                self.Axis3DValues = (axis, max_tick)
             else:
-               self.Axis3DValues = [(0, item) for item in axis]
-        else:
-            self.Axis3DValues = None
+                self.Axis3DValues = (axis, 0)
     
     def OnGraphics3DMotion(self, event):
         current_time = gettime()
         if current_time - self.LastMotionTime > REFRESH_PERIOD:
             self.LastMotionTime = current_time
             Axes3D._on_move(self.Graphics3DAxes, event)
-
+    
     def RefreshGraphicsCanvasWindowScrollbars(self):
         xstart, ystart = self.GraphicsCanvasWindow.GetViewStart()
         window_size = self.GraphicsCanvasWindow.GetClientSize()

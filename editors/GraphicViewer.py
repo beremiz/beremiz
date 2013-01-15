@@ -311,7 +311,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
                 self.StartIdx += 1
             self.EndIdx += 1
             self.StartTick = self.Data[self.StartIdx, 0]
-        self.NewDataAvailable()
+        self.NewDataAvailable(None)
     
     def RefreshScrollBar(self):
         if len(self.Data) > 0:
@@ -355,7 +355,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
             self.ResetBounds()
             self.StartTick = self.Data[0, 0] + event.GetPosition()
             self.Fixed = True
-            self.NewDataAvailable(True)
+            self.NewDataAvailable(None, True)
         event.Skip()
 
     def OnResetButton(self, event):
@@ -368,7 +368,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
             self.ResetBounds()
             self.StartTick = max(self.Data[0, 0], self.Data[-1, 0] - self.CurrentRange)
             self.Fixed = False
-            self.NewDataAvailable(True)
+            self.NewDataAvailable(None, True)
         event.Skip()
     
     def OnResetZoomOffsetButton(self, event):
@@ -443,7 +443,7 @@ class GraphicViewer(EditorPanel, DebugViewer):
             self.ResetBounds()
             self.StartTick = max(self.Data[0, 0], min(self.CurrentMotionValue, self.Data[-1, 0] - self.CurrentRange))
             self.CurrentMousePos = event.GetPosition()
-            self.NewDataAvailable(True)
+            self.NewDataAvailable(None, True)
         event.Skip()
 
     def OnCanvasMouseWheel(self, event):

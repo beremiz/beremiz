@@ -395,7 +395,7 @@ class DebugViewer:
             self.LastRefreshTimer.start()
             self.TimerAccessLock.release()
     
-    def NewDataAvailable(self, *args, **kwargs):
+    def NewDataAvailable(self, tick, *args, **kwargs):
         self.TimerAccessLock.acquire()
         if self.LastRefreshTimer is not None:
             self.LastRefreshTimer.cancel()
