@@ -761,6 +761,8 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         return [item.GetVariable() for item in self.Table.GetData() if item.GetAxis3D()]
     
     def ResetGraphicsValues(self):
+        self.Ticks = numpy.array([])
+        self.StartTick = 0
         for item in self.Table.GetData():
             item.ResetData()
     
