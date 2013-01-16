@@ -413,10 +413,10 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             range_label = wx.StaticText(self.GraphicsPanel, label=_('Range:'))
             graphics_button_sizer.AddWindow(range_label, flag=wx.ALIGN_CENTER_VERTICAL)
             
-            self.CanvasRange = wx.ComboBox(self.GraphicsPanel, 
-                  size=wx.Size(100, 28), style=wx.CB_READONLY)
+            self.CanvasRange = wx.ComboBox(self.GraphicsPanel, style=wx.CB_READONLY)
             self.Bind(wx.EVT_COMBOBOX, self.OnRangeChanged, self.CanvasRange)
-            graphics_button_sizer.AddWindow(self.CanvasRange, 1, flag=wx.ALIGN_CENTER_VERTICAL)
+            graphics_button_sizer.AddWindow(self.CanvasRange, 1, 
+                  border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
             
             for name, bitmap, help in [
                 ("ResetButton", "reset", _("Clear the graph values")),
