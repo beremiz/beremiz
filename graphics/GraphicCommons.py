@@ -402,8 +402,7 @@ class DebugViewer:
             self.LastRefreshTimer=None
         self.TimerAccessLock.release()
         if self.IsShown() and not self.Inhibited:
-            current_time = gettime()
-            if current_time - self.LastRefreshTime > REFRESH_PERIOD and DEBUG_REFRESH_LOCK.acquire(False):
+            if gettime() - self.LastRefreshTime > REFRESH_PERIOD and DEBUG_REFRESH_LOCK.acquire(False):
                 self.AccessLock.acquire()
                 self.HasAcquiredLock = True
                 self.AccessLock.release()
@@ -427,6 +426,8 @@ class DebugViewer:
         if self.HasAcquiredLock:
             DEBUG_REFRESH_LOCK.release()
             self.HasAcquiredLock = False
+        if gettime() - self.LastRefreshTime > REFRESH_PERIOD:
+            self.LastRefreshTime = gettime()
         self.AccessLock.release()
 
 #-------------------------------------------------------------------------------
