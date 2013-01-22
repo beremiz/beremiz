@@ -113,6 +113,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
+        self.previous_log_count = -1
         # copy ConfNodeMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
@@ -1078,11 +1079,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     ############# Real PLC object access #############
     def UpdateMethodsFromPLCStatus(self):
-        # Get PLC state : Running or Stopped
-        # TODO : use explicit status instead of boolean
         status = None
         if self._connector is not None:
-            status = self._connector.GetPLCstatus()
+            status, log_count = self._connector.GetPLCstatus()
         if status is None:
             self._connector = None
             status = "Disconnected"
@@ -1104,6 +1103,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
             return True
+        if(self.previous_log_count != log_count):
+            self.logger.write("Now log count is %d"%log_count)
+            self.previous_log_count = log_count
         return False
     
     def PullPLCStatusProc(self, event):
@@ -1277,7 +1279,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         while (not self.debug_break) and (self._connector is not None):
             Trace = self._connector.GetTraceVariables()
             if(Trace):
-                plc_status, debug_tick, debug_vars = Trace
+                plc_status, log_count, debug_tick, debug_vars = Trace
             else:
                 plc_status = None
             debug_getvar_retry += 1

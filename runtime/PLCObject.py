@@ -145,7 +145,10 @@ class PLCObject(pyro.ObjBase):
 
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
             self._resumeDebug.restype = None
-            
+
+            self._GetLogCount = self.PLClibraryHandle.GetLogCount
+            self._GetLogCount.restype = ctypes.c_uint32
+
             return True
         except:
             PLCprint(traceback.format_exc())
@@ -168,6 +171,7 @@ class PLCObject(pyro.ObjBase):
         self._suspendDebug = lambda x:-1
         self._resumeDebug = lambda:None
         self._PythonIterator = lambda:""
+        self._GetLogCount = lambda:-1 
         self.PLClibraryHandle = None
         # Unload library explicitely
         if getattr(self,"_PLClibraryHandle",None) is not None:
@@ -257,28 +261,22 @@ class PLCObject(pyro.ObjBase):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
             error = None
-            if self._LoadNewPLC():
-                if self._startPLC(len(self.argv),c_argv(*self.argv)) == 0:
-                    self.StartSem=Semaphore(0)
-                    self.PythonThread = Thread(target=self.PythonThreadProc)
-                    self.PythonThread.start()
-                    self.StartSem.acquire()
-                else:
-                    error = "starting"
+            res = self._startPLC(len(self.argv),c_argv(*self.argv))
+            if res == 0:
+                self.StartSem=Semaphore(0)
+                self.PythonThread = Thread(target=self.PythonThreadProc)
+                self.PythonThread.start()
+                self.StartSem.acquire()
             else:
-                error = "loading"
-            if error is not None:
-                PLCprint("Problem %s PLC"%error)
+                PLCprint(_("Problem starting PLC : error %d" % res))
                 self.PLCStatus = "Broken"
                 self.StatusChange()
-                self._FreePLC()
             
     def StopPLC(self):
         PLCprint("StopPLC")
         if self.PLCStatus == "Started":
             self._stopPLC()
             self.PythonThread.join()
-            self._FreePLC()
             return True
         return False
 
@@ -295,13 +293,17 @@ class PLCObject(pyro.ObjBase):
         return True
 
     def GetPLCstatus(self):
-        return self.PLCStatus
+        return self.PLCStatus, self._GetLogCount()
     
     def NewPLC(self, md5sum, data, extrafiles):
         PLCprint("NewPLC (%s)"%md5sum)
         if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
+
+            self._FreePLC()
+            self.PLCStatus = "Empty"
+
             try:
                 os.remove(os.path.join(self.workingdir,
                                        self.CurrentPLCFilename))
@@ -331,11 +333,18 @@ class PLCObject(pyro.ObjBase):
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName
             except:
+                self.PLCStatus = "Broken"
+                self.StatusChange()
                 PLCprint(traceback.format_exc())
                 return False
-            if self.PLCStatus == "Empty":
+
+            if self._LoadNewPLC():
                 self.PLCStatus = "Stopped"
-            return True
+            else:
+                self._FreePLC()
+            self.StatusChange()
+
+            return self.PLCStatus == "Stopped"
         return False
 
     def MatchMD5(self, MD5):
@@ -405,10 +414,10 @@ class PLCObject(pyro.ObjBase):
                     self._FreeDebugData()
                 self.PLClibraryLock.release()
             if offset and offset == size.value:
-                return self.PLCStatus, tick.value, res
+                return self.PLCStatus, self._GetLogCount(), tick.value, res
             #elif size.value:
                 #PLCprint("Debug error - wrong buffer unpack ! %d != %d"%(offset, size.value))
-        return self.PLCStatus, None, []
+        return self.PLCStatus, self._GetLogCount(), None, []
 
     def RemoteExec(self, script, **kwargs):
         try:

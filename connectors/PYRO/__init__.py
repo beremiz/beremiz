@@ -140,11 +140,11 @@ def PYRO_connector_factory(uri, confnodesroot):
             if self.RemotePLCObjectProxyCopy is None:
                 self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
             return self.RemotePLCObjectProxyCopy.GetTraceVariables()
-        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",None,None))
+        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",-1,None,None))
 
         def _PyroGetPLCstatus(self):
             return RemotePLCObjectProxy.GetPLCstatus()
-        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, "Broken")
+        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, ("Broken",-1))
 
         def _PyroRemoteExec(self, script, **kwargs):
             return RemotePLCObjectProxy.RemoteExec(script, **kwargs)
