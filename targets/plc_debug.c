@@ -302,3 +302,15 @@ int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     return wait_error;
 }
 
+
+uint32_t LogMessageCount = 0; 
+
+uint32_t GetLogCount(){
+    return LogMessageCount;
+}
+
+int LogMessage(char* Message){
+    LogMessageCount = __sync_add_and_fetch(&LogMessageCount, 1);
+    return 1; // Success
+}
+
