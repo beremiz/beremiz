@@ -374,6 +374,13 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         def _DeleteVariable(row):
             item = self.Table.GetItem(row)
             self.RemoveDataConsumer(item)
+            for infos in self.GraphicsAxes:
+                if item in infos["items"]:
+                    if len(infos["items"]) == 1:
+                        self.GraphicsAxes.remove(infos)
+                    else:
+                        infos["items"].remove(item)
+                    break
             self.Table.RemoveItem(row)
             self.ResetGraphics()
             self.RefreshGrid()
@@ -405,10 +412,10 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         if USE_MPL:
             self.GraphicsPanel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
             
-            graphics_panel_sizer = wx.BoxSizer(wx.VERTICAL)
+            self.GraphicsPanelSizer = wx.BoxSizer(wx.VERTICAL)
             
             graphics_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            graphics_panel_sizer.AddSizer(graphics_button_sizer, border=5, flag=wx.GROW|wx.ALL)
+            self.GraphicsPanelSizer.AddSizer(graphics_button_sizer, border=5, flag=wx.GROW|wx.ALL)
             
             range_label = wx.StaticText(self.GraphicsPanel, label=_('Range:'))
             graphics_button_sizer.AddWindow(range_label, flag=wx.ALIGN_CENTER_VERTICAL)
@@ -442,11 +449,11 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
                   self.OnPositionChanging, self.CanvasPosition)
             self.CanvasPosition.Bind(wx.EVT_SCROLL_PAGEDOWN, 
                   self.OnPositionChanging, self.CanvasPosition)
-            graphics_panel_sizer.AddWindow(self.CanvasPosition, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+            self.GraphicsPanelSizer.AddWindow(self.CanvasPosition, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
             
             self.GraphicsCanvasWindow = wx.ScrolledWindow(self.GraphicsPanel, style=wx.HSCROLL|wx.VSCROLL)
             self.GraphicsCanvasWindow.Bind(wx.EVT_SIZE, self.OnGraphicsCanvasWindowResize)
-            graphics_panel_sizer.AddWindow(self.GraphicsCanvasWindow, 1, flag=wx.GROW)
+            self.GraphicsPanelSizer.AddWindow(self.GraphicsCanvasWindow, 1, flag=wx.GROW)
             
             graphics_canvas_window_sizer = wx.BoxSizer(wx.VERTICAL)
             
@@ -469,11 +476,11 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             
             self.Graphics3DCanvas = FigureCanvas(self.GraphicsPanel, -1, self.Graphics3DFigure)
             self.Graphics3DCanvas.SetMinSize(wx.Size(1, 1))
-            graphics_panel_sizer.AddWindow(self.Graphics3DCanvas, 1, flag=wx.GROW)
+            self.GraphicsPanelSizer.AddWindow(self.Graphics3DCanvas, 1, flag=wx.GROW)
             
             self.Graphics3DAxes.mouse_init()
             
-            self.GraphicsPanel.SetSizer(graphics_panel_sizer)
+            self.GraphicsPanel.SetSizer(self.GraphicsPanelSizer)
             
             self.SplitHorizontally(self.MainPanel, self.GraphicsPanel, -200)
         
@@ -525,25 +532,38 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             self.Force = False
             
             # Refresh graphics
-            idx = 0
             start_tick, end_tick = self.StartTick, self.StartTick + self.CurrentRange
-            for item in self.Table.GetData():
-                data = item.GetData(start_tick, end_tick)
-                if data is not None:
-                    min_value, max_value = item.GetRange()
-                    if min_value is not None and max_value is not None:
-                        y_center = (min_value + max_value) / 2.
-                        y_range = max(1.0, max_value - min_value)
-                    else:
-                        y_center = 0.5
-                        y_range = 1.0
-                    self.GraphicsAxes[idx].clear()
-                    self.GraphicsAxes[idx].plot(data[:, 0], data[:, 1])
-                    self.GraphicsAxes[idx].set_xlim(start_tick, end_tick)
-                    self.GraphicsAxes[idx].set_ylim(
-                        y_center - y_range * 0.55, y_center + y_range * 0.55)
-                    idx += 1
-            if idx > 0:
+            for infos in self.GraphicsAxes:
+                min_value = max_value = None
+                
+                for idx, item in enumerate(infos["items"]):
+                    data = item.GetData(start_tick, end_tick)
+                    if data is not None:
+                        item_min_value, item_max_value = item.GetRange()
+                        if min_value is None:
+                            min_value = item_min_value
+                        elif item_min_value is not None:
+                            min_value = min(min_value, item_min_value)
+                        if max_value is None:
+                            max_value = item_max_value
+                        elif item_max_value is not None:
+                            max_value = max(max_value, item_max_value)
+                        
+                        if len(infos["plots"]) <= idx:
+                            infos["plots"].append(infos["axes"].plot(data[:, 0], data[:, 1])[0])
+                        else:
+                            infos["plots"][idx].set_data(data[:, 0], data[:, 1])
+                
+                if min_value is not None and max_value is not None:
+                    y_center = (min_value + max_value) / 2.
+                    y_range = max(1.0, max_value - min_value)
+                else:
+                    y_center = 0.5
+                    y_range = 1.0
+                infos["axes"].set_xlim(start_tick, end_tick)
+                infos["axes"].set_ylim(y_center - y_range * 0.55, y_center + y_range * 0.55)
+            
+            if len(self.GraphicsAxes) > 0:
                 self.GraphicsCanvas.draw()
                     
             # Refresh 3D graphics
@@ -750,6 +770,12 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         result = self.AddDataConsumer(iec_path.upper(), item)
         if result is not None or force:
             self.Table.InsertItem(idx, item)
+            if item.IsNumVariable():
+                self.GraphicsAxes.append({
+                    "items": [item],
+                    "axes": None,
+                    "type": "y",
+                    "plots": []})
             item.SetAxis3D(int(axis3D))
             self.ResetGraphics()
             self.RefreshGrid()
@@ -769,19 +795,15 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
     def ResetGraphics(self):
         if USE_MPL:
             self.GraphicsFigure.clear()
-            self.GraphicsAxes = []
             
-            axes_num = 0
-            for item in self.Table.GetData():    
-                if item.IsNumVariable():
-                    axes_num += 1
-            
+            axes_num = len(self.GraphicsAxes)
             for idx in xrange(axes_num):
                 if idx == 0:
                     axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1)
                 else:
-                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1, sharex=self.GraphicsAxes[0])
-                self.GraphicsAxes.append(axes)
+                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1, sharex=self.GraphicsAxes[0]["axes"])
+                self.GraphicsAxes[idx]["axes"] = axes
+                self.GraphicsAxes[idx]["plots"] = []
             
             self.RefreshGraphicsCanvasWindowScrollbars()
             self.GraphicsCanvas.draw()
@@ -800,6 +822,10 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
                 self.Axis3DValues = (axis, max_tick)
             else:
                 self.Axis3DValues = (axis, 0)
+            self.Graphics3DCanvas.Show()
+        else:
+            self.Graphics3DCanvas.Hide()
+        self.GraphicsPanelSizer.Layout()
     
     def OnGraphics3DMotion(self, event):
         current_time = gettime()
