@@ -1965,6 +1965,9 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         dragSource = wx.DropSource(self.Editor)
                         dragSource.SetData(data)
                         dragSource.DoDragDrop()
+                        if self.Editor.HasCapture():
+                            self.Editor.ReleaseMouse()
+                        wx.CallAfter(self.SetCurrentCursor, 0)
             self.UpdateScrollPos(event)
         event.Skip()
 
