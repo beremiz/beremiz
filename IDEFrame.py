@@ -931,8 +931,7 @@ class IDEFrame(wx.Frame):
             project_infos["tabs"] = self.SaveTabLayout(self.TabsOpened)
             if self.EnableDebug:
                 project_infos["debug_vars"] = self.DebugVariablePanel.GetDebugVariables()
-                project_infos["debug_axis3D"] = self.DebugVariablePanel.GetAxis3D()
-            
+                
             self.Config.Write("projects", cPickle.dumps(projects))
             self.Config.Flush()
     
@@ -948,9 +947,8 @@ class IDEFrame(wx.Frame):
                 
             if self.EnableDebug:
                 try:
-                    axis3D = project.get("debug_axis3D", [])
                     for variable in project.get("debug_vars", []):
-                        self.DebugVariablePanel.InsertValue(variable, force=True, axis3D=variable in axis3D)
+                        self.DebugVariablePanel.InsertValue(variable, force=True)
                 except:
                     self.DebugVariablePanel.ResetGrid()
             

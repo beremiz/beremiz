@@ -56,16 +56,15 @@ TIME_RANGE_VALUES = [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
                     [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
                     [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
 
+GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
+
 def AppendMenu(parent, help, id, kind, text):
     parent.Append(help=help, id=id, kind=kind, text=text)
 
 def GetDebugVariablesTableColnames():
     _ = lambda x : x
-    cols = [_("Variable"), _("Value")]
-    if USE_MPL:
-        cols.append(_("3DAxis"))
-    return cols
-
+    return [_("Variable"), _("Value")]
+    
 class VariableTableItem(DebugDataConsumer):
     
     def __init__(self, parent, variable):
@@ -74,8 +73,7 @@ class VariableTableItem(DebugDataConsumer):
         self.Variable = variable
         self.RefreshVariableType()
         self.Value = ""
-        self.Axis3D = False
-    
+        
     def __del__(self):
         self.Parent = None
     
@@ -165,15 +163,6 @@ class VariableTableItem(DebugDataConsumer):
             return "%.6g" % self.Value
         return self.Value
 
-    def SetAxis3D(self, axis_3d):
-        if self.IsNumVariable():
-            self.Axis3D = axis_3d
-        
-    def GetAxis3D(self):
-        if self.IsNumVariable():
-            return self.Axis3D
-        return ""
-
     def GetNearestData(self, tick, adjust):
         if self.IsNumVariable():
             ticks = self.Data[:, 0]
@@ -202,8 +191,6 @@ class DebugVariableTable(CustomTable):
                 return self.data[row].GetVariable()
             elif colname == "Value":
                 return self.data[row].GetValue()
-            elif colname == "3DAxis":
-                return self.data[row].GetAxis3D()
         return ""
 
     def SetValueByName(self, row, colname, value):
@@ -212,8 +199,6 @@ class DebugVariableTable(CustomTable):
                 self.data[row].SetVariable(value)
             elif colname == "Value":
                 self.data[row].SetValue(value)
-            elif colname == "3DAxis":
-                self.data[row].SetAxis3D(value)
     
     def IsForced(self, row):
         if row < self.GetNumberRows():
@@ -236,20 +221,12 @@ class DebugVariableTable(CustomTable):
         for row in range(self.GetNumberRows()):
             for col in range(self.GetNumberCols()):
                 colname = self.GetColLabelValue(col, False)
-                if colname == "3DAxis":
-                    if self.IsNumVariable(row):
-                        grid.SetCellRenderer(row, col, wx.grid.GridCellBoolRenderer())
-                        grid.SetCellEditor(row, col, wx.grid.GridCellBoolEditor())
-                        grid.SetReadOnly(row, col, False)
+                if colname == "Value":
+                    if self.IsForced(row):
+                        grid.SetCellTextColour(row, col, wx.BLUE)
                     else:
-                        grid.SetReadOnly(row, col, True)
-                else:
-                    if colname == "Value":
-                        if self.IsForced(row):
-                            grid.SetCellTextColour(row, col, wx.BLUE)
-                        else:
-                            grid.SetCellTextColour(row, col, wx.BLACK)
-                    grid.SetReadOnly(row, col, True)
+                        grid.SetCellTextColour(row, col, wx.BLACK)
+                grid.SetReadOnly(row, col, True)
             self.ResizeRow(grid, row)
                 
     def AppendItem(self, data):
@@ -269,15 +246,12 @@ class DebugVariableTable(CustomTable):
 
 class DebugVariableDropTarget(wx.TextDropTarget):
     
-    def __init__(self, parent):
+    def __init__(self, parent, control):
         wx.TextDropTarget.__init__(self)
         self.ParentWindow = parent
+        self.ParentControl = control
     
     def OnDropText(self, x, y, data):
-        x, y = self.ParentWindow.VariablesGrid.CalcUnscrolledPosition(x, y)
-        row = self.ParentWindow.VariablesGrid.YToRow(y - self.ParentWindow.VariablesGrid.GetColLabelSize())
-        if row == wx.NOT_FOUND:
-            row = self.ParentWindow.Table.GetNumberRows()
         message = None
         try:
             values = eval(data)
@@ -287,10 +261,33 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         if not isinstance(values, TupleType):
             message = _("Invalid value \"%s\" for debug variable")%data
             values = None
-        if values is not None and values[1] == "debug":
-            self.ParentWindow.InsertValue(values[0], row)
+        
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+        elif values is not None and values[1] == "debug":
+            if self.ParentControl == self.ParentWindow.VariablesGrid:
+                x, y = self.ParentWindow.VariablesGrid.CalcUnscrolledPosition(x, y)
+                row = self.ParentWindow.VariablesGrid.YToRow(y - self.ParentWindow.VariablesGrid.GetColLabelSize())
+                if row == wx.NOT_FOUND:
+                    row = self.ParentWindow.Table.GetNumberRows()
+                self.ParentWindow.InsertValue(values[0], row, force=True)
+            else:
+                x, y = self.ParentWindow.GraphicsCanvasWindow.CalcUnscrolledPosition(x, y)
+                width, height = self.ParentWindow.GraphicsCanvas.GetSize()
+                target = None
+                merge_type = GRAPH_PARALLEL
+                for infos in self.ParentWindow.GraphicsAxes:
+                    ax, ay, aw, ah = infos["axes"].get_position().bounds
+                    rect = wx.Rect(ax * width, height - (ay + ah) * height,
+                                   aw * width, ah * height)
+                    if rect.InsideXY(x, y):
+                        target = infos
+                        merge_rect = wx.Rect(ax * width, height - (ay + ah) * height,
+                                             aw * width / 2., ah * height)
+                        if merge_rect.InsideXY(x, y):
+                            merge_type = GRAPH_ORTHOGONAL
+                        break
+                self.ParentWindow.MergeGraphs(values[0], target, merge_type, force=True)
             
     def ShowMessage(self, message):
         dialog = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
@@ -309,6 +306,17 @@ def NextTick(variables):
                 next_tick = min(next_tick, data[0][0])
     return next_tick
 
+def OrthogonalData(item, start_tick, end_tick):
+    data = item.GetData(start_tick, end_tick)
+    min_value, max_value = item.GetRange()
+    if min_value is not None and max_value is not None:
+        center = (min_value + max_value) / 2.
+        range = max(1.0, max_value - min_value)
+    else:
+        center = 0.5
+        range = 1.0
+    return data, center - range * 0.55, center + range * 0.55 
+    
 class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
     
     def __init__(self, parent, producer, window):
@@ -343,13 +351,11 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             button_sizer.AddWindow(button, border=5, flag=wx.LEFT)
         
         self.VariablesGrid = CustomGrid(self.MainPanel, size=wx.Size(-1, 150), style=wx.VSCROLL)
-        self.VariablesGrid.SetDropTarget(DebugVariableDropTarget(self))
+        self.VariablesGrid.SetDropTarget(DebugVariableDropTarget(self, self.VariablesGrid))
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, 
               self.OnVariablesGridCellRightClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, 
               self.OnVariablesGridCellLeftClick)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, 
-              self.OnVariablesGridCellChange)
         main_panel_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
         
         self.MainPanel.SetSizer(main_panel_sizer)
@@ -397,14 +403,13 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         
         self.VariablesGrid.SetRowLabelSize(0)
         
+        self.GridColSizes = [200, 100]
+        
         for col in range(self.Table.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
-            if self.Table.GetColLabelValue(col, False) == "3DAxis":
-                attr.SetAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
-            else:
-                attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+            attr.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
             self.VariablesGrid.SetColAttr(col, attr)
-            self.VariablesGrid.SetColSize(col, 100)
+            self.VariablesGrid.SetColSize(col, self.GridColSizes[col])
         
         self.Table.ResetView(self.VariablesGrid)
         self.VariablesGrid.RefreshButtons()
@@ -458,10 +463,11 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             graphics_canvas_window_sizer = wx.BoxSizer(wx.VERTICAL)
             
             self.GraphicsFigure = matplotlib.figure.Figure()
-            self.GraphicsFigure.subplots_adjust(hspace=0)
             self.GraphicsAxes = []
             
             self.GraphicsCanvas = FigureCanvas(self.GraphicsCanvasWindow, -1, self.GraphicsFigure)
+            self.GraphicsCanvas.mpl_connect("button_press_event", self.OnGraphicsCanvasClick)
+            self.GraphicsCanvas.SetDropTarget(DebugVariableDropTarget(self, self.GraphicsCanvas))
             graphics_canvas_window_sizer.AddWindow(self.GraphicsCanvas, 1, flag=wx.GROW)
             
             self.GraphicsCanvasWindow.SetSizer(graphics_canvas_window_sizer)
@@ -528,56 +534,102 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         
         self.Thaw()
         
-        if USE_MPL and (not self.Fixed or self.Force):
-            self.Force = False
-            
-            # Refresh graphics
-            start_tick, end_tick = self.StartTick, self.StartTick + self.CurrentRange
-            for infos in self.GraphicsAxes:
-                min_value = max_value = None
+        if USE_MPL:
+        
+            if not self.Fixed or self.Force:
+                self.Force = False
                 
-                for idx, item in enumerate(infos["items"]):
-                    data = item.GetData(start_tick, end_tick)
-                    if data is not None:
-                        item_min_value, item_max_value = item.GetRange()
-                        if min_value is None:
-                            min_value = item_min_value
-                        elif item_min_value is not None:
-                            min_value = min(min_value, item_min_value)
-                        if max_value is None:
-                            max_value = item_max_value
-                        elif item_max_value is not None:
-                            max_value = max(max_value, item_max_value)
-                        
-                        if len(infos["plots"]) <= idx:
-                            infos["plots"].append(infos["axes"].plot(data[:, 0], data[:, 1])[0])
-                        else:
-                            infos["plots"][idx].set_data(data[:, 0], data[:, 1])
-                
-                if min_value is not None and max_value is not None:
-                    y_center = (min_value + max_value) / 2.
-                    y_range = max(1.0, max_value - min_value)
-                else:
-                    y_center = 0.5
-                    y_range = 1.0
-                infos["axes"].set_xlim(start_tick, end_tick)
-                infos["axes"].set_ylim(y_center - y_range * 0.55, y_center + y_range * 0.55)
-            
-            if len(self.GraphicsAxes) > 0:
-                self.GraphicsCanvas.draw()
+                # Refresh graphics
+                start_tick, end_tick = self.StartTick, self.StartTick + self.CurrentRange
+                for infos in self.GraphicsAxes:
                     
-            # Refresh 3D graphics
-            while len(self.Graphics3DAxes.lines) > 0:
-                self.Graphics3DAxes.lines.pop()
-            if self.Axis3DValues is not None:
-                axis = self.Axis3DValues[0]
-                start_tick = max(self.StartTick, self.Axis3DValues[1])
-                end_tick = max(self.StartTick + self.CurrentRange, self.Axis3DValues[1])
-                xyz_data = [axe.GetData(start_tick, end_tick)[:, 1] for axe in axis]
-                length = reduce(min, [len(data) for data in xyz_data])
-                self.Graphics3DAxes.plot(xyz_data[0][:length],
-                    xyz_data[1][:length],
-                    zs = xyz_data[2][:length])
+                    if infos["type"] == GRAPH_PARALLEL:
+                        min_value = max_value = None
+                        
+                        for idx, item in enumerate(infos["items"]):
+                            data = item.GetData(start_tick, end_tick)
+                            if data is not None:
+                                item_min_value, item_max_value = item.GetRange()
+                                if min_value is None:
+                                    min_value = item_min_value
+                                elif item_min_value is not None:
+                                    min_value = min(min_value, item_min_value)
+                                if max_value is None:
+                                    max_value = item_max_value
+                                elif item_max_value is not None:
+                                    max_value = max(max_value, item_max_value)
+                                
+                                if len(infos["plots"]) <= idx:
+                                    infos["plots"].append(
+                                        infos["axes"].plot(data[:, 0], data[:, 1])[0])
+                                else:
+                                    infos["plots"][idx].set_data(data[:, 0], data[:, 1])
+                        
+                        if min_value is not None and max_value is not None:
+                            y_center = (min_value + max_value) / 2.
+                            y_range = max(1.0, max_value - min_value)
+                        else:
+                            y_center = 0.5
+                            y_range = 1.0
+                        x_min, x_max = start_tick, end_tick
+                        y_min, y_max = y_center - y_range * 0.55, y_center + y_range * 0.55
+                    
+                    else:
+                        min_start_tick = reduce(max, [item.GetData()[0, 0] 
+                                                      for item in infos["items"]
+                                                      if len(item.GetData()) > 0], 0)
+                        start_tick = max(self.StartTick, min_start_tick)
+                        end_tick = max(self.StartTick + self.CurrentRange, min_start_tick)
+                        x_data, x_min, x_max = OrthogonalData(infos["items"][0], start_tick, end_tick)
+                        y_data, y_min, y_max = OrthogonalData(infos["items"][1], start_tick, end_tick)
+                        length = 0
+                        if x_data is not None and y_data is not None:  
+                            length = min(len(x_data), len(y_data))
+                        if len(infos["items"]) < 3:
+                            if x_data is not None and y_data is not None:
+                                if len(infos["plots"]) == 0:
+                                    infos["plots"].append(
+                                        infos["axes"].plot(x_data[:, 1][:length], 
+                                                           y_data[:, 1][:length])[0])
+                                else:
+                                    infos["plots"][0].set_data(
+                                        x_data[:, 1][:length], 
+                                        y_data[:, 1][:length])
+                        else:
+                            while len(infos["axes"].lines) > 0:
+                                infos["axes"].lines.pop()
+                            z_data, z_min, z_max = OrthogonalData(infos["items"][2], start_tick, end_tick)
+                            if x_data is not None and y_data is not None and z_data is not None:
+                                length = min(length, len(z_data))
+                                infos["axes"].plot(x_data[:, 1][:length],
+                                                   y_data[:, 1][:length],
+                                                   zs = z_data[:, 1][:length])
+                            infos["axes"].set_zlim(z_min, z_max)
+                    
+                    infos["axes"].set_xlim(x_min, x_max)
+                    infos["axes"].set_ylim(y_min, y_max)
+                
+            plot2d = plot3d = 0
+            for infos in self.GraphicsAxes:
+                labels = ["%s: %s" % (item.GetVariable(), item.GetValue())
+                          for item in infos["items"]]
+                if infos["type"] == GRAPH_PARALLEL:
+                    infos["axes"].legend(infos["plots"], labels, 
+                        loc="upper left", frameon=False,
+                        prop={'size':'small'})
+                    plot2d += 1
+                else:
+                    infos["axes"].set_xlabel(labels[0], fontdict={'size':'small'})
+                    infos["axes"].set_ylabel(labels[1], fontdict={'size':'small'})
+                    if len(labels) > 2:
+                        infos["axes"].set_zlabel(labels[2], fontdict={'size':'small'})
+                        plot3d += 1
+                    else:
+                        plot2d += 1
+            
+            if plot2d > 0:
+                self.GraphicsCanvas.draw()
+            if plot3d > 0:
                 self.Graphics3DCanvas.draw()
             
     def UnregisterObsoleteData(self):
@@ -683,12 +735,6 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             menu.Destroy()
         event.Skip()
     
-    def OnVariablesGridCellChange(self, event):
-        row, col = event.GetRow(), event.GetCol()
-        if self.Table.GetColLabelValue(col, False) == "3DAxis":
-            wx.CallAfter(self.Reset3DGraphics)
-        event.Skip()
-    
     def RefreshRange(self):
         if len(self.Ticks) > 0:
             if self.Fixed and self.Ticks[-1] - self.Ticks[0] < self.CurrentRange:
@@ -760,7 +806,7 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             wx.CallAfter(self.NewDataAvailable, None, True)
         event.Skip()
     
-    def InsertValue(self, iec_path, idx = None, force=False, axis3D=False):
+    def InsertValue(self, iec_path, idx = None, force=False):
         if idx is None:
             idx = self.Table.GetNumberRows()
         for item in self.Table.GetData():
@@ -774,17 +820,71 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
                 self.GraphicsAxes.append({
                     "items": [item],
                     "axes": None,
-                    "type": "y",
+                    "type": GRAPH_PARALLEL,
                     "plots": []})
-            item.SetAxis3D(int(axis3D))
             self.ResetGraphics()
             self.RefreshGrid()
+    
+    def MergeGraphs(self, source, target_infos, merge_type, force=False):
+        source_item = None
+        for item in self.Table.GetData():
+            if item.GetVariable() == source:
+                source_item = item
+        if source_item is None:
+            item = VariableTableItem(self, source)
+            if item.IsNumVariable():
+                result = self.AddDataConsumer(source.upper(), item)
+                if result is not None or force:
+                    self.Table.InsertItem(self.Table.GetNumberRows(), item)
+                    source_item = item
+        if source_item is not None:
+            source_infos = None
+            for infos in self.GraphicsAxes:
+                if source_item in infos["items"]:
+                    source_infos = infos
+                    break
+            if target_infos is None and source_infos is None:
+                self.GraphicsAxes.append({
+                    "items": [source_item],
+                    "axes": None,
+                    "type": GRAPH_PARALLEL,
+                    "plots": []})
+                
+                self.ResetGraphics()
+                self.RefreshGrid()
+            
+            elif target_infos is not None:
+                if (merge_type == GRAPH_PARALLEL and target_infos["type"] != merge_type or
+                    merge_type == GRAPH_ORTHOGONAL and 
+                    (target_infos["type"] == GRAPH_PARALLEL and len(target_infos["items"]) > 1 or
+                     target_infos["type"] == GRAPH_ORTHOGONAL and len(target_infos["items"]) >= 3)):
+                    return
+                
+                if source_infos is not None:
+                    source_infos["items"].remove(source_item)
+                    if len(source_infos["items"]) == 0:
+                        self.GraphicsAxes.remove(source_infos)
+                
+                target_infos["items"].append(source_item)
+                target_infos["type"] = merge_type
+                
+                self.ResetGraphics()
+                self.RefreshGrid()
             
     def GetDebugVariables(self):
         return [item.GetVariable() for item in self.Table.GetData()]
     
-    def GetAxis3D(self):
-        return [item.GetVariable() for item in self.Table.GetData() if item.GetAxis3D()]
+    def OnGraphicsCanvasClick(self, event):
+        for infos in self.GraphicsAxes:
+            if infos["axes"] == event.inaxes:
+                if len(infos["items"]) == 1:
+                    data = wx.TextDataObject(str((infos["items"][0].GetVariable(), "debug")))
+                    dragSource = wx.DropSource(self.GraphicsCanvas)
+                    dragSource.SetData(data)
+                    dragSource.DoDragDrop()
+                    if self.GraphicsCanvas.HasCapture():
+                        self.GraphicsCanvas.ReleaseMouse()
+                break
     
     def ResetGraphicsValues(self):
         self.Ticks = numpy.array([])
@@ -796,36 +896,26 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
         if USE_MPL:
             self.GraphicsFigure.clear()
             
-            axes_num = len(self.GraphicsAxes)
-            for idx in xrange(axes_num):
-                if idx == 0:
-                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1)
+            axes_num = 0
+            for infos in self.GraphicsAxes:
+                if infos["type"] != GRAPH_ORTHOGONAL or len(infos["items"]) < 3:
+                    axes_num += 1
+            if axes_num == len(self.GraphicsAxes):
+                self.Graphics3DCanvas.Hide()
+            else:
+                self.Graphics3DCanvas.Show()
+            self.GraphicsPanelSizer.Layout()
+            idx = 1
+            for infos in self.GraphicsAxes:
+                if infos["type"] != GRAPH_ORTHOGONAL or len(infos["items"]) < 3:
+                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx)
+                    infos["axes"] = axes
                 else:
-                    axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx + 1, sharex=self.GraphicsAxes[0]["axes"])
-                self.GraphicsAxes[idx]["axes"] = axes
-                self.GraphicsAxes[idx]["plots"] = []
-            
+                    infos["axes"] = self.Graphics3DAxes
+                infos["plots"] = []
+                idx += 1
             self.RefreshGraphicsCanvasWindowScrollbars()
             self.GraphicsCanvas.draw()
-            
-            self.Reset3DGraphics()
-    
-    def Reset3DGraphics(self):
-        self.Axis3DValues = None
-        axis = [item for item in self.Table.GetData() if item.GetAxis3D()]
-        if len(axis) == 3:
-            max_tick = None
-            xaxis, yaxis, zaxis = [item.GetData() for item in axis]
-            if len(xaxis) > 0 and len(yaxis) > 0 and len(zaxis) > 0:
-                max_tick = max(xaxis[0, 0], yaxis[0, 0], zaxis[0, 0])
-            if max_tick is not None:
-                self.Axis3DValues = (axis, max_tick)
-            else:
-                self.Axis3DValues = (axis, 0)
-            self.Graphics3DCanvas.Show()
-        else:
-            self.Graphics3DCanvas.Hide()
-        self.GraphicsPanelSizer.Layout()
     
     def OnGraphics3DMotion(self, event):
         current_time = gettime()
@@ -836,7 +926,7 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
     def RefreshGraphicsCanvasWindowScrollbars(self):
         xstart, ystart = self.GraphicsCanvasWindow.GetViewStart()
         window_size = self.GraphicsCanvasWindow.GetClientSize()
-        vwidth, vheight = (window_size[0], (len(self.GraphicsAxes) + 1) * 50)
+        vwidth, vheight = (window_size[0], (len(self.GraphicsAxes) + 1) * 100)
         self.GraphicsCanvas.SetMinSize(wx.Size(vwidth, vheight))
         posx = max(0, min(xstart, (vwidth - window_size[0]) / SCROLLBAR_UNIT))
         posy = max(0, min(ystart, (vheight - window_size[1]) / SCROLLBAR_UNIT))
