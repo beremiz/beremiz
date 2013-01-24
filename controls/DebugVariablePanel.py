@@ -272,21 +272,21 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                     row = self.ParentWindow.Table.GetNumberRows()
                 self.ParentWindow.InsertValue(values[0], row, force=True)
             else:
-                x, y = self.ParentWindow.GraphicsCanvasWindow.CalcUnscrolledPosition(x, y)
                 width, height = self.ParentWindow.GraphicsCanvas.GetSize()
                 target = None
                 merge_type = GRAPH_PARALLEL
                 for infos in self.ParentWindow.GraphicsAxes:
-                    ax, ay, aw, ah = infos["axes"].get_position().bounds
-                    rect = wx.Rect(ax * width, height - (ay + ah) * height,
-                                   aw * width, ah * height)
-                    if rect.InsideXY(x, y):
-                        target = infos
-                        merge_rect = wx.Rect(ax * width, height - (ay + ah) * height,
-                                             aw * width / 2., ah * height)
-                        if merge_rect.InsideXY(x, y):
-                            merge_type = GRAPH_ORTHOGONAL
-                        break
+                    if infos["axes"] != self.ParentWindow.Graphics3DAxes:
+                        ax, ay, aw, ah = infos["axes"].get_position().bounds
+                        rect = wx.Rect(ax * width, height - (ay + ah) * height,
+                                       aw * width, ah * height)
+                        if rect.InsideXY(x, y):
+                            target = infos
+                            merge_rect = wx.Rect(ax * width, height - (ay + ah) * height,
+                                                 aw * width / 2., ah * height)
+                            if merge_rect.InsideXY(x, y):
+                                merge_type = GRAPH_ORTHOGONAL
+                            break
                 self.ParentWindow.MergeGraphs(values[0], target, merge_type, force=True)
             
     def ShowMessage(self, message):
@@ -853,11 +853,12 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
                 self.ResetGraphics()
                 self.RefreshGrid()
             
-            elif target_infos is not None:
+            elif target_infos is not None and target_infos != source_infos:
                 if (merge_type == GRAPH_PARALLEL and target_infos["type"] != merge_type or
                     merge_type == GRAPH_ORTHOGONAL and 
                     (target_infos["type"] == GRAPH_PARALLEL and len(target_infos["items"]) > 1 or
                      target_infos["type"] == GRAPH_ORTHOGONAL and len(target_infos["items"]) >= 3)):
+                    print "Graphs not compatible"
                     return
                 
                 if source_infos is not None:
@@ -871,6 +872,9 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
                 self.ResetGraphics()
                 self.RefreshGrid()
             
+            else:
+                print "No modification to do"
+            
     def GetDebugVariables(self):
         return [item.GetVariable() for item in self.Table.GetData()]
     
@@ -879,7 +883,7 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
             if infos["axes"] == event.inaxes:
                 if len(infos["items"]) == 1:
                     data = wx.TextDataObject(str((infos["items"][0].GetVariable(), "debug")))
-                    dragSource = wx.DropSource(self.GraphicsCanvas)
+                    dragSource = wx.DropSource(self)
                     dragSource.SetData(data)
                     dragSource.DoDragDrop()
                     if self.GraphicsCanvas.HasCapture():
@@ -910,10 +914,10 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
                 if infos["type"] != GRAPH_ORTHOGONAL or len(infos["items"]) < 3:
                     axes = self.GraphicsFigure.add_subplot(axes_num, 1, idx)
                     infos["axes"] = axes
+                    idx += 1
                 else:
                     infos["axes"] = self.Graphics3DAxes
                 infos["plots"] = []
-                idx += 1
             self.RefreshGraphicsCanvasWindowScrollbars()
             self.GraphicsCanvas.draw()
     
@@ -926,7 +930,11 @@ class DebugVariablePanel(wx.SplitterWindow, DebugViewer):
     def RefreshGraphicsCanvasWindowScrollbars(self):
         xstart, ystart = self.GraphicsCanvasWindow.GetViewStart()
         window_size = self.GraphicsCanvasWindow.GetClientSize()
-        vwidth, vheight = (window_size[0], (len(self.GraphicsAxes) + 1) * 100)
+        axes_num = 0
+        for infos in self.GraphicsAxes:
+            if infos["type"] != GRAPH_ORTHOGONAL or len(infos["items"]) < 3:
+                axes_num += 1
+        vwidth, vheight = (window_size[0], (axes_num + 1) * 80)
         self.GraphicsCanvas.SetMinSize(wx.Size(vwidth, vheight))
         posx = max(0, min(xstart, (vwidth - window_size[0]) / SCROLLBAR_UNIT))
         posy = max(0, min(ystart, (vheight - window_size[1]) / SCROLLBAR_UNIT))
