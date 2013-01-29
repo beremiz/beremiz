@@ -65,6 +65,7 @@ class PLCObject(pyro.ObjBase):
         self.statuschange = statuschange
         self.hmi_frame = None
         self.website = website
+        self._loading_error = None
         
         # Get the last transfered PLC if connector must be restart
         try:
@@ -86,15 +87,20 @@ class PLCObject(pyro.ObjBase):
     def GetLogCount(self):
         if self._GetLogCount is not None :
             return int(self._GetLogCount())
+        elif self._loading_error is not None:
+            return 1;
+
 
     def GetLogMessage(self, msgid):
-        maxsz = len(self._log_read_buffer)-1
-        sz = self._GetLogMessage(msgid, self._log_read_buffer, maxsz)
-        if sz and sz <= maxsz:
-            self._log_read_buffer[sz] = '\x00'
-            return self._log_read_buffer.value
-        else :
-            return None
+        if self._GetLogMessage is not None:
+            maxsz = len(self._log_read_buffer)-1
+            sz = self._GetLogMessage(msgid, self._log_read_buffer, maxsz)
+            if sz and sz <= maxsz:
+                self._log_read_buffer[sz] = '\x00'
+                return self._log_read_buffer.value
+        elif self._loading_error is not None :
+            return self._loading_error
+        return None
 
     def _GetMD5FileName(self):
         return os.path.join(self.workingdir, "lasttransferedPLC.md5")
@@ -175,9 +181,11 @@ class PLCObject(pyro.ObjBase):
             self._GetLogMessage.restype = ctypes.c_uint32
             self._GetLogMessage.argtypes = [ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32]
 
+            self._loading_error = None
             return True
         except:
-            PLCprint(traceback.format_exc())
+            self._loading_error = traceback.format_exc()
+            PLCprint(self._loading_error)
             return False
 
     def _FreePLC(self):
@@ -199,7 +207,7 @@ class PLCObject(pyro.ObjBase):
         self._PythonIterator = lambda:""
         self._GetLogCount = None 
         self._LogMessage = lambda m,s:PLCprint("OFF LOG :"+m)
-        self._GetLogMessage = lambda i,b,s:None
+        self._GetLogMessage = None
         self.PLClibraryHandle = None
         # Unload library explicitely
         if getattr(self,"_PLClibraryHandle",None) is not None:

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Python xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="py_ext_xsd.xsd">
+<![CDATA[import threading
+
+MyT = None
+Stop = False
+
+def DoLog():
+    global MyT,Stop
+    MyT=threading.Timer(0.03, DoLog)
+    if not Stop : MyT.start()
+    Stop = False
+    PLCObject.LogMessage("Python side Logging")
+
+def StopLog():
+    global MyT,Stop
+    Stop=True
+    if MyT is not None: MyT.cancel()
+
+_runtime_begin.append(DoLog)
+_runtime_cleanup.append(StopLog)
+]]>
+</Python>

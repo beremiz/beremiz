@@ -942,7 +942,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for infos, (start_row, start_col) in chunk_infos:
             start = (from_location[0] - start_row, from_location[1] - start_col)
             end = (to_location[0] - start_row, to_location[1] - start_col)
-            #print from_location, to_location, start_row, start_col, start, end
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
     
@@ -1079,14 +1078,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def UpdatePLCLog(self, log_count):
         if log_count and self.previous_log_count != log_count:
-            #self.logger.write("Now log count is "+repr(log_count)+"\n")
+            # XXX replace dump to console with dedicated log panel.
             to_console = ['']
-            for msgidx in xrange(log_count-1, self.previous_log_count - 1 if self.previous_log_count is not None else 0,-1): 
+            dump_end = max( # request message sent after the last one we already got
+                self.previous_log_count - 1 if self.previous_log_count is not None else -1,
+                log_count - 100) # 100 is purely arbitrary number
+                # dedicated panel should only ask for a small range, 
+                # depending on how user navigate in the panel
+                # and only ask for last one in follow mode
+            for msgidx in xrange(log_count-1, dump_end,-1):
                 msg = self._connector.GetLogMessage(msgidx)
                 if msg is not None :
                     to_console.insert(0, '#' + repr(msgidx) + ": " + msg)
                 else:
-                    #self.logger.write(repr(msgidx) + " : GetLogMessage returned None\n")
                     to_console.insert(0, 'No log before #'+repr(msgidx))
                     break;
             self.logger.write("\n".join(to_console))
@@ -1143,7 +1147,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
                     # This variable is not needed anymore!
-                    #print "Unused : " + IECPath
                     IECPathsToPop.append(IECPath)
                 elif IECPath != "__tick__":
                     # Convert 
@@ -1166,9 +1169,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
             self.IECdebug_lock.release()
-            
-            #for IEC_path, IECdebug_data in self.IECdebug_datas.iteritems():
-            #    print IEC_path, IECdebug_data[0].keys()
 
     def ReArmDebugRegisterTimer(self):
         if self.DebugTimer is not None:
@@ -1213,7 +1213,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return IECdebug_data[1]
 
     def UnsubscribeDebugIECVariable(self, IECPath, callableobj):
-        #print "Unsubscribe", IECPath, callableobj
         self.IECdebug_lock.acquire()
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is not None:
@@ -1265,7 +1264,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             WeakCallableDict, data_log, status, fvalue = data_tuple
             #data_log.append((debug_tick, value))
             for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
-                #print weakcallable, value, args, kwargs
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
                     if status == "Forced" and cargs[1] == fvalue:
@@ -1295,7 +1293,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 plc_status = None
             debug_getvar_retry += 1
-            #print debug_tick, debug_vars
             if plc_status == "Started":
                 self.IECdebug_lock.acquire()
                 if len(debug_vars) == len(self.TracedIECPath):
@@ -1333,6 +1330,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugThread = None
 
     def _connect_debug(self): 
+        self.previous_plcstate = None
+        self.previous_log_count = None
         if self.AppFrame:
             self.AppFrame.ResetGraphicViewers()
         self.RegisterDebugVarToConnector()
@@ -1511,6 +1510,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.logger.write_error(_("Transfer failed\n"))
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
+
+        self.previous_log_count = None
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
