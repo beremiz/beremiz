@@ -322,7 +322,7 @@ void inline copy_from_log(uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(buf, &LogBuff[buffpos], size);
     }else{
-        uint32_t remaining = LOG_BUFFER_SIZE - buffpos - 1; 
+        uint32_t remaining = LOG_BUFFER_SIZE - buffpos; 
         memcpy(buf, &LogBuff[buffpos], remaining);
         memcpy(buf + remaining, LogBuff, size - remaining);
     }
@@ -387,27 +387,24 @@ uint32_t GetLogCount(){
 uint32_t GetLogMessage(uint32_t msgidx, char* buf, uint32_t max_size){
     uint64_t cursor = LogCursor;
     if(cursor){
-        /* feeding cursor values */
-        uint32_t curbuffpos = (uint32_t)cursor;
-        uint32_t curmsgidx = (cursor >> 32);
-
         /* seach cursor */
-        uint32_t stailpos = (curbuffpos - sizeof(mTail)) & LOG_BUFFER_MASK; 
+        uint32_t stailpos = (uint32_t)cursor; 
         uint32_t smsgidx;
         mTail tail;
-        tail.msgidx = curmsgidx;
+        tail.msgidx = cursor >> 32;
+        tail.msgsize = 0;
 
         /* Message search loop */
         do {
             smsgidx = tail.msgidx;
-            copy_from_log(stailpos, &tail, sizeof(mTail));
             stailpos = (stailpos - sizeof(mTail) - tail.msgsize ) & LOG_BUFFER_MASK;
-        }while(tail.msgidx == smsgidx - 1 && tail.msgidx > msgidx);
+            copy_from_log(stailpos, &tail, sizeof(mTail));
+        }while((tail.msgidx == smsgidx - 1) && (tail.msgidx > msgidx));
 
         if(tail.msgidx == msgidx){
             uint32_t sbuffpos = (stailpos - tail.msgsize ) & LOG_BUFFER_MASK; 
-            uint32_t totalsize = tail.msgsize + sizeof(mTail);
-            copy_from_log(stailpos, &tail, totalsize > max_size ? max_size : totalsize);
+            uint32_t totalsize = tail.msgsize; /*sizeof(mTail);*/
+            copy_from_log(sbuffpos, buf, totalsize > max_size ? max_size : totalsize);
             return totalsize;
         }
     }

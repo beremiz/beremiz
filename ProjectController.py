@@ -113,7 +113,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
-        self.previous_log_count = -1
+        self.previous_log_count = None
         # copy ConfNodeMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
@@ -1077,11 +1077,26 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._builder = None
         self.CompareLocalAndRemotePLC()
 
-    ############# Real PLC object access #############
+    def UpdatePLCLog(self, log_count):
+        if log_count and self.previous_log_count != log_count:
+            #self.logger.write("Now log count is "+repr(log_count)+"\n")
+            to_console = ['']
+            for msgidx in xrange(log_count-1, self.previous_log_count - 1 if self.previous_log_count is not None else 0,-1): 
+                msg = self._connector.GetLogMessage(msgidx)
+                if msg is not None :
+                    to_console.insert(0, '#' + repr(msgidx) + ": " + msg)
+                else:
+                    #self.logger.write(repr(msgidx) + " : GetLogMessage returned None\n")
+                    to_console.insert(0, 'No log before #'+repr(msgidx))
+                    break;
+            self.logger.write("\n".join(to_console))
+            self.previous_log_count = log_count
+
     def UpdateMethodsFromPLCStatus(self):
         status = None
         if self._connector is not None:
             status, log_count = self._connector.GetPLCstatus()
+            self.UpdatePLCLog(log_count)
         if status is None:
             self._connector = None
             status = "Disconnected"
@@ -1103,9 +1118,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
             return True
-        if(self.previous_log_count != log_count):
-            self.logger.write("Now log count is %d"%log_count)
-            self.previous_log_count = log_count
         return False
     
     def PullPLCStatusProc(self, event):
