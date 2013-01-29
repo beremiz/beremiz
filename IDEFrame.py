@@ -946,11 +946,10 @@ class IDEFrame(wx.Frame):
                 self.DeleteAllPages()
                 
             if self.EnableDebug:
-                try:
-                    for variable in project.get("debug_vars", []):
-                        self.DebugVariablePanel.InsertValue(variable, force=True)
-                except:
-                    self.DebugVariablePanel.ResetGrid()
+                #try:
+                self.DebugVariablePanel.SetDebugVariables(project.get("debug_vars", []))
+                #except:
+                #    self.DebugVariablePanel.ResetView()
             
 #-------------------------------------------------------------------------------
 #                               General Functions
@@ -1120,7 +1119,7 @@ class IDEFrame(wx.Frame):
         self.LibraryPanel.ResetTree()
         self.LibraryPanel.SetController(None)
         if self.EnableDebug:
-            self.DebugVariablePanel.ResetGrid()
+            self.DebugVariablePanel.ResetView()
         self.Controler = None
 
     def OnCloseTabMenu(self, event):
