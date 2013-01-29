@@ -8,7 +8,7 @@
               productVersion="1"
               creationDateTime="2013-01-29T14:01:00"/>
   <contentHeader name="Unnamed"
-                 modificationDateTime="2013-01-29T15:56:10">
+                 modificationDateTime="2013-01-29T21:30:36">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -301,7 +301,7 @@ TRIG0:=TRIG;
     <configurations>
       <configuration name="config">
         <resource name="resource1">
-          <task name="blob" interval="T#1ms" priority="0">
+          <task name="blob" interval="T#10ms" priority="0">
             <pouInstance name="blub" typeName="program0"/>
           </task>
         </resource>
