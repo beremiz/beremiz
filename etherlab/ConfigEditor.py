@@ -41,6 +41,8 @@ def GetVariablesTableColnames():
 class NodeEditor(ConfTreeNodeEditor):
     
     ID = ID_NODEEDITOR
+    CONFNODEEDITOR_TABS = [
+        (_("Ethercat node"), "_create_EthercatNodeEditor")]
     
     def _init_coll_MainSizer_Items(self, parent):
         parent.AddSizer(self.SlaveInfosDetailsSizer, 0, border=5, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
@@ -77,59 +79,59 @@ class NodeEditor(ConfTreeNodeEditor):
         self._init_coll_SlaveInfosDetailsSizer_Growables(self.SlaveInfosDetailsSizer)
         self._init_coll_SlaveInfosDetailsSizer_Items(self.SlaveInfosDetailsSizer)
         
-        self.ConfNodeEditor.SetSizer(self.MainSizer)
+        self.EthercatNodeEditor.SetSizer(self.MainSizer)
 
-    def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = wx.ScrolledWindow(id=-1, name='SlavePanel', parent=prnt,
+    def _create_EthercatNodeEditor(self, prnt):
+        self.EthercatNodeEditor = wx.ScrolledWindow(id=-1, name='SlavePanel', parent=prnt,
               size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
-        self.ConfNodeEditor.Bind(wx.EVT_SIZE, self.OnConfNodeEditorResize)
+        self.EthercatNodeEditor.Bind(wx.EVT_SIZE, self.OnEthercatNodeEditorResize)
         
         self.VendorLabel = wx.StaticText(id=ID_NODEEDITORVENDORLABEL,
-              label=_('Vendor:'), name='VendorLabel', parent=self.ConfNodeEditor,
+              label=_('Vendor:'), name='VendorLabel', parent=self.EthercatNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.Vendor = wx.TextCtrl(id=ID_NODEEDITORVENDOR, value='',
-              name='Vendor', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
+              name='Vendor', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.ProductCodeLabel = wx.StaticText(id=ID_NODEEDITORPRODUCTCODELABEL,
-              label=_('Product code:'), name='ProductCodeLabel', parent=self.ConfNodeEditor,
+              label=_('Product code:'), name='ProductCodeLabel', parent=self.EthercatNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.ProductCode = wx.TextCtrl(id=ID_NODEEDITORPRODUCTCODE, value='',
-              name='ProductCode', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
+              name='ProductCode', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.RevisionNumberLabel = wx.StaticText(id=ID_NODEEDITORREVISIONNUMBERLABEL,
-              label=_('Revision number:'), name='RevisionNumberLabel', parent=self.ConfNodeEditor,
+              label=_('Revision number:'), name='RevisionNumberLabel', parent=self.EthercatNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.RevisionNumber = wx.TextCtrl(id=ID_NODEEDITORREVISIONNUMBER, value='',
-              name='RevisionNumber', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
+              name='RevisionNumber', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.PhysicsLabel = wx.StaticText(id=ID_NODEEDITORPHYSICSLABEL,
-              label=_('Physics:'), name='PhysicsLabel', parent=self.ConfNodeEditor,
+              label=_('Physics:'), name='PhysicsLabel', parent=self.EthercatNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.Physics = wx.TextCtrl(id=ID_NODEEDITORPHYSICS, value='',
-              name='Physics', parent=self.ConfNodeEditor, pos=wx.Point(0, 0),
+              name='Physics', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
               size=wx.Size(0, 24), style=wx.TE_READONLY)
         
         self.SyncManagersLabel =  wx.StaticText(id=ID_NODEEDITORSYNCMANAGERSLABEL,
-              label=_('Sync managers:'), name='SyncManagersLabel', parent=self.ConfNodeEditor,
+              label=_('Sync managers:'), name='SyncManagersLabel', parent=self.EthercatNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.SyncManagersGrid = CustomGrid(id=ID_NODEEDITORSYNCMANAGERSGRID,
-              name='SyncManagersGrid', parent=self.ConfNodeEditor, pos=wx.Point(0, 0), 
+              name='SyncManagersGrid', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0), 
               size=wx.Size(0, 200), style=wx.VSCROLL)
         
         self.VariablesLabel =  wx.StaticText(id=ID_NODEEDITORVARIABLESLABEL,
-              label=_('Variable entries:'), name='VariablesLabel', parent=self.ConfNodeEditor,
+              label=_('Variable entries:'), name='VariablesLabel', parent=self.EthercatNodeEditor,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         
         self.VariablesGrid = wx.gizmos.TreeListCtrl(id=ID_NODEEDITORVARIABLESGRID,
-              name='VariablesGrid', parent=self.ConfNodeEditor, pos=wx.Point(0, 0), 
+              name='VariablesGrid', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0), 
               size=wx.Size(0, 400), style=wx.TR_DEFAULT_STYLE |
                                           wx.TR_ROW_LINES |
                                           wx.TR_COLUMN_LINES |
@@ -138,6 +140,8 @@ class NodeEditor(ConfTreeNodeEditor):
         self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN, self.OnVariablesGridLeftClick)
                 
         self._init_sizers()
+    
+        return self.EthercatNodeEditor
     
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
@@ -259,15 +263,15 @@ class NodeEditor(ConfTreeNodeEditor):
             
         event.Skip()
 
-    def OnConfNodeEditorResize(self, event):
-        self.ConfNodeEditor.GetBestSize()
-        xstart, ystart = self.ConfNodeEditor.GetViewStart()
-        window_size = self.ConfNodeEditor.GetClientSize()
-        maxx, maxy = self.ConfNodeEditor.GetMinSize()
+    def OnEthercatNodeEditorResize(self, event):
+        self.EthercatNodeEditor.GetBestSize()
+        xstart, ystart = self.EthercatNodeEditor.GetViewStart()
+        window_size = self.EthercatNodeEditor.GetClientSize()
+        maxx, maxy = self.EthercatNodeEditor.GetMinSize()
         posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
-        self.ConfNodeEditor.Scroll(posx, posy)
-        self.ConfNodeEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
+        self.EthercatNodeEditor.Scroll(posx, posy)
+        self.EthercatNodeEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
 
