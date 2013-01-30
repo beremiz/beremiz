@@ -273,7 +273,12 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                 target_idx = self.ParentControl.GetIndex()
                 merge_type = GRAPH_PARALLEL
                 if self.ParentControl.Is3DCanvas():
-                    self.ParentWindow.InsertValue(values[0], target_idx, force=True)
+                    if y > height / 2:
+                        target_idx += 1
+                    if len(values) > 2 and values[2] == "move":
+                        self.ParentWindow.MoveGraph(values[0], target_idx)
+                    else:
+                        self.ParentWindow.InsertValue(values[0], target_idx, force=True)
                 else:
                     ax, ay, aw, ah = self.ParentControl.Axes.get_position().bounds
                     rect = wx.Rect(ax * width, height - (ay + ah) * height,
@@ -285,7 +290,14 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                             merge_type = GRAPH_ORTHOGONAL
                         wx.CallAfter(self.ParentWindow.MergeGraphs, values[0], target_idx, merge_type, force=True)
                     else:
-                        self.ParentWindow.InsertValue(values[0], target_idx, force=True)
+                        if y > height / 2:
+                            target_idx += 1
+                        if len(values) > 2 and values[2] == "move":
+                            self.ParentWindow.MoveGraph(values[0], target_idx)
+                        else:
+                            self.ParentWindow.InsertValue(values[0], target_idx, force=True)
+            elif len(values) > 2 and values[2] == "move":
+                self.ParentWindow.MoveGraph(values[0])
             else:
                 self.ParentWindow.InsertValue(values[0], force=True)
             
@@ -572,23 +584,40 @@ if USE_MPL:
                 button_sizer.AddWindow(button, border=5, flag=wx.LEFT)
     
         def OnCanvasClick(self, event):
+            x, y = event.GetPosition()
+            width, height = self.Canvas.GetSize()
             if len(self.Items) == 1:
-                width, height = self.Canvas.GetSize()
-                x, y = event.GetPosition()
                 ax, ay, aw, ah = self.Axes.get_position().bounds
                 rect = wx.Rect(ax * width, height - (ay + ah) * height,
                                aw * width, ah * height)
                 if rect.InsideXY(x, y):
-                    data = wx.TextDataObject(str((self.Items[0].GetVariable(), "debug")))
-                    dragSource = wx.DropSource(self.Canvas)
-                    dragSource.SetData(data)
-                    dragSource.DoDragDrop()
+                    self.DoDragDrop(0)
+                    return
+            elif self.Legend is not None:
+                item_idx = None
+                for i, t in enumerate(self.Legend.get_texts()):
+                    (x0, y0), (x1, y1) = t.get_window_extent().get_points()
+                    rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
+                    if rect.InsideXY(x, y):
+                        item_idx = i
+                        break
+                if item_idx is not None:
+                    self.DoDragDrop(item_idx)
+                    return
+            event.Skip()
         
+        def DoDragDrop(self, item_idx):
+            data = wx.TextDataObject(str((self.Items[item_idx].GetVariable(), "debug", "move")))
+            dragSource = wx.DropSource(self.Canvas)
+            dragSource.SetData(data)
+            dragSource.DoDragDrop()
+            
         def OnMotion(self, event):
-            current_time = gettime()
-            if current_time - self.LastMotionTime > REFRESH_PERIOD:
-                self.LastMotionTime = current_time
-                Axes3D._on_move(self.Axes, event)
+            if self.Is3DCanvas():
+                current_time = gettime()
+                if current_time - self.LastMotionTime > REFRESH_PERIOD:
+                    self.LastMotionTime = current_time
+                    Axes3D._on_move(self.Axes, event)
         
         def OnSplitButton(self, event):
             if len(self.Items) == 2 or self.GraphType == GRAPH_ORTHOGONAL:
@@ -713,16 +742,17 @@ if USE_MPL:
                 self.Axes.set_xlim(x_min, x_max)
                 self.Axes.set_ylim(y_min, y_max)
             
-            labels = ["%s: %s" % (item.GetVariable(), item.GetValue())
+            labels = ["%s: %s" % (item.GetVariable(40), item.GetValue())
                       for item in self.Items]
             colors = [{True: 'b', False: 'k'}[item.IsForced()] for item in self.Items]
             if self.GraphType == GRAPH_PARALLEL:
-                legend = self.Axes.legend(self.Plots, labels, 
+                self.Legend = self.Axes.legend(self.Plots, labels, 
                     loc="upper left", frameon=False,
                     prop={'size':'small'})
-                for t, color in zip(legend.get_texts(), colors):
+                for t, color in zip(self.Legend.get_texts(), colors):
                     t.set_color(color)
             else:
+                self.Legend = None
                 self.Axes.set_xlabel(labels[0], fontdict={'size':'small','color':colors[0]})
                 self.Axes.set_ylabel(labels[1], fontdict={'size':'small','color':colors[1]})
                 if len(labels) > 2:
@@ -1157,6 +1187,29 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             else:
                 self.Table.InsertItem(idx, item)
             
+            self.RefreshView()
+    
+    def MoveGraph(self, iec_path, idx = None):
+        if idx is None:
+            idx = len(self.GraphicPanels)
+        source_panel = None
+        item = None
+        for panel in self.GraphicPanels:
+            item = panel.GetItem(iec_path)
+            if item is not None:
+                source_panel = panel
+                break
+        if source_panel is not None:
+            source_panel.RemoveItem(item)
+            if source_panel.IsEmpty():
+                if source_panel.Canvas.HasCapture():
+                    source_panel.Canvas.ReleaseMouse()
+                self.GraphicPanels.remove(source_panel)
+                source_panel.Destroy()
+            
+            panel = DebugVariableGraphic(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
+            self.GraphicPanels.insert(idx, panel)
+            self.RefreshGraphicsSizer()
             self.RefreshView()
     
     def SplitGraphs(self, source_panel, item=None):
