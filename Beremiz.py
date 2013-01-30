@@ -774,8 +774,6 @@ class Beremiz(IDEFrame):
             getattr(self.CTR, method)()
             # Re-enable button 
             event.GetEventObject().Enable()
-            # Trigger refresh on Idle
-            wx.CallAfter(self.RefreshStatusToolBar)
         return OnMenu
     
     def GetConfigEntry(self, entry_name, default):
