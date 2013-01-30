@@ -25,7 +25,7 @@ from graphics import DebugViewer
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
-from targets.typemapping import DebugTypesSize
+from targets.typemapping import DebugTypesSize, LogLevelsCount, LogLevels
 from ConfigTreeNode import ConfigTreeNode
 
 base_folder = os.path.split(sys.path[0])[0]
@@ -113,7 +113,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
-        self.previous_log_count = None
+        self.previous_log_count = [None]*LogLevelsCount
         # copy ConfNodeMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
@@ -1077,24 +1077,26 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.CompareLocalAndRemotePLC()
 
     def UpdatePLCLog(self, log_count):
-        if log_count and self.previous_log_count != log_count:
-            # XXX replace dump to console with dedicated log panel.
-            to_console = ['']
-            dump_end = max( # request message sent after the last one we already got
-                self.previous_log_count - 1 if self.previous_log_count is not None else -1,
-                log_count - 100) # 100 is purely arbitrary number
-                # dedicated panel should only ask for a small range, 
-                # depending on how user navigate in the panel
-                # and only ask for last one in follow mode
-            for msgidx in xrange(log_count-1, dump_end,-1):
-                msg = self._connector.GetLogMessage(msgidx)
-                if msg is not None :
-                    to_console.insert(0, '#' + repr(msgidx) + ": " + msg)
-                else:
-                    to_console.insert(0, 'No log before #'+repr(msgidx))
-                    break;
-            self.logger.write("\n".join(to_console))
-            self.previous_log_count = log_count
+        if log_count :
+            for level, count, prev in zip(xrange(LogLevelsCount), log_count,self.previous_log_count):
+                if count is not None and prev != count:
+                    # XXX replace dump to console with dedicated log panel.
+                    to_console = ['']
+                    dump_end = max( # request message sent after the last one we already got
+                        prev - 1 if prev is not None else -1,
+                        count - 100) # 100 is purely arbitrary number
+                        # dedicated panel should only ask for a small range, 
+                        # depending on how user navigate in the panel
+                        # and only ask for last one in follow mode
+                    for msgidx in xrange(count-1, dump_end,-1):
+                        msg = self._connector.GetLogMessage(level, msgidx)
+                        if msg is not None :
+                            to_console.insert(0, LogLevels[level]+ ':#' + repr(msgidx) + ": " + msg)
+                        else:
+                            to_console.insert(0, LogLevels[level]+ ': No log before #'+repr(msgidx))
+                            break;
+                    self.logger.write("\n".join(to_console))
+                    self.previous_log_count[level] = count
 
     def UpdateMethodsFromPLCStatus(self):
         status = None
@@ -1289,7 +1291,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         while (not self.debug_break) and (self._connector is not None):
             Trace = self._connector.GetTraceVariables()
             if(Trace):
-                plc_status, log_count, debug_tick, debug_vars = Trace
+                plc_status, debug_tick, debug_vars = Trace
             else:
                 plc_status = None
             debug_getvar_retry += 1
@@ -1331,7 +1333,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _connect_debug(self): 
         self.previous_plcstate = None
-        self.previous_log_count = None
+        self.previous_log_count = [None]*LogLevelsCount
         if self.AppFrame:
             self.AppFrame.ResetGraphicViewers()
         self.RegisterDebugVarToConnector()
@@ -1511,7 +1513,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
 
-        self.previous_log_count = None
+        self.previous_log_count = [None]*LogLevelsCount
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 

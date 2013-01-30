@@ -25,7 +25,8 @@
 import Pyro.core as pyro
 from threading import Timer, Thread, Lock, Semaphore
 import ctypes, os, commands, types, sys
-from targets.typemapping import SameEndianessTypeTranslator as TypeTranslator
+from targets.typemapping import LogLevelsDefault, LogLevelsCount, SameEndianessTypeTranslator as TypeTranslator
+
 
 if os.name in ("nt", "ce"):
     from _ctypes import LoadLibrary as dlopen
@@ -80,25 +81,29 @@ class PLCObject(pyro.ObjBase):
         if self.statuschange is not None:
             self.statuschange(self.PLCStatus)
 
-    def LogMessage(self, msg):
-        return self._LogMessage(msg, len(msg))
+    def LogMessage(self, *args):
+        if len(args) == 2:
+            level, msg = args
+        else:
+            level = LogLevelsDefault
+            msg, = args
+        return self._LogMessage(level, msg, len(msg))
 
 
-    def GetLogCount(self):
+    def GetLogCount(self, level):
         if self._GetLogCount is not None :
-            return int(self._GetLogCount())
-        elif self._loading_error is not None:
+            return int(self._GetLogCount(level))
+        elif self._loading_error is not None and level==0:
             return 1;
 
-
-    def GetLogMessage(self, msgid):
+    def GetLogMessage(self, level, msgid):
         if self._GetLogMessage is not None:
             maxsz = len(self._log_read_buffer)-1
-            sz = self._GetLogMessage(msgid, self._log_read_buffer, maxsz)
+            sz = self._GetLogMessage(level, msgid, self._log_read_buffer, maxsz)
             if sz and sz <= maxsz:
                 self._log_read_buffer[sz] = '\x00'
                 return self._log_read_buffer.value
-        elif self._loading_error is not None :
+        elif self._loading_error is not None and level==0:
             return self._loading_error
         return None
 
@@ -171,15 +176,16 @@ class PLCObject(pyro.ObjBase):
 
             self._GetLogCount = self.PLClibraryHandle.GetLogCount
             self._GetLogCount.restype = ctypes.c_uint32
+            self._GetLogCount.argtypes = [ctypes.c_uint8]
 
             self._LogMessage = self.PLClibraryHandle.LogMessage
             self._LogMessage.restype = ctypes.c_int
-            self._LogMessage.argtypes = [ctypes.c_char_p, ctypes.c_uint32]
+            self._LogMessage.argtypes = [ctypes.c_uint8, ctypes.c_char_p, ctypes.c_uint32]
             
             self._log_read_buffer = ctypes.create_string_buffer(1<<14) #16K
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
-            self._GetLogMessage.argtypes = [ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32]
+            self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32]
 
             self._loading_error = None
             return True
@@ -206,7 +212,7 @@ class PLCObject(pyro.ObjBase):
         self._resumeDebug = lambda:None
         self._PythonIterator = lambda:""
         self._GetLogCount = None 
-        self._LogMessage = lambda m,s:PLCprint("OFF LOG :"+m)
+        self._LogMessage = lambda l,m,s:PLCprint("OFF LOG :"+m)
         self._GetLogMessage = None
         self.PLClibraryHandle = None
         # Unload library explicitely
@@ -293,8 +299,6 @@ class PLCObject(pyro.ObjBase):
         self.evaluator(self.FinishRuntimePy)
     
     def StartPLC(self):
-        PLCprint("StartPLC")
-        self.LogMessage("Hello Log")
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
             error = None
@@ -304,14 +308,15 @@ class PLCObject(pyro.ObjBase):
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 self.StartSem.acquire()
+                self.LogMessage("PLC started")
             else:
-                PLCprint(_("Problem starting PLC : error %d" % res))
+                self.LogMessage(_("Problem starting PLC : error %d" % res))
                 self.PLCStatus = "Broken"
                 self.StatusChange()
             
     def StopPLC(self):
-        PLCprint("StopPLC")
         if self.PLCStatus == "Started":
+            self.LogMessage("PLC stopped")
             self._stopPLC()
             self.PythonThread.join()
             return True
@@ -330,10 +335,10 @@ class PLCObject(pyro.ObjBase):
         return True
 
     def GetPLCstatus(self):
-        return self.PLCStatus, self.GetLogCount()
+        return self.PLCStatus, map(self.GetLogCount,xrange(LogLevelsCount))
     
     def NewPLC(self, md5sum, data, extrafiles):
-        PLCprint("NewPLC (%s)"%md5sum)
+        self.LogMessage("NewPLC (%s)"%md5sum)
         if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
@@ -451,10 +456,10 @@ class PLCObject(pyro.ObjBase):
                     self._FreeDebugData()
                 self.PLClibraryLock.release()
             if offset and offset == size.value:
-                return self.PLCStatus, self.GetLogCount(), tick.value, res
+                return self.PLCStatus, tick.value, res
             #elif size.value:
                 #PLCprint("Debug error - wrong buffer unpack ! %d != %d"%(offset, size.value))
-        return self.PLCStatus, self.GetLogCount(), None, []
+        return self.PLCStatus, None, []
 
     def RemoteExec(self, script, **kwargs):
         try:
