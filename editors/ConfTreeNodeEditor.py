@@ -143,19 +143,42 @@ class ConfTreeNodeEditor(EditorPanel):
     
     SHOW_BASE_PARAMS = True
     SHOW_PARAMS = True
-    
-    def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = None
+    CONFNODEEDITOR_TABS = []
     
     def _init_Editor(self, parent):
-        self.Editor = wx.SplitterWindow(parent,
-              style=wx.SUNKEN_BORDER|wx.SP_3D)
-        self.SetNeedUpdating(True)
-        self.SetMinimumPaneSize(1)
+        tabs_num = len(self.CONFNODEEDITOR_TABS)
+        if self.SHOW_PARAMS:
+            tabs_num += 1
+            
+        if tabs_num > 1:
+            self.Editor = wx.Panel(parent, 
+                style=wx.SUNKEN_BORDER|wx.SP_3D)
+            
+            main_sizer = wx.BoxSizer(wx.VERTICAL)
+            
+            self.ConfNodeNoteBook = wx.Notebook(self.Editor)
+            parent = self.ConfNodeNoteBook
+            main_sizer.AddWindow(self.ConfNodeNoteBook, 1, flag=wx.GROW)
+            
+            self.Editor.SetSizer(main_sizer)
+        else:
+            self.ConfNodeNoteBook = None
+            self.Editor = None
+        
+        for title, create_func_name in self.CONFNODEEDITOR_TABS:
+            editor = getattr(self, create_func_name)(parent)
+            if self.ConfNodeNoteBook is not None:
+                self.ConfNodeNoteBook.AddPage(editor, title)
+            else:
+                self.Editor = editor
         
         if self.SHOW_PARAMS:
-            self.ParamsEditor = wx.ScrolledWindow(self.Editor, 
-                  style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+            
+            panel_style = wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL
+            if self.ConfNodeNoteBook is None:
+                panel_style |= wx.SUNKEN_BORDER
+            self.ParamsEditor = wx.ScrolledWindow(parent, 
+                  style=panel_style)
             self.ParamsEditor.SetBackgroundColour(WINDOW_COLOUR)
             self.ParamsEditor.Bind(wx.EVT_SIZE, self.OnWindowResize)
             self.ParamsEditor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
@@ -221,21 +244,13 @@ class ConfTreeNodeEditor(EditorPanel):
                   flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
             
             self.RefreshConfNodeParamsSizer()
+        
+            if self.ConfNodeNoteBook is not None:
+                self.ConfNodeNoteBook.AddPage(self.ParamsEditor, _("Config"))
+            else:
+                self.Editor = self.ParamsEditor
         else:
             self.ParamsEditor = None
-        
-        self._init_ConfNodeEditor(self.Editor)
-            
-        if self.ConfNodeEditor is not None:
-            if self.ParamsEditor is not None:
-                min_size = self.ParamsEditorSizer.GetMinSize()
-                self.Editor.SplitHorizontally(self.ParamsEditor, 
-                                              self.ConfNodeEditor, 
-                                              min(min_size.height, 200))
-            else:
-                self.Editor.Initialize(self.ConfNodeEditor)
-        elif self.ParamsEditor is not None:
-            self.Editor.Initialize(self.ParamsEditor)
     
     def __init__(self, parent, controler, window, tagname=""):
         EditorPanel.__init__(self, parent, tagname, window, controler)
