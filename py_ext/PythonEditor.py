@@ -57,178 +57,181 @@ def GetCursorPos(old, new):
 class PythonEditor(ConfTreeNodeEditor):
 
     fold_symbols = 3
+    CONFNODEEDITOR_TABS = [
+        (_("Python code"), "_create_PythonCodeEditor")]
     
-    def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = stc.StyledTextCtrl(id=ID_PYTHONEDITOR, parent=prnt,
+    def _create_PythonCodeEditor(self, prnt):
+        self.PythonCodeEditor = stc.StyledTextCtrl(id=ID_PYTHONEDITOR, parent=prnt,
                  name="TextViewer", pos=wx.DefaultPosition, 
                  size=wx.DefaultSize, style=0)
-        self.ConfNodeEditor.ParentWindow = self
+        self.PythonCodeEditor.ParentWindow = self
         
-        self.ConfNodeEditor.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
-        self.ConfNodeEditor.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
+        self.PythonCodeEditor.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
+        self.PythonCodeEditor.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
 
-        self.ConfNodeEditor.SetLexer(stc.STC_LEX_PYTHON)
-        self.ConfNodeEditor.SetKeyWords(0, " ".join(keyword.kwlist))
+        self.PythonCodeEditor.SetLexer(stc.STC_LEX_PYTHON)
+        self.PythonCodeEditor.SetKeyWords(0, " ".join(keyword.kwlist))
 
-        self.ConfNodeEditor.SetProperty("fold", "1")
-        self.ConfNodeEditor.SetProperty("tab.timmy.whinge.level", "1")
-        self.ConfNodeEditor.SetMargins(0,0)
+        self.PythonCodeEditor.SetProperty("fold", "1")
+        self.PythonCodeEditor.SetProperty("tab.timmy.whinge.level", "1")
+        self.PythonCodeEditor.SetMargins(0,0)
 
-        self.ConfNodeEditor.SetViewWhiteSpace(False)
+        self.PythonCodeEditor.SetViewWhiteSpace(False)
         
-        self.ConfNodeEditor.SetEdgeMode(stc.STC_EDGE_BACKGROUND)
-        self.ConfNodeEditor.SetEdgeColumn(78)
+        self.PythonCodeEditor.SetEdgeMode(stc.STC_EDGE_BACKGROUND)
+        self.PythonCodeEditor.SetEdgeColumn(78)
 
         # Set up the numbers in the margin for margin #1
-        self.ConfNodeEditor.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
+        self.PythonCodeEditor.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         # Reasonable value for, say, 4-5 digits using a mono font (40 pix)
-        self.ConfNodeEditor.SetMarginWidth(1, 40)
+        self.PythonCodeEditor.SetMarginWidth(1, 40)
 
         # Setup a margin to hold fold markers
-        self.ConfNodeEditor.SetMarginType(2, stc.STC_MARGIN_SYMBOL)
-        self.ConfNodeEditor.SetMarginMask(2, stc.STC_MASK_FOLDERS)
-        self.ConfNodeEditor.SetMarginSensitive(2, True)
-        self.ConfNodeEditor.SetMarginWidth(2, 12)
+        self.PythonCodeEditor.SetMarginType(2, stc.STC_MARGIN_SYMBOL)
+        self.PythonCodeEditor.SetMarginMask(2, stc.STC_MASK_FOLDERS)
+        self.PythonCodeEditor.SetMarginSensitive(2, True)
+        self.PythonCodeEditor.SetMarginWidth(2, 12)
 
         if self.fold_symbols == 0:
             # Arrow pointing right for contracted folders, arrow pointing down for expanded
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_ARROWDOWN, "black", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_ARROW, "black", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_EMPTY, "black", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_EMPTY, "black", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_EMPTY,     "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY,     "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY,     "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_ARROWDOWN, "black", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_ARROW, "black", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_EMPTY, "black", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_EMPTY, "black", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_EMPTY,     "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY,     "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY,     "white", "black")
             
         elif self.fold_symbols == 1:
             # Plus for contracted folders, minus for expanded
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_MINUS, "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_PLUS,  "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_EMPTY, "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_EMPTY, "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_EMPTY, "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY, "white", "black")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY, "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_MINUS, "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_PLUS,  "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_EMPTY, "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_EMPTY, "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_EMPTY, "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY, "white", "black")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY, "white", "black")
 
         elif self.fold_symbols == 2:
             # Like a flattened tree control using circular headers and curved joins
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_CIRCLEMINUS,          "white", "#404040")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_CIRCLEPLUS,           "white", "#404040")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,                "white", "#404040")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNERCURVE,         "white", "#404040")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_CIRCLEPLUSCONNECTED,  "white", "#404040")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_CIRCLEMINUSCONNECTED, "white", "#404040")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNERCURVE,         "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_CIRCLEMINUS,          "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_CIRCLEPLUS,           "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,                "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNERCURVE,         "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_CIRCLEPLUSCONNECTED,  "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_CIRCLEMINUSCONNECTED, "white", "#404040")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNERCURVE,         "white", "#404040")
 
         elif self.fold_symbols == 3:
             # Like a flattened tree control using square headers
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_BOXMINUS,          "white", "#808080")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_BOXPLUS,           "white", "#808080")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,             "white", "#808080")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNER,           "white", "#808080")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_BOXPLUSCONNECTED,  "white", "#808080")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_BOXMINUSCONNECTED, "white", "#808080")
-            self.ConfNodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNER,           "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_BOXMINUS,          "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_BOXPLUS,           "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,             "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNER,           "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_BOXPLUSCONNECTED,  "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_BOXMINUSCONNECTED, "white", "#808080")
+            self.PythonCodeEditor.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNER,           "white", "#808080")
 
 
-        self.ConfNodeEditor.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
-        self.ConfNodeEditor.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
-        self.ConfNodeEditor.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
+        self.PythonCodeEditor.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
+        self.PythonCodeEditor.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
+        self.PythonCodeEditor.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
 
         # Global default style
         if wx.Platform == '__WXMSW__':
-            self.ConfNodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Courier New')
+            self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Courier New')
         elif wx.Platform == '__WXMAC__':
             # TODO: if this looks fine on Linux too, remove the Mac-specific case 
             # and use this whenever OS != MSW.
-            self.ConfNodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Monaco')
+            self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Monaco')
         else:
             defsize = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT).GetPointSize()
-            self.ConfNodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Courier,size:%d'%defsize)
+            self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Courier,size:%d'%defsize)
 
         # Clear styles and revert to default.
-        self.ConfNodeEditor.StyleClearAll()
+        self.PythonCodeEditor.StyleClearAll()
 
         # Following style specs only indicate differences from default.
         # The rest remains unchanged.
 
         # Line numbers in margin
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,'fore:#000000,back:#99A9C2')    
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,'fore:#000000,back:#99A9C2')    
         # Highlighted brace
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,'fore:#00009D,back:#FFFF00')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,'fore:#00009D,back:#FFFF00')
         # Unmatched brace
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,'fore:#00009D,back:#FF0000')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,'fore:#00009D,back:#FF0000')
         # Indentation guide
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_STYLE_INDENTGUIDE, "fore:#CDCDCD")
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_INDENTGUIDE, "fore:#CDCDCD")
 
         # Python styles
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_DEFAULT, 'fore:#000000')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_DEFAULT, 'fore:#000000')
         # Comments
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_COMMENTLINE,  'fore:#008000,back:#F0FFF0')
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, 'fore:#008000,back:#F0FFF0')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_COMMENTLINE,  'fore:#008000,back:#F0FFF0')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, 'fore:#008000,back:#F0FFF0')
         # Numbers
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_NUMBER, 'fore:#008080')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_NUMBER, 'fore:#008080')
         # Strings and characters
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_STRING, 'fore:#800080')
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_CHARACTER, 'fore:#800080')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_STRING, 'fore:#800080')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_CHARACTER, 'fore:#800080')
         # Keywords
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_WORD, 'fore:#000080,bold')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_WORD, 'fore:#000080,bold')
         # Triple quotes
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_TRIPLE, 'fore:#800080,back:#FFFFEA')
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_TRIPLEDOUBLE, 'fore:#800080,back:#FFFFEA')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_TRIPLE, 'fore:#800080,back:#FFFFEA')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_TRIPLEDOUBLE, 'fore:#800080,back:#FFFFEA')
         # Class names
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_CLASSNAME, 'fore:#0000FF,bold')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_CLASSNAME, 'fore:#0000FF,bold')
         # Function names
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_DEFNAME, 'fore:#008080,bold')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_DEFNAME, 'fore:#008080,bold')
         # Operators
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_OPERATOR, 'fore:#800000,bold')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_OPERATOR, 'fore:#800000,bold')
         # Identifiers. I leave this as not bold because everything seems
         # to be an identifier if it doesn't match the above criterae
-        self.ConfNodeEditor.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, 'fore:#000000')
+        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, 'fore:#000000')
 
         # Caret color
-        self.ConfNodeEditor.SetCaretForeground("BLUE")
+        self.PythonCodeEditor.SetCaretForeground("BLUE")
         # Selection background
-        self.ConfNodeEditor.SetSelBackground(1, '#66CCFF')
+        self.PythonCodeEditor.SetSelBackground(1, '#66CCFF')
 
-        self.ConfNodeEditor.SetSelBackground(True, wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT))
-        self.ConfNodeEditor.SetSelForeground(True, wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
+        self.PythonCodeEditor.SetSelBackground(True, wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT))
+        self.PythonCodeEditor.SetSelForeground(True, wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT))
         
         # register some images for use in the AutoComplete box.
         #self.RegisterImage(1, images.getSmilesBitmap())
-        self.ConfNodeEditor.RegisterImage(1, 
+        self.PythonCodeEditor.RegisterImage(1, 
             wx.ArtProvider.GetBitmap(wx.ART_DELETE, size=(16,16)))
-        self.ConfNodeEditor.RegisterImage(2, 
+        self.PythonCodeEditor.RegisterImage(2, 
             wx.ArtProvider.GetBitmap(wx.ART_NEW, size=(16,16)))
-        self.ConfNodeEditor.RegisterImage(3, 
+        self.PythonCodeEditor.RegisterImage(3, 
             wx.ArtProvider.GetBitmap(wx.ART_COPY, size=(16,16)))
 
         # Indentation and tab stuff
-        self.ConfNodeEditor.SetIndent(4)               # Proscribed indent size for wx
-        self.ConfNodeEditor.SetIndentationGuides(True) # Show indent guides
-        self.ConfNodeEditor.SetBackSpaceUnIndents(True)# Backspace unindents rather than delete 1 space
-        self.ConfNodeEditor.SetTabIndents(True)        # Tab key indents
-        self.ConfNodeEditor.SetTabWidth(4)             # Proscribed tab size for wx
-        self.ConfNodeEditor.SetUseTabs(False)          # Use spaces rather than tabs, or
+        self.PythonCodeEditor.SetIndent(4)               # Proscribed indent size for wx
+        self.PythonCodeEditor.SetIndentationGuides(True) # Show indent guides
+        self.PythonCodeEditor.SetBackSpaceUnIndents(True)# Backspace unindents rather than delete 1 space
+        self.PythonCodeEditor.SetTabIndents(True)        # Tab key indents
+        self.PythonCodeEditor.SetTabWidth(4)             # Proscribed tab size for wx
+        self.PythonCodeEditor.SetUseTabs(False)          # Use spaces rather than tabs, or
                                         # TabTimmy will complain!    
         # White space
-        self.ConfNodeEditor.SetViewWhiteSpace(False)   # Don't view white space
+        self.PythonCodeEditor.SetViewWhiteSpace(False)   # Don't view white space
 
         # EOL: Since we are loading/saving ourselves, and the
         # strings will always have \n's in them, set the STC to
         # edit them that way.            
-        self.ConfNodeEditor.SetEOLMode(wx.stc.STC_EOL_LF)
-        self.ConfNodeEditor.SetViewEOL(False)
+        self.PythonCodeEditor.SetEOLMode(wx.stc.STC_EOL_LF)
+        self.PythonCodeEditor.SetViewEOL(False)
         
         # No right-edge mode indicator
-        self.ConfNodeEditor.SetEdgeMode(stc.STC_EDGE_NONE)
+        self.PythonCodeEditor.SetEdgeMode(stc.STC_EDGE_NONE)
         
-        self.ConfNodeEditor.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
+        self.PythonCodeEditor.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
 
-        self.ConfNodeEditor.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_PYTHONEDITOR)
-        self.ConfNodeEditor.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
-        self.ConfNodeEditor.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, id=ID_PYTHONEDITOR)
-
+        self.PythonCodeEditor.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_PYTHONEDITOR)
+        self.PythonCodeEditor.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
+        self.PythonCodeEditor.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, id=ID_PYTHONEDITOR)
+        
+        return self.PythonCodeEditor
 
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
@@ -301,43 +304,43 @@ class PythonEditor(ConfTreeNodeEditor):
         
         self.ResetBuffer()
         self.DisableEvents = True
-        old_cursor_pos = self.ConfNodeEditor.GetCurrentPos()
-        old_text = self.ConfNodeEditor.GetText()
+        old_cursor_pos = self.PythonCodeEditor.GetCurrentPos()
+        old_text = self.PythonCodeEditor.GetText()
         new_text = self.Controler.GetPythonCode()
-        self.ConfNodeEditor.SetText(new_text)
+        self.PythonCodeEditor.SetText(new_text)
         new_cursor_pos = GetCursorPos(old_text, new_text)
         if new_cursor_pos != None:
-            self.ConfNodeEditor.GotoPos(new_cursor_pos)
+            self.PythonCodeEditor.GotoPos(new_cursor_pos)
         else:
-            self.ConfNodeEditor.GotoPos(old_cursor_pos)
-        self.ConfNodeEditor.ScrollToColumn(0)
-        self.ConfNodeEditor.EmptyUndoBuffer()
+            self.PythonCodeEditor.GotoPos(old_cursor_pos)
+        self.PythonCodeEditor.ScrollToColumn(0)
+        self.PythonCodeEditor.EmptyUndoBuffer()
         self.DisableEvents = False
         
-        self.ConfNodeEditor.Colourise(0, -1)
+        self.PythonCodeEditor.Colourise(0, -1)
 
     def RefreshModel(self):
-        self.Controler.SetPythonCode(self.ConfNodeEditor.GetText())
+        self.Controler.SetPythonCode(self.PythonCodeEditor.GetText())
 
     def OnKeyPressed(self, event):
-        if self.ConfNodeEditor.CallTipActive():
-            self.ConfNodeEditor.CallTipCancel()
+        if self.PythonCodeEditor.CallTipActive():
+            self.PythonCodeEditor.CallTipCancel()
         key = event.GetKeyCode()
 
         if key == 32 and event.ControlDown():
-            pos = self.ConfNodeEditor.GetCurrentPos()
+            pos = self.PythonCodeEditor.GetCurrentPos()
 
             # Code completion
             if not event.ShiftDown():
-                self.ConfNodeEditor.AutoCompSetIgnoreCase(False)  # so this needs to match
+                self.PythonCodeEditor.AutoCompSetIgnoreCase(False)  # so this needs to match
 
                 # Images are specified with a appended "?type"
-                self.ConfNodeEditor.AutoCompShow(0, " ".join([word + "?1" for word in keyword.kwlist]))
+                self.PythonCodeEditor.AutoCompShow(0, " ".join([word + "?1" for word in keyword.kwlist]))
         else:
             event.Skip()
 
     def OnKillFocus(self, event):
-        self.ConfNodeEditor.AutoCompCancel()
+        self.PythonCodeEditor.AutoCompCancel()
         event.Skip()
 
     def OnUpdateUI(self, evt):
@@ -345,11 +348,11 @@ class PythonEditor(ConfTreeNodeEditor):
         braceAtCaret = -1
         braceOpposite = -1
         charBefore = None
-        caretPos = self.ConfNodeEditor.GetCurrentPos()
+        caretPos = self.PythonCodeEditor.GetCurrentPos()
 
         if caretPos > 0:
-            charBefore = self.ConfNodeEditor.GetCharAt(caretPos - 1)
-            styleBefore = self.ConfNodeEditor.GetStyleAt(caretPos - 1)
+            charBefore = self.PythonCodeEditor.GetCharAt(caretPos - 1)
+            styleBefore = self.PythonCodeEditor.GetStyleAt(caretPos - 1)
 
         # check before
         if charBefore and chr(charBefore) in "[]{}()" and styleBefore == stc.STC_P_OPERATOR:
@@ -357,19 +360,19 @@ class PythonEditor(ConfTreeNodeEditor):
 
         # check after
         if braceAtCaret < 0:
-            charAfter = self.ConfNodeEditor.GetCharAt(caretPos)
-            styleAfter = self.ConfNodeEditor.GetStyleAt(caretPos)
+            charAfter = self.PythonCodeEditor.GetCharAt(caretPos)
+            styleAfter = self.PythonCodeEditor.GetStyleAt(caretPos)
 
             if charAfter and chr(charAfter) in "[]{}()" and styleAfter == stc.STC_P_OPERATOR:
                 braceAtCaret = caretPos
 
         if braceAtCaret >= 0:
-            braceOpposite = self.ConfNodeEditor.BraceMatch(braceAtCaret)
+            braceOpposite = self.PythonCodeEditor.BraceMatch(braceAtCaret)
 
         if braceAtCaret != -1  and braceOpposite == -1:
-            self.ConfNodeEditor.BraceBadLight(braceAtCaret)
+            self.PythonCodeEditor.BraceBadLight(braceAtCaret)
         else:
-            self.ConfNodeEditor.BraceHighlight(braceAtCaret, braceOpposite)
+            self.PythonCodeEditor.BraceHighlight(braceAtCaret, braceOpposite)
 
     def OnMarginClick(self, evt):
         # fold and unfold as needed
@@ -377,83 +380,83 @@ class PythonEditor(ConfTreeNodeEditor):
             if evt.GetShift() and evt.GetControl():
                 self.FoldAll()
             else:
-                lineClicked = self.ConfNodeEditor.LineFromPosition(evt.GetPosition())
+                lineClicked = self.PythonCodeEditor.LineFromPosition(evt.GetPosition())
 
-                if self.ConfNodeEditor.GetFoldLevel(lineClicked) & stc.STC_FOLDLEVELHEADERFLAG:
+                if self.PythonCodeEditor.GetFoldLevel(lineClicked) & stc.STC_FOLDLEVELHEADERFLAG:
                     if evt.GetShift():
-                        self.ConfNodeEditor.SetFoldExpanded(lineClicked, True)
+                        self.PythonCodeEditor.SetFoldExpanded(lineClicked, True)
                         self.Expand(lineClicked, True, True, 1)
                     elif evt.GetControl():
-                        if self.ConfNodeEditor.GetFoldExpanded(lineClicked):
-                            self.ConfNodeEditor.SetFoldExpanded(lineClicked, False)
+                        if self.PythonCodeEditor.GetFoldExpanded(lineClicked):
+                            self.PythonCodeEditor.SetFoldExpanded(lineClicked, False)
                             self.Expand(lineClicked, False, True, 0)
                         else:
-                            self.ConfNodeEditor.SetFoldExpanded(lineClicked, True)
+                            self.PythonCodeEditor.SetFoldExpanded(lineClicked, True)
                             self.Expand(lineClicked, True, True, 100)
                     else:
-                        self.ConfNodeEditor.ToggleFold(lineClicked)
+                        self.PythonCodeEditor.ToggleFold(lineClicked)
 
 
     def FoldAll(self):
-        lineCount = self.ConfNodeEditor.GetLineCount()
+        lineCount = self.PythonCodeEditor.GetLineCount()
         expanding = True
 
         # find out if we are folding or unfolding
         for lineNum in range(lineCount):
-            if self.ConfNodeEditor.GetFoldLevel(lineNum) & stc.STC_FOLDLEVELHEADERFLAG:
-                expanding = not self.ConfNodeEditor.GetFoldExpanded(lineNum)
+            if self.PythonCodeEditor.GetFoldLevel(lineNum) & stc.STC_FOLDLEVELHEADERFLAG:
+                expanding = not self.PythonCodeEditor.GetFoldExpanded(lineNum)
                 break
 
         lineNum = 0
 
         while lineNum < lineCount:
-            level = self.ConfNodeEditor.GetFoldLevel(lineNum)
+            level = self.PythonCodeEditor.GetFoldLevel(lineNum)
             if level & stc.STC_FOLDLEVELHEADERFLAG and \
                (level & stc.STC_FOLDLEVELNUMBERMASK) == stc.STC_FOLDLEVELBASE:
 
                 if expanding:
-                    self.ConfNodeEditor.SetFoldExpanded(lineNum, True)
+                    self.PythonCodeEditor.SetFoldExpanded(lineNum, True)
                     lineNum = self.Expand(lineNum, True)
                     lineNum = lineNum - 1
                 else:
-                    lastChild = self.ConfNodeEditor.GetLastChild(lineNum, -1)
-                    self.ConfNodeEditor.SetFoldExpanded(lineNum, False)
+                    lastChild = self.PythonCodeEditor.GetLastChild(lineNum, -1)
+                    self.PythonCodeEditor.SetFoldExpanded(lineNum, False)
 
                     if lastChild > lineNum:
-                        self.ConfNodeEditor.HideLines(lineNum+1, lastChild)
+                        self.PythonCodeEditor.HideLines(lineNum+1, lastChild)
 
             lineNum = lineNum + 1
 
 
 
     def Expand(self, line, doExpand, force=False, visLevels=0, level=-1):
-        lastChild = self.ConfNodeEditor.GetLastChild(line, level)
+        lastChild = self.PythonCodeEditor.GetLastChild(line, level)
         line = line + 1
 
         while line <= lastChild:
             if force:
                 if visLevels > 0:
-                    self.ConfNodeEditor.ShowLines(line, line)
+                    self.PythonCodeEditor.ShowLines(line, line)
                 else:
-                    self.ConfNodeEditor.HideLines(line, line)
+                    self.PythonCodeEditor.HideLines(line, line)
             else:
                 if doExpand:
-                    self.ConfNodeEditor.ShowLines(line, line)
+                    self.PythonCodeEditor.ShowLines(line, line)
 
             if level == -1:
-                level = self.ConfNodeEditor.GetFoldLevel(line)
+                level = self.PythonCodeEditor.GetFoldLevel(line)
 
             if level & stc.STC_FOLDLEVELHEADERFLAG:
                 if force:
                     if visLevels > 1:
-                        self.ConfNodeEditor.SetFoldExpanded(line, True)
+                        self.PythonCodeEditor.SetFoldExpanded(line, True)
                     else:
-                        self.ConfNodeEditor.SetFoldExpanded(line, False)
+                        self.PythonCodeEditor.SetFoldExpanded(line, False)
 
                     line = self.Expand(line, doExpand, force, visLevels-1)
 
                 else:
-                    if doExpand and self.ConfNodeEditor.GetFoldExpanded(line):
+                    if doExpand and self.PythonCodeEditor.GetFoldExpanded(line):
                         line = self.Expand(line, True, force, visLevels-1)
                     else:
                         line = self.Expand(line, False, force, visLevels-1)
@@ -465,18 +468,18 @@ class PythonEditor(ConfTreeNodeEditor):
     def Cut(self):
         self.ResetBuffer()
         self.DisableEvents = True
-        self.ConfNodeEditor.CmdKeyExecute(wx.stc.STC_CMD_CUT)
+        self.PythonCodeEditor.CmdKeyExecute(wx.stc.STC_CMD_CUT)
         self.DisableEvents = False
         self.RefreshModel()
         self.RefreshBuffer()
     
     def Copy(self):
-        self.ConfNodeEditor.CmdKeyExecute(wx.stc.STC_CMD_COPY)
+        self.PythonCodeEditor.CmdKeyExecute(wx.stc.STC_CMD_COPY)
     
     def Paste(self):
         self.ResetBuffer()
         self.DisableEvents = True
-        self.ConfNodeEditor.CmdKeyExecute(wx.stc.STC_CMD_PASTE)
+        self.PythonCodeEditor.CmdKeyExecute(wx.stc.STC_CMD_PASTE)
         self.DisableEvents = False
         self.RefreshModel()
         self.RefreshBuffer()

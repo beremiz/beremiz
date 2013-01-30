@@ -17,8 +17,12 @@ from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
     
-    def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = EditingPanel(prnt, self, self.Controler, self.Editable)
+    CONFNODEEDITOR_TABS = [
+        (_("CANOpen slave"), "_create_SlaveNodeEditor")]
+    
+    def _create_SlaveNodeEditor(self, prnt):
+        self.SlaveNodeEditor = EditingPanel(prnt, self, self.Controler, self.Editable)
+        return self.SlaveNodeEditor
         
     def __init__(self, parent, controler, window, editable=True):
         self.Editable = editable
@@ -59,7 +63,7 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
 
     def RefreshView(self):
         ConfTreeNodeEditor.RefreshView(self)
-        self.ConfNodeEditor.RefreshIndexList()
+        self.SlaveNodeEditor.RefreshIndexList()
 
     def RefreshCurrentIndexList(self):
         self.RefreshView()

@@ -25,30 +25,25 @@ from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
     
     ID = ID_NETWORKEDITOR
+    CONFNODEEDITOR_TABS = [
+        (_("CANOpen network"), "_create_NetworkEditor")]
     
-    def _init_coll_MainSizer_Items(self, parent):
-        parent.AddWindow(self.NetworkNodes, 0, border=5, flag=wx.GROW|wx.ALL)
-
-    def _init_coll_MainSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(0)
-    
-    def _init_sizers(self):
-        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=0)
-        
-        self._init_coll_MainSizer_Items(self.MainSizer)
-        self._init_coll_MainSizer_Growables(self.MainSizer)
-        
-        self.ConfNodeEditor.SetSizer(self.MainSizer)
-    
-    def _init_ConfNodeEditor(self, prnt):
-        self.ConfNodeEditor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
+    def _create_NetworkEditor(self, prnt):
+        self.NetworkEditor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0), 
                 size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
         
-        NetworkEditorTemplate._init_ctrls(self, self.ConfNodeEditor)
+        NetworkEditorTemplate._init_ctrls(self, self.NetworkEditor)
         
-        self._init_sizers()
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=0)
+        main_sizer.AddGrowableCol(0)
+        main_sizer.AddGrowableRow(0)
         
+        main_sizer.AddWindow(self.NetworkNodes, 0, border=5, flag=wx.GROW|wx.ALL)
+    
+        self.NetworkEditor.SetSizer(main_sizer)
+    
+        return self.NetworkEditor
+    
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
         NetworkEditorTemplate.__init__(self, controler, window, False)

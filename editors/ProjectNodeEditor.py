@@ -1,51 +1,29 @@
 
 import wx
 
-from controls import ProjectPropertiesPanel
+from controls import ProjectPropertiesPanel, VariablePanel
 from EditorPanel import EditorPanel
-from ConfTreeNodeEditor import ConfTreeNodeEditor, WINDOW_COLOUR
+from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 class ProjectNodeEditor(ConfTreeNodeEditor):
     
-    VARIABLE_PANEL_TYPE = "config"
+    SHOW_BASE_PARAMS = False
     ENABLE_REQUIRED = True
+    CONFNODEEDITOR_TABS = [
+        (_("Config variables"), "_create_VariablePanel"),
+        (_("Project properties"), "_create_ProjectPropertiesPanel")]
     
-    def _init_Editor(self, prnt):
-        self.Editor = wx.ScrolledWindow(prnt, -1, size=wx.Size(-1, -1),
-                style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
-        self.Editor.SetBackgroundColour(WINDOW_COLOUR)
-        self.Editor.Bind(wx.EVT_SIZE, self.OnWindowResize)
-        self.Editor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-        self.ParamsEditor = self.Editor
+    def _create_VariablePanel(self, prnt):
+        self.VariableEditorPanel = VariablePanel(prnt, self, self.Controler, "config", self.Debug)
+        self.VariableEditorPanel.SetTagName(self.TagName)
+    
+        return self.VariableEditorPanel
+    
+    def _create_ProjectPropertiesPanel(self, prnt):
+        self.ProjectProperties = ProjectPropertiesPanel(prnt, self.Controler, self.ParentWindow, self.ENABLE_REQUIRED)
         
-        # Variable allowing disabling of Editor scroll when Popup shown 
-        self.ScrollingEnabled = True
-        
-        self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        self.ParamsEditorSizer.AddGrowableCol(0)
-        self.ParamsEditorSizer.AddGrowableRow(1)
-        
-        self.Editor.SetSizer(self.ParamsEditorSizer)
-        
-        
-        buttons_sizer = self.GenerateMethodButtonSizer()
-        self.ParamsEditorSizer.AddSizer(buttons_sizer, 0, border=5, 
-                                        flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.TOP)
-        
-        projectproperties_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.ParamsEditorSizer.AddSizer(projectproperties_sizer, 0, border=5, 
-                                        flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
-        
-        if self.SHOW_PARAMS:
-            self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
-            projectproperties_sizer.AddSizer(self.ConfNodeParamsSizer, 0, border=5, 
-                                             flag=wx.RIGHT)
-        else:
-            self.ConfNodeParamsSizer = None
-        
-        self.ProjectProperties = ProjectPropertiesPanel(self.Editor, self.Controler, self.ParentWindow, self.ENABLE_REQUIRED)
-        projectproperties_sizer.AddWindow(self.ProjectProperties, 0, border=0, flag=0)
-        
+        return self.ProjectProperties
+    
     def __init__(self, parent, controler, window):
         configuration = controler.GetProjectMainConfigurationName()
         if configuration is not None:
@@ -54,9 +32,21 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
             tagname = ""
         
         ConfTreeNodeEditor.__init__(self, parent, controler, window, tagname)
+        
+        buttons_sizer = self.GenerateMethodButtonSizer()
+        self.ParamsEditorSizer.InsertSizer(0, buttons_sizer, 0, border=5, 
+                flag=wx.LEFT|wx.RIGHT|wx.TOP)
+        self.ParamsEditorSizer.Layout()
+        
+        self.VariableEditor = self.VariableEditorPanel
 
     def GetTagName(self):
         return self.Controler.CTNName()
+    
+    def SetTagName(self, tagname):
+        self.TagName = tagname
+        if self.VariableEditor is not None:
+            self.VariableEditor.SetTagName(tagname)
     
     def GetTitle(self):
         fullname = _(self.Controler.CTNName())
@@ -65,10 +55,10 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         return fullname
     
     def RefreshView(self, variablepanel=True):
-        EditorPanel.RefreshView(self, variablepanel)
-        if self.ConfNodeParamsSizer is not None:
-            self.RefreshConfNodeParamsSizer()
-        self.ProjectProperties.RefreshView()
+        ConfTreeNodeEditor.RefreshView(self)
+        if variablepanel:
+            self.VariableEditor.RefreshView()
+        #self.ProjectProperties.RefreshView()
 
     def GetBufferState(self):
         return self.Controler.GetBufferState()
