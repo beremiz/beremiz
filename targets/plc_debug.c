@@ -306,25 +306,31 @@ int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
 /* LOGGING
 */
 
+#define LOG_LEVELS 4
+#define LOG_CRITICAL 0
+#define LOG_WARNING 1
+#define LOG_INFO 2
+#define LOG_DEBUG 4
+
 #define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
 #define LOG_BUFFER_MASK (LOG_BUFFER_SIZE-1)
-static char LogBuff[LOG_BUFFER_SIZE];
-void inline copy_to_log(uint32_t buffpos, void* buf, uint32_t size){
+static char LogBuff[LOG_LEVELS][LOG_BUFFER_SIZE];
+void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
-        memcpy(&LogBuff[buffpos], buf, size);
+        memcpy(&LogBuff[level][buffpos], buf, size);
     }else{
         uint32_t remaining = LOG_BUFFER_SIZE - buffpos - 1; 
-        memcpy(&LogBuff[buffpos], buf, remaining);
-        memcpy(LogBuff, buf + remaining, size - remaining);
+        memcpy(&LogBuff[level][buffpos], buf, remaining);
+        memcpy(LogBuff[level], buf + remaining, size - remaining);
     }
 }
-void inline copy_from_log(uint32_t buffpos, void* buf, uint32_t size){
+void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
-        memcpy(buf, &LogBuff[buffpos], size);
+        memcpy(buf, &LogBuff[level][buffpos], size);
     }else{
         uint32_t remaining = LOG_BUFFER_SIZE - buffpos; 
-        memcpy(buf, &LogBuff[buffpos], remaining);
-        memcpy(buf + remaining, LogBuff, size - remaining);
+        memcpy(buf, &LogBuff[level][buffpos], remaining);
+        memcpy(buf + remaining, LogBuff[level], size - remaining);
     }
 }
 
@@ -345,10 +351,10 @@ typedef struct {
    |63 ... 32|31 ... 0|
    | Message | Buffer |
    | counter | Index  | */
-static uint64_t LogCursor = 0x0;
+static uint64_t LogCursor[LOG_LEVELS] = {0x0,0x0,0x0,0x0};
 
 /* Store one log message of give size */
-int LogMessage(char* buf, uint32_t size){
+int LogMessage(uint8_t level, char* buf, uint32_t size){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
         uint32_t buffpos;
         mTail tail;
@@ -358,34 +364,34 @@ int LogMessage(char* buf, uint32_t size){
            succeeds non interrupted */
         uint64_t new_cursor, old_cursor;
         do{
-            old_cursor = LogCursor;
+            old_cursor = LogCursor[level];
             buffpos = (uint32_t)old_cursor;
             tail.msgidx = (old_cursor >> 32); 
             new_cursor = ((uint64_t)(tail.msgidx + 1)<<32) 
                          | (uint64_t)((buffpos + size + sizeof(mTail)) & LOG_BUFFER_MASK);
-        }while(!__sync_bool_compare_and_swap(&LogCursor,old_cursor,new_cursor));
+        }while(!__sync_bool_compare_and_swap(&LogCursor[level],old_cursor,new_cursor));
 
-        copy_to_log(buffpos, buf, size);
+        copy_to_log(level, buffpos, buf, size);
         tail.msgsize = size;
         /*XXX tick*/
         /*XXX RTC*/
-        copy_to_log((buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
+        copy_to_log(level, (buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
 
         return 1; /* Success */
     }else{
         char mstr[] = "Logging error : message too big";
-        LogMessage(mstr, sizeof(mstr));
+        LogMessage(LOG_CRITICAL, mstr, sizeof(mstr));
     }
     return 0;
 }
 
-uint32_t GetLogCount(){
-    return (uint64_t)LogCursor >> 32;
+uint32_t GetLogCount(uint8_t level){
+    return (uint64_t)LogCursor[level] >> 32;
 }
 
 /* Return message size and content */
-uint32_t GetLogMessage(uint32_t msgidx, char* buf, uint32_t max_size){
-    uint64_t cursor = LogCursor;
+uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size){
+    uint64_t cursor = LogCursor[level];
     if(cursor){
         /* seach cursor */
         uint32_t stailpos = (uint32_t)cursor; 
@@ -398,13 +404,13 @@ uint32_t GetLogMessage(uint32_t msgidx, char* buf, uint32_t max_size){
         do {
             smsgidx = tail.msgidx;
             stailpos = (stailpos - sizeof(mTail) - tail.msgsize ) & LOG_BUFFER_MASK;
-            copy_from_log(stailpos, &tail, sizeof(mTail));
+            copy_from_log(level, stailpos, &tail, sizeof(mTail));
         }while((tail.msgidx == smsgidx - 1) && (tail.msgidx > msgidx));
 
         if(tail.msgidx == msgidx){
             uint32_t sbuffpos = (stailpos - tail.msgsize ) & LOG_BUFFER_MASK; 
             uint32_t totalsize = tail.msgsize; /*sizeof(mTail);*/
-            copy_from_log(sbuffpos, buf, totalsize > max_size ? max_size : totalsize);
+            copy_from_log(level, sbuffpos, buf, totalsize > max_size ? max_size : totalsize);
             return totalsize;
         }
     }
