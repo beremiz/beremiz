@@ -1123,19 +1123,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
                    }.get(status,[]):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
-            return True
-        return False
+            {"Broken": self.logger.write_error,
+             None: lambda x: None}.get(
+                status, self.logger.write)(_("PLC is %s\n")%_(status))
+            if self.AppFrame is not None:
+                self.AppFrame.RefreshStatusToolBar()
     
     def PullPLCStatusProc(self, event):
         if self._connector is None:
             self.StatusTimer.Stop()
-        if self.UpdateMethodsFromPLCStatus():
-            
-            status = _(self.previous_plcstate)
-            {"Broken": self.logger.write_error,
-             None: lambda x: None}.get(
-                self.previous_plcstate, self.logger.write)(_("PLC is %s\n")%status)
-            self.AppFrame.RefreshStatusToolBar()
+        self.UpdateMethodsFromPLCStatus()
         
     def RegisterDebugVarToConnector(self):
         self.DebugTimer=None

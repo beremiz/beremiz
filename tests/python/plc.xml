@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2012-11-15T18:38:58">
+                 modificationDateTime="2013-01-11T14:08:25">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -155,6 +155,9 @@
               <type>
                 <string/>
               </type>
+              <initialValue>
+                <simpleValue value="test"/>
+              </initialValue>
             </variable>
             <variable name="Test_Bool">
               <type>
@@ -1064,6 +1067,30 @@ Global_RS();
           </ST>
         </body>
       </pou>
+      <pou name="norm" pouType="function">
+        <interface>
+          <returnType>
+            <REAL/>
+          </returnType>
+          <inputVars>
+            <variable name="IN1">
+              <type>
+                <REAL/>
+              </type>
+            </variable>
+            <variable name="IN2">
+              <type>
+                <REAL/>
+              </type>
+            </variable>
+          </inputVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[NORM := SQRT(IN1 * IN1 + IN2 * IN2);]]>
+          </ST>
+        </body>
+      </pou>
     </pous>
   </types>
   <instances>
@@ -1071,6 +1098,13 @@ Global_RS();
       <configuration name="conf_pytest">
         <resource name="res_pytest">
           <task name="pytest_task" interval="T#1ms" priority="0"/>
+          <globalVars>
+            <variable name="TOTO">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </globalVars>
           <pouInstance name="pytest_instance" typeName="main_pytest"/>
         </resource>
         <globalVars>
