@@ -1089,9 +1089,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         # depending on how user navigate in the panel
                         # and only ask for last one in follow mode
                     for msgidx in xrange(count-1, dump_end,-1):
-                        msg = self._connector.GetLogMessage(level, msgidx)
-                        if msg is not None :
-                            to_console.insert(0, LogLevels[level]+ ':#' + repr(msgidx) + ": " + msg)
+                        answer = self._connector.GetLogMessage(level, msgidx)
+                        if answer is not None :
+                            msg, tick, tv_sec, tv_nsec = answer 
+                            to_console.insert(0, LogLevels[level]+ ':#' + repr(msgidx) + ":\"" + msg + "\"" + str(map(int, (tick, tv_sec, tv_nsec))))
                         else:
                             to_console.insert(0, LogLevels[level]+ ': No log before #'+repr(msgidx))
                             break;

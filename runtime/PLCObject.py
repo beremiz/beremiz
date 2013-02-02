@@ -97,14 +97,21 @@ class PLCObject(pyro.ObjBase):
             return 1;
 
     def GetLogMessage(self, level, msgid):
+        tick = ctypes.c_uint32()
+        tv_sec = ctypes.c_uint32()
+        tv_nsec = ctypes.c_uint32()
         if self._GetLogMessage is not None:
             maxsz = len(self._log_read_buffer)-1
-            sz = self._GetLogMessage(level, msgid, self._log_read_buffer, maxsz)
+            sz = self._GetLogMessage(level, msgid, 
+                self._log_read_buffer, maxsz,
+                ctypes.byref(tick),
+                ctypes.byref(tv_sec),
+                ctypes.byref(tv_nsec))
             if sz and sz <= maxsz:
                 self._log_read_buffer[sz] = '\x00'
-                return self._log_read_buffer.value
+                return self._log_read_buffer.value,tick.value,tv_sec.value,tv_nsec.value
         elif self._loading_error is not None and level==0:
-            return self._loading_error
+            return self._loading_error,0,0,0
         return None
 
     def _GetMD5FileName(self):
@@ -185,7 +192,7 @@ class PLCObject(pyro.ObjBase):
             self._log_read_buffer = ctypes.create_string_buffer(1<<14) #16K
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
-            self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32]
+            self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
 
             self._loading_error = None
             return True
