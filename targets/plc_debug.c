@@ -343,8 +343,8 @@ void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t s
 typedef struct {
     uint32_t msgidx;
     uint32_t msgsize;
-    /*XXX tick*/
-    /*XXX RTC*/
+    unsigned long tick;
+    IEC_TIME time;
 } mTail;
 
 /* Log cursor : 64b
@@ -357,12 +357,17 @@ static uint64_t LogCursor[LOG_LEVELS] = {0x0,0x0,0x0,0x0};
 int LogMessage(uint8_t level, char* buf, uint32_t size){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
         uint32_t buffpos;
+        uint64_t new_cursor, old_cursor;
+
         mTail tail;
+        tail.msgsize = size;
+        tail.tick = __tick;
+        PLC_GetTime(&tail.time);
+
         /* We cannot increment both msg index and string pointer 
            in a single atomic operation but we can detect having been interrupted.
            So we can try with atomic compare and swap in a loop until operation
            succeeds non interrupted */
-        uint64_t new_cursor, old_cursor;
         do{
             old_cursor = LogCursor[level];
             buffpos = (uint32_t)old_cursor;
@@ -372,9 +377,6 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
         }while(!__sync_bool_compare_and_swap(&LogCursor[level],old_cursor,new_cursor));
 
         copy_to_log(level, buffpos, buf, size);
-        tail.msgsize = size;
-        /*XXX tick*/
-        /*XXX RTC*/
         copy_to_log(level, (buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
 
         return 1; /* Success */
@@ -390,7 +392,7 @@ uint32_t GetLogCount(uint8_t level){
 }
 
 /* Return message size and content */
-uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size){
+uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec){
     uint64_t cursor = LogCursor[level];
     if(cursor){
         /* seach cursor */
@@ -409,8 +411,12 @@ uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_s
 
         if(tail.msgidx == msgidx){
             uint32_t sbuffpos = (stailpos - tail.msgsize ) & LOG_BUFFER_MASK; 
-            uint32_t totalsize = tail.msgsize; /*sizeof(mTail);*/
-            copy_from_log(level, sbuffpos, buf, totalsize > max_size ? max_size : totalsize);
+            uint32_t totalsize = tail.msgsize;
+            *tick = tail.tick; 
+            *tv_sec = tail.time.tv_sec; 
+            *tv_nsec = tail.time.tv_nsec; 
+            copy_from_log(level, sbuffpos, buf, 
+                          totalsize > max_size ? max_size : totalsize);
             return totalsize;
         }
     }
