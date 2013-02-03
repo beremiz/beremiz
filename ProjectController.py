@@ -1078,10 +1078,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def UpdatePLCLog(self, log_count):
         if log_count :
+            to_console = []
             for level, count, prev in zip(xrange(LogLevelsCount), log_count,self.previous_log_count):
                 if count is not None and prev != count:
                     # XXX replace dump to console with dedicated log panel.
-                    to_console = ['']
                     dump_end = max( # request message sent after the last one we already got
                         prev - 1 if prev is not None else -1,
                         count - 100) # 100 is purely arbitrary number
@@ -1092,12 +1092,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         answer = self._connector.GetLogMessage(level, msgidx)
                         if answer is not None :
                             msg, tick, tv_sec, tv_nsec = answer 
-                            to_console.insert(0, LogLevels[level]+ ':#' + repr(msgidx) + ":\"" + msg + "\"" + str(map(int, (tick, tv_sec, tv_nsec))))
+                            to_console.insert(0,(
+                                (tv_sec, tv_nsec),
+                                '%d|%s.%9.9d|%s(%s)'%(
+                                    int(tick),
+                                    str(datetime.fromtimestamp(tv_sec)),
+                                    tv_nsec,
+                                    msg,
+                                    LogLevels[level])))
                         else:
-                            to_console.insert(0, LogLevels[level]+ ': No log before #'+repr(msgidx))
                             break;
-                    self.logger.write("\n".join(to_console))
                     self.previous_log_count[level] = count
+            if to_console:
+                to_console.sort()
+                self.logger.write("\n".join(zip(*to_console)[1]+('',)))
 
     def UpdateMethodsFromPLCStatus(self):
         status = None
@@ -1123,10 +1131,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                       ("_Disconnect", False)],
                    }.get(status,[]):
                 self.ShowMethod(*args)
-            self.previous_plcstate = status
             {"Broken": self.logger.write_error,
              None: lambda x: None}.get(
-                status, self.logger.write)(_("PLC is %s\n")%_(status))
+                status, self.logger.write)(_("PLC state is \"%s\"\n")%_(status))
+            self.previous_plcstate = status
             if self.AppFrame is not None:
                 self.AppFrame.RefreshStatusToolBar()
     
@@ -1364,7 +1372,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     def _Connect(self):
-        # don't accept re-connetion is already connected
+        # don't accept re-connetion if already connected
         if self._connector is not None:
             self.logger.write_error(_("Already connected. Please disconnect\n"))
             return
@@ -1429,17 +1437,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 status = _(self.previous_plcstate)
             else:
                 status = ""
-            self.logger.write(_("PLC is %s\n")%status)
+
+            #self.logger.write(_("PLC is %s\n")%status)
             
             # Start the status Timer
             self.StatusTimer.Start(milliseconds=500, oneShot=False)
             
-            if self.previous_plcstate=="Started":
+            if self.previous_plcstate in ["Started","Stopped"]:
                 if self.DebugAvailable() and self.GetIECProgramsAndVariables():
-                    self.logger.write(_("Debug connect matching running PLC\n"))
+                    self.logger.write(_("Debugger ready\n"))
                     self._connect_debug()
                 else:
-                    self.logger.write_warning(_("Debug do not match PLC - stop/transfert/start to re-enable\n"))
+                    self.logger.write_warning(_("Debug does not match PLC - stop/transfert/start to re-enable\n"))
 
     def CompareLocalAndRemotePLC(self):
         if self._connector is None:
