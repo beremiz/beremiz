@@ -88,7 +88,7 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     # Check connection is effective. 
     # lambda is for getattr of GetPLCstatus to happen inside catcher
-    if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() == None:
+    if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() is None:
         confnodesroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
         return None
 
@@ -144,7 +144,7 @@ def PYRO_connector_factory(uri, confnodesroot):
 
         def _PyroGetPLCstatus(self):
             return RemotePLCObjectProxy.GetPLCstatus()
-        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, ("Broken",-1))
+        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, ("Broken",None))
 
         def _PyroRemoteExec(self, script, **kwargs):
             return RemotePLCObjectProxy.RemoteExec(script, **kwargs)
