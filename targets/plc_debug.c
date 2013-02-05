@@ -310,7 +310,7 @@ int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
 #define LOG_CRITICAL 0
 #define LOG_WARNING 1
 #define LOG_INFO 2
-#define LOG_DEBUG 4
+#define LOG_DEBUG 3
 
 #define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
 #define LOG_BUFFER_MASK (LOG_BUFFER_SIZE-1)

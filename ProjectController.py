@@ -1110,8 +1110,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def UpdateMethodsFromPLCStatus(self):
         status = None
         if self._connector is not None:
-            status, log_count = self._connector.GetPLCstatus()
-            self.UpdatePLCLog(log_count)
+            PLCstatus = self._connector.GetPLCstatus()
+            if PLCstatus is not None:
+                status, log_count = PLCstatus
+                self.UpdatePLCLog(log_count)
         if status is None:
             self._connector = None
             status = "Disconnected"
