@@ -202,9 +202,17 @@ if HAS_MCL:
     DEFAULT_PUBLISH = "    *(__CIA402Node_%(location)s.%(name)s) = __CIA402Node_%(location)s.axis->%(name)s;"
     
     EXTRA_NODE_VARIABLES = [
+        ("ErrorCode", [
+            {"description": ("ErrorCode", 0x603F, 0x00, "UINT", "I"),
+             "publish": None}
+            ]),
         ("DigitalInputs", [
             {"description": ("DigitalInputs", 0x60FD, 0x00, "UDINT", "I"),
              "publish": None}
+            ]),
+        ("DigitalOutputs", [
+            {"description": ("DigitalOutputs", 0x60FE, 0x00, "UDINT", "Q"),
+             "retrieve": None}
             ])
     ]
     EXTRA_NODE_VARIABLES_DICT = dict([("Enable" + name, value) for name, value in EXTRA_NODE_VARIABLES])

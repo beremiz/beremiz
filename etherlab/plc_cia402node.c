@@ -118,6 +118,8 @@ void __retrieve_%(location)s()
 	}
 
 	// Default variables retrieve
+	__CIA402Node_%(location)s.axis->CommunicationReady = *(__CIA402Node_%(location)s.StatusWord) != 0;
+	__CIA402Node_%(location)s.axis->ReadyForPowerOn = __CIA402Node_%(location)s.state == __SwitchedOn || __OperationEnabled;
 	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
 	__CIA402Node_%(location)s.axis->ActualPosition = AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualPosition));
 	__CIA402Node_%(location)s.axis->ActualVelocity = AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualVelocity));
