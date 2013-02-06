@@ -36,6 +36,8 @@ try:
     matplotlib.use('WX')
     import matplotlib.pyplot
     from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+    from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
     from mpl_toolkits.mplot3d import Axes3D
     USE_MPL = True
 except:
@@ -330,12 +332,9 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                     else:
                         self.ParentWindow.InsertValue(values[0], target_idx, force=True)
                 else:
-                    ax, ay, aw, ah = self.ParentControl.Axes.get_position().bounds
-                    rect = wx.Rect(ax * width, height - (ay + ah) * height,
-                                   aw * width, ah * height)
+                    rect = self.ParentControl.GetAxesBoundingBox()
                     if rect.InsideXY(x, y):
-                        merge_rect = wx.Rect(ax * width, height - (ay + ah) * height,
-                                             aw * width / 2., ah * height)
+                        merge_rect = wx.Rect(rect.x, rect.y, rect.width / 2., rect.height)
                         if merge_rect.InsideXY(x, y):
                             merge_type = GRAPH_ORTHOGONAL
                         wx.CallAfter(self.ParentWindow.MergeGraphs, values[0], target_idx, merge_type, force=True)
@@ -619,7 +618,49 @@ if USE_MPL:
             else:
                 mask.append("*")
         return mask
+    
+    class DraggingFigureCanvas(FigureCanvas):
         
+        def __init__(self, parent, window, *args, **kwargs):
+            FigureCanvas.__init__(self, parent, *args, **kwargs)
+            
+            self.ParentWindow = window
+            
+        def draw(self, drawDC=None):
+            FigureCanvasAgg.draw(self)
+    
+            self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
+            if self.ParentWindow.IsDragging():
+                destBBox = self.ParentWindow.GetDraggingAxesClippingRegion(self.Parent)
+                if destBBox.width > 0 and destBBox.height > 0:
+                    srcPanel = self.ParentWindow.DraggingAxesPanel
+                    srcBBox = srcPanel.GetAxesBoundingBox()
+                    
+                    if destBBox.x == 0:
+                        srcX = srcBBox.x + srcBBox.width - destBBox.width
+                    else:
+                        srcX = srcBBox.x
+                    if destBBox.y == 0:
+                        srcY = srcBBox.y + srcBBox.height - destBBox.height
+                    else:
+                        srcY = srcBBox.y
+                    
+                    srcBmp = _convert_agg_to_wx_bitmap(srcPanel.Canvas.get_renderer(), None)
+                    srcDC = wx.MemoryDC()
+                    srcDC.SelectObject(srcBmp)
+                    
+                    destDC = wx.MemoryDC()
+                    destDC.SelectObject(self.bitmap)
+                    
+                    destDC.BeginDrawing()
+                    destDC.Blit(destBBox.x, destBBox.y, 
+                                int(destBBox.width), int(destBBox.height), 
+                                srcDC, srcX, srcY)
+                    destDC.EndDrawing()
+                    
+            self._isDrawn = True
+            self.gui_repaint(drawDC=drawDC)
+    
     class DebugVariableGraphic(DebugVariableViewer):
         
         def __init__(self, parent, window, items, graph_type):
@@ -633,11 +674,12 @@ if USE_MPL:
         def AddViewer(self):
             self.Figure = matplotlib.figure.Figure(facecolor='w')
             
-            self.Canvas = FigureCanvas(self, -1, self.Figure)
+            self.Canvas = DraggingFigureCanvas(self, self.ParentWindow, -1, self.Figure)
             self.Canvas.SetMinSize(wx.Size(200, 200))
             self.Canvas.SetDropTarget(DebugVariableDropTarget(self.ParentWindow, self))
+            self.Canvas.Bind(wx.EVT_LEFT_DOWN, self.OnCanvasLeftDown)
             self.Canvas.mpl_connect('motion_notify_event', self.OnCanvasMotion)
-            self.Canvas.Bind(wx.EVT_LEFT_DOWN, self.OnCanvasClick)
+            self.Canvas.mpl_connect('button_release_event', self.OnCanvasLeftUp)
             
             self.MainSizer.AddWindow(self.Canvas, flag=wx.GROW)
         
@@ -659,16 +701,26 @@ if USE_MPL:
                 setattr(self, name, button)
                 self.Bind(wx.EVT_BUTTON, getattr(self, "On" + name), button)
                 button_sizer.AddWindow(button, border=5, flag=wx.LEFT)
-    
-        def OnCanvasClick(self, event):
+        
+        def GetAxesBoundingBox(self, absolute=False):
+            width, height = self.Canvas.GetSize()
+            ax, ay, aw, ah = self.Axes.get_position().bounds
+            bbox = wx.Rect(ax * width, height - (ay + ah) * height - 1,
+                           aw * width + 2, ah * height + 1)
+            if absolute:
+                xw, yw = self.GetPosition()
+                bbox.x += xw
+                bbox.y += yw
+            return bbox
+        
+        def OnCanvasLeftDown(self, event):
             x, y = event.GetPosition()
             width, height = self.Canvas.GetSize()
             if len(self.Items) == 1:
-                ax, ay, aw, ah = self.Axes.get_position().bounds
-                rect = wx.Rect(ax * width, height - (ay + ah) * height,
-                               aw * width, ah * height)
+                rect = self.GetAxesBoundingBox()
                 if rect.InsideXY(x, y):
-                    self.DoDragDrop(0)
+                    xw, yw = self.GetPosition()
+                    self.ParentWindow.StartDragNDrop(self, x + xw, y + yw)
                     return
             elif self.Legend is not None:
                 item_idx = None
@@ -682,6 +734,15 @@ if USE_MPL:
                     self.DoDragDrop(item_idx)
                     return
             event.Skip()
+        
+        def OnCanvasLeftUp(self, event):
+            if self.ParentWindow.IsDragging():
+                width, height = self.Canvas.GetSize()
+                xw, yw = self.GetPosition()
+                self.ParentWindow.StopDragNDrop(
+                    self.Items[0].GetVariable(),
+                    xw + event.x, 
+                    yw + height - event.y)
         
         def DoDragDrop(self, item_idx):
             self.ParentWindow.ResetCursorTickRatio()
@@ -698,7 +759,13 @@ if USE_MPL:
                     Axes3D._on_move(self.Axes, event)
         
         def OnCanvasMotion(self, event):
-            if not self.Is3DCanvas():
+            if self.ParentWindow.IsDragging():
+                width, height = self.Canvas.GetSize()
+                xw, yw = self.GetPosition()
+                self.ParentWindow.MoveDragNDrop(
+                    xw + event.x, 
+                    yw + height - event.y)
+            elif not self.Is3DCanvas():
                 if event.inaxes == self.Axes:
                     start_tick, end_tick = self.ParentWindow.GetRange()
                     cursor_tick_ratio = None
@@ -956,6 +1023,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.StartTick = 0
             self.Fixed = False
             self.Force = False
+            self.CursorTickRatio = None
+            self.DraggingAxesPanel = None
+            self.DraggingAxesBoundingBox = None
+            self.DraggingAxesMousePos = None
             
             self.GraphicPanels = []
             
@@ -1005,7 +1076,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.GraphicsWindow.SetSizer(self.GraphicsSizer)
             
             self.RefreshCanvasRange()
-            self.CursorTickRatio = None
             
         else:
             main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
@@ -1149,6 +1219,60 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             duration += "%gms" % (float(tick_duration % SECOND) / MILLISECOND) 
             label += "(%s)" % duration
         return label
+    
+    def StartDragNDrop(self, panel, x_mouse, y_mouse):
+        self.DraggingAxesPanel = panel
+        self.DraggingAxesBoundingBox = panel.GetAxesBoundingBox(absolute=True)
+        self.DraggingAxesMousePos = wx.Point(
+            x_mouse - self.DraggingAxesBoundingBox.x, 
+            y_mouse - self.DraggingAxesBoundingBox.y)
+        self.ResetCursorTickRatio()
+        
+    def MoveDragNDrop(self, x_mouse, y_mouse):
+        self.DraggingAxesBoundingBox.x = x_mouse - self.DraggingAxesMousePos.x
+        self.DraggingAxesBoundingBox.y = y_mouse - self.DraggingAxesMousePos.y
+        self.ForceRefresh()
+    
+    def IsDragging(self):
+        return self.DraggingAxesPanel is not None
+    
+    def GetDraggingAxesClippingRegion(self, panel):
+        x, y = panel.GetPosition()
+        width, height = panel.Canvas.GetSize()
+        bbox = wx.Rect(x, y, width, height)
+        bbox = bbox.Intersect(self.DraggingAxesBoundingBox)
+        bbox.x -= x
+        bbox.y -= y
+        return bbox
+    
+    def StopDragNDrop(self, variable, x_mouse, y_mouse):
+        self.DraggingAxesPanel = None
+        self.DraggingAxesBoundingBox = None
+        self.DraggingAxesMousePos = None
+        for idx, panel in enumerate(self.GraphicPanels):
+            xw, yw = panel.GetPosition()
+            width, height = panel.Canvas.GetSize()
+            bbox = wx.Rect(xw, yw, width, height)
+            if bbox.InsideXY(x_mouse, y_mouse):
+                merge_type = GRAPH_PARALLEL
+                if panel.Is3DCanvas():
+                    if y_mouse > yw + height / 2:
+                        idx += 1
+                    wx.CallAfter(self.MoveGraph, variable, idx)
+                    return
+                else:
+                    rect = panel.GetAxesBoundingBox(True)
+                    if rect.InsideXY(x_mouse, y_mouse):
+                        merge_rect = wx.Rect(rect.x, rect.y, rect.width / 2., rect.height)
+                        if merge_rect.InsideXY(x_mouse, y_mouse):
+                            merge_type = GRAPH_ORTHOGONAL
+                        wx.CallAfter(self.MergeGraphs, variable, idx, merge_type, force=True)
+                    else:
+                        if y_mouse > yw + height / 2:
+                            idx += 1
+                        wx.CallAfter(self.MoveGraph, variable, idx)
+                break
+        self.ForceRefresh()
     
     def RefreshView(self, only_values=False):
         if USE_MPL:
