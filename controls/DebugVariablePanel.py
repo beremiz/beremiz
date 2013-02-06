@@ -1162,6 +1162,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     
     def NewDataAvailable(self, tick, *args, **kwargs):
         if USE_MPL and tick is not None:
+            if len(self.Ticks) == 0:
+                self.StartTick = tick 
             self.Ticks = numpy.append(self.Ticks, [tick])
             if not self.Fixed or tick < self.StartTick + self.CurrentRange:
                 self.StartTick = max(self.StartTick, tick - self.CurrentRange)
@@ -1340,6 +1342,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def ResetView(self):
         self.DeleteDataConsumers()
         if USE_MPL:
+            self.Fixed = False
             for panel in self.GraphicPanels:
                 panel.Destroy()
             self.GraphicPanels = []
@@ -1448,11 +1451,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         event.Skip()
     
     def OnResetButton(self, event):
-        self.StartTick = 0
-        self.Fixed = False
-        for panel in self.GraphicPanels:
-            panel.ResetData()
-        self.ForceRefresh()
+        self.ResetGraphicsValues()
         event.Skip()
 
     def OnCurrentButton(self, event):
@@ -1695,6 +1694,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if USE_MPL:
             self.Ticks = numpy.array([])
             self.StartTick = 0
+            self.Fixed = False
             for panel in self.GraphicPanels:
                 panel.ResetData()
 
