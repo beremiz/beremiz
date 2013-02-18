@@ -6,6 +6,13 @@ from types import TupleType
 import wx, wx.grid
 import wx.aui
 
+try:
+    import matplotlib
+    matplotlib.use('WX')
+    USE_MPL = True
+except:
+    USE_MPL = False
+
 from editors.EditorPanel import EditorPanel
 from editors.SFCViewer import SFC_Viewer
 from editors.LDViewer import LD_Viewer
@@ -2014,6 +2021,7 @@ class IDEFrame(wx.Frame):
 
     def OpenDebugViewer(self, instance_category, instance_path, instance_type):
         openedidx = self.IsOpened(instance_path)
+        new_window = None
         if openedidx is not None:
             old_selected = self.TabsOpened.GetSelection()
             if old_selected != openedidx:
@@ -2023,12 +2031,14 @@ class IDEFrame(wx.Frame):
         
         elif instance_category in ITEMS_VARIABLE:
             if self.Controler.IsNumType(instance_type, True):
-                new_window = GraphicViewer(self.TabsOpened, self, self.Controler, instance_path)
-                icon = GetBitmap("GRAPH")
+                if USE_MPL:
+                    self.AddDebugVariable(instance_path, True)
+                else:
+                    new_window = GraphicViewer(self.TabsOpened, self, self.Controler, instance_path)
+                    icon = GetBitmap("GRAPH")
         
         else:
             bodytype = self.Controler.GetEditedElementBodyType(instance_type, True)
-            new_window = None
             if bodytype == "FBD":
                 new_window = Viewer(self.TabsOpened, instance_type, self, self.Controler, True, instance_path)
                 new_window.RefreshScaling(False)

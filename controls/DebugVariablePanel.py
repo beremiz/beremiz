@@ -39,7 +39,8 @@ try:
     from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from mpl_toolkits.mplot3d import Axes3D
-    color_cycle = matplotlib.rcParams['axes.color_cycle']
+    color_cycle = ['r', 'b', 'g', 'm', 'y', 'k']
+    cursor_color = '#800080'
     USE_MPL = True
 except:
     USE_MPL = False
@@ -618,61 +619,53 @@ if USE_MPL:
     HIGHLIGHT_PEN = wx.Pen(wx.Colour(0, 128, 255))
     HIGHLIGHT_BRUSH = wx.Brush(wx.Colour(0, 128, 255, 128))
     
-    if wx.Platform == '__WXMSW__':
-        popupclass = wx.PopupTransientWindow
-    else:
-        popupclass = wx.PopupWindow
+    #CANVAS_SIZE_TYPES
+    [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI] = range(3)
     
-    class PopupWithButtons(popupclass):
-    
-        def __init__(self, parent, window, item, style=wx.HORIZONTAL):
-            popupclass.__init__(self, parent, wx.NO_BORDER)
-            self.SetBackgroundColour(wx.WHITE)
-            
-            self.ParentWindow = window
-            self.Item = item
-            
-            main_sizer = wx.BoxSizer(style)
-            
-            if self.Item.IsForced():
-                buttons = [("ReleaseButton", "release", _("Release value"))]
-            
-            else:
-                buttons = [("ForceButton", "force", _("Force value"))]
-            buttons.append(("DeleteButton", "delete_graph", _("Remove debug variable")))
-            
-            for name, bitmap, help in buttons:
-                button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap), 
-                      size=wx.Size(20, 20), style=wx.NO_BORDER)
-                button.SetToolTipString(help)
-                setattr(self, name, button)
-                self.Bind(wx.EVT_BUTTON, getattr(self, "On" + name), button)
-                main_sizer.AddWindow(button)
-            main_sizer.Layout()
-            
-            self.SetSizer(main_sizer)
-            main_sizer.Fit(self)
+    class GraphButton():
         
-        def GetItem(self):
-            return self.Item
+        def __init__(self, x, y, bitmap, callback):
+            self.Position = wx.Point(x, y)
+            self.Bitmap = bitmap
+            self.Shown = True
+            self.Callback = callback
         
-        def OnForceButton(self, event):
-            wx.CallAfter(self.Parent.DismissButtons)
-            wx.CallAfter(self.Parent.ForceValue, self.Item)
-            event.Skip()
+        def __del__(self):
+            self.callback = None
         
-        def OnReleaseButton(self, event):
-            wx.CallAfter(self.Parent.DismissButtons)
-            wx.CallAfter(self.Parent.ReleaseValue, self.Item)
-            event.Skip()
+        def GetSize(self):
+            return self.Bitmap.GetSize()
         
-        def OnDeleteButton(self, event):            
-            wx.CallAfter(self.Parent.DismissButtons)
-            wx.CallAfter(self.ParentWindow.DeleteValue, self.Parent, self.Item)
-            event.Skip()
-    
-        def OnDismiss(self):
-            wx.CallAfter(self.Parent.DismissButtons)
+        def SetPosition(self, x, y):
+            self.Position = wx.Point(x, y)
+        
+        def SetBitmap(self, bitmap):
+            self.Bitmap = bitmap
+            
+        def SetCallback(self, callback):
+            self.Callback = callback
+        
+        def Show(self):
+            self.Shown = True
+            
+        def Hide(self):
+            self.Shown = False
+        
+        def HitTest(self, x, y):
+            if self.Shown:
+                w, h = self.Bitmap.GetSize()
+                rect = wx.Rect(self.Position.x, self.Position.y, w, h)
+                if rect.InsideXY(x, y):
+                    return True
+            return False
+        
+        def ProcessCallback(self):
+            if self.Callback is not None:
+                wx.CallAfter(self.Callback)
+                
+        def Draw(self, dc):
+            if self.Shown:
+                dc.DrawBitmap(self.Bitmap, self.Position.x, self.Position.y, True)
     
     class DraggingFigureCanvas(FigureCanvas):
         
@@ -685,17 +678,16 @@ if USE_MPL:
             
             self.ParentWindow = window
             self.Highlight = HIGHLIGHT_NONE
+            self.CanvasSize = SIZE_MAXI
             
-            self.ChangeSizeButton = wx.lib.buttons.GenBitmapToggleButton(self, 
-                    bitmap=GetBitmap("minimize_graph"), 
-                    size=wx.Size(20, 20), style=wx.NO_BORDER)
-            self.ChangeSizeButton.SetBitmapSelected(GetBitmap("maximize_graph"))
-            self.Bind(wx.EVT_BUTTON, self.OnChangeSizeButton, self.ChangeSizeButton)
+            self.Buttons = []
+            self.ContextualButtons = []
+            self.ContextualButtonsItem = None
             
-            self.CloseButton = wx.lib.buttons.GenBitmapButton(self, 
-                    bitmap=GetBitmap("delete_graph"), 
-                    size=wx.Size(20, 20), style=wx.NO_BORDER)
-            self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.CloseButton)
+            self.Buttons.append(
+                GraphButton(0, 0, GetBitmap("minimize_graph"), self.OnChangeSizeButton))
+            self.Buttons.append(
+                GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
             
             self.ShowButtons(False)
             
@@ -723,7 +715,7 @@ if USE_MPL:
             destDC.SelectObject(self.bitmap)
             
             destGC = wx.GCDC(destDC)
-                    
+            
             destGC.BeginDrawing()
             destGC.SetPen(HIGHLIGHT_PEN)
             destGC.SetBrush(HIGHLIGHT_BRUSH)
@@ -737,6 +729,9 @@ if USE_MPL:
             elif self.Highlight == HIGHLIGHT_RIGHT:
                 destGC.DrawRectangle(bbox.x + bbox.width / 2, bbox.y, 
                                      bbox.width / 2, bbox.height)
+            
+            for button in self.Buttons + self.ContextualButtons:
+                button.Draw(destGC)
             
             if self.ParentWindow.IsDragging():
                 destBBox = self.ParentWindow.GetDraggingAxesClippingRegion(self.Parent)
@@ -766,13 +761,71 @@ if USE_MPL:
             self._isDrawn = True
             self.gui_repaint(drawDC=drawDC)
         
+        def HandleButtons(self, x, y):
+            for button in self.Buttons + self.ContextualButtons:
+                if button.HitTest(x, y):
+                    button.ProcessCallback()
+                    return True
+            return False
+        
+        def PopupContextualButtons(self, item, rect, style=wx.HORIZONTAL):
+            if self.ContextualButtonsItem is not None and item != self.ContextualButtonsItem:
+                self.DismissContextualButtons()
+            
+            if self.ContextualButtonsItem is None:
+                self.ContextualButtonsItem = item
+                
+                if self.ContextualButtonsItem.IsForced():
+                    self.ContextualButtons.append(
+                        GraphButton(0, 0, GetBitmap("release"), self.OnReleaseButton))
+                else:
+                    self.ContextualButtons.append(
+                        GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
+                self.ContextualButtons.append(
+                    GraphButton(0, 0, GetBitmap("delete_graph"), self.OnRemoveItemButton))
+                
+                offset = 0
+                buttons = self.ContextualButtons[:]
+                if style == wx.VERTICAL:
+                     buttons.reverse()
+                for button in buttons:
+                    w, h = button.GetSize()
+                    if style == wx.HORIZONTAL:
+                        x = rect.x + rect.width + offset
+                        y = rect.y + (rect.height - h) / 2
+                        offset += w
+                    else:
+                        x = rect.x + (rect.width - w ) / 2
+                        y = rect.y - h - offset
+                        offset += h
+                    button.SetPosition(x, y)
+            self.ParentWindow.ForceRefresh()
+        
+        def DismissContextualButtons(self):
+            if self.ContextualButtonsItem is not None:
+                self.ContextualButtonsItem = None
+                self.ContextualButtons = []
+            self.ParentWindow.ForceRefresh()
+        
+        def IsOverButton(self, x, y):
+            for button in self.Buttons + self.ContextualButtons:
+                if button.HitTest(x, y):
+                    return True
+            return False
+        
+        def IsOverContextualButton(self, x, y):
+            for button in self.ContextualButtons:
+                if button.HitTest(x, y):
+                    return True
+            return False
+        
         def ShowButtons(self, show):
-            if show:
-                self.ChangeSizeButton.Show()
-                self.CloseButton.Show()
-            else:
-                self.ChangeSizeButton.Hide()
-                self.CloseButton.Hide()
+            for button in self.Buttons:
+                if show:
+                    button.Show()
+                else:
+                    button.Hide()
+            self.ParentWindow.ForceRefresh()
         
         def OnEnterWindow(self, event):
             self.ShowButtons(True)
@@ -786,21 +839,41 @@ if USE_MPL:
                 self.ShowButtons(False)
             event.Skip()
         
-        def OnChangeSizeButton(self, event):
-            if self.ChangeSizeButton.GetToggle():
+        def OnChangeSizeButton(self):
+            if self.CanvasSize == SIZE_MAXI:
+                self.CanvasSize = SIZE_MIDDLE
                 self.Parent.Minimize()
             else:
+                self.CanvasSize = SIZE_MAXI
                 self.Parent.Maximize()
-            event.Skip()
         
-        def OnCloseButton(self, event):
-            wx.CallAfter(self.ParentWindow.DeleteValue, self.Parent)
-            event.Skip()
-    
+        def OnCloseButton(self):
+            self.ParentWindow.DeleteValue(self.Parent)
+        
+        def OnForceButton(self):
+            wx.CallAfter(self.Parent.ForceValue, 
+                         self.ContextualButtonsItem)
+            self.DismissContextualButtons()
+            
+        def OnReleaseButton(self):
+            wx.CallAfter(self.Parent.ReleaseValue, 
+                         self.ContextualButtonsItem)
+            self.DismissContextualButtons()
+            
+        def OnRemoveItemButton(self):            
+            wx.CallAfter(self.ParentWindow.DeleteValue, self.Parent, 
+                         self.ContextualButtonsItem)
+            self.DismissContextualButtons()
+            
         def OnResizeWindow(self, event):
             width, height = self.GetSize()
-            self.ChangeSizeButton.SetPosition(wx.Point(width - 50, 5))
-            self.CloseButton.SetPosition(wx.Point(width - 25, 5))
+            offset = 0
+            buttons = self.Buttons[:]
+            buttons.reverse()
+            for button in buttons:
+                w, h = button.GetSize()
+                button.SetPosition(width - 5 - w - offset, 5)
+                offset += w
             event.Skip()
     
     class DebugVariableGraphic(DebugVariableViewer):
@@ -817,6 +890,7 @@ if USE_MPL:
             main_sizer = wx.BoxSizer(wx.VERTICAL)
             
             self.Figure = matplotlib.figure.Figure(facecolor='w')
+            self.Figure.subplotpars.update(top=0.95, left=0.1, bottom=0.1, right=0.95)
             
             self.Canvas = DraggingFigureCanvas(self, self.ParentWindow, -1, self.Figure)
             self.Canvas.SetMinSize(wx.Size(200, 200))
@@ -832,16 +906,34 @@ if USE_MPL:
             
             self.ResetGraphics()
         
+        def RefreshLabelsPosition(self, ratio):
+            self.MaskLabel.set_position((0.05, 1.0 - 0.1 * ratio))
+            if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
+                num_item = len(self.Items)
+                for idx in xrange(num_item):
+                    if not self.Is3DCanvas():
+                        self.AxesLabels[idx].set_position((0.05, 1.0 - (0.1 + 0.075 * (idx + 1)) * ratio))
+                    self.Labels[idx].set_position((0.95, 0.1 + (num_item - idx - 1) * 0.1 * ratio))
+            else:
+                self.AxesLabels[0].set_position((0.1, 0.05 * ratio))
+                self.Labels[0].set_position((0.95, 0.05 * ratio))
+                self.AxesLabels[1].set_position((0.05, 0.1 * ratio))
+                self.Labels[1].set_position((0.05, 1.0 - 0.05 * ratio))
+        
         def Minimize(self):
             self.Canvas.SetMinSize(wx.Size(200, 100))
-            self.Figure.subplotpars.update(bottom=0.20)
+            self.Figure.subplotpars.update(top=0.9, bottom=0.2)
+            self.RefreshLabelsPosition(2)
+            self.Figure.subplots_adjust()
             self.ParentWindow.RefreshGraphicsSizer()
-        
+            
         def Maximize(self):
             self.Canvas.SetMinSize(wx.Size(200, 200))
-            self.Figure.subplotpars.update(bottom=0.1)
+            self.Figure.subplotpars.update(top=0.95, bottom=0.1)
+            self.RefreshLabelsPosition(1)
+            self.Figure.subplots_adjust()
             self.ParentWindow.RefreshGraphicsSizer()
-        
+            
         def GetAxesBoundingBox(self, absolute=False):
             bbox = self.Canvas.GetAxesBoundingBox()
             if absolute:
@@ -851,20 +943,14 @@ if USE_MPL:
             return bbox
         
         def OnCanvasButtonPressed(self, event):
-            if not self.Is3DCanvas():
-                width, height = self.Canvas.GetSize()
-                x, y = event.x, height - event.y
+            width, height = self.Canvas.GetSize()
+            x, y = event.x, height - event.y
+            if not self.Canvas.IsOverButton(x, y) and not self.Is3DCanvas():
                 rect = self.GetAxesBoundingBox()
                 if rect.InsideXY(x, y):
                     self.MouseStartPos = wx.Point(x, y)
-                if self.Legend is not None:
-                    texts = self.Legend.get_texts()
-                elif len(self.AxesLabels) > 0:
-                    texts = self.AxesLabels
-                else:
-                    texts = []
                 item_idx = None
-                for i, t in enumerate(texts):
+                for i, t in enumerate(self.AxesLabels):
                     (x0, y0), (x1, y1) = t.get_window_extent().get_points()
                     rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
                     if rect.InsideXY(x, y):
@@ -872,16 +958,16 @@ if USE_MPL:
                         break
                 if item_idx is not None:
                     self.Canvas.ShowButtons(False)
-                    self.DismissButtons()
+                    self.Canvas.DismissContextualButtons()
                     xw, yw = self.GetPosition()
                     self.ParentWindow.StartDragNDrop(self, 
                         self.Items[item_idx], x + xw, y + yw, x + xw, y + yw)
-                elif event.button == 1:
+                elif event.button == 1 and event.inaxes == self.Axes:
                     self.HandleCursorMove(event)
                 elif event.button == 2 and self.GraphType == GRAPH_PARALLEL:
                     width, height = self.Canvas.GetSize()
                     start_tick, end_tick = self.ParentWindow.GetRange()
-                    self.MouseStartPos = wx.Point(event.x, height - event.y)
+                    self.MouseStartPos = wx.Point(x, y)
                     self.StartCursorTick = start_tick
         
         def OnCanvasButtonReleased(self, event):
@@ -895,6 +981,8 @@ if USE_MPL:
             else:
                 self.MouseStartPos = None
                 self.StartCursorTick = None
+                width, height = self.Canvas.GetSize()
+                self.Canvas.HandleButtons(event.x, height - event.y)
         
         def OnCanvasMotion(self, event):
             width, height = self.Canvas.GetSize()
@@ -921,16 +1009,13 @@ if USE_MPL:
                         self.StartCursorTick + (self.MouseStartPos.x - event.x) *
                         (end_tick - start_tick) / rect.width)
                 elif event.button is None:
-                    if self.Legend is not None:
-                        labels = self.Legend.get_texts()
-                        texts = zip(labels, [wx.HORIZONTAL] * len(labels))
+                    if self.GraphType == GRAPH_PARALLEL:
+                        orientation = [wx.HORIZONTAL] * len(self.AxesLabels)
                     elif len(self.AxesLabels) > 0:
-                        texts = zip(self.AxesLabels, [wx.HORIZONTAL, wx.VERTICAL])
-                    else:
-                        texts = []
+                        orientation = [wx.HORIZONTAL, wx.VERTICAL]
                     item_idx = None
                     item_style = None
-                    for i, (t, style) in enumerate(texts):
+                    for i, (t, style) in enumerate(zip(self.AxesLabels, orientation)):
                         (x0, y0), (x1, y1) = t.get_window_extent().get_points()
                         rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
                         if rect.InsideXY(event.x, height - event.y):
@@ -938,10 +1023,10 @@ if USE_MPL:
                             item_style = style
                             break
                     if item_idx is not None:
-                        self.PopupButtons(item_idx, rect, item_style)
+                        self.Canvas.PopupContextualButtons(self.Items[item_idx], rect, item_style)
                         return 
-                    if self.ItemButtons is not None:
-                        self.DismissButtons()
+                    if not self.Canvas.IsOverContextualButton(event.x, height - event.y):
+                        self.Canvas.DismissContextualButtons()
         
         def OnCanvasDragging(self, x, y, refresh=True):
             width, height = self.Canvas.GetSize()
@@ -996,43 +1081,11 @@ if USE_MPL:
         
         def DoDragDrop(self, item_idx):
             self.Canvas.ShowButtons(False)
-            self.DismissButtons()
+            self.Canvas.DismissContextualButtons()
             data = wx.TextDataObject(str((self.Items[item_idx].GetVariable(), "debug", "move")))
             dragSource = wx.DropSource(self.Canvas)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
-        
-        def PopupButtons(self, item_idx, rect, style=wx.HORIZONTAL):
-            item = self.Items[item_idx]
-            if self.ItemButtons is not None and item != self.ItemButtons.GetItem():
-                self.DismissButtons()
-            if self.ItemButtons is None:
-                
-                self.ItemButtons = PopupWithButtons(self, self.ParentWindow, item, style)
-                
-                # Show the popup right below or above the button
-                # depending on available screen space...
-                w, h = self.ItemButtons.GetSize()
-                if style == wx.HORIZONTAL:
-                    x = rect.x + rect.width
-                    y = rect.y + (rect.height - h) / 2
-                else:
-                    x = rect.x + (rect.width - w ) / 2
-                    y = rect.y - h
-                self.ItemButtons.SetPosition(self.ClientToScreen((x, y)))
-                
-                if wx.Platform == '__WXMSW__':
-                    self.ItemButtons.Popup()
-                else:
-                    self.ItemButtons.Show()
-        
-        def DismissButtons(self):
-            if self.ItemButtons:
-                if wx.Platform == '__WXMSW__':
-                    self.ItemButtons.Dismiss()
-                else:
-                    self.ItemButtons.Destroy()
-                self.ItemButtons = None
         
         def OnAxesMotion(self, event):
             if self.Is3DCanvas():
@@ -1049,46 +1102,62 @@ if USE_MPL:
                 self.LastMotionTime = gettime()
                 setattr(self.Axes, "_on_move", self.OnAxesMotion)
                 self.Axes.mouse_init()
+                self.Axes.tick_params(axis='z', labelsize='small')
             else:
                 self.Axes = self.Figure.gca()
-                self.Figure.subplotpars.update(top=0.95, right=0.95)
+                self.Axes.set_color_cycle(color_cycle)
+            self.Axes.tick_params(axis='x', labelsize='small')
+            self.Axes.tick_params(axis='y', labelsize='small')
             self.Plots = []
             self.VLine = None
             self.HLine = None
-            self.Legend = None
             self.Labels = []
             self.AxesLabels = []
+            if not self.Is3DCanvas():
+                text_func = self.Axes.text
+            else:
+                text_func = self.Axes.text2D
+            self.MaskLabel = text_func(0, 0, "", size='small', 
+                                       transform=self.Axes.transAxes)
             if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
                 num_item = len(self.Items)
-                if not self.Is3DCanvas():
-                    text_func = self.Axes.text
-                else:
-                    text_func = self.Axes.text2D
                 for idx in xrange(num_item):
+                    if num_item == 1:
+                        color = 'k'
+                    else:
+                        color = color_cycle[idx % len(color_cycle)]
+                    if not self.Is3DCanvas():
+                        self.AxesLabels.append(
+                            text_func(0, 0, "", size='small', 
+                                      color=color,
+                                      transform=self.Axes.transAxes))
                     self.Labels.append(
-                        text_func(0.95, 0.05 + (num_item - idx - 1) * 0.1, 
-                                  "", size='large', 
+                        text_func(0, 0, "", size='large', 
                                   horizontalalignment='right',
-                                  color=color_cycle[idx % len(color_cycle)],
+                                  color=color,
                                   transform=self.Axes.transAxes))
             else:
                 self.AxesLabels.append(
-                    self.Axes.text(0.1, 0.05, "", size='small',
+                    self.Axes.text(0, 0, "", size='small',
                                    transform=self.Axes.transAxes))
                 self.Labels.append(
-                    self.Axes.text(0.95, 0.05, "", size='large',
+                    self.Axes.text(0, 0, "", size='large',
                                    horizontalalignment='right',
                                    transform=self.Axes.transAxes))
                 self.AxesLabels.append(
-                    self.Axes.text(0.05, 0.1, "", size='small',
+                    self.Axes.text(0, 0, "", size='small',
                                    rotation='vertical',
                                    verticalalignment='bottom',
                                    transform=self.Axes.transAxes))
                 self.Labels.append(
-                    self.Axes.text(0.05, 0.95, "", size='large',
+                    self.Axes.text(0, 0, "", size='large',
                                    rotation='vertical',
                                    verticalalignment='top',
                                    transform=self.Axes.transAxes))
+            if self.Canvas.CanvasSize == SIZE_MAXI:
+                self.RefreshLabelsPosition(1)
+            else:
+                self.RefreshLabelsPosition(2)
             
         def AddItem(self, item):
             DebugVariableViewer.AddItem(self, item)
@@ -1150,7 +1219,7 @@ if USE_MPL:
                     
                     if self.CursorTick is not None and start_tick <= self.CursorTick <= end_tick:
                         if self.VLine is None:
-                            self.VLine = self.Axes.axvline(self.CursorTick, color='r')
+                            self.VLine = self.Axes.axvline(self.CursorTick, color=cursor_color)
                         else:
                             self.VLine.set_xdata((self.CursorTick, self.CursorTick))
                         self.VLine.set_visible(True)
@@ -1184,11 +1253,11 @@ if USE_MPL:
                         
                         if self.CursorTick is not None and start_tick <= self.CursorTick <= end_tick:
                             if self.VLine is None:
-                                self.VLine = self.Axes.axvline(x_cursor, color='r')
+                                self.VLine = self.Axes.axvline(x_cursor, color=cursor_color)
                             else:
                                 self.VLine.set_xdata((x_cursor, x_cursor))
                             if self.HLine is None:
-                                self.HLine = self.Axes.axhline(y_cursor, color='r')
+                                self.HLine = self.Axes.axhline(y_cursor, color=cursor_color)
                             else:
                                 self.HLine.set_ydata((y_cursor, y_cursor))
                             self.VLine.set_visible(True)
@@ -1218,7 +1287,7 @@ if USE_MPL:
                                                      ("ys", numpy.array([y_cursor, y_cursor])),
                                                      ("zs", numpy.array([z_cursor, z_cursor]))]:
                                     kwargs.setdefault(param, value)
-                                kwargs["color"] = 'r'
+                                kwargs["color"] = cursor_color
                                 self.Axes.plot(**kwargs)
                     
                 self.Axes.set_xlim(x_min, x_max)
@@ -1230,27 +1299,19 @@ if USE_MPL:
             else:
                 values, forced = apply(zip, [(item.GetValue(), item.IsForced()) for item in self.Items])
             labels = [item.GetVariable(variable_name_mask) for item in self.Items]
-            colors = map(lambda x: {True: 'b', False: 'k'}[x], forced)
-            if self.GraphType == GRAPH_PARALLEL:
-                if self.Legend is None:
-                    self.Legend = self.Axes.legend(self.Plots, labels, 
-                        loc="upper left", frameon=False, prop={'size':'small'}, 
-                        title = '.'.join(variable_name_mask))
-                    self.Legend.get_title().set_fontsize('small')
-                for t, color in zip(self.Legend.get_texts(), colors):
-                    t.set_color(color)
+            styles = map(lambda x: {True: 'italic', False: 'normal'}[x], forced)
+            self.MaskLabel.set_text('.'.join(variable_name_mask))
+            if self.Is3DCanvas():
+                for idx, label_func in enumerate([self.Axes.set_xlabel, 
+                                                  self.Axes.set_ylabel,
+                                                  self.Axes.set_zlabel]):
+                    label_func(labels[idx], fontdict={'size': 'small','color': color_cycle[idx]})
             else:
-                self.Legend = None
-                if self.Is3DCanvas():
-                    self.Axes.set_xlabel(labels[0], fontdict={'size':'small','color':colors[0]})
-                    self.Axes.set_ylabel(labels[1], fontdict={'size':'small','color':colors[1]})
-                    self.Axes.set_zlabel(labels[2], fontdict={'size':'small','color':colors[2]})
-                else:
-                    for label, text, color in zip(self.AxesLabels, labels, colors):
-                        label.set_text(text)
-                        label.set_color(color)
-            for label, value in zip(self.Labels, values):
+                for label, text in zip(self.AxesLabels, labels):
+                    label.set_text(text)
+            for label, value, style in zip(self.Labels, values, styles):
                 label.set_text(value)
+                label.set_style(style)
                         
             self.Canvas.draw()
     
