@@ -26,6 +26,13 @@ import wx
 import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 
+try:
+    import matplotlib
+    matplotlib.use('WX')
+    USE_MPL = True
+except:
+    USE_MPL = False
+
 from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM_POU, ITEM_TRANSITION, ITEM_ACTION
 from util.BitmapLibrary import GetBitmap
 
@@ -146,7 +153,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                     
                 buttons = []
                 if var_infos["class"] in ITEMS_VARIABLE:
-                    if (var_infos["debug"] and self.Debug and
+                    if (not USE_MPL and var_infos["debug"] and self.Debug and
                         (self.Controller.IsOfType(var_infos["type"], "ANY_NUM", True) or
                          self.Controller.IsOfType(var_infos["type"], "ANY_BIT", True))):
                         graph_button = wx.lib.buttons.GenBitmapButton(panel, 
