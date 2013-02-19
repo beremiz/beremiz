@@ -768,7 +768,7 @@ if USE_MPL:
                     return True
             return False
         
-        def PopupContextualButtons(self, item, rect, style=wx.HORIZONTAL):
+        def PopupContextualButtons(self, item, rect, style=wx.RIGHT):
             if self.ContextualButtonsItem is not None and item != self.ContextualButtonsItem:
                 self.DismissContextualButtons()
             
@@ -786,17 +786,23 @@ if USE_MPL:
                 
                 offset = 0
                 buttons = self.ContextualButtons[:]
-                if style == wx.VERTICAL:
+                if style in [wx.TOP, wx.LEFT]:
                      buttons.reverse()
                 for button in buttons:
                     w, h = button.GetSize()
-                    if style == wx.HORIZONTAL:
-                        x = rect.x + rect.width + offset
+                    if style in [wx.LEFT, wx.RIGHT]:
+                        if style == wx.LEFT:
+                            x = rect.x - w - offset
+                        else:
+                            x = rect.x + rect.width + offset
                         y = rect.y + (rect.height - h) / 2
                         offset += w
                     else:
                         x = rect.x + (rect.width - w ) / 2
-                        y = rect.y - h - offset
+                        if style == wx.TOP:
+                            y = rect.y - h - offset
+                        else:
+                            y = rect.y + rect.height + offset
                         offset += h
                     button.SetPosition(x, y)
             self.ParentWindow.ForceRefresh()
@@ -907,12 +913,11 @@ if USE_MPL:
             self.ResetGraphics()
         
         def RefreshLabelsPosition(self, ratio):
-            self.MaskLabel.set_position((0.05, 1.0 - 0.1 * ratio))
             if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
                 num_item = len(self.Items)
                 for idx in xrange(num_item):
                     if not self.Is3DCanvas():
-                        self.AxesLabels[idx].set_position((0.05, 1.0 - (0.1 + 0.075 * (idx + 1)) * ratio))
+                        self.AxesLabels[idx].set_position((0.05, 1.0 - (0.1 + 0.075 * idx) * ratio))
                     self.Labels[idx].set_position((0.95, 0.1 + (num_item - idx - 1) * 0.1 * ratio))
             else:
                 self.AxesLabels[0].set_position((0.1, 0.05 * ratio))
@@ -950,7 +955,8 @@ if USE_MPL:
                 if rect.InsideXY(x, y):
                     self.MouseStartPos = wx.Point(x, y)
                 item_idx = None
-                for i, t in enumerate(self.AxesLabels):
+                for i, t in ([pair for pair in enumerate(self.AxesLabels)] + 
+                             [pair for pair in enumerate(self.Labels)]):
                     (x0, y0), (x1, y1) = t.get_window_extent().get_points()
                     rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
                     if rect.InsideXY(x, y):
@@ -975,7 +981,7 @@ if USE_MPL:
                 width, height = self.Canvas.GetSize()
                 xw, yw = self.GetPosition()
                 self.ParentWindow.StopDragNDrop(
-                    self.Items[0].GetVariable(),
+                    self.ParentWindow.DraggingAxesPanel.Items[0].GetVariable(),
                     xw + event.x, 
                     yw + height - event.y)
             else:
@@ -1010,12 +1016,14 @@ if USE_MPL:
                         (end_tick - start_tick) / rect.width)
                 elif event.button is None:
                     if self.GraphType == GRAPH_PARALLEL:
-                        orientation = [wx.HORIZONTAL] * len(self.AxesLabels)
+                        orientation = [wx.RIGHT] * len(self.AxesLabels) + [wx.LEFT] * len(self.Labels)
                     elif len(self.AxesLabels) > 0:
-                        orientation = [wx.HORIZONTAL, wx.VERTICAL]
+                        orientation = [wx.RIGHT, wx.TOP, wx.LEFT, wx.BOTTOM]
                     item_idx = None
                     item_style = None
-                    for i, (t, style) in enumerate(zip(self.AxesLabels, orientation)):
+                    for (i, t), style in zip([pair for pair in enumerate(self.AxesLabels)] + 
+                                             [pair for pair in enumerate(self.Labels)], 
+                                             orientation):
                         (x0, y0), (x1, y1) = t.get_window_extent().get_points()
                         rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
                         if rect.InsideXY(event.x, height - event.y):
@@ -1117,8 +1125,6 @@ if USE_MPL:
                 text_func = self.Axes.text
             else:
                 text_func = self.Axes.text2D
-            self.MaskLabel = text_func(0, 0, "", size='small', 
-                                       transform=self.Axes.transAxes)
             if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
                 num_item = len(self.Items)
                 for idx in xrange(num_item):
@@ -1300,7 +1306,6 @@ if USE_MPL:
                 values, forced = apply(zip, [(item.GetValue(), item.IsForced()) for item in self.Items])
             labels = [item.GetVariable(variable_name_mask) for item in self.Items]
             styles = map(lambda x: {True: 'italic', False: 'normal'}[x], forced)
-            self.MaskLabel.set_text('.'.join(variable_name_mask))
             if self.Is3DCanvas():
                 for idx, label_func in enumerate([self.Axes.set_xlabel, 
                                                   self.Axes.set_ylabel,
@@ -1312,7 +1317,7 @@ if USE_MPL:
             for label, value, style in zip(self.Labels, values, styles):
                 label.set_text(value)
                 label.set_style(style)
-                        
+            
             self.Canvas.draw()
     
 class DebugVariablePanel(wx.Panel, DebugViewer):
@@ -1339,7 +1344,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.DraggingAxesPanel = None
             self.DraggingAxesBoundingBox = None
             self.DraggingAxesMousePos = None
-            self.VariableNameMask = None
+            self.VariableNameMask = []
             
             self.GraphicPanels = []
             
@@ -1355,7 +1360,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                   border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
             
             for name, bitmap, help in [
-                ("ResetButton", "reset", _("Clear the graph values")),
                 ("CurrentButton", "current", _("Go to current value")),
                 ("ExportGraphButton", "export_graph", _("Export graph values to clipboard"))]:
                 button = wx.lib.buttons.GenBitmapButton(self, 
@@ -1384,7 +1388,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             main_sizer.AddSizer(self.TickSizer, border=5, flag=wx.ALL|wx.GROW)
             
             self.TickLabel = wx.StaticText(self)
-            self.TickSizer.AddWindow(self.TickLabel, 1, border=5, flag=wx.RIGHT|wx.GROW)
+            self.TickSizer.AddWindow(self.TickLabel, border=5, flag=wx.RIGHT)
+            
+            self.MaskLabel = wx.TextCtrl(self, style=wx.TE_READONLY|wx.TE_CENTER|wx.NO_BORDER)
+            self.TickSizer.AddWindow(self.MaskLabel, 1, border=5, flag=wx.RIGHT|wx.GROW)
             
             self.TickTimeLabel = wx.StaticText(self)
             self.TickSizer.AddWindow(self.TickTimeLabel)
@@ -1846,10 +1853,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         wx.CallAfter(self.RefreshRange)
         event.Skip()
     
-    def OnResetButton(self, event):
-        self.ResetGraphicsValues()
-        event.Skip()
-
     def OnCurrentButton(self, event):
         if len(self.Ticks) > 0:
             self.StartTick = max(self.Ticks[0], self.Ticks[-1] - self.CurrentRange)
@@ -1923,6 +1926,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.VariableNameMask = items[0].GetVariable().split('.')[:-1] + ['*']
         else:
             self.VariableNameMask = []
+        self.MaskLabel.ChangeValue(".".join(self.VariableNameMask))
+        self.MaskLabel.SetInsertionPoint(self.MaskLabel.GetLastPosition())
             
     def GetVariableNameMask(self):
         return self.VariableNameMask
