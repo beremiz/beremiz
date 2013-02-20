@@ -409,16 +409,17 @@ class DebugViewer:
                 self.LastRefreshTime = gettime()
                 self.Inhibit(True)
                 wx.CallAfter(self.RefreshViewOnNewData, *args, **kwargs)
+            else:
+                self.TimerAccessLock.acquire()
+                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
+                self.LastRefreshTimer.start()
+                self.TimerAccessLock.release()
         elif not self.IsShown() and self.HasAcquiredLock:
             DebugViewer.RefreshNewData(self)
             
     def RefreshViewOnNewData(self, *args, **kwargs):
         if self:
             self.RefreshNewData(*args, **kwargs)
-            self.TimerAccessLock.acquire()
-            self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
-            self.LastRefreshTimer.start()
-            self.TimerAccessLock.release()
     
     def RefreshNewData(self, *args, **kwargs):
         self.Inhibit(False)
