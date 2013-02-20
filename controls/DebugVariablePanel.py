@@ -969,6 +969,7 @@ if USE_MPL:
                     self.ParentWindow.StartDragNDrop(self, 
                         self.Items[item_idx], x + xw, y + yw, x + xw, y + yw)
                 elif event.button == 1 and event.inaxes == self.Axes:
+                    self.StartCursorTick = self.CursorTick
                     self.HandleCursorMove(event)
                 elif event.button == 2 and self.GraphType == GRAPH_PARALLEL:
                     width, height = self.Canvas.GetSize()
@@ -1004,6 +1005,7 @@ if USE_MPL:
                             self.HandleCursorMove(event)
                     elif self.MouseStartPos is not None and len(self.Items) == 1:
                         xw, yw = self.GetPosition()
+                        self.ParentWindow.SetCursorTick(self.StartCursorTick)
                         self.ParentWindow.StartDragNDrop(self, 
                             self.Items[0],
                             event.x + xw, height - event.y + yw, 
@@ -1086,14 +1088,6 @@ if USE_MPL:
                     cursor_tick = data[numpy.argmin(numpy.abs(data[:,0] - event.xdata)), 0]
             if cursor_tick is not None:
                 self.ParentWindow.SetCursorTick(cursor_tick)
-        
-        def DoDragDrop(self, item_idx):
-            self.Canvas.ShowButtons(False)
-            self.Canvas.DismissContextualButtons()
-            data = wx.TextDataObject(str((self.Items[item_idx].GetVariable(), "debug", "move")))
-            dragSource = wx.DropSource(self.Canvas)
-            dragSource.SetData(data)
-            dragSource.DoDragDrop()
         
         def OnAxesMotion(self, event):
             if self.Is3DCanvas():
@@ -1816,7 +1810,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             menu.Destroy()
         event.Skip()
     
-    def ChangeRange(self, dir, tick):
+    def ChangeRange(self, dir, tick=None):
         current_range = self.CurrentRange
         current_range_idx = self.CanvasRange.GetSelection()
         new_range_idx = max(0, min(current_range_idx + dir, len(self.RangeValues) - 1))
@@ -1827,6 +1821,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             else:
                 self.CurrentRange = self.RangeValues[new_range_idx][1] / self.Ticktime
             if len(self.Ticks) > 0:
+                if tick is None:
+                    tick = self.StartTick + self.CurrentRange / 2.
                 new_start_tick = tick - (tick - self.StartTick) * self.CurrentRange / current_range 
                 self.StartTick = self.Ticks[numpy.argmin(numpy.abs(self.Ticks - new_start_tick))]
                 self.Fixed = self.StartTick < self.Ticks[-1] - self.CurrentRange
