@@ -306,7 +306,9 @@ class DebugVariableDropTarget(wx.TextDropTarget):
     
     def OnDragOver(self, x, y, d):
         if self.ParentControl is not None:
-            self.ParentControl.OnCanvasDragging(x, y)
+            self.ParentControl.OnCanvasMouseDragging(x, y)
+        else:
+            self.ParentWindow.RefreshHighlight(x, y)
         return wx.TextDropTarget.OnDragOver(self, x, y, d)
         
     def OnDropText(self, x, y, data):
@@ -351,10 +353,9 @@ class DebugVariableDropTarget(wx.TextDropTarget):
             self.ParentWindow.InsertValue(values[0], force=True)
     
     def OnLeave(self):
-        if self.ParentControl is not None:
-            self.ParentControl.OnCanvasLeave()
+        self.ParentWindow.ResetHighlight()
         return wx.TextDropTarget.OnLeave(self)
-        
+    
     def ShowMessage(self, message):
         dialog = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
         dialog.ShowModal()
@@ -612,9 +613,11 @@ if USE_MPL:
     #CANVAS_HIGHLIGHT_TYPES
     [HIGHLIGHT_NONE,
      HIGHLIGHT_BEFORE,
+     HIGHLIGHT_BEFORE_DOUBLE,
      HIGHLIGHT_AFTER,
+     HIGHLIGHT_AFTER_DOUBLE,
      HIGHLIGHT_LEFT,
-     HIGHLIGHT_RIGHT] = range(5)
+     HIGHLIGHT_RIGHT] = range(7)
     
     HIGHLIGHT_PEN = wx.Pen(wx.Colour(0, 128, 255))
     HIGHLIGHT_BRUSH = wx.Brush(wx.Colour(0, 128, 255, 128))
@@ -719,9 +722,9 @@ if USE_MPL:
             destGC.BeginDrawing()
             destGC.SetPen(HIGHLIGHT_PEN)
             destGC.SetBrush(HIGHLIGHT_BRUSH)
-            if self.Highlight == HIGHLIGHT_BEFORE:
-                destGC.DrawLine(0, 0, width - 1, 0)
-            elif self.Highlight == HIGHLIGHT_AFTER:
+            if self.Highlight in [HIGHLIGHT_BEFORE]:
+                destGC.DrawLine(0, 1, width - 1, 1)
+            elif self.Highlight in [HIGHLIGHT_AFTER]:
                 destGC.DrawLine(0, height - 1, width - 1, height - 1)
             elif self.Highlight == HIGHLIGHT_LEFT:
                 destGC.DrawRectangle(bbox.x, bbox.y, 
@@ -805,13 +808,13 @@ if USE_MPL:
                             y = rect.y + rect.height + offset
                         offset += h
                     button.SetPosition(x, y)
-            self.ParentWindow.ForceRefresh()
+                self.ParentWindow.ForceRefresh()
         
         def DismissContextualButtons(self):
             if self.ContextualButtonsItem is not None:
                 self.ContextualButtonsItem = None
                 self.ContextualButtons = []
-            self.ParentWindow.ForceRefresh()
+                self.ParentWindow.ForceRefresh()
         
         def IsOverButton(self, x, y):
             for button in self.Buttons + self.ContextualButtons:
@@ -1038,7 +1041,11 @@ if USE_MPL:
                     if not self.Canvas.IsOverContextualButton(event.x, height - event.y):
                         self.Canvas.DismissContextualButtons()
         
-        def OnCanvasDragging(self, x, y, refresh=True):
+        def OnCanvasMouseDragging(self, x, y):
+            xw, yw = self.GetPosition()
+            self.ParentWindow.RefreshHighlight(x + xw, y + yw)
+        
+        def OnCanvasDragging(self, x, y):
             width, height = self.Canvas.GetSize()
             bbox = self.Canvas.GetAxesBoundingBox()
             if bbox.InsideXY(x, y) and not self.Is3DCanvas():
@@ -1048,16 +1055,13 @@ if USE_MPL:
                 else:
                     self.Canvas.SetHighlight(HIGHLIGHT_RIGHT)
             elif y < height / 2:
-                self.Canvas.SetHighlight(HIGHLIGHT_BEFORE)
+                if self.ParentWindow.IsViewerFirst(self):
+                    self.Canvas.SetHighlight(HIGHLIGHT_BEFORE)
+                else:
+                    self.Canvas.SetHighlight(HIGHLIGHT_NONE)
+                    self.ParentWindow.HighlightPreviousViewer(self)
             else:
                 self.Canvas.SetHighlight(HIGHLIGHT_AFTER)
-            if refresh:
-                self.ParentWindow.ForceRefresh()
-        
-        def OnCanvasLeave(self, refresh=True):
-            self.Canvas.SetHighlight(HIGHLIGHT_NONE)
-            if refresh:
-                self.ParentWindow.ForceRefresh()
         
         def OnCanvasScroll(self, event):
             if event.inaxes is not None:
@@ -1071,6 +1075,9 @@ if USE_MPL:
         def OnCanvasMouseWheel(self, event):
             if self.ItemButtons is not None:
                 event.Skip()
+        
+        def HighlightCanvas(self, highlight):
+            self.Canvas.SetHighlight(highlight)
         
         def HandleCursorMove(self, event):
             start_tick, end_tick = self.ParentWindow.GetRange()
@@ -1548,6 +1555,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def MoveDragNDrop(self, x_mouse, y_mouse):
         self.DraggingAxesBoundingBox.x = x_mouse - self.DraggingAxesMousePos.x
         self.DraggingAxesBoundingBox.y = y_mouse - self.DraggingAxesMousePos.y
+        self.RefreshHighlight(x_mouse, y_mouse)
+    
+    def RefreshHighlight(self, x_mouse, y_mouse):
         for idx, panel in enumerate(self.GraphicPanels):
             x, y = panel.GetPosition()
             width, height = panel.Canvas.GetSize()
@@ -1555,9 +1565,14 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             if (rect.InsideXY(x_mouse, y_mouse) or 
                 idx == 0 and y_mouse < 0 or
                 idx == len(self.GraphicPanels) - 1 and y_mouse > panel.GetPosition()[1]):
-                panel.OnCanvasDragging(x_mouse - x, y_mouse - y, False)
+                panel.OnCanvasDragging(x_mouse - x, y_mouse - y)
             else:
-                panel.OnCanvasLeave(False)
+                panel.HighlightCanvas(HIGHLIGHT_NONE)
+        self.ForceRefresh()
+    
+    def ResetHighlight(self):
+        for panel in self.GraphicPanels:
+            panel.HighlightCanvas(HIGHLIGHT_NONE)
         self.ForceRefresh()
     
     def IsDragging(self):
@@ -1577,7 +1592,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.DraggingAxesBoundingBox = None
         self.DraggingAxesMousePos = None
         for idx, panel in enumerate(self.GraphicPanels):
-            panel.OnCanvasLeave(False)
+            panel.HighlightCanvas(HIGHLIGHT_NONE)
             xw, yw = panel.GetPosition()
             width, height = panel.Canvas.GetSize()
             bbox = wx.Rect(xw, yw, width, height)
@@ -1635,7 +1650,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 refresh_graphics = False
             
             if self.DraggingAxesPanel is not None and self.DraggingAxesPanel not in self.GraphicPanels:
-                self.DraggingAxesPanel.Refresh()
+                self.DraggingAxesPanel.Refresh(refresh_graphics)
             for panel in self.GraphicPanels:
                 if isinstance(panel, DebugVariableGraphic):
                     panel.Refresh(refresh_graphics)
@@ -1910,6 +1925,20 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if viewer in self.GraphicPanels:
             return self.GraphicPanels.index(viewer)
         return None
+    
+    def IsViewerFirst(self, viewer):
+        return viewer == self.GraphicPanels[0]
+    
+    def IsViewerLast(self, viewer):
+        return viewer == self.GraphicPanels[-1]
+    
+    def HighlightPreviousViewer(self, viewer):
+        if self.IsViewerFirst(viewer):
+            return
+        idx = self.GetViewerIndex(viewer)
+        if idx is None:
+            return
+        self.GraphicPanels[idx-1].HighlightCanvas(HIGHLIGHT_AFTER)
     
     def ResetVariableNameMask(self):
         items = []
