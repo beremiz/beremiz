@@ -911,26 +911,27 @@ if USE_MPL:
             self.DismissContextualButtons()
         
         def RefreshButtonsState(self, refresh_positions=False):
-            width, height = self.GetSize()
-            min_width, min_height = self.Parent.GetCanvasMinSize()
-            for button, size in zip(self.Buttons, 
-                                    [min_height, SIZE_MIDDLE, SIZE_MAXI]):
-                if size == height and button.IsEnabled():
-                    button.Disable()
-                    refresh_positions = True
-                elif not button.IsEnabled():
-                    button.Enable()
-                    refresh_positions = True
-            if refresh_positions:
-                offset = 0
-                buttons = self.Buttons[:]
-                buttons.reverse()
-                for button in buttons:
-                    if button.IsShown() and button.IsEnabled():
-                        w, h = button.GetSize()
-                        button.SetPosition(width - 5 - w - offset, 5)
-                        offset += w + 2
-                self.ParentWindow.ForceRefresh()
+            if self:
+                width, height = self.GetSize()
+                min_width, min_height = self.Parent.GetCanvasMinSize()
+                for button, size in zip(self.Buttons, 
+                                        [min_height, SIZE_MIDDLE, SIZE_MAXI]):
+                    if size == height and button.IsEnabled():
+                        button.Disable()
+                        refresh_positions = True
+                    elif not button.IsEnabled():
+                        button.Enable()
+                        refresh_positions = True
+                if refresh_positions:
+                    offset = 0
+                    buttons = self.Buttons[:]
+                    buttons.reverse()
+                    for button in buttons:
+                        if button.IsShown() and button.IsEnabled():
+                            w, h = button.GetSize()
+                            button.SetPosition(width - 5 - w - offset, 5)
+                            offset += w + 2
+                    self.ParentWindow.ForceRefresh()
         
         def OnResizeWindow(self, event):
             wx.CallAfter(self.RefreshButtonsState, True)
@@ -1017,8 +1018,7 @@ if USE_MPL:
             width, height = self.Canvas.GetSize()
             x, y = event.x, height - event.y
             if not self.Canvas.IsOverButton(x, y):
-                if event.inaxes == self.Axes and not self.Is3DCanvas():
-                    self.MouseStartPos = wx.Point(x, y)
+                if event.inaxes == self.Axes:
                     item_idx = None
                     for i, t in ([pair for pair in enumerate(self.AxesLabels)] + 
                                  [pair for pair in enumerate(self.Labels)]):
@@ -1033,13 +1033,15 @@ if USE_MPL:
                         xw, yw = self.GetPosition()
                         self.ParentWindow.StartDragNDrop(self, 
                             self.Items[item_idx], x + xw, y + yw, x + xw, y + yw)
-                    elif event.button == 1 and event.inaxes == self.Axes:
-                        self.StartCursorTick = self.CursorTick
-                        self.HandleCursorMove(event)
-                    elif event.button == 2 and self.GraphType == GRAPH_PARALLEL:
-                        width, height = self.Canvas.GetSize()
-                        start_tick, end_tick = self.ParentWindow.GetRange()
-                        self.StartCursorTick = start_tick
+                    elif not self.Is3DCanvas():
+                        self.MouseStartPos = wx.Point(x, y)
+                        if event.button == 1 and event.inaxes == self.Axes:
+                            self.StartCursorTick = self.CursorTick
+                            self.HandleCursorMove(event)
+                        elif event.button == 2 and self.GraphType == GRAPH_PARALLEL:
+                            width, height = self.Canvas.GetSize()
+                            start_tick, end_tick = self.ParentWindow.GetRange()
+                            self.StartCursorTick = start_tick
                 
                 elif event.button == 1 and event.y <= 5:
                     self.MouseStartPos = wx.Point(x, y)
@@ -1097,9 +1099,11 @@ if USE_MPL:
                     
                 elif event.button in [None, "up", "down"]:
                     if self.GraphType == GRAPH_PARALLEL:
-                            orientation = [wx.RIGHT] * len(self.AxesLabels) + [wx.LEFT] * len(self.Labels)
+                        orientation = [wx.RIGHT] * len(self.AxesLabels) + [wx.LEFT] * len(self.Labels)
                     elif len(self.AxesLabels) > 0:
                         orientation = [wx.RIGHT, wx.TOP, wx.LEFT, wx.BOTTOM]
+                    else:
+                        orientation = [wx.LEFT] * len(self.Labels)
                     item_idx = None
                     item_style = None
                     for (i, t), style in zip([pair for pair in enumerate(self.AxesLabels)] + 
