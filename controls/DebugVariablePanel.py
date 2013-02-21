@@ -698,6 +698,8 @@ if USE_MPL:
             for size in [SIZE_MINI, SIZE_MIDDLE]:
                 self.Buttons.append(GraphButton(0, 0, *self.SizeButtonsParams[size]))
             self.Buttons.append(
+                GraphButton(0, 0, GetBitmap("export_graph_mini"), self.OnExportGraphButton))
+            self.Buttons.append(
                 GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
             
             self.ShowButtons(False)
@@ -793,6 +795,8 @@ if USE_MPL:
                     self.ContextualButtons.append(
                         GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
                 self.ContextualButtons.append(
+                    GraphButton(0, 0, GetBitmap("export_graph_mini"), self.OnExportItemGraphButton))
+                self.ContextualButtons.append(
                     GraphButton(0, 0, GetBitmap("delete_graph"), self.OnRemoveItemButton))
                 
                 offset = 0
@@ -874,6 +878,9 @@ if USE_MPL:
                     button.SetCallback(callback)
             return OnChangeSizeButton
         
+        def OnExportGraphButton(self):
+            self.Parent.ExportGraph()
+        
         def OnCloseButton(self):
             self.ParentWindow.DeleteValue(self.Parent)
         
@@ -886,12 +893,17 @@ if USE_MPL:
             wx.CallAfter(self.Parent.ReleaseValue, 
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
+        
+        def OnExportItemGraphButton(self):
+            wx.CallAfter(self.Parent.ExportGraph, 
+                         self.ContextualButtonsItem)
+            self.DismissContextualButtons()
             
         def OnRemoveItemButton(self):            
             wx.CallAfter(self.ParentWindow.DeleteValue, self.Parent, 
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
-            
+        
         def OnResizeWindow(self, event):
             width, height = self.GetSize()
             offset = 0
@@ -912,7 +924,6 @@ if USE_MPL:
             self.CursorTick = None
             self.MouseStartPos = None
             self.StartCursorTick = None
-            self.ItemButtons = None
             
             main_sizer = wx.BoxSizer(wx.VERTICAL)
             
@@ -922,7 +933,6 @@ if USE_MPL:
             self.Canvas = DraggingFigureCanvas(self, self.ParentWindow, -1, self.Figure)
             self.Canvas.SetMinSize(wx.Size(200, 200))
             self.Canvas.SetDropTarget(DebugVariableDropTarget(self.ParentWindow, self))
-            self.Canvas.Bind(wx.EVT_MOUSEWHEEL, self.OnCanvasMouseWheel)
             self.Canvas.mpl_connect('button_press_event', self.OnCanvasButtonPressed)
             self.Canvas.mpl_connect('motion_notify_event', self.OnCanvasMotion)
             self.Canvas.mpl_connect('button_release_event', self.OnCanvasButtonReleased)
@@ -1046,7 +1056,7 @@ if USE_MPL:
                     self.ParentWindow.SetCanvasPosition(
                         self.StartCursorTick + (self.MouseStartPos.x - event.x) *
                         (end_tick - start_tick) / rect.width)
-                elif event.button is None:
+                elif event.button in [None, "up", "down"]:
                     if self.GraphType == GRAPH_PARALLEL:
                         orientation = [wx.RIGHT] * len(self.AxesLabels) + [wx.LEFT] * len(self.Labels)
                     elif len(self.AxesLabels) > 0:
@@ -1098,10 +1108,6 @@ if USE_MPL:
                 else:
                     tick = event.xdata
                 self.ParentWindow.ChangeRange(int(-event.step) / 3, tick)
-        
-        def OnCanvasMouseWheel(self, event):
-            if self.ItemButtons is not None:
-                event.Skip()
         
         def HighlightCanvas(self, highlight):
             self.Canvas.SetHighlight(highlight)
@@ -1346,6 +1352,14 @@ if USE_MPL:
                 label.set_style(style)
             
             self.Canvas.draw()
+    
+        def ExportGraph(self, item=None):
+            if item is not None:
+                variables = [(item, [entry for entry in item.GetData()])]
+            else:
+                variables = [(item, [entry for entry in item.GetData()])
+                             for item in self.Items]
+            self.ParentWindow.CopyDataToClipboard(variables)
     
 class DebugVariablePanel(wx.Panel, DebugViewer):
     
@@ -1623,6 +1637,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             width, height = panel.Canvas.GetSize()
             bbox = wx.Rect(xw, yw, width, height)
             if bbox.InsideXY(x_mouse, y_mouse):
+                panel.Canvas.ShowButtons(True)
                 merge_type = GRAPH_PARALLEL
                 if panel.Is3DCanvas():
                     if y_mouse > yw + height / 2:
@@ -2075,7 +2090,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                             source_panel.Canvas.ReleaseMouse()
                         self.GraphicPanels.remove(source_panel)
                         source_panel.Destroy()
-                        
+            elif (merge_type != graph_type and len(target_panel.Items) == 2):
+                target_panel.RemoveItem(source_item)
+            else:
+                target_panel = None
+                
+            if target_panel is not None:
                 target_panel.AddItem(source_item)
                 target_panel.GraphType = merge_type
                 target_panel.ResetGraphics()
