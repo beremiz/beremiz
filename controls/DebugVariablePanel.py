@@ -613,17 +613,21 @@ if USE_MPL:
     #CANVAS_HIGHLIGHT_TYPES
     [HIGHLIGHT_NONE,
      HIGHLIGHT_BEFORE,
-     HIGHLIGHT_BEFORE_DOUBLE,
      HIGHLIGHT_AFTER,
-     HIGHLIGHT_AFTER_DOUBLE,
      HIGHLIGHT_LEFT,
-     HIGHLIGHT_RIGHT] = range(7)
+     HIGHLIGHT_RIGHT] = range(5)
     
     HIGHLIGHT_PEN = wx.Pen(wx.Colour(0, 128, 255))
     HIGHLIGHT_BRUSH = wx.Brush(wx.Colour(0, 128, 255, 128))
     
     #CANVAS_SIZE_TYPES
-    [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI] = range(3)
+    [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI] = [0, 100, 200]
+    
+    DEFAULT_CANVAS_HEIGHT = 200.
+    CANVAS_BORDER = (20., 10.)
+    CANVAS_PADDING = 8.5
+    VALUE_LABEL_HEIGHT = 17.
+    AXES_LABEL_HEIGHT = 12.75
     
     class GraphButton():
         
@@ -684,11 +688,15 @@ if USE_MPL:
             self.CanvasSize = SIZE_MAXI
             
             self.Buttons = []
+            self.SizeButtonsParams = dict(
+                [(size, (GetBitmap(bitmap), self.GetOnChangeSizeButton(size)))
+                 for size, bitmap in zip([SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI],
+                                         ["minimize_graph", "middle_graph", "maximize_graph"])])
             self.ContextualButtons = []
             self.ContextualButtonsItem = None
             
-            self.Buttons.append(
-                GraphButton(0, 0, GetBitmap("minimize_graph"), self.OnChangeSizeButton))
+            for size in [SIZE_MINI, SIZE_MIDDLE]:
+                self.Buttons.append(GraphButton(0, 0, *self.SizeButtonsParams[size]))
             self.Buttons.append(
                 GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
             
@@ -848,13 +856,23 @@ if USE_MPL:
                 self.ShowButtons(False)
             event.Skip()
         
-        def OnChangeSizeButton(self):
-            if self.CanvasSize == SIZE_MAXI:
-                self.CanvasSize = SIZE_MIDDLE
-                self.Parent.Minimize()
-            else:
-                self.CanvasSize = SIZE_MAXI
-                self.Parent.Maximize()
+        def GetOnChangeSizeButton(self, size):
+            def OnChangeSizeButton():
+                self.CanvasSize = size
+                self.Parent.SetCanvasSize(200, self.CanvasSize)
+                params = []
+                if self.CanvasSize != SIZE_MINI:
+                    params.append(self.SizeButtonsParams[SIZE_MINI])
+                else:
+                    params.append(self.SizeButtonsParams[SIZE_MIDDLE])
+                if self.CanvasSize != SIZE_MAXI:
+                    params.append(self.SizeButtonsParams[SIZE_MAXI])
+                else:
+                    params.append(self.SizeButtonsParams[SIZE_MIDDLE])
+                for button, (bitmap, callback) in zip(self.Buttons, params):
+                    button.SetBitmap(bitmap)
+                    button.SetCallback(callback)
+            return OnChangeSizeButton
         
         def OnCloseButton(self):
             self.ParentWindow.DeleteValue(self.Parent)
@@ -882,7 +900,7 @@ if USE_MPL:
             for button in buttons:
                 w, h = button.GetSize()
                 button.SetPosition(width - 5 - w - offset, 5)
-                offset += w
+                offset += w + 2
             event.Skip()
     
     class DebugVariableGraphic(DebugVariableViewer):
@@ -914,32 +932,41 @@ if USE_MPL:
             self.SetSizer(main_sizer)
             
             self.ResetGraphics()
+            self.RefreshLabelsPosition(200)
         
-        def RefreshLabelsPosition(self, ratio):
+        def RefreshLabelsPosition(self, height):
+            canvas_ratio = 1. / height
+            graph_ratio = 1. / ((1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio) * height)
+            
+            self.Figure.subplotpars.update(
+                top= 1.0 - CANVAS_BORDER[1] * canvas_ratio, 
+                bottom= CANVAS_BORDER[0] * canvas_ratio)
+            
             if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
                 num_item = len(self.Items)
                 for idx in xrange(num_item):
                     if not self.Is3DCanvas():
-                        self.AxesLabels[idx].set_position((0.05, 1.0 - (0.1 + 0.075 * idx) * ratio))
-                    self.Labels[idx].set_position((0.95, 0.1 + (num_item - idx - 1) * 0.1 * ratio))
+                        self.AxesLabels[idx].set_position(
+                            (0.05, 
+                             1.0 - (CANVAS_PADDING + AXES_LABEL_HEIGHT * idx) * graph_ratio))
+                    self.Labels[idx].set_position(
+                        (0.95, 
+                         CANVAS_PADDING * graph_ratio + 
+                         (num_item - idx - 1) * VALUE_LABEL_HEIGHT * graph_ratio))
             else:
-                self.AxesLabels[0].set_position((0.1, 0.05 * ratio))
-                self.Labels[0].set_position((0.95, 0.05 * ratio))
-                self.AxesLabels[1].set_position((0.05, 0.1 * ratio))
-                self.Labels[1].set_position((0.05, 1.0 - 0.05 * ratio))
+                self.AxesLabels[0].set_position((0.1, CANVAS_PADDING * graph_ratio))
+                self.Labels[0].set_position((0.95, CANVAS_PADDING * graph_ratio))
+                self.AxesLabels[1].set_position((0.05, 2 * CANVAS_PADDING * graph_ratio))
+                self.Labels[1].set_position((0.05, 1.0 - CANVAS_PADDING * graph_ratio))
         
-        def Minimize(self):
-            self.Canvas.SetMinSize(wx.Size(200, 100))
-            self.Figure.subplotpars.update(top=0.9, bottom=0.2)
-            self.RefreshLabelsPosition(2)
             self.Figure.subplots_adjust()
-            self.ParentWindow.RefreshGraphicsSizer()
-            
-        def Maximize(self):
-            self.Canvas.SetMinSize(wx.Size(200, 200))
-            self.Figure.subplotpars.update(top=0.95, bottom=0.1)
-            self.RefreshLabelsPosition(1)
-            self.Figure.subplots_adjust()
+        
+        def SetCanvasSize(self, width, height):
+            height = max(height,
+                         CANVAS_BORDER[0] + CANVAS_BORDER[1] + 
+                         2 * CANVAS_PADDING + VALUE_LABEL_HEIGHT * len(self.Items))
+            self.Canvas.SetMinSize(wx.Size(width, height))
+            self.RefreshLabelsPosition(height)
             self.ParentWindow.RefreshGraphicsSizer()
             
         def GetAxesBoundingBox(self, absolute=False):
@@ -1135,7 +1162,8 @@ if USE_MPL:
                         color = color_cycle[idx % len(color_cycle)]
                     if not self.Is3DCanvas():
                         self.AxesLabels.append(
-                            text_func(0, 0, "", size='small', 
+                            text_func(0, 0, "", size='small',
+                                      verticalalignment='top', 
                                       color=color,
                                       transform=self.Axes.transAxes))
                     self.Labels.append(
@@ -1161,10 +1189,8 @@ if USE_MPL:
                                    rotation='vertical',
                                    verticalalignment='top',
                                    transform=self.Axes.transAxes))
-            if self.Canvas.CanvasSize == SIZE_MAXI:
-                self.RefreshLabelsPosition(1)
-            else:
-                self.RefreshLabelsPosition(2)
+            width, height = self.Canvas.GetSize()
+            self.RefreshLabelsPosition(height)
             
         def AddItem(self, item):
             DebugVariableViewer.AddItem(self, item)
