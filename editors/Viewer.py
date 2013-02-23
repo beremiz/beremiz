@@ -303,6 +303,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         if not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                             self.ParentWindow.Controler.AddEditedElementPouVar(tagname, var_type, var_name, location, values[4])
                             self.ParentWindow.RefreshVariablePanel()
+                            self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)
             elif values[1] == "Global":
                 var_name = values[0]
