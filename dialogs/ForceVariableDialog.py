@@ -109,7 +109,7 @@ def getdatetime(v):
     if result is not None:
         year, month, day, hours, minutes, seconds = result.groups()
         try:
-            date = datetime.datetime(int(year), int(month), int(day), int(hours), int(minutes), int(float(seconds)), int((float(second) * SECOND) % SECOND))
+            date = datetime.datetime(int(year), int(month), int(day), int(hours), int(minutes), int(float(seconds)), int((float(seconds) * SECOND) % SECOND))
         except ValueError, e:
             return None
         base_date = datetime.datetime(1970, 1, 1)
