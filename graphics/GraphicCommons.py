@@ -385,16 +385,17 @@ class DebugViewer:
             wx.CallAfter(self._ShouldRefresh)
         
     def _ShouldRefresh(self):
-        if DEBUG_REFRESH_LOCK.acquire(False):
-            self.AccessLock.acquire()
-            self.HasAcquiredLock = True
-            self.AccessLock.release()
-            self.RefreshNewData()
-        else:
-            self.TimerAccessLock.acquire()
-            self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
-            self.LastRefreshTimer.start()
-            self.TimerAccessLock.release()
+        if self:
+            if DEBUG_REFRESH_LOCK.acquire(False):
+                self.AccessLock.acquire()
+                self.HasAcquiredLock = True
+                self.AccessLock.release()
+                self.RefreshNewData()
+            else:
+                self.TimerAccessLock.acquire()
+                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
+                self.LastRefreshTimer.start()
+                self.TimerAccessLock.release()
     
     def NewDataAvailable(self, tick, *args, **kwargs):
         self.TimerAccessLock.acquire()
