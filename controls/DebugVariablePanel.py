@@ -306,7 +306,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
     
     def OnDragOver(self, x, y, d):
         if self.ParentControl is not None:
-            self.ParentControl.OnCanvasMouseDragging(x, y)
+            self.ParentControl.OnMouseDragging(x, y)
         else:
             self.ParentWindow.RefreshHighlight(x, y)
         return wx.TextDropTarget.OnDragOver(self, x, y, d)
@@ -332,7 +332,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                     row = self.ParentWindow.Table.GetNumberRows()
                 self.ParentWindow.InsertValue(values[0], row, force=True)
             elif self.ParentControl is not None:
-                width, height = self.ParentControl.Canvas.GetSize()
+                width, height = self.ParentControl.GetSize()
                 target_idx = self.ParentControl.GetIndex()
                 merge_type = GRAPH_PARALLEL
                 if self.ParentControl.Is3DCanvas():
@@ -399,25 +399,18 @@ if USE_MPL:
             range = 1.0
         return data, center - range * 0.55, center + range * 0.55
     
-    class DebugVariableViewer(wx.Panel):
+    class DebugVariableViewer:
         
-        def AddViewer(self):
-            pass
-        
-        def AddButtons(self):
-            pass
-        
-        def __init__(self, parent, window, items=[]):
-            wx.Panel.__init__(self, parent)
-            self.SetBackgroundColour(wx.WHITE)
-            self.SetDropTarget(DebugVariableDropTarget(window, self))
-            
+        def __init__(self, window, items=[]):
             self.ParentWindow = window
             self.Items = items
             
+            self.Highlight = HIGHLIGHT_NONE
+            self.Buttons = []
+        
         def __del__(self):
             self.ParentWindow = None
-            
+        
         def GetIndex(self):
             return self.ParentWindow.GetViewerIndex(self)
         
@@ -467,74 +460,137 @@ if USE_MPL:
             for item in self.Items:
                 item.ResetData()
         
-        def Refresh(self):
+        def RefreshViewer(self):
             pass
-    
-        def OnForceButton(self, event):
-            if len(self.Items) == 1:
-                wx.CallAfter(self.ForceValue, self.Items[0])
-            else:
-                menu = wx.Menu(title='')
-                for item in self.Items:
-                    new_id = wx.NewId()
-                    AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, 
-                        text=item.GetVariable(self.ParentWindow.GetVariableNameMask()))
-                    self.Bind(wx.EVT_MENU, 
-                        self.GetForceVariableMenuFunction(item),
-                        id=new_id)
-                self.PopupMenu(menu)
+        
+        def SetHighlight(self, highlight):
+            if self.Highlight != highlight:
+                self.Highlight = highlight
+                return True
+            return False
+        
+        def GetButtons(self):
+            return self.Buttons
+        
+        def HandleButtons(self, x, y):
+            for button in self.GetButtons():
+                if button.HitTest(x, y):
+                    button.ProcessCallback()
+                    return True
+            return False
+        
+        def IsOverButton(self, x, y):
+            for button in self.GetButtons():
+                if button.HitTest(x, y):
+                    return True
+            return False
+        
+        def ShowButtons(self, show):
+            for button in self.Buttons:
+                if show:
+                    button.Show()
+                else:
+                    button.Hide()
+            self.RefreshButtonsState()
+            self.ParentWindow.ForceRefresh()
+        
+        def RefreshButtonsState(self, refresh_positions=False):
+            if self:
+                width, height = self.GetSize()
+                if refresh_positions:
+                    offset = 0
+                    buttons = self.Buttons[:]
+                    buttons.reverse()
+                    for button in buttons:
+                        if button.IsShown() and button.IsEnabled():
+                            w, h = button.GetSize()
+                            button.SetPosition(width - 5 - w - offset, 5)
+                            offset += w + 2
+                    self.ParentWindow.ForceRefresh()
+        
+        def DrawCommonElements(self, dc, buttons=None):
+            width, height = self.GetSize()
+            
+            dc.SetPen(HIGHLIGHT_DROP_PEN)
+            dc.SetBrush(HIGHLIGHT_DROP_BRUSH)
+            if self.Highlight in [HIGHLIGHT_BEFORE]:
+                dc.DrawLine(0, 1, width - 1, 1)
+            elif self.Highlight in [HIGHLIGHT_AFTER]:
+                dc.DrawLine(0, height - 1, width - 1, height - 1)
+            
+            if buttons is None:
+                buttons = self.Buttons
+            for button in buttons:
+                button.Draw(dc)
+                
+            if self.ParentWindow.IsDragging():
+                destBBox = self.ParentWindow.GetDraggingAxesClippingRegion(self)
+                srcPos = self.ParentWindow.GetDraggingAxesPosition(self)
+                if destBBox.width > 0 and destBBox.height > 0:
+                    srcPanel = self.ParentWindow.DraggingAxesPanel
+                    srcBBox = srcPanel.GetAxesBoundingBox()
+                    
+                    if destBBox.x == 0:
+                        srcX = srcBBox.x - srcPos.x
+                    else:
+                        srcX = srcBBox.x
+                    if destBBox.y == 0:
+                        srcY = srcBBox.y - srcPos.y
+                    else:
+                        srcY = srcBBox.y
+                    
+                    srcBmp = _convert_agg_to_wx_bitmap(srcPanel.get_renderer(), None)
+                    srcDC = wx.MemoryDC()
+                    srcDC.SelectObject(srcBmp)
+                    
+                    dc.Blit(destBBox.x, destBBox.y, 
+                            int(destBBox.width), int(destBBox.height), 
+                            srcDC, srcX, srcY)
+        
+        def OnEnter(self, event):
+            self.ShowButtons(True)
+            event.Skip()
+            
+        def OnLeave(self, event):
+            if self.Highlight != HIGHLIGHT_RESIZE or self.CanvasStartSize is None:
+                x, y = event.GetPosition()
+                width, height = self.GetSize()
+                if (x <= 0 or x >= width - 1 or
+                    y <= 0 or y >= height - 1):
+                    self.ShowButtons(False)
             event.Skip()
         
-        def OnReleaseButton(self, event):
-            if len(self.Items) == 1:
-                wx.CallAfter(self.ReleaseValue, self.Items[0])
-            else:
-                menu = wx.Menu(title='')
-                for item in self.Items:
-                    new_id = wx.NewId()
-                    AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, 
-                        text=item.GetVariable(self.ParentWindow.GetVariableNameMask()))
-                    self.Bind(wx.EVT_MENU, 
-                        self.GetReleaseVariableMenuFunction(item),
-                        id=new_id)
-                
-                self.PopupMenu(menu)
+        def OnCloseButton(self):
+            wx.CallAfter(self.ParentWindow.DeleteValue, self)
+        
+        def OnForceButton(self):
+            wx.CallAfter(self.ForceValue, self.Items[0])
+            
+        def OnReleaseButton(self):
+            wx.CallAfter(self.ReleaseValue, self.Items[0])
+        
+        def OnResizeWindow(self, event):
+            wx.CallAfter(self.RefreshButtonsState, True)
             event.Skip()
         
-        def OnDeleteButton(self, event):
-            if len(self.Items) == 1:
-                wx.CallAfter(self.ParentWindow.DeleteValue, self, self.Items[0])
+        def OnMouseDragging(self, x, y):
+            xw, yw = self.GetPosition()
+            self.ParentWindow.RefreshHighlight(x + xw, y + yw)
+        
+        def OnDragging(self, x, y):
+            width, height = self.GetSize()
+            if y < height / 2:
+                if self.ParentWindow.IsViewerFirst(self):
+                    self.SetHighlight(HIGHLIGHT_BEFORE)
+                else:
+                    self.SetHighlight(HIGHLIGHT_NONE)
+                    self.ParentWindow.HighlightPreviousViewer(self)
             else:
-                menu = wx.Menu(title='')
-                for item in self.Items:
-                    new_id = wx.NewId()
-                    AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, 
-                        text=item.GetVariable(self.ParentWindow.GetVariableNameMask()))
-                    self.Bind(wx.EVT_MENU, 
-                        self.GetDeleteValueMenuFunction(item),
-                        id=new_id)
-                
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("All"))
-                self.Bind(wx.EVT_MENU, self.OnDeleteAllValuesMenu, id=new_id)
-                
-                self.PopupMenu(menu)
+                self.SetHighlight(HIGHLIGHT_AFTER)
+        
+        def OnResize(self, event):
+            wx.CallAfter(self.RefreshButtonsState, True)
             event.Skip()
-    
-        def GetForceVariableMenuFunction(self, item):
-            def ForceVariableFunction(event):
-                self.ForceValue(item)
-            return ForceVariableFunction
-        
-        def GetReleaseVariableMenuFunction(self, item):
-            def ReleaseVariableFunction(event):
-                self.ReleaseValue(item)
-            return ReleaseVariableFunction
-        
-        def GetDeleteValueMenuFunction(self, item):
-            def DeleteValueFunction(event):
-                self.ParentWindow.DeleteValue(self, item)
-            return DeleteValueFunction
         
         def ForceValue(self, item):
             iec_path = item.GetVariable().upper()
@@ -547,59 +603,72 @@ if USE_MPL:
         def ReleaseValue(self, item):
             iec_path = item.GetVariable().upper()
             self.ParentWindow.ReleaseDataValue(iec_path)
-        
-        def OnDeleteAllValuesMenu(self, event):
-            wx.CallAfter(self.ParentWindow.DeleteValue, self)
-        
-    class DebugVariableText(DebugVariableViewer):
+    
+    
+    class DebugVariableText(DebugVariableViewer, wx.Panel):
         
         def __init__(self, parent, window, items=[]):
-            DebugVariableViewer.__init__(self, parent, window, items)
-        
-            main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
-            main_sizer.AddGrowableCol(0)
+            DebugVariableViewer.__init__(self, window, items)
             
-            viewer_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
-            viewer_sizer.AddGrowableCol(0)
-            main_sizer.AddSizer(viewer_sizer, border=5, 
-                flag=wx.ALL|wx.GROW|wx.ALIGN_CENTER_VERTICAL)
+            wx.Panel.__init__(self, parent)
+            self.SetBackgroundColour(wx.WHITE)
+            self.SetDropTarget(DebugVariableDropTarget(window, self))
+            self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+            self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+            self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
+            self.Bind(wx.EVT_SIZE, self.OnResize)
+            self.Bind(wx.EVT_PAINT, self.OnPaint)
             
-            variable_name_label = wx.TextCtrl(self, size=wx.Size(0, -1),
-                value=self.Items[0].GetVariable(), style=wx.TE_READONLY|wx.TE_RIGHT|wx.NO_BORDER)
-            variable_name_label.SetSelection(variable_name_label.GetLastPosition(), -1)
-            viewer_sizer.AddWindow(variable_name_label, flag=wx.GROW)
+            self.SetMinSize(wx.Size(0, 25))
             
-            self.ValueLabel = wx.TextCtrl(self,
-                size=wx.Size(100, -1), style=wx.TE_READONLY|wx.TE_RIGHT|wx.NO_BORDER)
-            viewer_sizer.AddWindow(self.ValueLabel, 
-                border=5, flag=wx.LEFT)
+            self.Buttons.append(
+                GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
+            self.Buttons.append(
+                GraphButton(0, 0, GetBitmap("release"), self.OnReleaseButton))
+            self.Buttons.append(
+                GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
             
-            button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            self.MainSizer.AddSizer(button_sizer, border=5, 
-                flag=wx.TOP|wx.BOTTOM|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+            self.ShowButtons(False)
             
-            buttons = [
-                ("ForceButton", "force", _("Force value")),
-                ("ReleaseButton", "release", _("Release value")),
-                ("DeleteButton", "delete_graph", _("Remove debug variable"))]
+        def RefreshViewer(self):
+            width, height = self.GetSize()
+            bitmap = wx.EmptyBitmap(width, height)
             
-            for name, bitmap, help in buttons:
-                button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap), 
-                      size=wx.Size(20, 20), style=wx.NO_BORDER)
-                button.SetToolTipString(help)
-                setattr(self, name, button)
-                self.Bind(wx.EVT_BUTTON, getattr(self, "On" + name), button)
-                button_sizer.AddWindow(button, border=5, flag=wx.LEFT)
+            dc = wx.BufferedPaintDC(self, bitmap)
+            dc.Clear()
+            dc.BeginDrawing()
             
-            self.SetSizer(main_sizer)
-    
-        def Refresh(self):
-            self.ValueLabel.ChangeValue(self.Items[0].GetValue())
+            gc = wx.GCDC(dc)
+            
+            item_name = self.Items[0].GetVariable(self.ParentWindow.GetVariableNameMask())
+            w, h = gc.GetTextExtent(item_name)
+            gc.DrawText(item_name, 10, (height - h) / 2)
+            
             if self.Items[0].IsForced():
-                self.ValueLabel.SetForegroundColour(wx.BLUE)
+                gc.SetTextForeground(wx.BLUE)
+                self.Buttons[0].Disable()
+                self.Buttons[1].Enable()
             else:
-                self.ValueLabel.SetForegroundColour(wx.BLACK)
-            self.ValueLabel.SetSelection(self.ValueLabel.GetLastPosition(), -1)
+                self.Buttons[1].Disable()
+                self.Buttons[0].Enable()
+            self.RefreshButtonsState(True)
+            
+            item_value = self.Items[0].GetValue()
+            w, h = gc.GetTextExtent(item_value)
+            gc.DrawText(item_value, width - 40 - w, (height - h) / 2)
+            
+            self.DrawCommonElements(gc)
+            
+            gc.EndDrawing()
+        
+        def OnLeftUp(self, event):
+            x, y = event.GetPosition()
+            wx.CallAfter(self.HandleButtons, x, y)
+            event.Skip()
+        
+        def OnPaint(self, event):
+            self.RefreshViewer()
+            event.Skip()
     
     def compute_mask(x, y):
         mask = []
@@ -684,22 +753,35 @@ if USE_MPL:
             if self.Shown and self.Enabled:
                 dc.DrawBitmap(self.Bitmap, self.Position.x, self.Position.y, True)
     
-    class DraggingFigureCanvas(FigureCanvas):
+    class DebugVariableGraphic(DebugVariableViewer, FigureCanvas):
         
-        def __init__(self, parent, window, *args, **kwargs):
-            FigureCanvas.__init__(self, parent, *args, **kwargs)
-            self.SetBackgroundColour(wx.WHITE)
-            self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
-            self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
-            self.Bind(wx.EVT_SIZE, self.OnResizeWindow)
+        def __init__(self, parent, window, items, graph_type):
+            DebugVariableViewer.__init__(self, window, items)
             
-            self.ParentWindow = window
-            self.Highlight = HIGHLIGHT_NONE
             self.CanvasSize = SIZE_MAXI
-            
-            self.Buttons = []
+            self.GraphType = graph_type
+            self.CursorTick = None
+            self.MouseStartPos = None
+            self.StartCursorTick = None
+            self.CanvasStartSize = None
             self.ContextualButtons = []
             self.ContextualButtonsItem = None
+            
+            self.Figure = matplotlib.figure.Figure(facecolor='w')
+            self.Figure.subplotpars.update(top=0.95, left=0.1, bottom=0.1, right=0.95)
+            
+            FigureCanvas.__init__(self, parent, -1, self.Figure)
+            self.SetBackgroundColour(wx.WHITE)
+            self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
+            self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
+            self.Bind(wx.EVT_SIZE, self.OnResize)
+            
+            self.SetMinSize(wx.Size(200, 200))
+            self.SetDropTarget(DebugVariableDropTarget(self.ParentWindow, self))
+            self.mpl_connect('button_press_event', self.OnCanvasButtonPressed)
+            self.mpl_connect('motion_notify_event', self.OnCanvasMotion)
+            self.mpl_connect('button_release_event', self.OnCanvasButtonReleased)
+            self.mpl_connect('scroll_event', self.OnCanvasScroll)
             
             for size, bitmap in zip([SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI],
                                     ["minimize_graph", "middle_graph", "maximize_graph"]):
@@ -709,19 +791,9 @@ if USE_MPL:
             self.Buttons.append(
                 GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
             
+            self.ResetGraphics()
+            self.RefreshLabelsPosition(200)
             self.ShowButtons(False)
-            
-        def SetHighlight(self, highlight):
-            if self.Highlight != highlight:
-                self.Highlight = highlight
-                return True
-            return False
-        
-        def GetAxesBoundingBox(self):
-            width, height = self.GetSize()
-            ax, ay, aw, ah = self.figure.gca().get_position().bounds
-            return wx.Rect(ax * width, height - (ay + ah) * height - 1,
-                           aw * width + 2, ah * height + 1)
         
         def draw(self, drawDC=None):
             FigureCanvasAgg.draw(self)
@@ -744,54 +816,22 @@ if USE_MPL:
             else:
                 destGC.SetPen(HIGHLIGHT_DROP_PEN)
                 destGC.SetBrush(HIGHLIGHT_DROP_BRUSH)
-                if self.Highlight in [HIGHLIGHT_BEFORE]:
-                    destGC.DrawLine(0, 1, width - 1, 1)
-                elif self.Highlight in [HIGHLIGHT_AFTER]:
-                    destGC.DrawLine(0, height - 1, width - 1, height - 1)
-                elif self.Highlight == HIGHLIGHT_LEFT:
+                if self.Highlight == HIGHLIGHT_LEFT:
                     destGC.DrawRectangle(bbox.x, bbox.y, 
                                          bbox.width / 2, bbox.height)
                 elif self.Highlight == HIGHLIGHT_RIGHT:
                     destGC.DrawRectangle(bbox.x + bbox.width / 2, bbox.y, 
                                          bbox.width / 2, bbox.height)
             
-            for button in self.Buttons + self.ContextualButtons:
-                button.Draw(destGC)
+            self.DrawCommonElements(destGC, self.Buttons + self.ContextualButtons)
             
-            if self.ParentWindow.IsDragging():
-                destBBox = self.ParentWindow.GetDraggingAxesClippingRegion(self.Parent)
-                if destBBox.width > 0 and destBBox.height > 0:
-                    srcPanel = self.ParentWindow.DraggingAxesPanel
-                    srcBBox = srcPanel.GetAxesBoundingBox()
-                    
-                    if destBBox.x == 0:
-                        srcX = srcBBox.x + srcBBox.width - destBBox.width
-                    else:
-                        srcX = srcBBox.x
-                    if destBBox.y == 0:
-                        srcY = srcBBox.y + srcBBox.height - destBBox.height
-                    else:
-                        srcY = srcBBox.y
-                    
-                    srcBmp = _convert_agg_to_wx_bitmap(srcPanel.Canvas.get_renderer(), None)
-                    srcDC = wx.MemoryDC()
-                    srcDC.SelectObject(srcBmp)
-                    
-                    destGC.Blit(destBBox.x, destBBox.y, 
-                                int(destBBox.width), int(destBBox.height), 
-                                srcDC, srcX, srcY)
-                    
             destGC.EndDrawing()
             
             self._isDrawn = True
             self.gui_repaint(drawDC=drawDC)
         
-        def HandleButtons(self, x, y):
-            for button in self.Buttons + self.ContextualButtons:
-                if button.HitTest(x, y):
-                    button.ProcessCallback()
-                    return True
-            return False
+        def GetButtons(self):
+            return self.Buttons + self.ContextualButtons
         
         def PopupContextualButtons(self, item, rect, style=wx.RIGHT):
             if self.ContextualButtonsItem is not None and item != self.ContextualButtonsItem:
@@ -840,12 +880,6 @@ if USE_MPL:
                 self.ContextualButtons = []
                 self.ParentWindow.ForceRefresh()
         
-        def IsOverButton(self, x, y):
-            for button in self.Buttons + self.ContextualButtons:
-                if button.HitTest(x, y):
-                    return True
-            return False
-        
         def IsOverContextualButton(self, x, y):
             for button in self.ContextualButtons:
                 if button.HitTest(x, y):
@@ -855,65 +889,40 @@ if USE_MPL:
         def SetMinSize(self, size):
             wx.Window.SetMinSize(self, size)
             wx.CallAfter(self.RefreshButtonsState)
-                
-        def ShowButtons(self, show):
-            for button in self.Buttons:
-                if show:
-                    button.Show()
-                else:
-                    button.Hide()
-            self.RefreshButtonsState()
-            self.ParentWindow.ForceRefresh()
-        
-        def OnEnterWindow(self, event):
-            self.ShowButtons(True)
-            event.Skip()
-            
-        def OnLeaveWindow(self, event):
-            if self.Highlight != HIGHLIGHT_RESIZE or self.Parent.CanvasStartSize is None:
-                x, y = event.GetPosition()
-                width, height = self.GetSize()
-                if (x <= 0 or x >= width - 1 or
-                    y <= 0 or y >= height - 1):
-                    self.ShowButtons(False)
-            event.Skip()
         
         def GetOnChangeSizeButton(self, size):
             def OnChangeSizeButton():
                 self.CanvasSize = size
-                self.Parent.SetCanvasSize(200, self.CanvasSize)
+                self.SetCanvasSize(200, self.CanvasSize)
             return OnChangeSizeButton
         
         def OnExportGraphButton(self):
-            self.Parent.ExportGraph()
-        
-        def OnCloseButton(self):
-            self.ParentWindow.DeleteValue(self.Parent)
+            self.ExportGraph()
         
         def OnForceButton(self):
-            wx.CallAfter(self.Parent.ForceValue, 
+            wx.CallAfter(self.ForceValue, 
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
             
         def OnReleaseButton(self):
-            wx.CallAfter(self.Parent.ReleaseValue, 
+            wx.CallAfter(self.ReleaseValue, 
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
         
         def OnExportItemGraphButton(self):
-            wx.CallAfter(self.Parent.ExportGraph, 
+            wx.CallAfter(self.ExportGraph, 
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
             
         def OnRemoveItemButton(self):            
-            wx.CallAfter(self.ParentWindow.DeleteValue, self.Parent, 
+            wx.CallAfter(self.ParentWindow.DeleteValue, self, 
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
         
         def RefreshButtonsState(self, refresh_positions=False):
             if self:
                 width, height = self.GetSize()
-                min_width, min_height = self.Parent.GetCanvasMinSize()
+                min_width, min_height = self.GetCanvasMinSize()
                 for button, size in zip(self.Buttons, 
                                         [min_height, SIZE_MIDDLE, SIZE_MAXI]):
                     if size == height and button.IsEnabled():
@@ -932,41 +941,6 @@ if USE_MPL:
                             button.SetPosition(width - 5 - w - offset, 5)
                             offset += w + 2
                     self.ParentWindow.ForceRefresh()
-        
-        def OnResizeWindow(self, event):
-            wx.CallAfter(self.RefreshButtonsState, True)
-            event.Skip()
-    
-    class DebugVariableGraphic(DebugVariableViewer):
-        
-        def __init__(self, parent, window, items, graph_type):
-            DebugVariableViewer.__init__(self, parent, window, items)
-        
-            self.GraphType = graph_type
-            self.CursorTick = None
-            self.MouseStartPos = None
-            self.StartCursorTick = None
-            self.CanvasStartSize = None
-            
-            main_sizer = wx.BoxSizer(wx.VERTICAL)
-            
-            self.Figure = matplotlib.figure.Figure(facecolor='w')
-            self.Figure.subplotpars.update(top=0.95, left=0.1, bottom=0.1, right=0.95)
-            
-            self.Canvas = DraggingFigureCanvas(self, self.ParentWindow, -1, self.Figure)
-            self.Canvas.SetMinSize(wx.Size(200, 200))
-            self.Canvas.SetDropTarget(DebugVariableDropTarget(self.ParentWindow, self))
-            self.Canvas.mpl_connect('button_press_event', self.OnCanvasButtonPressed)
-            self.Canvas.mpl_connect('motion_notify_event', self.OnCanvasMotion)
-            self.Canvas.mpl_connect('button_release_event', self.OnCanvasButtonReleased)
-            self.Canvas.mpl_connect('scroll_event', self.OnCanvasScroll)
-            self.Canvas.Bind(wx.EVT_LEAVE_WINDOW, self.OnCanvasLeave)
-            
-            main_sizer.AddWindow(self.Canvas, 1, flag=wx.GROW)
-            self.SetSizer(main_sizer)
-            
-            self.ResetGraphics()
-            self.RefreshLabelsPosition(200)
         
         def RefreshLabelsPosition(self, height):
             canvas_ratio = 1. / height
@@ -1002,12 +976,15 @@ if USE_MPL:
         
         def SetCanvasSize(self, width, height):
             height = max(height, self.GetCanvasMinSize()[1])
-            self.Canvas.SetMinSize(wx.Size(width, height))
+            self.SetMinSize(wx.Size(width, height))
             self.RefreshLabelsPosition(height)
             self.ParentWindow.RefreshGraphicsSizer()
             
         def GetAxesBoundingBox(self, absolute=False):
-            bbox = self.Canvas.GetAxesBoundingBox()
+            width, height = self.GetSize()
+            ax, ay, aw, ah = self.figure.gca().get_position().bounds
+            bbox = wx.Rect(ax * width, height - (ay + ah) * height - 1,
+                           aw * width + 2, ah * height + 1)
             if absolute:
                 xw, yw = self.GetPosition()
                 bbox.x += xw
@@ -1015,9 +992,9 @@ if USE_MPL:
             return bbox
         
         def OnCanvasButtonPressed(self, event):
-            width, height = self.Canvas.GetSize()
+            width, height = self.GetSize()
             x, y = event.x, height - event.y
-            if not self.Canvas.IsOverButton(x, y):
+            if not self.IsOverButton(x, y):
                 if event.inaxes == self.Axes:
                     item_idx = None
                     for i, t in ([pair for pair in enumerate(self.AxesLabels)] + 
@@ -1028,8 +1005,8 @@ if USE_MPL:
                             item_idx = i
                             break
                     if item_idx is not None:
-                        self.Canvas.ShowButtons(False)
-                        self.Canvas.DismissContextualButtons()
+                        self.ShowButtons(False)
+                        self.DismissContextualButtons()
                         xw, yw = self.GetPosition()
                         self.ParentWindow.StartDragNDrop(self, 
                             self.Items[item_idx], x + xw, y + yw, x + xw, y + yw)
@@ -1039,17 +1016,17 @@ if USE_MPL:
                             self.StartCursorTick = self.CursorTick
                             self.HandleCursorMove(event)
                         elif event.button == 2 and self.GraphType == GRAPH_PARALLEL:
-                            width, height = self.Canvas.GetSize()
+                            width, height = self.GetSize()
                             start_tick, end_tick = self.ParentWindow.GetRange()
                             self.StartCursorTick = start_tick
                 
                 elif event.button == 1 and event.y <= 5:
                     self.MouseStartPos = wx.Point(x, y)
-                    self.CanvasStartSize = self.Canvas.GetSize()
+                    self.CanvasStartSize = self.GetSize()
         
         def OnCanvasButtonReleased(self, event):
             if self.ParentWindow.IsDragging():
-                width, height = self.Canvas.GetSize()
+                width, height = self.GetSize()
                 xw, yw = self.GetPosition()
                 self.ParentWindow.StopDragNDrop(
                     self.ParentWindow.DraggingAxesPanel.Items[0].GetVariable(),
@@ -1059,14 +1036,14 @@ if USE_MPL:
                 self.MouseStartPos = None
                 self.StartCursorTick = None
                 self.CanvasStartSize = None
-                width, height = self.Canvas.GetSize()
-                self.Canvas.HandleButtons(event.x, height - event.y)
-                if event.y > 5 and self.Canvas.SetHighlight(HIGHLIGHT_NONE):
-                    self.Canvas.SetCursor(wx.NullCursor)
+                width, height = self.GetSize()
+                self.HandleButtons(event.x, height - event.y)
+                if event.y > 5 and self.SetHighlight(HIGHLIGHT_NONE):
+                    self.SetCursor(wx.NullCursor)
                     self.ParentWindow.ForceRefresh()
         
         def OnCanvasMotion(self, event):
-            width, height = self.Canvas.GetSize()
+            width, height = self.GetSize()
             if self.ParentWindow.IsDragging():
                 xw, yw = self.GetPosition()
                 self.ParentWindow.MoveDragNDrop(
@@ -1093,7 +1070,7 @@ if USE_MPL:
                             (end_tick - start_tick) / rect.width)    
                 
                 if event.button == 1 and self.CanvasStartSize is not None:
-                    width, height = self.Canvas.GetSize()
+                    width, height = self.GetSize()
                     self.SetCanvasSize(width, 
                         self.CanvasStartSize.height + height - event.y - self.MouseStartPos.y)
                     
@@ -1116,41 +1093,19 @@ if USE_MPL:
                             item_style = style
                             break
                     if item_idx is not None:
-                        self.Canvas.PopupContextualButtons(self.Items[item_idx], rect, item_style)
+                        self.PopupContextualButtons(self.Items[item_idx], rect, item_style)
                         return 
-                    if not self.Canvas.IsOverContextualButton(event.x, height - event.y):
-                        self.Canvas.DismissContextualButtons()
+                    if not self.IsOverContextualButton(event.x, height - event.y):
+                        self.DismissContextualButtons()
                     
                     if event.y <= 5:
-                        if self.Canvas.SetHighlight(HIGHLIGHT_RESIZE):
-                            self.Canvas.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+                        if self.SetHighlight(HIGHLIGHT_RESIZE):
+                            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
                             self.ParentWindow.ForceRefresh()
                     else:
-                        if self.Canvas.SetHighlight(HIGHLIGHT_NONE):
-                            self.Canvas.SetCursor(wx.NullCursor)
+                        if self.SetHighlight(HIGHLIGHT_NONE):
+                            self.SetCursor(wx.NullCursor)
                             self.ParentWindow.ForceRefresh()
-        
-        def OnCanvasMouseDragging(self, x, y):
-            xw, yw = self.GetPosition()
-            self.ParentWindow.RefreshHighlight(x + xw, y + yw)
-        
-        def OnCanvasDragging(self, x, y):
-            width, height = self.Canvas.GetSize()
-            bbox = self.Canvas.GetAxesBoundingBox()
-            if bbox.InsideXY(x, y) and not self.Is3DCanvas():
-                rect = wx.Rect(bbox.x, bbox.y, bbox.width / 2, bbox.height)
-                if rect.InsideXY(x, y):
-                    self.Canvas.SetHighlight(HIGHLIGHT_LEFT)
-                else:
-                    self.Canvas.SetHighlight(HIGHLIGHT_RIGHT)
-            elif y < height / 2:
-                if self.ParentWindow.IsViewerFirst(self):
-                    self.Canvas.SetHighlight(HIGHLIGHT_BEFORE)
-                else:
-                    self.Canvas.SetHighlight(HIGHLIGHT_NONE)
-                    self.ParentWindow.HighlightPreviousViewer(self)
-            else:
-                self.Canvas.SetHighlight(HIGHLIGHT_AFTER)
         
         def OnCanvasScroll(self, event):
             if event.inaxes is not None:
@@ -1161,14 +1116,29 @@ if USE_MPL:
                     tick = event.xdata
                 self.ParentWindow.ChangeRange(int(-event.step) / 3, tick)
         
-        def OnCanvasLeave(self, event):
-            if self.CanvasStartSize is None and self.Canvas.SetHighlight(HIGHLIGHT_NONE):
-                self.Canvas.SetCursor(wx.NullCursor)
-                self.ParentWindow.ForceRefresh()
-            event.Skip()
+        def OnDragging(self, x, y):
+            width, height = self.GetSize()
+            bbox = self.GetAxesBoundingBox()
+            if bbox.InsideXY(x, y) and not self.Is3DCanvas():
+                rect = wx.Rect(bbox.x, bbox.y, bbox.width / 2, bbox.height)
+                if rect.InsideXY(x, y):
+                    self.SetHighlight(HIGHLIGHT_LEFT)
+                else:
+                    self.SetHighlight(HIGHLIGHT_RIGHT)
+            elif y < height / 2:
+                if self.ParentWindow.IsViewerFirst(self):
+                    self.SetHighlight(HIGHLIGHT_BEFORE)
+                else:
+                    self.SetHighlight(HIGHLIGHT_NONE)
+                    self.ParentWindow.HighlightPreviousViewer(self)
+            else:
+                self.SetHighlight(HIGHLIGHT_AFTER)
         
-        def HighlightCanvas(self, highlight):
-            self.Canvas.SetHighlight(highlight)
+        def OnLeave(self, event):
+            if self.CanvasStartSize is None and self.SetHighlight(HIGHLIGHT_NONE):
+                self.SetCursor(wx.NullCursor)
+                self.ParentWindow.ForceRefresh()
+            DebugVariableViewer.OnLeave(self, event)
         
         def HandleCursorMove(self, event):
             start_tick, end_tick = self.ParentWindow.GetRange()
@@ -1253,7 +1223,7 @@ if USE_MPL:
                                    rotation='vertical',
                                    verticalalignment='top',
                                    transform=self.Axes.transAxes))
-            width, height = self.Canvas.GetSize()
+            width, height = self.GetSize()
             self.RefreshLabelsPosition(height)
             
         def AddItem(self, item):
@@ -1278,7 +1248,7 @@ if USE_MPL:
         def SetCursorTick(self, cursor_tick):
             self.CursorTick = cursor_tick
             
-        def Refresh(self, refresh_graphics=True):
+        def RefreshViewer(self, refresh_graphics=True):
             
             if refresh_graphics:
                 start_tick, end_tick = self.ParentWindow.GetRange()
@@ -1409,7 +1379,7 @@ if USE_MPL:
                 label.set_text(value)
                 label.set_style(style)
             
-            self.Canvas.draw()
+            self.draw()
     
         def ExportGraph(self, item=None):
             if item is not None:
@@ -1640,7 +1610,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.DraggingAxesPanel = DebugVariableGraphic(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
             self.DraggingAxesPanel.SetCursorTick(self.CursorTick)
             width, height = panel.GetSize()
-            self.DraggingAxesPanel.SetMinSize(wx.Size(width, height))
+            self.DraggingAxesPanel.SetSize(wx.Size(width, height))
             self.DraggingAxesPanel.SetPosition(wx.Point(0, -height))
         else:
             self.DraggingAxesPanel = panel
@@ -1658,19 +1628,19 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def RefreshHighlight(self, x_mouse, y_mouse):
         for idx, panel in enumerate(self.GraphicPanels):
             x, y = panel.GetPosition()
-            width, height = panel.Canvas.GetSize()
+            width, height = panel.GetSize()
             rect = wx.Rect(x, y, width, height)
             if (rect.InsideXY(x_mouse, y_mouse) or 
                 idx == 0 and y_mouse < 0 or
                 idx == len(self.GraphicPanels) - 1 and y_mouse > panel.GetPosition()[1]):
-                panel.OnCanvasDragging(x_mouse - x, y_mouse - y)
+                panel.OnDragging(x_mouse - x, y_mouse - y)
             else:
-                panel.HighlightCanvas(HIGHLIGHT_NONE)
+                panel.SetHighlight(HIGHLIGHT_NONE)
         self.ForceRefresh()
     
     def ResetHighlight(self):
         for panel in self.GraphicPanels:
-            panel.HighlightCanvas(HIGHLIGHT_NONE)
+            panel.SetHighlight(HIGHLIGHT_NONE)
         self.ForceRefresh()
     
     def IsDragging(self):
@@ -1678,26 +1648,33 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     
     def GetDraggingAxesClippingRegion(self, panel):
         x, y = panel.GetPosition()
-        width, height = panel.Canvas.GetSize()
+        width, height = panel.GetSize()
         bbox = wx.Rect(x, y, width, height)
         bbox = bbox.Intersect(self.DraggingAxesBoundingBox)
         bbox.x -= x
         bbox.y -= y
         return bbox
     
+    def GetDraggingAxesPosition(self, panel):
+        x, y = panel.GetPosition()
+        return wx.Point(self.DraggingAxesBoundingBox.x - x,
+                        self.DraggingAxesBoundingBox.y - y)
+    
     def StopDragNDrop(self, variable, x_mouse, y_mouse):
+        if self.DraggingAxesPanel not in self.GraphicPanels:
+            self.DraggingAxesPanel.Destroy()
         self.DraggingAxesPanel = None
         self.DraggingAxesBoundingBox = None
         self.DraggingAxesMousePos = None
         for idx, panel in enumerate(self.GraphicPanels):
-            panel.HighlightCanvas(HIGHLIGHT_NONE)
+            panel.SetHighlight(HIGHLIGHT_NONE)
             xw, yw = panel.GetPosition()
-            width, height = panel.Canvas.GetSize()
+            width, height = panel.GetSize()
             bbox = wx.Rect(xw, yw, width, height)
             if bbox.InsideXY(x_mouse, y_mouse):
-                panel.Canvas.ShowButtons(True)
+                panel.ShowButtons(True)
                 merge_type = GRAPH_PARALLEL
-                if panel.Is3DCanvas():
+                if isinstance(panel, DebugVariableText) or panel.Is3DCanvas():
                     if y_mouse > yw + height / 2:
                         idx += 1
                     wx.CallAfter(self.MoveGraph, variable, idx)
@@ -1733,7 +1710,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 destBBox = self.DraggingAxesBoundingBox
                 srcBBox = self.DraggingAxesPanel.GetAxesBoundingBox()
                 
-                srcBmp = _convert_agg_to_wx_bitmap(self.DraggingAxesPanel.Canvas.get_renderer(), None)
+                srcBmp = _convert_agg_to_wx_bitmap(self.DraggingAxesPanel.get_renderer(), None)
                 srcDC = wx.MemoryDC()
                 srcDC.SelectObject(srcBmp)
                     
@@ -1749,12 +1726,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 refresh_graphics = False
             
             if self.DraggingAxesPanel is not None and self.DraggingAxesPanel not in self.GraphicPanels:
-                self.DraggingAxesPanel.Refresh(refresh_graphics)
+                self.DraggingAxesPanel.RefreshViewer(refresh_graphics)
             for panel in self.GraphicPanels:
                 if isinstance(panel, DebugVariableGraphic):
-                    panel.Refresh(refresh_graphics)
+                    panel.RefreshViewer(refresh_graphics)
                 else:
-                    panel.Refresh()
+                    panel.RefreshViewer()
             
             if self.CursorTick is not None:
                 tick = self.CursorTick
@@ -1808,8 +1785,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             for panel in self.GraphicPanels:
                 panel.UnregisterObsoleteData()
                 if panel.IsEmpty():
-                    if panel.Canvas.HasCapture():
-                        panel.Canvas.ReleaseMouse()
+                    if panel.HasCapture():
+                        panel.ReleaseMouse()
                     self.GraphicPanels.remove(panel)
                     panel.Destroy()
             
@@ -2037,7 +2014,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         idx = self.GetViewerIndex(viewer)
         if idx is None:
             return
-        self.GraphicPanels[idx-1].HighlightCanvas(HIGHLIGHT_AFTER)
+        self.GraphicPanels[idx-1].SetHighlight(HIGHLIGHT_AFTER)
     
     def ResetVariableNameMask(self):
         items = []
@@ -2104,8 +2081,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if source_panel is not None:
             source_panel.RemoveItem(item)
             if source_panel.IsEmpty():
-                if source_panel.Canvas.HasCapture():
-                    source_panel.Canvas.ReleaseMouse()
+                if source_panel.HasCapture():
+                    source_panel.ReleaseMouse()
                 self.GraphicPanels.remove(source_panel)
                 source_panel.Destroy()
             
@@ -2144,8 +2121,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 if source_panel is not None:
                     source_panel.RemoveItem(source_item)
                     if source_panel.IsEmpty():
-                        if source_panel.Canvas.HasCapture():
-                            source_panel.Canvas.ReleaseMouse()
+                        if source_panel.HasCapture():
+                            source_panel.ReleaseMouse()
                         self.GraphicPanels.remove(source_panel)
                         source_panel.Destroy()
             elif (merge_type != graph_type and len(target_panel.Items) == 2):
