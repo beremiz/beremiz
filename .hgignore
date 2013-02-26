@@ -1,14 +1,6 @@
 .project
 
 syntax: regexp
-^tests/canopen_slave/build$
-syntax: regexp
-^tests/canopen_master/build$
-syntax: regexp
-^tests/python/build$
-syntax: regexp
-^tests/svgui/build$
-syntax: regexp
-^tests/wxGlade/build$
+^tests/.*/build$
 syntax: regexp
 ^.*\.pyc$
