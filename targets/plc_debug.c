@@ -312,7 +312,9 @@ int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
 #define LOG_INFO 2
 #define LOG_DEBUG 3
 
+#ifndef LOG_BUFFER_SIZE
 #define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
+#endif
 #define LOG_BUFFER_MASK (LOG_BUFFER_SIZE-1)
 static char LogBuff[LOG_LEVELS][LOG_BUFFER_SIZE];
 void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){

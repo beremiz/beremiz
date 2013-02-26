@@ -1,4 +1,5 @@
 libraries = [
+    ('Native', 'NativeLib.NativeLibrary'),
     ('Python', 'py_ext.PythonLibrary'),
     ('SVGUI', 'svgui.SVGUILibrary')]
 

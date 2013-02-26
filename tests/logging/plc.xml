@@ -8,7 +8,7 @@
               productVersion="1"
               creationDateTime="2013-01-29T14:01:00"/>
   <contentHeader name="Unnamed"
-                 modificationDateTime="2013-01-30T18:24:53">
+                 modificationDateTime="2013-02-26T16:22:11">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -22,66 +22,8 @@
     </coordinateInfo>
   </contentHeader>
   <types>
-    <dataTypes>
-      <dataType name="LOGLEVEL">
-        <baseType>
-          <enum>
-            <values>
-              <value name="CRITICAL"/>
-              <value name="WARNING"/>
-              <value name="INFO"/>
-              <value name="DEBUG"/>
-            </values>
-          </enum>
-        </baseType>
-        <initialValue>
-          <simpleValue value="INFO"/>
-        </initialValue>
-      </dataType>
-    </dataTypes>
+    <dataTypes/>
     <pous>
-      <pou name="LOGGER" pouType="functionBlock">
-        <interface>
-          <inputVars>
-            <variable name="TRIG">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="MSG">
-              <type>
-                <string/>
-              </type>
-            </variable>
-            <variable name="LEVEL">
-              <type>
-                <derived name="LOGLEVEL"/>
-              </type>
-              <initialValue>
-                <simpleValue value="INFO"/>
-              </initialValue>
-            </variable>
-          </inputVars>
-          <localVars>
-            <variable name="TRIG0">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-          </localVars>
-        </interface>
-        <body>
-          <ST>
-<![CDATA[IF TRIG AND NOT TRIG0 THEN
-{{
- LogMessage(GetFbVar(LEVEL),GetFbVar(MSG, .body),GetFbVar(MSG, .len));
-}}
-END_IF;
-TRIG0:=TRIG;
-]]>
-          </ST>
-        </body>
-      </pou>
       <pou name="program0" pouType="program">
         <interface>
           <localVars>
@@ -99,6 +41,14 @@ TRIG0:=TRIG;
               <type>
                 <derived name="LOGGER"/>
               </type>
+            </variable>
+            <variable name="lvl">
+              <type>
+                <derived name="LOGLEVEL"/>
+              </type>
+              <initialValue>
+                <simpleValue value="WARNING"/>
+              </initialValue>
             </variable>
           </localVars>
         </interface>
@@ -288,13 +238,15 @@ TRIG0:=TRIG;
               </outputVariables>
             </block>
             <block localId="11" width="65" height="80" typeName="LOGGER" instanceName="LOGGER0">
-              <position x="1183" y="64"/>
+              <position x="1100" y="98"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="3" formalParameter="OUT">
-                      <position x="1183" y="94"/>
+                      <position x="1100" y="128"/>
+                      <position x="631" y="128"/>
+                      <position x="631" y="94"/>
                       <position x="272" y="94"/>
                     </connection>
                   </connectionPointIn>
@@ -303,9 +255,9 @@ TRIG0:=TRIG;
                   <connectionPointIn>
                     <relPosition x="0" y="50"/>
                     <connection refLocalId="8" formalParameter="OUT">
-                      <position x="1183" y="114"/>
-                      <position x="979" y="114"/>
-                      <position x="979" y="204"/>
+                      <position x="1100" y="148"/>
+                      <position x="963" y="148"/>
+                      <position x="963" y="204"/>
                       <position x="935" y="204"/>
                     </connection>
                   </connectionPointIn>
@@ -313,12 +265,25 @@ TRIG0:=TRIG;
                 <variable formalParameter="LEVEL">
                   <connectionPointIn>
                     <relPosition x="0" y="70"/>
+                    <connection refLocalId="12">
+                      <position x="1100" y="168"/>
+                      <position x="1090" y="168"/>
+                      <position x="1090" y="168"/>
+                      <position x="1057" y="168"/>
+                    </connection>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
               <inOutVariables/>
               <outputVariables/>
             </block>
+            <inVariable localId="12" height="27" width="79">
+              <position x="978" y="155"/>
+              <connectionPointOut>
+                <relPosition x="79" y="13"/>
+              </connectionPointOut>
+              <expression>WARNING</expression>
+            </inVariable>
           </FBD>
         </body>
       </pou>
@@ -328,7 +293,7 @@ TRIG0:=TRIG;
     <configurations>
       <configuration name="config">
         <resource name="resource1">
-          <task name="blob" interval="T#10ms" priority="0">
+          <task name="blob" interval="T#100ms" priority="0">
             <pouInstance name="blub" typeName="program0"/>
           </task>
         </resource>
