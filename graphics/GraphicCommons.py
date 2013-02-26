@@ -381,7 +381,8 @@ class DebugViewer:
         self.DataConsumers = {}
     
     def ShouldRefresh(self):
-        wx.CallAfter(self._ShouldRefresh)
+        if self:
+            wx.CallAfter(self._ShouldRefresh)
         
     def _ShouldRefresh(self):
         if DEBUG_REFRESH_LOCK.acquire(False):
