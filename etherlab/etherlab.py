@@ -3,12 +3,13 @@ import cPickle
 from xml.dom import minidom
 
 import wx
+import csv
 
 from xmlclass import *
 from POULibrary import POULibrary
 from ConfigTreeNode import ConfigTreeNode
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
-from ConfigEditor import NodeEditor, CIA402NodeEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from ConfigEditor import NodeEditor, CIA402NodeEditor, LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 try:
     from MotionLibrary import Headers, AxisXSD
@@ -571,7 +572,7 @@ class _EthercatCTN:
                         "product_code": slave["product_code"],
                         "revision_number":slave["revision_number"],
                     }
-                    device = self.GetModuleInfos(type_infos)
+                    device, alignment = self.GetModuleInfos(type_infos)
                     if device is not None:
                         if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
                             CTNType = "EthercatCIA402Slave"
@@ -651,7 +652,7 @@ class _EthercatCTN:
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             type_infos = slave.getType()
-            device = self.GetModuleInfos(type_infos)
+            device, alignement = self.GetModuleInfos(type_infos)
             if device is not None:
                 infos = type_infos.copy()
                 entries = device.GetEntriesList()
@@ -688,7 +689,7 @@ class _EthercatCTN:
         if slave is not None:
             type_infos = slave.getType()
         
-            device = self.GetModuleInfos(type_infos)
+            device, alignement = self.GetModuleInfos(type_infos)
             if device is not None:
                 sync_managers = []
                 for sync_manager in device.getSm():
@@ -1016,7 +1017,7 @@ class _EthercatCFileGenerator:
             slave_pos = (slave_alias, alias[slave_alias])
             
             # Extract slave device informations
-            device = self.Controler.GetModuleInfos(type_infos)
+            device, alignement = self.Controler.GetModuleInfos(type_infos)
             if device is not None:
                 
                 # Extract slaves variables to be mapped
@@ -1473,10 +1474,7 @@ if cls:
                             "Type": subitem.getType(),
                             "BitSize": subitem.getBitSize(),
                             "Access": subitem_access, 
-                            "PDOMapping": subitem_pdomapping, 
-                            "PDO index": "", 
-                            "PDO name": "", 
-                            "PDO type": ""}
+                            "PDOMapping": subitem_pdomapping}
                 else:
                     entry_access = ""
                     entry_pdomapping = ""
@@ -1495,10 +1493,7 @@ if cls:
                          "Type": entry_type,
                          "BitSize": object.getBitSize(),
                          "Access": entry_access,
-                         "PDOMapping": entry_pdomapping, 
-                         "PDO index": "", 
-                         "PDO name": "", 
-                         "PDO type": ""}
+                         "PDOMapping": entry_pdomapping}
         
         for TxPdo in self.getTxPdo():
             ExtractPdoInfos(TxPdo, "Transmit", entries)
@@ -1578,53 +1573,33 @@ def ExtractPdoInfos(pdo, pdo_type, entries):
                     "Name": ExtractName(pdo_entry.getName()),
                     "Type": entry_type.getcontent(),
                     "Access": access,
-                    "PDOMapping": pdomapping,
-                    "PDO index": pdo_index, 
-                    "PDO name": pdo_name, 
-                    "PDO type": pdo_type}
+                    "PDOMapping": pdomapping}
 
-class RootClass:
+DEFAULT_ALIGNMENT = 8
+
+class ModulesLibrary:
     
-    CTNChildrenTypes = [("EthercatNode",_EthercatCTN,"Ethercat Master")]
-    
-    def __init__(self):
-        self.LoadModulesLibrary()
-    
-    def GetModulesLibraryPath(self):
-        library_path = os.path.join(self.CTNPath(), "modules")
-        if not os.path.exists(library_path):
-            os.mkdir(library_path)
-        return library_path
-    
-    def _ImportModuleLibrary(self):
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose an XML file"), os.getcwd(), "",  _("XML files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
-        if dialog.ShowModal() == wx.ID_OK:
-            filepath = dialog.GetPath()
-            if os.path.isfile(filepath):
-                shutil.copy(filepath, self.GetModulesLibraryPath())
-                self.LoadModulesLibrary()
-            else:
-                self.GetCTRoot().logger.write_error(_("No such XML file: %s\n") % filepath)
-        dialog.Destroy()  
-    
-    ConfNodeMethods = [
-        {"bitmap" : "ImportESI",
-         "name" : _("Import module library"), 
-         "tooltip" : _("Import module library"),
-         "method" : "_ImportModuleLibrary"},
-    ]
-    
-    def CTNGenerate_C(self, buildpath, locations):
-        return [],"",False
-    
-    def LoadModulesLibrary(self):
-        self.ModulesLibrary = {}
+    def __init__(self, path, parent_library=None):
+        self.Path = path
+        if not os.path.exists(self.Path):
+            os.makedirs(self.Path)
+        self.ParentLibrary = parent_library
         
-        library_path = self.GetModulesLibraryPath()
+        self.LoadModules()
+        self.LoadAlignments()
+    
+    def GetPath(self):
+        return self.Path
+    
+    def GetAlignmentFilePath(self):
+        return os.path.join(self.Path, "alignments.cfg")
+    
+    def LoadModules(self):
+        self.Library = {}
         
-        files = os.listdir(library_path)
+        files = os.listdir(self.Path)
         for file in files:
-            filepath = os.path.join(library_path, file)
+            filepath = os.path.join(self.Path, file)
             if os.path.isfile(filepath) and os.path.splitext(filepath)[-1] == ".xml":
                 xmlfile = open(filepath, 'r')
                 xml_tree = minidom.parse(xmlfile)
@@ -1639,9 +1614,9 @@ class RootClass:
                 if modules_infos is not None:
                     vendor = modules_infos.getVendor()
                     
-                    vendor_category = self.ModulesLibrary.setdefault(ExtractHexDecValue(vendor.getId()), 
-                                                                     {"name": ExtractName(vendor.getName(), _("Miscellaneous")), 
-                                                                      "groups": {}})
+                    vendor_category = self.Library.setdefault(ExtractHexDecValue(vendor.getId()), 
+                                                              {"name": ExtractName(vendor.getName(), _("Miscellaneous")), 
+                                                               "groups": {}})
                     
                     for group in modules_infos.getDescriptions().getGroups().getGroup():
                         group_type = group.getType()
@@ -1656,10 +1631,10 @@ class RootClass:
                         if not vendor_category["groups"].has_key(device_group):
                             raise ValueError, "Not such group \"%\"" % device_group
                         vendor_category["groups"][device_group]["devices"].append((device.getType().getcontent(), device))
-    
+
     def GetModulesLibrary(self, profile_filter=None):
         library = []
-        for vendor_id, vendor in self.ModulesLibrary.iteritems():
+        for vendor_id, vendor in self.Library.iteritems():
             groups = []
             children_dict = {}
             for group_type, group in vendor["groups"].iteritems():
@@ -1671,12 +1646,16 @@ class RootClass:
                 device_dict = {}
                 for device_type, device in group["devices"]:
                     if profile_filter is None or profile_filter in device.GetProfileNumbers():
+                        product_code = device.getType().getProductCode()
+                        revision_number = device.getType().getRevisionNo()
+                        alignment = self.GetAlignment(vendor_id, product_code, revision_number)
                         device_infos = {"name": ExtractName(device.getName()),
                                         "type": ETHERCAT_DEVICE,
                                         "infos": {"device_type": device_type,
                                                   "vendor": vendor_id,
-                                                  "product_code": device.getType().getProductCode(),
-                                                  "revision_number": device.getType().getRevisionNo()},
+                                                  "product_code": product_code,
+                                                  "revision_number": revision_number,
+                                                  "alignment": alignment},
                                         "children": []}
                         group_infos["children"].append(device_infos)
                         device_type_occurrences = device_dict.setdefault(device_type, [])
@@ -1698,17 +1677,115 @@ class RootClass:
                                 "children": groups})
         library.sort(lambda x, y: cmp(x["name"], y["name"]))
         return library
+
+    def GetModuleInfos(self, module_infos):
+        vendor = ExtractHexDecValue(module_infos["vendor"])
+        vendor_infos = self.Library.get(vendor)
+        if vendor_infos is not None:
+            for group_name, group_infos in vendor_infos["groups"].iteritems():
+                for device_type, device_infos in group_infos["devices"]:
+                    product_code = ExtractHexDecValue(device_infos.getType().getProductCode())
+                    revision_number = ExtractHexDecValue(device_infos.getType().getRevisionNo())
+                    if (product_code == ExtractHexDecValue(module_infos["product_code"]) and
+                        revision_number == ExtractHexDecValue(module_infos["revision_number"])):
+                        return device_infos, self.GetAlignment(vendor, product_code, revision_number)
+        return None, None
     
-    def GetModuleInfos(self, type_infos):
-        vendor = self.ModulesLibrary.get(ExtractHexDecValue(type_infos["vendor"]), None)
-        if vendor is not None:
-            for group_name, group in vendor["groups"].iteritems():
-                for device_type, device in group["devices"]:
-                    product_code = ExtractHexDecValue(device.getType().getProductCode())
-                    revision_number = ExtractHexDecValue(device.getType().getRevisionNo())
-                    if (product_code == ExtractHexDecValue(type_infos["product_code"]) and
-                        revision_number == ExtractHexDecValue(type_infos["revision_number"])):
-                        return device
-        return None
+    def ImportModuleLibrary(self, filepath):
+        if os.path.isfile(filepath):
+            shutil.copy(filepath, self.Path)
+            self.LoadModules()
+            return True
+        return False
+    
+    def LoadAlignments(self):
+        self.Alignments = {}
+        
+        csvfile_path = self.GetAlignmentFilePath()
+        if os.path.exists(csvfile_path):
+            csvfile = open(csvfile_path, "rb")
+            sample = csvfile.read(1024)
+            csvfile.seek(0)
+            dialect = csv.Sniffer().sniff(sample)
+            has_header = csv.Sniffer().has_header(sample)
+            reader = csv.reader(csvfile, dialect)
+            for row in reader:
+                if has_header:
+                    has_header = False
+                else:
+                    try:
+                        self.Alignments[tuple(map(int, row[:3]))] = row[3]
+                    except:
+                        pass
+            csvfile.close()
+        
+    def SaveAlignments(self):
+        csvfile = open(self.GetAlignmentFilePath(), "wb")
+        writer = csv.writer(csvfile, delimiter=';')
+        writer.writerow(['Vendor', 'product_code', 'revision_number', 'alignment'])
+        for (vendor, product_code, revision_number), alignment in self.Alignments.iteritems():
+            writer.writerow([vendor, product_code, revision_number, alignment])
+        csvfile.close()
+    
+    def SetAlignment(self, vendor, product_code, revision_number, alignment):
+        vendor = ExtractHexDecValue(vendor)
+        product_code = ExtractHexDecValue(product_code)
+        revision_number = ExtractHexDecValue(revision_number)
+        
+        self.Alignments[tuple([vendor, product_code, revision_number])] = alignment
+        self.SaveAlignments()
+    
+    def GetAlignment(self, vendor, product_code, revision_number):
+        vendor = ExtractHexDecValue(vendor)
+        product_code = ExtractHexDecValue(product_code)
+        revision_number = ExtractHexDecValue(revision_number)
+        
+        alignment = self.Alignments.get(tuple([vendor, product_code, revision_number]))
+        if alignment is not None:
+            return alignment
+        
+        if self.ParentLibrary is not None:
+            return self.ParentLibrary.GetAlignment(vendor, product_code, revision_number)
+        return DEFAULT_ALIGNMENT
+
+USERDATA_DIR = wx.StandardPaths.Get().GetUserDataDir()
+if wx.Platform != '__WXMSW__':
+    USERDATA_DIR += '_files'
+
+ModulesDatabase = ModulesLibrary(
+    os.path.join(USERDATA_DIR, "ethercat_modules"))
+
+class RootClass:
+    
+    CTNChildrenTypes = [("EthercatNode",_EthercatCTN,"Ethercat Master")]
+    EditorType = LibraryEditor
+    
+    def __init__(self):
+        self.ModulesLibrary = None
+        self.LoadModulesLibrary()
+    
+    def GetModulesLibraryPath(self):
+        return os.path.join(self.CTNPath(), "modules") 
+    
+    def CTNGenerate_C(self, buildpath, locations):
+        return [],"",False
+    
+    def LoadModulesLibrary(self):
+        if self.ModulesLibrary is None:
+            self.ModulesLibrary = ModulesLibrary(self.GetModulesLibraryPath(), ModulesDatabase)
+        else:
+            self.ModulesLibrary.LoadModulesLibrary()
+    
+    def GetModulesDatabaseInstance(self):
+        return ModulesDatabase
+    
+    def GetModulesLibraryInstance(self):
+        return self.ModulesLibrary
+    
+    def GetModulesLibrary(self, profile_filter=None):
+        return self.ModulesLibrary.GetModulesLibrary(profile_filter)
+    
+    def GetModuleInfos(self, module_infos):
+        return self.ModulesLibrary.GetModuleInfos(module_infos)
 
             
