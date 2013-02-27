@@ -1,9 +1,13 @@
+import os
+
 import wx
 import wx.grid
 import wx.gizmos
+import wx.lib.buttons
 
-from controls import CustomGrid, CustomTable
+from controls import CustomGrid, CustomTable, FolderTree
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
+from util.BitmapLibrary import GetBitmap
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
@@ -13,157 +17,59 @@ def AppendMenu(parent, help, id, kind, text):
     else:
         parent.Append(helpString=help, id=id, kind=kind, item=text)
 
-def GetSyncManagersTableColnames():
-    _ = lambda x : x
-    return ["#", _("Name"), _("Start Address"), _("Default Size"), _("Control Byte"), _("Enable")]
-
-class SyncManagersTable(CustomTable):
-    
-    def GetValue(self, row, col):
-        if row < self.GetNumberRows():
-            if col == 0:
-                return row
-            return self.data[row].get(self.GetColLabelValue(col, False), "")
-
 def GetVariablesTableColnames():
     _ = lambda x : x
-    return ["#", _("Name"), _("Index"), _("SubIndex"), _("Type"), _("PDO index"), _("PDO name"), _("PDO type")]
+    return ["#", _("Name"), _("Index"), _("SubIndex"), _("Type"), _("Access")]
 
-[ID_NODEEDITOR, ID_NODEEDITORVENDORLABEL, 
- ID_NODEEDITORVENDOR, ID_NODEEDITORPRODUCTCODELABEL, 
- ID_NODEEDITORPRODUCTCODE, ID_NODEEDITORREVISIONNUMBERLABEL, 
- ID_NODEEDITORREVISIONNUMBER, ID_NODEEDITORPHYSICSLABEL, 
- ID_NODEEDITORPHYSICS, ID_NODEEDITORSYNCMANAGERSLABEL, 
- ID_NODEEDITORSYNCMANAGERSGRID, ID_NODEEDITORVARIABLESLABEL, 
- ID_NODEEDITORVARIABLESGRID, 
-] = [wx.NewId() for _init_ctrls in range(13)]
+ACCESS_TYPES = {
+    'ro': 'R',
+    'wo': 'W',
+    'rw': 'R/W'}
+
+def GetAccessValue(access, pdo_mapping):
+    value = ACCESS_TYPES.get(access)
+    if pdo_mapping != "":
+        value += "/P"
+    return value
 
 class NodeEditor(ConfTreeNodeEditor):
     
-    ID = ID_NODEEDITOR
     CONFNODEEDITOR_TABS = [
         (_("Ethercat node"), "_create_EthercatNodeEditor")]
     
-    def _init_coll_MainSizer_Items(self, parent):
-        parent.AddSizer(self.SlaveInfosDetailsSizer, 0, border=5, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
-        parent.AddWindow(self.SyncManagersLabel, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.GROW)
-        parent.AddWindow(self.SyncManagersGrid, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.GROW)
-        parent.AddWindow(self.VariablesLabel, 0, border=5, flag=wx.LEFT|wx.RIGHT|wx.GROW)
-        parent.AddWindow(self.VariablesGrid, 0, border=5, flag=wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.GROW)
-        
-    def _init_coll_MainSizer_Growables(self, parent):
-        parent.AddGrowableCol(0)
-        parent.AddGrowableRow(2, 1)
-        parent.AddGrowableRow(4, 2)
-        
-    def _init_coll_SlaveInfosDetailsSizer_Items(self, parent):
-        parent.AddWindow(self.VendorLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.Vendor, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.ProductCodeLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.ProductCode, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.RevisionNumberLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.RevisionNumber, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.PhysicsLabel, 0, border=0, flag=wx.ALIGN_CENTER_VERTICAL|wx.GROW)
-        parent.AddWindow(self.Physics, 0, border=0, flag=wx.GROW)
-        
-    def _init_coll_SlaveInfosDetailsSizer_Growables(self, parent):
-        parent.AddGrowableCol(1)
-        parent.AddGrowableCol(3)
-    
-    def _init_sizers(self):
-        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=5)
-        self.SlaveInfosDetailsSizer = wx.FlexGridSizer(cols=4, hgap=5, rows=2, vgap=5)
-        
-        self._init_coll_MainSizer_Growables(self.MainSizer)
-        self._init_coll_MainSizer_Items(self.MainSizer)
-        self._init_coll_SlaveInfosDetailsSizer_Growables(self.SlaveInfosDetailsSizer)
-        self._init_coll_SlaveInfosDetailsSizer_Items(self.SlaveInfosDetailsSizer)
-        
-        self.EthercatNodeEditor.SetSizer(self.MainSizer)
-
     def _create_EthercatNodeEditor(self, prnt):
-        self.EthercatNodeEditor = wx.ScrolledWindow(id=-1, name='SlavePanel', parent=prnt,
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
-        self.EthercatNodeEditor.Bind(wx.EVT_SIZE, self.OnEthercatNodeEditorResize)
+        self.EthercatNodeEditor = wx.Panel(prnt, style=wx.TAB_TRAVERSAL)
         
-        self.VendorLabel = wx.StaticText(id=ID_NODEEDITORVENDORLABEL,
-              label=_('Vendor:'), name='VendorLabel', parent=self.EthercatNodeEditor,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
+        main_sizer.AddGrowableCol(0)
+        main_sizer.AddGrowableRow(1)
         
-        self.Vendor = wx.TextCtrl(id=ID_NODEEDITORVENDOR, value='',
-              name='Vendor', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
+        variables_label = wx.StaticText(self.EthercatNodeEditor,
+              label=_('Variable entries:'))
+        main_sizer.AddWindow(variables_label, border=10, flag=wx.TOP|wx.LEFT|wx.RIGHT)
         
-        self.ProductCodeLabel = wx.StaticText(id=ID_NODEEDITORPRODUCTCODELABEL,
-              label=_('Product code:'), name='ProductCodeLabel', parent=self.EthercatNodeEditor,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.ProductCode = wx.TextCtrl(id=ID_NODEEDITORPRODUCTCODE, value='',
-              name='ProductCode', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.RevisionNumberLabel = wx.StaticText(id=ID_NODEEDITORREVISIONNUMBERLABEL,
-              label=_('Revision number:'), name='RevisionNumberLabel', parent=self.EthercatNodeEditor,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.RevisionNumber = wx.TextCtrl(id=ID_NODEEDITORREVISIONNUMBER, value='',
-              name='RevisionNumber', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.PhysicsLabel = wx.StaticText(id=ID_NODEEDITORPHYSICSLABEL,
-              label=_('Physics:'), name='PhysicsLabel', parent=self.EthercatNodeEditor,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.Physics = wx.TextCtrl(id=ID_NODEEDITORPHYSICS, value='',
-              name='Physics', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0),
-              size=wx.Size(0, 24), style=wx.TE_READONLY)
-        
-        self.SyncManagersLabel =  wx.StaticText(id=ID_NODEEDITORSYNCMANAGERSLABEL,
-              label=_('Sync managers:'), name='SyncManagersLabel', parent=self.EthercatNodeEditor,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.SyncManagersGrid = CustomGrid(id=ID_NODEEDITORSYNCMANAGERSGRID,
-              name='SyncManagersGrid', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 200), style=wx.VSCROLL)
-        
-        self.VariablesLabel =  wx.StaticText(id=ID_NODEEDITORVARIABLESLABEL,
-              label=_('Variable entries:'), name='VariablesLabel', parent=self.EthercatNodeEditor,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
-        self.VariablesGrid = wx.gizmos.TreeListCtrl(id=ID_NODEEDITORVARIABLESGRID,
-              name='VariablesGrid', parent=self.EthercatNodeEditor, pos=wx.Point(0, 0), 
-              size=wx.Size(0, 400), style=wx.TR_DEFAULT_STYLE |
-                                          wx.TR_ROW_LINES |
-                                          wx.TR_COLUMN_LINES |
-                                          wx.TR_HIDE_ROOT |
-                                          wx.TR_FULL_ROW_HIGHLIGHT)
-        self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN, self.OnVariablesGridLeftClick)
+        self.VariablesGrid = wx.gizmos.TreeListCtrl(self.EthercatNodeEditor,
+              style=wx.TR_DEFAULT_STYLE |
+                    wx.TR_ROW_LINES |
+                    wx.TR_COLUMN_LINES |
+                    wx.TR_HIDE_ROOT |
+                    wx.TR_FULL_ROW_HIGHLIGHT)
+        self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN, 
+            self.OnVariablesGridLeftClick)
+        main_sizer.AddWindow(self.VariablesGrid, border=10, 
+            flag=wx.GROW|wx.BOTTOM|wx.LEFT|wx.RIGHT)
                 
-        self._init_sizers()
-    
+        self.EthercatNodeEditor.SetSizer(main_sizer)
+
         return self.EthercatNodeEditor
     
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
     
-        self.SyncManagersTable = SyncManagersTable(self, [], GetSyncManagersTableColnames())
-        self.SyncManagersGrid.SetTable(self.SyncManagersTable)
-        self.SyncManagersGridColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
-                                               wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT]
-        self.SyncManagersGridColSizes = [40, 150, 100, 100, 100, 100]
-        self.SyncManagersGrid.SetRowLabelSize(0)
-        for col in range(self.SyncManagersTable.GetNumberCols()):
-            attr = wx.grid.GridCellAttr()
-            attr.SetAlignment(self.SyncManagersGridColAlignements[col], wx.ALIGN_CENTRE)
-            self.SyncManagersGrid.SetColAttr(col, attr)
-            self.SyncManagersGrid.SetColMinimalWidth(col, self.SyncManagersGridColSizes[col])
-            self.SyncManagersGrid.AutoSizeColumn(col, False)
-        
         for colname, colsize, colalign in zip(GetVariablesTableColnames(),
-                                              [40, 150, 100, 100, 150, 100, 150, 100],
+                                              [40, 150, 100, 100, 150, 100],
                                               [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
-                                               wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
-                                               wx.ALIGN_LEFT, wx.ALIGN_LEFT]):
+                                               wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]):
             self.VariablesGrid.AddColumn(_(colname), colsize, colalign)
         self.VariablesGrid.SetMainColumn(1)
     
@@ -178,20 +84,8 @@ class NodeEditor(ConfTreeNodeEditor):
     def RefreshSlaveInfos(self):
         slave_infos = self.Controler.GetSlaveInfos()
         if slave_infos is not None:
-            self.Vendor.SetValue(slave_infos["vendor"])
-            self.ProductCode.SetValue(slave_infos["product_code"])
-            self.RevisionNumber.SetValue(slave_infos["revision_number"])
-            self.Physics.SetValue(slave_infos["physics"])
-            self.SyncManagersTable.SetData(slave_infos["sync_managers"])
-            self.SyncManagersTable.ResetView(self.SyncManagersGrid)
             self.RefreshVariablesGrid(slave_infos["entries"])
         else:
-            self.Vendor.SetValue("")
-            self.ProductCode.SetValue("")
-            self.RevisionNumber.SetValue("")
-            self.Physics.SetValue("")
-            self.SyncManagersTable.SetData([])
-            self.SyncManagersTable.ResetView(self.SyncManagersGrid)
             self.RefreshVariablesGrid([])
     
     def RefreshVariablesGrid(self, entries):
@@ -202,10 +96,7 @@ class NodeEditor(ConfTreeNodeEditor):
         self.VariablesGrid.Expand(root)
         
     def GenerateVariablesGridBranch(self, root, entries, colnames, idx=0):
-        if wx.VERSION >= (2, 6, 0):
-            item, root_cookie = self.VariablesGrid.GetFirstChild(root)
-        else:
-            item, root_cookie = self.VariablesGrid.GetFirstChild(root, 0)
+        item, root_cookie = self.VariablesGrid.GetFirstChild(root)
         
         no_more_items = not item.IsOk()
         for entry in entries:
@@ -216,7 +107,10 @@ class NodeEditor(ConfTreeNodeEditor):
                 if col == 0:
                     self.VariablesGrid.SetItemText(item, str(idx), 0)
                 else:
-                    self.VariablesGrid.SetItemText(item, entry.get(colname, ""), col)
+                    value = entry.get(colname, "")
+                    if colname == "Access":
+                        value = GetAccessValue(value, entry.get("PDOMapping", ""))
+                    self.VariablesGrid.SetItemText(item, value, col)
             if entry["PDOMapping"] == "":
                 self.VariablesGrid.SetItemBackgroundColour(item, wx.LIGHT_GREY)
             self.VariablesGrid.SetItemPyData(item, entry)
@@ -263,16 +157,275 @@ class NodeEditor(ConfTreeNodeEditor):
             
         event.Skip()
 
-    def OnEthercatNodeEditorResize(self, event):
-        self.EthercatNodeEditor.GetBestSize()
-        xstart, ystart = self.EthercatNodeEditor.GetViewStart()
-        window_size = self.EthercatNodeEditor.GetClientSize()
-        maxx, maxy = self.EthercatNodeEditor.GetMinSize()
+CIA402NodeEditor = NodeEditor
+
+
+def GetModulesTableColnames():
+    _ = lambda x : x
+    return [_("Name"), _("PDO alignment (bits)")]
+
+class LibraryEditorPanel(wx.ScrolledWindow):
+    
+    def __init__(self, parent, module_library, buttons):
+        wx.ScrolledWindow.__init__(self, parent,
+            style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
+        self.Bind(wx.EVT_SIZE, self.OnResize)
+        
+        self.ModuleLibrary = module_library
+    
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=5)
+        main_sizer.AddGrowableCol(0)
+        main_sizer.AddGrowableRow(1)
+        main_sizer.AddGrowableRow(3)
+        
+        ESI_files_label = wx.StaticText(self, 
+            label=_("ESI Files:"))
+        main_sizer.AddWindow(ESI_files_label, border=10, 
+            flag=wx.TOP|wx.LEFT|wx.RIGHT)
+        
+        folder_tree_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=1, vgap=0)
+        folder_tree_sizer.AddGrowableCol(0)
+        folder_tree_sizer.AddGrowableRow(0)
+        main_sizer.AddSizer(folder_tree_sizer, border=10, 
+            flag=wx.GROW|wx.LEFT|wx.RIGHT)
+        
+        self.ESIFiles = FolderTree(self, self.GetPath(), editable=False)
+        self.ESIFiles.SetFilter(".xml")
+        self.ESIFiles.SetMinSize(wx.Size(600, 300))
+        folder_tree_sizer.AddWindow(self.ESIFiles, flag=wx.GROW)
+        
+        buttons_sizer = wx.BoxSizer(wx.VERTICAL)
+        folder_tree_sizer.AddSizer(buttons_sizer, 
+            flag=wx.ALIGN_CENTER_VERTICAL)
+        
+        for idx, (name, bitmap, help, callback) in enumerate(buttons):
+            button = wx.lib.buttons.GenBitmapButton(self, 
+                  bitmap=GetBitmap(bitmap), 
+                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button.SetToolTipString(help)
+            setattr(self, name, button)
+            if idx > 0:
+                flag = wx.TOP
+            else:
+                flag = 0
+            if callback is None:
+                callback = getattr(self, "On" + name, None)
+            if callback is not None:
+                self.Bind(wx.EVT_BUTTON, callback, button)
+            buttons_sizer.AddWindow(button, border=10, flag=flag)
+        
+        modules_label = wx.StaticText(self, 
+            label=_("Modules library:"))
+        main_sizer.AddSizer(modules_label, border=10, 
+            flag=wx.LEFT|wx.RIGHT)
+        
+        self.ModulesGrid = wx.gizmos.TreeListCtrl(self,
+              style=wx.TR_DEFAULT_STYLE |
+                    wx.TR_ROW_LINES |
+                    wx.TR_COLUMN_LINES |
+                    wx.TR_HIDE_ROOT |
+                    wx.TR_FULL_ROW_HIGHLIGHT)
+        self.ModulesGrid.SetMinSize(wx.Size(600, 300))
+        self.ModulesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DCLICK,
+            self.OnModulesGridLeftDClick)
+        main_sizer.AddWindow(self.ModulesGrid, border=10, 
+            flag=wx.GROW|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        
+        self.SetSizer(main_sizer)
+        
+        for colname, colsize, colalign in zip(GetModulesTableColnames(),
+                                              [400, 150],
+                                              [wx.ALIGN_LEFT, wx.ALIGN_RIGHT]):
+            self.ModulesGrid.AddColumn(_(colname), colsize, colalign)
+        self.ModulesGrid.SetMainColumn(0)
+    
+    def GetPath(self):
+        return self.ModuleLibrary.GetPath()
+    
+    def GetSelectedFilePath(self):
+        return self.ESIFiles.GetPath()
+    
+    def RefreshView(self):
+        self.ESIFiles.RefreshTree()
+        self.RefreshModulesGrid()
+    
+    def RefreshModulesGrid(self):
+        root = self.ModulesGrid.GetRootItem()
+        if not root.IsOk():
+            root = self.ModulesGrid.AddRoot("Modules")
+        self.GenerateModulesGridBranch(root, 
+            self.ModuleLibrary.GetModulesLibrary(), 
+            GetVariablesTableColnames())
+        self.ModulesGrid.Expand(root)
+            
+    def GenerateModulesGridBranch(self, root, modules, colnames):
+        item, root_cookie = self.ModulesGrid.GetFirstChild(root)
+        
+        no_more_items = not item.IsOk()
+        for module in modules:
+            if no_more_items:
+                item = self.ModulesGrid.AppendItem(root, "")
+            self.ModulesGrid.SetItemText(item, module["name"], 0)
+            if module["infos"] is not None:
+                self.ModulesGrid.SetItemText(item, str(module["infos"]["alignment"]), 1)
+            else:
+                self.ModulesGrid.SetItemBackgroundColour(item, wx.LIGHT_GREY)
+            self.ModulesGrid.SetItemPyData(item, module["infos"])
+            self.GenerateModulesGridBranch(item, module["children"], colnames)
+            if not no_more_items:
+                item, root_cookie = self.ModulesGrid.GetNextChild(root, root_cookie)
+                no_more_items = not item.IsOk()
+        
+        if not no_more_items:
+            to_delete = []
+            while item.IsOk():
+                to_delete.append(item)
+                item, root_cookie = self.ModulesGrid.GetNextChild(root, root_cookie)
+            for item in to_delete:
+                self.ModulesGrid.Delete(item)
+    
+    def OnImportButton(self, event):
+        dialog = wx.FileDialog(self,
+             _("Choose an XML file"), 
+             os.getcwd(), "",  
+             _("XML files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
+        
+        if dialog.ShowModal() == wx.ID_OK:
+            filepath = dialog.GetPath()
+            if self.ModuleLibrary.ImportModuleLibrary(filepath):
+                wx.CallAfter(self.RefreshView)
+            else:
+                message = wx.MessageDialog(self, 
+                    _("No such XML file: %s\n") % filepath, 
+                    _("Error"), wx.OK|wx.ICON_ERROR)
+                message.ShowModal()
+                message.Destroy()
+        dialog.Destroy()
+        
+        event.Skip()
+    
+    def OnDeleteButton(self, event):
+        filepath = self.GetSelectedFilePath()
+        if os.path.isfile(filepath):
+            folder, filename = os.path.split(filepath)
+            
+            dialog = wx.MessageDialog(self, 
+                  _("Do you really want to delete the file '%s'?") % filename, 
+                  _("Delete File"), wx.YES_NO|wx.ICON_QUESTION)
+            remove = dialog.ShowModal() == wx.ID_YES
+            dialog.Destroy()
+            
+            if remove:
+                os.remove(filepath)
+                self.ModuleLibrary.LoadModules()
+                wx.CallAfter(self.RefreshView)
+        event.Skip()
+    
+    def OnModulesGridLeftDClick(self, event):
+        item, flags, col = self.ModulesGrid.HitTest(event.GetPosition())
+        if item.IsOk():
+            entry_infos = self.ModulesGrid.GetItemPyData(item)
+            if entry_infos is not None and col == 1:
+                dialog = wx.TextEntryDialog(self, 
+                    _("Set PDO alignment (bits):"),
+                    _("%s PDO alignment") % self.ModulesGrid.GetItemText(item), 
+                    str(entry_infos["alignment"]))
+                
+                if dialog.ShowModal() == wx.ID_OK:
+                    try:
+                        self.ModuleLibrary.SetAlignment(
+                            entry_infos["vendor"],
+                            entry_infos["product_code"],
+                            entry_infos["revision_number"],
+                            int(dialog.GetValue()))
+                        wx.CallAfter(self.RefreshModulesGrid)
+                    except ValueError:
+                        message = wx.MessageDialog(self, 
+                            _("Module PDO alignment must be an integer!"), 
+                            _("Error"), wx.OK|wx.ICON_ERROR)
+                        message.ShowModal()
+                        message.Destroy()
+                    
+                dialog.Destroy()
+        
+        event.Skip()
+    
+    def OnResize(self, event):
+        self.GetBestSize()
+        xstart, ystart = self.GetViewStart()
+        window_size = self.GetClientSize()
+        maxx, maxy = self.GetMinSize()
         posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
-        self.EthercatNodeEditor.Scroll(posx, posy)
-        self.EthercatNodeEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
+        self.Scroll(posx, posy)
+        self.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
 
-CIA402NodeEditor = NodeEditor
+class DatabaseManagementDialog(wx.Dialog):
+    
+    def __init__(self, parent, database):
+        wx.Dialog.__init__(self, parent,
+              size=wx.Size(700, 500), title=_('ESI Files Database management'),
+              style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+        
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
+        main_sizer.AddGrowableCol(0)
+        main_sizer.AddGrowableRow(0)
+        
+        self.DatabaseEditor = LibraryEditorPanel(self, database,
+            [("ImportButton", "ImportESI", _("Import file to ESI files database"), None),
+             ("DeleteButton", "remove_element", _("Remove file from database"), None)])
+        main_sizer.AddWindow(self.DatabaseEditor, border=10,
+            flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+        
+        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer.GetAffirmativeButton().SetLabel(_("Add file to project"))
+        button_sizer.GetCancelButton().SetLabel(_("Close"))
+        main_sizer.AddSizer(button_sizer, border=10, 
+              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        
+        self.SetSizer(main_sizer)
+        
+        self.DatabaseEditor.RefreshView()
+        
+    def GetValue(self):
+        return self.DatabaseEditor.GetSelectedFilePath()
+
+class LibraryEditor(ConfTreeNodeEditor):
+    
+    CONFNODEEDITOR_TABS = [
+        (_("Modules Library"), "_create_ModuleLibraryEditor")]
+    
+    def _create_ModuleLibraryEditor(self, prnt):
+        self.ModuleLibraryEditor = LibraryEditorPanel(prnt,
+            self.Controler.GetModulesLibraryInstance(),
+            [("ImportButton", "ImportESI", _("Import ESI file"), None),
+             ("AddButton", "ImportDatabase", _("Add file from ESI files database"), self.OnAddButton),
+             ("DeleteButton", "remove_element", _("Remove file from library"), None)])
+        
+        return self.ModuleLibraryEditor
+
+    def __init__(self, parent, controler, window):
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
+    
+        self.RefreshView()
+    
+    def RefreshView(self):
+        ConfTreeNodeEditor.RefreshView(self)
+        self.ModuleLibraryEditor.RefreshView()
+
+    def OnAddButton(self, event):
+        dialog = DatabaseManagementDialog(self, 
+            self.Controler.GetModulesDatabaseInstance())
+        
+        if dialog.ShowModal() == wx.ID_OK:
+            module_library = self.Controler.GetModulesLibraryInstance()
+            module_library.ImportModuleLibrary(dialog.GetValue())
+            
+        dialog.Destroy()
+        
+        wx.CallAfter(self.ModuleLibraryEditor.RefreshView)
+        
+        event.Skip()
+
