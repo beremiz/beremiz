@@ -114,7 +114,7 @@ class _SlaveCTN(NodeManager):
         return os.path.join(self.CTNPath(), 'slave.od')
 
     def GetCanDevice(self):
-        return self.CanFestivalSlaveNode.getCan_Device()
+        return self.CanFestivalSlaveNode.getCAN_Device()
 
     def _OpenView(self, name=None, onlyopened=False):
         ConfigTreeNode._OpenView(self, name, onlyopened)
@@ -266,7 +266,7 @@ class _NodeListCTN(NodeList):
         self.SetNetworkName(self.BaseParams.getName())
     
     def GetCanDevice(self):
-        return self.CanFestivalNode.getCan_Device()
+        return self.CanFestivalNode.getCAN_Device()
     
     def SetParamsAttribute(self, path, value):
         if path == "CanFestivalNode.NodeId":
