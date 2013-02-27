@@ -47,6 +47,10 @@ class CustomGrid(wx.grid.Grid):
         self.Bind(wx.grid.EVT_GRID_EDITOR_HIDDEN, self.OnEditorHidden)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
     
+    def SetFocus(self):
+        if self:
+            wx.grid.Grid.SetFocus(self)
+    
     def SetDefaultValue(self, default_value):
         self.DefaultValue = default_value
     
