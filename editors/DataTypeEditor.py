@@ -176,7 +176,7 @@ class DataTypeEditor(EditorPanel):
               flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
         
         self.DirectlyBaseType = wx.ComboBox(self.DirectlyPanel, style=wx.CB_READONLY)
-        self.Bind(wx.EVT_COMBOBOX, self.OnInfosChanged, self.DirectlyPanel)
+        self.Bind(wx.EVT_COMBOBOX, self.OnInfosChanged, self.DirectlyBaseType)
         directly_panel_sizer.AddWindow(self.DirectlyBaseType, 1, border=5, 
               flag=wx.GROW|wx.ALL)
         
@@ -186,7 +186,7 @@ class DataTypeEditor(EditorPanel):
               flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
         
         self.DirectlyInitialValue = wx.TextCtrl(self.DirectlyPanel, 
-              style=wx.TAB_TRAVERSAL|wx.TE_PROCESS_ENTER|wx.TE_RICH)
+              style=wx.TE_PROCESS_ENTER|wx.TE_RICH)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnReturnKeyPressed, self.DirectlyInitialValue)
         directly_panel_sizer.AddWindow(self.DirectlyInitialValue, 1, border=5, 
               flag=wx.ALL)
@@ -311,7 +311,7 @@ class DataTypeEditor(EditorPanel):
               flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
         
         self.ArrayInitialValue = wx.TextCtrl(self.ArrayPanel,
-              style=wx.TAB_TRAVERSAL|wx.TE_PROCESS_ENTER|wx.TE_RICH)
+              style=wx.TE_PROCESS_ENTER|wx.TE_RICH)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnReturnKeyPressed, self.ArrayInitialValue)
         array_panel_rightsizer.AddWindow(self.ArrayInitialValue, 1, border=5, 
               flag=wx.ALL)        
@@ -571,7 +571,7 @@ class DataTypeEditor(EditorPanel):
     
     def OnStructureElementsGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
-        colname = self.StructureElementsTable.GetColLabelValue(col)
+        colname = self.StructureElementsTable.GetColLabelValue(col, False)
         value = self.StructureElementsTable.GetValue(row, col)
         if colname == "Name":
             if not TestIdentifier(value):
@@ -613,7 +613,7 @@ class DataTypeEditor(EditorPanel):
     
     def OnStructureElementsGridEditorShown(self, event):
         row, col = event.GetRow(), event.GetCol() 
-        if self.StructureElementsTable.GetColLabelValue(col) == "Type":
+        if self.StructureElementsTable.GetColLabelValue(col, False) == "Type":
             type_menu = wx.Menu(title='')
             
             base_menu = wx.Menu(title='')
