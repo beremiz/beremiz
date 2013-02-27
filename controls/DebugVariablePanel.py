@@ -354,19 +354,19 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                         else:
                             if y > height / 2:
                                 target_idx += 1
-                            if len(values) > 1 and values[2] == "move":
+                            if len(values) > 2 and values[2] == "move":
                                 self.ParentWindow.MoveValue(values[0], target_idx)
                             else:
                                 self.ParentWindow.InsertValue(values[0], target_idx, force=True)
                 else:
                     if y > height / 2:
                         target_idx += 1
-                    if len(values) > 1 and values[2] == "move":
+                    if len(values) > 2 and values[2] == "move":
                         self.ParentWindow.MoveValue(values[0], target_idx)
                     else:
                         self.ParentWindow.InsertValue(values[0], target_idx, force=True)
                     
-            elif len(values) > 1 and values[2] == "move":
+            elif len(values) > 2 and values[2] == "move":
                 self.ParentWindow.MoveValue(values[0])
             else:
                 self.ParentWindow.InsertValue(values[0], force=True)
