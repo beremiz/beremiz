@@ -737,7 +737,7 @@ if USE_MPL:
             width, height = self.GetSize()
             bitmap = wx.EmptyBitmap(width, height)
             
-            dc = wx.BufferedPaintDC(self, bitmap)
+            dc = wx.BufferedDC(wx.ClientDC(self), bitmap)
             dc.Clear()
             dc.BeginDrawing()
             
@@ -1737,7 +1737,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             
             width, height = self.GraphicsWindow.GetVirtualSize()
             bitmap = wx.EmptyBitmap(width, height)
-            dc = wx.BufferedPaintDC(self.GraphicsWindow, bitmap)
+            dc = wx.BufferedDC(wx.ClientDC(self.GraphicsWindow), bitmap)
             dc.Clear()
             dc.BeginDrawing()
             if self.DraggingAxesPanel is not None:
