@@ -15,6 +15,18 @@ long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
 {
     return InterlockedCompareExchange(atomicvar, exchange, compared);
 }
+CRITICAL_SECTION Atomic64CS; 
+long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
+{
+    long long res;
+    EnterCriticalSection(&Atomic64CS);
+    res=*atomicvar;
+    if(*atomicvar == compared){
+        *atomicvar = exchange;
+    }
+    LeaveCriticalSection(&Atomic64CS);
+    return res;
+}
 
 struct _timeb timetmp;
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
@@ -63,9 +75,12 @@ HANDLE python_wait_sem;
 int startPLC(int argc,char **argv)
 {
 	unsigned long thread_id = 0;
+    BOOL tmp;
     setlocale(LC_NUMERIC, "C");
 	/* Define Ttick to 1ms if common_ticktime not defined */
     Ttick = common_ticktime__?common_ticktime__:1000000;
+
+    InitializeCriticalSection(&Atomic64CS);
 
     debug_sem = CreateSemaphore(
                             NULL,           // default security attributes
@@ -159,6 +174,7 @@ int stopPLC()
     CloseHandle(PLC_timer);
     WaitForSingleObject(PLC_thread, INFINITE);
     __cleanup();
+    DeleteCriticalSection(&Atomic64CS);
     CloseHandle(debug_wait_sem);
     CloseHandle(debug_sem);
     CloseHandle(python_wait_sem);

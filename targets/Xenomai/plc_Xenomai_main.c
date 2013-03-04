@@ -1,5 +1,5 @@
 /**
- * Linux specific code
+ * Xenomai Linux specific code
  **/
 
 #include <stdio.h>
@@ -42,6 +42,10 @@ unsigned int PLC_state = 0;
 extern unsigned long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
+{
+    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
+}
+long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
 {
     return __sync_val_compare_and_swap(atomicvar, compared, exchange);
 }
