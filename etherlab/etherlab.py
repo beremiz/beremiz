@@ -9,7 +9,7 @@ from xmlclass import *
 from POULibrary import POULibrary
 from ConfigTreeNode import ConfigTreeNode
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
-from ConfigEditor import NodeEditor, CIA402NodeEditor, LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from ConfigEditor import NodeEditor, CIA402NodeEditor, MasterEditor, LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 try:
     from MotionLibrary import Headers, AxisXSD
@@ -160,6 +160,9 @@ class _EthercatSlaveCTN:
         
     def GetSlaveInfos(self):
         return self.CTNParent.GetSlaveInfos(self.GetSlavePos())
+    
+    def GetSlaveVariables(self, limits):
+        return self.CTNParent.GetSlaveVariables(self.GetSlavePos(), limits)
     
     def GetVariableLocationTree(self):
         return  {"name": self.BaseParams.getName(),
@@ -470,6 +473,11 @@ def GenerateHexDecValue(value, base=10):
     else:
         raise ValueError, "Not supported base"
 
+def sort_commands(x, y):
+    if x["Index"] == y["Index"]:
+        return cmp(x["Subindex"], y["Subindex"])
+    return cmp(x["Index"], y["Index"])
+
 cls = EtherCATConfigClasses.get("Config_Slave", None)
 if cls:
     
@@ -488,37 +496,146 @@ if cls:
         slave_info.setProductCode(ExtractHexDecValue(type_infos["product_code"]))
         slave_info.setRevisionNo(ExtractHexDecValue(type_infos["revision_number"]))
     setattr(cls, "setType", setType)
+    
+    def getInitCmds(self, create_default=False):
+        Mailbox = self.getMailbox()
+        if Mailbox is None:
+            if create_default:
+                self.addMailbox()
+                Mailbox = self.getMailbox()
+            else:
+                return None
+        CoE = Mailbox.getCoE()
+        if CoE is None:
+            if create_default:
+                Mailbox.addCoE()
+                CoE = Mailbox.getCoE()
+            else:
+                return None
+        InitCmds = CoE.getInitCmds()
+        if InitCmds is None and create_default:
+            CoE.addInitCmds()
+            InitCmds = CoE.getInitCmds()
+        return InitCmds
+    setattr(cls, "getInitCmds", getInitCmds)
+    
+    def getStartupCommands(self):
+        pos = self.getInfo().getPhysAddr()
+        InitCmds = self.getInitCmds()
+        if InitCmds is None:
+            return []
+        commands = []
+        for idx, InitCmd in enumerate(InitCmds.getInitCmd()):
+            comment = InitCmd.getComment()
+            if comment is None:
+                comment = ""
+            commands.append({
+                "command_idx": idx,
+                "Position": pos,
+                "Index": InitCmd.getIndex(),
+                "Subindex": InitCmd.getSubIndex(),
+                "Value": InitCmd.getData(),
+                "Description": comment})
+        commands.sort(sort_commands)
+        return commands
+    setattr(cls, "getStartupCommands", getStartupCommands)
+    
+    def appendStartupCommand(self, command_infos):
+        InitCmds = self.getInitCmds(True)
+        command = EtherCATConfigClasses["InitCmds_InitCmd"]()
+        command.setIndex(command_infos["Index"])
+        command.setSubIndex(command_infos["Subindex"])
+        command.setData(command_infos["Value"])
+        command.setComment(command_infos["Description"])
+        InitCmds.appendInitCmd(command)
+        return len(InitCmds.getInitCmd()) - 1
+    setattr(cls, "appendStartupCommand", appendStartupCommand)
+    
+    def setStartupCommand(self, command_infos):
+        InitCmds = self.getInitCmds()
+        if InitCmds is not None:
+            commands = InitCmds.getInitCmd()
+            if command_infos["command_idx"] < len(commands):
+                command = commands[command_infos["command_idx"]]
+                command.setIndex(command_infos["Index"])
+                command.setSubIndex(command_infos["Subindex"])
+                command.setData(command_infos["Value"])
+                command.setComment(command_infos["Description"])
+    setattr(cls, "setStartupCommand", setStartupCommand)
+    
+    def removeStartupCommand(self, command_idx):
+        InitCmds = self.getInitCmds()
+        if InitCmds is not None:
+            if command_idx < len(InitCmds.getInitCmd()):
+                InitCmds.removeInitCmd(command_idx)
+    setattr(cls, "removeStartupCommand", removeStartupCommand)
 
-class _EthercatCTN:
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+ProcessVariablesXSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="EtherlabNode">
+      <xsd:element name="ProcessVariables">
         <xsd:complexType>
-          <xsd:attribute name="MasterNumber" type="xsd:integer" use="optional" default="0"/>
+          <xsd:sequence>
+            <xsd:element name="variable" minOccurs="0" maxOccurs="unbounded">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="ReadFrom" type="LocationDesc" minOccurs="0"/>
+                  <xsd:element name="WriteTo" type="LocationDesc" minOccurs="0"/>
+                </xsd:sequence>
+                <xsd:attribute name="Name" type="xsd:string" use="required"/>
+                <xsd:attribute name="Comment" type="xsd:string" use="required"/>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
         </xsd:complexType>
       </xsd:element>
+      <xsd:complexType name="LocationDesc">
+        <xsd:attribute name="Position" type="xsd:integer" use="required"/>
+        <xsd:attribute name="Index" type="xsd:integer" use="required"/>
+        <xsd:attribute name="SubIndex" type="xsd:integer" use="required"/>
+      </xsd:complexType>
     </xsd:schema>
-    """
+"""
+
+ProcessVariablesClasses = GenerateClassesFromXSDstring(ProcessVariablesXSD) 
+
+class _EthercatCTN:
     
     CTNChildrenTypes = [("EthercatSlave", _EthercatSlaveCTN, "Ethercat Slave")]
     if HAS_MCL:
         CTNChildrenTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlaveCTN, "Ethercat CIA402 Slave"))
+    EditorType = MasterEditor
     
     def __init__(self):
-        filepath = self.ConfigFileName()
-        
+        config_filepath = self.ConfigFileName()
+        config_is_saved = False
         self.Config = EtherCATConfigClasses["EtherCATConfig"]()
-        if os.path.isfile(filepath):
-            xmlfile = open(filepath, 'r')
-            tree = minidom.parse(xmlfile)
-            xmlfile.close()
+        if os.path.isfile(config_filepath):
+            config_xmlfile = open(config_filepath, 'r')
+            config_tree = minidom.parse(config_xmlfile)
+            config_xmlfile.close()
             
-            for child in tree.childNodes:
-                if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "EtherCATConfig":
+            for child in config_tree.childNodes:
+                if child.nodeType == config_tree.ELEMENT_NODE and child.nodeName == "EtherCATConfig":
                     self.Config.loadXMLTree(child)
-                    self.CreateConfigBuffer(True)
+                    config_is_saved = True
+        
+        process_filepath = self.ProcessVariablesFileName()
+        process_is_saved = False
+        self.ProcessVariables = ProcessVariablesClasses["ProcessVariables"]()
+        if os.path.isfile(process_filepath):
+            process_xmlfile = open(process_filepath, 'r')
+            process_tree = minidom.parse(process_xmlfile)
+            process_xmlfile.close()
+            
+            for child in process_tree.childNodes:
+                if child.nodeType == process_tree.ELEMENT_NODE and child.nodeName == "ProcessVariables":
+                    self.ProcessVariables.loadXMLTree(child)
+                    process_is_saved = True
+        
+        if config_is_saved and process_is_saved:
+            self.CreateBuffer(True)
         else:
-            self.CreateConfigBuffer(False)
+            self.CreateBuffer(False)
             self.OnCTNSave()
 
     def ExtractHexDecValue(self, value):
@@ -529,7 +646,10 @@ class _EthercatCTN:
 
     def ConfigFileName(self):
         return os.path.join(self.CTNPath(), "config.xml")
-
+    
+    def ProcessVariablesFileName(self):
+        return os.path.join(self.CTNPath(), "process_variables.xml")
+    
     def GetSlaves(self):
         slaves = []
         for slave in self.Config.getConfig().getSlave():
@@ -544,6 +664,97 @@ class _EthercatCTN:
                 return slave
         return None
 
+    def FilterSlave(self, slave, vendor=None, slave_pos=None, slave_profile=None):
+        if slave_pos is not None and slave.getInfo().getPhysAddr() != slave_pos:
+            return False
+        type_infos = slave.getType()
+        if vendor is not None and ExtractHexDecValue(type_infos["vendor"]) != vendor:
+            return False
+        device, alignment = self.GetModuleInfos(type_infos)
+        if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
+            return False
+        return True
+
+    def GetStartupCommands(self, vendor=None, slave_pos=None, slave_profile=None):
+        commands = []
+        for slave in self.Config.getConfig().getSlave():
+            if self.FilterSlave(slave, vendor, slave_pos, slave_profile):
+                commands.append((slave.getInfo().getPhysAddr(), slave.getStartupCommands()))
+        commands.sort()
+        return reduce(lambda x, y: x + y[1], commands, [])
+    
+    def AppendStartupCommand(self, command_infos):
+        slave = self.GetSlave(command_infos["Position"])
+        if slave is not None:
+            command_idx = slave.appendStartupCommand(command_infos)
+            self.BufferModel()
+            return command_idx
+        return None
+    
+    def SetStartupCommandInfos(self, command_infos):
+        slave = self.GetSlave(command_infos["Position"])
+        if slave is not None:
+            slave.setStartupCommand(command_infos)
+            self.BufferModel()
+    
+    def RemoveStartupCommand(self, slave_pos, command_idx):
+        slave = self.GetSlave(slave_pos)
+        if slave is not None:
+            slave.removeStartupCommand(command_idx)
+            self.BufferModel()
+    
+    def SetProcessVariables(self, variables):
+        vars = []
+        for var in variables:
+            variable = ProcessVariablesClasses["ProcessVariables_variable"]()
+            variable.setName(var["Name"])
+            variable.setComment(var["Description"])
+            if var["ReadFrom"] != "":
+                position, index, subindex = var["ReadFrom"]
+                if variable.getReadFrom() is None:
+                    variable.addReadFrom()
+                read_from = variable.getReadFrom()
+                read_from.setPosition(position)
+                read_from.setIndex(index)
+                read_from.setSubIndex(subindex)
+            elif variable.getReadFrom() is not None:
+                variable.deleteReadFrom()
+            if var["WriteTo"] != "":
+                position, index, subindex = var["WriteTo"]
+                if variable.getWriteTo() is None:
+                    variable.addWriteTo()
+                write_to = variable.getWriteTo()
+                write_to.setPosition(position)
+                write_to.setIndex(index)
+                write_to.setSubIndex(subindex)
+            elif variable.getWriteTo() is not None:
+                variable.deleteWriteTo()
+            vars.append(variable)
+        self.ProcessVariables.setvariable(vars)
+        self.BufferModel()
+        
+    def GetProcessVariables(self):
+        variables = []
+        for variable in self.ProcessVariables.getvariable():
+            var = {"Name": variable.getName(),
+                   "Description": variable.getComment()}
+            read_from = variable.getReadFrom()
+            if read_from is not None:
+                var["ReadFrom"] = (read_from.getPosition(),
+                                   read_from.getIndex(),
+                                   read_from.getSubIndex())
+            else:
+                var["ReadFrom"] = ""
+            write_to = variable.getWriteTo()
+            if write_to is not None:
+                var["WriteTo"] = (write_to.getPosition(),
+                                   write_to.getIndex(),
+                                   write_to.getSubIndex())
+            else:
+                var["WriteTo"] = ""
+            variables.append(var)
+        return variables
+    
     def _ScanNetwork(self):
         app_frame = self.GetCTRoot().AppFrame
         
@@ -599,7 +810,7 @@ class _EthercatCTN:
             slave_infos.setPhysAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
             slave_infos.setAutoIncAddr(0)
             self.Config.getConfig().appendSlave(slave)
-            self.BufferConfig()
+            self.BufferModel()
             self.OnCTNSave()
         
         return newConfNodeOpj
@@ -611,7 +822,7 @@ class _EthercatCTN:
             slave_infos = slave.getInfo()
             if slave_infos.getPhysAddr() == slave_pos:
                 config.removeSlave(idx)
-                self.BufferConfig()
+                self.BufferModel()
                 self.OnCTNSave()
         ConfigTreeNode._doRemoveChild(self, CTNInstance)
 
@@ -620,7 +831,7 @@ class _EthercatCTN:
         if slave is not None:
             slave_info = slave.getInfo()
             slave_info.setPhysAddr(new_pos)
-            self.BufferConfig()
+            self.BufferModel()
     
     def GetSlaveAlias(self, slave_pos):
         slave = self.GetSlave(slave_pos)
@@ -634,7 +845,7 @@ class _EthercatCTN:
         if slave is not None:
             slave_info = slave.getInfo()
             slave_info.setAutoIncAddr(alias)
-            self.BufferConfig()
+            self.BufferModel()
     
     def GetSlaveType(self, slave_pos):
         slave = self.GetSlave(slave_pos)
@@ -646,42 +857,73 @@ class _EthercatCTN:
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave.setType(type_infos)
-            self.BufferConfig()
+            self.BufferModel()
     
     def GetSlaveInfos(self, slave_pos):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             type_infos = slave.getType()
-            device, alignement = self.GetModuleInfos(type_infos)
+            device, alignment = self.GetModuleInfos(type_infos)
             if device is not None:
                 infos = type_infos.copy()
-                entries = device.GetEntriesList()
-                entries_list = entries.items()
-                entries_list.sort()
-                entries = []
-                current_index = None
-                current_entry = None
-                for (index, subindex), entry in entries_list:
-                    entry["children"] = []
-                    if index != current_index:
-                        current_index = index
-                        current_entry = entry
-                        entries.append(entry)
-                    elif current_entry is not None:
-                        current_entry["children"].append(entry)
-                    else:
-                        entries.append(entry)
                 infos.update({"physics": device.getPhysics(),
                               "sync_managers": device.GetSyncManagers(),
-                              "entries": entries})
+                              "entries": self.GetSlaveVariables(device)})
                 return infos
         return None
     
+    def GetSlaveVariables(self, slave_pos=None, limits=None, device=None):
+        if device is None and slave_pos is not None:
+            slave = self.GetSlave(slave_pos)
+            if slave is not None:
+                type_infos = slave.getType()
+                device, alignment = self.GetModuleInfos(type_infos)
+        if device is not None:
+            entries = device.GetEntriesList(limits)
+            entries_list = entries.items()
+            entries_list.sort()
+            entries = []
+            current_index = None
+            current_entry = None
+            for (index, subindex), entry in entries_list:
+                entry["children"] = []
+                if slave_pos is not None:
+                    entry["Position"] = str(slave_pos)
+                entry
+                if index != current_index:
+                    current_index = index
+                    current_entry = entry
+                    entries.append(entry)
+                elif current_entry is not None:
+                    current_entry["children"].append(entry)
+                else:
+                    entries.append(entry)
+            return entries
+        return []
+    
+    def GetNodesVariables(self, vendor=None, slave_pos=None, slave_profile=None, limits=None):
+        entries = []
+        for slave_position in self.GetSlaves():
+            if slave_pos is not None and slave_position != slave_pos:
+                continue
+            slave = self.GetSlave(slave_position)
+            type_infos = slave.getType()
+            if vendor is not None and ExtractHexDecValue(type_infos["vendor"]) != vendor:
+                continue
+            device, alignment = self.GetModuleInfos(type_infos)
+            if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
+                continue
+            entries.extend(self.GetSlaveVariables(slave_position, limits, device))
+        return entries
+     
     def GetModuleInfos(self, type_infos):
         return self.CTNParent.GetModuleInfos(type_infos)
     
     def GetSlaveTypesLibrary(self, profile_filter=None):
         return self.CTNParent.GetModulesLibrary(profile_filter)
+    
+    def GetLibraryVendors(self):
+        return self.CTNParent.GetVendors()
     
     def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
         slave = self.GetSlave(slave_pos)
@@ -689,7 +931,7 @@ class _EthercatCTN:
         if slave is not None:
             type_infos = slave.getType()
         
-            device, alignement = self.GetModuleInfos(type_infos)
+            device, alignment = self.GetModuleInfos(type_infos)
             if device is not None:
                 sync_managers = []
                 for sync_manager in device.getSm():
@@ -725,21 +967,31 @@ class _EthercatCTN:
         return vars
     
     def CTNTestModified(self):
-        return self.ChangesToSave or not self.ConfigIsSaved()    
+        return self.ChangesToSave or not self.ModelIsSaved()    
 
     def OnCTNSave(self):
-        filepath = self.ConfigFileName()
+        config_filepath = self.ConfigFileName()
         
-        text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-        extras = {"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
+        config_text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+        config_extras = {"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
                   "xsi:noNamespaceSchemaLocation" : "EtherCATInfo.xsd"}
-        text += self.Config.generateXMLText("EtherCATConfig", 0, extras)
+        config_text += self.Config.generateXMLText("EtherCATConfig", 0, config_extras)
 
-        xmlfile = open(filepath,"w")
-        xmlfile.write(text.encode("utf-8"))
-        xmlfile.close()
+        config_xmlfile = open(config_filepath,"w")
+        config_xmlfile.write(config_text.encode("utf-8"))
+        config_xmlfile.close()
         
-        self.ConfigBuffer.CurrentSaved()
+        process_filepath = self.ProcessVariablesFileName()
+        
+        process_text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+        process_extras = {"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance"}
+        process_text += self.ProcessVariables.generateXMLText("ProcessVariables", 0, process_extras)
+
+        process_xmlfile = open(process_filepath,"w")
+        process_xmlfile.write(process_text.encode("utf-8"))
+        process_xmlfile.close()
+        
+        self.Buffer.CurrentSaved()
         return True
 
     def _Generate_C(self, buildpath, locations):
@@ -810,27 +1062,27 @@ class _EthercatCTN:
     def Copy(self, model):
         return cPickle.loads(cPickle.dumps(model))
     
-    def CreateConfigBuffer(self, saved):
-        self.ConfigBuffer = UndoBuffer(cPickle.dumps(self.Config), saved)
+    def CreateBuffer(self, saved):
+        self.Buffer = UndoBuffer(cPickle.dumps((self.Config, self.ProcessVariables)), saved)
         
-    def BufferConfig(self):
-        self.ConfigBuffer.Buffering(cPickle.dumps(self.Config))
+    def BufferModel(self):
+        self.Buffer.Buffering(cPickle.dumps((self.Config, self.ProcessVariables)))
     
-    def ConfigIsSaved(self):
-        if self.ConfigBuffer is not None:
-            return self.ConfigBuffer.IsCurrentSaved()
+    def ModelIsSaved(self):
+        if self.Buffer is not None:
+            return self.Buffer.IsCurrentSaved()
         else:
             return True
 
     def LoadPrevious(self):
-        self.Config = cPickle.loads(self.ConfigBuffer.Previous())
+        self.Config, self.ProcessVariables = cPickle.loads(self.Buffer.Previous())
     
     def LoadNext(self):
-        self.Config = cPickle.loads(self.ConfigBuffer.Next())
+        self.Config, self.ProcessVariables = cPickle.loads(self.Buffer.Next())
     
     def GetBufferState(self):
-        first = self.ConfigBuffer.IsFirst()
-        last = self.ConfigBuffer.IsLast()
+        first = self.Buffer.IsFirst()
+        last = self.Buffer.IsLast()
         return not first, not last
 
 
@@ -983,7 +1235,7 @@ class _EthercatCFileGenerator:
         # Initialize strings for formatting master code template
         str_completion = {
             "location": location_str,
-            "master_number": etherlab_node_infos.getMasterNumber(),
+            "master_number": self.BaseParams.getIEC_Channel(),
             "located_variables_declaration": [],
             "used_pdo_entry_offset_variables_declaration": [],
             "used_pdo_entry_configuration": [],
@@ -1017,7 +1269,7 @@ class _EthercatCFileGenerator:
             slave_pos = (slave_alias, alias[slave_alias])
             
             # Extract slave device informations
-            device, alignement = self.Controler.GetModuleInfos(type_infos)
+            device, alignment = self.Controler.GetModuleInfos(type_infos)
             if device is not None:
                 
                 # Extract slaves variables to be mapped
@@ -1413,6 +1665,7 @@ if cls:
         self.DataTypes = {}
         
         for dictionary in self.GetProfileDictionaries():
+            dictionary.load()
             
             datatypes = dictionary.getDataTypes()
             if datatypes is not None:
@@ -1431,7 +1684,7 @@ if cls:
         return None
     setattr(cls, "getCoE", getCoE)
 
-    def GetEntriesList(self):
+    def GetEntriesList(self, limits=None):
         if self.DataTypes is None:
             self.ExtractDataTypes()
         
@@ -1443,62 +1696,63 @@ if cls:
             for object in dictionary.getObjects().getObject():
                 entry_index = object.getIndex().getcontent()
                 index = ExtractHexDecValue(entry_index)
-                entry_type = object.getType()
-                entry_name = ExtractName(object.getName())
-                
-                entry_type_infos = self.DataTypes.get(entry_type, None)
-                if entry_type_infos is not None:
-                    content = entry_type_infos.getcontent()
-                    for subitem in content["value"]:
-                        entry_subidx = subitem.getSubIdx()
-                        if entry_subidx is None:
-                            entry_subidx = "0"
-                        subidx = ExtractHexDecValue(entry_subidx)
-                        subitem_access = ""
-                        subitem_pdomapping = ""
-                        subitem_flags = subitem.getFlags()
-                        if subitem_flags is not None:
-                            access = subitem_flags.getAccess()
+                if limits is None or limits[0] <= index <= limits[1]:
+                    entry_type = object.getType()
+                    entry_name = ExtractName(object.getName())
+                    
+                    entry_type_infos = self.DataTypes.get(entry_type, None)
+                    if entry_type_infos is not None:
+                        content = entry_type_infos.getcontent()
+                        for subitem in content["value"]:
+                            entry_subidx = subitem.getSubIdx()
+                            if entry_subidx is None:
+                                entry_subidx = "0"
+                            subidx = ExtractHexDecValue(entry_subidx)
+                            subitem_access = ""
+                            subitem_pdomapping = ""
+                            subitem_flags = subitem.getFlags()
+                            if subitem_flags is not None:
+                                access = subitem_flags.getAccess()
+                                if access is not None:
+                                    subitem_access = access.getcontent()
+                                pdomapping = subitem_flags.getPdoMapping()
+                                if pdomapping is not None:
+                                    subitem_pdomapping = pdomapping.upper()
+                            entries[(index, subidx)] = {
+                                "Index": entry_index,
+                                "SubIndex": entry_subidx,
+                                "Name": "%s - %s" % 
+                                        (entry_name.decode("utf-8"),
+                                         ExtractName(subitem.getDisplayName(), 
+                                                     subitem.getName()).decode("utf-8")),
+                                "Type": subitem.getType(),
+                                "BitSize": subitem.getBitSize(),
+                                "Access": subitem_access, 
+                                "PDOMapping": subitem_pdomapping}
+                    else:
+                        entry_access = ""
+                        entry_pdomapping = ""
+                        entry_flags = object.getFlags()
+                        if entry_flags is not None:
+                            access = entry_flags.getAccess()
                             if access is not None:
-                                subitem_access = access.getcontent()
-                            pdomapping = subitem_flags.getPdoMapping()
+                                entry_access = access.getcontent()
+                            pdomapping = entry_flags.getPdoMapping()
                             if pdomapping is not None:
-                                subitem_pdomapping = pdomapping.upper()
-                        entries[(index, subidx)] = {
-                            "Index": entry_index,
-                            "SubIndex": entry_subidx,
-                            "Name": "%s - %s" % 
-                                    (entry_name.decode("utf-8"),
-                                     ExtractName(subitem.getDisplayName(), 
-                                                 subitem.getName()).decode("utf-8")),
-                            "Type": subitem.getType(),
-                            "BitSize": subitem.getBitSize(),
-                            "Access": subitem_access, 
-                            "PDOMapping": subitem_pdomapping}
-                else:
-                    entry_access = ""
-                    entry_pdomapping = ""
-                    entry_flags = object.getFlags()
-                    if entry_flags is not None:
-                        access = entry_flags.getAccess()
-                        if access is not None:
-                            entry_access = access.getcontent()
-                        pdomapping = entry_flags.getPdoMapping()
-                        if pdomapping is not None:
-                            entry_pdomapping = pdomapping.upper()
-                    entries[(index, 0)] = {
-                         "Index": entry_index,
-                         "SubIndex": "0",
-                         "Name": entry_name,
-                         "Type": entry_type,
-                         "BitSize": object.getBitSize(),
-                         "Access": entry_access,
-                         "PDOMapping": entry_pdomapping}
+                                entry_pdomapping = pdomapping.upper()
+                        entries[(index, 0)] = {
+                             "Index": entry_index,
+                             "SubIndex": "0",
+                             "Name": entry_name,
+                             "Type": entry_type,
+                             "BitSize": object.getBitSize(),
+                             "Access": entry_access,
+                             "PDOMapping": entry_pdomapping}
         
         for TxPdo in self.getTxPdo():
-            ExtractPdoInfos(TxPdo, "Transmit", entries)
+            ExtractPdoInfos(TxPdo, "Transmit", entries, limits)
         for RxPdo in self.getRxPdo():
-            ExtractPdoInfos(RxPdo, "Receive", entries)
+            ExtractPdoInfos(RxPdo, "Receive", entries, limits)
         
         return entries
     setattr(cls, "GetEntriesList", GetEntriesList)
@@ -1544,7 +1798,7 @@ def ExtractName(names, default=None):
                 return name.getcontent()
     return default
 
-def ExtractPdoInfos(pdo, pdo_type, entries):
+def ExtractPdoInfos(pdo, pdo_type, entries, limits=None):
     pdo_index = pdo.getIndex().getcontent()
     pdo_name = ExtractName(pdo.getName())
     for pdo_entry in pdo.getEntry():
@@ -1553,27 +1807,28 @@ def ExtractPdoInfos(pdo, pdo_type, entries):
         index = ExtractHexDecValue(entry_index)
         subindex = ExtractHexDecValue(entry_subindex)
         
-        entry = entries.get((index, subindex), None)
-        if entry is not None:
-            entry["PDO index"] = pdo_index
-            entry["PDO name"] = pdo_name
-            entry["PDO type"] = pdo_type
-        else:
-            entry_type = pdo_entry.getDataType()
-            if entry_type is not None:
-                if pdo_type == "Transmit":
-                    access = "ro"
-                    pdomapping = "T"
-                else:
-                    access = "wo"
-                    pdomapping = "R"
-                entries[(index, subindex)] = {
-                    "Index": entry_index,
-                    "SubIndex": entry_subindex,
-                    "Name": ExtractName(pdo_entry.getName()),
-                    "Type": entry_type.getcontent(),
-                    "Access": access,
-                    "PDOMapping": pdomapping}
+        if limits is None or limits[0] <= index <= limits[1]:
+            entry = entries.get((index, subindex), None)
+            if entry is not None:
+                entry["PDO index"] = pdo_index
+                entry["PDO name"] = pdo_name
+                entry["PDO type"] = pdo_type
+            else:
+                entry_type = pdo_entry.getDataType()
+                if entry_type is not None:
+                    if pdo_type == "Transmit":
+                        access = "ro"
+                        pdomapping = "T"
+                    else:
+                        access = "wo"
+                        pdomapping = "R"
+                    entries[(index, subindex)] = {
+                        "Index": entry_index,
+                        "SubIndex": entry_subindex,
+                        "Name": ExtractName(pdo_entry.getName()),
+                        "Type": entry_type.getcontent(),
+                        "Access": access,
+                        "PDOMapping": pdomapping}
 
 DEFAULT_ALIGNMENT = 8
 
@@ -1585,7 +1840,10 @@ class ModulesLibrary:
             os.makedirs(self.Path)
         self.ParentLibrary = parent_library
         
-        self.LoadModules()
+        if parent_library is not None:
+            self.LoadModules()
+        else:
+            self.Library = None
         self.LoadAlignments()
     
     def GetPath(self):
@@ -1633,6 +1891,8 @@ class ModulesLibrary:
                         vendor_category["groups"][device_group]["devices"].append((device.getType().getcontent(), device))
 
     def GetModulesLibrary(self, profile_filter=None):
+        if self.Library is None:
+            self.LoadModules()
         library = []
         for vendor_id, vendor in self.Library.iteritems():
             groups = []
@@ -1678,6 +1938,9 @@ class ModulesLibrary:
         library.sort(lambda x, y: cmp(x["name"], y["name"]))
         return library
 
+    def GetVendors(self):
+        return [(vendor_id, vendor["name"]) for vendor_id, vendor in self.Library.items()]
+    
     def GetModuleInfos(self, module_infos):
         vendor = ExtractHexDecValue(module_infos["vendor"])
         vendor_infos = self.Library.get(vendor)
@@ -1784,6 +2047,9 @@ class RootClass:
     
     def GetModulesLibrary(self, profile_filter=None):
         return self.ModulesLibrary.GetModulesLibrary(profile_filter)
+    
+    def GetVendors(self):
+        return self.ModulesLibrary.GetVendors()
     
     def GetModuleInfos(self, module_infos):
         return self.ModulesLibrary.GetModuleInfos(module_infos)
