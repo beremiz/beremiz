@@ -184,6 +184,7 @@ void RetainIterator(void* varp, __IEC_types_enum vartype){
 
 extern int TryEnterDebugSection(void);
 extern long AtomicCompareExchange(long*, long, long);
+extern long long AtomicCompareExchange64(long long* , long long , long long);
 extern void LeaveDebugSection(void);
 extern void ValidateRetainBuffer(void);
 extern void InValidateRetainBuffer(void);
@@ -376,7 +377,10 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
             tail.msgidx = (old_cursor >> 32); 
             new_cursor = ((uint64_t)(tail.msgidx + 1)<<32) 
                          | (uint64_t)((buffpos + size + sizeof(mTail)) & LOG_BUFFER_MASK);
-        }while(!__sync_bool_compare_and_swap(&LogCursor[level],old_cursor,new_cursor));
+        }while(AtomicCompareExchange64(
+            (long long*)&LogCursor[level],
+            (long long)old_cursor,
+            (long long)new_cursor)!=old_cursor);
 
         copy_to_log(level, buffpos, buf, size);
         copy_to_log(level, (buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));

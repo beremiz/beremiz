@@ -18,6 +18,10 @@ long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
     return __sync_val_compare_and_swap(atomicvar, compared, exchange);
 }
+long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
+{
+    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
+}
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
