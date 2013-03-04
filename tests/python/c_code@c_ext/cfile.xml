@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <CFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="cext_xsd.xsd">
   <includes>
-<![CDATA[]]>
+<![CDATA[#include "stdio.h"]]>
   </includes>
   <variables>
     <variable name="TestInput" type="SINT" class="input"/>

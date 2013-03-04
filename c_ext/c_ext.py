@@ -184,14 +184,7 @@ class CFile:
         text += self.CFile.includes.gettext()
         text += "\n"
         
-        text += """/* Beremiz c_ext confnode includes */
-#ifdef _WINDOWS_H
-  #include "iec_types.h"
-#else
-  #include "iec_std_lib.h"
-#endif
-
-"""
+        text += '#include "iec_types.h"'
 
         # Adding variables
         vars = []
