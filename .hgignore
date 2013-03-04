@@ -4,3 +4,7 @@ syntax: regexp
 ^tests/.*/build$
 syntax: regexp
 ^.*\.pyc$
+syntax: regexp
+^.*~$
+syntax: regexp
+^.*\.swp$
