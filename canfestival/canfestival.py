@@ -400,7 +400,6 @@ class RootClass:
       <xsd:element name="CanFestivalInstance">
         <xsd:complexType>
           <xsd:attribute name="CAN_Driver" type="xsd:string" use="optional" default="%(CAN_Driver)s"/>
-          <xsd:attribute name="Debug_mode" type="xsd:boolean" use="optional" default="false"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -419,19 +418,11 @@ class RootClass:
                             child["type"] = DLL_LIST  
         return infos
     
-    def GetCanDriver(self):
-        can_driver = self.CanFestivalInstance.getCAN_Driver()
-        if sys.platform == 'win32':
-            if self.CanFestivalInstance.getDebug_mode() and os.path.isfile(os.path.join("%s"%(can_driver + '_DEBUG.dll'))):
-                can_driver += '_DEBUG.dll'
-            else:
-                can_driver += '.dll'
-        return can_driver
-    
     def CTNGenerate_C(self, buildpath, locations):
+        can_driver = self.CanFestivalInstance.getCAN_Driver()
         
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
-                       "candriver" : self.GetCanDriver(),
+                       "candriver" : can_driver,
                        "nodes_includes" : "",
                        "board_decls" : "",
                        "nodes_init" : "",
@@ -522,7 +513,13 @@ class RootClass:
         f = open(cf_main_path,'w')
         f.write(cf_main)
         f.close()
-        
-        return [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))],local_canfestival_config.getLDFLAGS(CanFestivalPath), True
 
+        res = [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))],local_canfestival_config.getLDFLAGS(CanFestivalPath), True
+
+        can_drv_ext = self.GetCTRoot().GetBuilder().extension
+        can_driver_path = os.path.join(CanFestivalPath,"drivers",can_driver,"libcanfestival_"+can_driver+can_drv_ext)
+        if os.path.exists(can_driver_path):
+            res += ((can_driver+can_drv_ext, file(can_driver_path,"rb")),)
+
+        return res
 
