@@ -67,6 +67,7 @@ class PLCObject(pyro.ObjBase):
         self.hmi_frame = None
         self.website = website
         self._loading_error = None
+        self.python_threads_vars = None
         
         # Get the last transfered PLC if connector must be restart
         try:
