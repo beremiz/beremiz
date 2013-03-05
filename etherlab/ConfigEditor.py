@@ -331,14 +331,25 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
                 master_location = self.ParentWindow.GetMasterLocation()
                 if (master_location == tuple(location[:len(master_location)]) and 
                     len(location) - len(master_location) == 3):
+                    values = tuple(location[len(master_location):])
+                    var_type = self.ParentWindow.Controler.GetSlaveVariableDataType(*values)
                     if col == 2:
-                        self.ParentWindow.ProcessVariablesTable.SetValueByName(
-                            row, "ReadFrom", tuple(location[len(master_location):]))
+                        other_values = self.ParentWindow.ProcessVariablesTable.GetValueByName(row, "WriteTo")
                     else:
-                        self.ParentWindow.ProcessVariablesTable.SetValueByName(
-                            row, "WriteTo", tuple(location[len(master_location):]))
-                    self.ParentWindow.SaveProcessVariables()
-                    self.ParentWindow.RefreshProcessVariables()
+                        other_values = self.ParentWindow.ProcessVariablesTable.GetValueByName(row, "ReadFrom")
+                    if other_values != "":
+                        other_type = self.ParentWindow.Controler.GetSlaveVariableDataType(*other_values)
+                    else:
+                        other_type = None
+                    if other_type is None or var_type == other_type:
+                        if col == 2:
+                            self.ParentWindow.ProcessVariablesTable.SetValueByName(row, "ReadFrom", values)
+                        else:
+                            self.ParentWindow.ProcessVariablesTable.SetValueByName(row, "WriteTo", values)
+                        self.ParentWindow.SaveProcessVariables()
+                        self.ParentWindow.RefreshProcessVariables()
+                    else:
+                        message = _("'Read from' and 'Write to' variables types are not compatible")
                 else:
                     message = _("Invalid value \"%s\" for process variable")%data
                     
@@ -375,7 +386,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
             location = None
             if values[1] == "location":
                 result = LOCATION_MODEL.match(values[0])
-                if result is not None:
+                if result is not None and len(values) > 5:
                     location = map(int, result.group(1).split('.'))
                     access = values[5]
             elif values[1] == "variable":
@@ -531,6 +542,7 @@ class MasterEditor(ConfTreeNodeEditor):
               self.OnProcessVariablesGridCellChange)
         self.ProcessVariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, 
               self.OnProcessVariablesGridCellLeftClick)
+        self.ProcessVariablesGrid.Bind(wx.EVT_KEY_DOWN, self.OnProcessVariablesGridKeyDown)
         
         startup_commands_header = wx.BoxSizer(wx.HORIZONTAL)
         
@@ -586,7 +598,10 @@ class MasterEditor(ConfTreeNodeEditor):
 
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
-    
+        
+        self.ProcessVariables = []
+        self.LastCommandInfos = None
+        
         self.ProcessVariablesDefaultValue = {"Name": "", "ReadFrom": "", "WriteTo": "", "Description": ""}
         self.ProcessVariablesTable = ProcessVariablesTable(self, [], GetProcessVariablesTableColnames())
         self.ProcessVariablesColSizes = [40, 100, 150, 150, 200]
@@ -618,6 +633,17 @@ class MasterEditor(ConfTreeNodeEditor):
                 self.ProcessVariablesTable.ResetView(self.ProcessVariablesGrid)
             return new_row
         setattr(self.ProcessVariablesGrid, "_MoveRow", _MoveVariablesElement)
+        
+        _refresh_buttons = getattr(self.ProcessVariablesGrid, "RefreshButtons")
+        def _RefreshButtons():
+            if self.NodesFilter.GetSelection() == 0:
+                _refresh_buttons()
+            else:
+                self.AddVariableButton.Enable(False)
+                self.DeleteVariableButton.Enable(False)
+                self.UpVariableButton.Enable(False)
+                self.DownVariableButton.Enable(False)
+        setattr(self.ProcessVariablesGrid, "RefreshButtons", _RefreshButtons)
         
         self.ProcessVariablesGrid.SetRowLabelSize(0)
         for col in range(self.ProcessVariablesTable.GetNumberCols()):
@@ -651,7 +677,7 @@ class MasterEditor(ConfTreeNodeEditor):
             self.RefreshStartupCommands()
             self.RefreshBuffer()
         setattr(self.StartupCommandsGrid, "_DeleteRow", _DeleteCommandsElement)
-            
+        
         self.StartupCommandsGrid.SetRowLabelSize(0)
         for col in range(self.StartupCommandsTable.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
@@ -666,6 +692,17 @@ class MasterEditor(ConfTreeNodeEditor):
         self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
         self.ParentWindow.RefreshPageTitles()
+    
+    def GetBufferState(self):
+        return self.Controler.GetBufferState()
+    
+    def Undo(self):
+        self.Controler.LoadPrevious()
+        self.RefreshView()
+            
+    def Redo(self):
+        self.Controler.LoadNext()
+        self.RefreshView()
     
     def RefreshView(self):
         ConfTreeNodeEditor.RefreshView(self)
@@ -707,20 +744,31 @@ class MasterEditor(ConfTreeNodeEditor):
         self.NodesVariables.SetCurrentNodesFilter(self.CurrentNodesFilter)
     
     def RefreshProcessVariables(self):
-        self.ProcessVariablesTable.SetData(
-            self.Controler.GetProcessVariables())
-        self.ProcessVariablesTable.ResetView(self.ProcessVariablesGrid)
+        if self.CurrentNodesFilter is not None:
+            self.ProcessVariables = self.Controler.GetProcessVariables()
+            slaves = self.Controler.GetSlaves(**self.CurrentNodesFilter)
+            data = []
+            for variable in self.ProcessVariables:
+                if (variable["ReadFrom"] == "" or variable["ReadFrom"][0] in slaves or
+                    variable["WriteTo"] == "" or variable["WriteTo"][0] in slaves):
+                    data.append(variable)
+            self.ProcessVariablesTable.SetData(data)
+            self.ProcessVariablesTable.ResetView(self.ProcessVariablesGrid)
+            self.ProcessVariablesGrid.RefreshButtons()
     
     def SaveProcessVariables(self):
         self.Controler.SetProcessVariables(
             self.ProcessVariablesTable.GetData())
         self.RefreshBuffer()
     
-    def RefreshStartupCommands(self):
+    def RefreshStartupCommands(self, position=None, command_idx=None):
         if self.CurrentNodesFilter is not None:
+            self.StartupCommandsGrid.CloseEditControl()
             self.StartupCommandsTable.SetData(
                 self.Controler.GetStartupCommands(**self.CurrentNodesFilter))
             self.StartupCommandsTable.ResetView(self.StartupCommandsGrid)
+            if position is not None and command_idx is not None:
+                self.SelectStartupCommand(position, command_idx)
     
     def SelectStartupCommand(self, position, command_idx):
         self.StartupCommandsGrid.SetSelectedRow(
@@ -768,15 +816,43 @@ class MasterEditor(ConfTreeNodeEditor):
             dialog.ShowModal()
             dialog.Destroy()
             event.Veto()
-        
+    
     def OnProcessVariablesGridCellLeftClick(self, event):
+        row = event.GetRow()
+        if event.GetCol() == 0:
+            var_name = self.ProcessVariablesTable.GetValueByName(row, "Name")
+            var_type = self.Controler.GetSlaveVariableDataType(
+                *self.ProcessVariablesTable.GetValueByName(row, "ReadFrom"))
+            data_size = self.Controler.GetSizeOfType(var_type)
+            number = self.ProcessVariablesTable.GetValueByName(row, "Number")
+            location = "%%M%s" % data_size + \
+                       ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + (number,)))
+            
+            data = wx.TextDataObject(str((location, "location", var_type, var_name, "")))
+            dragSource = wx.DropSource(self.ProcessVariablesGrid)
+            dragSource.SetData(data)
+            dragSource.DoDragDrop()
         event.Skip()
+    
+    def OnProcessVariablesGridKeyDown(self, event):
+        keycode = event.GetKeyCode()
+        col = self.ProcessVariablesGrid.GetGridCursorCol()
+        row = self.ProcessVariablesGrid.GetGridCursorRow()
+        colname = self.ProcessVariablesTable.GetColLabelValue(col, False)
+        if (keycode in (wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE) and 
+            (colname.startswith("Read from") or colname.startswith("Write to"))):
+            self.ProcessVariablesTable.SetValue(row, col, "")
+            self.SaveProcessVariables()
+            wx.CallAfter(self.ProcessVariablesTable.ResetView, self.ProcessVariablesGrid)
+        else:
+            event.Skip()
     
     def OnStartupCommandsGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.StartupCommandsTable.GetColLabelValue(col, False)
         value = self.StartupCommandsTable.GetValue(row, col)
         message = None
+        veto = False
         if colname == "Position":
             if value not in self.Controler.GetSlaves():
                 message = _("No slave defined at position %d!") % value
@@ -786,13 +862,22 @@ class MasterEditor(ConfTreeNodeEditor):
                     self.StartupCommandsTable.GetValueByName(row, "command_idx"))
                 command = self.StartupCommandsTable.GetRow(row)
                 command_idx = self.Controler.AppendStartupCommand(command)
-                wx.CallAfter(self.RefreshStartupCommands)
-                wx.CallAfter(self.SelectStartupCommand, command["Position"], command_idx)
+                wx.CallAfter(self.RefreshStartupCommands, command["Position"], command_idx)
+                veto = True
         else:
-            self.Controler.SetStartupCommandInfos(self.StartupCommandsTable.GetRow(row))
+            command = self.StartupCommandsTable.GetRow(row)
+            if self.LastCommandInfos != command:
+                self.LastCommandInfos = command.copy()
+                self.Controler.SetStartupCommandInfos(command)
+                if colname in ["Index", "SubIndex"]: 
+                    wx.CallAfter(self.RefreshStartupCommands, command["Position"], command["command_idx"])
+                    veto = True
         if message is None:
             self.RefreshBuffer()
-            event.Skip()
+            if veto:
+                event.Veto()
+            else:
+                event.Skip()
         else:
             dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
             dialog.ShowModal()
