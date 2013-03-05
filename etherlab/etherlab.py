@@ -650,20 +650,6 @@ class _EthercatCTN:
     def ProcessVariablesFileName(self):
         return os.path.join(self.CTNPath(), "process_variables.xml")
     
-    def GetSlaves(self):
-        slaves = []
-        for slave in self.Config.getConfig().getSlave():
-            slaves.append(slave.getInfo().getPhysAddr())
-        slaves.sort()
-        return slaves
-
-    def GetSlave(self, slave_pos):
-        for slave in self.Config.getConfig().getSlave():
-            slave_info = slave.getInfo()
-            if slave_info.getPhysAddr() == slave_pos:
-                return slave
-        return None
-
     def FilterSlave(self, slave, vendor=None, slave_pos=None, slave_profile=None):
         if slave_pos is not None and slave.getInfo().getPhysAddr() != slave_pos:
             return False
@@ -674,6 +660,21 @@ class _EthercatCTN:
         if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
             return False
         return True
+
+    def GetSlaves(self, vendor=None, slave_pos=None, slave_profile=None):
+        slaves = []
+        for slave in self.Config.getConfig().getSlave():
+            if self.FilterSlave(slave, vendor, slave_pos, slave_profile):
+                slaves.append(slave.getInfo().getPhysAddr())
+        slaves.sort()
+        return slaves
+
+    def GetSlave(self, slave_pos):
+        for slave in self.Config.getConfig().getSlave():
+            slave_info = slave.getInfo()
+            if slave_info.getPhysAddr() == slave_pos:
+                return slave
+        return None
 
     def GetStartupCommands(self, vendor=None, slave_pos=None, slave_profile=None):
         commands = []
@@ -735,8 +736,10 @@ class _EthercatCTN:
         
     def GetProcessVariables(self):
         variables = []
+        idx = 0
         for variable in self.ProcessVariables.getvariable():
             var = {"Name": variable.getName(),
+                   "Number": idx,
                    "Description": variable.getComment()}
             read_from = variable.getReadFrom()
             if read_from is not None:
@@ -753,6 +756,7 @@ class _EthercatCTN:
             else:
                 var["WriteTo"] = ""
             variables.append(var)
+            idx += 1
         return variables
     
     def _ScanNetwork(self):
@@ -831,7 +835,18 @@ class _EthercatCTN:
         if slave is not None:
             slave_info = slave.getInfo()
             slave_info.setPhysAddr(new_pos)
-            self.BufferModel()
+            for variable in self.ProcessVariables.getvariable():
+                read_from = variable.getReadFrom()
+                if read_from is not None and read_from.getPosition() == slave_pos:
+                    read_from.setPosition(new_pos)
+                write_to = variable.getWriteTo()
+                if write_to is not None and write_to.getPosition() == slave_pos:
+                    write_to.setPosition(new_pos)
+            self.CreateBuffer(True)
+            self.OnCTNSave()
+            if self._View is not None:
+                self._View.RefreshView()
+                self._View.RefreshBuffer()
     
     def GetSlaveAlias(self, slave_pos):
         slave = self.GetSlave(slave_pos)
@@ -900,6 +915,17 @@ class _EthercatCTN:
                     entries.append(entry)
             return entries
         return []
+    
+    def GetSlaveVariableDataType(self, slave_pos, index, subindex):
+        slave = self.GetSlave(slave_pos)
+        if slave is not None:
+            device, alignment = self.GetModuleInfos(slave.getType())
+            if device is not None:
+                entries = device.GetEntriesList()
+                entry_infos = entries.get((index, subindex))
+                if entry_infos is not None:
+                    return entry_infos["Type"]
+        return None
     
     def GetNodesVariables(self, vendor=None, slave_pos=None, slave_profile=None, limits=None):
         entries = []
@@ -1005,7 +1031,7 @@ class _EthercatCTN:
         
         LocationCFilesAndCFLAGS, LDFLAGS, extra_files = ConfigTreeNode._Generate_C(self, buildpath, locations)
         
-        self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.EtherlabNode)
+        self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
         
         LocationCFilesAndCFLAGS.append(
             (current_location, 
@@ -1041,7 +1067,7 @@ class _EthercatCTN:
         for slave_pos in slaves:
             slave = self.GetSlave(slave_pos)
             if slave is not None:
-                self.FileGenerator.DeclareSlave(slave_pos, slave.getInfo().getAutoIncAddr(), slave.getType())
+                self.FileGenerator.DeclareSlave(slave_pos, slave)
         
         for location in locations:
             loc = location["LOC"][len(current_location):]
@@ -1210,8 +1236,8 @@ class _EthercatCFileGenerator:
     def __del__(self):
         self.Controler = None            
     
-    def DeclareSlave(self, slave_index, slave_alias, slave):
-        self.Slaves.append((slave_index, slave_alias, slave))
+    def DeclareSlave(self, slave_index, slave):
+        self.Slaves.append((slave_index, slave.getInfo().getAutoIncAddr(), slave))
 
     def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name):
         slave_variables = self.UsedVariables.setdefault(slave_index, {})
@@ -1224,7 +1250,7 @@ class _EthercatCFileGenerator:
         elif entry_infos["infos"] != (iec_type, dir, name):
             raise ValueError, _("Definition conflict for location \"%s\"") % name 
         
-    def GenerateCFile(self, filepath, location_str, etherlab_node_infos):
+    def GenerateCFile(self, filepath, location_str, master_number):
         
         # Extract etherlab master code template
         plc_etherlab_filepath = os.path.join(os.path.split(__file__)[0], "plc_etherlab.c")
@@ -1235,7 +1261,7 @@ class _EthercatCFileGenerator:
         # Initialize strings for formatting master code template
         str_completion = {
             "location": location_str,
-            "master_number": self.BaseParams.getIEC_Channel(),
+            "master_number": master_number,
             "located_variables_declaration": [],
             "used_pdo_entry_offset_variables_declaration": [],
             "used_pdo_entry_configuration": [],
@@ -1259,7 +1285,8 @@ class _EthercatCFileGenerator:
         alias = {}
         
         # Generating code for each slave
-        for (slave_idx, slave_alias, type_infos) in self.Slaves:
+        for (slave_idx, slave_alias, slave) in self.Slaves:
+            type_infos = slave.getType()
             
             # Defining slave alias and auto-increment position
             if alias.get(slave_alias) is not None:
@@ -1289,13 +1316,20 @@ class _EthercatCFileGenerator:
                     
                     # If device support CanOpen over Ethernet, adding code for calling 
                     # init commands when initializing slave in master code template strings
+                    initCmds = []
                     for initCmd in device_coe.getInitCmd():
-                        index = ExtractHexDecValue(initCmd.getIndex())
-                        subindex = ExtractHexDecValue(initCmd.getSubIndex())
+                        initCmds.append({
+                            "Index": ExtractHexDecValue(initCmd.getIndex()),
+                            "Subindex": ExtractHexDecValue(initCmd.getSubIndex()),
+                            "Value": initCmd.getData().getcontent()})
+                    initCmds.extend(slave.getStartupCommands())
+                    for initCmd in initCmds:
+                        index = initCmd["Index"]
+                        subindex = initCmd["Subindex"]
                         entry = device_entries.get((index, subindex), None)
                         if entry is not None:
                             data_size = entry["BitSize"] / 8
-                            data_str = ("0x%%.%dx" % (data_size * 2)) % initCmd.getData().getcontent()
+                            data_str = ("0x%%.%dx" % (data_size * 2)) % initCmd["Value"]
                             init_cmd_infos = {
                                 "index": index,
                                 "subindex": subindex,
@@ -1554,6 +1588,8 @@ class _EthercatCFileGenerator:
                                     dynamic_pdos[pdo_type]["pdos"].append(pdo)
                                 
                                 pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                                if entry_infos["bitlen"] < alignment:
+                                    pdo["entries"].append("    {0x0000, 0x00, %d}, /* None */" % (alignment - entry_infos["bitlen"]))
                                 pdo["entries_number"] += 1
                                 
                                 if pdo["entries_number"] == 255:
