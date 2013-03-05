@@ -1670,12 +1670,18 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 panel.OnDragging(x_mouse - x, y_mouse - y)
             else:
                 panel.SetHighlight(HIGHLIGHT_NONE)
-        self.ForceRefresh()
+        if wx.Platform == "__WXMSW__":
+            self.RefreshView()
+        else:
+            self.ForceRefresh()
     
     def ResetHighlight(self):
         for panel in self.GraphicPanels:
             panel.SetHighlight(HIGHLIGHT_NONE)
-        self.ForceRefresh()
+        if wx.Platform == "__WXMSW__":
+            self.RefreshView()
+        else:
+            self.ForceRefresh()
     
     def IsDragging(self):
         return self.DraggingAxesPanel is not None
