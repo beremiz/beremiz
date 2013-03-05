@@ -92,9 +92,8 @@ class CustomGrid(wx.grid.Grid):
         else:
             self.Table.InsertRow(new_row, self.DefaultValue.copy())
             self.Table.ResetView(self)
-        self.SetGridCursor(new_row, col)
-        self.MakeCellVisible(new_row, col)
-        self.RefreshButtons()
+        if new_row is not None:
+            self.SetSelectedRow(new_row)
 
     def DeleteRow(self):
         self.CloseEditControl()
@@ -106,10 +105,7 @@ class CustomGrid(wx.grid.Grid):
             else:
                 self.Table.RemoveRow(row)
                 self.Table.ResetView(self)
-            new_row = min(row, self.Table.GetNumberRows() - 1)
-            self.SetGridCursor(new_row, col)
-            self.MakeCellVisible(new_row, col)
-            self.RefreshButtons()
+            self.SetSelectedRow(min(row, self.Table.GetNumberRows() - 1))
 
     def MoveRow(self, row, move):
         self.CloseEditControl()
@@ -121,10 +117,14 @@ class CustomGrid(wx.grid.Grid):
             if new_row != row:
                 self.Table.ResetView(self)
         if new_row != row:
-            self.SetGridCursor(new_row, col)
-            self.MakeCellVisible(new_row, col)
-            self.RefreshButtons()
-
+            self.SetSelectedRow(new_row)
+    
+    def SetSelectedRow(self, row):
+        col = self.GetGridCursorCol()
+        self.SetGridCursor(row, col)
+        self.MakeCellVisible(row, col)
+        self.RefreshButtons()
+        
     def OnAddButton(self, event):
         self.AddRow()
         self.SetFocus()
