@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import string, os, sys
-
 #This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
 #based on the plcopen standard. 
 #
@@ -24,6 +22,7 @@ import string, os, sys
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import string, os, sys, re
 
 LANGUAGES = ["IL","ST","FBD","LD","SFC"]
 
@@ -375,20 +374,13 @@ DataTypeRange = dict(DataTypeRange_list)
 #                             Test identifier
 #-------------------------------------------------------------------------------
 
-
+IDENTIFIER_MODEL = re.compile(
+    "(?:%(letter)s|_(?:%(letter)s|%(digit)s))(?:_?(?:%(letter)s|%(digit)s))*$" %
+    {"letter": "[a-zA-Z]", "digit": "[0-9]"})
 
 # Test if identifier is valid
 def TestIdentifier(identifier):
-     if identifier[0].isdigit():
-        return False
-     words = identifier.split('_')
-     for i, word in enumerate(words):
-         if len(word) == 0 and i != 0:
-             return False
-         if len(word) != 0 and not word.isalnum():
-             return False
-     return True
-
+     return IDENTIFIER_MODEL.match(identifier) is not None
 
 #-------------------------------------------------------------------------------
 #                        Standard functions list generation
