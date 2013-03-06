@@ -1058,7 +1058,7 @@ class _EthercatCTN:
         
         LocationCFilesAndCFLAGS, LDFLAGS, extra_files = ConfigTreeNode._Generate_C(self, buildpath, locations)
         
-        for variable in self.ProcessVariables.getvariable():
+        for idx, variable in enumerate(self.ProcessVariables.getvariable()):
             name = None
             var_type = None
             read_from = variable.getReadFrom()
@@ -1067,7 +1067,7 @@ class _EthercatCTN:
                 pos = read_from.getPosition()
                 index = read_from.getIndex()
                 subindex = read_from.getSubIndex()
-                location = current_location + (pos, index, subindex)
+                location = current_location + (idx, )
                 var_type = self.GetSlaveVariableDataType(pos, index, subindex)
                 name = self.FileGenerator.DeclareVariable(
                             pos, index, subindex, var_type, "I",
@@ -1077,12 +1077,11 @@ class _EthercatCTN:
                 index = write_to.getIndex()
                 subindex = write_to.getSubIndex()
                 if name is None:
-                    location = current_location + (pos, index, subindex)
+                    location = current_location + (idx, )
                     var_type = self.GetSlaveVariableDataType(pos, index, subindex)
                     name = self.GetProcessVariableName(location, var_type)
                 self.FileGenerator.DeclareVariable(
-                            pos, index, subindex, var_type, "Q",
-                            name)
+                            pos, index, subindex, var_type, "Q", name, True)
         
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
         
@@ -1225,18 +1224,21 @@ def ConfigureVariable(entry_infos, str_completion):
     if entry_infos["data_type"] is None:
         raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
     
-    if entry_infos.has_key("real_var"):
-        str_completion["located_variables_declaration"].append(
-            "IEC_%(var_type)s %(real_var)s;" % entry_infos)
-    else:
+    if not entry_infos.get("no_decl", False):
+        if entry_infos.has_key("real_var"):
+            str_completion["located_variables_declaration"].append(
+                "IEC_%(var_type)s %(real_var)s;" % entry_infos)
+        else:
+            entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
+            str_completion["located_variables_declaration"].extend(
+                ["IEC_%(var_type)s %(real_var)s;" % entry_infos,
+                 "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos])
+        for declaration in entry_infos.get("extra_declarations", []):
+            entry_infos["extra_decl"] = declaration
+            str_completion["located_variables_declaration"].append(
+                 "IEC_%(var_type)s *%(extra_decl)s = &%(real_var)s;" % entry_infos)
+    elif not entry_infos.has_key("real_var"):
         entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
-        str_completion["located_variables_declaration"].extend(
-            ["IEC_%(var_type)s %(real_var)s;" % entry_infos,
-             "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos])
-    for declaration in entry_infos.get("extra_declarations", []):
-        entry_infos["extra_decl"] = declaration
-        str_completion["located_variables_declaration"].append(
-             "IEC_%(var_type)s *%(extra_decl)s = &%(real_var)s;" % entry_infos)
     
     str_completion["used_pdo_entry_offset_variables_declaration"].append(
         "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
@@ -1296,13 +1298,13 @@ class _EthercatCFileGenerator:
     def DeclareSlave(self, slave_index, slave):
         self.Slaves.append((slave_index, slave.getInfo().getAutoIncAddr(), slave))
 
-    def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name):
+    def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name, no_decl=False):
         slave_variables = self.UsedVariables.setdefault(slave_index, {})
         
         entry_infos = slave_variables.get((index, subindex), None)
         if entry_infos is None:
             slave_variables[(index, subindex)] = {
-                "infos": (iec_type, dir, name, []),
+                "infos": (iec_type, dir, name, no_decl, []),
                 "mapped": False}
             return name
         elif entry_infos["infos"][:2] == (iec_type, dir):
@@ -1313,7 +1315,6 @@ class _EthercatCFileGenerator:
                 else:
                     raise ValueError, _("Output variables can't be defined with different locations (%s and %s)") % (entry_infos["infos"][2], name)
         else:
-            print entry_infos["infos"][:2], (iec_type, dir)
             raise ValueError, _("Definition conflict for location \"%s\"") % name 
         
     def GenerateCFile(self, filepath, location_str, master_number):
@@ -1523,7 +1524,8 @@ class _EthercatCFileGenerator:
                             if entry_declaration is not None and not entry_declaration["mapped"]:
                                 pdo_needed = True
                                 
-                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "extra_declarations"], entry_declaration["infos"])))
+                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "no_decl", "extra_declarations"], 
+                                                            entry_declaration["infos"])))
                                 entry_declaration["mapped"] = True
                                 
                                 entry_type = entry.getDataType().getcontent()
@@ -1609,7 +1611,8 @@ class _EthercatCFileGenerator:
                                 }
                                 entry_infos.update(type_infos)
                                 
-                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "extra_declarations"], entry_declaration["infos"])))
+                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "no_decl", "extra_declarations"], 
+                                                            entry_declaration["infos"])))
                                 entry_declaration["mapped"] = True
                                 
                                 if entry_infos["var_type"] != entry["Type"]:
