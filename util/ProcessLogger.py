@@ -71,7 +71,7 @@ class ProcessLogger:
     def __init__(self, logger, Command, finish_callback = None, 
                  no_stdout = False, no_stderr = False, no_gui = True, 
                  timeout = None, outlimit = None, errlimit = None,
-                 endlog = None, keyword = None, kill_it = False):
+                 endlog = None, keyword = None, kill_it = False, cwd = None):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -107,7 +107,7 @@ class ProcessLogger:
         self.endlock = Lock()
         
         popenargs= {
-               "cwd":os.getcwd(),
+               "cwd":os.getcwd() if cwd is None else cwd,
                "stdin":subprocess.PIPE, 
                "stdout":subprocess.PIPE, 
                "stderr":subprocess.PIPE}
