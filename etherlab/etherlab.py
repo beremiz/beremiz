@@ -698,11 +698,12 @@ class _EthercatCTN:
             slave.setStartupCommand(command_infos)
             self.BufferModel()
     
-    def RemoveStartupCommand(self, slave_pos, command_idx):
+    def RemoveStartupCommand(self, slave_pos, command_idx, buffer=True):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave.removeStartupCommand(command_idx)
-            self.BufferModel()
+            if buffer:
+                self.BufferModel()
     
     def SetProcessVariables(self, variables):
         vars = []
@@ -1020,6 +1021,9 @@ class _EthercatCTN:
         self.Buffer.CurrentSaved()
         return True
 
+    def GetProcessVariableName(self, location, var_type):
+        return "__M%s_%s" % (self.GetSizeOfType(var_type), "_".join(map(str, location)))
+
     def _Generate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
@@ -1030,6 +1034,32 @@ class _EthercatCTN:
         self.FileGenerator = _EthercatCFileGenerator(self)
         
         LocationCFilesAndCFLAGS, LDFLAGS, extra_files = ConfigTreeNode._Generate_C(self, buildpath, locations)
+        
+        for variable in self.ProcessVariables.getvariable():
+            name = None
+            var_type = None
+            read_from = variable.getReadFrom()
+            write_to = variable.getWriteTo()
+            if read_from is not None:
+                pos = read_from.getPosition()
+                index = read_from.getIndex()
+                subindex = read_from.getSubIndex()
+                location = current_location + (pos, index, subindex)
+                var_type = self.GetSlaveVariableDataType(pos, index, subindex)
+                name = self.FileGenerator.DeclareVariable(
+                            pos, index, subindex, var_type, "I",
+                            self.GetProcessVariableName(location, var_type))
+            if write_to is not None:
+                pos = write_to.getPosition()
+                index = write_to.getIndex()
+                subindex = write_to.getSubIndex()
+                if name is None:
+                    location = current_location + (pos, index, subindex)
+                    var_type = self.GetSlaveVariableDataType(pos, index, subindex)
+                    name = self.GetProcessVariableName(location, var_type)
+                self.FileGenerator.DeclareVariable(
+                            pos, index, subindex, var_type, "Q",
+                            name)
         
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
         
@@ -1072,7 +1102,7 @@ class _EthercatCTN:
         for location in locations:
             loc = location["LOC"][len(current_location):]
             slave_pos = loc[0]
-            if slave_pos in slaves and len(loc) == 3:
+            if slave_pos in slaves and len(loc) == 3 and location["DIR"] != "M":
                 self.FileGenerator.DeclareVariable(
                     slave_pos, loc[1], loc[2], location["IEC_TYPE"], location["DIR"], location["NAME"])
         
@@ -1180,6 +1210,10 @@ def ConfigureVariable(entry_infos, str_completion):
         str_completion["located_variables_declaration"].extend(
             ["IEC_%(var_type)s %(real_var)s;" % entry_infos,
              "IEC_%(var_type)s *%(var_name)s = &%(real_var)s;" % entry_infos])
+    for declaration in entry_infos.get("extra_declarations", []):
+        entry_infos["extra_decl"] = declaration
+        str_completion["located_variables_declaration"].append(
+             "IEC_%(var_type)s *%(extra_decl)s = &%(real_var)s;" % entry_infos)
     
     str_completion["used_pdo_entry_offset_variables_declaration"].append(
         "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x;" % entry_infos)
@@ -1245,9 +1279,18 @@ class _EthercatCFileGenerator:
         entry_infos = slave_variables.get((index, subindex), None)
         if entry_infos is None:
             slave_variables[(index, subindex)] = {
-                "infos": (iec_type, dir, name),
+                "infos": (iec_type, dir, name, []),
                 "mapped": False}
-        elif entry_infos["infos"] != (iec_type, dir, name):
+            return name
+        elif entry_infos["infos"][:2] == (iec_type, dir):
+            if name != entry_infos["infos"][2]:
+                if dir == "I":
+                    entry_infos["infos"][3].append(name)
+                    return entry_infos["infos"][2]
+                else:
+                    raise ValueError, _("Output variables can't be defined with different locations (%s and %s)") % (entry_infos["infos"][2], name)
+        else:
+            print entry_infos["infos"][:2], (iec_type, dir)
             raise ValueError, _("Definition conflict for location \"%s\"") % name 
         
     def GenerateCFile(self, filepath, location_str, master_number):
@@ -1457,7 +1500,7 @@ class _EthercatCFileGenerator:
                             if entry_declaration is not None and not entry_declaration["mapped"]:
                                 pdo_needed = True
                                 
-                                entry_infos.update(dict(zip(["var_type", "dir", "var_name"], entry_declaration["infos"])))
+                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "extra_declarations"], entry_declaration["infos"])))
                                 entry_declaration["mapped"] = True
                                 
                                 entry_type = entry.getDataType().getcontent()
@@ -1543,7 +1586,7 @@ class _EthercatCFileGenerator:
                                 }
                                 entry_infos.update(type_infos)
                                 
-                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "real_var"], entry_declaration["infos"])))
+                                entry_infos.update(dict(zip(["var_type", "dir", "var_name", "extra_declarations"], entry_declaration["infos"])))
                                 entry_declaration["mapped"] = True
                                 
                                 if entry_infos["var_type"] != entry["Type"]:
@@ -1589,6 +1632,7 @@ class _EthercatCFileGenerator:
                                 
                                 pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                                 if entry_infos["bitlen"] < alignment:
+                                    print (alignment, entry_infos["bitlen"])
                                     pdo["entries"].append("    {0x0000, 0x00, %d}, /* None */" % (alignment - entry_infos["bitlen"]))
                                 pdo["entries_number"] += 1
                                 
@@ -2013,7 +2057,7 @@ class ModulesLibrary:
                     has_header = False
                 else:
                     try:
-                        self.Alignments[tuple(map(int, row[:3]))] = row[3]
+                        self.Alignments[tuple(map(int, row[:3]))] = int(row[3])
                     except:
                         pass
             csvfile.close()
