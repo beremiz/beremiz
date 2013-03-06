@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
 from docutil import *
 
-from util.TranslationCatalogs import AddCatalog, locale
+from util.TranslationCatalogs import AddCatalog
 from util.BitmapLibrary import AddBitmapFolder, GetBitmap
 
 AddCatalog(os.path.join(CWD, "locale"))
@@ -75,7 +75,6 @@ if __name__ == '__main__':
     import gettext
     import __builtin__
     
-    __builtin__.__dict__['loc'] = locale
     __builtin__.__dict__['_'] = wx.GetTranslation
 
 from IDEFrame import IDEFrame, AppendMenu
