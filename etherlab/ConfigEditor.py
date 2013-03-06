@@ -260,12 +260,12 @@ class ProcessVariablesTable(CustomTable):
                 value = self.data[row].get("ReadFrom", "")
                 if value == "":
                     return value
-                return "%d, #x%0.4x, #x%0.2x" % value
+                return "%d, #x%0.4X, #x%0.2X" % value
             elif colname.startswith("Write to"):
                 value = self.data[row].get("WriteTo", "")
                 if value == "":
                     return value
-                return "%d, #x%0.4x, #x%0.2x" % value
+                return "%d, #x%0.4X, #x%0.2X" % value
             return self.data[row].get(colname, "")
     
     def SetValue(self, row, col, value):
@@ -426,9 +426,9 @@ class StartupCommandsTable(CustomTable):
             colname = self.GetColLabelValue(col, False)
             value = self.data[row].get(colname, "")
             if colname == "Index":
-                return "#x%0.4x" % value
+                return "#x%0.4X" % value
             elif colname == "Subindex":
-                return "#x%0.2x" % value
+                return "#x%0.2X" % value
             return value
     
     def SetValue(self, row, col, value):
@@ -565,6 +565,8 @@ class MasterEditor(ConfTreeNodeEditor):
         self.StartupCommandsGrid.SetMinSize(wx.Size(0, 150))
         self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, 
               self.OnStartupCommandsGridCellChange)
+        self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, 
+              self.OnStartupCommandsGridEditorShow)
         
         second_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Nodes variables filter:"))
         second_staticbox_sizer = wx.StaticBoxSizer(second_staticbox, wx.VERTICAL)
@@ -600,7 +602,7 @@ class MasterEditor(ConfTreeNodeEditor):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
         
         self.ProcessVariables = []
-        self.LastCommandInfos = None
+        self.CellShown = None
         
         self.ProcessVariablesDefaultValue = {"Name": "", "ReadFrom": "", "WriteTo": "", "Description": ""}
         self.ProcessVariablesTable = ProcessVariablesTable(self, [], GetProcessVariablesTableColnames())
@@ -763,12 +765,11 @@ class MasterEditor(ConfTreeNodeEditor):
     
     def RefreshStartupCommands(self, position=None, command_idx=None):
         if self.CurrentNodesFilter is not None:
-            self.StartupCommandsGrid.CloseEditControl()
             self.StartupCommandsTable.SetData(
                 self.Controler.GetStartupCommands(**self.CurrentNodesFilter))
             self.StartupCommandsTable.ResetView(self.StartupCommandsGrid)
             if position is not None and command_idx is not None:
-                self.SelectStartupCommand(position, command_idx)
+                wx.CallAfter(self.SelectStartupCommand, position, command_idx)
     
     def SelectStartupCommand(self, position, command_idx):
         self.StartupCommandsGrid.SetSelectedRow(
@@ -847,43 +848,44 @@ class MasterEditor(ConfTreeNodeEditor):
         else:
             event.Skip()
     
+    def OnStartupCommandsGridEditorShow(self, event):
+        self.CellShown = event.GetRow(), event.GetCol()
+        event.Skip()
+    
     def OnStartupCommandsGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
-        colname = self.StartupCommandsTable.GetColLabelValue(col, False)
-        value = self.StartupCommandsTable.GetValue(row, col)
-        message = None
-        veto = False
-        if colname == "Position":
-            if value not in self.Controler.GetSlaves():
-                message = _("No slave defined at position %d!") % value
-            if message is None:
-                self.Controler.RemoveStartupCommand(
-                    self.StartupCommandsTable.GetOldValue(),
-                    self.StartupCommandsTable.GetValueByName(row, "command_idx"))
+        if self.CellShown == (row, col):
+            self.CellShown = None
+            colname = self.StartupCommandsTable.GetColLabelValue(col, False)
+            value = self.StartupCommandsTable.GetValue(row, col)
+            message = None
+            if colname == "Position":
+                if value not in self.Controler.GetSlaves():
+                    message = _("No slave defined at position %d!") % value
+                old_value = self.StartupCommandsTable.GetOldValue()
                 command = self.StartupCommandsTable.GetRow(row)
-                command_idx = self.Controler.AppendStartupCommand(command)
-                wx.CallAfter(self.RefreshStartupCommands, command["Position"], command_idx)
-                veto = True
-        else:
-            command = self.StartupCommandsTable.GetRow(row)
-            if self.LastCommandInfos != command:
-                self.LastCommandInfos = command.copy()
+                if message is None and old_value != command["Position"]:
+                    self.Controler.RemoveStartupCommand(
+                        self.StartupCommandsTable.GetOldValue(),
+                        command["command_idx"], False)
+                    command_idx = self.Controler.AppendStartupCommand(command)
+                    wx.CallAfter(self.RefreshStartupCommands, command["Position"], command_idx)
+            else:
+                command = self.StartupCommandsTable.GetRow(row)
                 self.Controler.SetStartupCommandInfos(command)
                 if colname in ["Index", "SubIndex"]: 
                     wx.CallAfter(self.RefreshStartupCommands, command["Position"], command["command_idx"])
-                    veto = True
-        if message is None:
-            self.RefreshBuffer()
-            if veto:
-                event.Veto()
-            else:
+            if message is None:
+                self.RefreshBuffer()
                 event.Skip()
+            else:
+                dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+                dialog.ShowModal()
+                dialog.Destroy()
+                event.Veto()
         else:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
             event.Veto()
-        
+    
     def OnResize(self, event):
         self.EthercatMasterEditor.GetBestSize()
         xstart, ystart = self.EthercatMasterEditor.GetViewStart()
