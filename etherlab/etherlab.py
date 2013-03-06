@@ -10,6 +10,8 @@ from POULibrary import POULibrary
 from ConfigTreeNode import ConfigTreeNode
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigEditor import NodeEditor, CIA402NodeEditor, MasterEditor, LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from dialogs import BrowseValuesLibraryDialog
+from IDEFrame import TITLE, FILEMENU, PROJECTTREE
 
 try:
     from MotionLibrary import Headers, AxisXSD
@@ -637,7 +639,28 @@ class _EthercatCTN:
         else:
             self.CreateBuffer(False)
             self.OnCTNSave()
-
+    
+    def GetContextualMenuItems(self):
+        return [("Add Ethercat Slave", "Add Ethercat Slave to Master", self.OnAddEthercatSlave)]
+    
+    def OnAddEthercatSlave(self, event):
+        app_frame = self.GetCTRoot().AppFrame
+        dialog = BrowseValuesLibraryDialog(app_frame, 
+            "Ethercat Slave Type", self.GetSlaveTypesLibrary())
+        if dialog.ShowModal() == wx.ID_OK:
+            type_infos = dialog.GetValueInfos()
+            device, alignment = self.GetModuleInfos(type_infos)
+            if device is not None:
+                if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
+                    ConfNodeType = "EthercatCIA402Slave"
+                else:
+                    ConfNodeType = "EthercatSlave"
+                new_child = self.CTNAddChild("%s_0" % ConfNodeType, ConfNodeType)
+                new_child.SetParamsAttribute("SlaveParams.Type", type_infos)
+                self.CTNRequestSave()
+                app_frame._Refresh(TITLE, FILEMENU, PROJECTTREE)
+        dialog.Destroy()
+    
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
 
