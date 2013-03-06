@@ -129,7 +129,7 @@ ElementNameToClass = {}
 cls = PLCOpenClasses.get("formattedText", None)
 if cls:
     def updateElementName(self, old_name, new_name):
-        text = self.text.decode("utf-8")
+        text = self.text
         index = text.find(old_name)
         while index != -1:
             if index > 0 and (text[index - 1].isalnum() or text[index - 1] == "_"):
@@ -139,11 +139,11 @@ if cls:
             else:
                 text = text[:index] + new_name + text[index + len(old_name):]
                 index = text.find(old_name, index + len(new_name))
-        self.text = text.encode("utf-8")
+        self.text = text
     setattr(cls, "updateElementName", updateElementName)
     
     def updateElementAddress(self, address_model, new_leading):
-        text = self.text.decode("utf-8")
+        text = self.text
         startpos = 0
         result = address_model.search(text, startpos)
         while result is not None:
@@ -152,7 +152,7 @@ if cls:
             text = text[:result.start()] + new_address + text[result.end():]
             startpos = result.start() + len(new_address)
             result = address_model.search(self.text, startpos)
-        self.text = text.encode("utf-8")
+        self.text = text
     setattr(cls, "updateElementAddress", updateElementAddress)
     
     def Search(self, criteria, parent_infos):
