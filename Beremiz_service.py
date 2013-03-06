@@ -389,28 +389,27 @@ if enablewx:
                     self.pyroserver.Restart()
                 evt.Skip()
             
-            def OnTaskBarLiveShell(self, evt):
-                if self.pyroserver.plcobj is not None and self.pyroserver.plcobj.python_threads_vars is not None:
-                    from wx import py
-                    #frame = py.shell.ShellFrame(locals=self.pyroserver.plcobj.python_threads_vars)
-                    frame = py.crust.CrustFrame(locals=self.pyroserver.plcobj.python_threads_vars)
-                    frame.Show()
+            def _LiveShellLocals(self):
+                if self.pyroserver.plcobj is not None:
+                    return {"locals":self.pyroserver.plcobj.python_threads_vars}
                 else:
-                    wx.MessageBox(_("No running PLC"), _("Error"))
+                    return {}
+
+            def OnTaskBarLiveShell(self, evt):
+                from wx import py
+                frame = py.crust.CrustFrame(**self._LiveShellLocals())
+                frame.Show()
                 evt.Skip()
             
             def OnTaskBarWXInspector(self, evt):
                 # Activate the widget inspection tool
                 from wx.lib.inspection import InspectionTool
                 if not InspectionTool().initialized:
-                    InspectionTool().Init(locals=self.pyroserver.plcobj.python_threads_vars)
-                
-                # Find a widget to be selected in the tree.  Use either the
-                # one under the cursor, if any, or this frame.
-                wnd = wx.FindWindowAtPointer()
-                if not wnd:
-                    wnd = wx.GetApp()
+                    InspectionTool().Init(**self._LiveShellLocals())
+
+                wnd = wx.GetApp()
                 InspectionTool().Show(wnd, True)
+
                 evt.Skip()
             
             def OnTaskBarQuit(self, evt):
