@@ -110,7 +110,7 @@ if __name__ == '__main__':
         splash.SetText(text=updateinfo)
         wx.Yield()
 
-from util.TranslationCatalogs import AddCatalog, locale
+from util.TranslationCatalogs import AddCatalog
 from util.BitmapLibrary import AddBitmapFolder, GetBitmap
 
 AddCatalog(os.path.join(CWD, "locale"))
@@ -120,7 +120,6 @@ if __name__ == '__main__':
     # Import module for internationalization
     import gettext
     
-    __builtin__.__dict__['loc'] = locale
     __builtin__.__dict__['_'] = wx.GetTranslation
     
     # Load extensions
@@ -942,11 +941,18 @@ class Beremiz(IDEFrame):
             confnode_menu = wx.Menu(title='')
             
             confnode = item_infos["confnode"]
-            if confnode is not None and len(confnode.CTNChildrenTypes) > 0:
-                for name, XSDClass, help in confnode.CTNChildrenTypes:
-                    new_id = wx.NewId()
-                    confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Add") + " " + name)
-                    self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
+            if confnode is not None:
+                menu_items = confnode.GetContextualMenuItems()
+                if menu_items is not None:
+                    for text, help, callback in menu_items:
+                        new_id = wx.NewId()
+                        confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=text)
+                        self.Bind(wx.EVT_MENU, callback, id=new_id)
+                else:
+                    for name, XSDClass, help in confnode.CTNChildrenTypes:
+                        new_id = wx.NewId()
+                        confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Add") + " " + name)
+                        self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
 
             new_id = wx.NewId()
             AppendMenu(confnode_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Delete"))

@@ -422,6 +422,9 @@ class ConfigTreeNode:
         self.BaseParams.setIEC_Channel(res)
         return res
 
+    def GetContextualMenuItems(self):
+        return None
+
     def _OpenView(self, name=None, onlyopened=False):
         if self.EditorType is not None:
             app_frame = self.GetCTRoot().AppFrame
