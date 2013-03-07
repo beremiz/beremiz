@@ -182,6 +182,7 @@ void RetainIterator(void* varp, __IEC_types_enum vartype){
     BufferIterator(varp, vartype, 0);
 }
 
+extern void PLC_GetTime(IEC_TIME*);
 extern int TryEnterDebugSection(void);
 extern long AtomicCompareExchange(long*, long, long);
 extern long long AtomicCompareExchange64(long long* , long long , long long);
@@ -357,7 +358,7 @@ typedef struct {
 static uint64_t LogCursor[LOG_LEVELS] = {0x0,0x0,0x0,0x0};
 
 /* Store one log message of give size */
-int LogMessage(uint8_t level, char* buf, uint32_t size){
+int LogMessage(uint8_t level, uint8_t* buf, uint32_t size){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
         uint32_t buffpos;
         uint64_t new_cursor, old_cursor;
@@ -387,7 +388,7 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
 
         return 1; /* Success */
     }else{
-        char mstr[] = "Logging error : message too big";
+    	uint8_t mstr[] = "Logging error : message too big";
         LogMessage(LOG_CRITICAL, mstr, sizeof(mstr));
     }
     return 0;
