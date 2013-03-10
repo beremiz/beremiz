@@ -433,7 +433,8 @@ class Beremiz(IDEFrame):
         if projectOpen is not None:
             projectOpen = DecodeFileSystemPath(projectOpen, False)
         
-        if ctr is None and projectOpen is None and self.Config.HasEntry("currenteditedproject"):
+        if (self.EnableSaveProjectState() and ctr is None and 
+            projectOpen is None and self.Config.HasEntry("currenteditedproject")):
             try:
                 projectOpen = DecodeFileSystemPath(self.Config.Read("currenteditedproject"))
                 if projectOpen == "":

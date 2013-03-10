@@ -718,6 +718,9 @@ class IDEFrame(wx.Frame):
             self.RestoreLastLayout()
         event.Skip()
     
+    def EnableSaveProjectState(self):
+        return False
+    
     def GetProjectConfiguration(self):
         projects = {}
         try:
@@ -887,7 +890,8 @@ class IDEFrame(wx.Frame):
         except:
             self.ResetPerspective()
         
-        self.LoadProjectLayout()
+        if self.EnableSaveProjectState():
+            self.LoadProjectLayout()
         
         self._Refresh(EDITORTOOLBAR)
         
@@ -914,11 +918,12 @@ class IDEFrame(wx.Frame):
         if pane.IsMaximized():
             self.AUIManager.RestorePane(pane)
         self.Config.Write("perspective", self.AUIManager.SavePerspective())
-    
-        self.SaveProjectLayout()
         
-        for i in xrange(self.TabsOpened.GetPageCount()):
-            self.SavePageState(self.TabsOpened.GetPage(i))
+        if self.EnableSaveProjectState():
+            self.SaveProjectLayout()
+        
+            for i in xrange(self.TabsOpened.GetPageCount()):
+                self.SavePageState(self.TabsOpened.GetPage(i))
         
         self.Config.Flush()
 
@@ -993,7 +998,8 @@ class IDEFrame(wx.Frame):
             window = self.TabsOpened.GetPage(selected)
             
             if window.CheckSaveBeforeClosing():
-                self.SavePageState(window)
+                if self.EnableSaveProjectState():
+                    self.SavePageState(window)
                 
                 # Refresh all window elements that have changed
                 wx.CallAfter(self._Refresh, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
@@ -1855,14 +1861,15 @@ class IDEFrame(wx.Frame):
                     new_window.SetIcon(GetBitmap("DATATYPE"))
                     self.AddPage(new_window, "")
             if new_window is not None:
-                project_infos = self.GetProjectConfiguration()
-                if project_infos.has_key("editors_state"):
-                    if new_window.IsDebugging():
-                        state = project_infos["editors_state"].get(new_window.GetInstancePath())
-                    else:
-                        state = project_infos["editors_state"].get(tagname)
-                    if state is not None:
-                        wx.CallAfter(new_window.SetState, state)
+                if self.EnableSaveProjectState():
+                    project_infos = self.GetProjectConfiguration()
+                    if project_infos.has_key("editors_state"):
+                        if new_window.IsDebugging():
+                            state = project_infos["editors_state"].get(new_window.GetInstancePath())
+                        else:
+                            state = project_infos["editors_state"].get(tagname)
+                        if state is not None:
+                            wx.CallAfter(new_window.SetState, state)
                 
                 openedidx = self.IsOpened(tagname)
                 old_selected = self.TabsOpened.GetSelection()
@@ -2066,11 +2073,12 @@ class IDEFrame(wx.Frame):
                     icon = GetBitmap("ACTION", bodytype)
         
         if new_window is not None:
-            project_infos = self.GetProjectConfiguration()
-            if project_infos.has_key("editors_state"):
-                state = project_infos["editors_state"].get(instance_path)
-                if state is not None:
-                    wx.CallAfter(new_window.SetState, state)
+            if self.EnableSaveProjectState():
+                project_infos = self.GetProjectConfiguration()
+                if project_infos.has_key("editors_state"):
+                    state = project_infos["editors_state"].get(instance_path)
+                    if state is not None:
+                        wx.CallAfter(new_window.SetState, state)
             
             new_window.SetIcon(icon)
             self.AddPage(new_window, "")
