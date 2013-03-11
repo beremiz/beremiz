@@ -240,25 +240,23 @@ class PLCObject(pyro.ObjBase):
         self.python_threads_vars["PLCObject"] = self
         self.python_threads_vars["PLCBinary"] = self.PLClibraryHandle
         
-        for filename in os.listdir(self.workingdir):
-            name, ext = os.path.splitext(filename)
-            if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
-                try:
-                    # TODO handle exceptions in runtime.py
-                    # pyfile may redefine _runtime_cleanup
-                    # or even call _PythonThreadProc itself.
+        try:
+            for filename in os.listdir(self.workingdir):
+                name, ext = os.path.splitext(filename)
+                if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
                     execfile(os.path.join(self.workingdir, filename), self.python_threads_vars)
-                except:
-                    PLCprint(traceback.format_exc())
-                runtime_begin = self.python_threads_vars.get("_%s_begin" % name, None)
-                if runtime_begin is not None:
-                    self.python_threads_vars["_runtime_begin"].append(runtime_begin)
-                runtime_cleanup = self.python_threads_vars.get("_%s_cleanup" % name, None)
-                if runtime_cleanup is not None:
-                    self.python_threads_vars["_runtime_cleanup"].append(runtime_cleanup)
-        
-        for runtime_begin in self.python_threads_vars.get("_runtime_begin", []):
-            runtime_begin()
+                    runtime_begin = self.python_threads_vars.get("_%s_begin" % name, None)
+                    if runtime_begin is not None:
+                        self.python_threads_vars["_runtime_begin"].append(runtime_begin)
+                    runtime_cleanup = self.python_threads_vars.get("_%s_cleanup" % name, None)
+                    if runtime_cleanup is not None:
+                        self.python_threads_vars["_runtime_cleanup"].append(runtime_cleanup)
+            
+            for runtime_begin in self.python_threads_vars.get("_runtime_begin", []):
+                runtime_begin()
+        except:
+            self.LogMessage(0,traceback.format_exc())
+            raise
             
         if self.website is not None:
             self.website.PLCStarted()
@@ -274,7 +272,8 @@ class PLCObject(pyro.ObjBase):
         self.PLCStatus = "Started"
         self.StatusChange()
         self.StartSem.release()
-        self.evaluator(self.PrepareRuntimePy)
+        res,exp = self.evaluator(self.PrepareRuntimePy)
+        if exp is not None: raise(exp)
         res,cmd,blkid = "None","None",ctypes.c_void_p()
         compile_cache={}
         while True:
@@ -298,13 +297,11 @@ class PLCObject(pyro.ObjBase):
                 self.python_threads_vars["FBID"]=None
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
-                PLCprint(('*** Python eval EXCEPTION ***\n'+
-                          '| Function Block ID: %d\n'+
-                          '| Command : "%s"\n'+
-                          '| Exception : "%s"')%(FBID,cmd,str(e)))
+                self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,str(e)))
         self.PLCStatus = "Stopped"
         self.StatusChange()
-        self.evaluator(self.FinishRuntimePy)
+        exp,res = self.evaluator(self.FinishRuntimePy)
+        if exp is not None: raise(exp)
     
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
@@ -318,7 +315,7 @@ class PLCObject(pyro.ObjBase):
                 self.StartSem.acquire()
                 self.LogMessage("PLC started")
             else:
-                self.LogMessage(_("Problem starting PLC : error %d" % res))
+                self.LogMessage(0,_("Problem starting PLC : error %d" % res))
                 self.PLCStatus = "Broken"
                 self.StatusChange()
             
