@@ -878,7 +878,8 @@ class Beremiz(IDEFrame):
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
-                self.LoadProjectLayout()
+                if self.EnableSaveProjectState():
+                    self.LoadProjectLayout()
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
             else:
                 self.ResetView()
