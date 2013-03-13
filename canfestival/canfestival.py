@@ -400,14 +400,22 @@ class RootClass:
         return infos
     
     def GetCanDriver(self):
-        can_driver = self.CanFestivalInstance.getCAN_Driver()
-        if not can_driver :
-            can_driver = local_canfestival_config.DLL_LIST[0]
-        can_drv_ext = self.GetCTRoot().GetBuilder().extension
-        return "libcanfestival_" + can_driver + can_drv_ext
+        res = self.CanFestivalInstance.getCAN_Driver()
+        if not res :
+            return ""
+        return res
         
     def CTNGenerate_C(self, buildpath, locations):
-        can_driver_name = self.GetCanDriver()
+        can_driver = self.GetCanDriver()
+        if can_driver is not None:
+            can_drivers = local_canfestival_config.DLL_LIST
+            if can_driver not in can_drivers :
+                can_driver = can_drivers[0]
+            can_drv_ext = self.GetCTRoot().GetBuilder().extension
+            can_driver_name = "libcanfestival_" + can_driver + can_drv_ext
+        else:
+            can_driver_name = ""
+
         
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
                        "candriver" : can_driver_name,
@@ -504,7 +512,7 @@ class RootClass:
 
         res = [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))],local_canfestival_config.getLDFLAGS(CanFestivalPath), True
         
-        if can_driver_name:
+        if can_driver is not None:
             can_driver_path = os.path.join(CanFestivalPath,"drivers",can_driver,can_driver_name)
             if os.path.exists(can_driver_path):
                 res += ((can_driver_name, file(can_driver_path,"rb")),)
