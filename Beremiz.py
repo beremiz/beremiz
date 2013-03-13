@@ -146,6 +146,7 @@ from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
+from controls.LogViewer import LogViewer
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNODE
@@ -287,7 +288,7 @@ class LogPseudoFile:
 CONFNODEMENU_POSITION = 3
 
 class Beremiz(IDEFrame):
-	
+    
     def _init_utils(self):
         self.ConfNodeMenu = wx.Menu(title='')
         self.RecentProjectsMenu = wx.Menu(title='')
@@ -385,7 +386,12 @@ class Beremiz(IDEFrame):
         self.MainTabs["LogConsole"] = (self.LogConsole, _("Log Console"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
         #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
-
+        
+        self.LogViewer = LogViewer(self.BottomNoteBook, self)
+        self.MainTabs["LogViewer"] = (self.LogViewer, _("Log Viewer"))
+        self.BottomNoteBook.AddPage(*self.MainTabs["LogViewer"])
+        self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
+        
         StatusToolBar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
                 wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
         StatusToolBar.SetToolBitmapSize(wx.Size(25, 25))
@@ -541,7 +547,7 @@ class Beremiz(IDEFrame):
                 infos = self.CTR.ShowError(self.Log,
                                                   (int(first_line), int(first_column)), 
                                                   (int(last_line), int(last_column)))
-	
+    
     ## Function displaying an Error dialog in PLCOpenEditor.
     #  @return False if closing cancelled.
     def CheckSaveBeforeClosing(self, title=_("Close Project")):

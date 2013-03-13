@@ -85,9 +85,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         PLCControler.__init__(self)
 
         self.MandatoryParams = None
-        self.SetAppFrame(frame, logger)
         self._builder = None
         self._connector = None
+        self.SetAppFrame(frame, logger)
         
         self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
         self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
@@ -113,7 +113,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
-        self.previous_log_count = [None]*LogLevelsCount
         # copy ConfNodeMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
@@ -137,6 +136,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.StatusTimer = None
         
         if frame is not None:
+            frame.LogViewer.SetLogSource(self._connector)
+            
             # Timer to pull PLC status
             ID_STATUSTIMER = wx.NewId()
             self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
@@ -281,7 +282,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         if os.path.basename(ProjectPath) == "":
             ProjectPath = os.path.dirname(ProjectPath)
-		# Verify that project contains a PLCOpen program
+        # Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
             return _("Chosen folder doesn't contain a program. It's not a valid project!")
@@ -1077,36 +1078,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.CompareLocalAndRemotePLC()
 
     def UpdatePLCLog(self, log_count):
-        if log_count :
-            to_console = []
-            for level, count, prev in zip(xrange(LogLevelsCount), log_count,self.previous_log_count):
-                if count is not None and prev != count:
-                    # XXX replace dump to console with dedicated log panel.
-                    dump_end = max( # request message sent after the last one we already got
-                        prev - 1 if prev is not None else -1,
-                        count - 100) # 100 is purely arbitrary number
-                        # dedicated panel should only ask for a small range, 
-                        # depending on how user navigate in the panel
-                        # and only ask for last one in follow mode
-                    for msgidx in xrange(count-1, dump_end,-1):
-                        answer = self._connector.GetLogMessage(level, msgidx)
-                        if answer is not None :
-                            msg, tick, tv_sec, tv_nsec = answer 
-                            to_console.insert(0,(
-                                (tv_sec, tv_nsec),
-                                '%d|%s.%9.9d|%s(%s)'%(
-                                    int(tick),
-                                    str(datetime.fromtimestamp(tv_sec)),
-                                    tv_nsec,
-                                    msg,
-                                    LogLevels[level])))
-                        else:
-                            break;
-                    self.previous_log_count[level] = count
-            if to_console:
-                to_console.sort()
-                self.logger.write("\n".join(zip(*to_console)[1]+('',)))
-
+        if log_count:
+            if self.AppFrame is not None:
+                self.AppFrame.LogViewer.SetLogCounters(log_count)
+    
     def UpdateMethodsFromPLCStatus(self):
         status = None
         if self._connector is not None:
@@ -1115,7 +1090,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 status, log_count = PLCstatus
                 self.UpdatePLCLog(log_count)
         if status is None:
-            self._connector = None
+            self._SetConnector(None)
             status = "Disconnected"
         if(self.previous_plcstate != status):
             for args in {
@@ -1303,6 +1278,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 plc_status = None
             debug_getvar_retry += 1
+            #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
             if plc_status == "Started":
                 self.IECdebug_lock.acquire()
                 if len(debug_vars) == len(self.TracedIECPath):
@@ -1341,7 +1317,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _connect_debug(self): 
         self.previous_plcstate = None
-        self.previous_log_count = [None]*LogLevelsCount
         if self.AppFrame:
             self.AppFrame.ResetGraphicViewers()
         self.RegisterDebugVarToConnector()
@@ -1373,6 +1348,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
+    def _SetConnector(self, connector):
+        self._connector = connector
+        if self.AppFrame is not None:
+            self.AppFrame.LogViewer.SetLogSource(connector)
+            
     def _Connect(self):
         # don't accept re-connetion if already connected
         if self._connector is not None:
@@ -1417,7 +1397,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                            
         # Get connector from uri
         try:
-            self._connector = connectors.ConnectorFactory(uri, self)
+            self._SetConnector(connectors.ConnectorFactory(uri, self))
         except Exception, msg:
             self.logger.write_error(_("Exception while connecting %s!\n")%uri)
             self.logger.write_error(traceback.format_exc())
@@ -1477,7 +1457,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
 
     def _Disconnect(self):
-        self._connector = None
+        self._SetConnector(None)
         self.StatusTimer.Stop()
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
         
@@ -1521,8 +1501,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.logger.write_error(_("Transfer failed\n"))
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
-
-        self.previous_log_count = [None]*LogLevelsCount
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
