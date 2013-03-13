@@ -256,7 +256,7 @@ class LogViewer(DebugViewer, wx.Panel):
         self.ResetLogMessages()
         self.ParentWindow = window
     
-        self.LevelIcons = [GetBitmap(level) for level in LogLevels]
+        self.LevelIcons = [GetBitmap("LOG_" + level) for level in LogLevels]
         self.LevelFilters = [range(i) for i in xrange(4, 0, -1)]
         self.CurrentFilter = self.LevelFilters[0]
         
