@@ -723,8 +723,8 @@ class IDEFrame(wx.Frame):
 
     def GetTabInfos(self, tab):
         for page_name, (page_ref, page_title) in self.MainTabs.iteritems():
-                if page_ref == tab:
-                    return ("main", page_name)
+            if page_ref == tab:
+                return ("main", page_name)
         return None
     
     def SaveTabLayout(self, notebook):
