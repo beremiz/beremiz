@@ -88,12 +88,6 @@ class EditorPanel(wx.SplitterWindow):
     def SetIcon(self, icon):
         self.Icon = icon
     
-    def GetState(self):
-        return None
-    
-    def SetState(self, state):
-        pass
-    
     def IsViewing(self, tagname):
         return self.GetTagName() == tagname
 

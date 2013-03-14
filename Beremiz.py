@@ -439,15 +439,6 @@ class Beremiz(IDEFrame):
         if projectOpen is not None:
             projectOpen = DecodeFileSystemPath(projectOpen, False)
         
-        if (self.EnableSaveProjectState() and ctr is None and 
-            projectOpen is None and self.Config.HasEntry("currenteditedproject")):
-            try:
-                projectOpen = DecodeFileSystemPath(self.Config.Read("currenteditedproject"))
-                if projectOpen == "":
-                    projectOpen = None
-            except:
-                projectOpen = None
-        
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
@@ -602,13 +593,6 @@ class Beremiz(IDEFrame):
             self.KillLocalRuntime()
             
             self.SaveLastState()
-            
-            if self.CTR is not None:
-                project_path = os.path.realpath(self.CTR.GetProjectPath())
-            else:
-                project_path = ""
-            self.Config.Write("currenteditedproject", EncodeFileSystemPath(project_path))    
-            self.Config.Flush()
             
             event.Skip()
         else:
@@ -814,10 +798,6 @@ class Beremiz(IDEFrame):
         IDEFrame.ResetPerspective(self)
         self.RefreshStatusToolBar()
     
-    def RestoreLastLayout(self):
-        IDEFrame.RestoreLastLayout(self)
-        self.RefreshStatusToolBar()
-    
     def OnNewProjectMenu(self, event):
         if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
@@ -884,8 +864,6 @@ class Beremiz(IDEFrame):
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
-                if self.EnableSaveProjectState():
-                    self.LoadProjectLayout()
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
             else:
                 self.ResetView()
@@ -899,7 +877,6 @@ class Beremiz(IDEFrame):
         if self.CTR is not None and not self.CheckSaveBeforeClosing():
             return
         
-        self.SaveProjectLayout()
         self.ResetView()
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         self.RefreshAll()

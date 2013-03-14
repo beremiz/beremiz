@@ -2201,43 +2201,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                     self.RefreshGraphicsSizer()
             self.ForceRefresh()
     
-    def GetDebugVariables(self):
-        if USE_MPL:
-            return [panel.GetVariables() for panel in self.GraphicPanels]
-        else:
-            return [item.GetVariable() for item in self.Table.GetData()]
-    
-    def SetDebugVariables(self, variables):
-        if USE_MPL:
-            for variable in variables:
-                if isinstance(variable, (TupleType, ListType)):
-                    items = []
-                    for iec_path in variable:
-                        item = VariableTableItem(self, iec_path)
-                        if not item.IsNumVariable():
-                            continue
-                        self.AddDataConsumer(iec_path.upper(), item)
-                        items.append(item)
-                    if isinstance(variable, ListType):
-                        panel = DebugVariableGraphic(self.GraphicsWindow, self, items, GRAPH_PARALLEL)
-                    elif isinstance(variable, TupleType) and len(items) <= 3:
-                        panel = DebugVariableGraphic(self.GraphicsWindow, self, items, GRAPH_ORTHOGONAL)
-                    else:
-                        continue
-                    self.GraphicPanels.append(panel)
-                    self.ResetVariableNameMask()
-                    self.RefreshGraphicsSizer()
-                else:
-                    self.InsertValue(variable, force=True)
-            self.ForceRefresh()
-        else:
-            for variable in variables:
-                if isinstance(variable, (ListType, TupleType)):
-                    for iec_path in variable:
-                        self.InsertValue(iec_path, force=True)
-                else:
-                    self.InsertValue(variable, force=True)
-    
     def ResetGraphicsValues(self):
         if USE_MPL:
             self.Ticks = numpy.array([])
