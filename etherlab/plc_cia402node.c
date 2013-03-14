@@ -58,7 +58,7 @@ int __init_%(location)s()
 %(init_entry_variables)s
 	*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
 	__CIA402Node_%(location)s.axis = __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
-	__MK_Set_AXIS_REF_Pos(*__IW%(location)s_0, %(slave_pos)d);
+	__CIA402Node_%(location)s.axis->NetworkPosition = %(slave_pos)d;
 	*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
     return 0;
 }
