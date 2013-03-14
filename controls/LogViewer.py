@@ -295,7 +295,7 @@ class LogViewer(DebugViewer, wx.Panel):
             self.Font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier New')
         else:
             self.Font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')
-        self.MessagePanel.Bind(wx.EVT_LEFT_DOWN, self.OnMessagePanelLeftDown)
+        self.MessagePanel.Bind(wx.EVT_LEFT_UP, self.OnMessagePanelLeftUp)
         self.MessagePanel.Bind(wx.EVT_MOUSEWHEEL, self.OnMessagePanelMouseWheel)
         self.MessagePanel.Bind(wx.EVT_PAINT, self.OnMessagePanelPaint)
         self.MessagePanel.Bind(wx.EVT_SIZE, self.OnMessagePanelResize)
@@ -530,7 +530,7 @@ class LogViewer(DebugViewer, wx.Panel):
                 self.ScrollToFirst()
             else:
                 self.CurrentMessage = msgidx
-                self.Refresh()
+                self.RefreshView()
             
     def ResetMessagePanel(self):
         if len(self.LogMessages) > 0:
@@ -566,12 +566,13 @@ class LogViewer(DebugViewer, wx.Panel):
             self.ScrollMessagePanelByTimestamp(duration)
         return OnDurationButton
     
-    def OnMessagePanelLeftDown(self, event):
+    def OnMessagePanelLeftUp(self, event):
         if self.CurrentMessage is not None:
             posx, posy = event.GetPosition()
             for button in self.LeftButtons + self.RightButtons:
                 if button.HitTest(posx, posy):
                     button.ProcessCallback()
+                    break
         event.Skip()
     
     def OnMessagePanelMouseWheel(self, event):
@@ -583,18 +584,17 @@ class LogViewer(DebugViewer, wx.Panel):
         event.Skip()
     
     def OnMessagePanelResize(self, event):
-        if self.CurrentMessage is not None:
-            width, height = self.MessagePanel.GetClientSize()
-            offset = 2
-            for button in self.LeftButtons:
-                button.SetPosition(offset, 2)
-                w, h = button.GetSize()
-                offset += w + 2
-            offset = width - 2
-            for button in self.RightButtons:
-                w, h = button.GetSize()
-                button.SetPosition(offset - w, 2)
-                offset -= w + 2
+        width, height = self.MessagePanel.GetClientSize()
+        offset = 2
+        for button in self.LeftButtons:
+            button.SetPosition(offset, 2)
+            w, h = button.GetSize()
+            offset += w + 2
+        offset = width - 2
+        for button in self.RightButtons:
+            w, h = button.GetSize()
+            button.SetPosition(offset - w, 2)
+            offset -= w + 2
         if self.IsMessagePanelBottom():
             self.ScrollToFirst()
         else:
