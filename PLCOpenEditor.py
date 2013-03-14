@@ -303,7 +303,6 @@ class PLCOpenEditor(IDEFrame):
                     self.LibraryPanel.SetController(controler)
                     self.ProjectTree.Enable(True)
                     self.PouInstanceVariablesPanel.SetController(controler)
-                    self.LoadProjectLayout()
                     self._Refresh(PROJECTTREE, LIBRARYTREE)
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
@@ -314,7 +313,6 @@ class PLCOpenEditor(IDEFrame):
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():
             return
-        self.SaveProjectLayout()
         self.ResetView()
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
 

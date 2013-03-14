@@ -718,18 +718,6 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
     def GetViewScale(self):
         return self.ViewScale
 
-    def GetState(self):
-        return {"position": self.Editor.GetViewStart(),
-                "zoom": self.CurrentScale}
-
-    def SetState(self, state):
-        if self:
-            if state.has_key("zoom"):
-                self.SetScale(state["zoom"])
-            if state.has_key("position"):
-                self.Scroll(*state["position"])
-            self.RefreshVisibleElements()
-        
     def GetLogicalDC(self, buffered=False):
         if buffered:
             bitmap = wx.EmptyBitmap(*self.Editor.GetClientSize())

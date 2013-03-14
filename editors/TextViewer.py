@@ -247,13 +247,6 @@ class TextViewer(EditorPanel):
     def GetCurrentPos(self):
         return self.Editor.GetCurrentPos()
     
-    def GetState(self):
-        return {"cursor_pos": self.Editor.GetCurrentPos()}
-    
-    def SetState(self, state):
-        if self and state.has_key("cursor_pos"):
-            self.Editor.GotoPos(state.get("cursor_pos", 0))
-        
     def OnModification(self, event):
         if not self.DisableEvents:
             mod_type = event.GetModificationType()

@@ -308,8 +308,6 @@ UNEDITABLE_NAMES_DICT = dict([(_(name), name) for name in UNEDITABLE_NAMES])
 
 class IDEFrame(wx.Frame):
     
-    Starting = False
-    
     # Compatibility function for wx versions < 2.6
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id = None):
@@ -457,7 +455,6 @@ class IDEFrame(wx.Frame):
               style=wx.DEFAULT_FRAME_STYLE)
         self.SetClientSize(wx.Size(1000, 600))
         self.Bind(wx.EVT_ACTIVATE, self.OnActivated)
-        self.Bind(wx.EVT_SIZE, self.OnResize)
         
         self.TabsImageList = wx.ImageList(31, 16)
         self.TabsImageListIndexes = {}
@@ -682,7 +679,18 @@ class IDEFrame(wx.Frame):
         self.DrawingMode = FREEDRAWING_MODE
         #self.DrawingMode = DRIVENDRAWING_MODE
         self.AuiTabCtrl = []
-        self.DefaultPerspective = None
+        
+        # Save default perspective
+        notebooks = {}
+        for notebook, entry_name in [(self.LeftNoteBook, "leftnotebook"),
+                                     (self.BottomNoteBook, "bottomnotebook"),
+                                     (self.RightNoteBook, "rightnotebook")]:
+            notebooks[entry_name] = self.SaveTabLayout(notebook)
+        self.DefaultPerspective = {
+            "perspective": self.AUIManager.SavePerspective(),
+            "notebooks": notebooks,
+        }
+        
         
         # Initialize Printing configuring elements
         self.PrintData = wx.PrintData()
@@ -713,53 +721,8 @@ class IDEFrame(wx.Frame):
 #                Saving and restoring frame organization functions
 #-------------------------------------------------------------------------------
 
-    def OnResize(self, event):
-        if self.Starting:
-            self.RestoreLastLayout()
-        event.Skip()
-    
-    def EnableSaveProjectState(self):
-        return False
-    
-    def GetProjectConfiguration(self):
-        projects = {}
-        try:
-            if self.Config.HasEntry("projects"):
-                projects = cPickle.loads(str(self.Config.Read("projects")))
-        except:
-            pass
-        
-        return projects.get(
-            EncodeFileSystemPath(os.path.realpath(self.Controler.GetFilePath())), {})
-    
-    def SavePageState(self, page):
-        state = page.GetState()
-        if state is not None:
-            if self.Config.HasEntry("projects"):
-                projects = cPickle.loads(str(self.Config.Read("projects")))
-            else:
-                projects = {}
-            
-            project_infos = projects.setdefault(
-                 EncodeFileSystemPath(os.path.realpath(self.Controler.GetFilePath())), {})
-            editors_state = project_infos.setdefault("editors_state", {})
-            
-            if page.IsDebugging():
-                editors_state[page.GetInstancePath()] = state
-            else:
-                editors_state[page.GetTagName()] = state
-            
-            self.Config.Write("projects", cPickle.dumps(projects))
-            self.Config.Flush()
-    
     def GetTabInfos(self, tab):
-        if isinstance(tab, EditorPanel):
-            if tab.IsDebugging():
-                return ("debug", tab.GetInstancePath())
-            else:
-                return ("editor", tab.GetTagName())
-        else:
-            for page_name, (page_ref, page_title) in self.MainTabs.iteritems():
+        for page_name, (page_ref, page_title) in self.MainTabs.iteritems():
                 if page_ref == tab:
                     return ("main", page_name)
         return None
@@ -859,110 +822,15 @@ class IDEFrame(wx.Frame):
             self.Maximize()
         else:
             self.SetClientSize(frame_size)
-            wx.CallAfter(self.RestoreLastLayout)
         
-    def RestoreLastLayout(self):
-        notebooks = {}
-        for notebook, entry_name in [(self.LeftNoteBook, "leftnotebook"),
-                                     (self.BottomNoteBook, "bottomnotebook"),
-                                     (self.RightNoteBook, "rightnotebook")]:
-            notebooks[entry_name] = self.SaveTabLayout(notebook)
-        self.DefaultPerspective = {
-            "perspective": self.AUIManager.SavePerspective(),
-            "notebooks": notebooks,
-        }
-        
-        try:
-            if self.Config.HasEntry("perspective"):
-                self.AUIManager.LoadPerspective(unicode(self.Config.Read("perspective")))
-        
-            if self.Config.HasEntry("notebooks"):
-                notebooks = cPickle.loads(str(self.Config.Read("notebooks")))
-                
-                for notebook in [self.LeftNoteBook, self.BottomNoteBook, self.RightNoteBook]:
-                    for idx in xrange(notebook.GetPageCount()):
-                        notebook.RemovePage(0)
-                        
-                for notebook, entry_name in [(self.LeftNoteBook, "leftnotebook"),
-                                             (self.BottomNoteBook, "bottomnotebook"),
-                                             (self.RightNoteBook, "rightnotebook")]:
-                    self.LoadTabLayout(notebook, notebooks.get(entry_name))
-        except:
-            self.ResetPerspective()
-        
-        if self.EnableSaveProjectState():
-            self.LoadProjectLayout()
-        
-        self._Refresh(EDITORTOOLBAR)
-        
-        if wx.Platform == '__WXMSW__':
-            wx.CallAfter(self.ResetStarting)
-        else:
-            self.ResetStarting()
-        wx.CallAfter(self.RefreshEditor)
-    
     def SaveLastState(self):
         if not self.IsMaximized():
             self.Config.Write("framesize", cPickle.dumps(self.GetClientSize()))
         elif self.Config.HasEntry("framesize"):
             self.Config.DeleteEntry("framesize")
         
-        notebooks = {}
-        for notebook, entry_name in [(self.LeftNoteBook, "leftnotebook"),
-                                     (self.BottomNoteBook, "bottomnotebook"),
-                                     (self.RightNoteBook, "rightnotebook")]:
-            notebooks[entry_name] = self.SaveTabLayout(notebook)
-        self.Config.Write("notebooks", cPickle.dumps(notebooks))
-        
-        pane = self.AUIManager.GetPane(self.TabsOpened)
-        if pane.IsMaximized():
-            self.AUIManager.RestorePane(pane)
-        self.Config.Write("perspective", self.AUIManager.SavePerspective())
-        
-        if self.EnableSaveProjectState():
-            self.SaveProjectLayout()
-        
-            for i in xrange(self.TabsOpened.GetPageCount()):
-                self.SavePageState(self.TabsOpened.GetPage(i))
-        
         self.Config.Flush()
 
-    def SaveProjectLayout(self):
-        if self.Controler is not None:
-            tabs = []
-            
-            projects = {}
-            try:
-                 if self.Config.HasEntry("projects"):
-                    projects = cPickle.loads(str(self.Config.Read("projects")))
-            except:
-                pass
-            
-            project_infos = projects.setdefault(
-                 EncodeFileSystemPath(os.path.realpath(self.Controler.GetFilePath())), {})
-            project_infos["tabs"] = self.SaveTabLayout(self.TabsOpened)
-            if self.EnableDebug:
-                project_infos["debug_vars"] = self.DebugVariablePanel.GetDebugVariables()
-                
-            self.Config.Write("projects", cPickle.dumps(projects))
-            self.Config.Flush()
-    
-    def LoadProjectLayout(self):
-        if self.Controler is not None:
-            project = self.GetProjectConfiguration()
-            
-            try:
-                if project.has_key("tabs"):
-                    self.LoadTabLayout(self.TabsOpened, project["tabs"])
-            except:
-                self.DeleteAllPages()
-                
-            if self.EnableDebug:
-                #try:
-                self.DebugVariablePanel.SetDebugVariables(project.get("debug_vars", []))
-                #except:
-                #    self.DebugVariablePanel.ResetView()
-            
 #-------------------------------------------------------------------------------
 #                               General Functions
 #-------------------------------------------------------------------------------
@@ -998,8 +866,6 @@ class IDEFrame(wx.Frame):
             window = self.TabsOpened.GetPage(selected)
             
             if window.CheckSaveBeforeClosing():
-                if self.EnableSaveProjectState():
-                    self.SavePageState(window)
                 
                 # Refresh all window elements that have changed
                 wx.CallAfter(self._Refresh, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
@@ -1861,16 +1727,6 @@ class IDEFrame(wx.Frame):
                     new_window.SetIcon(GetBitmap("DATATYPE"))
                     self.AddPage(new_window, "")
             if new_window is not None:
-                if self.EnableSaveProjectState():
-                    project_infos = self.GetProjectConfiguration()
-                    if project_infos.has_key("editors_state"):
-                        if new_window.IsDebugging():
-                            state = project_infos["editors_state"].get(new_window.GetInstancePath())
-                        else:
-                            state = project_infos["editors_state"].get(tagname)
-                        if state is not None:
-                            wx.CallAfter(new_window.SetState, state)
-                
                 openedidx = self.IsOpened(tagname)
                 old_selected = self.TabsOpened.GetSelection()
                 if old_selected != openedidx:
@@ -2073,13 +1929,6 @@ class IDEFrame(wx.Frame):
                     icon = GetBitmap("ACTION", bodytype)
         
         if new_window is not None:
-            if self.EnableSaveProjectState():
-                project_infos = self.GetProjectConfiguration()
-                if project_infos.has_key("editors_state"):
-                    state = project_infos["editors_state"].get(instance_path)
-                    if state is not None:
-                        wx.CallAfter(new_window.SetState, state)
-            
             new_window.SetIcon(icon)
             self.AddPage(new_window, "")
             new_window.RefreshView()
