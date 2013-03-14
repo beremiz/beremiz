@@ -23,6 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from datetime import datetime
+from time import time as gettime
 
 import wx
 
@@ -30,7 +31,7 @@ from graphics import DebugViewer, REFRESH_PERIOD
 from targets.typemapping import LogLevelsCount, LogLevels
 from util.BitmapLibrary import GetBitmap
 
-SPEED_VALUES = [10, 5, 2, 1, 0, -1, -2, -5, -10]
+THUMB_SIZE_RATIO = 1. / 8.
 
 class MyScrollBar(wx.Panel):
     
@@ -42,8 +43,8 @@ class MyScrollBar(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnResize)
         
-        self.ThumbPosition = SPEED_VALUES.index(0)
-        self.ThumbScrolling = False
+        self.ThumbPosition = 0. # -1 <= ThumbPosition <= 1
+        self.ThumbScrollingStartPos = None
     
     def GetRangeRect(self):
         width, height = self.GetClientSize()
@@ -52,15 +53,24 @@ class MyScrollBar(wx.Panel):
     def GetThumbRect(self):
         width, height = self.GetClientSize()
         range_rect = self.GetRangeRect()
-        if self.Parent.IsMessagePanelTop():
-            thumb_start = 0
-        else:
-            thumb_start = int(float(self.ThumbPosition * range_rect.height) / len(SPEED_VALUES))
-        if self.Parent.IsMessagePanelBottom():
-            thumb_end = range_rect.height
-        else:
-            thumb_end = int(float((self.ThumbPosition + 1) * range_rect.height) / len(SPEED_VALUES))
+        thumb_size = range_rect.height * THUMB_SIZE_RATIO
+        thumb_range = range_rect.height - thumb_size
+        thumb_center_position = (thumb_size + (self.ThumbPosition + 1) * thumb_range) / 2.
+        thumb_start = int(thumb_center_position - thumb_size / 2.)
+        thumb_end = int(thumb_center_position + thumb_size / 2.)
         return wx.Rect(1, range_rect.y + thumb_start, width - 1, thumb_end - thumb_start)
+    
+    def RefreshThumbPosition(self, thumb_position=None):
+        if thumb_position is None:
+            thumb_position = self.ThumbPosition
+        if self.Parent.IsMessagePanelTop():
+            thumb_position = max(0., thumb_position)
+        if self.Parent.IsMessagePanelBottom():
+            thumb_position = min(0., thumb_position)
+        if thumb_position != self.ThumbPosition:
+            self.ThumbPosition = thumb_position
+            self.Parent.SetScrollSpeed(self.ThumbPosition)
+        self.Refresh()
     
     def OnLeftDown(self, event):
         self.CaptureMouse()
@@ -70,43 +80,33 @@ class MyScrollBar(wx.Panel):
         thumb_rect = self.GetThumbRect()
         if range_rect.InsideXY(posx, posy):
             if thumb_rect.InsideXY(posx, posy):
-                self.ThumbScrolling = True
+                self.ThumbScrollingStartPos = wx.Point(posx, posy)
             elif posy < thumb_rect.y:
-                self.Parent.ScrollPageUp()
+                self.Parent.ScrollToLast()
             elif posy > thumb_rect.y + thumb_rect.height:
-                self.Parent.ScrollPageDown()
+                self.Parent.ScrollToFirst()
         elif posy < width:
-            self.Parent.SetScrollSpeed(1)
+            pass
         elif posy > height - width:
-            self.Parent.SetScrollSpeed(-1)
+            pass
         event.Skip()
         
     def OnLeftUp(self, event):
-        self.ThumbScrolling = False
-        self.ThumbPosition = SPEED_VALUES.index(0)
-        self.Parent.SetScrollSpeed(SPEED_VALUES[self.ThumbPosition])
-        self.Refresh()
+        self.ThumbScrollingStartPos = None
+        self.RefreshThumbPosition(0.)
         if self.HasCapture():
             self.ReleaseMouse()
         event.Skip()
         
     def OnMotion(self, event):
-        if event.Dragging() and self.ThumbScrolling:
+        if event.Dragging() and self.ThumbScrollingStartPos is not None:
             posx, posy = event.GetPosition()
             width, height = self.GetClientSize()
             range_rect = self.GetRangeRect()
-            if range_rect.InsideXY(posx, posy):
-                new_thumb_position = int(float(posy - range_rect.y) * len(SPEED_VALUES) / range_rect.height)
-                thumb_rect = self.GetThumbRect()
-                if self.ThumbPosition == SPEED_VALUES.index(0):
-                    if thumb_rect.y == width:
-                        new_thumb_position = max(new_thumb_position, SPEED_VALUES.index(0))
-                    if thumb_rect.y + thumb_rect.height == height - width:
-                        new_thumb_position = min(new_thumb_position, SPEED_VALUES.index(0))
-                if new_thumb_position != self.ThumbPosition:
-                    self.ThumbPosition = new_thumb_position
-                    self.Parent.SetScrollSpeed(SPEED_VALUES[new_thumb_position])
-                    self.Refresh()
+            thumb_size = range_rect.height * THUMB_SIZE_RATIO
+            thumb_range = range_rect.height - thumb_size
+            self.RefreshThumbPosition(
+                max(-1., min((posy - self.ThumbScrollingStartPos.y) * 2. / thumb_range, 1.)))
         event.Skip()
     
     def OnResize(self, event):
@@ -118,10 +118,25 @@ class MyScrollBar(wx.Panel):
         dc.Clear()
         dc.BeginDrawing()
         
+        width, height = self.GetClientSize()
+        
+        thumb_rect = self.GetThumbRect()
+        exclusion_rect = wx.Rect(thumb_rect.x, thumb_rect.y,
+                                 thumb_rect.width, thumb_rect.height)
+        if self.Parent.IsMessagePanelTop():
+            exclusion_rect.y, exclusion_rect.height = width, exclusion_rect.y + exclusion_rect.height - width
+        if self.Parent.IsMessagePanelBottom():
+            exclusion_rect.height = height - width - exclusion_rect.y
+        if exclusion_rect != thumb_rect:
+            colour = wx.NamedColour("LIGHT GREY")
+            dc.SetPen(wx.Pen(colour))
+            dc.SetBrush(wx.Brush(colour))
+        
+            dc.DrawRectangle(exclusion_rect.x, exclusion_rect.y, 
+                             exclusion_rect.width, exclusion_rect.height)
+        
         dc.SetPen(wx.GREY_PEN)
         dc.SetBrush(wx.GREY_BRUSH)
-        
-        width, height = self.GetClientSize()
         
         dc.DrawPolygon([wx.Point(width / 2, 1),
                         wx.Point(1, width - 2),
@@ -130,8 +145,7 @@ class MyScrollBar(wx.Panel):
         dc.DrawPolygon([wx.Point(width / 2, height - 1),
                         wx.Point(2, height - width + 1),
                         wx.Point(width - 1, height - width + 1)])
-        
-        thumb_rect = self.GetThumbRect()
+            
         dc.DrawRectangle(thumb_rect.x, thumb_rect.y, 
                          thumb_rect.width, thumb_rect.height)
         
@@ -213,11 +227,14 @@ class LogViewer(DebugViewer, wx.Panel):
         self.Bind(wx.EVT_COMBOBOX, self.OnMessageFilterChanged, self.MessageFilter)
         filter_sizer.AddWindow(self.MessageFilter, 1, border=5, flag=wx.RIGHT|wx.GROW)
         
-        self.SearchMessage = wx.SearchCtrl(self)
+        self.SearchMessage = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.SearchMessage.ShowSearchButton(True)
-        self.Bind(wx.EVT_TEXT, self.OnSearchMessageChanged, self.SearchMessage)
+        self.SearchMessage.ShowCancelButton(True)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnSearchMessageChanged, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, 
-              self.OnSearchMessageButtonClick, self.SearchMessage)
+              self.OnSearchMessageSearchButtonClick, self.SearchMessage)
+        self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, 
+              self.OnSearchMessageCancelButtonClick, self.SearchMessage)
         filter_sizer.AddWindow(self.SearchMessage, 3, flag=wx.GROW)
         
         message_panel_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
@@ -226,12 +243,10 @@ class LogViewer(DebugViewer, wx.Panel):
         main_sizer.AddSizer(message_panel_sizer, border=5, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.GROW)
         
         buttons_sizer = wx.BoxSizer(wx.VERTICAL)
-        for label, callback in [(_("First"), self.OnFirstButton)] + \
-                               [("+" + text, self.GenerateOnDurationButton(duration)) 
+        for label, callback in [("+" + text, self.GenerateOnDurationButton(duration)) 
                                 for text, duration in CHANGE_TIMESTAMP_BUTTONS] +\
                                [("-" + text, self.GenerateOnDurationButton(-duration)) 
-                                for text, duration in REVERSE_CHANGE_TIMESTAMP_BUTTONS] + \
-                               [(_("Last"), self.OnLastButton)]:
+                                for text, duration in REVERSE_CHANGE_TIMESTAMP_BUTTONS]:
             button = wx.Button(self, label=label)
             self.Bind(wx.EVT_BUTTON, callback, button)
             buttons_sizer.AddWindow(button, 1, wx.ALIGN_CENTER_VERTICAL)
@@ -242,6 +257,7 @@ class LogViewer(DebugViewer, wx.Panel):
             self.Font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier New')
         else:
             self.Font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')    
+        self.MessagePanel.Bind(wx.EVT_MOUSEWHEEL, self.OnMessagePanelMouseWheel)
         self.MessagePanel.Bind(wx.EVT_PAINT, self.OnMessagePanelPaint)
         self.MessagePanel.Bind(wx.EVT_SIZE, self.OnMessagePanelResize)
         message_panel_sizer.AddWindow(self.MessagePanel, flag=wx.GROW)
@@ -259,8 +275,10 @@ class LogViewer(DebugViewer, wx.Panel):
         self.LevelIcons = [GetBitmap("LOG_" + level) for level in LogLevels]
         self.LevelFilters = [range(i) for i in xrange(4, 0, -1)]
         self.CurrentFilter = self.LevelFilters[0]
+        self.CurrentSearchValue = ""
         
-        self.ScrollSpeed = 0
+        self.ScrollSpeed = 0.
+        self.LastStartTime = None
         self.ScrollTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnScrollTimer, self.ScrollTimer)
     
@@ -320,19 +338,22 @@ class LogViewer(DebugViewer, wx.Panel):
                 self.CurrentMessage = len(self.LogMessages) - 1
             self.NewDataAvailable(None)
     
-    def GetNextMessage(self, msgidx, levels=range(4)):
+    def FilterLogMessage(self, message):
+        return message.Level in self.CurrentFilter and message.Message.find(self.CurrentSearchValue) != -1
+    
+    def GetNextMessage(self, msgidx):
         while msgidx < len(self.LogMessages) - 1:
             message = self.LogMessages[msgidx + 1]
-            if message.Level in levels:
+            if self.FilterLogMessage(message):
                 return message, msgidx + 1
             msgidx += 1
         return None, None
-            
-    def GetPreviousMessage(self, msgidx, levels=range(4)):
+    
+    def GetPreviousMessage(self, msgidx):
         message = None
         while 0 < msgidx < len(self.LogMessages):
             message = self.LogMessages[msgidx - 1]
-            if message.Level in levels:
+            if self.FilterLogMessage(message):
                 return message, msgidx - 1
             msgidx -= 1
         if len(self.LogMessages) > 0:
@@ -358,7 +379,7 @@ class LogViewer(DebugViewer, wx.Panel):
                         self.CurrentMessage += 1
                     else:
                         self.CurrentMessage = 0
-                    if message.Level in levels:
+                    if self.FilterLogMessage(message):
                         return message, 0
         return None, None
     
@@ -385,30 +406,20 @@ class LogViewer(DebugViewer, wx.Panel):
                 message.Draw(dc, offset, width, draw_date)
                 offset += message.GetHeight(draw_date)
                 
-                previous_message, message_idx = self.GetPreviousMessage(message_idx, self.CurrentFilter)
+                previous_message, message_idx = self.GetPreviousMessage(message_idx)
                 if previous_message is not None:
                     draw_date = message.Date != previous_message.Date
                 message = previous_message
         
         dc.EndDrawing()
         
-        self.MessageScrollBar.Refresh()
-    
-    def OnMessageFilterChanged(self, event):
-        self.CurrentFilter = self.LevelFilters[self.MessageFilter.GetSelection()]
-        if len(self.LogMessages) > 0:
-            self.CurrentMessage = len(self.LogMessages) - 1
-            message = self.LogMessages[self.CurrentMessage]
-            while message is not None and message.Level not in self.CurrentFilter:
-                message, self.CurrentMessage = self.GetPreviousMessage(self.CurrentMessage, self.CurrentFilter)
-            self.RefreshView()
-        event.Skip()
+        self.MessageScrollBar.RefreshThumbPosition()
     
     def IsMessagePanelTop(self, message_idx=None):
         if message_idx is None:
             message_idx = self.CurrentMessage
         if message_idx is not None:
-            return self.GetNextMessage(message_idx, self.CurrentFilter)[0] is None
+            return self.GetNextMessage(message_idx)[0] is None
         return True
     
     def IsMessagePanelBottom(self, message_idx=None):
@@ -421,7 +432,7 @@ class LogViewer(DebugViewer, wx.Panel):
             draw_date = True
             while message is not None and offset < height:
                 offset += message.GetHeight(draw_date)
-                previous_message, message_idx = self.GetPreviousMessage(message_idx, self.CurrentFilter)
+                previous_message, message_idx = self.GetPreviousMessage(message_idx)
                 if previous_message is not None:
                     draw_date = message.Date != previous_message.Date
                 message = previous_message
@@ -432,49 +443,119 @@ class LogViewer(DebugViewer, wx.Panel):
         if self.CurrentMessage is not None:
             message = self.LogMessages[self.CurrentMessage]
             while scroll > 0 and message is not None:
-                message, msgidx = self.GetNextMessage(self.CurrentMessage, self.CurrentFilter)
+                message, msgidx = self.GetNextMessage(self.CurrentMessage)
                 if message is not None:
                     self.CurrentMessage = msgidx
                     scroll -= 1
             while scroll < 0 and message is not None and not self.IsMessagePanelBottom():
-                message, msgidx = self.GetPreviousMessage(self.CurrentMessage, self.CurrentFilter)
+                message, msgidx = self.GetPreviousMessage(self.CurrentMessage)
                 if message is not None:
                     self.CurrentMessage = msgidx
                     scroll += 1
             self.RefreshView()
-        
-    def OnSearchMessageChanged(self, event):
-        event.Skip()
-        
-    def OnSearchMessageButtonClick(self, event):
-        event.Skip()
     
-    def OnFirstButton(self, event):
+    def ResetMessagePanel(self):
         if len(self.LogMessages) > 0:
             self.CurrentMessage = len(self.LogMessages) - 1
             message = self.LogMessages[self.CurrentMessage]
-            if message.Level not in self.CurrentFilter:
-                message, self.CurrentMessage = self.GetPreviousMessage(self.CurrentMessage, self.CurrentFilter)
+            while message is not None and not self.FilterLogMessage(message):
+                message, self.CurrentMessage = self.GetPreviousMessage(self.CurrentMessage)
             self.RefreshView()
+    
+    def OnMessageFilterChanged(self, event):
+        self.CurrentFilter = self.LevelFilters[self.MessageFilter.GetSelection()]
+        self.ResetMessagePanel()
+        event.Skip()
+    
+    def OnSearchMessageChanged(self, event):
+        self.CurrentSearchValue = self.SearchMessage.GetValue()
+        self.ResetMessagePanel()
         event.Skip()
         
-    def OnLastButton(self, event):
+    def OnSearchMessageSearchButtonClick(self, event):
+        self.CurrentSearchValue = self.SearchMessage.GetValue()
+        self.ResetMessagePanel()
+        event.Skip()
+    
+    def OnSearchMessageCancelButtonClick(self, event):
+        self.CurrentSearchValue = ""
+        self.SearchMessage.SetValue("")
+        self.ResetMessagePanel()
+        event.Skip()
+    
+    def GenerateOnDurationButton(self, duration):
+        def OnDurationButton(event):
+            event.Skip()
+        return OnDurationButton
+    
+    def OnMessagePanelMouseWheel(self, event):
+        self.ScrollMessagePanel(event.GetWheelRotation() / event.GetWheelDelta())
+        event.Skip()
+    
+    def OnMessagePanelPaint(self, event):
+        self.RefreshView()
+        event.Skip()
+    
+    def OnMessagePanelResize(self, event):
+        if self.IsMessagePanelBottom():
+            self.ScrollToFirst()
+        else:
+            self.RefreshView()
+        event.Skip()
+    
+    def OnScrollTimer(self, event):
+        if self.ScrollSpeed != 0.:
+            speed_norm = abs(self.ScrollSpeed)
+            period = REFRESH_PERIOD / speed_norm
+            self.ScrollMessagePanel(-speed_norm / self.ScrollSpeed)
+            self.LastStartTime = gettime()
+            self.ScrollTimer.Start(int(period * 1000), True)
+        event.Skip()
+    
+    def SetScrollSpeed(self, speed):
+        if speed == 0.:
+            self.ScrollTimer.Stop()
+        else:
+            speed_norm = abs(speed)
+            period = REFRESH_PERIOD / speed_norm
+            current_time = gettime()
+            if self.LastStartTime is not None:
+                elapsed_time = current_time - self.LastStartTime
+                if elapsed_time > period:
+                    self.ScrollMessagePanel(-speed_norm / speed)
+                    self.LastStartTime = current_time
+                else:
+                    period -= elapsed_time
+            else:
+                self.LastStartTime = current_time
+            self.ScrollTimer.Start(int(period * 1000), True)
+        self.ScrollSpeed = speed    
+    
+    def ScrollToLast(self):
+        if len(self.LogMessages) > 0:
+            self.CurrentMessage = len(self.LogMessages) - 1
+            message = self.LogMessages[self.CurrentMessage]
+            if not self.FilterLogMessage(message):
+                message, self.CurrentMessage = self.GetPreviousMessage(self.CurrentMessage)
+            self.RefreshView()
+
+    def ScrollToFirst(self):
         if len(self.LogMessages) > 0:
             message_idx = 0
             message = self.LogMessages[message_idx]
-            if message.Level not in self.CurrentFilter:
-                next_message, msgidx = self.GetNextMessage(message_idx, self.CurrentFilter)
+            if not self.FilterLogMessage(message):
+                next_message, msgidx = self.GetNextMessage(message_idx)
                 if next_message is not None:
                     message_idx = msgidx
                     message = next_message
             while message is not None:
-                message, msgidx = self.GetPreviousMessage(message_idx, self.CurrentFilter)
+                message, msgidx = self.GetPreviousMessage(message_idx)
                 if message is not None:
                     message_idx = msgidx
             message = self.LogMessages[message_idx]
-            if message.Level in self.CurrentFilter:
+            if self.FilterLogMessage(message):
                 while message is not None:
-                    message, msgidx = self.GetNextMessage(message_idx, self.CurrentFilter)
+                    message, msgidx = self.GetNextMessage(message_idx)
                     if message is not None:
                         if not self.IsMessagePanelBottom(msgidx):
                             break
@@ -483,50 +564,3 @@ class LogViewer(DebugViewer, wx.Panel):
             else:
                 self.CurrentMessage = None
             self.RefreshView()
-        event.Skip()
-    
-    def GenerateOnDurationButton(self, duration):
-        def OnDurationButton(event):
-            event.Skip()
-        return OnDurationButton
-    
-    def OnMessagePanelPaint(self, event):
-        self.RefreshView()
-        event.Skip()
-    
-    def OnMessagePanelResize(self, event):
-        self.RefreshView()
-        event.Skip()
-    
-    def OnScrollTimer(self, event):
-        if self.ScrollSpeed != 0:
-            speed_norm = abs(self.ScrollSpeed)
-            if speed_norm <= 5:
-                self.ScrollMessagePanel(speed_norm / self.ScrollSpeed)
-                period = REFRESH_PERIOD * 5000 / speed_norm
-            else:
-                self.ScrollMessagePanel(self.ScrollSpeed / 5)
-                period = REFRESH_PERIOD * 1000
-            self.ScrollTimer.Start(period, True)
-        event.Skip()
-    
-    def SetScrollSpeed(self, speed):
-        if speed == 0:
-            self.ScrollTimer.Stop()
-        else:
-            if not self.ScrollTimer.IsRunning():
-                speed_norm = abs(speed)
-                if speed_norm <= 5:
-                    self.ScrollMessagePanel(speed_norm / speed)
-                    period = REFRESH_PERIOD * 5000 / speed_norm
-                else:
-                    period = REFRESH_PERIOD * 1000
-                    self.ScrollMessagePanel(speed / 5)
-                self.ScrollTimer.Start(period, True)
-        self.ScrollSpeed = speed    
-    
-    def ScrollPageUp(self):
-        pass
-
-    def ScrollPageDown(self):
-        pass
