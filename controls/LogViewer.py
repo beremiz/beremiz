@@ -34,7 +34,7 @@ from util.BitmapLibrary import GetBitmap
 
 THUMB_SIZE_RATIO = 1. / 8.
 
-class MyScrollBar(wx.Panel):
+class LogScrollBar(wx.Panel):
     
     def __init__(self, parent, size):
         wx.Panel.__init__(self, parent, size=size)
@@ -153,6 +153,55 @@ class MyScrollBar(wx.Panel):
         dc.EndDrawing()
         event.Skip()
 
+BUTTON_SIZE = (30, 15)
+
+class LogButton():
+    
+    def __init__(self, label, callback):
+        self.Position = wx.Point(0, 0)
+        self.Size = wx.Size(*BUTTON_SIZE)
+        if wx.Platform == '__WXMSW__':
+            self.Font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier New')
+        else:
+            self.Font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')
+        self.Label = label
+        self.Shown = True
+        self.Callback = callback
+    
+    def __del__(self):
+        self.callback = None
+    
+    def GetSize(self):
+        return self.Size
+    
+    def SetPosition(self, x, y):
+        self.Position = wx.Point(x, y)
+    
+    def HitTest(self, x, y):
+        rect = wx.Rect(self.Position.x, self.Position.y, 
+                       self.Size.width, self.Size.height)
+        if rect.InsideXY(x, y):
+            return True
+        return False
+    
+    def ProcessCallback(self):
+        if self.Callback is not None:
+            wx.CallAfter(self.Callback)
+            
+    def Draw(self, dc):
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        dc.SetBrush(wx.Brush(wx.NamedColour("LIGHT GREY")))
+        
+        dc.DrawRectangle(self.Position.x, self.Position.y, 
+                         self.Size.width, self.Size.height)
+        
+        dc.SetFont(self.Font)
+        
+        w, h = dc.GetTextExtent(self.Label)
+        dc.DrawText(self.Label, 
+            self.Position.x + (self.Size.width - w) / 2, 
+            self.Position.y + (self.Size.height - h) / 2)
+
 DATE_INFO_SIZE = 10
 MESSAGE_INFO_SIZE = 30
 
@@ -203,8 +252,6 @@ DAY = 24 * HOUR
 CHANGE_TIMESTAMP_BUTTONS = [(_("1d"), DAY),
                             (_("1h"), HOUR),
                             (_("1m"), MINUTE)]
-REVERSE_CHANGE_TIMESTAMP_BUTTONS = CHANGE_TIMESTAMP_BUTTONS[:]
-REVERSE_CHANGE_TIMESTAMP_BUTTONS.reverse()
 
 class LogViewer(DebugViewer, wx.Panel):
     
@@ -238,36 +285,37 @@ class LogViewer(DebugViewer, wx.Panel):
               self.OnSearchMessageCancelButtonClick, self.SearchMessage)
         filter_sizer.AddWindow(self.SearchMessage, 3, flag=wx.GROW)
         
-        message_panel_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
-        message_panel_sizer.AddGrowableCol(1)
+        message_panel_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
+        message_panel_sizer.AddGrowableCol(0)
         message_panel_sizer.AddGrowableRow(0)
         main_sizer.AddSizer(message_panel_sizer, border=5, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.GROW)
-        
-        buttons_sizer = wx.BoxSizer(wx.VERTICAL)
-        for label, callback in [("+" + text, self.GenerateOnDurationButton(duration)) 
-                                for text, duration in CHANGE_TIMESTAMP_BUTTONS] +\
-                               [("-" + text, self.GenerateOnDurationButton(-duration)) 
-                                for text, duration in REVERSE_CHANGE_TIMESTAMP_BUTTONS]:
-            button = wx.Button(self, label=label)
-            self.Bind(wx.EVT_BUTTON, callback, button)
-            buttons_sizer.AddWindow(button, 1, wx.ALIGN_CENTER_VERTICAL)
-        message_panel_sizer.AddSizer(buttons_sizer, flag=wx.GROW)
         
         self.MessagePanel = wx.Panel(self)
         if wx.Platform == '__WXMSW__':
             self.Font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier New')
         else:
-            self.Font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')    
+            self.Font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')
+        self.MessagePanel.Bind(wx.EVT_LEFT_DOWN, self.OnMessagePanelLeftDown)
         self.MessagePanel.Bind(wx.EVT_MOUSEWHEEL, self.OnMessagePanelMouseWheel)
         self.MessagePanel.Bind(wx.EVT_PAINT, self.OnMessagePanelPaint)
         self.MessagePanel.Bind(wx.EVT_SIZE, self.OnMessagePanelResize)
         message_panel_sizer.AddWindow(self.MessagePanel, flag=wx.GROW)
         
-        self.MessageScrollBar = MyScrollBar(self, wx.Size(16, -1))
+        self.MessageScrollBar = LogScrollBar(self, wx.Size(16, -1))
         message_panel_sizer.AddWindow(self.MessageScrollBar, flag=wx.GROW)
         
         self.SetSizer(main_sizer)
-    
+        
+        self.LeftButtons = []
+        for label, callback in [("+" + text, self.GenerateOnDurationButton(duration)) 
+                                for text, duration in CHANGE_TIMESTAMP_BUTTONS]:
+            self.LeftButtons.append(LogButton(label, callback))
+        
+        self.RightButtons = []
+        for label, callback in [("-" + text, self.GenerateOnDurationButton(-duration)) 
+                                for text, duration in CHANGE_TIMESTAMP_BUTTONS]:
+            self.RightButtons.append(LogButton(label, callback))
+        
         self.MessageFilter.SetSelection(0)
         self.LogSource = None
         self.ResetLogMessages()
@@ -409,10 +457,15 @@ class LogViewer(DebugViewer, wx.Panel):
         bitmap = wx.EmptyBitmap(width, height)
         dc = wx.BufferedDC(wx.ClientDC(self.MessagePanel), bitmap)
         dc.Clear()
-        dc.SetFont(self.Font)
         dc.BeginDrawing()
         
         if self.CurrentMessage is not None:
+            
+            for button in self.LeftButtons + self.RightButtons:
+                button.Draw(dc)
+            
+            dc.SetFont(self.Font)
+            
             message_idx = self.CurrentMessage
             message = self.LogMessages[message_idx]
             draw_date = True
@@ -509,10 +562,17 @@ class LogViewer(DebugViewer, wx.Panel):
         event.Skip()
     
     def GenerateOnDurationButton(self, duration):
-        def OnDurationButton(event):
+        def OnDurationButton():
             self.ScrollMessagePanelByTimestamp(duration)
-            event.Skip()
         return OnDurationButton
+    
+    def OnMessagePanelLeftDown(self, event):
+        if self.CurrentMessage is not None:
+            posx, posy = event.GetPosition()
+            for button in self.LeftButtons + self.RightButtons:
+                if button.HitTest(posx, posy):
+                    button.ProcessCallback()
+        event.Skip()
     
     def OnMessagePanelMouseWheel(self, event):
         self.ScrollMessagePanel(event.GetWheelRotation() / event.GetWheelDelta())
@@ -523,6 +583,18 @@ class LogViewer(DebugViewer, wx.Panel):
         event.Skip()
     
     def OnMessagePanelResize(self, event):
+        if self.CurrentMessage is not None:
+            width, height = self.MessagePanel.GetClientSize()
+            offset = 2
+            for button in self.LeftButtons:
+                button.SetPosition(offset, 2)
+                w, h = button.GetSize()
+                offset += w + 2
+            offset = width - 2
+            for button in self.RightButtons:
+                w, h = button.GetSize()
+                button.SetPosition(offset - w, 2)
+                offset -= w + 2
         if self.IsMessagePanelBottom():
             self.ScrollToFirst()
         else:
