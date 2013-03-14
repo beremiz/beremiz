@@ -24,6 +24,7 @@
 
 from datetime import datetime
 from time import time as gettime
+import numpy
 
 import wx
 
@@ -86,9 +87,9 @@ class MyScrollBar(wx.Panel):
             elif posy > thumb_rect.y + thumb_rect.height:
                 self.Parent.ScrollToFirst()
         elif posy < width:
-            pass
+            self.Parent.ScrollMessagePanelByTimestamp(1)
         elif posy > height - width:
-            pass
+            self.Parent.ScrollMessagePanelByTimestamp(-1)
         event.Skip()
         
     def OnLeftUp(self, event):
@@ -161,6 +162,7 @@ class LogMessage:
         self.Date = datetime.fromtimestamp(tv_sec)
         self.Seconds = self.Date.second + tv_nsec * 1e-9
         self.Date = self.Date.replace(second=0)
+        self.Timestamp = tv_sec + tv_nsec * 1e-9
         self.Level = level
         self.LevelBitmap = level_bitmap
         self.Message = msg
@@ -200,8 +202,7 @@ DAY = 24 * HOUR
 
 CHANGE_TIMESTAMP_BUTTONS = [(_("1d"), DAY),
                             (_("1h"), HOUR),
-                            (_("1m"), MINUTE),
-                            (_("1s"), SECOND)]
+                            (_("1m"), MINUTE)]
 REVERSE_CHANGE_TIMESTAMP_BUTTONS = CHANGE_TIMESTAMP_BUTTONS[:]
 REVERSE_CHANGE_TIMESTAMP_BUTTONS.reverse()
 
@@ -289,6 +290,7 @@ class LogViewer(DebugViewer, wx.Panel):
         self.previous_log_count = [None]*LogLevelsCount
         self.OldestMessages = []
         self.LogMessages = []
+        self.LogMessagesTimestamp = numpy.array([])
         self.CurrentMessage = None
         self.HasNewData = False
     
@@ -334,12 +336,24 @@ class LogViewer(DebugViewer, wx.Panel):
             old_length = len(self.LogMessages)
             for new_message in new_messages:
                 self.LogMessages.append(new_message)
+                self.LogMessagesTimestamp = numpy.append(self.LogMessagesTimestamp, [new_message.Timestamp])
             if self.CurrentMessage is None or self.CurrentMessage == old_length - 1:
                 self.CurrentMessage = len(self.LogMessages) - 1
             self.NewDataAvailable(None)
     
-    def FilterLogMessage(self, message):
-        return message.Level in self.CurrentFilter and message.Message.find(self.CurrentSearchValue) != -1
+    def FilterLogMessage(self, message, timestamp=None):
+        return (message.Level in self.CurrentFilter and 
+                message.Message.find(self.CurrentSearchValue) != -1 and
+                (timestamp is None or message.Timestamp < timestamp))
+    
+    def GetMessageByTimestamp(self, timestamp):
+        if self.CurrentMessage is not None:
+            msgidx = numpy.argmin(abs(self.LogMessagesTimestamp - timestamp))
+            message = self.LogMessages[msgidx]
+            if self.FilterLogMessage(message) and message.Timestamp > timestamp:
+                return self.GetPreviousMessage(msgidx, timestamp)
+            return message, msgidx
+        return None, None
     
     def GetNextMessage(self, msgidx):
         while msgidx < len(self.LogMessages) - 1:
@@ -349,11 +363,11 @@ class LogViewer(DebugViewer, wx.Panel):
             msgidx += 1
         return None, None
     
-    def GetPreviousMessage(self, msgidx):
+    def GetPreviousMessage(self, msgidx, timestamp=None):
         message = None
         while 0 < msgidx < len(self.LogMessages):
             message = self.LogMessages[msgidx - 1]
-            if self.FilterLogMessage(message):
+            if self.FilterLogMessage(message, timestamp):
                 return message, msgidx - 1
             msgidx -= 1
         if len(self.LogMessages) > 0:
@@ -375,11 +389,12 @@ class LogViewer(DebugViewer, wx.Panel):
                         message = msg
                 if message is not None:
                     self.LogMessages.insert(0, message)
+                    self.LogMessagesTimestamp = numpy.insert(self.LogMessagesTimestamp, [0], [message.Timestamp])
                     if self.CurrentMessage is not None:
                         self.CurrentMessage += 1
                     else:
                         self.CurrentMessage = 0
-                    if self.FilterLogMessage(message):
+                    if self.FilterLogMessage(message, timestamp):
                         return message, 0
         return None, None
     
@@ -454,6 +469,16 @@ class LogViewer(DebugViewer, wx.Panel):
                     scroll += 1
             self.RefreshView()
     
+    def ScrollMessagePanelByTimestamp(self, seconds):
+        if self.CurrentMessage is not None:
+            current_message = self.LogMessages[self.CurrentMessage]
+            message, msgidx = self.GetMessageByTimestamp(current_message.Timestamp + seconds)
+            if message is None or self.IsMessagePanelBottom(msgidx):
+                self.ScrollToFirst()
+            else:
+                self.CurrentMessage = msgidx
+                self.Refresh()
+            
     def ResetMessagePanel(self):
         if len(self.LogMessages) > 0:
             self.CurrentMessage = len(self.LogMessages) - 1
@@ -485,6 +510,7 @@ class LogViewer(DebugViewer, wx.Panel):
     
     def GenerateOnDurationButton(self, duration):
         def OnDurationButton(event):
+            self.ScrollMessagePanelByTimestamp(duration)
             event.Skip()
         return OnDurationButton
     
