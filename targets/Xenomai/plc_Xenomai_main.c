@@ -38,8 +38,6 @@ unsigned int PLC_state = 0;
 #define PYTHON_PIPE_MINOR            3
 #define PIPE_SIZE                    1 
 
-/* provided by POUS.C */
-extern unsigned long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
@@ -169,9 +167,6 @@ int startPLC(int argc,char **argv)
 
     /* no memory swapping for that process */
     mlockall(MCL_CURRENT | MCL_FUTURE);
-
-    /* Define Ttick to 1ms if common_ticktime not defined */
-    Ttick = common_ticktime__?common_ticktime__:1000000;
 
     PLC_shutdown = 0;
 
