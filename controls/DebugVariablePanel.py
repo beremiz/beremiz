@@ -690,6 +690,9 @@ if USE_MPL:
             else:
                 self.SetHighlight(HIGHLIGHT_AFTER)
         
+        def OnEraseBackground(self, event):
+            pass
+        
         def OnResize(self, event):
             wx.CallAfter(self.RefreshButtonsState, True)
             event.Skip()
@@ -720,6 +723,7 @@ if USE_MPL:
             self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
             self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
             self.Bind(wx.EVT_SIZE, self.OnResize)
+            self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
             self.Bind(wx.EVT_PAINT, self.OnPaint)
             
             self.SetMinSize(wx.Size(0, 25))
@@ -808,6 +812,7 @@ if USE_MPL:
             self.SetBackgroundColour(wx.WHITE)
             self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
             self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
+            self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
             self.Bind(wx.EVT_SIZE, self.OnResize)
             
             self.SetMinSize(wx.Size(200, 200))
@@ -1502,6 +1507,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.GraphicsWindow = wx.ScrolledWindow(self, style=wx.HSCROLL|wx.VSCROLL)
             self.GraphicsWindow.SetBackgroundColour(wx.WHITE)
             self.GraphicsWindow.SetDropTarget(DebugVariableDropTarget(self))
+            self.GraphicsWindow.Bind(wx.EVT_ERASE_BACKGROUND, self.OnGraphicsWindowEraseBackground)
+            self.GraphicsWindow.Bind(wx.EVT_PAINT, self.OnGraphicsWindowPaint)
             self.GraphicsWindow.Bind(wx.EVT_SIZE, self.OnGraphicsWindowResize)
             main_sizer.AddWindow(self.GraphicsWindow, 1, flag=wx.GROW)
             
@@ -2219,6 +2226,14 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.GraphicsWindow.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
                 vwidth / SCROLLBAR_UNIT, vheight / SCROLLBAR_UNIT, posx, posy)
     
+    def OnGraphicsWindowEraseBackground(self, event):
+        pass
+    
+    def OnGraphicsWindowPaint(self, event):
+        self.RefreshView()
+        event.Skip()
+    
     def OnGraphicsWindowResize(self, event):
         self.RefreshGraphicsWindowScrollbars()
         event.Skip()
+    
