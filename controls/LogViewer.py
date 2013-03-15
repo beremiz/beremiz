@@ -69,7 +69,7 @@ class LogScrollBar(wx.Panel):
         thumb_center_position = (thumb_size + (self.ThumbPosition + 1) * thumb_range) / 2.
         thumb_start = int(thumb_center_position - thumb_size / 2.)
         thumb_end = int(thumb_center_position + thumb_size / 2.)
-        return wx.Rect(1, range_rect.y + thumb_start, width - 1, thumb_end - thumb_start)
+        return wx.Rect(0, range_rect.y + thumb_start, width, thumb_end - thumb_start)
     
     def RefreshThumbPosition(self, thumb_position=None):
         if thumb_position is None:
@@ -129,16 +129,18 @@ class LogScrollBar(wx.Panel):
         dc.Clear()
         dc.BeginDrawing()
         
+        gc = wx.GCDC(dc)
+        
         width, height = self.GetClientSize()
         
-        dc.SetPen(wx.Pen(wx.NamedColour("GREY"), 2))
-        dc.SetBrush(wx.GREY_BRUSH)
+        gc.SetPen(wx.Pen(wx.NamedColour("GREY"), 2))
+        gc.SetBrush(wx.GREY_BRUSH)
         
-        dc.DrawLines(ArrowPoints(wx.TOP, width, width * 0.75, 2 * width))
-        dc.DrawLines(ArrowPoints(wx.TOP, width, width * 0.75, 2 * width + 6))
+        gc.DrawLines(ArrowPoints(wx.TOP, width, width * 0.75, 2 * width))
+        gc.DrawLines(ArrowPoints(wx.TOP, width, width * 0.75, 2 * width + 6))
         
-        dc.DrawLines(ArrowPoints(wx.BOTTOM, width, width * 0.75, height - 2 * width))
-        dc.DrawLines(ArrowPoints(wx.BOTTOM, width, width * 0.75, height - 2 * width - 6))
+        gc.DrawLines(ArrowPoints(wx.BOTTOM, width, width * 0.75, height - 2 * width))
+        gc.DrawLines(ArrowPoints(wx.BOTTOM, width, width * 0.75, height - 2 * width - 6))
         
         thumb_rect = self.GetThumbRect()
         exclusion_rect = wx.Rect(thumb_rect.x, thumb_rect.y,
@@ -149,20 +151,20 @@ class LogScrollBar(wx.Panel):
             exclusion_rect.height = height - width - exclusion_rect.y
         if exclusion_rect != thumb_rect:
             colour = wx.NamedColour("LIGHT GREY")
-            dc.SetPen(wx.Pen(colour))
-            dc.SetBrush(wx.Brush(colour))
+            gc.SetPen(wx.Pen(colour))
+            gc.SetBrush(wx.Brush(colour))
         
-            dc.DrawRectangle(exclusion_rect.x, exclusion_rect.y, 
+            gc.DrawRectangle(exclusion_rect.x, exclusion_rect.y, 
                              exclusion_rect.width, exclusion_rect.height)
         
-        dc.SetPen(wx.GREY_PEN)
-        dc.SetBrush(wx.GREY_BRUSH)
+        gc.SetPen(wx.GREY_PEN)
+        gc.SetBrush(wx.GREY_BRUSH)
         
-        dc.DrawPolygon(ArrowPoints(wx.TOP, width, width, 0))
+        gc.DrawPolygon(ArrowPoints(wx.TOP, width, width, 0))
         
-        dc.DrawPolygon(ArrowPoints(wx.BOTTOM, width, width, height))
+        gc.DrawPolygon(ArrowPoints(wx.BOTTOM, width, width, height))
             
-        dc.DrawRectangle(thumb_rect.x, thumb_rect.y, 
+        gc.DrawRectangle(thumb_rect.x, thumb_rect.y, 
                          thumb_rect.width, thumb_rect.height)
         
         dc.EndDrawing()
