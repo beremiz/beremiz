@@ -34,6 +34,16 @@ from util.BitmapLibrary import GetBitmap
 
 THUMB_SIZE_RATIO = 1. / 8.
 
+def ArrowPoints(direction, width, height, offset):
+    if direction == wx.TOP:
+        return [wx.Point(1, offset + height - 2),
+                wx.Point(width / 2, offset + 1),
+                wx.Point(width - 1, offset + height - 2)]
+    else:
+        return [wx.Point(1, offset - height + 1),
+                wx.Point(width / 2, offset - 2),
+                wx.Point(width - 1, offset - height + 1)]
+
 class LogScrollBar(wx.Panel):
     
     def __init__(self, parent, size):
@@ -87,9 +97,9 @@ class LogScrollBar(wx.Panel):
             elif posy > thumb_rect.y + thumb_rect.height:
                 self.Parent.ScrollToFirst()
         elif posy < width:
-            self.Parent.ScrollMessagePanelByTimestamp(1)
+            self.Parent.ScrollMessagePanelByPage(1)
         elif posy > height - width:
-            self.Parent.ScrollMessagePanelByTimestamp(-1)
+            self.Parent.ScrollMessagePanelByPage(-1)
         event.Skip()
         
     def OnLeftUp(self, event):
@@ -121,6 +131,15 @@ class LogScrollBar(wx.Panel):
         
         width, height = self.GetClientSize()
         
+        dc.SetPen(wx.Pen(wx.NamedColour("GREY"), 2))
+        dc.SetBrush(wx.GREY_BRUSH)
+        
+        dc.DrawLines(ArrowPoints(wx.TOP, width, width * 0.75, 2 * width))
+        dc.DrawLines(ArrowPoints(wx.TOP, width, width * 0.75, 2 * width + 6))
+        
+        dc.DrawLines(ArrowPoints(wx.BOTTOM, width, width * 0.75, height - 2 * width))
+        dc.DrawLines(ArrowPoints(wx.BOTTOM, width, width * 0.75, height - 2 * width - 6))
+        
         thumb_rect = self.GetThumbRect()
         exclusion_rect = wx.Rect(thumb_rect.x, thumb_rect.y,
                                  thumb_rect.width, thumb_rect.height)
@@ -139,13 +158,9 @@ class LogScrollBar(wx.Panel):
         dc.SetPen(wx.GREY_PEN)
         dc.SetBrush(wx.GREY_BRUSH)
         
-        dc.DrawPolygon([wx.Point(width / 2, 1),
-                        wx.Point(1, width - 2),
-                        wx.Point(width - 1, width - 2)])
+        dc.DrawPolygon(ArrowPoints(wx.TOP, width, width, 0))
         
-        dc.DrawPolygon([wx.Point(width / 2, height - 1),
-                        wx.Point(2, height - width + 1),
-                        wx.Point(width - 1, height - width + 1)])
+        dc.DrawPolygon(ArrowPoints(wx.BOTTOM, width, width, height))
             
         dc.DrawRectangle(thumb_rect.x, thumb_rect.y, 
                          thumb_rect.width, thumb_rect.height)
@@ -251,7 +266,8 @@ DAY = 24 * HOUR
 
 CHANGE_TIMESTAMP_BUTTONS = [(_("1d"), DAY),
                             (_("1h"), HOUR),
-                            (_("1m"), MINUTE)]
+                            (_("1m"), MINUTE),
+                            (_("1s"), SECOND)]
 
 class LogViewer(DebugViewer, wx.Panel):
     
@@ -296,6 +312,7 @@ class LogViewer(DebugViewer, wx.Panel):
         else:
             self.Font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')
         self.MessagePanel.Bind(wx.EVT_LEFT_UP, self.OnMessagePanelLeftUp)
+        self.MessagePanel.Bind(wx.EVT_LEFT_DCLICK, self.OnMessagePanelLeftDCLick)
         self.MessagePanel.Bind(wx.EVT_MOUSEWHEEL, self.OnMessagePanelMouseWheel)
         self.MessagePanel.Bind(wx.EVT_PAINT, self.OnMessagePanelPaint)
         self.MessagePanel.Bind(wx.EVT_SIZE, self.OnMessagePanelResize)
@@ -522,6 +539,12 @@ class LogViewer(DebugViewer, wx.Panel):
                     scroll += 1
             self.RefreshView()
     
+    def ScrollMessagePanelByPage(self, page):
+        if self.CurrentMessage is not None:
+            width, height = self.MessagePanel.GetClientSize()
+            message_per_page = max(1, (height - DATE_INFO_SIZE) / MESSAGE_INFO_SIZE - 1)
+            self.ScrollMessagePanel(page * message_per_page)
+    
     def ScrollMessagePanelByTimestamp(self, seconds):
         if self.CurrentMessage is not None:
             current_message = self.LogMessages[self.CurrentMessage]
@@ -573,6 +596,33 @@ class LogViewer(DebugViewer, wx.Panel):
                 if button.HitTest(posx, posy):
                     button.ProcessCallback()
                     break
+        event.Skip()
+    
+    def OnMessagePanelLeftDCLick(self, event):
+        if self.CurrentMessage is not None:
+            posx, posy = event.GetPosition()
+            width, height = self.MessagePanel.GetClientSize()
+            message_idx = self.CurrentMessage
+            message = self.LogMessages[message_idx]
+            draw_date = True
+            offset = 5
+            
+            while offset < height and message is not None:
+                if draw_date:
+                    offset += DATE_INFO_SIZE
+
+                if offset <= posy < offset + MESSAGE_INFO_SIZE:
+                    self.CurrentSearchValue = message.Message
+                    self.SearchMessage.SetValue(message.Message)
+                    self.ResetMessagePanel()
+                    break
+                
+                offset += MESSAGE_INFO_SIZE
+                
+                previous_message, message_idx = self.GetPreviousMessage(message_idx)
+                if previous_message is not None:
+                    draw_date = message.Date != previous_message.Date
+                message = previous_message
         event.Skip()
     
     def OnMessagePanelMouseWheel(self, event):

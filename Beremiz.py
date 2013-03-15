@@ -383,12 +383,12 @@ class Beremiz(IDEFrame):
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
         self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
-        self.MainTabs["LogConsole"] = (self.LogConsole, _("Log Console"))
+        self.MainTabs["LogConsole"] = (self.LogConsole, _("Console"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
         #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
         self.LogViewer = LogViewer(self.BottomNoteBook, self)
-        self.MainTabs["LogViewer"] = (self.LogViewer, _("Log Viewer"))
+        self.MainTabs["LogViewer"] = (self.LogViewer, _("PLC Log"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogViewer"])
         self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
         
