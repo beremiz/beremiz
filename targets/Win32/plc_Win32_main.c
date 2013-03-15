@@ -8,8 +8,6 @@
 #include <windows.h>
 #include <locale.h>
 
-/* provided by POUS.C */
-extern unsigned long long common_ticktime__;
 
 long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
 {
@@ -77,8 +75,6 @@ int startPLC(int argc,char **argv)
 	unsigned long thread_id = 0;
     BOOL tmp;
     setlocale(LC_NUMERIC, "C");
-	/* Define Ttick to 1ms if common_ticktime not defined */
-    Ttick = common_ticktime__?common_ticktime__:1000000;
 
     InitializeCriticalSection(&Atomic64CS);
 

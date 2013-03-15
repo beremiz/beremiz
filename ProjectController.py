@@ -777,7 +777,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         
         return debug_code
         
-    def Generate_plc_common_main(self):
+    def Generate_plc_main(self):
         """
         Use confnodes layout given in LocationCFilesAndCFLAGS to
         generate glue code that dispatch calls to all confnodes
@@ -789,7 +789,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Generate main, based on template
         if not self.BeremizRoot.getDisable_Extensions():
-            plc_main_code = targets.GetCode("plc_common_main") % {
+            plc_main_code = targets.GetCode("plc_main_head") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
                       "void __cleanup_%(s)s(void);\n"+
@@ -809,7 +809,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
-            plc_main_code = targets.GetCode("plc_common_main") % {
+            plc_main_code = targets.GetCode("plc_main_head") % {
                 "calls_prototypes":"\n",
                 "retrieve_calls":"\n",
                 "publish_calls":"\n",
@@ -817,6 +817,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 "cleanup_calls":"\n"
                 }
         plc_main_code += targets.GetTargetCode(self.GetTarget().getcontent()["name"])
+        plc_main_code += targets.GetCode("plc_main_tail")
         return plc_main_code
 
         
@@ -897,7 +898,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
            # debugger code
            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
            # init/cleanup/retrieve/publish, run and align code
-           (self.Generate_plc_common_main,"plc_common_main.c","Common runtime")]:
+           (self.Generate_plc_main,"plc_main.c","Common runtime")]:
             try:
                 # Do generate
                 code = generator()
