@@ -51,6 +51,7 @@ class LogScrollBar(wx.Panel):
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
+        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnResize)
         
@@ -123,6 +124,9 @@ class LogScrollBar(wx.Panel):
     def OnResize(self, event):
         self.Refresh()
         event.Skip()
+    
+    def OnEraseBackground(self, event):
+        pass
     
     def OnPaint(self, event):
         dc = wx.BufferedPaintDC(self)
@@ -316,6 +320,7 @@ class LogViewer(DebugViewer, wx.Panel):
         self.MessagePanel.Bind(wx.EVT_LEFT_UP, self.OnMessagePanelLeftUp)
         self.MessagePanel.Bind(wx.EVT_LEFT_DCLICK, self.OnMessagePanelLeftDCLick)
         self.MessagePanel.Bind(wx.EVT_MOUSEWHEEL, self.OnMessagePanelMouseWheel)
+        self.MessagePanel.Bind(wx.EVT_ERASE_BACKGROUND, self.OnMessagePanelEraseBackground)
         self.MessagePanel.Bind(wx.EVT_PAINT, self.OnMessagePanelPaint)
         self.MessagePanel.Bind(wx.EVT_SIZE, self.OnMessagePanelResize)
         message_panel_sizer.AddWindow(self.MessagePanel, flag=wx.GROW)
@@ -630,6 +635,9 @@ class LogViewer(DebugViewer, wx.Panel):
     def OnMessagePanelMouseWheel(self, event):
         self.ScrollMessagePanel(event.GetWheelRotation() / event.GetWheelDelta())
         event.Skip()
+    
+    def OnMessagePanelEraseBackground(self, event):
+        pass
     
     def OnMessagePanelPaint(self, event):
         self.RefreshView()
