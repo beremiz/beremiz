@@ -705,9 +705,6 @@ class IDEFrame(wx.Frame):
     def __del__(self):
         self.FindDialog.Destroy()
     
-    def ResetStarting(self):
-        self.Starting = False
-    
     def Show(self):
         wx.Frame.Show(self)
         wx.CallAfter(self.RestoreLastState)
@@ -817,7 +814,6 @@ class IDEFrame(wx.Frame):
         if self.Config.HasEntry("framesize"):
             frame_size = cPickle.loads(str(self.Config.Read("framesize")))
         
-        self.Starting = True
         if frame_size is None:
             self.Maximize()
         else:
@@ -1321,33 +1317,31 @@ class IDEFrame(wx.Frame):
         notebook.SetSelection(notebook.GetPageIndex(tab))
     
     def OnPouSelectedChanging(self, event):
-        if not self.Starting:
-            selected = self.TabsOpened.GetSelection()
-            if selected >= 0:
-                window = self.TabsOpened.GetPage(selected)
-                if not window.IsDebugging():
-                    window.ResetBuffer()
+        selected = self.TabsOpened.GetSelection()
+        if selected >= 0:
+            window = self.TabsOpened.GetPage(selected)
+            if not window.IsDebugging():
+                window.ResetBuffer()
         event.Skip()
     
     def OnPouSelectedChanged(self, event):
-        if not self.Starting:
-            selected = self.TabsOpened.GetSelection()
-            if selected >= 0:
-                window = self.TabsOpened.GetPage(selected)
-                tagname = window.GetTagName()
-                if not window.IsDebugging():
-                    wx.CallAfter(self.SelectProjectTreeItem, tagname)
-                    wx.CallAfter(self.PouInstanceVariablesPanel.SetPouType, tagname)
-                    window.RefreshView()
-                    self.EnsureTabVisible(self.LibraryPanel)
-                else:
-                    instance_path = window.GetInstancePath()
-                    if tagname == "":
-                        instance_path = instance_path.rsplit(".", 1)[0]
-                        tagname = self.Controler.GetPouInstanceTagName(instance_path, self.EnableDebug)
-                    self.EnsureTabVisible(self.DebugVariablePanel)
-                    wx.CallAfter(self.PouInstanceVariablesPanel.SetPouType, tagname, instance_path)
-            wx.CallAfter(self._Refresh, FILEMENU, EDITMENU, DISPLAYMENU, EDITORTOOLBAR)
+        selected = self.TabsOpened.GetSelection()
+        if selected >= 0:
+            window = self.TabsOpened.GetPage(selected)
+            tagname = window.GetTagName()
+            if not window.IsDebugging():
+                wx.CallAfter(self.SelectProjectTreeItem, tagname)
+                wx.CallAfter(self.PouInstanceVariablesPanel.SetPouType, tagname)
+                window.RefreshView()
+                self.EnsureTabVisible(self.LibraryPanel)
+            else:
+                instance_path = window.GetInstancePath()
+                if tagname == "":
+                    instance_path = instance_path.rsplit(".", 1)[0]
+                    tagname = self.Controler.GetPouInstanceTagName(instance_path, self.EnableDebug)
+                self.EnsureTabVisible(self.DebugVariablePanel)
+                wx.CallAfter(self.PouInstanceVariablesPanel.SetPouType, tagname, instance_path)
+        wx.CallAfter(self._Refresh, FILEMENU, EDITMENU, DISPLAYMENU, EDITORTOOLBAR)
         event.Skip()
         
     def RefreshEditor(self):
