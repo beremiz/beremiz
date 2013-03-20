@@ -1383,7 +1383,7 @@ if cls:
     setattr(cls, "removepouVar", removepouVar)
     
     def hasblock(self, name):
-        if self.getbodyType() in ["FBD", "LD", "SFC"]:
+        if name != "" and self.getbodyType() in ["FBD", "LD", "SFC"]:
             for instance in self.getinstances():
                 if isinstance(instance, PLCOpenClasses["fbdObjects_block"]) and instance.getinstanceName() == name:
                     return True
