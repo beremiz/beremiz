@@ -658,6 +658,7 @@ class _EthercatCTN:
                 new_child = self.CTNAddChild("%s_0" % ConfNodeType, ConfNodeType)
                 new_child.SetParamsAttribute("SlaveParams.Type", type_infos)
                 self.CTNRequestSave()
+                new_child._OpenView()
                 app_frame._Refresh(TITLE, FILEMENU, PROJECTTREE)
         dialog.Destroy()
     
