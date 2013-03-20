@@ -58,8 +58,9 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         self.Controler = controler
         self.PositionColumn = position_column
         
-        self.VariablesFilter = wx.ComboBox(parent)
+        self.VariablesFilter = wx.ComboBox(parent, style=wx.TE_PROCESS_ENTER)
         self.VariablesFilter.Bind(wx.EVT_COMBOBOX, self.OnVariablesFilterChanged)
+        self.VariablesFilter.Bind(wx.EVT_TEXT_ENTER, self.OnVariablesFilterChanged)
         self.AddWindow(self.VariablesFilter, flag=wx.GROW)
         
         self.VariablesGrid = wx.gizmos.TreeListCtrl(parent, 
@@ -154,7 +155,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                 result = ETHERCAT_INDEX_MODEL.match(value)
                 if result is not None:
                     value = result.group(1)
-                index = int(value)
+                index = int(value, 16)
                 self.CurrentFilter = (index, index)
                 self.RefreshView()
             except:
@@ -322,7 +323,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
         if not isinstance(values, TupleType):
             message = _("Invalid value \"%s\" for process variable")%data
             values = None
-        if values is not None and 2 <= col <= 3:
+        if values is not None and col != wx.NOT_FOUND and row != wx.NOT_FOUND and 2 <= col <= 3:
             location = None
             if values[1] == "location":
                 result = LOCATION_MODEL.match(values[0])
@@ -576,11 +577,12 @@ class MasterEditor(ConfTreeNodeEditor):
         
         main_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Node filter:"))
         staticbox_sizer = wx.StaticBoxSizer(main_staticbox, wx.VERTICAL)
-        main_sizer.AddSizer(staticbox_sizer, border=10, flag=wx.GROW|wx.ALL)
-        main_staticbox_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=0)
+        main_sizer.AddSizer(staticbox_sizer, 1, border=10, flag=wx.GROW|wx.ALL)
+        main_staticbox_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=6, vgap=0)
         main_staticbox_sizer.AddGrowableCol(0)
-        main_staticbox_sizer.AddGrowableRow(1)
-        main_staticbox_sizer.AddGrowableRow(3)
+        main_staticbox_sizer.AddGrowableRow(2)
+        main_staticbox_sizer.AddGrowableRow(4)
+        main_staticbox_sizer.AddGrowableRow(5)
         staticbox_sizer.AddSizer(main_staticbox_sizer, 1, flag=wx.GROW)
         main_staticbox_sizer.AddWindow(self.NodesFilter, border=5, flag=wx.GROW|wx.ALL)
         main_staticbox_sizer.AddSizer(process_variables_header, border=5, 
@@ -908,7 +910,8 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         wx.FlexGridSizer.__init__(self, cols=1, hgap=0, rows=4, vgap=5)
         
         self.ModuleLibrary = module_library
-    
+        self.ParentWindow = parent
+        
         self.AddGrowableCol(0)
         self.AddGrowableRow(1)
         self.AddGrowableRow(3)
@@ -1020,7 +1023,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                 self.ModulesGrid.Delete(item)
     
     def OnImportButton(self, event):
-        dialog = wx.FileDialog(self,
+        dialog = wx.FileDialog(self.ParentWindow,
              _("Choose an XML file"), 
              os.getcwd(), "",  
              _("XML files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
@@ -1044,7 +1047,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         if os.path.isfile(filepath):
             folder, filename = os.path.split(filepath)
             
-            dialog = wx.MessageDialog(self, 
+            dialog = wx.MessageDialog(self.ParentWindow, 
                   _("Do you really want to delete the file '%s'?") % filename, 
                   _("Delete File"), wx.YES_NO|wx.ICON_QUESTION)
             remove = dialog.ShowModal() == wx.ID_YES
@@ -1061,7 +1064,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         if item.IsOk():
             entry_infos = self.ModulesGrid.GetItemPyData(item)
             if entry_infos is not None and col == 1:
-                dialog = wx.TextEntryDialog(self, 
+                dialog = wx.TextEntryDialog(self.ParentWindow, 
                     _("Set PDO alignment (bits):"),
                     _("%s PDO alignment") % self.ModulesGrid.GetItemText(item), 
                     str(entry_infos["alignment"]))
