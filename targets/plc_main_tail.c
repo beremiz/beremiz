@@ -28,7 +28,7 @@ void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t siz
     }else{
         uint32_t remaining = LOG_BUFFER_SIZE - buffpos - 1; 
         memcpy(&LogBuff[level][buffpos], buf, remaining);
-        memcpy(LogBuff[level], buf + remaining, size - remaining);
+        memcpy(LogBuff[level], (char*)buf + remaining, size - remaining);
     }
 }
 void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
@@ -37,7 +37,7 @@ void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t s
     }else{
         uint32_t remaining = LOG_BUFFER_SIZE - buffpos; 
         memcpy(buf, &LogBuff[level][buffpos], remaining);
-        memcpy(buf + remaining, LogBuff[level], size - remaining);
+        memcpy((char*)buf + remaining, LogBuff[level], size - remaining);
     }
 }
 
@@ -84,7 +84,7 @@ int LogMessage(uint8_t level, uint8_t* buf, uint32_t size){
         }while(AtomicCompareExchange64(
             (long long*)&LogCursor[level],
             (long long)old_cursor,
-            (long long)new_cursor)!=old_cursor);
+            (long long)new_cursor)!=(long long)old_cursor);
 
         copy_to_log(level, buffpos, buf, size);
         copy_to_log(level, (buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
