@@ -1117,8 +1117,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.AppFrame.RefreshStatusToolBar()
     
     def PullPLCStatusProc(self, event):
-        if self._connector is None:
-            self.StatusTimer.Stop()
         self.UpdateMethodsFromPLCStatus()
         
     def RegisterDebugVarToConnector(self):
@@ -1353,7 +1351,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._connector = connector
         if self.AppFrame is not None:
             self.AppFrame.LogViewer.SetLogSource(connector)
-            
+        if connector is not None:
+            # Start the status Timer
+            self.StatusTimer.Start(milliseconds=500, oneShot=False)
+        else:
+            # Stop the status Timer
+            self.StatusTimer.Stop()
+
     def _Connect(self):
         # don't accept re-connetion if already connected
         if self._connector is not None:
@@ -1423,9 +1427,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             #self.logger.write(_("PLC is %s\n")%status)
             
-            # Start the status Timer
-            self.StatusTimer.Start(milliseconds=500, oneShot=False)
-            
             if self.previous_plcstate in ["Started","Stopped"]:
                 if self.DebugAvailable() and self.GetIECProgramsAndVariables():
                     self.logger.write(_("Debugger ready\n"))
@@ -1459,7 +1460,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _Disconnect(self):
         self._SetConnector(None)
-        self.StatusTimer.Stop()
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
         
     def _Transfer(self):
