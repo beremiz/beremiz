@@ -578,20 +578,27 @@ TOOLTIP_MAX_LINE = 5
 
 class ToolTip(wx.PopupWindow):
     
-    def __init__(self, parent, tip):
+    def __init__(self, parent, tip, restricted=True):
         wx.PopupWindow.__init__(self, parent)
         
         self.CurrentPosition = wx.Point(0, 0)
+        self.Restricted = restricted
         
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.SetTip(tip)
         
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["mono"])
         
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+    
+    def SetFont(self, font):
+        self.Font = font
+        self.RefreshTip()
+    
     def SetTip(self, tip):
         lines = []
         for line in tip.splitlines():
-            if line != "":
+            if self.Restricted and line != "":
                 words = line.split()
                 new_line = words[0]
                 for word in words[1:]:
@@ -603,7 +610,7 @@ class ToolTip(wx.PopupWindow):
                 lines.append(new_line)
             else:
                 lines.append(line)
-        if len(lines) > TOOLTIP_MAX_LINE:
+        if self.Restricted and len(lines) > TOOLTIP_MAX_LINE:
             self.Tip = lines[:TOOLTIP_MAX_LINE]
             if len(self.Tip[-1]) < TOOLTIP_MAX_CHARACTERS - 3:
                 self.Tip[-1] += "..."
@@ -614,14 +621,20 @@ class ToolTip(wx.PopupWindow):
         wx.CallAfter(self.RefreshTip)
     
     def MoveToolTip(self, pos):
-        self.CurrentPosition = pos
+        screen_size = wx.GetDisplaySize()
+        w, h = self.GetTipExtent()
+        self.CurrentPosition = wx.Point(
+            max(0, min(pos.x, screen_size[0] - w - 4)),
+            max(0, min(pos.y, screen_size[1] - h - 4))) 
         self.SetPosition(pos)
     
     def GetTipExtent(self):
         max_width = 0
         max_height = 0
         for line in self.Tip:
-            w, h = self.GetTextExtent(line)
+            dc = wx.MemoryDC()
+            dc.SetFont(self.Font)
+            w, h = dc.GetTextExtent(line)
             max_width = max(max_width, w)
             max_height += h
         return max_width, max_height
@@ -638,7 +651,7 @@ class ToolTip(wx.PopupWindow):
         dc.Clear()
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.Brush(wx.Colour(255, 238, 170)))
-        dc.SetFont(wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["mono"]))
+        dc.SetFont(self.Font)
         dc.BeginDrawing()
         w, h = self.GetTipExtent()
         dc.DrawRectangle(0, 0, w + 4, h + 4)
