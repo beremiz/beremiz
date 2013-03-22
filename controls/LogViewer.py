@@ -218,7 +218,7 @@ class LogButton():
             self.Position.y + (self.Size.height - h) / 2)
 
 DATE_INFO_SIZE = 10
-MESSAGE_INFO_SIZE = 25
+MESSAGE_INFO_SIZE = 18
 
 class LogMessage:
     
