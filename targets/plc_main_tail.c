@@ -26,7 +26,7 @@ void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t siz
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(&LogBuff[level][buffpos], buf, size);
     }else{
-        uint32_t remaining = LOG_BUFFER_SIZE - buffpos - 1; 
+        uint32_t remaining = LOG_BUFFER_SIZE - buffpos; 
         memcpy(&LogBuff[level][buffpos], buf, remaining);
         memcpy(LogBuff[level], (char*)buf + remaining, size - remaining);
     }
