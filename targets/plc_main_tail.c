@@ -58,7 +58,7 @@ typedef struct {
    |63 ... 32|31 ... 0|
    | Message | Buffer |
    | counter | Index  | */
-static uint64_t LogCursor[LOG_LEVELS] = {0x0,0x0,0x0,0x0};
+static uint64_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 
 /* Store one log message of give size */
 int LogMessage(uint8_t level, uint8_t* buf, uint32_t size){
