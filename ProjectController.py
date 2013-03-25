@@ -313,7 +313,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         if os.path.isfile(self._getIECrawcodepath()):
             self.ShowMethod("_showIECcode", True)
-
+        
+        self.UpdateMethodsFromPLCStatus()
+        
         return None
     
     def RecursiveConfNodeInfos(self, confnode):
@@ -1109,13 +1111,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                       ("_Disconnect", False)],
                    }.get(status,[]):
                 self.ShowMethod(*args)
-            {"Broken": self.logger.write_error,
-             None: lambda x: None}.get(
-                status, self.logger.write)(_("PLC state is \"%s\"\n")%_(status))
             self.previous_plcstate = status
             if self.AppFrame is not None:
                 self.AppFrame.RefreshStatusToolBar()
-    
+                if status == "Disconnected":
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 1)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText('', 2)
+                else:
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(
+                        _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(status, 2)
+                
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
         
