@@ -424,6 +424,7 @@ class LogViewer(DebugViewer, wx.Panel):
                 self.CurrentMessage = len(self.LogMessages) - 1
                 self.ResetMessageToolTip()
                 self.MessageToolTipTimer.Stop()
+                self.ParentWindow.SelectTab(self)
             self.NewDataAvailable(None)
     
     def FilterLogMessage(self, message, timestamp=None):

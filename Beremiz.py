@@ -130,7 +130,7 @@ if __name__ == '__main__':
         AddBitmapFolder(os.path.join(extension_folder, "images"))
         execfile(extfilename, locals())
 
-import wx.lib.buttons, wx.lib.statbmp
+import wx.lib.buttons, wx.lib.statbmp, wx.stc
 import cPickle
 import types, time, re, platform, time, traceback, commands
 
@@ -177,7 +177,17 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
         if self._bitmap:
             dc.DrawBitmap(self._bitmap, 0, 0, True)
 
-                        
+if wx.Platform == '__WXMSW__':
+    faces = {
+        'mono' : 'Courier New',
+        'size' : 8,
+    }
+else:
+    faces = {
+        'mono' : 'Courier',
+        'size' : 10,
+    }
+
 from threading import Lock,Timer,currentThread
 MainThread = currentThread().ident
 REFRESH_PERIOD = 0.1
@@ -185,10 +195,9 @@ from time import time as gettime
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output, risecall):
-        self.red_white = wx.TextAttr("RED", "WHITE")
-        self.red_yellow = wx.TextAttr("RED", "YELLOW")
-        self.black_white = wx.TextAttr("BLACK", "WHITE")
-        self.default_style = None
+        self.red_white = 1
+        self.red_yellow = 2
+        self.black_white = wx.stc.STC_STYLE_DEFAULT
         self.output = output
         self.risecall = risecall
         # to prevent rapid fire on rising log panel
@@ -243,14 +252,14 @@ class LogPseudoFile:
             self.lock.acquire()
             for s, style in self.stack:
                 if style is None : style=self.black_white
-                if self.default_style != style: 
-                    self.output.SetDefaultStyle(style)
-                    self.default_style = style
-                self.output.AppendText(s)
-                self.output.ScrollLines(s.count('\n')+1)
+                if style != self.black_white:
+                    self.output.StartStyling(self.output.GetLength(), 0xff)
+                self.output.AddText(s)
+                if style != self.black_white:
+                    self.output.SetStyling(len(s), style)
             self.stack = []
             self.lock.release()
-            self.output.ShowPosition(self.output.GetLastPosition())
+            self.output.ScrollToLine(self.output.GetLineCount())
             self.output.Thaw()
             self.LastRefreshTime = gettime()
             try:
@@ -259,7 +268,7 @@ class LogPseudoFile:
                 pass
             newtime = time.time()
             if newtime - self.rising_timer > 1:
-                self.risecall()
+                self.risecall(self.output)
             self.rising_timer = newtime
         
     def write_warning(self, s):
@@ -273,7 +282,7 @@ class LogPseudoFile:
         wx.GetApp().Yield()
 
     def flush(self):
-        self.output.SetValue("")
+        self.output.SetText("")
     
     def isatty(self):
         return false
@@ -379,18 +388,34 @@ class Beremiz(IDEFrame):
         
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
-        self.LogConsole = wx.TextCtrl(id=ID_BEREMIZLOGCONSOLE, value='',
+        self.LogConsole = wx.stc.StyledTextCtrl(id=ID_BEREMIZLOGCONSOLE,
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
-                  size=wx.Size(0, 0), style=wx.TE_MULTILINE|wx.TE_RICH2)
-        self.LogConsole.Bind(wx.EVT_LEFT_DCLICK, self.OnLogConsoleDClick)
+                  size=wx.Size(0, 0))
+        
+        # Define Log Console styles
+        self.LogConsole.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, "face:%(mono)s,size:%(size)d" % faces)
+        self.LogConsole.StyleClearAll()
+        self.LogConsole.StyleSetSpec(1, "face:%(mono)s,fore:#FF0000,size:%(size)d" % faces)
+        self.LogConsole.StyleSetSpec(2, "face:%(mono)s,fore:#FF0000,back:#FFFF00,size:%(size)d" % faces)
+        
+        # Define Log Console markers
+        self.LogConsole.SetMarginSensitive(1, True)
+        self.LogConsole.SetMarginType(1, wx.stc.STC_MARGIN_SYMBOL)
+        self.LogConsole.MarkerDefine(0, wx.stc.STC_MARK_CIRCLE, "BLACK", "RED")
+        
+        self.LogConsole.SetModEventMask(wx.stc.STC_MOD_INSERTTEXT)
+        
+        self.LogConsole.Bind(wx.stc.EVT_STC_MARGINCLICK, self.OnLogConsoleMarginClick)
+        self.LogConsole.Bind(wx.stc.EVT_STC_MODIFIED, self.OnLogConsoleModified)
+        
         self.MainTabs["LogConsole"] = (self.LogConsole, _("Console"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
+        #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
         self.LogViewer = LogViewer(self.BottomNoteBook, self)
         self.MainTabs["LogViewer"] = (self.LogViewer, _("PLC Log"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogViewer"])
         #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
-        self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
         
         StatusToolBar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
                 wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
@@ -406,7 +431,7 @@ class Beremiz(IDEFrame):
         
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
         IDEFrame.__init__(self, parent, debug)
-        self.Log = LogPseudoFile(self.LogConsole,self.RiseLogConsole)
+        self.Log = LogPseudoFile(self.LogConsole,self.SelectTab)
         
         self.local_runtime = None
         self.runtime_port = None
@@ -469,9 +494,6 @@ class Beremiz(IDEFrame):
         self.RefreshAll()
         self.LogConsole.SetFocus()
 
-    def RiseLogConsole(self):
-        self.BottomNoteBook.SetSelection(self.BottomNoteBook.GetPageIndex(self.LogConsole))
-        
     def RefreshTitle(self):
         name = _("Beremiz")
         if self.CTR is not None:
@@ -524,14 +546,22 @@ class Beremiz(IDEFrame):
             wnd = self
         InspectionTool().Show(wnd, True)
 
-    def OnLogConsoleDClick(self, event):
-        wx.CallAfter(self.SearchLineForError)
+    def OnLogConsoleMarginClick(self, event):
+        line_idx = self.LogConsole.LineFromPosition(event.GetPosition())
+        wx.CallAfter(self.SearchLineForError, self.LogConsole.GetLine(line_idx))
+        event.Skip()
+        
+    def OnLogConsoleModified(self, event):
+        line_idx = self.LogConsole.LineFromPosition(event.GetPosition())
+        line = self.LogConsole.GetLine(line_idx)
+        if line:
+            result = MATIEC_ERROR_MODEL.match(line)
+            if result is not None:
+                self.LogConsole.MarkerAdd(line_idx, 0)
         event.Skip()
 
-    def SearchLineForError(self):
+    def SearchLineForError(self, line):
         if self.CTR is not None:
-            text = self.LogConsole.GetRange(0, self.LogConsole.GetInsertionPoint())
-            line = self.LogConsole.GetLineText(len(text.splitlines()) - 1)
             result = MATIEC_ERROR_MODEL.match(line)
             if result is not None:
                 first_line, first_column, last_line, last_column, error = result.groups()
