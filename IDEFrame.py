@@ -714,6 +714,13 @@ class IDEFrame(wx.Frame):
             wx.CallAfter(self._Refresh, TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         event.Skip()
 
+    def SelectTab(self, tab):
+        for notebook in [self.LeftNoteBook, self.BottomNoteBook, self.RightNoteBook]:
+            idx = notebook.GetPageIndex(tab)
+            if idx != wx.NOT_FOUND:
+                notebook.SetSelection(idx)
+                return
+
 #-------------------------------------------------------------------------------
 #                Saving and restoring frame organization functions
 #-------------------------------------------------------------------------------
@@ -1234,7 +1241,7 @@ class IDEFrame(wx.Frame):
             result = self.Controler.SearchInProject(criteria)
             self.ClearSearchResults()
             self.SearchResultPanel.SetSearchResults(criteria, result)
-            self.BottomNoteBook.SetSelection(self.BottomNoteBook.GetPageIndex(self.SearchResultPanel))
+            self.SelectTab(self.SearchResultPanel)
             
 #-------------------------------------------------------------------------------
 #                             Display Menu Functions
