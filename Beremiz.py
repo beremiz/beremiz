@@ -364,6 +364,15 @@ class Beremiz(IDEFrame):
               kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
     
+    def _init_coll_ConnectionStatusBar_Fields(self, parent):
+        parent.SetFieldsCount(3)
+
+        parent.SetStatusText(number=0, text='')
+        parent.SetStatusText(number=1, text='')
+        parent.SetStatusText(number=2, text='')
+
+        parent.SetStatusWidths([-1, 300, 200])
+    
     def _init_ctrls(self, prnt):
         IDEFrame._init_ctrls(self, prnt)
         
@@ -428,6 +437,10 @@ class Beremiz(IDEFrame):
                   LeftDockable(False).RightDockable(False))
         
         self.AUIManager.Update()
+        
+        self.ConnectionStatusBar = wx.StatusBar(self, style=wx.ST_SIZEGRIP)
+        self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
+        self.SetStatusBar(self.ConnectionStatusBar)
         
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
         IDEFrame.__init__(self, parent, debug)
@@ -801,6 +814,10 @@ class Beremiz(IDEFrame):
     def GetConfigEntry(self, entry_name, default):
         return cPickle.loads(str(self.Config.Read(entry_name, cPickle.dumps(default))))
     
+    def ResetConnectionStatusBar(self):
+        for field in xrange(self.ConnectionStatusBar.GetFieldsCount()):
+            self.ConnectionStatusBar.SetStatusText('', field)
+    
     def ResetView(self):
         IDEFrame.ResetView(self)
         self.ConfNodeInfos = {}
@@ -810,6 +827,7 @@ class Beremiz(IDEFrame):
         self.Log.flush()
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(None)
+            self.ResetConnectionStatusBar()
     
     def RefreshConfigRecentProjects(self, projectpath):
         try:
