@@ -85,12 +85,35 @@ class LocationCellControl(wx.PyControl):
         dialog = BrowseLocationsDialog(self, self.VarType, self.Controller)
         if dialog.ShowModal() == wx.ID_OK:
             infos = dialog.GetValues()
-
-            # set the location
-            self.Location.SetValue(infos["location"])
-            self.VarType = infos["IEC_type"]
-
+        else:
+            infos = None
         dialog.Destroy()
+        
+        if infos is not None:
+            location = infos["location"]
+            # set the location
+            if not infos["location"].startswith("%"):
+                dialog = wx.SingleChoiceDialog(self, 
+                      _("Select a variable class:"), _("Variable class"), 
+                      ["Input", "Output", "Memory"], 
+                      wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                if dialog.ShowModal() == wx.ID_OK:
+                    selected = dialog.GetSelection()
+                else:
+                    selected = None
+                dialog.Destroy()
+                if selected is None:
+                    self.Location.SetFocus()
+                    return
+                if selected == 0:
+                    location = "%I" + location
+                elif selected == 1:
+                    location = "%Q" + location
+                else:
+                    location = "%M" + location
+            
+            self.Location.SetValue(location)
+            self.VarType = infos["IEC_type"]
 
         self.Location.SetFocus()
 
