@@ -9,5 +9,5 @@
 #define LOG_DEBUG 3
 
 extern unsigned long long common_ticktime__;
-int LogMessage(uint8_t level, uint8_t* buf, uint32_t size);
+int LogMessage(uint8_t level, char* buf, uint32_t size);
 

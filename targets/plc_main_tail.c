@@ -55,7 +55,7 @@ typedef struct {
 static uint64_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 
 /* Store one log message of give size */
-int LogMessage(uint8_t level, uint8_t* buf, uint32_t size){
+int LogMessage(uint8_t level, char* buf, uint32_t size){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
         uint32_t buffpos;
         uint64_t new_cursor, old_cursor;
