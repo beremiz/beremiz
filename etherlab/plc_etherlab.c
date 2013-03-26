@@ -38,6 +38,12 @@ static ec_master_t *master = NULL;
 static ec_domain_t *domain1 = NULL;
 static int first_sent=0;
 %(slaves_declaration)s
+#define SLOGF(level, format, args...)\
+{\
+    char sbuf[256];\
+    int slen = snprintf(sbuf , sizeof(sbuf) , format , ##args);\
+    LogMessage(level, sbuf, slen);\
+}
 
 /* Beremiz plugin functions */
 int __init_%(location)s(int argc,char **argv)
@@ -58,7 +64,7 @@ int __init_%(location)s(int argc,char **argv)
 %(slaves_configuration)s
 
     if (ecrt_domain_reg_pdo_entry_list(domain1, domain1_regs)) {
-        fprintf(stderr, "PDO entry registration failed!\n");
+        SLOGF(LOG_CRITICAL, "PDO entry registration failed!\n");
         return -1;
     }
 
@@ -73,7 +79,7 @@ int __init_%(location)s(int argc,char **argv)
     sprintf(&rt_dev_file[0],"%%s%%u",EC_RTDM_DEV_FILE_NAME,0);
     rt_fd = rt_dev_open( &rt_dev_file[0], 0);
     if (rt_fd < 0) {
-        fprintf(stderr, "Can't open %%s\n", &rt_dev_file[0]);
+        SLOGF(LOG_CRITICAL, "Can't open %%s\n", &rt_dev_file[0]);
         return -1;
     }
 
@@ -81,7 +87,7 @@ int __init_%(location)s(int argc,char **argv)
     MstrAttach.domainindex = ecrt_domain_index(domain1);
     rtstatus = ecrt_rtdm_master_attach(rt_fd, &MstrAttach);
     if (rtstatus < 0) {
-        fprintf(stderr, "Cannot attach to master over rtdm\n");
+        SLOGF(LOG_CRITICAL, "Cannot attach to master over rtdm\n");
         return -1;
     }
 
@@ -89,11 +95,11 @@ int __init_%(location)s(int argc,char **argv)
         return -1;
 
     if (!(domain1_pd = ecrt_domain_data(domain1))) {
-        fprintf(stderr, "domain1_pd:  0x%%.6lx\n", (unsigned long)domain1_pd);
+        SLOGF(LOG_CRITICAL, "domain1_pd:  0x%%.6lx\n", (unsigned long)domain1_pd);
         return -1;
     }
 
-    fprintf(stdout, "Master %(master_number)d activated...\n");
+    SLOGF(LOG_INFO, "Master %(master_number)d activated...\n");
     
     first_sent = 0;
 
