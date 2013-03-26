@@ -70,6 +70,10 @@ def GetTargetChoices():
 def GetTargetCode(targetname):
     return open(targets[targetname]["code"]).read()
 
+def GetHeader():
+    filename = path.join(path.split(__file__)[0],"beremiz.h")
+    return open(filename).read()
+
 def GetCode(name):
     filename = path.join(path.split(__file__)[0],name + ".c")
     return open(filename).read()
