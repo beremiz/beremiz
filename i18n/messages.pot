@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-07 01:17+0200\n"
+"POT-Creation-Date: 2013-03-26 22:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../PLCOpenEditor.py:520
+#: ../PLCOpenEditor.py:405
 msgid ""
 "\n"
 "An error has occurred.\n"
@@ -30,7 +30,7 @@ msgid ""
 "Error:\n"
 msgstr ""
 
-#: ../Beremiz.py:1071
+#: ../Beremiz.py:1119
 #, python-format
 msgid ""
 "\n"
@@ -69,7 +69,7 @@ msgstr ""
 msgid "   Temp"
 msgstr ""
 
-#: ../PLCOpenEditor.py:530
+#: ../PLCOpenEditor.py:415
 msgid " : "
 msgstr ""
 
@@ -79,7 +79,7 @@ msgstr ""
 msgid " and %s"
 msgstr ""
 
-#: ../ProjectController.py:890
+#: ../ProjectController.py:917
 msgid " generation failed !\n"
 msgstr ""
 
@@ -103,7 +103,7 @@ msgstr ""
 msgid "\"%s\" can't use itself!"
 msgstr ""
 
-#: ../IDEFrame.py:1706 ../IDEFrame.py:1725
+#: ../IDEFrame.py:1587 ../IDEFrame.py:1606
 #, python-format
 msgid "\"%s\" config already exists!"
 msgstr ""
@@ -113,38 +113,38 @@ msgstr ""
 msgid "\"%s\" configuration already exists !!!"
 msgstr ""
 
-#: ../IDEFrame.py:1660
+#: ../IDEFrame.py:1541
 #, python-format
 msgid "\"%s\" data type already exists!"
 msgstr ""
 
-#: ../PLCControler.py:2040 ../PLCControler.py:2044
+#: ../PLCControler.py:2165 ../PLCControler.py:2169
 #, python-format
 msgid "\"%s\" element can't be pasted here!!!"
 msgstr ""
 
-#: ../editors/TextViewer.py:305 ../editors/TextViewer.py:325
-#: ../editors/Viewer.py:252 ../dialogs/PouTransitionDialog.py:105
-#: ../dialogs/ConnectionDialog.py:150 ../dialogs/PouActionDialog.py:102
+#: ../editors/TextViewer.py:298 ../editors/TextViewer.py:318
+#: ../editors/Viewer.py:250 ../dialogs/PouTransitionDialog.py:105
+#: ../dialogs/ConnectionDialog.py:157 ../dialogs/PouActionDialog.py:102
 #: ../dialogs/FBDBlockDialog.py:162
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
 msgstr ""
 
-#: ../Beremiz.py:894
+#: ../Beremiz.py:921
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr ""
 
-#: ../plcopen/structures.py:106
+#: ../plcopen/structures.py:105
 #, python-format
 msgid "\"%s\" function cancelled in \"%s\" POU: No input connected"
 msgstr ""
 
-#: ../controls/VariablePanel.py:656 ../IDEFrame.py:1651
-#: ../editors/DataTypeEditor.py:548 ../editors/DataTypeEditor.py:577
+#: ../controls/VariablePanel.py:659 ../IDEFrame.py:1532
+#: ../editors/DataTypeEditor.py:554 ../editors/DataTypeEditor.py:583
 #: ../dialogs/PouNameDialog.py:49 ../dialogs/PouTransitionDialog.py:101
-#: ../dialogs/SFCStepNameDialog.py:51 ../dialogs/ConnectionDialog.py:146
+#: ../dialogs/SFCStepNameDialog.py:51 ../dialogs/ConnectionDialog.py:153
 #: ../dialogs/FBDVariableDialog.py:199 ../dialogs/PouActionDialog.py:98
 #: ../dialogs/PouDialog.py:118 ../dialogs/SFCStepDialog.py:122
 #: ../dialogs/FBDBlockDialog.py:158
@@ -152,41 +152,41 @@ msgstr ""
 msgid "\"%s\" is a keyword. It can't be used!"
 msgstr ""
 
-#: ../editors/Viewer.py:240
+#: ../editors/Viewer.py:238
 #, python-format
 msgid "\"%s\" is already used by \"%s\"!"
 msgstr ""
 
-#: ../plcopen/plcopen.py:2786
+#: ../plcopen/plcopen.py:2836
 #, python-format
 msgid "\"%s\" is an invalid value!"
 msgstr ""
 
-#: ../PLCOpenEditor.py:362 ../PLCOpenEditor.py:399
+#: ../PLCOpenEditor.py:341 ../PLCOpenEditor.py:378
 #, python-format
 msgid "\"%s\" is not a valid folder!"
 msgstr ""
 
-#: ../controls/VariablePanel.py:654 ../IDEFrame.py:1649
-#: ../editors/DataTypeEditor.py:572 ../dialogs/PouNameDialog.py:47
+#: ../controls/VariablePanel.py:657 ../IDEFrame.py:1530
+#: ../editors/DataTypeEditor.py:578 ../dialogs/PouNameDialog.py:47
 #: ../dialogs/PouTransitionDialog.py:99 ../dialogs/SFCStepNameDialog.py:49
-#: ../dialogs/ConnectionDialog.py:144 ../dialogs/PouActionDialog.py:96
+#: ../dialogs/ConnectionDialog.py:151 ../dialogs/PouActionDialog.py:96
 #: ../dialogs/PouDialog.py:116 ../dialogs/SFCStepDialog.py:120
 #: ../dialogs/FBDBlockDialog.py:156
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
 msgstr ""
 
-#: ../IDEFrame.py:214 ../IDEFrame.py:2445 ../IDEFrame.py:2464
+#: ../IDEFrame.py:221 ../IDEFrame.py:2313 ../IDEFrame.py:2332
 #, python-format
 msgid "\"%s\" is used by one or more POUs. It can't be removed!"
 msgstr ""
 
-#: ../controls/VariablePanel.py:311 ../IDEFrame.py:1669
-#: ../editors/TextViewer.py:303 ../editors/TextViewer.py:323
-#: ../editors/TextViewer.py:360 ../editors/Viewer.py:250
-#: ../editors/Viewer.py:295 ../editors/Viewer.py:312
-#: ../dialogs/ConnectionDialog.py:148 ../dialogs/PouDialog.py:120
+#: ../controls/VariablePanel.py:313 ../IDEFrame.py:1550
+#: ../editors/TextViewer.py:296 ../editors/TextViewer.py:316
+#: ../editors/TextViewer.py:353 ../editors/Viewer.py:248
+#: ../editors/Viewer.py:293 ../editors/Viewer.py:311
+#: ../dialogs/ConnectionDialog.py:155 ../dialogs/PouDialog.py:120
 #: ../dialogs/FBDBlockDialog.py:160
 #, python-format
 msgid "\"%s\" pou already exists!"
@@ -207,29 +207,29 @@ msgstr ""
 msgid "\"%s\" step already exists!"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:543
+#: ../editors/DataTypeEditor.py:549
 #, python-format
 msgid "\"%s\" value already defined!"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:719 ../dialogs/ArrayTypeDialog.py:97
+#: ../editors/DataTypeEditor.py:744 ../dialogs/ArrayTypeDialog.py:97
 #, python-format
 msgid "\"%s\" value isn't a valid array dimension!"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:726 ../dialogs/ArrayTypeDialog.py:103
+#: ../editors/DataTypeEditor.py:751 ../dialogs/ArrayTypeDialog.py:103
 #, python-format
 msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
 msgstr ""
 
-#: ../PLCControler.py:793
+#: ../PLCControler.py:847
 #, python-format
 msgid "%s \"%s\" can't be pasted as a %s."
 msgstr ""
 
-#: ../PLCControler.py:1422
+#: ../PLCControler.py:1476
 #, python-format
 msgid "%s Data Types"
 msgstr ""
@@ -239,86 +239,86 @@ msgstr ""
 msgid "%s Graphics"
 msgstr ""
 
-#: ../PLCControler.py:1417
+#: ../PLCControler.py:1471
 #, python-format
 msgid "%s POUs"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:42 ../canfestival/NetworkEditor.py:72
+#: ../canfestival/SlaveEditor.py:46 ../canfestival/NetworkEditor.py:67
 #, python-format
 msgid "%s Profile"
 msgstr ""
 
-#: ../plcopen/plcopen.py:1780 ../plcopen/plcopen.py:1790
-#: ../plcopen/plcopen.py:1800 ../plcopen/plcopen.py:1810
-#: ../plcopen/plcopen.py:1819
+#: ../plcopen/plcopen.py:1790 ../plcopen/plcopen.py:1800
+#: ../plcopen/plcopen.py:1810 ../plcopen/plcopen.py:1820
+#: ../plcopen/plcopen.py:1829
 #, python-format
 msgid "%s body don't have instances!"
 msgstr ""
 
-#: ../plcopen/plcopen.py:1842 ../plcopen/plcopen.py:1849
+#: ../plcopen/plcopen.py:1852 ../plcopen/plcopen.py:1859
 #, python-format
 msgid "%s body don't have text!"
 msgstr ""
 
-#: ../IDEFrame.py:364
+#: ../IDEFrame.py:369
 msgid "&Add Element"
 msgstr ""
 
-#: ../IDEFrame.py:334
+#: ../IDEFrame.py:339
 msgid "&Configuration"
 msgstr ""
 
-#: ../IDEFrame.py:325
+#: ../IDEFrame.py:330
 msgid "&Data Type"
 msgstr ""
 
-#: ../IDEFrame.py:368
+#: ../IDEFrame.py:373
 msgid "&Delete"
 msgstr ""
 
-#: ../IDEFrame.py:317
+#: ../IDEFrame.py:322
 msgid "&Display"
 msgstr ""
 
-#: ../IDEFrame.py:316
+#: ../IDEFrame.py:321
 msgid "&Edit"
 msgstr ""
 
-#: ../IDEFrame.py:315
+#: ../IDEFrame.py:320
 msgid "&File"
 msgstr ""
 
-#: ../IDEFrame.py:327
+#: ../IDEFrame.py:332
 msgid "&Function"
 msgstr ""
 
-#: ../IDEFrame.py:318
+#: ../IDEFrame.py:323
 msgid "&Help"
 msgstr ""
 
-#: ../IDEFrame.py:331
+#: ../IDEFrame.py:336
 msgid "&Program"
 msgstr ""
 
-#: ../PLCOpenEditor.py:148
+#: ../PLCOpenEditor.py:129
 msgid "&Properties"
 msgstr ""
 
-#: ../Beremiz.py:310
+#: ../Beremiz.py:312
 msgid "&Recent Projects"
 msgstr ""
 
-#: ../Beremiz.py:352
+#: ../Beremiz.py:354
 msgid "&Resource"
 msgstr ""
 
-#: ../controls/SearchResultPanel.py:237
+#: ../controls/SearchResultPanel.py:252
 #, python-format
 msgid "'%s' - %d match in project"
 msgstr ""
 
-#: ../controls/SearchResultPanel.py:239
+#: ../controls/SearchResultPanel.py:254
 #, python-format
 msgid "'%s' - %d matches in project"
 msgstr ""
@@ -328,12 +328,12 @@ msgstr ""
 msgid "'%s' is located at %s\n"
 msgstr ""
 
-#: ../controls/SearchResultPanel.py:289
+#: ../controls/SearchResultPanel.py:304
 #, python-format
 msgid "(%d matches)"
 msgstr ""
 
-#: ../PLCOpenEditor.py:508 ../PLCOpenEditor.py:510 ../PLCOpenEditor.py:511
+#: ../PLCOpenEditor.py:393 ../PLCOpenEditor.py:395 ../PLCOpenEditor.py:396
 msgid ",   "
 msgstr ""
 
@@ -343,21 +343,21 @@ msgstr ""
 msgid ", %s"
 msgstr ""
 
-#: ../PLCOpenEditor.py:506
+#: ../PLCOpenEditor.py:391
 msgid ". "
 msgstr ""
 
-#: ../ProjectController.py:1268
+#: ../ProjectController.py:1294
 msgid "... debugger recovered\n"
 msgstr ""
 
-#: ../IDEFrame.py:1672 ../IDEFrame.py:1714 ../IDEFrame.py:1733
+#: ../IDEFrame.py:1553 ../IDEFrame.py:1595 ../IDEFrame.py:1614
 #: ../dialogs/PouDialog.py:122
 #, python-format
 msgid "A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr ""
 
-#: ../controls/VariablePanel.py:658 ../IDEFrame.py:1684 ../IDEFrame.py:1695
+#: ../controls/VariablePanel.py:661 ../IDEFrame.py:1565 ../IDEFrame.py:1576
 #: ../dialogs/PouNameDialog.py:51 ../dialogs/PouTransitionDialog.py:103
 #: ../dialogs/SFCStepNameDialog.py:53 ../dialogs/PouActionDialog.py:100
 #: ../dialogs/SFCStepDialog.py:124
@@ -365,30 +365,30 @@ msgstr ""
 msgid "A POU named \"%s\" already exists!"
 msgstr ""
 
-#: ../ConfigTreeNode.py:371
+#: ../ConfigTreeNode.py:388
 #, python-format
 msgid "A child named \"%s\" already exist -> \"%s\"\n"
 msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:175
+#: ../dialogs/BrowseLocationsDialog.py:212
 msgid "A location must be selected!"
 msgstr ""
 
-#: ../controls/VariablePanel.py:660 ../IDEFrame.py:1686 ../IDEFrame.py:1697
+#: ../controls/VariablePanel.py:663 ../IDEFrame.py:1567 ../IDEFrame.py:1578
 #: ../dialogs/SFCStepNameDialog.py:55 ../dialogs/SFCStepDialog.py:126
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
 msgstr ""
 
-#: ../Beremiz.py:362 ../PLCOpenEditor.py:181
+#: ../Beremiz.py:364 ../PLCOpenEditor.py:162
 msgid "About"
 msgstr ""
 
-#: ../Beremiz.py:931
+#: ../Beremiz.py:957
 msgid "About Beremiz"
 msgstr ""
 
-#: ../PLCOpenEditor.py:376
+#: ../PLCOpenEditor.py:355
 msgid "About PLCOpenEditor"
 msgstr ""
 
@@ -400,7 +400,7 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-#: ../editors/Viewer.py:495
+#: ../editors/Viewer.py:494
 msgid "Action Block"
 msgstr ""
 
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Action Name:"
 msgstr ""
 
-#: ../plcopen/plcopen.py:1480
+#: ../plcopen/plcopen.py:1490
 #, python-format
 msgid "Action with name %s doesn't exist!"
 msgstr ""
@@ -425,28 +425,32 @@ msgstr ""
 msgid "Actions:"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:54 ../canfestival/NetworkEditor.py:84
-#: ../editors/Viewer.py:527
+#: ../editors/Viewer.py:999
+msgid "Active"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:57 ../canfestival/NetworkEditor.py:78
+#: ../Beremiz.py:987 ../editors/Viewer.py:527
 msgid "Add"
 msgstr ""
 
-#: ../IDEFrame.py:1925 ../IDEFrame.py:1956
+#: ../IDEFrame.py:1801 ../IDEFrame.py:1832
 msgid "Add Action"
 msgstr ""
 
-#: ../features.py:7
+#: ../features.py:8
 msgid "Add C code accessing located variables synchronously"
 msgstr ""
 
-#: ../IDEFrame.py:1908
+#: ../IDEFrame.py:1784
 msgid "Add Configuration"
 msgstr ""
 
-#: ../IDEFrame.py:1888
+#: ../IDEFrame.py:1764
 msgid "Add DataType"
 msgstr ""
 
-#: ../editors/Viewer.py:453
+#: ../editors/Viewer.py:452
 msgid "Add Divergence Branch"
 msgstr ""
 
@@ -454,23 +458,23 @@ msgstr ""
 msgid "Add IP"
 msgstr ""
 
-#: ../IDEFrame.py:1896
+#: ../IDEFrame.py:1772
 msgid "Add POU"
 msgstr ""
 
-#: ../features.py:8
+#: ../features.py:9
 msgid "Add Python code executed asynchronously"
 msgstr ""
 
-#: ../IDEFrame.py:1936 ../IDEFrame.py:1982
+#: ../IDEFrame.py:1812 ../IDEFrame.py:1858
 msgid "Add Resource"
 msgstr ""
 
-#: ../IDEFrame.py:1914 ../IDEFrame.py:1953
+#: ../IDEFrame.py:1790 ../IDEFrame.py:1829
 msgid "Add Transition"
 msgstr ""
 
-#: ../editors/Viewer.py:442
+#: ../editors/Viewer.py:441
 msgid "Add Wire Segment"
 msgstr ""
 
@@ -478,7 +482,7 @@ msgstr ""
 msgid "Add a new initial step"
 msgstr ""
 
-#: ../editors/Viewer.py:2289 ../editors/SFCViewer.py:696
+#: ../editors/Viewer.py:2363 ../editors/SFCViewer.py:696
 msgid "Add a new jump"
 msgstr ""
 
@@ -486,7 +490,7 @@ msgstr ""
 msgid "Add a new step"
 msgstr ""
 
-#: ../features.py:9
+#: ../features.py:10
 msgid "Add a simple WxGlade based GUI."
 msgstr ""
 
@@ -494,23 +498,23 @@ msgstr ""
 msgid "Add action"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:345
+#: ../editors/DataTypeEditor.py:351
 msgid "Add element"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:251
+#: ../editors/ResourceEditor.py:259
 msgid "Add instance"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:86
+#: ../canfestival/NetworkEditor.py:80
 msgid "Add slave"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:222
+#: ../editors/ResourceEditor.py:230
 msgid "Add task"
 msgstr ""
 
-#: ../controls/VariablePanel.py:378
+#: ../controls/VariablePanel.py:380 ../c_ext/CFileEditor.py:517
 msgid "Add variable"
 msgstr ""
 
@@ -518,16 +522,22 @@ msgstr ""
 msgid "Addition"
 msgstr ""
 
-#: ../plcopen/structures.py:250
+#: ../plcopen/structures.py:249
 msgid "Additional function blocks"
 msgstr ""
 
-#: ../editors/Viewer.py:1395
+#: ../editors/Viewer.py:510
+msgid "Adjust Block Size"
+msgstr ""
+
+#: ../editors/Viewer.py:1458
 msgid "Alignment"
 msgstr ""
 
-#: ../controls/VariablePanel.py:75 ../dialogs/BrowseLocationsDialog.py:35
-#: ../dialogs/BrowseLocationsDialog.py:116
+#: ../controls/VariablePanel.py:75 ../dialogs/BrowseLocationsDialog.py:34
+#: ../dialogs/BrowseLocationsDialog.py:43
+#: ../dialogs/BrowseLocationsDialog.py:136
+#: ../dialogs/BrowseLocationsDialog.py:139
 msgid "All"
 msgstr ""
 
@@ -535,13 +545,17 @@ msgstr ""
 msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
 msgstr ""
 
-#: ../ProjectController.py:1335
+#: ../ProjectController.py:1373
 msgid "Already connected. Please disconnect\n"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:587
+#: ../editors/DataTypeEditor.py:593
 #, python-format
 msgid "An element named \"%s\" already exists in this structure!"
+msgstr ""
+
+#: ../dialogs/ConnectionDialog.py:98
+msgid "Apply name modification to all continuations with the same name"
 msgstr ""
 
 #: ../plcopen/iec_std.csv:31
@@ -560,7 +574,8 @@ msgstr ""
 msgid "Arithmetic"
 msgstr ""
 
-#: ../controls/VariablePanel.py:729 ../editors/DataTypeEditor.py:52
+#: ../controls/VariablePanel.py:732 ../editors/DataTypeEditor.py:54
+#: ../editors/DataTypeEditor.py:634
 msgid "Array"
 msgstr ""
 
@@ -597,16 +612,16 @@ msgstr ""
 msgid "Bad location size : %s"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:168 ../editors/DataTypeEditor.py:198
-#: ../editors/DataTypeEditor.py:290 ../dialogs/ArrayTypeDialog.py:55
+#: ../editors/DataTypeEditor.py:174 ../editors/DataTypeEditor.py:204
+#: ../editors/DataTypeEditor.py:296 ../dialogs/ArrayTypeDialog.py:55
 msgid "Base Type:"
 msgstr ""
 
-#: ../controls/VariablePanel.py:699 ../editors/DataTypeEditor.py:617
+#: ../controls/VariablePanel.py:702 ../editors/DataTypeEditor.py:624
 msgid "Base Types"
 msgstr ""
 
-#: ../Beremiz.py:486
+#: ../Beremiz.py:511
 msgid "Beremiz"
 msgstr ""
 
@@ -638,7 +653,7 @@ msgstr ""
 msgid "Bitwise inverting"
 msgstr ""
 
-#: ../editors/Viewer.py:465
+#: ../editors/Viewer.py:464
 msgid "Block"
 msgstr ""
 
@@ -646,7 +661,7 @@ msgstr ""
 msgid "Block Properties"
 msgstr ""
 
-#: ../editors/Viewer.py:434
+#: ../editors/Viewer.py:433
 msgid "Bottom"
 msgstr ""
 
@@ -655,31 +670,35 @@ msgstr ""
 msgid "Browse %s values library"
 msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:55
+#: ../dialogs/BrowseLocationsDialog.py:61
 msgid "Browse Locations"
 msgstr ""
 
-#: ../ProjectController.py:1484
+#: ../ProjectController.py:1519
 msgid "Build"
 msgstr ""
 
-#: ../ProjectController.py:1051
+#: ../ProjectController.py:1079
 msgid "Build directory already clean\n"
 msgstr ""
 
-#: ../ProjectController.py:1485
+#: ../ProjectController.py:1520
 msgid "Build project into build folder"
 msgstr ""
 
-#: ../ProjectController.py:910
+#: ../ProjectController.py:937
 msgid "C Build crashed !\n"
 msgstr ""
 
-#: ../ProjectController.py:907
+#: ../ProjectController.py:934
 msgid "C Build failed.\n"
 msgstr ""
 
-#: ../ProjectController.py:895
+#: ../c_ext/CFileEditor.py:731
+msgid "C code"
+msgstr ""
+
+#: ../ProjectController.py:922
 msgid "C code generated successfully.\n"
 msgstr ""
 
@@ -688,16 +707,24 @@ msgstr ""
 msgid "C compilation of %s failed.\n"
 msgstr ""
 
-#: ../features.py:7
+#: ../features.py:8
 msgid "C extension"
 msgstr ""
 
-#: ../features.py:6
+#: ../canfestival/NetworkEditor.py:29
+msgid "CANOpen network"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:21
+msgid "CANOpen slave"
+msgstr ""
+
+#: ../features.py:7
 msgid "CANopen support"
 msgstr ""
 
-#: ../plcopen/plcopen.py:1722 ../plcopen/plcopen.py:1736
-#: ../plcopen/plcopen.py:1757 ../plcopen/plcopen.py:1773
+#: ../plcopen/plcopen.py:1732 ../plcopen/plcopen.py:1746
+#: ../plcopen/plcopen.py:1767 ../plcopen/plcopen.py:1783
 msgid "Can only generate execution order on FBD networks!"
 msgstr ""
 
@@ -705,7 +732,7 @@ msgstr ""
 msgid "Can only give a location to local or global variables"
 msgstr ""
 
-#: ../PLCOpenEditor.py:357
+#: ../PLCOpenEditor.py:336
 #, python-format
 msgid "Can't generate program to file %s!"
 msgstr ""
@@ -714,21 +741,21 @@ msgstr ""
 msgid "Can't give a location to a function block instance"
 msgstr ""
 
-#: ../PLCOpenEditor.py:397
+#: ../PLCOpenEditor.py:376
 #, python-format
 msgid "Can't save project to file %s!"
 msgstr ""
 
-#: ../controls/VariablePanel.py:298
+#: ../controls/VariablePanel.py:300
 msgid "Can't set an initial value to a function block instance"
 msgstr ""
 
-#: ../ConfigTreeNode.py:470
+#: ../ConfigTreeNode.py:490
 #, python-format
 msgid "Cannot create child %s of type %s "
 msgstr ""
 
-#: ../ConfigTreeNode.py:400
+#: ../ConfigTreeNode.py:417
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
 msgstr ""
@@ -737,7 +764,7 @@ msgstr ""
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr ""
 
-#: ../ProjectController.py:715
+#: ../ProjectController.py:737
 msgid "Cannot open/parse VARIABLES.csv!\n"
 msgstr ""
 
@@ -750,27 +777,27 @@ msgstr ""
 msgid "Case sensitive"
 msgstr ""
 
-#: ../editors/Viewer.py:429
+#: ../editors/Viewer.py:428
 msgid "Center"
 msgstr ""
 
-#: ../Beremiz_service.py:322
+#: ../Beremiz_service.py:326
 msgid "Change IP of interface to bind"
 msgstr ""
 
-#: ../Beremiz_service.py:321
+#: ../Beremiz_service.py:325
 msgid "Change Name"
 msgstr ""
 
-#: ../IDEFrame.py:1974
+#: ../IDEFrame.py:1850
 msgid "Change POU Type To"
 msgstr ""
 
-#: ../Beremiz_service.py:325
+#: ../Beremiz_service.py:327
 msgid "Change Port Number"
 msgstr ""
 
-#: ../Beremiz_service.py:327
+#: ../Beremiz_service.py:328
 msgid "Change working directory"
 msgstr ""
 
@@ -782,16 +809,16 @@ msgstr ""
 msgid "Choose a SVG file"
 msgstr ""
 
-#: ../ProjectController.py:353
+#: ../ProjectController.py:364
 msgid "Choose a directory to save project"
 msgstr ""
 
-#: ../canfestival/canfestival.py:118 ../PLCOpenEditor.py:313
-#: ../PLCOpenEditor.py:347 ../PLCOpenEditor.py:391
+#: ../canfestival/canfestival.py:136 ../PLCOpenEditor.py:294
+#: ../PLCOpenEditor.py:326 ../PLCOpenEditor.py:370
 msgid "Choose a file"
 msgstr ""
 
-#: ../Beremiz.py:831 ../Beremiz.py:866
+#: ../Beremiz.py:858 ../Beremiz.py:893
 msgid "Choose a project"
 msgstr ""
 
@@ -800,15 +827,15 @@ msgstr ""
 msgid "Choose a value for %s:"
 msgstr ""
 
-#: ../Beremiz_service.py:373
+#: ../Beremiz_service.py:378
 msgid "Choose a working directory "
 msgstr ""
 
-#: ../ProjectController.py:281
+#: ../ProjectController.py:288
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
 msgstr ""
 
-#: ../ProjectController.py:247
+#: ../ProjectController.py:255
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr ""
 
@@ -816,7 +843,7 @@ msgstr ""
 msgid "Class"
 msgstr ""
 
-#: ../controls/VariablePanel.py:369
+#: ../controls/VariablePanel.py:371
 msgid "Class Filter:"
 msgstr ""
 
@@ -824,19 +851,19 @@ msgstr ""
 msgid "Class:"
 msgstr ""
 
-#: ../ProjectController.py:1488
+#: ../ProjectController.py:1523
 msgid "Clean"
 msgstr ""
 
-#: ../ProjectController.py:1490
+#: ../ProjectController.py:1525
 msgid "Clean project build folder"
 msgstr ""
 
-#: ../ProjectController.py:1048
+#: ../ProjectController.py:1076
 msgid "Cleaning the build directory\n"
 msgstr ""
 
-#: ../IDEFrame.py:411
+#: ../IDEFrame.py:416
 msgid "Clear Errors"
 msgstr ""
 
@@ -848,24 +875,24 @@ msgstr ""
 msgid "Clear the graph values"
 msgstr ""
 
-#: ../Beremiz.py:598 ../PLCOpenEditor.py:221
+#: ../Beremiz.py:633 ../PLCOpenEditor.py:202
 msgid "Close Application"
 msgstr ""
 
-#: ../IDEFrame.py:1089 ../Beremiz.py:319 ../Beremiz.py:552
-#: ../PLCOpenEditor.py:131
+#: ../IDEFrame.py:972 ../Beremiz.py:321 ../Beremiz.py:587
+#: ../PLCOpenEditor.py:112
 msgid "Close Project"
 msgstr ""
 
-#: ../Beremiz.py:317 ../PLCOpenEditor.py:129
+#: ../Beremiz.py:319 ../PLCOpenEditor.py:110
 msgid "Close Tab"
 msgstr ""
 
-#: ../editors/Viewer.py:481
+#: ../editors/Viewer.py:480
 msgid "Coil"
 msgstr ""
 
-#: ../editors/Viewer.py:501 ../editors/LDViewer.py:503
+#: ../editors/Viewer.py:500 ../editors/LDViewer.py:506
 msgid "Comment"
 msgstr ""
 
@@ -881,12 +908,20 @@ msgstr ""
 msgid "Comparison"
 msgstr ""
 
-#: ../ProjectController.py:538
+#: ../ProjectController.py:552
 msgid "Compiling IEC Program into C code...\n"
 msgstr ""
 
 #: ../plcopen/iec_std.csv:85
 msgid "Concatenation"
+msgstr ""
+
+#: ../editors/ConfTreeNodeEditor.py:249
+msgid "Config"
+msgstr ""
+
+#: ../editors/ProjectNodeEditor.py:13
+msgid "Config variables"
 msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:47
@@ -897,12 +932,17 @@ msgstr ""
 msgid "Configurations"
 msgstr ""
 
-#: ../ProjectController.py:1503
+#: ../ProjectController.py:1538
 msgid "Connect"
 msgstr ""
 
-#: ../ProjectController.py:1504
+#: ../ProjectController.py:1539
 msgid "Connect to the target PLC"
+msgstr ""
+
+#: ../ProjectController.py:1125
+#, python-format
+msgid "Connected to URI: %s"
 msgstr ""
 
 #: ../connectors/PYRO/__init__.py:40
@@ -910,7 +950,7 @@ msgstr ""
 msgid "Connecting to URI : %s\n"
 msgstr ""
 
-#: ../editors/Viewer.py:467 ../dialogs/SFCTransitionDialog.py:76
+#: ../editors/Viewer.py:466 ../dialogs/SFCTransitionDialog.py:76
 msgid "Connection"
 msgstr ""
 
@@ -918,11 +958,11 @@ msgstr ""
 msgid "Connection Properties"
 msgstr ""
 
-#: ../ProjectController.py:1359
+#: ../ProjectController.py:1397
 msgid "Connection canceled!\n"
 msgstr ""
 
-#: ../ProjectController.py:1384
+#: ../ProjectController.py:1422
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr ""
@@ -932,7 +972,7 @@ msgstr ""
 msgid "Connection to '%s' failed.\n"
 msgstr ""
 
-#: ../dialogs/ConnectionDialog.py:56
+#: ../editors/Viewer.py:1426 ../dialogs/ConnectionDialog.py:56
 msgid "Connector"
 msgstr ""
 
@@ -940,11 +980,15 @@ msgstr ""
 msgid "Connectors:"
 msgstr ""
 
+#: ../Beremiz.py:420
+msgid "Console"
+msgstr ""
+
 #: ../controls/VariablePanel.py:65
 msgid "Constant"
 msgstr ""
 
-#: ../editors/Viewer.py:477
+#: ../editors/Viewer.py:476
 msgid "Contact"
 msgstr ""
 
@@ -952,7 +996,7 @@ msgstr ""
 msgid "Content Description (optional):"
 msgstr ""
 
-#: ../dialogs/ConnectionDialog.py:61
+#: ../editors/Viewer.py:1427 ../dialogs/ConnectionDialog.py:61
 msgid "Continuation"
 msgstr ""
 
@@ -972,19 +1016,19 @@ msgstr ""
 msgid "Conversion to time-of-day"
 msgstr ""
 
-#: ../IDEFrame.py:348 ../IDEFrame.py:401 ../editors/Viewer.py:536
+#: ../IDEFrame.py:353 ../IDEFrame.py:406 ../editors/Viewer.py:536
 msgid "Copy"
 msgstr ""
 
-#: ../IDEFrame.py:1961
+#: ../IDEFrame.py:1837
 msgid "Copy POU"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:283
+#: ../editors/FileManagementPanel.py:65
 msgid "Copy file from left folder to right"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:282
+#: ../editors/FileManagementPanel.py:64
 msgid "Copy file from right folder to left"
 msgstr ""
 
@@ -992,40 +1036,40 @@ msgstr ""
 msgid "Cosine"
 msgstr ""
 
-#: ../ConfigTreeNode.py:582
+#: ../ConfigTreeNode.py:602
 #, python-format
 msgid ""
 "Could not add child \"%s\", type %s :\n"
 "%s\n"
 msgstr ""
 
-#: ../ConfigTreeNode.py:559
+#: ../ConfigTreeNode.py:579
 #, python-format
 msgid ""
 "Couldn't load confnode base parameters %s :\n"
 " %s"
 msgstr ""
 
-#: ../ConfigTreeNode.py:570
+#: ../ConfigTreeNode.py:590
 #, python-format
 msgid ""
 "Couldn't load confnode parameters %s :\n"
 " %s"
 msgstr ""
 
-#: ../PLCControler.py:765 ../PLCControler.py:802
+#: ../PLCControler.py:819 ../PLCControler.py:856
 msgid "Couldn't paste non-POU object."
 msgstr ""
 
-#: ../ProjectController.py:1317
+#: ../ProjectController.py:1344
 msgid "Couldn't start PLC !\n"
 msgstr ""
 
-#: ../ProjectController.py:1325
+#: ../ProjectController.py:1352
 msgid "Couldn't stop PLC !\n"
 msgstr ""
 
-#: ../ProjectController.py:1295
+#: ../ProjectController.py:1321
 msgid "Couldn't stop debugger.\n"
 msgstr ""
 
@@ -1041,35 +1085,35 @@ msgstr ""
 msgid "Create a new action"
 msgstr ""
 
-#: ../IDEFrame.py:135
+#: ../IDEFrame.py:142
 msgid "Create a new action block"
 msgstr ""
 
-#: ../IDEFrame.py:84 ../IDEFrame.py:114 ../IDEFrame.py:147
+#: ../IDEFrame.py:91 ../IDEFrame.py:121 ../IDEFrame.py:154
 msgid "Create a new block"
 msgstr ""
 
-#: ../IDEFrame.py:108
+#: ../IDEFrame.py:115
 msgid "Create a new branch"
 msgstr ""
 
-#: ../IDEFrame.py:102
+#: ../IDEFrame.py:109
 msgid "Create a new coil"
 msgstr ""
 
-#: ../IDEFrame.py:78 ../IDEFrame.py:93 ../IDEFrame.py:123
+#: ../IDEFrame.py:85 ../IDEFrame.py:100 ../IDEFrame.py:130
 msgid "Create a new comment"
 msgstr ""
 
-#: ../IDEFrame.py:87 ../IDEFrame.py:117 ../IDEFrame.py:150
+#: ../IDEFrame.py:94 ../IDEFrame.py:124 ../IDEFrame.py:157
 msgid "Create a new connection"
 msgstr ""
 
-#: ../IDEFrame.py:105 ../IDEFrame.py:156
+#: ../IDEFrame.py:112 ../IDEFrame.py:163
 msgid "Create a new contact"
 msgstr ""
 
-#: ../IDEFrame.py:138
+#: ../IDEFrame.py:145
 msgid "Create a new divergence"
 msgstr ""
 
@@ -1077,39 +1121,39 @@ msgstr ""
 msgid "Create a new divergence or convergence"
 msgstr ""
 
-#: ../IDEFrame.py:126
+#: ../IDEFrame.py:133
 msgid "Create a new initial step"
 msgstr ""
 
-#: ../IDEFrame.py:141
+#: ../IDEFrame.py:148
 msgid "Create a new jump"
 msgstr ""
 
-#: ../IDEFrame.py:96 ../IDEFrame.py:153
+#: ../IDEFrame.py:103 ../IDEFrame.py:160
 msgid "Create a new power rail"
 msgstr ""
 
-#: ../IDEFrame.py:99
+#: ../IDEFrame.py:106
 msgid "Create a new rung"
 msgstr ""
 
-#: ../IDEFrame.py:129
+#: ../IDEFrame.py:136
 msgid "Create a new step"
 msgstr ""
 
-#: ../IDEFrame.py:132 ../dialogs/PouTransitionDialog.py:42
+#: ../IDEFrame.py:139 ../dialogs/PouTransitionDialog.py:42
 msgid "Create a new transition"
 msgstr ""
 
-#: ../IDEFrame.py:81 ../IDEFrame.py:111 ../IDEFrame.py:144
+#: ../IDEFrame.py:88 ../IDEFrame.py:118 ../IDEFrame.py:151
 msgid "Create a new variable"
 msgstr ""
 
-#: ../IDEFrame.py:346 ../IDEFrame.py:400 ../editors/Viewer.py:535
+#: ../IDEFrame.py:351 ../IDEFrame.py:405 ../editors/Viewer.py:535
 msgid "Cut"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:71
+#: ../editors/ResourceEditor.py:72
 msgid "Cyclic"
 msgstr ""
 
@@ -1121,11 +1165,11 @@ msgstr ""
 msgid "DEPRECATED"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:50 ../canfestival/NetworkEditor.py:80
+#: ../canfestival/SlaveEditor.py:53 ../canfestival/NetworkEditor.py:74
 msgid "DS-301 Profile"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:51 ../canfestival/NetworkEditor.py:81
+#: ../canfestival/SlaveEditor.py:54 ../canfestival/NetworkEditor.py:75
 msgid "DS-302 Profile"
 msgstr ""
 
@@ -1158,58 +1202,58 @@ msgstr ""
 msgid "Days:"
 msgstr ""
 
-#: ../ProjectController.py:1405
-msgid "Debug connect matching running PLC\n"
+#: ../ProjectController.py:1444
+msgid "Debug does not match PLC - stop/transfert/start to re-enable\n"
 msgstr ""
 
-#: ../ProjectController.py:1408
-msgid "Debug do not match PLC - stop/transfert/start to re-enable\n"
-msgstr ""
-
-#: ../controls/PouInstanceVariablesPanel.py:52
+#: ../controls/PouInstanceVariablesPanel.py:59
 msgid "Debug instance"
 msgstr ""
 
-#: ../editors/Viewer.py:3222
+#: ../editors/Viewer.py:1016 ../editors/Viewer.py:3326
 #, python-format
 msgid "Debug: %s"
 msgstr ""
 
-#: ../ProjectController.py:1122
+#: ../ProjectController.py:1153
 #, python-format
 msgid "Debug: Unknown variable '%s'\n"
 msgstr ""
 
-#: ../ProjectController.py:1120
+#: ../ProjectController.py:1151
 #, python-format
 msgid "Debug: Unsupported type to debug '%s'\n"
 msgstr ""
 
-#: ../IDEFrame.py:608
+#: ../IDEFrame.py:612
 msgid "Debugger"
 msgstr ""
 
-#: ../ProjectController.py:1285
+#: ../ProjectController.py:1311
 msgid "Debugger disabled\n"
 msgstr ""
 
-#: ../ProjectController.py:1297
+#: ../ProjectController.py:1441
+msgid "Debugger ready\n"
+msgstr ""
+
+#: ../ProjectController.py:1323
 msgid "Debugger stopped.\n"
 msgstr ""
 
-#: ../IDEFrame.py:1990 ../Beremiz.py:958 ../editors/Viewer.py:511
+#: ../IDEFrame.py:1866 ../Beremiz.py:991 ../editors/Viewer.py:511
 msgid "Delete"
 msgstr ""
 
-#: ../editors/Viewer.py:454
+#: ../editors/Viewer.py:453
 msgid "Delete Divergence Branch"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:371
+#: ../editors/FileManagementPanel.py:153
 msgid "Delete File"
 msgstr ""
 
-#: ../editors/Viewer.py:443
+#: ../editors/Viewer.py:442
 msgid "Delete Wire Segment"
 msgstr ""
 
@@ -1221,21 +1265,21 @@ msgstr ""
 msgid "Deletion (within)"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:146
+#: ../editors/DataTypeEditor.py:152
 msgid "Derivation Type:"
 msgstr ""
 
-#: ../plcopen/structures.py:264
+#: ../plcopen/structures.py:263
 msgid ""
 "Derivative\n"
 "The derivative function block produces an output XOUT proportional to the rate of change of the input XIN."
 msgstr ""
 
-#: ../controls/VariablePanel.py:360
+#: ../controls/VariablePanel.py:362
 msgid "Description:"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:314 ../dialogs/ArrayTypeDialog.py:61
+#: ../editors/DataTypeEditor.py:320 ../dialogs/ArrayTypeDialog.py:61
 msgid "Dimensions:"
 msgstr ""
 
@@ -1243,23 +1287,23 @@ msgstr ""
 msgid "Direction"
 msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:78
+#: ../dialogs/BrowseLocationsDialog.py:86
 msgid "Direction:"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Directly"
 msgstr ""
 
-#: ../ProjectController.py:1512
+#: ../ProjectController.py:1547
 msgid "Disconnect"
 msgstr ""
 
-#: ../ProjectController.py:1514
+#: ../ProjectController.py:1549
 msgid "Disconnect from PLC"
 msgstr ""
 
-#: ../editors/Viewer.py:496
+#: ../editors/Viewer.py:495
 msgid "Divergence"
 msgstr ""
 
@@ -1267,7 +1311,7 @@ msgstr ""
 msgid "Division"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:370
+#: ../editors/FileManagementPanel.py:152
 #, python-format
 msgid "Do you really want to delete the file '%s'?"
 msgstr ""
@@ -1276,11 +1320,11 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#: ../PLCOpenEditor.py:351
+#: ../PLCOpenEditor.py:330
 msgid "Done"
 msgstr ""
 
-#: ../plcopen/structures.py:227
+#: ../plcopen/structures.py:226
 msgid ""
 "Down-counter\n"
 "The down-counter can be used to signal when a count has reached zero, on counting down from a preset value."
@@ -1290,11 +1334,11 @@ msgstr ""
 msgid "Duration"
 msgstr ""
 
-#: ../canfestival/canfestival.py:118
+#: ../canfestival/canfestival.py:139
 msgid "EDS files (*.eds)|*.eds|All files|*.*"
 msgstr ""
 
-#: ../editors/Viewer.py:510
+#: ../editors/Viewer.py:509
 msgid "Edit Block"
 msgstr ""
 
@@ -1326,12 +1370,12 @@ msgstr ""
 msgid "Edit array type properties"
 msgstr ""
 
-#: ../editors/Viewer.py:2112 ../editors/Viewer.py:2114
-#: ../editors/Viewer.py:2630 ../editors/Viewer.py:2632
+#: ../editors/Viewer.py:2186 ../editors/Viewer.py:2188
+#: ../editors/Viewer.py:2706 ../editors/Viewer.py:2708
 msgid "Edit comment"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:284
+#: ../editors/FileManagementPanel.py:66
 msgid "Edit file"
 msgstr ""
 
@@ -1339,11 +1383,11 @@ msgstr ""
 msgid "Edit item"
 msgstr ""
 
-#: ../editors/Viewer.py:2594
+#: ../editors/Viewer.py:2670
 msgid "Edit jump target"
 msgstr ""
 
-#: ../ProjectController.py:1526
+#: ../ProjectController.py:1561
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr ""
 
@@ -1355,35 +1399,35 @@ msgstr ""
 msgid "Edit transition"
 msgstr ""
 
-#: ../IDEFrame.py:580
+#: ../IDEFrame.py:584
 msgid "Editor ToolBar"
 msgstr ""
 
-#: ../ProjectController.py:1013
+#: ../ProjectController.py:1039
 msgid "Editor selection"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:341
+#: ../editors/DataTypeEditor.py:347
 msgid "Elements :"
 msgstr ""
 
-#: ../IDEFrame.py:343
+#: ../IDEFrame.py:348
 msgid "Enable Undo/Redo"
 msgstr ""
 
-#: ../Beremiz_service.py:380
+#: ../Beremiz_service.py:385
 msgid "Enter a name "
 msgstr ""
 
-#: ../Beremiz_service.py:365
+#: ../Beremiz_service.py:370
 msgid "Enter a port number "
 msgstr ""
 
-#: ../Beremiz_service.py:355
+#: ../Beremiz_service.py:360
 msgid "Enter the IP of the interface to bind"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Enumerated"
 msgstr ""
 
@@ -1391,23 +1435,22 @@ msgstr ""
 msgid "Equal to"
 msgstr ""
 
-#: ../Beremiz_service.py:270 ../Beremiz_service.py:394
-#: ../controls/VariablePanel.py:330 ../controls/VariablePanel.py:678
-#: ../controls/DebugVariablePanel.py:164 ../IDEFrame.py:1083
-#: ../IDEFrame.py:1672 ../IDEFrame.py:1709 ../IDEFrame.py:1714
-#: ../IDEFrame.py:1728 ../IDEFrame.py:1733 ../IDEFrame.py:2422
-#: ../Beremiz.py:1083 ../PLCOpenEditor.py:358 ../PLCOpenEditor.py:363
-#: ../PLCOpenEditor.py:531 ../PLCOpenEditor.py:541
-#: ../editors/TextViewer.py:376 ../editors/DataTypeEditor.py:543
-#: ../editors/DataTypeEditor.py:548 ../editors/DataTypeEditor.py:572
-#: ../editors/DataTypeEditor.py:577 ../editors/DataTypeEditor.py:587
-#: ../editors/DataTypeEditor.py:719 ../editors/DataTypeEditor.py:726
-#: ../editors/Viewer.py:366 ../editors/LDViewer.py:663
-#: ../editors/LDViewer.py:879 ../editors/LDViewer.py:883
-#: ../editors/FileManagementPanel.py:210 ../ProjectController.py:221
-#: ../dialogs/PouNameDialog.py:53 ../dialogs/PouTransitionDialog.py:107
-#: ../dialogs/BrowseLocationsDialog.py:175 ../dialogs/ProjectDialog.py:71
-#: ../dialogs/SFCStepNameDialog.py:59 ../dialogs/ConnectionDialog.py:152
+#: ../Beremiz_service.py:271 ../controls/VariablePanel.py:332
+#: ../controls/VariablePanel.py:681 ../controls/DebugVariablePanel.py:379
+#: ../IDEFrame.py:966 ../IDEFrame.py:1553 ../IDEFrame.py:1590
+#: ../IDEFrame.py:1595 ../IDEFrame.py:1609 ../IDEFrame.py:1614
+#: ../IDEFrame.py:2290 ../Beremiz.py:1131 ../PLCOpenEditor.py:337
+#: ../PLCOpenEditor.py:342 ../PLCOpenEditor.py:416 ../PLCOpenEditor.py:426
+#: ../editors/TextViewer.py:369 ../editors/DataTypeEditor.py:549
+#: ../editors/DataTypeEditor.py:554 ../editors/DataTypeEditor.py:578
+#: ../editors/DataTypeEditor.py:583 ../editors/DataTypeEditor.py:593
+#: ../editors/DataTypeEditor.py:744 ../editors/DataTypeEditor.py:751
+#: ../editors/Viewer.py:365 ../editors/LDViewer.py:666
+#: ../editors/LDViewer.py:882 ../editors/LDViewer.py:886
+#: ../ProjectController.py:225 ../dialogs/PouNameDialog.py:53
+#: ../dialogs/PouTransitionDialog.py:107
+#: ../dialogs/BrowseLocationsDialog.py:212 ../dialogs/ProjectDialog.py:71
+#: ../dialogs/SFCStepNameDialog.py:59 ../dialogs/ConnectionDialog.py:159
 #: ../dialogs/FBDVariableDialog.py:201 ../dialogs/PouActionDialog.py:104
 #: ../dialogs/BrowseValuesLibraryDialog.py:83 ../dialogs/PouDialog.py:132
 #: ../dialogs/SFCTransitionDialog.py:147
@@ -1415,44 +1458,44 @@ msgstr ""
 #: ../dialogs/DurationEditorDialog.py:163
 #: ../dialogs/SearchInProjectDialog.py:157 ../dialogs/SFCStepDialog.py:130
 #: ../dialogs/ArrayTypeDialog.py:97 ../dialogs/ArrayTypeDialog.py:103
-#: ../dialogs/FBDBlockDialog.py:164 ../dialogs/ForceVariableDialog.py:169
+#: ../dialogs/FBDBlockDialog.py:164 ../dialogs/ForceVariableDialog.py:179
 msgid "Error"
 msgstr ""
 
-#: ../ProjectController.py:587
+#: ../ProjectController.py:601
 msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
 msgstr ""
 
-#: ../ProjectController.py:579
+#: ../ProjectController.py:593
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr ""
 
-#: ../ProjectController.py:520
+#: ../ProjectController.py:534
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
 "%s\n"
 msgstr ""
 
-#: ../ConfigTreeNode.py:182
+#: ../ConfigTreeNode.py:183
 #, python-format
 msgid "Error while saving \"%s\"\n"
 msgstr ""
 
-#: ../canfestival/canfestival.py:122
+#: ../canfestival/canfestival.py:144
 msgid "Error: Export slave failed\n"
 msgstr ""
 
-#: ../canfestival/canfestival.py:270
+#: ../canfestival/canfestival.py:345
 msgid "Error: No Master generated\n"
 msgstr ""
 
-#: ../canfestival/canfestival.py:265
+#: ../canfestival/canfestival.py:340
 msgid "Error: No PLC built\n"
 msgstr ""
 
-#: ../ProjectController.py:1378
+#: ../ProjectController.py:1416
 #, python-format
 msgid "Exception while connecting %s!\n"
 msgstr ""
@@ -1465,7 +1508,7 @@ msgstr ""
 msgid "Execution Order:"
 msgstr ""
 
-#: ../features.py:10
+#: ../features.py:11
 msgid "Experimental web based HMI"
 msgstr ""
 
@@ -1477,15 +1520,15 @@ msgstr ""
 msgid "Exponentiation"
 msgstr ""
 
-#: ../canfestival/canfestival.py:128
+#: ../canfestival/canfestival.py:150
 msgid "Export CanOpen slave to EDS file"
 msgstr ""
 
-#: ../editors/GraphicViewer.py:144
+#: ../controls/DebugVariablePanel.py:1472 ../editors/GraphicViewer.py:144
 msgid "Export graph values to clipboard"
 msgstr ""
 
-#: ../canfestival/canfestival.py:127
+#: ../canfestival/canfestival.py:149
 msgid "Export slave"
 msgstr ""
 
@@ -1497,7 +1540,7 @@ msgstr ""
 msgid "External"
 msgstr ""
 
-#: ../ProjectController.py:591
+#: ../ProjectController.py:605
 msgid "Extracting Located Variables...\n"
 msgstr ""
 
@@ -1507,21 +1550,21 @@ msgstr ""
 msgid "FBD"
 msgstr ""
 
-#: ../ProjectController.py:1445
+#: ../ProjectController.py:1480
 msgid "Failed : Must build before transfer.\n"
 msgstr ""
 
-#: ../editors/Viewer.py:405 ../dialogs/LDElementDialog.py:84
+#: ../editors/Viewer.py:404 ../dialogs/LDElementDialog.py:84
 msgid "Falling Edge"
 msgstr ""
 
-#: ../plcopen/structures.py:217
+#: ../plcopen/structures.py:216
 msgid ""
 "Falling edge detector\n"
 "The output produces a single pulse when a falling edge is detected."
 msgstr ""
 
-#: ../ProjectController.py:900
+#: ../ProjectController.py:927
 msgid "Fatal : cannot get builder.\n"
 msgstr ""
 
@@ -1535,21 +1578,16 @@ msgstr ""
 msgid "Fields %s haven't a valid value!"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:209
-#, python-format
-msgid "File '%s' already exists!"
-msgstr ""
-
-#: ../IDEFrame.py:353 ../dialogs/FindInPouDialog.py:30
+#: ../IDEFrame.py:358 ../dialogs/FindInPouDialog.py:30
 #: ../dialogs/FindInPouDialog.py:99
 msgid "Find"
 msgstr ""
 
-#: ../IDEFrame.py:355
+#: ../IDEFrame.py:360
 msgid "Find Next"
 msgstr ""
 
-#: ../IDEFrame.py:357
+#: ../IDEFrame.py:362
 msgid "Find Previous"
 msgstr ""
 
@@ -1565,11 +1603,11 @@ msgstr ""
 msgid "Force runtime reload\n"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:295 ../editors/Viewer.py:1353
+#: ../controls/DebugVariablePanel.py:1934 ../editors/Viewer.py:1385
 msgid "Force value"
 msgstr ""
 
-#: ../dialogs/ForceVariableDialog.py:152
+#: ../dialogs/ForceVariableDialog.py:162
 msgid "Forcing Variable Value"
 msgstr ""
 
@@ -1580,7 +1618,7 @@ msgstr ""
 msgid "Form isn't complete. %s must be filled!"
 msgstr ""
 
-#: ../dialogs/ConnectionDialog.py:142 ../dialogs/FBDBlockDialog.py:154
+#: ../dialogs/ConnectionDialog.py:149 ../dialogs/FBDBlockDialog.py:154
 msgid "Form isn't complete. Name must be filled!"
 msgstr ""
 
@@ -1600,15 +1638,15 @@ msgstr ""
 msgid "Function"
 msgstr ""
 
-#: ../IDEFrame.py:329
+#: ../IDEFrame.py:334
 msgid "Function &Block"
 msgstr ""
 
-#: ../IDEFrame.py:1969 ../dialogs/SearchInProjectDialog.py:45
+#: ../IDEFrame.py:1845 ../dialogs/SearchInProjectDialog.py:45
 msgid "Function Block"
 msgstr ""
 
-#: ../controls/VariablePanel.py:741
+#: ../controls/VariablePanel.py:744
 msgid "Function Block Types"
 msgstr ""
 
@@ -1620,11 +1658,7 @@ msgstr ""
 msgid "Function Blocks can't be used in Functions!"
 msgstr ""
 
-#: ../editors/Viewer.py:238
-msgid "Function Blocks can't be used in Transitions!"
-msgstr ""
-
-#: ../PLCControler.py:2055
+#: ../PLCControler.py:2180
 #, python-format
 msgid "FunctionBlock \"%s\" can't be pasted in a Function!!!"
 msgstr ""
@@ -1633,11 +1667,11 @@ msgstr ""
 msgid "Functions"
 msgstr ""
 
-#: ../PLCOpenEditor.py:138
+#: ../PLCOpenEditor.py:119
 msgid "Generate Program"
 msgstr ""
 
-#: ../ProjectController.py:510
+#: ../ProjectController.py:524
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr ""
 
@@ -1645,7 +1679,7 @@ msgstr ""
 msgid "Global"
 msgstr ""
 
-#: ../editors/GraphicViewer.py:131
+#: ../controls/DebugVariablePanel.py:1471 ../editors/GraphicViewer.py:131
 msgid "Go to current value"
 msgstr ""
 
@@ -1669,7 +1703,7 @@ msgstr ""
 msgid "Height:"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:303
+#: ../editors/FileManagementPanel.py:85
 msgid "Home Directory:"
 msgstr ""
 
@@ -1681,13 +1715,13 @@ msgstr ""
 msgid "Hours:"
 msgstr ""
 
-#: ../plcopen/structures.py:279
+#: ../plcopen/structures.py:278
 msgid ""
 "Hysteresis\n"
 "The hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."
 msgstr ""
 
-#: ../ProjectController.py:827
+#: ../ProjectController.py:851
 msgid "IEC-61131-3 code generation failed !\n"
 msgstr ""
 
@@ -1696,7 +1730,7 @@ msgstr ""
 msgid "IL"
 msgstr ""
 
-#: ../Beremiz_service.py:356 ../Beremiz_service.py:357
+#: ../Beremiz_service.py:361 ../Beremiz_service.py:362
 msgid "IP is not valid!"
 msgstr ""
 
@@ -1704,11 +1738,16 @@ msgstr ""
 msgid "Import SVG"
 msgstr ""
 
-#: ../controls/VariablePanel.py:76 ../dialogs/FBDVariableDialog.py:34
+#: ../controls/VariablePanel.py:76 ../editors/Viewer.py:1412
+#: ../dialogs/FBDVariableDialog.py:34
 msgid "InOut"
 msgstr ""
 
-#: ../controls/VariablePanel.py:263
+#: ../editors/Viewer.py:999
+msgid "Inactive"
+msgstr ""
+
+#: ../controls/VariablePanel.py:265
 #, python-format
 msgid "Incompatible data types between \"%s\" and \"%s\""
 msgstr ""
@@ -1727,17 +1766,17 @@ msgstr ""
 msgid "Indicator"
 msgstr ""
 
-#: ../editors/Viewer.py:492
+#: ../editors/Viewer.py:491
 msgid "Initial Step"
 msgstr ""
 
 #: ../controls/VariablePanel.py:58 ../controls/VariablePanel.py:59
-#: ../editors/DataTypeEditor.py:48
+#: ../editors/DataTypeEditor.py:50
 msgid "Initial Value"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:178 ../editors/DataTypeEditor.py:209
-#: ../editors/DataTypeEditor.py:265 ../editors/DataTypeEditor.py:303
+#: ../editors/DataTypeEditor.py:184 ../editors/DataTypeEditor.py:215
+#: ../editors/DataTypeEditor.py:271 ../editors/DataTypeEditor.py:309
 msgid "Initial Value:"
 msgstr ""
 
@@ -1750,8 +1789,9 @@ msgstr ""
 msgid "Inline"
 msgstr ""
 
-#: ../controls/VariablePanel.py:76 ../dialogs/BrowseLocationsDialog.py:36
-#: ../dialogs/FBDVariableDialog.py:33 ../dialogs/SFCStepDialog.py:61
+#: ../controls/VariablePanel.py:76 ../editors/Viewer.py:1410
+#: ../dialogs/BrowseLocationsDialog.py:35 ../dialogs/FBDVariableDialog.py:33
+#: ../dialogs/SFCStepDialog.py:61
 msgid "Input"
 msgstr ""
 
@@ -1763,16 +1803,16 @@ msgstr ""
 msgid "Insertion (into)"
 msgstr ""
 
-#: ../plcopen/plcopen.py:1833
+#: ../plcopen/plcopen.py:1843
 #, python-format
 msgid "Instance with id %d doesn't exist!"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:247
+#: ../editors/ResourceEditor.py:255
 msgid "Instances:"
 msgstr ""
 
-#: ../plcopen/structures.py:259
+#: ../plcopen/structures.py:258
 msgid ""
 "Integral\n"
 "The integral function block integrates the value of input XIN over time."
@@ -1782,15 +1822,15 @@ msgstr ""
 msgid "Interface"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:71
+#: ../editors/ResourceEditor.py:72
 msgid "Interrupt"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Interval"
 msgstr ""
 
-#: ../PLCControler.py:2032 ../PLCControler.py:2070
+#: ../PLCControler.py:2157 ../PLCControler.py:2195
 msgid "Invalid plcopen element(s)!!!"
 msgstr ""
 
@@ -1799,12 +1839,12 @@ msgstr ""
 msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
 msgstr ""
 
-#: ../dialogs/ForceVariableDialog.py:167
+#: ../dialogs/ForceVariableDialog.py:177
 #, python-format
 msgid "Invalid value \"%s\" for \"%s\" variable!"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:153 ../controls/DebugVariablePanel.py:156
+#: ../controls/DebugVariablePanel.py:319 ../controls/DebugVariablePanel.py:322
 #, python-format
 msgid "Invalid value \"%s\" for debug variable"
 msgstr ""
@@ -1825,7 +1865,7 @@ msgid ""
 "You must fill a numeric value."
 msgstr ""
 
-#: ../editors/Viewer.py:497
+#: ../editors/Viewer.py:496
 msgid "Jump"
 msgstr ""
 
@@ -1854,19 +1894,19 @@ msgstr ""
 msgid "Language:"
 msgstr ""
 
-#: ../ProjectController.py:1451
+#: ../ProjectController.py:1486
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr ""
 
-#: ../Beremiz_service.py:324
+#: ../Beremiz_service.py:331
 msgid "Launch WX GUI inspector"
 msgstr ""
 
-#: ../Beremiz_service.py:323
+#: ../Beremiz_service.py:330
 msgid "Launch a live Python shell"
 msgstr ""
 
-#: ../editors/Viewer.py:428
+#: ../editors/Viewer.py:427
 msgid "Left"
 msgstr ""
 
@@ -1886,7 +1926,7 @@ msgstr ""
 msgid "Less than or equal to"
 msgstr ""
 
-#: ../IDEFrame.py:600
+#: ../IDEFrame.py:604
 msgid "Library"
 msgstr ""
 
@@ -1902,7 +1942,11 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
-#: ../ProjectController.py:1353
+#: ../canfestival/canfestival.py:322
+msgid "Local entries"
+msgstr ""
+
+#: ../ProjectController.py:1391
 msgid "Local service discovery failed!\n"
 msgstr ""
 
@@ -1910,12 +1954,8 @@ msgstr ""
 msgid "Location"
 msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:61
+#: ../dialogs/BrowseLocationsDialog.py:68
 msgid "Locations available:"
-msgstr ""
-
-#: ../Beremiz.py:393
-msgid "Log Console"
 msgstr ""
 
 #: ../plcopen/iec_std.csv:25
@@ -1927,19 +1967,19 @@ msgstr ""
 msgid "MDNS resolution failure for '%s'\n"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:37 ../canfestival/NetworkEditor.py:67
+#: ../canfestival/SlaveEditor.py:41 ../canfestival/NetworkEditor.py:62
 msgid "Map Variable"
 msgstr ""
 
-#: ../features.py:6
+#: ../features.py:7
 msgid "Map located variables over CANopen"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:89
+#: ../canfestival/NetworkEditor.py:83
 msgid "Master"
 msgstr ""
 
-#: ../ConfigTreeNode.py:480
+#: ../ConfigTreeNode.py:500
 #, python-format
 msgid "Max count (%d) reached for this confnode of type %s "
 msgstr ""
@@ -1948,15 +1988,15 @@ msgstr ""
 msgid "Maximum"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:232
+#: ../editors/DataTypeEditor.py:238
 msgid "Maximum:"
 msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:38
+#: ../dialogs/BrowseLocationsDialog.py:37
 msgid "Memory"
 msgstr ""
 
-#: ../IDEFrame.py:568
+#: ../IDEFrame.py:572
 msgid "Menu ToolBar"
 msgstr ""
 
@@ -1964,7 +2004,7 @@ msgstr ""
 msgid "Microseconds:"
 msgstr ""
 
-#: ../editors/Viewer.py:433
+#: ../editors/Viewer.py:432
 msgid "Middle"
 msgstr ""
 
@@ -1976,7 +2016,7 @@ msgstr ""
 msgid "Minimum"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:219
+#: ../editors/DataTypeEditor.py:225
 msgid "Minimum:"
 msgstr ""
 
@@ -1992,7 +2032,7 @@ msgstr ""
 msgid "Modifier:"
 msgstr ""
 
-#: ../PLCGenerator.py:703 ../PLCGenerator.py:936
+#: ../PLCGenerator.py:732 ../PLCGenerator.py:975
 #, python-format
 msgid "More than one connector found corresponding to \"%s\" continuation in \"%s\" POU"
 msgstr ""
@@ -2005,11 +2045,11 @@ msgstr ""
 msgid "Move action up"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:185
+#: ../controls/DebugVariablePanel.py:1532
 msgid "Move debug variable down"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:184
+#: ../controls/DebugVariablePanel.py:1531
 msgid "Move debug variable up"
 msgstr ""
 
@@ -2017,31 +2057,31 @@ msgstr ""
 msgid "Move down"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:348
+#: ../editors/DataTypeEditor.py:354
 msgid "Move element down"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:347
+#: ../editors/DataTypeEditor.py:353
 msgid "Move element up"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:254
+#: ../editors/ResourceEditor.py:262
 msgid "Move instance down"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:253
+#: ../editors/ResourceEditor.py:261
 msgid "Move instance up"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:225
+#: ../editors/ResourceEditor.py:233
 msgid "Move task down"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:224
+#: ../editors/ResourceEditor.py:232
 msgid "Move task up"
 msgstr ""
 
-#: ../IDEFrame.py:75 ../IDEFrame.py:90 ../IDEFrame.py:120 ../IDEFrame.py:161
+#: ../IDEFrame.py:82 ../IDEFrame.py:97 ../IDEFrame.py:127 ../IDEFrame.py:168
 msgid "Move the view"
 msgstr ""
 
@@ -2049,11 +2089,11 @@ msgstr ""
 msgid "Move up"
 msgstr ""
 
-#: ../controls/VariablePanel.py:381
+#: ../controls/VariablePanel.py:383 ../c_ext/CFileEditor.py:520
 msgid "Move variable down"
 msgstr ""
 
-#: ../controls/VariablePanel.py:380
+#: ../controls/VariablePanel.py:382 ../c_ext/CFileEditor.py:519
 msgid "Move variable up"
 msgstr ""
 
@@ -2065,17 +2105,17 @@ msgstr ""
 msgid "Multiplication"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:301
+#: ../editors/FileManagementPanel.py:83
 msgid "My Computer:"
 msgstr ""
 
 #: ../controls/VariablePanel.py:58 ../controls/VariablePanel.py:59
-#: ../editors/DataTypeEditor.py:48 ../editors/ResourceEditor.py:67
-#: ../editors/ResourceEditor.py:76
+#: ../editors/DataTypeEditor.py:50 ../editors/ResourceEditor.py:68
+#: ../editors/ResourceEditor.py:77
 msgid "Name"
 msgstr ""
 
-#: ../Beremiz_service.py:381
+#: ../Beremiz_service.py:386
 msgid "Name must not be null!"
 msgstr ""
 
@@ -2089,12 +2129,12 @@ msgstr ""
 msgid "Natural logarithm"
 msgstr ""
 
-#: ../editors/Viewer.py:403 ../dialogs/LDElementDialog.py:67
+#: ../editors/Viewer.py:402 ../dialogs/LDElementDialog.py:67
 msgid "Negated"
 msgstr ""
 
-#: ../Beremiz.py:307 ../Beremiz.py:342 ../PLCOpenEditor.py:125
-#: ../PLCOpenEditor.py:167
+#: ../Beremiz.py:309 ../Beremiz.py:344 ../PLCOpenEditor.py:106
+#: ../PLCOpenEditor.py:148
 msgid "New"
 msgstr ""
 
@@ -2102,45 +2142,41 @@ msgstr ""
 msgid "New item"
 msgstr ""
 
-#: ../editors/Viewer.py:402
+#: ../editors/Viewer.py:401
 msgid "No Modifier"
 msgstr ""
 
-#: ../PLCControler.py:2929
+#: ../PLCControler.py:3054
 msgid "No PLC project found"
 msgstr ""
 
-#: ../ProjectController.py:1478
+#: ../ProjectController.py:1513
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr ""
 
-#: ../PLCGenerator.py:1321
+#: ../PLCGenerator.py:1360
 #, python-format
 msgid "No body defined in \"%s\" POU"
 msgstr ""
 
-#: ../PLCGenerator.py:722 ../PLCGenerator.py:945
+#: ../PLCGenerator.py:751 ../PLCGenerator.py:984
 #, python-format
 msgid "No connector found corresponding to \"%s\" continuation in \"%s\" POU"
 msgstr ""
 
-#: ../PLCOpenEditor.py:370
+#: ../PLCOpenEditor.py:349
 msgid ""
 "No documentation available.\n"
 "Coming soon."
 msgstr ""
 
-#: ../PLCGenerator.py:744
+#: ../PLCGenerator.py:773
 #, python-format
 msgid "No informations found for \"%s\" block"
 msgstr ""
 
-#: ../plcopen/structures.py:167
+#: ../plcopen/structures.py:166
 msgid "No output variable found"
-msgstr ""
-
-#: ../Beremiz_service.py:394
-msgid "No running PLC"
 msgstr ""
 
 #: ../controls/SearchResultPanel.py:169
@@ -2166,13 +2202,9 @@ msgstr ""
 msgid "No valid value selected!"
 msgstr ""
 
-#: ../PLCGenerator.py:1319
+#: ../PLCGenerator.py:1358
 #, python-format
 msgid "No variable defined in \"%s\" POU"
-msgstr ""
-
-#: ../canfestival/SlaveEditor.py:49 ../canfestival/NetworkEditor.py:79
-msgid "Node infos"
 msgstr ""
 
 #: ../canfestival/config_utils.py:354
@@ -2205,13 +2237,13 @@ msgstr ""
 msgid "Numerical"
 msgstr ""
 
-#: ../plcopen/structures.py:247
+#: ../plcopen/structures.py:246
 msgid ""
 "Off-delay timer\n"
 "The off-delay timer can be used to delay setting an output false, for fixed period after input goes false."
 msgstr ""
 
-#: ../plcopen/structures.py:242
+#: ../plcopen/structures.py:241
 msgid ""
 "On-delay timer\n"
 "The on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."
@@ -2221,8 +2253,8 @@ msgstr ""
 msgid "Only Elements"
 msgstr ""
 
-#: ../Beremiz.py:309 ../Beremiz.py:343 ../PLCOpenEditor.py:127
-#: ../PLCOpenEditor.py:168
+#: ../Beremiz.py:311 ../Beremiz.py:345 ../PLCOpenEditor.py:108
+#: ../PLCOpenEditor.py:149
 msgid "Open"
 msgstr ""
 
@@ -2230,7 +2262,7 @@ msgstr ""
 msgid "Open Inkscape"
 msgstr ""
 
-#: ../ProjectController.py:1530
+#: ../ProjectController.py:1565
 msgid "Open a file explorer to manage project files"
 msgstr ""
 
@@ -2250,24 +2282,25 @@ msgstr ""
 msgid "Organization (optional):"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:47 ../canfestival/NetworkEditor.py:77
+#: ../canfestival/SlaveEditor.py:51 ../canfestival/NetworkEditor.py:72
 msgid "Other Profile"
 msgstr ""
 
-#: ../controls/VariablePanel.py:76 ../dialogs/BrowseLocationsDialog.py:37
-#: ../dialogs/FBDVariableDialog.py:35 ../dialogs/SFCStepDialog.py:65
+#: ../controls/VariablePanel.py:76 ../editors/Viewer.py:1411
+#: ../dialogs/BrowseLocationsDialog.py:36 ../dialogs/FBDVariableDialog.py:35
+#: ../dialogs/SFCStepDialog.py:65
 msgid "Output"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:36 ../canfestival/NetworkEditor.py:66
+#: ../canfestival/SlaveEditor.py:40 ../canfestival/NetworkEditor.py:61
 msgid "PDO Receive"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:35 ../canfestival/NetworkEditor.py:65
+#: ../canfestival/SlaveEditor.py:39 ../canfestival/NetworkEditor.py:60
 msgid "PDO Transmit"
 msgstr ""
 
-#: ../plcopen/structures.py:269
+#: ../plcopen/structures.py:268
 msgid ""
 "PID\n"
 "The PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."
@@ -2277,16 +2310,15 @@ msgstr ""
 msgid "PLC :\n"
 msgstr ""
 
-#: ../ProjectController.py:1096 ../ProjectController.py:1398
-#, python-format
-msgid "PLC is %s\n"
+#: ../Beremiz.py:425
+msgid "PLC Log"
 msgstr ""
 
-#: ../PLCOpenEditor.py:313 ../PLCOpenEditor.py:391
+#: ../PLCOpenEditor.py:294 ../PLCOpenEditor.py:370
 msgid "PLCOpen files (*.xml)|*.xml|All files|*.*"
 msgstr ""
 
-#: ../PLCOpenEditor.py:175 ../PLCOpenEditor.py:231
+#: ../PLCOpenEditor.py:156 ../PLCOpenEditor.py:212
 msgid "PLCOpenEditor"
 msgstr ""
 
@@ -2306,7 +2338,7 @@ msgstr ""
 msgid "POU Type:"
 msgstr ""
 
-#: ../Beremiz.py:322 ../PLCOpenEditor.py:141
+#: ../Beremiz.py:324 ../PLCOpenEditor.py:122
 msgid "Page Setup"
 msgstr ""
 
@@ -2314,20 +2346,20 @@ msgstr ""
 msgid "Page Size (optional):"
 msgstr ""
 
-#: ../PLCOpenEditor.py:476
+#: ../IDEFrame.py:2492
 #, python-format
 msgid "Page: %d"
 msgstr ""
 
-#: ../controls/PouInstanceVariablesPanel.py:41
+#: ../controls/PouInstanceVariablesPanel.py:48
 msgid "Parent instance"
 msgstr ""
 
-#: ../IDEFrame.py:350 ../IDEFrame.py:402 ../editors/Viewer.py:537
+#: ../IDEFrame.py:355 ../IDEFrame.py:407 ../editors/Viewer.py:537
 msgid "Paste"
 msgstr ""
 
-#: ../IDEFrame.py:1900
+#: ../IDEFrame.py:1776
 msgid "Paste POU"
 msgstr ""
 
@@ -2339,13 +2371,13 @@ msgstr ""
 msgid "Pin number:"
 msgstr ""
 
-#: ../editors/Viewer.py:2289 ../editors/Viewer.py:2594
+#: ../editors/Viewer.py:2363 ../editors/Viewer.py:2670
 #: ../editors/SFCViewer.py:696
 msgid "Please choose a target"
 msgstr ""
 
-#: ../editors/Viewer.py:2112 ../editors/Viewer.py:2114
-#: ../editors/Viewer.py:2630 ../editors/Viewer.py:2632
+#: ../editors/Viewer.py:2186 ../editors/Viewer.py:2188
+#: ../editors/Viewer.py:2706 ../editors/Viewer.py:2708
 msgid "Please enter comment text"
 msgstr ""
 
@@ -2354,16 +2386,16 @@ msgstr ""
 msgid "Please enter step name"
 msgstr ""
 
-#: ../dialogs/ForceVariableDialog.py:153
+#: ../dialogs/ForceVariableDialog.py:163
 #, python-format
 msgid "Please enter value for a \"%s\" variable:"
 msgstr ""
 
-#: ../Beremiz_service.py:366
+#: ../Beremiz_service.py:371
 msgid "Port number must be 0 <= port <= 65535!"
 msgstr ""
 
-#: ../Beremiz_service.py:366
+#: ../Beremiz_service.py:371
 msgid "Port number must be an integer!"
 msgstr ""
 
@@ -2371,7 +2403,7 @@ msgstr ""
 msgid "Position:"
 msgstr ""
 
-#: ../editors/Viewer.py:476
+#: ../editors/Viewer.py:475
 msgid "Power Rail"
 msgstr ""
 
@@ -2379,7 +2411,7 @@ msgstr ""
 msgid "Power Rail Properties"
 msgstr ""
 
-#: ../Beremiz.py:324 ../PLCOpenEditor.py:143
+#: ../Beremiz.py:326 ../PLCOpenEditor.py:124
 msgid "Preview"
 msgstr ""
 
@@ -2390,21 +2422,26 @@ msgstr ""
 msgid "Preview:"
 msgstr ""
 
-#: ../Beremiz.py:326 ../Beremiz.py:346 ../PLCOpenEditor.py:145
-#: ../PLCOpenEditor.py:171
+#: ../Beremiz.py:328 ../Beremiz.py:348 ../PLCOpenEditor.py:126
+#: ../PLCOpenEditor.py:152
 msgid "Print"
 msgstr ""
 
-#: ../IDEFrame.py:1155
+#: ../IDEFrame.py:1038
 msgid "Print preview"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Priority"
 msgstr ""
 
 #: ../dialogs/SFCTransitionDialog.py:83
 msgid "Priority:"
+msgstr ""
+
+#: ../runtime/PLCObject.py:318
+#, python-format
+msgid "Problem starting PLC : error %d"
 msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:80
@@ -2419,11 +2456,11 @@ msgstr ""
 msgid "Product Version (required):"
 msgstr ""
 
-#: ../IDEFrame.py:1972 ../dialogs/SearchInProjectDialog.py:46
+#: ../IDEFrame.py:1848 ../dialogs/SearchInProjectDialog.py:46
 msgid "Program"
 msgstr ""
 
-#: ../PLCOpenEditor.py:360
+#: ../PLCOpenEditor.py:339
 msgid "Program was successfully generated!"
 msgstr ""
 
@@ -2435,7 +2472,7 @@ msgstr ""
 msgid "Programs can't be used by other POUs!"
 msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:553
+#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:557
 msgid "Project"
 msgstr ""
 
@@ -2444,7 +2481,7 @@ msgstr ""
 msgid "Project '%s':"
 msgstr ""
 
-#: ../ProjectController.py:1529
+#: ../ProjectController.py:1564
 msgid "Project Files"
 msgstr ""
 
@@ -2456,32 +2493,40 @@ msgstr ""
 msgid "Project Version (optional):"
 msgstr ""
 
-#: ../PLCControler.py:2916
+#: ../PLCControler.py:3041
 msgid ""
 "Project file syntax error:\n"
 "\n"
 msgstr ""
 
-#: ../dialogs/ProjectDialog.py:32
+#: ../editors/ProjectNodeEditor.py:14 ../dialogs/ProjectDialog.py:32
 msgid "Project properties"
 msgstr ""
 
-#: ../ConfigTreeNode.py:506
+#: ../ConfigTreeNode.py:526
 #, python-format
 msgid "Project tree layout do not match confnode.xml %s!=%s "
+msgstr ""
+
+#: ../dialogs/ConnectionDialog.py:96
+msgid "Propagate Name"
 msgstr ""
 
 #: ../PLCControler.py:96
 msgid "Properties"
 msgstr ""
 
-#: ../plcopen/structures.py:237
+#: ../plcopen/structures.py:236
 msgid ""
 "Pulse timer\n"
 "The pulse timer can be used to generate output pulses of a given time duration."
 msgstr ""
 
-#: ../features.py:8
+#: ../py_ext/PythonEditor.py:61
+msgid "Python code"
+msgstr ""
+
+#: ../features.py:9
 msgid "Python file"
 msgstr ""
 
@@ -2489,42 +2534,42 @@ msgstr ""
 msgid "Qualifier"
 msgstr ""
 
-#: ../Beremiz_service.py:328 ../Beremiz.py:329 ../PLCOpenEditor.py:151
+#: ../Beremiz_service.py:333 ../Beremiz.py:331 ../PLCOpenEditor.py:132
 msgid "Quit"
 msgstr ""
 
-#: ../plcopen/structures.py:202
+#: ../plcopen/structures.py:201
 msgid ""
 "RS bistable\n"
 "The RS bistable is a latch where the Reset dominates."
 msgstr ""
 
-#: ../plcopen/structures.py:274
+#: ../plcopen/structures.py:273
 msgid ""
 "Ramp\n"
 "The RAMP function block is modelled on example given in the standard."
 msgstr ""
 
-#: ../editors/GraphicViewer.py:89
+#: ../controls/DebugVariablePanel.py:1462 ../editors/GraphicViewer.py:89
 msgid "Range:"
 msgstr ""
 
-#: ../ProjectController.py:1525
+#: ../ProjectController.py:1560
 msgid "Raw IEC code"
 msgstr ""
 
-#: ../plcopen/structures.py:254
+#: ../plcopen/structures.py:253
 msgid ""
 "Real time clock\n"
 "The real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."
 msgstr ""
 
-#: ../Beremiz.py:1039
+#: ../Beremiz.py:1072
 #, python-format
 msgid "Really delete node '%s'?"
 msgstr ""
 
-#: ../IDEFrame.py:340 ../IDEFrame.py:398
+#: ../IDEFrame.py:345 ../IDEFrame.py:403
 msgid "Redo"
 msgstr ""
 
@@ -2532,7 +2577,7 @@ msgstr ""
 msgid "Reference"
 msgstr ""
 
-#: ../IDEFrame.py:408 ../dialogs/DiscoveryDialog.py:105
+#: ../IDEFrame.py:413 ../dialogs/DiscoveryDialog.py:105
 msgid "Refresh"
 msgstr ""
 
@@ -2544,7 +2589,7 @@ msgstr ""
 msgid "Regular expressions"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:299 ../editors/Viewer.py:1356
+#: ../controls/DebugVariablePanel.py:1938 ../editors/Viewer.py:1388
 msgid "Release value"
 msgstr ""
 
@@ -2552,7 +2597,7 @@ msgstr ""
 msgid "Remainder (modulo)"
 msgstr ""
 
-#: ../Beremiz.py:1040
+#: ../Beremiz.py:1073
 #, python-format
 msgid "Remove %s node"
 msgstr ""
@@ -2561,39 +2606,39 @@ msgstr ""
 msgid "Remove action"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:183
+#: ../controls/DebugVariablePanel.py:1530
 msgid "Remove debug variable"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:346
+#: ../editors/DataTypeEditor.py:352
 msgid "Remove element"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:281
+#: ../editors/FileManagementPanel.py:63
 msgid "Remove file from left folder"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:252
+#: ../editors/ResourceEditor.py:260
 msgid "Remove instance"
 msgstr ""
 
-#: ../canfestival/NetworkEditor.py:87
+#: ../canfestival/NetworkEditor.py:81
 msgid "Remove slave"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:223
+#: ../editors/ResourceEditor.py:231
 msgid "Remove task"
 msgstr ""
 
-#: ../controls/VariablePanel.py:379
+#: ../controls/VariablePanel.py:381 ../c_ext/CFileEditor.py:518
 msgid "Remove variable"
 msgstr ""
 
-#: ../IDEFrame.py:1976
+#: ../IDEFrame.py:1852
 msgid "Rename"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:399
+#: ../editors/FileManagementPanel.py:181
 msgid "Replace File"
 msgstr ""
 
@@ -2609,7 +2654,7 @@ msgstr ""
 msgid "Reset Execution Order"
 msgstr ""
 
-#: ../IDEFrame.py:423
+#: ../IDEFrame.py:428
 msgid "Reset Perspective"
 msgstr ""
 
@@ -2629,11 +2674,11 @@ msgstr ""
 msgid "Retain"
 msgstr ""
 
-#: ../controls/VariablePanel.py:352
+#: ../controls/VariablePanel.py:354
 msgid "Return Type:"
 msgstr ""
 
-#: ../editors/Viewer.py:430
+#: ../editors/Viewer.py:429
 msgid "Right"
 msgstr ""
 
@@ -2641,11 +2686,11 @@ msgstr ""
 msgid "Right PowerRail"
 msgstr ""
 
-#: ../editors/Viewer.py:404 ../dialogs/LDElementDialog.py:80
+#: ../editors/Viewer.py:403 ../dialogs/LDElementDialog.py:80
 msgid "Rising Edge"
 msgstr ""
 
-#: ../plcopen/structures.py:212
+#: ../plcopen/structures.py:211
 msgid ""
 "Rising edge detector\n"
 "The output produces a single pulse when a rising edge is detected."
@@ -2663,19 +2708,19 @@ msgstr ""
 msgid "Rounding up/down"
 msgstr ""
 
-#: ../ProjectController.py:1493
+#: ../ProjectController.py:1528
 msgid "Run"
 msgstr ""
 
-#: ../ProjectController.py:841 ../ProjectController.py:850
+#: ../ProjectController.py:865 ../ProjectController.py:874
 msgid "Runtime extensions C code generation failed !\n"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:34 ../canfestival/NetworkEditor.py:64
+#: ../canfestival/SlaveEditor.py:38 ../canfestival/NetworkEditor.py:59
 msgid "SDO Client"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:33 ../canfestival/NetworkEditor.py:63
+#: ../canfestival/SlaveEditor.py:37 ../canfestival/NetworkEditor.py:58
 msgid "SDO Server"
 msgstr ""
 
@@ -2683,7 +2728,7 @@ msgstr ""
 msgid "SFC"
 msgstr ""
 
-#: ../plcopen/structures.py:197
+#: ../plcopen/structures.py:196
 msgid ""
 "SR bistable\n"
 "The SR bistable is a latch where the Set dominates."
@@ -2694,7 +2739,7 @@ msgstr ""
 msgid "ST"
 msgstr ""
 
-#: ../PLCOpenEditor.py:347
+#: ../PLCOpenEditor.py:326
 msgid "ST files (*.st)|*.st|All files|*.*"
 msgstr ""
 
@@ -2702,20 +2747,20 @@ msgstr ""
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
 msgstr ""
 
-#: ../features.py:10
+#: ../features.py:11
 msgid "SVGUI"
 msgstr ""
 
-#: ../Beremiz.py:313 ../Beremiz.py:344 ../PLCOpenEditor.py:134
-#: ../PLCOpenEditor.py:169
+#: ../Beremiz.py:315 ../Beremiz.py:346 ../PLCOpenEditor.py:115
+#: ../PLCOpenEditor.py:150
 msgid "Save"
 msgstr ""
 
-#: ../Beremiz.py:345 ../PLCOpenEditor.py:136 ../PLCOpenEditor.py:170
+#: ../Beremiz.py:347 ../PLCOpenEditor.py:117 ../PLCOpenEditor.py:151
 msgid "Save As..."
 msgstr ""
 
-#: ../Beremiz.py:315
+#: ../Beremiz.py:317
 msgid "Save as"
 msgstr ""
 
@@ -2723,11 +2768,11 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#: ../IDEFrame.py:592 ../dialogs/SearchInProjectDialog.py:105
+#: ../IDEFrame.py:596 ../dialogs/SearchInProjectDialog.py:105
 msgid "Search"
 msgstr ""
 
-#: ../IDEFrame.py:360 ../IDEFrame.py:404
+#: ../IDEFrame.py:365 ../IDEFrame.py:409
 #: ../dialogs/SearchInProjectDialog.py:52
 msgid "Search in Project"
 msgstr ""
@@ -2736,24 +2781,24 @@ msgstr ""
 msgid "Seconds:"
 msgstr ""
 
-#: ../IDEFrame.py:366
+#: ../IDEFrame.py:371
 msgid "Select All"
 msgstr ""
 
-#: ../controls/VariablePanel.py:277 ../editors/TextViewer.py:330
-#: ../editors/Viewer.py:277
+#: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:277
+#: ../editors/TextViewer.py:323 ../editors/Viewer.py:275
 msgid "Select a variable class:"
 msgstr ""
 
-#: ../ProjectController.py:1013
+#: ../ProjectController.py:1039
 msgid "Select an editor:"
 msgstr ""
 
-#: ../controls/PouInstanceVariablesPanel.py:197
+#: ../controls/PouInstanceVariablesPanel.py:209
 msgid "Select an instance"
 msgstr ""
 
-#: ../IDEFrame.py:576
+#: ../IDEFrame.py:580
 msgid "Select an object"
 msgstr ""
 
@@ -2769,7 +2814,7 @@ msgstr ""
 msgid "Selection Divergence"
 msgstr ""
 
-#: ../plcopen/structures.py:207
+#: ../plcopen/structures.py:206
 msgid ""
 "Semaphore\n"
 "The semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."
@@ -2791,19 +2836,19 @@ msgstr ""
 msgid "Shift right"
 msgstr ""
 
-#: ../ProjectController.py:1519
+#: ../ProjectController.py:1554
 msgid "Show IEC code generated by PLCGenerator"
 msgstr ""
 
-#: ../canfestival/canfestival.py:288
+#: ../canfestival/canfestival.py:363
 msgid "Show Master"
 msgstr ""
 
-#: ../canfestival/canfestival.py:289
+#: ../canfestival/canfestival.py:364
 msgid "Show Master generated by config_utils"
 msgstr ""
 
-#: ../ProjectController.py:1517
+#: ../ProjectController.py:1552
 msgid "Show code"
 msgstr ""
 
@@ -2819,7 +2864,7 @@ msgstr ""
 msgid "Sine"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Single"
 msgstr ""
 
@@ -2827,52 +2872,52 @@ msgstr ""
 msgid "Square root (base 2)"
 msgstr ""
 
-#: ../plcopen/structures.py:193
+#: ../plcopen/structures.py:192
 msgid "Standard function blocks"
 msgstr ""
 
-#: ../Beremiz_service.py:319 ../ProjectController.py:1495
+#: ../Beremiz_service.py:321 ../ProjectController.py:1530
 msgid "Start PLC"
 msgstr ""
 
-#: ../ProjectController.py:819
+#: ../ProjectController.py:843
 #, python-format
 msgid "Start build in %s\n"
 msgstr ""
 
-#: ../ProjectController.py:1314
+#: ../ProjectController.py:1341
 msgid "Starting PLC\n"
 msgstr ""
 
-#: ../Beremiz.py:403
+#: ../Beremiz.py:435
 msgid "Status ToolBar"
 msgstr ""
 
-#: ../editors/Viewer.py:493
+#: ../editors/Viewer.py:492
 msgid "Step"
 msgstr ""
 
-#: ../ProjectController.py:1498
+#: ../ProjectController.py:1533
 msgid "Stop"
 msgstr ""
 
-#: ../Beremiz_service.py:320
+#: ../Beremiz_service.py:322
 msgid "Stop PLC"
 msgstr ""
 
-#: ../ProjectController.py:1500
+#: ../ProjectController.py:1535
 msgid "Stop Running PLC"
 msgstr ""
 
-#: ../ProjectController.py:1292
+#: ../ProjectController.py:1318
 msgid "Stopping debugger...\n"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Structure"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Subrange"
 msgstr ""
 
@@ -2880,7 +2925,7 @@ msgstr ""
 msgid "Subtraction"
 msgstr ""
 
-#: ../ProjectController.py:915
+#: ../ProjectController.py:942
 msgid "Successfully built.\n"
 msgstr ""
 
@@ -2892,11 +2937,11 @@ msgstr ""
 msgid "Tangent"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:76
+#: ../editors/ResourceEditor.py:77
 msgid "Task"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:218
+#: ../editors/ResourceEditor.py:226
 msgid "Tasks:"
 msgstr ""
 
@@ -2904,33 +2949,33 @@ msgstr ""
 msgid "Temp"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:398
+#: ../editors/FileManagementPanel.py:180
 #, python-format
 msgid ""
 "The file '%s' already exist.\n"
 "Do you want to replace it?"
 msgstr ""
 
-#: ../editors/LDViewer.py:879
+#: ../editors/LDViewer.py:882
 msgid "The group of block must be coherent!"
 msgstr ""
 
-#: ../IDEFrame.py:1091 ../Beremiz.py:555
+#: ../IDEFrame.py:974 ../Beremiz.py:590
 msgid "There are changes, do you want to save?"
 msgstr ""
 
-#: ../IDEFrame.py:1709 ../IDEFrame.py:1728
+#: ../IDEFrame.py:1590 ../IDEFrame.py:1609
 #, python-format
 msgid "There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr ""
 
-#: ../IDEFrame.py:1178
+#: ../IDEFrame.py:1061
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
 msgstr ""
 
-#: ../editors/LDViewer.py:888
+#: ../editors/LDViewer.py:891
 msgid "This option isn't available yet!"
 msgstr ""
 
@@ -2971,31 +3016,31 @@ msgstr ""
 msgid "Time-of-day subtraction"
 msgstr ""
 
-#: ../editors/Viewer.py:432
+#: ../editors/Viewer.py:431
 msgid "Top"
 msgstr ""
 
-#: ../ProjectController.py:1507
+#: ../ProjectController.py:1542
 msgid "Transfer"
 msgstr ""
 
-#: ../ProjectController.py:1509
+#: ../ProjectController.py:1544
 msgid "Transfer PLC"
 msgstr ""
 
-#: ../ProjectController.py:1474
+#: ../ProjectController.py:1509
 msgid "Transfer completed successfully.\n"
 msgstr ""
 
-#: ../ProjectController.py:1476
+#: ../ProjectController.py:1511
 msgid "Transfer failed\n"
 msgstr ""
 
-#: ../editors/Viewer.py:494
+#: ../editors/Viewer.py:493
 msgid "Transition"
 msgstr ""
 
-#: ../PLCGenerator.py:1212
+#: ../PLCGenerator.py:1252
 #, python-format
 msgid "Transition \"%s\" body must contain an output variable or coil referring to its name"
 msgstr ""
@@ -3008,17 +3053,17 @@ msgstr ""
 msgid "Transition Name:"
 msgstr ""
 
-#: ../PLCGenerator.py:1301
+#: ../PLCGenerator.py:1340
 #, python-format
 msgid "Transition with content \"%s\" not connected to a next step in \"%s\" POU"
 msgstr ""
 
-#: ../PLCGenerator.py:1292
+#: ../PLCGenerator.py:1331
 #, python-format
 msgid "Transition with content \"%s\" not connected to a previous step in \"%s\" POU"
 msgstr ""
 
-#: ../plcopen/plcopen.py:1442
+#: ../plcopen/plcopen.py:1447
 #, python-format
 msgid "Transition with name %s doesn't exist!"
 msgstr ""
@@ -3027,14 +3072,18 @@ msgstr ""
 msgid "Transitions"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Triggering"
 msgstr ""
 
 #: ../controls/VariablePanel.py:58 ../controls/VariablePanel.py:59
-#: ../editors/DataTypeEditor.py:48 ../editors/ResourceEditor.py:76
+#: ../editors/DataTypeEditor.py:50 ../editors/ResourceEditor.py:77
 #: ../dialogs/ActionBlockDialog.py:37
 msgid "Type"
+msgstr ""
+
+#: ../dialogs/BrowseLocationsDialog.py:44
+msgid "Type and derivated"
 msgstr ""
 
 #: ../canfestival/config_utils.py:335 ../canfestival/config_utils.py:617
@@ -3046,13 +3095,17 @@ msgstr ""
 msgid "Type conversion"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:155
+#: ../editors/DataTypeEditor.py:161
 msgid "Type infos:"
 msgstr ""
 
+#: ../dialogs/BrowseLocationsDialog.py:45
+msgid "Type strict"
+msgstr ""
+
 #: ../dialogs/SFCDivergenceDialog.py:51 ../dialogs/LDPowerRailDialog.py:51
-#: ../dialogs/ConnectionDialog.py:52 ../dialogs/SFCTransitionDialog.py:53
-#: ../dialogs/FBDBlockDialog.py:48
+#: ../dialogs/BrowseLocationsDialog.py:95 ../dialogs/ConnectionDialog.py:52
+#: ../dialogs/SFCTransitionDialog.py:53 ../dialogs/FBDBlockDialog.py:48
 msgid "Type:"
 msgstr ""
 
@@ -3066,30 +3119,30 @@ msgstr ""
 msgid "Unable to get Xenomai's %s \n"
 msgstr ""
 
-#: ../PLCGenerator.py:865 ../PLCGenerator.py:924
+#: ../PLCGenerator.py:904 ../PLCGenerator.py:963
 #, python-format
 msgid "Undefined block type \"%s\" in \"%s\" POU"
 msgstr ""
 
-#: ../PLCGenerator.py:240
+#: ../PLCGenerator.py:252
 #, python-format
 msgid "Undefined pou type \"%s\""
 msgstr ""
 
-#: ../IDEFrame.py:338 ../IDEFrame.py:397
+#: ../IDEFrame.py:343 ../IDEFrame.py:402
 msgid "Undo"
 msgstr ""
 
-#: ../ProjectController.py:254
+#: ../ProjectController.py:262
 msgid "Unknown"
 msgstr ""
 
-#: ../editors/Viewer.py:336
+#: ../editors/Viewer.py:335
 #, python-format
 msgid "Unknown variable \"%s\" for this POU!"
 msgstr ""
 
-#: ../ProjectController.py:251 ../ProjectController.py:252
+#: ../ProjectController.py:259 ../ProjectController.py:260
 msgid "Unnamed"
 msgstr ""
 
@@ -3103,23 +3156,23 @@ msgstr ""
 msgid "Unrecognized data size \"%s\""
 msgstr ""
 
-#: ../plcopen/structures.py:222
+#: ../plcopen/structures.py:221
 msgid ""
 "Up-counter\n"
 "The up-counter can be used to signal when a count has reached a maximum value."
 msgstr ""
 
-#: ../plcopen/structures.py:232
+#: ../plcopen/structures.py:231
 msgid ""
 "Up-down counter\n"
 "The up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."
 msgstr ""
 
-#: ../controls/VariablePanel.py:709 ../editors/DataTypeEditor.py:623
+#: ../controls/VariablePanel.py:712 ../editors/DataTypeEditor.py:631
 msgid "User Data Types"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:38 ../canfestival/NetworkEditor.py:68
+#: ../canfestival/SlaveEditor.py:42 ../canfestival/NetworkEditor.py:63
 msgid "User Type"
 msgstr ""
 
@@ -3127,7 +3180,7 @@ msgstr ""
 msgid "User-defined POUs"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:40 ../dialogs/ActionBlockDialog.py:37
+#: ../controls/DebugVariablePanel.py:58 ../dialogs/ActionBlockDialog.py:37
 msgid "Value"
 msgstr ""
 
@@ -3135,11 +3188,11 @@ msgstr ""
 msgid "Values"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:252
+#: ../editors/DataTypeEditor.py:258
 msgid "Values:"
 msgstr ""
 
-#: ../controls/DebugVariablePanel.py:40 ../editors/Viewer.py:466
+#: ../controls/DebugVariablePanel.py:58 ../editors/Viewer.py:465
 #: ../dialogs/ActionBlockDialog.py:41
 msgid "Variable"
 msgstr ""
@@ -3148,12 +3201,12 @@ msgstr ""
 msgid "Variable Properties"
 msgstr ""
 
-#: ../controls/VariablePanel.py:277 ../editors/TextViewer.py:330
-#: ../editors/Viewer.py:277
+#: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:277
+#: ../editors/TextViewer.py:323 ../editors/Viewer.py:275
 msgid "Variable class"
 msgstr ""
 
-#: ../editors/TextViewer.py:374 ../editors/Viewer.py:338
+#: ../editors/TextViewer.py:367 ../editors/Viewer.py:337
 msgid "Variable don't belong to this POU!"
 msgstr ""
 
@@ -3169,15 +3222,15 @@ msgstr ""
 msgid "WXGLADE GUI"
 msgstr ""
 
-#: ../ProjectController.py:1276
+#: ../ProjectController.py:1302
 msgid "Waiting debugger to recover...\n"
 msgstr ""
 
-#: ../editors/LDViewer.py:888 ../dialogs/PouDialog.py:126
+#: ../editors/LDViewer.py:891 ../dialogs/PouDialog.py:126
 msgid "Warning"
 msgstr ""
 
-#: ../ProjectController.py:515
+#: ../ProjectController.py:529
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr ""
 
@@ -3193,7 +3246,7 @@ msgstr ""
 msgid "Wrap search"
 msgstr ""
 
-#: ../features.py:9
+#: ../features.py:10
 msgid "WxGlade GUI"
 msgstr ""
 
@@ -3209,17 +3262,17 @@ msgid ""
 "Open wxGlade anyway ?"
 msgstr ""
 
-#: ../ProjectController.py:220
+#: ../ProjectController.py:224
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
 msgstr ""
 
-#: ../editors/LDViewer.py:883
+#: ../editors/LDViewer.py:886
 msgid "You must select the block or group of blocks around which a branch should be added!"
 msgstr ""
 
-#: ../editors/LDViewer.py:663
+#: ../editors/LDViewer.py:666
 msgid "You must select the wire where a contact should be added!"
 msgstr ""
 
@@ -3228,11 +3281,11 @@ msgstr ""
 msgid "You must type a name!"
 msgstr ""
 
-#: ../dialogs/ForceVariableDialog.py:165
+#: ../dialogs/ForceVariableDialog.py:175
 msgid "You must type a value!"
 msgstr ""
 
-#: ../IDEFrame.py:414
+#: ../IDEFrame.py:419
 msgid "Zoom"
 msgstr ""
 
@@ -3240,7 +3293,7 @@ msgstr ""
 msgid "Zoom:"
 msgstr ""
 
-#: ../PLCOpenEditor.py:356
+#: ../PLCOpenEditor.py:335
 #, python-format
 msgid "error: %s\n"
 msgstr ""
@@ -3250,7 +3303,7 @@ msgstr ""
 msgid "exited with status %s (pid %s)\n"
 msgstr ""
 
-#: ../PLCOpenEditor.py:508 ../PLCOpenEditor.py:510
+#: ../PLCOpenEditor.py:393 ../PLCOpenEditor.py:395
 msgid "file : "
 msgstr ""
 
@@ -3258,7 +3311,7 @@ msgstr ""
 msgid "function"
 msgstr ""
 
-#: ../PLCOpenEditor.py:511
+#: ../PLCOpenEditor.py:396
 msgid "function : "
 msgstr ""
 
@@ -3266,7 +3319,7 @@ msgstr ""
 msgid "functionBlock"
 msgstr ""
 
-#: ../PLCOpenEditor.py:511
+#: ../PLCOpenEditor.py:396
 msgid "line : "
 msgstr ""
 
@@ -3286,7 +3339,7 @@ msgstr ""
 msgid "string right of"
 msgstr ""
 
-#: ../PLCOpenEditor.py:354
+#: ../PLCOpenEditor.py:333
 #, python-format
 msgid "warning: %s\n"
 msgstr ""
@@ -3321,9 +3374,6 @@ msgid "CanFestivalInstance"
 msgstr ""
 
 msgid "CAN_Driver"
-msgstr ""
-
-msgid "Debug_mode"
 msgstr ""
 
 msgid "CExtension"
