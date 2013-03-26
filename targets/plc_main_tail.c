@@ -6,12 +6,6 @@
  * LOGGING
  **/
 
-#define LOG_LEVELS 4
-#define LOG_CRITICAL 0
-#define LOG_WARNING 1
-#define LOG_INFO 2
-#define LOG_DEBUG 3
-
 #ifndef LOG_BUFFER_SIZE
 #define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
 #endif

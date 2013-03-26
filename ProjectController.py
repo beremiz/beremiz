@@ -894,6 +894,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Now we can forget ExtraFiles (will close files object)
         del ExtraFiles
         
+        # Header file for extensions
+        open(os.path.join(buildpath,"beremiz.h"), "w").write(targets.GetHeader())
+
         # Template based part of C code generation
         # files are stacked at the beginning, as files of confnode tree root
         for generator, filename, name in [
