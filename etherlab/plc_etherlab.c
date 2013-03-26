@@ -10,13 +10,8 @@
 #include "ecrt.h"
 #include "ec_rtdm.h"
 
-#ifdef _WINDOWS_H
-  #include "iec_types.h"
-#else
-  #include "iec_std_lib.h"
-#endif
-
-extern unsigned long long common_ticktime__;
+#include "beremiz.h"
+#include "iec_types_all.h"
 
 // declaration of interface variables
 %(located_variables_declaration)s
