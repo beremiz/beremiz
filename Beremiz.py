@@ -400,6 +400,7 @@ class Beremiz(IDEFrame):
         self.LogConsole = wx.stc.StyledTextCtrl(id=ID_BEREMIZLOGCONSOLE,
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0))
+        self.LogConsole.SetWrapMode(wx.stc.STC_WRAP_CHAR)
         
         # Define Log Console styles
         self.LogConsole.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, "face:%(mono)s,size:%(size)d" % faces)
