@@ -625,7 +625,7 @@ class VariablePanel(wx.Panel):
         new_description = self.Description.GetValue()
         if new_description != old_description:
             self.Controler.SetPouDescription(words[1], new_description)
-            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         event.Skip()
     
     def OnClassFilter(self, event):
@@ -666,13 +666,13 @@ class VariablePanel(wx.Panel):
                 if old_value != "":
                     self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_value, value)
                 self.Controler.BufferProject()
-                self.ParentWindow.RefreshView(variablepanel = False)
-                self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                wx.CallAfter(self.ParentWindow.RefreshView, False)
+                self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
                 event.Skip()
         else:
             self.SaveValues()
             if colname == "Class":
-                self.ParentWindow.RefreshView(variablepanel = False)
+                wx.CallAfter(self.ParentWindow.RefreshView, False)
             elif colname == "Location":
                 wx.CallAfter(self.ParentWindow.RefreshView)
             
@@ -761,7 +761,7 @@ class VariablePanel(wx.Panel):
             self.SaveValues(False)
             self.ParentWindow.RefreshView(variablepanel = False)
             self.Controler.BufferProject()
-            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         return VariableTypeFunction
     
     def VariableArrayTypeFunction(self, event):
@@ -775,7 +775,7 @@ class VariablePanel(wx.Panel):
             self.SaveValues(False)
             self.ParentWindow.RefreshView(variablepanel = False)
             self.Controler.BufferProject()
-            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         dialog.Destroy()
     
     def OnVariablesGridCellLeftClick(self, event):
@@ -811,7 +811,7 @@ class VariablePanel(wx.Panel):
             self.Controler.SetPouInterfaceVars(words[1], self.Values)
         if buffer:
             self.Controler.BufferProject()
-            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)            
+            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)            
 
 #-------------------------------------------------------------------------------
 #                        Highlights showing functions
