@@ -305,10 +305,11 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         self.ParentControl = None
     
     def OnDragOver(self, x, y, d):
-        if self.ParentControl is not None:
-            self.ParentControl.OnMouseDragging(x, y)
-        else:
-            self.ParentWindow.RefreshHighlight(x, y)
+        if not isinstance(self.ParentControl, CustomGrid):
+            if self.ParentControl is not None:
+                self.ParentControl.OnMouseDragging(x, y)
+            else:
+                self.ParentWindow.RefreshHighlight(x, y)
         return wx.TextDropTarget.OnDragOver(self, x, y, d)
         
     def OnDropText(self, x, y, data):
@@ -372,7 +373,8 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                 self.ParentWindow.InsertValue(values[0], force=True)
     
     def OnLeave(self):
-        self.ParentWindow.ResetHighlight()
+        if not isinstance(self.ParentControl, CustomGrid):
+            self.ParentWindow.ResetHighlight()
         return wx.TextDropTarget.OnLeave(self)
     
     def ShowMessage(self, message):
@@ -1432,22 +1434,23 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     
     def __init__(self, parent, producer, window):
         wx.Panel.__init__(self, parent, style=wx.SP_3D|wx.TAB_TRAVERSAL)
-        self.SetBackgroundColour(wx.WHITE)
         
         self.ParentWindow = window
         
         DebugViewer.__init__(self, producer, True)
         
         self.HasNewData = False
+        self.Force = False
         
         if USE_MPL:
+            self.SetBackgroundColour(wx.WHITE)
+            
             main_sizer = wx.BoxSizer(wx.VERTICAL)
             
             self.Ticks = numpy.array([])
             self.RangeValues = None
             self.StartTick = 0
             self.Fixed = False
-            self.Force = False
             self.CursorTick = None
             self.DraggingAxesPanel = None
             self.DraggingAxesBoundingBox = None
@@ -2110,10 +2113,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                     self.GraphicPanels.append(panel)
                 self.ResetVariableNameMask()
                 self.RefreshGraphicsSizer()
+                self.ForceRefresh()
             else:
                 self.Table.InsertItem(idx, item)
-            
-            self.ForceRefresh()
+                self.RefreshView()
     
     def MoveValue(self, iec_path, idx = None):
         if idx is None:
