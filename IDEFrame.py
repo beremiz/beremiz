@@ -1788,8 +1788,8 @@ class IDEFrame(wx.Frame):
                 menu = wx.Menu(title='')
                 new_id = wx.NewId()
                 AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Transition"))
-                parent = self.ProjectTree.GetItemParent(item)["type"]
-                parent_type = self.ProjectTree.GetPyData(parent)
+                parent = self.ProjectTree.GetItemParent(item)
+                parent_type = self.ProjectTree.GetPyData(parent)["type"]
                 while parent_type != ITEM_POU:
                     parent = self.ProjectTree.GetItemParent(parent)
                     parent_type = self.ProjectTree.GetPyData(parent)["type"]
