@@ -343,12 +343,12 @@ class PLCObject(pyro.ObjBase):
         return self.PLCStatus, map(self.GetLogCount,xrange(LogLevelsCount))
     
     def NewPLC(self, md5sum, data, extrafiles):
-        self.LogMessage("NewPLC (%s)"%md5sum)
         if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
 
             self._FreePLC()
+            self.LogMessage("NewPLC (%s)"%md5sum)
             self.PLCStatus = "Empty"
 
             try:
