@@ -1123,7 +1123,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 else:
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
                         _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(status, 2)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 2)
                 
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
