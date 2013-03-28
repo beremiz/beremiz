@@ -8,7 +8,6 @@
 #include <native/timer.h>
 
 #include "ecrt.h"
-#include "ec_rtdm.h"
 
 #include "beremiz.h"
 #include "iec_types_all.h"
@@ -28,9 +27,6 @@ const static ec_pdo_entry_reg_t domain1_regs[] = {
 
 %(pdos_configuration_declaration)s
 
-int rt_fd = -1;
-CstructMstrAttach MstrAttach;
-char rt_dev_file[64];
 long long wait_period_ns = 100000LL;
 
 // EtherCAT
@@ -50,11 +46,8 @@ int __init_%(location)s(int argc,char **argv)
 {
     uint32_t abort_code;
     size_t result_size;
-    int rtstatus;
     
-	MstrAttach.masterindex = %(master_number)d;
-
-	master = ecrt_request_master(MstrAttach.masterindex);
+	master = ecrt_request_master(%(master_number)d);
 	if (!master) return -1;
 
 	domain1 = ecrt_master_create_domain(master);
@@ -76,21 +69,6 @@ int __init_%(location)s(int argc,char **argv)
     // extracting default value for not mapped entry in output PDOs
 %(slaves_output_pdos_default_values_extraction)s
 
-    sprintf(&rt_dev_file[0],"%%s%%u",EC_RTDM_DEV_FILE_NAME,0);
-    rt_fd = rt_dev_open( &rt_dev_file[0], 0);
-    if (rt_fd < 0) {
-        SLOGF(LOG_CRITICAL, "Can't open %%s\n", &rt_dev_file[0]);
-        return -1;
-    }
-
-    // attach the master over rtdm driver
-    MstrAttach.domainindex = ecrt_domain_index(domain1);
-    rtstatus = ecrt_rtdm_master_attach(rt_fd, &MstrAttach);
-    if (rtstatus < 0) {
-        SLOGF(LOG_CRITICAL, "Cannot attach to master over rtdm\n");
-        return -1;
-    }
-
     if (ecrt_master_activate(master))
         return -1;
 
@@ -108,9 +86,6 @@ int __init_%(location)s(int argc,char **argv)
 
 void __cleanup_%(location)s(void)
 {
-	if (rt_fd >= 0) {
-		rt_dev_close(rt_fd);
-	}
 	//release master
 	ecrt_release_master(master);
     first_sent = 0;
@@ -120,8 +95,8 @@ void __retrieve_%(location)s(void)
 {
     // receive ethercat
     if(first_sent){
-        ecrt_rtdm_master_recieve(rt_fd);
-        ecrt_rtdm_domain_process(rt_fd);
+        ecrt_master_receive(master);
+        ecrt_domain_process(domain1);
 %(retrieve_variables)s
     }
 
@@ -136,7 +111,7 @@ static inline RTIME max(RTIME a,RTIME b){return a>b?a:b;}
 void __publish_%(location)s(void)
 {
 %(publish_variables)s
-    ecrt_rtdm_domain_queque(rt_fd);
+    ecrt_domain_queue(domain1);
     {
         RTIME current_time = rt_timer_read();
         // Limit spining max 1/5 of common_ticktime
@@ -164,6 +139,6 @@ void __publish_%(location)s(void)
             _last_occur = current_time; //Drift forward
         }
     }
-    ecrt_rtdm_master_send(rt_fd);
+    ecrt_master_send(master);
     first_sent = 1;
 }
