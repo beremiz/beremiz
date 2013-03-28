@@ -174,18 +174,6 @@ class _EthercatSlaveCTN:
         }
 
     def CTNGenerate_C(self, buildpath, locations):
-        """
-        Generate C code
-        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
-        @param locations: List of complete variables locations \
-            [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
-            "NAME" : name of the variable (generally "__IW0_1_2" style)
-            "DIR" : direction "Q","I" or "M"
-            "SIZE" : size "X", "B", "W", "D", "L"
-            "LOC" : tuple of interger for IEC location (0,1,2,...)
-            }, ...]
-        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
-        """
         return [],"",False
 
 #--------------------------------------------------
@@ -315,18 +303,6 @@ void __%(blocktype)s_%(location)s(MC_%(ucase_blocktype)s *data__) {
             dragSource.DoDragDrop()
         
         def CTNGenerate_C(self, buildpath, locations):
-            """
-            Generate C code
-            @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
-            @param locations: List of complete variables locations \
-                [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
-                "NAME" : name of the variable (generally "__IW0_1_2" style)
-                "DIR" : direction "Q","I" or "M"
-                "SIZE" : size "X", "B", "W", "D", "L"
-                "LOC" : tuple of interger for IEC location (0,1,2,...)
-                }, ...]
-            @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
-            """
             current_location = self.GetCurrentLocation()
             
             location_str = "_".join(map(lambda x:str(x), current_location))
@@ -1102,18 +1078,6 @@ class _EthercatCTN:
     ]
 
     def CTNGenerate_C(self, buildpath, locations):
-        """
-        Generate C code
-        @param current_location: Tupple containing confnode IEC location : %I0.0.4.5 => (0,0,4,5)
-        @param locations: List of complete variables locations \
-            [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
-            "NAME" : name of the variable (generally "__IW0_1_2" style)
-            "DIR" : direction "Q","I" or "M"
-            "SIZE" : size "X", "B", "W", "D", "L"
-            "LOC" : tuple of interger for IEC location (0,1,2,...)
-            }, ...]
-        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
-        """
         current_location = self.GetCurrentLocation()
         
         slaves = self.GetSlaves()
@@ -1213,7 +1177,7 @@ SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
     {
         uint8_t value[%(data_size)d];
         if (ecrt_master_sdo_upload(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &result_size, &abort_code)) {
-            SLOGF(LOG_CRITICAL, "Failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%d\\n", abort_code);
+            SLOGF(LOG_CRITICAL, "Failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%ud\\n", abort_code);
             return -1;
         }
         %(real_var)s = EC_READ_%(data_type)s((uint8_t *)value);
