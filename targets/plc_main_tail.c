@@ -85,7 +85,7 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
 
         return 1; /* Success */
     }else{
-    	uint8_t mstr[] = "Logging error : message too big";
+    	char mstr[] = "Logging error : message too big";
         LogMessage(LOG_CRITICAL, mstr, sizeof(mstr));
     }
     return 0;
