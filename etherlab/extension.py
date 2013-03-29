@@ -1,7 +1,7 @@
 import features
 
 def GetEtherLabLibClass():
-    from etherlab import EtherlabLibrary
+    from EthercatMaster import EtherlabLibrary
     return EtherlabLibrary
 
 features.libraries.append(
