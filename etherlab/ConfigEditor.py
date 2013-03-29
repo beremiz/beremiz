@@ -761,9 +761,12 @@ class MasterEditor(ConfTreeNodeEditor):
             self.ProcessVariablesGrid.RefreshButtons()
     
     def SaveProcessVariables(self):
-        self.Controler.SetProcessVariables(
-            self.ProcessVariablesTable.GetData())
-        self.RefreshBuffer()
+        if self.CurrentNodesFilter is not None:
+            if len(self.CurrentNodesFilter) > 0:
+                self.Controler.SetProcessVariables(self.ProcessVariables)
+            else:
+                self.Controler.SetProcessVariables(self.ProcessVariablesTable.GetData())
+            self.RefreshBuffer()
     
     def RefreshStartupCommands(self, position=None, command_idx=None):
         if self.CurrentNodesFilter is not None:
@@ -794,6 +797,7 @@ class MasterEditor(ConfTreeNodeEditor):
     def OnNodesFilterChanged(self, event):
         self.RefreshCurrentNodesFilter()
         if self.CurrentNodesFilter is not None:
+            self.RefreshProcessVariables()
             self.RefreshStartupCommands()
             self.NodesVariables.RefreshView()
         event.Skip()
