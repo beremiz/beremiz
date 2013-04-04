@@ -3061,15 +3061,7 @@
           </Entry>
         </TxPdo>
         <Mailbox>
-          <CoE DS402Channels="1" CompleteAccess="false" PdoUpload="false" PdoConfig="true" PdoAssign="true" SdoInfo="false">
-            <InitCmd>
-              <Transition>PS</Transition>
-              <Index>#x2025</Index>
-              <SubIndex>0</SubIndex>
-              <Data>0004</Data>
-              <Comment>Digital Inputs Reverse Setting ([2]ESTOP, [1]CW, [0]CCW)</Comment>
-            </InitCmd>
-          </CoE>
+          <CoE DS402Channels="1" CompleteAccess="false" PdoUpload="false" PdoConfig="true" PdoAssign="true" SdoInfo="false"/>
         </Mailbox>
         <Dc>
           <OpMode>
