@@ -717,7 +717,7 @@ class IDEFrame(wx.Frame):
     def SelectTab(self, tab):
         for notebook in [self.LeftNoteBook, self.BottomNoteBook, self.RightNoteBook]:
             idx = notebook.GetPageIndex(tab)
-            if idx != wx.NOT_FOUND:
+            if idx != wx.NOT_FOUND and idx != notebook.GetSelection():
                 notebook.SetSelection(idx)
                 return
 
@@ -879,8 +879,13 @@ class IDEFrame(wx.Frame):
                 event.Veto()
         
 
-    def GetCopyBuffer(self):
+    def GetCopyBuffer(self, primary_selection=False):
         data = None
+        if primary_selection:
+            if wx.Platform != '__WXMSW__':
+                wx.TheClipboard.UsePrimarySelection(primary_selection)
+            else:
+                return data
         if wx.TheClipboard.Open():
             dataobj = wx.TextDataObject()
             if wx.TheClipboard.GetData(dataobj):
@@ -888,7 +893,12 @@ class IDEFrame(wx.Frame):
             wx.TheClipboard.Close()
         return data
         
-    def SetCopyBuffer(self, text):
+    def SetCopyBuffer(self, text, primary_selection=False):
+        if primary_selection:
+            if wx.Platform != '__WXMSW__':
+                wx.TheClipboard.UsePrimarySelection(primary_selection)
+            else:
+                return
         if wx.TheClipboard.Open():
             data = wx.TextDataObject()
             data.SetText(text)
