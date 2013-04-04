@@ -72,10 +72,10 @@ class SVGUI:
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write(svguiservercode % {"svgfile" : "gui.svg"})
         runtimefile.write("""
-def _runtime_%(location)s_begin():
+def _runtime_%(location)s_start():
     website.LoadHMI(%(svgui_class)s, %(jsmodules)s)
     
-def _runtime_%(location)s_cleanup():
+def _runtime_%(location)s_stop():
     website.UnLoadHMI()
     
 """ % {"location": location_str,

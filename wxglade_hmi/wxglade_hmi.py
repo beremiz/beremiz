@@ -73,7 +73,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         runtimefile.write("""
 %(declare)s
 
-def _runtime_%(location)s_begin():
+def _runtime_%(location)s_start():
     global %(global)s
     
     def OnCloseFrame(evt):
@@ -81,7 +81,7 @@ def _runtime_%(location)s_begin():
     
     %(init)s
     
-def _runtime_%(location)s_cleanup():
+def _runtime_%(location)s_stop():
     global %(global)s
     
     %(cleanup)s
