@@ -1,5 +1,6 @@
 import subprocess,sys,ctypes
 from threading import Thread
+import ctypes,time,re
 
 SDOAnswered = PLCBinary.SDOAnswered
 SDOAnswered.restype = None
@@ -48,3 +49,44 @@ def EthercatSDODownload(pos, index, subindex, var_type, value):
 def GetResult():
     global Result
     return Result
+
+KMSGPollThread=None
+StopKMSGThread=False
+def KMSGPollThreadProc():
+    """
+    Logs Kernel messages starting with EtherCAT
+    Uses GLibc wrapper to Linux syscall "klogctl"
+    Last 4 KB are polled, and lines compared to last 
+    captured line to detect new lines
+    """
+    global StopKMSGThread
+    libc=ctypes.CDLL("libc.so.6")
+    klog = libc.klogctl
+    klog.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int]
+    klog.restype = ctypes.c_int
+    s=ctypes.create_string_buffer(4*1024)
+    last = None
+    while not StopKMSGThread:
+        l = klog(3,s,len(s)-1)
+        log = s.value[:l-1]
+        if last :
+            log = log.rpartition(last)[2]
+        if log : 
+            last = log.rpartition('\n')[2]
+            for msg in re.findall(r'<\d>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
+                                  log, re.MULTILINE):
+                PLCObject.LogMessage(msg)
+        time.sleep(0.5) 
+
+def _runtime_etherlab_init():
+    global KMSGPollThread, StopKMSGThread
+    StopKMSGThread = False
+    KMSGPollThread = Thread(target = KMSGPollThreadProc)
+    KMSGPollThread.start()
+
+def _runtime_etherlab_cleanup():
+    global KMSGPollThread, StopKMSGThread
+    StopKMSGThread = True
+    KMSGPollThread = None
+
+        
