@@ -3,12 +3,12 @@
          xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <fileHeader companyName="beremiz"
+  <fileHeader companyName=""
               productName="Beremiz"
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2013-02-23T23:37:47">
+                 modificationDateTime="2013-04-04T10:25:57">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -179,6 +179,16 @@
             <variable name="Global_RS">
               <type>
                 <derived name="RS"/>
+              </type>
+            </variable>
+            <variable name="TUTU">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="TOTO">
+              <type>
+                <INT/>
               </type>
             </variable>
           </externalVars>
@@ -1048,6 +1058,37 @@ Enjoy. ]]>
               </connectionPointOut>
               <expression>Test_TOD</expression>
             </inOutVariable>
+            <inVariable localId="49" height="30" width="30">
+              <position x="765" y="1200"/>
+              <connectionPointOut>
+                <relPosition x="30" y="15"/>
+              </connectionPointOut>
+              <expression>42</expression>
+            </inVariable>
+            <outVariable localId="57" height="30" width="50">
+              <position x="845" y="1200"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="49">
+                  <position x="845" y="1215"/>
+                  <position x="795" y="1215"/>
+                </connection>
+              </connectionPointIn>
+              <expression>TOTO</expression>
+            </outVariable>
+            <outVariable localId="56" height="30" width="50">
+              <position x="845" y="1240"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="49">
+                  <position x="845" y="1255"/>
+                  <position x="820" y="1255"/>
+                  <position x="820" y="1215"/>
+                  <position x="795" y="1215"/>
+                </connection>
+              </connectionPointIn>
+              <expression>TUTU</expression>
+            </outVariable>
           </FBD>
         </body>
       </pou>
@@ -1180,6 +1221,11 @@ Global_RS();
           <variable name="Global_RS">
             <type>
               <derived name="RS"/>
+            </type>
+          </variable>
+          <variable name="TUTU">
+            <type>
+              <INT/>
             </type>
           </variable>
         </globalVars>
