@@ -668,7 +668,6 @@ class VariablePanel(wx.Panel):
                 self.Controler.BufferProject()
                 wx.CallAfter(self.ParentWindow.RefreshView, False)
                 self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-                event.Skip()
         else:
             self.SaveValues()
             if colname == "Class":
