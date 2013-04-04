@@ -67,7 +67,7 @@ class PLCObject(pyro.ObjBase):
         self.hmi_frame = None
         self.website = website
         self._loading_error = None
-        self.python_threads_vars = None
+        self.python_runtime_vars = None
         
         # Get the last transfered PLC if connector must be restart
         try:
@@ -231,49 +231,63 @@ class PLCObject(pyro.ObjBase):
         self.PLClibraryLock.release()
         return False
 
-    def PrepareRuntimePy(self):
-        self.python_threads_vars = globals().copy()
-        self.python_threads_vars["WorkingDir"] = self.workingdir
-        self.python_threads_vars["website"] = self.website
-        self.python_threads_vars["_runtime_begin"] = []
-        self.python_threads_vars["_runtime_cleanup"] = []
-        self.python_threads_vars["PLCObject"] = self
-        self.python_threads_vars["PLCBinary"] = self.PLClibraryHandle
+    def PythonRuntimeCall(self, methodname):
+        """ 
+        Calls init, start, stop or cleanup method provided by 
+        runtime python files, loaded when new PLC uploaded
+        """
+        try :
+            for method in self.python_runtime_vars.get("_runtime_%s"%methodname, []):
+                res,exp = self.evaluator(method)
+                if exp is not None: raise(exp)
+        except:
+            self.LogMessage(0,traceback.format_exc())
+            raise
+
+    def PythonRuntimeInit(self):
+        MethodNames = ["init", "start", "stop", "cleanup"]
+        self.python_runtime_vars = globals().copy()
+        self.python_runtime_vars["WorkingDir"] = self.workingdir
+        self.python_runtime_vars["website"] = self.website
+        for methodname in MethodNames :
+            self.python_runtime_vars["_runtime_%s"%methodname] = []
+        self.python_runtime_vars["PLCObject"] = self
+        self.python_runtime_vars["PLCBinary"] = self.PLClibraryHandle
         
         try:
             for filename in os.listdir(self.workingdir):
                 name, ext = os.path.splitext(filename)
                 if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
-                    execfile(os.path.join(self.workingdir, filename), self.python_threads_vars)
-                    runtime_begin = self.python_threads_vars.get("_%s_begin" % name, None)
-                    if runtime_begin is not None:
-                        self.python_threads_vars["_runtime_begin"].append(runtime_begin)
-                    runtime_cleanup = self.python_threads_vars.get("_%s_cleanup" % name, None)
-                    if runtime_cleanup is not None:
-                        self.python_threads_vars["_runtime_cleanup"].append(runtime_cleanup)
+                    execfile(os.path.join(self.workingdir, filename), self.python_runtime_vars)
+                    for methodname in MethodNames: 
+                        method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
+                        if method is not None:
+                            self.python_runtime_vars["_runtime_%s"%methodname].append(method)
             
-            for runtime_begin in self.python_threads_vars.get("_runtime_begin", []):
-                runtime_begin()
         except:
             self.LogMessage(0,traceback.format_exc())
             raise
             
+        self.PythonRuntimeCall("init")
+
         if self.website is not None:
             self.website.PLCStarted()
 
-    def FinishRuntimePy(self):
-        for runtime_cleanup in self.python_threads_vars.get("_runtime_cleanup", []):
-            runtime_cleanup()    
+
+    def PythonRuntimeCleanup(self):
+        if self.python_runtime_vars is not None:
+            self.PythonRuntimeCall("cleanup")
+
         if self.website is not None:
             self.website.PLCStopped()
-        self.python_threads_vars = None
+
+        self.python_runtime_vars = None
 
     def PythonThreadProc(self):
         self.PLCStatus = "Started"
         self.StatusChange()
         self.StartSem.release()
-        res,exp = self.evaluator(self.PrepareRuntimePy)
-        if exp is not None: raise(exp)
+        self.PythonRuntimeCall("start")
         res,cmd,blkid = "None","None",ctypes.c_void_p()
         compile_cache={}
         while True:
@@ -284,24 +298,23 @@ class PLCObject(pyro.ObjBase):
             if cmd is None:
                 break
             try :
-                self.python_threads_vars["FBID"]=FBID
+                self.python_runtime_vars["FBID"]=FBID
                 ccmd,AST =compile_cache.get(FBID, (None,None))
                 if ccmd is None or ccmd!=cmd:
                     AST = compile(cmd, '<plc>', 'eval')
                     compile_cache[FBID]=(cmd,AST)
-                result,exp = self.evaluator(eval,cmd,self.python_threads_vars)
+                result,exp = self.evaluator(eval,cmd,self.python_runtime_vars)
                 if exp is not None: 
                     raise(exp)
                 else:
                     res=str(result)
-                self.python_threads_vars["FBID"]=None
+                self.python_runtime_vars["FBID"]=None
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,str(e)))
         self.PLCStatus = "Stopped"
         self.StatusChange()
-        exp,res = self.evaluator(self.FinishRuntimePy)
-        if exp is not None: raise(exp)
+        self.PythonRuntimeCall("stop")
     
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
@@ -347,6 +360,8 @@ class PLCObject(pyro.ObjBase):
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
 
+            self.PythonRuntimeCleanup()
+
             self._FreePLC()
             self.LogMessage("NewPLC (%s)"%md5sum)
             self.PLCStatus = "Empty"
@@ -387,6 +402,10 @@ class PLCObject(pyro.ObjBase):
 
             if self._LoadNewPLC():
                 self.PLCStatus = "Stopped"
+                try:
+                    self.PythonRuntimeInit()
+                except:
+                    self.PLCStatus = "Broken"
             else:
                 self._FreePLC()
             self.StatusChange()
