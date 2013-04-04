@@ -19,6 +19,19 @@
         <RevisionNo>65536</RevisionNo>
         <SerialNo>0</SerialNo>
       </Info>
+      <Mailbox>
+        <Send>
+          <Start>0</Start>
+          <Length>0</Length>
+        </Send>
+        <Recv>
+          <Start>0</Start>
+          <Length>0</Length>
+        </Recv>
+        <CoE>
+          <InitCmds/>
+        </CoE>
+      </Mailbox>
     </Slave>
     <Slave>
       <Info>
@@ -31,6 +44,19 @@
         <RevisionNo>1048576</RevisionNo>
         <SerialNo>0</SerialNo>
       </Info>
+      <Mailbox>
+        <Send>
+          <Start>0</Start>
+          <Length>0</Length>
+        </Send>
+        <Recv>
+          <Start>0</Start>
+          <Length>0</Length>
+        </Recv>
+        <CoE>
+          <InitCmds/>
+        </CoE>
+      </Mailbox>
     </Slave>
     <Slave>
       <Info>
@@ -55,6 +81,47 @@
         <RevisionNo>2</RevisionNo>
         <SerialNo>0</SerialNo>
       </Info>
+      <Mailbox>
+        <Send>
+          <Start>0</Start>
+          <Length>0</Length>
+        </Send>
+        <Recv>
+          <Start>0</Start>
+          <Length>0</Length>
+        </Recv>
+        <CoE>
+          <InitCmds>
+            <InitCmd>
+              <Transition>II</Transition>
+              <Comment>Configure limit switches signal</Comment>
+              <Timeout>0</Timeout>
+              <Ccs>0</Ccs>
+              <Index>8229</Index>
+              <SubIndex>0</SubIndex>
+              <Data>07</Data>
+            </InitCmd>
+            <InitCmd>
+              <Transition>II</Transition>
+              <Comment></Comment>
+              <Timeout>0</Timeout>
+              <Ccs>0</Ccs>
+              <Index>24800</Index>
+              <SubIndex>0</SubIndex>
+              <Data>05DC</Data>
+            </InitCmd>
+            <InitCmd>
+              <Transition>II</Transition>
+              <Comment></Comment>
+              <Timeout>0</Timeout>
+              <Ccs>0</Ccs>
+              <Index>24801</Index>
+              <SubIndex>0</SubIndex>
+              <Data>05DC</Data>
+            </InitCmd>
+          </InitCmds>
+        </CoE>
+      </Mailbox>
     </Slave>
   </Config>
 </EtherCATConfig>
