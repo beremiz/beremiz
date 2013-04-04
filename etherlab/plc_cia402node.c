@@ -55,10 +55,8 @@ static __CIA402Node __CIA402Node_%(location)s;
 
 int __init_%(location)s()
 {
+    __FirstTick = 1;
 %(init_entry_variables)s
-	*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
-	__CIA402Node_%(location)s.axis = __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
-	__CIA402Node_%(location)s.axis->NetworkPosition = %(slave_pos)d;
 	*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
     return 0;
 }
@@ -69,13 +67,15 @@ void __cleanup_%(location)s()
 
 void __retrieve_%(location)s()
 {
-%(fieldbus_interface_definition)s
-
 	IEC_UINT statusword_inactive = *(__CIA402Node_%(location)s.StatusWord) & __InactiveMask;
 	IEC_UINT statusword_active = *(__CIA402Node_%(location)s.StatusWord) & __ActiveMask;
 
 	if (__FirstTick) {
+		*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
+		__CIA402Node_%(location)s.axis = __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
+		__CIA402Node_%(location)s.axis->NetworkPosition = %(slave_pos)d;
 %(init_axis_params)s
+%(fieldbus_interface_definition)s
 		__FirstTick = 0;
 	}
 
