@@ -73,7 +73,6 @@ class EtherlabLibrary(POULibrary):
         ethelabfile.write(etherlab_ext_code)
         ethelabfile.close()
         
-        runtimefile_path = os.path.join(os.path.split(__file__)[0], "runtime_etherlab.py")
         return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "", 
                 ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
     
