@@ -1669,6 +1669,8 @@ def generateSetElementValue(factory, classinfos):
                     raise ValueError("Wrong path!")
                 if attributes[parts[0]]["attr_type"]["basename"] == "boolean":
                     setattr(self, parts[0], value)
+                elif attributes[parts[0]]["use"] == "optional" and value == "":
+                    setattr(self, parts[0], None)
                 else:
                     setattr(self, parts[0], attributes[parts[0]]["attr_type"]["extract"](value, False))
             elif elements.has_key(parts[0]):
@@ -1677,6 +1679,8 @@ def generateSetElementValue(factory, classinfos):
                         raise ValueError("Wrong path!")
                     if elements[parts[0]]["elmt_type"]["basename"] == "boolean":
                         setattr(self, parts[0], value)
+                    elif attributes[parts[0]]["minOccurs"] == 0 and value == "":
+                        setattr(self, parts[0], None)
                     else:
                         setattr(self, parts[0], elements[parts[0]]["elmt_type"]["extract"](value, False))
                 else:
