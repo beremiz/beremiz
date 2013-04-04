@@ -51,8 +51,7 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
 }
 """
 
-BLOCK_FUNTION_DEFINITION_TEMPLATE = """    if (!__CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s)
-__CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location)s;"""
+BLOCK_FUNTION_DEFINITION_TEMPLATE = "        __CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location)s;"
 
 GLOBAL_INSTANCES = [
     {"blocktype": "GetTorqueLimit", 
