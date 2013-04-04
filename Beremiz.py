@@ -254,7 +254,9 @@ class LogPseudoFile:
                 if style is None : style=self.black_white
                 if style != self.black_white:
                     self.output.StartStyling(self.output.GetLength(), 0xff)
+                self.output.SetReadOnly(False)
                 self.output.AddText(s)
+                self.output.SetReadOnly(True)
                 if style != self.black_white:
                     self.output.SetStyling(len(s), style)
             self.stack = []
@@ -400,6 +402,10 @@ class Beremiz(IDEFrame):
         self.LogConsole = wx.stc.StyledTextCtrl(id=ID_BEREMIZLOGCONSOLE,
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0))
+        self.LogConsole.Bind(wx.EVT_SET_FOCUS, self.OnLogConsoleFocusChanged)
+        self.LogConsole.Bind(wx.EVT_KILL_FOCUS, self.OnLogConsoleFocusChanged)
+        self.LogConsole.Bind(wx.stc.EVT_STC_UPDATEUI, self.OnLogConsoleUpdateUI)
+        self.LogConsole.SetReadOnly(True)
         self.LogConsole.SetWrapMode(wx.stc.STC_WRAP_CHAR)
         
         # Define Log Console styles
@@ -559,6 +565,15 @@ class Beremiz(IDEFrame):
         if not wnd:
             wnd = self
         InspectionTool().Show(wnd, True)
+
+    def OnLogConsoleFocusChanged(self, event):
+        if self:
+            self.RefreshEditMenu()
+        event.Skip()
+
+    def OnLogConsoleUpdateUI(self, event):
+        self.SetCopyBuffer(self.LogConsole.GetSelectedText(), True)
+        event.Skip()
 
     def OnLogConsoleMarginClick(self, event):
         line_idx = self.LogConsole.LineFromPosition(event.GetPosition())
@@ -762,6 +777,9 @@ class Beremiz(IDEFrame):
     
     def RefreshEditMenu(self):
         IDEFrame.RefreshEditMenu(self)
+        if self.FindFocus() == self.LogConsole:
+            self.EditMenu.Enable(wx.ID_COPY, True)
+            self.Panes["MenuToolBar"].EnableTool(wx.ID_COPY, True)
         
         if self.CTR is not None:
             selected = self.TabsOpened.GetSelection()
