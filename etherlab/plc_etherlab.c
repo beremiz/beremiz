@@ -47,13 +47,13 @@ int __init_%(location)s(int argc,char **argv)
     uint32_t abort_code;
     size_t result_size;
     
-	master = ecrt_request_master(%(master_number)d);
-	if (!master) {
+    master = ecrt_request_master(%(master_number)d);
+    if (!master) {
         SLOGF(LOG_CRITICAL, "EtherCAT master request failed!");
         return -1;
     }
 
-	if(!(domain1 = ecrt_master_create_domain(master))){
+    if(!(domain1 = ecrt_master_create_domain(master))){
         SLOGF(LOG_CRITICAL, "EtherCAT Domain Creation failed!");
         goto ecat_failed;
     }
@@ -66,7 +66,7 @@ int __init_%(location)s(int argc,char **argv)
         goto ecat_failed;
     }
 
-	ecrt_master_set_send_interval(master, common_ticktime__);
+    ecrt_master_set_send_interval(master, common_ticktime__);
 
     // slaves initialization
 %(slaves_initialization)s
@@ -91,15 +91,15 @@ int __init_%(location)s(int argc,char **argv)
     return 0;
 
 ecat_failed:
-	ecrt_release_master(master);
+    ecrt_release_master(master);
     return -1;
 
 }
 
 void __cleanup_%(location)s(void)
 {
-	//release master
-	ecrt_release_master(master);
+    //release master
+    ecrt_release_master(master);
     first_sent = 0;
 }
 
