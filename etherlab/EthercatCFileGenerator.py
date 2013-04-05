@@ -25,12 +25,12 @@ ec_sync_info_t slave_%(slave)d_syncs[] = {
 
 SLAVE_CONFIGURATION_TEMPLATE = """
     if (!(slave%(slave)d = ecrt_master_slave_config(master, %(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x))) {
-        SLOGF(LOG_CRITICAL, "Failed to get slave %(device_type)s configuration at alias %(alias)d and position %(position)d.\\n");
+        SLOGF(LOG_CRITICAL, "EtherCAT failed to get slave %(device_type)s configuration at alias %(alias)d and position %(position)d.");
         return -1;
     }
 
     if (ecrt_slave_config_pdos(slave%(slave)d, EC_END, slave_%(slave)d_syncs)) {
-        SLOGF(LOG_CRITICAL, "Failed to configure PDOs for slave %(device_type)s at alias %(alias)d and position %(position)d.\\n");
+        SLOGF(LOG_CRITICAL, "EtherCAT failed to configure PDOs for slave %(device_type)s at alias %(alias)d and position %(position)d.");
         return -1;
     }
 """
@@ -40,7 +40,7 @@ SLAVE_INITIALIZATION_TEMPLATE = """
         uint8_t value[%(data_size)d];
         EC_WRITE_%(data_type)s((uint8_t *)value, %(data)s);
         if (ecrt_master_sdo_download(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &abort_code)) {
-            SLOGF(LOG_CRITICAL, "Failed to initialize slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%d\\n", abort_code);
+            SLOGF(LOG_CRITICAL, "EtherCAT Failed to initialize slave %(device_type)s at alias %(alias)d and position %(position)d. Error: %%d", abort_code);
             return -1;
         }
     }
@@ -50,7 +50,7 @@ SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
     {
         uint8_t value[%(data_size)d];
         if (ecrt_master_sdo_upload(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &result_size, &abort_code)) {
-            SLOGF(LOG_CRITICAL, "Failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d.\\nError: %%ud\\n", abort_code);
+            SLOGF(LOG_CRITICAL, "EtherCAT failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d. Error: %%ud", abort_code);
             return -1;
         }
         %(real_var)s = EC_READ_%(data_type)s((uint8_t *)value);
