@@ -567,7 +567,7 @@ class Beremiz(IDEFrame):
         InspectionTool().Show(wnd, True)
 
     def OnLogConsoleFocusChanged(self, event):
-        if self:
+        if self.EditMenu:
             self.RefreshEditMenu()
         event.Skip()
 
