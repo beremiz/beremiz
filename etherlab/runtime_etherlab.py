@@ -79,9 +79,14 @@ def KMSGPollThreadProc():
             log = log.rpartition(last)[2]
         if log : 
             last = log.rpartition('\n')[2]
-            for msg in re.findall(r'<\d>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
-                                  log, re.MULTILINE):
-                PLCObject.LogMessage(msg)
+            for lvl,msg in re.findall(
+                            r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
+                            log, re.MULTILINE):
+                PLCObject.LogMessage(
+                    LogLevelsDict[{
+                        "4":"WARNING",
+                        "3":"CRITICAL"}.get(lvl,"DEBUG")],
+                    msg)
         time.sleep(0.5) 
 
 def _runtime_etherlab_init():
