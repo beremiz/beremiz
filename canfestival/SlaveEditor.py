@@ -2,7 +2,7 @@
 import wx
 
 from subindextable import EditingPanel
-from nodeeditor import NodeEditorTemplate
+from nodeeditortemplate import NodeEditorTemplate
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 [ID_SLAVEEDITORCONFNODEMENUNODEINFOS, ID_SLAVEEDITORCONFNODEMENUDS301PROFILE,
