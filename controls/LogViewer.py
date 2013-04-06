@@ -573,6 +573,8 @@ class LogViewer(DebugViewer, wx.Panel):
             if message is None or self.IsMessagePanelBottom(msgidx):
                 self.ScrollToFirst()
             else:
+                if seconds > 0 and self.CurrentMessage == msgidx and msgidx < len(self.LogMessages) - 1:
+                    msgidx += 1
                 self.CurrentMessage = msgidx
                 self.RefreshView()
             
