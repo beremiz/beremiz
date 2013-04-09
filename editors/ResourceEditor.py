@@ -154,7 +154,7 @@ class ResourceTable(CustomTable):
                         grid.SetReadOnly(row, col, True)
                 elif colname == "Triggering":
                     editor = wx.grid.GridCellChoiceEditor()
-                    editor.SetParameters(",".join([""] + map(_, GetTaskTriggeringOptions())))
+                    editor.SetParameters(",".join(map(_, GetTaskTriggeringOptions())))
                 elif colname == "Type":
                     editor = wx.grid.GridCellChoiceEditor()
                     editor.SetParameters(self.Parent.TypeList)
