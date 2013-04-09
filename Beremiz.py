@@ -351,10 +351,13 @@ class Beremiz(IDEFrame):
     
     def _init_coll_AddMenu_Items(self, parent):
         IDEFrame._init_coll_AddMenu_Items(self, parent, False)
-        new_id = wx.NewId()
-        AppendMenu(parent, help='', id=new_id,
-                  kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
-        self.Bind(wx.EVT_MENU, self.AddResourceMenu, id=new_id)
+        
+        # Disable add resource until matiec is able to handle multiple ressource definition
+        #new_id = wx.NewId()
+        #AppendMenu(parent, help='', id=new_id,
+        #          kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
+        #self.Bind(wx.EVT_MENU, self.AddResourceMenu, id=new_id)
+        
         for name, XSDClass, help in ProjectController.CTNChildrenTypes:
             new_id = wx.NewId()
             AppendMenu(parent, help='', id=new_id, 
@@ -1015,7 +1018,10 @@ class Beremiz(IDEFrame):
             
             event.Skip()
         else:
-            IDEFrame.OnProjectTreeRightUp(self, event)
+            parent = self.ProjectTree.GetItemParent(item)
+            parent_name = self.ProjectTree.GetItemText(parent)
+            if item_infos["type"] != ITEM_RESOURCE or parent_name == _("Resources"):
+                IDEFrame.OnProjectTreeRightUp(self, event)
     
     def OnProjectTreeItemActivated(self, event):
         selected = event.GetItem()

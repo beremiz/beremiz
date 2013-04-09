@@ -1826,11 +1826,15 @@ class IDEFrame(wx.Frame):
                 while parent_type not in [ITEM_CONFIGURATION, ITEM_PROJECT]:
                     parent = self.ProjectTree.GetItemParent(parent)
                     parent_type = self.ProjectTree.GetPyData(parent)["type"]
+                parent_name = None
                 if parent_type == ITEM_PROJECT:
-                    parent_name = None
+                    config_names = self.Controler.GetProjectConfigNames()
+                    if len(config_names) > 0:
+                        parent_name = config_names[0]
                 else:
                     parent_name = self.ProjectTree.GetItemText(parent)
-                self.Bind(wx.EVT_MENU, self.GenerateAddResourceFunction(parent_name), id=new_id)
+                if parent_name is not None:
+                    self.Bind(wx.EVT_MENU, self.GenerateAddResourceFunction(parent_name), id=new_id)
             
         else:
             if item_infos["type"] == ITEM_POU:
