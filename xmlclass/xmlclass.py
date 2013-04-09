@@ -1670,7 +1670,12 @@ def generateSetElementValue(factory, classinfos):
                 if attributes[parts[0]]["attr_type"]["basename"] == "boolean":
                     setattr(self, parts[0], value)
                 elif attributes[parts[0]]["use"] == "optional" and value == "":
-                    setattr(self, parts[0], None)
+                    if attributes[parts[0]].has_key("default"):
+                        setattr(self, parts[0], 
+                            attributes[parts[0]]["attr_type"]["extract"](
+                                attributes[parts[0]]["default"], False))
+                    else:
+                        setattr(self, parts[0], None)
                 else:
                     setattr(self, parts[0], attributes[parts[0]]["attr_type"]["extract"](value, False))
             elif elements.has_key(parts[0]):
