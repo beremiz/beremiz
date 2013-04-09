@@ -98,7 +98,7 @@ class toolchain_gcc():
         ######### GENERATE OBJECT FILES ########################################
         obns = []
         objs = []
-        relink = False
+        relink = self.GetBinaryCode() is None
         for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             if CFilesAndCFLAGS:
                 if Location :
