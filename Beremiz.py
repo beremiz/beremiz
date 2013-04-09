@@ -254,9 +254,14 @@ class LogPseudoFile:
                 if style is None : style=self.black_white
                 if style != self.black_white:
                     self.output.StartStyling(self.output.GetLength(), 0xff)
+                
+                # Temporary deactivate read only mode on StyledTextCtrl for adding text
+                # It seems that text modifications, even programmatically, are disabled
+                # in StyledTextCtrl when read only is active 
                 self.output.SetReadOnly(False)
                 self.output.AddText(s)
                 self.output.SetReadOnly(True)
+                
                 if style != self.black_white:
                     self.output.SetStyling(len(s), style)
             self.stack = []
@@ -284,7 +289,12 @@ class LogPseudoFile:
         wx.GetApp().Yield()
 
     def flush(self):
+        # Temporary deactivate read only mode on StyledTextCtrl for clearing text
+        # It seems that text modifications, even programmatically, are disabled
+        # in StyledTextCtrl when read only is active 
+        self.output.SetReadOnly(False)
         self.output.SetText("")
+        self.output.SetReadOnly(True)
     
     def isatty(self):
         return false
