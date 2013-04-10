@@ -881,11 +881,10 @@ class IDEFrame(wx.Frame):
 
     def GetCopyBuffer(self, primary_selection=False):
         data = None
-        if primary_selection:
-            if wx.Platform != '__WXMSW__':
-                wx.TheClipboard.UsePrimarySelection(primary_selection)
-            else:
-                return data
+        if primary_selection and wx.Platform == '__WXMSW__':
+            return data
+        else:
+            wx.TheClipboard.UsePrimarySelection(primary_selection)
         if wx.TheClipboard.Open():
             dataobj = wx.TextDataObject()
             if wx.TheClipboard.GetData(dataobj):
@@ -894,11 +893,10 @@ class IDEFrame(wx.Frame):
         return data
         
     def SetCopyBuffer(self, text, primary_selection=False):
-        if primary_selection:
-            if wx.Platform != '__WXMSW__':
-                wx.TheClipboard.UsePrimarySelection(primary_selection)
-            else:
-                return
+        if primary_selection and wx.Platform == '__WXMSW__':
+            return
+        else:
+            wx.TheClipboard.UsePrimarySelection(primary_selection)
         if wx.TheClipboard.Open():
             data = wx.TextDataObject()
             data.SetText(text)
