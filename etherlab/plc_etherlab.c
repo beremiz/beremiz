@@ -47,21 +47,26 @@ int __init_%(location)s(int argc,char **argv)
     uint32_t abort_code;
     size_t result_size;
     
-	master = ecrt_request_master(%(master_number)d);
-	if (!master) return -1;
+    master = ecrt_request_master(%(master_number)d);
+    if (!master) {
+        SLOGF(LOG_CRITICAL, "EtherCAT master request failed!");
+        return -1;
+    }
 
-	domain1 = ecrt_master_create_domain(master);
-	if (!domain1) return -1;
+    if(!(domain1 = ecrt_master_create_domain(master))){
+        SLOGF(LOG_CRITICAL, "EtherCAT Domain Creation failed!");
+        goto ecat_failed;
+    }
 
     // slaves PDO configuration
 %(slaves_configuration)s
 
     if (ecrt_domain_reg_pdo_entry_list(domain1, domain1_regs)) {
-        SLOGF(LOG_CRITICAL, "PDO entry registration failed!\n");
-        return -1;
+        SLOGF(LOG_CRITICAL, "EtherCAT PDO registration failed!");
+        goto ecat_failed;
     }
 
-	ecrt_master_set_send_interval(master, common_ticktime__);
+    ecrt_master_set_send_interval(master, common_ticktime__);
 
     // slaves initialization
 %(slaves_initialization)s
@@ -69,25 +74,32 @@ int __init_%(location)s(int argc,char **argv)
     // extracting default value for not mapped entry in output PDOs
 %(slaves_output_pdos_default_values_extraction)s
 
-    if (ecrt_master_activate(master))
-        return -1;
-
-    if (!(domain1_pd = ecrt_domain_data(domain1))) {
-        SLOGF(LOG_CRITICAL, "domain1_pd:  0x%%.6lx\n", (unsigned long)domain1_pd);
-        return -1;
+    if (ecrt_master_activate(master)){
+        SLOGF(LOG_CRITICAL, "EtherCAT Master activation failed");
+        goto ecat_failed;
     }
 
-    SLOGF(LOG_INFO, "Master %(master_number)d activated...\n");
+    if (!(domain1_pd = ecrt_domain_data(domain1))) {
+        SLOGF(LOG_CRITICAL, "Failed to map EtherCAT process data");
+        goto ecat_failed;
+    }
+
+    SLOGF(LOG_INFO, "Master %(master_number)d activated.");
     
     first_sent = 0;
 
     return 0;
+
+ecat_failed:
+    ecrt_release_master(master);
+    return -1;
+
 }
 
 void __cleanup_%(location)s(void)
 {
-	//release master
-	ecrt_release_master(master);
+    //release master
+    ecrt_release_master(master);
     first_sent = 0;
 }
 
