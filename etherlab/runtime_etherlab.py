@@ -1,6 +1,7 @@
 import subprocess,sys,ctypes
 from threading import Thread
 import ctypes,time,re
+from targets.typemapping import LogLevelsDict
 
 SDOAnswered = PLCBinary.SDOAnswered
 SDOAnswered.restype = None
@@ -12,11 +13,12 @@ Result = None
 def SDOThreadProc(*params):
     global Result
     if params[0] == "upload":
-        command = "ethercat upload -p %d -t %s 0x%.4x 0x%.2x"
+        cmdfmt = "ethercat upload -p %d -t %s 0x%.4x 0x%.2x"
     else:
-        command = "ethercat download -p %d -t %s 0x%.4x 0x%.2x %s"
+        cmdfmt = "ethercat download -p %d -t %s 0x%.4x 0x%.2x %s"
     
-    proc = subprocess.Popen(command % params[1:], stdout=subprocess.PIPE, shell=True)
+    command = cmdfmt % params[1:]
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     res = proc.wait()
     output = proc.communicate()[0]
     
@@ -35,6 +37,10 @@ def SDOThreadProc(*params):
         Result = res == 0
     
     SDOAnswered()
+    if res != 0 :
+        PLCObject.LogMessage(
+            LogLevelsDict["WARNING"], 
+            "%s : %s"%(command,output))
     
 def EthercatSDOUpload(pos, index, subindex, var_type):
     global SDOThread
@@ -73,9 +79,14 @@ def KMSGPollThreadProc():
             log = log.rpartition(last)[2]
         if log : 
             last = log.rpartition('\n')[2]
-            for msg in re.findall(r'<\d>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
-                                  log, re.MULTILINE):
-                PLCObject.LogMessage(msg)
+            for lvl,msg in re.findall(
+                            r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
+                            log, re.MULTILINE):
+                PLCObject.LogMessage(
+                    LogLevelsDict[{
+                        "4":"WARNING",
+                        "3":"CRITICAL"}.get(lvl,"DEBUG")],
+                    msg)
         time.sleep(0.5) 
 
 def _runtime_etherlab_init():
@@ -89,4 +100,3 @@ def _runtime_etherlab_cleanup():
     StopKMSGThread = True
     KMSGPollThread = None
 
-        
