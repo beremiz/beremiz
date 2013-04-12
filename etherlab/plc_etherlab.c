@@ -47,6 +47,9 @@ int __init_%(location)s(int argc,char **argv)
     uint32_t abort_code;
     size_t result_size;
     
+    abort_code = 0;
+    result_size = 0;
+
     master = ecrt_request_master(%(master_number)d);
     if (!master) {
         SLOGF(LOG_CRITICAL, "EtherCAT master request failed!");
