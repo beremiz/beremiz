@@ -5,11 +5,8 @@
 
 #include "ecrt.h"
 
-#ifdef _WINDOWS_H
-  #include "iec_types.h"
-#else
-  #include "iec_std_lib.h"
-#endif
+#include "beremiz.h"
+#include "iec_types_all.h"
 
 #include "accessor.h"
 #include "POUS.h"
