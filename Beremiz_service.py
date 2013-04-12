@@ -488,6 +488,7 @@ class Server():
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
         
         if self.autostart:
+            self.plcobj.LoadPLC()
             self.plcobj.StartPLC()
         
         sys.stdout.flush()

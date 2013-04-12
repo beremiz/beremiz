@@ -122,7 +122,7 @@ class PLCObject(pyro.ObjBase):
         return os.path.join(self.workingdir,self.CurrentPLCFilename)
 
 
-    def _LoadNewPLC(self):
+    def LoadPLC(self):
         """
         Load PLC library
         Declare all functions, arguments and return values
@@ -209,7 +209,7 @@ class PLCObject(pyro.ObjBase):
         """
         self.PLClibraryLock.acquire()
         # Forget all refs to library
-        self._startPLC = lambda:None
+        self._startPLC = lambda x,y:None
         self._stopPLC = lambda:None
         self._ResetDebugVariables = lambda:None
         self._RegisterDebugVariable = lambda x, y:None
@@ -400,7 +400,7 @@ class PLCObject(pyro.ObjBase):
                 PLCprint(traceback.format_exc())
                 return False
 
-            if self._LoadNewPLC():
+            if self.LoadPLC():
                 self.PLCStatus = "Stopped"
                 try:
                     self.PythonRuntimeInit()
