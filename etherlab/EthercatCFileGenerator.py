@@ -26,7 +26,7 @@ ec_sync_info_t slave_%(slave)d_syncs[] = {
 SLAVE_CONFIGURATION_TEMPLATE = """
     if (!(slave%(slave)d = ecrt_master_slave_config(master, %(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x))) {
         SLOGF(LOG_CRITICAL, "EtherCAT failed to get slave %(device_type)s configuration at alias %(alias)d and position %(position)d.");
-        return -1;
+        goto ecat_failed;
     }
 
     if (ecrt_slave_config_pdos(slave%(slave)d, EC_END, slave_%(slave)d_syncs)) {
