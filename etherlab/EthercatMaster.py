@@ -292,6 +292,12 @@ class _EthercatCTN:
             return False
         return True
 
+    def GetSlaveName(self, slave_pos):
+        CTNChild = self.GetChildByIECLocation((slave_pos,))
+        if CTNChild is not None:
+            return CTNChild.CTNName()
+        return self.CTNName()
+
     def GetSlaves(self, vendor=None, slave_pos=None, slave_profile=None):
         slaves = []
         for slave in self.Config.getConfig().getSlave():

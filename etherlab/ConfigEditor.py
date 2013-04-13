@@ -174,20 +174,22 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                 access = entry.get("Access", "")
                 entry_index = self.Controler.ExtractHexDecValue(entry.get("Index", "0"))
                 entry_subindex = self.Controler.ExtractHexDecValue(entry.get("SubIndex", "0"))
+                location = self.Controler.GetCurrentLocation()
                 if self.PositionColumn:
                     slave_pos = self.Controler.ExtractHexDecValue(entry.get("Position", "0"))
+                    location += (slave_pos,)
+                    node_name = self.Controler.GetSlaveName(slave_pos)
                 else:
-                    slave_pos = self.Controler.GetSlavePos()
+                    node_name = self.Controler.CTNName()
                 
                 if pdo_mapping != "":
-                    var_name = "%s_%4.4x_%2.2x" % (self.Controler.CTNName(), entry_index, entry_subindex)
-                    if pdo_mapping == "R":
+                    var_name = "%s_%4.4x_%2.2x" % (node_name, entry_index, entry_subindex)
+                    if pdo_mapping == "T":
                         dir = "%I"
                     else:
                         dir = "%Q"
                     location = "%s%s" % (dir, data_size) + \
-                               ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + 
-                                                             (slave_pos, entry_index, entry_subindex)))
+                               ".".join(map(lambda x:str(x), location + (entry_index, entry_subindex)))
                     
                     data = wx.TextDataObject(str((location, "location", data_type, var_name, "", access)))
                     dragSource = wx.DropSource(self.VariablesGrid)
@@ -195,7 +197,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                     dragSource.DoDragDrop()
                     return
                 
-                elif self.ColumnPosition:
+                elif self.PositionColumn:
                     location = self.Controler.GetCurrentLocation() +\
                                (slave_pos, entry_index, entry_subindex)
                     data = wx.TextDataObject(str((location, "variable", access)))
