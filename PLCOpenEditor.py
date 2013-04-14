@@ -82,6 +82,7 @@ from IDEFrame import TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJ
 from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 from editors.Viewer import Viewer
 from PLCControler import PLCControler
+from dialogs import ProjectDialog
 
 #-------------------------------------------------------------------------------
 #                            PLCOpenEditor Main Class
