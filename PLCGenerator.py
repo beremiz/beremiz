@@ -106,9 +106,9 @@ class ProgramGenerator:
     # Compute value according to type given
     def ComputeValue(self, value, var_type):
         base_type = self.Controler.GetBaseType(var_type)
-        if base_type == "STRING":
+        if base_type == "STRING" and not value.startswith("'") and not value.endswith("'"):
             return "'%s'"%value
-        elif base_type == "WSTRING":
+        elif base_type == "WSTRING" and not value.startswith('"') and not value.endswith('"'):
             return "\"%s\""%value
         return value
 
