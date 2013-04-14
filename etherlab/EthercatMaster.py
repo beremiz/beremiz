@@ -435,7 +435,10 @@ class _EthercatCTN:
                         self.SetSlaveAlias(slave["idx"], slave["alias"])
                         type_infos["device_type"] = device.getType().getcontent()
                         self.SetSlaveType(slave["idx"], type_infos)
-
+            
+                if app_frame:
+                    app_frame.RefreshProjectTree()
+            
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """
         Create the confnodes that may be added as child to this node self
