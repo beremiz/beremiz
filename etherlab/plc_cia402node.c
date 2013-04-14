@@ -153,7 +153,12 @@ void __publish_%(location)s()
 	}
 
 	// Default variables publish
-	*(__CIA402Node_%(location)s.TargetPosition) = USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->PositionSetPoint);
+	if (__CIA402Node_%(location)s.axis->CSP && *(__CIA402Node_%(location)s.ModesOfOperationDisplay) == 0x08) {
+		*(__CIA402Node_%(location)s.TargetPosition) = USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->PositionSetPoint);
+	}
+	else {
+		*(__CIA402Node_%(location)s.TargetPosition) = *(__CIA402Node_%(location)s.ActualPosition);
+	}
 
 	// Extra variables publish
 %(extra_variables_publish)s
