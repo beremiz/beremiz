@@ -465,6 +465,8 @@ class ConfigTreeNode:
         shutil.rmtree(CTNInstance.CTNPath())
         # Remove child of Children
         self.Children[CTNInstance.CTNType].remove(CTNInstance)
+        if len(self.Children[CTNInstance.CTNType]) == 0:
+            self.Children.pop(CTNInstance.CTNType)
         # Forget it... (View have to refresh)
 
     def CTNRemove(self):
