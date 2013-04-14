@@ -74,6 +74,7 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.VariablesList.Bind(CT.EVT_TREE_ITEM_ACTIVATED,
                 self.OnVariablesListItemActivated)
         self.VariablesList.Bind(wx.EVT_LEFT_DOWN, self.OnVariablesListLeftDown)
+        self.VariablesList.Bind(wx.EVT_KEY_DOWN, self.OnVariablesListKeyDown)
         
         buttons_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
         buttons_sizer.AddWindow(self.ParentButton)
@@ -353,6 +354,11 @@ class PouInstanceVariablesPanel(wx.Panel):
                     dragSource.SetData(data)
                     dragSource.DoDragDrop()
         event.Skip()
+
+    def OnVariablesListKeyDown(self, event):
+        keycode = event.GetKeyCode()
+        if keycode != wx.WXK_LEFT:
+            event.Skip()
         
     def OnInstanceChoiceLeftDown(self, event):
         event.Skip()
