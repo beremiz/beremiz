@@ -33,9 +33,9 @@ ACCESS_TYPES = {
     'rw': 'R/W'}
 
 def GetAccessValue(access, pdo_mapping):
-    value = ACCESS_TYPES.get(access, "")
+    value = "SDO: %s" % ACCESS_TYPES.get(access, "")
     if pdo_mapping != "":
-        value += "/P"
+        value += ", PDO: %s" % pdo_mapping
     return value
 
 VARIABLES_FILTERS = [
@@ -44,9 +44,29 @@ VARIABLES_FILTERS = [
     (_("Manufacturer Specific"), (0x2000, 0x5fff)),
     (_("Standardized Device Profile"), (0x6000, 0x9fff))]
 
+VARIABLE_INDEX_FILTER_FORMAT = _("Variable Index: #x%4.4X")
+
 ETHERCAT_INDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,4})$")
 ETHERCAT_SUBINDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,2})$")
 LOCATION_MODEL = re.compile("(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
+
+NAVIGATION_KEYS = [
+    wx.WXK_END,
+    wx.WXK_HOME,
+    wx.WXK_LEFT,
+    wx.WXK_UP,
+    wx.WXK_RIGHT,
+    wx.WXK_DOWN,
+    wx.WXK_PAGEUP,
+    wx.WXK_PAGEDOWN,
+    wx.WXK_NUMPAD_HOME,
+    wx.WXK_NUMPAD_LEFT,
+    wx.WXK_NUMPAD_UP,
+    wx.WXK_NUMPAD_RIGHT,
+    wx.WXK_NUMPAD_DOWN,
+    wx.WXK_NUMPAD_PAGEUP,
+    wx.WXK_NUMPAD_PAGEDOWN,
+    wx.WXK_NUMPAD_END]
 
 class NodeVariablesSizer(wx.FlexGridSizer):
     
@@ -61,6 +81,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         self.VariablesFilter = wx.ComboBox(parent, style=wx.TE_PROCESS_ENTER)
         self.VariablesFilter.Bind(wx.EVT_COMBOBOX, self.OnVariablesFilterChanged)
         self.VariablesFilter.Bind(wx.EVT_TEXT_ENTER, self.OnVariablesFilterChanged)
+        self.VariablesFilter.Bind(wx.EVT_CHAR, self.OnVariablesFilterKeyDown)
         self.AddWindow(self.VariablesFilter, flag=wx.GROW)
         
         self.VariablesGrid = wx.gizmos.TreeListCtrl(parent, 
@@ -80,10 +101,11 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         
         self.VariablesFilter.SetSelection(0)
         self.CurrentFilter = self.Filters[0]
+        self.VariablesFilterFirstCharacter = True
         
         if position_column:
             for colname, colsize, colalign in zip(GetVariablesTableColnames(position_column),
-                                                  [40, 80, 350, 80, 100, 80, 80],
+                                                  [40, 80, 350, 80, 100, 80, 150],
                                                   [wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_LEFT, 
                                                    wx.ALIGN_RIGHT, wx.ALIGN_RIGHT, wx.ALIGN_LEFT, 
                                                    wx.ALIGN_LEFT]):
@@ -91,7 +113,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
             self.VariablesGrid.SetMainColumn(2)
         else:
             for colname, colsize, colalign in zip(GetVariablesTableColnames(),
-                                                  [40, 350, 80, 100, 80, 80],
+                                                  [40, 350, 80, 100, 80, 150],
                                                   [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, 
                                                    wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]):
                 self.VariablesGrid.AddColumn(_(colname), colsize, colalign)
@@ -152,15 +174,37 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         else:
             try:
                 value = self.VariablesFilter.GetValue()
-                result = ETHERCAT_INDEX_MODEL.match(value)
-                if result is not None:
-                    value = result.group(1)
-                index = int(value, 16)
-                self.CurrentFilter = (index, index)
+                if value == "":
+                    self.CurrentFilter = self.Filters[0]
+                    self.VariablesFilter.SetSelection(0)
+                else:
+                    result = ETHERCAT_INDEX_MODEL.match(value)
+                    if result is not None:
+                        value = result.group(1)
+                    index = int(value, 16)
+                    self.CurrentFilter = (index, index)
+                    self.VariablesFilter.SetValue(VARIABLE_INDEX_FILTER_FORMAT % index)
                 self.RefreshView()
             except:
-                pass
+                if self.CurrentFilter in self.Filters:
+                    self.VariablesFilter.SetSelection(self.Filters.index(self.CurrentFilter))
+                else:
+                    self.VariablesFilter.SetValue(VARIABLE_INDEX_FILTER_FORMAT % self.CurrentFilter[0])
+        self.VariablesFilterFirstCharacter = True
         event.Skip()
+    
+    def OnVariablesFilterKeyDown(self, event):
+        if self.VariablesFilterFirstCharacter:
+            keycode = event.GetKeyCode()
+            self.VariablesFilterFirstCharacter = False
+            if keycode not in NAVIGATION_KEYS:
+                self.VariablesFilter.SetValue("")
+            if keycode not in [wx.WXK_DELETE, 
+                               wx.WXK_NUMPAD_DELETE, 
+                               wx.WXK_BACK]:
+                event.Skip()
+        else:
+            event.Skip()
     
     def OnVariablesGridLeftClick(self, event):
         item, flags, col = self.VariablesGrid.HitTest(event.GetPosition())
@@ -503,6 +547,8 @@ class MasterNodesVariablesSizer(NodeVariablesSizer):
             entries = self.Controler.GetNodesVariables(**args)
             self.RefreshVariablesGrid(entries)
 
+NODE_POSITION_FILTER_FORMAT = _("Node Position: %d")
+
 class MasterEditor(ConfTreeNodeEditor):
     
     CONFNODEEDITOR_TABS = [
@@ -519,6 +565,7 @@ class MasterEditor(ConfTreeNodeEditor):
             style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_COMBOBOX, self.OnNodesFilterChanged, self.NodesFilter)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnNodesFilterChanged, self.NodesFilter)
+        self.NodesFilter.Bind(wx.EVT_CHAR, self.OnNodesFilterKeyDown)
         
         process_variables_header = wx.BoxSizer(wx.HORIZONTAL)
         
@@ -579,7 +626,7 @@ class MasterEditor(ConfTreeNodeEditor):
         
         main_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Node filter:"))
         staticbox_sizer = wx.StaticBoxSizer(main_staticbox, wx.VERTICAL)
-        main_sizer.AddSizer(staticbox_sizer, 1, border=10, flag=wx.GROW|wx.ALL)
+        main_sizer.AddSizer(staticbox_sizer, 0, border=10, flag=wx.GROW|wx.ALL)
         main_staticbox_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=6, vgap=0)
         main_staticbox_sizer.AddGrowableCol(0)
         main_staticbox_sizer.AddGrowableRow(2)
@@ -607,6 +654,7 @@ class MasterEditor(ConfTreeNodeEditor):
         
         self.ProcessVariables = []
         self.CellShown = None
+        self.NodesFilterFirstCharacter = True
         
         self.ProcessVariablesDefaultValue = {"Name": "", "ReadFrom": "", "WriteTo": "", "Description": ""}
         self.ProcessVariablesTable = ProcessVariablesTable(self, [], GetProcessVariablesTableColnames())
@@ -744,9 +792,20 @@ class MasterEditor(ConfTreeNodeEditor):
             self.CurrentNodesFilter = self.NodesFilterValues[filter]
         else:
             try:
-                self.CurrentNodesFilter = {"slave_pos": int(self.NodesFilter.GetValue())}
+                value = self.NodesFilter.GetValue()
+                if value == "":
+                    self.CurrentNodesFilter = self.NodesFilterValues[0]
+                    self.NodesFilter.SetSelection(0)
+                else:
+                    position = int(self.NodesFilter.GetValue())
+                    self.CurrentNodesFilter = {"slave_pos": position}
+                    self.NodesFilter.SetValue(NODE_POSITION_FILTER_FORMAT % position)
             except:
-                self.CurrentNodesFilter = None
+                if self.CurrentNodesFilter in self.NodesFilterValues:
+                    self.NodesFilter.SetSelection(self.NodesFilterValues.index(self.CurrentNodesFilter))
+                else:
+                    self.NodesFilter.SetValue(NODE_POSITION_FILTER_FORMAT % self.CurrentNodesFilter["slave_pos"])
+        self.NodesFilterFirstCharacter = True
         self.NodesVariables.SetCurrentNodesFilter(self.CurrentNodesFilter)
     
     def RefreshProcessVariables(self):
@@ -803,6 +862,19 @@ class MasterEditor(ConfTreeNodeEditor):
             self.RefreshStartupCommands()
             self.NodesVariables.RefreshView()
         event.Skip()
+    
+    def OnNodesFilterKeyDown(self, event):
+        if self.NodesFilterFirstCharacter:
+            keycode = event.GetKeyCode()
+            self.NodesFilterFirstCharacter = False
+            if keycode not in NAVIGATION_KEYS:
+                self.NodesFilter.SetValue("")
+            if keycode not in [wx.WXK_DELETE, 
+                               wx.WXK_NUMPAD_DELETE, 
+                               wx.WXK_BACK]:
+                event.Skip()
+        else:
+            event.Skip()
     
     def OnProcessVariablesGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
