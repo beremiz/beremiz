@@ -196,6 +196,9 @@ class PLCObject(pyro.ObjBase):
             self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
 
             self._loading_error = None
+
+            self.PythonRuntimeInit()
+
             return True
         except:
             self._loading_error = traceback.format_exc()
@@ -402,11 +405,8 @@ class PLCObject(pyro.ObjBase):
 
             if self.LoadPLC():
                 self.PLCStatus = "Stopped"
-                try:
-                    self.PythonRuntimeInit()
-                except:
-                    self.PLCStatus = "Broken"
             else:
+                self.PLCStatus = "Broken"
                 self._FreePLC()
             self.StatusChange()
 

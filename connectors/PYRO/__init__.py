@@ -45,6 +45,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             from util.Zeroconf import Zeroconf
             r = Zeroconf()
             i=r.getServiceInfo(service_type, location)
+            if i is None : raise Exception, "'%s' not found"%location
             ip = str(socket.inet_ntoa(i.getAddress()))
             port = str(i.getPort())
             newlocation = ip+':'+port
