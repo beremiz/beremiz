@@ -139,6 +139,7 @@ class VariableTableItem(DebugDataConsumer):
             self.MaxValue = None
         else:
             self.Data = None
+        self.Value = ""
     
     def IsNumVariable(self):
         return (self.Parent.IsNumType(self.VariableType) or 
@@ -1149,13 +1150,14 @@ if USE_MPL:
                             self.ParentWindow.ForceRefresh()
         
         def OnCanvasScroll(self, event):
-            if event.inaxes is not None:
+            if event.inaxes is not None and event.guiEvent.ControlDown():
                 if self.GraphType == GRAPH_ORTHOGONAL:
                     start_tick, end_tick = self.ParentWindow.GetRange()
                     tick = (start_tick + end_tick) / 2.
                 else:
                     tick = event.xdata
                 self.ParentWindow.ChangeRange(int(-event.step) / 3, tick)
+                self.ParentWindow.VetoScrollEvent = True
         
         def OnDragging(self, x, y):
             width, height = self.GetSize()
@@ -1455,6 +1457,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.DraggingAxesPanel = None
             self.DraggingAxesBoundingBox = None
             self.DraggingAxesMousePos = None
+            self.VetoScrollEvent = False
             self.VariableNameMask = []
             
             self.GraphicPanels = []
@@ -1513,6 +1516,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.GraphicsWindow.Bind(wx.EVT_ERASE_BACKGROUND, self.OnGraphicsWindowEraseBackground)
             self.GraphicsWindow.Bind(wx.EVT_PAINT, self.OnGraphicsWindowPaint)
             self.GraphicsWindow.Bind(wx.EVT_SIZE, self.OnGraphicsWindowResize)
+            self.GraphicsWindow.Bind(wx.EVT_MOUSEWHEEL, self.OnGraphicsWindowMouseWheel)
+            
             main_sizer.AddWindow(self.GraphicsWindow, 1, flag=wx.GROW)
             
             self.GraphicsSizer = wx.BoxSizer(wx.VERTICAL)
@@ -2239,4 +2244,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def OnGraphicsWindowResize(self, event):
         self.RefreshGraphicsWindowScrollbars()
         event.Skip()
-    
+
+    def OnGraphicsWindowMouseWheel(self, event):
+        if self.VetoScrollEvent:
+            self.VetoScrollEvent = False
+        else:
+            event.Skip()
