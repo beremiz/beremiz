@@ -2041,6 +2041,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                 self.StartBuffering()
                 self.SelectedElement.RefreshModel()
                 self.RefreshScrollBars()
+                self.RefreshVisibleElements()
                 self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
         elif not self.Debug and keycode == wx.WXK_SPACE and self.SelectedElement is not None and self.SelectedElement.Dragging:
             if self.IsBlock(self.SelectedElement) or self.IsComment(self.SelectedElement):
