@@ -818,7 +818,7 @@ if USE_MPL:
             self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
             self.Bind(wx.EVT_SIZE, self.OnResize)
             
-            self.SetMinSize(wx.Size(200, 200))
+            self.SetMinSize(self.GetCanvasMinSize())
             self.SetDropTarget(DebugVariableDropTarget(self.ParentWindow, self))
             self.mpl_connect('button_press_event', self.OnCanvasButtonPressed)
             self.mpl_connect('motion_notify_event', self.OnCanvasMotion)
@@ -2135,6 +2135,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 break
         if source_panel is not None:
             source_panel.RemoveItem(item)
+            source_size = source_panel.GetSize()
             if source_panel.IsEmpty():
                 if source_panel.HasCapture():
                     source_panel.ReleaseMouse()
@@ -2143,6 +2144,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             
             if item.IsNumVariable():
                 panel = DebugVariableGraphic(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
+                panel.SetCanvasSize(source_size.width, source_size.height)
                 if self.CursorTick is not None:
                     panel.SetCursorTick(self.CursorTick)
             else:
@@ -2167,6 +2169,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 if result is not None or force:
                     source_item = item
         if source_item is not None and source_item.IsNumVariable():
+            if source_panel is not None:
+                source_size = source_panel.GetSize()
+            else:
+                source_size = None
             target_panel = self.GraphicPanels[target_idx]
             graph_type = target_panel.GraphType
             if target_panel != source_panel:
@@ -2191,6 +2197,13 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             if target_panel is not None:
                 target_panel.AddItem(source_item)
                 target_panel.GraphType = merge_type
+                size = target_panel.GetSize()
+                if merge_type == GRAPH_ORTHOGONAL:
+                    target_panel.SetCanvasSize(size.width, size.width)
+                elif source_size is not None:
+                    target_panel.SetCanvasSize(size.width, size.height + source_size.height)
+                else:
+                    target_panel.SetCanvasSize(size.width, size.height)
                 target_panel.ResetGraphics()
                 
                 self.ResetVariableNameMask()
@@ -2242,6 +2255,11 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         event.Skip()
     
     def OnGraphicsWindowResize(self, event):
+        size = self.GetSize()
+        for panel in self.GraphicPanels:
+            panel_size = panel.GetSize()
+            if panel.GraphType == GRAPH_ORTHOGONAL and panel_size.width == panel_size.height:
+                panel.SetCanvasSize(size.width, size.width)
         self.RefreshGraphicsWindowScrollbars()
         event.Skip()
 
