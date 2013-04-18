@@ -1027,11 +1027,13 @@ class Beremiz(IDEFrame):
             confnode_menu.Destroy()
             
             event.Skip()
-        else:
+        elif item_infos["type"] == ITEM_PROJECT:
             parent = self.ProjectTree.GetItemParent(item)
             parent_name = self.ProjectTree.GetItemText(parent)
             if item_infos["type"] != ITEM_RESOURCE or parent_name == _("Resources"):
                 IDEFrame.OnProjectTreeRightUp(self, event)
+        else:
+            IDEFrame.OnProjectTreeRightUp(self, event)
     
     def OnProjectTreeItemActivated(self, event):
         selected = event.GetItem()
