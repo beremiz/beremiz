@@ -818,7 +818,8 @@ if USE_MPL:
             self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
             self.Bind(wx.EVT_SIZE, self.OnResize)
             
-            self.SetMinSize(self.GetCanvasMinSize())
+            canvas_size = self.GetCanvasMinSize()
+            self.SetMinSize(canvas_size)
             self.SetDropTarget(DebugVariableDropTarget(self.ParentWindow, self))
             self.mpl_connect('button_press_event', self.OnCanvasButtonPressed)
             self.mpl_connect('motion_notify_event', self.OnCanvasMotion)
@@ -834,7 +835,7 @@ if USE_MPL:
                 GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
             
             self.ResetGraphics()
-            self.RefreshLabelsPosition(200)
+            self.RefreshLabelsPosition(canvas_size.height)
             self.ShowButtons(False)
         
         def draw(self, drawDC=None):
