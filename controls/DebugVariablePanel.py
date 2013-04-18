@@ -607,10 +607,9 @@ if USE_MPL:
                     buttons = self.Buttons[:]
                     buttons.reverse()
                     for button in buttons:
-                        if button.IsShown() and button.IsEnabled():
-                            w, h = button.GetSize()
-                            button.SetPosition(width - 5 - w - offset, 5)
-                            offset += w + 2
+                        w, h = button.GetSize()
+                        button.SetPosition(width - 5 - w - offset, 5)
+                        offset += w + 2
                     self.ParentWindow.ForceRefresh()
         
         def DrawCommonElements(self, dc, buttons=None):
@@ -799,7 +798,7 @@ if USE_MPL:
         def __init__(self, parent, window, items, graph_type):
             DebugVariableViewer.__init__(self, window, items)
             
-            self.CanvasSize = SIZE_MAXI
+            self.CanvasSize = SIZE_MINI
             self.GraphType = graph_type
             self.CursorTick = None
             self.MouseStartPos = None
@@ -886,9 +885,8 @@ if USE_MPL:
                 if self.ContextualButtonsItem.IsForced():
                     self.ContextualButtons.append(
                         GraphButton(0, 0, GetBitmap("release"), self.OnReleaseButton))
-                else:
-                    self.ContextualButtons.append(
-                        GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
+                self.ContextualButtons.append(
+                    GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
                 self.ContextualButtons.append(
                     GraphButton(0, 0, GetBitmap("export_graph_mini"), self.OnExportItemGraphButton))
                 self.ContextualButtons.append(
@@ -962,29 +960,6 @@ if USE_MPL:
                          self.ContextualButtonsItem)
             self.DismissContextualButtons()
         
-        def RefreshButtonsState(self, refresh_positions=False):
-            if self:
-                width, height = self.GetSize()
-                min_width, min_height = self.GetCanvasMinSize()
-                for button, size in zip(self.Buttons, 
-                                        [min_height, SIZE_MIDDLE, SIZE_MAXI]):
-                    if size == height and button.IsEnabled():
-                        button.Disable()
-                        refresh_positions = True
-                    elif not button.IsEnabled():
-                        button.Enable()
-                        refresh_positions = True
-                if refresh_positions:
-                    offset = 0
-                    buttons = self.Buttons[:]
-                    buttons.reverse()
-                    for button in buttons:
-                        if button.IsShown() and button.IsEnabled():
-                            w, h = button.GetSize()
-                            button.SetPosition(width - 5 - w - offset, 5)
-                            offset += w + 2
-                    self.ParentWindow.ForceRefresh()
-        
         def RefreshLabelsPosition(self, height):
             canvas_ratio = 1. / height
             graph_ratio = 1. / ((1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio) * height)
@@ -1021,6 +996,7 @@ if USE_MPL:
             height = max(height, self.GetCanvasMinSize()[1])
             self.SetMinSize(wx.Size(width, height))
             self.RefreshLabelsPosition(height)
+            self.RefreshButtonsState()
             self.ParentWindow.RefreshGraphicsSizer()
             
         def GetAxesBoundingBox(self, absolute=False):
@@ -1661,6 +1637,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.DraggingAxesPanel.SetCursorTick(self.CursorTick)
             width, height = panel.GetSize()
             self.DraggingAxesPanel.SetSize(wx.Size(width, height))
+            self.DraggingAxesPanel.ResetGraphics()
             self.DraggingAxesPanel.SetPosition(wx.Point(0, -height))
         else:
             self.DraggingAxesPanel = panel
