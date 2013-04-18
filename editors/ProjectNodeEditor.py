@@ -33,11 +33,12 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         
         ConfTreeNodeEditor.__init__(self, parent, controler, window, tagname)
         
-        buttons_sizer = self.GenerateMethodButtonSizer()
-        self.ParamsEditorSizer.InsertSizer(0, buttons_sizer, 0, border=5, 
-                flag=wx.LEFT|wx.RIGHT|wx.TOP)
-        self.ParamsEditorSizer.Layout()
-        
+        if self.SHOW_BASE_PARAMS:
+            buttons_sizer = self.GenerateMethodButtonSizer()
+            self.ParamsEditorSizer.InsertSizer(0, buttons_sizer, 0, border=5, 
+                    flag=wx.LEFT|wx.RIGHT|wx.TOP)
+            self.ParamsEditorSizer.Layout()
+            
         self.VariableEditor = self.VariableEditorPanel
 
     def GetTagName(self):
