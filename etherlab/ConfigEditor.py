@@ -196,9 +196,11 @@ class NodeVariablesSizer(wx.FlexGridSizer):
     def OnVariablesFilterKeyDown(self, event):
         if self.VariablesFilterFirstCharacter:
             keycode = event.GetKeyCode()
-            self.VariablesFilterFirstCharacter = False
-            if keycode not in NAVIGATION_KEYS:
-                self.VariablesFilter.SetValue("")
+            if keycode not in [wx.WXK_RETURN, 
+                               wx.WXK_NUMPAD_ENTER]:
+                self.VariablesFilterFirstCharacter = False
+                if keycode not in NAVIGATION_KEYS:
+                    self.VariablesFilter.SetValue("")
             if keycode not in [wx.WXK_DELETE, 
                                wx.WXK_NUMPAD_DELETE, 
                                wx.WXK_BACK]:
@@ -866,9 +868,11 @@ class MasterEditor(ConfTreeNodeEditor):
     def OnNodesFilterKeyDown(self, event):
         if self.NodesFilterFirstCharacter:
             keycode = event.GetKeyCode()
-            self.NodesFilterFirstCharacter = False
-            if keycode not in NAVIGATION_KEYS:
-                self.NodesFilter.SetValue("")
+            if keycode not in [wx.WXK_RETURN, 
+                               wx.WXK_NUMPAD_ENTER]:
+                self.NodesFilterFirstCharacter = False
+                if keycode not in NAVIGATION_KEYS:
+                    self.NodesFilter.SetValue("")
             if keycode not in [wx.WXK_DELETE, 
                                wx.WXK_NUMPAD_DELETE, 
                                wx.WXK_BACK]:
