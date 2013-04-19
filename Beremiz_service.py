@@ -465,6 +465,8 @@ class Server():
 
     def Quit(self):
         self.continueloop = False
+        if self.plcobj is not None:
+            self.plcobj.UnLoadPLC()
         self.Stop()
 
     def Start(self):
@@ -496,7 +498,8 @@ class Server():
         self.daemon.requestLoop()
     
     def Stop(self):
-        self.plcobj.StopPLC()
+        if self.plcobj is not None:
+            self.plcobj.StopPLC()
         if self.servicepublisher is not None:
             self.servicepublisher.UnRegisterService()
             self.servicepublisher = None

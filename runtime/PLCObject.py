@@ -205,6 +205,10 @@ class PLCObject(pyro.ObjBase):
             PLCprint(self._loading_error)
             return False
 
+    def UnLoadPLC(self):
+        self.PythonRuntimeCleanup()
+        self._FreePLC()
+
     def _FreePLC(self):
         """
         Unload PLC library.
@@ -363,9 +367,8 @@ class PLCObject(pyro.ObjBase):
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
 
-            self.PythonRuntimeCleanup()
+            self.UnLoadPLC()
 
-            self._FreePLC()
             self.LogMessage("NewPLC (%s)"%md5sum)
             self.PLCStatus = "Empty"
 
