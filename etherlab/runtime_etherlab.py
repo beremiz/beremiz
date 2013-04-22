@@ -1,4 +1,4 @@
-import subprocess,sys,ctypes
+import os,subprocess,sys,ctypes
 from threading import Thread
 import ctypes,time,re
 from targets.typemapping import LogLevelsDict
@@ -8,19 +8,20 @@ SDOAnswered.restype = None
 SDOAnswered.argtypes = []
 
 SDOThread = None
+SDOProc = None
 Result = None
 
 def SDOThreadProc(*params):
-    global Result
+    global Result, SDOProc
     if params[0] == "upload":
         cmdfmt = "ethercat upload -p %d -t %s 0x%.4x 0x%.2x"
     else:
         cmdfmt = "ethercat download -p %d -t %s 0x%.4x 0x%.2x %s"
     
     command = cmdfmt % params[1:]
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-    res = proc.wait()
-    output = proc.communicate()[0]
+    SDOProc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    res = SDOProc.wait()
+    output = SDOProc.communicate()[0]
     
     if params[0] == "upload":
         Result = None
@@ -96,7 +97,12 @@ def _runtime_etherlab_init():
     KMSGPollThread.start()
 
 def _runtime_etherlab_cleanup():
-    global KMSGPollThread, StopKMSGThread
+    global KMSGPollThread, StopKMSGThread, SDOProc, SDOThread
+    try:
+        os.kill(SDOProc.pid, SIGTERM)
+    except:
+        pass
+    SDOThread = None
     StopKMSGThread = True
     KMSGPollThread = None
 
