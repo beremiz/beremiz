@@ -349,12 +349,10 @@ if enablewx:
             def OnTaskBarStartPLC(self, evt):
                 if self.pyroserver.plcobj is not None: 
                     self.pyroserver.plcobj.StartPLC()
-                evt.Skip()
             
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
                     Thread(target=self.pyroserver.plcobj.StopPLC).start()
-                evt.Skip()
             
             def OnTaskBarChangeInterface(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip_addr)
@@ -364,7 +362,6 @@ if enablewx:
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip_addr = dlg.GetValue()
                     self.pyroserver.Stop()
-                evt.Skip()
             
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
@@ -372,14 +369,12 @@ if enablewx:
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Stop()
-                evt.Skip()
             
             def OnTaskBarChangeWorkingDir(self, evt):
                 dlg = wx.DirDialog(None, _("Choose a working directory "), self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.workdir = dlg.GetPath()
                     self.pyroserver.Stop()
-                evt.Skip()
             
             def OnTaskBarChangeName(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=self.pyroserver.name)
@@ -387,19 +382,17 @@ if enablewx:
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.name = dlg.GetValue()
                     self.pyroserver.Restart()
-                evt.Skip()
             
             def _LiveShellLocals(self):
                 if self.pyroserver.plcobj is not None:
                     return {"locals":self.pyroserver.plcobj.python_threads_vars}
                 else:
                     return {}
-
+            
             def OnTaskBarLiveShell(self, evt):
                 from wx import py
                 frame = py.crust.CrustFrame(**self._LiveShellLocals())
                 frame.Show()
-                evt.Skip()
             
             def OnTaskBarWXInspector(self, evt):
                 # Activate the widget inspection tool
@@ -409,14 +402,10 @@ if enablewx:
 
                 wnd = wx.GetApp()
                 InspectionTool().Show(wnd, True)
-
-                evt.Skip()
             
             def OnTaskBarQuit(self, evt):
-                Thread(target=self.pyroserver.Quit).start()
                 self.RemoveIcon()
                 wx.CallAfter(wx.GetApp().Exit)
-                evt.Skip()
             
             def UpdateIcon(self, plcstatus):
                 if plcstatus is "Started" :
