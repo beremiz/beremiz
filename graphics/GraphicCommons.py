@@ -1493,9 +1493,9 @@ class Graphic_Group(Graphic_Element):
         self.Parent.PopupGroupMenu()
 
     # Refreshes the model of all the elements of this group
-    def RefreshModel(self):
+    def RefreshModel(self, move=True):
         for element in self.Elements:
-            element.RefreshModel()
+            element.RefreshModel(move)
 
 
 #-------------------------------------------------------------------------------
