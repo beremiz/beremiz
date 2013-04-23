@@ -147,57 +147,22 @@ class ConfTreeNodeEditor(EditorPanel):
     
     def _init_Editor(self, parent):
         tabs_num = len(self.CONFNODEEDITOR_TABS)
-        if self.SHOW_PARAMS:
+        if self.SHOW_PARAMS and len(self.Controler.GetParamsAttributes()) > 0:
             tabs_num += 1
             
-        if tabs_num > 1:
+        if tabs_num > 1 or self.SHOW_BASE_PARAMS:
             self.Editor = wx.Panel(parent, 
                 style=wx.SUNKEN_BORDER|wx.SP_3D)
+            self.Editor.SetBackgroundColour(WINDOW_COLOUR)
             
-            main_sizer = wx.BoxSizer(wx.VERTICAL)
-            
-            self.ConfNodeNoteBook = wx.Notebook(self.Editor)
-            parent = self.ConfNodeNoteBook
-            main_sizer.AddWindow(self.ConfNodeNoteBook, 1, flag=wx.GROW)
-            
-            self.Editor.SetSizer(main_sizer)
-        else:
-            self.ConfNodeNoteBook = None
-            self.Editor = None
-        
-        for title, create_func_name in self.CONFNODEEDITOR_TABS:
-            editor = getattr(self, create_func_name)(parent)
-            if self.ConfNodeNoteBook is not None:
-                self.ConfNodeNoteBook.AddPage(editor, title)
-            else:
-                self.Editor = editor
-        
-        if self.SHOW_PARAMS:
-            
-            panel_style = wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL
-            if self.ConfNodeNoteBook is None:
-                panel_style |= wx.SUNKEN_BORDER
-            self.ParamsEditor = wx.ScrolledWindow(parent, 
-                  style=panel_style)
-            self.ParamsEditor.SetBackgroundColour(WINDOW_COLOUR)
-            self.ParamsEditor.Bind(wx.EVT_SIZE, self.OnWindowResize)
-            self.ParamsEditor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-            
-            # Variable allowing disabling of ParamsEditor scroll when Popup shown 
-            self.ScrollingEnabled = True
+            self.MainSizer = wx.BoxSizer(wx.VERTICAL)
             
             if self.SHOW_BASE_PARAMS:
-                self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-                self.ParamsEditorSizer.AddGrowableCol(0)
-                self.ParamsEditorSizer.AddGrowableRow(1)
-                
-                self.ParamsEditor.SetSizer(self.ParamsEditorSizer)
-                
                 baseparamseditor_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.ParamsEditorSizer.AddSizer(baseparamseditor_sizer, border=5, 
-                      flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.TOP)
+                self.MainSizer.AddSizer(baseparamseditor_sizer, border=5, 
+                      flag=wx.GROW|wx.ALL)
                 
-                self.FullIECChannel = wx.StaticText(self.ParamsEditor, -1)
+                self.FullIECChannel = wx.StaticText(self.Editor, -1)
                 self.FullIECChannel.SetFont(
                     wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL, 
                             wx.BOLD, faceName = faces["helv"]))
@@ -208,19 +173,19 @@ class ConfTreeNodeEditor(EditorPanel):
                 baseparamseditor_sizer.AddSizer(updownsizer, border=5, 
                       flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
                 
-                self.IECCUpButton = wx.lib.buttons.GenBitmapTextButton(self.ParamsEditor, 
+                self.IECCUpButton = wx.lib.buttons.GenBitmapTextButton(self.Editor, 
                       bitmap=GetBitmap('IECCDown'), size=wx.Size(16, 16), style=wx.NO_BORDER)
                 self.IECCUpButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(1), 
                       self.IECCUpButton)
                 updownsizer.AddWindow(self.IECCUpButton, flag=wx.ALIGN_LEFT)
                 
-                self.IECCDownButton = wx.lib.buttons.GenBitmapButton(self.ParamsEditor, 
+                self.IECCDownButton = wx.lib.buttons.GenBitmapButton(self.Editor, 
                       bitmap=GetBitmap('IECCUp'), size=wx.Size(16, 16), style=wx.NO_BORDER)
                 self.IECCDownButton.Bind(wx.EVT_BUTTON, self.GetItemChannelChangedFunction(-1), 
                       self.IECCDownButton)
                 updownsizer.AddWindow(self.IECCDownButton, flag=wx.ALIGN_LEFT)
                 
-                self.ConfNodeName = wx.TextCtrl(self.ParamsEditor, 
+                self.ConfNodeName = wx.TextCtrl(self.Editor, 
                       size=wx.Size(150, 25), style=wx.NO_BORDER)
                 self.ConfNodeName.SetFont(
                     wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, 
@@ -234,10 +199,46 @@ class ConfTreeNodeEditor(EditorPanel):
                 buttons_sizer = self.GenerateMethodButtonSizer()
                 baseparamseditor_sizer.AddSizer(buttons_sizer, flag=wx.ALIGN_CENTER)
             
+            if tabs_num > 1:
+                self.ConfNodeNoteBook = wx.Notebook(self.Editor)
+                parent = self.ConfNodeNoteBook
+                self.MainSizer.AddWindow(self.ConfNodeNoteBook, 1, flag=wx.GROW)
             else:
-                self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=5)
-                self.ParamsEditorSizer.AddGrowableCol(0)
-                self.ParamsEditorSizer.AddGrowableRow(0)
+                self.ConfNodeNoteBook = None
+            
+            self.Editor.SetSizer(self.MainSizer)
+        else:
+            self.ConfNodeNoteBook = None
+            self.Editor = None
+        
+        for title, create_func_name in self.CONFNODEEDITOR_TABS:
+            editor = getattr(self, create_func_name)(parent)
+            if self.ConfNodeNoteBook is not None:
+                self.ConfNodeNoteBook.AddPage(editor, title)
+            elif self.SHOW_BASE_PARAMS:
+                self.MainSizer.AddWindow(editor, 1, flag=wx.GROW)
+            else:
+                self.Editor = editor
+        
+        if self.SHOW_PARAMS and len(self.Controler.GetParamsAttributes()) > 0:
+            
+            panel_style = wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL
+            editor_parent = parent
+            if self.ConfNodeNoteBook is None:
+                panel_style |= wx.SUNKEN_BORDER
+            self.ParamsEditor = wx.ScrolledWindow(parent, 
+                  style=panel_style)
+            self.ParamsEditor.SetBackgroundColour(WINDOW_COLOUR)
+            self.ParamsEditor.Bind(wx.EVT_SIZE, self.OnWindowResize)
+            self.ParamsEditor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
+            
+            # Variable allowing disabling of ParamsEditor scroll when Popup shown 
+            self.ScrollingEnabled = True
+            
+            self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=5)
+            self.ParamsEditorSizer.AddGrowableCol(0)
+            self.ParamsEditorSizer.AddGrowableRow(0)
+            self.ParamsEditor.SetSizer(self.ParamsEditorSizer)
             
             self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
             self.ParamsEditorSizer.AddSizer(self.ConfNodeParamsSizer, border=5, 
@@ -247,6 +248,8 @@ class ConfTreeNodeEditor(EditorPanel):
         
             if self.ConfNodeNoteBook is not None:
                 self.ConfNodeNoteBook.AddPage(self.ParamsEditor, _("Config"))
+            elif self.SHOW_BASE_PARAMS:
+                self.MainSizer.AddWindow(self.ParamsEditor, 1, flag=wx.GROW)
             else:
                 self.Editor = self.ParamsEditor
         else:
@@ -287,10 +290,10 @@ class ConfTreeNodeEditor(EditorPanel):
     
     def RefreshView(self):
         EditorPanel.RefreshView(self)
+        if self.SHOW_BASE_PARAMS:
+            self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
+            self.RefreshIECChannelControlsState()
         if self.ParamsEditor is not None:
-            if self.SHOW_BASE_PARAMS:
-                self.ConfNodeName.ChangeValue(self.Controler.MandatoryParams[1].getName())
-                self.RefreshIECChannelControlsState()
             self.RefreshConfNodeParamsSizer()
             self.RefreshScrollbars()
     
@@ -320,7 +323,7 @@ class ConfTreeNodeEditor(EditorPanel):
         
         for confnode_method in self.Controler.ConfNodeMethods:
             if "method" in confnode_method and confnode_method.get("shown",True):
-                button = GenBitmapTextButton(self.ParamsEditor,
+                button = GenBitmapTextButton(self.Editor,
                     bitmap=GetBitmap(confnode_method.get("bitmap", "Unknown")), 
                     label=confnode_method["name"], style=wx.NO_BORDER)
                 button.SetFont(normal_bt_font)
