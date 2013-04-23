@@ -764,6 +764,9 @@ class TextViewer(EditorPanel):
         self.RefreshModel()
         self.RefreshBuffer()
     
+    def Search(self, criteria):
+        return self.Controler.SearchInPou(self.TagName, criteria, self.Debug)
+    
     def Find(self, direction, search_params):
         if self.SearchParams != search_params:
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
@@ -779,7 +782,8 @@ class TextViewer(EditorPanel):
             self.SearchResults = [
                 (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)
                 for infos, start, end, text in 
-                self.Controler.SearchInPou(self.TagName, criteria, self.Debug)]
+                self.Search(criteria)]
+            self.CurrentFindHighlight = None
         
         if len(self.SearchResults) > 0:
             if self.CurrentFindHighlight is not None:
@@ -800,6 +804,8 @@ class TextViewer(EditorPanel):
             if self.CurrentFindHighlight is not None:
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
+    
+        print self.CurrentFindHighlight
     
     def RefreshModel(self):
         self.RefreshJumpList()

@@ -1,9 +1,20 @@
-import wx
-import wx.grid
-import wx.stc  as  stc
+import re
 import keyword
 
+import wx
+import wx.grid
+import wx.stc as stc
+
+from plcopen.plcopen import TestTextElement
+from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+
+[STC_PYTHON_ERROR, STC_PYTHON_SEARCH_RESULT] = range(15, 17)
+
+HIGHLIGHT_TYPES = {
+    ERROR_HIGHLIGHT: STC_PYTHON_ERROR,
+    SEARCH_RESULT_HIGHLIGHT: STC_PYTHON_SEARCH_RESULT,
+}
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
@@ -155,39 +166,43 @@ class PythonEditor(ConfTreeNodeEditor):
         # The rest remains unchanged.
 
         # Line numbers in margin
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,'fore:#000000,back:#99A9C2')    
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_LINENUMBER,'fore:#000000,back:#99A9C2')    
         # Highlighted brace
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,'fore:#00009D,back:#FFFF00')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_BRACELIGHT,'fore:#00009D,back:#FFFF00')
         # Unmatched brace
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,'fore:#00009D,back:#FF0000')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_BRACEBAD,'fore:#00009D,back:#FF0000')
         # Indentation guide
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_STYLE_INDENTGUIDE, "fore:#CDCDCD")
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_INDENTGUIDE, "fore:#CDCDCD")
 
         # Python styles
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_DEFAULT, 'fore:#000000')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_DEFAULT, 'fore:#000000')
         # Comments
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_COMMENTLINE,  'fore:#008000,back:#F0FFF0')
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, 'fore:#008000,back:#F0FFF0')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_COMMENTLINE,  'fore:#008000,back:#F0FFF0')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_COMMENTBLOCK, 'fore:#008000,back:#F0FFF0')
         # Numbers
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_NUMBER, 'fore:#008080')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_NUMBER, 'fore:#008080')
         # Strings and characters
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_STRING, 'fore:#800080')
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_CHARACTER, 'fore:#800080')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_STRING, 'fore:#800080')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_CHARACTER, 'fore:#800080')
         # Keywords
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_WORD, 'fore:#000080,bold')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_WORD, 'fore:#000080,bold')
         # Triple quotes
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_TRIPLE, 'fore:#800080,back:#FFFFEA')
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_TRIPLEDOUBLE, 'fore:#800080,back:#FFFFEA')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_TRIPLE, 'fore:#800080,back:#FFFFEA')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_TRIPLEDOUBLE, 'fore:#800080,back:#FFFFEA')
         # Class names
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_CLASSNAME, 'fore:#0000FF,bold')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_CLASSNAME, 'fore:#0000FF,bold')
         # Function names
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_DEFNAME, 'fore:#008080,bold')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_DEFNAME, 'fore:#008080,bold')
         # Operators
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_OPERATOR, 'fore:#800000,bold')
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_OPERATOR, 'fore:#800000,bold')
         # Identifiers. I leave this as not bold because everything seems
         # to be an identifier if it doesn't match the above criterae
-        self.PythonCodeEditor.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, 'fore:#000000')
-
+        self.PythonCodeEditor.StyleSetSpec(stc.STC_P_IDENTIFIER, 'fore:#000000')
+        
+        # Highlighting styles
+        self.PythonCodeEditor.StyleSetSpec(STC_PYTHON_ERROR, "fore:#FF0000,back:#FFFF00")
+        self.PythonCodeEditor.StyleSetSpec(STC_PYTHON_SEARCH_RESULT, "fore:#FFFFFF,back:#FFA500")
+        
         # Caret color
         self.PythonCodeEditor.SetCaretForeground("BLUE")
         # Selection background
@@ -219,13 +234,13 @@ class PythonEditor(ConfTreeNodeEditor):
         # EOL: Since we are loading/saving ourselves, and the
         # strings will always have \n's in them, set the STC to
         # edit them that way.            
-        self.PythonCodeEditor.SetEOLMode(wx.stc.STC_EOL_LF)
+        self.PythonCodeEditor.SetEOLMode(stc.STC_EOL_LF)
         self.PythonCodeEditor.SetViewEOL(False)
         
         # No right-edge mode indicator
         self.PythonCodeEditor.SetEdgeMode(stc.STC_EDGE_NONE)
         
-        self.PythonCodeEditor.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
+        self.PythonCodeEditor.SetModEventMask(stc.STC_MOD_BEFOREINSERT|stc.STC_MOD_BEFOREDELETE)
 
         self.PythonCodeEditor.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_PYTHONEDITOR)
         self.PythonCodeEditor.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
@@ -238,6 +253,14 @@ class PythonEditor(ConfTreeNodeEditor):
         
         self.DisableEvents = False
         self.CurrentAction = None
+    
+        self.Highlights = []
+        self.SearchParams = None
+        self.SearchResults = None
+        self.CurrentFindHighlight = None
+        
+        self.RefreshHighlightsTimer = wx.Timer(self, -1)
+        self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
     
     def GetBufferState(self):
         return self.Controler.GetBufferState()
@@ -318,6 +341,8 @@ class PythonEditor(ConfTreeNodeEditor):
         self.DisableEvents = False
         
         self.PythonCodeEditor.Colourise(0, -1)
+        
+        self.ShowHighlights()
 
     def RefreshModel(self):
         self.Controler.SetPythonCode(self.PythonCodeEditor.GetText())
@@ -483,3 +508,89 @@ class PythonEditor(ConfTreeNodeEditor):
         self.DisableEvents = False
         self.RefreshModel()
         self.RefreshBuffer()
+
+    def Find(self, direction, search_params):
+        if self.SearchParams != search_params:
+            self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
+            
+            self.SearchParams = search_params
+            criteria = {
+                "raw_pattern": search_params["find_pattern"], 
+                "pattern": re.compile(search_params["find_pattern"]),
+                "case_sensitive": search_params["case_sensitive"],
+                "regular_expression": search_params["regular_expression"],
+                "filter": "all"}
+            
+            self.SearchResults = [
+                (start, end, SEARCH_RESULT_HIGHLIGHT)
+                for start, end, text in 
+                TestTextElement(self.PythonCodeEditor.GetText(), criteria)]
+            self.CurrentFindHighlight = None
+        
+        if len(self.SearchResults) > 0:
+            if self.CurrentFindHighlight is not None:
+                old_idx = self.SearchResults.index(self.CurrentFindHighlight)
+                if self.SearchParams["wrap"]:
+                    idx = (old_idx + direction) % len(self.SearchResults)
+                else:
+                    idx = max(0, min(old_idx + direction, len(self.SearchResults) - 1))
+                if idx != old_idx:
+                    self.RemoveHighlight(*self.CurrentFindHighlight)
+                    self.CurrentFindHighlight = self.SearchResults[idx]
+                    self.AddHighlight(*self.CurrentFindHighlight)
+            else:
+                self.CurrentFindHighlight = self.SearchResults[0]
+                self.AddHighlight(*self.CurrentFindHighlight)
+            
+        else:
+            if self.CurrentFindHighlight is not None:
+                self.RemoveHighlight(*self.CurrentFindHighlight)
+            self.CurrentFindHighlight = None
+
+#-------------------------------------------------------------------------------
+#                        Highlights showing functions
+#-------------------------------------------------------------------------------
+
+    def OnRefreshHighlightsTimer(self, event):
+        self.RefreshView()
+        event.Skip()
+
+    def ClearHighlights(self, highlight_type=None):
+        if highlight_type is None:
+            self.Highlights = []
+        else:
+            highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
+            if highlight_type is not None:
+                self.Highlights = [(start, end, highlight) for (start, end, highlight) in self.Highlights if highlight != highlight_type]
+        self.RefreshView()
+
+    def AddHighlight(self, start, end, highlight_type):
+        highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
+        if highlight_type is not None:
+            self.Highlights.append((start, end, highlight_type))
+            self.PythonCodeEditor.GotoPos(self.PythonCodeEditor.PositionFromLine(start[0]) + start[1])
+            self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
+            self.RefreshView()
+
+    def RemoveHighlight(self, start, end, highlight_type):
+        highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
+        if (highlight_type is not None and 
+            (start, end, highlight_type) in self.Highlights):
+            self.Highlights.remove((start, end, highlight_type))
+            self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
+    
+    def ShowHighlights(self):
+        for start, end, highlight_type in self.Highlights:
+            if start[0] == 0:
+                highlight_start_pos = start[1]
+            else:
+                highlight_start_pos = self.PythonCodeEditor.GetLineEndPosition(start[0] - 1) + start[1] + 1
+            if end[0] == 0:
+                highlight_end_pos = end[1] - indent + 1
+            else:
+                highlight_end_pos = self.PythonCodeEditor.GetLineEndPosition(end[0] - 1) + end[1] + 2
+            self.PythonCodeEditor.StartStyling(highlight_start_pos, 0xff)
+            self.PythonCodeEditor.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
+            self.PythonCodeEditor.StartStyling(highlight_start_pos, 0x00)
+            self.PythonCodeEditor.SetStyling(len(self.PythonCodeEditor.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
+                

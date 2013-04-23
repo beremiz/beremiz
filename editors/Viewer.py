@@ -3167,6 +3167,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         blocks.append((block, (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)))
             blocks.sort(sort_blocks)
             self.SearchResults.extend([infos for block, infos in blocks])
+            self.CurrentFindHighlight = None
         
         if len(self.SearchResults) > 0:
             if self.CurrentFindHighlight is not None:
