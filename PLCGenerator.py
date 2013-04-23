@@ -883,7 +883,7 @@ class PouProgramGenerator:
             otherInstances["outVariables&coils"].sort(SortInstances)
             otherInstances["blocks"].sort(SortInstances)
             instances = [instance for (executionOrderId, instance) in orderedInstances]
-            instances.extend(otherInstances["connectors"] + otherInstances["outVariables&coils"] + otherInstances["blocks"])
+            instances.extend(otherInstances["outVariables&coils"] + otherInstances["blocks"] + otherInstances["connectors"])
             for instance in instances:
                 if isinstance(instance, (plcopen.fbdObjects_outVariable, plcopen.fbdObjects_inOutVariable)):
                     connections = instance.connectionPointIn.getconnections()
