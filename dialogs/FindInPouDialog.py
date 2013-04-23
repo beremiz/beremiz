@@ -109,7 +109,8 @@ class FindInPouDialog(wx.Frame):
         self.ParentWindow = parent
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-    
+        
+        self.FindPattern.SetFocus()
         self.RefreshButtonsState()
     
     def RefreshButtonsState(self):
