@@ -385,7 +385,7 @@ if enablewx:
             
             def _LiveShellLocals(self):
                 if self.pyroserver.plcobj is not None:
-                    return {"locals":self.pyroserver.plcobj.python_threads_vars}
+                    return {"locals":self.pyroserver.plcobj.python_runtime_vars}
                 else:
                     return {}
             
