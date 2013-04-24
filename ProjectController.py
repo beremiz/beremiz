@@ -313,7 +313,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if os.path.exists(self._getBuildPath()):
             self.EnableMethod("_Clean", True)
 
-        if os.path.isfile(self._getIECrawcodepath()):
+        if os.path.isfile(self._getIECcodepath()):
             self.ShowMethod("_showIECcode", True)
         
         self.UpdateMethodsFromPLCStatus()
