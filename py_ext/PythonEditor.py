@@ -8,6 +8,7 @@ import wx.stc as stc
 from plcopen.plcopen import TestTextElement
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from editors.TextViewer import GetCursorPos, faces
 
 [STC_PYTHON_ERROR, STC_PYTHON_SEARCH_RESULT] = range(15, 17)
 
@@ -16,54 +17,8 @@ HIGHLIGHT_TYPES = {
     SEARCH_RESULT_HIGHLIGHT: STC_PYTHON_SEARCH_RESULT,
 }
 
-if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 10,
-              'size2': 8,
-             }
-elif wx.Platform == '__WXMAC__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Monaco',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 12,
-              'size2': 10,
-             }
-else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 12,
-              'size2': 10,
-             }
-
 [ID_PYTHONEDITOR,
 ] = [wx.NewId() for _init_ctrls in range(1)]
-
-def GetCursorPos(old, new):
-    old_length = len(old)
-    new_length = len(new)
-    common_length = min(old_length, new_length)
-    i = 0
-    for i in xrange(common_length):
-        if old[i] != new[i]:
-            break
-    if old_length < new_length:
-        if common_length > 0 and old[i] != new[i]:
-            return i + new_length - old_length
-        else:
-            return i + new_length - old_length + 1
-    elif old_length > new_length or i < min(old_length, new_length) - 1:
-        if common_length > 0 and old[i] != new[i]:
-            return i
-        else:
-            return i + 1
-    else:
-        return None
 
 class PythonEditor(ConfTreeNodeEditor):
 
@@ -147,7 +102,7 @@ class PythonEditor(ConfTreeNodeEditor):
         self.PythonCodeEditor.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         self.PythonCodeEditor.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
         self.PythonCodeEditor.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
-
+        
         # Global default style
         if wx.Platform == '__WXMSW__':
             self.PythonCodeEditor.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'fore:#000000,back:#FFFFFF,face:Courier New')
@@ -328,16 +283,19 @@ class PythonEditor(ConfTreeNodeEditor):
         self.ResetBuffer()
         self.DisableEvents = True
         old_cursor_pos = self.PythonCodeEditor.GetCurrentPos()
+        line = self.PythonCodeEditor.GetFirstVisibleLine()
+        column = self.PythonCodeEditor.GetXOffset()
         old_text = self.PythonCodeEditor.GetText()
         new_text = self.Controler.GetPythonCode()
-        self.PythonCodeEditor.SetText(new_text)
-        new_cursor_pos = GetCursorPos(old_text, new_text)
-        if new_cursor_pos != None:
-            self.PythonCodeEditor.GotoPos(new_cursor_pos)
-        else:
-            self.PythonCodeEditor.GotoPos(old_cursor_pos)
-        self.PythonCodeEditor.ScrollToColumn(0)
-        self.PythonCodeEditor.EmptyUndoBuffer()
+        if old_text != new_text:
+            self.PythonCodeEditor.SetText(new_text)
+            new_cursor_pos = GetCursorPos(old_text, new_text)
+            self.PythonCodeEditor.LineScroll(column, line)
+            if new_cursor_pos != None:
+                self.PythonCodeEditor.GotoPos(new_cursor_pos)
+            else:
+                self.PythonCodeEditor.GotoPos(old_cursor_pos)
+            self.PythonCodeEditor.EmptyUndoBuffer()
         self.DisableEvents = False
         
         self.PythonCodeEditor.Colourise(0, -1)
@@ -363,7 +321,7 @@ class PythonEditor(ConfTreeNodeEditor):
                 self.PythonCodeEditor.AutoCompShow(0, " ".join([word + "?1" for word in keyword.kwlist]))
         else:
             event.Skip()
-
+    
     def OnKillFocus(self, event):
         self.PythonCodeEditor.AutoCompCancel()
         event.Skip()
