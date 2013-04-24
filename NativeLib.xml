@@ -74,8 +74,7 @@
           <ST>
 <![CDATA[IF TRIG AND NOT TRIG0 THEN
 {{
- extern int LogMessage(uint8_t, uint8_t*, uint32_t);
- LogMessage(GetFbVar(LEVEL),GetFbVar(MSG, .body),GetFbVar(MSG, .len));
+ LogMessage(GetFbVar(LEVEL),(char*)GetFbVar(MSG, .body),GetFbVar(MSG, .len));
 }}
 END_IF;
 TRIG0:=TRIG;
