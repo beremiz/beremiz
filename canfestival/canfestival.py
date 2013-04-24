@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, shutil
 
 base_folder = os.path.split(sys.path[0])[0]
 CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
@@ -154,7 +154,7 @@ class _SlaveCTN(NodeManager):
     def CTNTestModified(self):
         return self.ChangesToSave or self.OneFileHasChanged()
         
-    def OnCTNSave(self):
+    def OnCTNSave(self, from_project_path=None):
         return self.SaveCurrentInFile(self.GetSlaveODPath())
 
     def SetParamsAttribute(self, path, value):
@@ -378,8 +378,10 @@ class _NodeListCTN(NodeList):
     def CTNTestModified(self):
         return self.ChangesToSave or self.HasChanged()
         
-    def OnCTNSave(self):
+    def OnCTNSave(self, from_project_path=None):
         self.SetRoot(self.CTNPath())
+        shutil.copytree(self.GetEDSFolder(from_project_path), 
+                        self.GetEDSFolder())
         return self.SaveProject() is None
 
     def CTNGenerate_C(self, buildpath, locations):

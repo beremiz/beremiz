@@ -1695,6 +1695,10 @@ class Connector:
     def InsertConnect(self, idx, wire, refresh = True):
         if wire not in self.Wires:
             self.Wires.insert(idx, wire)
+            if wire[1] == 0:
+                wire[0].ConnectStartPoint(None, self)
+            else:
+                wire[0].ConnectEndPoint(None, self)
             if refresh:
                 self.ParentBlock.RefreshModel(False)
     

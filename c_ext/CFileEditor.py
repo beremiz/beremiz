@@ -8,24 +8,7 @@ import wx.lib.buttons
 from controls import CustomGrid, CustomTable
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 from util.BitmapLibrary import GetBitmap
-
-if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 10,
-              'size2': 8,
-             }
-else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 12,
-              'size2': 10,
-             }
-
+from editors.TextViewer import GetCursorPos, faces
 
 def AppendMenu(parent, help, id, kind, text):
     if wx.VERSION >= (2, 6, 0):
@@ -46,27 +29,6 @@ CPP_KEYWORDS = ["asm", "auto", "bool", "break", "case", "catch", "char", "class"
     "static_cast", "struct", "switch", "template", "this", "throw", "true", "try",
     "typedef", "typeid", "typename", "union", "unsigned", "using", "virtual", 
     "void", "volatile", "wchar_t", "while"]
-
-def GetCursorPos(old, new):
-    old_length = len(old)
-    new_length = len(new)
-    common_length = min(old_length, new_length)
-    i = 0
-    for i in xrange(common_length):
-        if old[i] != new[i]:
-            break
-    if old_length < new_length:
-        if common_length > 0 and old[i] != new[i]:
-            return i + new_length - old_length
-        else:
-            return i + new_length - old_length + 1
-    elif old_length > new_length or i < min(old_length, new_length) - 1:
-        if common_length > 0 and old[i] != new[i]:
-            return i
-        else:
-            return i + 1
-    else:
-        return None
 
 class CppEditor(stc.StyledTextCtrl):
 
@@ -165,15 +127,15 @@ class CppEditor(stc.StyledTextCtrl):
         self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT,  "fore:#FFFFFF,back:#0000FF,bold")
         self.StyleSetSpec(stc.STC_STYLE_BRACEBAD,    "fore:#000000,back:#FF0000,bold")
 
-        self.StyleSetSpec(stc.STC_C_COMMENT, 'fore:#408060')
-        self.StyleSetSpec(stc.STC_C_COMMENTLINE, 'fore:#408060')
-        self.StyleSetSpec(stc.STC_C_COMMENTDOC, 'fore:#408060')
-        self.StyleSetSpec(stc.STC_C_NUMBER, 'fore:#0076AE')
-        self.StyleSetSpec(stc.STC_C_WORD, 'bold,fore:#800056')
-        self.StyleSetSpec(stc.STC_C_STRING, 'fore:#2a00ff')
-        self.StyleSetSpec(stc.STC_C_PREPROCESSOR, 'bold,fore:#800056')
-        self.StyleSetSpec(stc.STC_C_OPERATOR, 'bold')
-        self.StyleSetSpec(stc.STC_C_STRINGEOL, 'back:#FFD5FF')
+        self.StyleSetSpec(stc.STC_C_COMMENT, 'fore:#408060,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_COMMENTLINE, 'fore:#408060,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_COMMENTDOC, 'fore:#408060,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_NUMBER, 'fore:#0076AE,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_WORD, 'bold,fore:#800056,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_STRING, 'fore:#2a00ff,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_PREPROCESSOR, 'bold,fore:#800056,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_OPERATOR, 'bold,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_C_STRINGEOL, 'back:#FFD5FF,size:%(size)d' % faces)
         
         # register some images for use in the AutoComplete box.
         #self.RegisterImage(1, images.getSmilesBitmap())
@@ -254,16 +216,19 @@ class CppEditor(stc.StyledTextCtrl):
         self.ResetBuffer()
         self.DisableEvents = True
         old_cursor_pos = self.GetCurrentPos()
+        line = self.GetFirstVisibleLine()
+        column = self.GetXOffset()
         old_text = self.GetText()
         new_text = self.Controler.GetPartText(self.Name)
         self.SetText(new_text)
-        new_cursor_pos = GetCursorPos(old_text, new_text)
-        if new_cursor_pos != None:
-            self.GotoPos(new_cursor_pos)
-        else:
-            self.GotoPos(old_cursor_pos)
-        self.ScrollToColumn(0)
-        self.EmptyUndoBuffer()
+        if old_text != new_text:
+            new_cursor_pos = GetCursorPos(old_text, new_text)
+            self.LineScroll(column, line)
+            if new_cursor_pos != None:
+                self.GotoPos(new_cursor_pos)
+            else:
+                self.GotoPos(old_cursor_pos)
+            self.EmptyUndoBuffer()
         self.DisableEvents = False
         
         self.Colourise(0, -1)

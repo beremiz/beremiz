@@ -234,7 +234,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 return True
         return False
     
-    def _getProjectFilesPath(self):
+    def _getProjectFilesPath(self, project_path=None):
+        if project_path is not None:
+            return os.path.join(project_path, "project_files")
         projectfiles_path = os.path.join(self.GetProjectPath(), "project_files")
         if not os.path.exists(projectfiles_path):
             os.mkdir(projectfiles_path)
@@ -348,14 +350,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ClearChildren()
         self.ResetAppFrame(None)
         
-    def SaveProject(self):
+    def SaveProject(self, from_project_path=None):
         if self.CheckProjectPathPerm(False):
+            if from_project_path is not None:
+                old_projectfiles_path = self._getProjectFilesPath(from_project_path)
+                if os.path.isdir(old_projectfiles_path):
+                    shutil.copytree(old_projectfiles_path, 
+                                    self._getProjectFilesPath(self.ProjectPath))
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
-            result = self.CTNRequestSave()
+            result = self.CTNRequestSave(from_project_path)
             if result:
                 self.logger.write_error(result)
     
-    def SaveProjectAs(self, dosave=True):
+    def SaveProjectAs(self):
         # Ask user to choose a path with write permissions
         if wx.Platform == '__WXMSW__':
             path = os.getenv("USERPROFILE")
@@ -367,9 +374,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if answer == wx.ID_OK:
             newprojectpath = dirdialog.GetPath()
             if os.path.isdir(newprojectpath):
-                self.ProjectPath = newprojectpath
-                if dosave:
-                    self.SaveProject()
+                self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
+                self.SaveProject(old_project_path)
                 self._setBuildPath(self.BuildPath)
                 return True
         return False
