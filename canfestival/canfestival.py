@@ -380,8 +380,9 @@ class _NodeListCTN(NodeList):
         
     def OnCTNSave(self, from_project_path=None):
         self.SetRoot(self.CTNPath())
-        shutil.copytree(self.GetEDSFolder(from_project_path), 
-                        self.GetEDSFolder())
+        if from_project_path is not None:
+            shutil.copytree(self.GetEDSFolder(from_project_path), 
+                            self.GetEDSFolder())
         return self.SaveProject() is None
 
     def CTNGenerate_C(self, buildpath, locations):
