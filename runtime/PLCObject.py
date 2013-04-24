@@ -246,7 +246,7 @@ class PLCObject(pyro.ObjBase):
         for method in self.python_runtime_vars.get("_runtime_%s"%methodname, []):
             res,exp = self.evaluator(method)
             if exp is not None: 
-                self.LogMessage(0,traceback.format_exception(*exp))
+                self.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
 
     def PythonRuntimeInit(self):
         MethodNames = ["init", "start", "stop", "cleanup"]
@@ -309,7 +309,9 @@ class PLCObject(pyro.ObjBase):
                     compile_cache[FBID]=(cmd,AST)
                 result,exp = self.evaluator(eval,cmd,self.python_runtime_vars)
                 if exp is not None: 
-                    raise(exp[1])
+                    res = "#EXCEPTION : "+str(exp[1])
+                    self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,
+                        '\n'.join(traceback.format_exception(*exp))))
                 else:
                     res=str(result)
                 self.python_runtime_vars["FBID"]=None
