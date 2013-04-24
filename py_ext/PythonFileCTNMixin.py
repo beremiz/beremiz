@@ -48,7 +48,7 @@ class PythonFileCTNMixin:
     def CTNTestModified(self):
         return self.ChangesToSave or not self.PythonIsSaved()
     
-    def OnCTNSave(self):
+    def OnCTNSave(self, from_project_path=None):
         filepath = self.PythonFileName()
         
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"

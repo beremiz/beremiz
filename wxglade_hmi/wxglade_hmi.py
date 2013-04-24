@@ -1,5 +1,5 @@
 import wx
-import os, sys
+import os, sys, shutil
 from xml.dom import minidom
 
 from py_ext import PythonFileCTNMixin
@@ -16,9 +16,11 @@ class WxGladeHMI(PythonFileCTNMixin):
     def ConfNodePath(self):
         return os.path.join(os.path.dirname(__file__))
 
-    def _getWXGLADEpath(self):
-        # define name for IEC raw code file
-        return os.path.join(self.CTNPath(), "hmi.wxg")
+    def _getWXGLADEpath(self, project_path=None):
+        if project_path is None:
+            project_path = self.CTNPath()
+        # define name for wxGlade gui file
+        return os.path.join(project_path, "hmi.wxg")
 
     def launch_wxglade(self, options, wait=False):
         from wxglade import __file__ as fileName
@@ -29,6 +31,11 @@ class WxGladeHMI(PythonFileCTNMixin):
         mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
         os.spawnv(mode, sys.executable, ["\"%s\""%sys.executable] + [glade] + options)
 
+    def OnCTNSave(self, from_project_path=None):
+        if from_project_path is not None:
+            shutil.copyfile(self._getWXGLADEpath(from_project_path),
+                            self._getWXGLADEpath())
+        return PythonFileCTNMixin.OnCTNSave(self, from_project_path)
 
     def CTNGenerate_C(self, buildpath, locations):
         """
@@ -128,3 +135,4 @@ def _runtime_%(location)s_stop():
             if wx.Platform == '__WXMSW__':
                 wxg_filename = "\"%s\""%wxg_filename
             self.launch_wxglade([wxg_filename])
+

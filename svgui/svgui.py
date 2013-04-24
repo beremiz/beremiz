@@ -5,12 +5,13 @@ from pyjs import translate
 
 from POULibrary import POULibrary
 from docutil import open_svg
+from py_ext import PythonFileCTNMixin
 
 class SVGUILibrary(POULibrary):
     def GetLibraryPath(self):
         return os.path.join(os.path.split(__file__)[0], "pous.xml") 
 
-class SVGUI:
+class SVGUI(PythonFileCTNMixin):
 
     ConfNodeMethods = [
         {"bitmap" : "ImportSVG",
@@ -26,12 +27,20 @@ class SVGUI:
     def ConfNodePath(self):
         return os.path.join(os.path.dirname(__file__))
 
-    def _getSVGpath(self):
-        # define name for IEC raw code file
-        return os.path.join(self.CTNPath(), "gui.svg")
+    def _getSVGpath(self, project_path=None):
+        if project_path is None:
+            project_path = self.CTNPath()
+        # define name for SVG file containing gui layout
+        return os.path.join(project_path, "gui.svg")
 
     def _getSVGUIserverpath(self):
         return os.path.join(os.path.dirname(__file__), "svgui_server.py")
+
+    def OnCTNSave(self, from_project_path=None):
+        if from_project_path is not None:
+            shutil.copyfile(self._getSVGpath(from_project_path),
+                            self._getSVGpath())
+        return PythonFileCTNMixin.OnCTNSave(self, from_project_path)
 
     def CTNGenerate_C(self, buildpath, locations):
         """

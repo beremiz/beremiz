@@ -73,10 +73,12 @@ class ConfigTreeNode:
     def ConfNodePath(self):
         return os.path.join(self.CTNParent.ConfNodePath(), self.CTNType)
 
-    def CTNPath(self,CTNName=None):
+    def CTNPath(self,CTNName=None,project_path=None):
         if not CTNName:
             CTNName = self.CTNName()
-        return os.path.join(self.CTNParent.CTNPath(),
+        if not project_path:
+            project_path = self.CTNParent.CTNPath()
+        return os.path.join(project_path,
                             CTNName + NameTypeSeparator + self.CTNType)
     
     def CTNName(self):
@@ -113,7 +115,7 @@ class ConfigTreeNode:
     def RemoteExec(self, script, **kwargs):
         return self.CTNParent.RemoteExec(script, **kwargs)
     
-    def OnCTNSave(self):
+    def OnCTNSave(self, from_project_path=None):
         #Default, do nothing and return success
         return True
 
@@ -155,7 +157,7 @@ class ConfigTreeNode:
     def CTNMakeDir(self):
         os.mkdir(self.CTNPath())
 
-    def CTNRequestSave(self):
+    def CTNRequestSave(self, from_project_path=None):
         if self.GetCTRoot().CheckProjectPathPerm(False):
             # If confnode do not have corresponding directory
             ctnpath = self.CTNPath()
@@ -178,7 +180,7 @@ class ConfigTreeNode:
                 XMLFile.close()
             
             # Call the confnode specific OnCTNSave method
-            result = self.OnCTNSave()
+            result = self.OnCTNSave(from_project_path)
             if not result:
                 return _("Error while saving \"%s\"\n")%self.CTNPath()
     
@@ -186,7 +188,8 @@ class ConfigTreeNode:
             self.ChangesToSave = False
             # go through all children and do the same
             for CTNChild in self.IterChildren():
-                result = CTNChild.CTNRequestSave()
+                result = CTNChild.CTNRequestSave(
+                    CTNChild.CTNPath(project_path=from_project_path))
                 if result:
                     return result
         return None
