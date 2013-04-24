@@ -561,7 +561,7 @@ class MasterEditor(ConfTreeNodeEditor):
             style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
         self.EthercatMasterEditor.Bind(wx.EVT_SIZE, self.OnResize)
         
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.EthercatMasterEditorSizer = wx.BoxSizer(wx.VERTICAL)
         
         self.NodesFilter = wx.ComboBox(self.EthercatMasterEditor,
             style=wx.TE_PROCESS_ENTER)
@@ -620,15 +620,12 @@ class MasterEditor(ConfTreeNodeEditor):
         self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, 
               self.OnStartupCommandsGridEditorShow)
         
-        second_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Nodes variables filter:"))
-        second_staticbox_sizer = wx.StaticBoxSizer(second_staticbox, wx.VERTICAL)
-        
         self.NodesVariables = MasterNodesVariablesSizer(self.EthercatMasterEditor, self.Controler)
-        second_staticbox_sizer.AddSizer(self.NodesVariables, 1, border=5, flag=wx.GROW|wx.ALL)
         
         main_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Node filter:"))
         staticbox_sizer = wx.StaticBoxSizer(main_staticbox, wx.VERTICAL)
-        main_sizer.AddSizer(staticbox_sizer, 0, border=10, flag=wx.GROW|wx.ALL)
+        self.EthercatMasterEditorSizer.AddSizer(staticbox_sizer, 0, border=10, flag=wx.GROW|wx.ALL)
+        
         main_staticbox_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=6, vgap=0)
         main_staticbox_sizer.AddGrowableCol(0)
         main_staticbox_sizer.AddGrowableRow(2)
@@ -644,10 +641,15 @@ class MasterEditor(ConfTreeNodeEditor):
               border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
         main_staticbox_sizer.AddWindow(self.StartupCommandsGrid, 1, 
               border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+        
+        second_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Nodes variables filter:"))
+        second_staticbox_sizer = wx.StaticBoxSizer(second_staticbox, wx.VERTICAL)
+        second_staticbox_sizer.AddSizer(self.NodesVariables, 1, border=5, flag=wx.GROW|wx.ALL)
+        
         main_staticbox_sizer.AddSizer(second_staticbox_sizer, 1, 
             border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
         
-        self.EthercatMasterEditor.SetSizer(main_sizer)
+        self.EthercatMasterEditor.SetSizer(self.EthercatMasterEditorSizer)
         
         return self.EthercatMasterEditor
 
@@ -974,7 +976,7 @@ class MasterEditor(ConfTreeNodeEditor):
         self.EthercatMasterEditor.GetBestSize()
         xstart, ystart = self.EthercatMasterEditor.GetViewStart()
         window_size = self.EthercatMasterEditor.GetClientSize()
-        maxx, maxy = self.EthercatMasterEditor.GetMinSize()
+        maxx, maxy = self.EthercatMasterEditorSizer.GetMinSize()
         posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
         self.EthercatMasterEditor.Scroll(posx, posy)
