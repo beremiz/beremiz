@@ -204,6 +204,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 parent = self.ConfNodeNoteBook
                 self.MainSizer.AddWindow(self.ConfNodeNoteBook, 1, flag=wx.GROW)
             else:
+                parent = self.Editor
                 self.ConfNodeNoteBook = None
             
             self.Editor.SetSizer(self.MainSizer)
@@ -223,8 +224,7 @@ class ConfTreeNodeEditor(EditorPanel):
         if self.SHOW_PARAMS and len(self.Controler.GetParamsAttributes()) > 0:
             
             panel_style = wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL
-            editor_parent = parent
-            if self.ConfNodeNoteBook is None:
+            if self.ConfNodeNoteBook is None and parent != self.Editor:
                 panel_style |= wx.SUNKEN_BORDER
             self.ParamsEditor = wx.ScrolledWindow(parent, 
                   style=panel_style)
@@ -303,6 +303,7 @@ class ConfTreeNodeEditor(EditorPanel):
     def RefreshIECChannelControlsState(self):
         self.FullIECChannel.SetLabel(self.Controler.GetFullIEC_Channel())
         self.IECCDownButton.Enable(self.Controler.BaseParams.getIEC_Channel() > 0)
+        self.MainSizer.Layout()
     
     def RefreshConfNodeParamsSizer(self):
         self.Freeze()
