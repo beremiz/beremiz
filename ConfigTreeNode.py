@@ -188,8 +188,10 @@ class ConfigTreeNode:
             self.ChangesToSave = False
             # go through all children and do the same
             for CTNChild in self.IterChildren():
-                result = CTNChild.CTNRequestSave(
-                    CTNChild.CTNPath(project_path=from_project_path))
+                CTNChildPath = None
+                if from_project_path is not None:
+                    CTNChildPath = CTNChild.CTNPath(project_path=from_project_path)
+                result = CTNChild.CTNRequestSave(CTNChildPath)
                 if result:
                     return result
         return None
