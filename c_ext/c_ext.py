@@ -144,7 +144,7 @@ class CFile:
     def CTNTestModified(self):
         return self.ChangesToSave or not self.CFileIsSaved()    
 
-    def OnCTNSave(self):
+    def OnCTNSave(self, from_project_path=None):
         filepath = self.CFileName()
         
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"

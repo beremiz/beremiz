@@ -980,7 +980,6 @@ class Beremiz(IDEFrame):
             self.CTR.SaveProjectAs()
             self.RefreshAll()
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
-        event.Skip()
     
     def OnQuitMenu(self, event):
         self.Close()
