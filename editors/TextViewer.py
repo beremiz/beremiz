@@ -810,8 +810,6 @@ class TextViewer(EditorPanel):
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
     
-        print self.CurrentFindHighlight
-    
     def RefreshModel(self):
         self.RefreshJumpList()
         self.Controler.SetEditedElementText(self.TagName, self.GetText())
