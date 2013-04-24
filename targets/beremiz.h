@@ -10,4 +10,5 @@
 
 extern unsigned long long common_ticktime__;
 int LogMessage(uint8_t level, char* buf, uint32_t size);
+long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
 
