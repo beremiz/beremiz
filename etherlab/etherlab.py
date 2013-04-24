@@ -429,8 +429,16 @@ class RootClass:
         self.ModulesLibrary = None
         self.LoadModulesLibrary()
     
-    def GetModulesLibraryPath(self):
-        return os.path.join(self.CTNPath(), "modules") 
+    def GetModulesLibraryPath(self, project_path=None):
+        if project_path is None:
+            project_path = self.CTNPath()
+        return os.path.join(project_path, "modules") 
+    
+    def OnCTNSave(self, from_project_path=None):
+        if from_project_path is not None:
+            shutil.copytree(self.GetModulesLibraryPath(from_project_path),
+                            self.GetModulesLibraryPath())
+        return True
     
     def CTNGenerate_C(self, buildpath, locations):
         return [],"",False

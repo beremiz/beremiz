@@ -636,7 +636,7 @@ class _EthercatCTN:
     def CTNTestModified(self):
         return self.ChangesToSave or not self.ModelIsSaved()    
 
-    def OnCTNSave(self):
+    def OnCTNSave(self, from_project_path=None):
         config_filepath = self.ConfigFileName()
         
         config_text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
