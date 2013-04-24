@@ -95,7 +95,7 @@ def _runtime_%(location)s_stop():
     %(name)s.Show()
 """ % {"name": x[0], "class": x[1]},
                              hmi_frames.items())),
-       "cleanup": "\n    ".join(map(lambda x:"%s.Destroy()" % x, hmi_frames.keys()))})
+       "cleanup": "\n    ".join(map(lambda x:"if %s is not None: %s.Destroy()" % (x,x), hmi_frames.keys()))})
         runtimefile.close()
         
         return [], "", False, ("runtime_%s.py"%location_str, file(runtimefile_path,"rb"))
