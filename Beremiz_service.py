@@ -425,8 +425,8 @@ if not os.path.isdir(WorkingDir):
 def default_evaluator(tocall, *args, **kwargs):
     try:
         res=(tocall(*args,**kwargs), None)
-    except Exception,exp:
-        res=(None, exp)
+    except Exception:
+        res=(None, sys.exc_info())
     return res
 
 class Server():

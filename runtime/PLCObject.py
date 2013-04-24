@@ -243,13 +243,10 @@ class PLCObject(pyro.ObjBase):
         Calls init, start, stop or cleanup method provided by 
         runtime python files, loaded when new PLC uploaded
         """
-        try :
-            for method in self.python_runtime_vars.get("_runtime_%s"%methodname, []):
-                res,exp = self.evaluator(method)
-                if exp is not None: raise(exp)
-        except:
-            self.LogMessage(0,traceback.format_exc())
-            raise
+        for method in self.python_runtime_vars.get("_runtime_%s"%methodname, []):
+            res,exp = self.evaluator(method)
+            if exp is not None: 
+                self.LogMessage(0,traceback.format_exception(*exp))
 
     def PythonRuntimeInit(self):
         MethodNames = ["init", "start", "stop", "cleanup"]
@@ -312,7 +309,7 @@ class PLCObject(pyro.ObjBase):
                     compile_cache[FBID]=(cmd,AST)
                 result,exp = self.evaluator(eval,cmd,self.python_runtime_vars)
                 if exp is not None: 
-                    raise(exp)
+                    raise(exp[1])
                 else:
                     res=str(result)
                 self.python_runtime_vars["FBID"]=None
