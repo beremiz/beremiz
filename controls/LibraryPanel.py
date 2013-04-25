@@ -224,7 +224,7 @@ class LibraryPanel(wx.Panel):
                     item = self.Tree.GetNextSibling(item)
             else:
                 name = self.Tree.GetItemText(item)
-                if name.upper().startswith(value.upper()) and item != selected:
+                if name.upper().find(value.upper()) != -1 and item != selected:
                     child, child_cookie = self.Tree.GetFirstChild(root)
                     while child.IsOk():
                         self.Tree.CollapseAllChildren(child)
