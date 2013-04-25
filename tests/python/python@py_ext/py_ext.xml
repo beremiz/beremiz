@@ -15,5 +15,21 @@ def MyPythonFunc(arg):
         res = None
     sys.stdout.flush()
     return res
+
+async_error_test_code = """
+def badaboom():
+    tuple()[0]
+
+import wx
+def badaboomwx():
+    wx.CallAfter(badaboom)
+
+from threading import Timer
+a = Timer(3, badaboom)
+a.start()
+
+b = Timer(6, badaboomwx)
+b.start()
+"""
 ]]>
 </Python>
