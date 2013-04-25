@@ -416,12 +416,15 @@ class LogViewer(DebugViewer, wx.Panel):
         new_messages.sort()
         if len(new_messages) > 0:
             self.HasNewData = True
-            old_length = len(self.LogMessages)
+            if self.CurrentMessage is not None:
+                current_is_last = self.GetNextMessage(self.CurrentMessage)[0] is None
+            else:
+                current_is_last = True
             for new_message in new_messages:
                 self.LogMessages.append(new_message)
                 self.LogMessagesTimestamp = numpy.append(self.LogMessagesTimestamp, [new_message.Timestamp])
-            if self.CurrentMessage is None or self.CurrentMessage == old_length - 1:
-                self.CurrentMessage = len(self.LogMessages) - 1
+            if current_is_last:
+                self.ScrollToLast(False)
                 self.ResetMessageToolTip()
                 self.MessageToolTipTimer.Stop()
                 self.ParentWindow.SelectTab(self)
@@ -757,13 +760,14 @@ class LogViewer(DebugViewer, wx.Panel):
             self.ScrollTimer.Start(int(period * 1000), True)
         self.ScrollSpeed = speed    
     
-    def ScrollToLast(self):
+    def ScrollToLast(self, refresh=True):
         if len(self.LogMessages) > 0:
             self.CurrentMessage = len(self.LogMessages) - 1
             message = self.LogMessages[self.CurrentMessage]
             if not self.FilterLogMessage(message):
                 message, self.CurrentMessage = self.GetPreviousMessage(self.CurrentMessage)
-            self.RefreshView()
+            if refresh:
+                self.RefreshView()
 
     def ScrollToFirst(self):
         if len(self.LogMessages) > 0:
