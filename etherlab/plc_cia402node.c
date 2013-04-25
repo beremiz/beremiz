@@ -39,10 +39,15 @@ typedef struct {
     axis_s* axis;
 } __CIA402Node;
 
-#define AXIS_UNIT_TO_USER_UNIT(param)\
-(IEC_LREAL)(param) * __CIA402Node_%(location)s.axis->RatioDenominator / __CIA402Node_%(location)s.axis->RatioNumerator
-#define USER_UNIT_TO_AXIS_UNIT(param)\
-(IEC_DINT)(param * __CIA402Node_%(location)s.axis->RatioNumerator / __CIA402Node_%(location)s.axis->RatioDenominator)
+#define AXIS_UNIT_TO_USER_UNIT(param, type, name)\
+(IEC_##type)(param) * __CIA402Node_%(location)s.axis->name##RatioDenominator / __CIA402Node_%(location)s.axis->name##RatioNumerator
+#define USER_UNIT_TO_AXIS_UNIT(param, type, name)\
+(IEC_##type)(param * __CIA402Node_%(location)s.axis->name##RatioNumerator / __CIA402Node_%(location)s.axis->name##RatioDenominator)
+
+#define DEFAULT_AXIS_UNIT_TO_USER_UNIT(param) AXIS_UNIT_TO_USER_UNIT(param, LREAL,)
+#define DEFAULT_USER_UNIT_TO_AXIS_UNIT(param) USER_UNIT_TO_AXIS_UNIT(param, DINT,)
+#define TORQUE_AXIS_UNIT_TO_USER_UNIT(param) AXIS_UNIT_TO_USER_UNIT(param, LREAL, Torque)
+#define TORQUE_USER_UNIT_TO_AXIS_UNIT(param) USER_UNIT_TO_AXIS_UNIT(param, INT, Torque)
 
 static __CIA402Node __CIA402Node_%(location)s;
 
@@ -118,8 +123,9 @@ void __retrieve_%(location)s()
 	__CIA402Node_%(location)s.axis->CommunicationReady = *(__CIA402Node_%(location)s.StatusWord) != 0;
 	__CIA402Node_%(location)s.axis->ReadyForPowerOn = __CIA402Node_%(location)s.state == __SwitchedOn || __OperationEnabled;
 	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
-	__CIA402Node_%(location)s.axis->ActualPosition = AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualPosition));
-	__CIA402Node_%(location)s.axis->ActualVelocity = AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualVelocity));
+	__CIA402Node_%(location)s.axis->ActualPosition = DEFAULT_AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualPosition));
+	__CIA402Node_%(location)s.axis->ActualVelocity = DEFAULT_AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualVelocity));
+	__CIA402Node_%(location)s.axis->ActualTorque = TORQUE_AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualTorque));
 
 	// Extra variables retrieve
 %(extra_variables_retrieve)s
@@ -152,8 +158,23 @@ void __publish_%(location)s()
 	    	break;
 	}
 
+	// CIA402 node modes of operation computation according to axis motion mode
+	switch (__CIA402Node_%(location)s.axis->AxisMotionMode) {
+		case mc_mode_cst:
+			*(__CIA402Node_%(location)s.ModesOfOperation) = 0x0a;
+			break;
+		case mc_mode_csv:
+			*(__CIA402Node_%(location)s.ModesOfOperation) = 0x09;
+			break;
+		default:
+			*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
+			break;
+	}
+
 	// Default variables publish
-	*(__CIA402Node_%(location)s.TargetPosition) = USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->PositionSetPoint);
+	*(__CIA402Node_%(location)s.TargetPosition) = DEFAULT_USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->PositionSetPoint);
+	*(__CIA402Node_%(location)s.TargetVelocity) = DEFAULT_USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->VelocitySetPoint);
+	*(__CIA402Node_%(location)s.TargetTorque) = TORQUE_USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->TorqueSetPoint);
 
 	// Extra variables publish
 %(extra_variables_publish)s

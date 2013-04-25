@@ -11,11 +11,14 @@ from ConfigEditor import CIA402NodeEditor
 NODE_VARIABLES = [
     ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
     ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
+    ("TargetVelocity", 0x60ff, 0x00, "DINT", "Q"),
+    ("TargetTorque", 0x6071, 0x00, "INT", "Q"),
     ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
     ("StatusWord", 0x6041, 0x00, "UINT", "I"),
     ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
     ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
-    ("ActualVelocity", 0x606C, 0x00, "DINT", "I"),
+    ("ActualVelocity", 0x606c, 0x00, "DINT", "I"),
+    ("ActualTorque", 0x6077, 0x00, "INT", "I"),
 ]
 
 DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"
