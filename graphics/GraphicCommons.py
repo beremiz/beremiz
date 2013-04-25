@@ -1497,6 +1497,10 @@ class Graphic_Group(Graphic_Element):
         for element in self.Elements:
             element.RefreshModel(move)
 
+    # Draws the handles of this element if it is selected
+    def Draw(self, dc):
+        for element in self.Elements:
+            element.Draw(dc)
 
 #-------------------------------------------------------------------------------
 #                         Connector for all types of blocks

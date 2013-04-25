@@ -1941,6 +1941,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                     movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)
                     if movex != 0 or movey != 0:
                         self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
+                    self.RefreshVisibleElements()
             elif self.Debug and self.StartMousePos is not None and event.Dragging():
                 pos = event.GetPosition()
                 if abs(self.StartMousePos.x - pos.x) > 5 or abs(self.StartMousePos.y - pos.y) > 5:
