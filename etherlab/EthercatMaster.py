@@ -702,7 +702,7 @@ class _EthercatCTN:
         
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
         
-        LocationCFilesAndCFLAGS.append(
+        LocationCFilesAndCFLAGS.insert(0, 
             (current_location, 
              [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))], 
              True))
