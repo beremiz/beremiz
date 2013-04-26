@@ -984,10 +984,6 @@ class MasterEditor(ConfTreeNodeEditor):
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
     
-def GetModulesTableColnames():
-    _ = lambda x : x
-    return [_("Name"), _("PDO alignment (bits)")]
-
 class LibraryEditorSizer(wx.FlexGridSizer):
     
     def __init__(self, parent, module_library, buttons):
@@ -1051,9 +1047,12 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         self.AddWindow(self.ModulesGrid, border=10, 
             flag=wx.GROW|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
-        for colname, colsize, colalign in zip(GetModulesTableColnames(),
-                                              [400, 150],
-                                              [wx.ALIGN_LEFT, wx.ALIGN_RIGHT]):
+        for colname, colsize, colalign in zip(
+                [_("Name")] + [param_infos["column_label"] 
+                               for param, param_infos in 
+                               self.ModuleLibrary.MODULES_EXTRA_PARAMS],
+                [400] + [150] * len(self.ModuleLibrary.MODULES_EXTRA_PARAMS),
+                [wx.ALIGN_LEFT] + [wx.ALIGN_RIGHT] * len(self.ModuleLibrary.MODULES_EXTRA_PARAMS)):
             self.ModulesGrid.AddColumn(_(colname), colsize, colalign)
         self.ModulesGrid.SetMainColumn(0)
     
@@ -1089,7 +1088,10 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                 item = self.ModulesGrid.AppendItem(root, "")
             self.ModulesGrid.SetItemText(item, module["name"], 0)
             if module["infos"] is not None:
-                self.ModulesGrid.SetItemText(item, str(module["infos"]["alignment"]), 1)
+                for param_idx, (param, params_infos) in enumerate(self.ModuleLibrary.MODULES_EXTRA_PARAMS):
+                    self.ModulesGrid.SetItemText(item, 
+                                                 str(module["infos"][param]), 
+                                                 param_idx + 1)
             else:
                 self.ModulesGrid.SetItemBackgroundColour(item, wx.LIGHT_GREY)
             self.ModulesGrid.SetItemPyData(item, module["infos"])
@@ -1147,23 +1149,27 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         item, flags, col = self.ModulesGrid.HitTest(event.GetPosition())
         if item.IsOk():
             entry_infos = self.ModulesGrid.GetItemPyData(item)
-            if entry_infos is not None and col == 1:
+            if entry_infos is not None and col > 0:
+                param, param_infos = self.ModuleLibrary.MODULES_EXTRA_PARAMS[col - 1]
+                column_label = param_infos["column_label"]
+                stripped_column_label = column_label.split('(')[0].strip()
                 dialog = wx.TextEntryDialog(self.ParentWindow, 
-                    _("Set PDO alignment (bits):"),
-                    _("%s PDO alignment") % self.ModulesGrid.GetItemText(item), 
-                    str(entry_infos["alignment"]))
+                    _("Set %s:") % column_label,
+                    self.ModulesGrid.GetItemText(item) + " " + stripped_column_label, 
+                    str(entry_infos[param]))
                 
                 if dialog.ShowModal() == wx.ID_OK:
                     try:
-                        self.ModuleLibrary.SetAlignment(
+                        self.ModuleLibrary.SetModuleExtraParam(
                             entry_infos["vendor"],
                             entry_infos["product_code"],
                             entry_infos["revision_number"],
+                            param,
                             int(dialog.GetValue()))
                         wx.CallAfter(self.RefreshModulesGrid)
                     except ValueError:
                         message = wx.MessageDialog(self, 
-                            _("Module PDO alignment must be an integer!"), 
+                            _("Module %s must be an integer!") % stripped_column_label, 
                             _("Error"), wx.OK|wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
