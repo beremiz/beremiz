@@ -236,14 +236,27 @@ class ModulesLibrary:
 
     MODULES_EXTRA_PARAMS = [
         ("pdo_alignment", {
-            "column_label": _("PDO alignment (bits)"), 
-            "default": 8}),
+            "column_label": _("PDO alignment"), 
+            "column_size": 150,
+            "default": 8,
+            "description": _(
+"Minimal size in bits between 2 pdo entries")}),
         ("max_pdo_size", {
-            "column_label": _("Max entries by PDO (-1=unbounded)"), 
-            "default": -1}),
+            "column_label": _("Max entries by PDO"),
+            "column_size": 150,
+            "default": -1,
+            "description": _(
+"""Maximal number of entries mapped in a PDO
+including empty entries used for PDO alignment
+(-1=unbounded)""")}),
         ("add_pdo", {
-            "column_label": _("Creating new PDO (1=possible)"), 
-            "default": 0})
+            "column_label": _("Creating new PDO"), 
+            "column_size": 150,
+            "default": 0,
+            "description": _(
+"""Adding a PDO not defined in default configuration
+for mapping needed location variables
+(1 if possible)""")})
     ]
     
     def __init__(self, path, parent_library=None):
@@ -388,12 +401,13 @@ class ModulesLibrary:
                 if has_header:
                     has_header = False
                 else:
-                    try:
-                        self.ModulesExtraParams[tuple(map(int, row[:3]))] = dict(
-                            zip([param for param, params_infos in self.MODULES_EXTRA_PARAMS], 
-                                int(row[3])))
-                    except:
-                        pass
+                    params_values = {}
+                    for (param, param_infos), value in zip(
+                        self.MODULES_EXTRA_PARAMS, row[3:]):
+                        if value != "":
+                            params_values[param] = int(value)
+                    self.ModulesExtraParams[
+                        tuple(map(int, row[:3]))] = params_values
             csvfile.close()
     
     def SaveModulesExtraParams(self):
@@ -412,7 +426,10 @@ class ModulesLibrary:
         product_code = ExtractHexDecValue(product_code)
         revision_number = ExtractHexDecValue(revision_number)
         
-        self.ModulesExtraParams[tuple([vendor, product_code, revision_number])][param] = value
+        module_infos = (vendor, product_code, revision_number)
+        self.ModulesExtraParams.setdefault(module_infos, {})
+        self.ModulesExtraParams[module_infos][param] = value
+        
         self.SaveModulesExtraParams()
     
     def GetModuleExtraParams(self, vendor, product_code, revision_number):
@@ -425,7 +442,7 @@ class ModulesLibrary:
         else:
             extra_params = {}
         
-        extra_params.update(self.ModulesExtraParams.get(tuple([vendor, product_code, revision_number]), {}))
+        extra_params.update(self.ModulesExtraParams.get((vendor, product_code, revision_number), {}))
         
         for param, param_infos in self.MODULES_EXTRA_PARAMS:
             extra_params.setdefault(param, param_infos["default"])
