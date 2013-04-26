@@ -201,7 +201,7 @@ class _EthercatCFileGenerator:
             slave_pos = (slave_alias, alias[slave_alias])
             
             # Extract slave device informations
-            device, alignment = self.Controler.GetModuleInfos(type_infos)
+            device, module_extra_params = self.Controler.GetModuleInfos(type_infos)
             if device is not None:
                 
                 # Extract slaves variables to be mapped
@@ -495,9 +495,9 @@ class _EthercatCFileGenerator:
                                     dynamic_pdos[pdo_type]["pdos"].append(pdo)
                                 
                                 pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
-                                if entry_infos["bitlen"] < alignment:
-                                    print (alignment, entry_infos["bitlen"])
-                                    pdo["entries"].append("    {0x0000, 0x00, %d}, /* None */" % (alignment - entry_infos["bitlen"]))
+                                if entry_infos["bitlen"] < module_extra_params["pdo_alignment"]:
+                                    pdo["entries"].append("    {0x0000, 0x00, %d}, /* None */" % (
+                                            module_extra_params["pdo_alignment"] - entry_infos["bitlen"]))
                                 pdo["entries_number"] += 1
                                 
                                 if pdo["entries_number"] == 255:

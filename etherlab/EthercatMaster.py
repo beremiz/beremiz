@@ -256,7 +256,7 @@ class _EthercatCTN:
             "Ethercat Slave Type", self.GetSlaveTypesLibrary())
         if dialog.ShowModal() == wx.ID_OK:
             type_infos = dialog.GetValueInfos()
-            device, alignment = self.GetModuleInfos(type_infos)
+            device, module_extra_params = self.GetModuleInfos(type_infos)
             if device is not None:
                 if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
                     ConfNodeType = "EthercatCIA402Slave"
@@ -287,7 +287,7 @@ class _EthercatCTN:
         type_infos = slave.getType()
         if vendor is not None and ExtractHexDecValue(type_infos["vendor"]) != vendor:
             return False
-        device, alignment = self.GetModuleInfos(type_infos)
+        device, module_extra_params = self.GetModuleInfos(type_infos)
         if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
             return False
         return True
@@ -425,7 +425,7 @@ class _EthercatCTN:
                         "product_code": slave["product_code"],
                         "revision_number":slave["revision_number"],
                     }
-                    device, alignment = self.GetModuleInfos(type_infos)
+                    device, module_extra_params = self.GetModuleInfos(type_infos)
                     if device is not None:
                         if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
                             CTNType = "EthercatCIA402Slave"
@@ -519,7 +519,7 @@ class _EthercatCTN:
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             type_infos = slave.getType()
-            device, alignment = self.GetModuleInfos(type_infos)
+            device, module_extra_params = self.GetModuleInfos(type_infos)
             if device is not None:
                 infos = type_infos.copy()
                 infos.update({"physics": device.getPhysics(),
@@ -533,7 +533,7 @@ class _EthercatCTN:
             slave = self.GetSlave(slave_pos)
             if slave is not None:
                 type_infos = slave.getType()
-                device, alignment = self.GetModuleInfos(type_infos)
+                device, module_extra_params = self.GetModuleInfos(type_infos)
         if device is not None:
             entries = device.GetEntriesList(limits)
             entries_list = entries.items()
@@ -560,7 +560,7 @@ class _EthercatCTN:
     def GetSlaveVariableDataType(self, slave_pos, index, subindex):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
-            device, alignment = self.GetModuleInfos(slave.getType())
+            device, module_extra_params = self.GetModuleInfos(slave.getType())
             if device is not None:
                 entries = device.GetEntriesList()
                 entry_infos = entries.get((index, subindex))
@@ -577,7 +577,7 @@ class _EthercatCTN:
             type_infos = slave.getType()
             if vendor is not None and ExtractHexDecValue(type_infos["vendor"]) != vendor:
                 continue
-            device, alignment = self.GetModuleInfos(type_infos)
+            device, module_extra_params = self.GetModuleInfos(type_infos)
             if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
                 continue
             entries.extend(self.GetSlaveVariables(slave_position, limits, device))
@@ -598,7 +598,7 @@ class _EthercatCTN:
         if slave is not None:
             type_infos = slave.getType()
         
-            device, alignment = self.GetModuleInfos(type_infos)
+            device, module_extra_params = self.GetModuleInfos(type_infos)
             if device is not None:
                 sync_managers = []
                 for sync_manager in device.getSm():
