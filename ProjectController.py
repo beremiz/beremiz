@@ -803,7 +803,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # in retreive, publish, init, cleanup
         locstrs = map(lambda x:"_".join(map(str,x)),
            [loc for loc,Cfiles,DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
-
+        
         # Generate main, based on template
         if not self.BeremizRoot.getDisable_Extensions():
             plc_main_code = targets.GetCode("plc_main_head") % {
@@ -813,9 +813,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "void __retrieve_%(s)s(void);\n"+
                       "void __publish_%(s)s(void);")%{'s':locstr} for locstr in locstrs]),
                 "retrieve_calls":"\n    ".join([
-                      "__retrieve_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
+                      "__retrieve_%s();"%locstr for locstr in locstrs]),
                 "publish_calls":"\n    ".join([ #Call publish in reverse order
-                      "__publish_%s();"%locstr for locstr in locstrs]),
+                      "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls":"\n    ".join([
                       "init_level=%d; "%(i+1)+
                       "if((res = __init_%s(argc,argv))){"%locstr +
