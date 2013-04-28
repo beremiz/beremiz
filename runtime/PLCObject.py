@@ -471,7 +471,7 @@ class PLCObject(pyro.ObjBase):
                                 res.append(unpack_func(
                                             ctypes.cast(cursor,
                                              ctypes.POINTER(c_type)).contents))
-                                offset += ctypes.sizeof(c_type)
+                                offset += ctypes.sizeof(c_type) if iectype != "STRING" else len(res[-1])+1
                             else:
                                 if c_type is None:
                                     PLCprint("Debug error - " + iectype +

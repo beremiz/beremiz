@@ -152,6 +152,10 @@ inline void BufferIterator(void* varp, __IEC_types_enum vartype, int do_debug)
                 /* compute next cursor positon.
                    No need to check overflow, as BUFFER_SIZE
                    is computed large enough */
+                if(vartype == STRING_ENUM){
+                    /* optimization for strings */
+                    size = ((STRING*)visible_value_p)->len + 1;
+                }
                 char* next_cursor = buffer_cursor + size;
                 /* copy data to the buffer */
                 memcpy(buffer_cursor, visible_value_p, size);
