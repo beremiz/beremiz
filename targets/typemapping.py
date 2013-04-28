@@ -73,8 +73,36 @@ SwapedEndianessTypeTranslator = {
     #TODO
     } 
 
+TypeTranslator=SameEndianessTypeTranslator
+
 # Construct debugger natively supported types
 DebugTypesSize =  dict([(key,sizeof(t)) for key,(t,p,u) in SameEndianessTypeTranslator.iteritems() if t is not None])
+
+def UnpackDebugBuffer(buff, size, indexes):
+    res = []
+    offset = 0
+    for idx, iectype, forced in indexes:
+        cursor = c_void_p(buff.value + offset)
+        c_type,unpack_func, pack_func = \
+            TypeTranslator.get(iectype,
+                                    (None,None,None))
+        if c_type is not None and offset < size:
+            res.append(unpack_func(
+                        cast(cursor,
+                         POINTER(c_type)).contents))
+            offset += sizeof(c_type) if iectype != "STRING" else len(res[-1])+1
+        else:
+            #if c_type is None:
+            #    PLCprint("Debug error - " + iectype +
+            #             " not supported !")
+            #if offset >= size:
+            #    PLCprint("Debug error - buffer too small ! %d != %d"%(offset, size))
+            break
+    if offset and offset == size:
+        return res
+    return None
+
+
 
 LogLevels = ["CRITICAL","WARNING","INFO","DEBUG"]
 LogLevelsCount = len(LogLevels)
