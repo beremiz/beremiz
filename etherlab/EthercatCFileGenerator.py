@@ -322,7 +322,7 @@ class _EthercatCFileGenerator:
                                 if slave_variables.get((index, subindex), None) is not None:
                                     pdo_mapping_match["matching"] += 1
                         
-                            if pdo.getFixed() == True:
+                            if pdo.getFixed() != True:
                                 pdo_mapping_match["matching"] += \
                                     module_extra_params["max_pdo_size"] - \
                                     pdo_mapping_match["count"]
