@@ -408,10 +408,8 @@ class LogViewer(DebugViewer, wx.Panel):
                                 new_messages = [new_message]
                         else:
                             new_messages.insert(0, new_message)
-                    else:
-                        if prev is None:
-                            self.OldestMessages.append((-1, None))
-                        break
+                if prev is None and len(self.OldestMessages) <= level:
+                    self.OldestMessages.append((-1, None))
                 self.previous_log_count[level] = count
         new_messages.sort()
         if len(new_messages) > 0:
