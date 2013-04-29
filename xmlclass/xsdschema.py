@@ -2142,7 +2142,7 @@ XSD_NAMESPACE = {
         "extract": GenerateIntegerExtraction(minExclusive=0),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
-        "initial": lambda: 0,
+        "initial": lambda: 1,
         "check": lambda x: isinstance(x, IntType)
     },
     
@@ -2152,7 +2152,7 @@ XSD_NAMESPACE = {
         "extract": GenerateIntegerExtraction(maxExclusive=0),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
-        "initial": lambda: 0,
+        "initial": lambda: -1,
         "check": lambda x: isinstance(x, IntType)
     },
     
