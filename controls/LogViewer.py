@@ -396,7 +396,7 @@ class LogViewer(DebugViewer, wx.Panel):
         for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
             if count is not None and prev != count:
                 if prev is None:
-                    dump_end = count - 2
+                    dump_end = count - 1
                 else:
                     dump_end = prev - 1
                 for msgidx in xrange(count-1, dump_end,-1):
