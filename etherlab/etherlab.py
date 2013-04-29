@@ -244,11 +244,10 @@ class ModulesLibrary:
         ("max_pdo_size", {
             "column_label": _("Max entries by PDO"),
             "column_size": 150,
-            "default": -1,
+            "default": 255,
             "description": _(
 """Maximal number of entries mapped in a PDO
-including empty entries used for PDO alignment
-(-1=unbounded)""")}),
+including empty entries used for PDO alignment""")}),
         ("add_pdo", {
             "column_label": _("Creating new PDO"), 
             "column_size": 150,
