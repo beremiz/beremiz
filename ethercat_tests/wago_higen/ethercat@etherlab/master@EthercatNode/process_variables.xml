@@ -1,7 +1,2 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<ProcessVariables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <variable Name="Digital_IO" Comment="Transfering inputs to outputs">
-    <ReadFrom Position="3" Index="24829" SubIndex="0"/>
-    <WriteTo Position="3" Index="24830" SubIndex="1"/>
-  </variable>
-</ProcessVariables>
+<ProcessVariables xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
