@@ -223,7 +223,7 @@ MESSAGE_INFO_SIZE = 18
 class LogMessage:
     
     def __init__(self, tv_sec, tv_nsec, level, level_bitmap, msg):
-        self.Date = datetime.fromtimestamp(tv_sec)
+        self.Date = datetime.utcfromtimestamp(tv_sec)
         self.Seconds = self.Date.second + tv_nsec * 1e-9
         self.Date = self.Date.replace(second=0)
         self.Timestamp = tv_sec + tv_nsec * 1e-9
