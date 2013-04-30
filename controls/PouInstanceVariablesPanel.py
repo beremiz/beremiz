@@ -56,7 +56,7 @@ class PouInstanceVariablesPanel(wx.Panel):
         
         self.DebugButton = wx.lib.buttons.GenBitmapButton(self, 
               bitmap=GetBitmap("debug_instance"), size=wx.Size(28, 28), style=wx.NO_BORDER)
-        self.ParentButton.SetToolTipString(_("Debug instance"))
+        self.DebugButton.SetToolTipString(_("Debug instance"))
         self.Bind(wx.EVT_BUTTON, self.OnDebugButtonClick, 
                 self.DebugButton)
         
