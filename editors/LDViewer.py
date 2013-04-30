@@ -184,17 +184,17 @@ class LD_Viewer(Viewer):
 
     def RefreshView(self, variablepanel=True, selection=None):
         Viewer.RefreshView(self, variablepanel, selection)
-        wx.CallAfter(self.Refresh)
-        for i, rung in enumerate(self.Rungs):
-            bbox = rung.GetBoundingBox()
-            if i < len(self.RungComments):
-                if self.RungComments[i]:
-                    pos = self.RungComments[i].GetPosition()
-                    if pos[1] > bbox.y:
-                        self.RungComments.insert(i, None)
-            else:
-                self.RungComments.insert(i, None)
-    
+        if self.GetDrawingMode() != FREEDRAWING_MODE:
+            for i, rung in enumerate(self.Rungs):
+                bbox = rung.GetBoundingBox()
+                if i < len(self.RungComments):
+                    if self.RungComments[i]:
+                        pos = self.RungComments[i].GetPosition()
+                        if pos[1] > bbox.y:
+                            self.RungComments.insert(i, None)
+                else:
+                    self.RungComments.insert(i, None)
+        
     def loadInstance(self, instance, ids, selection):
         Viewer.loadInstance(self, instance, ids, selection)
         if self.GetDrawingMode() != FREEDRAWING_MODE:
