@@ -214,24 +214,28 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def SetParamsAttribute(self, path, value):
         if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
             self.BeremizRoot.setTargetType(self.GetTarget())
-        return ConfigTreeNode.SetParamsAttribute(self, path, value)
+        res = ConfigTreeNode.SetParamsAttribute(self, path, value)
+        if path.startswith("BeremizRoot.Libraries."):
+            wx.CallAfter(self.RefreshConfNodesBlockLists)
+        return res
         
     # helper func to check project path write permission
     def CheckProjectPathPerm(self, dosave=True):
         if CheckPathPerm(self.ProjectPath):
             return True
-        dialog = wx.MessageDialog(self.AppFrame, 
-                    _('You must have permission to work on the project\nWork on a project copy ?'),
-                    _('Error'), 
-                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        answer = dialog.ShowModal()
-        dialog.Destroy()
-        if answer == wx.ID_YES:
-            if self.SaveProjectAs():
-                self.AppFrame.RefreshTitle()
-                self.AppFrame.RefreshFileMenu()
-                self.AppFrame.RefreshPageTitles()
-                return True
+        if self.AppFrame is not None:
+            dialog = wx.MessageDialog(self.AppFrame, 
+                        _('You must have permission to work on the project\nWork on a project copy ?'),
+                        _('Error'), 
+                        wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            answer = dialog.ShowModal()
+            dialog.Destroy()
+            if answer == wx.ID_YES:
+                if self.SaveProjectAs():
+                    self.AppFrame.RefreshTitle()
+                    self.AppFrame.RefreshFileMenu()
+                    self.AppFrame.RefreshPageTitles()
+                    return True
         return False
     
     def _getProjectFilesPath(self, project_path=None):
