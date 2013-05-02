@@ -658,8 +658,8 @@ class Beremiz(IDEFrame):
             return IDEFrame.LoadTab(self, notebook, page_infos)
     
     def OnCloseFrame(self, event):
-        self.LogConsole.Unbind(wx.EVT_KILL_FOCUS, self.OnLogConsoleFocusChanged)
-        self.LogConsole.Unbind(wx.stc.EVT_STC_UPDATEUI, self.OnLogConsoleUpdateUI)
+        self.LogConsole.Unbind(wx.EVT_KILL_FOCUS)
+        self.LogConsole.Unbind(wx.stc.EVT_STC_UPDATEUI)
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
             if self.CTR is not None:
                 self.CTR.KillDebugThread()
