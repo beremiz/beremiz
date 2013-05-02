@@ -1210,13 +1210,13 @@ class LibraryEditorSizer(wx.FlexGridSizer):
     def OnModulesGridHeaderMotion(self, event):
         item, flags, col = self.ModulesGrid.HitTest(event.GetPosition())
         if col != self.LastToolTipCol and self.LastToolTipCol is not None:
-            self.ModulesGrid.SetToolTip(None)
+            self.ModulesGrid.GetHeaderWindow().SetToolTip(None)
             self.LastToolTipCol = None
-        if col > 0:
+        if col > 0 and self.LastToolTipCol != col:
             self.LastToolTipCol = col
             param, param_infos = self.ModuleLibrary.MODULES_EXTRA_PARAMS[col - 1]
-            wx.CallAfter(self.ModulesGrid.SetToolTip,
-                         wx.ToolTip(param_infos["description"]))
+            wx.CallAfter(self.ModulesGrid.GetHeaderWindow().SetToolTipString, 
+                         param_infos["description"])
         event.Skip()
 
 class DatabaseManagementDialog(wx.Dialog):
