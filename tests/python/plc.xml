@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2013-04-25T11:47:30">
+                 modificationDateTime="2013-05-02T10:44:19">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -1161,6 +1161,7 @@ Enjoy. ]]>
 {{
   char toPLC;
   char fromPLC = GetFbVar(IN);
+  extern int PLC_C_Call(char, char *);
   if(PLC_C_Call(fromPLC, &toPLC)){
     SetFbVar(OUT, toPLC);
   }
