@@ -303,7 +303,7 @@ class VariableDropTarget(wx.TextDropTarget):
                         self.ParentWindow.Table.ResetView(self.ParentWindow.VariablesGrid)
                         self.ParentWindow.SaveValues()
             elif (element_type not in ["config", "resource"] and values[1] == "Global" and self.ParentWindow.Filter in ["All", "Interface", "External"] or
-                  element_type in ["config", "resource"] and values[1] == "location"):
+                  element_type in ["config", "resource", "program"] and values[1] == "location"):
                 if values[1] == "location":
                     var_name = values[3]
                 else:
@@ -316,7 +316,10 @@ class VariableDropTarget(wx.TextDropTarget):
                     var_infos["Name"] = var_name
                     var_infos["Type"] = values[2]
                     if values[1] == "location":
-                        var_infos["Class"] = "Global"
+                        if element_type == "program":
+                            var_infos["Class"] = "Local"
+                        else:
+                            var_infos["Class"] = "Global"
                         var_infos["Location"] = values[0]
                     else:
                         var_infos["Class"] = "External"
