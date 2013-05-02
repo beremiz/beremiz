@@ -903,8 +903,7 @@ class IDEFrame(wx.Frame):
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Flush()
             wx.TheClipboard.Close()
-        if self.EditMenu:
-            self.RefreshEditMenu()
+        self.RefreshEditMenu()
 
     def GetDrawingMode(self):
         return self.DrawingMode
