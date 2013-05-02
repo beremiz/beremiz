@@ -11,6 +11,8 @@
 <![CDATA[volatile long Lock=0;
 volatile char PtoC=1,CtoP=2;
 
+extern long AtomicCompareExchange(long*,long, long);
+
 int Simple_C_Call(int val){
   return val+1;
 }
@@ -23,10 +25,10 @@ int Python_to_C_Call(char toC, char *fromC){
      beremiz' runtime implementation */
 
   int res = 0;
-  if(!AtomicCompareExchange(&Lock, 0, 1)){
+  if(!AtomicCompareExchange((long*)&Lock, 0, 1)){
     PtoC=toC;
     *fromC=CtoP;
-    AtomicCompareExchange(&Lock, 1, 0);
+    AtomicCompareExchange((long*)&Lock, 1, 0);
     res=1;
   }
   printf("C code called by Python: toC %d fromC %d\n",toC,*fromC);
@@ -36,11 +38,10 @@ int Python_to_C_Call(char toC, char *fromC){
 int PLC_C_Call(char fromPLC, char *toPLC){
   /* PLC also have to be realy carefull not to 
      conflict with asynchronous python access */
-  int res;
-  if(!AtomicCompareExchange(&Lock, 0, 1)){
+  if(!AtomicCompareExchange((long*)&Lock, 0, 1)){
       CtoP = fromPLC;
       *toPLC = PtoC;
-      AtomicCompareExchange(&Lock, 1, 0);
+      AtomicCompareExchange((long*)&Lock, 1, 0);
       return 1;
   }
   return 0;
@@ -56,9 +57,9 @@ int PLC_C_Call(char fromPLC, char *toPLC){
 <![CDATA[]]>
   </retrieveFunction>
   <publishFunction>
-<![CDATA[if(!AtomicCompareExchange(&Lock, 0, 1)){
+<![CDATA[if(!AtomicCompareExchange((long*)&Lock, 0, 1)){
     TestInput = CtoP + PtoC + TestOutput;
-    AtomicCompareExchange(&Lock, 1, 0);
+    AtomicCompareExchange((long*)&Lock, 1, 0);
 }]]>
   </publishFunction>
 </CFile>
