@@ -1185,12 +1185,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def ReArmDebugRegisterTimer(self):
         if self.DebugTimer is not None:
             self.DebugTimer.cancel()
-
-        # Timer to prevent rapid-fire when registering many variables
-        # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
-        self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
-        # Rearm anti-rapid-fire timer
-        self.DebugTimer.start()
+        
+        # Prevent to call RegisterDebugVarToConnector when PLC is not started
+        # If an output location var is forced it's leads to segmentation fault in runtime
+        # Links between PLC located variables and real variables are not ready
+        if self.previous_plcstate == "Started":
+            # Timer to prevent rapid-fire when registering many variables
+            # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
+            self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
+            # Rearm anti-rapid-fire timer
+            self.DebugTimer.start()
 
     def GetDebugIECVariableType(self, IECPath):
         Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
@@ -1235,7 +1239,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def UnsubscribeAllDebugIECVariable(self):
         self.IECdebug_lock.acquire()
-        IECdebug_data = {}
+        self.IECdebug_datas = {}
         self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()

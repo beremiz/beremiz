@@ -1970,7 +1970,7 @@ class IDEFrame(wx.Frame):
                     elif isinstance(editor, GraphicViewer):
                         editor.ResetView(True)
                     else:
-                        editor.RefreshView()
+                        editor.RegisterVariables()
                 elif editor.IsDebugging():
                     editor.RegisterVariables()
             self.DebugVariablePanel.UnregisterObsoleteData()
