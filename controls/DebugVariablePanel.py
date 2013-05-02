@@ -1810,6 +1810,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Thaw()
         
     def UnregisterObsoleteData(self):
+        self.RegisterVariables()
         if USE_MPL:
             if self.DataProducer is not None:
                 self.Ticktime = self.DataProducer.GetTicktime()

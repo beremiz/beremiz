@@ -1041,7 +1041,11 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             self.RefreshRect(self.GetScrolledRect(refresh_rect), False)
         else:
             DebugViewer.RefreshNewData(self)
-        
+    
+    def RegisterVariables(self):
+        DebugViewer.RegisterVariables(self)
+        self.RefreshView()
+    
     # Refresh Viewer elements
     def RefreshView(self, variablepanel=True, selection=None):
         EditorPanel.RefreshView(self, variablepanel)

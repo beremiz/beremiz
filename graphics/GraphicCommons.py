@@ -327,7 +327,7 @@ class DebugViewer:
             if producer is not None:
                 producer.SubscribeDebugIECVariable("__tick__", self)
             if self.DataProducer is not None:
-                self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)        
+                self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)
         self.DataProducer = producer
     
     def IsDebugging(self):
@@ -353,7 +353,8 @@ class DebugViewer:
             self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
     
     def RegisterVariables(self):
-        pass
+        if self.RegisterTick and self.Debug and self.DataProducer is not None:
+            self.DataProducer.SubscribeDebugIECVariable("__tick__", self)
     
     def GetDataType(self, iec_path):
         if self.DataProducer is not None:
