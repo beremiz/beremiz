@@ -1619,13 +1619,13 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def SetCursorTick(self, cursor_tick):
         self.CursorTick = cursor_tick
         self.Fixed = True
-        self.ResetCursorTick() 
+        self.UpdateCursorTick() 
     
     def ResetCursorTick(self):
         self.CursorTick = None
-        self.ResetCursorTick()
+        self.UpdateCursorTick()
     
-    def ResetCursorTick(self):
+    def UpdateCursorTick(self):
         for panel in self.GraphicPanels:
             if isinstance(panel, DebugVariableGraphic):
                 panel.SetCursorTick(self.CursorTick)
@@ -1977,7 +1977,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if len(self.Ticks) > 0:
             self.StartTick = max(self.Ticks[0], self.Ticks[-1] - self.CurrentRange)
             self.Fixed = False
-            self.CursorTick = None
             self.ResetCursorTick()
         event.Skip()
     
@@ -2214,6 +2213,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Fixed = False
             for panel in self.GraphicPanels:
                 panel.ResetData()
+            self.ResetCursorTick()
 
     def RefreshGraphicsWindowScrollbars(self):
         xstart, ystart = self.GraphicsWindow.GetViewStart()
