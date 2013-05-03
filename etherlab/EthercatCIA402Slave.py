@@ -219,7 +219,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                     "param_name": param["name"],
                 }
                 if param["type"] == "boolean":
-                    param_infos["param_value"] = {True: "true", False: "false"}[param["value"]]
+                    param_infos["param_value"] = {True: "1", False: "0"}[param["value"]]
                 else:
                     param_infos["param_value"] = str(param["value"])
                 str_completion["init_axis_params"].append(
