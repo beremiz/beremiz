@@ -45,7 +45,7 @@ def GetCursorPos(old, new):
 class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
     
     def __init__(self, *args, **kwargs):
-        wx.stc.StyledTextCtrl(self, *args, **kwargs)
+        wx.stc.StyledTextCtrl.__init__(self, *args, **kwargs)
         
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         
@@ -55,22 +55,18 @@ class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
                 x, y = event.GetPosition()
                 margin_width = reduce(
                         lambda x, y: x + y,
-                        [self.LogConsole.GetMarginWidth(i)
+                        [self.GetMarginWidth(i)
                          for i in xrange(3)],
                         0)
                 if x <= margin_width:
-                    self.LogConsole.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+                    self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
                 else:
-                    self.LogConsole.SetCursor(wx.StockCursor(wx.CURSOR_IBEAM))
+                    self.SetCursor(wx.StockCursor(wx.CURSOR_IBEAM))
+            else:
+                event.Skip()
         else:
             event.Skip()
 
     def AppendText(self, text):
-        last_position = self.GetLength()
-        current_selection = self.GetSelection()
-        self.GotoPos(last_position)
+        self.GotoPos(self.GetLength())
         self.AddText(text)
-        if current_selection[0] != last_position:
-            self.SetSelection(*current_selection)
-        else:
-            self.ScrollToLine(self.GetLineCount())
