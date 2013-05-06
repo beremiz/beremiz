@@ -54,6 +54,13 @@ typedef struct {
    | counter | Index  | */
 static uint64_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 
+void ResetLogCount(void) {
+	uint8_t level;
+	for(level=0;level<LOG_LEVELS;level++){
+		LogCursor[level] = 0;
+	}
+}
+
 /* Store one log message of give size */
 int LogMessage(uint8_t level, char* buf, uint32_t size){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
