@@ -8,7 +8,7 @@ import wx.lib.buttons
 from controls import CustomGrid, CustomTable
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 from util.BitmapLibrary import GetBitmap
-from editors.TextViewer import GetCursorPos, faces
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
 
 def AppendMenu(parent, help, id, kind, text):
     if wx.VERSION >= (2, 6, 0):
@@ -30,12 +30,12 @@ CPP_KEYWORDS = ["asm", "auto", "bool", "break", "case", "catch", "char", "class"
     "typedef", "typeid", "typename", "union", "unsigned", "using", "virtual", 
     "void", "volatile", "wchar_t", "while"]
 
-class CppEditor(stc.StyledTextCtrl):
+class CppEditor(CustomStyledTextCtrl):
 
     fold_symbols = 3
     
     def __init__(self, parent, name, window, controler):
-        stc.StyledTextCtrl.__init__(self, parent, ID_CPPEDITOR, wx.DefaultPosition, 
+        CustomStyledTextCtrl.__init__(self, parent, ID_CPPEDITOR, wx.DefaultPosition, 
                  wx.Size(-1, 300), 0)
 
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)

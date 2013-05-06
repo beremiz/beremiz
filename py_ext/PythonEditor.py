@@ -8,7 +8,7 @@ import wx.stc as stc
 from plcopen.plcopen import TestTextElement
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
-from editors.TextViewer import GetCursorPos, faces
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
 
 [STC_PYTHON_ERROR, STC_PYTHON_SEARCH_RESULT] = range(15, 17)
 
@@ -27,7 +27,7 @@ class PythonEditor(ConfTreeNodeEditor):
         (_("Python code"), "_create_PythonCodeEditor")]
     
     def _create_PythonCodeEditor(self, prnt):
-        self.PythonCodeEditor = stc.StyledTextCtrl(id=ID_PYTHONEDITOR, parent=prnt,
+        self.PythonCodeEditor = CustomStyledTextCtrl(id=ID_PYTHONEDITOR, parent=prnt,
                  name="TextViewer", pos=wx.DefaultPosition, 
                  size=wx.DefaultSize, style=0)
         self.PythonCodeEditor.ParentWindow = self

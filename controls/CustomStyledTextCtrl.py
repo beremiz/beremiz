@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import wx
+import wx.stc
+
+if wx.Platform == '__WXMSW__':
+    faces = { 'times': 'Times New Roman',
+              'mono' : 'Courier New',
+              'helv' : 'Arial',
+              'other': 'Comic Sans MS',
+              'size' : 10,
+             }
+else:
+    faces = { 'times': 'Times',
+              'mono' : 'Courier',
+              'helv' : 'Helvetica',
+              'other': 'new century schoolbook',
+              'size' : 12,
+             }
+
+def GetCursorPos(old, new):
+    if old == "":
+        return 0
+    old_length = len(old)
+    new_length = len(new)
+    common_length = min(old_length, new_length)
+    i = 0
+    for i in xrange(common_length):
+        if old[i] != new[i]:
+            break
+    if old_length < new_length:
+        if common_length > 0 and old[i] != new[i]:
+            return i + new_length - old_length
+        else:
+            return i + new_length - old_length + 1
+    elif old_length > new_length or i < min(old_length, new_length) - 1:
+        if common_length > 0 and old[i] != new[i]:
+            return i
+        else:
+            return i + 1
+    else:
+        return None
+
+class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
+    
+    def __init__(self, *args, **kwargs):
+        wx.stc.StyledTextCtrl(self, *args, **kwargs)
+        
+        self.Bind(wx.EVT_MOTION, self.OnMotion)
+        
+    def OnMotion(self, event):
+        if wx.Platform == '__WXMSW__':
+            if not event.Dragging():
+                x, y = event.GetPosition()
+                margin_width = reduce(
+                        lambda x, y: x + y,
+                        [self.LogConsole.GetMarginWidth(i)
+                         for i in xrange(3)],
+                        0)
+                if x <= margin_width:
+                    self.LogConsole.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+                else:
+                    self.LogConsole.SetCursor(wx.StockCursor(wx.CURSOR_IBEAM))
+        else:
+            event.Skip()
+
+    def AppendText(self, text):
+        last_position = self.GetLength()
+        current_selection = self.GetSelection()
+        self.GotoPos(last_position)
+        self.AddText(text)
+        if current_selection[0] != last_position:
+            self.SetSelection(*current_selection)
+        else:
+            self.ScrollToLine(self.GetLineCount())

@@ -147,6 +147,7 @@ from editors.DataTypeEditor import DataTypeEditor
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from controls.LogViewer import LogViewer
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNODE
@@ -255,18 +256,18 @@ class LogPseudoFile:
                 if style != self.black_white:
                     self.output.StartStyling(self.output.GetLength(), 0xff)
                 
-                # Temporary deactivate read only mode on StyledTextCtrl for adding text
-                # It seems that text modifications, even programmatically, are disabled
-                # in StyledTextCtrl when read only is active 
+                # Temporary deactivate read only mode on StyledTextCtrl for
+                # adding text. It seems that text modifications, even 
+                # programmatically, are disabled in StyledTextCtrl when read
+                # only is active 
                 self.output.SetReadOnly(False)
-                self.output.AddText(s)
+                self.output.AppendText(s)
                 self.output.SetReadOnly(True)
                 
                 if style != self.black_white:
                     self.output.SetStyling(len(s), style)
             self.stack = []
             self.lock.release()
-            self.output.ScrollToLine(self.output.GetLineCount())
             self.output.Thaw()
             self.LastRefreshTime = gettime()
             try:
@@ -289,9 +290,9 @@ class LogPseudoFile:
         wx.GetApp().Yield()
 
     def flush(self):
-        # Temporary deactivate read only mode on StyledTextCtrl for clearing text
-        # It seems that text modifications, even programmatically, are disabled
-        # in StyledTextCtrl when read only is active 
+        # Temporary deactivate read only mode on StyledTextCtrl for clearing
+        # text. It seems that text modifications, even programmatically, are
+        # disabled in StyledTextCtrl when read only is active 
         self.output.SetReadOnly(False)
         self.output.SetText("")
         self.output.SetReadOnly(True)
@@ -412,7 +413,7 @@ class Beremiz(IDEFrame):
         
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
-        self.LogConsole = wx.stc.StyledTextCtrl(id=ID_BEREMIZLOGCONSOLE,
+        self.LogConsole = CustomStyledTextCtrl(id=ID_BEREMIZLOGCONSOLE,
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0))
         self.LogConsole.Bind(wx.EVT_SET_FOCUS, self.OnLogConsoleFocusChanged)
