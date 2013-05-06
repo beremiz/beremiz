@@ -308,7 +308,13 @@ class LogViewer(DebugViewer, wx.Panel):
               self.OnSearchMessageSearchButtonClick, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, 
               self.OnSearchMessageCancelButtonClick, self.SearchMessage)
-        filter_sizer.AddWindow(self.SearchMessage, 3, flag=wx.GROW)
+        filter_sizer.AddWindow(self.SearchMessage, 3, border=5, flag=wx.RIGHT|wx.GROW)
+        
+        self.CleanButton = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap("Clean"), 
+              size=wx.Size(28, 28), style=wx.NO_BORDER)
+        self.CleanButton.SetToolTipString(_("Clean log messages"))
+        self.Bind(wx.EVT_BUTTON, self.OnCleanButton, self.CleanButton)
+        filter_sizer.AddWindow(self.CleanButton)
         
         message_panel_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
         message_panel_sizer.AddGrowableCol(0)
@@ -379,6 +385,7 @@ class LogViewer(DebugViewer, wx.Panel):
     
     def SetLogSource(self, log_source):
         self.LogSource = log_source
+        self.CleanButton.Enable(self.LogSource is not None)
         if log_source is not None:
             self.ResetLogMessages()
             self.RefreshView()
@@ -396,18 +403,21 @@ class LogViewer(DebugViewer, wx.Panel):
         for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
             if count is not None and prev != count:
                 if prev is None:
-                    dump_end = count - 1
+                    dump_end = -1
                 else:
                     dump_end = prev - 1
                 for msgidx in xrange(count-1, dump_end,-1):
                     new_message = self.GetLogMessageFromSource(msgidx, level)
-                    if new_message is not None:
-                        if prev is None:
-                            self.OldestMessages.append((msgidx, new_message))
-                            if len(new_messages) == 0 or new_message > new_messages[0]:
-                                new_messages = [new_message]
+                    if new_message is None:
+                        break
+                    if prev is None:
+                        self.OldestMessages.append((msgidx, new_message))
+                        if len(new_messages) == 0:
+                            new_messages = [new_message]
                         else:
                             new_messages.insert(0, new_message)
+                    else:
+                        new_messages.insert(0, new_message)
                 if prev is None and len(self.OldestMessages) <= level:
                     self.OldestMessages.append((-1, None))
                 self.previous_log_count[level] = count
@@ -606,6 +616,13 @@ class LogViewer(DebugViewer, wx.Panel):
         self.CurrentSearchValue = ""
         self.SearchMessage.SetValue("")
         self.ResetMessagePanel()
+        event.Skip()
+    
+    def OnCleanButton(self, event):
+        if self.LogSource is not None:
+            self.LogSource.ResetLogCount()
+        self.ResetLogMessages()
+        self.RefreshView()
         event.Skip()
     
     def GenerateOnDurationButton(self, duration):

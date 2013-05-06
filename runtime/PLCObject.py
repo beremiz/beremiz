@@ -90,12 +90,15 @@ class PLCObject(pyro.ObjBase):
             msg, = args
         return self._LogMessage(level, msg, len(msg))
 
+    def ResetLogCount(self):
+        if self._ResetLogCount is not None:
+            self._ResetLogCount()
 
     def GetLogCount(self, level):
         if self._GetLogCount is not None :
             return int(self._GetLogCount(level))
         elif self._loading_error is not None and level==0:
-            return 1;
+            return 1
 
     def GetLogMessage(self, level, msgid):
         tick = ctypes.c_uint32()
@@ -182,6 +185,9 @@ class PLCObject(pyro.ObjBase):
             self._resumeDebug = self.PLClibraryHandle.resumeDebug
             self._resumeDebug.restype = None
 
+            self._ResetLogCount = self.PLClibraryHandle.ResetLogCount
+            self._ResetLogCount.restype = None
+
             self._GetLogCount = self.PLClibraryHandle.GetLogCount
             self._GetLogCount.restype = ctypes.c_uint32
             self._GetLogCount.argtypes = [ctypes.c_uint8]
@@ -189,7 +195,7 @@ class PLCObject(pyro.ObjBase):
             self._LogMessage = self.PLClibraryHandle.LogMessage
             self._LogMessage.restype = ctypes.c_int
             self._LogMessage.argtypes = [ctypes.c_uint8, ctypes.c_char_p, ctypes.c_uint32]
-            
+
             self._log_read_buffer = ctypes.create_string_buffer(1<<14) #16K
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
