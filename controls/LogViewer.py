@@ -298,7 +298,7 @@ class LogViewer(DebugViewer, wx.Panel):
         for level in levels:
             self.MessageFilter.Append(_(level))
         self.Bind(wx.EVT_COMBOBOX, self.OnMessageFilterChanged, self.MessageFilter)
-        filter_sizer.AddWindow(self.MessageFilter, 1, border=5, flag=wx.RIGHT|wx.GROW)
+        filter_sizer.AddWindow(self.MessageFilter, 1, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         self.SearchMessage = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.SearchMessage.ShowSearchButton(True)
@@ -308,7 +308,7 @@ class LogViewer(DebugViewer, wx.Panel):
               self.OnSearchMessageSearchButtonClick, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, 
               self.OnSearchMessageCancelButtonClick, self.SearchMessage)
-        filter_sizer.AddWindow(self.SearchMessage, 3, border=5, flag=wx.RIGHT|wx.GROW)
+        filter_sizer.AddWindow(self.SearchMessage, 3, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
         
         self.CleanButton = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap("Clean"), 
               size=wx.Size(28, 28), style=wx.NO_BORDER)
