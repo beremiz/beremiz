@@ -31,6 +31,7 @@ import wx.stc
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from plcopen.structures import ST_BLOCK_START_KEYWORDS, ST_BLOCK_END_KEYWORDS, IEC_BLOCK_START_KEYWORDS, IEC_BLOCK_END_KEYWORDS, LOCATIONDATATYPES
 from EditorPanel import EditorPanel
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
 
 #-------------------------------------------------------------------------------
 #                         Textual programs Viewer class
@@ -52,20 +53,6 @@ for i in xrange(26):
 [ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
 ] = [wx.NewId() for _init_ctrls in range(2)]
 
-if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 10,
-             }
-else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 12,
-             }
 re_texts = {}
 re_texts["letter"] = "[A-Za-z]"
 re_texts["digit"] = "[0-9]"
@@ -78,29 +65,6 @@ HIGHLIGHT_TYPES = {
     ERROR_HIGHLIGHT: STC_PLC_ERROR,
     SEARCH_RESULT_HIGHLIGHT: STC_PLC_SEARCH_RESULT,
 }
-
-def GetCursorPos(old, new):
-    if old == "":
-        return 0
-    old_length = len(old)
-    new_length = len(new)
-    common_length = min(old_length, new_length)
-    i = 0
-    for i in xrange(common_length):
-        if old[i] != new[i]:
-            break
-    if old_length < new_length:
-        if common_length > 0 and old[i] != new[i]:
-            return i + new_length - old_length
-        else:
-            return i + new_length - old_length + 1
-    elif old_length > new_length or i < min(old_length, new_length) - 1:
-        if common_length > 0 and old[i] != new[i]:
-            return i
-        else:
-            return i + 1
-    else:
-        return None
 
 def LineStartswith(line, symbols):
     return reduce(lambda x, y: x or y, map(lambda x: line.startswith(x), symbols), False)
@@ -117,7 +81,7 @@ class TextViewer(EditorPanel):
                 event(self, function)
     
     def _init_Editor(self, prnt):
-        self.Editor = wx.stc.StyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL, 
+        self.Editor = CustomStyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL, 
                 parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
         self.Editor.ParentWindow = self
         
