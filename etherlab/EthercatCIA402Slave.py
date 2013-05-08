@@ -36,7 +36,17 @@ EXTRA_NODE_VARIABLES = [
     ("DigitalOutputs", [
         {"description": ("DigitalOutputs", 0x60FE, 0x00, "UDINT", "Q"),
          "retrieve": None}
-        ])
+        ]),
+    ("TouchProbe", [
+        {"description": ("TouchProbeFunction", 0x60B8, 0x00, "UINT", "Q"),
+         "retrieve": None},
+        {"description": ("TouchProbeStatus", 0x60B9, 0x00, "UINT", "I"),
+         "publish": None},
+        {"description": ("TouchProbePos1PosValue", 0x60BA, 0x00, "DINT", "I"),
+         "publish": None},
+        {"description": ("TouchProbePos1NegValue", 0x60BB, 0x00, "DINT", "I"),
+         "publish": None},
+        ]),
 ]
 EXTRA_NODE_VARIABLES_DICT = dict([("Enable" + name, value) for name, value in EXTRA_NODE_VARIABLES])
 
