@@ -5,13 +5,22 @@ import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
 
+from plcopen.plcopen import TestTextElement
 from controls import CustomGrid, CustomTable
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
+from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 
 SECTIONS_NAMES = ["Includes", "Globals", "Init",
                   "CleanUp", "Retrieve", "Publish"]
+
+[STC_CODE_ERROR, STC_CODE_SEARCH_RESULT] = range(15, 17)
+
+HIGHLIGHT_TYPES = {
+    ERROR_HIGHLIGHT: STC_CODE_ERROR,
+    SEARCH_RESULT_HIGHLIGHT: STC_CODE_SEARCH_RESULT,
+}
 
 class CodeEditor(CustomStyledTextCtrl):
     
@@ -71,6 +80,10 @@ class CodeEditor(CustomStyledTextCtrl):
         self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT,  "fore:#FFFFFF,back:#0000FF,bold")
         self.StyleSetSpec(stc.STC_STYLE_BRACEBAD,    "fore:#000000,back:#FF0000,bold")
         
+        # Highlighting styles
+        self.StyleSetSpec(STC_CODE_ERROR, 'fore:#FF0000,back:#FFFF00,size:%(size)d' % faces)
+        self.StyleSetSpec(STC_CODE_SEARCH_RESULT, 'fore:#FFFFFF,back:#FFA500,size:%(size)d' % faces)
+        
         # register some images for use in the AutoComplete box.
         #self.RegisterImage(1, images.getSmilesBitmap())
         self.RegisterImage(1, 
@@ -92,6 +105,14 @@ class CodeEditor(CustomStyledTextCtrl):
         
         self.DisableEvents = True
         self.CurrentAction = None
+        
+        self.Highlights = []
+        self.SearchParams = None
+        self.SearchResults = None
+        self.CurrentFindHighlight = None
+        
+        self.RefreshHighlightsTimer = wx.Timer(self, -1)
+        self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
         
         self.SectionsComments = {}
         for section in SECTIONS_NAMES:
@@ -194,6 +215,8 @@ class CodeEditor(CustomStyledTextCtrl):
         self.DisableEvents = False
         
         self.Colourise(0, -1)
+        
+        self.ShowHighlights()
 
     def DoGetBestSize(self):
         return self.ParentWindow.GetPanelBestSize()
@@ -375,6 +398,91 @@ class CodeEditor(CustomStyledTextCtrl):
         self.RefreshModel()
         self.RefreshBuffer()
 
+    def Find(self, direction, search_params):
+        if self.SearchParams != search_params:
+            self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
+            
+            self.SearchParams = search_params
+            criteria = {
+                "raw_pattern": search_params["find_pattern"], 
+                "pattern": re.compile(search_params["find_pattern"]),
+                "case_sensitive": search_params["case_sensitive"],
+                "regular_expression": search_params["regular_expression"],
+                "filter": "all"}
+            
+            self.SearchResults = [
+                (start, end, SEARCH_RESULT_HIGHLIGHT)
+                for start, end, text in 
+                TestTextElement(self.GetText(), criteria)]
+            self.CurrentFindHighlight = None
+        
+        if len(self.SearchResults) > 0:
+            if self.CurrentFindHighlight is not None:
+                old_idx = self.SearchResults.index(self.CurrentFindHighlight)
+                if self.SearchParams["wrap"]:
+                    idx = (old_idx + direction) % len(self.SearchResults)
+                else:
+                    idx = max(0, min(old_idx + direction, len(self.SearchResults) - 1))
+                if idx != old_idx:
+                    self.RemoveHighlight(*self.CurrentFindHighlight)
+                    self.CurrentFindHighlight = self.SearchResults[idx]
+                    self.AddHighlight(*self.CurrentFindHighlight)
+            else:
+                self.CurrentFindHighlight = self.SearchResults[0]
+                self.AddHighlight(*self.CurrentFindHighlight)
+            
+        else:
+            if self.CurrentFindHighlight is not None:
+                self.RemoveHighlight(*self.CurrentFindHighlight)
+            self.CurrentFindHighlight = None
+
+#-------------------------------------------------------------------------------
+#                        Highlights showing functions
+#-------------------------------------------------------------------------------
+
+    def OnRefreshHighlightsTimer(self, event):
+        self.RefreshView()
+        event.Skip()
+
+    def ClearHighlights(self, highlight_type=None):
+        if highlight_type is None:
+            self.Highlights = []
+        else:
+            highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
+            if highlight_type is not None:
+                self.Highlights = [(start, end, highlight) for (start, end, highlight) in self.Highlights if highlight != highlight_type]
+        self.RefreshView()
+
+    def AddHighlight(self, start, end, highlight_type):
+        highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
+        if highlight_type is not None:
+            self.Highlights.append((start, end, highlight_type))
+            self.GotoPos(self.PositionFromLine(start[0]) + start[1])
+            self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
+            self.RefreshView()
+
+    def RemoveHighlight(self, start, end, highlight_type):
+        highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
+        if (highlight_type is not None and 
+            (start, end, highlight_type) in self.Highlights):
+            self.Highlights.remove((start, end, highlight_type))
+            self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
+    
+    def ShowHighlights(self):
+        for start, end, highlight_type in self.Highlights:
+            if start[0] == 0:
+                highlight_start_pos = start[1]
+            else:
+                highlight_start_pos = self.GetLineEndPosition(start[0] - 1) + start[1] + 1
+            if end[0] == 0:
+                highlight_end_pos = end[1] - indent + 1
+            else:
+                highlight_end_pos = self.GetLineEndPosition(end[0] - 1) + end[1] + 2
+            self.StartStyling(highlight_start_pos, 0xff)
+            self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
+            self.StartStyling(highlight_start_pos, 0x00)
+            self.SetStyling(len(self.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
+
 
 #-------------------------------------------------------------------------------
 #                         Helper for VariablesGrid values
@@ -429,13 +537,7 @@ class VariablesEditor(wx.Panel):
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=4)
         main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
-        
-        self.VariablesGrid = CustomGrid(self, size=wx.Size(-1, 300), style=wx.VSCROLL)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
-        main_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
+        main_sizer.AddGrowableRow(1)
         
         controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(controls_sizer, border=5, flag=wx.TOP|wx.ALIGN_RIGHT)
@@ -449,7 +551,13 @@ class VariablesEditor(wx.Panel):
                   size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
-            controls_sizer.AddWindow(button, border=5, flag=wx.LEFT)
+            controls_sizer.AddWindow(button, border=5, flag=wx.RIGHT)
+        
+        self.VariablesGrid = CustomGrid(self, size=wx.Size(-1, 300), style=wx.VSCROLL)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
+        main_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
         
         self.SetSizer(main_sizer)
                 
@@ -531,7 +639,7 @@ class VariablesEditor(wx.Panel):
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), id=new_id)
             type_menu.AppendMenu(wx.NewId(), "Base Types", base_menu)
             datatype_menu = wx.Menu(title='')
-            for datatype in self.Controler.GetDataTypes(basetypes=False, only_locatables=True):
+            for datatype in self.Controler.GetDataTypes():
                 new_id = wx.NewId()
                 datatype_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
