@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-<xsd:schema targetNamespace="cext_xsd.xsd" 
-            xmlns:cext="cext_xsd.xsd" 
+<xsd:schema targetNamespace="code_file.xsd" 
+            xmlns:codefile="code_file.xsd" 
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="qualified" 
             attributeFormDefault="unqualified">
 
-  <xsd:element name="CFile">
+  <xsd:element name="CodeFile">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element name="includes" type="cext:CCode"/>
+        <xsd:element name="includes" type="codefile:CodeText"/>
         <xsd:element name="variables">
           <xsd:complexType>
             <xsd:sequence>
@@ -16,7 +16,7 @@
                 <xsd:complexType>
                   <xsd:attribute name="name" type="xsd:string" use="required"/>
                   <xsd:attribute name="type" type="xsd:string" use="required"/>
-                  <xsd:attribute name="class" use="required">
+                  <xsd:attribute name="class" use="optional">
                     <xsd:simpleType>
                       <xsd:restriction base="xsd:string">
                         <xsd:enumeration value="input"/>
@@ -25,20 +25,21 @@
                       </xsd:restriction>
                     </xsd:simpleType>
                   </xsd:attribute>
+                  <xsd:attribute name="initial" type="xsd:string" use="optional" default=""/>
                 </xsd:complexType>
               </xsd:element>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
-        <xsd:element name="globals" type="cext:CCode"/>
-        <xsd:element name="initFunction" type="cext:CCode"/>
-        <xsd:element name="cleanUpFunction" type="cext:CCode"/>
-        <xsd:element name="retrieveFunction" type="cext:CCode"/>
-        <xsd:element name="publishFunction" type="cext:CCode"/>
+        <xsd:element name="globals" type="codefile:CodeText"/>
+        <xsd:element name="initFunction" type="codefile:CodeText"/>
+        <xsd:element name="cleanUpFunction" type="codefile:CodeText"/>
+        <xsd:element name="retrieveFunction" type="codefile:CodeText"/>
+        <xsd:element name="publishFunction" type="codefile:CodeText"/>
       </xsd:sequence>
     </xsd:complexType>
   </xsd:element>
-  <xsd:complexType name="CCode">
+  <xsd:complexType name="CodeText">
     <xsd:annotation>
       <xsd:documentation>Formatted text according to parts of XHTML 1.1</xsd:documentation>
     </xsd:annotation>
