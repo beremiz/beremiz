@@ -97,6 +97,7 @@ class FindInPouDialog(wx.Frame):
               flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.ALIGN_RIGHT)
         
         self.FindButton = wx.Button(panel, label=_("Find"))
+        self.FindButton.SetDefault()
         self.Bind(wx.EVT_BUTTON, self.OnFindButton, self.FindButton)
         buttons_sizer.AddWindow(self.FindButton, border=5, flag=wx.RIGHT)
         
