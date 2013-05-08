@@ -48,3 +48,6 @@ class CFileEditor(CodeFileEditor):
         CodeFileEditor.RefreshView(self)
         
         self.CCodeEditor.RefreshView()
+
+    def Find(self, direction, search_params):
+        self.CCodeEditor.Find(direction, search_params)

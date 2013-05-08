@@ -50,7 +50,6 @@ class CFile(CodeFile):
         text += '#include "iec_types_all.h"'
 
         # Adding variables
-        base_types = self.GetCTRoot().GetBaseTypes()
         config = self.GetCTRoot().GetProjectConfigNames()[0]
         text += "/* User variables reference */\n"
         for variable in self.CodeFile.variables.variable:
