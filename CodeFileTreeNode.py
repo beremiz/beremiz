@@ -21,7 +21,7 @@ class CodeFile:
             xmlfile.close()
             
             for child in tree.childNodes:
-                if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "CodeFile":
+                if child.nodeType == tree.ELEMENT_NODE and child.nodeName in ["CodeFile", "CFile"]:
                     self.CodeFile.loadXMLTree(child, ["xmlns", "xmlns:xsi", "xsi:schemaLocation"])
                     self.CreateCodeFileBuffer(True)
         else:
@@ -82,7 +82,7 @@ class CodeFile:
         text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
         extras = {"xmlns":"http://www.w3.org/2001/XMLSchema",
                   "xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
-                  "xsi:schemaLocation" : "codefile.xsd"}
+                  "xsi:schemaLocation" : "code_file.xsd"}
         text += self.CodeFile.generateXMLText("CodeFile", 0, extras)
 
         xmlfile = open(filepath,"w")
