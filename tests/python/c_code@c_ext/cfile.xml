@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<CFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="cext_xsd.xsd">
+<CodeFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="codefile.xsd">
   <includes>
 <![CDATA[#include "stdio.h"]]>
   </includes>
   <variables>
-    <variable name="TestInput" type="SINT" class="input"/>
-    <variable name="TestOutput" type="SINT" class="output"/>
+    <variable name="TestInput" type="SINT" initial="0"/>
+    <variable name="TestOutput" type="SINT"/>
   </variables>
   <globals>
 <![CDATA[volatile long Lock=0;
@@ -62,4 +62,4 @@ int PLC_C_Call(char fromPLC, char *toPLC){
     AtomicCompareExchange((long*)&Lock, 1, 0);
 }]]>
   </publishFunction>
-</CFile>
+</CodeFile>
