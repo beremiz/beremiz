@@ -1,4 +1,4 @@
-import keyword
+import re
 
 import wx
 import wx.grid
@@ -6,36 +6,20 @@ import wx.stc as stc
 import wx.lib.buttons
 
 from controls import CustomGrid, CustomTable
-from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
 
-def AppendMenu(parent, help, id, kind, text):
-    if wx.VERSION >= (2, 6, 0):
-        parent.Append(help=help, id=id, kind=kind, text=text)
-    else:
-        parent.Append(helpString=help, id=id, kind=kind, item=text)
+SECTIONS_NAMES = ["Includes", "Globals", "Init",
+                  "CleanUp", "Retrieve", "Publish"]
 
-
-[ID_CPPEDITOR,
-] = [wx.NewId() for _init_ctrls in range(1)]
-
-CPP_KEYWORDS = ["asm", "auto", "bool", "break", "case", "catch", "char", "class", 
-    "const", "const_cast", "continue", "default", "delete", "do", "double", 
-    "dynamic_cast", "else", "enum", "explicit", "export", "extern", "false", 
-    "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable", 
-    "namespace", "new", "operator", "private", "protected", "public", "register", 
-    "reinterpret_cast", "return", "short", "signed", "sizeof", "static", 
-    "static_cast", "struct", "switch", "template", "this", "throw", "true", "try",
-    "typedef", "typeid", "typename", "union", "unsigned", "using", "virtual", 
-    "void", "volatile", "wchar_t", "while"]
-
-class CppEditor(CustomStyledTextCtrl):
-
-    fold_symbols = 3
+class CodeEditor(CustomStyledTextCtrl):
     
-    def __init__(self, parent, name, window, controler):
-        CustomStyledTextCtrl.__init__(self, parent, ID_CPPEDITOR, wx.DefaultPosition, 
+    KEYWORDS = []
+    COMMENT_HEADER = ""
+
+    def __init__(self, parent, window, controler):
+        CustomStyledTextCtrl.__init__(self, parent, -1, wx.DefaultPosition, 
                  wx.Size(-1, 300), 0)
 
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
@@ -44,70 +28,30 @@ class CppEditor(CustomStyledTextCtrl):
         self.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
         self.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
 
-        self.SetLexer(stc.STC_LEX_CPP)
-        self.SetKeyWords(0, " ".join(CPP_KEYWORDS))
-
         self.SetProperty("fold", "1")
         self.SetProperty("tab.timmy.whinge.level", "1")
         self.SetMargins(0,0)
 
         self.SetViewWhiteSpace(False)
-        #self.SetBufferedDraw(False)
-        #self.SetViewEOL(True)
-        #self.SetEOLMode(stc.STC_EOL_CRLF)
-        #self.SetUseAntiAliasing(True)
         
         self.SetEdgeMode(stc.STC_EDGE_BACKGROUND)
         self.SetEdgeColumn(78)
 
         # Setup a margin to hold fold markers
-        #self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?
         self.SetMarginType(2, stc.STC_MARGIN_SYMBOL)
         self.SetMarginMask(2, stc.STC_MASK_FOLDERS)
         self.SetMarginSensitive(2, True)
         self.SetMarginWidth(2, 12)
 
-        if self.fold_symbols == 0:
-            # Arrow pointing right for contracted folders, arrow pointing down for expanded
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_ARROWDOWN, "black", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_ARROW, "black", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_EMPTY, "black", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_EMPTY, "black", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_EMPTY,     "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY,     "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY,     "white", "black")
-            
-        elif self.fold_symbols == 1:
-            # Plus for contracted folders, minus for expanded
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_MINUS, "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_PLUS,  "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_EMPTY, "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_EMPTY, "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_EMPTY, "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY, "white", "black")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY, "white", "black")
-
-        elif self.fold_symbols == 2:
-            # Like a flattened tree control using circular headers and curved joins
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_CIRCLEMINUS,          "white", "#404040")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_CIRCLEPLUS,           "white", "#404040")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,                "white", "#404040")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNERCURVE,         "white", "#404040")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_CIRCLEPLUSCONNECTED,  "white", "#404040")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_CIRCLEMINUSCONNECTED, "white", "#404040")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNERCURVE,         "white", "#404040")
-
-        elif self.fold_symbols == 3:
-            # Like a flattened tree control using square headers
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_BOXMINUS,          "white", "#808080")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_BOXPLUS,           "white", "#808080")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,             "white", "#808080")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNER,           "white", "#808080")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_BOXPLUSCONNECTED,  "white", "#808080")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_BOXMINUSCONNECTED, "white", "#808080")
-            self.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNER,           "white", "#808080")
-
-
+        # Like a flattened tree control using square headers
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPEN,    stc.STC_MARK_BOXMINUS,          "white", "#808080")
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDER,        stc.STC_MARK_BOXPLUS,           "white", "#808080")
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDERSUB,     stc.STC_MARK_VLINE,             "white", "#808080")
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDERTAIL,    stc.STC_MARK_LCORNER,           "white", "#808080")
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDEREND,     stc.STC_MARK_BOXPLUSCONNECTED,  "white", "#808080")
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_BOXMINUSCONNECTED, "white", "#808080")
+        self.MarkerDefine(stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNER,           "white", "#808080")
+        
         self.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         self.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
@@ -126,16 +70,6 @@ class CppEditor(CustomStyledTextCtrl):
         self.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
         self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT,  "fore:#FFFFFF,back:#0000FF,bold")
         self.StyleSetSpec(stc.STC_STYLE_BRACEBAD,    "fore:#000000,back:#FF0000,bold")
-
-        self.StyleSetSpec(stc.STC_C_COMMENT, 'fore:#408060,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_COMMENTLINE, 'fore:#408060,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_COMMENTDOC, 'fore:#408060,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_NUMBER, 'fore:#0076AE,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_WORD, 'bold,fore:#800056,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_STRING, 'fore:#2a00ff,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_PREPROCESSOR, 'bold,fore:#800056,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_OPERATOR, 'bold,size:%(size)d' % faces)
-        self.StyleSetSpec(stc.STC_C_STRINGEOL, 'back:#FFD5FF,size:%(size)d' % faces)
         
         # register some images for use in the AutoComplete box.
         #self.RegisterImage(1, images.getSmilesBitmap())
@@ -149,19 +83,37 @@ class CppEditor(CustomStyledTextCtrl):
         # Indentation size
         self.SetTabWidth(2)
         self.SetUseTabs(0)
-
+        
+        self.SetCodeLexer()
+        self.SetKeyWords(0, " ".join(self.KEYWORDS))
+        
         self.Controler = controler
         self.ParentWindow = window
         
         self.DisableEvents = True
-        self.Name = name
         self.CurrentAction = None
+        
+        self.SectionsComments = {}
+        for section in SECTIONS_NAMES:
+            section_start_comment = "%s %s section\n" % (self.COMMENT_HEADER, section)
+            section_end_comment = "\n%s End %s section\n\n" % (self.COMMENT_HEADER, section)
+            self.SectionsComments[section] = {
+                 "start": section_start_comment,
+                 "end": section_end_comment,
+                 "pattern": re.compile(section_start_comment + 
+                                       "(.*)" + 
+                                       section_end_comment,
+                                       re.DOTALL)
+            }
         
         self.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
 
-        self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_CPPEDITOR)
+        self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
-        self.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, id=ID_CPPEDITOR)
+        self.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification)
+    
+    def SetCodeLexer(self):
+        pass
     
     def OnModification(self, event):
         if not self.DisableEvents:
@@ -192,7 +144,7 @@ class CppEditor(CustomStyledTextCtrl):
 
     # Buffer the last model state
     def RefreshBuffer(self):
-        self.Controler.BufferCFile()
+        self.Controler.BufferCodeFile()
         if self.ParentWindow is not None:
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
@@ -212,6 +164,16 @@ class CppEditor(CustomStyledTextCtrl):
             self.Controler.EndBuffering()
             self.CurrentAction = None
 
+    def GetCodeText(self):
+        parts = self.Controler.GetTextParts()
+        text = ""
+        for section in SECTIONS_NAMES:
+            section_comments = self.SectionsComments[section]
+            text += section_comments["start"]
+            text += parts[section]
+            text += section_comments["end"]
+        return text
+
     def RefreshView(self):
         self.ResetBuffer()
         self.DisableEvents = True
@@ -219,7 +181,7 @@ class CppEditor(CustomStyledTextCtrl):
         line = self.GetFirstVisibleLine()
         column = self.GetXOffset()
         old_text = self.GetText()
-        new_text = self.Controler.GetPartText(self.Name)
+        new_text = self.GetCodeText()
         self.SetText(new_text)
         if old_text != new_text:
             new_cursor_pos = GetCursorPos(old_text, new_text)
@@ -237,7 +199,16 @@ class CppEditor(CustomStyledTextCtrl):
         return self.ParentWindow.GetPanelBestSize()
 
     def RefreshModel(self):
-        self.Controler.SetPartText(self.Name, self.GetText())
+        text = self.GetText()
+        parts = {}
+        for section in SECTIONS_NAMES:
+            section_comments = self.SectionsComments[section]
+            result = section_comments["pattern"].search(text)
+            if result is not None:
+                parts[section] = result.group(1)
+            else:
+                parts[section] = ""
+        self.Controler.SetTextParts(parts)
 
     def OnKeyPressed(self, event):
         if self.CallTipActive():
@@ -250,16 +221,12 @@ class CppEditor(CustomStyledTextCtrl):
             # Tips
             if event.ShiftDown():
                 pass
-##                self.CallTipSetBackground("yellow")
-##                self.CallTipShow(pos, 'lots of of text: blah, blah, blah\n\n'
-##                                 'show some suff, maybe parameters..\n\n'
-##                                 'fubar(param1, param2)')
             # Code completion
             else:
                 self.AutoCompSetIgnoreCase(False)  # so this needs to match
 
                 # Images are specified with a appended "?type"
-                self.AutoCompShow(0, " ".join([word + "?1" for word in CPP_KEYWORDS]))
+                self.AutoCompShow(0, " ".join([word + "?1" for word in self.KEYWORDS]))
         else:
             event.Skip()
 
@@ -297,11 +264,6 @@ class CppEditor(CustomStyledTextCtrl):
             self.BraceBadLight(braceAtCaret)
         else:
             self.BraceHighlight(braceAtCaret, braceOpposite)
-            #pt = self.PointFromPosition(braceOpposite)
-            #self.Refresh(True, wxRect(pt.x, pt.y, 5,5))
-            #print pt
-            #self.Refresh(False)
-
 
     def OnMarginClick(self, evt):
         # fold and unfold as needed
@@ -443,7 +405,7 @@ class VariablesTable(CustomTable):
                 renderer = None
                 colname = self.GetColLabelValue(col, False)
                 
-                if colname == "Name":
+                if colname in ["Name", "Initial"]:
                     editor = wx.grid.GridCellTextEditor()
                 elif colname == "Class":
                     editor = wx.grid.GridCellChoiceEditor()
@@ -494,8 +456,8 @@ class VariablesEditor(wx.Panel):
         self.ParentWindow = window
         self.Controler = controler
         
-        self.VariablesDefaultValue = {"Name" : "", "Class" : "input", "Type" : ""}
-        self.Table = VariablesTable(self, [], ["#", "Name", "Class", "Type"])
+        self.VariablesDefaultValue = {"Name" : "", "Type" : "", "Initial": ""}
+        self.Table = VariablesTable(self, [], ["#", "Name", "Type", "Initial"])
         self.ColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
         self.ColSizes = [40, 200, 150, 150]
         self.VariablesGrid.SetTable(self.Table)
@@ -539,7 +501,7 @@ class VariablesEditor(wx.Panel):
         
     # Buffer the last model state
     def RefreshBuffer(self):
-        self.Controler.BufferCFile()
+        self.Controler.BufferCodeFile()
         self.ParentWindow.RefreshTitle()
         self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
@@ -565,13 +527,13 @@ class VariablesEditor(wx.Panel):
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():
                 new_id = wx.NewId()
-                AppendMenu(base_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=base_type)
+                base_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=base_type)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), id=new_id)
             type_menu.AppendMenu(wx.NewId(), "Base Types", base_menu)
             datatype_menu = wx.Menu(title='')
             for datatype in self.Controler.GetDataTypes(basetypes=False, only_locatables=True):
                 new_id = wx.NewId()
-                AppendMenu(datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
+                datatype_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
             type_menu.AppendMenu(wx.NewId(), "User Data Types", datatype_menu)
             rect = self.VariablesGrid.BlockToDeviceRect((row, col), (row, col))
@@ -608,107 +570,18 @@ class VariablesEditor(wx.Panel):
     
 
 #-------------------------------------------------------------------------------
-#                          SVGUIEditor Main Frame Class
+#                          CodeFileEditor Main Frame Class
 #-------------------------------------------------------------------------------
 
-CFILE_PARTS = [
-    ("Includes", CppEditor), 
-    ("Variables", VariablesEditor), 
-    ("Globals", CppEditor), 
-    ("Init", CppEditor), 
-    ("CleanUp", CppEditor), 
-    ("Retrieve", CppEditor), 
-    ("Publish", CppEditor),
-]
-
-class FoldPanelCaption(wx.lib.buttons.GenBitmapTextToggleButton):
-    
-    def GetBackgroundBrush(self, dc):
-        colBg = self.GetBackgroundColour()
-        brush = wx.Brush(colBg, wx.SOLID)
-        if self.style & wx.BORDER_NONE:
-            myAttr = self.GetDefaultAttributes()
-            parAttr = self.GetParent().GetDefaultAttributes()
-            myDef = colBg == myAttr.colBg
-            parDef = self.GetParent().GetBackgroundColour() == parAttr.colBg
-            if myDef and parDef:
-                if wx.Platform == "__WXMAC__":
-                    brush.MacSetTheme(1) # 1 == kThemeBrushDialogBackgroundActive
-                elif wx.Platform == "__WXMSW__":
-                    if self.DoEraseBackground(dc):
-                        brush = None
-            elif myDef and not parDef:
-                colBg = self.GetParent().GetBackgroundColour()
-                brush = wx.Brush(colBg, wx.SOLID)
-        return brush
-    
-    def DrawLabel(self, dc, width, height, dx=0, dy=0):
-        bmp = self.bmpLabel
-        if bmp is not None:     # if the bitmap is used
-            if self.bmpDisabled and not self.IsEnabled():
-                bmp = self.bmpDisabled
-            if self.bmpFocus and self.hasFocus:
-                bmp = self.bmpFocus
-            if self.bmpSelected and not self.up:
-                bmp = self.bmpSelected
-            bw,bh = bmp.GetWidth(), bmp.GetHeight()
-            hasMask = bmp.GetMask() is not None
-        else:
-            bw = bh = 0     # no bitmap -> size is zero
-        
-        dc.SetFont(self.GetFont())
-        if self.IsEnabled():
-            dc.SetTextForeground(self.GetForegroundColour())
-        else:
-            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
-
-        label = self.GetLabel()
-        tw, th = dc.GetTextExtent(label)        # size of text
-        
-        if bmp is not None:
-            dc.DrawBitmap(bmp, width - bw - 2, (height-bh)/2, hasMask) # draw bitmap if available
-        
-        dc.DrawText(label, 2, (height-th)/2)      # draw the text
-
-        dc.SetPen(wx.Pen(self.GetForegroundColour()))
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.DrawRectangle(0, 0, width, height)
-
-class CFileEditor(ConfTreeNodeEditor):
+class CodeFileEditor(ConfTreeNodeEditor):
     
     CONFNODEEDITOR_TABS = [
-        (_("C code"), "_create_CCodeEditor")]
+        (_("Variables"), "_create_VariablesPanel")]
     
-    def _create_CCodeEditor(self, prnt):
-        self.CCodeEditor = wx.ScrolledWindow(prnt, 
-              style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
-        self.CCodeEditor.Bind(wx.EVT_SIZE, self.OnCCodeEditorResize)
+    def _create_VariablesPanel(self, prnt):
+        self.VariablesPanel = VariablesEditor(prnt, self.ParentWindow, self.Controler)
         
-        self.Panels = {}
-        self.MainSizer = wx.BoxSizer(wx.VERTICAL)
-        
-        for idx, (name, panel_class) in enumerate(CFILE_PARTS):
-            button_id = wx.NewId()
-            button = FoldPanelCaption(id=button_id, name='FoldPanelCaption_%s' % name, 
-                  label=name, bitmap=GetBitmap("CollapsedIconData"), 
-                  parent=self.CCodeEditor, pos=wx.Point(0, 0),
-                  size=wx.Size(0, 20), style=wx.NO_BORDER|wx.ALIGN_LEFT)
-            button.SetBitmapSelected(GetBitmap("ExpandedIconData"))
-            button.Bind(wx.EVT_BUTTON, self.GenPanelButtonCallback(name), id=button_id)
-            self.MainSizer.AddWindow(button, 0, border=0, flag=wx.TOP|wx.GROW)
-            
-            if panel_class == VariablesEditor:
-                panel = VariablesEditor(self.CCodeEditor, self.ParentWindow, self.Controler)
-            else:
-                panel = panel_class(self.CCodeEditor, name, self.ParentWindow, self.Controler)
-            self.MainSizer.AddWindow(panel, 0, border=0, flag=wx.BOTTOM|wx.GROW)
-            panel.Hide()
-            
-            self.Panels[name] = {"button": button, "panel": panel, "expanded": False, "row": 2 * idx + 1}
-        
-        self.CCodeEditor.SetSizer(self.MainSizer)
-        
-        return self.CCodeEditor
+        return self.VariablesPanel
     
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
@@ -727,62 +600,5 @@ class CFileEditor(ConfTreeNodeEditor):
     def RefreshView(self):
         ConfTreeNodeEditor.RefreshView(self)
         
-        for infos in self.Panels.itervalues():
-            infos["panel"].RefreshView()
-        
-        self.RefreshCCodeEditorScrollbars()
-
-    def GenPanelButtonCallback(self, name):
-        def PanelButtonCallback(event):
-            self.TogglePanel(name)
-        return PanelButtonCallback
-
-    def ExpandPanel(self, name):
-        infos = self.Panels.get(name, None)
-        if infos is not None and not infos["expanded"]:
-            infos["expanded"] = True
-            infos["button"].SetToggle(True)
-            infos["panel"].Show()
+        self.VariablesPanel.RefreshView()
             
-            self.RefreshSizerLayout()
-    
-    def CollapsePanel(self, name):
-        infos = self.Panels.get(name, None)
-        if infos is not None and infos["expanded"]:
-            infos["expanded"] = False
-            infos["button"].SetToggle(False)
-            infos["panel"].Hide()
-            
-            self.RefreshSizerLayout()
-        
-    def TogglePanel(self, name):
-        infos = self.Panels.get(name, None)
-        if infos is not None:
-            infos["expanded"] = not infos["expanded"]
-            infos["button"].SetToggle(infos["expanded"])
-            if infos["expanded"]:
-                infos["panel"].Show()
-            else:
-                infos["panel"].Hide()
-            
-            self.RefreshSizerLayout()
-    
-    def RefreshSizerLayout(self):
-        self.MainSizer.Layout()
-        self.RefreshCCodeEditorScrollbars()
-    
-    def RefreshCCodeEditorScrollbars(self):
-        self.CCodeEditor.GetBestSize()
-        xstart, ystart = self.CCodeEditor.GetViewStart()
-        window_size = self.CCodeEditor.GetClientSize()
-        maxx, maxy = self.MainSizer.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
-        self.CCodeEditor.Scroll(posx, posy)
-        self.CCodeEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
-    
-    def OnCCodeEditorResize(self, event):
-        self.RefreshCCodeEditorScrollbars()
-        event.Skip()
-    

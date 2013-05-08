@@ -1492,23 +1492,28 @@ class PLCControler:
 
     def GetConfigurationExtraVariables(self):
         global_vars = []
-        for var_name, var_type in self.GetConfNodeGlobalInstances():
+        for var_name, var_type, var_initial in self.GetConfNodeGlobalInstances():
             tempvar = plcopen.varListPlain_variable()
             tempvar.setname(var_name)
             
             tempvartype = plcopen.dataType()
             if var_type in self.GetBaseTypes():
                 if var_type == "STRING":
-                    var_type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
+                    tempvartype.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
                 elif var_type == "WSTRING":
-                    var_type.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
+                    tempvartype.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
                 else:
-                    var_type.setcontent({"name" : var_type, "value" : None})
+                    tempvartype.setcontent({"name" : var_type, "value" : None})
             else:
                 tempderivedtype = plcopen.derivedTypes_derived()
                 tempderivedtype.setname(var_type)
                 tempvartype.setcontent({"name" : "derived", "value" : tempderivedtype})
             tempvar.settype(tempvartype)
+            
+            if var_initial != "":
+                value = plcopen.value()
+                value.setvalue(var_initial)
+                tempvar.setinitialValue(value)
             
             global_vars.append(tempvar)
         return global_vars
