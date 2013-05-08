@@ -195,7 +195,7 @@ class CodeEditor(CustomStyledTextCtrl):
             text += section_comments["end"]
         return text
 
-    def RefreshView(self):
+    def RefreshView(self, scroll_to_highlight=False):
         self.ResetBuffer()
         self.DisableEvents = True
         old_cursor_pos = self.GetCurrentPos()
@@ -203,8 +203,8 @@ class CodeEditor(CustomStyledTextCtrl):
         column = self.GetXOffset()
         old_text = self.GetText()
         new_text = self.GetCodeText()
-        self.SetText(new_text)
         if old_text != new_text:
+            self.SetText(new_text)
             new_cursor_pos = GetCursorPos(old_text, new_text)
             self.LineScroll(column, line)
             if new_cursor_pos != None:
@@ -431,6 +431,8 @@ class CodeEditor(CustomStyledTextCtrl):
                 self.CurrentFindHighlight = self.SearchResults[0]
                 self.AddHighlight(*self.CurrentFindHighlight)
             
+            self.ScrollToLine(self.CurrentFindHighlight[0][0])
+            
         else:
             if self.CurrentFindHighlight is not None:
                 self.RemoveHighlight(*self.CurrentFindHighlight)
@@ -441,7 +443,7 @@ class CodeEditor(CustomStyledTextCtrl):
 #-------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
-        self.RefreshView()
+        self.RefreshView(True)
         event.Skip()
 
     def ClearHighlights(self, highlight_type=None):
