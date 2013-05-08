@@ -8,7 +8,7 @@
               productVersion="0.0"
               creationDateTime="2008-12-14T16:21:19"/>
   <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2013-05-02T10:44:19">
+                 modificationDateTime="2013-05-08T22:43:14">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -102,18 +102,18 @@
               </type>
             </variable>
           </localVars>
-          <localVars>
-            <variable name="TestInput" address="%IB1.0">
+          <externalVars>
+            <variable name="TestInput">
               <type>
                 <SINT/>
               </type>
             </variable>
-            <variable name="TestOutput" address="%QB1.0">
+            <variable name="TestOutput">
               <type>
                 <SINT/>
               </type>
             </variable>
-          </localVars>
+          </externalVars>
           <localVars>
             <variable name="FromInput">
               <type>
@@ -625,14 +625,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="27" height="30" width="75">
-              <position x="305" y="770"/>
+            <inVariable localId="27" height="30" width="90">
+              <position x="300" y="770"/>
               <connectionPointOut>
-                <relPosition x="75" y="15"/>
+                <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>TestInput</expression>
             </inVariable>
-            <outVariable localId="28" height="30" width="90">
+            <outVariable localId="28" height="30" width="105">
               <position x="395" y="705"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -649,7 +649,7 @@
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="27">
                   <position x="415" y="785"/>
-                  <position x="380" y="785"/>
+                  <position x="390" y="785"/>
                 </connection>
               </connectionPointIn>
               <expression>FromInput</expression>
