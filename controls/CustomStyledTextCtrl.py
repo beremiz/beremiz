@@ -19,6 +19,24 @@ else:
               'size' : 12,
              }
 
+NAVIGATION_KEYS = [
+    wx.WXK_END,
+    wx.WXK_HOME,
+    wx.WXK_LEFT,
+    wx.WXK_UP,
+    wx.WXK_RIGHT,
+    wx.WXK_DOWN,
+    wx.WXK_PAGEUP,
+    wx.WXK_PAGEDOWN,
+    wx.WXK_NUMPAD_HOME,
+    wx.WXK_NUMPAD_LEFT,
+    wx.WXK_NUMPAD_UP,
+    wx.WXK_NUMPAD_RIGHT,
+    wx.WXK_NUMPAD_DOWN,
+    wx.WXK_NUMPAD_PAGEUP,
+    wx.WXK_NUMPAD_PAGEDOWN,
+    wx.WXK_NUMPAD_END]
+
 def GetCursorPos(old, new):
     if old == "":
         return 0

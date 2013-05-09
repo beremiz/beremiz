@@ -9,13 +9,14 @@ from plcopen.plcopen import TestTextElement
 from controls import CustomGrid, CustomTable
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap
-from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 
 SECTIONS_NAMES = ["Includes", "Globals", "Init",
                   "CleanUp", "Retrieve", "Publish"]
 
-[STC_CODE_ERROR, STC_CODE_SEARCH_RESULT] = range(15, 17)
+[STC_CODE_ERROR, STC_CODE_SEARCH_RESULT, 
+ STC_CODE_SECTION] = range(15, 18)
 
 HIGHLIGHT_TYPES = {
     ERROR_HIGHLIGHT: STC_CODE_ERROR,
@@ -76,13 +77,17 @@ class CodeEditor(CustomStyledTextCtrl):
         # Global default styles for all languages
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT,     "face:%(mono)s,size:%(size)d" % faces)
         self.StyleSetSpec(stc.STC_STYLE_LINENUMBER,  "back:#C0C0C0,face:%(helv)s,size:%(size)d" % faces)
-        self.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
+        self.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(mono)s" % faces)
         self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT,  "fore:#FFFFFF,back:#0000FF,bold")
         self.StyleSetSpec(stc.STC_STYLE_BRACEBAD,    "fore:#000000,back:#FF0000,bold")
         
         # Highlighting styles
         self.StyleSetSpec(STC_CODE_ERROR, 'fore:#FF0000,back:#FFFF00,size:%(size)d' % faces)
         self.StyleSetSpec(STC_CODE_SEARCH_RESULT, 'fore:#FFFFFF,back:#FFA500,size:%(size)d' % faces)
+        
+        # Section style
+        self.StyleSetSpec(STC_CODE_SECTION, 'fore:#808080,size:%(size)d')
+        self.StyleSetChangeable(STC_CODE_SECTION, False)
         
         # register some images for use in the AutoComplete box.
         #self.RegisterImage(1, images.getSmilesBitmap())
@@ -116,8 +121,10 @@ class CodeEditor(CustomStyledTextCtrl):
         
         self.SectionsComments = {}
         for section in SECTIONS_NAMES:
-            section_start_comment = "%s %s section\n" % (self.COMMENT_HEADER, section)
-            section_end_comment = "\n%s End %s section\n\n" % (self.COMMENT_HEADER, section)
+            section_start_comment = "%s %s section %s" % (
+                    self.COMMENT_HEADER, section, self.COMMENT_HEADER)
+            section_end_comment = "%s End %s section %s" % (
+                    self.COMMENT_HEADER, section, self.COMMENT_HEADER)
             self.SectionsComments[section] = {
                  "start": section_start_comment,
                  "end": section_end_comment,
@@ -156,6 +163,7 @@ class CodeEditor(CustomStyledTextCtrl):
                         self.StartBuffering()
                     self.CurrentAction = ("Delete", event.GetPosition())
                     wx.CallAfter(self.RefreshModel)
+        wx.CallAfter(self.RefreshSectionStyling)
         event.Skip()
     
     def OnDoDrop(self, event):
@@ -191,8 +199,14 @@ class CodeEditor(CustomStyledTextCtrl):
         for section in SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
             text += section_comments["start"]
+            if not parts[section].startswith("\n"):
+                text += "\n"
             text += parts[section]
+            if not parts[section].endswith("\n"):
+                text += "\n"
             text += section_comments["end"]
+            if section != SECTIONS_NAMES[-1]:
+                 text += "\n\n"
         return text
 
     def RefreshView(self, scroll_to_highlight=False):
@@ -214,9 +228,40 @@ class CodeEditor(CustomStyledTextCtrl):
             self.EmptyUndoBuffer()
         self.DisableEvents = False
         
-        self.Colourise(0, -1)
+        self.RefreshSectionStyling()
         
         self.ShowHighlights()
+
+    def RefreshSectionStyling(self):
+        self.Colourise(0, -1)
+        
+        text = self.GetText()
+        for line in xrange(self.GetLineCount()):
+            self.SetLineState(line, 0)
+        
+        last_styled_pos = None
+        end_pos = None
+        for section in SECTIONS_NAMES:
+            section_comments = self.SectionsComments[section]
+            start_pos = text.find(section_comments["start"])
+            end_pos = start_pos + len(section_comments["start"])
+            if last_styled_pos is None:
+                last_styled_pos = start_pos
+                self.StartStyling(start_pos, 0xff)
+            self.SetStyling(end_pos - last_styled_pos, STC_CODE_SECTION)
+            for line in xrange(self.LineFromPosition(last_styled_pos),
+                                self.LineFromPosition(end_pos) + 1):
+                self.SetLineState(line, 1)
+            start_pos = text.find(section_comments["end"])
+            self.StartStyling(start_pos, 0xff)
+            last_styled_pos = start_pos
+            end_pos = start_pos + len(section_comments["end"])
+            
+        if last_styled_pos is not None and end_pos:
+            self.SetStyling(end_pos - last_styled_pos, STC_CODE_SECTION)
+            for line in xrange(self.LineFromPosition(last_styled_pos),
+                               self.LineFromPosition(end_pos) + 1):
+                self.SetLineState(line, 1)  
 
     def DoGetBestSize(self):
         return self.ParentWindow.GetPanelBestSize()
@@ -237,8 +282,12 @@ class CodeEditor(CustomStyledTextCtrl):
         if self.CallTipActive():
             self.CallTipCancel()
         key = event.GetKeyCode()
-
-        if key == 32 and event.ControlDown():
+        
+        if (self.GetLineState(self.LineFromPosition(self.GetSelection()[0])) and
+            key not in NAVIGATION_KEYS):
+            return
+        
+        elif key == 32 and event.ControlDown():
             pos = self.GetCurrentPos()
 
             # Tips
