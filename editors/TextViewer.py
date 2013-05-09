@@ -547,7 +547,8 @@ class TextViewer(EditorPanel):
                 else:
                     self.SetStyling(current_pos - last_styled_pos, 31)
                 last_styled_pos = current_pos
-                state = SPACE
+                if state != DPRAGMA:
+                    state = SPACE
                 line = ""
                 line_number += 1
                 self.RefreshLineFolding(line_number)
@@ -579,7 +580,7 @@ class TextViewer(EditorPanel):
                     state = SPACE
             elif state == DPRAGMA:
                 if line.endswith("}}"):
-                    self.SetStyling(current_pos - last_styled_pos + 2, 31)
+                    self.SetStyling(current_pos - last_styled_pos + 1, 31)
                     last_styled_pos = current_pos + 1
                     state = SPACE
             elif (line.endswith("'") or line.endswith('"')) and state not in [STRING, WSTRING]:
