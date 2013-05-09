@@ -348,6 +348,8 @@ class PouInstanceVariablesPanel(wx.Panel):
             if item is not None and flags & CT.TREE_HITTEST_ONITEMLABEL:
                 item_infos = self.VariablesList.GetPyData(item)
                 if item_infos is not None and item_infos["class"] in ITEMS_VARIABLE:
+                    self.ParentWindow.EnsureTabVisible(
+                        self.ParentWindow.DebugVariablePanel)
                     item_path = "%s.%s" % (instance_path, item_infos["name"])
                     data = wx.TextDataObject(str((item_path, "debug")))
                     dragSource = wx.DropSource(self.VariablesList)
