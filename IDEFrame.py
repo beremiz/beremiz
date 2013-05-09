@@ -547,6 +547,7 @@ class IDEFrame(wx.Frame):
               id=ID_PLCOPENEDITORPROJECTTREE)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnProjectTreeItemActivated,
               id=ID_PLCOPENEDITORPROJECTTREE)
+        self.ProjectTree.Bind(wx.EVT_MOTION, self.OnProjectTreeMotion)
         
         #-----------------------------------------------------------------------
         #        Creating PLCopen Project POU Instance Variables Panel
@@ -674,6 +675,7 @@ class IDEFrame(wx.Frame):
         self.CurrentEditorToolBar = []
         self.CurrentMenu = None
         self.SelectedItem = None
+        self.LastToolTipItem = None
         self.SearchParams = None
         self.Highlights = {}
         self.DrawingMode = FREEDRAWING_MODE
@@ -1691,6 +1693,38 @@ class IDEFrame(wx.Frame):
             self.ProjectTree.SelectItem(self.SelectedItem)
             self.ProjectTreeItemSelect(self.SelectedItem)
             wx.CallAfter(self.ResetSelectedItem)
+        event.Skip()
+    
+    def OnProjectTreeMotion(self, event):
+        if not event.Dragging():
+            pt = wx.Point(event.GetX(), event.GetY())
+            item, flags = self.ProjectTree.HitTest(pt)
+            if item.IsOk() and flags & wx.TREE_HITTEST_ONITEMLABEL:
+                item_infos = self.ProjectTree.GetPyData(item)
+                if item != self.LastToolTipItem and self.LastToolTipItem is not None:
+                    self.ProjectTree.SetToolTip(None)
+                    self.LastToolTipItem = None
+                if (self.LastToolTipItem != item and 
+                    item_infos["type"] in [ITEM_POU, ITEM_TRANSITION, ITEM_ACTION]):
+                    bodytype = self.Controler.GetEditedElementBodyType(
+                            item_infos["tagname"])
+                    if item_infos["type"] == ITEM_POU:
+                        block_type = {
+                            "program": _("Program"),
+                            "functionBlock": _("Function Block"),
+                            "function": _("Function")
+                        }[self.Controler.GetPouType(item_infos["name"])]
+                    elif item_infos["type"] == ITEM_TRANSITION:
+                        block_type = "Transition"
+                    else:
+                        block_type = "Action"
+                    self.LastToolTipItem = item
+                    wx.CallAfter(self.ProjectTree.SetToolTipString, 
+                        "%s : %s : %s" % (
+                            block_type, bodytype, item_infos["name"]))
+            elif self.LastToolTipItem is not None:
+                self.ProjectTree.SetToolTip(None)
+                self.LastToolTipItem = None
         event.Skip()
     
     def OnProjectTreeItemSelected(self, event):
