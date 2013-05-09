@@ -199,7 +199,7 @@ class CodeEditor(CustomStyledTextCtrl):
         for section in SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
             text += section_comments["start"]
-            if not parts[section].startswith("\n"):
+            if not parts[section].startswith("\n") or parts[section] == "\n":
                 text += "\n"
             text += parts[section]
             if not parts[section].endswith("\n"):
