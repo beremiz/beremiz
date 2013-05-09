@@ -1419,12 +1419,35 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
     def RefreshProjectTree(self):
+        # Disconnect event when selection in treectrl changed
+        self.Unbind(wx.EVT_TREE_SEL_CHANGED, 
+                    id=ID_PLCOPENEDITORPROJECTTREE)
+    
+        # Extract current selected item tagname
+        selected = self.ProjectTree.GetSelection()
+        if selected is not None and selected.IsOk():
+            item_infos = self.ProjectTree.GetPyData(selected)
+            tagname = item_infos.get("tagname", None)
+        else:
+            tagname = None
+        
+        # Refresh treectrl items according to project infos
         infos = self.Controler.GetProjectInfos()
         root = self.ProjectTree.GetRootItem()
         if not root.IsOk():
             root = self.ProjectTree.AddRoot(infos["name"])
         self.GenerateProjectTreeBranch(root, infos)
         self.ProjectTree.Expand(root)
+        
+        # Select new item corresponding to previous selected item
+        if tagname is not None:
+            wx.CallAfter(self.SelectProjectTreeItem, tagname)
+    
+        # Reconnect event when selection in treectrl changed
+        wx.CallAfter(self.Bind, 
+            wx.EVT_TREE_SEL_CHANGED, 
+            self.OnProjectTreeItemSelected,
+            id=ID_PLCOPENEDITORPROJECTTREE)
 
     def ResetSelectedItem(self):
         self.SelectedItem = None

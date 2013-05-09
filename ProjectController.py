@@ -330,6 +330,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             values.append(
                 {"name": "%s: %s" % (CTNChild.GetFullIEC_Channel(),
                                      CTNChild.CTNName()), 
+                 "tagname": CTNChild.CTNFullName(),
                  "type": ITEM_CONFNODE, 
                  "confnode": CTNChild,
                  "icon": CTNChild.GetIconName(),

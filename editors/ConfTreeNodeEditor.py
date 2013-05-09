@@ -506,7 +506,6 @@ class ConfTreeNodeEditor(EditorPanel):
             res = self.SetConfNodeParamsAttribute("BaseParams.IEC_Channel", confnode_IECChannel + dir)
             wx.CallAfter(self.RefreshIECChannelControlsState)
             wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU, PROJECTTREE)
-            wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, self.GetTagName())
             event.Skip()
         return OnConfNodeTreeItemChannelChanged
     
