@@ -358,10 +358,13 @@ class DebugViewer:
     
     def GetDataType(self, iec_path):
         if self.DataProducer is not None:
+            data_type = self.DataProducer.GetDebugIECVariableType(iec_path.upper())
+            if data_type is not None:
+                return data_type
+            
             infos = self.DataProducer.GetInstanceInfos(iec_path)
             if infos is not None:
                 return infos["type"]
-            return self.DataProducer.GetDebugIECVariableType(iec_path.upper())
         return None
     
     def IsNumType(self, data_type):

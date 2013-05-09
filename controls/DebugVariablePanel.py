@@ -553,12 +553,12 @@ if USE_MPL:
         
         def UnregisterObsoleteData(self):
             for item in self.Items[:]:
-                iec_path = item.GetVariable().upper()
+                iec_path = item.GetVariable()
                 if self.ParentWindow.GetDataType(iec_path) is None:
                     self.ParentWindow.RemoveDataConsumer(item)
                     self.RemoveItem(item)
                 else:
-                    self.ParentWindow.AddDataConsumer(iec_path, item)
+                    self.ParentWindow.AddDataConsumer(iec_path.upper(), item)
                     item.RefreshVariableType()
             
         def ResetData(self):
@@ -700,12 +700,12 @@ if USE_MPL:
             event.Skip()
         
         def ForceValue(self, item):
-            iec_path = item.GetVariable().upper()
+            iec_path = item.GetVariable()
             iec_type = self.ParentWindow.GetDataType(iec_path)
             if iec_type is not None:
                 dialog = ForceVariableDialog(self, iec_type, str(item.GetValue()))
                 if dialog.ShowModal() == wx.ID_OK:
-                    self.ParentWindow.ForceDataValue(iec_path, dialog.GetValue())
+                    self.ParentWindow.ForceDataValue(iec_path.upper(), dialog.GetValue())
         
         def ReleaseValue(self, item):
             iec_path = item.GetVariable().upper()
@@ -1832,12 +1832,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             items = [(idx, item) for idx, item in enumerate(self.Table.GetData())]
             items.reverse()
             for idx, item in items:
-                iec_path = item.GetVariable().upper()
+                iec_path = item.GetVariable()
                 if self.GetDataType(iec_path) is None:
                     self.RemoveDataConsumer(item)
                     self.Table.RemoveItem(idx)
                 else:
-                    self.AddDataConsumer(iec_path, item)
+                    self.AddDataConsumer(iec_path.upper(), item)
                     item.RefreshVariableType()
             self.Freeze()
             self.Table.ResetView(self.VariablesGrid)
@@ -1893,7 +1893,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             if iec_type is not None:
                 dialog = ForceVariableDialog(self, iec_type, str(item.GetValue()))
                 if dialog.ShowModal() == wx.ID_OK:
-                    self.ForceDataValue(iec_path, dialog.GetValue())
+                    self.ForceDataValue(iec_path.upper(), dialog.GetValue())
         return ForceVariableFunction
 
     def GetReleaseVariableMenuFunction(self, iec_path):
