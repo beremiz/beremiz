@@ -53,9 +53,14 @@ class PythonFileCTNMixin(CodeFile):
         
         # Adding variables
         text += "## User variables reference\n"
+        config = self.GetCTRoot().GetProjectConfigNames()[0]
         for variable in self.CodeFile.variables.variable:
-            text += "%s = %s\n" % (variable.getname(),
-                                   str(variable.getinitial()))
+            global_name = "%s_%s" % (config.upper(), variable.getname().upper())
+            text += "# global_var:%s python_var:%s type:%s initial:%s\n" % (
+                global_name,
+                variable.getname(),
+                variable.gettype(),
+                str(variable.getinitial()))
         text += "\n"
         
         # Adding user global variables and routines
