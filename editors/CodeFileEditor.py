@@ -273,9 +273,16 @@ class CodeEditor(CustomStyledTextCtrl):
         if self.CallTipActive():
             self.CallTipCancel()
         key = event.GetKeyCode()
+        caret = self.GetSelection()[0]
+        print (key in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE], 
+               self.GetLineState(self.LineFromPosition(min(len(self.GetText()), caret + 1))))
         
-        if (self.GetLineState(self.LineFromPosition(self.GetSelection()[0])) and
-            key not in NAVIGATION_KEYS):
+        if (self.GetLineState(self.LineFromPosition(caret)) and
+            key not in NAVIGATION_KEYS or
+            key == wx.WXK_BACK and
+            self.GetLineState(self.LineFromPosition(max(0, caret - 1))) or
+            key in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE] and
+            self.GetLineState(self.LineFromPosition(min(len(self.GetText()), caret + 1)))):
             return
         
         elif key == 32 and event.ControlDown():
