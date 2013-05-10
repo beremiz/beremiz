@@ -511,7 +511,7 @@ class ConfTreeNodeEditor(EditorPanel):
     
     def SetConfNodeParamsAttribute(self, *args, **kwargs):
         res, StructChanged = self.Controler.SetParamsAttribute(*args, **kwargs)
-        if StructChanged:
+        if StructChanged and self.ParamsEditor is not None:
             wx.CallAfter(self.RefreshConfNodeParamsSizer)
         wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU)
         return res
