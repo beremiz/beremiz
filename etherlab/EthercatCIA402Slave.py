@@ -134,8 +134,8 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     
     def CTNGlobalInstances(self):
         current_location = self.GetCurrentLocation()
-        return [("%s_%s" % (block_infos["blocktype"], "_".join(map(str, current_location))),
-                 "EtherLab%s" % block_infos["blocktype"]) for block_infos in GLOBAL_INSTANCES]
+        return [("%s_%s" % (block_infos["blocktype"], "_".join(map(str, current_location)), None),
+                 "EtherLab%s" % block_infos["blocktype"], "") for block_infos in GLOBAL_INSTANCES]
     
     def _getCIA402AxisRef(self):
         data = wx.TextDataObject(str(("%%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 

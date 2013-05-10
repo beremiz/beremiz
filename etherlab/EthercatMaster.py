@@ -484,7 +484,7 @@ class _EthercatCTN:
                 if write_to is not None and write_to.getPosition() == slave_pos:
                     write_to.setPosition(new_pos)
             self.CreateBuffer(True)
-            self.OnCTNSave()
+            self.CTNRequestSave()
             if self._View is not None:
                 self._View.RefreshView()
                 self._View.RefreshBuffer()
