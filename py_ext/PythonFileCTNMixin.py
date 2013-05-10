@@ -48,7 +48,7 @@ class PythonFileCTNMixin(CodeFile):
         
         # Adding includes
         text += "## User includes\n"
-        text += self.CodeFile.includes.gettext()
+        text += self.CodeFile.includes.gettext().strip()
         text += "\n"
         
         # Adding variables
@@ -65,7 +65,7 @@ class PythonFileCTNMixin(CodeFile):
         
         # Adding user global variables and routines
         text += "## User internal user variables and routines\n"
-        text += self.CodeFile.globals.gettext()
+        text += self.CodeFile.globals.gettext().strip()
         text += "\n"
         
         # Adding Beremiz confnode functions
@@ -78,10 +78,13 @@ class PythonFileCTNMixin(CodeFile):
             ("__publish_", "", "", self.CodeFile.publishFunction),]:
             text += "def %s%s(%s):\n" % (func, location_str, args)
             lines = code_object.gettext().strip().splitlines()
+            print lines
             if len(lines) > 0 or return_code != "":
                 for line in lines:
                     text += "    " + line + "\n"
-                text += "    " + return_code + "\n\n"
+                if return_code != "":
+                    text += "    " + return_code + "\n"
+                text += "\n"
             else:
                 text += "    pass\n\n"
         
