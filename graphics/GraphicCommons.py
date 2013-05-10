@@ -2047,7 +2047,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def Clone(self, parent, connectors = {}, dx = 0, dy = 0):
         start_connector = connectors.get(self.StartConnected, None)
         end_connector = connectors.get(self.EndConnected, None)
-        print self.StartConnected, "=>", start_connector, ",", self.EndConnected, "=>", end_connector
         if start_connector is not None and end_connector is not None:
             wire = Wire(parent)
             wire.SetPoints([(point.x + dx, point.y + dy) for point in self.Points])

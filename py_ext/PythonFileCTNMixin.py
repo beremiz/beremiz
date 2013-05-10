@@ -78,7 +78,6 @@ class PythonFileCTNMixin(CodeFile):
             ("__publish_", "", "", self.CodeFile.publishFunction),]:
             text += "def %s%s(%s):\n" % (func, location_str, args)
             lines = code_object.gettext().strip().splitlines()
-            print lines
             if len(lines) > 0 or return_code != "":
                 for line in lines:
                     text += "    " + line + "\n"
