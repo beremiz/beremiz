@@ -121,19 +121,26 @@ class CodeEditor(CustomStyledTextCtrl):
         
         self.SectionsComments = {}
         for section in SECTIONS_NAMES:
-            section_start_comment = "%s %s section %s" % (
-                    self.COMMENT_HEADER, section, self.COMMENT_HEADER)
-            section_end_comment = "%s End %s section %s" % (
-                    self.COMMENT_HEADER, section, self.COMMENT_HEADER)
+            section_comment = " %s section " % (section)
+            len_headers = 78 - len(section_comment)
+            section_comment = self.COMMENT_HEADER * (len_headers / 2) + \
+                              section_comment + \
+                              self.COMMENT_HEADER * (len_headers - len_headers / 2)
+            
             self.SectionsComments[section] = {
-                 "start": section_start_comment,
-                 "end": section_end_comment,
-                 "pattern": re.compile(section_start_comment + 
-                                       "(.*)" + 
-                                       section_end_comment,
-                                       re.DOTALL)
+                 "comment": section_comment,
             }
-        
+            
+        for i, section in enumerate(SECTIONS_NAMES):
+            section_infos = self.SectionsComments[section]
+            if i + 1 < len(SECTIONS_NAMES):
+                section_end = self.SectionsComments[SECTIONS_NAMES[i + 1]]["comment"]
+            else:
+                section_end = "$"
+            section_infos["pattern"] = re.compile(
+                section_infos["comment"] + "(.*)" + 
+                section_end, re.DOTALL)
+            
         self.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
 
         self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop)
@@ -198,15 +205,12 @@ class CodeEditor(CustomStyledTextCtrl):
         text = ""
         for section in SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
-            text += section_comments["start"]
+            text += section_comments["comment"]
             if not parts[section].startswith("\n") or parts[section] == "\n":
                 text += "\n"
             text += parts[section]
             if not parts[section].endswith("\n"):
                 text += "\n"
-            text += section_comments["end"]
-            if section != SECTIONS_NAMES[-1]:
-                 text += "\n\n"
         return text
 
     def RefreshView(self, scroll_to_highlight=False):
@@ -239,29 +243,16 @@ class CodeEditor(CustomStyledTextCtrl):
         for line in xrange(self.GetLineCount()):
             self.SetLineState(line, 0)
         
-        last_styled_pos = None
-        end_pos = None
         for section in SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
-            start_pos = text.find(section_comments["start"])
-            end_pos = start_pos + len(section_comments["start"])
-            if last_styled_pos is None:
-                last_styled_pos = start_pos
-                self.StartStyling(start_pos, 0xff)
-            self.SetStyling(end_pos - last_styled_pos, STC_CODE_SECTION)
-            for line in xrange(self.LineFromPosition(last_styled_pos),
-                                self.LineFromPosition(end_pos) + 1):
-                self.SetLineState(line, 1)
-            start_pos = text.find(section_comments["end"])
+            start_pos = text.find(section_comments["comment"])
+            end_pos = start_pos + len(section_comments["comment"])
             self.StartStyling(start_pos, 0xff)
-            last_styled_pos = start_pos
-            end_pos = start_pos + len(section_comments["end"])
+            self.SetStyling(end_pos - start_pos, STC_CODE_SECTION)
+            self.SetLineState(self.LineFromPosition(start_pos), 1)
             
-        if last_styled_pos is not None and end_pos:
-            self.SetStyling(end_pos - last_styled_pos, STC_CODE_SECTION)
-            for line in xrange(self.LineFromPosition(last_styled_pos),
-                               self.LineFromPosition(end_pos) + 1):
-                self.SetLineState(line, 1)  
+        self.StartStyling(end_pos, 0x00)
+        self.SetStyling(len(self.GetText()) - end_pos, stc.STC_STYLE_DEFAULT)
 
     def DoGetBestSize(self):
         return self.ParentWindow.GetPanelBestSize()
