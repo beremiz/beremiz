@@ -206,11 +206,14 @@ class CodeEditor(CustomStyledTextCtrl):
         for section in SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
             text += section_comments["comment"]
-            if not parts[section].startswith("\n") or parts[section] == "\n":
+            if parts[section] == "":
                 text += "\n"
-            text += parts[section]
-            if not parts[section].endswith("\n"):
-                text += "\n"
+            else:
+                if not parts[section].startswith("\n"):
+                    text += "\n"
+                text += parts[section]
+                if not parts[section].endswith("\n"):
+                    text += "\n"
         return text
 
     def RefreshView(self, scroll_to_highlight=False):
@@ -273,16 +276,12 @@ class CodeEditor(CustomStyledTextCtrl):
         if self.CallTipActive():
             self.CallTipCancel()
         key = event.GetKeyCode()
-        caret = self.GetSelection()[0]
-        print (key in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE], 
-               self.GetLineState(self.LineFromPosition(min(len(self.GetText()), caret + 1))))
+        current_pos = self.GetSelection()[0]
         
-        if (self.GetLineState(self.LineFromPosition(caret)) and
-            key not in NAVIGATION_KEYS or
-            key == wx.WXK_BACK and
-            self.GetLineState(self.LineFromPosition(max(0, caret - 1))) or
-            key in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE] and
-            self.GetLineState(self.LineFromPosition(min(len(self.GetText()), caret + 1)))):
+        if (self.GetLineState(self.LineFromPosition(current_pos)) and
+            key not in NAVIGATION_KEYS + [
+                wx.WXK_RETURN,
+                wx.WXK_NUMPAD_ENTER]):
             return
         
         elif key == 32 and event.ControlDown():
