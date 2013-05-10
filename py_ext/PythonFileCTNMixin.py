@@ -77,10 +77,10 @@ class PythonFileCTNMixin(CodeFile):
             ("__retrieve_", "", "", self.CodeFile.retrieveFunction),
             ("__publish_", "", "", self.CodeFile.publishFunction),]:
             text += "def %s%s(%s):\n" % (func, location_str, args)
-            lines = code_object.gettext().splitlines()
+            lines = code_object.gettext().strip().splitlines()
             if len(lines) > 0 or return_code != "":
-                for line in code_object.gettext().splitlines():
-                    text += "    " + line
+                for line in lines:
+                    text += "    " + line + "\n"
                 text += "    " + return_code + "\n\n"
             else:
                 text += "    pass\n\n"
