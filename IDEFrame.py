@@ -1421,10 +1421,11 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
     def RefreshProjectTree(self):
-        # Disconnect event when selection in treectrl changed
-        self.Unbind(wx.EVT_TREE_SEL_CHANGED, 
-                    id=ID_PLCOPENEDITORPROJECTTREE)
-    
+        if wx.Platform == '__WXMSW__':
+            # Disconnect event when selection in treectrl changed
+            self.Unbind(wx.EVT_TREE_SEL_CHANGED, 
+                        id=ID_PLCOPENEDITORPROJECTTREE)
+        
         # Extract current selected item tagname
         selected = self.ProjectTree.GetSelection()
         if selected is not None and selected.IsOk():
@@ -1444,12 +1445,13 @@ class IDEFrame(wx.Frame):
         # Select new item corresponding to previous selected item
         if tagname is not None:
             wx.CallAfter(self.SelectProjectTreeItem, tagname)
-    
-        # Reconnect event when selection in treectrl changed
-        wx.CallAfter(self.Bind, 
-            wx.EVT_TREE_SEL_CHANGED, 
-            self.OnProjectTreeItemSelected,
-            id=ID_PLCOPENEDITORPROJECTTREE)
+        
+        if wx.Platform == '__WXMSW__':
+            # Reconnect event when selection in treectrl changed
+            wx.CallAfter(self.Bind, 
+                wx.EVT_TREE_SEL_CHANGED, 
+                self.OnProjectTreeItemSelected,
+                id=ID_PLCOPENEDITORPROJECTTREE)
 
     def ResetSelectedItem(self):
         self.SelectedItem = None
@@ -1680,13 +1682,14 @@ class IDEFrame(wx.Frame):
             event.Skip()
     
     def ProjectTreeItemSelect(self, select_item):
-        name = self.ProjectTree.GetItemText(select_item)
-        item_infos = self.ProjectTree.GetPyData(select_item)
-        if item_infos["type"] in [ITEM_DATATYPE, ITEM_POU,
-                                  ITEM_CONFIGURATION, ITEM_RESOURCE,
-                                  ITEM_TRANSITION, ITEM_ACTION]:
-            self.EditProjectElement(item_infos["type"], item_infos["tagname"], True)
-            self.PouInstanceVariablesPanel.SetPouType(item_infos["tagname"])
+        if select_item.IsOk():
+            name = self.ProjectTree.GetItemText(select_item)
+            item_infos = self.ProjectTree.GetPyData(select_item)
+            if item_infos["type"] in [ITEM_DATATYPE, ITEM_POU,
+                                      ITEM_CONFIGURATION, ITEM_RESOURCE,
+                                      ITEM_TRANSITION, ITEM_ACTION]:
+                self.EditProjectElement(item_infos["type"], item_infos["tagname"], True)
+                self.PouInstanceVariablesPanel.SetPouType(item_infos["tagname"])
         
     def OnProjectTreeLeftUp(self, event):
         if self.SelectedItem is not None:
