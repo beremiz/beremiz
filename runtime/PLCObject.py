@@ -74,6 +74,7 @@ class PLCObject(pyro.ObjBase):
             self.CurrentPLCFilename=open(
                              self._GetMD5FileName(),
                              "r").read().strip() + lib_ext
+            self.LoadPLC()
         except Exception, e:
             self.PLCStatus = "Empty"
             self.CurrentPLCFilename=None
