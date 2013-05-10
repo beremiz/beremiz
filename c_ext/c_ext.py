@@ -44,7 +44,7 @@ class CFile(CodeFile):
         
         # Adding includes
         text += "/* User includes */\n"
-        text += self.CodeFile.includes.gettext()
+        text += self.CodeFile.includes.gettext().strip()
         text += "\n"
         
         text += '#include "iec_types_all.h"\n\n'
@@ -64,26 +64,25 @@ class CFile(CodeFile):
         
         # Adding user global variables and routines
         text += "/* User internal user variables and routines */\n"
-        text += self.CodeFile.globals.gettext()
+        text += self.CodeFile.globals.gettext().strip()
         text += "\n"
         
         # Adding Beremiz confnode functions
         text += "/* Beremiz confnode functions */\n"
         text += "int __init_%s(int argc,char **argv)\n{\n"%location_str
-        text += self.CodeFile.initFunction.gettext()
-        text += "  return 0;\n"
-        text += "\n}\n\n"
+        text += self.CodeFile.initFunction.gettext().strip()
+        text += "  return 0;\n}\n\n"
         
         text += "void __cleanup_%s(void)\n{\n"%location_str
-        text += self.CodeFile.cleanUpFunction.gettext()
+        text += self.CodeFile.cleanUpFunction.gettext().strip()
         text += "\n}\n\n"
         
         text += "void __retrieve_%s(void)\n{\n"%location_str
-        text += self.CodeFile.retrieveFunction.gettext()
+        text += self.CodeFile.retrieveFunction.gettext().strip()
         text += "\n}\n\n"
         
         text += "void __publish_%s(void)\n{\n"%location_str
-        text += self.CodeFile.publishFunction.gettext()
+        text += self.CodeFile.publishFunction.gettext().strip()
         text += "\n}\n\n"
         
         Gen_Cfile_path = os.path.join(buildpath, "CFile_%s.c"%location_str)
