@@ -11,6 +11,7 @@ from plcopen.structures import IEC_KEYWORDS, TestIdentifier
 from controls import CustomGrid, CustomTable, FolderTree
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 from util.BitmapLibrary import GetBitmap
+from controls.CustomStyledTextCtrl import NAVIGATION_KEYS
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
@@ -49,24 +50,6 @@ VARIABLE_INDEX_FILTER_FORMAT = _("Variable Index: #x%4.4X")
 ETHERCAT_INDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,4})$")
 ETHERCAT_SUBINDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,2})$")
 LOCATION_MODEL = re.compile("(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
-
-NAVIGATION_KEYS = [
-    wx.WXK_END,
-    wx.WXK_HOME,
-    wx.WXK_LEFT,
-    wx.WXK_UP,
-    wx.WXK_RIGHT,
-    wx.WXK_DOWN,
-    wx.WXK_PAGEUP,
-    wx.WXK_PAGEDOWN,
-    wx.WXK_NUMPAD_HOME,
-    wx.WXK_NUMPAD_LEFT,
-    wx.WXK_NUMPAD_UP,
-    wx.WXK_NUMPAD_RIGHT,
-    wx.WXK_NUMPAD_DOWN,
-    wx.WXK_NUMPAD_PAGEUP,
-    wx.WXK_NUMPAD_PAGEDOWN,
-    wx.WXK_NUMPAD_END]
 
 class NodeVariablesSizer(wx.FlexGridSizer):
     
