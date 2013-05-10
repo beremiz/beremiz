@@ -15,7 +15,7 @@ class CppEditor(CodeEditor):
         "static_cast", "struct", "switch", "template", "this", "throw", "true", "try",
         "typedef", "typeid", "typename", "union", "unsigned", "using", "virtual", 
         "void", "volatile", "wchar_t", "while"]
-    COMMENT_HEADER = "//"
+    COMMENT_HEADER = "/"
     
     def SetCodeLexer(self):
         self.SetLexer(stc.STC_LEX_CPP)

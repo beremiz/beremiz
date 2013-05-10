@@ -7,7 +7,7 @@ from editors.CodeFileEditor import CodeFileEditor, CodeEditor
 class PythonCodeEditor(CodeEditor):
 
     KEYWORDS = keyword.kwlist
-    COMMENT_HEADER = "##"
+    COMMENT_HEADER = "#"
     
     def SetCodeLexer(self):
         self.SetLexer(stc.STC_LEX_PYTHON)
