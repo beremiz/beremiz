@@ -73,17 +73,17 @@ def PYRO_connector_factory(uri, confnodesroot):
         def catcher_func(*args,**kwargs):
             try:
                 return func(*args,**kwargs)
-            except Pyro.errors.ProtocolError, e:
-                confnodesroot.logger.write_error("Pyro exception: "+str(e)+"\n")
             except Pyro.errors.ConnectionClosedError, e:
                 confnodesroot.logger.write_error("Connection lost!\n")
-                confnodesroot._connector = None
+                confnodesroot._SetConnector(None)
+            except Pyro.errors.ProtocolError, e:
+                confnodesroot.logger.write_error("Pyro exception: "+str(e)+"\n")
             except Exception,e:
                 #confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
                 confnodesroot.logger.write_error(errmess+"\n")
                 print errmess
-                confnodesroot._connector = None
+                confnodesroot._SetConnector(None)
             return default
         return catcher_func
 

@@ -1116,7 +1116,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 status, log_count = PLCstatus
                 self.UpdatePLCLog(log_count)
         if status is None:
-            self._SetConnector(None)
+            self._SetConnector(None, False)
             status = "Disconnected"
         if(self.previous_plcstate != status):
             for args in {
@@ -1380,7 +1380,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
-    def _SetConnector(self, connector):
+    def _SetConnector(self, connector, update_status=True):
         self._connector = connector
         if self.AppFrame is not None:
             self.AppFrame.LogViewer.SetLogSource(connector)
@@ -1390,6 +1390,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             # Stop the status Timer
             self.StatusTimer.Stop()
+            if update_status:
+                wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     def _Connect(self):
         # don't accept re-connetion if already connected
@@ -1493,7 +1495,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _Disconnect(self):
         self._SetConnector(None)
-        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
         
     def _Transfer(self):
         # Get the last build PLC's 
