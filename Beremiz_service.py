@@ -306,8 +306,10 @@ if enablewx:
                 InspectionTool().Show(wnd, True)
             
             def OnTaskBarQuit(self, evt):
+                if wx.Platform == '__WXMSW__':
+                    Thread(target=self.pyroserver.Quit).start()
                 self.RemoveIcon()
-                wx.CallAfter(wx.GetApp().Exit)
+                wx.CallAfter(wx.GetApp().ExitMainLoop)
             
             def UpdateIcon(self, plcstatus):
                 if plcstatus is "Started" :
@@ -381,7 +383,6 @@ class Server():
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
         
         if self.autostart and self.plcobj.GetPLCstatus()[0] != "Empty":
-            self.plcobj.LoadPLC()
             self.plcobj.StartPLC()
         
         sys.stdout.flush()
