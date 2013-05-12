@@ -89,6 +89,7 @@ CheckOptionForClass = {"Local": lambda x: x,
                       }
 
 LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
+VARIABLE_NAME_SUFFIX_MODEL = re.compile("([0-9]*)$")
 
 #-------------------------------------------------------------------------------
 #                            Variables Panel Table
@@ -490,11 +491,27 @@ class VariablePanel(wx.Panel):
         
         def _AddVariable(new_row):
             if not self.PouIsUsed or self.Filter not in ["Interface", "Input", "Output", "InOut"]:
-                row_content = self.DefaultValue.copy()
-                if self.Filter in self.DefaultTypes:
-                    row_content["Class"] = self.DefaultTypes[self.Filter]
+                if new_row > 0:
+                    row_content = self.Values[new_row - 1].copy()
+                    result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
+                    if result is not None:
+                        name = row_content["Name"][:result.start(1)]
+                        suffix = result.group(1)
+                        if suffix != "":
+                            start_idx = int(suffix)
+                        else:
+                            start_idx = 0
+                    else:
+                        name = row_content["Name"]
+                        start_idx = 0
+                    row_content["Name"] = self.Controler.GenerateNewName(
+                        self.TagName, None, name + "%d", start_idx)
                 else:
-                    row_content["Class"] = self.Filter
+                    row_content = self.DefaultValue.copy()
+                    if self.Filter in self.DefaultTypes:
+                        row_content["Class"] = self.DefaultTypes[self.Filter]
+                    else:
+                        row_content["Class"] = self.Filter
                 if self.Filter == "All" and len(self.Values) > 0:
                     self.Values.insert(new_row, row_content)
                 else:
