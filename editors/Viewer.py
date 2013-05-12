@@ -74,7 +74,11 @@ else:
               'size' : 12,
              }
 
-ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, 7)]
+if wx.Platform == '__WXMSW__':
+    MAX_ZOOMIN = 4
+else:
+    MAX_ZOOMIN = 7
+ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, MAX_ZOOMIN)]
 
 def GetVariableCreationFunction(variable_type):
     def variableCreationFunction(viewer, id, specific_values):
@@ -608,7 +612,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
         
         self.CurrentScale = None
-        self.SetScale(len(ZOOM_FACTORS) / 2, False)
+        self.SetScale(ZOOM_FACTORS.index(1.0), False)
         
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
