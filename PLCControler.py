@@ -2100,14 +2100,17 @@ class PLCControler:
                     text += instance_copy.generateXMLText(name.split("_")[-1], 0)
         return text
     
-    def GenerateNewName(self, tagname, name, format, exclude={}, debug=False):
+    def GenerateNewName(self, tagname, name, format, start_idx=0, exclude={}, debug=False):
         names = exclude.copy()
         if tagname is not None:
-            names.update(dict([(varname.upper(), True) for varname in self.GetEditedElementVariables(tagname, debug)]))
+            names.update(dict([(varname.upper(), True) 
+                               for varname in self.GetEditedElementVariables(tagname, debug)]))
             element = self.GetEditedElement(tagname, debug)
-            if element is not None:
+            if element is not None and element.getbodyType() not in ["ST", "IL"]:
                 for instance in element.getinstances():
-                    if isinstance(instance, (plcopen.sfcObjects_step, plcopen.commonObjects_connector, plcopen.commonObjects_continuation)):
+                    if isinstance(instance, (plcopen.sfcObjects_step, 
+                                             plcopen.commonObjects_connector, 
+                                             plcopen.commonObjects_continuation)):
                         names[instance.getname().upper()] = True
         else:
             project = self.GetProject(debug)
@@ -2127,7 +2130,7 @@ class PLCControler:
                     for resource in config.getresource():
                         names[resource.getname().upper()] = True
             
-        i = 0
+        i = start_idx
         while name is None or names.get(name.upper(), False):
             name = (format%i)
             i += 1
@@ -2183,12 +2186,19 @@ class PLCControler:
                                         blocktype = instance.gettypeName()
                                         if element_type == "function":
                                             return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
-                                        blockname = self.GenerateNewName(tagname, blockname, "%s%%d"%blocktype, debug=debug)
+                                        blockname = self.GenerateNewName(tagname, 
+                                                                         blockname, 
+                                                                         "%s%%d"%blocktype, 
+                                                                         debug=debug)
                                         exclude[blockname] = True
                                         instance.setinstanceName(blockname)
                                         self.AddEditedElementPouVar(tagname, blocktype, blockname)
                                 elif child.nodeName == "step":
-                                    stepname = self.GenerateNewName(tagname, instance.getname(), "Step%d", exclude, debug)
+                                    stepname = self.GenerateNewName(tagname, 
+                                                                    instance.getname(), 
+                                                                    "Step%d", 
+                                                                    exclude=exclude, 
+                                                                    debug=debug)
                                     exclude[stepname] = True
                                     instance.setname(stepname)
                                 localid = instance.getlocalId()

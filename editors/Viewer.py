@@ -3085,7 +3085,11 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             if blocktype is None:
                 blocktype = "Block"
             format = "%s%%d" % blocktype
-        return self.Controler.GenerateNewName(self.TagName, None, format, exclude, self.Debug)
+        return self.Controler.GenerateNewName(self.TagName, 
+                                              None, 
+                                              format, 
+                                              exclude=exclude, 
+                                              debug=self.Debug)
 
     def IsNamedElement(self, element):
         return isinstance(element, FBD_Block) and element.GetName() != "" or isinstance(element, SFC_Step)
