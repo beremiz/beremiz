@@ -141,6 +141,7 @@ class TextViewer(EditorPanel):
 
         self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.OnStyleNeeded, id=ID_TEXTVIEWERTEXTCTRL)
         self.Editor.Bind(wx.stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
+        self.Editor.Bind(wx.stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         self.Editor.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         if self.Controler is not None:
             self.Editor.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
@@ -714,7 +715,12 @@ class TextViewer(EditorPanel):
             if self.Editor.GetFoldLevel(line) & wx.stc.STC_FOLDLEVELHEADERFLAG:
                 self.Editor.ToggleFold(line)
         event.Skip()
-        
+    
+    def OnUpdateUI(self, event):
+        if self.ParentWindow:
+            self.ParentWindow.SetCopyBuffer(self.Editor.GetSelectedText(), True)
+        event.Skip()
+    
     def Cut(self):
         self.ResetBuffer()
         self.DisableEvents = True
@@ -725,6 +731,8 @@ class TextViewer(EditorPanel):
     
     def Copy(self):
         self.Editor.CmdKeyExecute(wx.stc.STC_CMD_COPY)
+        if self.ParentWindow:
+            self.ParentWindow.RefreshEditMenu()
     
     def Paste(self):
         self.ResetBuffer()
