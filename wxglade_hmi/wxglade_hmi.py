@@ -88,7 +88,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         
         for section in ["init", "cleanup"]:
             if not sections_code[section]:
-                sections_code = "    pass"
+                sections_code[section] = "    pass"
         
         sections_code.update({
             "location": location_str,
