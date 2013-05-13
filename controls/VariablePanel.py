@@ -167,11 +167,8 @@ class VariableTable(CustomTable):
                     elif col != 0 and self.GetValueByName(row, "Edit"):
                         grid.SetReadOnly(row, col, False)
                         if colname == "Name":
-                            if self.Parent.PouIsUsed and var_class in ["Input", "Output", "InOut"]:
-                                grid.SetReadOnly(row, col, True)
-                            else:
-                                editor = wx.grid.GridCellTextEditor()
-                                renderer = wx.grid.GridCellStringRenderer()
+                            editor = wx.grid.GridCellTextEditor()
+                            renderer = wx.grid.GridCellStringRenderer()
                         elif colname == "Initial Value":
                             if var_class not in ["External", "InOut"]:
                                 if self.Parent.Controler.IsEnumeratedType(var_type):
@@ -189,13 +186,11 @@ class VariableTable(CustomTable):
                             else:
                                 grid.SetReadOnly(row, col, True)
                         elif colname == "Class":
-                            if len(self.Parent.ClassList) == 1 or self.Parent.PouIsUsed and var_class in ["Input", "Output", "InOut"]:
+                            if len(self.Parent.ClassList) == 1:
                                 grid.SetReadOnly(row, col, True)
                             else:
                                 editor = wx.grid.GridCellChoiceEditor()
                                 excluded = []
-                                if self.Parent.PouIsUsed:
-                                    excluded.extend(["Input","Output","InOut"])
                                 if self.Parent.IsFunctionBlockType(var_type):
                                     excluded.extend(["Local","Temp"])
                                 editor.SetParameters(",".join([_(choice) for choice in self.Parent.ClassList if choice not in excluded]))
@@ -490,50 +485,46 @@ class VariablePanel(wx.Panel):
         self.VariablesGrid.SetEditable(not self.Debug)
         
         def _AddVariable(new_row):
-            if not self.PouIsUsed or self.Filter not in ["Interface", "Input", "Output", "InOut"]:
-                if new_row > 0:
-                    row_content = self.Values[new_row - 1].copy()
-                    result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
-                    if result is not None:
-                        name = row_content["Name"][:result.start(1)]
-                        suffix = result.group(1)
-                        if suffix != "":
-                            start_idx = int(suffix)
-                        else:
-                            start_idx = 0
+            if new_row > 0:
+                row_content = self.Values[new_row - 1].copy()
+                result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
+                if result is not None:
+                    name = row_content["Name"][:result.start(1)]
+                    suffix = result.group(1)
+                    if suffix != "":
+                        start_idx = int(suffix)
                     else:
-                        name = row_content["Name"]
                         start_idx = 0
-                    row_content["Name"] = self.Controler.GenerateNewName(
-                        self.TagName, None, name + "%d", start_idx)
                 else:
-                    row_content = self.DefaultValue.copy()
-                    if self.Filter in self.DefaultTypes:
-                        row_content["Class"] = self.DefaultTypes[self.Filter]
-                    else:
-                        row_content["Class"] = self.Filter
-                if self.Filter == "All" and len(self.Values) > 0:
-                    self.Values.insert(new_row, row_content)
+                    name = row_content["Name"]
+                    start_idx = 0
+                row_content["Name"] = self.Controler.GenerateNewName(
+                    self.TagName, None, name + "%d", start_idx)
+            else:
+                row_content = self.DefaultValue.copy()
+                if self.Filter in self.DefaultTypes:
+                    row_content["Class"] = self.DefaultTypes[self.Filter]
                 else:
-                    self.Values.append(row_content)
-                    new_row = self.Table.GetNumberRows()
-                self.SaveValues()
-                self.RefreshValues()
-                return new_row
-            return self.VariablesGrid.GetGridCursorRow()
+                    row_content["Class"] = self.Filter
+            if self.Filter == "All" and len(self.Values) > 0:
+                self.Values.insert(new_row, row_content)
+            else:
+                self.Values.append(row_content)
+                new_row = self.Table.GetNumberRows()
+            self.SaveValues()
+            self.RefreshValues()
+            return new_row
         setattr(self.VariablesGrid, "_AddRow", _AddVariable)
         
         def _DeleteVariable(row):
-            if (self.Table.GetValueByName(row, "Edit") and 
-                (not self.PouIsUsed or self.Table.GetValueByName(row, "Class") not in ["Input", "Output", "InOut"])):
+            if self.Table.GetValueByName(row, "Edit"):
                 self.Values.remove(self.Table.GetRow(row))
                 self.SaveValues()
                 self.RefreshValues()
         setattr(self.VariablesGrid, "_DeleteRow", _DeleteVariable)
             
         def _MoveVariable(row, move):
-            if (self.Filter == "All" and 
-                (not self.PouIsUsed or self.Table.GetValueByName(row, "Class") not in ["Input", "Output", "InOut"])):
+            if self.Filter == "All":
                 new_row = max(0, min(row + move, len(self.Values) - 1))
                 if new_row != row:
                     self.Values.insert(new_row, self.Values.pop(row))
@@ -552,12 +543,10 @@ class VariablePanel(wx.Panel):
                 if table_length > 0:
                     row = self.VariablesGrid.GetGridCursorRow()
                     row_edit = self.Table.GetValueByName(row, "Edit")
-                    if self.PouIsUsed:
-                        row_class = self.Table.GetValueByName(row, "Class")
-                self.AddButton.Enable(not self.Debug and (not self.PouIsUsed or self.Filter not in ["Interface", "Input", "Output", "InOut"]))
-                self.DeleteButton.Enable(not self.Debug and (table_length > 0 and row_edit and row_class not in ["Input", "Output", "InOut"]))
-                self.UpButton.Enable(not self.Debug and (table_length > 0 and row > 0 and self.Filter == "All" and row_class not in ["Input", "Output", "InOut"]))
-                self.DownButton.Enable(not self.Debug and (table_length > 0 and row < table_length - 1 and self.Filter == "All" and row_class not in ["Input", "Output", "InOut"]))
+                self.AddButton.Enable(not self.Debug)
+                self.DeleteButton.Enable(not self.Debug and (table_length > 0 and row_edit))
+                self.UpButton.Enable(not self.Debug and (table_length > 0 and row > 0 and self.Filter == "All"))
+                self.DownButton.Enable(not self.Debug and (table_length > 0 and row < table_length - 1 and self.Filter == "All"))
         setattr(self.VariablesGrid, "RefreshButtons", _RefreshButtons)
         
         self.VariablesGrid.SetRowLabelSize(0)
@@ -592,10 +581,8 @@ class VariablePanel(wx.Panel):
         
         words = self.TagName.split("::")
         if self.ElementType == "config":
-            self.PouIsUsed = False
             self.Values = self.Controler.GetConfigurationGlobalVars(words[1], self.Debug)
         elif self.ElementType == "resource":
-            self.PouIsUsed = False
             self.Values = self.Controler.GetConfigurationResourceGlobalVars(words[1], words[2], self.Debug)
         else:
             if self.ElementType == "function":
@@ -604,7 +591,6 @@ class VariablePanel(wx.Panel):
                     self.ReturnType.Append(data_type)
                 returnType = self.Controler.GetEditedElementInterfaceReturnType(self.TagName)
             description = self.Controler.GetPouDescription(words[1])
-            self.PouIsUsed = self.Controler.PouIsUsed(words[1])
             self.Values = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
         
         if returnType is not None:
