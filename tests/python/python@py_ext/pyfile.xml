@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<CodeFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="codefile.xsd">
-  <includes>
-<![CDATA[]]>
-  </includes>
+<PyFile>
   <variables>
     <variable name="Test_Python_Var" type="INT" initial="0"/>
   </variables>
   <globals>
-<![CDATA[import time,sys,ctypes
+<![CDATA[
+import time,sys,ctypes
 Python_to_C_Call = PLCBinary.Python_to_C_Call
 Python_to_C_Call.restype = ctypes.c_int
 Python_to_C_Call.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
@@ -40,16 +38,28 @@ b.start()
 """
 ]]>
   </globals>
-  <initFunction>
-<![CDATA[]]>
-  </initFunction>
-  <cleanUpFunction>
-<![CDATA[]]>
-  </cleanUpFunction>
-  <retrieveFunction>
-<![CDATA[]]>
-  </retrieveFunction>
-  <publishFunction>
-<![CDATA[]]>
-  </publishFunction>
-</CodeFile>
+  <init>
+<![CDATA[
+global x, y
+x = 2
+y = 5
+print "py_runtime init:", x, ",", y
+]]>
+  </init>
+  <cleanup>
+<![CDATA[
+print "py_runtime cleanup"
+]]>
+  </cleanup>
+  <start>
+<![CDATA[
+global x, y
+print "py_runtime start", x * x + y * y
+]]>
+  </start>
+  <stop>
+<![CDATA[
+print "py_runtime stop"
+]]>
+  </stop>
+</PyFile>
