@@ -210,15 +210,13 @@ def GetShortcutKeyCallbackFunction(viewer_function):
 def GetDeleteElementFunction(remove_function, parent_type=None, check_function=None):
     def DeleteElementFunction(self, selected):
         name = self.ProjectTree.GetItemText(selected)
-        if check_function is None or not check_function(self.Controler, name):
+        if check_function is None or check_function(name):
             if parent_type is not None:
                 item_infos = self.ProjectTree.GetPyData(selected)
                 parent_name = item_infos["tagname"].split("::")[1]
                 remove_function(self.Controler, parent_name, name)
             else:
                 remove_function(self.Controler, name)
-        else:
-            self.ShowErrorMessage(_("\"%s\" is used by one or more POUs. It can't be removed!")%name)
     return DeleteElementFunction
 
 if wx.Platform == '__WXMSW__':
@@ -703,6 +701,7 @@ class IDEFrame(wx.Frame):
         self.PageSetupData.SetMarginBottomRight(wx.Point(10, 20))
         
         self.SetRefreshFunctions()
+        self.SetDeleteFunctions()
     
     def __del__(self):
         self.FindDialog.Destroy()
@@ -1196,14 +1195,23 @@ class IDEFrame(wx.Frame):
         elif isinstance(control, wx.ComboBox):
             control.SetMark(0, control.GetLastPosition() + 1)
     
-    DeleteFunctions = {
-        ITEM_DATATYPE: GetDeleteElementFunction(PLCControler.ProjectRemoveDataType, check_function=PLCControler.DataTypeIsUsed),
-        ITEM_POU: GetDeleteElementFunction(PLCControler.ProjectRemovePou, check_function=PLCControler.PouIsUsed),
-        ITEM_TRANSITION: GetDeleteElementFunction(PLCControler.ProjectRemovePouTransition, ITEM_POU),
-        ITEM_ACTION: GetDeleteElementFunction(PLCControler.ProjectRemovePouAction, ITEM_POU),
-        ITEM_CONFIGURATION: GetDeleteElementFunction(PLCControler.ProjectRemoveConfiguration),
-        ITEM_RESOURCE: GetDeleteElementFunction(PLCControler.ProjectRemoveConfigurationResource, ITEM_CONFIGURATION)
-    }
+    def SetDeleteFunctions(self):
+        self.DeleteFunctions = {
+            ITEM_DATATYPE: GetDeleteElementFunction(
+                    PLCControler.ProjectRemoveDataType, 
+                    check_function=self.CheckDataTypeIsUsedBeforeDeletion),
+            ITEM_POU: GetDeleteElementFunction(
+                    PLCControler.ProjectRemovePou, 
+                    check_function=self.CheckPouIsUsedBeforeDeletion),
+            ITEM_TRANSITION: GetDeleteElementFunction(
+                    PLCControler.ProjectRemovePouTransition, ITEM_POU),
+            ITEM_ACTION: GetDeleteElementFunction(
+                    PLCControler.ProjectRemovePouAction, ITEM_POU),
+            ITEM_CONFIGURATION: GetDeleteElementFunction(
+                    PLCControler.ProjectRemoveConfiguration),
+            ITEM_RESOURCE: GetDeleteElementFunction(
+                    PLCControler.ProjectRemoveConfigurationResource, ITEM_CONFIGURATION)
+        }
     
     def OnDeleteMenu(self, event):
         window = self.FindFocus()
@@ -2359,9 +2367,7 @@ class IDEFrame(wx.Frame):
         result = self.Controler.PastePou(pou_type, pou_xml)
 
         if not isinstance(result, TupleType):
-            message = wx.MessageDialog(self, result, _("Error"), wx.OK|wx.ICON_ERROR)
-            message.ShowModal()
-            message.Destroy()
+            self.ShowErrorMessage(result)
         else:
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, PROJECTTREE, LIBRARYTREE)
             self.EditProjectElement(ITEM_POU, result[0])
@@ -2370,20 +2376,39 @@ class IDEFrame(wx.Frame):
 #                        Remove Project Elements Functions
 #-------------------------------------------------------------------------------
 
+    def CheckElementIsUsedBeforeDeletion(self, check_function, title, name):
+        if not check_function(name):
+            return True
+        
+        dialog = wx.MessageDialog(self, 
+            _("\"%s\" is used by one or more POUs. Do you wish to continue?") % name, 
+            title, wx.YES_NO|wx.ICON_QUESTION)
+        answer = dialog.ShowModal()
+        dialog.Destroy()
+        return answer == wx.ID_YES
+
+    def CheckDataTypeIsUsedBeforeDeletion(self, name):
+        return self.CheckElementIsUsedBeforeDeletion(
+            self.Controler.DataTypeIsUsed,
+            _("Remove Datatype"), name)
+    
+    def CheckPouIsUsedBeforeDeletion(self, name):
+        return self.CheckElementIsUsedBeforeDeletion(
+            self.Controler.PouIsUsed,
+            _("Remove Pou"), name)
+    
     def OnRemoveDataTypeMenu(self, event):
         selected = self.ProjectTree.GetSelection()
         if self.ProjectTree.GetPyData(selected)["type"] == ITEM_DATATYPE:
             name = self.ProjectTree.GetItemText(selected)
-            if not self.Controler.DataTypeIsUsed(name):
+            if self.CheckDataTypeIsUsedBeforeDeletion(name):
                 self.Controler.ProjectRemoveDataType(name)
                 tagname = self.Controler.ComputeDataTypeName(name)
                 idx = self.IsOpened(tagname)
                 if idx is not None:
                     self.TabsOpened.DeletePage(idx)
                 self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, PROJECTTREE)
-            else:
-                self.ShowErrorMessage(_("\"%s\" is used by one or more POUs. It can't be removed!"))
-
+            
     def OnRenamePouMenu(self, event):
         selected = self.ProjectTree.GetSelection()
         if self.ProjectTree.GetPyData(selected)["type"] == ITEM_POU: 
@@ -2393,15 +2418,13 @@ class IDEFrame(wx.Frame):
         selected = self.ProjectTree.GetSelection()
         if self.ProjectTree.GetPyData(selected)["type"] == ITEM_POU:
             name = self.ProjectTree.GetItemText(selected)
-            if not self.Controler.PouIsUsed(name):
+            if self.CheckPouIsUsedBeforeDeletion(name):
                 self.Controler.ProjectRemovePou(name)
                 tagname = self.Controler.ComputePouName(name)
                 idx = self.IsOpened(tagname)
                 if idx is not None:
                     self.TabsOpened.DeletePage(idx)
                 self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-            else:
-                self.ShowErrorMessage(_("\"%s\" is used by one or more POUs. It can't be removed!"))
 
     def OnRemoveTransitionMenu(self, event):
         selected = self.ProjectTree.GetSelection()
