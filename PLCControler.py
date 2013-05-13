@@ -2105,13 +2105,15 @@ class PLCControler:
         if tagname is not None:
             names.update(dict([(varname.upper(), True) 
                                for varname in self.GetEditedElementVariables(tagname, debug)]))
-            element = self.GetEditedElement(tagname, debug)
-            if element is not None and element.getbodyType() not in ["ST", "IL"]:
-                for instance in element.getinstances():
-                    if isinstance(instance, (plcopen.sfcObjects_step, 
-                                             plcopen.commonObjects_connector, 
-                                             plcopen.commonObjects_continuation)):
-                        names[instance.getname().upper()] = True
+            words = tagname.split("::")
+            if words[0] in ["P","T","A"]:
+                element = self.GetEditedElement(tagname, debug)
+                if element is not None and element.getbodyType() not in ["ST", "IL"]:
+                    for instance in element.getinstances():
+                        if isinstance(instance, (plcopen.sfcObjects_step, 
+                                                 plcopen.commonObjects_connector, 
+                                                 plcopen.commonObjects_continuation)):
+                            names[instance.getname().upper()] = True
         else:
             project = self.GetProject(debug)
             if project is not None:
