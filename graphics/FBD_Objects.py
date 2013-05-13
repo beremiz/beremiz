@@ -179,15 +179,16 @@ class FBD_Block(Graphic_Element):
             output.MoveConnected(exclude)
     
     # Returns the block connector that starts with the point given if it exists 
-    def GetConnector(self, position, name = None):
-        # if a name is given
-        if name is not None:
-            # Test each input and output connector
-            #for input in self.Inputs:
-            #    if name == input.GetName():
-            #        return input
+    def GetConnector(self, position, output_name = None, input_name = None):
+        if input_name is not None:
+            # Test each input connector
+            for input in self.Inputs:
+                if input_name == input.GetName():
+                    return input
+        if output_name is not None:
+            # Test each output connector
             for output in self.Outputs:
-                if name == output.GetName():
+                if output_name == output.GetName():
                     return output
         return self.FindNearestConnector(position, self.Inputs + self.Outputs)
         
