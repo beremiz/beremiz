@@ -1857,9 +1857,11 @@ This function generate the classes from a class factory
 def GenerateClasses(factory):
     ComputedClasses = factory.CreateClasses()
     if factory.FileName is not None and len(ComputedClasses) == 1:
-        globals().update(ComputedClasses[factory.FileName])
+        UpdateXMLClassGlobals(ComputedClasses[factory.FileName])
         return ComputedClasses[factory.FileName]
     else:
-        globals().update(ComputedClasses)
+        UpdateXMLClassGlobals(ComputedClasses)
         return ComputedClasses
 
+def UpdateXMLClassGlobals(classes):
+    globals().update(classes)

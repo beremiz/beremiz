@@ -1,3 +1,4 @@
+
 import os
 
 from CFileEditor import CFileEditor
@@ -14,7 +15,18 @@ class CFile(CodeFile):
       </xsd:element>
     </xsd:schema>
     """
+    CODEFILE_NAME = "CFile"
+    SECTIONS_NAMES = [
+        "includes",
+        "globals",
+        "initFunction",
+        "cleanUpFunction",
+        "retrieveFunction",
+        "publishFunction"]
     EditorType = CFileEditor
+    
+    def GenerateClassesFromXSDstring(self, xsd_string):
+        return GenerateClassesFromXSDstring(xsd_string)
     
     def GetIconName(self):
         return "Cfile"

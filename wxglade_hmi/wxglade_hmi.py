@@ -76,33 +76,59 @@ class WxGladeHMI(PythonFileCTNMixin):
             runtimefile.write(hmipyfile.read())
             hmipyfile.close()
         
-        runtimefile.write(self.GetPythonCode())
-        runtimefile.write("""
-%(declare)s
-
-def _runtime_%(location)s_start():
-    global %(global)s
-    
-    def OnCloseFrame(evt):
-        wx.MessageBox(_("Please stop PLC to close"))
-    
-    %(init)s
-    
-def _runtime_%(location)s_stop():
-    global %(global)s
-    
-    %(cleanup)s
-
-""" % {"location": location_str,
-       "declare": "\n".join(map(lambda x:"%s = None" % x, hmi_frames.keys())),
-       "global": ",".join(hmi_frames.keys()),
-       "init": "\n".join(map(lambda x: """
+        sections_code = self.GetSectionsCode()
+        
+        # Adding variables
+        runtimefile.write("## User variables reference\n" +
+                          sections_code["variables"] + "\n")
+        
+        # Adding user global variables and routines
+        runtimefile.write("## User internal user variables and routines\n" +
+                          sections_code["globals"] + "\n")
+        
+        for section in ["init", "cleanup"]:
+            if not sections_code[section]:
+                sections_code = "    pass"
+        
+        sections_code.update({
+            "location": location_str,
+            "declare_hmi": "\n".join(map(lambda x:"%s = None" % x, hmi_frames.keys())),
+            "global_hmi": ",".join(hmi_frames.keys()),
+            "init_hmi": "\n".join(map(lambda x: """
     %(name)s = %(class)s(None)
     %(name)s.Bind(wx.EVT_CLOSE, OnCloseFrame)
     %(name)s.Show()
 """ % {"name": x[0], "class": x[1]},
                              hmi_frames.items())),
-       "cleanup": "\n    ".join(map(lambda x:"if %s is not None: %s.Destroy()" % (x,x), hmi_frames.keys()))})
+            "cleanup_hmi": "\n    ".join(map(lambda x:"if %s is not None: %s.Destroy()" % (x,x), hmi_frames.keys()))})
+        
+        runtimefile.write("""
+%(declare_hmi)s
+
+def _runtime_%(location)s_init():
+%(init)s
+
+def _runtime_%(location)s_cleanup():
+%(cleanup)s
+
+def _runtime_%(location)s_start():
+    global %(global_hmi)s
+    
+%(start)s
+
+    def OnCloseFrame(evt):
+        wx.MessageBox(_("Please stop PLC to close"))
+    
+    %(init_hmi)s
+    
+def _runtime_%(location)s_stop():
+    global %(global_hmi)s
+    
+    %(cleanup_hmi)s
+
+%(stop)s
+
+""" % sections_code)
         runtimefile.close()
         
         return [], "", False, ("runtime_%s.py"%location_str, file(runtimefile_path,"rb"))
