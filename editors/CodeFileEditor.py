@@ -313,7 +313,7 @@ class CodeEditor(CustomStyledTextCtrl):
         self.AutoCompCancel()
         event.Skip()
 
-    def OnUpdateUI(self, evt):
+    def OnUpdateUI(self, event):
         # check for matching braces
         braceAtCaret = -1
         braceOpposite = -1
@@ -343,8 +343,11 @@ class CodeEditor(CustomStyledTextCtrl):
             self.BraceBadLight(braceAtCaret)
         else:
             self.BraceHighlight(braceAtCaret, braceOpposite)
+            
+        self.ParentWindow.SetCopyBuffer(self.GetSelectedText(), True)
+        event.Skip()
 
-    def OnMarginClick(self, evt):
+    def OnMarginClick(self, event):
         # fold and unfold as needed
         if evt.GetMargin() == 2:
             if evt.GetShift() and evt.GetControl():
@@ -365,7 +368,7 @@ class CodeEditor(CustomStyledTextCtrl):
                             self.Expand(lineClicked, True, True, 100)
                     else:
                         self.ToggleFold(lineClicked)
-
+        event.Skip()
 
     def FoldAll(self):
         lineCount = self.GetLineCount()
