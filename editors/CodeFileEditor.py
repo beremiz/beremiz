@@ -12,9 +12,6 @@ from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 
-SECTIONS_NAMES = ["Includes", "Globals", "Init",
-                  "CleanUp", "Retrieve", "Publish"]
-
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT, 
  STC_CODE_SECTION] = range(15, 18)
 
@@ -120,7 +117,7 @@ class CodeEditor(CustomStyledTextCtrl):
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
         
         self.SectionsComments = {}
-        for section in SECTIONS_NAMES:
+        for section in self.Controler.SECTIONS_NAMES:
             section_comment = " %s section " % (section)
             len_headers = 78 - len(section_comment)
             section_comment = self.COMMENT_HEADER * (len_headers / 2) + \
@@ -131,10 +128,11 @@ class CodeEditor(CustomStyledTextCtrl):
                  "comment": section_comment,
             }
             
-        for i, section in enumerate(SECTIONS_NAMES):
+        for i, section in enumerate(self.Controler.SECTIONS_NAMES):
             section_infos = self.SectionsComments[section]
-            if i + 1 < len(SECTIONS_NAMES):
-                section_end = self.SectionsComments[SECTIONS_NAMES[i + 1]]["comment"]
+            if i + 1 < len(self.Controler.SECTIONS_NAMES):
+                section_end = self.SectionsComments[
+                    self.Controler.SECTIONS_NAMES[i + 1]]["comment"]
             else:
                 section_end = "$"
             section_infos["pattern"] = re.compile(
@@ -203,7 +201,7 @@ class CodeEditor(CustomStyledTextCtrl):
     def GetCodeText(self):
         parts = self.Controler.GetTextParts()
         text = ""
-        for section in SECTIONS_NAMES:
+        for section in self.Controler.SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
             text += section_comments["comment"]
             if parts[section] == "":
@@ -246,7 +244,7 @@ class CodeEditor(CustomStyledTextCtrl):
         for line in xrange(self.GetLineCount()):
             self.SetLineState(line, 0)
         
-        for section in SECTIONS_NAMES:
+        for section in self.Controler.SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
             start_pos = text.find(section_comments["comment"])
             end_pos = start_pos + len(section_comments["comment"])
@@ -263,7 +261,7 @@ class CodeEditor(CustomStyledTextCtrl):
     def RefreshModel(self):
         text = self.GetText()
         parts = {}
-        for section in SECTIONS_NAMES:
+        for section in self.Controler.SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
             result = section_comments["pattern"].search(text)
             if result is not None:
@@ -276,12 +274,24 @@ class CodeEditor(CustomStyledTextCtrl):
         if self.CallTipActive():
             self.CallTipCancel()
         key = event.GetKeyCode()
-        current_pos = self.GetSelection()[0]
+        current_pos = self.GetCurrentPos()
+        selected = self.GetSelection()
+        text_selected = selected[0] != selected[1]
         
+        # Disable to type any character in section header lines
         if (self.GetLineState(self.LineFromPosition(current_pos)) and
+            not text_selected and
             key not in NAVIGATION_KEYS + [
                 wx.WXK_RETURN,
                 wx.WXK_NUMPAD_ENTER]):
+            return
+        
+        # Disable to delete line between code and header lines
+        elif (self.GetCurLine()[0].strip() != "" and not text_selected and
+              (key == wx.WXK_BACK and
+               self.GetLineState(self.LineFromPosition(max(0, current_pos - 1))) or
+               key in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE] and
+               self.GetLineState(self.LineFromPosition(min(len(self.GetText()), current_pos + 1))))):
             return
         
         elif key == 32 and event.ControlDown():
@@ -435,6 +445,7 @@ class CodeEditor(CustomStyledTextCtrl):
     
     def Copy(self):
         self.CmdKeyExecute(wx.stc.STC_CMD_COPY)
+        self.ParentWindow.RefreshEditMenu()
     
     def Paste(self):
         self.ResetBuffer()

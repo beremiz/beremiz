@@ -24,5 +24,5 @@
 
 # Package initialisation
 
-from xmlclass import ClassFactory, GenerateClasses, GetAttributeValue, time_model, CreateNode, NodeSetAttr, NodeRenameAttr
+from xmlclass import ClassFactory, GenerateClasses, GetAttributeValue, time_model, CreateNode, NodeSetAttr, NodeRenameAttr, UpdateXMLClassGlobals
 from xsdschema import XSDClassFactory, GenerateClassesFromXSD, GenerateClassesFromXSDstring
