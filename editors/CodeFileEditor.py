@@ -172,8 +172,21 @@ class CodeEditor(CustomStyledTextCtrl):
         event.Skip()
     
     def OnDoDrop(self, event):
-        self.ResetBuffer()
-        wx.CallAfter(self.RefreshModel)
+        try:
+            values = eval(event.GetDragText())
+        except:
+            values = event.GetDragText()
+        if isinstance(values, tuple):
+            message = None
+            if values[3] == self.Controler.GetCurrentLocation():
+                self.ResetBuffer()
+                event.SetDragText(values[0])
+                wx.CallAfter(self.RefreshModel)
+            else:
+                event.SetDragText("")
+        else:
+            self.ResetBuffer()
+            wx.CallAfter(self.RefreshModel)
         event.Skip()
 
     # Buffer the last model state
@@ -731,9 +744,8 @@ class VariablesEditor(wx.Panel):
             row = event.GetRow()
             data_type = self.Table.GetValueByName(row, "Type")
             var_name = self.Table.GetValueByName(row, "Name")
-            location = "_".join(map(lambda x:str(x), self.Controler.GetCurrentLocation()))
-            data = wx.TextDataObject(str(("%s_%s" % (var_name, location), 
-                                          "Global", data_type, "")))
+            data = wx.TextDataObject(str((var_name, "Global", data_type, 
+                    self.Controler.GetCurrentLocation())))
             dragSource = wx.DropSource(self.VariablesGrid)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
@@ -747,16 +759,31 @@ class VariablesEditor(wx.Panel):
 
 class CodeFileEditor(ConfTreeNodeEditor):
     
-    CONFNODEEDITOR_TABS = [
-        (_("Variables"), "_create_VariablesPanel")]
+    CONFNODEEDITOR_TABS = []
+    CODE_EDITOR = None
     
-    def _create_VariablesPanel(self, prnt):
-        self.VariablesPanel = VariablesEditor(prnt, self.ParentWindow, self.Controler)
+    def _create_CodePanel(self, prnt):
+        self.CodeEditorPanel = wx.SplitterWindow(prnt)
+        self.CodeEditorPanel.SetMinimumPaneSize(1)
         
-        return self.VariablesPanel
+        self.VariablesPanel = VariablesEditor(self.CodeEditorPanel, 
+                self.ParentWindow, self.Controler)
+        
+        if self.CODE_EDITOR is not None:
+            self.CodeEditor = self.CODE_EDITOR(self.CodeEditorPanel, 
+                        self.ParentWindow, self.Controler)
+            
+            self.CodeEditorPanel.SplitHorizontally(self.VariablesPanel, 
+                    self.CodeEditor, 150)
+        else:
+            self.CodeEditorPanel.Initialize(self.VariablesPanel)
+        
+        return self.CodeEditorPanel
     
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
+        
+        wx.CallAfter(self.CodeEditorPanel.SetSashPosition, 150)
     
     def GetBufferState(self):
         return self.Controler.GetBufferState()
@@ -773,4 +800,8 @@ class CodeFileEditor(ConfTreeNodeEditor):
         ConfTreeNodeEditor.RefreshView(self)
         
         self.VariablesPanel.RefreshView()
-            
+        self.CodeEditor.RefreshView()
+    
+    def Find(self, direction, search_params):
+        self.CodeEditor.Find(direction, search_params)
+        
