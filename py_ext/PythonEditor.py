@@ -53,18 +53,7 @@ class PythonCodeEditor(CodeEditor):
 
 class PythonEditor(CodeFileEditor):
     
-    CONFNODEEDITOR_TABS = CodeFileEditor.CONFNODEEDITOR_TABS + [
-        (_("Python code"), "_create_PythonCodeEditor")]
-    
-    def _create_PythonCodeEditor(self, prnt):
-        self.PythonCodeEditor = PythonCodeEditor(prnt, self.ParentWindow, self.Controler)
-        
-        return self.PythonCodeEditor
+    CONFNODEEDITOR_TABS = [
+        (_("Python code"), "_create_CodePanel")]
+    CODE_EDITOR = PythonCodeEditor
 
-    def RefreshView(self):
-        CodeFileEditor.RefreshView(self)
-        
-        self.PythonCodeEditor.RefreshView()
-
-    def Find(self, direction, search_params):
-        self.PythonCodeEditor.Find(direction, search_params)

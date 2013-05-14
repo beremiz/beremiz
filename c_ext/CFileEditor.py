@@ -36,18 +36,9 @@ class CppEditor(CodeEditor):
 
 class CFileEditor(CodeFileEditor):
     
-    CONFNODEEDITOR_TABS = CodeFileEditor.CONFNODEEDITOR_TABS + [
-        (_("C code"), "_create_CCodeEditor")]
-    
-    def _create_CCodeEditor(self, prnt):
-        self.CCodeEditor = CppEditor(prnt, self.ParentWindow, self.Controler)
-        
-        return self.CCodeEditor
+    CONFNODEEDITOR_TABS = [
+        (_("C code"), "_create_CodePanel")]
+    CODE_EDITOR = CppEditor
 
-    def RefreshView(self):
-        CodeFileEditor.RefreshView(self)
-        
-        self.CCodeEditor.RefreshView()
 
-    def Find(self, direction, search_params):
-        self.CCodeEditor.Find(direction, search_params)
+
