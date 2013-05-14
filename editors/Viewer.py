@@ -1248,12 +1248,13 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         output_name = output_connector["name"])
                 else:
                     connector = connectors["outputs"][i]
-                if output_connector.get("negated", False):
-                    connector.SetNegated(True)
-                if output_connector.get("edge", "none") != "none":
-                    connector.SetEdge(output_connector["edge"])
-                if connectors["outputs"].index(connector) == i:
-                    connector.SetPosition(wx.Point(*output_connector["position"]))
+                if connector is not None:
+                    if output_connector.get("negated", False):
+                        connector.SetNegated(True)
+                    if output_connector.get("edge", "none") != "none":
+                        connector.SetEdge(output_connector["edge"])
+                    if connectors["outputs"].index(connector) == i:
+                        connector.SetPosition(wx.Point(*output_connector["position"]))
         for i, input_connector in enumerate(instance["inputs"]):
             if i < len(connectors["inputs"]):
                 if isinstance(element, FBD_Block):
@@ -1262,13 +1263,14 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         input_name = input_connector["name"])
                 else:
                     connector = connectors["inputs"][i]
-                if connectors["inputs"].index(connector) == i:
-                    connector.SetPosition(wx.Point(*input_connector["position"]))
-                if input_connector.get("negated", False):
-                    connector.SetNegated(True)
-                if input_connector.get("edge", "none") != "none":
-                    connector.SetEdge(input_connector["edge"])
-                self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection)
+                if connector is not None:
+                    if connectors["inputs"].index(connector) == i:
+                        connector.SetPosition(wx.Point(*input_connector["position"]))
+                    if input_connector.get("negated", False):
+                        connector.SetNegated(True)
+                    if input_connector.get("edge", "none") != "none":
+                        connector.SetEdge(input_connector["edge"])
+                    self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection)
         element.RefreshConnectors()
         if selection is not None and selection[0].get(instance["id"], False):
             self.SelectInGroup(element)
