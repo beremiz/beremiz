@@ -902,7 +902,10 @@ class PouProgramGenerator:
                         block_infos = self.GetBlockType(block_type)
                     if block_infos is None:
                         raise PLCGenException, _("Undefined block type \"%s\" in \"%s\" POU")%(block_type, self.Name)
-                    block_infos["generate"](self, instance, block_infos, body, None)
+                    try:
+                        block_infos["generate"](self, instance, block_infos, body, None)
+                    except ValueError, e:
+                        raise PLCGenException, e.message
                 elif isinstance(instance, plcopen.commonObjects_connector):
                     connector = instance.getname()
                     if self.ComputedConnectors.get(connector, None):
@@ -961,7 +964,10 @@ class PouProgramGenerator:
                     block_infos = self.GetBlockType(block_type)
                 if block_infos is None:
                     raise PLCGenException, _("Undefined block type \"%s\" in \"%s\" POU")%(block_type, self.Name)
-                paths.append(str(block_infos["generate"](self, next, block_infos, body, connection, order, to_inout)))
+                try:
+                    paths.append(str(block_infos["generate"](self, next, block_infos, body, connection, order, to_inout)))
+                except ValueError, e:
+                    raise PLCGenException, e.message
             elif isinstance(next, plcopen.commonObjects_continuation):
                 name = next.getname()
                 computed_value = self.ComputedConnectors.get(name, None)
