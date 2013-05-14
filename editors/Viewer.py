@@ -1270,36 +1270,49 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
                         connector.SetNegated(True)
                     if input_connector.get("edge", "none") != "none":
                         connector.SetEdge(input_connector["edge"])
-                    self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection)
+                    if not self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection):
+                        element.RefreshModel()
         element.RefreshConnectors()
         if selection is not None and selection[0].get(instance["id"], False):
             self.SelectInGroup(element)
 
     def CreateWires(self, start_connector, id, links, ids, selection=None):
+        links_connected = True
         for link in links:
             refLocalId = link["refLocalId"]
-            if refLocalId is not None:
-                if refLocalId not in ids:
-                    new_instance = self.Controler.GetEditedElementInstanceInfos(self.TagName, refLocalId, debug = self.Debug)
-                    if new_instance is not None:
-                        self.loadInstance(new_instance, ids, selection)
-                connected = self.FindElementById(refLocalId)
-                if connected is not None:
-                    points = link["points"]
-                    end_connector = connected.GetConnector(wx.Point(points[-1][0], points[-1][1]), link["formalParameter"])
-                    if end_connector is not None:
-                        wire = Wire(self)
-                        wire.SetPoints(points)
-                        start_connector.Connect((wire, 0), False)
-                        end_connector.Connect((wire, -1), False)
-                        wire.ConnectStartPoint(None, start_connector)
-                        wire.ConnectEndPoint(None, end_connector)
-                        connected.RefreshConnectors()
-                        self.AddWire(wire)
-                        if selection is not None and (\
-                           selection[1].get((id, refLocalId), False) or \
-                           selection[1].get((refLocalId, id), False)):
-                            self.SelectInGroup(wire)
+            if refLocalId is None:
+                links_connected = False
+                continue
+            
+            if refLocalId not in ids:
+                new_instance = self.Controler.GetEditedElementInstanceInfos(self.TagName, refLocalId, debug = self.Debug)
+                if new_instance is not None:
+                    self.loadInstance(new_instance, ids, selection)
+            
+            connected = self.FindElementById(refLocalId)
+            if connected is None:
+                links_connected = False
+                continue
+            
+            points = link["points"]
+            end_connector = connected.GetConnector(wx.Point(points[-1][0], points[-1][1]), link["formalParameter"])
+            if end_connector is not None:
+                wire = Wire(self)
+                wire.SetPoints(points)
+                start_connector.Connect((wire, 0), False)
+                end_connector.Connect((wire, -1), False)
+                wire.ConnectStartPoint(None, start_connector)
+                wire.ConnectEndPoint(None, end_connector)
+                connected.RefreshConnectors()
+                self.AddWire(wire)
+                if selection is not None and (\
+                   selection[1].get((id, refLocalId), False) or \
+                   selection[1].get((refLocalId, id), False)):
+                    self.SelectInGroup(wire)
+            else:
+                links_connected = False
+        
+        return links_connected
                         
     def IsOfType(self, type, reference):
         return self.Controler.IsOfType(type, reference, self.Debug)
