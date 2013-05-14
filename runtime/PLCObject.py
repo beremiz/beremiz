@@ -264,7 +264,6 @@ class PLCObject(pyro.ObjBase):
             self.python_runtime_vars["_runtime_%s"%methodname] = []
         self.python_runtime_vars["PLCObject"] = self
         self.python_runtime_vars["PLCBinary"] = self.PLClibraryHandle
-        
         try:
             for filename in os.listdir(self.workingdir):
                 name, ext = os.path.splitext(filename)
@@ -274,7 +273,6 @@ class PLCObject(pyro.ObjBase):
                         method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
                         if method is not None:
                             self.python_runtime_vars["_runtime_%s"%methodname].append(method)
-            
         except:
             self.LogMessage(0,traceback.format_exc())
             raise
