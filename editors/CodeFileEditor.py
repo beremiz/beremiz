@@ -303,9 +303,11 @@ class CodeEditor(CustomStyledTextCtrl):
             # Code completion
             else:
                 self.AutoCompSetIgnoreCase(False)  # so this needs to match
-
-                # Images are specified with a appended "?type"
-                self.AutoCompShow(0, " ".join([word + "?1" for word in self.KEYWORDS]))
+                
+                keywords = self.KEYWORDS + [var["Name"]
+                                            for var in self.Controler.GetVariables()]
+                keywords.sort()
+                self.AutoCompShow(0, " ".join(keywords))
         else:
             event.Skip()
 
