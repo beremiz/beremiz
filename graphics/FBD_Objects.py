@@ -190,7 +190,9 @@ class FBD_Block(Graphic_Element):
             for output in self.Outputs:
                 if output_name == output.GetName():
                     return output
-        return self.FindNearestConnector(position, self.Inputs + self.Outputs)
+        if input_name is None and output_name is None:
+            return self.FindNearestConnector(position, self.Inputs + self.Outputs)
+        return None
         
     def GetInputTypes(self):
         return tuple([input.GetType(True) for input in self.Inputs if input.GetName() != "EN"])
