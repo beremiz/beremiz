@@ -155,6 +155,17 @@ if cls:
         self.text = text
     setattr(cls, "updateElementAddress", updateElementAddress)
     
+    def hasblock(self, block_type):
+        text = self.text.upper()
+        index = text.find(block_type.upper())
+        while index != -1:
+            if (not (index > 0 and (text[index - 1].isalnum() or text[index - 1] == "_")) and 
+                not (index < len(text) - len(block_type) and text[index + len(block_type)] != "(")):
+                return True
+            index = text.find(block_type.upper(), index + len(block_type))
+        return False
+    setattr(cls, "hasblock", hasblock)
+    
     def Search(self, criteria, parent_infos):
         return [(tuple(parent_infos),) + result for result in TestTextElement(self.gettext(), criteria)]
     setattr(cls, "Search", Search)
@@ -533,6 +544,10 @@ if cls:
                             typename = vartype_content["value"].getname()
                             if self.ElementUsingTree.has_key(typename) and name not in self.ElementUsingTree[typename]:
                                 self.ElementUsingTree[typename].append(name)
+            for typename in self.ElementUsingTree.iterkeys():
+                if typename != name and pou.hasblock(block_type=typename) and name not in self.ElementUsingTree[typename]:
+                    self.ElementUsingTree[typename].append(name)
+        
     setattr(cls, "RefreshElementUsingTree", RefreshElementUsingTree)
 
     def GetParentType(self, type):
@@ -1382,21 +1397,25 @@ if cls:
                     break
     setattr(cls, "removepouVar", removepouVar)
     
-    def hasblock(self, name):
-        if name != "" and self.getbodyType() in ["FBD", "LD", "SFC"]:
+    def hasblock(self, name=None, block_type=None):
+        if self.getbodyType() in ["FBD", "LD", "SFC"]:
             for instance in self.getinstances():
-                if isinstance(instance, PLCOpenClasses["fbdObjects_block"]) and instance.getinstanceName() == name:
+                if (isinstance(instance, PLCOpenClasses["fbdObjects_block"]) and 
+                    (name and instance.getinstanceName() == name or
+                     block_type and instance.gettypeName() == block_type)):
                     return True
             if self.transitions:
                 for transition in self.transitions.gettransition():
-                    result = transition.hasblock(name)
+                    result = transition.hasblock(name, block_type)
                     if result:
                         return result
             if self.actions:
                 for action in self.actions.getaction():
-                    result = action.hasblock(name)
+                    result = action.hasblock(name, block_type)
                     if result:
                         return result
+        elif block_type is not None and len(self.body) > 0:
+            return self.body[0].hasblock(block_type)
         return False
     setattr(cls, "hasblock", hasblock)
     
@@ -1626,6 +1645,24 @@ def settext(self, text):
 def gettext(self):
     return self.body.gettext()
 
+def hasblock(self, name=None, block_type=None):
+    if self.getbodyType() in ["FBD", "LD", "SFC"]:
+        for instance in self.getinstances():
+            if (isinstance(instance, PLCOpenClasses["fbdObjects_block"]) and 
+                (name and instance.getinstanceName() == name or
+                 block_type and instance.gettypeName() == block_type)):
+                return True
+    elif block_type is not None:
+        return self.body.hasblock(block_type)
+    return False
+
+def updateElementName(self, old_name, new_name):
+    self.body.updateElementName(old_name, new_name)
+
+def updateElementAddress(self, address_model, new_leading):
+    self.body.updateElementAddress(address_model, new_leading)
+    
+
 cls = PLCOpenClasses.get("transitions_transition", None)
 if cls:
     setattr(cls, "setbodyType", setbodyType)
@@ -1641,23 +1678,10 @@ if cls:
     setattr(cls, "removeinstance", removeinstance)
     setattr(cls, "settext", settext)
     setattr(cls, "gettext", gettext)
-
-    def updateElementName(self, old_name, new_name):
-        self.body.updateElementName(old_name, new_name)
-    setattr(cls, "updateElementName", updateElementName)
-
-    def updateElementAddress(self, address_model, new_leading):
-        self.body.updateElementAddress(address_model, new_leading)
-    setattr(cls, "updateElementAddress", updateElementAddress)
-
-    def hasblock(self, name):
-        if self.getbodyType() in ["FBD", "LD", "SFC"]:
-            for instance in self.getinstances():
-                if isinstance(instance, PLCOpenClasses["fbdObjects_block"]) and instance.getinstanceName() == name:
-                    return True
-        return False
     setattr(cls, "hasblock", hasblock)
-
+    setattr(cls, "updateElementName", updateElementName)
+    setattr(cls, "updateElementAddress", updateElementAddress)
+    
     def Search(self, criteria, parent_infos):
         search_result = []
         parent_infos = parent_infos[:-1] + ["T::%s::%s" % (parent_infos[-1].split("::")[1], self.getname())]
@@ -1682,23 +1706,10 @@ if cls:
     setattr(cls, "removeinstance", removeinstance)
     setattr(cls, "settext", settext)
     setattr(cls, "gettext", gettext)
-
-    def updateElementName(self, old_name, new_name):
-        self.body.updateElementName(old_name, new_name)
-    setattr(cls, "updateElementName", updateElementName)
-
-    def updateElementAddress(self, address_model, new_leading):
-        self.body.updateElementAddress(address_model, new_leading)
-    setattr(cls, "updateElementAddress", updateElementAddress)
-
-    def hasblock(self, name):
-        if self.getbodyType() in ["FBD", "LD", "SFC"]:
-            for instance in self.getinstances():
-                if isinstance(instance, PLCOpenClasses["fbdObjects_block"]) and instance.getinstanceName() == name:
-                    return True
-        return False
     setattr(cls, "hasblock", hasblock)
-
+    setattr(cls, "updateElementName", updateElementName)
+    setattr(cls, "updateElementAddress", updateElementAddress)
+    
     def Search(self, criteria, parent_infos):
         search_result = []
         parent_infos = parent_infos[:-1] + ["A::%s::%s" % (parent_infos[-1].split("::")[1], self.getname())]
@@ -1858,6 +1869,13 @@ if cls:
         else:
             raise TypeError, _("%s body don't have text!")%self.content["name"]
     setattr(cls, "gettext", gettext)
+    
+    def hasblock(self, block_type):
+        if self.content["name"] in ["IL","ST"]:
+            return self.content["value"].hasblock(block_type)
+        else:
+            raise TypeError, _("%s body don't have text!")%self.content["name"]
+    setattr(cls, "hasblock", hasblock)
     
     def updateElementName(self, old_name, new_name):
         if self.content["name"] in ["IL", "ST"]:
