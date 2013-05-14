@@ -291,6 +291,13 @@ class CodeEditor(CustomStyledTextCtrl):
         selected = self.GetSelection()
         text_selected = selected[0] != selected[1]
         
+        # Test if caret is before Windows like new line
+        text = self.GetText()
+        if ord(text[current_pos]) == 13:
+            newline_size = 2
+        else:
+            newline_size = 1
+        
         # Disable to type any character in section header lines
         if (self.GetLineState(self.LineFromPosition(current_pos)) and
             not text_selected and
@@ -304,7 +311,7 @@ class CodeEditor(CustomStyledTextCtrl):
               (key == wx.WXK_BACK and
                self.GetLineState(self.LineFromPosition(max(0, current_pos - 1))) or
                key in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE] and
-               self.GetLineState(self.LineFromPosition(min(len(self.GetText()), current_pos + 1))))):
+               self.GetLineState(self.LineFromPosition(min(len(text), current_pos + newline_size))))):
             return
         
         elif key == 32 and event.ControlDown():
