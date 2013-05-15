@@ -264,6 +264,14 @@ class PLCObject(pyro.ObjBase):
             self.python_runtime_vars["_runtime_%s"%methodname] = []
         self.python_runtime_vars["PLCObject"] = self
         self.python_runtime_vars["PLCBinary"] = self.PLClibraryHandle
+        class PLCSafeGlobals:
+            def __getattr__(self, name):
+                r = globals()["_PySafeGetPLCGlob_"+name]()
+                return globals()["_"+name+"_unpack"](r)
+            def __setattr__(self, name, value):
+                v = globals()["_"+name+"_pack"](c_type,value)
+                globals()["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
+        self.python_runtime_vars["PLCGlobals"] = PLCSafeGlobals()
         try:
             for filename in os.listdir(self.workingdir):
                 name, ext = os.path.splitext(filename)
