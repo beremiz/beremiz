@@ -295,7 +295,7 @@ class CodeEditor(CustomStyledTextCtrl):
         
         # Test if caret is before Windows like new line
         text = self.GetText()
-        if ord(text[current_pos]) == 13:
+        if current_pos < len(text) and ord(text[current_pos]) == 13:
             newline_size = 2
         else:
             newline_size = 1
