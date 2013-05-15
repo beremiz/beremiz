@@ -98,7 +98,7 @@ def generate_block(generator, block, block_infos, body, link, order=False, to_in
             if one_input_connected:
                 for i, variable in enumerate(output_variables):
                     parameter = variable.getformalParameter()
-                    if not inout_variables.has_key(parameter) and parameter in output_names + ["ENO"]:
+                    if not inout_variables.has_key(parameter) and parameter in output_names + ["", "ENO"]:
                         if variable.getformalParameter() == "":
                             variable_name = "%s%d"%(type, block.getlocalId())
                         else:
