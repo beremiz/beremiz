@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <PyFile>
   <variables>
-    <variable name="Test_Python_Var" type="INT" initial="0"/>
+    <variable name="Test_Python_Var" type="INT" initial="4"/>
+    <variable name="Second_Python_Var" type="INT" initial="5"/>
   </variables>
   <globals>
 <![CDATA[
@@ -18,6 +19,8 @@ def MyPythonFunc(arg):
     else:
         print "Failed Python_to_C_Call failed"
         res = None
+    print "Python read PLC global :",PLCGlobals.Test_Python_Var
+    PLCGlobals.Second_Python_Var = 789
     sys.stdout.flush()
     return res
 
