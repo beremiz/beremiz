@@ -90,6 +90,12 @@ class CodeFile:
     def GetDataTypes(self, basetypes = False):
         return self.GetCTRoot().GetDataTypes(basetypes=basetypes)
 
+    def GenerateNewName(self, format, start_idx):
+        return self.GetCTRoot().GenerateNewName(
+            None, None, format, start_idx,
+            dict([(var.getname(), None) 
+                  for var in self.CodeFile.variables.getvariable()]))
+
     def SetVariables(self, variables):
         self.CodeFile.variables.setvariable([])
         for var in variables:
