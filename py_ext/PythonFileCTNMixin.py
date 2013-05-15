@@ -157,7 +157,7 @@ __SafeSetPLCGlob_%(name)s(%(IECtype)s *value){
     }
 """ 
 
-        vardec, varret, varpub = map("\n".join, zip(*[
+        var_str = map("\n".join, zip(*[
             map(lambda f : f % varinfo,
                 (vardecfmt, varretfmt, varpubfmt))
                 for varinfo in map(lambda variable : {
@@ -167,6 +167,10 @@ __SafeSetPLCGlob_%(name)s(%(IECtype)s *value){
                     "IECtype": "IEC_%s"%variable.gettype(),
                     "initial" : str(variable.getinitial())},
                     self.CodeFile.variables.variable)]))
+        if len(var_str) > 0:
+            vardec, varret, varpub = var_str
+        else:
+            vardec = varret = varpub = ""
         
         PyCFileContent = """\
 /* 
