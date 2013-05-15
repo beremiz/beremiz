@@ -93,7 +93,7 @@ class CodeFile:
     def GenerateNewName(self, format, start_idx):
         return self.GetCTRoot().GenerateNewName(
             None, None, format, start_idx,
-            dict([(var.getname(), None) 
+            dict([(var.getname().upper(), True) 
                   for var in self.CodeFile.variables.getvariable()]))
 
     def SetVariables(self, variables):
