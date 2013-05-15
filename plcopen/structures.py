@@ -59,17 +59,23 @@ def generate_block(generator, block, block_infos, body, link, order=False, to_in
         if not generator.ComputedBlocks.get(block, False) and not order:
             generator.ComputedBlocks[block] = True
             connected_vars = []
-            input_connected = dict([("EN", None)] + 
-                                   [(input_name, None) for input_name in input_names])
-            for variable in input_variables:
-                parameter = variable.getformalParameter()
-                if input_connected.has_key(parameter):
-                    input_connected[parameter] = variable
-            if input_connected["EN"] is None:
-                input_connected.pop("EN")
-                input_parameters = input_names
+            if not block_infos["extensible"]:
+                input_connected = dict([("EN", None)] + 
+                                       [(input_name, None) for input_name in input_names])
+                for variable in input_variables:
+                    parameter = variable.getformalParameter()
+                    if input_connected.has_key(parameter):
+                        input_connected[parameter] = variable
+                if input_connected["EN"] is None:
+                    input_connected.pop("EN")
+                    input_parameters = input_names
+                else:
+                    input_parameters = ["EN"] + input_names
             else:
-                input_parameters = ["EN"] + input_names
+                input_connected = dict([(variable.getformalParameter(), variable)
+                                        for variable in input_variables])
+                input_parameters = [variable.getformalParameter()
+                                    for variable in input_variables]
             one_input_connected = False
             all_input_connected = True
             for i, parameter in enumerate(input_parameters):
