@@ -65,7 +65,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         
         declare_hmi = "\n".join(map(lambda x:"%s = None" % x,
                                 hmi_frames.keys()))
-        global_hmi = "global "+",".join(hmi_frames.keys())
+        global_hmi = "global "+",".join(hmi_frames.keys()) + "\n"
         init_hmi = "\n".join(map(lambda x: """\
 def OnCloseFrame(evt):
     wx.MessageBox(_("Please stop PLC to close"))
@@ -79,7 +79,7 @@ def OnCloseFrame(evt):
         self.PreSectionsTexts = {
             "globals":define_hmi + declare_hmi,
             "start":global_hmi,
-            "stop":global_hmi
+            "stop":global_hmi + cleanup_hmi
         }
         self.PostSectionsTexts = {
             "start":init_hmi,
