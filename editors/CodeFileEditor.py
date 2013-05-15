@@ -6,10 +6,12 @@ import wx.stc as stc
 import wx.lib.buttons
 
 from plcopen.plcopen import TestTextElement
+from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 from controls import CustomGrid, CustomTable
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
+from controls.VariablePanel import VARIABLE_NAME_SUFFIX_MODEL
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT, 
@@ -365,8 +367,10 @@ class CodeEditor(CustomStyledTextCtrl):
             self.BraceBadLight(braceAtCaret)
         else:
             self.BraceHighlight(braceAtCaret, braceOpposite)
-            
-        self.ParentWindow.SetCopyBuffer(self.GetSelectedText(), True)
+        
+        selected_text = self.GetSelectedText()
+        if selected_text:
+            self.ParentWindow.SetCopyBuffer(selected_text, True)
         event.Skip()
 
     def OnMarginClick(self, event):
@@ -648,7 +652,7 @@ class VariablesEditor(wx.Panel):
         self.ParentWindow = window
         self.Controler = controler
         
-        self.VariablesDefaultValue = {"Name" : "", "Type" : "", "Initial": ""}
+        self.VariablesDefaultValue = {"Name" : "", "Type" : "INT", "Initial": ""}
         self.Table = VariablesTable(self, [], ["#", "Name", "Type", "Initial"])
         self.ColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
         self.ColSizes = [40, 200, 150, 150]
@@ -659,7 +663,24 @@ class VariablesEditor(wx.Panel):
                                        "Down": self.DownVariableButton})
         
         def _AddVariable(new_row):
-            self.Table.InsertRow(new_row, self.VariablesDefaultValue.copy())
+            if new_row > 0:
+                row_content = self.Table.data[new_row - 1].copy()
+                result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
+                if result is not None:
+                    name = row_content["Name"][:result.start(1)]
+                    suffix = result.group(1)
+                    if suffix != "":
+                        start_idx = int(suffix)
+                    else:
+                        start_idx = 0
+                else:
+                    name = row_content["Name"]
+                    start_idx = 0
+                row_content["Name"] = self.Controler.GenerateNewName(
+                        name + "%d", start_idx)
+            else:
+                row_content = self.VariablesDefaultValue.copy()
+            self.Table.InsertRow(new_row, row_content)
             self.RefreshModel()
             self.RefreshView()
             return new_row
@@ -708,9 +729,34 @@ class VariablesEditor(wx.Panel):
         return self.ParentWindow.GetPanelBestSize()
     
     def OnVariablesGridCellChange(self, event):
-        self.RefreshModel()
-        wx.CallAfter(self.RefreshView)
-        event.Skip()
+        row, col = event.GetRow(), event.GetCol()
+        colname = self.Table.GetColLabelValue(col, False)
+        value = self.Table.GetValue(row, col)
+        message = None
+        
+        if colname == "Name" and value != "":
+            if not TestIdentifier(value):
+                message = _("\"%s\" is not a valid identifier!") % value
+            elif value.upper() in IEC_KEYWORDS:
+                message = _("\"%s\" is a keyword. It can't be used!") % value
+            elif value.upper() in [var["Name"].upper() 
+                                   for var_row, var in enumerate(self.Table.data) 
+                                   if var_row != row]:
+                message = _("A variable with \"%s\" as name already exists!") % value
+            else:
+                self.RefreshModel()
+                wx.CallAfter(self.RefreshView)
+        else:
+            self.RefreshModel()
+            wx.CallAfter(self.RefreshView)
+        
+        if message is not None:
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog.ShowModal()
+            dialog.Destroy()
+            event.Veto()
+        else:
+            event.Skip()
 
     def OnVariablesGridEditorShown(self, event):
         row, col = event.GetRow(), event.GetCol() 

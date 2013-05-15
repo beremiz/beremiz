@@ -1182,7 +1182,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
             self.IECdebug_lock.release()
-
+    
+    def IsPLCStarted(self):
+        return self.previous_plcstate == "Started"
+     
     def ReArmDebugRegisterTimer(self):
         if self.DebugTimer is not None:
             self.DebugTimer.cancel()
@@ -1190,7 +1193,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Prevent to call RegisterDebugVarToConnector when PLC is not started
         # If an output location var is forced it's leads to segmentation fault in runtime
         # Links between PLC located variables and real variables are not ready
-        if self.previous_plcstate == "Started":
+        if self.IsPLCStarted():
             # Timer to prevent rapid-fire when registering many variables
             # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
             self.DebugTimer=Timer(0.5,wx.CallAfter,args = [self.RegisterDebugVarToConnector])
