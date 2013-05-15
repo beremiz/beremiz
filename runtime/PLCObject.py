@@ -265,12 +265,14 @@ class PLCObject(pyro.ObjBase):
         self.python_runtime_vars["PLCObject"] = self
         self.python_runtime_vars["PLCBinary"] = self.PLClibraryHandle
         class PLCSafeGlobals:
-            def __getattr__(self, name):
-                r = globals()["_PySafeGetPLCGlob_"+name]()
-                return globals()["_"+name+"_unpack"](r)
-            def __setattr__(self, name, value):
-                v = globals()["_"+name+"_pack"](c_type,value)
-                globals()["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
+            def __getattr__(_self, name):
+                v = self.python_runtime_vars["_"+name+"_ctype"]()
+                r = self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
+                return self.python_runtime_vars["_"+name+"_unpack"](v)
+            def __setattr__(_self, name, value):
+                t = self.python_runtime_vars["_"+name+"_ctype"]
+                v = self.python_runtime_vars["_"+name+"_pack"](t,value)
+                self.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
         self.python_runtime_vars["PLCGlobals"] = PLCSafeGlobals()
         try:
             for filename in os.listdir(self.workingdir):

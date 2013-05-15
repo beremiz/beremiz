@@ -66,8 +66,8 @@ class PythonFileCTNMixin(CodeFile):
 _%(name)s_ctype, _%(name)s_unpack, _%(name)s_pack = \\
     TypeTranslator["%(IECtype)s"]
 _PySafeGetPLCGlob_%(name)s = PLCBinary.__SafeGetPLCGlob_%(name)s
-_PySafeGetPLCGlob_%(name)s.restype = _%(name)s_ctype 
-_PySafeGetPLCGlob_%(name)s.argtypes = []
+_PySafeGetPLCGlob_%(name)s.restype = None
+_PySafeGetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)] 
 _PySafeSetPLCGlob_%(name)s = PLCBinary.__SafeSetPLCGlob_%(name)s
 _PySafeSetPLCGlob_%(name)s.restype = None
 _PySafeSetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
@@ -127,12 +127,11 @@ extern  __%(IECtype)s_t %(configname)s__%(uppername)s;
 long __%(name)s_rlock = 0;
 long __%(name)s_wlock = 0;
 int __%(name)s_wbuffer_written = 0;
-%(IECtype)s __SafeGetPLCGlob_%(name)s(){
+void __SafeGetPLCGlob_%(name)s(%(IECtype)s *pvalue){
     %(IECtype)s res;
     while(AtomicCompareExchange(&__%(name)s_rlock, 0, 1));
-    res = __%(name)s_rbuffer;
+    *pvalue = __%(name)s_rbuffer;
     AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
-    return res;
 }
 __SafeSetPLCGlob_%(name)s(%(IECtype)s *value){
     while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
@@ -207,6 +206,6 @@ void __publish_%(location_str)s(void){
         
         return ([(Gen_PyCfile_path, matiec_flags)],
                 "",
-                False,
+                True,
                 ("runtime_%s.py"%location_str, file(runtimefile_path,"rb")))
 
