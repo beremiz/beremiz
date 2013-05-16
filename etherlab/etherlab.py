@@ -464,6 +464,9 @@ class RootClass:
         self.ModulesLibrary = None
         self.LoadModulesLibrary()
     
+    def GetIconName(self):
+        return "Ethercat"
+    
     def GetModulesLibraryPath(self, project_path=None):
         if project_path is None:
             project_path = self.CTNPath()

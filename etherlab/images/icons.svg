@@ -43,9 +43,9 @@
      pagecolor="#ffffff"
      id="base"
      showgrid="false"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="233.96247"
-     inkscape:cy="947.27561"
+     inkscape:zoom="8.0000002"
+     inkscape:cx="294.02018"
+     inkscape:cy="814.50324"
      inkscape:window-x="0"
      inkscape:window-y="24"
      inkscape:current-layer="svg2"
@@ -61539,6 +61539,68 @@
        inkscape:vp_x="0 : 526.18109 : 1"
        inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
        id="perspective8097" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5175-3-4"
+       id="linearGradient18288-54"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-40,0)"
+       x1="0"
+       y1="1"
+       x2="15"
+       y2="16" />
+    <linearGradient
+       id="linearGradient5175-3-4">
+      <stop
+         style="stop-color:#bdcccd;stop-opacity:1;"
+         offset="0"
+         id="stop5177-6-4" />
+      <stop
+         style="stop-color:#7979ff;stop-opacity:1;"
+         offset="1"
+         id="stop5179-73-6" />
+    </linearGradient>
+    <linearGradient
+       y2="16"
+       x2="15"
+       y1="1"
+       x1="0"
+       gradientTransform="translate(-40,0)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient13566"
+       xlink:href="#linearGradient5175-3-4"
+       inkscape:collect="always" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5175-3-6"
+       id="linearGradient18288-8"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-40,0)"
+       x1="0"
+       y1="1"
+       x2="15"
+       y2="16" />
+    <linearGradient
+       id="linearGradient5175-3-6">
+      <stop
+         style="stop-color:#bdcccd;stop-opacity:1;"
+         offset="0"
+         id="stop5177-6-9" />
+      <stop
+         style="stop-color:#7979ff;stop-opacity:1;"
+         offset="1"
+         id="stop5179-73-5" />
+    </linearGradient>
+    <linearGradient
+       y2="16"
+       x2="15"
+       y1="1"
+       x1="0"
+       gradientTransform="translate(-40,0)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient13566-2"
+       xlink:href="#linearGradient5175-3-6"
+       inkscape:collect="always" />
   </defs>
   <text
      style="font-size:40.12579727px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
@@ -61764,14 +61826,38 @@
              x="-3348.2173"
              height="593.25934"
              width="995.74323" />
-          <use
-             x="0"
-             y="0"
-             xlink:href="#g13551"
-             id="use12717-4"
-             transform="matrix(-4.2446832,-1.7695903,0,4.2446832,2533.2515,-2614.9729)"
-             width="744.09448"
-             height="1052.3622" />
+          <g
+             transform="matrix(-4.2446832,-1.7695903,0,4.2446832,2533.2515,-2530.0792)"
+             id="use12717-4">
+            <text
+               xml:space="preserve"
+               style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+               x="340.53214"
+               y="284.15552"
+               id="text13610"
+               sodipodi:linespacing="125%"><tspan
+                 sodipodi:role="line"
+                 id="tspan13612"
+                 x="340.53214"
+                 y="284.15552"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Ume Gothic C5;-inkscape-font-specification:Ume Gothic C5"
+                 dx="0 -3.3841705 -2.9611492 -2.1151066 -3.8071918">Ether<tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+   id="tspan13614"
+   dx="-3.3841705 -4.6532345 -6.3453197">CAT</tspan></tspan></text>
+            <path
+               style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+               d="m 474.55583,247.23926 46.68198,0 -0.0748,-5.64517 15.94727,11.21704 -62.55448,0 z"
+               id="path13616"
+               inkscape:connector-curvature="0"
+               sodipodi:nodetypes="cccccc" />
+            <path
+               style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+               d="m 537.07809,260.62642 -17.93418,0 0.0748,5.64517 -15.94727,-11.21704 33.80668,0 z"
+               id="path13618"
+               inkscape:connector-curvature="0"
+               sodipodi:nodetypes="cccccc" />
+          </g>
         </g>
         <text
            sodipodi:linespacing="125%"
@@ -61816,14 +61902,38 @@
              x="-3348.2173"
              height="593.25934"
              width="995.74323" />
-          <use
-             x="0"
-             y="0"
-             xlink:href="#g13551"
-             id="use12717"
-             transform="matrix(-4.2030416,-1.7522306,0,4.2030416,2515.7719,-2599.2493)"
-             width="744.09448"
-             height="1052.3622" />
+          <g
+             transform="matrix(-4.2030416,-1.7522306,0,4.2030416,2515.7719,-2515.1885)"
+             id="use12717">
+            <text
+               xml:space="preserve"
+               style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+               x="340.53214"
+               y="284.15552"
+               id="text13622"
+               sodipodi:linespacing="125%"><tspan
+                 sodipodi:role="line"
+                 id="tspan13624"
+                 x="340.53214"
+                 y="284.15552"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Ume Gothic C5;-inkscape-font-specification:Ume Gothic C5"
+                 dx="0 -3.3841705 -2.9611492 -2.1151066 -3.8071918">Ether<tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+   id="tspan13626"
+   dx="-3.3841705 -4.6532345 -6.3453197">CAT</tspan></tspan></text>
+            <path
+               style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+               d="m 474.55583,247.23926 46.68198,0 -0.0748,-5.64517 15.94727,11.21704 -62.55448,0 z"
+               id="path13628"
+               inkscape:connector-curvature="0"
+               sodipodi:nodetypes="cccccc" />
+            <path
+               style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+               d="m 537.07809,260.62642 -17.93418,0 0.0748,5.64517 -15.94727,-11.21704 33.80668,0 z"
+               id="path13630"
+               inkscape:connector-curvature="0"
+               sodipodi:nodetypes="cccccc" />
+          </g>
         </g>
         <text
            sodipodi:linespacing="125%"
@@ -61931,14 +62041,38 @@
          style="opacity:0.20454544;fill:url(#radialGradient16655);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible"
          inkscape:connector-curvature="0" />
     </g>
-    <use
-       x="0"
-       y="0"
-       xlink:href="#g13551"
-       id="use13558"
-       transform="matrix(0.11674554,0,0,0.11674554,-1100.4775,533.64398)"
-       width="744.09448"
-       height="1052.3622" />
+    <g
+       transform="matrix(0.11674554,0,0,0.11674554,-1100.4775,535.97889)"
+       id="use13558">
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         x="340.53214"
+         y="284.15552"
+         id="text13634"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan13636"
+           x="340.53214"
+           y="284.15552"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Ume Gothic C5;-inkscape-font-specification:Ume Gothic C5"
+           dx="0 -3.3841705 -2.9611492 -2.1151066 -3.8071918">Ether<tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+   id="tspan13638"
+   dx="-3.3841705 -4.6532345 -6.3453197">CAT</tspan></tspan></text>
+      <path
+         style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 474.55583,247.23926 46.68198,0 -0.0748,-5.64517 15.94727,11.21704 -62.55448,0 z"
+         id="path13640"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccc" />
+      <path
+         style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 537.07809,260.62642 -17.93418,0 0.0748,5.64517 -15.94727,-11.21704 33.80668,0 z"
+         id="path13642"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccc" />
+    </g>
   </g>
   <g
      id="g12739"
@@ -63073,38 +63207,21 @@
          id="tspan13467-8"
          sodipodi:role="line">ab</tspan></text>
   </g>
-  <g
-     id="g13551"
-     transform="translate(0,20)">
-    <text
-       sodipodi:linespacing="125%"
-       id="text13524"
-       y="284.15552"
+  <text
+     xml:space="preserve"
+     style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+     x="340.53214"
+     y="304.15552"
+     id="text13524"
+     sodipodi:linespacing="125%"><tspan
+       sodipodi:role="line"
+       id="tspan13526"
        x="340.53214"
-       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       xml:space="preserve"><tspan
-         dx="0 -3.3841705 -2.9611492 -2.1151066 -3.8071918"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Ume Gothic C5;-inkscape-font-specification:Ume Gothic C5"
-         y="284.15552"
-         x="340.53214"
-         id="tspan13526"
-         sodipodi:role="line">Ether<tspan
-   dx="-3.3841705 -4.6532345 -6.3453197"
-   id="tspan13528"
-   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold">CAT</tspan></tspan></text>
-    <path
-       sodipodi:nodetypes="cccccc"
-       inkscape:connector-curvature="0"
-       id="rect13530"
-       d="m 474.55583,247.23926 46.68198,0 -0.0748,-5.64517 15.94727,11.21704 -62.55448,0 z"
-       style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-    <path
-       sodipodi:nodetypes="cccccc"
-       inkscape:connector-curvature="0"
-       id="rect13530-2"
-       d="m 537.07809,260.62642 -17.93418,0 0.0748,5.64517 -15.94727,-11.21704 33.80668,0 z"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-  </g>
+       y="304.15552"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Ume Gothic C5;-inkscape-font-specification:Ume Gothic C5"
+       dx="0 -3.3841705 -2.9611492 -2.1151066 -3.8071918">Ether<tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+   id="tspan13528" /></tspan></text>
   <g
      transform="translate(189.64271,0.17806707)"
      id="g12739-1">
@@ -63621,9 +63738,9 @@
        y="208.63211"
        x="175.23717"
        id="tspan16195-0"
-       sodipodi:role="line">%% Slave CIA402Slave %%</tspan></text>
+       sodipodi:role="line">%% Ethercat Slave CIA402Slave %%</tspan></text>
   <g
-     transform="translate(253.01843,213.90813)"
+     transform="translate(310.76843,213.90813)"
      style="display:inline"
      id="Slave"
      inkscape:export-xdpi="90"
@@ -63637,7 +63754,7 @@
        inkscape:label="#rect2160" />
   </g>
   <g
-     transform="translate(314.66593,213.68848)"
+     transform="translate(372.41593,213.68848)"
      style="display:inline"
      id="CIA402Slave"
      inkscape:export-xdpi="90"
@@ -63655,7 +63772,7 @@
      y="0"
      xlink:href="#g12739"
      id="use13270"
-     transform="matrix(0.53043689,0,0,0.53043689,-39.190359,146.32621)"
+     transform="matrix(0.53043689,0,0,0.53043689,18.559641,146.32621)"
      width="744.09448"
      height="1052.3622" />
   <use
@@ -63663,7 +63780,7 @@
      y="0"
      xlink:href="#g12739-1"
      id="use13306"
-     transform="matrix(0.51386408,0,0,0.51386408,-10.570915,148.43892)"
+     transform="matrix(0.51386408,0,0,0.51386408,47.179085,148.43892)"
      width="744.09448"
      height="1052.3622" />
   <g
@@ -63884,5 +64001,69 @@
        style="opacity:0.4;fill:none;stroke:url(#linearGradient5877);display:block"
        d="M 18.531,8.7812 V 10 A 0.51754,0.51754 0 0 1 18,10.531 H 9.4375 l 0.03125,2.9375 h 8.5312 a 0.51754,0.51754 0 0 1 0.531,0.532 v 1.1562 l 3.469,-3.281 -3.469,-3.0938 z"
        transform="translate(0,0.99987)" />
+  </g>
+  <g
+     transform="translate(259.01843,213.90813)"
+     style="display:inline"
+     id="Ethercat"
+     inkscape:export-xdpi="90"
+     inkscape:export-ydpi="90">
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:url(#linearGradient13566);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible"
+       d="m -40,0 0,16 16,0 0,-16 -16,0 z m 1,1 14,0 0,14 -14,0 0,-14 z"
+       id="path3806-1"
+       sodipodi:nodetypes="cccccccccc"
+       inkscape:label="#rect2160" />
+  </g>
+  <g
+     id="g13706">
+    <path
+       sodipodi:nodetypes="cccccc"
+       inkscape:connector-curvature="0"
+       id="rect13530"
+       d="m 474.55583,267.23926 46.68198,0 -0.0748,-5.64517 15.94727,11.21704 -62.55448,0 z"
+       style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <path
+       sodipodi:nodetypes="cccccc"
+       inkscape:connector-curvature="0"
+       id="rect13530-2"
+       d="m 537.07809,280.62642 -17.93418,0 0.0748,5.64517 -15.94727,-11.21704 33.80668,0 z"
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72142136px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text13524-5"
+       y="304.15552"
+       x="428.53214"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Ume Gothic C5;-inkscape-font-specification:Ume Gothic C5"
+         y="304.15552"
+         x="428.53214"
+         id="tspan13526-0"
+         sodipodi:role="line"><tspan
+           dx="-3.3841705 -4.6532345 -6.3453197"
+           id="tspan13528-3"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold">CAT</tspan></tspan></text>
+  </g>
+  <g
+     id="g13717"
+     transform="matrix(0.11737773,0,0,0.11737773,193.85555,200.05415)">
+    <use
+       height="1052.3622"
+       width="744.09448"
+       transform="translate(-100,-124.66768)"
+       id="use13713"
+       xlink:href="#text13524"
+       y="0"
+       x="0" />
+    <use
+       height="1052.3622"
+       width="744.09448"
+       transform="translate(-200,-78)"
+       id="use13715"
+       xlink:href="#g13706"
+       y="0"
+       x="0" />
   </g>
 </svg>

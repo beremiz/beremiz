@@ -247,6 +247,9 @@ class _EthercatCTN:
             self.CreateBuffer(False)
             self.OnCTNSave()
     
+    def GetIconName(self):
+        return "Ethercat"
+    
     def GetContextualMenuItems(self):
         return [("Add Ethercat Slave", "Add Ethercat Slave to Master", self.OnAddEthercatSlave)]
     
