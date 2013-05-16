@@ -74,8 +74,7 @@ _PySafeSetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
 """ % { "name": variable.getname(),
         "configname": configname.upper(),
         "uppername": variable.getname().upper(),
-        "IECtype": variable.gettype(),
-        "initial" : str(variable.getinitial())}
+        "IECtype": variable.gettype()}
             for variable in self.CodeFile.variables.variable])
 
         # Runtime calls (start, stop, init, and cleanup)
@@ -86,7 +85,7 @@ _PySafeSetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
                 sectiontext = self.GetSection(section).strip()
                 if sectiontext:
                     rtcalls += '    ' + \
-                        sectiontext.strip().replace('\n', '\n    ')+"\n"
+                        sectiontext.replace('\n', '\n    ')+"\n\n"
                 else:
                     rtcalls += "    pass\n\n"
 
@@ -121,19 +120,19 @@ import ctypes
         # C code for safe global variables access
         
         vardecfmt = """\
-extern  __%(IECtype)s_t %(configname)s__%(uppername)s;
-%(IECtype)s __%(name)s_rbuffer = %(initial)s;
-%(IECtype)s __%(name)s_wbuffer;
+extern  __IEC_%(IECtype)s_t %(configname)s__%(uppername)s;
+IEC_%(IECtype)s __%(name)s_rbuffer = __INIT_%(IECtype)s;
+IEC_%(IECtype)s __%(name)s_wbuffer;
 long __%(name)s_rlock = 0;
 long __%(name)s_wlock = 0;
 int __%(name)s_wbuffer_written = 0;
-void __SafeGetPLCGlob_%(name)s(%(IECtype)s *pvalue){
-    %(IECtype)s res;
+void __SafeGetPLCGlob_%(name)s(IEC_%(IECtype)s *pvalue){
+    IEC_%(IECtype)s res;
     while(AtomicCompareExchange(&__%(name)s_rlock, 0, 1));
     *pvalue = __%(name)s_rbuffer;
     AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
 }
-__SafeSetPLCGlob_%(name)s(%(IECtype)s *value){
+__SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
     while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
     __%(name)s_wbuffer = *value;
     __%(name)s_wbuffer_written = 1;
@@ -164,8 +163,7 @@ __SafeSetPLCGlob_%(name)s(%(IECtype)s *value){
                     "name": variable.getname(),
                     "configname": configname.upper(),
                     "uppername": variable.getname().upper(),
-                    "IECtype": "IEC_%s"%variable.gettype(),
-                    "initial" : str(variable.getinitial())},
+                    "IECtype": variable.gettype()},
                     self.CodeFile.variables.variable)]))
         if len(var_str) > 0:
             vardec, varret, varpub = var_str
