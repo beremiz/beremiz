@@ -29,23 +29,11 @@ else:
              }
 
 SCROLLBAR_UNIT = 10
-WINDOW_COLOUR = wx.Colour(240, 240, 240)
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
 def Bpath(*args):
     return os.path.join(CWD,*args)
-
-# Some helpers to tweak GenBitmapTextButtons
-# TODO: declare customized classes instead.
-gen_mini_GetBackgroundBrush = lambda obj:lambda dc: wx.Brush(obj.GetParent().GetBackgroundColour(), wx.SOLID)
-gen_textbutton_GetLabelSize = lambda obj:lambda:(wx.lib.buttons.GenButton._GetLabelSize(obj)[:-1] + (False,))
-
-def make_genbitmaptogglebutton_flat(button):
-    button.GetBackgroundBrush = gen_mini_GetBackgroundBrush(button)
-    button.labelDelta = 0
-    button.SetBezelWidth(0)
-    button.SetUseFocusIndicator(False)
 
 # Patch wx.lib.imageutils so that gray is supported on alpha images
 import wx.lib.imageutils
@@ -116,7 +104,7 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
         dc.DrawText(label, pos_x, pos_y)      # draw the text
 
 
-class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
+class GenStaticBitmap(wx.StaticBitmap):
     """ Customized GenStaticBitmap, fix transparency redraw bug on wx2.8/win32, 
     and accept image name as __init__ parameter, fail silently if file do not exist"""
     def __init__(self, parent, ID, bitmapname,
@@ -124,20 +112,15 @@ class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
                  style = 0,
                  name = "genstatbmp"):
         
-        wx.lib.statbmp.GenStaticBitmap.__init__(self, parent, ID, 
-                 GetBitmap(bitmapname),
+        bitmap = GetBitmap(bitmapname)
+        if bitmap is None:
+            bitmap = wx.EmptyBitmap(0, 0)
+        
+        wx.StaticBitmap.__init__(self, parent, ID, 
+                 bitmap,
                  pos, size,
                  style,
                  name)
-        
-    def OnPaint(self, event):
-        dc = wx.PaintDC(self)
-        colour = self.GetParent().GetBackgroundColour()
-        dc.SetPen(wx.Pen(colour))
-        dc.SetBrush(wx.Brush(colour ))
-        dc.DrawRectangle(0, 0, *dc.GetSizeTuple())
-        if self._bitmap:
-            dc.DrawBitmap(self._bitmap, 0, 0, True)
 
 class ConfTreeNodeEditor(EditorPanel):
     
@@ -153,7 +136,6 @@ class ConfTreeNodeEditor(EditorPanel):
         if tabs_num > 1 or self.SHOW_BASE_PARAMS:
             self.Editor = wx.Panel(parent, 
                 style=wx.SUNKEN_BORDER|wx.SP_3D)
-            self.Editor.SetBackgroundColour(WINDOW_COLOUR)
             
             self.MainSizer = wx.BoxSizer(wx.VERTICAL)
             
@@ -186,7 +168,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 updownsizer.AddWindow(self.IECCDownButton, flag=wx.ALIGN_LEFT)
                 
                 self.ConfNodeName = wx.TextCtrl(self.Editor, 
-                      size=wx.Size(150, 25), style=wx.NO_BORDER)
+                      size=wx.Size(150, 25))
                 self.ConfNodeName.SetFont(
                     wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL, 
                             wx.BOLD, faceName = faces["helv"]))
@@ -228,7 +210,6 @@ class ConfTreeNodeEditor(EditorPanel):
                 panel_style |= wx.SUNKEN_BORDER
             self.ParamsEditor = wx.ScrolledWindow(parent, 
                   style=panel_style)
-            self.ParamsEditor.SetBackgroundColour(WINDOW_COLOUR)
             self.ParamsEditor.Bind(wx.EVT_SIZE, self.OnWindowResize)
             self.ParamsEditor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
             
