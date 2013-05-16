@@ -1443,7 +1443,7 @@ class IDEFrame(wx.Frame):
         # Refresh treectrl items according to project infos
         infos = self.Controler.GetProjectInfos()
         root = self.ProjectTree.GetRootItem()
-        if not root.IsOk():
+        if root is None or not root.IsOk():
             root = self.ProjectTree.AddRoot(infos["name"])
         self.GenerateProjectTreeBranch(root, infos)
         self.ProjectTree.Expand(root)
@@ -1457,12 +1457,12 @@ class IDEFrame(wx.Frame):
     def ResetSelectedItem(self):
         self.SelectedItem = None
 
-    def GenerateProjectTreeBranch(self, root, infos):
+    def GenerateProjectTreeBranch(self, root, infos, item_alone=False):
         to_delete = []
         item_name = infos["name"]
         if infos["type"] in ITEMS_UNEDITABLE:
             if len(infos["values"]) == 1:
-                return self.GenerateProjectTreeBranch(root, infos["values"][0])
+                return self.GenerateProjectTreeBranch(root, infos["values"][0], True)
             item_name = _(item_name)
         self.ProjectTree.SetItemText(root, item_name)
         self.ProjectTree.SetPyData(root, infos)
@@ -1470,7 +1470,10 @@ class IDEFrame(wx.Frame):
         self.ProjectTree.SetItemBackgroundColour(root, highlight_colours[0])
         self.ProjectTree.SetItemTextColour(root, highlight_colours[1])
         if infos["type"] == ITEM_POU:
-            self.ProjectTree.SetItemImage(root, self.TreeImageDict[self.Controler.GetPouBodyType(infos["name"])])
+            self.ProjectTree.SetItemImage(root, 
+                self.TreeImageDict[self.Controler.GetPouBodyType(infos["name"])])
+            if item_alone:
+                self.ProjectTree.SetItemExtraImage(root, self.Controler.GetPouType(infos["name"]))
         elif infos.has_key("icon") and infos["icon"] is not None:
             icon_name = infos["icon"]
             if not self.TreeImageDict.has_key(icon_name):
@@ -1479,19 +1482,16 @@ class IDEFrame(wx.Frame):
         elif self.TreeImageDict.has_key(infos["type"]):
             self.ProjectTree.SetItemImage(root, self.TreeImageDict[infos["type"]])      
         
-        if wx.VERSION >= (2, 6, 0):
-            item, root_cookie = self.ProjectTree.GetFirstChild(root)
-        else:
-            item, root_cookie = self.ProjectTree.GetFirstChild(root, 0)
+        item, root_cookie = self.ProjectTree.GetFirstChild(root)
         for values in infos["values"]:
             if values["type"] not in ITEMS_UNEDITABLE or len(values["values"]) > 0:
-                if not item.IsOk():
+                if item is None or not item.IsOk():
                     item = self.ProjectTree.AppendItem(root, "")
                     if wx.Platform != '__WXMSW__':
                         item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
                 self.GenerateProjectTreeBranch(item, values)
                 item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
-        while item.IsOk():
+        while item is not None and item.IsOk():
             to_delete.append(item)
             item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
         for item in to_delete:
@@ -1521,11 +1521,8 @@ class IDEFrame(wx.Frame):
 
     def RecursiveProjectTreeItemSelection(self, root, items):
         found = False
-        if wx.VERSION >= (2, 6, 0):
-            item, root_cookie = self.ProjectTree.GetFirstChild(root)
-        else:
-            item, root_cookie = self.ProjectTree.GetFirstChild(root, 0)
-        while item.IsOk() and not found:
+        item, root_cookie = self.ProjectTree.GetFirstChild(root)
+        while item is not None and item.IsOk() and not found:
             item_infos = self.ProjectTree.GetPyData(item)
             if (item_infos["name"].split(":")[-1].strip(), item_infos["type"]) == items[0]:
                 if len(items) == 1:
@@ -1686,7 +1683,7 @@ class IDEFrame(wx.Frame):
             event.Skip()
     
     def ProjectTreeItemSelect(self, select_item):
-        if select_item.IsOk():
+        if select_item is not None and select_item.IsOk():
             name = self.ProjectTree.GetItemText(select_item)
             item_infos = self.ProjectTree.GetPyData(select_item)
             if item_infos["type"] in [ITEM_DATATYPE, ITEM_POU,
@@ -1706,7 +1703,7 @@ class IDEFrame(wx.Frame):
         if not event.Dragging():
             pt = wx.Point(event.GetX(), event.GetY())
             item, flags = self.ProjectTree.HitTest(pt)
-            if item.IsOk() and flags & wx.TREE_HITTEST_ONITEMLABEL:
+            if item is not None and item.IsOk() and flags & wx.TREE_HITTEST_ONITEMLABEL:
                 item_infos = self.ProjectTree.GetPyData(item)
                 if item != self.LastToolTipItem and self.LastToolTipItem is not None:
                     self.ProjectTree.SetToolTip(None)
