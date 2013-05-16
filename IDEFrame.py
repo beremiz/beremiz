@@ -1429,7 +1429,8 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
     def RefreshProjectTree(self):
-        self.ProjectTree.SetEvtHandlerEnabled(False)
+        if wx.Platform == '__WXMSW__':
+            self.ProjectTree.SetEvtHandlerEnabled(False)
         
         # Extract current selected item tagname
         selected = self.ProjectTree.GetSelection()
@@ -1450,7 +1451,7 @@ class IDEFrame(wx.Frame):
         # Select new item corresponding to previous selected item
         if tagname is not None:
             self.SelectProjectTreeItem(tagname)
-        else:
+        elif wx.Platform == '__WXMSW__':
             self.ProjectTree.SetEvtHandlerEnabled(True)
 
     def ResetSelectedItem(self):
