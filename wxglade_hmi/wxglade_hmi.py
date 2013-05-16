@@ -39,7 +39,7 @@ class WxGladeHMI(PythonFileCTNMixin):
 
     def CTNGenerate_C(self, buildpath, locations):
         
-        hmi_frames = {}
+        hmi_frames = []
         
         wxgfile_path=self._getWXGLADEpath()
         if os.path.exists(wxgfile_path):
@@ -49,7 +49,12 @@ class WxGladeHMI(PythonFileCTNMixin):
             
             for node in wxgtree.childNodes[1].childNodes:
                 if node.nodeType == wxgtree.ELEMENT_NODE:
-                    hmi_frames[node._attrs["name"].value] =  node._attrs["class"].value
+                    hmi_frames.append({
+                        "name" : node.getAttribute("name"),
+                        "class" : node.getAttribute("class"),
+                        "handlers" : [
+                            hnode.firstChild.data for hnode in 
+                            node.getElementsByTagName("handler")]})
                     
             hmipyfile_path=os.path.join(self._getBuildPath(), "hmi.py")
             if wx.Platform == '__WXMSW__':
@@ -63,25 +68,31 @@ class WxGladeHMI(PythonFileCTNMixin):
             define_hmi = hmipyfile.read().decode('utf-8')
             hmipyfile.close()
         
-        declare_hmi = "\n".join(map(lambda x:"%s = None" % x,
-                                hmi_frames.keys()))
-        global_hmi = "global "+",".join(hmi_frames.keys()) + "\n"
-        init_hmi = "\n".join(map(lambda x: """\
+        declare_hmi = "\n".join(["%(name)s = None\n" % x + 
+                          "\n".join(["%(class)s.%(h)s = %(h)s"%
+                            dict(x,h=h) for h in x['handlers']])
+                                for x in hmi_frames])
+        global_hmi = "global %s\n"%",".join(
+            [x["name"] for x in hmi_frames]) 
+        init_hmi = "\n".join(["""\
 def OnCloseFrame(evt):
     wx.MessageBox(_("Please stop PLC to close"))
 
 %(name)s = %(class)s(None)
 %(name)s.Bind(wx.EVT_CLOSE, OnCloseFrame)
 %(name)s.Show()
-""" % {"name": x[0], "class": x[1]}, hmi_frames.items()))
-        cleanup_hmi = "\n".join(map(lambda x:"if %s is not None: %s.Destroy()" % (x,x), hmi_frames.keys()))
+""" % x for x in hmi_frames])
+        cleanup_hmi = "\n".join(
+            ["if %(name)s is not None: %(name)s.Destroy()" % x 
+                for x in hmi_frames])
         
         self.PreSectionsTexts = {
-            "globals":define_hmi + declare_hmi,
+            "globals":define_hmi,
             "start":global_hmi,
             "stop":global_hmi + cleanup_hmi
         }
         self.PostSectionsTexts = {
+            "globals":declare_hmi,
             "start":init_hmi,
         }
 
