@@ -127,12 +127,11 @@ long __%(name)s_rlock = 0;
 long __%(name)s_wlock = 0;
 int __%(name)s_wbuffer_written = 0;
 void __SafeGetPLCGlob_%(name)s(IEC_%(IECtype)s *pvalue){
-    IEC_%(IECtype)s res;
     while(AtomicCompareExchange(&__%(name)s_rlock, 0, 1));
     *pvalue = __%(name)s_rbuffer;
     AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
 }
-__SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
+void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
     while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
     __%(name)s_wbuffer = *value;
     __%(name)s_wbuffer_written = 1;
