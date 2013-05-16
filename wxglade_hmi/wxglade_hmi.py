@@ -13,6 +13,9 @@ class WxGladeHMI(PythonFileCTNMixin):
          "method" : "_editWXGLADE"},
     ]
 
+    def GetIconName(self):
+        return "wxGlade"
+
     def ConfNodePath(self):
         return os.path.join(os.path.dirname(__file__))
 
