@@ -1355,8 +1355,8 @@ class IDEFrame(wx.Frame):
             window = self.TabsOpened.GetPage(selected)
             tagname = window.GetTagName()
             if not window.IsDebugging():
-                wx.CallAfter(self.SelectProjectTreeItem, tagname)
-                wx.CallAfter(self.PouInstanceVariablesPanel.SetPouType, tagname)
+                self.SelectProjectTreeItem(tagname)
+                self.PouInstanceVariablesPanel.SetPouType(tagname)
                 window.RefreshView()
                 self.EnsureTabVisible(self.LibraryPanel)
             else:
@@ -1429,10 +1429,7 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
     def RefreshProjectTree(self):
-        if wx.Platform == '__WXMSW__':
-            # Disconnect event when selection in treectrl changed
-            self.Unbind(wx.EVT_TREE_SEL_CHANGED, 
-                        id=ID_PLCOPENEDITORPROJECTTREE)
+        self.ProjectTree.SetEvtHandlerEnabled(False)
         
         # Extract current selected item tagname
         selected = self.ProjectTree.GetSelection()
@@ -1452,14 +1449,9 @@ class IDEFrame(wx.Frame):
         
         # Select new item corresponding to previous selected item
         if tagname is not None:
-            wx.CallAfter(self.SelectProjectTreeItem, tagname)
-        
-        if wx.Platform == '__WXMSW__':
-            # Reconnect event when selection in treectrl changed
-            wx.CallAfter(self.Bind, 
-                wx.EVT_TREE_SEL_CHANGED, 
-                self.OnProjectTreeItemSelected,
-                id=ID_PLCOPENEDITORPROJECTTREE)
+            self.SelectProjectTreeItem(tagname)
+        else:
+            self.ProjectTree.SetEvtHandlerEnabled(True)
 
     def ResetSelectedItem(self):
         self.SelectedItem = None
@@ -1505,23 +1497,26 @@ class IDEFrame(wx.Frame):
             self.ProjectTree.Delete(item)
 
     def SelectProjectTreeItem(self, tagname):
+        self.ProjectTree.SetEvtHandlerEnabled(False)
+        result = False
         if self.ProjectTree is not None:
             root = self.ProjectTree.GetRootItem()
             if root.IsOk():
                 words = tagname.split("::")
                 if words[0] == "D":
-                    return self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_DATATYPE)])
+                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_DATATYPE)])
                 elif words[0] == "P":
-                    return self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU)])
+                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU)])
                 elif words[0] == "T":
-                    return self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU), (words[2], ITEM_TRANSITION)])
+                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU), (words[2], ITEM_TRANSITION)])
                 elif words[0] == "A":
-                    return self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU), (words[2], ITEM_ACTION)])
+                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU), (words[2], ITEM_ACTION)])
                 elif words[0] == "C":
-                    return self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_CONFIGURATION)])
+                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_CONFIGURATION)])
                 elif words[0] == "R":
-                    return self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_CONFIGURATION), (words[2], ITEM_RESOURCE)])
-        return False
+                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_CONFIGURATION), (words[2], ITEM_RESOURCE)])
+        self.ProjectTree.SetEvtHandlerEnabled(True)
+        return result
 
     def RecursiveProjectTreeItemSelection(self, root, items):
         found = False
@@ -1534,8 +1529,8 @@ class IDEFrame(wx.Frame):
             if (item_infos["name"].split(":")[-1].strip(), item_infos["type"]) == items[0]:
                 if len(items) == 1:
                     self.SelectedItem = item
-                    wx.CallAfter(self.ProjectTree.SelectItem, item)
-                    wx.CallAfter(self.ResetSelectedItem)
+                    self.ProjectTree.SelectItem(item)
+                    self.ResetSelectedItem()
                     return True
                 else:
                     found = self.RecursiveProjectTreeItemSelection(item, items[1:])
