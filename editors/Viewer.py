@@ -844,11 +844,13 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
     def GetElementIECPath(self, element):
         iec_path = None
         instance_path = self.GetInstancePath(True)
-        if isinstance(element, Wire) and element.EndConnected is not None:
-            block = element.EndConnected.GetParentBlock()
+        if isinstance(element, (Wire, Connector)):
+            if isinstance(element, Wire):
+                element = element.EndConnected
+            block = element.GetParentBlock()
             if isinstance(block, FBD_Block):
                 blockname = block.GetName()
-                connectorname = element.EndConnected.GetName()
+                connectorname = element.GetName()
                 if blockname != "":
                     iec_path = "%s.%s.%s"%(instance_path, blockname, connectorname)
                 else:
@@ -1092,9 +1094,16 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         if self.Debug:
             for block in self.Blocks.itervalues():
                 block.SpreadCurrent()
-                iec_path = self.GetElementIECPath(block)
-                if iec_path is not None:
-                    self.AddDataConsumer(iec_path.upper(), block)
+                if isinstance(block, FBD_Block):
+                    for output_connector in block.GetConnectors()["outputs"]:
+                        if len(output_connector.GetWires()) == 0:
+                            iec_path = self.GetElementIECPath(output_connector)
+                            if iec_path is not None:
+                                self.AddDataConsumer(iec_path.upper(), output_connector)
+                else:
+                    iec_path = self.GetElementIECPath(block)
+                    if iec_path is not None:
+                        self.AddDataConsumer(iec_path.upper(), block)
 
         self.Inhibit(False)
         self.RefreshVisibleElements()
