@@ -521,7 +521,8 @@ class IDEFrame(wx.Frame):
         self.ProjectTree = CustomTree(id=ID_PLCOPENEDITORPROJECTTREE,
                   name='ProjectTree', parent=self.ProjectPanel, 
                   pos=wx.Point(0, 0), size=wx.Size(0, 0),
-                  style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER|wx.TR_EDIT_LABELS)
+                  style=wx.SUNKEN_BORDER,
+                  agwStyle=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.TR_EDIT_LABELS)
         self.ProjectTree.SetBackgroundBitmap(GetBitmap("custom_tree_background"),
                                              wx.ALIGN_RIGHT|wx.ALIGN_BOTTOM)
         add_menu = wx.Menu()
