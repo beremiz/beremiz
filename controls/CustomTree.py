@@ -16,12 +16,30 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import wx
+import wx.lib.agw.customtreectrl as CT
 
-class CustomTree(wx.TreeCtrl):
+from util.BitmapLibrary import GetBitmap
+
+# Customize CustomTreeItem for adding icon on item left
+CT.GenericTreeItem._ExtraImage = None
+
+def SetExtraImage(self, image):
+    self._type = 1
+    self._ExtraImage = image
+CT.GenericTreeItem.SetExtraImage = SetExtraImage
+
+_DefaultGetCurrentCheckedImage = CT.GenericTreeItem.GetCurrentCheckedImage
+def GetCurrentCheckedImage(self):
+    if self._ExtraImage is not None:
+        return self._ExtraImage
+    return _DefaultGetCurrentCheckedImage(self)
+CT.GenericTreeItem.GetCurrentCheckedImage = GetCurrentCheckedImage
+
+class CustomTree(CT.CustomTreeCtrl):
     
     def __init__(self, *args, **kwargs):
-        wx.TreeCtrl.__init__(self, *args, **kwargs)
-        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        CT.CustomTreeCtrl.__init__(self, *args, **kwargs)
+        #self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         
         self.BackgroundBitmap = None
         self.BackgroundAlign = wx.ALIGN_LEFT|wx.ALIGN_TOP
@@ -29,17 +47,27 @@ class CustomTree(wx.TreeCtrl):
         self.AddMenu = None
         self.Enabled = False
         
-        if wx.Platform == '__WXMSW__':
-            self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
-        else:
-            self.Bind(wx.EVT_PAINT, self.OnPaint)
-            self.Bind(wx.EVT_SIZE, self.OnResize)
-            self.Bind(wx.EVT_SCROLL, self.OnScroll)
+        self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
     
     def SetBackgroundBitmap(self, bitmap, align):
         self.BackgroundBitmap = bitmap
         self.BackgroundAlign = align
+    
+    def SetImageListCheck(self, sizex, sizey, imglist=None):
+        CT.CustomTreeCtrl.SetImageListCheck(self, sizex, sizey, imglist=None)
+        
+        self.ExtraImages = {}
+        for image in ["function", "functionBlock", "program"]:
+            self.ExtraImages[image] = self._imageListCheck.Add(GetBitmap(image.upper()))
+    
+    def SetItemExtraImage(self, item, bitmap):
+        image = self.ExtraImages.get(bitmap)
+        if image is not None:
+            dc = wx.ClientDC(self)
+            item.SetExtraImage(image)
+            self.CalculateSize(item, dc)
+            self.RefreshLine(item)
     
     def SetAddMenu(self, add_menu):
         self.AddMenu = add_menu
@@ -67,19 +95,6 @@ class CustomTree(wx.TreeCtrl):
         
         return wx.Rect(x, y, bitmap_size[0], bitmap_size[1])
     
-    def RefreshBackground(self, refresh_base=False):
-        dc = wx.ClientDC(self)
-        dc.Clear()
-        
-        bitmap_rect = self.GetBitmapRect()
-        dc.DrawBitmap(self.BackgroundBitmap, bitmap_rect.x, bitmap_rect.y)
-        
-        if refresh_base:
-            self.Refresh(False)
-    
-    def OnEraseBackground(self, event):
-        self.RefreshBackground(True)
-    
     def OnLeftUp(self, event):
         if self.Enabled:
             pos = event.GetPosition()
@@ -88,17 +103,26 @@ class CustomTree(wx.TreeCtrl):
             bitmap_rect = self.GetBitmapRect()
             if (bitmap_rect.InsideXY(pos.x, pos.y) or 
                 flags & wx.TREE_HITTEST_NOWHERE) and self.AddMenu is not None:
-                self.PopupMenuXY(self.AddMenu, pos.x, pos.y)
-        event.Skip()
-
-    def OnScroll(self, event):
-        self.RefreshBackground(True)
-        event.Skip()
-
-    def OnResize(self, event):
-        self.RefreshBackground(True)
+                wx.CallAfter(self.PopupMenuXY, self.AddMenu, pos.x, pos.y)
         event.Skip()
     
-    def OnPaint(self, event):
-        self.RefreshBackground()
+    def OnEraseBackground(self, event):
+        dc = event.GetDC()
+
+        if not dc:
+            dc = wx.ClientDC(self)
+            rect = self.GetUpdateRegion().GetBox()
+            dc.SetClippingRect(rect)
+        
+        dc.Clear()
+        
+        bitmap_rect = self.GetBitmapRect()
+        dc.DrawBitmap(self.BackgroundBitmap, bitmap_rect.x, bitmap_rect.y)
+    
+    def OnScroll(self, event):
+        wx.CallAfter(self.Refresh)
         event.Skip()
+
+    def OnSize(self, event):
+        CT.CustomTreeCtrl.OnSize(self, event)
+        self.Refresh()
