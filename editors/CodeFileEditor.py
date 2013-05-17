@@ -22,6 +22,8 @@ HIGHLIGHT_TYPES = {
     SEARCH_RESULT_HIGHLIGHT: STC_CODE_SEARCH_RESULT,
 }
 
+EDGE_COLUMN = 80
+
 class CodeEditor(CustomStyledTextCtrl):
     
     KEYWORDS = []
@@ -30,12 +32,9 @@ class CodeEditor(CustomStyledTextCtrl):
     def __init__(self, parent, window, controler):
         CustomStyledTextCtrl.__init__(self, parent, -1, wx.DefaultPosition, 
                  wx.Size(-1, 300), 0)
-
+        
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, 25)
-
-        self.CmdKeyAssign(ord('B'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
-        self.CmdKeyAssign(ord('N'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
 
         self.SetProperty("fold", "1")
         self.SetProperty("tab.timmy.whinge.level", "1")
@@ -44,7 +43,7 @@ class CodeEditor(CustomStyledTextCtrl):
         self.SetViewWhiteSpace(False)
         
         self.SetEdgeMode(stc.STC_EDGE_BACKGROUND)
-        self.SetEdgeColumn(78)
+        self.SetEdgeColumn(EDGE_COLUMN)
 
         # Setup a margin to hold fold markers
         self.SetMarginType(2, stc.STC_MARGIN_SYMBOL)
@@ -88,17 +87,8 @@ class CodeEditor(CustomStyledTextCtrl):
         self.StyleSetSpec(STC_CODE_SECTION, 'fore:#808080,size:%(size)d')
         self.StyleSetChangeable(STC_CODE_SECTION, False)
         
-        # register some images for use in the AutoComplete box.
-        #self.RegisterImage(1, images.getSmilesBitmap())
-        self.RegisterImage(1, 
-            wx.ArtProvider.GetBitmap(wx.ART_DELETE, size=(16,16)))
-        self.RegisterImage(2, 
-            wx.ArtProvider.GetBitmap(wx.ART_NEW, size=(16,16)))
-        self.RegisterImage(3, 
-            wx.ArtProvider.GetBitmap(wx.ART_COPY, size=(16,16)))
-
         # Indentation size
-        self.SetTabWidth(2)
+        self.SetTabWidth(4)
         self.SetUseTabs(0)
         
         self.SetCodeLexer()
@@ -121,7 +111,7 @@ class CodeEditor(CustomStyledTextCtrl):
         self.SectionsComments = {}
         for section in self.Controler.SECTIONS_NAMES:
             section_comment = " %s section " % (section)
-            len_headers = 78 - len(section_comment)
+            len_headers = EDGE_COLUMN - len(section_comment)
             section_comment = self.COMMENT_HEADER * (len_headers / 2) + \
                               section_comment + \
                               self.COMMENT_HEADER * (len_headers - len_headers / 2)
@@ -371,8 +361,7 @@ class CodeEditor(CustomStyledTextCtrl):
         selected_text = self.GetSelectedText()
         if selected_text:
             self.ParentWindow.SetCopyBuffer(selected_text, True)
-        event.Skip()
-
+    
     def OnMarginClick(self, event):
         # fold and unfold as needed
         if evt.GetMargin() == 2:
@@ -623,12 +612,12 @@ class VariablesEditor(wx.Panel):
     def __init__(self, parent, window, controler):
         wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
         
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=4)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(1)
+        main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=4)
+        main_sizer.AddGrowableCol(1)
+        main_sizer.AddGrowableRow(0)
         
-        controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(controls_sizer, border=5, flag=wx.TOP|wx.ALIGN_RIGHT)
+        controls_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer.AddSizer(controls_sizer, border=5, flag=wx.ALL)
         
         for name, bitmap, help in [
                 ("AddVariableButton", "add_element", _("Add variable")),
@@ -639,7 +628,7 @@ class VariablesEditor(wx.Panel):
                   size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
-            controls_sizer.AddWindow(button, border=5, flag=wx.RIGHT)
+            controls_sizer.AddWindow(button, border=5, flag=wx.BOTTOM)
         
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)

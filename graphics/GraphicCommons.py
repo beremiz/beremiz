@@ -1514,10 +1514,11 @@ class Graphic_Group(Graphic_Element):
 Class that implements a connector for any type of block
 """
 
-class Connector:
+class Connector(DebugDataConsumer):
     
     # Create a new connector
     def __init__(self, parent, name, type, position, direction, negated = False, edge = "none", onlyone = False):
+        DebugDataConsumer.__init__(self)
         self.ParentBlock = parent
         self.Name = name
         self.Type = type
@@ -1534,6 +1535,8 @@ class Connector:
         self.Valid = True
         self.Value = None
         self.Forced = False
+        self.ValueSize = None
+        self.ComputedValue = None
         self.Selected = False
         self.Highlights = []
         self.RefreshNameSize()
@@ -1557,7 +1560,18 @@ class Connector:
             height = 5
         else:
             height = CONNECTOR_SIZE
-        return wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
+        rect =  wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
+        if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+            self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
+        if self.ValueSize is not None:
+            width, height = self.ValueSize
+            rect = rect.Union(wx.Rect(
+                    parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] + \
+                                    width * (self.Direction[0] - 1) / 2,
+                    parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] + \
+                                    height * (self.Direction[1] - 1),
+                    width, height))
+        return rect
     
     # Change the connector selection
     def SetSelected(self, selected):
@@ -1621,6 +1635,31 @@ class Connector:
         self.Name = name
         self.RefreshNameSize()
 
+    def SetForced(self, forced):
+        if self.Forced != forced:
+            self.Forced = forced
+            if self.Visible:
+                self.Parent.ElementNeedRefresh(self)
+
+    def SetValue(self, value):
+        if self.Value != value:
+            self.Value = value
+            if value is not None and not isinstance(value, BooleanType):
+                connector_type = self.GetType()
+                if connector_type == "STRING":
+                    self.ComputedValue = "'%s'"%value
+                elif connector_type == "WSTRING":
+                    self.ComputedValue = "\"%s\""%value
+                else:
+                    self.ComputedValue = str(value)
+                #if self.ToolTip is not None:
+                #    self.ToolTip.SetTip(self.ComputedValue)
+                if len(self.ComputedValue) > 4:
+                    self.ComputedValue = self.ComputedValue[:4] + "..."
+            self.ValueSize = None
+            if self.ParentBlock.Visible:
+                self.ParentBlock.Parent.ElementNeedRefresh(self)
+    
     def RefreshForced(self):
         self.Forced = False
         for wire, handle in self.Wires:
@@ -1959,6 +1998,21 @@ class Connector:
         dc.DrawText(self.Name, xtext, ytext)
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, xtext, ytext)
+
+        if self.Value is not None and not isinstance(self.Value, BooleanType) and self.Value != "undefined":
+            dc.SetFont(self.ParentBlock.Parent.GetMiniFont())
+            dc.SetTextForeground(wx.NamedColour("purple"))
+            if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+                self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
+            if self.ValueSize is not None:
+                width, height = self.ValueSize
+                dc.DrawText(self.ComputedValue, 
+                    parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] + \
+                                    width * (self.Direction[0] - 1) / 2,
+                    parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] + \
+                                    height * (self.Direction[1] - 1))
+            dc.SetFont(self.ParentBlock.Parent.GetFont())
+            dc.SetTextForeground(wx.BLACK)
 
 #-------------------------------------------------------------------------------
 #                           Common Wire Element
