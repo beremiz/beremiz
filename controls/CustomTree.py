@@ -39,7 +39,7 @@ class CustomTree(CT.CustomTreeCtrl):
     
     def __init__(self, *args, **kwargs):
         CT.CustomTreeCtrl.__init__(self, *args, **kwargs)
-        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        #self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         
         self.BackgroundBitmap = None
         self.BackgroundAlign = wx.ALIGN_LEFT|wx.ALIGN_TOP
@@ -103,9 +103,22 @@ class CustomTree(CT.CustomTreeCtrl):
             bitmap_rect = self.GetBitmapRect()
             if (bitmap_rect.InsideXY(pos.x, pos.y) or 
                 flags & wx.TREE_HITTEST_NOWHERE) and self.AddMenu is not None:
-                self.PopupMenuXY(self.AddMenu, pos.x, pos.y)
+                wx.CallAfter(self.PopupMenuXY, self.AddMenu, pos.x, pos.y)
         event.Skip()
+    
+    def OnEraseBackground(self, event):
+        dc = event.GetDC()
 
+        if not dc:
+            dc = wx.ClientDC(self)
+            rect = self.GetUpdateRegion().GetBox()
+            dc.SetClippingRect(rect)
+        
+        dc.Clear()
+        
+        bitmap_rect = self.GetBitmapRect()
+        dc.DrawBitmap(self.BackgroundBitmap, bitmap_rect.x, bitmap_rect.y)
+    
     def OnScroll(self, event):
         wx.CallAfter(self.Refresh)
         event.Skip()
@@ -113,12 +126,3 @@ class CustomTree(CT.CustomTreeCtrl):
     def OnSize(self, event):
         CT.CustomTreeCtrl.OnSize(self, event)
         self.Refresh()
-    
-    def OnPaint(self, event):
-        dc = wx.ClientDC(self)
-        dc.Clear()
-        
-        bitmap_rect = self.GetBitmapRect()
-        dc.DrawBitmap(self.BackgroundBitmap, bitmap_rect.x, bitmap_rect.y)
-        
-        CT.CustomTreeCtrl.OnPaint(self, event)

@@ -1217,7 +1217,7 @@ class IDEFrame(wx.Frame):
         window = self.FindFocus()
         if window == self.ProjectTree or window is None:
             selected = self.ProjectTree.GetSelection()
-            if selected.IsOk():
+            if selected is not None and selected.IsOk():
                 function = self.DeleteFunctions.get(self.ProjectTree.GetPyData(selected)["type"], None)
                 if function is not None:
                     function(self, selected)
@@ -1429,9 +1429,6 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
     def RefreshProjectTree(self):
-        if wx.Platform == '__WXMSW__':
-            self.ProjectTree.SetEvtHandlerEnabled(False)
-        
         # Extract current selected item tagname
         selected = self.ProjectTree.GetSelection()
         if selected is not None and selected.IsOk():
@@ -1451,8 +1448,6 @@ class IDEFrame(wx.Frame):
         # Select new item corresponding to previous selected item
         if tagname is not None:
             self.SelectProjectTreeItem(tagname)
-        elif wx.Platform == '__WXMSW__':
-            self.ProjectTree.SetEvtHandlerEnabled(True)
 
     def ResetSelectedItem(self):
         self.SelectedItem = None
@@ -1487,8 +1482,7 @@ class IDEFrame(wx.Frame):
             if values["type"] not in ITEMS_UNEDITABLE or len(values["values"]) > 0:
                 if item is None or not item.IsOk():
                     item = self.ProjectTree.AppendItem(root, "")
-                    if wx.Platform != '__WXMSW__':
-                        item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
+                    item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
                 self.GenerateProjectTreeBranch(item, values)
                 item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
         while item is not None and item.IsOk():
@@ -1497,26 +1491,22 @@ class IDEFrame(wx.Frame):
         for item in to_delete:
             self.ProjectTree.Delete(item)
 
+    TagNamePartsItemTypes = {
+        "D": [ITEM_DATATYPE],
+        "P": [ITEM_POU],
+        "T": [ITEM_POU, ITEM_TRANSITION],
+        "A": [ITEM_POU, ITEM_ACTION],
+        "C": [ITEM_CONFIGURATION],
+        "R": [ITEM_CONFIGURATION, ITEM_RESOURCE]}
+
     def SelectProjectTreeItem(self, tagname):
-        self.ProjectTree.SetEvtHandlerEnabled(False)
         result = False
         if self.ProjectTree is not None:
             root = self.ProjectTree.GetRootItem()
-            if root.IsOk():
+            if root is not None and root.IsOk():
                 words = tagname.split("::")
-                if words[0] == "D":
-                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_DATATYPE)])
-                elif words[0] == "P":
-                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU)])
-                elif words[0] == "T":
-                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU), (words[2], ITEM_TRANSITION)])
-                elif words[0] == "A":
-                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_POU), (words[2], ITEM_ACTION)])
-                elif words[0] == "C":
-                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_CONFIGURATION)])
-                elif words[0] == "R":
-                    result = self.RecursiveProjectTreeItemSelection(root, [(words[1], ITEM_CONFIGURATION), (words[2], ITEM_RESOURCE)])
-        self.ProjectTree.SetEvtHandlerEnabled(True)
+                result = self.RecursiveProjectTreeItemSelection(root,
+                    zip(words[1:], self.TagNamePartsItemTypes.get(words[0], [])))
         return result
 
     def RecursiveProjectTreeItemSelection(self, root, items):
