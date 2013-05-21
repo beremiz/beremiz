@@ -11,45 +11,66 @@
 #include "accessor.h"
 #include "POUS.h"
 
+/* From CiA402, page 27
+
+        Table 30 - State coding
+    Statusword      |      PDS FSA state
+xxxx xxxx x0xx 0000 | Not ready to switch on
+xxxx xxxx x1xx 0000 | Switch on disabled
+xxxx xxxx x01x 0001 | Ready to switch on
+xxxx xxxx x01x 0011 | Switched on
+xxxx xxxx x01x 0111 | Operation enabled
+xxxx xxxx x00x 0111 | Quick stop active
+xxxx xxxx x0xx 1111 | Fault reaction active
+xxxx xxxx x0xx 1000 | Fault
+*/
+#define FSAFromStatusWord(SW) (SW & 0x006f)
+#define NotReadyToSwitchOn  0b00000000 FSA_sep 0b00100000
+#define SwitchOnDisabled    0b01000000 FSA_sep 0b01100000
+#define ReadyToSwitchOn     0b00100001
+#define SwitchedOn          0b00100011
+#define OperationEnabled    0b00100111
+#define QuickStopActive     0b00000111
+#define FaultReactionActive 0b00001111 FSA_sep 0b00101111
+#define Fault               0b00001000 FSA_sep 0b00101000
+
+// SatusWord bits :
+#define SW_ReadyToSwitchOn     0x0001
+#define SW_SwitchedOn          0x0002
+#define SW_OperationEnabled    0x0004
+#define SW_Fault               0x0008
+#define SW_VoltageEnabled      0x0010
+#define SW_QuickStop           0x0020
+#define SW_SwitchOnDisabled    0x0040
+#define SW_Warning             0x0080
+#define SW_Remote              0x0200
+#define SW_TargetReached       0x0400
+#define SW_InternalLimitActive 0x0800
+
+// ControlWord bits :
+#define SwitchOn        0x0001
+#define EnableVoltage   0x0002
+#define QuickStop       0x0004
+#define EnableOperation 0x0008
+#define FaultReset      0x0080
+#define Halt            0x0100
+
+
 IEC_INT beremiz__IW%(location)s_0;
 IEC_INT *__IW%(location)s_0 = &beremiz__IW%(location)s_0;
 
 %(MCL_headers)s
 
-static IEC_UINT __InactiveMask = 0x4f;
-static IEC_UINT __ActiveMask = 0x6f;
-static IEC_UINT __PowerMask = 0x10;
 static IEC_BOOL __FirstTick = 1;
-
-typedef enum {
-	__Unknown,
-	__NotReadyToSwitchOn,
-	__SwitchOnDisabled,
-	__ReadyToSwitchOn,
-	__SwitchedOn,
-	__OperationEnabled,
-	__QuickStopActive,
-    __FaultReactionActive,
-    __Fault,
-} __CIA402NodeState;
 
 typedef struct {
 %(entry_variables)s
-    __CIA402NodeState state;
     axis_s* axis;
 } __CIA402Node;
 
-#define AXIS_UNIT_TO_USER_UNIT(param, type, name)\
-(IEC_##type)(param) * __CIA402Node_%(location)s.axis->name##RatioDenominator / __CIA402Node_%(location)s.axis->name##RatioNumerator
-#define USER_UNIT_TO_AXIS_UNIT(param, type, name)\
-(IEC_##type)(param * __CIA402Node_%(location)s.axis->name##RatioNumerator / __CIA402Node_%(location)s.axis->name##RatioDenominator)
+#define AxsPub __CIA402Node_%(location)s
 
-#define DEFAULT_AXIS_UNIT_TO_USER_UNIT(param) AXIS_UNIT_TO_USER_UNIT(param, LREAL,)
-#define DEFAULT_USER_UNIT_TO_AXIS_UNIT(param) USER_UNIT_TO_AXIS_UNIT(param, DINT,)
-#define TORQUE_AXIS_UNIT_TO_USER_UNIT(param) AXIS_UNIT_TO_USER_UNIT(param, LREAL, Torque)
-#define TORQUE_USER_UNIT_TO_AXIS_UNIT(param) USER_UNIT_TO_AXIS_UNIT(param, INT, Torque)
-
-static __CIA402Node __CIA402Node_%(location)s;
+static __CIA402Node AxsPub;
 
 %(extern_located_variables_declaration)s
 
@@ -59,7 +80,7 @@ int __init_%(location)s()
 {
     __FirstTick = 1;
 %(init_entry_variables)s
-	*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
+	*(AxsPub.ModesOfOperation) = 0x08;
     return 0;
 }
 
@@ -69,63 +90,29 @@ void __cleanup_%(location)s()
 
 void __retrieve_%(location)s()
 {
-	IEC_UINT statusword_inactive = *(__CIA402Node_%(location)s.StatusWord) & __InactiveMask;
-	IEC_UINT statusword_active = *(__CIA402Node_%(location)s.StatusWord) & __ActiveMask;
-
 	if (__FirstTick) {
 		*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
-		__CIA402Node_%(location)s.axis = __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
-		__CIA402Node_%(location)s.axis->NetworkPosition = %(slave_pos)d;
+		AxsPub.axis = 
+            __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
+		AxsPub.axis->NetworkPosition = %(slave_pos)d;
 %(init_axis_params)s
 %(fieldbus_interface_definition)s
 		__FirstTick = 0;
 	}
 
-	// CIA402 node state computation
-	__CIA402Node_%(location)s.state = __Unknown;
-	switch (statusword_inactive) {
-		case 0x00:
-			__CIA402Node_%(location)s.state = __NotReadyToSwitchOn;
-			break;
-		case 0x40:
-			__CIA402Node_%(location)s.state = __SwitchOnDisabled;
-			break;
-		case 0x0f:
-			__CIA402Node_%(location)s.state = __FaultReactionActive;
-			break;
-		case 0x08:
-			__CIA402Node_%(location)s.state = __Fault;
-			break;
-		default:
-			break;
-	}
-	switch (statusword_active) {
-		case 0x21:
-			__CIA402Node_%(location)s.state = __ReadyToSwitchOn;
-			break;
-		case 0x23:
-			__CIA402Node_%(location)s.state = __SwitchedOn;
-			break;
-		case 0x27:
-			__CIA402Node_%(location)s.state = __OperationEnabled;
-			break;
-		case 0x07:
-			__CIA402Node_%(location)s.state = __QuickStopActive;
-			break;
-		default:
-			break;
-	}
-	if (__CIA402Node_%(location)s.state == __Unknown) {
-		return;
-	}
-
 	// Default variables retrieve
-	__CIA402Node_%(location)s.axis->CommunicationReady = *(__CIA402Node_%(location)s.StatusWord) != 0;
-	__CIA402Node_%(location)s.axis->ReadyForPowerOn = __CIA402Node_%(location)s.state == __SwitchedOn || __OperationEnabled;
-	__CIA402Node_%(location)s.axis->PowerFeedback = __CIA402Node_%(location)s.state == __OperationEnabled;
-	__CIA402Node_%(location)s.axis->ActualPosition = DEFAULT_AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualPosition));
-	__CIA402Node_%(location)s.axis->ActualVelocity = DEFAULT_AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualVelocity));
-	__CIA402Node_%(location)s.axis->ActualTorque = TORQUE_AXIS_UNIT_TO_USER_UNIT(*(__CIA402Node_%(location)s.ActualTorque));
+	AxsPub.axis->CommunicationReady = 
+        *(AxsPub.StatusWord) != 0;
+#define FSA_sep || FSA ==
+    {
+        uint16_t FSA = FSAFromStatusWord(*(AxsPub.StatusWord));
+        AxsPub.axis->ReadyForPowerOn = FSA == ReadyToSwitchOn;
+        AxsPub.axis->PowerFeedback = FSA == OperationEnabled;
+    }
+#undef FSA_sep 
+	AxsPub.axis->ActualRawPosition = *(AxsPub.ActualPosition);
+	AxsPub.axis->ActualRawVelocity = *(AxsPub.ActualVelocity);
+	AxsPub.axis->ActualRawTorque = *(AxsPub.ActualTorque);
 
 	// Extra variables retrieve
 %(extra_variables_retrieve)s
@@ -133,48 +120,62 @@ void __retrieve_%(location)s()
 
 void __publish_%(location)s()
 {
-	IEC_BOOL power = ((*(__CIA402Node_%(location)s.StatusWord) & __PowerMask) > 0) && __CIA402Node_%(location)s.axis->Power;
+	IEC_BOOL power = 
+        ((*(AxsPub.StatusWord) & SW_VoltageEnabled) != 0) 
+        && AxsPub.axis->Power;
+    uint16_t CW = *(AxsPub.ControlWord);
 
+#define FSA_sep : case
 	// CIA402 node state transition computation
-	switch (__CIA402Node_%(location)s.state) {
-	    case __SwitchOnDisabled:
-	    	*(__CIA402Node_%(location)s.ControlWord) = (*(__CIA402Node_%(location)s.ControlWord) & ~0x87) | 0x06;
+	switch (FSAFromStatusWord(*(AxsPub.StatusWord))) {
+	    case SwitchOnDisabled :
+            CW &= ~(SwitchOn | FaultReset);
+            CW |= EnableVoltage | QuickStop;
 	    	break;
-	    case __ReadyToSwitchOn:
-	    case __OperationEnabled:
+	    case ReadyToSwitchOn :
+	    case OperationEnabled :
 	    	if (!power) {
-	    		*(__CIA402Node_%(location)s.ControlWord) = (*(__CIA402Node_%(location)s.ControlWord) & ~0x8f) | 0x07;
+                CW &= ~(FaultReset | EnableOperation);
+                CW |= SwitchOn | EnableVoltage | QuickStop;
 	    		break;
 	    	}
-	    case __SwitchedOn:
+	    case SwitchedOn :
 	    	if (power) {
-	    	    *(__CIA402Node_%(location)s.ControlWord) = (*(__CIA402Node_%(location)s.ControlWord) & ~0x8f) | 0x0f;
+                CW &= ~(FaultReset);
+                CW |= SwitchOn | EnableVoltage | QuickStop | EnableOperation;
 	    	}
 	    	break;
-	    case __Fault:
-	    	*(__CIA402Node_%(location)s.ControlWord) = (*(__CIA402Node_%(location)s.ControlWord) & ~0x8f) | 0x80;
+	    case Fault :
+            /* TODO reset fault only when MC_Reset */
+            CW &= ~(SwitchOn | EnableVoltage | QuickStop | EnableOperation);
+            CW |= FaultReset;
 	    	break;
 	    default:
 	    	break;
 	}
+#undef FSA_sep 
+    *(AxsPub.ControlWord) = CW;
 
 	// CIA402 node modes of operation computation according to axis motion mode
-	switch (__CIA402Node_%(location)s.axis->AxisMotionMode) {
+	switch (AxsPub.axis->AxisMotionMode) {
 		case mc_mode_cst:
-			*(__CIA402Node_%(location)s.ModesOfOperation) = 0x0a;
+			*(AxsPub.ModesOfOperation) = 0x0a;
 			break;
 		case mc_mode_csv:
-			*(__CIA402Node_%(location)s.ModesOfOperation) = 0x09;
+			*(AxsPub.ModesOfOperation) = 0x09;
 			break;
 		default:
-			*(__CIA402Node_%(location)s.ModesOfOperation) = 0x08;
+			*(AxsPub.ModesOfOperation) = 0x08;
 			break;
 	}
 
 	// Default variables publish
-	*(__CIA402Node_%(location)s.TargetPosition) = DEFAULT_USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->PositionSetPoint);
-	*(__CIA402Node_%(location)s.TargetVelocity) = DEFAULT_USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->VelocitySetPoint);
-	*(__CIA402Node_%(location)s.TargetTorque) = TORQUE_USER_UNIT_TO_AXIS_UNIT(__CIA402Node_%(location)s.axis->TorqueSetPoint);
+	*(AxsPub.TargetPosition) = 
+            AxsPub.axis->RawPositionSetPoint;
+	*(AxsPub.TargetVelocity) = 
+            AxsPub.axis->RawVelocitySetPoint;
+	*(AxsPub.TargetTorque) = 
+            AxsPub.axis->RawTorqueSetPoint;
 
 	// Extra variables publish
 %(extra_variables_publish)s
