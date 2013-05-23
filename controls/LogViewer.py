@@ -28,7 +28,8 @@ import numpy
 
 import wx
 
-from graphics import DebugViewer, REFRESH_PERIOD, ToolTip, TOOLTIP_WAIT_PERIOD
+from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
+from graphics import DebugViewer, REFRESH_PERIOD
 from targets.typemapping import LogLevelsCount, LogLevels
 from util.BitmapLibrary import GetBitmap
 
@@ -699,7 +700,7 @@ class LogViewer(DebugViewer, wx.Panel):
                 tooltip_pos = self.MessagePanel.ClientToScreen(self.LastMousePos)
                 tooltip_pos.x += 10
                 tooltip_pos.y += 10
-                self.MessageToolTip = ToolTip(self.MessagePanel, message.GetFullText(), False)
+                self.MessageToolTip = CustomToolTip(self.MessagePanel, message.GetFullText(), False)
                 self.MessageToolTip.SetFont(self.Font)
                 self.MessageToolTip.MoveToolTip(tooltip_pos)
                 self.MessageToolTip.Show()
