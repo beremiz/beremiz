@@ -1060,7 +1060,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self)
         
         if self.ToolTipElement is not None:
-            self.ToolTipElement.ClearToolTip()
+            self.ToolTipElement.DestroyToolTip()
             self.ToolTipElement = None
         
         self.Inhibit(True)
@@ -1644,15 +1644,19 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             self.ResetBuffer()
             element = None
             if not event.Leaving() and not event.LeftUp() and not event.LeftDClick():
-                element = self.FindElement(event, True, False)
+                dc = self.GetLogicalDC()
+                pos = event.GetLogicalPosition(dc)
+                element = self.FindBlockConnector(pos)
+                if element is None:
+                    element = self.FindElement(event, True, False)
             if self.ToolTipElement is not None:
-                self.ToolTipElement.ClearToolTip()
+                self.ToolTipElement.DestroyToolTip()
             self.ToolTipElement = element
             if self.ToolTipElement is not None:
                 tooltip_pos = self.Editor.ClientToScreen(event.GetPosition())
                 tooltip_pos.x += 10
                 tooltip_pos.y += 10
-                self.ToolTipElement.CreateToolTip(tooltip_pos)
+                self.ToolTipElement.DisplayToolTip(tooltip_pos)
         event.Skip()
     
     def OnViewerLeftDown(self, event):
@@ -1889,7 +1893,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         event.Skip()
     
     def OnViewerLeftDClick(self, event):
-        element = self.FindElement(event, connectors=False)
+        element = self.FindElement(event)
         if self.Mode == MODE_SELECTION and element is not None:
             if self.SelectedElement is not None and self.SelectedElement != element:
                 self.SelectedElement.SetSelected(False)
@@ -1902,15 +1906,24 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             
             if self.Debug:
                 if isinstance(self.SelectedElement, FBD_Block):
-                    instance_type = self.SelectedElement.GetType()
-                    pou_type = {
-                        "program": ITEM_PROGRAM,
-                        "functionBlock": ITEM_FUNCTIONBLOCK,
-                    }.get(self.Controler.GetPouType(instance_type))
-                    if pou_type is not None and instance_type in self.Controler.GetProjectPouNames(self.Debug):
-                        self.ParentWindow.OpenDebugViewer(pou_type, 
-                            "%s.%s"%(self.GetInstancePath(True), self.SelectedElement.GetName()),
-                            self.Controler.ComputePouName(instance_type))
+                    dc = self.GetLogicalDC()
+                    pos = event.GetLogicalPosition(dc)
+                    connector = self.SelectedElement.TestConnector(pos, EAST)
+                    if connector is not None and len(connector.GetWires()) == 0:
+                        iec_path = self.GetElementIECPath(connector)
+                        if iec_path is not None:
+                            self.ParentWindow.OpenDebugViewer(
+                                ITEM_VAR_LOCAL, iec_path, connector.GetType())
+                    else:
+                        instance_type = self.SelectedElement.GetType()
+                        pou_type = {
+                            "program": ITEM_PROGRAM,
+                            "functionBlock": ITEM_FUNCTIONBLOCK,
+                        }.get(self.Controler.GetPouType(instance_type))
+                        if pou_type is not None and instance_type in self.Controler.GetProjectPouNames(self.Debug):
+                            self.ParentWindow.OpenDebugViewer(pou_type, 
+                                "%s.%s"%(self.GetInstancePath(True), self.SelectedElement.GetName()),
+                                self.Controler.ComputePouName(instance_type))
                 else:
                     iec_path = self.GetElementIECPath(self.SelectedElement)
                     if iec_path is not None:
@@ -1993,7 +2006,15 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
             elif self.Debug and self.StartMousePos is not None and event.Dragging():
                 pos = event.GetPosition()
                 if abs(self.StartMousePos.x - pos.x) > 5 or abs(self.StartMousePos.y - pos.y) > 5:
-                    iec_path = self.GetElementIECPath(self.SelectedElement)
+                    element = self.SelectedElement
+                    if isinstance(self.SelectedElement, FBD_Block):
+                        dc = self.GetLogicalDC()
+                        connector = self.SelectedElement.TestConnector(
+                            wx.Point(dc.DeviceToLogicalX(self.StartMousePos.x), 
+                                     dc.DeviceToLogicalY(self.StartMousePos.y)))
+                        if connector is not None:
+                            element = connector
+                    iec_path = self.GetElementIECPath(element)
                     if iec_path is not None:
                         self.StartMousePos = None
                         if self.HighlightedElement is not None:

@@ -29,7 +29,7 @@ from types import *
 import datetime
 from threading import Lock,Timer
 
-from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
+from graphics.ToolTipProducer import ToolTipProducer
 
 #-------------------------------------------------------------------------------
 #                               Common constants
@@ -594,10 +594,11 @@ def DrawHighlightedText(dc, text, highlights, x, y):
 Class that implements a generic graphic element
 """
 
-class Graphic_Element:
+class Graphic_Element(ToolTipProducer):
     
     # Create a new graphic element
     def __init__(self, parent, id = None):
+        ToolTipProducer.__init__(self, parent)
         self.Parent = parent
         self.Id = id
         self.oldPos = None
@@ -611,13 +612,6 @@ class Graphic_Element:
         self.Size = wx.Size(0, 0)
         self.BoundingBox = wx.Rect(0, 0, 0, 0)
         self.Visible = False
-        self.ToolTip = None
-        self.ToolTipPos = None
-        self.ToolTipTimer = wx.Timer(self.Parent, -1)
-        self.Parent.Bind(wx.EVT_TIMER, self.OnToolTipTimer, self.ToolTipTimer)
-    
-    def __del__(self):
-        self.ToolTipTimer.Stop()
     
     def GetDefinition(self):
         return [self.Id], []
@@ -989,36 +983,6 @@ class Graphic_Element:
             self.Move(movex, movey)
             return movex, movey
         return 0, 0
-    
-    def OnToolTipTimer(self, event):
-        value = self.GetToolTipValue()
-        if value is not None and self.ToolTipPos is not None:
-            self.ToolTip = CustomToolTip(self.Parent, value)
-            self.ToolTip.MoveToolTip(self.ToolTipPos)
-            self.ToolTip.Show()
-        
-    def GetToolTipValue(self):
-        return None
-    
-    def CreateToolTip(self, pos):
-        value = self.GetToolTipValue()
-        if value is not None:
-            self.ToolTipPos = pos
-            self.ToolTipTimer.Start(int(TOOLTIP_WAIT_PERIOD * 1000), oneShot=True)
-        
-    def MoveToolTip(self, pos):
-        if self.ToolTip is not None:
-            self.ToolTip.MoveToolTip(pos)
-        elif self.ToolTipPos is not None:
-            self.ToolTipPos = pos
-            self.ToolTipTimer.Start(int(TOOLTIP_WAIT_PERIOD * 1000), oneShot=True)
-    
-    def ClearToolTip(self):
-        self.ToolTipTimer.Stop()
-        self.ToolTipPos = None
-        if self.ToolTip is not None:
-            self.ToolTip.Destroy()
-            self.ToolTip = None
     
     # Override this method for defining the method to call for adding an highlight to this element
     def AddHighlight(self, infos, start, end, highlight_type):
@@ -1400,11 +1364,12 @@ class Graphic_Group(Graphic_Element):
 Class that implements a connector for any type of block
 """
 
-class Connector(DebugDataConsumer):
+class Connector(DebugDataConsumer, ToolTipProducer):
     
     # Create a new connector
     def __init__(self, parent, name, type, position, direction, negated = False, edge = "none", onlyone = False):
         DebugDataConsumer.__init__(self)
+        ToolTipProducer.__init__(self, parent.Parent)
         self.ParentBlock = parent
         self.Name = name
         self.Type = type
@@ -1526,20 +1491,28 @@ class Connector(DebugDataConsumer):
             self.Forced = forced
             if self.Visible:
                 self.Parent.ElementNeedRefresh(self)
-
+    
+    def GetComputedValue(self):
+        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
+            wire_type = self.GetType()
+            if wire_type == "STRING":
+                return "'%s'"%self.Value
+            elif wire_type == "WSTRING":
+                return "\"%s\""%self.Value
+            else:
+                return str(self.Value)
+        return None
+    
+    def GetToolTipValue(self):
+        return self.GetComputedValue()
+    
     def SetValue(self, value):
         if self.Value != value:
             self.Value = value
-            if value is not None and not isinstance(value, BooleanType):
-                connector_type = self.GetType()
-                if connector_type == "STRING":
-                    self.ComputedValue = "'%s'"%value
-                elif connector_type == "WSTRING":
-                    self.ComputedValue = "\"%s\""%value
-                else:
-                    self.ComputedValue = str(value)
-                #if self.ToolTip is not None:
-                #    self.ToolTip.SetTip(self.ComputedValue)
+            computed_value = self.GetComputedValue()
+            if computed_value is not None:
+                self.ComputedValue = computed_value
+                self.SetToolTipText(self.ComputedValue)
                 if len(self.ComputedValue) > 4:
                     self.ComputedValue = self.ComputedValue[:4] + "..."
             self.ValueSize = None
@@ -1945,17 +1918,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.StartConnected = None
         self.EndConnected = None
     
-    def GetToolTipValue(self):
-        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
-            wire_type = self.GetEndConnectedType()
-            if wire_type == "STRING":
-                return "'%s'"%self.Value
-            elif wire_type == "WSTRING":
-                return "\"%s\""%self.Value
-            else:
-                return str(self.Value)
-        return None
-    
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
@@ -2113,19 +2075,27 @@ class Wire(Graphic_Element, DebugDataConsumer):
             if self.Visible:
                 self.Parent.ElementNeedRefresh(self)
 
+    def GetComputedValue(self):
+        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
+            wire_type = self.GetEndConnectedType()
+            if wire_type == "STRING":
+                return "'%s'"%self.Value
+            elif wire_type == "WSTRING":
+                return "\"%s\""%self.Value
+            else:
+                return str(self.Value)
+        return None
+    
+    def GetToolTipValue(self):
+        return self.GetComputedValue()
+
     def SetValue(self, value):
         if self.Value != value:
             self.Value = value
-            if value is not None and not isinstance(value, BooleanType):
-                wire_type = self.GetEndConnectedType()
-                if wire_type == "STRING":
-                    self.ComputedValue = "'%s'"%value
-                elif wire_type == "WSTRING":
-                    self.ComputedValue = "\"%s\""%value
-                else:
-                    self.ComputedValue = str(value)
-                if self.ToolTip is not None:
-                    self.ToolTip.SetTip(self.ComputedValue)
+            computed_value = self.GetComputedValue()
+            if computed_value is not None:
+                self.ComputedValue = computed_value
+                self.SetToolTipText(self.ComputedValue)
                 if len(self.ComputedValue) > 4:
                     self.ComputedValue = self.ComputedValue[:4] + "..."
             self.ValueSize = None
