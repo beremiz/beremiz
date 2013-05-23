@@ -300,24 +300,59 @@ class VariableDropTarget(wx.TextDropTarget):
                         self.ParentWindow.SaveValues()
             elif (element_type not in ["config", "resource", "function"] and values[1] == "Global" and 
                   self.ParentWindow.Filter in ["All", "Interface", "External"] or
-                  element_type in ["config", "resource", "program"] and values[1] == "location"):
+                  element_type != "function" and values[1] == "location"):
                 if values[1] == "location":
                     var_name = values[3]
                 else:
                     var_name = values[0]
                 tagname = self.ParentWindow.GetTagName()
-                if var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
+                if var_name.upper() in [name.upper() 
+                        for name in self.ParentWindow.Controler.\
+                            GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!")%var_name
-                elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
+                elif not var_name.upper() in [name.upper() 
+                        for name in self.ParentWindow.Controler.\
+                            GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     var_infos = self.ParentWindow.DefaultValue.copy()
                     var_infos["Name"] = var_name
                     var_infos["Type"] = values[2]
                     if values[1] == "location":
-                        if element_type == "program":
-                            var_infos["Class"] = "Local"
+                        location = values[0]
+                        if not location.startswith("%"):
+                            dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow, 
+                                  _("Select a variable class:"), _("Variable class"), 
+                                  ["Input", "Output", "Memory"], 
+                                  wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                            if dialog.ShowModal() == wx.ID_OK:
+                                selected = dialog.GetSelection()
+                            else:
+                                selected = None
+                            dialog.Destroy()
+                            if selected is None:
+                                return
+                            if selected == 0:
+                                location = "%I" + location
+                            elif selected == 1:
+                                location = "%Q" + location
+                            else:
+                                location = "%M" + location
+                        if element_type == "functionBlock":
+                            configs = self.ParentWindow.Controler.GetProjectConfigNames(
+                                                                self.ParentWindow.Debug)
+                            if len(configs) == 0:
+                                return
+                            if not var_name.upper() in [name.upper() 
+                                for name in self.ParentWindow.Controler.\
+                                    GetConfigurationVariableNames(configs[0])]:
+                                self.ParentWindow.Controler.AddConfigurationGlobalVar(
+                                    configs[0], values[2], var_name, location, "")
+                            var_infos["Class"] = "External"
                         else:
-                            var_infos["Class"] = "Global"
-                        var_infos["Location"] = values[0]
+                            if element_type == "program":
+                                var_infos["Class"] = "Local"
+                            else:
+                                var_infos["Class"] = "Global"
+                            var_infos["Location"] = location
                     else:
                         var_infos["Class"] = "External"
                     var_infos["Number"] = len(self.ParentWindow.Values)

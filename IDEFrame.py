@@ -1576,7 +1576,7 @@ class IDEFrame(wx.Frame):
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames() if name != old_name]:
                         message = _("\"%s\" pou already exists!")%new_name
                         abort = True
-                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariables()]:
+                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
                         messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
@@ -1590,7 +1590,7 @@ class IDEFrame(wx.Frame):
                 elif item_infos["type"] == ITEM_TRANSITION:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
-                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariables(pou_name) if name != old_name]:
+                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
                         message = _("A variable with \"%s\" as name already exists in this pou!")%new_name
                     else:
                         words = item_infos["tagname"].split("::")
@@ -1601,7 +1601,7 @@ class IDEFrame(wx.Frame):
                 elif item_infos["type"] == ITEM_ACTION:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
-                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariables(pou_name) if name != old_name]:
+                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
                         message = _("A variable with \"%s\" as name already exists in this pou!")%new_name
                     else:
                         words = item_infos["tagname"].split("::")
@@ -1618,7 +1618,7 @@ class IDEFrame(wx.Frame):
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
-                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariables()]:
+                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
                         messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
@@ -1637,7 +1637,7 @@ class IDEFrame(wx.Frame):
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
-                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariables()]:
+                    elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
                         messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
@@ -2263,7 +2263,7 @@ class IDEFrame(wx.Frame):
         def OnAddPouMenu(event):
             dialog = PouDialog(self, pou_type)
             dialog.SetPouNames(self.Controler.GetProjectPouNames())
-            dialog.SetPouElementNames(self.Controler.GetProjectPouVariables())
+            dialog.SetPouElementNames(self.Controler.GetProjectPouVariableNames())
             dialog.SetValues({"pouName": self.Controler.GenerateNewName(None, None, "%s%%d" % pou_type)})
             if dialog.ShowModal() == wx.ID_OK:
                 values = dialog.GetValues()
@@ -2278,7 +2278,7 @@ class IDEFrame(wx.Frame):
         def OnAddTransitionMenu(event):
             dialog = PouTransitionDialog(self)
             dialog.SetPouNames(self.Controler.GetProjectPouNames())
-            dialog.SetPouElementNames(self.Controler.GetProjectPouVariables(pou_name))
+            dialog.SetPouElementNames(self.Controler.GetProjectPouVariableNames(pou_name))
             dialog.SetValues({"transitionName": self.Controler.GenerateNewName(None, None, "transition%d")})
             if dialog.ShowModal() == wx.ID_OK: 
                 values = dialog.GetValues()
@@ -2293,7 +2293,7 @@ class IDEFrame(wx.Frame):
         def OnAddActionMenu(event):
             dialog = PouActionDialog(self)
             dialog.SetPouNames(self.Controler.GetProjectPouNames())
-            dialog.SetPouElementNames(self.Controler.GetProjectPouVariables(pou_name))
+            dialog.SetPouElementNames(self.Controler.GetProjectPouVariableNames(pou_name))
             dialog.SetValues({"actionName": self.Controler.GenerateNewName(None, None, "action%d")})
             if dialog.ShowModal() == wx.ID_OK:
                 values = dialog.GetValues()

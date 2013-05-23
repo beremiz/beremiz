@@ -855,6 +855,35 @@ def _SearchInConfigurationResource(self, criteria, parent_infos=[]):
 
 cls = PLCOpenClasses.get("configurations_configuration", None)
 if cls:
+    
+    def addglobalVar(self, type, name, location="", description=""):
+        globalvars = self.getglobalVars()
+        if len(globalvars) == 0:
+            globalvars.append(PLCOpenClasses["varList"]())
+        var = PLCOpenClasses["varListPlain_variable"]()
+        var.setname(name)
+        var_type = PLCOpenClasses["dataType"]()
+        if type in [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]:
+            if type == "STRING":
+                var_type.setcontent({"name" : "string", "value" : PLCOpenClasses["elementaryTypes_string"]()})
+            elif type == "WSTRING":
+                var_type.setcontent({"name" : "wstring", "value" : PLCOpenClasses["elementaryTypes_wstring"]()})
+            else:
+                var_type.setcontent({"name" : type, "value" : None})
+        else:
+            derived_type = PLCOpenClasses["derivedTypes_derived"]()
+            derived_type.setname(type)
+            var_type.setcontent({"name" : "derived", "value" : derived_type})
+        var.settype(var_type)
+        if location != "":
+            var.setaddress(location)
+        if description != "":
+            ft = PLCOpenClasses["formattedText"]()
+            ft.settext(description)
+            var.setdocumentation(ft)
+        globalvars[-1].appendvariable(var)
+    setattr(cls, "addglobalVar", addglobalVar)
+    
     def updateElementName(self, old_name, new_name):
         _updateConfigurationResourceElementName(self, old_name, new_name)
         for resource in self.getresource():

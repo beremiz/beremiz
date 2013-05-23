@@ -266,8 +266,8 @@ class PLCControler:
             return [config.getname() for config in project.getconfigurations()]
         return []
     
-    # Return project pou variables
-    def GetProjectPouVariables(self, pou_name = None, debug = False):
+    # Return project pou variable names
+    def GetProjectPouVariableNames(self, pou_name = None, debug = False):
         variables = []
         project = self.GetProject(debug)
         if project is not None:
@@ -1261,6 +1261,16 @@ class PLCControler:
             tempvar["Documentation"] = ""
 
         return tempvar
+    
+    # Add a global var to configuration to configuration
+    def AddConfigurationGlobalVar(self, config_name, type, var_name, 
+                                           location="", description=""):
+        if self.Project is not None:
+            # Found the configuration corresponding to name
+            configuration = self.Project.getconfiguration(config_name)
+            if configuration is not None:
+                # Set configuration global vars
+                configuration.addglobalVar(type, var_name, location, description)
 
     # Replace the configuration globalvars by those given
     def SetConfigurationGlobalVars(self, name, vars):
@@ -1289,6 +1299,20 @@ class PLCControler:
                         vars.append(tempvar)
         return vars
 
+    # Return configuration variable names
+    def GetConfigurationVariableNames(self, config_name = None, debug = False):
+        variables = []
+        project = self.GetProject(debug)
+        if project is not None:
+            for configuration in self.Project.getconfigurations():
+                if config_name is None or config_name == configuration.getname():
+                    variables.extend(
+                        [var.getname() for var in reduce(
+                            lambda x, y: x + y, [varlist.getvariable() 
+                                for varlist in configuration.globalVars],
+                            [])])
+        return variables
+
     # Replace the resource globalvars by those given
     def SetConfigurationResourceGlobalVars(self, config_name, name, vars):
         if self.Project is not None:
@@ -1315,6 +1339,23 @@ class PLCControler:
                         tempvar["Class"] = "Global"
                         vars.append(tempvar)
         return vars
+    
+    # Return resource variable names
+    def GetConfigurationResourceVariableNames(self, 
+                config_name = None, resource_name = None, debug = False):
+        variables = []
+        project = self.GetProject(debug)
+        if project is not None:
+            for configuration in self.Project.getconfigurations():
+                if config_name is None or config_name == configuration.getname():
+                    for resource in configuration.getresource():
+                        if resource_name is None or resource.getname() == resource_name:
+                            variables.extend(
+                                [var.getname() for var in reduce(
+                                    lambda x, y: x + y, [varlist.getvariable() 
+                                        for varlist in resource.globalVars],
+                                    [])])
+        return variables
     
     # Recursively generate element name tree for a structured variable
     def GenerateVarTree(self, typename, debug = False):
@@ -2076,7 +2117,13 @@ class PLCControler:
     def GetEditedElementVariables(self, tagname, debug = False):
         words = tagname.split("::")
         if words[0] in ["P","T","A"]:
-            return self.GetProjectPouVariables(words[1], debug)
+            return self.GetProjectPouVariableNames(words[1], debug)
+        elif words[0] in ["C", "R"]:
+            names = self.GetConfigurationVariableNames(words[1], debug)
+            if words[0] == "R":
+                names.extend(self.GetConfigurationResourceVariableNames(
+                    words[1], words[2], debug))
+            return names
         return []
 
     def GetEditedElementCopy(self, tagname, debug = False):
