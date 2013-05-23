@@ -702,7 +702,7 @@ class LogViewer(DebugViewer, wx.Panel):
                 tooltip_pos.y += 10
                 self.MessageToolTip = CustomToolTip(self.MessagePanel, message.GetFullText(), False)
                 self.MessageToolTip.SetFont(self.Font)
-                self.MessageToolTip.MoveToolTip(tooltip_pos)
+                self.MessageToolTip.SetToolTipPosition(tooltip_pos)
                 self.MessageToolTip.Show()
         event.Skip()
     

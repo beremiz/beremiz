@@ -116,9 +116,9 @@ class CustomToolTip(wx.PopupWindow):
         # Prevent to call wx method in non-wx threads
         wx.CallAfter(self.RefreshTip)
     
-    def MoveToolTip(self, pos):
+    def SetToolTipPosition(self, pos):
         """
-        Move tool tip
+        Set tool tip position
         @param pos: New tool tip position
         """
         # Get screen size to prevent tool tip to go out of the screen
