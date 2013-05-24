@@ -812,6 +812,7 @@ if USE_MPL:
             
             FigureCanvas.__init__(self, parent, -1, self.Figure)
             self.SetBackgroundColour(wx.WHITE)
+            self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
             self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
             self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
             self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
@@ -1159,6 +1160,18 @@ if USE_MPL:
                 self.SetCursor(wx.NullCursor)
                 self.ParentWindow.ForceRefresh()
             DebugVariableViewer.OnLeave(self, event)
+        
+        KEY_CURSOR_INCREMENT = {
+            wx.WXK_LEFT: -1,
+            wx.WXK_RIGHT: 1,
+            wx.WXK_UP: -10,
+            wx.WXK_DOWN: 10}
+        def OnKeyDown(self, event):
+            if self.CursorTick is not None:
+                self.ParentWindow.MoveCursorTick(
+                    self.KEY_CURSOR_INCREMENT.get(
+                      event.GetKeyCode(), 0))
+            event.Skip()
         
         def HandleCursorMove(self, event):
             start_tick, end_tick = self.ParentWindow.GetRange()
@@ -1621,6 +1634,20 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.Fixed = True
         self.UpdateCursorTick() 
     
+    def MoveCursorTick(self, move):
+        if self.CursorTick is not None:
+            cursor_tick = max(self.Ticks[0], 
+                          min(self.CursorTick + move, 
+                              self.Ticks[-1]))
+            self.CursorTick = self.Ticks[
+                numpy.argmin(numpy.abs(self.Ticks - cursor_tick))]
+            self.StartTick = max(self.Ticks[
+                                numpy.argmin(numpy.abs(self.Ticks - 
+                                        self.CursorTick + self.CurrentRange))],
+                             min(self.StartTick, self.CursorTick))
+            self.RefreshCanvasPosition()
+            self.UpdateCursorTick() 
+            
     def ResetCursorTick(self):
         self.CursorTick = None
         self.UpdateCursorTick()
