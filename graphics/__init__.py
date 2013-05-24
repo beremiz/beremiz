@@ -28,3 +28,4 @@ from GraphicCommons import *
 from FBD_Objects import *
 from LD_Objects import *
 from SFC_Objects import *
+from RubberBand import RubberBand
