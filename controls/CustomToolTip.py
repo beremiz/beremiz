@@ -174,10 +174,7 @@ class CustomToolTip(wx.PopupWindow):
         dc.Clear()
         
         # Set DC drawing style
-        pen = wx.Pen(wx.BLACK)
-        pen.SetJoin(wx.JOIN_MITER)
-        pen.SetCap(wx.CAP_PROJECTING)
-        dc.SetPen(pen)
+        dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.Brush(wx.Colour(255, 238, 170)))
         dc.SetFont(self.Font)
         

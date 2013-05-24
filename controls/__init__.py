@@ -40,3 +40,4 @@ from TextCtrlAutoComplete import TextCtrlAutoComplete
 from FolderTree import FolderTree
 from LogViewer import LogViewer
 from CustomStyledTextCtrl import CustomStyledTextCtrl
+from CustomToolTip import CustomToolTip
