@@ -35,6 +35,7 @@ from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBL
 
 from dialogs import *
 from graphics import *
+from editors.DebugViewer import DebugViewer
 from EditorPanel import EditorPanel
 
 SCROLLBAR_UNIT = 10
@@ -375,7 +376,7 @@ Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
 manipulating graphic elements
 """
 
-class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
+class Viewer(EditorPanel, DebugViewer):
     
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id = None):
@@ -556,7 +557,6 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         
         EditorPanel.__init__(self, parent, tagname, window, controler, debug)
         DebugViewer.__init__(self, controler, debug)
-        DebugDataConsumer.__init__(self)
         
         # Adding a rubberband to Viewer
         self.rubberBand = RubberBand(viewer=self)
@@ -892,7 +892,7 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         self.ToolTipElement = None
     
     def Flush(self):
-        self.DeleteDataConsumers()
+        self.UnsubscribeAllDataConsumers()
         for block in self.Blocks.itervalues():
             block.Flush()
     
@@ -1048,8 +1048,8 @@ class Viewer(EditorPanel, DebugViewer, DebugDataConsumer):
         else:
             DebugViewer.RefreshNewData(self)
     
-    def RegisterVariables(self):
-        DebugViewer.RegisterVariables(self)
+    def SubscribeAllDataConsumers(self):
+        DebugViewer.SubscribeAllDataConsumers(self)
         self.RefreshView()
     
     # Refresh Viewer elements

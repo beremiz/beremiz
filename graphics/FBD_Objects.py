@@ -24,7 +24,7 @@
 
 import wx
 
-from GraphicCommons import *
+from graphics.GraphicCommons import *
 from plcopen.structures import *
 
 #-------------------------------------------------------------------------------
