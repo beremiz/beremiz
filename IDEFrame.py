@@ -2022,9 +2022,9 @@ class IDEFrame(wx.Frame):
                     elif isinstance(editor, GraphicViewer):
                         editor.ResetView(True)
                     else:
-                        editor.RegisterVariables()
+                        editor.SubscribeAllDataConsumers()
                 elif editor.IsDebugging():
-                    editor.RegisterVariables()
+                    editor.SubscribeAllDataConsumers()
             self.DebugVariablePanel.UnregisterObsoleteData()
     
     def AddDebugVariable(self, iec_path, force=False):

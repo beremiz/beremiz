@@ -21,7 +21,7 @@ from util.BitmapLibrary import GetBitmap
 from editors.FileManagementPanel import FileManagementPanel
 from editors.ProjectNodeEditor import ProjectNodeEditor
 from editors.IECCodeViewer import IECCodeViewer
-from graphics import DebugViewer
+from editors.DebugViewer import DebugViewer
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS

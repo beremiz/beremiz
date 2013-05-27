@@ -29,7 +29,7 @@ import numpy
 import wx
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
-from graphics import DebugViewer, REFRESH_PERIOD
+from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from targets.typemapping import LogLevelsCount, LogLevels
 from util.BitmapLibrary import GetBitmap
 

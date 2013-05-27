@@ -29,8 +29,9 @@ import wx
 import wx.lib.plot as plot
 import wx.lib.buttons
 
-from graphics.GraphicCommons import DebugViewer, MODE_SELECTION, MODE_MOTION
-from EditorPanel import EditorPanel
+from graphics.GraphicCommons import MODE_SELECTION, MODE_MOTION
+from editors.DebugViewer import DebugViewer
+from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 
 colours = ['blue', 'red', 'green', 'yellow', 'orange', 'purple', 'brown', 'cyan',

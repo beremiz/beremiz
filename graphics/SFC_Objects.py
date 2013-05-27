@@ -24,7 +24,8 @@
 
 import wx
 
-from GraphicCommons import *
+from graphics.GraphicCommons import *
+from graphics.DebugDataConsumer import DebugDataConsumer
 from plcopen.structures import *
 
 def GetWireSize(block):

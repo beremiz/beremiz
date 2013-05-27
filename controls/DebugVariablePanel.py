@@ -45,7 +45,8 @@ try:
 except:
     USE_MPL = False
 
-from graphics import DebugDataConsumer, DebugViewer, REFRESH_PERIOD
+from graphics.DebugDataConsumer import DebugDataConsumer
+from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from controls import CustomGrid, CustomTable
 from dialogs.ForceVariableDialog import ForceVariableDialog
 from util.BitmapLibrary import GetBitmap
@@ -1837,7 +1838,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Thaw()
         
     def UnregisterObsoleteData(self):
-        self.RegisterVariables()
+        self.SubscribeAllDataConsumers()
         if USE_MPL:
             if self.DataProducer is not None:
                 self.Ticktime = self.DataProducer.GetTicktime()
@@ -1872,7 +1873,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Thaw()
     
     def ResetView(self):
-        self.DeleteDataConsumers()
+        self.UnsubscribeAllDataConsumers()
         if USE_MPL:
             self.Fixed = False
             for panel in self.GraphicPanels:

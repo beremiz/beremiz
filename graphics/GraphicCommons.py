@@ -23,13 +23,13 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import wx
-from time import time as gettime
 from math import *
 from types import *
 import datetime
 from threading import Lock,Timer
 
 from graphics.ToolTipProducer import ToolTipProducer
+from graphics.DebugDataConsumer import DebugDataConsumer
 
 #-------------------------------------------------------------------------------
 #                               Common constants
@@ -186,255 +186,11 @@ def DirectionChoice(v_base, v_target, dir_target):
         return dir_target
     return v_base
 
-SECOND = 1000000
-MINUTE = 60 * SECOND
-HOUR = 60 * MINUTE
-DAY = 24 * HOUR
-
-def generate_time(value):
-    microseconds = float(value.days * DAY + value.seconds * SECOND + value.microseconds)
-    negative = microseconds < 0
-    microseconds = abs(microseconds)
-    data = "T#"
-    not_null = False
-    if negative:
-        data += "-"
-    for val, format in [(int(microseconds) / DAY, "%dd"),
-                        ((int(microseconds) % DAY) / HOUR, "%dh"),
-                        ((int(microseconds) % HOUR) / MINUTE, "%dm"),
-                        ((int(microseconds) % MINUTE) / SECOND, "%ds")]:
-        if val > 0 or not_null:
-            data += format % val
-            not_null = True
-    data += "%gms" % (microseconds % SECOND / 1000.)
-    return data
-
-def generate_date(value):
-    base_date = datetime.datetime(1970, 1, 1)
-    date = base_date + value 
-    return date.strftime("DATE#%Y-%m-%d")
-
-def generate_datetime(value):
-    base_date = datetime.datetime(1970, 1, 1)
-    date_time = base_date + value 
-    return date_time.strftime("DT#%Y-%m-%d-%H:%M:%S.%f")
-
-def generate_timeofday(value):
-    microseconds = float(value.days * DAY + value.seconds * SECOND + value.microseconds)
-    negative = microseconds < 0
-    microseconds = abs(microseconds)
-    data = "TOD#"
-    for val, format in [(int(microseconds) / HOUR, "%2.2d:"),
-                        ((int(microseconds) % HOUR) / MINUTE, "%2.2d:"),
-                        ((int(microseconds) % MINUTE) / SECOND, "%2.2d."),
-                        (microseconds % SECOND, "%6.6d")]:
-        data += format % val
-    return data
-
-TYPE_TRANSLATOR = {"TIME": generate_time,
-                   "DATE": generate_date,
-                   "DT": generate_datetime,
-                   "TOD": generate_timeofday}
-
 def MiterPen(colour, width=1, style=wx.SOLID):
     pen = wx.Pen(colour, width, style)
     pen.SetJoin(wx.JOIN_MITER)
     pen.SetCap(wx.CAP_PROJECTING)
     return pen
-
-#-------------------------------------------------------------------------------
-#                            Debug Data Consumer Class
-#-------------------------------------------------------------------------------
-
-class DebugDataConsumer:
-    
-    def __init__(self):
-        self.LastValue = None
-        self.Value = None
-        self.DataType = None
-        self.LastForced = False
-        self.Forced = False
-        self.Inhibited = False
-    
-    def Inhibit(self, inhibit):
-        self.Inhibited = inhibit
-        if not inhibit and self.LastValue is not None:
-            self.SetForced(self.LastForced)
-            self.SetValue(self.LastValue)
-            self.LastValue = None
-    
-    def SetDataType(self, data_type):
-        self.DataType = data_type
-    
-    def NewValue(self, tick, value, forced=False):
-        value = TYPE_TRANSLATOR.get(self.DataType, lambda x:x)(value)
-        if self.Inhibited:
-            self.LastValue = value
-            self.LastForced = forced
-        else:
-            self.SetForced(forced)
-            self.SetValue(value)
-    
-    def SetValue(self, value):
-        self.Value = value
-    
-    def GetValue(self):
-        return self.Value
-    
-    def SetForced(self, forced):
-        self.Forced = forced
-    
-    def IsForced(self):
-        return self.Forced
-
-#-------------------------------------------------------------------------------
-#                               Debug Viewer Class
-#-------------------------------------------------------------------------------
-
-REFRESH_PERIOD = 0.1
-DEBUG_REFRESH_LOCK = Lock()
-
-class DebugViewer:
-    
-    def __init__(self, producer, debug, register_tick=True):
-        self.DataProducer = None
-        self.Debug = debug
-        self.RegisterTick = register_tick
-        self.Inhibited = False
-        
-        self.DataConsumers = {}
-        
-        self.LastRefreshTime = gettime()
-        self.HasAcquiredLock = False
-        self.AccessLock = Lock()
-        self.TimerAccessLock = Lock()
-        
-        self.LastRefreshTimer = None
-        
-        self.SetDataProducer(producer)
-        
-    def __del__(self):
-        self.DataProducer = None
-        self.DeleteDataConsumers()
-        if self.LastRefreshTimer is not None:
-            self.LastRefreshTimer.Stop()
-        if self.HasAcquiredLock:
-            DEBUG_REFRESH_LOCK.release()
-    
-    def SetDataProducer(self, producer):
-        if self.RegisterTick and self.Debug:
-            if producer is not None:
-                producer.SubscribeDebugIECVariable("__tick__", self)
-            if self.DataProducer is not None:
-                self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)
-        self.DataProducer = producer
-    
-    def IsDebugging(self):
-        return self.Debug
-    
-    def Inhibit(self, inhibit):
-        for consumer, iec_path in self.DataConsumers.iteritems():
-            consumer.Inhibit(inhibit)
-        self.Inhibited = inhibit
-    
-    def AddDataConsumer(self, iec_path, consumer):
-        if self.DataProducer is None:
-            return None
-        result = self.DataProducer.SubscribeDebugIECVariable(iec_path, consumer)
-        if result is not None and consumer != self:
-            self.DataConsumers[consumer] = iec_path
-            consumer.SetDataType(self.GetDataType(iec_path))
-        return result
-    
-    def RemoveDataConsumer(self, consumer):
-        iec_path = self.DataConsumers.pop(consumer, None)
-        if iec_path is not None:
-            self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
-    
-    def RegisterVariables(self):
-        if self.RegisterTick and self.Debug and self.DataProducer is not None:
-            self.DataProducer.SubscribeDebugIECVariable("__tick__", self)
-    
-    def GetDataType(self, iec_path):
-        if self.DataProducer is not None:
-            data_type = self.DataProducer.GetDebugIECVariableType(iec_path.upper())
-            if data_type is not None:
-                return data_type
-            
-            infos = self.DataProducer.GetInstanceInfos(iec_path)
-            if infos is not None:
-                return infos["type"]
-        return None
-    
-    def IsNumType(self, data_type):
-        return self.DataProducer.IsNumType(data_type)
-    
-    def ForceDataValue(self, iec_path, value):
-        if self.DataProducer is not None:
-            self.DataProducer.ForceDebugIECVariable(iec_path, value)
-    
-    def ReleaseDataValue(self, iec_path):
-        if self.DataProducer is not None:
-            self.DataProducer.ReleaseDebugIECVariable(iec_path)
-    
-    def DeleteDataConsumers(self):
-        if self.DataProducer is not None:
-            for consumer, iec_path in self.DataConsumers.iteritems():
-                self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
-        self.DataConsumers = {}
-    
-    def ShouldRefresh(self):
-        if self:
-            wx.CallAfter(self._ShouldRefresh)
-        
-    def _ShouldRefresh(self):
-        if self:
-            if DEBUG_REFRESH_LOCK.acquire(False):
-                self.AccessLock.acquire()
-                self.HasAcquiredLock = True
-                self.AccessLock.release()
-                self.RefreshNewData()
-            else:
-                self.TimerAccessLock.acquire()
-                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
-                self.LastRefreshTimer.start()
-                self.TimerAccessLock.release()
-    
-    def NewDataAvailable(self, tick, *args, **kwargs):
-        self.TimerAccessLock.acquire()
-        if self.LastRefreshTimer is not None:
-            self.LastRefreshTimer.cancel()
-            self.LastRefreshTimer=None
-        self.TimerAccessLock.release()
-        if self.IsShown() and not self.Inhibited:
-            if gettime() - self.LastRefreshTime > REFRESH_PERIOD and DEBUG_REFRESH_LOCK.acquire(False):
-                self.AccessLock.acquire()
-                self.HasAcquiredLock = True
-                self.AccessLock.release()
-                self.LastRefreshTime = gettime()
-                self.Inhibit(True)
-                wx.CallAfter(self.RefreshViewOnNewData, *args, **kwargs)
-            else:
-                self.TimerAccessLock.acquire()
-                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self.ShouldRefresh)
-                self.LastRefreshTimer.start()
-                self.TimerAccessLock.release()
-        elif not self.IsShown() and self.HasAcquiredLock:
-            DebugViewer.RefreshNewData(self)
-            
-    def RefreshViewOnNewData(self, *args, **kwargs):
-        if self:
-            self.RefreshNewData(*args, **kwargs)
-    
-    def RefreshNewData(self, *args, **kwargs):
-        self.Inhibit(False)
-        self.AccessLock.acquire()
-        if self.HasAcquiredLock:
-            DEBUG_REFRESH_LOCK.release()
-            self.HasAcquiredLock = False
-        if gettime() - self.LastRefreshTime > REFRESH_PERIOD:
-            self.LastRefreshTime = gettime()
-        self.AccessLock.release()
 
 #-------------------------------------------------------------------------------
 #                    Helpers for highlighting text
@@ -1377,13 +1133,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     
     def GetComputedValue(self):
         if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
-            wire_type = self.GetType()
-            if wire_type == "STRING":
-                return "'%s'"%self.Value
-            elif wire_type == "WSTRING":
-                return "\"%s\""%self.Value
-            else:
-                return str(self.Value)
+            return self.Value
         return None
     
     def GetToolTipValue(self):
@@ -1960,13 +1710,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
     def GetComputedValue(self):
         if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
-            wire_type = self.GetEndConnectedType()
-            if wire_type == "STRING":
-                return "'%s'"%self.Value
-            elif wire_type == "WSTRING":
-                return "\"%s\""%self.Value
-            else:
-                return str(self.Value)
+            return self.Value
         return None
     
     def GetToolTipValue(self):
