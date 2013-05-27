@@ -523,6 +523,7 @@ class VariablePanel(wx.Panel):
         def _AddVariable(new_row):
             if new_row > 0:
                 row_content = self.Values[new_row - 1].copy()
+                
                 result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
                 if result is not None:
                     name = row_content["Name"][:result.start(1)]
@@ -534,14 +535,21 @@ class VariablePanel(wx.Panel):
                 else:
                     name = row_content["Name"]
                     start_idx = 0
-                row_content["Name"] = self.Controler.GenerateNewName(
-                    self.TagName, None, name + "%d", start_idx)
+            else:
+                name = ""
+                
+            if row_content is not None and row_content["Edit"]: 
+                row_content = self.Values[new_row - 1].copy()
             else:
                 row_content = self.DefaultValue.copy()
                 if self.Filter in self.DefaultTypes:
                     row_content["Class"] = self.DefaultTypes[self.Filter]
                 else:
                     row_content["Class"] = self.Filter
+            
+            row_content["Name"] = self.Controler.GenerateNewName(
+                    self.TagName, None, name + "%d", start_idx)
+            
             if self.Filter == "All" and len(self.Values) > 0:
                 self.Values.insert(new_row, row_content)
             else:
