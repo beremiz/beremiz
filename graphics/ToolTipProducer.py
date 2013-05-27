@@ -74,7 +74,8 @@ class ToolTipProducer:
     
     def GetToolTipValue(self):
         """
-        Generic method that have to be overridden by derived classes 
+        Return tool tip text
+        Have to be overridden by inherited classes 
         @return: Tool tip text (None if not overridden) 
         """
         return None

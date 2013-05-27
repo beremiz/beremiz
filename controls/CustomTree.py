@@ -39,7 +39,6 @@ class CustomTree(CT.CustomTreeCtrl):
     
     def __init__(self, *args, **kwargs):
         CT.CustomTreeCtrl.__init__(self, *args, **kwargs)
-        #self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         
         self.BackgroundBitmap = None
         self.BackgroundAlign = wx.ALIGN_LEFT|wx.ALIGN_TOP
