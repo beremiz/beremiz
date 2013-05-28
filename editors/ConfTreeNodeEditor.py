@@ -210,11 +210,8 @@ class ConfTreeNodeEditor(EditorPanel):
                 panel_style |= wx.SUNKEN_BORDER
             self.ParamsEditor = wx.ScrolledWindow(parent, 
                   style=panel_style)
-            self.ParamsEditor.Bind(wx.EVT_SIZE, self.OnWindowResize)
-            self.ParamsEditor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-            
-            # Variable allowing disabling of ParamsEditor scroll when Popup shown 
-            self.ScrollingEnabled = True
+            self.ParamsEditor.Bind(wx.EVT_SIZE, self.OnParamsEditorResize)
+            self.ParamsEditor.Bind(wx.EVT_SCROLLWIN, self.OnParamsEditorScroll)
             
             self.ParamsEditorSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=1, vgap=5)
             self.ParamsEditorSizer.AddGrowableCol(0)
@@ -277,9 +274,6 @@ class ConfTreeNodeEditor(EditorPanel):
         if self.ParamsEditor is not None:
             self.RefreshConfNodeParamsSizer()
             self.RefreshScrollbars()
-    
-    def EnableScrolling(self, enable):
-        self.ScrollingEnabled = enable
     
     def RefreshIECChannelControlsState(self):
         self.FullIECChannel.SetLabel(self.Controler.GetFullIEC_Channel())
@@ -469,7 +463,6 @@ class ConfTreeNodeEditor(EditorPanel):
                         choices = self.ParentWindow.GetConfigEntry(element_path, [""])
                         textctrl = TextCtrlAutoComplete(name=element_infos["name"], 
                                                         parent=self.ParamsEditor, 
-                                                        appframe=self, 
                                                         choices=choices, 
                                                         element_path=element_path,
                                                         size=wx.Size(300, -1))
@@ -477,7 +470,9 @@ class ConfTreeNodeEditor(EditorPanel):
                         boxsizer.AddWindow(textctrl)
                         if element_infos["value"] is not None:
                             textctrl.ChangeValue(str(element_infos["value"]))
-                        textctrl.Bind(wx.EVT_TEXT, self.GetTextCtrlCallBackFunction(textctrl, element_path))
+                        callback = self.GetTextCtrlCallBackFunction(textctrl, element_path)
+                        textctrl.Bind(wx.EVT_TEXT_ENTER, callback)
+                        textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
             first = False
     
     
@@ -569,11 +564,14 @@ class ConfTreeNodeEditor(EditorPanel):
         self.ParamsEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
     
-    def OnWindowResize(self, event):
+    def OnParamsEditorResize(self, event):
         self.RefreshScrollbars()
         event.Skip()
     
-    def OnMouseWheel(self, event):
-        if self.ScrollingEnabled:
-            event.Skip()
+    def OnParamsEditorScroll(self, event):
+        control = self.ParamsEditor.FindFocus()
+        if isinstance(control, TextCtrlAutoComplete):
+            control.DismissListBox()
+            self.Refresh()
+        event.Skip()
     
