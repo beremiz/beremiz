@@ -150,8 +150,10 @@ class ConfigTreeNode:
         parts = path.split(".", 1)
         if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
             self.MandatoryParams[1].setElementValue(parts[1], value)
+            value = self.MandatoryParams[1].getElementInfos(parts[0], parts[1])["value"]
         elif self.CTNParams and parts[0] == self.CTNParams[0]:
             self.CTNParams[1].setElementValue(parts[1], value)
+            value = self.CTNParams[1].getElementInfos(parts[0], parts[1])["value"]
         return value, False
 
     def CTNMakeDir(self):

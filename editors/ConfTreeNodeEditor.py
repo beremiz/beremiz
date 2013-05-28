@@ -531,8 +531,8 @@ class ConfTreeNodeEditor(EditorPanel):
             if res != textctrl.GetValue():
                 if isinstance(textctrl, wx.SpinCtrl):
                     textctrl.SetValue(res)
-                else:
-                    textctrl.ChangeValue(res)
+                elif res is not None:
+                    textctrl.ChangeValue(str(res))
             if refresh:
                 wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU, PROJECTTREE, PAGETITLES)
                 wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, self.GetTagName())
