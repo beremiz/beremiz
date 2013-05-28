@@ -100,10 +100,7 @@ class CodeEditor(CustomStyledTextCtrl):
         self.DisableEvents = True
         self.CurrentAction = None
         
-        self.Highlights = []
-        self.SearchParams = None
-        self.SearchResults = None
-        self.CurrentFindHighlight = None
+        self.ResetSearchResults()
         
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
@@ -139,6 +136,12 @@ class CodeEditor(CustomStyledTextCtrl):
     
     def SetCodeLexer(self):
         pass
+    
+    def ResetSearchResults(self):
+        self.Highlights = []
+        self.SearchParams = None
+        self.SearchResults = None
+        self.CurrentFindHighlight = None
     
     def OnModification(self, event):
         if not self.DisableEvents:
@@ -241,7 +244,7 @@ class CodeEditor(CustomStyledTextCtrl):
         self.RefreshSectionStyling()
         
         self.ShowHighlights()
-
+        
     def RefreshSectionStyling(self):
         self.Colourise(0, -1)
         
@@ -274,7 +277,8 @@ class CodeEditor(CustomStyledTextCtrl):
             else:
                 parts[section] = ""
         self.Controler.SetTextParts(parts)
-
+        self.ResetSearchResults()
+    
     def OnKeyPressed(self, event):
         if self.CallTipActive():
             self.CallTipCancel()
@@ -503,8 +507,21 @@ class CodeEditor(CustomStyledTextCtrl):
                     self.CurrentFindHighlight = self.SearchResults[idx]
                     self.AddHighlight(*self.CurrentFindHighlight)
             else:
-                self.CurrentFindHighlight = self.SearchResults[0]
-                self.AddHighlight(*self.CurrentFindHighlight)
+                caret_pos = self.GetCurrentPos()
+                if self.SearchParams["wrap"]:
+                    self.CurrentFindHighlight = self.SearchResults[0]
+                else:
+                    self.CurrentFindHighlight = None
+                for start, end, highlight_type in self.SearchResults:
+                    if start[0] == 0:
+                        highlight_start_pos = start[1]
+                    else:
+                        highlight_start_pos = self.GetLineEndPosition(start[0] - 1) + start[1] + 1
+                    if highlight_start_pos >= caret_pos:
+                        self.CurrentFindHighlight = (start, end, highlight_type)
+                        break
+                if self.CurrentFindHighlight is not None:
+                    self.AddHighlight(*self.CurrentFindHighlight)
             
             self.ScrollToLine(self.CurrentFindHighlight[0][0])
             
@@ -552,12 +569,12 @@ class CodeEditor(CustomStyledTextCtrl):
             else:
                 highlight_start_pos = self.GetLineEndPosition(start[0] - 1) + start[1] + 1
             if end[0] == 0:
-                highlight_end_pos = end[1] - indent + 1
+                highlight_end_pos = end[1] + 1
             else:
                 highlight_end_pos = self.GetLineEndPosition(end[0] - 1) + end[1] + 2
             self.StartStyling(highlight_start_pos, 0xff)
             self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
-            self.StartStyling(highlight_start_pos, 0x00)
+            self.StartStyling(highlight_end_pos, 0x00)
             self.SetStyling(len(self.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
 
 

@@ -163,13 +163,12 @@ class TextViewer(EditorPanel):
         self.DisableEvents = True
         self.TextSyntax = None
         self.CurrentAction = None
-        self.Highlights = []
-        self.SearchParams = None
-        self.SearchResults = None
-        self.CurrentFindHighlight = None
+        
         self.InstancePath = instancepath
         self.ContextStack = []
         self.CallStack = []
+        
+        self.ResetSearchResults()
         
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
@@ -213,6 +212,12 @@ class TextViewer(EditorPanel):
     
     def GetCurrentPos(self):
         return self.Editor.GetCurrentPos()
+    
+    def ResetSearchResults(self):
+        self.Highlights = []
+        self.SearchParams = None
+        self.SearchResults = None
+        self.CurrentFindHighlight = None
     
     def OnModification(self, event):
         if not self.DisableEvents:
@@ -786,6 +791,7 @@ class TextViewer(EditorPanel):
     def RefreshModel(self):
         self.RefreshJumpList()
         self.Controler.SetEditedElementText(self.TagName, self.GetText())
+        self.ResetSearchResults()
     
     def OnKeyDown(self, event):
         if self.Controler is not None:
