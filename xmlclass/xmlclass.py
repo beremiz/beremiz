@@ -1598,14 +1598,14 @@ def generateGetElementInfos(factory, classinfos):
         if path is not None:
             parts = path.split(".", 1)
             if attributes.has_key(parts[0]):
-                if len(parts) != 0:
+                if len(parts) != 1:
                     raise ValueError("Wrong path!")
                 attr_type = gettypeinfos(attributes[parts[0]]["attr_type"]["basename"], 
                                          attributes[parts[0]]["attr_type"]["facets"])
                 value = getattr(self, parts[0], "")
             elif elements.has_key(parts[0]):
                 if elements[parts[0]]["elmt_type"]["type"] == SIMPLETYPE:
-                    if len(parts) != 0:
+                    if len(parts) != 1:
                         raise ValueError("Wrong path!")
                     attr_type = gettypeinfos(elements[parts[0]]["elmt_type"]["basename"], 
                                              elements[parts[0]]["elmt_type"]["facets"])
@@ -1620,6 +1620,11 @@ def generateGetElementInfos(factory, classinfos):
                         return attr.getElementInfos(parts[0])
                     else:
                         return attr.getElementInfos(parts[0], parts[1])
+            elif elements.has_key("content"):
+                if len(parts) > 0:
+                    return self.content["value"].getElementInfos(name, path)
+            elif classinfos.has_key("base"):
+                classinfos["base"].getElementInfos(name, path)
             else:
                 raise ValueError("Wrong path!")
         else:
