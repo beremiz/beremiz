@@ -54,7 +54,7 @@ class FBDVariableDialog(wx.Dialog):
         main_sizer.AddSizer(column_sizer, border=20, 
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
         
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=6, vgap=5)
+        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=5)
         left_gridsizer.AddGrowableCol(0)
         column_sizer.AddSizer(left_gridsizer, 1, border=5, 
               flag=wx.GROW|wx.RIGHT)
@@ -66,13 +66,6 @@ class FBDVariableDialog(wx.Dialog):
         self.Bind(wx.EVT_COMBOBOX, self.OnClassChanged, self.Class)
         left_gridsizer.AddWindow(self.Class, flag=wx.GROW)
         
-        expression_label = wx.StaticText(self, label=_('Expression:'))
-        left_gridsizer.AddWindow(expression_label, flag=wx.GROW)
-        
-        self.Expression = wx.TextCtrl(self)
-        self.Bind(wx.EVT_TEXT, self.OnExpressionChanged, self.Expression)
-        left_gridsizer.AddWindow(self.Expression, flag=wx.GROW)
-        
         execution_order_label = wx.StaticText(self, label=_('Execution Order:'))
         left_gridsizer.AddWindow(execution_order_label, flag=wx.GROW)
         
@@ -80,16 +73,20 @@ class FBDVariableDialog(wx.Dialog):
         self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged, self.ExecutionOrder)
         left_gridsizer.AddWindow(self.ExecutionOrder, flag=wx.GROW)
         
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
+        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
         right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(1)
+        right_gridsizer.AddGrowableRow(2)
         column_sizer.AddSizer(right_gridsizer, 1, border=5, 
               flag=wx.GROW|wx.LEFT)
         
-        name_label = wx.StaticText(self, label=_('Name:'))
-        right_gridsizer.AddWindow(name_label, flag=wx.GROW)
+        name_label = wx.StaticText(self, label=_('Expression:'))
+        right_gridsizer.AddWindow(name_label, border=5, flag=wx.GROW|wx.BOTTOM)
         
-        self.VariableName = wx.ListBox(self, size=wx.Size(0, 0), 
+        self.Expression = wx.TextCtrl(self)
+        self.Bind(wx.EVT_TEXT, self.OnExpressionChanged, self.Expression)
+        right_gridsizer.AddWindow(self.Expression, flag=wx.GROW)
+        
+        self.VariableName = wx.ListBox(self, size=wx.Size(0, 120), 
               style=wx.LB_SINGLE|wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
         right_gridsizer.AddWindow(self.VariableName, flag=wx.GROW)
@@ -131,19 +128,16 @@ class FBDVariableDialog(wx.Dialog):
         self.Preview.SetFont(font)
 
     def RefreshNameList(self):
-        selected = self.VariableName.GetStringSelection()
+        selected = self.Expression.GetValue()
         var_class = VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()]
         self.VariableName.Clear()
-        self.VariableName.Append("")
         for name, var_type, value_type in self.VarList:
             if var_type != "Input" or var_class == INPUT:
                 self.VariableName.Append(name)
         if selected != "" and self.VariableName.FindString(selected) != wx.NOT_FOUND:
             self.VariableName.SetStringSelection(selected)
-            self.Expression.Enable(False)
         else:
-            self.VariableName.SetStringSelection("")
-            #self.Expression.Enable(var_class == INPUT)
+            self.VariableName.SetSelection(wx.NOT_FOUND)
         self.VariableName.Enable(self.VariableName.GetCount() > 0)
             
     def SetMinVariableSize(self, size):
@@ -160,12 +154,11 @@ class FBDVariableDialog(wx.Dialog):
             self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[value_type])
             self.RefreshNameList()
         if value_name:
+            self.Expression.ChangeValue(value_name)
             if self.VariableName.FindString(value_name) != wx.NOT_FOUND:
                 self.VariableName.SetStringSelection(value_name)
-                self.Expression.Enable(False)
             else:
-                self.Expression.SetValue(value_name)
-                self.VariableName.Enable(False)
+                self.VariableName.SetSelection(wx.NOT_FOUND)
         if "executionOrder" in values:
             self.ExecutionOrder.SetValue(values["executionOrder"])
         self.RefreshPreview()
@@ -173,11 +166,7 @@ class FBDVariableDialog(wx.Dialog):
     def GetValues(self):
         values = {}
         values["type"] = VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()]
-        expression = self.Expression.GetValue()
-        if self.Expression.IsEnabled() and expression != "":
-            values["name"] = expression
-        else:
-            values["name"] = self.VariableName.GetStringSelection()
+        values["name"] = self.Expression.GetValue()
         values["value_type"] = None
         for var_name, var_type, value_type in self.VarList:
             if var_name == values["name"]:
@@ -188,11 +177,7 @@ class FBDVariableDialog(wx.Dialog):
 
     def OnOK(self, event):
         message = None
-        expression = self.Expression.GetValue()
-        if self.Expression.IsEnabled():
-            value = expression
-        else:
-            value = self.VariableName.GetStringSelection()
+        value = self.Expression.GetValue()
         if value == "":
             message = _("At least a variable or an expression must be selected!")
         elif value.upper() in IEC_KEYWORDS:
@@ -210,18 +195,15 @@ class FBDVariableDialog(wx.Dialog):
         event.Skip()
 
     def OnNameChanged(self, event):
-        if self.VariableName.GetStringSelection() != "":
-            self.Expression.Enable(False)
-        elif VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()] == INPUT:
-            self.Expression.Enable(True)
+        self.Expression.ChangeValue(
+            self.VariableName.GetStringSelection())
         self.RefreshPreview()
         event.Skip()
     
     def OnExpressionChanged(self, event):
-        if self.Expression.GetValue() != "":
-            self.VariableName.Enable(False)
-        else:
-            self.VariableName.Enable(True)
+        expression = self.Expression.GetValue()
+        self.VariableName.SetSelection(
+            self.VariableName.FindString(expression))
         self.RefreshPreview()
         event.Skip()
     
@@ -233,11 +215,7 @@ class FBDVariableDialog(wx.Dialog):
         dc = wx.ClientDC(self.Preview)
         dc.SetFont(self.Preview.GetFont())
         dc.Clear()
-        expression = self.Expression.GetValue()
-        if self.Expression.IsEnabled() and expression != "":
-            name = expression
-        else:
-            name = self.VariableName.GetStringSelection()
+        name = self.Expression.GetValue()
         type = ""
         for var_name, var_type, value_type in self.VarList:
             if var_name == name:
