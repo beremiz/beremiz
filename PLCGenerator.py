@@ -654,7 +654,16 @@ class PouProgramGenerator:
                     self.Interface.append((varTypeNames[varlist["name"]], option, False, variables))
                 if len(located) > 0:
                     self.Interface.append((varTypeNames[varlist["name"]], option, True, located))
-        
+    
+    LITERAL_TYPES = {
+        "T": "TIME",
+        "D": "DATE",
+        "TOD": "TIME_OF_DAY",
+        "DT": "DATE_AND_TIME",
+        "2": "ANY",
+        "8": "ANY",
+        "16": "ANY",
+    }
     def ComputeConnectionTypes(self, pou):
         body = pou.getbody()
         if isinstance(body, ListType):
@@ -681,7 +690,9 @@ class PouProgramGenerator:
                     elif var_type is None:
                         parts = expression.split("#")
                         if len(parts) > 1:
-                            var_type = parts[0]
+                            literal_prefix = parts[0].upper()
+                            var_type = self.LITERAL_TYPES.get(literal_prefix, 
+                                                              literal_prefix)
                         elif expression.startswith("'"):
                             var_type = "STRING"
                         elif expression.startswith('"'):
