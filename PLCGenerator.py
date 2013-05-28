@@ -660,9 +660,9 @@ class PouProgramGenerator:
         "D": "DATE",
         "TOD": "TIME_OF_DAY",
         "DT": "DATE_AND_TIME",
-        "2": "ANY",
-        "8": "ANY",
-        "16": "ANY",
+        "2": None,
+        "8": None,
+        "16": None,
     }
     def ComputeConnectionTypes(self, pou):
         body = pou.getbody()
