@@ -3,8 +3,11 @@
   <variables>
     <variable name="WiiNunchuckStickX" type="INT"/>
     <variable name="WiiNunchuckStickY" type="INT"/>
-    <variable name="WiiNunchuckButtons" type="BYTE"/>
-    <variable name="WiiButtons" type="BYTE"/>
+    <variable name="WiiNunchuckAccX" type="INT"/>
+    <variable name="WiiNunchuckAccY" type="INT"/>
+    <variable name="WiiNunchuckAccZ" type="INT"/>
+    <variable name="WiiNunchuckButtons" type="WORD"/>
+    <variable name="WiiButtons" type="WORD"/>
   </variables>
   <globals>
 <![CDATA[
@@ -24,6 +27,9 @@ def Wiimote_cback(messages, time):
     if nunchuck is not None:
         PLCGlobals.WiiNunchuckButtons = nunchuck['buttons']
         X,Y = nunchuck['stick']
+        PLCGlobals.WiiNunchuckAccX = nunchuck['acc'][cwiid.X]
+        PLCGlobals.WiiNunchuckAccY = nunchuck['acc'][cwiid.Y]
+        PLCGlobals.WiiNunchuckAccZ = nunchuck['acc'][cwiid.Z]
         if nunchuckzero is None:
             nunchuckzero = X,Y
         (PLCGlobals.WiiNunchuckStickX,
