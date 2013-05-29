@@ -1004,9 +1004,9 @@ if USE_MPL:
             wx.WXK_DOWN: 10}
         def OnKeyDown(self, event):
             if self.CursorTick is not None:
-                self.ParentWindow.MoveCursorTick(
-                    self.KEY_CURSOR_INCREMENT.get(
-                      event.GetKeyCode(), 0))
+                move = self.KEY_CURSOR_INCREMENT.get(event.GetKeyCode(), None)
+                if move is not None:
+                    self.ParentWindow.MoveCursorTick(move)
             event.Skip()
         
         def HandleCursorMove(self, event):
@@ -2092,6 +2092,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 panel_size.width == panel_size.height):
                 panel.SetCanvasSize(size.width, size.width)
         self.RefreshGraphicsWindowScrollbars()
+        self.GraphicsSizer.Layout()
         event.Skip()
 
     def OnGraphicsWindowMouseWheel(self, event):
