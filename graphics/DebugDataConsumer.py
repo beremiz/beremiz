@@ -235,7 +235,8 @@ class DebugDataConsumer:
     
     def SetForced(self, forced):
         """
-        Update Forced flag. May be overridden by inherited classes
+        Update Forced flag.
+        May be overridden by inherited classes
         @param forced: New forced flag
         """
         self.Forced = forced
