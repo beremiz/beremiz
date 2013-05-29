@@ -180,8 +180,6 @@ class FBDVariableDialog(wx.Dialog):
         value = self.Expression.GetValue()
         if value == "":
             message = _("At least a variable or an expression must be selected!")
-        elif value.upper() in IEC_KEYWORDS:
-            message = _("\"%s\" is a keyword. It can't be used!") % value
         if message is not None:
             message = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
             message.ShowModal()
