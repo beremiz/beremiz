@@ -26,7 +26,6 @@ from types import TupleType, ListType, FloatType
 from time import time as gettime
 import math
 import numpy
-import binascii
 
 import wx
 import wx.lib.buttons
@@ -48,6 +47,7 @@ except:
 from graphics.DebugDataConsumer import DebugDataConsumer
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from controls import CustomGrid, CustomTable
+from controls.DebugVariablePanel.DebugVariableItem import DebugVariableItem
 from dialogs.ForceVariableDialog import ForceVariableDialog
 from util.BitmapLibrary import GetBitmap
 
@@ -57,173 +57,6 @@ def AppendMenu(parent, help, id, kind, text):
 def GetDebugVariablesTableColnames():
     _ = lambda x : x
     return [_("Variable"), _("Value")]
-
-CRC_SIZE = 8
-CRC_MASK = 2 ** CRC_SIZE - 1
-
-class VariableTableItem(DebugDataConsumer):
-    
-    def __init__(self, parent, variable):
-        DebugDataConsumer.__init__(self)
-        self.Parent = parent
-        self.Variable = variable
-        self.RefreshVariableType()
-        self.Value = ""
-        
-    def __del__(self):
-        self.Parent = None
-    
-    def SetVariable(self, variable):
-        if self.Parent and self.Variable != variable:
-            self.Variable = variable
-            self.RefreshVariableType()
-            self.Parent.RefreshView()
-    
-    def GetVariable(self, mask=None):
-        variable = self.Variable
-        if mask is not None:
-            parts = variable.split('.')
-            mask = mask + ['*'] * max(0, len(parts) - len(mask))
-            last = None
-            variable = ""
-            for m, v in zip(mask, parts):
-                if m == '*':
-                    if last == '*':
-                        variable += '.'
-                    variable += v
-                elif last is None or last == '*':
-                    variable += '..'
-                last = m
-        return variable
-    
-    def RefreshVariableType(self):
-        self.VariableType = self.Parent.GetDataType(self.Variable)
-        if USE_MPL:
-            self.ResetData()
-    
-    def GetVariableType(self):
-        return self.VariableType
-    
-    def GetData(self, start_tick=None, end_tick=None):
-        if USE_MPL and self.IsNumVariable():
-            if len(self.Data) == 0:
-                return self.Data
-            
-            start_idx = end_idx = None
-            if start_tick is not None:
-                start_idx = self.GetNearestData(start_tick, -1)
-            if end_tick is not None:
-                end_idx = self.GetNearestData(end_tick, 1)
-            if start_idx is None:
-                start_idx = 0
-            if end_idx is not None:
-                return self.Data[start_idx:end_idx + 1]
-            else:
-                return self.Data[start_idx:]
-            
-        return None
-    
-    def GetRawValue(self, idx):
-        if self.VariableType in ["STRING", "WSTRING"] and idx < len(self.RawData):
-            return self.RawData[idx][0]
-        return ""
-    
-    def GetRange(self):
-        return self.MinValue, self.MaxValue
-    
-    def ResetData(self):
-        if self.IsNumVariable():
-            self.Data = numpy.array([]).reshape(0, 3)
-            if self.VariableType in ["STRING", "WSTRING"]:
-                self.RawData = []
-            self.MinValue = None
-            self.MaxValue = None
-        else:
-            self.Data = None
-        self.Value = ""
-    
-    def IsNumVariable(self):
-        return (self.Parent.IsNumType(self.VariableType) or 
-                self.VariableType in ["STRING", "WSTRING"])
-    
-    def NewValue(self, tick, value, forced=False):
-        if USE_MPL and self.IsNumVariable():
-            if self.VariableType in ["STRING", "WSTRING"]:
-                num_value = binascii.crc32(value) & CRC_MASK
-            else:
-                num_value = float(value)
-            if self.MinValue is None:
-                self.MinValue = num_value
-            else:
-                self.MinValue = min(self.MinValue, num_value)
-            if self.MaxValue is None:
-                self.MaxValue = num_value
-            else:
-                self.MaxValue = max(self.MaxValue, num_value)
-            forced_value = float(forced)
-            if self.VariableType in ["STRING", "WSTRING"]:
-                raw_data = (value, forced_value)
-                if len(self.RawData) == 0 or self.RawData[-1] != raw_data:
-                    extra_value = len(self.RawData)
-                    self.RawData.append(raw_data)
-                else:
-                    extra_value = len(self.RawData) - 1
-            else:
-                extra_value = forced_value
-            self.Data = numpy.append(self.Data, [[float(tick), num_value, extra_value]], axis=0)
-            self.Parent.HasNewData = True
-        DebugDataConsumer.NewValue(self, tick, value, forced)
-    
-    def SetForced(self, forced):
-        if self.Forced != forced:
-            self.Forced = forced
-            self.Parent.HasNewData = True
-    
-    def SetValue(self, value):
-        if (self.VariableType == "STRING" and value.startswith("'") and value.endswith("'") or
-            self.VariableType == "WSTRING" and value.startswith('"') and value.endswith('"')):
-            value = value[1:-1]
-        if self.Value != value:
-            self.Value = value
-            self.Parent.HasNewData = True
-            
-    def GetValue(self, tick=None, raw=False):
-        if tick is not None and self.IsNumVariable():
-            if len(self.Data) > 0:
-                idx = numpy.argmin(abs(self.Data[:, 0] - tick))
-                if self.VariableType in ["STRING", "WSTRING"]:
-                    value, forced = self.RawData[int(self.Data[idx, 2])]
-                    if not raw:
-                        if self.VariableType == "STRING":
-                            value = "'%s'" % value
-                        else:
-                            value = '"%s"' % value
-                    return value, forced
-                else:
-                    value = self.Data[idx, 1]
-                    if not raw and isinstance(value, FloatType):
-                        value = "%.6g" % value
-                    return value, self.Data[idx, 2]
-            return self.Value, self.IsForced()
-        elif not raw:
-            if self.VariableType == "STRING":
-                return "'%s'" % self.Value
-            elif self.VariableType == "WSTRING":
-                return '"%s"' % self.Value
-            elif isinstance(self.Value, FloatType):
-                return "%.6g" % self.Value
-        return self.Value
-
-    def GetNearestData(self, tick, adjust):
-        if USE_MPL and self.IsNumVariable():
-            ticks = self.Data[:, 0]
-            new_cursor = numpy.argmin(abs(ticks - tick))
-            if adjust == -1 and ticks[new_cursor] > tick and new_cursor > 0:
-                new_cursor -= 1
-            elif adjust == 1 and ticks[new_cursor] < tick and new_cursor < len(ticks):
-                new_cursor += 1
-            return new_cursor
-        return None
 
 class DebugVariableTable(CustomTable):
     
@@ -445,7 +278,7 @@ if USE_MPL:
     
     def OrthogonalData(item, start_tick, end_tick):
         data = item.GetData(start_tick, end_tick)
-        min_value, max_value = item.GetRange()
+        min_value, max_value = item.GetValueRange()
         if min_value is not None and max_value is not None:
             center = (min_value + max_value) / 2.
             range = max(1.0, max_value - min_value)
@@ -1295,7 +1128,7 @@ if USE_MPL:
                     for idx, item in enumerate(self.Items):
                         data = item.GetData(start_tick, end_tick)
                         if data is not None:
-                            item_min_value, item_max_value = item.GetRange()
+                            item_min_value, item_max_value = item.GetValueRange()
                             if min_value is None:
                                 min_value = item_min_value
                             elif item_min_value is not None:
@@ -2096,7 +1929,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                     return
             if idx is None:
                 idx = self.Table.GetNumberRows()
-        item = VariableTableItem(self, iec_path)
+        item = DebugVariableItem(self, iec_path, USE_MPL)
         result = self.AddDataConsumer(iec_path.upper(), item)
         if result is not None or force:
             
@@ -2158,7 +1991,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 source_panel = panel
                 break
         if source_item is None:
-            item = VariableTableItem(self, source)
+            item = DebugVariableItem(self, source, USE_MPL)
             if item.IsNumVariable():
                 result = self.AddDataConsumer(source.upper(), item)
                 if result is not None or force:
@@ -2254,7 +2087,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         size = self.GetSize()
         for panel in self.GraphicPanels:
             panel_size = panel.GetSize()
-            if panel.GraphType == GRAPH_ORTHOGONAL and panel_size.width == panel_size.height:
+            if (isinstance(panel, DebugVariableGraphic) and 
+                panel.GraphType == GRAPH_ORTHOGONAL and 
+                panel_size.width == panel_size.height):
                 panel.SetCanvasSize(size.width, size.width)
         self.RefreshGraphicsWindowScrollbars()
         event.Skip()
