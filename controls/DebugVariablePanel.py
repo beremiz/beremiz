@@ -812,6 +812,7 @@ if USE_MPL:
             self.Figure.subplotpars.update(top=0.95, left=0.1, bottom=0.1, right=0.95)
             
             FigureCanvas.__init__(self, parent, -1, self.Figure)
+            self.SetWindowStyle(wx.WANTS_CHARS)
             self.SetBackgroundColour(wx.WHITE)
             self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
             self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
