@@ -2209,7 +2209,7 @@ class PLCControler:
             text = "<paste>%s</paste>"%text
             
             try:
-                tree = minidom.parseString(text)
+                tree = minidom.parseString(text.encode("utf-8"))
             except:
                 return _("Invalid plcopen element(s)!!!")
             instances = []
