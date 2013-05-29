@@ -322,19 +322,25 @@ class PouInstanceVariablesPanel(wx.Panel):
         event.Skip()
         
     def OnVariablesListItemActivated(self, event):
-        if self.InstanceChoice.GetSelection() != -1:
-            instance_path = self.InstanceChoice.GetStringSelection()
-            selected_item = event.GetItem()
-            if selected_item is not None and selected_item.IsOk():
-                item_infos = self.VariablesList.GetPyData(selected_item)
-                if item_infos is not None and item_infos["class"] not in ITEMS_VARIABLE:
-                    if item_infos["class"] == ITEM_RESOURCE:
+        selected_item = event.GetItem()
+        if selected_item is not None and selected_item.IsOk():
+            item_infos = self.VariablesList.GetPyData(selected_item)
+            if item_infos is not None and item_infos["class"] not in ITEMS_VARIABLE:
+                instance_path = self.InstanceChoice.GetStringSelection()
+                if item_infos["class"] == ITEM_RESOURCE:
+                    if instance_path != "":
                         tagname = self.Controller.ComputeConfigurationResourceName(
                                        instance_path, 
                                        item_infos["name"])
                     else:
-                        tagname = self.Controller.ComputePouName(item_infos["type"])
-                    item_path = "%s.%s" % (instance_path, item_infos["name"])
+                        tagname = None
+                else:
+                    tagname = self.Controller.ComputePouName(item_infos["type"])
+                if tagname is not None:
+                    if instance_path != "":
+                        item_path = "%s.%s" % (instance_path, item_infos["name"])
+                    else:
+                        item_path = None
                     wx.CallAfter(self.SetPouType, tagname, item_path)
                     wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, tagname)
         event.Skip()
