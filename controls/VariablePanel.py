@@ -536,7 +536,9 @@ class VariablePanel(wx.Panel):
                     name = row_content["Name"]
                     start_idx = 0
             else:
-                name = ""
+                row_content = None
+                start_idx = 0
+                name = "LocalVar"
                 
             if row_content is not None and row_content["Edit"]: 
                 row_content = self.Values[new_row - 1].copy()
