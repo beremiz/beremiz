@@ -8,7 +8,7 @@
               productVersion="1"
               creationDateTime="2012-09-12T23:30:19"/>
   <contentHeader name="Unnamed"
-                 modificationDateTime="2013-05-16T17:17:49">
+                 modificationDateTime="2013-05-28T18:28:14">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -37,14 +37,29 @@
                 <INT/>
               </type>
             </variable>
+            <variable name="a">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="b">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="c">
+              <type>
+                <INT/>
+              </type>
+            </variable>
             <variable name="b1">
               <type>
-                <BYTE/>
+                <WORD/>
               </type>
             </variable>
             <variable name="b0">
               <type>
-                <BYTE/>
+                <WORD/>
               </type>
             </variable>
           </localVars>
@@ -61,12 +76,27 @@
             </variable>
             <variable name="WiiNunchuckButtons">
               <type>
-                <BYTE/>
+                <WORD/>
               </type>
             </variable>
             <variable name="WiiButtons">
               <type>
-                <BYTE/>
+                <WORD/>
+              </type>
+            </variable>
+            <variable name="WiiNunchuckAccX">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="WiiNunchuckAccY">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="WiiNunchuckAccZ">
+              <type>
+                <INT/>
               </type>
             </variable>
           </externalVars>
@@ -144,6 +174,60 @@
                 </connection>
               </connectionPointIn>
               <expression>b0</expression>
+            </outVariable>
+            <inVariable localId="11" height="30" width="135">
+              <position x="135" y="295"/>
+              <connectionPointOut>
+                <relPosition x="135" y="15"/>
+              </connectionPointOut>
+              <expression>WiiNunchuckAccX</expression>
+            </inVariable>
+            <inVariable localId="12" height="30" width="135">
+              <position x="135" y="340"/>
+              <connectionPointOut>
+                <relPosition x="135" y="15"/>
+              </connectionPointOut>
+              <expression>WiiNunchuckAccY</expression>
+            </inVariable>
+            <inVariable localId="13" height="30" width="130">
+              <position x="140" y="385"/>
+              <connectionPointOut>
+                <relPosition x="130" y="15"/>
+              </connectionPointOut>
+              <expression>WiiNunchuckAccZ</expression>
+            </inVariable>
+            <outVariable localId="14" height="30" width="20">
+              <position x="345" y="295"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="11">
+                  <position x="345" y="310"/>
+                  <position x="270" y="310"/>
+                </connection>
+              </connectionPointIn>
+              <expression>a</expression>
+            </outVariable>
+            <outVariable localId="15" height="30" width="20">
+              <position x="345" y="340"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="12">
+                  <position x="345" y="355"/>
+                  <position x="270" y="355"/>
+                </connection>
+              </connectionPointIn>
+              <expression>b</expression>
+            </outVariable>
+            <outVariable localId="16" height="30" width="20">
+              <position x="345" y="385"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="13">
+                  <position x="345" y="400"/>
+                  <position x="270" y="400"/>
+                </connection>
+              </connectionPointIn>
+              <expression>c</expression>
             </outVariable>
           </FBD>
         </body>
