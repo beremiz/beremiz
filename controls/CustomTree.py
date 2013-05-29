@@ -24,8 +24,9 @@ from util.BitmapLibrary import GetBitmap
 CT.GenericTreeItem._ExtraImage = None
 
 def SetExtraImage(self, image):
-    self._type = 1
+    self._type = (1 if image is not None else 0)
     self._ExtraImage = image
+
 CT.GenericTreeItem.SetExtraImage = SetExtraImage
 
 _DefaultGetCurrentCheckedImage = CT.GenericTreeItem.GetCurrentCheckedImage
@@ -61,13 +62,15 @@ class CustomTree(CT.CustomTreeCtrl):
             self.ExtraImages[image] = self._imageListCheck.Add(GetBitmap(image.upper()))
     
     def SetItemExtraImage(self, item, bitmap):
+        dc = wx.ClientDC(self)
         image = self.ExtraImages.get(bitmap)
         if image is not None:
-            dc = wx.ClientDC(self)
             item.SetExtraImage(image)
-            self.CalculateSize(item, dc)
-            self.RefreshLine(item)
-    
+        else:
+            item.SetExtraImage(None)
+        self.CalculateSize(item, dc)
+        self.RefreshLine(item)   
+        
     def SetAddMenu(self, add_menu):
         self.AddMenu = add_menu
     

@@ -1465,6 +1465,7 @@ class IDEFrame(wx.Frame):
         highlight_colours = self.Highlights.get(infos.get("tagname", None), (wx.WHITE, wx.BLACK))
         self.ProjectTree.SetItemBackgroundColour(root, highlight_colours[0])
         self.ProjectTree.SetItemTextColour(root, highlight_colours[1])
+        self.ProjectTree.SetItemExtraImage(root, None)
         if infos["type"] == ITEM_POU:
             self.ProjectTree.SetItemImage(root, 
                 self.TreeImageDict[self.Controler.GetPouBodyType(infos["name"])])
