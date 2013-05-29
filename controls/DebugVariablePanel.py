@@ -1432,8 +1432,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         
         self.ParentWindow = window
         
-        DebugViewer.__init__(self, producer, True)
-        
         self.HasNewData = False
         self.Force = False
         
@@ -1466,10 +1464,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                   border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
             
             self.CanvasRange.Clear()
-            for text, value in RANGE_VALUES:
+            default_range_idx = 0
+            for idx, (text, value) in enumerate(RANGE_VALUES):
                 self.CanvasRange.Append(text)
-            self.CanvasRange.SetStringSelection(RANGE_VALUES[6][0])
-            self.CurrentRange = RANGE_VALUES[6][1] / self.Ticktime
+                if text == "1s":
+                    default_range_idx = idx
+            self.CanvasRange.SetSelection(default_range_idx)
             
             for name, bitmap, help in [
                 ("CurrentButton", "current", _("Go to current value")),
@@ -1586,16 +1586,24 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Table.ResetView(self.VariablesGrid)
             self.VariablesGrid.RefreshButtons()
         
-        self.SetSizer(main_sizer)
+        DebugViewer.__init__(self, producer, True)
         
+        self.SetSizer(main_sizer)
+    
+    def SetTickTime(self, ticktime=0):
+        if USE_MPL:
+            self.Ticktime = ticktime
+            if self.Ticktime == 0:
+                self.Ticktime = MILLISECOND
+            self.CurrentRange = RANGE_VALUES[
+                self.CanvasRange.GetSelection()][1] / self.Ticktime
+    
     def SetDataProducer(self, producer):
         DebugViewer.SetDataProducer(self, producer)
         
         if USE_MPL:
             if self.DataProducer is not None:
-                self.Ticktime = self.DataProducer.GetTicktime()
-            else:
-                self.Ticktime = MILLISECOND
+                self.SetTickTime(self.DataProducer.GetTicktime())
     
     def RefreshNewData(self, *args, **kwargs):
         if self.HasNewData or self.Force:
@@ -1644,8 +1652,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             cursor_tick = max(self.Ticks[0], 
                           min(self.CursorTick + move, 
                               self.Ticks[-1]))
-            self.CursorTick = self.Ticks[
-                numpy.argmin(numpy.abs(self.Ticks - cursor_tick))]
+            cursor_tick_idx = numpy.argmin(numpy.abs(self.Ticks - cursor_tick))
+            if self.Ticks[cursor_tick_idx] == self.CursorTick:
+                cursor_tick_idx = max(0, 
+                                  min(cursor_tick_idx + abs(move) / move, 
+                                      len(self.Ticks) - 1))
+            self.CursorTick = self.Ticks[cursor_tick_idx]
             self.StartTick = max(self.Ticks[
                                 numpy.argmin(numpy.abs(self.Ticks - 
                                         self.CursorTick + self.CurrentRange))],
@@ -1806,23 +1818,20 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 tick = None
             if tick is not None:
                 self.TickLabel.SetLabel("Tick: %d" % tick)
-                if self.Ticktime > 0:
-                    tick_duration = int(tick * self.Ticktime)
-                    not_null = False
-                    duration = ""
-                    for value, format in [(tick_duration / DAY, "%dd"),
-                                          ((tick_duration % DAY) / HOUR, "%dh"),
-                                          ((tick_duration % HOUR) / MINUTE, "%dm"),
-                                          ((tick_duration % MINUTE) / SECOND, "%ds")]:
-                        
-                        if value > 0 or not_null:
-                            duration += format % value
-                            not_null = True
+                tick_duration = int(tick * self.Ticktime)
+                not_null = False
+                duration = ""
+                for value, format in [(tick_duration / DAY, "%dd"),
+                                      ((tick_duration % DAY) / HOUR, "%dh"),
+                                      ((tick_duration % HOUR) / MINUTE, "%dm"),
+                                      ((tick_duration % MINUTE) / SECOND, "%ds")]:
                     
-                    duration += "%gms" % (float(tick_duration % SECOND) / MILLISECOND) 
-                    self.TickTimeLabel.SetLabel("t: %s" % duration)
-                else:
-                    self.TickTimeLabel.SetLabel("")
+                    if value > 0 or not_null:
+                        duration += format % value
+                        not_null = True
+                
+                duration += "%gms" % (float(tick_duration % SECOND) / MILLISECOND) 
+                self.TickTimeLabel.SetLabel("t: %s" % duration)
             else:
                 self.TickLabel.SetLabel("")
                 self.TickTimeLabel.SetLabel("")
@@ -1845,7 +1854,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.SubscribeAllDataConsumers()
         if USE_MPL:
             if self.DataProducer is not None:
-                self.Ticktime = self.DataProducer.GetTicktime()
+                if self.DataProducer is not None:
+                    self.SetTickTime(self.DataProducer.GetTicktime())
             
             for panel in self.GraphicPanels:
                 panel.UnregisterObsoleteData()
