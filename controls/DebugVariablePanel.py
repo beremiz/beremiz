@@ -392,10 +392,11 @@ if USE_MPL:
     DAY = 24 * HOUR
     
     ZOOM_VALUES = map(lambda x:("x %.1f" % x, x), [math.sqrt(2) ** i for i in xrange(8)])
-    RANGE_VALUES = map(lambda x: (str(x), x), [25 * 2 ** i for i in xrange(6)])
-    TIME_RANGE_VALUES = [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
-                        [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
-                        [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
+    RANGE_VALUES = \
+        [("%dms" % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
+        [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
+        [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
+        [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
     
     GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
     
@@ -1442,7 +1443,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             main_sizer = wx.BoxSizer(wx.VERTICAL)
             
             self.Ticks = numpy.array([])
-            self.RangeValues = None
             self.StartTick = 0
             self.Fixed = False
             self.CursorTick = None
@@ -1464,6 +1464,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Bind(wx.EVT_COMBOBOX, self.OnRangeChanged, self.CanvasRange)
             graphics_button_sizer.AddWindow(self.CanvasRange, 1, 
                   border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
+            
+            self.CanvasRange.Clear()
+            for text, value in RANGE_VALUES:
+                self.CanvasRange.Append(text)
+            self.CanvasRange.SetStringSelection(RANGE_VALUES[6][0])
+            self.CurrentRange = RANGE_VALUES[6][1] / self.Ticktime
             
             for name, bitmap, help in [
                 ("CurrentButton", "current", _("Go to current value")),
@@ -1514,8 +1520,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             
             self.GraphicsSizer = wx.BoxSizer(wx.VERTICAL)
             self.GraphicsWindow.SetSizer(self.GraphicsSizer)
-            
-            self.RefreshCanvasRange()
             
         else:
             main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
@@ -1590,9 +1594,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if USE_MPL:
             if self.DataProducer is not None:
                 self.Ticktime = self.DataProducer.GetTicktime()
-                self.RefreshCanvasRange()
             else:
-                self.Ticktime = 0
+                self.Ticktime = MILLISECOND
     
     def RefreshNewData(self, *args, **kwargs):
         if self.HasNewData or self.Force:
@@ -1843,7 +1846,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if USE_MPL:
             if self.DataProducer is not None:
                 self.Ticktime = self.DataProducer.GetTicktime()
-                self.RefreshCanvasRange()
             
             for panel in self.GraphicPanels:
                 panel.UnregisterObsoleteData()
@@ -1888,24 +1890,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Table.ResetView(self.VariablesGrid)
             self.VariablesGrid.RefreshButtons()
             self.Thaw()
-    
-    def RefreshCanvasRange(self):
-        if self.Ticktime == 0 and self.RangeValues != RANGE_VALUES:
-            self.RangeValues = RANGE_VALUES
-            self.CanvasRange.Clear()
-            for text, value in RANGE_VALUES:
-                self.CanvasRange.Append(text)
-            self.CanvasRange.SetStringSelection(RANGE_VALUES[0][0])
-            self.CurrentRange = RANGE_VALUES[0][1]
-            self.RefreshView(True)
-        elif self.Ticktime != 0 and self.RangeValues != TIME_RANGE_VALUES:
-            self.RangeValues = TIME_RANGE_VALUES
-            self.CanvasRange.Clear()
-            for text, value in TIME_RANGE_VALUES:
-                self.CanvasRange.Append(text)
-            self.CanvasRange.SetStringSelection(TIME_RANGE_VALUES[0][0])
-            self.CurrentRange = TIME_RANGE_VALUES[0][1] / self.Ticktime
-            self.RefreshView(True)
     
     def RefreshCanvasPosition(self):
         if len(self.Ticks) > 0:
@@ -1967,13 +1951,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def ChangeRange(self, dir, tick=None):
         current_range = self.CurrentRange
         current_range_idx = self.CanvasRange.GetSelection()
-        new_range_idx = max(0, min(current_range_idx + dir, len(self.RangeValues) - 1))
+        new_range_idx = max(0, min(current_range_idx + dir, len(RANGE_VALUES) - 1))
         if new_range_idx != current_range_idx:
             self.CanvasRange.SetSelection(new_range_idx)
-            if self.Ticktime == 0:
-                self.CurrentRange = self.RangeValues[new_range_idx][1]
-            else:
-                self.CurrentRange = self.RangeValues[new_range_idx][1] / self.Ticktime
+            self.CurrentRange = RANGE_VALUES[new_range_idx][1] / self.Ticktime
             if len(self.Ticks) > 0:
                 if tick is None:
                     tick = self.StartTick + self.CurrentRange / 2.
@@ -1994,10 +1975,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     
     def OnRangeChanged(self, event):
         try:
-            if self.Ticktime == 0:
-                self.CurrentRange = self.RangeValues[self.CanvasRange.GetSelection()][1]
-            else:
-                self.CurrentRange = self.RangeValues[self.CanvasRange.GetSelection()][1] / self.Ticktime
+            self.CurrentRange = RANGE_VALUES[self.CanvasRange.GetSelection()][1] / self.Ticktime
         except ValueError, e:
             self.CanvasRange.SetValue(str(self.CurrentRange))
         wx.CallAfter(self.RefreshRange)
