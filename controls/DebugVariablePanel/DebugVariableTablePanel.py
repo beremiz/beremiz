@@ -29,9 +29,10 @@ import wx.lib.buttons
 
 from editors.DebugViewer import DebugViewer
 from controls import CustomGrid, CustomTable
-from controls.DebugVariablePanel.DebugVariableItem import DebugVariableItem
 from dialogs.ForceVariableDialog import ForceVariableDialog
 from util.BitmapLibrary import GetBitmap
+
+from DebugVariableItem import DebugVariableItem
 
 def GetDebugVariablesTableColnames():
     _ = lambda x : x

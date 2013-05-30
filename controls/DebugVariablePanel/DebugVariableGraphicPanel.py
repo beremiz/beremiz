@@ -41,9 +41,11 @@ color_cycle = ['r', 'b', 'g', 'm', 'y', 'k']
 cursor_color = '#800080'
 
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
-from controls.DebugVariablePanel.DebugVariableItem import DebugVariableItem
 from dialogs.ForceVariableDialog import ForceVariableDialog
 from util.BitmapLibrary import GetBitmap
+
+from DebugVariableItem import DebugVariableItem
+from GraphButton import GraphButton
 
 class DebugVariableDropTarget(wx.TextDropTarget):
     
@@ -195,58 +197,6 @@ def OrthogonalData(item, start_tick, end_tick):
         range = 1.0
     return data, center - range * 0.55, center + range * 0.55
 
-class GraphButton():
-    
-    def __init__(self, x, y, bitmap, callback):
-        self.Position = wx.Point(x, y)
-        self.Bitmap = bitmap
-        self.Shown = True
-        self.Enabled = True
-        self.Callback = callback
-    
-    def __del__(self):
-        self.callback = None
-    
-    def GetSize(self):
-        return self.Bitmap.GetSize()
-    
-    def SetPosition(self, x, y):
-        self.Position = wx.Point(x, y)
-    
-    def Show(self):
-        self.Shown = True
-        
-    def Hide(self):
-        self.Shown = False
-    
-    def IsShown(self):
-        return self.Shown
-    
-    def Enable(self):
-        self.Enabled = True
-    
-    def Disable(self):
-        self.Enabled = False
-    
-    def IsEnabled(self):
-        return self.Enabled
-    
-    def HitTest(self, x, y):
-        if self.Shown and self.Enabled:
-            w, h = self.Bitmap.GetSize()
-            rect = wx.Rect(self.Position.x, self.Position.y, w, h)
-            if rect.InsideXY(x, y):
-                return True
-        return False
-    
-    def ProcessCallback(self):
-        if self.Callback is not None:
-            wx.CallAfter(self.Callback)
-            
-    def Draw(self, dc):
-        if self.Shown and self.Enabled:
-            dc.DrawBitmap(self.Bitmap, self.Position.x, self.Position.y, True)
-
 class DebugVariableViewer:
     
     def __init__(self, window, items=[]):
@@ -350,9 +300,10 @@ class DebugVariableViewer:
                 buttons = self.Buttons[:]
                 buttons.reverse()
                 for button in buttons:
-                    w, h = button.GetSize()
-                    button.SetPosition(width - 5 - w - offset, 5)
-                    offset += w + 2
+                    if button.IsEnabled():
+                        w, h = button.GetSize()
+                        button.SetPosition(width - 5 - w - offset, 5)
+                        offset += w + 2
                 self.ParentWindow.ForceRefresh()
     
     def DrawCommonElements(self, dc, buttons=None):
@@ -473,12 +424,10 @@ class DebugVariableText(DebugVariableViewer, wx.Panel):
         
         self.SetMinSize(wx.Size(0, 25))
         
-        self.Buttons.append(
-            GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
-        self.Buttons.append(
-            GraphButton(0, 0, GetBitmap("release"), self.OnReleaseButton))
-        self.Buttons.append(
-            GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
+        for bitmap, callback in [("force", self.OnForceButton),
+                                 ("release", self.OnReleaseButton),
+                                 ("delete_graph", self.OnCloseButton)]:
+            self.Buttons.append(GraphButton(0, 0, bitmap, callback))
         
         self.ShowButtons(False)
         
@@ -572,11 +521,10 @@ class DebugVariableGraphic(DebugVariableViewer, FigureCanvas):
         
         for size, bitmap in zip([SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI],
                                 ["minimize_graph", "middle_graph", "maximize_graph"]):
-            self.Buttons.append(GraphButton(0, 0, GetBitmap(bitmap), self.GetOnChangeSizeButton(size)))
-        self.Buttons.append(
-            GraphButton(0, 0, GetBitmap("export_graph_mini"), self.OnExportGraphButton))
-        self.Buttons.append(
-            GraphButton(0, 0, GetBitmap("delete_graph"), self.OnCloseButton))
+            self.Buttons.append(GraphButton(0, 0, bitmap, self.GetOnChangeSizeButton(size)))
+        for bitmap, callback in [("export_graph_mini", self.OnExportGraphButton),
+                                 ("delete_graph", self.OnCloseButton)]:
+            self.Buttons.append(GraphButton(0, 0, bitmap, callback))
         
         self.ResetGraphics()
         self.RefreshLabelsPosition(canvas_size.height)
@@ -629,13 +577,11 @@ class DebugVariableGraphic(DebugVariableViewer, FigureCanvas):
             
             if self.ContextualButtonsItem.IsForced():
                 self.ContextualButtons.append(
-                    GraphButton(0, 0, GetBitmap("release"), self.OnReleaseButton))
-            self.ContextualButtons.append(
-                GraphButton(0, 0, GetBitmap("force"), self.OnForceButton))
-            self.ContextualButtons.append(
-                GraphButton(0, 0, GetBitmap("export_graph_mini"), self.OnExportItemGraphButton))
-            self.ContextualButtons.append(
-                GraphButton(0, 0, GetBitmap("delete_graph"), self.OnRemoveItemButton))
+                    GraphButton(0, 0, "release", self.OnReleaseButton))
+            for bitmap, callback in [("force", self.OnForceButton),
+                                     ("export_graph_mini", self.OnExportItemGraphButton),
+                                     ("delete_graph", self.OnRemoveItemButton)]:
+                self.ContextualButtons.append(GraphButton(0, 0, bitmap, callback))
             
             offset = 0
             buttons = self.ContextualButtons[:]
