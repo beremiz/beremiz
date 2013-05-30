@@ -404,15 +404,18 @@ class LogViewer(DebugViewer, wx.Panel):
         for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
             if count is not None and prev != count:
                 if prev is None:
-                    dump_end = -1
+                    dump_end = max(-1, count - 10)
+                    oldest_message = (-1, None)
                 else:
                     dump_end = prev - 1
                 for msgidx in xrange(count-1, dump_end,-1):
                     new_message = self.GetLogMessageFromSource(msgidx, level)
                     if new_message is None:
+                        if prev is None:
+                            oldest_message = (-1, None)
                         break
                     if prev is None:
-                        self.OldestMessages.append((msgidx, new_message))
+                        oldest_message = (msgidx, new_message)
                         if len(new_messages) == 0:
                             new_messages = [new_message]
                         else:
@@ -420,7 +423,7 @@ class LogViewer(DebugViewer, wx.Panel):
                     else:
                         new_messages.insert(0, new_message)
                 if prev is None and len(self.OldestMessages) <= level:
-                    self.OldestMessages.append((-1, None))
+                    self.OldestMessages.append(oldest_message)
                 self.previous_log_count[level] = count
         new_messages.sort()
         if len(new_messages) > 0:
@@ -470,30 +473,41 @@ class LogViewer(DebugViewer, wx.Panel):
             msgidx -= 1
         if len(self.LogMessages) > 0:
             message = self.LogMessages[0]
+            for idx, msg in self.OldestMessages:
+                if msg is not None and msg > message:
+                    message = msg
             while message is not None:
                 level = message.Level
                 oldest_msgidx, oldest_message = self.OldestMessages[level]
                 if oldest_msgidx > 0:
-                    old_message = self.GetLogMessageFromSource(oldest_msgidx - 1, level)
-                    if old_message is not None:
-                        self.OldestMessages[level] = (oldest_msgidx - 1, old_message)
+                    message = self.GetLogMessageFromSource(oldest_msgidx - 1, level)
+                    if message is not None:
+                        self.OldestMessages[level] = (oldest_msgidx - 1, message)
                     else:
                         self.OldestMessages[level] = (-1, None)
                 else:
+                    message = None
                     self.OldestMessages[level] = (-1, None)
-                message = None
+                if message is not None:
+                    message_idx = 0
+                    while (message_idx < len(self.LogMessages) and 
+                           self.LogMessages[message_idx] < message):
+                        message_idx += 1
+                    if len(self.LogMessages) > 0:
+                        current_message = self.LogMessages[self.CurrentMessage]
+                    else:
+                        current_message = message
+                    self.LogMessages.insert(message_idx, message)
+                    self.LogMessagesTimestamp = numpy.insert(
+                            self.LogMessagesTimestamp, 
+                            [message_idx], 
+                            [message.Timestamp])
+                    self.CurrentMessage = self.LogMessages.index(current_message)
+                    if message_idx == 0 and self.FilterLogMessage(message, timestamp):
+                        return message, 0
                 for idx, msg in self.OldestMessages:
                     if msg is not None and (message is None or msg > message):
                         message = msg
-                if message is not None:
-                    self.LogMessages.insert(0, message)
-                    self.LogMessagesTimestamp = numpy.insert(self.LogMessagesTimestamp, [0], [message.Timestamp])
-                    if self.CurrentMessage is not None:
-                        self.CurrentMessage += 1
-                    else:
-                        self.CurrentMessage = 0
-                    if self.FilterLogMessage(message, timestamp):
-                        return message, 0
         return None, None
     
     def RefreshNewData(self, *args, **kwargs):
