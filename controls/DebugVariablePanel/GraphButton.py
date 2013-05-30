@@ -106,7 +106,7 @@ class GraphButton():
         @param enable: True if button is active in Graphic Viewer
         (default True)
         """
-        self.Enabled = True
+        self.Enabled = enable
     
     def Disable(self):
         """
@@ -143,7 +143,7 @@ class GraphButton():
         Call callback function if defined
         """
         if self.Callback is not None:
-            wx.CallAfter(self.Callback)
+            self.Callback()
     
     def Draw(self, dc):
         """
