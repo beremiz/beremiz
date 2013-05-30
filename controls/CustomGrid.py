@@ -118,7 +118,7 @@ class CustomGrid(wx.grid.Grid):
             if new_row != row:
                 self.Table.ResetView(self)
         if new_row != row:
-            self.SetSelectedRow(new_row, col)
+            self.SetSelectedCell(new_row, col)
     
     def SetSelectedCell(self, row, col):
         self.SetGridCursor(row, col)
