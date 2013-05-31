@@ -1049,8 +1049,8 @@ class Viewer(EditorPanel, DebugViewer):
             DebugViewer.RefreshNewData(self)
     
     def SubscribeAllDataConsumers(self):
-        DebugViewer.SubscribeAllDataConsumers(self)
         self.RefreshView()
+        DebugViewer.SubscribeAllDataConsumers(self)
     
     # Refresh Viewer elements
     def RefreshView(self, variablepanel=True, selection=None):
@@ -3402,6 +3402,7 @@ class Viewer(EditorPanel, DebugViewer):
                 text = _("Debug: %s") % self.InstancePath
                 if is_action and self.Value is not None:
                     text += " ("
+                text_offset_x, text_offset_y = self.CalcUnscrolledPosition(2, 2)
                 dc.DrawText(text, 2, 2)
                 if is_action and self.Value is not None:
                     value_text = self.VALUE_TRANSLATION[self.Value]
