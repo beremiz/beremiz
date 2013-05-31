@@ -739,8 +739,19 @@ class Viewer(EditorPanel, DebugViewer):
     def RefreshRect(self, rect, eraseBackground=True):
         self.Editor.RefreshRect(rect, eraseBackground)
     
+    def RefreshEditor(self):
+        self.Editor.Thaw()
+        self.Editor.Refresh()
+    
     def Scroll(self, x, y):
+        if self.Debug and wx.Platform == '__WXMSW__':
+            self.Editor.Freeze()
         self.Editor.Scroll(x, y)
+        if self.Debug:
+            if wx.Platform == '__WXMSW__':
+                wx.CallAfter(self.RefreshEditor)
+            else:
+                self.Editor.Refresh()
     
     def GetScrollPos(self, orientation):
         return self.Editor.GetScrollPos(orientation)
@@ -995,7 +1006,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.PagePen = wx.TRANSPARENT_PEN
         if refresh:
             self.RefreshVisibleElements()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
         
         
 #-------------------------------------------------------------------------------
@@ -1108,7 +1119,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.Inhibit(False)
         self.RefreshVisibleElements()
         self.ShowHighlights()
-        self.Refresh(False)
+        self.Editor.Refresh(False)
     
     def GetPreviousSteps(self, connectors):
         steps = []
@@ -1523,37 +1534,37 @@ class Viewer(EditorPanel, DebugViewer):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.AlignElements(ALIGN_LEFT, None)
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
     
     def OnAlignCenterMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.AlignElements(ALIGN_CENTER, None)
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
     
     def OnAlignRightMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.AlignElements(ALIGN_RIGHT, None)
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
     
     def OnAlignTopMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.AlignElements(None, ALIGN_TOP)
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
     
     def OnAlignMiddleMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.AlignElements(None, ALIGN_MIDDLE)
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
     
     def OnAlignBottomMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.AlignElements(None, ALIGN_BOTTOM)
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
         
     def OnNoModifierMenu(self, event):
         if self.SelectedElement is not None and self.IsBlock(self.SelectedElement):
@@ -1613,7 +1624,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.SelectedElement.Delete()
             self.SelectedElement = None
             self.RefreshBuffer()
-            self.Refresh(False)
+            self.Editor.Refresh(False)
 
     def OnClearExecutionOrderMenu(self, event):
         self.Controler.ClearEditedElementExecutionOrder(self.TagName)
@@ -1973,8 +1984,6 @@ class Viewer(EditorPanel, DebugViewer):
                     self.Scroll(scrollx, scrolly)
                     self.RefreshScrollBars()
                 self.RefreshVisibleElements()
-                if self.Debug:
-                    self.Refresh()
         else:
             if not event.Dragging():
                 highlighted = self.FindElement(event, connectors=False) 
@@ -2160,7 +2169,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.RefreshBuffer()
         self.RefreshScrollBars()
         self.RefreshVisibleElements()
-        self.Refresh(False)
+        self.Editor.Refresh(False)
 
 #-------------------------------------------------------------------------------
 #                          Model adding functions
@@ -3315,6 +3324,8 @@ class Viewer(EditorPanel, DebugViewer):
             return
         if wx.Platform == '__WXMSW__':
             wx.CallAfter(self.RefreshVisibleElements)
+            self.Editor.Freeze()
+            wx.CallAfter(self.RefreshEditor)
         elif event.GetOrientation() == wx.HORIZONTAL:
             self.RefreshVisibleElements(xp = event.GetPosition())
         else:
@@ -3322,13 +3333,12 @@ class Viewer(EditorPanel, DebugViewer):
         
         # Handle scroll in debug to fully redraw area and ensuring
         # instance path is fully draw without flickering
-        if self.Debug:
+        if self.Debug and wx.Platform != '__WXMSW__':
             x, y = self.GetViewStart()
             if event.GetOrientation() == wx.HORIZONTAL:
                 self.Scroll(event.GetPosition(), y)
             else:
                 self.Scroll(x, event.GetPosition())
-            self.Refresh()
         else:
             event.Skip()
 
@@ -3344,8 +3354,6 @@ class Viewer(EditorPanel, DebugViewer):
                 xp = max(0, min(x - rotation * 3, self.Editor.GetVirtualSize()[0] / self.Editor.GetScrollPixelsPerUnit()[0]))
                 self.RefreshVisibleElements(xp = xp)
                 self.Scroll(xp, y)
-                if self.Debug:
-                    self.Refresh()
             elif event.ControlDown():
                 dc = self.GetLogicalDC()
                 self.SetScale(self.CurrentScale + rotation, mouse_event = event)
@@ -3355,9 +3363,7 @@ class Viewer(EditorPanel, DebugViewer):
                 yp = max(0, min(y - rotation * 3, self.Editor.GetVirtualSize()[1] / self.Editor.GetScrollPixelsPerUnit()[1]))
                 self.RefreshVisibleElements(yp = yp)
                 self.Scroll(x, yp)
-                if self.Debug:
-                    self.Refresh()
-        
+            
     def OnMoveWindow(self, event):
         self.RefreshScrollBars()
         self.RefreshVisibleElements()
