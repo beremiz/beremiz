@@ -180,7 +180,7 @@ class DebugViewer:
         if self.SubscribeTick and self.Debug and self.DataProducer is not None:
             self.DataProducer.SubscribeDebugIECVariable("__tick__", self)
     
-    def UnsubscribeAllDataConsumers(self):
+    def UnsubscribeAllDataConsumers(self, tick=True):
         """
         Called to Unsubscribe all data consumers.
         """
@@ -192,7 +192,7 @@ class DebugViewer:
                             iec_path, consumer)
             
             # Unscribe tick if needed
-            if self.SubscribeTick and self.Debug:
+            if self.SubscribeTick and tick and self.Debug:
                 self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)
         
         self.DataConsumers = {}
