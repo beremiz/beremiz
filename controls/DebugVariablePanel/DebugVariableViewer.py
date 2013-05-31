@@ -126,7 +126,7 @@ class DebugVariableViewer:
             self.ParentWindow.RemoveDataConsumer(item)
         
         # Clear list
-        self.Items.clear()
+        self.ItemsDict.clear()
         
     def ItemsIsEmpty(self):
         """
