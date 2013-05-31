@@ -903,10 +903,10 @@ class Viewer(EditorPanel, DebugViewer):
         self.ToolTipElement = None
     
     def Flush(self):
-        self.UnsubscribeAllDataConsumers()
+        self.UnsubscribeAllDataConsumers(tick=False)
         for block in self.Blocks.itervalues():
             block.Flush()
-    
+        
     # Remove all elements
     def CleanView(self):
         for block in self.Blocks.itervalues():
@@ -1062,7 +1062,7 @@ class Viewer(EditorPanel, DebugViewer):
     def SubscribeAllDataConsumers(self):
         self.RefreshView()
         DebugViewer.SubscribeAllDataConsumers(self)
-    
+        
     # Refresh Viewer elements
     def RefreshView(self, variablepanel=True, selection=None):
         EditorPanel.RefreshView(self, variablepanel)
