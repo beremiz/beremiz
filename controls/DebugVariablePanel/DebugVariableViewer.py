@@ -101,7 +101,7 @@ class DebugVariableViewer:
         Return items displayed by Viewer
         @return: List of items displayed in Viewer
         """
-        return self.Items
+        return self.ItemsDict.values()
     
     def AddItem(self, item):
         """

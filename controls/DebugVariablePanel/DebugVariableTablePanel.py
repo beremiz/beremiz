@@ -244,7 +244,7 @@ class DebugVariableTablePanel(wx.Panel, DebugViewer):
         
         self.Thaw()
         
-    def UnregisterObsoleteData(self):
+    def UnsubscribeObsoleteData(self):
         self.SubscribeAllDataConsumers()
         
         items = [(idx, item) for idx, item in enumerate(self.Table.GetData())]
