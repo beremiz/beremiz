@@ -2027,7 +2027,7 @@ class IDEFrame(wx.Frame):
                         editor.SubscribeAllDataConsumers()
                 elif editor.IsDebugging():
                     editor.SubscribeAllDataConsumers()
-            self.DebugVariablePanel.UnsubscribeObsoleteData()
+            self.DebugVariablePanel.SubscribeAllDataConsumers()
     
     def AddDebugVariable(self, iec_path, force=False):
         if self.EnableDebug:

@@ -87,7 +87,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
             if not isinstance(values, TupleType):
-                raise
+                raise ValueError
         except:
             message = _("Invalid value \"%s\" for debug variable")%data
             values = None
@@ -609,8 +609,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 self.GraphType = GRAPH_PARALLEL
             self.ResetGraphics()
     
-    def UnsubscribeObsoleteData(self):
-        DebugVariableViewer.UnsubscribeObsoleteData(self)
+    def SubscribeAllDataConsumers(self):
+        DebugVariableViewer.SubscribeAllDataConsumers(self)
         if not self.ItemsIsEmpty():
             self.ResetGraphics()
     

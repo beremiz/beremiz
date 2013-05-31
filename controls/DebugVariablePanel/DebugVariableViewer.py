@@ -135,7 +135,7 @@ class DebugVariableViewer:
         """
         return len(self.Items) == 0
     
-    def UnsubscribeObsoleteData(self):
+    def SubscribeAllDataConsumers(self):
         """
         Function that unsubscribe and remove every item that store values of
         a variable that doesn't exist in PLC anymore
