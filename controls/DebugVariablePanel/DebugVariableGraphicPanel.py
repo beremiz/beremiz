@@ -460,7 +460,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             self.TickTimeLabel.SetLabel("")
         self.TickSizer.Layout()
     
-    def UnregisterObsoleteData(self):
+    def UnsubscribeObsoleteData(self):
         self.SubscribeAllDataConsumers()
         
         if self.DataProducer is not None:
