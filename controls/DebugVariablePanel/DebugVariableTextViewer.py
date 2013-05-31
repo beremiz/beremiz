@@ -84,7 +84,7 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
             if not isinstance(values, TupleType):
-                raise
+                raise ValueError
         except:
             message = _("Invalid value \"%s\" for debug variable") % data
             values = None

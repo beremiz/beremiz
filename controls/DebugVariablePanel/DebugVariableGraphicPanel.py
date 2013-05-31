@@ -60,7 +60,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
             if not isinstance(values, TupleType):
-                raise
+                raise ValueError
         except:
             message = _("Invalid value \"%s\" for debug variable")%data
             values = None
@@ -460,15 +460,15 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             self.TickTimeLabel.SetLabel("")
         self.TickSizer.Layout()
     
-    def UnsubscribeObsoleteData(self):
-        self.SubscribeAllDataConsumers()
+    def SubscribeAllDataConsumers(self):
+        DebugViewer.SubscribeAllDataConsumers(self)
         
         if self.DataProducer is not None:
             if self.DataProducer is not None:
                 self.SetTickTime(self.DataProducer.GetTicktime())
         
         for panel in self.GraphicPanels:
-            panel.UnsubscribeObsoleteData()
+            panel.SubscribeAllDataConsumers()
             if panel.ItemsIsEmpty():
                 if panel.HasCapture():
                     panel.ReleaseMouse()
