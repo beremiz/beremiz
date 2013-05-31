@@ -1973,6 +1973,8 @@ class Viewer(EditorPanel, DebugViewer):
                     self.Scroll(scrollx, scrolly)
                     self.RefreshScrollBars()
                 self.RefreshVisibleElements()
+                if self.Debug:
+                    self.Refresh()
         else:
             if not event.Dragging():
                 highlighted = self.FindElement(event, connectors=False) 
@@ -3317,7 +3319,18 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshVisibleElements(xp = event.GetPosition())
         else:
             self.RefreshVisibleElements(yp = event.GetPosition())
-        event.Skip()
+        
+        # Handle scroll in debug to fully redraw area and ensuring
+        # instance path is fully draw without flickering
+        if self.Debug:
+            x, y = self.GetViewStart()
+            if event.GetOrientation() == wx.HORIZONTAL:
+                self.Scroll(event.GetPosition(), y)
+            else:
+                self.Scroll(x, event.GetPosition())
+            self.Refresh()
+        else:
+            event.Skip()
 
     def OnScrollStop(self, event):
         self.RefreshScrollBars()
@@ -3331,6 +3344,8 @@ class Viewer(EditorPanel, DebugViewer):
                 xp = max(0, min(x - rotation * 3, self.Editor.GetVirtualSize()[0] / self.Editor.GetScrollPixelsPerUnit()[0]))
                 self.RefreshVisibleElements(xp = xp)
                 self.Scroll(xp, y)
+                if self.Debug:
+                    self.Refresh()
             elif event.ControlDown():
                 dc = self.GetLogicalDC()
                 self.SetScale(self.CurrentScale + rotation, mouse_event = event)
@@ -3340,6 +3355,8 @@ class Viewer(EditorPanel, DebugViewer):
                 yp = max(0, min(y - rotation * 3, self.Editor.GetVirtualSize()[1] / self.Editor.GetScrollPixelsPerUnit()[1]))
                 self.RefreshVisibleElements(yp = yp)
                 self.Scroll(x, yp)
+                if self.Debug:
+                    self.Refresh()
         
     def OnMoveWindow(self, event):
         self.RefreshScrollBars()
@@ -3398,22 +3415,28 @@ class Viewer(EditorPanel, DebugViewer):
         
         if not printing:
             if self.Debug:
+                scalex, scaley = dc.GetUserScale()
+                dc.SetUserScale(1, 1)
+                
                 is_action = self.TagName.split("::")[0] == "A"
                 text = _("Debug: %s") % self.InstancePath
                 if is_action and self.Value is not None:
                     text += " ("
                 text_offset_x, text_offset_y = self.CalcUnscrolledPosition(2, 2)
-                dc.DrawText(text, 2, 2)
+                dc.DrawText(text, text_offset_x, text_offset_y)
                 if is_action and self.Value is not None:
                     value_text = self.VALUE_TRANSLATION[self.Value]
                     tw, th = dc.GetTextExtent(text)
                     if self.Value:
                         dc.SetTextForeground(wx.GREEN)
-                    dc.DrawText(value_text, tw + 2, 2)
+                    dc.DrawText(value_text, text_offset_x + tw, text_offset_y)
                     if self.Value:
                         dc.SetTextForeground(wx.BLACK)
                     vw, vh = dc.GetTextExtent(value_text)
-                    dc.DrawText(")", tw + vw + 4, 2)
+                    dc.DrawText(")", text_offset_x + tw + vw + 2, text_offset_y)
+                
+                dc.SetUserScale(scalex, scaley)
+                
             if self.rubberBand.IsShown():
                 self.rubberBand.Draw(dc)
             dc.EndDrawing()
