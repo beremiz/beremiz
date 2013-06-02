@@ -739,17 +739,13 @@ class Viewer(EditorPanel, DebugViewer):
     def RefreshRect(self, rect, eraseBackground=True):
         self.Editor.RefreshRect(rect, eraseBackground)
     
-    def RefreshEditor(self):
-        self.Editor.Thaw()
-        self.Editor.Refresh()
-    
     def Scroll(self, x, y):
         if self.Debug and wx.Platform == '__WXMSW__':
             self.Editor.Freeze()
         self.Editor.Scroll(x, y)
         if self.Debug:
             if wx.Platform == '__WXMSW__':
-                wx.CallAfter(self.RefreshEditor)
+                self.Editor.Thaw()
             else:
                 self.Editor.Refresh()
     
@@ -3325,7 +3321,7 @@ class Viewer(EditorPanel, DebugViewer):
         if wx.Platform == '__WXMSW__':
             wx.CallAfter(self.RefreshVisibleElements)
             self.Editor.Freeze()
-            wx.CallAfter(self.RefreshEditor)
+            wx.CallAfter(self.Editor.Thaw)
         elif event.GetOrientation() == wx.HORIZONTAL:
             self.RefreshVisibleElements(xp = event.GetPosition())
         else:
