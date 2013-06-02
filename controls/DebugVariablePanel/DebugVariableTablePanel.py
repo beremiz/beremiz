@@ -161,6 +161,8 @@ class DebugVariableTableDropTarget(wx.TextDropTarget):
         @param data: Text associated to drag'n drop
         """
         message = None
+        
+        # Check that data is valid regarding DebugVariablePanel
         try:
             values = eval(data)
             if not isinstance(values, TupleType):
@@ -169,9 +171,11 @@ class DebugVariableTableDropTarget(wx.TextDropTarget):
             message = _("Invalid value \"%s\" for debug variable") % data
             values = None
         
+        # Display message if data is invalid
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
         
+        # Data contain a reference to a variable to debug
         elif values[1] == "debug":
             grid = self.ParentWindow.VariablesGrid
             

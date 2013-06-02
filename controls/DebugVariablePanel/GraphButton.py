@@ -49,8 +49,8 @@ class GraphButton():
         # Get wx.Bitmap object corresponding to bitmap
         self.Bitmap = GetBitmap(bitmap)
         
-        # By default button is shown and enabled
-        self.Shown = True
+        # By default button is hide and enabled
+        self.Shown = False
         self.Enabled = True
         
         # Save reference to callback function

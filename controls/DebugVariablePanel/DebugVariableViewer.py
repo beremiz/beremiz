@@ -314,11 +314,8 @@ class DebugVariableViewer:
         Function called when leaving Viewer
         @param event: wx.MouseEvent 
         """
-        # Check that mouse position is inside Viewer and hide buttons
-        x, y = event.GetPosition()
-        width, height = self.GetSize()
-        if not (0 < x < width - 1 and 0 < y < height - 1):
-            self.ShowButtons(False)
+        # Hide buttons
+        self.ShowButtons(False)
         event.Skip()
     
     def OnCloseButton(self):

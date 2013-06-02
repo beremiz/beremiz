@@ -51,7 +51,6 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         self.ParentWindow = None
     
     def OnDragOver(self, x, y, d):
-        self.ParentControl.OnMouseDragging(x, y)
         self.ParentWindow.RefreshHighlight(x, y)
         return wx.TextDropTarget.OnDragOver(self, x, y, d)
         
@@ -268,7 +267,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
     
     def SetCursorTick(self, cursor_tick):
         self.CursorTick = cursor_tick
-        self.Fixed = True
+        self.Fixed = cursor_tick is not None
         self.UpdateCursorTick() 
     
     def MoveCursorTick(self, move):
@@ -629,6 +628,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         result = self.AddDataConsumer(iec_path.upper(), item)
         if result is not None or force:
             
+            self.Freeze()
             if item.IsNumVariable():
                 panel = DebugVariableGraphicViewer(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
                 if self.CursorTick is not None:
@@ -641,6 +641,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                 self.GraphicPanels.append(panel)
             self.ResetVariableNameMask()
             self.RefreshGraphicsSizer()
+            self.Thaw()
             self.ForceRefresh()
     
     def MoveValue(self, iec_path, idx = None):

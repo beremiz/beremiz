@@ -179,9 +179,6 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
                                  ("release", self.OnReleaseButton),
                                  ("delete_graph", self.OnCloseButton)]:
             self.Buttons.append(GraphButton(0, 0, bitmap, callback))
-        
-        # Hide buttons until mouse enter Viewer
-        self.ShowButtons(False)
     
     def RefreshViewer(self):
         """
@@ -192,11 +189,12 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         bitmap = wx.EmptyBitmap(width, height)
         dc = wx.BufferedDC(wx.ClientDC(self), bitmap)
         dc.Clear()
-        dc.BeginDrawing()
         
         # Get Graphics Context for DC, for anti-aliased and transparent
         # rendering
         gc = wx.GCDC(dc)
+        
+        gc.BeginDrawing()
         
         # Get first item
         item = self.ItemsDict.values()[0]
