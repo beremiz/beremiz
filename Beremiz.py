@@ -1250,6 +1250,7 @@ if __name__ == '__main__':
     AddExceptHook(os.getcwd(),updateinfo_url)
     
     frame = Beremiz(None, projectOpen, buildpath)
-    splash.Close()
+    if splash:
+        splash.Close()
     frame.Show()
     app.MainLoop()
