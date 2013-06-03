@@ -73,7 +73,7 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         
     def OnDropText(self, x, y, data):
         """
-        Function called when mouse is dragged over Drop Target
+        Function called when mouse is released in Drop Target
         @param x: X coordinate of mouse pointer
         @param y: Y coordinate of mouse pointer
         @param data: Text associated to drag'n drop

@@ -58,23 +58,13 @@ COLOR_CYCLE = ['r', 'b', 'g', 'm', 'y', 'k']
 # Color for graph cursor
 CURSOR_COLOR = '#800080'
 
-def OrthogonalDataAndRange(item, start_tick, end_tick):
-    data = item.GetData(start_tick, end_tick)
-    min_value, max_value = item.GetValueRange()
-    if min_value is not None and max_value is not None:
-        center = (min_value + max_value) / 2.
-        range = max(1.0, max_value - min_value)
-    else:
-        center = 0.5
-        range = 1.0
-    return data, center - range * 0.55, center + range * 0.55
-
 #-------------------------------------------------------------------------------
 #                   Debug Variable Graphic Viewer Drop Target
 #-------------------------------------------------------------------------------
 
 """
-Class that implements a custom drop target class for Debug Variable Graphic Viewer
+Class that implements a custom drop target class for Debug Variable Graphic
+Viewer
 """
 
 class DebugVariableGraphicDropTarget(wx.TextDropTarget):
@@ -112,7 +102,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
         
     def OnDropText(self, x, y, data):
         """
-        Function called when mouse is dragged over Drop Target
+        Function called when mouse is released in Drop Target
         @param x: X coordinate of mouse pointer
         @param y: Y coordinate of mouse pointer
         @param data: Text associated to drag'n drop
@@ -1095,8 +1085,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 start_tick = max(start_tick, min_start_tick)
                 end_tick = max(end_tick, min_start_tick)
                 items = self.ItemsDict.values()
-                x_data, x_min, x_max = OrthogonalDataAndRange(items[0], start_tick, end_tick)
-                y_data, y_min, y_max = OrthogonalDataAndRange(items[1], start_tick, end_tick)
+                x_data, x_min, x_max = items[0].OrthogonalDataAndRange(start_tick, end_tick)
+                y_data, y_min, y_max = items[1].OrthogonalDataAndRange(start_tick, end_tick)
                 if self.CursorTick is not None:
                     x_cursor, x_forced = items[0].GetValue(self.CursorTick, raw=True)
                     y_cursor, y_forced = items[1].GetValue(self.CursorTick, raw=True)
@@ -1133,7 +1123,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 else:
                     while len(self.Axes.lines) > 0:
                         self.Axes.lines.pop()
-                    z_data, z_min, z_max = OrthogonalDataAndRange(items[2], start_tick, end_tick)
+                    z_data, z_min, z_max = items[2].OrthogonalDataAndRange(start_tick, end_tick)
                     if self.CursorTick is not None:
                         z_cursor, z_forced = items[2].GetValue(self.CursorTick, raw=True)
                     if x_data is not None and y_data is not None and z_data is not None:

@@ -41,21 +41,86 @@ from DebugVariableItem import DebugVariableItem
 from DebugVariableTextViewer import DebugVariableTextViewer
 from DebugVariableGraphicViewer import *
 
+MILLISECOND = 1000000       # Number of nanosecond in a millisecond
+SECOND = 1000 * MILLISECOND # Number of nanosecond in a second
+MINUTE = 60 * SECOND        # Number of nanosecond in a minute
+HOUR = 60 * MINUTE          # Number of nanosecond in a hour
+DAY = 24 * HOUR             # Number of nanosecond in a day
+
+# List of values possible for graph range
+# Format is [(time_in_plain_text, value_in_nanosecond),...]
+RANGE_VALUES = \
+    [("%dms" % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
+    [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
+    [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
+    [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
+
+# Scrollbar increment in pixel
+SCROLLBAR_UNIT = 10
+
+def compute_mask(x, y):
+    return [(xp if xp == yp else "*")
+            for xp, yp in zip(x, y)]
+
+def NextTick(variables):
+    next_tick = None
+    for item, data in variables:
+        if len(data) == 0:
+            continue
+        
+        next = (data[0][0]
+                if next_tick is None
+                else min(next_tick, data[0][0]))
+    
+    return next_tick
+
+#-------------------------------------------------------------------------------
+#                    Debug Variable Graphic Panel Drop Target
+#-------------------------------------------------------------------------------
+
+"""
+Class that implements a custom drop target class for Debug Variable Graphic
+Panel
+"""
+
 class DebugVariableDropTarget(wx.TextDropTarget):
     
-    def __init__(self, parent):
+    def __init__(self, window):
+        """
+        Constructor
+        @param window: Reference to the Debug Variable Panel
+        """
         wx.TextDropTarget.__init__(self)
-        self.ParentWindow = parent
+        self.ParentWindow = window
     
     def __del__(self):
+        """
+        Destructor
+        """
+        # Remove reference to Debug Variable Panel
         self.ParentWindow = None
     
     def OnDragOver(self, x, y, d):
+        """
+        Function called when mouse is dragged over Drop Target
+        @param x: X coordinate of mouse pointer
+        @param y: Y coordinate of mouse pointer
+        @param d: Suggested default for return value
+        """
+       # Signal Debug Variable Panel to refresh highlight giving mouse position
         self.ParentWindow.RefreshHighlight(x, y)
         return wx.TextDropTarget.OnDragOver(self, x, y, d)
         
     def OnDropText(self, x, y, data):
+        """
+        Function called when mouse is released in Drop Target
+        @param x: X coordinate of mouse pointer
+        @param y: Y coordinate of mouse pointer
+        @param data: Text associated to drag'n drop
+        """
         message = None
+        
+        # Check that data is valid regarding DebugVariablePanel
         try:
             values = eval(data)
             if not isinstance(values, TupleType):
@@ -64,80 +129,87 @@ class DebugVariableDropTarget(wx.TextDropTarget):
             message = _("Invalid value \"%s\" for debug variable")%data
             values = None
             
+        # Display message if data is invalid
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
         
+        # Data contain a reference to a variable to debug
         elif values[1] == "debug":
+            
+            # Drag'n Drop is an internal is an internal move inside Debug
+            # Variable Panel 
             if len(values) > 2 and values[2] == "move":
                 self.ParentWindow.MoveValue(values[0])
+            
+            # Drag'n Drop was initiated by another control of Beremiz
             else:
                 self.ParentWindow.InsertValue(values[0], force=True)
     
     def OnLeave(self):
+        """
+        Function called when mouse is leave Drop Target
+        """
+        # Signal Debug Variable Panel to reset highlight
         self.ParentWindow.ResetHighlight()
         return wx.TextDropTarget.OnLeave(self)
     
     def ShowMessage(self, message):
+        """
+        Show error message in Error Dialog
+        @param message: Error message to display
+        """
         dialog = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 
-MILLISECOND = 1000000
-SECOND = 1000 * MILLISECOND
-MINUTE = 60 * SECOND
-HOUR = 60 * MINUTE
-DAY = 24 * HOUR
 
-ZOOM_VALUES = map(lambda x:("x %.1f" % x, x), [math.sqrt(2) ** i for i in xrange(8)])
-RANGE_VALUES = \
-    [("%dms" % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
-    [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
-    [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
-    [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
+#-------------------------------------------------------------------------------
+#                      Debug Variable Graphic Panel Class
+#-------------------------------------------------------------------------------
 
-SCROLLBAR_UNIT = 10
-
-def compute_mask(x, y):
-    mask = []
-    for xp, yp in zip(x, y):
-        if xp == yp:
-            mask.append(xp)
-        else:
-            mask.append("*")
-    return mask
-
-def NextTick(variables):
-    next_tick = None
-    for item, data in variables:
-        if len(data) > 0:
-            if next_tick is None:
-                next_tick = data[0][0]
-            else:
-                next_tick = min(next_tick, data[0][0])
-    return next_tick
+"""
+Class that implements a Viewer that display variable values as a graphs
+"""
 
 class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
     
     def __init__(self, parent, producer, window):
+        """
+        Constructor
+        @param parent: Reference to the parent wx.Window
+        @param producer: Object receiving debug value and dispatching them to
+        consumers
+        @param window: Reference to Beremiz frame
+        """
         wx.Panel.__init__(self, parent, style=wx.SP_3D|wx.TAB_TRAVERSAL)
         
+        # Save Reference to Beremiz frame
         self.ParentWindow = window
         
+        # Variable storing flag indicating that variable displayed in table
+        # received new value and then table need to be refreshed
         self.HasNewData = False
+        
+        # Variable storing flag indicating that refresh has been forced, and
+        # that next time refresh is possible, it will be done even if no new
+        # data is available
         self.Force = False
         
         self.SetBackgroundColour(wx.WHITE)
         
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         
-        self.Ticks = numpy.array([])
-        self.StartTick = 0
-        self.Fixed = False
-        self.CursorTick = None
+        self.Ticks = numpy.array([]) # List of tick received
+        self.StartTick = 0           # Tick starting range of data displayed
+        self.Fixed = False           # Flag that range of data is fixed
+        self.CursorTick = None       # Tick of cursor for displaying values
+        
+        # 
         self.DraggingAxesPanel = None
         self.DraggingAxesBoundingBox = None
         self.DraggingAxesMousePos = None
         self.VetoScrollEvent = False
+        
         self.VariableNameMask = []
         
         self.GraphicPanels = []
@@ -215,40 +287,78 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         
         self.SetSizer(main_sizer)
     
-    def __del__(self):
-        DebugViewer.__del__(self)
-    
     def SetTickTime(self, ticktime=0):
+        """
+        Set Ticktime for calculate data range according to time range selected
+        @param ticktime: Ticktime to apply to range (default: 0)
+        """
+        # Save ticktime
         self.Ticktime = ticktime
+        
+        # Set ticktime to millisecond if undefined
         if self.Ticktime == 0:
             self.Ticktime = MILLISECOND
+        
+        # Calculate range to apply to data
         self.CurrentRange = RANGE_VALUES[
             self.CanvasRange.GetSelection()][1] / self.Ticktime
     
     def SetDataProducer(self, producer):
+        """
+        Set Data Producer
+        @param producer: Data Producer
+        """
         DebugViewer.SetDataProducer(self, producer)
         
+        # Set ticktime if data producer is available
         if self.DataProducer is not None:
             self.SetTickTime(self.DataProducer.GetTicktime())
     
     def RefreshNewData(self, *args, **kwargs):
+        """
+        Called to refresh Panel according to values received by variables
+        Can receive any parameters (not used here)
+        """
+        # Refresh graphs if new data is available or refresh is forced
         if self.HasNewData or self.Force:
             self.HasNewData = False
             self.RefreshView()
+        
         DebugViewer.RefreshNewData(self, *args, **kwargs)
     
     def NewDataAvailable(self, tick, *args, **kwargs):
+        """
+        Called by DataProducer for each tick captured or by panel to refresh
+        graphs
+        @param tick: PLC tick captured
+        All other parameters are passed to refresh function 
+        """
+        # If tick given
         if tick is not None:
+            
+            # Save tick as start tick for range if data is still empty
             if len(self.Ticks) == 0:
                 self.StartTick = tick 
+            
+            # Add tick to list of ticks received
             self.Ticks = numpy.append(self.Ticks, [tick])
+            
+            # Update start tick for range if range follow ticks received
             if not self.Fixed or tick < self.StartTick + self.CurrentRange:
                 self.StartTick = max(self.StartTick, tick - self.CurrentRange)
-            if self.Fixed and self.Ticks[-1] - self.Ticks[0] < self.CurrentRange:
+            
+            # Force refresh if graph is fixed because range of data received
+            # is too small to fill data range selected
+            if self.Fixed and \
+               self.Ticks[-1] - self.Ticks[0] < self.CurrentRange:
                 self.Force = True
+        
         DebugViewer.NewDataAvailable(self, tick, *args, **kwargs)
     
     def ForceRefresh(self):
+        """
+        Called to force refresh of graphs
+        """
         self.Force = True
         wx.CallAfter(self.NewDataAvailable, None, True)
     
@@ -668,6 +778,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                 panel.SetCanvasSize(source_size.width, source_size.height)
                 if self.CursorTick is not None:
                     panel.SetCursorTick(self.CursorTick)
+            
             else:
                 panel = DebugVariableTextViewer(self.GraphicsWindow, self, [item])
             
@@ -676,9 +787,10 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             if source_panel.ItemsIsEmpty():
                 if source_panel.HasCapture():
                     source_panel.ReleaseMouse()
+                if isinstance(source_panel, DebugVariableGraphicViewer):
+                    source_panel.Destroy()
                 self.GraphicPanels.remove(source_panel)
-                source_panel.Destroy()
-            
+                
             self.ResetVariableNameMask()
             self.RefreshGraphicsSizer()
             self.ForceRefresh()
@@ -716,8 +828,9 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                     if source_panel.ItemsIsEmpty():
                         if source_panel.HasCapture():
                             source_panel.ReleaseMouse()
+                        if isinstance(source_panel, DebugVariableGraphicViewer):
+                            source_panel.Destroy()
                         self.GraphicPanels.remove(source_panel)
-                        source_panel.Destroy()
             elif (merge_type != graph_type and len(target_panel.Items) == 2):
                 target_panel.RemoveItem(source_item)
             else:
@@ -745,14 +858,16 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             
             if item is None:
                 source_panel.ClearItems()
-                source_panel.Destroy()
+                if isinstance(source_panel, DebugVariableGraphicViewer):
+                    source_panel.Destroy()
                 self.GraphicPanels.remove(source_panel)
                 self.ResetVariableNameMask()
                 self.RefreshGraphicsSizer()
             else:
                 source_panel.RemoveItem(item)
                 if source_panel.ItemsIsEmpty():
-                    source_panel.Destroy()
+                    if isinstance(source_panel, DebugVariableGraphicViewer):
+                        source_panel.Destroy()
                     self.GraphicPanels.remove(source_panel)
                     self.ResetVariableNameMask()
                     self.RefreshGraphicsSizer()

@@ -172,6 +172,25 @@ class DebugVariableItem(DebugDataConsumer):
         """
         return self.MinValue, self.MaxValue
     
+    def OrthogonalDataAndRange(self, start_tick, end_tick):
+        """
+        Return variable value range
+        @param start_tick: Start tick of given range (default None, first data)
+        @param end_tick: end tick of given range (default None, last data)
+        @return: (numpy.array([(tick, value, forced),...]), 
+                  min_value, max_value)
+        """
+        # Calculate min_value and max_value so that range size is greater
+        # than 1.0
+        if self.MinValue is not None and self.MaxValue is not None:
+            center = (self.MinValue + self.MaxValue) / 2.
+            range = max(1.0, self.MaxValue - self.MinValue)
+        else:
+            center = 0.5
+            range = 1.0
+        return (self.GetData(start_tick, end_tick), 
+                center - range * 0.55, center + range * 0.55)
+    
     def ResetData(self):
         """
         Reset data stored when store data option enabled
