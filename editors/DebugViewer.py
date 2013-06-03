@@ -186,14 +186,14 @@ class DebugViewer:
         """
         if self.DataProducer is not None:
             
+            # Unscribe tick if needed
+            if self.SubscribeTick and tick and self.Debug:
+                self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)
+            
             # Unsubscribe all data consumers in list
             for consumer, iec_path in self.DataConsumers.iteritems():
                 self.DataProducer.UnsubscribeDebugIECVariable(
                             iec_path, consumer)
-            
-            # Unscribe tick if needed
-            if self.SubscribeTick and tick and self.Debug:
-                self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)
         
         self.DataConsumers = {}
     
