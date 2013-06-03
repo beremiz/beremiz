@@ -308,7 +308,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             self.DraggingAxesPanel.SetPosition(wx.Point(0, -height))
         else:
             self.DraggingAxesPanel = panel
-        self.DraggingAxesBoundingBox = panel.GetAxesBoundingBox(absolute=True)
+        self.DraggingAxesBoundingBox = panel.GetAxesBoundingBox(parent_coordinate=True)
         self.DraggingAxesMousePos = wx.Point(
             x_mouse_start - self.DraggingAxesBoundingBox.x, 
             y_mouse_start - self.DraggingAxesBoundingBox.y)
