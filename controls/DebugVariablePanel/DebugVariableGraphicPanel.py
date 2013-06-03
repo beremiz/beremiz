@@ -787,8 +787,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             if source_panel.ItemsIsEmpty():
                 if source_panel.HasCapture():
                     source_panel.ReleaseMouse()
-                if isinstance(source_panel, DebugVariableGraphicViewer):
-                    source_panel.Destroy()
+                source_panel.Destroy()
                 self.GraphicPanels.remove(source_panel)
                 
             self.ResetVariableNameMask()
@@ -828,8 +827,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                     if source_panel.ItemsIsEmpty():
                         if source_panel.HasCapture():
                             source_panel.ReleaseMouse()
-                        if isinstance(source_panel, DebugVariableGraphicViewer):
-                            source_panel.Destroy()
+                        source_panel.Destroy()
                         self.GraphicPanels.remove(source_panel)
             elif (merge_type != graph_type and len(target_panel.Items) == 2):
                 target_panel.RemoveItem(source_item)
@@ -858,16 +856,14 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             
             if item is None:
                 source_panel.ClearItems()
-                if isinstance(source_panel, DebugVariableGraphicViewer):
-                    source_panel.Destroy()
+                source_panel.Destroy()
                 self.GraphicPanels.remove(source_panel)
                 self.ResetVariableNameMask()
                 self.RefreshGraphicsSizer()
             else:
                 source_panel.RemoveItem(item)
                 if source_panel.ItemsIsEmpty():
-                    if isinstance(source_panel, DebugVariableGraphicViewer):
-                        source_panel.Destroy()
+                    source_panel.Destroy()
                     self.GraphicPanels.remove(source_panel)
                     self.ResetVariableNameMask()
                     self.RefreshGraphicsSizer()
