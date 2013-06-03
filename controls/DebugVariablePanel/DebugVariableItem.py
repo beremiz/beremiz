@@ -211,7 +211,7 @@ class DebugVariableItem(DebugDataConsumer):
         @param value: Value captured
         @param forced: Forced flag, True if value is forced (default: False)
         """
-        DebugDataConsumer.NewValue(self, tick, value, forced)
+        DebugDataConsumer.NewValue(self, tick, value, forced, raw_bool=False)
         
         if self.Data is not None:
             # String data value is CRC

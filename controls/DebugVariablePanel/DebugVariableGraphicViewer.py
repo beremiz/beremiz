@@ -239,6 +239,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         self.SetBackgroundColour(wx.WHITE)
         
         # Bind wx events
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
@@ -613,7 +614,6 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         else:
             # Reset any move in progress
             self.MouseStartPos = None
-            self.StartCursorTick = None
             self.CanvasStartSize = None
             
             # Handle button under mouse if it exist
@@ -751,6 +751,23 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             
             # Vetoing event to prevent parent panel to be scrolled
             self.ParentWindow.VetoScrollEvent = True
+    
+    def OnLeftDClick(self, event):
+        """
+        Function called when a left mouse button is double clicked
+        @param event: Mouse event
+        """
+        # Check that double click was done inside figure
+        pos = event.GetPosition()
+        rect = self.GetAxesBoundingBox()
+        if rect.InsideXY(pos.x, pos.y):
+            # Reset Cursor tick to value before starting clicking
+            self.ParentWindow.SetCursorTick(self.StartCursorTick)
+            # Toggle to text Viewer(s)
+            self.ParentWindow.ToggleViewerType(self)
+        
+        else:
+            event.Skip()
     
     # Cursor tick move for each arrow key
     KEY_CURSOR_INCREMENT = {
@@ -982,7 +999,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # text position in figure don't change when canvas size change, we
         # expressed border and text position in pixel on screen and apply the
         # ratio calculated hereafter to get border and text position in
-        # matplotlib coordinate 
+        # matplotlib coordinate
         canvas_ratio = 1. / height # Divide by canvas height in pixel
         graph_ratio = 1. / (
             (1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio)

@@ -2029,9 +2029,9 @@ class IDEFrame(wx.Frame):
                     editor.SubscribeAllDataConsumers()
             self.DebugVariablePanel.SubscribeAllDataConsumers()
     
-    def AddDebugVariable(self, iec_path, force=False):
+    def AddDebugVariable(self, iec_path, force=False, graph=False):
         if self.EnableDebug:
-            self.DebugVariablePanel.InsertValue(iec_path, force=force)
+            self.DebugVariablePanel.InsertValue(iec_path, force=force, graph=graph)
             self.EnsureTabVisible(self.DebugVariablePanel)
             
 #-------------------------------------------------------------------------------

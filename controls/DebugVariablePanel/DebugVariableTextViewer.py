@@ -165,6 +165,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         # Bind events
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
         self.Bind(wx.EVT_SIZE, self.OnResize)
@@ -244,6 +245,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         x, y = event.GetPosition()
         item_path_bbox = wx.Rect(20, (height - h) / 2, w, h)
         if item_path_bbox.InsideXY(x, y):
+            self.ShowButtons(False)
             data = wx.TextDataObject(str((item.GetVariable(), "debug", "move")))
             dragSource = wx.DropSource(self)
             dragSource.SetData(data)
@@ -262,6 +264,15 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         x, y = event.GetPosition()
         wx.CallAfter(self.HandleButton, x, y)
         event.Skip()
+    
+    def OnLeftDClick(self, event):
+        """
+        Function called when mouse left button is double clicked
+        @param event: wx.MouseEvent
+        """
+        # Only numeric variables can be toggled to graph canvas
+        if self.ItemsDict.values()[0].IsNumVariable():
+            self.ParentWindow.ToggleViewerType(self)
     
     def OnPaint(self, event):
         """
