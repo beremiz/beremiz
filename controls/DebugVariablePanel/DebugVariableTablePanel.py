@@ -470,7 +470,7 @@ class DebugVariableTablePanel(wx.Panel, DebugViewer):
             menu.Destroy()
         event.Skip()
     
-    def InsertValue(self, iec_path, index=None, force=False):
+    def InsertValue(self, iec_path, index=None, force=False, graph=False):
         """
         Insert a new variable to debug in table
         @param iec_path: Variable path to debug
@@ -478,6 +478,8 @@ class DebugVariableTablePanel(wx.Panel, DebugViewer):
         insert at last position)
         @param force: Force insertion of variable even if not defined in
         producer side
+        @param graph: Values must be displayed in graph canvas (Do nothing,
+        here for compatibility with Debug Variable Graphic Panel)
         """
         # Return immediately if variable is already debugged
         for item in self.Table.GetData():

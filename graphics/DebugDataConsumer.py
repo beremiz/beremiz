@@ -141,8 +141,7 @@ TYPE_TRANSLATOR = {
     "STRING": lambda v: "'%s'" % v,
     "WSTRING": lambda v: '"%s"' % v,
     "REAL": lambda v: "%.6g" % v,
-    "LREAL": lambda v: "%.6g" % v,
-    "BOOL": lambda v: v}
+    "LREAL": lambda v: "%.6g" % v}
 
 #-------------------------------------------------------------------------------
 #                            Debug Data Consumer Class
@@ -198,15 +197,17 @@ class DebugDataConsumer:
         """
         self.DataType = data_type
     
-    def NewValue(self, tick, value, forced=False):
+    def NewValue(self, tick, value, forced=False, raw_bool=True):
         """
         Function called by debug thread when a new debug value is available
         @param tick: PLC tick when value was captured
         @param value: Value captured
         @param forced: Forced flag, True if value is forced (default: False)
+        @param raw_bool: Bool values must be treated rawly (default: True)
         """
         # Translate value to IEC literal
-        value = TYPE_TRANSLATOR.get(self.DataType, str)(value)
+        if self.DataType != "BOOL" or not raw_bool:
+            value = TYPE_TRANSLATOR.get(self.DataType, str)(value)
         
         # Store value and forced flag when value update is inhibited
         if self.Inhibited:
