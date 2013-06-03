@@ -818,20 +818,23 @@ class MasterEditor(ConfTreeNodeEditor):
     
     def RefreshStartupCommands(self, position=None, command_idx=None):
         if self.CurrentNodesFilter is not None:
+            col = max(self.StartupCommandsGrid.GetGridCursorCol(), 0)
             self.StartupCommandsTable.SetData(
                 self.Controler.GetStartupCommands(**self.CurrentNodesFilter))
             self.StartupCommandsTable.ResetView(self.StartupCommandsGrid)
             if position is not None and command_idx is not None:
-                wx.CallAfter(self.SelectStartupCommand, position, command_idx)
+                self.SelectStartupCommand(position, command_idx, col)
     
-    def SelectStartupCommand(self, position, command_idx):
-        self.StartupCommandsGrid.SetSelectedRow(
-            self.StartupCommandsTable.GetCommandIndex(position, command_idx))
+    def SelectStartupCommand(self, position, command_idx, col):
+        self.StartupCommandsGrid.SetSelectedCell(
+            self.StartupCommandsTable.GetCommandIndex(position, command_idx),
+            col)
     
     def GetMasterLocation(self):
         return self.Controler.GetCurrentLocation()
     
     def AddStartupCommand(self, position, index, subindex):
+        col = max(self.StartupCommandsGrid.GetGridCursorCol(), 0)
         command = self.StartupCommandsDefaultValue.copy()
         command["Position"] = position
         command["Index"] = index
@@ -839,8 +842,7 @@ class MasterEditor(ConfTreeNodeEditor):
         command_idx = self.Controler.AppendStartupCommand(command)
         self.RefreshStartupCommands()
         self.RefreshBuffer()
-        self.StartupCommandsGrid.SetSelectedRow(
-            self.StartupCommandsTable.GetCommandIndex(position, command_idx))
+        self.SelectStartupCommand(position, command_idx, col)
     
     def OnNodesFilterChanged(self, event):
         self.RefreshCurrentNodesFilter()
