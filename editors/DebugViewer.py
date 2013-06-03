@@ -248,7 +248,7 @@ class DebugViewer:
     
     def NewDataAvailable(self, tick, *args, **kwargs):
         """
-        Called by DataProducer for each tick captured in 
+        Called by DataProducer for each tick captured
         @param tick: PLC tick captured
         All other parameters are passed to refresh function 
         """
