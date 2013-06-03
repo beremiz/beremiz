@@ -299,6 +299,13 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 self.GraphType = GRAPH_PARALLEL
             self.ResetGraphics()
     
+    def SetCursorTick(self, cursor_tick):
+        """
+        Set cursor tick
+        @param cursor_tick: Cursor tick
+        """
+        self.CursorTick = cursor_tick
+    
     def SubscribeAllDataConsumers(self):
         """
         Function that unsubscribe and remove every item that store values of
@@ -479,20 +486,44 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         self.DismissContextualButtons()
     
     def HandleCursorMove(self, event):
+        """
+        Update Cursor position according to mouse position and graph type
+        @param event: Mouse event
+        """
         start_tick, end_tick = self.ParentWindow.GetRange()
         cursor_tick = None
         items = self.ItemsDict.values()
+        
+        # Graph is orthogonal
         if self.GraphType == GRAPH_ORTHOGONAL:
+            # Extract items data displayed in canvas figure
+            min_start_tick = max(start_tick, self.GetItemsMinCommonTick())
+            start_tick = max(start_tick, min_start_tick)
+            end_tick = max(end_tick, min_start_tick)
             x_data = items[0].GetData(start_tick, end_tick)
             y_data = items[1].GetData(start_tick, end_tick)
+            
+            # Search for the nearest point from mouse position
             if len(x_data) > 0 and len(y_data) > 0:
-                length = min(len(x_data), len(y_data))
-                d = numpy.sqrt((x_data[:length,1]-event.xdata) ** 2 + (y_data[:length,1]-event.ydata) ** 2)
+                length = min(len(x_data), len(y_data)) 
+                d = numpy.sqrt((x_data[:length,1]-event.xdata) ** 2 + \
+                               (y_data[:length,1]-event.ydata) ** 2)
+                
+                # Set cursor tick to the tick of this point
                 cursor_tick = x_data[numpy.argmin(d), 0]
+        
+        # Graph is parallel
         else:
+            # Extract items tick
             data = items[0].GetData(start_tick, end_tick)
+            
+            # Search for point that tick is the nearest from mouse X position
+            # and set cursor tick to the tick of this point
             if len(data) > 0:
-                cursor_tick = data[numpy.argmin(numpy.abs(data[:,0] - event.xdata)), 0]
+                cursor_tick = data[numpy.argmin(
+                        numpy.abs(data[:,0] - event.xdata)), 0]
+        
+        # Update cursor tick
         if cursor_tick is not None:
             self.ParentWindow.SetCursorTick(cursor_tick)
     
@@ -501,8 +532,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         Function called when a button of mouse is pressed
         @param event: Mouse event
         """
-        # Get mouse position, graph coordinates are inverted comparing to wx
-        # coordinates
+        # Get mouse position, graph Y coordinate is inverted in matplotlib
+        # comparing to wx
         width, height = self.GetSize()
         x, y = event.x, height - event.y
         
@@ -721,19 +752,6 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # Vetoing event to prevent parent panel to be scrolled
             self.ParentWindow.VetoScrollEvent = True
     
-    def OnAxesMotion(self, event):
-        """
-        Function overriding default function called when mouse is dragged for
-        rotating graph preventing refresh to be called too quickly
-        @param event: Mouse event
-        """
-        if self.Is3DCanvas():
-            # Call default function at most 10 times per second
-            current_time = gettime()
-            if current_time - self.LastMotionTime > REFRESH_PERIOD:
-                self.LastMotionTime = current_time
-                Axes3D._on_move(self.Axes, event)
-    
     # Cursor tick move for each arrow key
     KEY_CURSOR_INCREMENT = {
         wx.WXK_LEFT: -1,
@@ -766,138 +784,250 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         else:
             event.Skip()
     
-    def RefreshLabelsPosition(self, height):
-        canvas_ratio = 1. / height
-        graph_ratio = 1. / ((1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio) * height)
-        
-        self.Figure.subplotpars.update(
-            top= 1.0 - CANVAS_BORDER[1] * canvas_ratio, 
-            bottom= CANVAS_BORDER[0] * canvas_ratio)
-        
-        if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
-            num_item = len(self.Items)
-            for idx in xrange(num_item):
-                if not self.Is3DCanvas():
-                    self.AxesLabels[idx].set_position(
-                        (0.05, 
-                         1.0 - (CANVAS_PADDING + AXES_LABEL_HEIGHT * idx) * graph_ratio))
-                self.Labels[idx].set_position(
-                    (0.95, 
-                     CANVAS_PADDING * graph_ratio + 
-                     (num_item - idx - 1) * VALUE_LABEL_HEIGHT * graph_ratio))
-        else:
-            self.AxesLabels[0].set_position((0.1, CANVAS_PADDING * graph_ratio))
-            self.Labels[0].set_position((0.95, CANVAS_PADDING * graph_ratio))
-            self.AxesLabels[1].set_position((0.05, 2 * CANVAS_PADDING * graph_ratio))
-            self.Labels[1].set_position((0.05, 1.0 - CANVAS_PADDING * graph_ratio))
-    
-        self.Figure.subplots_adjust()
-    
     def GetCanvasMinSize(self):
+        """
+        Return the minimum size of Viewer so that all items label can be
+        displayed
+        @return: wx.Size containing Viewer minimum size
+        """
+        # The minimum height take in account the height of all items, padding
+        # inside figure and border around figure
         return wx.Size(200, 
-                       CANVAS_BORDER[0] + CANVAS_BORDER[1] + 
-                       2 * CANVAS_PADDING + VALUE_LABEL_HEIGHT * len(self.Items))
+            CANVAS_BORDER[0] + CANVAS_BORDER[1] + 
+            2 * CANVAS_PADDING + VALUE_LABEL_HEIGHT * len(self.Items))
     
     def SetCanvasSize(self, width, height):
+        """
+        Set Viewer size checking that it respects Viewer minimum size
+        @param width: Viewer width
+        @param height: Viewer height
+        """
         height = max(height, self.GetCanvasMinSize()[1])
         self.SetMinSize(wx.Size(width, height))
         self.RefreshLabelsPosition(height)
         self.ParentWindow.RefreshGraphicsSizer()
         
-    def GetAxesBoundingBox(self, absolute=False):
+    def GetAxesBoundingBox(self, parent_coordinate=False):
+        """
+        Return figure bounding box in wx coordinate
+        @param parent_coordinate: True if use parent coordinate (default False)
+        """
+        # Calculate figure bounding box. Y coordinate is inverted in matplotlib
+        # figure comparing to wx panel
         width, height = self.GetSize()
         ax, ay, aw, ah = self.figure.gca().get_position().bounds
         bbox = wx.Rect(ax * width, height - (ay + ah) * height - 1,
                        aw * width + 2, ah * height + 1)
-        if absolute:
+        
+        # If parent_coordinate, add Viewer position in parent
+        if parent_coordinate:
             xw, yw = self.GetPosition()
             bbox.x += xw
             bbox.y += yw
+        
         return bbox
     
     def RefreshHighlight(self, x, y):
+        """
+        Refresh Viewer highlight according to mouse position
+        @param x: X coordinate of mouse pointer
+        @param y: Y coordinate of mouse pointer
+        """
         width, height = self.GetSize()
+        
+        # Mouse is over Viewer figure and graph is not 3D
         bbox = self.GetAxesBoundingBox()
         if bbox.InsideXY(x, y) and not self.Is3DCanvas():
             rect = wx.Rect(bbox.x, bbox.y, bbox.width / 2, bbox.height)
+            # Mouse is over Viewer left part of figure
             if rect.InsideXY(x, y):
                 self.SetHighlight(HIGHLIGHT_LEFT)
+            
+            # Mouse is over Viewer right part of figure
             else:
                 self.SetHighlight(HIGHLIGHT_RIGHT)
+        
+        # Mouse is over upper part of Viewer
         elif y < height / 2:
+            # Viewer is upper one in Debug Variable Panel, show highlight
             if self.ParentWindow.IsViewerFirst(self):
                 self.SetHighlight(HIGHLIGHT_BEFORE)
+            
+            # Viewer is not the upper one, show highlight in previous one
+            # It prevents highlight to move when mouse leave one Viewer to
+            # another
             else:
                 self.SetHighlight(HIGHLIGHT_NONE)
                 self.ParentWindow.HighlightPreviousViewer(self)
+        
+        # Mouse is over lower part of Viewer
         else:
             self.SetHighlight(HIGHLIGHT_AFTER)
     
+    def OnAxesMotion(self, event):
+        """
+        Function overriding default function called when mouse is dragged for
+        rotating graph preventing refresh to be called too quickly
+        @param event: Mouse event
+        """
+        if self.Is3DCanvas():
+            # Call default function at most 10 times per second
+            current_time = gettime()
+            if current_time - self.LastMotionTime > REFRESH_PERIOD:
+                self.LastMotionTime = current_time
+                Axes3D._on_move(self.Axes, event)
+    
+    def GetAddTextFunction(self):
+        """
+        Return function for adding text in figure according to graph type
+        @return: Function adding text to figure
+        """
+        text_func = (self.Axes.text2D if self.Is3DCanvas() else self.Axes.text)
+        def AddText(*args, **kwargs):
+            args = [0, 0, ""]
+            kwargs["transform"] = self.Axes.transAxes
+            return text_func(*args, **kwargs)
+        return AddText
+    
     def ResetGraphics(self):
+        """
+        Reset figure and graphical elements displayed in it
+        Called any time list of items or graph type change 
+        """
+        # Clear figure from any axes defined
         self.Figure.clear()
+        
+        # Add 3D projection if graph is in 3D
         if self.Is3DCanvas():
             self.Axes = self.Figure.gca(projection='3d')
             self.Axes.set_color_cycle(['b'])
+            
+            # Override function to prevent too much refresh when graph is 
+            # rotated
             self.LastMotionTime = gettime()
             setattr(self.Axes, "_on_move", self.OnAxesMotion)
+            
+            # Init graph mouse event so that graph can be rotated
             self.Axes.mouse_init()
+            
+            # Set size of Z axis labels
             self.Axes.tick_params(axis='z', labelsize='small')
+        
         else:
             self.Axes = self.Figure.gca()
             self.Axes.set_color_cycle(COLOR_CYCLE)
+        
+        # Set size of X and Y axis labels
         self.Axes.tick_params(axis='x', labelsize='small')
         self.Axes.tick_params(axis='y', labelsize='small')
-        self.Plots = []
-        self.VLine = None
-        self.HLine = None
-        self.Labels = []
-        self.AxesLabels = []
-        if not self.Is3DCanvas():
-            text_func = self.Axes.text
-        else:
-            text_func = self.Axes.text2D
+        
+        # Init variables storing graphical elements added to figure
+        self.Plots = []      # List of curves
+        self.VLine = None    # Vertical line for cursor
+        self.HLine = None    # Horizontal line for cursor (only orthogonal 2D)
+        self.AxesLabels = [] # List of items variable path text label
+        self.Labels = []     # List of items text label
+        
+        # Get function to add a text in figure according to graph type 
+        add_text_func = self.GetAddTextFunction()
+        
+        # Graph type is parallel or orthogonal in 3D
         if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
             num_item = len(self.Items)
             for idx in xrange(num_item):
-                if num_item == 1:
-                    color = 'k'
-                else:
-                    color = COLOR_CYCLE[idx % len(COLOR_CYCLE)]
+                
+                # Get color from color cycle (black if only one item)
+                color = ('k' if num_item == 1
+                             else COLOR_CYCLE[idx % len(COLOR_CYCLE)])
+                
+                # In 3D graph items variable label are not displayed as text
+                # in figure, but as axis title
                 if not self.Is3DCanvas():
+                    # Items variable labels are in figure upper left corner
                     self.AxesLabels.append(
-                        text_func(0, 0, "", size='small',
-                                  verticalalignment='top', 
-                                  color=color,
-                                  transform=self.Axes.transAxes))
+                        add_text_func(size='small', color=color,
+                                      verticalalignment='top'))
+                
+                # Items variable labels are in figure lower right corner
                 self.Labels.append(
-                    text_func(0, 0, "", size='large', 
-                              horizontalalignment='right',
-                              color=color,
-                              transform=self.Axes.transAxes))
+                    add_text_func(size='large', color=color, 
+                                  horizontalalignment='right'))
+        
+        # Graph type is orthogonal in 2D
         else:
-            self.AxesLabels.append(
-                self.Axes.text(0, 0, "", size='small',
-                               transform=self.Axes.transAxes))
+            # X coordinate labels are in figure lower side
+            self.AxesLabels.append(add_text_func(size='small'))
             self.Labels.append(
-                self.Axes.text(0, 0, "", size='large',
-                               horizontalalignment='right',
-                               transform=self.Axes.transAxes))
+                add_text_func(size='large',
+                              horizontalalignment='right'))
+            
+            # Y coordinate labels are vertical and in figure left side
             self.AxesLabels.append(
-                self.Axes.text(0, 0, "", size='small',
-                               rotation='vertical',
-                               verticalalignment='bottom',
-                               transform=self.Axes.transAxes))
+                add_text_func(size='small', rotation='vertical'))
             self.Labels.append(
-                self.Axes.text(0, 0, "", size='large',
-                               rotation='vertical',
-                               verticalalignment='top',
-                               transform=self.Axes.transAxes))
+                add_text_func(size='large', rotation='vertical',
+                              verticalalignment='top'))
+       
+        # Refresh position of labels according to Viewer size
         width, height = self.GetSize()
         self.RefreshLabelsPosition(height)
+    
+    def RefreshLabelsPosition(self, height):
+        """
+        Function called when mouse leave Viewer
+        @param event: wx.MouseEvent
+        """
+        # Figure position like text position in figure are expressed is ratio
+        # canvas size and figure size. As we want that border around figure and
+        # text position in figure don't change when canvas size change, we
+        # expressed border and text position in pixel on screen and apply the
+        # ratio calculated hereafter to get border and text position in
+        # matplotlib coordinate 
+        canvas_ratio = 1. / height # Divide by canvas height in pixel
+        graph_ratio = 1. / (
+            (1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio)
+             * height)             # Divide by figure height in pixel
         
-    def SetCursorTick(self, cursor_tick):
-        self.CursorTick = cursor_tick
+        # Update position of figure (keeping up and bottom border the same
+        # size)
+        self.Figure.subplotpars.update(
+            top= 1.0 - CANVAS_BORDER[1] * canvas_ratio, 
+            bottom= CANVAS_BORDER[0] * canvas_ratio)
         
+        # Update position of items labels
+        if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
+            num_item = len(self.Items)
+            for idx in xrange(num_item):
+                
+                # In 3D graph items variable label are not displayed
+                if not self.Is3DCanvas():
+                    # Items variable labels are in figure upper left corner
+                    self.AxesLabels[idx].set_position(
+                        (0.05, 
+                         1.0 - (CANVAS_PADDING + 
+                                AXES_LABEL_HEIGHT * idx) * graph_ratio))
+                
+                # Items variable labels are in figure lower right corner
+                self.Labels[idx].set_position(
+                    (0.95, 
+                     CANVAS_PADDING * graph_ratio + 
+                     (num_item - idx - 1) * VALUE_LABEL_HEIGHT * graph_ratio))
+        else:
+            # X coordinate labels are in figure lower side
+            self.AxesLabels[0].set_position(
+                    (0.1, CANVAS_PADDING * graph_ratio))
+            self.Labels[0].set_position(
+                    (0.95, CANVAS_PADDING * graph_ratio))
+            
+            # Y coordinate labels are vertical and in figure left side
+            self.AxesLabels[1].set_position(
+                    (0.05, 2 * CANVAS_PADDING * graph_ratio))
+            self.Labels[1].set_position(
+                    (0.05, 1.0 - CANVAS_PADDING * graph_ratio))
+        
+        # Update subplots
+        self.Figure.subplots_adjust()
+    
     def RefreshViewer(self, refresh_graphics=True):
         
         if refresh_graphics:
@@ -944,9 +1074,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                     if self.VLine is not None:
                         self.VLine.set_visible(False)
             else:
-                min_start_tick = reduce(max, [item.GetData()[0, 0] 
-                                              for item in self.Items
-                                              if len(item.GetData()) > 0], 0)
+                min_start_tick = max(start_tick, self.GetItemsMinCommonTick())
                 start_tick = max(start_tick, min_start_tick)
                 end_tick = max(end_tick, min_start_tick)
                 items = self.ItemsDict.values()

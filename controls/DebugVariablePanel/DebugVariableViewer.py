@@ -160,6 +160,15 @@ class DebugVariableViewer:
         for item in self.Items:
             item.ResetData()
     
+    def GetItemsMinCommonTick(self):
+        """
+        Return the minimum tick common to all iems displayed in Viewer
+        @return: Minimum common tick between items
+        """
+        return reduce(max, [item.GetData()[0, 0] 
+                            for item in self.Items
+                            if len(item.GetData()) > 0], 0)
+    
     def RefreshViewer(self):
         """
         Method that refresh the content displayed by Viewer
