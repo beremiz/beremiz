@@ -507,9 +507,10 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             if len(self.Ticks) > 0:
                 if tick is None:
                     tick = self.StartTick + self.CurrentRange / 2.
-                new_start_tick = tick - (tick - self.StartTick) * self.CurrentRange / current_range 
+                new_start_tick = min(tick - (tick - self.StartTick) * self.CurrentRange / current_range,
+                                     self.Ticks[-1] - self.CurrentRange)
                 self.StartTick = self.Ticks[numpy.argmin(numpy.abs(self.Ticks - new_start_tick))]
-                self.Fixed = self.StartTick < self.Ticks[-1] - self.CurrentRange
+                self.Fixed = new_start_tick < self.Ticks[-1] - self.CurrentRange
             self.ForceRefresh()
     
     def RefreshRange(self):
