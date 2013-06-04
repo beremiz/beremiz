@@ -174,7 +174,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                           bitmap=GetBitmap("debug_instance"), 
                           size=wx.Size(28, 28), style=wx.NO_BORDER)
                     self.Bind(wx.EVT_BUTTON, self.GenDebugButtonCallback(var_infos), debug_button)
-                    debug_button.Bind(wx.EVT_RIGHT_UP, self.GenDebugButtonRightClickCallback(var_infos))
+                    debug_button.Bind(wx.EVT_LEFT_DCLICK, self.GenDebugButtonDClickCallback(var_infos))
                     buttons.append(debug_button)
                 
                 button_num = len(buttons)
@@ -280,8 +280,8 @@ class PouInstanceVariablesPanel(wx.Panel):
             event.Skip()
         return DebugButtonCallback
     
-    def GenDebugButtonRightClickCallback(self, infos):
-        def DebugButtonCallback(event):
+    def GenDebugButtonDClickCallback(self, infos):
+        def DebugButtonDClickCallback(event):
             if self.InstanceChoice.GetSelection() != -1:
                 if infos["class"] in ITEMS_VARIABLE:
                     self.ParentWindow.AddDebugVariable(
@@ -290,7 +290,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                         force=True,
                         graph=True)
             event.Skip()
-        return DebugButtonCallback
+        return DebugButtonDClickCallback
     
     def GenGraphButtonCallback(self, infos):
         def GraphButtonCallback(event):
