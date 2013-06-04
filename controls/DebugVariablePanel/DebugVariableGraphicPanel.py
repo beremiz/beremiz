@@ -118,6 +118,9 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         @param y: Y coordinate of mouse pointer
         @param data: Text associated to drag'n drop
         """
+        # Signal Debug Variable Panel to reset highlight
+        self.ParentWindow.ResetHighlight()
+        
         message = None
         
         # Check that data is valid regarding DebugVariablePanel
@@ -204,7 +207,6 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         self.Fixed = False           # Flag that range of data is fixed
         self.CursorTick = None       # Tick of cursor for displaying values
         
-        # 
         self.DraggingAxesPanel = None
         self.DraggingAxesBoundingBox = None
         self.DraggingAxesMousePos = None
@@ -362,22 +364,6 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         self.Force = True
         wx.CallAfter(self.NewDataAvailable, None, True)
     
-    def RefreshGraphicsSizer(self):
-        self.GraphicsSizer.Clear()
-        
-        for panel in self.GraphicPanels:
-            self.GraphicsSizer.AddWindow(panel, flag=wx.GROW)
-            
-        self.GraphicsSizer.Layout()
-        self.RefreshGraphicsWindowScrollbars()
-    
-    def SetCanvasPosition(self, tick):
-        tick = max(self.Ticks[0], min(tick, self.Ticks[-1] - self.CurrentRange))
-        self.StartTick = self.Ticks[numpy.argmin(numpy.abs(self.Ticks - tick))]
-        self.Fixed = True
-        self.RefreshCanvasPosition()
-        self.ForceRefresh()
-    
     def SetCursorTick(self, cursor_tick):
         self.CursorTick = cursor_tick
         self.Fixed = cursor_tick is not None
@@ -510,6 +496,15 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             wx.CallAfter(self.MoveValue, variable, len(self.GraphicPanels), True)
         self.ForceRefresh()
     
+    def RefreshGraphicsSizer(self):
+        self.GraphicsSizer.Clear()
+        
+        for panel in self.GraphicPanels:
+            self.GraphicsSizer.AddWindow(panel, flag=wx.GROW)
+            
+        self.GraphicsSizer.Layout()
+        self.RefreshGraphicsWindowScrollbars()
+    
     def RefreshView(self):
         self.RefreshCanvasPosition()
         
@@ -600,6 +595,13 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         self.GraphicPanels = []
         self.ResetVariableNameMask()
         self.RefreshGraphicsSizer()
+    
+    def SetCanvasPosition(self, tick):
+        tick = max(self.Ticks[0], min(tick, self.Ticks[-1] - self.CurrentRange))
+        self.StartTick = self.Ticks[numpy.argmin(numpy.abs(self.Ticks - tick))]
+        self.Fixed = True
+        self.RefreshCanvasPosition()
+        self.ForceRefresh()
     
     def RefreshCanvasPosition(self):
         if len(self.Ticks) > 0:
@@ -770,10 +772,16 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         if source_panel is not None:
             source_panel_idx = self.GraphicPanels.index(source_panel)
             
-            if (len(panel.GetItems()) == 1):
+            if (len(source_panel.GetItems()) == 1):
                 
-                self.GraphicPanels.insert(idx, source_panel)
-                self.GraphicPanels.pop(source_panel_idx)
+                if source_panel_idx < idx:
+                    self.GraphicPanels.insert(idx, source_panel)
+                    self.GraphicPanels.pop(source_panel_idx)
+                elif source_panel_idx > idx:
+                    self.GraphicPanels.pop(source_panel_idx)
+                    self.GraphicPanels.insert(idx, source_panel)
+                else:
+                    return
                 
             else:
                 source_panel.RemoveItem(item)
