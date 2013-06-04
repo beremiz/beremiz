@@ -732,6 +732,8 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
     def InsertValue(self, iec_path, idx = None, force=False, graph=False):
         for panel in self.GraphicPanels:
             if panel.GetItem(iec_path) is not None:
+                if graph and isinstance(panel, DebugVariableTextViewer):
+                    self.ToggleViewerType(panel)
                 return
         if idx is None:
             idx = len(self.GraphicPanels)
@@ -767,28 +769,31 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                 break
         if source_panel is not None:
             source_panel_idx = self.GraphicPanels.index(source_panel)
-            if len(panel.GetItems()) == 1 and \
-               idx in [source_panel_idx, source_panel_idx + 1]:
-                return
             
-            source_panel.RemoveItem(item)
-            source_size = source_panel.GetSize()
-            if item.IsNumVariable() and graph:
-                panel = DebugVariableGraphicViewer(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
-                panel.SetCanvasSize(source_size.width, source_size.height)
-                if self.CursorTick is not None:
-                    panel.SetCursorTick(self.CursorTick)
-            
+            if (len(panel.GetItems()) == 1):
+                
+                self.GraphicPanels.insert(idx, source_panel)
+                self.GraphicPanels.pop(source_panel_idx)
+                
             else:
-                panel = DebugVariableTextViewer(self.GraphicsWindow, self, [item])
-            
-            self.GraphicPanels.insert(idx, panel)
-            
-            if source_panel.ItemsIsEmpty():
-                if source_panel.HasCapture():
-                    source_panel.ReleaseMouse()
-                source_panel.Destroy()
-                self.GraphicPanels.remove(source_panel)
+                source_panel.RemoveItem(item)
+                source_size = source_panel.GetSize()
+                if item.IsNumVariable() and graph:
+                    panel = DebugVariableGraphicViewer(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
+                    panel.SetCanvasSize(source_size.width, source_size.height)
+                    if self.CursorTick is not None:
+                        panel.SetCursorTick(self.CursorTick)
+                
+                else:
+                    panel = DebugVariableTextViewer(self.GraphicsWindow, self, [item])
+                
+                self.GraphicPanels.insert(idx, panel)
+                
+                if source_panel.ItemsIsEmpty():
+                    if source_panel.HasCapture():
+                        source_panel.ReleaseMouse()
+                    source_panel.Destroy()
+                    self.GraphicPanels.remove(source_panel)
                 
             self.ResetVariableNameMask()
             self.RefreshGraphicsSizer()
