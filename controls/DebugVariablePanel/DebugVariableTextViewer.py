@@ -78,6 +78,9 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         @param y: Y coordinate of mouse pointer
         @param data: Text associated to drag'n drop
         """
+        # Signal Debug Variable Panel to reset highlight
+        self.ParentWindow.ResetHighlight()
+        
         message = None
         
         # Check that data is valid regarding DebugVariablePanel
