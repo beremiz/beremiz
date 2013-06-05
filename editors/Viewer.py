@@ -1090,6 +1090,12 @@ class Viewer(EditorPanel, DebugViewer):
             instance = self.Controler.GetEditedElementInstanceInfos(self.TagName, exclude = ids, debug = self.Debug)
             if instance is not None:
                 self.loadInstance(instance, ids, selection)
+        
+        if (selection is not None and 
+            isinstance(self.SelectedElement, GraphicGroup)):
+            self.SelectedElement.RefreshWireExclusion()
+            self.SelectedElement.RefreshBoundingBox()
+        
         self.RefreshScrollBars()
         
         for wire in self.Wires:
@@ -1201,11 +1207,11 @@ class Viewer(EditorPanel, DebugViewer):
         if self.SelectedElement is None:
             self.SelectedElement = element
         elif isinstance(self.SelectedElement, Graphic_Group):
-            self.SelectedElement.SelectElement(element)
+            self.SelectedElement.AddElement(element)
         else:
             group = Graphic_Group(self)
-            group.SelectElement(self.SelectedElement)
-            group.SelectElement(element)
+            group.AddElement(self.SelectedElement)
+            group.AddElement(element)
             self.SelectedElement = group
         
     # Load instance from given informations
@@ -1405,8 +1411,7 @@ class Viewer(EditorPanel, DebugViewer):
         if self.SelectedElement is not None:
             self.SelectedElement.SetSelected(False)
         self.SelectedElement = Graphic_Group(self)
-        for element in self.GetElements():
-            self.SelectedElement.SelectElement(element)
+        self.SelectedElement.SetElements(self.GetElements())
         self.SelectedElement.SetSelected(True)
     
 #-------------------------------------------------------------------------------
