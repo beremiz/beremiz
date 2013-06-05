@@ -1659,9 +1659,9 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnViewerMouseEvent(self, event):
         self.ResetBuffer()
-        if self.ToolTipElement is not None:
+        if event.Leaving() and self.ToolTipElement is not None:
             self.ToolTipElement.DestroyToolTip()
-        if (not event.Entering() and
+        elif (not event.Entering() and
             gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
             self.LastToolTipCheckTime = gettime()
             element = None
@@ -1671,6 +1671,8 @@ class Viewer(EditorPanel, DebugViewer):
                 element = self.FindBlockConnector(pos)
                 if element is None or len(element.GetWires()) > 0:
                     element = self.FindElement(event, True, False)
+            if self.ToolTipElement is not None:
+                self.ToolTipElement.DestroyToolTip()
             self.ToolTipElement = element
             if self.ToolTipElement is not None:
                 tooltip_pos = self.Editor.ClientToScreen(event.GetPosition())
