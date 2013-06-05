@@ -1577,7 +1577,7 @@ class PLCControler:
                                 result_blocktype["inputs"] = [(i[0], "ANY", i[2]) for i in result_blocktype["inputs"]]
                                 result_blocktype["outputs"] = [(o[0], "ANY", o[2]) for o in result_blocktype["outputs"]]
                                 return result_blocktype
-                        result_blocktype = blocktype
+                        result_blocktype = blocktype.copy()
         if result_blocktype is not None:
             return result_blocktype
         project = self.GetProject(debug)

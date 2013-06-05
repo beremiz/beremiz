@@ -185,10 +185,7 @@ class LibraryPanel(wx.Panel):
             if pydata is not None and self.Tree.GetItemText(root) == name and same_inputs:
                 return root
             else:
-                if wx.VERSION < (2, 6, 0):
-                    item, root_cookie = self.Tree.GetFirstChild(root, 0)
-                else:
-                    item, root_cookie = self.Tree.GetFirstChild(root)
+                item, root_cookie = self.Tree.GetFirstChild(root)
                 while item.IsOk():
                     result = self.FindTreeItem(item, name, inputs)
                     if result:
