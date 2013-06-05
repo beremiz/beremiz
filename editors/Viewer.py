@@ -1997,7 +1997,7 @@ class Viewer(EditorPanel, DebugViewer):
                     self.HighlightedElement.SetHighlighted(False)
                     self.HighlightedElement = None
                 if highlighted is not None:
-                    if isinstance(highlighted, (Wire, Graphic_Group)):
+                    if not self.Debug and isinstance(highlighted, (Wire, Graphic_Group)):
                         highlighted.HighlightPoint(pos)
                     if self.HighlightedElement != highlighted:
                         highlighted.SetHighlighted(True)
@@ -2013,7 +2013,7 @@ class Viewer(EditorPanel, DebugViewer):
                         self.SelectedElement.GeneratePoints()
                         if movex != 0 or movey != 0:
                             self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
-                    else:
+                    elif not self.Debug:
                         self.SelectedElement.HighlightPoint(pos)
                 else:
                     movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)
