@@ -853,9 +853,12 @@ class Graphic_Group(Graphic_Element):
                 if movex != 0 or movey != 0:
                     element.Move(movex, movey)
                     element.RefreshModel()
-        self.RefreshWireExclusion()
         self.RefreshBoundingBox()
     
+    # Add the given element to the group of elements
+    def AddElement(self, element):
+        self.Elements.append(element)
+        
     # Remove or select the given element if it is or not in the group
     def SelectElement(self, element):
         if element in self.Elements:
