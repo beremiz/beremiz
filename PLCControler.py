@@ -561,7 +561,7 @@ class PLCControler:
                         instances.append(var_path)
                     else:
                         pou = project.getpou(var_type)
-                        if pou is not None:
+                        if pou is not None and project.ElementIsUsedBy(pou_type, var_type):
                             instances.extend(
                                 self.RecursiveSearchPouInstances(
                                     project, pou_type, var_path, 
@@ -596,7 +596,7 @@ class PLCControler:
                             if pou_type == words[1]:
                                 instances.append(pou_path)
                             pou = project.getpou(pou_type)
-                            if pou is not None:
+                            if pou is not None and project.ElementIsUsedBy(words[1], pou_type):
                                 instances.extend(
                                     self.RecursiveSearchPouInstances(
                                         project, words[1], pou_path, 
