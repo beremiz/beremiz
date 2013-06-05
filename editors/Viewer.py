@@ -1092,7 +1092,7 @@ class Viewer(EditorPanel, DebugViewer):
                 self.loadInstance(instance, ids, selection)
         
         if (selection is not None and 
-            isinstance(self.SelectedElement, GraphicGroup)):
+            isinstance(self.SelectedElement, Graphic_Group)):
             self.SelectedElement.RefreshWireExclusion()
             self.SelectedElement.RefreshBoundingBox()
         
