@@ -24,7 +24,7 @@
 
 import re
 import math
-import time
+from time import time as gettime
 from types import TupleType
 from threading import Lock
 
@@ -35,7 +35,7 @@ from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBL
 
 from dialogs import *
 from graphics import *
-from editors.DebugViewer import DebugViewer
+from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from EditorPanel import EditorPanel
 
 SCROLLBAR_UNIT = 10
@@ -578,6 +578,12 @@ class Viewer(EditorPanel, DebugViewer):
         self.InstancePath = instancepath
         self.StartMousePos = None
         self.StartScreenPos = None
+        
+        # Prevent search for highlighted element to be called too often
+        self.LastHighlightCheckTime = gettime()
+        # Prevent search for element producing tooltip to be called too often
+        self.LastToolTipCheckTime = gettime()
+        
         self.Buffering = False
         
         # Initialize Cursors
@@ -1647,17 +1653,19 @@ class Viewer(EditorPanel, DebugViewer):
 #-------------------------------------------------------------------------------
 
     def OnViewerMouseEvent(self, event):
-        if not event.Entering():
-            self.ResetBuffer()
+        self.ResetBuffer()
+        if self.ToolTipElement is not None:
+            self.ToolTipElement.DestroyToolTip()
+        if (not event.Entering() and
+            gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
+            self.LastToolTipCheckTime = gettime()
             element = None
             if not event.Leaving() and not event.LeftUp() and not event.LeftDClick():
                 dc = self.GetLogicalDC()
                 pos = event.GetLogicalPosition(dc)
                 element = self.FindBlockConnector(pos)
-                if element is None:
+                if element is None or len(element.GetWires()) > 0:
                     element = self.FindElement(event, True, False)
-            if self.ToolTipElement is not None:
-                self.ToolTipElement.DestroyToolTip()
             self.ToolTipElement = element
             if self.ToolTipElement is not None:
                 tooltip_pos = self.Editor.ClientToScreen(event.GetPosition())
@@ -1981,7 +1989,9 @@ class Viewer(EditorPanel, DebugViewer):
                     self.RefreshScrollBars()
                 self.RefreshVisibleElements()
         else:
-            if not event.Dragging():
+            if (not event.Dragging() and
+                gettime() - self.LastHighlightCheckTime > REFRESH_PERIOD):
+                self.LastHighlightCheckTime = gettime()
                 highlighted = self.FindElement(event, connectors=False) 
                 if self.HighlightedElement is not None and self.HighlightedElement != highlighted:
                     self.HighlightedElement.SetHighlighted(False)
