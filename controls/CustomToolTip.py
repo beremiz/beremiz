@@ -50,7 +50,6 @@ class CustomToolTip(wx.PopupWindow):
         """
         wx.PopupWindow.__init__(self, parent)
         
-        self.CurrentPosition = wx.Point(0, 0)
         self.Restricted = restricted
         
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
@@ -126,11 +125,9 @@ class CustomToolTip(wx.PopupWindow):
         
         # Calculate position of tool tip to stay in screen limits
         tip_width, tip_height = self.GetToolTipSize()
-        self.CurrentPosition = wx.Point(
+        self.SetPosition(wx.Point(
             max(0, min(pos.x, screen_width - tip_width)),
-            max(0, min(pos.y, screen_height - tip_height))) 
-        
-        self.SetPosition(pos)
+            max(0, min(pos.y, screen_height - tip_height))))
     
     def GetToolTipSize(self):
         """
@@ -158,8 +155,7 @@ class CustomToolTip(wx.PopupWindow):
         # Prevent to call this function if tool tip destroyed
         if self:
             # Refresh tool tip size and position
-            self.SetSize(self.GetToolTipSize())
-            self.SetPosition(self.CurrentPosition)
+            self.SetClientSize(self.GetToolTipSize())
             
             # Redraw tool tip
             self.Refresh()
