@@ -181,7 +181,10 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
         Show error message in Error Dialog
         @param message: Error message to display
         """
-        dialog = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self.ParentWindow, 
+                                  message, 
+                                  _("Error"), 
+                                  wx.OK|wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 

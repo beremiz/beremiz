@@ -161,7 +161,10 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         Show error message in Error Dialog
         @param message: Error message to display
         """
-        dialog = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self.ParentWindow, 
+                                  message, 
+                                  _("Error"), 
+                                  wx.OK|wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -337,6 +340,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         """
         # If tick given
         if tick is not None:
+            self.HasNewData = True
             
             # Save tick as start tick for range if data is still empty
             if len(self.Ticks) == 0:
@@ -365,6 +369,11 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         wx.CallAfter(self.NewDataAvailable, None, True)
     
     def SetCursorTick(self, cursor_tick):
+        """
+        Set Cursor for displaying values of items at a tick given
+        @param cursor_tick: Tick of cursor
+        """
+        # Save cursor tick
         self.CursorTick = cursor_tick
         self.Fixed = cursor_tick is not None
         self.UpdateCursorTick() 
@@ -389,6 +398,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             
     def ResetCursorTick(self):
         self.CursorTick = None
+        self.Fixed = False
         self.UpdateCursorTick()
     
     def UpdateCursorTick(self):
@@ -649,7 +659,6 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
     def OnCurrentButton(self, event):
         if len(self.Ticks) > 0:
             self.StartTick = max(self.Ticks[0], self.Ticks[-1] - self.CurrentRange)
-            self.Fixed = False
             self.ResetCursorTick()
         event.Skip()
     
@@ -880,6 +889,9 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                     self.GraphicPanels.remove(source_panel)
                     self.ResetVariableNameMask()
                     self.RefreshGraphicsSizer()
+            if len(self.GraphicPanels) == 0:
+                self.Fixed = False
+                self.ResetCursorTick()
             self.ForceRefresh()
     
     def ToggleViewerType(self, panel):
@@ -901,7 +913,6 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
     def ResetGraphicsValues(self):
         self.Ticks = numpy.array([])
         self.StartTick = 0
-        self.Fixed = False
         for panel in self.GraphicPanels:
             panel.ResetItemsData()
         self.ResetCursorTick()
