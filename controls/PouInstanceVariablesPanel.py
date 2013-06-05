@@ -113,7 +113,7 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.RefreshView()
     
     def SetPouType(self, tagname, pou_instance=None):
-        if  self.Controller is not None:
+        if self.Controller is not None:
             self.PouTagName = tagname
             if self.PouTagName == "Project":
                 config_name = self.Controller.GetProjectMainConfigurationName()
@@ -134,6 +134,7 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.RefreshView()
     
     def RefreshView(self):
+        self.Freeze()
         self.VariablesList.DeleteAllItems()
         self.InstanceChoice.Clear()
         self.InstanceChoice.SetValue("")
@@ -211,6 +212,8 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.InstanceChoice.SetValue(_("Select an instance"))
         
         self.RefreshButtons()
+        
+        self.Thaw()
         
     def RefreshButtons(self):
         enabled = self.InstanceChoice.GetSelection() != -1
