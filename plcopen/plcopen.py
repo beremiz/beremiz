@@ -1751,6 +1751,17 @@ if cls:
 cls = PLCOpenClasses.get("body", None)
 if cls:
     cls.currentExecutionOrderId = 0
+    cls.instances_dict = {}
+    
+    setattr(cls, "_loadXMLTree", getattr(cls, "loadXMLTree"))
+    
+    def loadXMLTree(self, *args, **kwargs):
+        self._loadXMLTree(*args, **kwargs)
+        if self.content["name"] in ["LD","FBD","SFC"]:
+            self.instances_dict = dict(
+                [(element["value"].getlocalId(), element)
+                 for element in self.content["value"].getcontent()])
+    setattr(cls, "loadXMLTree", loadXMLTree)
     
     def resetcurrentExecutionOrderId(self):
         object.__setattr__(self, "currentExecutionOrderId", 0)
@@ -1825,7 +1836,9 @@ if cls:
     
     def appendcontentInstance(self, name, instance):
         if self.content["name"] in ["LD","FBD","SFC"]:
-            self.content["value"].appendcontent({"name" : name, "value" : instance})
+            element = {"name" : name, "value" : instance}
+            self.content["value"].appendcontent(element)
+            self.instances_dict[instance.getlocalId()] = element
         else:
             raise TypeError, _("%s body don't have instances!")%self.content["name"]
     setattr(cls, "appendcontentInstance", appendcontentInstance)
@@ -1842,9 +1855,9 @@ if cls:
 
     def getcontentInstance(self, id):
         if self.content["name"] in ["LD","FBD","SFC"]:
-            for element in self.content["value"].getcontent():
-                if element["value"].getlocalId() == id:
-                    return element["value"]
+            instance = self.instances_dict.get(id, None)
+            if instance is not None:
+                return instance["value"]
             return None
         else:
             raise TypeError, _("%s body don't have instances!")%self.content["name"]
@@ -1852,9 +1865,9 @@ if cls:
     
     def getcontentRandomInstance(self, exclude):
         if self.content["name"] in ["LD","FBD","SFC"]:
-            for element in self.content["value"].getcontent():
-                if element["value"].getlocalId() not in exclude:
-                    return element["value"]
+            ids = self.instances_dict.viewkeys() - exclude
+            if len(ids) > 0:
+                return self.instances_dict[ids.pop()]["value"]
             return None
         else:
             raise TypeError, _("%s body don't have instances!")%self.content["name"]
@@ -1871,15 +1884,10 @@ if cls:
     
     def removecontentInstance(self, id):
         if self.content["name"] in ["LD","FBD","SFC"]:
-            i = 0
-            removed = False
-            elements = self.content["value"].getcontent()
-            while i < len(elements) and not removed:
-                if elements[i]["value"].getlocalId() == id:
-                    self.content["value"].removecontent(i)
-                    removed = True
-                i += 1
-            if not removed:
+            element = self.instances_dict.get(id, None)
+            if element is not None:
+                self.content["value"].getcontent().remove(element)
+            else:
                 raise ValueError, _("Instance with id %d doesn't exist!")%id
         else:
             raise TypeError, "%s body don't have instances!"%self.content["name"]
