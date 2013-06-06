@@ -417,7 +417,10 @@ class LibraryPanel(wx.Panel):
                 if name.upper().find(value.upper()) != -1 and item != selected:
                     # Select block and collapse all categories other than block
                     # category
-                    self.Tree.CollapseAllChildren(root)
+                    child, child_cookie = self.Tree.GetFirstChild(root)
+                    while child.IsOk():
+                        self.Tree.CollapseAllChildren(child)
+                        child, child_cookie = self.Tree.GetNextChild(root, child_cookie)
                     self.Tree.SelectItem(item)
                     self.Tree.EnsureVisible(item)
                     return True
