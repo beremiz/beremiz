@@ -114,15 +114,20 @@ class PouInstanceVariablesPanel(wx.Panel):
     
     def SetPouType(self, tagname, pou_instance=None):
         if self.Controller is not None:
-            self.PouTagName = tagname
-            if self.PouTagName == "Project":
+            if tagname == "Project":
                 config_name = self.Controller.GetProjectMainConfigurationName()
                 if config_name is not None:
-                    self.PouTagName = self.Controller.ComputeConfigurationName(config_name)
+                    tagname = self.Controller.ComputeConfigurationName(config_name)
             if pou_instance is not None:
                 self.PouInstance = pou_instance
-        
-        self.RefreshView()
+            
+            if self.PouTagName != tagname:
+                self.PouTagName = tagname
+                self.RefreshView()
+            else:
+                self.RefreshInstanceChoice()
+        else:
+            self.RefreshView()
     
     def ResetView(self):
         self.Controller = None
@@ -197,6 +202,14 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.VariablesList.SetItemImage(item, self.ParentWindow.GetTreeImage(var_infos["class"]))
                 self.VariablesList.SetPyData(item, var_infos)
             
+            self.RefreshInstanceChoice()
+        
+        self.RefreshButtons()
+        
+        self.Thaw()
+    
+    def RefreshInstanceChoice(self):
+        if self.Controller is not None and self.PouInfos is not None:
             instances = self.Controller.SearchPouInstances(self.PouTagName, self.Debug)
             for instance in instances:
                 self.InstanceChoice.Append(instance)
@@ -210,11 +223,7 @@ class PouInstanceVariablesPanel(wx.Panel):
             else:
                 self.PouInstance = None
                 self.InstanceChoice.SetValue(_("Select an instance"))
-        
-        self.RefreshButtons()
-        
-        self.Thaw()
-        
+    
     def RefreshButtons(self):
         enabled = self.InstanceChoice.GetSelection() != -1
         self.ParentButton.Enable(enabled and self.PouInfos["class"] != ITEM_CONFIGURATION)

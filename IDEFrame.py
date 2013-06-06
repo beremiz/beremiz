@@ -1358,6 +1358,7 @@ class IDEFrame(wx.Frame):
             tagname = window.GetTagName()
             if not window.IsDebugging():
                 self.SelectProjectTreeItem(tagname)
+                self.PouInstanceVariablesPanel.SetPouType(tagname)
                 window.RefreshView()
                 self.EnsureTabVisible(self.LibraryPanel)
             else:

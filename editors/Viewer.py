@@ -271,6 +271,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         self.ParentWindow.RefreshScrollBars()
                         self.ParentWindow.RefreshVisibleElements()
                         self.ParentWindow.RefreshVariablePanel()
+                        self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.Refresh(False)
             elif values[1] == "location":
                 if pou_type == "program":
@@ -318,6 +319,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                         self.ParentWindow.Controler.AddEditedElementPouExternalVar(tagname, values[2], var_name)
                         self.ParentWindow.RefreshVariablePanel()
+                        self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                     self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, var_name, values[2])
             elif values[1] == "Constant":
                 self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, values[0], None)
