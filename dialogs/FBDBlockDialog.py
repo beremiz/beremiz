@@ -51,7 +51,6 @@ class FBDBlockDialog(wx.Dialog):
               flag=wx.GROW|wx.RIGHT)
         
         self.LibraryPanel = LibraryPanel(self)
-        self.LibraryPanel.SetController(controller)
         setattr(self.LibraryPanel, "_OnTreeItemSelected", 
               self.OnLibraryTreeItemSelected)
         left_staticboxsizer.AddWindow(self.LibraryPanel, 1, border=5, 
