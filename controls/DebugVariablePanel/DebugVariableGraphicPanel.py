@@ -68,9 +68,9 @@ def NextTick(variables):
         if len(data) == 0:
             continue
         
-        next = (data[0][0]
-                if next_tick is None
-                else min(next_tick, data[0][0]))
+        next_tick = (data[0][0]
+                     if next_tick is None
+                     else min(next_tick, data[0][0]))
     
     return next_tick
 
