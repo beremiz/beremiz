@@ -1884,7 +1884,7 @@ if cls:
     
     def removecontentInstance(self, id):
         if self.content["name"] in ["LD","FBD","SFC"]:
-            element = self.instances_dict.get(id, None)
+            element = self.instances_dict.pop(id, None)
             if element is not None:
                 self.content["value"].getcontent().remove(element)
             else:
