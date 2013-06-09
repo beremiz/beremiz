@@ -129,7 +129,7 @@ class FBDBlockDialog(BlockPreviewDialog):
             message = _("Form isn't complete. Name must be filled!")
         if message is not None:
             self.ShowMessage(message)
-        elif name_enabled and self.TestBlockName(block_name):
+        elif not name_enabled or self.TestBlockName(block_name):
             BlockPreviewDialog.OnOK(self, event)
 
     def SetValues(self, values):
@@ -140,9 +140,10 @@ class FBDBlockDialog(BlockPreviewDialog):
                                              values.get("inputs", None))
         for name, value in values.items():
             if name == "name":
-                self.DefaultBlockName = value
-                if default_name_model.match(value) is None:
-                    self.CurrentBlockName = value
+                if value != "":
+                    self.DefaultBlockName = value
+                    if default_name_model.match(value) is None:
+                        self.CurrentBlockName = value
                 self.BlockName.ChangeValue(value)
             elif name == "extension":
                 self.Inputs.SetValue(value)
