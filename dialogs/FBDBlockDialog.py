@@ -22,19 +22,22 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import re
+
 import wx
 
-from graphics import *
+from graphics.FBD_Objects import FBD_Block
 from controls.LibraryPanel import LibraryPanel
+from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
 #                          Create New Block Dialog
 #-------------------------------------------------------------------------------
 
-class FBDBlockDialog(wx.Dialog):
+class FBDBlockDialog(BlockPreviewDialog):
     
-    def __init__(self, parent, controller):
-        wx.Dialog.__init__(self, parent,
+    def __init__(self, parent, controller, tagname):
+        BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(600, 450), title=_('Block Properties'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=10)
@@ -99,48 +102,21 @@ class FBDBlockDialog(wx.Dialog):
         self.Bind(wx.EVT_CHECKBOX, self.OnExecutionOrderChanged, self.ExecutionControl)
         top_right_gridsizer.AddWindow(self.ExecutionControl, flag=wx.GROW)
         
-        preview_label = wx.StaticText(self, label=_('Preview:'))
-        right_gridsizer.AddWindow(preview_label, flag=wx.GROW)
-
-        self.Preview = wx.Panel(self,
-              style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
-        self.Preview.SetBackgroundColour(wx.Colour(255,255,255))
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "GetScaling", lambda:None)
-        setattr(self.Preview, "GetBlockType", controller.GetBlockType)
-        setattr(self.Preview, "IsOfType", controller.IsOfType)
-        self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
+        right_gridsizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
         right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
         
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        main_sizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
         self.SetSizer(main_sizer)
         
-        self.Controller = controller
-        
         self.BlockName.SetValue("")
         self.BlockName.Enable(False)
         self.Inputs.Enable(False)
-        self.Block = None
-        self.MinBlockSize = None
-        self.First = True
+        self.CurrentBlockName = None
         
-        self.PouNames = []
-        self.PouElementNames = []
-        
+        self.LibraryPanel.SetBlockList(controller.GetBlockTypes(tagname))
         self.LibraryPanel.SetFocus()
-    
-    def __del__(self):
-        self.Controller = None
-    
-    def SetBlockList(self, blocklist):
-        self.LibraryPanel.SetBlockList(blocklist)
-    
-    def SetPreviewFont(self, font):
-        self.Preview.SetFont(font)
     
     def OnOK(self, event):
         message = None
@@ -151,37 +127,23 @@ class FBDBlockDialog(wx.Dialog):
             message = _("Form isn't complete. Valid block type must be selected!")
         elif name_enabled and block_name == "":
             message = _("Form isn't complete. Name must be filled!")
-        elif name_enabled and not TestIdentifier(block_name):
-            message = _("\"%s\" is not a valid identifier!") % block_name
-        elif name_enabled and block_name.upper() in IEC_KEYWORDS:
-            message = _("\"%s\" is a keyword. It can't be used!") % block_name
-        elif name_enabled and block_name.upper() in self.PouNames:
-            message = _("\"%s\" pou already exists!") % block_name
-        elif name_enabled and block_name.upper() in self.PouElementNames:
-            message = _("\"%s\" element for this pou already exists!") % block_name
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
-        else:
-            self.EndModal(wx.ID_OK)
+            self.ShowMessage(message)
+        elif name_enabled and self.TestBlockName(block_name):
+            BlockPreviewDialog.OnOK(self, event)
 
-    def SetMinBlockSize(self, size):
-        self.MinBlockSize = size
-
-    def SetPouNames(self, pou_names):
-        self.PouNames = [pou_name.upper() for pou_name in pou_names]
-        
-    def SetPouElementNames(self, element_names):
-        self.PouElementNames = [element_name.upper() for element_name in element_names]
-        
     def SetValues(self, values):
         blocktype = values.get("type", None)
+        default_name_model = re.compile("%s[0-9]+" % blocktype)
         if blocktype is not None:
-            self.LibraryPanel.SelectTreeItem(blocktype, values.get("inputs", None))
+            self.LibraryPanel.SelectTreeItem(blocktype, 
+                                             values.get("inputs", None))
         for name, value in values.items():
             if name == "name":
-                self.BlockName.SetValue(value)
+                self.DefaultBlockName = value
+                if default_name_model.match(value) is None:
+                    self.CurrentBlockName = value
+                self.BlockName.ChangeValue(value)
             elif name == "extension":
                 self.Inputs.SetValue(value)
             elif name == "executionOrder":
@@ -199,26 +161,36 @@ class FBDBlockDialog(wx.Dialog):
         values["executionOrder"] = self.ExecutionOrder.GetValue()
         values["executionControl"] = self.ExecutionControl.GetValue()
         return values
-
+        
     def OnLibraryTreeItemSelected(self, event):
         values = self.LibraryPanel.GetSelectedBlock()
-        if values is not None:
-            blocktype = self.Controller.GetBlockType(values["type"], values["inputs"])
-        else:
-            blocktype = None
+        blocktype = (self.Controller.GetBlockType(values["type"], 
+                                                  values["inputs"])
+                     if values is not None else None)
+        
         if blocktype is not None:
             self.Inputs.SetValue(len(blocktype["inputs"]))
             self.Inputs.Enable(blocktype["extensible"])
-            self.BlockName.Enable(blocktype["type"] != "function")
-            wx.CallAfter(self.RefreshPreview)
+        else:
+            self.Inputs.SetValue(2)
+            self.Inputs.Enable(False)
+        
+        if blocktype is not None and blocktype["type"] != "function":
+            self.BlockName.Enable(True)
+            self.BlockName.ChangeValue(
+                self.CurrentBlockName
+                if self.CurrentBlockName is not None
+                else self.Controller.GenerateNewName(
+                    self.TagName, None, values["type"]+"%d", 0))
         else:
             self.BlockName.Enable(False)
-            self.Inputs.Enable(False)
-            self.Inputs.SetValue(2)
-            wx.CallAfter(self.ErasePreview)
+            self.BlockName.ChangeValue("")
+        
+        self.RefreshPreview()
     
     def OnNameChanged(self, event):
         if self.BlockName.IsEnabled():
+            self.CurrentBlockName = self.BlockName.GetValue()
             self.RefreshPreview()
         event.Skip()
     
@@ -235,15 +207,7 @@ class FBDBlockDialog(wx.Dialog):
         self.RefreshPreview()
         event.Skip()
     
-    def ErasePreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.Clear()
-        self.Block = None
-        
     def RefreshPreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.SetFont(self.Preview.GetFont())
-        dc.Clear()
         values = self.LibraryPanel.GetSelectedBlock()
         if values is not None:
             if self.BlockName.IsEnabled():
@@ -256,19 +220,6 @@ class FBDBlockDialog(wx.Dialog):
                     inputs = values["inputs"], 
                     executionControl = self.ExecutionControl.GetValue(), 
                     executionOrder = self.ExecutionOrder.GetValue())
-            width, height = self.MinBlockSize
-            min_width, min_height = self.Block.GetMinSize()
-            width, height = max(min_width, width), max(min_height, height)
-            self.Block.SetSize(width, height)
-            clientsize = self.Preview.GetClientSize()
-            x = (clientsize.width - width) / 2
-            y = (clientsize.height - height) / 2
-            self.Block.SetPosition(x, y)
-            self.Block.Draw(dc)
         else:
-            self.Block = None        
-
-    def OnPaint(self, event):
-        if self.Block is not None:
-            self.RefreshPreview()
-        event.Skip()
+            self.Block = None 
+        BlockPreviewDialog.RefreshPreview(self)

@@ -2197,11 +2197,8 @@ class Viewer(EditorPanel, DebugViewer):
         return width, height
     
     def AddNewBlock(self, bbox):
-        dialog = FBDBlockDialog(self.ParentWindow, self.Controler)
+        dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetBlockList(self.Controler.GetBlockTypes(self.TagName, self.Debug))
-        dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
-        dialog.SetPouElementNames(self.Controler.GetEditedElementVariables(self.TagName, self.Debug))
         dialog.SetMinBlockSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
@@ -2501,14 +2498,8 @@ class Viewer(EditorPanel, DebugViewer):
 #-------------------------------------------------------------------------------
 
     def EditBlockContent(self, block):
-        dialog = FBDBlockDialog(self.ParentWindow, self.Controler)
+        dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetBlockList(self.Controler.GetBlockTypes(self.TagName, self.Debug))
-        dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
-        variable_names = self.Controler.GetEditedElementVariables(self.TagName, self.Debug)
-        if block.GetName() != "":
-            variable_names.remove(block.GetName())
-        dialog.SetPouElementNames(variable_names)
         dialog.SetMinBlockSize(block.GetSize())
         old_values = {"name" : block.GetName(), 
                       "type" : block.GetType(), 
