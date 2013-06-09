@@ -80,7 +80,8 @@ class BlockPreviewDialog(wx.Dialog):
             format = _("\"%s\" is a keyword. It can't be used!")
         elif uppercase_block_name in self.Controller.GetProjectPouNames():
             format = _("\"%s\" pou already exists!")
-        elif (self.DefaultBlockName.upper() != uppercase_block_name and 
+        elif ((self.DefaultBlockName is None or 
+               self.DefaultBlockName.upper() != uppercase_block_name) and 
               uppercase_block_name in self.Controller.GetEditedElementVariables(
                                                                 self.TagName)):
             format = _("\"%s\" element for this pou already exists!")
