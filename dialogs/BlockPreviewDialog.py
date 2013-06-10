@@ -112,9 +112,18 @@ class BlockPreviewDialog(wx.Dialog):
             width = max(self.MinBlockSize[0], min_width)
             height = max(self.MinBlockSize[1], min_height)
             self.Block.SetSize(width, height)
-            clientsize = self.Preview.GetClientSize()
-            x = (clientsize.width - width) / 2
-            y = (clientsize.height - height) / 2
+            client_size = self.Preview.GetClientSize()
+            if (width * 1.2 > client_size.width or 
+                height * 1.2 > client_size.height):
+                scale = max(float(width) / client_size.width,
+                            float(height) / client_size.height) * 1.2
+                x = int(client_size.width * scale - width) / 2
+                y = int(client_size.height * scale - height) / 2
+            else:
+                x = (client_size.width - width) / 2
+                y = (client_size.height - height) / 2
+                scale = 1.0
+            dc.SetUserScale(1.0 / scale, 1.0 / scale)
             self.Block.SetPosition(x, y)
             self.Block.Draw(dc)
     
