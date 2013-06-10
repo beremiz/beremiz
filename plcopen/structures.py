@@ -87,12 +87,14 @@ def generate_block(generator, block, block_infos, body, link, order=False, to_in
                         if parameter != "EN":
                             one_input_connected = True
                         if inout_variables.has_key(parameter):
-                            value = generator.ComputeExpression(body, connections, executionOrderId > 0, True)
-                            inout_variables[parameter] = value
+                            expression = generator.ComputeExpression(body, connections, executionOrderId > 0, True)
+                            if expression is not None:
+                                inout_variables[parameter] = value
                         else:
-                            value = generator.ComputeExpression(body, connections, executionOrderId > 0)
-                        connected_vars.append(([(parameter, input_info), (" := ", ())],
-                                               generator.ExtractModifier(variable, value, input_info)))
+                            expression = generator.ComputeExpression(body, connections, executionOrderId > 0)
+                        if expression is not None:
+                            connected_vars.append(([(parameter, input_info), (" := ", ())],
+                                                   generator.ExtractModifier(variable, expression, input_info)))
                     else:
                         all_input_connected = False
                 else:
@@ -146,9 +148,10 @@ def generate_block(generator, block, block_infos, body, link, order=False, to_in
                     input_info = (generator.TagName, "block", block.getlocalId(), "input", input_idx)
                     connections = variable.connectionPointIn.getconnections()
                     if connections is not None:
-                        value = generator.ComputeExpression(body, connections, executionOrderId > 0, inout_variables.has_key(parameter))
-                        vars.append([(parameter, input_info),
-                                     (" := ", ())] + generator.ExtractModifier(variable, value, input_info))
+                        expression = generator.ComputeExpression(body, connections, executionOrderId > 0, inout_variables.has_key(parameter))
+                        if expression is not None:
+                            vars.append([(parameter, input_info),
+                                         (" := ", ())] + generator.ExtractModifier(variable, expression, input_info))
             generator.Program += [(generator.CurrentIndent, ()), 
                                   (name, (generator.TagName, "block", block.getlocalId(), "name")),
                                   ("(", ())]
