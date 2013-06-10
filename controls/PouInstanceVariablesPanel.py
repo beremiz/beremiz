@@ -141,8 +141,6 @@ class PouInstanceVariablesPanel(wx.Panel):
     def RefreshView(self):
         self.Freeze()
         self.VariablesList.DeleteAllItems()
-        self.InstanceChoice.Clear()
-        self.InstanceChoice.SetValue("")
         
         if self.Controller is not None and self.PouTagName is not None:
             self.PouInfos = self.Controller.GetPouVariables(self.PouTagName, self.Debug)
@@ -202,13 +200,14 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.VariablesList.SetItemImage(item, self.ParentWindow.GetTreeImage(var_infos["class"]))
                 self.VariablesList.SetPyData(item, var_infos)
             
-            self.RefreshInstanceChoice()
-        
+        self.RefreshInstanceChoice()
         self.RefreshButtons()
         
         self.Thaw()
     
     def RefreshInstanceChoice(self):
+        self.InstanceChoice.Clear()
+        self.InstanceChoice.SetValue("")
         if self.Controller is not None and self.PouInfos is not None:
             instances = self.Controller.SearchPouInstances(self.PouTagName, self.Debug)
             for instance in instances:
