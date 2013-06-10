@@ -39,60 +39,111 @@ graphic created by dialog
 class BlockPreviewDialog(wx.Dialog):
 
     def __init__(self, parent, controller, tagname, size, title):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param controller: Reference to project controller
+        @param tagname: Tagname of project POU edited
+        @param size: wx.Size object containing size of dialog
+        @param title: Title of dialog frame
+        """
         wx.Dialog.__init__(self, parent, size=size, title=title)
         
+        # Save reference to
         self.Controller = controller
         self.TagName = tagname
         
+        # Label for preview
         self.PreviewLabel = wx.StaticText(self, label=_('Preview:'))
         
+        # Create Preview panel
         self.Preview = wx.Panel(self, style=wx.SIMPLE_BORDER)
         self.Preview.SetBackgroundColour(wx.WHITE)
+        
+        # Add function to preview panel so that it answers to graphic elements
+        # like Viewer
         setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
         setattr(self.Preview, "GetScaling", lambda:None)
         setattr(self.Preview, "GetBlockType", controller.GetBlockType)
         setattr(self.Preview, "IsOfType", controller.IsOfType)
+        
+        # Bind paint event on Preview panel
         self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
         
+        # Add default dialog buttons sizer
         self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, 
                   self.ButtonSizer.GetAffirmativeButton())
         
-        self.Block = None
-        self.DefaultBlockName = None
-        self.MinBlockSize = None
-    
+        self.Block = None            # Graphic element to display in preview
+        self.MinBlockSize = None     # Graphic element minimal size
+        self.DefaultBlockName = None # Graphic element name when opening dialog
+        
     def __del__(self):
+        """
+        Destructor
+        """
+        # Remove reference to project controller
         self.Controller = None
     
     def SetMinBlockSize(self, size):
+        """
+        Define minimal graphic element size
+        @param size: wx.Size object containing minimal size
+        """
         self.MinBlockSize = size
     
     def SetPreviewFont(self, font):
+        """
+        Set font of Preview panel
+        @param font: wx.Font object containing font style
+        """
         self.Preview.SetFont(font)
     
     def TestBlockName(self, block_name):
-        format = None
+        """
+        Text displayed graphic element name
+        @param block_name: Graphic element name
+        """
+        # Variable containing error message format
+        message_format = None
+        # Get graphic element name in upper case
         uppercase_block_name = block_name.upper()
+        
+        # Test if graphic element name is a valid identifier
         if not TestIdentifier(block_name):
-            format = _("\"%s\" is not a valid identifier!")
+            message_format = _("\"%s\" is not a valid identifier!")
+        
+        # Test that graphic element name isn't a keyword
         elif uppercase_block_name in IEC_KEYWORDS:
-            format = _("\"%s\" is a keyword. It can't be used!")
+            message_format = _("\"%s\" is a keyword. It can't be used!")
+        
+        # Test that graphic element name isn't a POU name
         elif uppercase_block_name in self.Controller.GetProjectPouNames():
-            format = _("\"%s\" pou already exists!")
+            message_format = _("\"%s\" pou already exists!")
+        
+        # Test that graphic element name isn't already used in POU by a variable
+        # or another graphic element
         elif ((self.DefaultBlockName is None or 
                self.DefaultBlockName.upper() != uppercase_block_name) and 
               uppercase_block_name in self.Controller.GetEditedElementVariables(
                                                                 self.TagName)):
-            format = _("\"%s\" element for this pou already exists!")
+            message_format = _("\"%s\" element for this pou already exists!")
         
-        if format is not None:
-            self.ShowErrorMessage(format % block_name)
+        # If an error have been identify, show error message dialog
+        if message_format is not None:
+            self.ShowErrorMessage(message_format % block_name)
+            # Test failed
             return False
         
+        # Test succeed
         return True
     
     def ShowErrorMessage(self, message):
+        """
+        Show an error message dialog over this dialog
+        @param message: Error message to display
+        """
         dialog = wx.MessageDialog(self, message, 
                                   _("Error"), 
                                   wx.OK|wx.ICON_ERROR)
@@ -100,34 +151,61 @@ class BlockPreviewDialog(wx.Dialog):
         dialog.Destroy()
     
     def OnOK(self, event):
+        """
+        Called when dialog OK button is pressed
+        Need to be overridden by inherited classes to check that dialog values
+        are valid
+        @param event: wx.Event from OK button
+        """
+        # Close dialog
         self.EndModal(wx.ID_OK)
     
     def RefreshPreview(self):
+        """
+        Refresh preview panel of graphic element
+        May be overridden by inherited classes
+        """
+        # Init preview panel paint device context
         dc = wx.ClientDC(self.Preview)
         dc.SetFont(self.Preview.GetFont())
         dc.Clear()
         
-        if self.Block is not None:
-            min_width, min_height = self.Block.GetMinSize()
-            width = max(self.MinBlockSize[0], min_width)
-            height = max(self.MinBlockSize[1], min_height)
-            self.Block.SetSize(width, height)
-            client_size = self.Preview.GetClientSize()
-            if (width * 1.2 > client_size.width or 
-                height * 1.2 > client_size.height):
-                scale = max(float(width) / client_size.width,
-                            float(height) / client_size.height) * 1.2
-                x = int(client_size.width * scale - width) / 2
-                y = int(client_size.height * scale - height) / 2
-            else:
-                x = (client_size.width - width) / 2
-                y = (client_size.height - height) / 2
-                scale = 1.0
-            dc.SetUserScale(1.0 / scale, 1.0 / scale)
-            self.Block.SetPosition(x, y)
-            self.Block.Draw(dc)
+        # Return immediately if no graphic element defined
+        if self.Block is None:
+            return
+        
+        # Calculate block size according to graphic element min size due to its
+        # parameters and graphic element min size defined
+        min_width, min_height = self.Block.GetMinSize()
+        width = max(self.MinBlockSize[0], min_width)
+        height = max(self.MinBlockSize[1], min_height)
+        self.Block.SetSize(width, height)
+        
+        # Get Preview panel size
+        client_size = self.Preview.GetClientSize()
+        
+        # If graphic element is too big to be displayed in preview panel,
+        # calculate preview panel scale so that graphic element fit inside
+        scale = (max(float(width) / client_size.width, 
+                     float(height) / client_size.height) * 1.2
+                 if width * 1.2 > client_size.width or 
+                    height * 1.2 > client_size.height
+                 else 1.0)
+        dc.SetUserScale(1.0 / scale, 1.0 / scale)
+        
+        # Center graphic element in preview panel
+        x = int(client_size.width * scale - width) / 2
+        y = int(client_size.height * scale - height) / 2
+        self.Block.SetPosition(x, y)
+        
+        # Draw graphic element
+        self.Block.Draw(dc)
     
     def OnPaint(self, event):
+        """
+        Called when Preview panel need to be redraw
+        @param event: wx.PaintEvent
+        """
         self.RefreshPreview()
         event.Skip()
         
