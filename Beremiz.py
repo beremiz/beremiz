@@ -999,10 +999,7 @@ class Beremiz(IDEFrame):
             IDEFrame.OnProjectTreeItemBeginEdit(self, event)
     
     def OnProjectTreeRightUp(self, event):
-        if wx.Platform == '__WXMSW__':
-            item = event.GetItem()
-        else:
-            item, flags = self.ProjectTree.HitTest(wx.Point(event.GetX(), event.GetY()))
+        item = event.GetItem()
         item_infos = self.ProjectTree.GetPyData(item)
         
         if item_infos["type"] == ITEM_CONFNODE:
