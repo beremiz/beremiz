@@ -529,16 +529,11 @@ class IDEFrame(wx.Frame):
         add_menu = wx.Menu()
         self._init_coll_AddMenu_Items(add_menu)
         self.ProjectTree.SetAddMenu(add_menu)
-        if wx.Platform == '__WXMSW__':
-            self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnProjectTreeRightUp,
-                  id=ID_PLCOPENEDITORPROJECTTREE)
-            self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnProjectTreeItemSelected,
-                  id=ID_PLCOPENEDITORPROJECTTREE)
-        else:
-            self.ProjectTree.Bind(wx.EVT_RIGHT_UP, self.OnProjectTreeRightUp)
-            self.ProjectTree.Bind(wx.EVT_LEFT_UP, self.OnProjectTreeLeftUp)
-            self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnProjectTreeItemChanging,
-                  id=ID_PLCOPENEDITORPROJECTTREE)
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnProjectTreeRightUp,
+              id=ID_PLCOPENEDITORPROJECTTREE)
+        self.ProjectTree.Bind(wx.EVT_LEFT_UP, self.OnProjectTreeLeftUp)
+        self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnProjectTreeItemChanging,
+              id=ID_PLCOPENEDITORPROJECTTREE)
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.OnProjectTreeBeginDrag,
               id=ID_PLCOPENEDITORPROJECTTREE)
         self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnProjectTreeItemBeginEdit,
@@ -1531,8 +1526,6 @@ class IDEFrame(wx.Frame):
         return found
 
     def OnProjectTreeBeginDrag(self, event):
-        if wx.Platform == '__WXMSW__':
-            self.SelectedItem = event.GetItem()
         if self.SelectedItem is not None and self.ProjectTree.GetPyData(self.SelectedItem)["type"] == ITEM_POU:
             block_name = self.ProjectTree.GetItemText(self.SelectedItem)
             block_type = self.Controler.GetPouType(block_name)
@@ -1689,7 +1682,7 @@ class IDEFrame(wx.Frame):
         if self.SelectedItem is not None:
             self.ProjectTree.SelectItem(self.SelectedItem)
             self.ProjectTreeItemSelect(self.SelectedItem)
-            wx.CallAfter(self.ResetSelectedItem)
+            self.ResetSelectedItem()
         event.Skip()
     
     def OnProjectTreeMotion(self, event):
@@ -1722,10 +1715,6 @@ class IDEFrame(wx.Frame):
             elif self.LastToolTipItem is not None:
                 self.ProjectTree.SetToolTip(None)
                 self.LastToolTipItem = None
-        event.Skip()
-    
-    def OnProjectTreeItemSelected(self, event):
-        self.ProjectTreeItemSelect(event.GetItem())
         event.Skip()
     
     def OnProjectTreeItemChanging(self, event):
@@ -1804,10 +1793,7 @@ class IDEFrame(wx.Frame):
             return new_window
     
     def OnProjectTreeRightUp(self, event):
-        if wx.Platform == '__WXMSW__':
-            item = event.GetItem()
-        else:
-            item, flags = self.ProjectTree.HitTest(wx.Point(event.GetX(), event.GetY()))
+        item = event.GetItem()
         self.ProjectTree.SelectItem(item)
         self.ProjectTreeItemSelect(item)
         name = self.ProjectTree.GetItemText(item)
@@ -1935,6 +1921,8 @@ class IDEFrame(wx.Frame):
         if menu is not None:
             self.PopupMenu(menu)
             menu.Destroy()
+        
+        self.ResetSelectedItem()
         
         event.Skip()
 
