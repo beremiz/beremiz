@@ -2241,11 +2241,9 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewConnection(self, bbox):
-        dialog = ConnectionDialog(self.ParentWindow, self.Controler)
+        dialog = ConnectionDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
-        dialog.SetPouElementNames(self.Controler.GetEditedElementVariables(self.TagName, self.Debug))
-        dialog.SetMinConnectionSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
@@ -2262,10 +2260,10 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewComment(self, bbox):
-        if wx.VERSION >= (2, 5, 0):
-            dialog = wx.TextEntryDialog(self.ParentWindow, _("Edit comment"), _("Please enter comment text"), "", wx.OK|wx.CANCEL|wx.TE_MULTILINE)
-        else:
-            dialog = wx.TextEntryDialog(self.ParentWindow, _("Edit comment"), _("Please enter comment text"), "", wx.OK|wx.CANCEL)
+        dialog = wx.TextEntryDialog(self.ParentWindow, 
+                                    _("Edit comment"), 
+                                    _("Please enter comment text"), 
+                                    "", wx.OK|wx.CANCEL|wx.TE_MULTILINE)
         dialog.SetClientSize(wx.Size(400, 200))
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
@@ -2547,11 +2545,9 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditConnectionContent(self, connection):
-        dialog = ConnectionDialog(self.ParentWindow, self.Controler, True)
+        dialog = ConnectionDialog(self.ParentWindow, self.Controler, self.TagName, True)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
-        dialog.SetPouElementNames(self.Controler.GetEditedElementVariables(self.TagName, self.Debug))
-        dialog.SetMinConnectionSize(connection.GetSize())
+        dialog.SetMinElementSize(connection.GetSize())
         values = {"name" : connection.GetName(), "type" : connection.GetType()}
         dialog.SetValues(values)
         result = dialog.ShowModal()
@@ -2762,10 +2758,11 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditCommentContent(self, comment):
-        if wx.VERSION >= (2, 5, 0):
-            dialog = wx.TextEntryDialog(self.ParentWindow, _("Edit comment"), _("Please enter comment text"), comment.GetContent(), wx.OK|wx.CANCEL|wx.TE_MULTILINE)
-        else:
-            dialog = wx.TextEntryDialog(self.ParentWindow, _("Edit comment"), _("Please enter comment text"), comment.GetContent(), wx.OK|wx.CANCEL)
+        dialog = wx.TextEntryDialog(self.ParentWindow, 
+                                    _("Edit comment"), 
+                                    _("Please enter comment text"), 
+                                    comment.GetContent(), 
+                                    wx.OK|wx.CANCEL|wx.TE_MULTILINE)
         dialog.SetClientSize(wx.Size(400, 200))
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()

@@ -24,178 +24,207 @@
 
 import wx
 
-from graphics import *
+from graphics.GraphicCommons import CONNECTOR, CONTINUATION
+from graphics.FBD_Objects import FBD_Connector
+from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
-#                          Create New Connection Dialog
+#                       Set Connection Parameters Dialog
 #-------------------------------------------------------------------------------
 
-class ConnectionDialog(wx.Dialog):
+class ConnectionDialog(BlockPreviewDialog):
     
-    def __init__(self, parent, controller, apply_button=False):
-        wx.Dialog.__init__(self, parent,
+    def __init__(self, parent, controller, tagname, apply_button=False):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param controller: Reference to project controller
+        @param tagname: Tagname of project POU edited
+        @param apply_button: Enable button for applying connector modification
+        to all connector having the same name in POU (default: False)
+        """
+        BlockPreviewDialog.__init__(self, parent, controller, tagname, 
               size=wx.Size(350, 220), title=_('Connection Properties'))
         
+        # Create dialog main sizer
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
         
+        # Create a sizer for dividing FBD connection parameters in two columns
         column_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(column_sizer, border=20, 
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
         
+        # Create a sizer for left column
         left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=5)
         left_gridsizer.AddGrowableCol(0)
         column_sizer.AddSizer(left_gridsizer, 1, border=5, 
               flag=wx.GROW|wx.RIGHT)
         
+        # Create label for connection type
         type_label = wx.StaticText(self, label=_('Type:'))
         left_gridsizer.AddWindow(type_label, flag=wx.GROW)
         
-        self.ConnectorRadioButton = wx.RadioButton(self, 
-              label=_('Connector'), style=wx.RB_GROUP)
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, self.ConnectorRadioButton)
-        self.ConnectorRadioButton.SetValue(True)
-        left_gridsizer.AddWindow(self.ConnectorRadioButton, flag=wx.GROW)
+        # Create radio buttons for selecting connection type
+        self.ConnectionRadioButtons = {}
+        first = True
+        for type, label in [(CONNECTOR, _('Connector')),
+                            (CONTINUATION, _('Continuation'))]:
+            radio_button = wx.RadioButton(self, label=label, 
+                  style=(wx.RB_GROUP if first else wx.RB_SINGLE))
+            radio_button.SetValue(first)
+            self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
+            left_gridsizer.AddWindow(radio_button, flag=wx.GROW)
+            self.ConnectionRadioButtons[type] = radio_button
+            first = False
         
-        self.ConnectionRadioButton = wx.RadioButton(self, label=_('Continuation'))
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, self.ConnectionRadioButton)
-        left_gridsizer.AddWindow(self.ConnectionRadioButton, flag=wx.GROW)
-        
+        # Create label for connection name
         name_label = wx.StaticText(self, label=_('Name:'))
         left_gridsizer.AddWindow(name_label, flag=wx.GROW)
         
+        # Create text control for defining connection name
         self.ConnectionName = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.OnNameChanged, self.ConnectionName)
         left_gridsizer.AddWindow(self.ConnectionName, flag=wx.GROW)
         
+        # Create a sizer for right column
         right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
         right_gridsizer.AddGrowableCol(0)
         right_gridsizer.AddGrowableRow(1)
         column_sizer.AddSizer(right_gridsizer, 1, border=5, 
               flag=wx.GROW|wx.LEFT)
         
-        preview_label = wx.StaticText(self, label=_('Preview:'))
-        right_gridsizer.AddWindow(preview_label, flag=wx.GROW)
-        
-        self.Preview = wx.Panel(self, 
-              style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
-        self.Preview.SetBackgroundColour(wx.Colour(255,255,255))
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "GetScaling", lambda:None)
-        setattr(self.Preview, "IsOfType", controller.IsOfType)
-        self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
+        # Add preview panel and associated label to sizers
+        right_gridsizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
         right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
         
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        # Add buttons sizer to sizers
+        main_sizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
+        # Add button for applying connection name modification to all connection
+        # of POU
         if apply_button:
             self.ApplyToAllButton = wx.Button(self, label=_("Propagate Name"))
             self.ApplyToAllButton.SetToolTipString(
                 _("Apply name modification to all continuations with the same name"))
             self.Bind(wx.EVT_BUTTON, self.OnApplyToAll, self.ApplyToAllButton)
-            button_sizer.AddWindow(self.ApplyToAllButton)
+            self.ButtonSizer.AddWindow(self.ApplyToAllButton, border=10,
+                    flag=wx.LEFT)
+        else:
+            self.ConnectionName.ChangeValue(
+                controller.GenerateNewName(
+                        tagname, None, "Connection%d", 0))
         
         self.SetSizer(main_sizer)
         
-        self.Connection = None
-        self.MinConnectionSize = None
-        
-        self.PouNames = []
-        self.PouElementNames = []
-        
-        self.ConnectorRadioButton.SetFocus()
-    
-    def SetPreviewFont(self, font):
-        self.Preview.SetFont(font)
-    
-    def SetMinConnectionSize(self, size):
-        self.MinConnectionSize = size
+        # Connector radio button is default control having keyboard focus
+        self.ConnectionRadioButtons[CONNECTOR].SetFocus()
     
     def SetValues(self, values):
+        """
+        Set default connection parameters
+        @param values: Connection parameters values
+        """
+        # For each parameters defined, set corresponding control value
         for name, value in values.items():
+            
+            # Parameter is connection type
             if name == "type":
-                if value == CONNECTOR:
-                    self.ConnectorRadioButton.SetValue(True)
-                elif value == CONTINUATION:
-                    self.ConnectionRadioButton.SetValue(True)
+                self.ConnectionRadioButtons[value].SetValue(True)
+            
+            # Parameter is connection name
             elif name == "name":
                 self.ConnectionName.SetValue(value)
+        
+        # Refresh preview panel
         self.RefreshPreview()
     
     def GetValues(self):
-        values = {}
-        if self.ConnectorRadioButton.GetValue():
-            values["type"] = CONNECTOR
-        else:
-            values["type"] = CONTINUATION
-        values["name"] = self.ConnectionName.GetValue()
-        values["width"], values["height"] = self.Connection.GetSize()
+        """
+        Return connection parameters defined in dialog
+        @return: {parameter_name: parameter_value,...}
+        """
+        values = {
+            "type": (CONNECTOR 
+                     if self.ConnectionRadioButtons[CONNECTOR].GetValue()
+                     else CONTINUATION),
+            "name": self.ConnectionName.GetValue()}
+        values["width"], values["height"] = self.Element.GetSize()
         return values
 
-    def SetPouNames(self, pou_names):
-        self.PouNames = [pou_name.upper() for pou_name in pou_names]
-        
-    def SetPouElementNames(self, element_names):
-        self.PouElementNames = [element_name.upper() for element_name in element_names]
-    
-    def TestName(self):
+    def TestConnectionName(self):
+        """
+        Test that connection name is valid
+        @return: True if connection name is valid
+        """
         message = None
+        
+        # Get connection name typed by user
         connection_name = self.ConnectionName.GetValue()
+        
+        # Test that a name have been defined
         if connection_name == "":
             message = _("Form isn't complete. Name must be filled!")
-        elif not TestIdentifier(connection_name):
-            message = _("\"%s\" is not a valid identifier!") % connection_name
-        elif connection_name.upper() in IEC_KEYWORDS:
-            message = _("\"%s\" is a keyword. It can't be used!") % connection_name
-        elif connection_name.upper() in self.PouNames:
-            message = _("\"%s\" pou already exists!") % connection_name
-        elif connection_name.upper() in self.PouElementNames:
-            message = _("\"%s\" element for this pou already exists!") % connection_name
+        
+        # If an error have been identify, show error message dialog
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
+            self.ShowErrorMessage(message)
+            # Test failed
             return False
-        return True
+        
+        # Return result of element name test
+        return self.TestElementName(connection_name)
         
     def OnOK(self, event):
-        if self.TestName():
+        """
+        Called when dialog OK button is pressed
+        Test if connection name is valid
+        @param event: wx.Event from OK button
+        """
+        # Close dialog if connection name is valid
+        if self.TestConnectionName():
             self.EndModal(wx.ID_OK)
 
     def OnApplyToAll(self, event):
-        if self.TestName():
+        """
+        Called when Apply To All button is pressed
+        Test if connection name is valid
+        @param event: wx.Event from OK button
+        """
+        # Close dialog if connection name is valid
+        if self.TestConnectionName():
             self.EndModal(wx.ID_YESTOALL)
 
     def OnTypeChanged(self, event):
+        """
+        Called when connection type changed
+        @param event: wx.RadioButtonEvent
+        """
         self.RefreshPreview()
         event.Skip()
 
     def OnNameChanged(self, event):
+        """
+        Called when connection name value changed
+        @param event: wx.TextEvent
+        """
         self.RefreshPreview()
         event.Skip()
         
     def RefreshPreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.SetFont(self.Preview.GetFont())
-        dc.Clear()
-        if self.ConnectorRadioButton.GetValue():
-            self.Connection = FBD_Connector(self.Preview, CONNECTOR, self.ConnectionName.GetValue())
-        else:
-            self.Connection = FBD_Connector(self.Preview, CONTINUATION, self.ConnectionName.GetValue())
-        width, height = self.MinConnectionSize
-        min_width, min_height = self.Connection.GetMinSize()
-        width, height = max(min_width, width), max(min_height, height)
-        self.Connection.SetSize(width, height)
-        clientsize = self.Preview.GetClientSize()
-        x = (clientsize.width - width) / 2
-        y = (clientsize.height - height) / 2
-        self.Connection.SetPosition(x, y)
-        self.Connection.Draw(dc)
-
-    def OnPaint(self, event):
-        self.RefreshPreview()
-        event.Skip()
+        """
+        Refresh preview panel of graphic element
+        Override BlockPreviewDialog function
+        """
+        # Set graphic element displayed, creating a FBD connection element
+        self.Element = FBD_Connector(self.Preview, 
+                (CONNECTOR
+                 if self.ConnectionRadioButtons[CONNECTOR].GetValue()
+                 else CONTINUATION),
+                self.ConnectionName.GetValue())
+        
+        # Call BlockPreviewDialog function
+        BlockPreviewDialog.RefreshPreview(self)
+        
