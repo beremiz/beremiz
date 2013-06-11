@@ -24,12 +24,16 @@
 
 import wx
 
-from graphics import *
+from graphics.GraphicCommons import INPUT, INOUT, OUTPUT
+from graphics.FBD_Objects import FBD_Variable
+from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
 #                                    Helpers
 #-------------------------------------------------------------------------------
 
+# Dictionaries containing correspondence between variable block class and string
+# to be shown in Class combo box in both sense
 VARIABLE_CLASSES_DICT = {INPUT : _("Input"),
                          INOUT : _("InOut"),
                          OUTPUT : _("Output")}
@@ -37,199 +41,286 @@ VARIABLE_CLASSES_DICT_REVERSE = dict(
     [(value, key) for key, value in VARIABLE_CLASSES_DICT.iteritems()])
 
 #-------------------------------------------------------------------------------
-#                          Create New Variable Dialog
+#                        Set Variable Parameters Dialog
 #-------------------------------------------------------------------------------
 
-class FBDVariableDialog(wx.Dialog):
+"""
+Class that implements a dialog for defining parameters of a FBD variable graphic
+element
+"""
 
-    def __init__(self, parent, controller, transition = ""):
-        wx.Dialog.__init__(self, parent,
+class FBDVariableDialog(BlockPreviewDialog):
+
+    def __init__(self, parent, controller, tagname):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param controller: Reference to project controller
+        @param tagname: Tagname of project POU edited
+        """
+        BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(400, 380), title=_('Variable Properties'))
         
+        # Create dialog main sizer
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(2)
         
+        # Create a sizer for dividing FBD variable parameters in two columns
         column_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(column_sizer, border=20, 
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
         
+        # Create a sizer for left column
         left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=5)
         left_gridsizer.AddGrowableCol(0)
         column_sizer.AddSizer(left_gridsizer, 1, border=5, 
               flag=wx.GROW|wx.RIGHT)
         
+        # Create label for variable class
         class_label = wx.StaticText(self, label=_('Class:'))
         left_gridsizer.AddWindow(class_label, flag=wx.GROW)
         
+        # Create a combo box for defining variable class
         self.Class = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnClassChanged, self.Class)
         left_gridsizer.AddWindow(self.Class, flag=wx.GROW)
         
-        execution_order_label = wx.StaticText(self, label=_('Execution Order:'))
+        # Create label for variable execution order
+        execution_order_label = wx.StaticText(self, 
+              label=_('Execution Order:'))
         left_gridsizer.AddWindow(execution_order_label, flag=wx.GROW)
         
+        # Create spin control for defining variable execution order
         self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
-        self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged, self.ExecutionOrder)
+        self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged, 
+                  self.ExecutionOrder)
         left_gridsizer.AddWindow(self.ExecutionOrder, flag=wx.GROW)
         
+        # Create a sizer for right column
         right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
         right_gridsizer.AddGrowableCol(0)
         right_gridsizer.AddGrowableRow(2)
         column_sizer.AddSizer(right_gridsizer, 1, border=5, 
               flag=wx.GROW|wx.LEFT)
         
+        # Create label for variable expression
         name_label = wx.StaticText(self, label=_('Expression:'))
         right_gridsizer.AddWindow(name_label, border=5, flag=wx.GROW|wx.BOTTOM)
         
+        # Create text control for defining variable expression
         self.Expression = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.OnExpressionChanged, self.Expression)
         right_gridsizer.AddWindow(self.Expression, flag=wx.GROW)
         
+        # Create a list box to selected variable expression in the list of
+        # variables defined in POU
         self.VariableName = wx.ListBox(self, size=wx.Size(0, 120), 
               style=wx.LB_SINGLE|wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
         right_gridsizer.AddWindow(self.VariableName, flag=wx.GROW)
         
-        preview_label = wx.StaticText(self, label=_('Preview:'))
-        main_sizer.AddWindow(preview_label, border=20,
+        # Add preview panel and associated label to sizers
+        main_sizer.AddWindow(self.PreviewLabel, border=20,
               flag=wx.GROW|wx.LEFT|wx.RIGHT)
-        
-        self.Preview = wx.Panel(self, 
-              style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
-        self.Preview.SetBackgroundColour(wx.Colour(255,255,255))
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "GetScaling", lambda:None)
-        setattr(self.Preview, "IsOfType", controller.IsOfType)
-        self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
         main_sizer.AddWindow(self.Preview, border=20,
               flag=wx.GROW|wx.LEFT|wx.RIGHT)
         
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        # Add buttons sizer to sizers
+        main_sizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
         self.SetSizer(main_sizer)
         
-        self.Transition = transition
-        self.Variable = None
-        self.VarList = []
-        self.MinVariableSize = None
-        
+        # Set options that can be selected in class combo box
         for choice in VARIABLE_CLASSES_DICT.itervalues():
             self.Class.Append(choice)
         self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[INPUT])
-
+        
+        # Get list of variables defined in POU
+        self.VarList = {
+            var["Name"]: (var["Class"], var["Type"])
+            for var in self.Controller.GetEditedElementInterfaceVars(
+                                                        self.TagName)
+            if var["Edit"]}
+        
+        # Add POU name to variable list if POU is a function 
+        returntype = self.Controller.GetEditedElementInterfaceReturnType(
+                                                            self.TagName)
+        if returntype is not None:
+            self.VarList[
+                self.Controller.GetEditedElementName(self.TagName)] = \
+                 ("Output", returntype)
+        
+        # Add POU name if POU is a transition
+        words = tagname.split("::")
+        if words[0] == "T":
+            self.VarList[words[2]] = ("Output", "BOOL")
+        
+        # Refresh values in name list box
         self.RefreshNameList()
+        
+        # Class combo box is default control having keyboard focus
         self.Class.SetFocus()
 
-    def SetPreviewFont(self, font):
-        self.Preview.SetFont(font)
-
     def RefreshNameList(self):
-        selected = self.Expression.GetValue()
-        var_class = VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()]
+        """
+        Called to refresh names in name list box
+        """
+        # Get variable class to select POU variable applicable
+        var_class = VARIABLE_CLASSES_DICT_REVERSE[
+                            self.Class.GetStringSelection()]
+        
+        # Refresh names in name list box by selecting variables in POU variables
+        # list that can be applied to variable class
         self.VariableName.Clear()
-        for name, var_type, value_type in self.VarList:
+        for name, (var_type, value_type) in self.VarList.iteritems():
             if var_type != "Input" or var_class == INPUT:
                 self.VariableName.Append(name)
-        if selected != "" and self.VariableName.FindString(selected) != wx.NOT_FOUND:
+        
+        # Get variable expression and select corresponding value in name list
+        # box if it exists
+        selected = self.Expression.GetValue()
+        if (selected != "" and 
+            self.VariableName.FindString(selected) != wx.NOT_FOUND):
             self.VariableName.SetStringSelection(selected)
         else:
             self.VariableName.SetSelection(wx.NOT_FOUND)
+        
+        # Disable name list box if no name present inside
         self.VariableName.Enable(self.VariableName.GetCount() > 0)
             
-    def SetMinVariableSize(self, size):
-        self.MinVariableSize = size
-
-    def SetVariables(self, vars):
-        self.VarList = vars
-        self.RefreshNameList()
-
     def SetValues(self, values):
-        value_type = values.get("type", None)
-        value_name = values.get("name", None)
-        if value_type:
-            self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[value_type])
+        """
+        Set default variable parameters
+        @param values: Variable parameters values
+        """
+        
+        # Get class parameter value
+        var_class = values.get("class", None)
+        if var_class is not None:
+            # Set class selected in class combo box
+            self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[var_class])
+            # Refresh names in name list box according to var class
             self.RefreshNameList()
-        if value_name:
-            self.Expression.ChangeValue(value_name)
-            if self.VariableName.FindString(value_name) != wx.NOT_FOUND:
-                self.VariableName.SetStringSelection(value_name)
-            else:
-                self.VariableName.SetSelection(wx.NOT_FOUND)
-        if "executionOrder" in values:
-            self.ExecutionOrder.SetValue(values["executionOrder"])
+        
+        # For each parameters defined, set corresponding control value
+        for name, value in values.items():
+            
+            # Parameter is variable expression
+            if name == "expression":
+                # Set expression text control value
+                self.Expression.ChangeValue(value)
+                # Select corresponding text in name list box if it exists
+                if self.VariableName.FindString(value) != wx.NOT_FOUND:
+                    self.VariableName.SetStringSelection(value)
+                else:
+                    self.VariableName.SetSelection(wx.NOT_FOUND)
+            
+            # Parameter is variable execution order
+            elif name == "executionOrder":
+                self.ExecutionOrder.SetValue(value)
+        
+        # Refresh preview panel
         self.RefreshPreview()
         
     def GetValues(self):
-        values = {}
-        values["type"] = VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()]
-        values["name"] = self.Expression.GetValue()
-        values["value_type"] = None
-        for var_name, var_type, value_type in self.VarList:
-            if var_name == values["name"]:
-                values["value_type"] = value_type
-        values["width"], values["height"] = self.Variable.GetSize()
-        values["executionOrder"] = self.ExecutionOrder.GetValue()
+        """
+        Return block parameters defined in dialog
+        @return: {parameter_name: parameter_value,...}
+        """
+        expression = self.Expression.GetValue()
+        values = {
+            "class": VARIABLE_CLASSES_DICT_REVERSE[
+                        self.Class.GetStringSelection()],
+            "expression": expression,
+            "var_type": self.VarList.get(expression, (None, None))[1],
+            "executionOrder": self.ExecutionOrder.GetValue()}
+        values["width"], values["height"] = self.Element.GetSize()
         return values
 
     def OnOK(self, event):
+        """
+        Called when dialog OK button is pressed
+        Test if parameters defined are valid
+        @param event: wx.Event from OK button
+        """
         message = None
+        
+        # Test that an expression have been selected or typed by user
         value = self.Expression.GetValue()
         if value == "":
             message = _("At least a variable or an expression must be selected!")
+        
+        # Show error message if an error is detected
         if message is not None:
-            message = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            message.ShowModal()
-            message.Destroy()
+            self.ShowErrorMessage(message)
+        
         else:
-            self.EndModal(wx.ID_OK)
+            # Call BlockPreviewDialog function
+            BlockPreviewDialog.OnOK(self, event)
 
     def OnClassChanged(self, event):
+        """
+        Called when variable class value changed
+        @param event: wx.ComboBoxEvent
+        """
+        # Refresh name list box values
         self.RefreshNameList()
+        
         self.RefreshPreview()
         event.Skip()
 
     def OnNameChanged(self, event):
-        self.Expression.ChangeValue(
-            self.VariableName.GetStringSelection())
+        """
+        Called when name selected in name list box changed
+        @param event: wx.ListBoxEvent
+        """
+        # Change expression test control value to the value selected in name
+        # list box if value selected is valid
+        if self.VariableName.GetSelection() != wx.NOT_FOUND:
+            self.Expression.ChangeValue(self.VariableName.GetStringSelection())
+        
         self.RefreshPreview()
         event.Skip()
     
     def OnExpressionChanged(self, event):
-        expression = self.Expression.GetValue()
+        """
+        Called when expression text control is changed by user
+        @param event: wx.ListBoxEvent
+        """
+        # Select the corresponding value in name list box if it exists
         self.VariableName.SetSelection(
-            self.VariableName.FindString(expression))
+            self.VariableName.FindString(self.Expression.GetValue()))
+        
         self.RefreshPreview()
         event.Skip()
     
     def OnExecutionOrderChanged(self, event):
+        """
+        Called when block execution control value changed
+        @param event: wx.SpinEvent
+        """
         self.RefreshPreview()
         event.Skip()
     
     def RefreshPreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.SetFont(self.Preview.GetFont())
-        dc.Clear()
+        """
+        Refresh preview panel of graphic element
+        Override BlockPreviewDialog function
+        """
+        # Get expression value to put in FBD variable element
         name = self.Expression.GetValue()
-        type = ""
-        for var_name, var_type, value_type in self.VarList:
-            if var_name == name:
-                type = value_type
-        classtype = VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()]
-        self.Variable = FBD_Variable(self.Preview, classtype, name, type, executionOrder = self.ExecutionOrder.GetValue())
-        width, height = self.MinVariableSize
-        min_width, min_height = self.Variable.GetMinSize()
-        width, height = max(min_width, width), max(min_height, height)
-        self.Variable.SetSize(width, height)
-        clientsize = self.Preview.GetClientSize()
-        x = (clientsize.width - width) / 2
-        y = (clientsize.height - height) / 2
-        self.Variable.SetPosition(x, y)
-        self.Variable.Draw(dc)
-
-    def OnPaint(self, event):
-        self.RefreshPreview()
-        event.Skip()
+        
+        # Set graphic element displayed, creating a FBD variable element
+        self.Element = FBD_Variable(self.Preview, 
+                    VARIABLE_CLASSES_DICT_REVERSE[
+                        self.Class.GetStringSelection()], 
+                    name, 
+                    self.VarList.get(name, ("", ""))[1], 
+                    executionOrder = self.ExecutionOrder.GetValue())
+        
+        # Call BlockPreviewDialog function
+        BlockPreviewDialog.RefreshPreview(self)
+        
+        

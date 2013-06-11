@@ -2199,7 +2199,7 @@ class Viewer(EditorPanel, DebugViewer):
     def AddNewBlock(self, bbox):
         dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinBlockSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
@@ -2222,31 +2222,17 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
     
     def AddNewVariable(self, bbox):
-        words = self.TagName.split("::")
-        if words[0] == "T":
-            dialog = FBDVariableDialog(self.ParentWindow, self.Controler, words[2])
-        else:
-            dialog = FBDVariableDialog(self.ParentWindow, self.Controler)
+        dialog = FBDVariableDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinVariableSize((bbox.width, bbox.height))
-        varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
-        if vars:
-            for var in vars:
-                if var["Edit"]:
-                    varlist.append((var["Name"], var["Class"], var["Type"]))
-        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
-        if returntype:
-            varlist.append((self.Controler.GetEditedElementName(self.TagName), "Output", returntype))
-        dialog.SetVariables(varlist)
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
-            variable = FBD_Variable(self, values["type"], values["name"], values["value_type"], id)
+            variable = FBD_Variable(self, values["class"], values["expression"], values["vr_type"], id)
             variable.SetPosition(bbox.x, bbox.y)
             variable.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             self.AddBlock(variable)
-            self.Controler.AddEditedElementVariable(self.TagName, id, values["type"])
+            self.Controler.AddEditedElementVariable(self.TagName, id, values["class"])
             self.RefreshVariableModel(variable)
             self.RefreshBuffer()
             self.RefreshScrollBars()
@@ -2500,7 +2486,7 @@ class Viewer(EditorPanel, DebugViewer):
     def EditBlockContent(self, block):
         dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinBlockSize(block.GetSize())
+        dialog.SetMinElementSize(block.GetSize())
         old_values = {"name" : block.GetName(), 
                       "type" : block.GetType(), 
                       "extension" : block.GetExtension(), 
@@ -2532,38 +2518,24 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditVariableContent(self, variable):
-        words = self.TagName.split("::")
-        if words[0] == "T":
-            dialog = FBDVariableDialog(self.ParentWindow, self.Controler, words[2])
-        else:
-            dialog = FBDVariableDialog(self.ParentWindow, self.Controler)
+        dialog = FBDVariableDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinVariableSize(variable.GetSize())
-        varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
-        if vars:
-            for var in vars:
-                if var["Edit"]:
-                    varlist.append((var["Name"], var["Class"], var["Type"]))
-        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
-        if returntype:
-            varlist.append((self.Controler.GetEditedElementName(self.TagName), "Output", returntype))
-        dialog.SetVariables(varlist)
-        old_values = {"name" : variable.GetName(), "type" : variable.GetType(), 
-            "executionOrder" : variable.GetExecutionOrder()}
+        dialog.SetMinElementSize(variable.GetSize())
+        old_values = {"expression" : variable.GetName(), "class" : variable.GetType(), 
+                      "executionOrder" : variable.GetExecutionOrder()}
         dialog.SetValues(old_values)
         if dialog.ShowModal() == wx.ID_OK:
             new_values = dialog.GetValues()
             rect = variable.GetRedrawRect(1, 1)
-            variable.SetName(new_values["name"])
-            variable.SetType(new_values["type"], new_values["value_type"])
+            variable.SetName(new_values["expression"])
+            variable.SetType(new_values["class"], new_values["var_type"])
             variable.SetSize(*self.GetScaledSize(new_values["width"], new_values["height"]))
             variable.SetExecutionOrder(new_values["executionOrder"])
             rect = rect.Union(variable.GetRedrawRect())
-            if old_values["type"] != new_values["type"]:
+            if old_values["class"] != new_values["class"]:
                 id = variable.GetId()
                 self.Controler.RemoveEditedElementInstance(self.TagName, id)
-                self.Controler.AddEditedElementVariable(self.TagName, id, new_values["type"])
+                self.Controler.AddEditedElementVariable(self.TagName, id, new_values["class"])
             self.RefreshVariableModel(variable)
             self.RefreshBuffer()
             if old_values["executionOrder"] != new_values["executionOrder"]:
