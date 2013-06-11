@@ -137,25 +137,8 @@ class FBDVariableDialog(BlockPreviewDialog):
             self.Class.Append(choice)
         self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[INPUT])
         
-        # Get list of variables defined in POU
-        self.VarList = {
-            var["Name"]: (var["Class"], var["Type"])
-            for var in self.Controller.GetEditedElementInterfaceVars(
-                                                        self.TagName)
-            if var["Edit"]}
-        
-        # Add POU name to variable list if POU is a function 
-        returntype = self.Controller.GetEditedElementInterfaceReturnType(
-                                                            self.TagName)
-        if returntype is not None:
-            self.VarList[
-                self.Controller.GetEditedElementName(self.TagName)] = \
-                 ("Output", returntype)
-        
-        # Add POU name if POU is a transition
-        words = tagname.split("::")
-        if words[0] == "T":
-            self.VarList[words[2]] = ("Output", "BOOL")
+        # Extract list of variables defined in POU
+        self.RefreshVariableList()
         
         # Refresh values in name list box
         self.RefreshNameList()
@@ -174,7 +157,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Refresh names in name list box by selecting variables in POU variables
         # list that can be applied to variable class
         self.VariableName.Clear()
-        for name, (var_type, value_type) in self.VarList.iteritems():
+        for name, (var_type, value_type) in self.VariableList.iteritems():
             if var_type != "Input" or var_class == INPUT:
                 self.VariableName.Append(name)
         
@@ -234,7 +217,7 @@ class FBDVariableDialog(BlockPreviewDialog):
             "class": VARIABLE_CLASSES_DICT_REVERSE[
                         self.Class.GetStringSelection()],
             "expression": expression,
-            "var_type": self.VarList.get(expression, (None, None))[1],
+            "var_type": self.VariableList.get(expression, (None, None))[1],
             "executionOrder": self.ExecutionOrder.GetValue()}
         values["width"], values["height"] = self.Element.GetSize()
         return values
@@ -317,7 +300,7 @@ class FBDVariableDialog(BlockPreviewDialog):
                     VARIABLE_CLASSES_DICT_REVERSE[
                         self.Class.GetStringSelection()], 
                     name, 
-                    self.VarList.get(name, ("", ""))[1], 
+                    self.VariableList.get(name, ("", ""))[1], 
                     executionOrder = self.ExecutionOrder.GetValue())
         
         # Call BlockPreviewDialog function
