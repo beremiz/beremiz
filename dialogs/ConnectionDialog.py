@@ -67,7 +67,7 @@ class ConnectionDialog(BlockPreviewDialog):
         left_gridsizer.AddWindow(type_label, flag=wx.GROW)
         
         # Create radio buttons for selecting connection type
-        self.ConnectionRadioButtons = {}
+        self.TypeRadioButtons = {}
         first = True
         for type, label in [(CONNECTOR, _('Connector')),
                             (CONTINUATION, _('Continuation'))]:
@@ -76,7 +76,7 @@ class ConnectionDialog(BlockPreviewDialog):
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             left_gridsizer.AddWindow(radio_button, flag=wx.GROW)
-            self.ConnectionRadioButtons[type] = radio_button
+            self.TypeRadioButtons[type] = radio_button
             first = False
         
         # Create label for connection name
@@ -120,7 +120,7 @@ class ConnectionDialog(BlockPreviewDialog):
         self.SetSizer(main_sizer)
         
         # Connector radio button is default control having keyboard focus
-        self.ConnectionRadioButtons[CONNECTOR].SetFocus()
+        self.TypeRadioButtons[CONNECTOR].SetFocus()
     
     def SetValues(self, values):
         """
@@ -132,7 +132,7 @@ class ConnectionDialog(BlockPreviewDialog):
             
             # Parameter is connection type
             if name == "type":
-                self.ConnectionRadioButtons[value].SetValue(True)
+                self.TypeRadioButtons[value].SetValue(True)
             
             # Parameter is connection name
             elif name == "name":
@@ -148,7 +148,7 @@ class ConnectionDialog(BlockPreviewDialog):
         """
         values = {
             "type": (CONNECTOR 
-                     if self.ConnectionRadioButtons[CONNECTOR].GetValue()
+                     if self.TypeRadioButtons[CONNECTOR].GetValue()
                      else CONTINUATION),
             "name": self.ConnectionName.GetValue()}
         values["width"], values["height"] = self.Element.GetSize()
@@ -221,7 +221,7 @@ class ConnectionDialog(BlockPreviewDialog):
         # Set graphic element displayed, creating a FBD connection element
         self.Element = FBD_Connector(self.Preview, 
                 (CONNECTOR
-                 if self.ConnectionRadioButtons[CONNECTOR].GetValue()
+                 if self.TypeRadioButtons[CONNECTOR].GetValue()
                  else CONTINUATION),
                 self.ConnectionName.GetValue())
         

@@ -2282,21 +2282,13 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewContact(self, bbox):
-        dialog = LDElementDialog(self.ParentWindow, self.Controler, "contact")
+        dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "contact")
         dialog.SetPreviewFont(self.GetFont())
-        varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
-        if vars:
-            for var in vars:
-                if var["Type"] == "BOOL":
-                    varlist.append(var["Name"])
-        dialog.SetVariables(varlist)
-        dialog.SetValues({"name":"","type":CONTACT_NORMAL})
-        dialog.SetElementSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
-            contact = LD_Contact(self, values["type"], values["name"], id)
+            contact = LD_Contact(self, values["modifier"], values["variable"], id)
             contact.SetPosition(bbox.x, bbox.y)
             contact.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             self.AddBlock(contact)
@@ -2309,24 +2301,13 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewCoil(self, bbox):
-        dialog = LDElementDialog(self.ParentWindow, self.Controler, "coil")
+        dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "coil")
         dialog.SetPreviewFont(self.GetFont())
-        varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
-        if vars:
-            for var in vars:
-                if var["Class"] != "Input" and var["Type"] == "BOOL":
-                    varlist.append(var["Name"])
-        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
-        if returntype == "BOOL":
-            varlist.append(self.Controler.GetEditedElementName(self.TagName))
-        dialog.SetVariables(varlist)
-        dialog.SetValues({"name":"","type":COIL_NORMAL})
-        dialog.SetElementSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
-            coil = LD_Coil(self, values["type"], values["name"], id)
+            coil = LD_Coil(self, values["modifier"], values["variable"], id)
             coil.SetPosition(bbox.x, bbox.y)
             coil.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             self.AddBlock(coil)
@@ -2577,23 +2558,16 @@ class Viewer(EditorPanel, DebugViewer):
                 connection.Refresh(rect)
         
     def EditContactContent(self, contact):
-        dialog = LDElementDialog(self.ParentWindow, self.Controler, "contact")
+        dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "contact")
         dialog.SetPreviewFont(self.GetFont())
-        varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
-        if vars:
-            for var in vars:
-                if var["Type"] == "BOOL":
-                    varlist.append(var["Name"])
-        dialog.SetVariables(varlist)
-        values = {"name" : contact.GetName(), "type" : contact.GetType()}
-        dialog.SetValues(values)
-        dialog.SetElementSize(contact.GetSize())
+        dialog.SetMinElementSize(contact.GetSize())
+        dialog.SetValues({"variable" : contact.GetName(), 
+                          "modifier" : contact.GetType()})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = contact.GetRedrawRect(1, 1)
-            contact.SetName(values["name"])
-            contact.SetType(values["type"])
+            contact.SetName(values["variable"])
+            contact.SetType(values["modifier"])
             contact.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             rect = rect.Union(contact.GetRedrawRect())
             self.RefreshContactModel(contact)
@@ -2604,26 +2578,16 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditCoilContent(self, coil):
-        dialog = LDElementDialog(self.ParentWindow, self.Controler, "coil")
+        dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "coil")
         dialog.SetPreviewFont(self.GetFont())
-        varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
-        if vars:
-            for var in vars:
-                if var["Class"] != "Input" and var["Type"] == "BOOL":
-                    varlist.append(var["Name"])
-        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
-        if returntype == "BOOL":
-            varlist.append(self.Controler.GetEditedElementName(self.TagName))
-        dialog.SetVariables(varlist)
-        values = {"name" : coil.GetName(), "type" : coil.GetType()}
-        dialog.SetValues(values)
-        dialog.SetElementSize(coil.GetSize())
+        dialog.SetMinElementSize(coil.GetSize())
+        dialog.SetValues({"variable" : coil.GetName(), 
+                          "modifier" : coil.GetType()})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = coil.GetRedrawRect(1, 1)
-            coil.SetName(values["name"])
-            coil.SetType(values["type"])
+            coil.SetName(values["variable"])
+            coil.SetType(values["modifier"])
             coil.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             rect = rect.Union(coil.GetRedrawRect())
             self.RefreshCoilModel(coil)

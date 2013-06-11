@@ -81,6 +81,9 @@ class BlockPreviewDialog(wx.Dialog):
         # Variable containing the graphic element name when dialog is opened
         self.DefaultElementName = None
         
+        # List of variables defined in POU {var_name: (var_class, var_type),...}
+        self.VariableList = {}
+        
     def __del__(self):
         """
         Destructor
@@ -101,6 +104,30 @@ class BlockPreviewDialog(wx.Dialog):
         @param font: wx.Font object containing font style
         """
         self.Preview.SetFont(font)
+    
+    def RefreshVariableList(self):
+        """
+        Extract list of variables defined in POU
+        """
+        # Get list of variables defined in POU
+        self.VariableList = {
+            var["Name"]: (var["Class"], var["Type"])
+            for var in self.Controller.GetEditedElementInterfaceVars(
+                                                        self.TagName)
+            if var["Edit"]}
+        
+        # Add POU name to variable list if POU is a function 
+        returntype = self.Controller.GetEditedElementInterfaceReturnType(
+                                                            self.TagName)
+        if returntype is not None:
+            self.VariableList[
+                self.Controller.GetEditedElementName(self.TagName)] = \
+                 ("Output", returntype)
+        
+        # Add POU name if POU is a transition
+        words = self.TagName.split("::")
+        if words[0] == "T":
+            self.VariableList[words[2]] = ("Output", "BOOL")
     
     def TestElementName(self, element_name):
         """
