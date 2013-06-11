@@ -2228,7 +2228,7 @@ class Viewer(EditorPanel, DebugViewer):
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
-            variable = FBD_Variable(self, values["class"], values["expression"], values["vr_type"], id)
+            variable = FBD_Variable(self, values["class"], values["expression"], values["var_type"], id)
             variable.SetPosition(bbox.x, bbox.y)
             variable.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             self.AddBlock(variable)

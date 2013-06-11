@@ -72,7 +72,7 @@ class ConnectionDialog(BlockPreviewDialog):
         for type, label in [(CONNECTOR, _('Connector')),
                             (CONTINUATION, _('Continuation'))]:
             radio_button = wx.RadioButton(self, label=label, 
-                  style=(wx.RB_GROUP if first else wx.RB_SINGLE))
+                  style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             left_gridsizer.AddWindow(radio_button, flag=wx.GROW)
@@ -110,7 +110,8 @@ class ConnectionDialog(BlockPreviewDialog):
             self.ApplyToAllButton.SetToolTipString(
                 _("Apply name modification to all continuations with the same name"))
             self.Bind(wx.EVT_BUTTON, self.OnApplyToAll, self.ApplyToAllButton)
-            self.ButtonSizer.AddWindow(self.ApplyToAllButton, border=10,
+            self.ButtonSizer.AddWindow(self.ApplyToAllButton, 
+                    border=(3 if wx.Platform == '__WXMSW__' else 10),
                     flag=wx.LEFT)
         else:
             self.ConnectionName.ChangeValue(
