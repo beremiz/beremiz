@@ -31,6 +31,13 @@ from controls.LibraryPanel import LibraryPanel
 from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
+#                                    Helpers
+#-------------------------------------------------------------------------------
+
+def GetBlockTypeDefaultNameModel(blocktype):
+    return re.compile("%s[0-9]+" % blocktype if blocktype is not None else ".*")
+
+#-------------------------------------------------------------------------------
 #                         Set Block Parameters Dialog
 #-------------------------------------------------------------------------------
 
@@ -136,11 +143,14 @@ class FBDBlockDialog(BlockPreviewDialog):
         right_gridsizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
         right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
         
+        # Add buttons sizer to sizers
         main_sizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
         self.SetSizer(main_sizer)
         
+        # Dictionary containing correspondence between parameter exchanged and
+        # control to fill with parameter value
         self.ParamsControl = {
             "extension": self.Inputs,
             "executionOrder": self.ExecutionOrder,
@@ -184,10 +194,11 @@ class FBDBlockDialog(BlockPreviewDialog):
         
         # Show error message if an error is detected
         if message is not None:
-            self.ShowMessage(message)
+            self.ShowErrorMessage(message)
         
         # Test block name validity if necessary
-        elif not name_enabled or self.TestBlockName(block_name):
+        elif not name_enabled or self.TestElementName(block_name):
+            # Call BlockPreviewDialog function
             BlockPreviewDialog.OnOK(self, event)
     
     def SetValues(self, values):
@@ -200,21 +211,16 @@ class FBDBlockDialog(BlockPreviewDialog):
         
         # Define regular expression for determine if block name is block
         # default name
-        default_name_model = re.compile(
-            "%s[0-9]+" % blocktype if blocktype is not None else ".*")
-        
-        # Select block type in library panel    
-        if blocktype is not None:
-            self.LibraryPanel.SelectTreeItem(blocktype, 
-                                             values.get("inputs", None))
+        default_name_model = GetBlockTypeDefaultNameModel(blocktype)
         
         # For each parameters defined, set corresponding control value
         for name, value in values.items():
+            
+            # Parameter is block name
             if name == "name":
-                # Parameter is block name
                 if value != "":
-                    # Set default block name for testing
-                    self.DefaultBlockName = value
+                    # Set default graphic element name for testing
+                    self.DefaultElementName = value
                     
                     # Test if block name is type default block name and save
                     # block name if not (name have been typed by user)
@@ -223,10 +229,16 @@ class FBDBlockDialog(BlockPreviewDialog):
             
                 self.BlockName.ChangeValue(value)
             
+            # Set value of other controls
             else:
                 control = self.ParamsControl.get(name, None)
                 if control is not None:
                     control.SetValue(value)
+        
+        # Select block type in library panel    
+        if blocktype is not None:
+            self.LibraryPanel.SelectTreeItem(blocktype, 
+                                             values.get("inputs", None))
         
         # Refresh preview panel
         self.RefreshPreview()
@@ -239,7 +251,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         values = self.LibraryPanel.GetSelectedBlock()
         if self.BlockName.IsEnabled() and self.BlockName.GetValue() != "":
             values["name"] = self.BlockName.GetValue()
-        values["width"], values["height"] = self.Block.GetSize()
+        values["width"], values["height"] = self.Element.GetSize()
         values.update({
             name: control.GetValue()
             for name, control in self.ParamsControl.iteritems()})
@@ -270,11 +282,22 @@ class FBDBlockDialog(BlockPreviewDialog):
         # current block name wasn't typed by user
         if blocktype is not None and blocktype["type"] != "function":
             self.BlockName.Enable(True)
-            self.BlockName.ChangeValue(
-                self.CurrentBlockName
-                if self.CurrentBlockName is not None
-                else self.Controller.GenerateNewName(
-                    self.TagName, None, values["type"]+"%d", 0))
+            
+            if self.CurrentBlockName is None:
+                # Generate new block name according to block type, taking
+                # default element name if it was already a default name for this
+                # block type
+                default_name_model = GetBlockTypeDefaultNameModel(values["type"])
+                block_name = (
+                    self.DefaultElementName
+                    if (self.DefaultElementName is not None and 
+                        default_name_model.match(self.DefaultElementName))
+                    else self.Controller.GenerateNewName(
+                        self.TagName, None, values["type"]+"%d", 0))
+            else:
+                block_name = self.CurrentBlockName
+                
+            self.BlockName.ChangeValue(block_name)
         else:
             self.BlockName.Enable(False)
             self.BlockName.ChangeValue("")
@@ -328,13 +351,11 @@ class FBDBlockDialog(BlockPreviewDialog):
         
         # If a block type is selected in library panel
         if values is not None:
-            blockname = (self.BlockName.GetValue()
-                         if self.BlockName.IsEnabled()
-                         else "")
-            
             # Set graphic element displayed, creating a FBD block element
-            self.Block = FBD_Block(self.Preview, values["type"], 
-                    blockname, 
+            self.Element = FBD_Block(self.Preview, values["type"], 
+                    (self.BlockName.GetValue()
+                     if self.BlockName.IsEnabled()
+                     else ""), 
                     extension = self.Inputs.GetValue(), 
                     inputs = values["inputs"], 
                     executionControl = self.ExecutionControl.GetValue(), 
@@ -342,7 +363,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         
         # Reset graphic element displayed
         else:
-            self.Block = None 
+            self.Element = None 
         
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

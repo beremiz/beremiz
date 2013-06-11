@@ -75,9 +75,11 @@ class BlockPreviewDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnOK, 
                   self.ButtonSizer.GetAffirmativeButton())
         
-        self.Block = None            # Graphic element to display in preview
-        self.MinBlockSize = None     # Graphic element minimal size
-        self.DefaultBlockName = None # Graphic element name when opening dialog
+        self.Element = None            # Graphic element to display in preview
+        self.MinElementSize = None     # Graphic element minimal size
+        
+        # Variable containing the graphic element name when dialog is opened
+        self.DefaultElementName = None
         
     def __del__(self):
         """
@@ -86,12 +88,12 @@ class BlockPreviewDialog(wx.Dialog):
         # Remove reference to project controller
         self.Controller = None
     
-    def SetMinBlockSize(self, size):
+    def SetMinElementSize(self, size):
         """
         Define minimal graphic element size
-        @param size: wx.Size object containing minimal size
+        @param size: Tuple containing minimal size (width, height)
         """
-        self.MinBlockSize = size
+        self.MinElementSize = size
     
     def SetPreviewFont(self, font):
         """
@@ -100,39 +102,39 @@ class BlockPreviewDialog(wx.Dialog):
         """
         self.Preview.SetFont(font)
     
-    def TestBlockName(self, block_name):
+    def TestElementName(self, element_name):
         """
         Text displayed graphic element name
-        @param block_name: Graphic element name
+        @param element_name: Graphic element name
         """
         # Variable containing error message format
         message_format = None
         # Get graphic element name in upper case
-        uppercase_block_name = block_name.upper()
+        uppercase_element_name = element_name.upper()
         
         # Test if graphic element name is a valid identifier
-        if not TestIdentifier(block_name):
+        if not TestIdentifier(element_name):
             message_format = _("\"%s\" is not a valid identifier!")
         
         # Test that graphic element name isn't a keyword
-        elif uppercase_block_name in IEC_KEYWORDS:
+        elif uppercase_element_name in IEC_KEYWORDS:
             message_format = _("\"%s\" is a keyword. It can't be used!")
         
         # Test that graphic element name isn't a POU name
-        elif uppercase_block_name in self.Controller.GetProjectPouNames():
+        elif uppercase_element_name in self.Controller.GetProjectPouNames():
             message_format = _("\"%s\" pou already exists!")
         
         # Test that graphic element name isn't already used in POU by a variable
         # or another graphic element
-        elif ((self.DefaultBlockName is None or 
-               self.DefaultBlockName.upper() != uppercase_block_name) and 
-              uppercase_block_name in self.Controller.GetEditedElementVariables(
-                                                                self.TagName)):
+        elif ((self.DefaultElementName is None or 
+               self.DefaultElementName.upper() != uppercase_element_name) and 
+              uppercase_element_name in self.Controller.\
+                    GetEditedElementVariables(self.TagName)):
             message_format = _("\"%s\" element for this pou already exists!")
         
         # If an error have been identify, show error message dialog
         if message_format is not None:
-            self.ShowErrorMessage(message_format % block_name)
+            self.ShowErrorMessage(message_format % element_name)
             # Test failed
             return False
         
@@ -171,15 +173,15 @@ class BlockPreviewDialog(wx.Dialog):
         dc.Clear()
         
         # Return immediately if no graphic element defined
-        if self.Block is None:
+        if self.Element is None:
             return
         
         # Calculate block size according to graphic element min size due to its
         # parameters and graphic element min size defined
-        min_width, min_height = self.Block.GetMinSize()
-        width = max(self.MinBlockSize[0], min_width)
-        height = max(self.MinBlockSize[1], min_height)
-        self.Block.SetSize(width, height)
+        min_width, min_height = self.Element.GetMinSize()
+        width = max(self.MinElementSize[0], min_width)
+        height = max(self.MinElementSize[1], min_height)
+        self.Element.SetSize(width, height)
         
         # Get Preview panel size
         client_size = self.Preview.GetClientSize()
@@ -196,10 +198,10 @@ class BlockPreviewDialog(wx.Dialog):
         # Center graphic element in preview panel
         x = int(client_size.width * scale - width) / 2
         y = int(client_size.height * scale - height) / 2
-        self.Block.SetPosition(x, y)
+        self.Element.SetPosition(x, y)
         
         # Draw graphic element
-        self.Block.Draw(dc)
+        self.Element.Draw(dc)
     
     def OnPaint(self, event):
         """
