@@ -1446,9 +1446,6 @@ class IDEFrame(wx.Frame):
         if tagname is not None:
             self.SelectProjectTreeItem(tagname)
 
-    def ResetSelectedItem(self):
-        self.SelectedItem = None
-
     def GenerateProjectTreeBranch(self, root, infos, item_alone=False):
         to_delete = []
         item_name = infos["name"]
@@ -1525,9 +1522,15 @@ class IDEFrame(wx.Frame):
             item, root_cookie = self.ProjectTree.GetNextChild(root, root_cookie)
         return found
 
+    def ResetSelectedItem(self):
+        self.SelectedItem = None
+
     def OnProjectTreeBeginDrag(self, event):
-        if self.SelectedItem is not None and self.ProjectTree.GetPyData(self.SelectedItem)["type"] == ITEM_POU:
-            block_name = self.ProjectTree.GetItemText(self.SelectedItem)
+        selected_item = (self.SelectedItem 
+                         if self.SelectedItem is not None
+                         else event.GetItem())
+        if selected_item.IsOk() and self.ProjectTree.GetPyData(selected_item)["type"] == ITEM_POU:
+            block_name = self.ProjectTree.GetItemText(selected_item)
             block_type = self.Controler.GetPouType(block_name)
             if block_type != "program":
                 data = wx.TextDataObject(str((block_name, block_type, "")))
