@@ -104,7 +104,7 @@ class BlockPreviewDialog(wx.Dialog):
     
     def TestElementName(self, element_name):
         """
-        Text displayed graphic element name
+        Test displayed graphic element name
         @param element_name: Graphic element name
         """
         # Variable containing error message format
