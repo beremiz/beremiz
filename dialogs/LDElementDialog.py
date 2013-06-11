@@ -91,10 +91,12 @@ class LDElementDialog(BlockPreviewDialog):
         
         for modifier, label in zip(element_modifiers, modifiers_label):
             radio_button = wx.RadioButton(self, label=label, 
-                  style=(wx.RB_GROUP if first else wx.RB_SINGLE))
+                  style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnModifierChanged, radio_button)
-            left_gridsizer.AddWindow(radio_button, flag=wx.GROW)
+            left_gridsizer.AddWindow(radio_button, 
+                  border=(5 if not first and wx.Platform == '__WXMSW__' else 0),
+                  flag=wx.GROW|wx.TOP)
             self.ModifierRadioButtons[modifier] = radio_button
             first = False
         
