@@ -2229,6 +2229,7 @@ class Viewer(EditorPanel, DebugViewer):
             id = self.GetNewId()
             values = dialog.GetValues()
             variable = FBD_Variable(self, values["class"], values["expression"], values["var_type"], id)
+            variable.SetExecutionOrder(values["executionOrder"])
             variable.SetPosition(bbox.x, bbox.y)
             variable.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             self.AddBlock(variable)
