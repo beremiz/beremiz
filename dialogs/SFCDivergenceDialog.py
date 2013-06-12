@@ -23,141 +23,132 @@
 
 import wx
 
-from graphics import *
+from graphics.GraphicCommons import SELECTION_DIVERGENCE, \
+    SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE
+from graphics.SFC_Objects import SFC_Divergence
+from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
 #                         Create New Divergence Dialog
 #-------------------------------------------------------------------------------
 
-class SFCDivergenceDialog(wx.Dialog):
+"""
+Class that implements a dialog for defining parameters for creating a new
+divergence graphic element
+"""
+
+class SFCDivergenceDialog(BlockPreviewDialog):
     
-    def __init__(self, parent, controller):
-        wx.Dialog.__init__(self, parent, size=wx.Size(500, 300), 
+    def __init__(self, parent, controller, tagname):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param controller: Reference to project controller
+        @param tagname: Tagname of project POU edited
+        """
+        BlockPreviewDialog.__init__(self, parent, controller, tagname, 
+              size=wx.Size(500, 300), 
               title=_('Create a new divergence or convergence'))
         
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
+        # Init common sizers
+        self._init_sizers(2, 0, 7, None, 2, 1)
         
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=7, vgap=5)
-        left_gridsizer.AddGrowableCol(0)
-        column_sizer.AddSizer(left_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.RIGHT)
-        
+        # Create label for divergence type
         type_label = wx.StaticText(self, label=_('Type:'))
-        left_gridsizer.AddWindow(type_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
+        
+        # Create radio buttons for selecting divergence type
+        self.TypeRadioButtons = {}
+        first = True
+        for type, label in [
+                (SELECTION_DIVERGENCE, _('Selection Divergence')),
+                (SELECTION_CONVERGENCE, _('Selection Convergence')),
+                (SIMULTANEOUS_DIVERGENCE, _('Simultaneous Divergence')),
+                (SIMULTANEOUS_CONVERGENCE, _('Simultaneous Convergence'))]:
+            radio_button = wx.RadioButton(self, label=label, 
+                  style=(wx.RB_GROUP if first else 0))
+            radio_button.SetValue(first)
+            self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
+            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
+            self.TypeRadioButtons[type] = radio_button
+            first = False
 
-        self.SelectionDivergence = wx.RadioButton(self, 
-              label=_('Selection Divergence'), style=wx.RB_GROUP)
-        self.SelectionDivergence.SetValue(True)
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, 
-                  self.SelectionDivergence)
-        left_gridsizer.AddWindow(self.SelectionDivergence, flag=wx.GROW)
-        
-        self.SelectionConvergence = wx.RadioButton(self,
-              label=_('Selection Convergence'))
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, 
-                  self.SelectionConvergence)
-        left_gridsizer.AddWindow(self.SelectionConvergence, flag=wx.GROW)
-        
-        self.SimultaneousDivergence = wx.RadioButton(self,
-              label=_('Simultaneous Divergence'))
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, 
-                  self.SimultaneousDivergence)
-        left_gridsizer.AddWindow(self.SimultaneousDivergence, flag=wx.GROW)
-        
-        self.SimultaneousConvergence = wx.RadioButton(self,
-              label=_('Simultaneous Convergence'))
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, 
-                  self.SimultaneousConvergence)
-        left_gridsizer.AddWindow(self.SimultaneousConvergence, flag=wx.GROW)
-        
+        # Create label for number of divergence sequences
         sequences_label = wx.StaticText(self, 
               label=_('Number of sequences:'))
-        left_gridsizer.AddWindow(sequences_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(sequences_label, flag=wx.GROW)
         
+        # Create spin control for defining number of divergence sequences
         self.Sequences = wx.SpinCtrl(self, min=2, max=20)
         self.Bind(wx.EVT_SPINCTRL, self.OnSequencesChanged, self.Sequences)
-        left_gridsizer.AddWindow(self.Sequences, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(self.Sequences, flag=wx.GROW)
         
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(1)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
+        # Add preview panel and associated label to sizers
+        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
-        preview_label = wx.StaticText(self, label=_('Preview:'))
-        right_gridsizer.AddWindow(preview_label, flag=wx.GROW)
+        # Add buttons sizer to sizers
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
+              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
-        self.Preview = wx.Panel(self, style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
-        self.Preview.SetBackgroundColour(wx.Colour(255,255,255))
-        self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "IsOfType", controller.IsOfType)
-        right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
-        
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        main_sizer.AddSizer(button_sizer, border=20, flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-        self.SetSizer(main_sizer)
-        
-        self.Divergence = None
-        self.MinSize = (0, 0)
-        
-        self.SelectionDivergence.SetFocus()
+        # Selection divergence radio button is default control having keyboard
+        # focus
+        self.TypeRadioButtons[SELECTION_DIVERGENCE].SetFocus()
     
-    def SetPreviewFont(self, font):
-        self.Preview.SetFont(font)
+    def GetMinElementSize(self):
+        """
+        Get minimal graphic element size
+        @return: Tuple containing minimal size (width, height) or None if no
+        element defined
+        """
+        return self.Element.GetSize()
+    
+    def GetDivergenceType(self):
+        """
+        Return type selected for SFC divergence
+        @return: Type selected (None if not found)
+        """
+        # Go through radio buttons and return type associated to the one that
+        # is selected
+        for type, control in self.TypeRadioButtons.iteritems():
+            if control.GetValue():
+                return type
+        return None
     
     def GetValues(self):
-        values = {}
-        if self.SelectionDivergence.GetValue():
-            values["type"] = SELECTION_DIVERGENCE
-        elif self.SelectionConvergence.GetValue():
-            values["type"] = SELECTION_CONVERGENCE
-        elif self.SimultaneousDivergence.GetValue():
-            values["type"] = SIMULTANEOUS_DIVERGENCE
-        else:
-            values["type"] = SIMULTANEOUS_CONVERGENCE
-        values["number"] = self.Sequences.GetValue()
-        return values
-
-    def SetMinSize(self, size):
-        self.MinSize = size
+        """
+        Set default SFC divergence parameters
+        @param values: Divergence parameters values
+        """
+        return {"type": self.GetDivergenceType(),
+                "number": self.Sequences.GetValue()}
 
     def OnTypeChanged(self, event):
+        """
+        Called when SFC divergence type changed
+        @param event: wx.RadioButtonEvent
+        """
         self.RefreshPreview()
         event.Skip()
 
     def OnSequencesChanged(self, event):
+        """
+        Called when SFC divergence number of sequences changed
+        @param event: wx.SpinEvent
+        """
         self.RefreshPreview()
         event.Skip()
         
     def RefreshPreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.SetFont(self.Preview.GetFont())
-        dc.Clear()
-        if self.SelectionDivergence.GetValue():
-            self.Divergence = SFC_Divergence(self.Preview, SELECTION_DIVERGENCE, self.Sequences.GetValue())
-        elif self.SelectionConvergence.GetValue():
-            self.Divergence = SFC_Divergence(self.Preview, SELECTION_CONVERGENCE, self.Sequences.GetValue())
-        elif self.SimultaneousDivergence.GetValue():
-            self.Divergence = SFC_Divergence(self.Preview, SIMULTANEOUS_DIVERGENCE, self.Sequences.GetValue())
-        else:
-            self.Divergence = SFC_Divergence(self.Preview, SIMULTANEOUS_CONVERGENCE, self.Sequences.GetValue())
-        width, height = self.Divergence.GetSize()
-        min_width, min_height = max(width, self.MinSize[0]), max(height, self.MinSize[1])
-        self.Divergence.SetSize(min_width, min_height)
-        clientsize = self.Preview.GetClientSize()
-        x = (clientsize.width - min_width) / 2
-        y = (clientsize.height - min_height) / 2
-        self.Divergence.SetPosition(x, y)
-        self.Divergence.Draw(dc)
-
-    def OnPaint(self, event):
-        self.RefreshPreview()
-        event.Skip()
+        """
+        Refresh preview panel of graphic element
+        Override BlockPreviewDialog function
+        """
+        # Set graphic element displayed, creating a SFC divergence
+        self.Element = SFC_Divergence(self.Preview, 
+                                      self.GetDivergenceType(), 
+                                      self.Sequences.GetValue())
+        
+        # Call BlockPreviewDialog function
+        BlockPreviewDialog.RefreshPreview(self)
+        

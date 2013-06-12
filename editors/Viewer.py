@@ -2392,9 +2392,9 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewDivergence(self, bbox):
-        dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler)
+        dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
