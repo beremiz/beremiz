@@ -37,7 +37,7 @@ graphic created by dialog
 """
 
 class BlockPreviewDialog(wx.Dialog):
-
+    
     def __init__(self, parent, controller, tagname, size, title):
         """
         Constructor
@@ -90,6 +90,53 @@ class BlockPreviewDialog(wx.Dialog):
         """
         # Remove reference to project controller
         self.Controller = None
+    
+    def _init_sizers(self, main_rows, main_growable_row,
+                            left_rows, left_growable_row,
+                            right_rows, right_growable_row):
+        """
+        Initialize common sizers
+        @param main_rows: Number of rows in main sizer
+        @param main_growable_row: Row that is growable in main sizer, None if no
+        row is growable
+        @param left_rows: Number of rows in left grid sizer
+        @param left_growable_row: Row that is growable in left grid sizer, None
+        if no row is growable
+        @param right_rows: Number of rows in right grid sizer
+        @param right_growable_row: Row that is growable in right grid sizer,
+        None if no row is growable
+        """
+        # Create dialog main sizer
+        self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, 
+                                          rows=main_rows, vgap=10)
+        self.MainSizer.AddGrowableCol(0)
+        if main_growable_row is not None:
+            self.MainSizer.AddGrowableRow(main_growable_row)
+        
+        # Create a sizer for dividing parameters in two columns
+        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.MainSizer.AddSizer(column_sizer, border=20, 
+              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+        
+        # Create a sizer for left column
+        self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=0, 
+                                              rows=left_rows, vgap=5)
+        self.LeftGridSizer.AddGrowableCol(0)
+        if left_growable_row is not None:
+            self.LeftGridSizer.AddGrowableRow(left_growable_row)
+        column_sizer.AddSizer(self.LeftGridSizer, 1, border=5, 
+              flag=wx.GROW|wx.RIGHT)
+        
+        # Create a sizer for right column
+        self.RightGridSizer = wx.FlexGridSizer(cols=1, hgap=0, 
+                                               rows=right_rows, vgap=0)
+        self.RightGridSizer.AddGrowableCol(0)
+        if right_growable_row is not None:
+            self.RightGridSizer.AddGrowableRow(right_growable_row)
+        column_sizer.AddSizer(self.RightGridSizer, 1, border=5, 
+              flag=wx.GROW|wx.LEFT)
+        
+        self.SetSizer(self.MainSizer)
     
     def SetMinElementSize(self, size):
         """

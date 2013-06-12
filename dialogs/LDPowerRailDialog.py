@@ -48,25 +48,12 @@ class LDPowerRailDialog(BlockPreviewDialog):
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(350, 260), title=_('Power Rail Properties'))
         
-        # Create dialog main sizer
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
-        
-        # Create a sizer for dividing power rail parameters in two columns
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        # Create a sizer for left column
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=5)
-        left_gridsizer.AddGrowableCol(0)
-        column_sizer.AddSizer(left_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.RIGHT)
+        # Init common sizers
+        self._init_sizers(2, 0, 5, None, 2, 1)
         
         # Create label for connection type
         type_label = wx.StaticText(self, label=_('Type:'))
-        left_gridsizer.AddWindow(type_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
         
         # Create radio buttons for selecting power rail type
         self.TypeRadioButtons = {}
@@ -77,36 +64,27 @@ class LDPowerRailDialog(BlockPreviewDialog):
                   style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
-            left_gridsizer.AddWindow(radio_button, flag=wx.GROW)
+            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
             self.TypeRadioButtons[type] = radio_button
             first = False
         
         # Create label for power rail pin number
         pin_number_label = wx.StaticText(self, label=_('Pin number:'))
-        left_gridsizer.AddWindow(pin_number_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(pin_number_label, flag=wx.GROW)
         
         # Create spin control for defining power rail pin number
         self.PinNumber = wx.SpinCtrl(self, min=1, max=50,
               style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_SPINCTRL, self.OnPinNumberChanged, self.PinNumber)
-        left_gridsizer.AddWindow(self.PinNumber, flag=wx.GROW)
-        
-        # Create a sizer for right column
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(1)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
+        self.LeftGridSizer.AddWindow(self.PinNumber, flag=wx.GROW)
         
         # Add preview panel and associated label to sizers
-        right_gridsizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
         # Add buttons sizer to sizers
-        main_sizer.AddSizer(self.ButtonSizer, border=20, 
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-        self.SetSizer(main_sizer)
         
         # Left Power Rail radio button is default control having keyboard focus
         self.TypeRadioButtons[LEFTRAIL].SetFocus()

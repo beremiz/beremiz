@@ -2340,12 +2340,9 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewStep(self, bbox, initial = False):
-        dialog = SFCStepDialog(self.ParentWindow, self.Controler, initial)
+        dialog = SFCStepDialog(self.ParentWindow, self.Controler, self.TagName, initial)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
-        dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug))
-        dialog.SetStepNames([block.GetName() for block in self.Blocks.itervalues() if isinstance(block, SFC_Step)])
-        dialog.SetMinStepSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
@@ -2625,18 +2622,15 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditStepContent(self, step):
-        dialog = SFCStepDialog(self.ParentWindow, self.Controler, step.GetInitial())
+        dialog = SFCStepDialog(self.ParentWindow, self.Controler, self.TagName, step.GetInitial())
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
-        dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug))
-        dialog.SetStepNames([block.GetName() for block in self.Blocks.itervalues() if isinstance(block, SFC_Step) and block.GetName() != step.GetName()])
-        dialog.SetMinStepSize(step.GetSize())
-        values = {"name" : step.GetName()}
+        dialog.SetMinElementSize(step.GetSize())
         connectors = step.GetConnectors()
-        values["input"] = len(connectors["inputs"]) > 0
-        values["output"] = len(connectors["outputs"]) > 0
-        values["action"] = step.GetActionConnector() != None
-        dialog.SetValues(values)
+        dialog.SetValues({
+            "name" : step.GetName(),
+            "input": len(connectors["inputs"]) > 0,
+            "output": len(connectors["outputs"]) > 0,
+            "action": step.GetActionConnector() != None})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = step.GetRedrawRect(1, 1)
