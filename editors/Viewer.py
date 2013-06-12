@@ -2372,9 +2372,9 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewTransition(self, bbox):
-        dialog = SFCTransitionDialog(self.ParentWindow, self.Controler, self.GetDrawingMode() == FREEDRAWING_MODE)
+        dialog = SFCTransitionDialog(self.ParentWindow, self.Controler, self.TagName, self.GetDrawingMode() == FREEDRAWING_MODE)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetTransitions(self.Controler.GetEditedElementTransitions(self.TagName, self.Debug))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
@@ -2656,11 +2656,10 @@ class Viewer(EditorPanel, DebugViewer):
             step.Refresh(rect)
         
     def EditTransitionContent(self, transition):
-        dialog = SFCTransitionDialog(self.ParentWindow, self.Controler, self.GetDrawingMode() == FREEDRAWING_MODE)
+        dialog = SFCTransitionDialog(self.ParentWindow, self.Controler, self.TagName, self.GetDrawingMode() == FREEDRAWING_MODE)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetTransitions(self.Controler.GetEditedElementTransitions(self.TagName, self.Debug))
+        dialog.SetMinElementSize(transition.GetSize())
         dialog.SetValues({"type":transition.GetType(),"value":transition.GetCondition(), "priority":transition.GetPriority()})
-        dialog.SetElementSize(transition.GetSize())
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = transition.GetRedrawRect(1, 1)

@@ -85,6 +85,10 @@ class SFCStepDialog(BlockPreviewDialog):
         # Save flag that indicates that step is initial
         self.Initial = initial
         
+        # Set default name for step
+        self.StepName.ChangeValue(controller.GenerateNewName(
+               tagname, None, "Step%d", 0))
+        
         # Step name text control is default control having keyboard focus
         self.StepName.SetFocus()
     

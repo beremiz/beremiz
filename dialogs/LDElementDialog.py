@@ -137,7 +137,7 @@ class LDElementDialog(BlockPreviewDialog):
     def SetValues(self, values):
         """
         Set default LD element parameters
-        @param values: Block parameters values
+        @param values: LD element parameters values
         """
         # For each parameters defined, set corresponding control value
         for name, value in values.items():

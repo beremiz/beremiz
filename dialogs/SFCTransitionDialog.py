@@ -23,221 +23,215 @@
 
 import wx
 
-from graphics import *
+from graphics.SFC_Objects import SFC_Transition
+from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
-#                          Edit Transition Content Dialog
+#                        Set Transition Parameters Dialog
 #-------------------------------------------------------------------------------
 
-class SFCTransitionDialog(wx.Dialog):
+"""
+Class that implements a dialog for defining parameters of a transition graphic
+element
+"""
+
+class SFCTransitionDialog(BlockPreviewDialog):
     
-    def __init__(self, parent, controller, connection):
-        self.Connection = connection
-        
-        wx.Dialog.__init__(self, parent, 
+    def __init__(self, parent, controller, tagname, connection=True):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param controller: Reference to project controller
+        @param tagname: Tagname of project POU edited
+        @param connection: True if transition value can be defined by a
+        connection (default: True)
+        """
+        BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(350, 300), title=_('Edit transition'))
         
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
+        # Init common sizers
+        self._init_sizers(2, 0, 8, None, 2, 1)
         
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=8, vgap=5)
-        left_gridsizer.AddGrowableCol(0)
-        column_sizer.AddSizer(left_gridsizer, 1, border=5, 
-                              flag=wx.GROW|wx.RIGHT)
-        
+        # Create label for transition type
         type_label = wx.StaticText(self, label=_('Type:'))
-        left_gridsizer.AddWindow(type_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
         
-        self.ReferenceRadioButton = wx.RadioButton(self,
-              label=_('Reference'), style=wx.RB_GROUP)
-        self.ReferenceRadioButton.SetValue(True)
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, self.ReferenceRadioButton)
-        left_gridsizer.AddWindow(self.ReferenceRadioButton, flag=wx.GROW)
+        # Create combo box for selecting reference value
+        reference = wx.ComboBox(self, style=wx.CB_READONLY)
+        reference.Append("")
+        for transition in controller.GetEditedElementTransitions(tagname):
+            reference.Append(transition)
+        self.Bind(wx.EVT_COMBOBOX, self.OnReferenceChanged, reference)
         
-        self.Reference = wx.ComboBox(self, style=wx.CB_READONLY)
-        self.Bind(wx.EVT_COMBOBOX, self.OnReferenceChanged, self.Reference)
-        left_gridsizer.AddWindow(self.Reference, flag=wx.GROW)
+        # Create Text control for defining inline value
+        inline = wx.TextCtrl(self)
+        self.Bind(wx.EVT_TEXT, self.OnInlineChanged, inline)
         
-        self.InlineRadioButton = wx.RadioButton(self, label=_('Inline'))
-        self.InlineRadioButton.SetValue(False)
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, self.InlineRadioButton)
-        left_gridsizer.AddWindow(self.InlineRadioButton, flag=wx.GROW)
+        # Create radio buttons for selecting power rail type
+        self.TypeRadioButtons = {}
+        first = True
+        for type, label, control in [('reference', _('Reference'), reference),
+                                     ('inline', _('Inline'), inline),
+                                     ('connection', _('Connection'), None)]:
+            radio_button = wx.RadioButton(self, label=label, 
+                  style=(wx.RB_GROUP if first else 0))
+            radio_button.SetValue(first)
+            self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
+            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
+            if control is not None:
+                control.Enable(first)
+                self.LeftGridSizer.AddWindow(control, flag=wx.GROW)
+            self.TypeRadioButtons[type] = (radio_button, control)
+            first = False
         
-        self.Inline = wx.TextCtrl(self)
-        self.Inline.Enable(False)
-        self.Bind(wx.EVT_TEXT, self.OnInlineChanged, self.Inline)
-        left_gridsizer.AddWindow(self.Inline, flag=wx.GROW)
-        
-        self.ConnectionRadioButton = wx.RadioButton(self, label=_('Connection'))
-        self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, self.ConnectionRadioButton)
-        self.ConnectionRadioButton.SetValue(False)
-        if not self.Connection:
-            self.ConnectionRadioButton.Hide()
-        left_gridsizer.AddWindow(self.ConnectionRadioButton, flag=wx.GROW)
-        
+        # Create label for transition priority
         priority_label = wx.StaticText(self, label=_('Priority:'))
-        left_gridsizer.AddWindow(priority_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(priority_label, flag=wx.GROW)
         
+        # Create spin control for defining priority value
         self.Priority = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_TEXT, self.OnPriorityChanged, self.Priority)
-        left_gridsizer.AddWindow(self.Priority, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(self.Priority, flag=wx.GROW)
         
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(1)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
+        # Add preview panel and associated label to sizers
+        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
-        preview_label = wx.StaticText(self, label=_('Preview:'))
-        right_gridsizer.AddWindow(preview_label, flag=wx.GROW)
-        
-        self.Preview = wx.Panel(self, 
-              style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
-        self.Preview.SetBackgroundColour(wx.Colour(255,255,255))
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "RefreshTransitionModel", lambda x:None)
-        setattr(self.Preview, "GetScaling", lambda:None)
-        setattr(self.Preview, "IsOfType", controller.IsOfType)
-        self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
-        right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
-        
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, 
-              button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        # Add buttons sizer to sizers
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
-        self.SetSizer(main_sizer)
-        
-        self.Transition = None
-        self.MinTransitionSize = None
-        
-        self.Element = SFC_Transition(self.Preview)
-        
-        self.ReferenceRadioButton.SetFocus()
+        # Reference radio button is default control having keyboard focus
+        self.TypeRadioButtons["reference"][0].SetFocus()
     
-    def SetPreviewFont(self, font):
-        self.Preview.SetFont(font)
+    def GetTransitionType(self):
+        """
+        Return type selected for SFC transition and associated value
+        @return: Type selected and associated value (None if no value)
+        """
+        # Go through radio buttons and return type and value associated to the
+        # one that is selected
+        for type, (radio, control) in self.TypeRadioButtons.iteritems():
+            if radio.GetValue():
+                if isinstance(control, wx.ComboBox):
+                    return type, control.GetStringSelection()
+                elif isinstance(control, wx.TextCtrl):
+                    return type, control.GetValue()
+                else:
+                    return type, None
+        return None, None
     
-    def SetElementSize(self, size):
-        min_width, min_height = self.Element.GetMinSize()
-        width, height = max(min_width, size[0]), max(min_height, size[1])
-        self.Element.SetSize(width, height)
+    def SetValues(self, values):
+        """
+        Set default SFC transition parameters
+        @param values: Transition parameters values
+        """
+        # Extract transition value according to type
+        type_value = values.get("value", None)
+        
+        # For each parameters defined, set corresponding control value
+        for name, value in values.items():
+            
+            # Parameter is SFC transition priority
+            if name == "priority":
+                self.Priority.SetValue(values["priority"])
+            
+            # Parameter is SFC transition type
+            elif name == "type":
+                for type, (radio, control) in self.TypeRadioButtons.iteritems():
+                    radio.SetValue(type == value)
+                    if control is not None:
+                        # Enable associated control to type and set value
+                        control.Enable(type == value)
+                        if type == value:
+                            if isinstance(control, wx.ComboBox):
+                                control.SetStringSelection(type_value)
+                            elif isinstance(control, wx.TextCtrl):
+                                control.ChangeValue(type_value)
+        
+        # Refresh preview panel
+        self.RefreshPreview()
+        
+    def GetValues(self):
+        """
+        Return SFC transition parameters defined in dialog
+        @return: {parameter_name: parameter_value,...}
+        """
+        values = {"priority" : self.Priority.GetValue()}
+        values["type"], values["value"] = self.GetTransitionType()
+        values["width"], values["height"] = self.Element.GetSize()
+        return values
     
     def OnOK(self, event):
-        error = []
-        if self.ReferenceRadioButton.GetValue() and self.Reference.GetStringSelection() == "":
-            error.append(_("Reference"))
-        if self.InlineRadioButton.GetValue() and self.Inline.GetValue() == "":
-            error.append(_("Inline"))
-        if len(error) > 0:
-            text = ""
-            for i, item in enumerate(error):
-                if i == 0:
-                    text += item
-                elif i == len(error) - 1:
-                    text += _(" and %s")%item
-                else:
-                    text += _(", %s")%item 
-            dialog = wx.MessageDialog(self, _("Form isn't complete. %s must be filled!")%text, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
+        """
+        Called when dialog OK button is pressed
+        Test if parameters defined are valid
+        @param event: wx.Event from OK button
+        """
+        message = None
+        
+        # Get transition type and value associated
+        type, value = self.GetTransitionType()
+        
+        # Test that value associated to type is defined
+        if type != "connection" and value == "":
+            message = _("Form isn't complete. %s must be filled!") % type
+        
+        # Show error message if an error is detected
+        if message is not None:
+            self.ShowErrorMessage(message)
+        
         else:
-            self.EndModal(wx.ID_OK)
+            # Call BlockPreviewDialog function
+            BlockPreviewDialog.OnOK(self, event)
 
     def OnTypeChanged(self, event):
-        if self.ReferenceRadioButton.GetValue():
-            self.Element.SetType("reference", self.Reference.GetStringSelection())
-            self.Reference.Enable(True)
-            self.Inline.Enable(False)
-        elif self.InlineRadioButton.GetValue():
-            self.Element.SetType("inline", self.Inline.GetValue())
-            self.Reference.Enable(False)
-            self.Inline.Enable(True)
-        else:
-            self.Element.SetType("connection")
-            self.Reference.Enable(False)
-            self.Inline.Enable(False)
+        """
+        Called when transition type changed
+        @param event: wx.RadioButtonEvent
+        """
+        # Refresh sensibility of control associated to transition types
+        for type, (radio, control) in self.TypeRadioButtons.iteritems():
+            if control is not None:
+                control.Enable(radio.GetValue())
+        
+        # Refresh preview panel
         self.RefreshPreview()
         event.Skip()
 
     def OnReferenceChanged(self, event):
-        self.Element.SetType("reference", self.Reference.GetStringSelection())
+        """
+        Called when SFC transition reference value changed
+        @param event: wx.ComboBoxEvent
+        """
         self.RefreshPreview()
         event.Skip()
 
     def OnInlineChanged(self, event):
-        self.Element.SetType("inline", self.Inline.GetValue())
+        """
+        Called when SFC transition inline value changed
+        @param event: wx.TextEvent
+        """
         self.RefreshPreview()
         event.Skip()
 
     def OnPriorityChanged(self, event):
-        self.Element.SetPriority(int(self.Priority.GetValue()))
+        """
+        Called when block inputs number changed
+        @param event: wx.SpinEvent
+        """
         self.RefreshPreview()
         event.Skip()
-
-    def SetTransitions(self, transitions):
-        self.Reference.Append("")
-        for transition in transitions:
-            self.Reference.Append(transition)
-
-    def SetValues(self, values):
-        if values["type"] == "reference":
-            self.ReferenceRadioButton.SetValue(True)
-            self.InlineRadioButton.SetValue(False)
-            self.ConnectionRadioButton.SetValue(False)
-            self.Reference.Enable(True)
-            self.Inline.Enable(False)
-            self.Reference.SetStringSelection(values["value"])
-            self.Element.SetType("reference", values["value"])
-        elif values["type"] == "inline":
-            self.ReferenceRadioButton.SetValue(False)
-            self.InlineRadioButton.SetValue(True)
-            self.ConnectionRadioButton.SetValue(False)
-            self.Reference.Enable(False)
-            self.Inline.Enable(True)
-            self.Inline.SetValue(values["value"])
-            self.Element.SetType("inline", values["value"])
-        elif values["type"] == "connection" and self.Connection:
-            self.ReferenceRadioButton.SetValue(False)
-            self.InlineRadioButton.SetValue(False)
-            self.ConnectionRadioButton.SetValue(True)
-            self.Reference.Enable(False)
-            self.Inline.Enable(False)
-            self.Element.SetType("connection")
-        self.Priority.SetValue(values["priority"])
-        self.Element.SetPriority(values["priority"])
-        self.RefreshPreview()
-        
-    def GetValues(self):
-        values = {"priority" : int(self.Priority.GetValue())}
-        if self.ReferenceRadioButton.GetValue():
-            values["type"] = "reference"
-            values["value"] = self.Reference.GetStringSelection()
-        elif self.InlineRadioButton.GetValue():
-            values["type"] = "inline"
-            values["value"] = self.Inline.GetValue()
-        else:
-            values["type"] = "connection"
-            values["value"] = None
-        return values
 
     def RefreshPreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.SetFont(self.Preview.GetFont())
-        dc.Clear()
-        clientsize = self.Preview.GetClientSize()
-        posx, posy = self.Element.GetPosition()
-        rect = self.Element.GetBoundingBox()
-        diffx, diffy = posx - rect.x, posy - rect.y
-        self.Element.SetPosition((clientsize.width - rect.width) / 2 + diffx, (clientsize.height - rect.height) / 2 + diffy)
-        self.Element.Draw(dc)
-
-    def OnPaint(self, event):
-        self.RefreshPreview()
-        event.Skip()
+        """
+        Refresh preview panel of graphic element
+        Override BlockPreviewDialog function
+        """
+        # Set graphic element displayed, creating a SFC transition
+        self.Element = SFC_Transition(self.Preview)
+        self.Element.SetType(*self.GetTransitionType())
+        self.Element.SetPriority(self.Priority.GetValue())
+        
+        # Call BlockPreviewDialog function
+        BlockPreviewDialog.RefreshPreview(self)
