@@ -94,7 +94,6 @@ class LDPowerRailDialog(BlockPreviewDialog):
         Get minimal graphic element size
         @return: Tuple containing minimal size (width, height) or None if no
         element defined
-        May be overridden by inherited classes
         """
         return (2, LD_LINE_SIZE * self.PinNumber.GetValue())
     
