@@ -55,26 +55,13 @@ class LDElementDialog(BlockPreviewDialog):
                      if type == "contact"
                      else _("Edit Coil Values")))
         
-        # Create dialog main sizer
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
-        
-        # Create a sizer for dividing LD element parameters in two columns
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        # Create a sizer for left column
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, 
-              rows=(7 if type == "contact" else 9), vgap=0)
-        left_gridsizer.AddGrowableCol(0)
-        column_sizer.AddSizer(left_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.RIGHT)
+        # Init common sizers
+        self._init_sizers(2, 0, 
+              (7 if type == "contact" else 9), None, 2, 1)
         
         # Create label for LD element modifier
         modifier_label = wx.StaticText(self, label=_('Modifier:'))
-        left_gridsizer.AddWindow(modifier_label, border=5, 
+        self.LeftGridSizer.AddWindow(modifier_label, border=5, 
               flag=wx.GROW|wx.BOTTOM)
         
         # Create radio buttons for selecting LD element modifier
@@ -94,40 +81,29 @@ class LDElementDialog(BlockPreviewDialog):
                   style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnModifierChanged, radio_button)
-            left_gridsizer.AddWindow(radio_button, 
-                  border=(5 if not first and wx.Platform == '__WXMSW__' else 0),
-                  flag=wx.GROW|wx.TOP)
+            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
             self.ModifierRadioButtons[modifier] = radio_button
             first = False
         
         # Create label for LD element variable
         element_variable_label = wx.StaticText(self, label=_('Variable:'))
-        left_gridsizer.AddWindow(element_variable_label, border=5,
+        self.LeftGridSizer.AddWindow(element_variable_label, border=5,
               flag=wx.GROW|wx.TOP)
         
         # Create a combo box for defining LD element variable
         self.ElementVariable = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnVariableChanged, 
                   self.ElementVariable)
-        left_gridsizer.AddWindow(self.ElementVariable, border=5,
+        self.LeftGridSizer.AddWindow(self.ElementVariable, border=5,
              flag=wx.GROW|wx.TOP)
         
-        # Create a sizer for right column
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(1)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
-        
         # Add preview panel and associated label to sizers
-        right_gridsizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
         # Add buttons sizer to sizers
-        main_sizer.AddSizer(self.ButtonSizer, border=20, 
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-        self.SetSizer(main_sizer)
         
         # Save LD element class
         self.ElementClass = (LD_Contact if type == "contact" else LD_Coil)

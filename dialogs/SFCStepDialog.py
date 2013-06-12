@@ -23,183 +23,160 @@
 
 import wx
 
-from graphics import *
+from graphics.SFC_Objects import SFC_Step
+from BlockPreviewDialog import BlockPreviewDialog
 
 #-------------------------------------------------------------------------------
-#                          Edit Step Content Dialog
+#                         Set SFC Step Parameters Dialog
 #-------------------------------------------------------------------------------
 
-class SFCStepDialog(wx.Dialog):
+"""
+Class that implements a dialog for defining parameters of a SFC step graphic
+element
+"""
+
+class SFCStepDialog(BlockPreviewDialog):
     
-    def __init__(self, parent, controller, initial = False):
-        wx.Dialog.__init__(self, parent, title=_('Edit Step'), 
-              size=wx.Size(400, 250))
+    def __init__(self, parent, controller, tagname, initial=False):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param controller: Reference to project controller
+        @param tagname: Tagname of project POU edited
+        @param initial: True if step is initial (default: False)
+        """
+        BlockPreviewDialog.__init__(self,parent, controller, tagname,  
+              size=wx.Size(400, 250), title=_('Edit Step'))
         
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
+        # Init common sizers
+        self._init_sizers(2, 0, 6, None, 2, 1)
         
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=6, vgap=5)
-        left_gridsizer.AddGrowableCol(0)
-        column_sizer.AddSizer(left_gridsizer, 1, border=5, 
-                              flag=wx.GROW|wx.RIGHT)
-        
+        # Create label for SFC step name
         name_label = wx.StaticText(self, label=_('Name:'))
-        left_gridsizer.AddWindow(name_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(name_label, flag=wx.GROW)
         
+        # Create text control for defining SFC step name
         self.StepName = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.OnNameChanged, self.StepName)
-        left_gridsizer.AddWindow(self.StepName, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(self.StepName, flag=wx.GROW)
         
+        # Create label for SFC step connectors
         connectors_label = wx.StaticText(self, label=_('Connectors:'))
-        left_gridsizer.AddWindow(connectors_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(connectors_label, flag=wx.GROW)
         
-        self.Input = wx.CheckBox(self, label=_("Input"))
-        self.Bind(wx.EVT_CHECKBOX, self.OnConnectorsChanged, self.Input)
-        left_gridsizer.AddWindow(self.Input, flag=wx.GROW)
+        # Create check boxes for defining connectors available on SFC step
+        self.ConnectorsCheckBox = {}
+        for name, label in [("input", _("Input")),
+                            ("output", _("Output")),
+                            ("action", _("Action"))]:
+            check_box = wx.CheckBox(self, label=label)
+            self.Bind(wx.EVT_CHECKBOX, self.OnConnectorsChanged, check_box)
+            self.LeftGridSizer.AddWindow(check_box, flag=wx.GROW)
+            self.ConnectorsCheckBox[name] = check_box
         
-        self.Output = wx.CheckBox(self, label=_("Output"))
-        self.Bind(wx.EVT_CHECKBOX, self.OnConnectorsChanged, self.Output)
-        left_gridsizer.AddWindow(self.Output, flag=wx.GROW)
+        # Add preview panel and associated label to sizers
+        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
-        self.Action = wx.CheckBox(self, label=_("Action"))
-        self.Bind(wx.EVT_CHECKBOX, self.OnConnectorsChanged, self.Action)
-        left_gridsizer.AddWindow(self.Action, flag=wx.GROW)
-        
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(1)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
-        
-        preview_label = wx.StaticText(self, label=_('Preview:'))
-        right_gridsizer.AddWindow(preview_label, flag=wx.GROW)
-        
-        self.Preview = wx.Panel(self,
-              style=wx.TAB_TRAVERSAL|wx.SIMPLE_BORDER)
-        self.Preview.SetBackgroundColour(wx.Colour(255,255,255))
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "RefreshStepModel", lambda x:None)
-        setattr(self.Preview, "GetScaling", lambda:None)
-        setattr(self.Preview, "IsOfType", controller.IsOfType)
-        self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
-        right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
-        
-        button_sizer = self.CreateButtonSizer(
-                  wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, 
-                  button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        # Add buttons sizer to sizers
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
-        self.SetSizer(main_sizer)
-        
-        self.Step = None
+        # Save flag that indicates that step is initial
         self.Initial = initial
-        self.MinStepSize = None
-    
-        self.PouNames = []
-        self.Variables = []
-        self.StepNames = []
         
+        # Step name text control is default control having keyboard focus
         self.StepName.SetFocus()
     
-    def SetPreviewFont(self, font):
-        self.Preview.SetFont(font)
-    
-    def OnOK(self, event):
-        message = None
-        step_name = self.StepName.GetValue()
-        if step_name == "":
-            message = _("You must type a name!")
-        elif not TestIdentifier(step_name):
-            message = _("\"%s\" is not a valid identifier!") % step_name
-        elif step_name.upper() in IEC_KEYWORDS:
-            message = _("\"%s\" is a keyword. It can't be used!") % step_name
-        elif step_name.upper() in self.PouNames:
-            message = _("A POU named \"%s\" already exists!") % step_name
-        elif step_name.upper() in self.Variables:
-            message = _("A variable with \"%s\" as name already exists in this pou!") % step_name
-        elif step_name.upper() in self.StepNames:
-            message = _("\"%s\" step already exists!") % step_name
-        if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()    
-        else:
-            self.EndModal(wx.ID_OK)
-    
-    def SetMinStepSize(self, size):
-        self.MinStepSize = size
-
-    def SetPouNames(self, pou_names):
-        self.PouNames = [pou_name.upper() for pou_name in pou_names]
-
-    def SetVariables(self, variables):
-        self.Variables = [var["Name"].upper() for var in variables]
-
-    def SetStepNames(self, step_names):
-        self.StepNames = [step_name.upper() for step_name in step_names]
-
     def SetValues(self, values):
-        value_name = values.get("name", None)
-        if value_name:
-            self.StepName.SetValue(value_name)
-        else:
-            self.StepName.SetValue("")
-        self.Input.SetValue(values.get("input", False))
-        self.Output.SetValue(values.get("output", False))
-        self.Action.SetValue(values.get("action", False))
+        """
+        Set default block parameters
+        @param values: Block parameters values
+        """
+        # For each parameters defined, set corresponding control value
+        for name, value in values.items():
+            
+            # Parameter is step name
+            if name == "name":
+                self.StepName.ChangeValue(value)
+        
+            # Set value of other controls
+            else:
+                control = self.ConnectorsCheckBox.get(name, None)
+                if control is not None:
+                    control.SetValue(value)
+        
+        # Refresh preview panel
         self.RefreshPreview()
         
     def GetValues(self):
-        values = {}
-        values["name"] = self.StepName.GetValue()
-        values["input"] = self.Input.IsChecked()
-        values["output"] = self.Output.IsChecked()
-        values["action"] = self.Action.IsChecked()
-        values["width"], values["height"] = self.Step.GetSize()
+        """
+        Return step parameters defined in dialog
+        @return: {parameter_name: parameter_value,...}
+        """
+        values = {"name": self.StepName.GetValue()}
+        values.update({
+            name: control.IsChecked()
+            for name, control in self.ConnectorsCheckBox.iteritems()})
+        values["width"], values["height"] = self.Element.GetSize()
         return values
     
+    def OnOK(self, event):
+        """
+        Called when dialog OK button is pressed
+        Test if step name defined is valid
+        @param event: wx.Event from OK button
+        """
+        message = None
+        
+        # Get step name typed by user
+        step_name = self.StepName.GetValue()
+        
+        # Test that a name have been defined
+        if step_name == "":
+            message = _("Form isn't complete. Name must be filled!")
+        
+        # If an error have been identify, show error message dialog
+        if message is not None:
+            self.ShowErrorMessage(message)
+        
+        # Test step name validity
+        elif self.TestElementName(step_name):
+            # Call BlockPreviewDialog function
+            BlockPreviewDialog.OnOK(self, event)
+    
     def OnConnectorsChanged(self, event):
+        """
+        Called when a step connector value changed
+        @param event: wx.CheckBoxEvent
+        """
         self.RefreshPreview()
         event.Skip()
 
     def OnNameChanged(self, event):
+        """
+        Called when step name value changed
+        @param event: wx.TextEvent
+        """
         self.RefreshPreview()
         event.Skip()
     
     def RefreshPreview(self):
-        dc = wx.ClientDC(self.Preview)
-        dc.SetFont(self.Preview.GetFont())
-        dc.Clear()
-        self.Step = SFC_Step(self.Preview, self.StepName.GetValue(), self.Initial)
-        if self.Input.IsChecked():
-            self.Step.AddInput()
-        else:
-            self.Step.RemoveInput()
-        if self.Output.IsChecked():
-            self.Step.AddOutput()
-        else:
-            self.Step.RemoveOutput()
-        if self.Action.IsChecked():
-            self.Step.AddAction()    
-        else:
-            self.Step.RemoveAction()
-        width, height = self.MinStepSize
-        min_width, min_height = self.Step.GetMinSize()
-        width, height = max(min_width, width), max(min_height, height)
-        self.Step.SetSize(width, height)
-        clientsize = self.Preview.GetClientSize()
-        x = (clientsize.width - width) / 2
-        y = (clientsize.height - height) / 2
-        self.Step.SetPosition(x, y)
-        self.Step.Draw(dc)
-
-    def OnPaint(self, event):
-        self.RefreshPreview()
-        event.Skip()
+        """
+        Refresh preview panel of graphic element
+        Override BlockPreviewDialog function
+        """
+        # Set graphic element displayed, creating a SFC step element
+        self.Element = SFC_Step(self.Preview, 
+                                self.StepName.GetValue(), 
+                                self.Initial)
+        
+        # Update connectors of SFC step element according to check boxes value
+        for name, control in self.ConnectorsCheckBox.iteritems():
+            if control.IsChecked():
+                getattr(self.Element, "Add" + name.capitalize())()
+            else:
+                getattr(self.Element, "Remove" + name.capitalize())()
+        
+        # Call BlockPreviewDialog function
+        BlockPreviewDialog.RefreshPreview(self)

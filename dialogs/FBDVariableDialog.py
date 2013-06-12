@@ -61,76 +61,55 @@ class FBDVariableDialog(BlockPreviewDialog):
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(400, 380), title=_('Variable Properties'))
         
-        # Create dialog main sizer
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(2)
-        
-        # Create a sizer for dividing FBD variable parameters in two columns
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        # Create a sizer for left column
-        left_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=5)
-        left_gridsizer.AddGrowableCol(0)
-        column_sizer.AddSizer(left_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.RIGHT)
+        # Init common sizers
+        self._init_sizers(4, 2, 4, None, 3, 2)
         
         # Create label for variable class
         class_label = wx.StaticText(self, label=_('Class:'))
-        left_gridsizer.AddWindow(class_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(class_label, flag=wx.GROW)
         
         # Create a combo box for defining variable class
         self.Class = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnClassChanged, self.Class)
-        left_gridsizer.AddWindow(self.Class, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(self.Class, flag=wx.GROW)
         
         # Create label for variable execution order
         execution_order_label = wx.StaticText(self, 
               label=_('Execution Order:'))
-        left_gridsizer.AddWindow(execution_order_label, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(execution_order_label, flag=wx.GROW)
         
         # Create spin control for defining variable execution order
         self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged, 
                   self.ExecutionOrder)
-        left_gridsizer.AddWindow(self.ExecutionOrder, flag=wx.GROW)
-        
-        # Create a sizer for right column
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(2)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
+        self.LeftGridSizer.AddWindow(self.ExecutionOrder, flag=wx.GROW)
         
         # Create label for variable expression
         name_label = wx.StaticText(self, label=_('Expression:'))
-        right_gridsizer.AddWindow(name_label, border=5, flag=wx.GROW|wx.BOTTOM)
+        self.RightGridSizer.AddWindow(name_label, border=5, 
+              flag=wx.GROW|wx.BOTTOM)
         
         # Create text control for defining variable expression
         self.Expression = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.OnExpressionChanged, self.Expression)
-        right_gridsizer.AddWindow(self.Expression, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Expression, flag=wx.GROW)
         
         # Create a list box to selected variable expression in the list of
         # variables defined in POU
         self.VariableName = wx.ListBox(self, size=wx.Size(0, 120), 
               style=wx.LB_SINGLE|wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
-        right_gridsizer.AddWindow(self.VariableName, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.VariableName, flag=wx.GROW)
         
         # Add preview panel and associated label to sizers
-        main_sizer.AddWindow(self.PreviewLabel, border=20,
+        self.MainSizer.AddWindow(self.PreviewLabel, border=20,
               flag=wx.GROW|wx.LEFT|wx.RIGHT)
-        main_sizer.AddWindow(self.Preview, border=20,
+        self.MainSizer.AddWindow(self.Preview, border=20,
               flag=wx.GROW|wx.LEFT|wx.RIGHT)
         
         # Add buttons sizer to sizers
-        main_sizer.AddSizer(self.ButtonSizer, border=20, 
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-        self.SetSizer(main_sizer)
         
         # Set options that can be selected in class combo box
         for choice in VARIABLE_CLASSES_DICT.itervalues():

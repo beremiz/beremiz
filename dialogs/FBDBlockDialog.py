@@ -58,21 +58,13 @@ class FBDBlockDialog(BlockPreviewDialog):
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(600, 450), title=_('Block Properties'))
         
-        # Create dialog main sizer
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=10)
-        main_sizer.AddGrowableCol(0)
-        main_sizer.AddGrowableRow(0)
-        
-        # Create a sizer for dividing FBD block parameters in two columns
-        column_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(column_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+        # Init common sizers
+        self._init_sizers(2, 0, 1, 0, 3, 2)
         
         # Create static box around library panel
         type_staticbox = wx.StaticBox(self, label=_('Type:'))
         left_staticboxsizer = wx.StaticBoxSizer(type_staticbox, wx.VERTICAL)
-        column_sizer.AddSizer(left_staticboxsizer, 1, border=5, 
-              flag=wx.GROW|wx.RIGHT)
+        self.LeftGridSizer.AddSizer(left_staticboxsizer, border=5, flag=wx.GROW)
         
         # Create Library panel and add it to static box
         self.LibraryPanel = LibraryPanel(self)
@@ -82,17 +74,10 @@ class FBDBlockDialog(BlockPreviewDialog):
         left_staticboxsizer.AddWindow(self.LibraryPanel, 1, border=5, 
               flag=wx.GROW|wx.TOP)
         
-        # Create sizer for other block parameters and preview panle
-        right_gridsizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=5)
-        right_gridsizer.AddGrowableCol(0)
-        right_gridsizer.AddGrowableRow(2)
-        column_sizer.AddSizer(right_gridsizer, 1, border=5, 
-              flag=wx.GROW|wx.LEFT)
-        
         # Create sizer for other block parameters
         top_right_gridsizer = wx.FlexGridSizer(cols=2, hgap=0, rows=4, vgap=5)
         top_right_gridsizer.AddGrowableCol(1)
-        right_gridsizer.AddSizer(top_right_gridsizer, flag=wx.GROW)
+        self.RightGridSizer.AddSizer(top_right_gridsizer, flag=wx.GROW)
         
         # Create label for block name
         name_label = wx.StaticText(self, label=_('Name:'))
@@ -140,14 +125,12 @@ class FBDBlockDialog(BlockPreviewDialog):
         top_right_gridsizer.AddWindow(self.ExecutionControl, flag=wx.GROW)
         
         # Add preview panel and associated label to sizers
-        right_gridsizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        right_gridsizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
         # Add buttons sizer to sizers
-        main_sizer.AddSizer(self.ButtonSizer, border=20, 
+        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
-        self.SetSizer(main_sizer)
         
         # Dictionary containing correspondence between parameter exchanged and
         # control to fill with parameter value
@@ -168,38 +151,6 @@ class FBDBlockDialog(BlockPreviewDialog):
         # Refresh Library panel values
         self.LibraryPanel.SetBlockList(controller.GetBlockTypes(tagname))
         self.LibraryPanel.SetFocus()
-    
-    def OnOK(self, event):
-        """
-        Called when dialog OK button is pressed
-        Test if parameters defined are valid
-        @param event: wx.Event from OK button
-        """
-        message = None
-        
-        # Get block type selected
-        selected = self.LibraryPanel.GetSelectedBlock()
-        
-        # Get block type name and if block is a function block
-        block_name = self.BlockName.GetValue()
-        name_enabled = self.BlockName.IsEnabled()
-        
-        # Test that a type has been selected for block
-        if selected is None:
-            message = _("Form isn't complete. Valid block type must be selected!")
-        
-        # Test, if block is a function block, that a name have been defined
-        elif name_enabled and block_name == "":
-            message = _("Form isn't complete. Name must be filled!")
-        
-        # Show error message if an error is detected
-        if message is not None:
-            self.ShowErrorMessage(message)
-        
-        # Test block name validity if necessary
-        elif not name_enabled or self.TestElementName(block_name):
-            # Call BlockPreviewDialog function
-            BlockPreviewDialog.OnOK(self, event)
     
     def SetValues(self, values):
         """
@@ -256,7 +207,39 @@ class FBDBlockDialog(BlockPreviewDialog):
             name: control.GetValue()
             for name, control in self.ParamsControl.iteritems()})
         return values
+    
+    def OnOK(self, event):
+        """
+        Called when dialog OK button is pressed
+        Test if parameters defined are valid
+        @param event: wx.Event from OK button
+        """
+        message = None
         
+        # Get block type selected
+        selected = self.LibraryPanel.GetSelectedBlock()
+        
+        # Get block type name and if block is a function block
+        block_name = self.BlockName.GetValue()
+        name_enabled = self.BlockName.IsEnabled()
+        
+        # Test that a type has been selected for block
+        if selected is None:
+            message = _("Form isn't complete. Valid block type must be selected!")
+        
+        # Test, if block is a function block, that a name have been defined
+        elif name_enabled and block_name == "":
+            message = _("Form isn't complete. Name must be filled!")
+        
+        # Show error message if an error is detected
+        if message is not None:
+            self.ShowErrorMessage(message)
+        
+        # Test block name validity if necessary
+        elif not name_enabled or self.TestElementName(block_name):
+            # Call BlockPreviewDialog function
+            BlockPreviewDialog.OnOK(self, event)
+    
     def OnLibraryTreeItemSelected(self, event):
         """
         Called when block type selected in library panel
