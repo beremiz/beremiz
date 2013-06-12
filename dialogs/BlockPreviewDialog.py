@@ -269,7 +269,8 @@ class BlockPreviewDialog(wx.Dialog):
         height = max(self.MinElementSize[1], min_height)
         self.Element.SetSize(width, height)
         
-        # Get element bounding box to center in preview
+        # Get element position and bounding box to center in preview
+        posx, posy = self.Element.GetPosition()
         bbox = self.Element.GetBoundingBox()
         
         # Get Preview panel size
@@ -278,15 +279,15 @@ class BlockPreviewDialog(wx.Dialog):
         # If graphic element is too big to be displayed in preview panel,
         # calculate preview panel scale so that graphic element fit inside
         scale = (max(float(bbox.width) / client_size.width, 
-                     float(bbox.height) / client_size.height) * 1.2
+                     float(bbox.height) / client_size.height) * 1.1
                  if bbox.width * 1.1 > client_size.width or 
                     bbox.height * 1.1 > client_size.height
                  else 1.0)
         dc.SetUserScale(1.0 / scale, 1.0 / scale)
         
         # Center graphic element in preview panel
-        x = int(client_size.width * scale - bbox.width) / 2
-        y = int(client_size.height * scale - bbox.height) / 2
+        x = int(client_size.width * scale - bbox.width) / 2 + posx - bbox.x
+        y = int(client_size.height * scale - bbox.height) / 2 + posy - bbox.y
         self.Element.SetPosition(x, y)
         
         # Draw graphic element
