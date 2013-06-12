@@ -32,6 +32,11 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                       Set Connection Parameters Dialog
 #-------------------------------------------------------------------------------
 
+"""
+Class that implements a dialog for defining parameters of a connection graphic
+element
+"""
+
 class ConnectionDialog(BlockPreviewDialog):
     
     def __init__(self, parent, controller, tagname, apply_button=False):
@@ -123,6 +128,15 @@ class ConnectionDialog(BlockPreviewDialog):
         # Connector radio button is default control having keyboard focus
         self.TypeRadioButtons[CONNECTOR].SetFocus()
     
+    def GetConnectionType(self):
+        """
+        Return type selected for connection
+        @return: Type selected (CONNECTOR or CONTINUATION)
+        """
+        return (CONNECTOR
+                if self.TypeRadioButtons[CONNECTOR].GetValue()
+                else CONTINUATION)
+    
     def SetValues(self, values):
         """
         Set default connection parameters
@@ -148,9 +162,7 @@ class ConnectionDialog(BlockPreviewDialog):
         @return: {parameter_name: parameter_value,...}
         """
         values = {
-            "type": (CONNECTOR 
-                     if self.TypeRadioButtons[CONNECTOR].GetValue()
-                     else CONTINUATION),
+            "type": self.GetConnectionType(),
             "name": self.ConnectionName.GetValue()}
         values["width"], values["height"] = self.Element.GetSize()
         return values
@@ -221,9 +233,7 @@ class ConnectionDialog(BlockPreviewDialog):
         """
         # Set graphic element displayed, creating a FBD connection element
         self.Element = FBD_Connector(self.Preview, 
-                (CONNECTOR
-                 if self.TypeRadioButtons[CONNECTOR].GetValue()
-                 else CONTINUATION),
+                self.GetConnectionType(),
                 self.ConnectionName.GetValue())
         
         # Call BlockPreviewDialog function

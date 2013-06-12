@@ -2321,13 +2321,13 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def AddNewPowerRail(self, bbox):
-        dialog = LDPowerRailDialog(self.ParentWindow, self.Controler)
+        dialog = LDPowerRailDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinSize((bbox.width, bbox.height))
+        dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             values = dialog.GetValues()
-            powerrail = LD_PowerRail(self, values["type"], id, values["number"])
+            powerrail = LD_PowerRail(self, values["type"], id, values["pin_number"])
             powerrail.SetPosition(bbox.x, bbox.y)
             powerrail.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             self.AddBlock(powerrail)
@@ -2599,23 +2599,21 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditPowerRailContent(self, powerrail):
-        connectors = powerrail.GetConnectors()
-        type = powerrail.GetType()
-        if type == LEFTRAIL:
-            pin_number = len(connectors["outputs"])
-        else:
-            pin_number = len(connectors["inputs"])
-        dialog = LDPowerRailDialog(self.ParentWindow, self.Controler, type, pin_number)
+        dialog = LDPowerRailDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
-        dialog.SetMinSize(powerrail.GetSize())
+        dialog.SetMinElementSize(powerrail.GetSize())
+        powerrail_type = powerrail.GetType()
+        dialog.SetValues({
+            "type": powerrail.GetType(),
+            "pin_number": len(powerrail.GetConnectors()[
+                    ("outputs" if powerrail_type == LEFTRAIL else "inputs")])})
         if dialog.ShowModal() == wx.ID_OK:
-            old_type = powerrail.GetType()
             values = dialog.GetValues()
             rect = powerrail.GetRedrawRect(1, 1)
-            powerrail.SetType(values["type"], values["number"])
+            powerrail.SetType(values["type"], values["pin_number"])
             powerrail.SetSize(*self.GetScaledSize(values["width"], values["height"]))
             rect = rect.Union(powerrail.GetRedrawRect())
-            if old_type != values["type"]:
+            if powerrail_type != values["type"]:
                 id = powerrail.GetId()
                 self.Controler.RemoveEditedElementInstance(self.TagName, id)
                 self.Controler.AddEditedElementPowerRail(self.TagName, id, values["type"])

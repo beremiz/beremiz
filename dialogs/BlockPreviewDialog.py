@@ -98,6 +98,18 @@ class BlockPreviewDialog(wx.Dialog):
         """
         self.MinElementSize = size
     
+    def GetMinElementSize(self):
+        """
+        Get minimal graphic element size
+        @return: Tuple containing minimal size (width, height) or None if no
+        element defined
+        May be overridden by inherited classes
+        """
+        if self.Element is None:
+            return None
+        
+        return self.Element.GetMinSize()
+    
     def SetPreviewFont(self, font):
         """
         Set font of Preview panel
@@ -205,7 +217,7 @@ class BlockPreviewDialog(wx.Dialog):
         
         # Calculate block size according to graphic element min size due to its
         # parameters and graphic element min size defined
-        min_width, min_height = self.Element.GetMinSize()
+        min_width, min_height = self.GetMinElementSize()
         width = max(self.MinElementSize[0], min_width)
         height = max(self.MinElementSize[1], min_height)
         self.Element.SetSize(width, height)
