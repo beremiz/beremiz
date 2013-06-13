@@ -649,14 +649,38 @@ class PLCControler:
                         return self.RecursiveGetPouInstanceTagName(project, vartype, parts[1:], debug)
         return None
     
+    def GetGlobalInstanceTagName(self, project, element, parts, debug = False):
+        for varlist in element.getglobalVars():
+            for variable in varlist.getvariable():
+                if variable.getname() == parts[0]:
+                    vartype_content = variable.gettype().getcontent()
+                    if vartype_content["name"] == "derived":                        
+                        if len(parts) == 1:
+                            return self.ComputePouName(
+                                        vartype_content["value"].getname())
+                        else:
+                            return self.RecursiveGetPouInstanceTagName(
+                                        project, 
+                                        vartype_content["value"].getname(),
+                                        parts[1:], debug)
+        return None
+    
     def GetPouInstanceTagName(self, instance_path, debug = False):
+        project = self.GetProject(debug)
         parts = instance_path.split(".")
         if len(parts) == 1:
             return self.ComputeConfigurationName(parts[0])
         elif len(parts) == 2:
+            for config in project.getconfigurations():
+                if config.getname() == parts[0]:
+                    result = self.GetGlobalInstanceTagName(project, 
+                                                           config, 
+                                                           parts[1:],
+                                                           debug)
+                    if result is not None:
+                        return result
             return self.ComputeConfigurationResourceName(parts[0], parts[1])
         else:
-            project = self.GetProject(debug)
             for config in project.getconfigurations():
                 if config.getname() == parts[0]:
                     for resource in config.getresource():
@@ -674,16 +698,26 @@ class PLCControler:
                                                     project,
                                                     pou_instance.gettypeName(),
                                                     parts[3:], debug)
+                            return self.GetGlobalInstanceTagName(project, 
+                                                                 resource, 
+                                                                 parts[2:], 
+                                                                 debug)
+                    return self.GetGlobalInstanceTagName(project, 
+                                                         config, 
+                                                         parts[1:],
+                                                         debug)
         return None
     
     def GetInstanceInfos(self, instance_path, debug = False):
         tagname = self.GetPouInstanceTagName(instance_path)
+        print instance_path, tagname
         if tagname is not None:
             infos = self.GetPouVariables(tagname, debug)
             infos["type"] = tagname
             return infos
         else:
             pou_path, var_name = instance_path.rsplit(".", 1)
+            print pou_path, tagname
             tagname = self.GetPouInstanceTagName(pou_path)
             if tagname is not None:
                 pou_infos = self.GetPouVariables(tagname, debug)
