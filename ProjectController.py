@@ -1237,6 +1237,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is not None:
             IECdebug_data[0].pop(callableobj,None)
+            if len(IECdebug_data[0]) == 0:
+                self.IECdebug_datas.pop(IECPath)
         self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
