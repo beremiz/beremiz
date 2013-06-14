@@ -1923,6 +1923,8 @@ class Viewer(EditorPanel, DebugViewer):
                         self.RefreshRect(self.GetScrolledRect(rect), False)
                     else:
                         self.SelectedElement.SetSelected(True)
+                        if not self.SelectedElement.IsConnectedCompatible():
+                            self.SelectedElement.SetValid(False)
             else:
                 if self.Debug:
                     Graphic_Element.OnLeftUp(self.SelectedElement, event, dc, self.Scaling)
@@ -2305,6 +2307,7 @@ class Viewer(EditorPanel, DebugViewer):
                     values["extension"], values["inputs"], 
                     executionControl = values["executionControl"],
                     executionOrder = values["executionOrder"])
+            self.Controler.AddEditedElementBlock(self.TagName, id, values["type"], values.get("name", None))
             connector = None
             for input_connector in block.GetConnectors()["inputs"]:
                 if input_connector.IsCompatible(
