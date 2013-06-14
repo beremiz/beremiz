@@ -1360,11 +1360,25 @@ class SFC_Divergence(Graphic_Element):
     
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
-        connector = None
-        if event.ControlDown():
-            pos = GetScaledEventPosition(event, dc, scaling)
-            # Test if a connector have been handled
-            connector = self.TestConnector(pos, exclude=False)
+        self.RealConnectors = {"Inputs":[],"Outputs":[]}
+        for input in self.Inputs:
+            position = input.GetRelPosition()
+            self.RealConnectors["Inputs"].append(float(position.x)/float(self.Size[0]))
+        for output in self.Outputs:
+            position = output.GetRelPosition()
+            self.RealConnectors["Outputs"].append(float(position.x)/float(self.Size[0]))
+        Graphic_Element.OnLeftDown(self, event, dc, scaling)
+    
+    # Method called when a LeftUp event have been generated
+    def OnLeftUp(self, event, dc, scaling):
+        Graphic_Element.OnLeftUp(self, event, dc, scaling)
+        self.RealConnectors = None
+    
+    # Method called when a RightDown event have been generated
+    def OnRightDown(self, event, dc, scaling):
+        pos = GetScaledEventPosition(event, dc, scaling)
+        # Test if a connector have been handled
+        connector = self.TestConnector(pos, exclude=False)
         if connector:
             self.Handle = (HANDLE_CONNECTOR, connector)
             wx.CallAfter(self.Parent.SetCurrentCursor, 1)
@@ -1372,17 +1386,11 @@ class SFC_Divergence(Graphic_Element):
             # Initializes the last position
             self.oldPos = GetScaledEventPosition(event, dc, scaling)
         else:
-            self.RealConnectors = {"Inputs":[],"Outputs":[]}
-            for input in self.Inputs:
-                position = input.GetRelPosition()
-                self.RealConnectors["Inputs"].append(float(position.x)/float(self.Size[0]))
-            for output in self.Outputs:
-                position = output.GetRelPosition()
-                self.RealConnectors["Outputs"].append(float(position.x)/float(self.Size[0]))
-            Graphic_Element.OnLeftDown(self, event, dc, scaling)
+            Graphic_Element.OnRightDown(self, event, dc, scaling)
     
-    # Method called when a LeftUp event have been generated
-    def OnLeftUp(self, event, dc, scaling):
+    # Method called when a RightUp event have been generated
+    def OnRightUp(self, event, dc, scaling):
+        pos = GetScaledEventPosition(event, dc, scaling)
         handle_type, handle = self.Handle
         if handle_type == HANDLE_CONNECTOR and self.Dragging and self.oldPos:
             wires = handle.GetWires()
@@ -1394,21 +1402,17 @@ class SFC_Divergence(Graphic_Element):
                         block.RefreshInputModel()
                     else:
                         block.RefreshOutputModel()
-        Graphic_Element.OnLeftUp(self, event, dc, scaling)
-        self.RealConnectors = None
-    
-    # Method called when a RightUp event have been generated
-    def OnRightUp(self, event, dc, scaling):
-        pos = GetScaledEventPosition(event, dc, scaling)
-        # Popup the menu with special items for a block and a connector if one is handled
-        connector = self.TestConnector(pos, exclude=False)
-        if connector:
-            self.Handle = (HANDLE_CONNECTOR, connector)
-            self.Parent.PopupDivergenceMenu(True)
+            Graphic_Element.OnRightUp(self, event, dc, scaling)
         else:
-            # Popup the divergence menu without delete branch
-            self.Parent.PopupDivergenceMenu(False)
-    
+            # Popup the menu with special items for a block and a connector if one is handled
+            connector = self.TestConnector(pos, exclude=False)
+            if connector:
+                self.Handle = (HANDLE_CONNECTOR, connector)
+                self.Parent.PopupDivergenceMenu(True)
+            else:
+                # Popup the divergence menu without delete branch
+                self.Parent.PopupDivergenceMenu(False)
+        
     # Refreshes the divergence state according to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
         handle_type, handle = self.Handle

@@ -504,7 +504,7 @@ class Graphic_Element(ToolTipProducer):
         # If the cursor is dragging and the element have been clicked
         if event.Dragging() and self.oldPos:
             # Calculate the movement of cursor
-            pos = event.GetLogicalPosition(dc)
+            pos = GetScaledEventPosition(event, dc, scaling)
             movex = pos.x - self.oldPos.x
             movey = pos.y - self.oldPos.y
             # If movement is greater than MIN_MOVE then a dragging is initiated
