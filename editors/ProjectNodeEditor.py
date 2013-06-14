@@ -55,9 +55,8 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
     
     def RefreshView(self, variablepanel=True):
         ConfTreeNodeEditor.RefreshView(self)
-        if variablepanel:
-            self.VariableEditor.RefreshView()
-        #self.ProjectProperties.RefreshView()
+        self.VariableEditorPanel.RefreshView()
+        self.ProjectProperties.RefreshView()
 
     def GetBufferState(self):
         return self.Controler.GetBufferState()
