@@ -120,8 +120,10 @@ class LD_PowerRail(Graphic_Element):
         self.RefreshBoundingBox()
     
     # Returns the block minimum size
-    def GetMinSize(self):
-        return LD_POWERRAIL_WIDTH, self.Extensions[0] + self.Extensions[1]
+    def GetMinSize(self, default=False):
+        height = (LD_LINE_SIZE * (len(self.Connectors) - 1)
+                  if default else 0)
+        return LD_POWERRAIL_WIDTH, height + self.Extensions[0] + self.Extensions[1]
     
     # Add a connector or a blank to this power rail at the last place
     def AddConnector(self):
@@ -279,7 +281,7 @@ class LD_PowerRail(Graphic_Element):
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
         handle_type, handle = self.Handle
-        if handle_type == HANDLE_CONNECTOR:
+        if handle_type == HANDLE_CONNECTOR and self.Dragging and self.oldPos:
             wires = handle.GetWires()
             if len(wires) == 1:
                 if handle == wires[0][0].StartConnected:
