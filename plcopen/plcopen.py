@@ -1753,6 +1753,13 @@ if cls:
     cls.currentExecutionOrderId = 0
     cls.instances_dict = {}
     
+    setattr(cls, "_init_", getattr(cls, "__init__"))
+    
+    def __init__(self, *args, **kwargs):
+        self._init_(*args, **kwargs)
+        self.instances_dict = {}
+    setattr(cls, "__init__", __init__)
+    
     setattr(cls, "_loadXMLTree", getattr(cls, "loadXMLTree"))
     
     def loadXMLTree(self, *args, **kwargs):
