@@ -101,7 +101,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         @return: Tuple containing minimal size (width, height) or None if no
         element defined
         """
-        return self.Element.GetSize()
+        return self.Element.GetMinSize(True)
     
     def GetDivergenceType(self):
         """
