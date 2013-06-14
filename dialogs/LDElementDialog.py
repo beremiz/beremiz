@@ -50,7 +50,7 @@ class LDElementDialog(BlockPreviewDialog):
         @param type: Type of LD element ('contact or 'coil')
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname, 
-              size=wx.Size(350, 260 if type == "contact" else 310),
+              size=wx.Size(350, 280 if type == "contact" else 330),
               title=(_("Edit Contact Values")
                      if type == "contact"
                      else _("Edit Coil Values")))
@@ -91,7 +91,7 @@ class LDElementDialog(BlockPreviewDialog):
               flag=wx.GROW|wx.TOP)
         
         # Create a combo box for defining LD element variable
-        self.ElementVariable = wx.ComboBox(self, style=wx.CB_READONLY)
+        self.ElementVariable = wx.ComboBox(self, style=wx.CB_READONLY|wx.CB_SORT)
         self.Bind(wx.EVT_COMBOBOX, self.OnVariableChanged, 
                   self.ElementVariable)
         self.LeftGridSizer.AddWindow(self.ElementVariable, border=5,

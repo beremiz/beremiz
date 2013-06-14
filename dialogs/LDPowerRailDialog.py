@@ -95,7 +95,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         @return: Tuple containing minimal size (width, height) or None if no
         element defined
         """
-        return (2, LD_LINE_SIZE * self.PinNumber.GetValue())
+        return self.Element.GetMinSize(True)
     
     def GetPowerRailType(self):
         """

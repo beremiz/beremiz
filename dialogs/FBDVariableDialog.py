@@ -51,12 +51,13 @@ element
 
 class FBDVariableDialog(BlockPreviewDialog):
 
-    def __init__(self, parent, controller, tagname):
+    def __init__(self, parent, controller, tagname, exclude_input=False):
         """
         Constructor
         @param parent: Parent wx.Window of dialog for modal
         @param controller: Reference to project controller
         @param tagname: Tagname of project POU edited
+        @param exclude_input: Exclude input from variable class selection
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
               size=wx.Size(400, 380), title=_('Variable Properties'))
@@ -112,9 +113,10 @@ class FBDVariableDialog(BlockPreviewDialog):
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
         # Set options that can be selected in class combo box
-        for choice in VARIABLE_CLASSES_DICT.itervalues():
-            self.Class.Append(choice)
-        self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[INPUT])
+        for var_class, choice in VARIABLE_CLASSES_DICT.iteritems():
+            if not exclude_input or var_class != INPUT:
+                self.Class.Append(choice)
+        self.Class.SetSelection(0)
         
         # Extract list of variables defined in POU
         self.RefreshVariableList()
