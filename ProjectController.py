@@ -993,7 +993,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self._IECCodeView is None:
                 plc_file = self._getIECcodepath()
             
-                self._IECCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", None, None, instancepath=name)
+                self._IECCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", self.AppFrame, None, instancepath=name)
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
@@ -1013,7 +1013,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self._IECRawCodeView is None:
                 controler = MiniTextControler(self._getIECrawcodepath(), self)
                 
-                self._IECRawCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", None, controler, instancepath=name)
+                self._IECRawCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", self.AppFrame, controler, instancepath=name)
                 self._IECRawCodeView.SetTextSyntax("ALL")
                 self._IECRawCodeView.SetKeywords(IEC_KEYWORDS)
                 self._IECRawCodeView.RefreshView()
