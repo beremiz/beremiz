@@ -31,7 +31,7 @@ import wx.stc
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from plcopen.structures import ST_BLOCK_START_KEYWORDS, ST_BLOCK_END_KEYWORDS, IEC_BLOCK_START_KEYWORDS, IEC_BLOCK_END_KEYWORDS, LOCATIONDATATYPES
 from EditorPanel import EditorPanel
-from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 
 #-------------------------------------------------------------------------------
 #                         Textual programs Viewer class
@@ -722,8 +722,9 @@ class TextViewer(EditorPanel):
         event.Skip()
     
     def OnUpdateUI(self, event):
-        if self.ParentWindow:
-            self.ParentWindow.SetCopyBuffer(self.Editor.GetSelectedText(), True)
+        selected = self.Editor.GetSelectedText()
+        if self.ParentWindow and selected != "":
+            self.ParentWindow.SetCopyBuffer(selected, True)
         event.Skip()
     
     def Cut(self):
@@ -794,11 +795,12 @@ class TextViewer(EditorPanel):
         self.ResetSearchResults()
     
     def OnKeyDown(self, event):
+        key = event.GetKeyCode()
         if self.Controler is not None:
         
             if self.Editor.CallTipActive():
                 self.Editor.CallTipCancel()
-            key = event.GetKeyCode()
+            
             key_handled = False
 
             line = self.Editor.GetCurrentLine()
@@ -852,6 +854,8 @@ class TextViewer(EditorPanel):
                         key_handled = True
             if not key_handled:
                 event.Skip()
+        elif key in NAVIGATION_KEYS:
+            event.Skip()
 
     def OnKillFocus(self, event):
         self.Editor.AutoCompCancel()
