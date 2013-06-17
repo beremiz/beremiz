@@ -864,6 +864,8 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                     target_panel.SetCanvasHeight(size.width)
                 elif source_size is not None and source_panel != target_panel:
                     target_panel.SetCanvasHeight(size.height + source_size.height)
+                else:
+                    target_panel.SetCanvasHeight(size.height)
                 target_panel.ResetGraphics()
                 
                 self.ResetVariableNameMask()
