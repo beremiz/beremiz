@@ -797,7 +797,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                 source_size = source_panel.GetSize()
                 if item.IsNumVariable() and graph:
                     panel = DebugVariableGraphicViewer(self.GraphicsWindow, self, [item], GRAPH_PARALLEL)
-                    panel.SetCanvasSize(source_size.width, source_size.height)
+                    panel.SetCanvasHeight(source_size.height)
                     if self.CursorTick is not None:
                         panel.SetCursorTick(self.CursorTick)
                 
@@ -861,11 +861,9 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
                 target_panel.GraphType = merge_type
                 size = target_panel.GetSize()
                 if merge_type == GRAPH_ORTHOGONAL:
-                    target_panel.SetCanvasSize(size.width, size.width)
-                elif source_size is not None:
-                    target_panel.SetCanvasSize(size.width, size.height + source_size.height)
-                else:
-                    target_panel.SetCanvasSize(size.width, size.height)
+                    target_panel.SetCanvasHeight(size.width)
+                elif source_size is not None and source_panel != target_panel:
+                    target_panel.SetCanvasHeight(size.height + source_size.height)
                 target_panel.ResetGraphics()
                 
                 self.ResetVariableNameMask()
@@ -941,7 +939,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             if (isinstance(panel, DebugVariableGraphicViewer) and 
                 panel.GraphType == GRAPH_ORTHOGONAL and 
                 panel_size.width == panel_size.height):
-                panel.SetCanvasSize(size.width, size.width)
+                panel.SetCanvasHeight(size.width)
         self.RefreshGraphicsWindowScrollbars()
         self.GraphicsSizer.Layout()
         event.Skip()

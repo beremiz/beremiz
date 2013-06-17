@@ -435,7 +435,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         @return: callback function
         """
         def OnChangeSizeButton():
-            self.SetCanvasSize(200, height)
+            self.SetCanvasHeight(height)
         return OnChangeSizeButton
     
     def OnExportGraphButton(self):
@@ -634,7 +634,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # If a Viewer resize is in progress, change Viewer size 
         elif event.button == 1 and self.CanvasStartSize is not None:
             width, height = self.GetSize()
-            self.SetCanvasSize(width, 
+            self.SetCanvasHeight(
                 self.CanvasStartSize + height - event.y - self.MouseStartPos.y)
         
         # If no button is pressed, show or hide contextual buttons or resize
@@ -809,14 +809,14 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             CANVAS_BORDER[0] + CANVAS_BORDER[1] + 
             2 * CANVAS_PADDING + VALUE_LABEL_HEIGHT * len(self.Items))
     
-    def SetCanvasSize(self, width, height):
+    def SetCanvasHeight(self, height):
         """
         Set Viewer size checking that it respects Viewer minimum size
-        @param width: Viewer width
         @param height: Viewer height
         """
-        height = max(height, self.GetCanvasMinSize()[1])
-        self.SetMinSize(wx.Size(width, height))
+        min_width, min_height = self.GetCanvasMinSize()
+        height = max(height, min_height)
+        self.SetMinSize(wx.Size(min_width, height))
         self.RefreshLabelsPosition(height)
         self.ParentWindow.RefreshGraphicsSizer()
         
@@ -976,7 +976,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             
             # Y coordinate labels are vertical and in figure left side
             self.AxesLabels.append(
-                add_text_func(size='small', rotation='vertical'))
+                add_text_func(size='small', rotation='vertical',
+                              verticalalignment='bottom'))
             self.Labels.append(
                 add_text_func(size='large', rotation='vertical',
                               verticalalignment='top'))
