@@ -710,14 +710,12 @@ class PLCControler:
     
     def GetInstanceInfos(self, instance_path, debug = False):
         tagname = self.GetPouInstanceTagName(instance_path)
-        print instance_path, tagname
         if tagname is not None:
             infos = self.GetPouVariables(tagname, debug)
             infos["type"] = tagname
             return infos
         else:
             pou_path, var_name = instance_path.rsplit(".", 1)
-            print pou_path, tagname
             tagname = self.GetPouInstanceTagName(pou_path)
             if tagname is not None:
                 pou_infos = self.GetPouVariables(tagname, debug)
