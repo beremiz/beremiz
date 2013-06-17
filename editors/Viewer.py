@@ -440,15 +440,18 @@ class Viewer(EditorPanel, DebugViewer):
             (ID_ALIGN_BOTTOM, wx.ITEM_NORMAL, _(u'Bottom'), '', self.OnAlignBottomMenu)])
     
     # Add Wire Menu items to the given menu
-    def AddWireMenuItems(self, menu, delete=False):
-        [ID_ADD_SEGMENT, ID_DELETE_SEGMENT] = [wx.NewId() for i in xrange(2)]
+    def AddWireMenuItems(self, menu, delete=False, replace=False):
+        [ID_ADD_SEGMENT, ID_DELETE_SEGMENT, ID_REPLACE_WIRE,
+         ] = [wx.NewId() for i in xrange(3)]
         
         # Create menu items
         self.AddMenuItems(menu, [
             (ID_ADD_SEGMENT, wx.ITEM_NORMAL, _(u'Add Wire Segment'), '', self.OnAddSegmentMenu),
-            (ID_DELETE_SEGMENT, wx.ITEM_NORMAL, _(u'Delete Wire Segment'), '', self.OnDeleteSegmentMenu)])
-    
+            (ID_DELETE_SEGMENT, wx.ITEM_NORMAL, _(u'Delete Wire Segment'), '', self.OnDeleteSegmentMenu),
+            (ID_REPLACE_WIRE, wx.ITEM_NORMAL, _(u'Replace Wire by connections'), '', self.OnReplaceWireMenu)])
+        
         menu.Enable(ID_DELETE_SEGMENT, delete)
+        menu.Enable(ID_REPLACE_WIRE, replace)
     
     # Add Divergence Menu items to the given menu
     def AddDivergenceMenuItems(self, menu, delete=False):
@@ -1505,7 +1508,18 @@ class Viewer(EditorPanel, DebugViewer):
     
     def PopupWireMenu(self, delete=True):
         menu = wx.Menu(title='')
-        self.AddWireMenuItems(menu, delete)
+        
+        # If Check that wire can be replace by connections or abort
+        connected = self.SelectedElement.GetConnected()
+        start_connector = (
+            self.SelectedElement.GetEndConnected()
+            if self.SelectedElement.GetStartConnected() in connected
+            else self.SelectedElement.GetStartConnected())
+        
+        self.AddWireMenuItems(menu, delete,
+            start_connector.GetDirection() == EAST and 
+            not isinstance(start_connector.GetParentBlock(), SFC_Step))
+        
         menu.AppendSeparator()
         self.AddDefaultMenuItems(menu, block=True)
         self.Editor.PopupMenu(menu)
@@ -1608,7 +1622,111 @@ class Viewer(EditorPanel, DebugViewer):
         if self.SelectedElement is not None and self.IsWire(self.SelectedElement):
             self.SelectedElement.DeleteSegment()
             self.SelectedElement.Refresh()
-
+    
+    def OnReplaceWireMenu(self, event):
+        # Check that selected element is a wire before applying replace
+        if (self.SelectedElement is not None and 
+            self.IsWire(self.SelectedElement)):
+            
+            # Get wire redraw bbox to erase it from screen
+            wire = self.SelectedElement
+            redraw_rect = wire.GetRedrawRect()
+            
+            # Get connector at both ends of wire
+            connected = wire.GetConnected()
+            if wire.GetStartConnected() in connected:
+                start_connector = wire.GetEndConnected()
+                end_connector = wire.GetStartConnected()
+                wire.UnConnectStartPoint()
+                point_to_connect = 0
+            else:
+                start_connector = wire.GetStartConnected()
+                end_connector = wire.GetEndConnected()
+                wire.UnConnectEndPoint()
+                point_to_connect = -1
+            
+            # Get a new default connection name
+            connection_name = self.Controler.GenerateNewName(
+                    self.TagName, None, "Connection%d", 0)
+            
+            # Create a connector to connect to wire
+            id = self.GetNewId()
+            connection = FBD_Connector(self, CONNECTOR, connection_name, id)
+            connection.SetSize(*self.GetScaledSize(*connection.GetMinSize()))
+            
+            # Calculate position of connector at the right of start connector 
+            connector = connection.GetConnectors()["inputs"][0]
+            rel_pos = connector.GetRelPosition()
+            direction = connector.GetDirection()
+            start_point = start_connector.GetPosition(False)
+            end_point = (start_point[0] + LD_WIRE_SIZE, start_point[1])
+            connection.SetPosition(end_point[0] - rel_pos[0], 
+                                   end_point[1] - rel_pos[1])
+            
+            # Connect connector to wire
+            connector.Connect((wire, point_to_connect))
+            if point_to_connect == 0:
+                wire.SetPoints([end_point, start_point])
+            else:
+                wire.SetPoints([start_point, end_point])
+            # Update redraw bbox with new wire trace so that it will be redraw
+            # on screen
+            redraw_rect.Union(wire.GetRedrawRect())
+            
+            # Add connector to Viewer and model
+            self.AddBlock(connection)
+            self.Controler.AddEditedElementConnection(self.TagName, id, 
+                                                      CONNECTOR)
+            connection.RefreshModel()
+            # Update redraw bbox with new connector bbox so that it will be
+            # drawn on screen
+            redraw_rect.Union(connection.GetRedrawRect())
+            
+            # Add new continuation
+            id = self.GetNewId()
+            connection = FBD_Connector(self, CONTINUATION, connection_name, id)
+            connection.SetSize(*self.GetScaledSize(*connection.GetMinSize()))
+            
+            # Calculate position of connection at the left of end connector
+            connector = connection.GetConnectors()["outputs"][0]
+            rel_pos = connector.GetRelPosition()
+            direction = connector.GetDirection()
+            end_point = end_connector.GetPosition(False)
+            start_point = (end_point[0] - LD_WIRE_SIZE, end_point[1])
+            connection.SetPosition(start_point[0] - rel_pos[0], 
+                                   start_point[1] - rel_pos[1])
+            
+            # Add Wire to Viewer and connect it to blocks
+            new_wire = Wire(self, 
+                [wx.Point(*start_point), connector.GetDirection()], 
+                [wx.Point(*end_point), end_connector.GetDirection()])
+            self.AddWire(new_wire)
+            connector.Connect((new_wire, 0), False)
+            end_connector.Connect((new_wire, -1), False)
+            new_wire.ConnectStartPoint(None, connector)
+            new_wire.ConnectEndPoint(None, end_connector)
+            # Update redraw bbox with new wire bbox so that it will be drawn on
+            # screen
+            redraw_rect.Union(new_wire.GetRedrawRect())
+            
+            # Add connection to Viewer and model
+            self.AddBlock(connection)
+            self.Controler.AddEditedElementConnection(self.TagName, id, 
+                                                      CONTINUATION)
+            connection.RefreshModel()
+            # Update redraw bbox with new connection bbox so that it will be
+            # drawn on screen
+            redraw_rect.Union(connection.GetRedrawRect())
+            
+            # Refresh model for new wire
+            end_connector.RefreshParentBlock()
+            
+            # Redraw 
+            self.RefreshBuffer()
+            self.RefreshScrollBars()
+            self.RefreshVisibleElements()
+            self.RefreshRect(self.GetScrolledRect(redraw_rect), False)
+            
     def OnAddBranchMenu(self, event):
         if self.SelectedElement is not None and self.IsBlock(self.SelectedElement):
             self.AddDivergenceBranch(self.SelectedElement)
