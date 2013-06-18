@@ -584,7 +584,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             if self.DataProducer is not None:
                 self.SetTickTime(self.DataProducer.GetTicktime())
         
-        for panel in self.GraphicPanels:
+        for panel in self.GraphicPanels[:]:
             panel.SubscribeAllDataConsumers()
             if panel.ItemsIsEmpty():
                 if panel.HasCapture():
