@@ -46,8 +46,8 @@ class GraphButton():
         """
         # Save button position
         self.SetPosition(x, y)
-        # Get wx.Bitmap object corresponding to bitmap
-        self.Bitmap = GetBitmap(bitmap)
+        # Set button bitmap
+        self.SetBitmap(bitmap)
         
         # By default button is hide and enabled
         self.Shown = False
@@ -62,6 +62,14 @@ class GraphButton():
         """
         # Remove reference to callback function
         self.callback = None
+    
+    def SetBitmap(self, bitmap):
+        """
+        Set bitmap to use for button
+        @param bitmap: Name of bitmap to use for button
+        """
+        # Get wx.Bitmap object corresponding to bitmap
+        self.Bitmap = GetBitmap(bitmap)
     
     def GetSize(self):
         """

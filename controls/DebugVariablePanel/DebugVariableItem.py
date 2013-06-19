@@ -172,24 +172,33 @@ class DebugVariableItem(DebugDataConsumer):
         """
         return self.MinValue, self.MaxValue
     
-    def OrthogonalDataAndRange(self, start_tick, end_tick):
+    def GetDataAndValueRange(self, start_tick, end_tick, full_range=True):
         """
-        Return variable value range
+        Return variable data and value range for a given tick range
         @param start_tick: Start tick of given range (default None, first data)
         @param end_tick: end tick of given range (default None, last data)
+        @param full_range: Value range is calculated on whole data (False: only
+        calculated on data in given range)
         @return: (numpy.array([(tick, value, forced),...]), 
                   min_value, max_value)
         """
-        # Calculate min_value and max_value so that range size is greater
-        # than 1.0
-        if self.MinValue is not None and self.MaxValue is not None:
-            center = (self.MinValue + self.MaxValue) / 2.
-            range = max(1.0, self.MaxValue - self.MinValue)
-        else:
-            center = 0.5
-            range = 1.0
-        return (self.GetData(start_tick, end_tick), 
-                center - range * 0.55, center + range * 0.55)
+        # Get data in given tick range
+        data = self.GetData(start_tick, end_tick)
+        
+        # Value range is calculated on whole data
+        if full_range:
+            return data, self.MinValue, self.MaxValue
+        
+        # Check that data in given range is not empty
+        values = data[:, 1]
+        if len(values) > 0:
+            # Return value range for data in given tick range
+            return (data,
+                    data[numpy.argmin(values), 1],
+                    data[numpy.argmax(values), 1])
+        
+        # Return default values
+        return data, None, None
     
     def ResetData(self):
         """

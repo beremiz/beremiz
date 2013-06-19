@@ -59,6 +59,46 @@ COLOR_CYCLE = ['r', 'b', 'g', 'm', 'y', 'k']
 CURSOR_COLOR = '#800080'
 
 #-------------------------------------------------------------------------------
+#                      Debug Variable Graphic Viewer Helpers
+#-------------------------------------------------------------------------------
+
+def merge_ranges(ranges):
+    """
+    Merge variables data range in a list to return a range of minimal min range
+    value and maximal max range value extended of 10% for keeping a padding
+    around graph in canvas
+    @param ranges: [(range_min_value, range_max_value),...]
+    @return: merged_range_min_value, merged_range_max_value
+    """
+    # Get minimal and maximal range value
+    min_value = max_value = None
+    for range_min, range_max in ranges:
+        # Update minimal range value
+        if min_value is None:
+            min_value = range_min
+        elif range_min is not None:
+            min_value = min(min_value, range_min)
+        
+        # Update maximal range value
+        if max_value is None:
+            max_value = range_max
+        elif range_min is not None:
+            max_value = max(max_value, range_max)
+    
+    # Calculate range center and width if at least one valid range is defined
+    if min_value is not None and max_value is not None:
+        center = (min_value + max_value) / 2.
+        range_size = max(1.0, max_value - min_value)
+    
+    # Set default center and with if no valid range is defined
+    else:
+        center = 0.5
+        range_size = 1.0
+    
+    # Return range expended from 10 %
+    return center - range_size * 0.55, center + range_size * 0.55
+
+#-------------------------------------------------------------------------------
 #                   Debug Variable Graphic Viewer Drop Target
 #-------------------------------------------------------------------------------
 
@@ -224,6 +264,10 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Reference to item for which contextual buttons was displayed
         self.ContextualButtonsItem = None
         
+        # Flag indicating that zoom fit current displayed data range or whole
+        # data range if False
+        self.ZoomFit = False
+        
         # Create figure for drawing graphs
         self.Figure = matplotlib.figure.Figure(facecolor='w')
         # Defined border around figure in canvas
@@ -254,6 +298,10 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         self.mpl_connect('motion_notify_event', self.OnCanvasMotion)
         self.mpl_connect('button_release_event', self.OnCanvasButtonReleased)
         self.mpl_connect('scroll_event', self.OnCanvasScroll)
+        
+        # Add buttons for zooming on current displayed data range
+        self.Buttons.append(
+                GraphButton(0, 0, "fit_graph", self.OnZoomFitButton))
         
         # Add buttons for changing canvas size with predefined height
         for size, bitmap in zip(
@@ -303,13 +351,34 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         """
         self.CursorTick = cursor_tick
     
+    def SetZoomFit(self, zoom_fit):
+        """
+        Set flag indicating that zoom fit current displayed data range
+        @param zoom_fit: Flag for zoom fit (False: zoom fit whole data range)
+        """
+        # Flag is different from the actual one 
+        if zoom_fit != self.ZoomFit:
+            # Save new flag value
+            self.ZoomFit = zoom_fit
+            
+            # Update button for zoom fit bitmap
+            self.Buttons[0].SetBitmap("full_graph" if zoom_fit else "fit_graph")
+            
+            # Refresh canvas
+            self.RefreshViewer()
+        
     def SubscribeAllDataConsumers(self):
         """
         Function that unsubscribe and remove every item that store values of
         a variable that doesn't exist in PLC anymore
         """
         DebugVariableViewer.SubscribeAllDataConsumers(self)
+        
+        # Graph still have data to display
         if not self.ItemsIsEmpty():
+            # Reset flag indicating that zoom fit current displayed data range
+            self.SetZoomFit(False)
+            
             self.ResetGraphics()
     
     def Is3DCanvas(self):
@@ -427,6 +496,13 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                           if item is None 
                           else [item])])
     
+    def OnZoomFitButton(self):
+        """
+        Function called when Viewer Zoom Fit button is pressed
+        """
+        # Toggle zoom fit flag value
+        self.SetZoomFit(not self.ZoomFit)
+        
     def GetOnChangeSizeButton(self, height):
         """
         Function that generate callback function for change Viewer height to
@@ -494,9 +570,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Graph is orthogonal
         if self.GraphType == GRAPH_ORTHOGONAL:
             # Extract items data displayed in canvas figure
-            min_start_tick = max(start_tick, self.GetItemsMinCommonTick())
-            start_tick = max(start_tick, min_start_tick)
-            end_tick = max(end_tick, min_start_tick)
+            start_tick = max(start_tick, self.GetItemsMinCommonTick())
+            end_tick = max(end_tick, start_tick)
             x_data = items[0].GetData(start_tick, end_tick)
             y_data = items[1].GetData(start_tick, end_tick)
             
@@ -769,8 +844,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
     KEY_CURSOR_INCREMENT = {
         wx.WXK_LEFT: -1,
         wx.WXK_RIGHT: 1,
-        wx.WXK_UP: -10,
-        wx.WXK_DOWN: 10}
+        wx.WXK_UP: 10,
+        wx.WXK_DOWN: -10}
     
     def OnKeyDown(self, event):
         """
@@ -1043,135 +1118,241 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         self.Figure.subplots_adjust()
     
     def RefreshViewer(self, refresh_graphics=True):
-        
+        """
+        Function called to refresh displayed by matplotlib canvas
+        @param refresh_graphics: Flag indicating that graphs have to be
+        refreshed (False: only label values have to be refreshed)
+        """
+        # Refresh graphs if needed
         if refresh_graphics:
+            # Get tick range of values to display
             start_tick, end_tick = self.ParentWindow.GetRange()
             
+            # Graph is parallel
             if self.GraphType == GRAPH_PARALLEL:    
-                min_value = max_value = None
+                # Init list of data range for each variable displayed
+                ranges = []
                 
+                # Get data and range for each variable displayed
                 for idx, item in enumerate(self.Items):
-                    data = item.GetData(start_tick, end_tick)
+                    data, min_value, max_value = item.GetDataAndValueRange(
+                                start_tick, end_tick, not self.ZoomFit)
+                    
+                    # Check that data is not empty
                     if data is not None:
-                        item_min_value, item_max_value = item.GetValueRange()
-                        if min_value is None:
-                            min_value = item_min_value
-                        elif item_min_value is not None:
-                            min_value = min(min_value, item_min_value)
-                        if max_value is None:
-                            max_value = item_max_value
-                        elif item_max_value is not None:
-                            max_value = max(max_value, item_max_value)
+                        # Add variable range to list of variable data range
+                        ranges.append((min_value, max_value))
                         
+                        # Add plot to canvas if not yet created
                         if len(self.Plots) <= idx:
                             self.Plots.append(
                                 self.Axes.plot(data[:, 0], data[:, 1])[0])
+                        
+                        # Set data to already created plot in canvas
                         else:
                             self.Plots[idx].set_data(data[:, 0], data[:, 1])
-                    
-                if min_value is not None and max_value is not None:
-                    y_center = (min_value + max_value) / 2.
-                    y_range = max(1.0, max_value - min_value)
-                else:
-                    y_center = 0.5
-                    y_range = 1.0
-                x_min, x_max = start_tick, end_tick
-                y_min, y_max = y_center - y_range * 0.55, y_center + y_range * 0.55
                 
-                if self.CursorTick is not None and start_tick <= self.CursorTick <= end_tick:
+                # Get X and Y axis ranges
+                x_min, x_max = start_tick, end_tick
+                y_min, y_max = merge_ranges(ranges)
+                
+                # Display cursor in canvas if a cursor tick is defined and it is
+                # include in values tick range
+                if (self.CursorTick is not None and 
+                    start_tick <= self.CursorTick <= end_tick):
+                    
+                    # Define a vertical line to display cursor position if no
+                    # line is already defined
                     if self.VLine is None:
-                        self.VLine = self.Axes.axvline(self.CursorTick, color=CURSOR_COLOR)
+                        self.VLine = self.Axes.axvline(self.CursorTick, 
+                                                       color=CURSOR_COLOR)
+                    
+                    # Set value of vertical line if already defined
                     else:
                         self.VLine.set_xdata((self.CursorTick, self.CursorTick))
                     self.VLine.set_visible(True)
-                else:
-                    if self.VLine is not None:
-                        self.VLine.set_visible(False)
+                
+                # Hide vertical line if cursor tick is not defined or reset
+                elif self.VLine is not None:
+                    self.VLine.set_visible(False)
+            
+            # Graph is orthogonal
             else:
-                min_start_tick = max(start_tick, self.GetItemsMinCommonTick())
-                start_tick = max(start_tick, min_start_tick)
-                end_tick = max(end_tick, min_start_tick)
+                # Update tick range, removing ticks that don't have a value for
+                # each variable
+                start_tick = max(start_tick, self.GetItemsMinCommonTick())
+                end_tick = max(end_tick, start_tick)
                 items = self.ItemsDict.values()
-                x_data, x_min, x_max = items[0].OrthogonalDataAndRange(start_tick, end_tick)
-                y_data, y_min, y_max = items[1].OrthogonalDataAndRange(start_tick, end_tick)
+                
+                # Get data and range for first variable (X coordinate)
+                x_data, x_min, x_max = items[0].GetDataAndValueRange(
+                                        start_tick, end_tick, not self.ZoomFit)
+                # Get data and range for second variable (Y coordinate)
+                y_data, y_min, y_max = items[1].GetDataAndValueRange(
+                                        start_tick, end_tick, not self.ZoomFit)
+                
+                # Normalize X and Y coordinates value range
+                x_min, x_max = merge_ranges([(x_min, x_max)])
+                y_min, y_max = merge_ranges([(y_min, y_max)])
+                
+                # Get X and Y coordinates for cursor if cursor tick is defined 
                 if self.CursorTick is not None:
-                    x_cursor, x_forced = items[0].GetValue(self.CursorTick, raw=True)
-                    y_cursor, y_forced = items[1].GetValue(self.CursorTick, raw=True)
-                length = 0
-                if x_data is not None and y_data is not None:  
-                    length = min(len(x_data), len(y_data))
+                    x_cursor, x_forced = items[0].GetValue(
+                                            self.CursorTick, raw=True)
+                    y_cursor, y_forced = items[1].GetValue(
+                                            self.CursorTick, raw=True)
+                
+                # Get common data length so that each value has an x and y
+                # coordinate
+                length = (min(len(x_data), len(y_data))
+                          if x_data is not None and y_data is not None
+                          else 0)
+                
+                # Graph is orthogonal 2D 
                 if len(self.Items) < 3:
+                    
+                    # Check that x and y data are not empty
                     if x_data is not None and y_data is not None:
+                        
+                        # Add plot to canvas if not yet created
                         if len(self.Plots) == 0:
                             self.Plots.append(
                                 self.Axes.plot(x_data[:, 1][:length], 
                                                y_data[:, 1][:length])[0])
+                        
+                        # Set data to already created plot in canvas
                         else:
                             self.Plots[0].set_data(
                                 x_data[:, 1][:length], 
                                 y_data[:, 1][:length])
                     
-                    if self.CursorTick is not None and start_tick <= self.CursorTick <= end_tick:
+                    # Display cursor in canvas if a cursor tick is defined and it is
+                    # include in values tick range
+                    if (self.CursorTick is not None and 
+                        start_tick <= self.CursorTick <= end_tick):
+                        
+                        # Define a vertical line to display cursor x coordinate
+                        # if no line is already defined
                         if self.VLine is None:
-                            self.VLine = self.Axes.axvline(x_cursor, color=CURSOR_COLOR)
+                            self.VLine = self.Axes.axvline(x_cursor, 
+                                                           color=CURSOR_COLOR)
+                        # Set value of vertical line if already defined
                         else:
                             self.VLine.set_xdata((x_cursor, x_cursor))
+                        
+                        
+                        # Define a horizontal line to display cursor y
+                        # coordinate if no line is already defined
                         if self.HLine is None:
-                            self.HLine = self.Axes.axhline(y_cursor, color=CURSOR_COLOR)
+                            self.HLine = self.Axes.axhline(y_cursor, 
+                                                           color=CURSOR_COLOR)
+                        # Set value of horizontal line if already defined
                         else:
                             self.HLine.set_ydata((y_cursor, y_cursor))
+                        
                         self.VLine.set_visible(True)
                         self.HLine.set_visible(True)
+                    
+                    # Hide vertical and horizontal line if cursor tick is not
+                    # defined or reset
                     else:
                         if self.VLine is not None:
                             self.VLine.set_visible(False)
                         if self.HLine is not None:
                             self.HLine.set_visible(False)
+                
+                # Graph is orthogonal 3D
                 else:
+                    # Remove all plots already defined in 3D canvas
                     while len(self.Axes.lines) > 0:
                         self.Axes.lines.pop()
-                    z_data, z_min, z_max = items[2].OrthogonalDataAndRange(start_tick, end_tick)
-                    if self.CursorTick is not None:
-                        z_cursor, z_forced = items[2].GetValue(self.CursorTick, raw=True)
-                    if x_data is not None and y_data is not None and z_data is not None:
+                    
+                    # Get data and range for third variable (Z coordinate)
+                    z_data, z_min, z_max = items[2].GetDataAndValueRange(
+                                    start_tick, end_tick, not self.ZoomFit)
+                    
+                    # Normalize Z coordinate value range
+                    z_min, z_max = merge_ranges([(z_min, z_max)])
+                    
+                    # Check that x, y and z data are not empty
+                    if (x_data is not None and y_data is not None and 
+                        z_data is not None):
+                        
+                        # Get common data length so that each value has an x, y
+                        # and z coordinate
                         length = min(length, len(z_data))
+                        
+                        # Add plot to canvas
                         self.Axes.plot(x_data[:, 1][:length],
                                        y_data[:, 1][:length],
                                        zs = z_data[:, 1][:length])
-                    self.Axes.set_zlim(z_min, z_max)
-                    if self.CursorTick is not None and start_tick <= self.CursorTick <= end_tick:
+                    
+                    # Display cursor in canvas if a cursor tick is defined and
+                    # it is include in values tick range
+                    if (self.CursorTick is not None and 
+                        start_tick <= self.CursorTick <= end_tick):
+                        
+                        # Get Z coordinate for cursor
+                        z_cursor, z_forced = items[2].GetValue(
+                                                self.CursorTick, raw=True)
+                        
+                        # Add 3 lines parallel to x, y and z axis to display
+                        # cursor position in 3D
                         for kwargs in [{"xs": numpy.array([x_min, x_max])},
                                        {"ys": numpy.array([y_min, y_max])},
                                        {"zs": numpy.array([z_min, z_max])}]:
-                            for param, value in [("xs", numpy.array([x_cursor, x_cursor])),
-                                                 ("ys", numpy.array([y_cursor, y_cursor])),
-                                                 ("zs", numpy.array([z_cursor, z_cursor]))]:
+                            for param, value in [
+                                    ("xs", numpy.array([x_cursor, x_cursor])),
+                                    ("ys", numpy.array([y_cursor, y_cursor])),
+                                    ("zs", numpy.array([z_cursor, z_cursor]))]:
                                 kwargs.setdefault(param, value)
                             kwargs["color"] = CURSOR_COLOR
                             self.Axes.plot(**kwargs)
-                
+                    
+                    # Set Z axis limits
+                    self.Axes.set_zlim(z_min, z_max)
+            
+            # Set X and Y axis limits
             self.Axes.set_xlim(x_min, x_max)
             self.Axes.set_ylim(y_min, y_max)
         
-        variable_name_mask = self.ParentWindow.GetVariableNameMask()
-        if self.CursorTick is not None:
-            values, forced = apply(zip, [item.GetValue(self.CursorTick) for item in self.Items])
-        else:
-            values, forced = apply(zip, [(item.GetValue(), item.IsForced()) for item in self.Items])
-        labels = [item.GetVariable(variable_name_mask) for item in self.Items]
+        # Get value and forced flag for each variable displayed in graph
+        # If cursor tick is not defined get value and flag of last received
+        # or get value and flag of variable at cursor tick
+        values, forced = apply(zip, [
+                (item.GetValue(self.CursorTick)
+                 if self.CursorTick is not None
+                 else (item.GetValue(), item.IsForced()))
+                for item in self.Items])
+        
+        # Get path of each variable displayed simplified using panel variable
+        # name mask
+        labels = [item.GetVariable(self.ParentWindow.GetVariableNameMask()) 
+                  for item in self.Items]
+        
+        # Get style for each variable according to 
         styles = map(lambda x: {True: 'italic', False: 'normal'}[x], forced)
+        
+        # Graph is orthogonal 3D, set variables path as 3D axis label
         if self.Is3DCanvas():
             for idx, label_func in enumerate([self.Axes.set_xlabel, 
                                               self.Axes.set_ylabel,
                                               self.Axes.set_zlabel]):
-                label_func(labels[idx], fontdict={'size': 'small','color': COLOR_CYCLE[idx]})
+                label_func(labels[idx], fontdict={'size': 'small',
+                                                  'color': COLOR_CYCLE[idx]})
+        
+        # Graph is not orthogonal 3D, set variables path in axes labels
         else:
             for label, text in zip(self.AxesLabels, labels):
                 label.set_text(text)
+        
+        # Set value label text and style according to value and forced flag for
+        # each variable displayed
         for label, value, style in zip(self.Labels, values, styles):
             label.set_text(value)
             label.set_style(style)
         
+        # Refresh figure
         self.draw()
 
     def draw(self, drawDC=None):
