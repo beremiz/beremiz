@@ -56,8 +56,8 @@ xxxx xxxx x0xx 1000 | Fault
 #define Halt            0x0100
 
 
-IEC_INT beremiz__IW%(location)s_0;
-IEC_INT *__IW%(location)s_0 = &beremiz__IW%(location)s_0;
+IEC_INT beremiz__IW%(location_str)s_0;
+IEC_INT *__IW%(location_str)s_0 = &beremiz__IW%(location_str)s_0;
 
 %(MCL_headers)s
 
@@ -68,7 +68,7 @@ typedef struct {
     axis_s* axis;
 } __CIA402Node;
 
-#define AxsPub __CIA402Node_%(location)s
+#define AxsPub __CIA402Node_%(location_str)s
 
 static __CIA402Node AxsPub;
 
@@ -76,7 +76,7 @@ static __CIA402Node AxsPub;
 
 %(fieldbus_interface_declaration)s
 
-int __init_%(location)s()
+int __init_%(location_str)s()
 {
     __FirstTick = 1;
 %(init_entry_variables)s
@@ -84,16 +84,16 @@ int __init_%(location)s()
     return 0;
 }
 
-void __cleanup_%(location)s()
+void __cleanup_%(location_str)s()
 {
 }
 
-void __retrieve_%(location)s()
+void __retrieve_%(location_str)s()
 {
 	if (__FirstTick) {
-		*__IW%(location)s_0 = __MK_Alloc_AXIS_REF();
+		*__IW%(location_str)s_0 = __MK_Alloc_AXIS_REF();
 		AxsPub.axis = 
-            __MK_GetPublic_AXIS_REF(*__IW%(location)s_0);
+            __MK_GetPublic_AXIS_REF(*__IW%(location_str)s_0);
 		AxsPub.axis->NetworkPosition = %(slave_pos)d;
 %(init_axis_params)s
 %(fieldbus_interface_definition)s
@@ -118,7 +118,7 @@ void __retrieve_%(location)s()
 %(extra_variables_retrieve)s
 }
 
-void __publish_%(location)s()
+void __publish_%(location_str)s()
 {
 	IEC_BOOL power = 
         ((*(AxsPub.StatusWord) & SW_VoltageEnabled) != 0) 
