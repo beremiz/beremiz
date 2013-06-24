@@ -8,26 +8,33 @@ from MotionLibrary import Headers, AxisXSD
 from EthercatSlave import _EthercatSlaveCTN, _CommonSlave
 from ConfigEditor import CIA402NodeEditor
 
-#------------------------------------------
-#from CommonSlave import _CommonSlave 
-#------------------------------------------
-
+# Definition of node variables that have to be mapped in PDO
+# [(name, index, subindex, type, 
+#   direction for master ('I': input, 'Q': output)),...]
 NODE_VARIABLES = [
-    ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
-    ("TargetPosition", 0x607a, 0x00, "DINT", "Q"),
-    ("TargetVelocity", 0x60ff, 0x00, "DINT", "Q"),
-    ("TargetTorque", 0x6071, 0x00, "INT", "Q"),
-    ("ModesOfOperation", 0x06060, 0x00, "SINT", "Q"),
-    ("StatusWord", 0x6041, 0x00, "UINT", "I"),
-    ("ModesOfOperationDisplay", 0x06061, 0x00, "SINT", "I"),
-    ("ActualPosition", 0x6064, 0x00, "DINT", "I"),
-    ("ActualVelocity", 0x606c, 0x00, "DINT", "I"),
-    ("ActualTorque", 0x6077, 0x00, "INT", "I"),
+    ("ControlWord",             0x6040, 0x00, "UINT", "Q"),
+    ("TargetPosition",          0x607a, 0x00, "DINT", "Q"),
+    ("TargetVelocity",          0x60ff, 0x00, "DINT", "Q"),
+    ("TargetTorque",            0x6071, 0x00, "INT",  "Q"),
+    ("ModesOfOperation",        0x6060, 0x00, "SINT", "Q"),
+    ("StatusWord",              0x6041, 0x00, "UINT", "I"),
+    ("ModesOfOperationDisplay", 0x6061, 0x00, "SINT", "I"),
+    ("ActualPosition",          0x6064, 0x00, "DINT", "I"),
+    ("ActualVelocity",          0x606c, 0x00, "DINT", "I"),
+    ("ActualTorque",            0x6077, 0x00, "INT",  "I"),
 ]
 
-DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"
-DEFAULT_PUBLISH = "    *(__CIA402Node_%(location)s.%(name)s) = __CIA402Node_%(location)s.axis->%(name)s;"
-
+# Definition of optional node variables that can be added to PDO mapping.
+# A checkbox will be displayed for each section in node configuration panel to
+# enable them
+# [(section_name, 
+#   [{'description', (name, index, subindex, type, 
+#                     direction for master ('I': input, 'Q': output)),
+#     'retrieve', string_template_for_retrieve_variable (None: not retrieved, 
+#                                 default string template if not defined),
+#     'publish', string_template_for_publish_variable (None: not published, 
+#                                 default string template if not defined),
+#    },...]
 EXTRA_NODE_VARIABLES = [
     ("ErrorCode", [
         {"description": ("ErrorCode", 0x603F, 0x00, "UINT", "I"),
@@ -52,25 +59,15 @@ EXTRA_NODE_VARIABLES = [
          "publish": None},
         ]),
 ]
-EXTRA_NODE_VARIABLES_DICT = dict([("Enable" + name, value) for name, value in EXTRA_NODE_VARIABLES])
 
-BLOCK_INPUT_TEMPLATE = "    __SET_VAR(%(blockname)s->,%(input_name)s, %(input_value)s);"
-BLOCK_OUTPUT_TEMPLATE = "    __SET_VAR(data__->,%(output_name)s, __GET_VAR(%(blockname)s->%(output_name)s));"
+# List of parameters name in no configuration panel for optional variable
+# sections
+EXTRA_NODE_VARIABLES_DICT = {
+    "Enable" + name: params 
+    for name, params in EXTRA_NODE_VARIABLES}
 
-BLOCK_FUNCTION_TEMPLATE = """
-extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s* data__);
-void __%(blocktype)s_%(location)s(MC_%(ucase_blocktype)s *data__) {
-__DECLARE_GLOBAL_PROTOTYPE(ETHERLAB%(ucase_blocktype)s, %(blockname)s);
-ETHERLAB%(ucase_blocktype)s* %(blockname)s = __GET_GLOBAL_%(blockname)s();
-%(extract_inputs)s
-ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
-%(return_outputs)s
-}
-"""
-
-BLOCK_FUNTION_DEFINITION_TEMPLATE = "        __CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location)s;"
-
-GLOBAL_INSTANCES = [
+# List of block to define to interface MCL to fieldbus for specific functions
+FIELDBUS_INTERFACE_GLOBAL_INSTANCES = [
     {"blocktype": "GetTorqueLimit", 
      "inputs": [],
      "outputs": [{"name": "TorqueLimitPos", "type": "UINT"},
@@ -94,8 +91,10 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """ % ("\n".join(['<xsd:attribute name="Enable%s" type="xsd:boolean" use="optional" default="false"/>' % category 
-                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
+    """ % ("\n".join(["""\
+          <xsd:attribute name="Enable%s" type="xsd:boolean"
+                         use="optional" default="false"/>""" % category 
+                for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
     
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor
@@ -146,12 +145,15 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     
     def CTNGlobalInstances(self):
         current_location = self.GetCurrentLocation()
-        return [("%s_%s" % (block_infos["blocktype"], "_".join(map(str, current_location))),
-                 "EtherLab%s" % block_infos["blocktype"], "") for block_infos in GLOBAL_INSTANCES]
+        return [("%s_%s" % (block_infos["blocktype"], 
+                            "_".join(map(str, current_location))),
+                 "EtherLab%s" % block_infos["blocktype"], "") 
+                for block_infos in FIELDBUS_INTERFACE_GLOBAL_INSTANCES]
     
     def _getCIA402AxisRef(self):
-        data = wx.TextDataObject(str(("%%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
-                                      "location", "AXIS_REF", self.CTNName(), "")))
+        data = wx.TextDataObject(str(
+            ("%%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
+             "location", "AXIS_REF", self.CTNName(), "")))
         dragSource = wx.DropSource(self.GetCTRoot().AppFrame)
         dragSource.SetData(data)
         dragSource.DoDragDrop()
@@ -160,124 +162,141 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         current_location = self.GetCurrentLocation()
         
         location_str = "_".join(map(lambda x:str(x), current_location))
+        slave_pos = self.GetSlavePos()
+        MCL_headers = Headers
         
-        plc_cia402node_filepath = os.path.join(os.path.split(__file__)[0], "plc_cia402node.c")
+        # Open CIA402 node code template file 
+        plc_cia402node_filepath = os.path.join(os.path.split(__file__)[0], 
+                                               "plc_cia402node.c")
         plc_cia402node_file = open(plc_cia402node_filepath, 'r')
         plc_cia402node_code = plc_cia402node_file.read()
         plc_cia402node_file.close()
         
-        str_completion = {
-            "slave_pos": self.GetSlavePos(),
-            "location": location_str,
-            "MCL_headers": Headers,
-            "extern_located_variables_declaration": [],
-            "fieldbus_interface_declaration": [],
-            "fieldbus_interface_definition": [],
-            "entry_variables": [],
-            "init_axis_params": [],
-            "init_entry_variables": [],
-            "extra_variables_retrieve": [],
-            "extra_variables_publish": []
-        }
+        # Init list of generated strings for each code template file section
+        fieldbus_interface_declaration = []
+        fieldbus_interface_definition = []
+        init_axis_params = []
+        extra_variables_retrieve = []
+        extra_variables_publish = []
+        extern_located_variables_declaration = []
+        entry_variables = []
+        init_entry_variables = []
         
-        for blocktype_infos in GLOBAL_INSTANCES:
-            texts = {
-                "blocktype": blocktype_infos["blocktype"],
-                "ucase_blocktype": blocktype_infos["blocktype"].upper(),
-                "location": "_".join(map(str, current_location))
-            }
-            texts["blockname"] = "%(ucase_blocktype)s_%(location)s" % texts
+        # Fieldbus interface code sections
+        for blocktype_infos in FIELDBUS_INTERFACE_GLOBAL_INSTANCES:
+            blocktype = blocktype_infos["blocktype"]
+            ucase_blocktype = blocktype.upper()
+            blockname = "_".join([ucase_blocktype, location_str])
             
-            inputs = [{"input_name": "POS", "input_value": str(self.GetSlavePos())},
-                      {"input_name": "EXECUTE", "input_value": "__GET_VAR(data__->EXECUTE)"}] +\
-                     [{"input_name": input["name"].upper(), 
-                       "input_value": "__GET_VAR(data__->%s)" % input["name"].upper()}
-                      for input in blocktype_infos["inputs"]]
-            input_texts = []
-            for input_infos in inputs:
-                input_infos.update(texts)
-                input_texts.append(BLOCK_INPUT_TEMPLATE % input_infos)
-            texts["extract_inputs"] = "\n".join(input_texts)
+            extract_inputs = "\n".join(["""\
+    __SET_VAR(%s->, %s, %s);""" % (blockname, input_name, input_value)
+                for (input_name, input_value) in [
+                    ("EXECUTE", "__GET_VAR(data__->EXECUTE)")] + [
+                    (input["name"].upper(), 
+                     "__GET_VAR(data__->%s)" % input["name"].upper())
+                    for input in blocktype_infos["inputs"]]
+                ])
             
-            outputs = [{"output_name": output} for output in ["DONE", "BUSY", "ERROR"]] + \
-                      [{"output_name": output["name"].upper()} for output in blocktype_infos["outputs"]]
-            output_texts = []
-            for output_infos in outputs:
-                output_infos.update(texts)
-                output_texts.append(BLOCK_OUTPUT_TEMPLATE % output_infos)
-            texts["return_outputs"] = "\n".join(output_texts)
             
-            str_completion["fieldbus_interface_declaration"].append(
-                    BLOCK_FUNCTION_TEMPLATE % texts)
+            return_outputs = "\n".join(["""\
+    __SET_VAR(data__->,%(output_name)s, 
+              __GET_VAR(%(blockname)s->%(output_name)s));""" % locals()
+                    for output_name in ["DONE", "BUSY", "ERROR"] + [
+                        output["name"].upper()
+                        for output in blocktype_infos["outputs"]]
+                ])
+                        
+            fieldbus_interface_declaration.append("""
+extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s* data__);
+void __%(blocktype)s_%(location_str)s(MC_%(ucase_blocktype)s *data__) {
+__DECLARE_GLOBAL_PROTOTYPE(ETHERLAB%(ucase_blocktype)s, %(blockname)s);
+ETHERLAB%(ucase_blocktype)s* %(blockname)s = __GET_GLOBAL_%(blockname)s();
+__SET_VAR(%(blockname)s->, POS, AxsPub.axis->NetworkPosition);
+%(extract_inputs)s
+ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
+%(return_outputs)s
+}""" % locals())
             
-            str_completion["fieldbus_interface_definition"].append(
-                    BLOCK_FUNTION_DEFINITION_TEMPLATE % texts)
-            
+            fieldbus_interface_definition.append("""\
+        AxsPub.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location_str)s;\
+""" % locals())
+        
+        # Get a copy list of default variables to map
         variables = NODE_VARIABLES[:]
         
-        params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
-        for param in params["children"]:
-            if param["name"] in EXTRA_NODE_VARIABLES_DICT:
-                if param["value"]:
-                    extra_variables = EXTRA_NODE_VARIABLES_DICT.get(param["name"])
-                    for variable_infos in extra_variables:
-                        var_infos = {
-                            "location": location_str,
-                            "name": variable_infos["description"][0]
-                        }
-                        variables.append(variable_infos["description"])
-                        retrieve_template = variable_infos.get("retrieve", DEFAULT_RETRIEVE)
-                        publish_template = variable_infos.get("publish", DEFAULT_PUBLISH)
-                        
-                        if retrieve_template is not None:
-                            str_completion["extra_variables_retrieve"].append(
-                                retrieve_template % var_infos)
-                        if publish_template is not None:
-                            str_completion["extra_variables_publish"].append(
-                                publish_template % var_infos)
-            elif param["value"] is not None:
-                param_infos = {
-                    "location": location_str,
-                    "param_name": param["name"],
-                }
-                if param["type"] == "boolean":
-                    param_infos["param_value"] = {True: "1", False: "0"}[param["value"]]
-                else:
-                    param_infos["param_value"] = str(param["value"])
-                str_completion["init_axis_params"].append(
-                    "        __CIA402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
-        
-        for variable in variables:
-            var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
-            var_infos["location"] = location_str
-            var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
-            var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
+        # Set AxisRef public struct members value
+        node_params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
+        for param in node_params["children"]:
+            param_name = param["name"]
             
-            str_completion["extern_located_variables_declaration"].append(
-                    "IEC_%(var_type)s *%(var_name)s;" % var_infos)
-            str_completion["entry_variables"].append(
-                    "    IEC_%(var_type)s *%(name)s;" % var_infos)
-            str_completion["init_entry_variables"].append(
-                    "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+            # Param is optional variables section enable flag
+            extra_node_variable_infos = EXTRA_NODE_VARIABLES_DICT.get(param_name)
+            if extra_node_variable_infos is not None:
+                
+                if not param["value"]:
+                    continue
+                
+                # Optional variables section is enabled
+                for variable_infos in extra_node_variable_infos:
+                    var_name = variable_infos["description"][0]
+                    
+                    # Add each variables defined in section description to the
+                    # list of variables to map
+                    variables.append(variable_infos["description"])
+                    
+                    # Add code to publish or retrive variable
+                    for var_exchange_dir, str_list, default_template in [
+                         ("retrieve", extra_variables_retrieve,
+                          "    AxsPub.axis->%(var_name)s = *(AxsPub.%(var_name)s);"),
+                         ("publish", extra_variables_publish,
+                          "    *(AxsPub.%(var_name)s) = AxsPub.axis->%(var_name)s;")]:
+                        
+                        template = variable_infos.get(var_exchange_dir, 
+                                                      default_template)
+                        if template is not None:
+                            extra_variables_publish.append(template % locals())
+            
+            # Set AxisRef public struct member value if defined
+            elif param["value"] is not None:
+                param_value = ({True: "1", False: "0"}[param["value"]]
+                               if param["type"] == "boolean"
+                               else str(param["value"]))
+                
+                init_axis_params.append("""\
+        AxsPub.axis->%(param_name)s = %(param_value)s;""" % locals())
+        
+        # Add each variable in list of variables to map to master list of
+        # variables to add to network configuration
+        for name, index, subindex, var_type, dir in variables:
+            var_size = self.GetSizeOfType(var_type)
+            var_name = """\
+__%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % locals()
+            
+            extern_located_variables_declaration.append(
+                    "IEC_%(var_type)s *%(var_name)s;" % locals())
+            entry_variables.append(
+                    "    IEC_%(var_type)s *%(name)s;" % locals())
+            init_entry_variables.append(
+                    "    AxsPub.%(name)s = %(var_name)s;" % locals())
             
             self.CTNParent.FileGenerator.DeclareVariable(
-                    self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
-                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
+                    slave_pos, index, subindex, var_type, dir, var_name)
         
-        for element in ["extern_located_variables_declaration", 
-                        "fieldbus_interface_declaration",
-                        "fieldbus_interface_definition",
-                        "entry_variables", 
-                        "init_axis_params", 
-                        "init_entry_variables",
-                        "extra_variables_retrieve",
-                        "extra_variables_publish"]:
-            str_completion[element] = "\n".join(str_completion[element])
+        # Add newline between string in list of generated strings for sections
+        [fieldbus_interface_declaration, fieldbus_interface_definition,
+         init_axis_params, extra_variables_retrieve, extra_variables_publish,
+         extern_located_variables_declaration, entry_variables, 
+         init_entry_variables] = map(lambda l: "\n".join(l), [
+            fieldbus_interface_declaration, fieldbus_interface_definition,
+            init_axis_params, extra_variables_retrieve, extra_variables_publish,
+            extern_located_variables_declaration, entry_variables, 
+            init_entry_variables])
         
-        Gen_CIA402Nodefile_path = os.path.join(buildpath, "cia402node_%s.c"%location_str)
+        # Write generated content to CIA402 node file
+        Gen_CIA402Nodefile_path = os.path.join(buildpath, 
+                                "cia402node_%s.c"%location_str)
         cia402nodefile = open(Gen_CIA402Nodefile_path, 'w')
-        cia402nodefile.write(plc_cia402node_code % str_completion)
+        cia402nodefile.write(plc_cia402node_code % locals())
         cia402nodefile.close()
         
         return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))],"",True
-    
