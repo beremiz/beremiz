@@ -250,7 +250,7 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
             # Param is optional variables section enable flag
             extra_node_variable_infos = EXTRA_NODE_VARIABLES_DICT.get(param_name)
             if extra_node_variable_infos is not None:
-                param_name += "Enabled"
+                param_name = param_name.replace("Enable", "") + "Enabled"
                 
                 if not param["value"]:
                     continue
