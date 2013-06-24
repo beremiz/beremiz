@@ -8,7 +8,7 @@
               productVersion="1.0"
               creationDateTime="2011-10-20T19:01:52"/>
   <contentHeader name="test_ethercat"
-                 modificationDateTime="2013-04-30T00:35:53">
+                 modificationDateTime="2013-06-24T20:55:15">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -103,7 +103,7 @@
             </variable>
           </localVars>
           <localVars>
-            <variable name="Axis" address="%IW0.0.3.0">
+            <variable name="Axis" address="%IW0.0.3.402">
               <type>
                 <derived name="AXIS_REF"/>
               </type>

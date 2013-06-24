@@ -56,8 +56,10 @@ xxxx xxxx x0xx 1000 | Fault
 #define Halt            0x0100
 
 
-IEC_INT beremiz__IW%(location_str)s_0;
-IEC_INT *__IW%(location_str)s_0 = &beremiz__IW%(location_str)s_0;
+IEC_INT beremiz__IW%(location_str)s = %(slave_pos)s;
+IEC_INT *__IW%(location_str)s = &beremiz__IW%(location_str)s;
+IEC_INT beremiz__IW%(location_str)s_402;
+IEC_INT *__IW%(location_str)s_402 = &beremiz__IW%(location_str)s_402;
 
 %(MCL_headers)s
 
@@ -91,10 +93,10 @@ void __cleanup_%(location_str)s()
 void __retrieve_%(location_str)s()
 {
 	if (__FirstTick) {
-		*__IW%(location_str)s_0 = __MK_Alloc_AXIS_REF();
+		*__IW%(location_str)s_402 = __MK_Alloc_AXIS_REF();
 		AxsPub.axis = 
-            __MK_GetPublic_AXIS_REF(*__IW%(location_str)s_0);
-		AxsPub.axis->NetworkPosition = %(slave_pos)d;
+            __MK_GetPublic_AXIS_REF(*__IW%(location_str)s_402);
+		AxsPub.axis->NetworkPosition = beremiz__IW%(location_str)s;
 %(init_axis_params)s
 %(fieldbus_interface_definition)s
 		__FirstTick = 0;
