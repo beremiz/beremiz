@@ -133,23 +133,20 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     def GetVariableLocationTree(self):
         axis_name = self.CTNName()
         current_location = self.GetCurrentLocation()
-        children = [{"name": "%s Network Position" % (axis_name),
+        children = [{"name": name_frmt % (axis_name),
                      "type": LOCATION_VAR_INPUT,
                      "size": "W",
-                     "IEC_type": "UINT",
-                     "var_name": axis_name,
-                     "location": "%%IW%s" % (".".join(map(str, current_location))),
+                     "IEC_type": iec_type,
+                     "var_name": var_name_frmt % axis_name,
+                     "location": location_frmt % (
+                            ".".join(map(str, current_location))),
                      "description": "",
-                     "children": []},
-                    {"name": "%s Axis Ref" % (axis_name),
-                     "type": LOCATION_VAR_INPUT,
-                     "size": "W",
-                     "IEC_type": "AXIS_REF",
-                     "var_name": axis_name,
-                     "location": "%%IW%s.402" % (".".join(map(str, current_location))),
-                     "description": "",
-                     "children": []}]
-        children.extend(self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), current_location, axis_name))
+                     "children": []}
+                    for name_frmt, iec_type, var_name_frmt, location_frmt in
+                        [("%s Network Position", "UINT", "%s_pos", "%%IW%s"),
+                         ("%s Axis Ref", "AXIS_REF", "%s", "%%IW%s.402")]]
+        children.extend(self.CTNParent.GetDeviceLocationTree(
+                            self.GetSlavePos(), current_location, axis_name))
         return  {"name": axis_name,
                  "type": LOCATION_CONFNODE,
                  "location": self.GetFullIEC_Channel(),
@@ -253,6 +250,7 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
             # Param is optional variables section enable flag
             extra_node_variable_infos = EXTRA_NODE_VARIABLES_DICT.get(param_name)
             if extra_node_variable_infos is not None:
+                param_name += "Enabled"
                 
                 if not param["value"]:
                     continue
@@ -278,7 +276,7 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
                             extra_variables_publish.append(template % locals())
             
             # Set AxisRef public struct member value if defined
-            elif param["value"] is not None:
+            if param["value"] is not None:
                 param_value = ({True: "1", False: "0"}[param["value"]]
                                if param["type"] == "boolean"
                                else str(param["value"]))
