@@ -105,6 +105,11 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
          "tooltip" : _("Initiate Drag'n drop of Axis ref located variable"),
          "method" : "_getCIA402AxisRef",
          "push": True},
+        {"bitmap" : "CIA402NetPos",
+         "name" : _("Axis Pos"),
+         "tooltip" : _("Initiate Drag'n drop of Network position located variable"),
+         "method" : "_getCIA402NetworkPosition",
+         "push": True},
     ]
     
 #--------------------------------------------------
@@ -128,12 +133,20 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     def GetVariableLocationTree(self):
         axis_name = self.CTNName()
         current_location = self.GetCurrentLocation()
-        children = [{"name": "%s Axis Ref" % (axis_name),
+        children = [{"name": "%s Network Position" % (axis_name),
+                     "type": LOCATION_VAR_INPUT,
+                     "size": "W",
+                     "IEC_type": "UINT",
+                     "var_name": axis_name,
+                     "location": "%%IW%s" % (".".join(map(str, current_location))),
+                     "description": "",
+                     "children": []},
+                    {"name": "%s Axis Ref" % (axis_name),
                      "type": LOCATION_VAR_INPUT,
                      "size": "W",
                      "IEC_type": "AXIS_REF",
                      "var_name": axis_name,
-                     "location": "%%IW%s.0" % (".".join(map(str, current_location))),
+                     "location": "%%IW%s.402" % (".".join(map(str, current_location))),
                      "description": "",
                      "children": []}]
         children.extend(self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), current_location, axis_name))
@@ -150,14 +163,22 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                  "EtherLab%s" % block_infos["blocktype"], "") 
                 for block_infos in FIELDBUS_INTERFACE_GLOBAL_INSTANCES]
     
-    def _getCIA402AxisRef(self):
-        data = wx.TextDataObject(str(
-            ("%%IW%s.0" % ".".join(map(str, self.GetCurrentLocation())), 
-             "location", "AXIS_REF", self.CTNName(), "")))
+    def StartDragNDrop(self, data):
+        data_obj = wx.TextDataObject(str(data))
         dragSource = wx.DropSource(self.GetCTRoot().AppFrame)
-        dragSource.SetData(data)
+        dragSource.SetData(data_obj)
         dragSource.DoDragDrop()
     
+    def _getCIA402NetworkPosition(self):
+        self.StartDragNDrop(
+            ("%%IW%s" % ".".join(map(str, self.GetCurrentLocation())), 
+             "location", "UINT", self.CTNName() + "_Pos", ""))
+        
+    def _getCIA402AxisRef(self):
+        self.StartDragNDrop(
+            ("%%IW%s.402" % ".".join(map(str, self.GetCurrentLocation())), 
+             "location", "AXIS_REF", self.CTNName(), ""))
+        
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         
