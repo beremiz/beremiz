@@ -162,7 +162,7 @@ class DebugVariableItem(DebugDataConsumer):
         """
         if (self.VariableType in ["STRING", "WSTRING"] and
             index < len(self.RawData)):
-            return self.RawData[idx][0]
+            return self.RawData[index][0]
         return ""
     
     def GetValueRange(self):
