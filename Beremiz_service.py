@@ -612,7 +612,7 @@ def LogException(*exp):
     if pyroserver.plcobj is not None:
         pyroserver.plcobj.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
     else:
-        traceback.print_exception(e_type, e_value, e_traceback)
+        traceback.print_exception(*exp)
 
 sys.excepthook = LogException
 def installThreadExcepthook():
