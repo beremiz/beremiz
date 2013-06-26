@@ -298,7 +298,7 @@ class LogPseudoFile:
         self.output.SetReadOnly(True)
     
     def isatty(self):
-        return false
+        return False
 
 [ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
  ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
@@ -1056,7 +1056,6 @@ class Beremiz(IDEFrame):
             self.CTR._OpenView(onlyopened=True)
         else:
             IDEFrame.ProjectTreeItemSelect(self, select_item)
-            
     
     def SelectProjectTreeItem(self, tagname):
         if self.ProjectTree is not None:
@@ -1067,7 +1066,7 @@ class Beremiz(IDEFrame):
                     if tagname == "Project":
                         self.SelectedItem = root
                         self.ProjectTree.SelectItem(root)
-                        wx.CallAfter(self.ResetSelectedItem)
+                        self.ResetSelectedItem()
                     else:
                         return self.RecursiveProjectTreeItemSelection(root, 
                               [(word, ITEM_CONFNODE) for word in tagname.split(".")])
