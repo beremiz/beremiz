@@ -1048,14 +1048,15 @@ class Beremiz(IDEFrame):
             IDEFrame.OnProjectTreeItemActivated(self, event)
     
     def ProjectTreeItemSelect(self, select_item):
-        name = self.ProjectTree.GetItemText(select_item)
-        item_infos = self.ProjectTree.GetPyData(select_item)
-        if item_infos["type"] == ITEM_CONFNODE:
-            item_infos["confnode"]._OpenView(onlyopened=True)
-        elif item_infos["type"] == ITEM_PROJECT:
-            self.CTR._OpenView(onlyopened=True)
-        else:
-            IDEFrame.ProjectTreeItemSelect(self, select_item)
+        if select_item is not None and select_item.IsOk():
+            name = self.ProjectTree.GetItemText(select_item)
+            item_infos = self.ProjectTree.GetPyData(select_item)
+            if item_infos["type"] == ITEM_CONFNODE:
+                item_infos["confnode"]._OpenView(onlyopened=True)
+            elif item_infos["type"] == ITEM_PROJECT:
+                self.CTR._OpenView(onlyopened=True)
+            else:
+                IDEFrame.ProjectTreeItemSelect(self, select_item)
     
     def SelectProjectTreeItem(self, tagname):
         if self.ProjectTree is not None:
