@@ -1809,6 +1809,7 @@ class Viewer(EditorPanel, DebugViewer):
     
     def OnViewerLeftDown(self, event):
         self.Editor.CaptureMouse()
+        self.StartMousePos = event.GetPosition()
         if self.Mode == MODE_SELECTION:
             dc = self.GetLogicalDC()
             pos = event.GetLogicalPosition(dc)
@@ -1892,7 +1893,6 @@ class Viewer(EditorPanel, DebugViewer):
                     if element is not None:
                         self.SelectedElement = element
                         if self.Debug:
-                            self.StartMousePos = event.GetPosition()
                             Graphic_Element.OnLeftDown(self.SelectedElement, event, dc, self.Scaling)
                         else:
                             self.SelectedElement.OnLeftDown(event, dc, self.Scaling)
@@ -1906,7 +1906,6 @@ class Viewer(EditorPanel, DebugViewer):
             self.rubberBand.Reset()
             self.rubberBand.OnLeftDown(event, self.GetLogicalDC(), self.Scaling)
         elif self.Mode == MODE_MOTION:
-            self.StartMousePos = event.GetPosition()
             self.StartScreenPos = self.GetScrollPos(wx.HORIZONTAL), self.GetScrollPos(wx.VERTICAL)
         event.Skip()
 
@@ -2050,7 +2049,6 @@ class Viewer(EditorPanel, DebugViewer):
                     self.SelectedElement.OnLeftUp(event, dc, self.Scaling)
                 wx.CallAfter(self.SetCurrentCursor, 0)
         elif self.Mode == MODE_MOTION:
-            self.StartMousePos = None
             self.StartScreenPos = None
         if self.Mode != MODE_SELECTION and not self.SavedMode:
             wx.CallAfter(self.ParentWindow.ResetCurrentMode)
@@ -2245,8 +2243,6 @@ class Viewer(EditorPanel, DebugViewer):
         event.Skip()
 
     def OnLeaveViewer(self, event):
-        if self.StartScreenPos is None:
-            self.StartMousePos = None
         if self.SelectedElement is not None and self.SelectedElement.GetDragging():
             event.Skip()
         elif self.HighlightedElement is not None:
@@ -3417,7 +3413,7 @@ class Viewer(EditorPanel, DebugViewer):
 #-------------------------------------------------------------------------------
 
     def OnScrollWindow(self, event):
-        if self.Editor.HasCapture() and self.StartMousePos:
+        if self.Editor.HasCapture() and self.StartMousePos is not None:
             return
         if wx.Platform == '__WXMSW__':
             wx.CallAfter(self.RefreshVisibleElements)
