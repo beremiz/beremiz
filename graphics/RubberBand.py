@@ -164,6 +164,8 @@ class RubberBand:
                     bbox.x * scalex, bbox.y * scaley, 
                     bbox.width * scalex, bbox.height * scaley)
         
+        dc.SetLogicalFunction(wx.COPY)
+        
         # Restore Viewer scale factor
         dc.SetUserScale(scalex, scaley)
     
