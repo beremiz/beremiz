@@ -98,10 +98,11 @@ class DurationCellEditor(wx.grid.PyGridCellEditor):
     '''
     Grid cell editor that uses DurationCellControl to display an edit button.
     '''
-    def __init__(self, table):
+    def __init__(self, table, colname):
         wx.grid.PyGridCellEditor.__init__(self)
         
         self.Table = table
+        self.Colname = colname
     
     def __del__(self):
         self.CellControl = None
@@ -114,15 +115,15 @@ class DurationCellEditor(wx.grid.PyGridCellEditor):
 
     def BeginEdit(self, row, col, grid):
         self.CellControl.Enable()
-        self.CellControl.SetValue(self.Table.GetValueByName(row, 'Interval'))
+        self.CellControl.SetValue(self.Table.GetValueByName(row, self.Colname))
         self.CellControl.SetFocus()
 
     def EndEdit(self, row, col, grid):
         duration = self.CellControl.GetValue()
-        old_duration = self.Table.GetValueByName(row, 'Interval')
+        old_duration = self.Table.GetValueByName(row, self.Colname)
         changed = duration != old_duration
         if changed:
-            self.Table.SetValueByName(row, 'Interval', duration)
+            self.Table.SetValueByName(row, self.Colname, duration)
         self.CellControl.Disable()
         return changed
 

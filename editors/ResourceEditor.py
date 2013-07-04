@@ -140,7 +140,7 @@ class ResourceTable(CustomTable):
                     editor = wx.grid.GridCellTextEditor()
                     renderer = wx.grid.GridCellStringRenderer()
                 elif colname == "Interval":
-                    editor = DurationCellEditor(self)
+                    editor = DurationCellEditor(self, colname)
                     renderer = wx.grid.GridCellStringRenderer()
                     if self.GetValueByName(row, "Triggering") != "Cyclic":
                         grid.SetReadOnly(row, col, True)
