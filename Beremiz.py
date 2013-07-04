@@ -1073,7 +1073,7 @@ class Beremiz(IDEFrame):
                               [(word, ITEM_CONFNODE) for word in tagname.split(".")])
                 elif words[0] == "R":
                     return self.RecursiveProjectTreeItemSelection(root, [(words[2], ITEM_RESOURCE)])
-                else:
+                elif not os.path.exists(words[0]):
                     IDEFrame.SelectProjectTreeItem(self, tagname)
             
     def GetAddConfNodeFunction(self, name, confnode=None):
