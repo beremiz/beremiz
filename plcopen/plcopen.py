@@ -500,17 +500,19 @@ if cls:
         self.CustomBlockTypes.append(block_infos)
     setattr(cls, "AddCustomBlockType", AddCustomBlockType)
 
+    def AddElementUsingTreeInstance(self, name, type_infos):
+        typename = type_infos.getname()
+        if not self.ElementUsingTree.has_key(typename):
+            self.ElementUsingTree[typename] = [name]
+        elif name not in self.ElementUsingTree[typename]:
+            self.ElementUsingTree[typename].append(name)
+    setattr(cls, "AddElementUsingTreeInstance", AddElementUsingTreeInstance)
+    
     def RefreshElementUsingTree(self):
         # Reset the tree of user-defined element cross-use
         self.ElementUsingTree = {}
         pous = self.getpous()
         datatypes = self.getdataTypes()
-        # Reference all the user-defined elementu names and initialize the tree of 
-        # user-defined elemnt cross-use
-        elementnames = [datatype.getname() for datatype in datatypes] + \
-                       [pou.getname() for pou in pous]
-        for name in elementnames:
-            self.ElementUsingTree[name] = []
         # Analyze each datatype
         for datatype in datatypes:
             name = datatype.getname()
@@ -522,16 +524,12 @@ if cls:
             elif basetype_content["name"] in ["subrangeSigned", "subrangeUnsigned", "array"]:
                 base_type = basetype_content["value"].baseType.getcontent()
                 if base_type["name"] == "derived":
-                    typename = base_type["value"].getname()
-                    if self.ElementUsingTree.has_key(typename) and name not in self.ElementUsingTree[typename]:
-                        self.ElementUsingTree[typename].append(name)
+                    self.AddElementUsingTreeInstance(name, base_type["value"])
             elif basetype_content["name"] == "struct":
                 for element in basetype_content["value"].getvariable():
                     type_content = element.type.getcontent()
                     if type_content["name"] == "derived":
-                        typename = type_content["value"].getname()
-                        if self.ElementUsingTree.has_key(typename) and name not in self.ElementUsingTree[typename]:
-                            self.ElementUsingTree[typename].append(name)
+                        self.AddElementUsingTreeInstance(name, type_content["value"])
         # Analyze each pou
         for pou in pous:
             name = pou.getname()
@@ -541,9 +539,7 @@ if cls:
                     for var in varlist.getvariable():
                         vartype_content = var.gettype().getcontent()
                         if vartype_content["name"] == "derived":
-                            typename = vartype_content["value"].getname()
-                            if self.ElementUsingTree.has_key(typename) and name not in self.ElementUsingTree[typename]:
-                                self.ElementUsingTree[typename].append(name)
+                            self.AddElementUsingTreeInstance(name, vartype_content["value"])
             for typename in self.ElementUsingTree.iterkeys():
                 if typename != name and pou.hasblock(block_type=typename) and name not in self.ElementUsingTree[typename]:
                     self.ElementUsingTree[typename].append(name)
