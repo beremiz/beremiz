@@ -52,7 +52,6 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.InstanceChoice = wx.ComboBox(self, size=wx.Size(0, 0), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnInstanceChoiceChanged,
                 self.InstanceChoice)
-        self.InstanceChoice.Bind(wx.EVT_LEFT_DOWN, self.OnInstanceChoiceLeftDown)
         
         self.DebugButton = wx.lib.buttons.GenBitmapButton(self, 
               bitmap=GetBitmap("debug_instance"), size=wx.Size(28, 28), style=wx.NO_BORDER)
@@ -365,8 +364,8 @@ class PouInstanceVariablesPanel(wx.Panel):
                         item_path = "%s.%s" % (instance_path, item_infos["name"])
                     else:
                         item_path = None
-                    wx.CallAfter(self.SetPouType, tagname, item_path)
-                    wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, tagname)
+                    self.SetPouType(tagname, item_path)
+                    self.ParentWindow.SelectProjectTreeItem(tagname)
         event.Skip()
     
     def OnVariablesListLeftDown(self, event):
@@ -391,6 +390,4 @@ class PouInstanceVariablesPanel(wx.Panel):
         keycode = event.GetKeyCode()
         if keycode != wx.WXK_LEFT:
             event.Skip()
-        
-    def OnInstanceChoiceLeftDown(self, event):
-        event.Skip()
+
