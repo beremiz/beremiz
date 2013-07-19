@@ -118,23 +118,24 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     @return: a tuple of value and number of parameters to add to DCF 
     """
     
+    dcfdata=[]
     # Create entry for RPDO or TPDO parameters and Disable PDO
-    dcfdata = LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(0x80000000 + cobid, 4)
-    # Set Transmit type synchrone
-    dcfdata += LE_to_BE(idx, 2) + LE_to_BE(0x02, 1) + LE_to_BE(0x01, 4) + LE_to_BE(transmittype, 1)
-    # Re-Enable PDO
-    #         ---- INDEX -----   --- SUBINDEX ----   ----- SIZE ------   ------ DATA ------
-    dcfdata += LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(cobid, 4)
-    nbparams = 3
+    #           ---- INDEX -----   --- SUBINDEX ----   ----- SIZE ------   ------ DATA ------
+    dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(0x80000000 + cobid, 4)]
+    # Set Transmit type
+    dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x02, 1) + LE_to_BE(0x01, 4) + LE_to_BE(transmittype, 1)]
     if len(pdomapping) > 0:
-        dcfdata += LE_to_BE(idx + 0x200, 2) + LE_to_BE(0x00, 1) + LE_to_BE(0x01, 4) + LE_to_BE(len(pdomapping), 1)
-        nbparams += 1
+        # Disable Mapping
+        dcfdata += [LE_to_BE(idx + 0x200, 2) + LE_to_BE(0x00, 1) + LE_to_BE(0x01, 4) + LE_to_BE(0x00, 1)]
         # Map Variables
         for subindex, (name, loc_infos) in enumerate(pdomapping):
             value = (loc_infos["index"] << 16) + (loc_infos["subindex"] << 8) + loc_infos["size"]
-            dcfdata += LE_to_BE(idx + 0x200, 2) + LE_to_BE(subindex + 1, 1) + LE_to_BE(0x04, 4) + LE_to_BE(value, 4)
-            nbparams += 1
-    return dcfdata, nbparams
+            dcfdata += [LE_to_BE(idx + 0x200, 2) + LE_to_BE(subindex + 1, 1) + LE_to_BE(0x04, 4) + LE_to_BE(value, 4)]
+        # Re-enable Mapping
+        dcfdata += [LE_to_BE(idx + 0x200, 2) + LE_to_BE(0x00, 1) + LE_to_BE(0x01, 4) + LE_to_BE(len(pdomapping), 1)]
+    # Re-Enable PDO
+    dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(cobid, 4)]
+    return "".join(dcfdata), len(dcfdata)
 
 class ConciseDCFGenerator:
 
