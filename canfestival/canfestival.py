@@ -463,7 +463,8 @@ class RootClass:
             if can_driver not in can_drivers :
                 can_driver = can_drivers[0]
             can_drv_ext = self.GetCTRoot().GetBuilder().extension
-            can_driver_name = "libcanfestival_" + can_driver + can_drv_ext
+            can_drv_prefix = self.GetCTRoot().GetBuilder().dlopen_prefix
+            can_driver_name = can_drv_prefix + "libcanfestival_" + can_driver + can_drv_ext
         else:
             can_driver_name = ""
 
