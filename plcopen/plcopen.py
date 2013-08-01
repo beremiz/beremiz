@@ -502,10 +502,8 @@ if cls:
 
     def AddElementUsingTreeInstance(self, name, type_infos):
         typename = type_infos.getname()
-        if not self.ElementUsingTree.has_key(typename):
-            self.ElementUsingTree[typename] = [name]
-        elif name not in self.ElementUsingTree[typename]:
-            self.ElementUsingTree[typename].append(name)
+        elements = self.ElementUsingTree.setdefault(typename, set())
+        elements.add(name)
     setattr(cls, "AddElementUsingTreeInstance", AddElementUsingTreeInstance)
     
     def RefreshElementUsingTree(self):
@@ -518,9 +516,8 @@ if cls:
             name = datatype.getname()
             basetype_content = datatype.baseType.getcontent()
             if basetype_content["name"] == "derived":
-                typename = basetype_content["value"].getname()
-                if name in self.ElementUsingTree[typename]:
-                    self.ElementUsingTree[typename].append(name)
+                self.AddElementUsingTreeInstance(name,
+                                                 basetype_content["value"])
             elif basetype_content["name"] in ["subrangeSigned", "subrangeUnsigned", "array"]:
                 base_type = basetype_content["value"].baseType.getcontent()
                 if base_type["name"] == "derived":
@@ -540,9 +537,6 @@ if cls:
                         vartype_content = var.gettype().getcontent()
                         if vartype_content["name"] == "derived":
                             self.AddElementUsingTreeInstance(name, vartype_content["value"])
-            for typename in self.ElementUsingTree.iterkeys():
-                if typename != name and pou.hasblock(block_type=typename) and name not in self.ElementUsingTree[typename]:
-                    self.ElementUsingTree[typename].append(name)
         
     setattr(cls, "RefreshElementUsingTree", RefreshElementUsingTree)
 
@@ -591,9 +585,8 @@ if cls:
 
     # Return if pou given by name is used by another pou
     def ElementIsUsed(self, name):
-        if self.ElementUsingTree.has_key(name):
-            return len(self.ElementUsingTree[name]) > 0
-        return False
+        elements = self.ElementUsingTree.get(name, None)
+        return elements is not None
     setattr(cls, "ElementIsUsed", ElementIsUsed)
 
     def DataTypeIsDerived(self, name):
@@ -602,18 +595,17 @@ if cls:
 
     # Return if pou given by name is directly or undirectly used by the reference pou
     def ElementIsUsedBy(self, name, reference):
-        if self.ElementUsingTree.has_key(name):
-            list = self.ElementUsingTree[name]
-            # Test if pou is directly used by reference
-            if reference in list:
-                return True
-            else:
-                # Test if pou is undirectly used by reference, by testing if pous 
-                # that directly use pou is directly or undirectly used by reference
-                used = False
-                for element in list:
-                    used |= self.ElementIsUsedBy(element, reference)
-                return used
+        elements = self.ElementUsingTree.get(name, set())
+        # Test if pou is directly used by reference
+        if reference in elements:
+            return True
+        else:
+            # Test if pou is undirectly used by reference, by testing if pous
+            # that directly use pou is directly or undirectly used by reference
+            selffn = self.ElementIsUsedBy
+            for element in elements:
+                if selffn(element, reference):
+                    return True
         return False
     setattr(cls, "ElementIsUsedBy", ElementIsUsedBy)
 
@@ -654,17 +646,16 @@ if cls:
     setattr(cls, "GetCustomBlockType", GetCustomBlockType)
 
     # Return Block types checking for recursion
-    def GetCustomBlockTypes(self, exclude = "", onlyfunctions = False):
-        type = None
-        if exclude != "":
-            pou = self.getpou(exclude)
-            if pou is not None:
-                type = pou.getpouType()
-        customblocktypes = []
-        for customblocktype in self.CustomBlockTypes:
-            if customblocktype["type"] != "program" and customblocktype["name"] != exclude and not self.ElementIsUsedBy(exclude, customblocktype["name"]) and not (onlyfunctions and customblocktype["type"] != "function"):
-                customblocktypes.append(customblocktype)
-        return customblocktypes
+    def GetCustomBlockTypes(self, exclude = None, onlyfunctions = False):
+        if exclude is not None:
+            return [customblocktype for customblocktype in self.CustomBlockTypes
+                if (customblocktype["type"] != "program"
+                    and customblocktype["name"] != exclude
+                    and not self.ElementIsUsedBy(exclude, customblocktype["name"])
+                    and not (onlyfunctions and customblocktype["type"] != "function"))]
+        return [customblocktype for customblocktype in self.CustomBlockTypes
+            if (customblocktype["type"] != "program"
+                and not (onlyfunctions and customblocktype["type"] != "function"))]
     setattr(cls, "GetCustomBlockTypes", GetCustomBlockTypes)
 
     # Return Function Block types checking for recursion

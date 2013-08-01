@@ -3,7 +3,6 @@ import os
 import types
 
 import wx
-import wx.lib.buttons
 
 from EditorPanel import EditorPanel
 
@@ -34,22 +33,6 @@ CWD = os.path.split(os.path.realpath(__file__))[0]
 
 def Bpath(*args):
     return os.path.join(CWD,*args)
-
-# Patch wx.lib.imageutils so that gray is supported on alpha images
-import wx.lib.imageutils
-from wx.lib.imageutils import grayOut as old_grayOut
-def grayOut(anImage):
-    if anImage.HasAlpha():
-        AlphaData = anImage.GetAlphaData()
-    else :
-        AlphaData = None
-
-    old_grayOut(anImage)
-
-    if AlphaData is not None:
-        anImage.SetAlphaData(AlphaData)
-
-wx.lib.imageutils.grayOut = grayOut
 
 class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
     def _GetLabelSize(self):
