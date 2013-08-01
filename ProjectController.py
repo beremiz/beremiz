@@ -7,6 +7,7 @@ import features
 import shutil
 import wx
 import re, tempfile
+from types import ListType
 from threading import Timer, Lock, Thread
 from time import localtime
 from datetime import datetime
@@ -37,6 +38,28 @@ DEBUG_RETRIES_REREGISTER = 4
 
 ITEM_CONFNODE = 25
 
+def ExtractChildrenTypesFromCatalog(catalog):
+    children_types = []
+    for n,d,h,c in catalog:
+        if isinstance(c, ListType):
+            children_types.extend(ExtractChildrenTypesFromCatalog(c))
+        else:
+            children_types.append((n, GetClassImporter(c), d))
+    return children_types
+
+def ExtractMenuItemsFromCatalog(catalog):
+    menu_items = []
+    for n,d,h,c in catalog:
+        if isinstance(c, ListType):
+            children = ExtractMenuItemsFromCatalog(c)
+        else:
+            children = []
+        menu_items.append((n, d, h, children))
+    return menu_items
+
+def GetAddMenuItems():
+    return ExtractMenuItemsFromCatalog(features.catalog)
+
 class ProjectController(ConfigTreeNode, PLCControler):
     """
     This class define Root object of the confnode tree. 
@@ -50,7 +73,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     """
 
     # For root object, available Children Types are modules of the confnode packages.
-    CTNChildrenTypes =  [(n, GetClassImporter(c), d) for n,d,h,c in features.catalog]
+    CTNChildrenTypes = ExtractChildrenTypesFromCatalog(features.catalog)
 
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -116,6 +139,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # copy ConfNodeMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
+    def __del__(self):
+        if self.DebugTimer:
+            self.DebugTimer.cancel()
+        self.KillDebugThread()
+    
     def LoadLibraries(self):
         self.Libraries = []
         TypeStack=[]
@@ -124,11 +152,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries.append(Lib)
-
-    def __del__(self):
-        if self.DebugTimer:
-            self.DebugTimer.cancel()
-        self.KillDebugThread()
     
     def SetAppFrame(self, frame, logger):
         self.AppFrame = frame

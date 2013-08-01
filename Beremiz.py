@@ -150,7 +150,7 @@ from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
-from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNODE
+from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ITEM_CONFNODE
 
 
 MAX_RECENT_PROJECTS = 10
@@ -330,6 +330,19 @@ class Beremiz(IDEFrame):
                                (wx.ID_SAVEAS, "saveas", _(u'Save As...'), None),
                                (wx.ID_PRINT, "print", _(u'Print'), None)])
     
+    def _RecursiveAddMenuItems(self, menu, items):
+        for name, text, help, children in items:
+            new_id = wx.NewId()
+            if len(children) > 0:
+                new_menu = wx.Menu(title='')
+                menu.AppendMenu(new_id, text, new_menu)
+                self._RecursiveAddMenuItems(new_menu, children)
+            else:
+                AppendMenu(menu, help=help, id=new_id, 
+                       kind=wx.ITEM_NORMAL, text=text)
+                self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name), 
+                          id=new_id)    
+    
     def _init_coll_AddMenu_Items(self, parent):
         IDEFrame._init_coll_AddMenu_Items(self, parent, False)
         
@@ -339,11 +352,7 @@ class Beremiz(IDEFrame):
         #          kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
         #self.Bind(wx.EVT_MENU, self.AddResourceMenu, id=new_id)
         
-        for name, XSDClass, help in ProjectController.CTNChildrenTypes:
-            new_id = wx.NewId()
-            AppendMenu(parent, help='', id=new_id, 
-                       kind=wx.ITEM_NORMAL, text=help)
-            self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name), id=new_id)
+        self._RecursiveAddMenuItems(parent, GetAddMenuItems())
     
     def _init_coll_HelpMenu_Items(self, parent):
         parent.Append(help='', id=wx.ID_ABOUT,
