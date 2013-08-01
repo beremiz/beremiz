@@ -23,8 +23,29 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import wx
-import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
+
+import wx.lib.imageutils
+import wx.lib.buttons
+GrayedBitmapCache = {}
+def SetBitmapLabel(self, bitmap, createOthers=True):
+    """
+    Set the bitmap to display normally.
+    This is the only one that is required. If
+    createOthers is True, then the other bitmaps
+    will be generated on the fly.  Currently,
+    only the disabled bitmap is generated.
+    """
+    self.bmpLabel = bitmap
+    if bitmap is not None and createOthers:
+        GrayBitmap=GrayedBitmapCache.get(bitmap,None)
+        if GrayBitmap is None:
+            image = wx.ImageFromBitmap(bitmap)
+            wx.lib.imageutils.grayOut(image)
+            GrayBitmap = wx.BitmapFromImage(image)
+            GrayedBitmapCache[bitmap] = GrayBitmap
+        self.SetBitmapDisabled(GrayBitmap)
+wx.lib.buttons.GenBitmapButton.SetBitmapLabel = SetBitmapLabel
 
 try:
     import matplotlib

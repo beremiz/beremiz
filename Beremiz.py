@@ -155,29 +155,6 @@ from ProjectController import ProjectController, MATIEC_ERROR_MODEL, ITEM_CONFNO
 
 MAX_RECENT_PROJECTS = 10
 
-class GenStaticBitmap(wx.lib.statbmp.GenStaticBitmap):
-    """ Customized GenStaticBitmap, fix transparency redraw bug on wx2.8/win32, 
-    and accept image name as __init__ parameter, fail silently if file do not exist"""
-    def __init__(self, parent, ID, bitmapname,
-                 pos = wx.DefaultPosition, size = wx.DefaultSize,
-                 style = 0,
-                 name = "genstatbmp"):
-        
-        wx.lib.statbmp.GenStaticBitmap.__init__(self, parent, ID, 
-                 GetBitmap(bitmapname),
-                 pos, size,
-                 style,
-                 name)
-        
-    def OnPaint(self, event):
-        dc = wx.PaintDC(self)
-        colour = self.GetParent().GetBackgroundColour()
-        dc.SetPen(wx.Pen(colour))
-        dc.SetBrush(wx.Brush(colour ))
-        dc.DrawRectangle(0, 0, *dc.GetSizeTuple())
-        if self._bitmap:
-            dc.DrawBitmap(self._bitmap, 0, 0, True)
-
 if wx.Platform == '__WXMSW__':
     faces = {
         'mono' : 'Courier New',
@@ -300,14 +277,7 @@ class LogPseudoFile:
     def isatty(self):
         return False
 
-[ID_BEREMIZ, ID_BEREMIZMAINSPLITTER, 
- ID_BEREMIZPLCCONFIG, ID_BEREMIZLOGCONSOLE, 
- ID_BEREMIZINSPECTOR] = [wx.NewId() for _init_ctrls in range(5)]
-
-[ID_FILEMENURECENTPROJECTS,
-] = [wx.NewId() for _init_ctrls in range(1)]
-
-CONFNODEMENU_POSITION = 3
+ID_FILEMENURECENTPROJECTS = wx.NewId()
 
 class Beremiz(IDEFrame):
     
@@ -394,8 +364,9 @@ class Beremiz(IDEFrame):
         
         self.EditMenuSize = self.EditMenu.GetMenuItemCount()
         
-        self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=ID_BEREMIZINSPECTOR)
-        accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), ID_BEREMIZINSPECTOR)]
+        inspectorID = wx.NewId()
+        self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=inspectorID)
+        accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), inspectorID)]
         for method,shortcut in [("Stop",     wx.WXK_F4),
                                 ("Run",      wx.WXK_F5),
                                 ("Transfer", wx.WXK_F6),
@@ -413,7 +384,7 @@ class Beremiz(IDEFrame):
         
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         
-        self.LogConsole = CustomStyledTextCtrl(id=ID_BEREMIZLOGCONSOLE,
+        self.LogConsole = CustomStyledTextCtrl(
                   name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
                   size=wx.Size(0, 0))
         self.LogConsole.Bind(wx.EVT_SET_FOCUS, self.OnLogConsoleFocusChanged)
