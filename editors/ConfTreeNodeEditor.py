@@ -316,7 +316,11 @@ class ConfTreeNodeEditor(EditorPanel):
             else:
                 element_path = element_infos["name"]
             if element_infos["type"] == "element":
-                label = element_infos["name"]
+                name = element_infos["name"]
+                value = element_infos["value"]
+                label = _(name)
+                if value is not None:
+                    label += " - %s" % _(value)
                 staticbox = wx.StaticBox(self.ParamsEditor, 
                       label=_(label), size=wx.Size(10, 0))
                 staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
