@@ -210,7 +210,8 @@ class PLCControler:
         self.NextCompiledProject = None
         self.CurrentCompiledProject = None
         self.ConfNodeTypes = []
-        self.ProgramFilePath = ""
+        self.TotalTypesDict = StdBlckDct.copy()
+        self.TotalTypes = StdBlckLst[:]
         
     def GetQualifierTypes(self):
         return plcopen.QualifierList
@@ -1534,25 +1535,34 @@ class PLCControler:
     # Function that add a new confnode to the confnode list
     def AddConfNodeTypesList(self, typeslist):
         self.ConfNodeTypes.extend(typeslist)
+        addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
+                     "list": confnodetypes["types"].GetCustomBlockTypes()}
+                     for confnodetypes in typeslist]
+        self.TotalTypes.extend(addedcat)
+        for cat in addedcat:
+            for desc in cat["list"]:
+                BlkLst = self.TotalTypesDict.setdefault(desc["name"],[])
+                BlkLst.append((section["name"], desc))
         
     # Function that clear the confnode list
     def ClearConfNodeTypes(self):
-        for i in xrange(len(self.ConfNodeTypes)):
-            self.ConfNodeTypes.pop(0)
+        self.ConfNodeTypes = []
+        self.TotalTypesDict = StdBlckDct.copy()
+        self.TotalTypes = StdBlckLst[:]
 
     def GetConfNodeBlockTypes(self):
         return [{"name": _("%s POUs") % confnodetypes["name"],
                  "list": confnodetypes["types"].GetCustomBlockTypes()}
                 for confnodetypes in self.ConfNodeTypes]
         
-    def GetConfNodeDataTypes(self, exclude = "", only_locatables = False):
+    def GetConfNodeDataTypes(self, exclude = None, only_locatables = False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
                  "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude, only_locatables)]}
                 for confnodetypes in self.ConfNodeTypes]
     
-    def GetConfNodeDataType(self, type):
+    def GetConfNodeDataType(self, typename):
         for confnodetype in self.ConfNodeTypes:
-            datatype = confnodetype["types"].getdataType(type)
+            datatype = confnodetype["types"].getdataType(typename)
             if datatype is not None:
                 return datatype
         return None
@@ -1592,61 +1602,59 @@ class PLCControler:
         return global_vars
 
     # Function that returns the block definition associated to the block type given
-    def GetBlockType(self, type, inputs = None, debug = False):
+    def GetBlockType(self, typename, inputs = None, debug = False):
         result_blocktype = None
-        for category in BlockTypes + self.GetConfNodeBlockTypes():
-            for blocktype in category["list"]:
-                if blocktype["name"] == type:
-                    if inputs is not None and inputs != "undefined":
-                        block_inputs = tuple([var_type for name, var_type, modifier in blocktype["inputs"]])
-                        if reduce(lambda x, y: x and y, map(lambda x: x[0] == "ANY" or self.IsOfType(*x), zip(inputs, block_inputs)), True):
-                            return blocktype
+        for sectioname, blocktype in self.TotalTypesDict.get(typename,[]):
+            if inputs is not None and inputs != "undefined":
+                block_inputs = tuple([var_type for name, var_type, modifier in blocktype["inputs"]])
+                if reduce(lambda x, y: x and y, map(lambda x: x[0] == "ANY" or self.IsOfType(*x), zip(inputs, block_inputs)), True):
+                    return blocktype
+            else:
+                if result_blocktype is not None:
+                    if inputs == "undefined":
+                        return None
                     else:
-                        if result_blocktype is not None:
-                            if inputs == "undefined":
-                                return None
-                            else:
-                                result_blocktype["inputs"] = [(i[0], "ANY", i[2]) for i in result_blocktype["inputs"]]
-                                result_blocktype["outputs"] = [(o[0], "ANY", o[2]) for o in result_blocktype["outputs"]]
-                                return result_blocktype
-                        result_blocktype = blocktype.copy()
+                        result_blocktype["inputs"] = [(i[0], "ANY", i[2]) for i in result_blocktype["inputs"]]
+                        result_blocktype["outputs"] = [(o[0], "ANY", o[2]) for o in result_blocktype["outputs"]]
+                        return result_blocktype
+                result_blocktype = blocktype.copy()
         if result_blocktype is not None:
             return result_blocktype
         project = self.GetProject(debug)
         if project is not None:
-            return project.GetCustomBlockType(type, inputs)
+            return project.GetCustomBlockType(typename, inputs)
         return None
 
     # Return Block types checking for recursion
     def GetBlockTypes(self, tagname = "", debug = False):
-        type = None
+        typename = None
         words = tagname.split("::")
-        if self.Project:
-            name = ""
-            if words[0] in ["P","T","A"]:
-                name = words[1]
-                type = self.GetPouType(name, debug)
-        if type == "function":
-            blocktypes = []
-            for category in BlockTypes + self.GetConfNodeBlockTypes():
-                cat = {"name" : category["name"], "list" : []}
-                for block in category["list"]:
-                    if block["type"] == "function":
-                        cat["list"].append(block)
-                if len(cat["list"]) > 0:
-                    blocktypes.append(cat)
-        else:
-            blocktypes = [category for category in BlockTypes + self.GetConfNodeBlockTypes()]
+        name = None
         project = self.GetProject(debug)
         if project is not None:
-            blocktypes.append({"name" : USER_DEFINED_POUS, "list": project.GetCustomBlockTypes(name, type == "function" or words[0] == "T")})
-        return blocktypes
+            blocktypes = []
+            if words[0] in ["P","T","A"]:
+                name = words[1]
+                typename = self.GetPouType(name, debug)
+                if typename == "function":
+                    for category in self.TotalTypes:
+                        cat = {"name" : category["name"], "list" : []}
+                        for block in category["list"]:
+                            if block["type"] == "function":
+                                cat["list"].append(block)
+                        if len(cat["list"]) > 0:
+                            blocktypes.append(cat)
+                    blocktypes.append({"name" : USER_DEFINED_POUS, 
+                        "list": project.GetCustomBlockTypes(name, 
+                            typename == "function" or words[0] == "T")})
+                    return blocktypes
+        return self.TotalTypes
 
     # Return Function Block types checking for recursion
     def GetFunctionBlockTypes(self, tagname = "", debug = False):
         blocktypes = []
-        for category in BlockTypes + self.GetConfNodeBlockTypes():
-            for block in category["list"]:
+        for blocks in self.TotalTypesDict.itervalues():
+            for sectioname,block in blocks:
                 if block["type"] == "functionBlock":
                     blocktypes.append(block["name"])
         project = self.GetProject(debug)
@@ -1661,7 +1669,7 @@ class PLCControler:
     # Return Block types checking for recursion
     def GetBlockResource(self, debug = False):
         blocktypes = []
-        for category in BlockTypes[:-1]:
+        for category in StdBlckLst[:-1]:
             for blocktype in category["list"]:
                 if blocktype["type"] == "program":
                     blocktypes.append(blocktype["name"])
@@ -1677,8 +1685,8 @@ class PLCControler:
         else:
             datatypes = []
         project = self.GetProject(debug)
+        name = None
         if project is not None:
-            name = ""
             words = tagname.split("::")
             if words[0] in ["D"]:
                 name = words[1]

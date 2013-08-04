@@ -250,7 +250,7 @@ Inputs and outputs are a tuple of characteristics that are in order:
     - The default modifier which can be "none", "negated", "rising" or "falling"
 """
 
-BlockTypes = [{"name" : _("Standard function blocks"), "list":
+StdBlckLst = [{"name" : _("Standard function blocks"), "list":
                [{"name" : "SR", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("S1","BOOL","none"),("R","BOOL","none")], 
                     "outputs" : [("Q1","BOOL","none")],
@@ -663,9 +663,12 @@ def get_standard_funtions(table):
 
 std_decl = get_standard_funtions(csv_file_to_table(open(os.path.join(os.path.split(__file__)[0],"iec_std.csv"))))#, True)
 
-BlockTypes.extend(std_decl)
+StdBlckLst.extend(std_decl)
 
-for section in BlockTypes: 
+# Dictionary to speedup block type fetching by name
+StdBlckDct = {}
+
+for section in StdBlckLst:
     for desc in section["list"]:
         words = desc["comment"].split('"')
         if len(words) > 1:
@@ -676,7 +679,8 @@ for section in BlockTypes:
             " ) => (" +
             str([ " " + fctdecl[1]+":"+fctdecl[0] for fctdecl in desc["outputs"]]).strip("[]").replace("'",'') +
             " )")
-
+        BlkLst = StdBlckDct.setdefault(desc["name"],[])
+        BlkLst.append((section["name"], desc))
 
 #-------------------------------------------------------------------------------
 #                            Languages Keywords
@@ -687,7 +691,7 @@ for section in BlockTypes:
 POU_BLOCK_START_KEYWORDS = ["FUNCTION", "FUNCTION_BLOCK", "PROGRAM"]
 POU_BLOCK_END_KEYWORDS = ["END_FUNCTION", "END_FUNCTION_BLOCK", "END_PROGRAM"]
 POU_KEYWORDS = ["EN", "ENO", "F_EDGE", "R_EDGE"] + POU_BLOCK_START_KEYWORDS + POU_BLOCK_END_KEYWORDS
-for category in BlockTypes:
+for category in StdBlckLst:
     for block in category["list"]:
         if block["name"] not in POU_KEYWORDS:
             POU_KEYWORDS.append(block["name"])

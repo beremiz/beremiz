@@ -26,7 +26,7 @@ from xmlclass import *
 from structures import *
 from types import *
 import os, re
-
+from collections import OrderedDict
 """
 Dictionary that makes the relation between var names in plcopen and displayed values
 """
@@ -177,7 +177,7 @@ if cls:
     cls.CustomDataTypeRange = {}
     cls.CustomTypeHierarchy = {}
     cls.ElementUsingTree = {}
-    cls.CustomBlockTypes = []
+    cls.CustomBlockTypes = OrderedDict()
     
     def setname(self, name):
         self.contentHeader.setname(name)
@@ -443,7 +443,7 @@ if cls:
     # Update Block types with user-defined pou added
     def RefreshCustomBlockTypes(self):
         # Reset the tree of user-defined pou cross-use
-        self.CustomBlockTypes = []
+        self.CustomBlockTypes = OrderedDict()
         for pou in self.getpous():
             self.AddCustomBlockType(pou)
     setattr(cls, "RefreshCustomBlockTypes", RefreshCustomBlockTypes)
@@ -497,7 +497,7 @@ if cls:
                             block_infos["outputs"].append((var.getname(), var_type["name"], "none"))    
         block_infos["usage"] = "\n (%s) => (%s)" % (", ".join(["%s:%s" % (input[1], input[0]) for input in block_infos["inputs"]]),
                                                     ", ".join(["%s:%s" % (output[1], output[0]) for output in block_infos["outputs"]]))
-        self.CustomBlockTypes.append(block_infos)
+        self.CustomBlockTypes[pou_name]=block_infos
     setattr(cls, "AddCustomBlockType", AddCustomBlockType)
 
     def AddElementUsingTreeInstance(self, name, type_infos):
@@ -633,14 +633,14 @@ if cls:
     setattr(cls, "GetEnumeratedDataTypeValues", GetEnumeratedDataTypeValues)
 
     # Function that returns the block definition associated to the block type given
-    def GetCustomBlockType(self, type, inputs = None):
-        for customblocktype in self.CustomBlockTypes:
+    def GetCustomBlockType(self, typename, inputs = None):
+        customblocktype = self.CustomBlockTypes.get(typename,None)
+        if customblocktype is not None:
             if inputs is not None and inputs != "undefined":
                 customblock_inputs = tuple([var_type for name, var_type, modifier in customblocktype["inputs"]])
-                same_inputs = inputs == customblock_inputs
+                if inputs == customblock_inputs:
+                    return customblocktype
             else:
-                same_inputs = True
-            if customblocktype["name"] == type and same_inputs:
                 return customblocktype
         return None
     setattr(cls, "GetCustomBlockType", GetCustomBlockType)
@@ -648,32 +648,31 @@ if cls:
     # Return Block types checking for recursion
     def GetCustomBlockTypes(self, exclude = None, onlyfunctions = False):
         if exclude is not None:
-            return [customblocktype for customblocktype in self.CustomBlockTypes
+            return [customblocktype for name,customblocktype in self.CustomBlockTypes.iteritems()
                 if (customblocktype["type"] != "program"
-                    and customblocktype["name"] != exclude
-                    and not self.ElementIsUsedBy(exclude, customblocktype["name"])
+                    and name != exclude
+                    and not self.ElementIsUsedBy(exclude, name)
                     and not (onlyfunctions and customblocktype["type"] != "function"))]
-        return [customblocktype for customblocktype in self.CustomBlockTypes
+        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
             if (customblocktype["type"] != "program"
                 and not (onlyfunctions and customblocktype["type"] != "function"))]
     setattr(cls, "GetCustomBlockTypes", GetCustomBlockTypes)
 
     # Return Function Block types checking for recursion
-    def GetCustomFunctionBlockTypes(self, exclude = ""):
-        customblocktypes = []
-        for customblocktype in self.CustomBlockTypes:
-            if customblocktype["type"] == "functionBlock" and customblocktype["name"] != exclude and not self.ElementIsUsedBy(exclude, customblocktype["name"]):
-                customblocktypes.append(customblocktype["name"])
-        return customblocktypes
+    def GetCustomFunctionBlockTypes(self, exclude = None):
+        if exclude is not None:
+            return [customblocktype for name,customblocktype in self.CustomBlockTypes.iteritems()
+                if (customblocktype["type"] == "functionBlock" 
+                    and name != exclude 
+                    and not self.ElementIsUsedBy(exclude, name))]
+        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
+            if customblocktype["type"] == "functionBlock"]
     setattr(cls, "GetCustomFunctionBlockTypes", GetCustomFunctionBlockTypes)
 
     # Return Block types checking for recursion
     def GetCustomBlockResource(self):
-        customblocktypes = []
-        for customblocktype in self.CustomBlockTypes:
-            if customblocktype["type"] == "program":
-                customblocktypes.append(customblocktype["name"])
-        return customblocktypes
+        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
+            if customblocktype["type"] == "program"]
     setattr(cls, "GetCustomBlockResource", GetCustomBlockResource)
 
     # Return Data Types checking for recursion
