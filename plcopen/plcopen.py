@@ -2801,6 +2801,7 @@ if cls:
     def getconnections(self):
         if self.content:
             return self.content["value"]
+        return []
     setattr(cls, "getconnections", getconnections)
     
     def setconnectionId(self, idx, id):
@@ -2822,7 +2823,7 @@ if cls:
     def getconnectionPoints(self, idx):
         if self.content:
             return self.content["value"][idx].getpoints()
-        return None
+        return []
     setattr(cls, "getconnectionPoints", getconnectionPoints)
 
     def setconnectionParameter(self, idx, parameter):
