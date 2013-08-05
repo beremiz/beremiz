@@ -212,7 +212,8 @@ class PLCControler:
         self.ConfNodeTypes = []
         self.TotalTypesDict = StdBlckDct.copy()
         self.TotalTypes = StdBlckLst[:]
-        
+        self.ProgramFilePath = ""
+            
     def GetQualifierTypes(self):
         return plcopen.QualifierList
 
@@ -1632,22 +1633,25 @@ class PLCControler:
         name = None
         project = self.GetProject(debug)
         if project is not None:
-            blocktypes = []
+            pou_type = None
             if words[0] in ["P","T","A"]:
+                blocktypes = []
                 name = words[1]
-                typename = self.GetPouType(name, debug)
-                if typename == "function":
-                    for category in self.TotalTypes:
-                        cat = {"name" : category["name"], "list" : []}
-                        for block in category["list"]:
-                            if block["type"] == "function":
-                                cat["list"].append(block)
-                        if len(cat["list"]) > 0:
-                            blocktypes.append(cat)
-                    blocktypes.append({"name" : USER_DEFINED_POUS, 
-                        "list": project.GetCustomBlockTypes(name, 
-                            typename == "function" or words[0] == "T")})
-                    return blocktypes
+                pou_type = self.GetPouType(name, debug)
+            if pou_type == "function":
+                for category in self.TotalTypes:
+                    cat = {"name" : category["name"], "list" : []}
+                    for block in category["list"]:
+                        if block["type"] == "function":
+                            cat["list"].append(block)
+                    if len(cat["list"]) > 0:
+                        blocktypes.append(cat)
+            else:
+                blocktypes = [category for category in self.TotalTypes]
+            blocktypes.append({"name" : USER_DEFINED_POUS, 
+                "list": project.GetCustomBlockTypes(name, 
+                    pou_type == "function" or words[0] == "T")})
+            return blocktypes
         return self.TotalTypes
 
     # Return Function Block types checking for recursion
