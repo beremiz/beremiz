@@ -75,8 +75,9 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
         self.ParentWindow.RefreshPageTitles()
 
 class MasterViewer(SlaveEditor):
+    SHOW_BASE_PARAMS = False
     SHOW_PARAMS = False
-
+    
     def __init__(self, parent, controler, window, tagname):
         SlaveEditor.__init__(self, parent, controler, window, False)
     
@@ -96,3 +97,7 @@ class MasterViewer(SlaveEditor):
         
     def IsViewing(self, tagname):
         return self.GetInstancePath() == tagname
+
+    def RefreshView(self):
+        self.SlaveNodeEditor.RefreshIndexList()
+
