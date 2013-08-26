@@ -29,7 +29,7 @@ import os,sys,re
 import datetime
 from time import localtime
 
-from plcopen import plcopen
+from plcopen import PLCOpenParser, LoadProject, SaveProject
 from plcopen.structures import *
 from graphics.GraphicCommons import *
 from PLCGenerator import *
@@ -66,14 +66,16 @@ ITEMS_VARIABLE = [ITEM_VAR_LOCAL,
                   ITEM_VAR_INOUT
                  ] = range(17, 24)
 
-VAR_CLASS_INFOS = {"Local" :    (plcopen.interface_localVars,    ITEM_VAR_LOCAL),
-                   "Global" :   (plcopen.interface_globalVars,   ITEM_VAR_GLOBAL),
-                   "External" : (plcopen.interface_externalVars, ITEM_VAR_EXTERNAL),
-                   "Temp" :     (plcopen.interface_tempVars,     ITEM_VAR_TEMP),
-                   "Input" :    (plcopen.interface_inputVars,    ITEM_VAR_INPUT),
-                   "Output" :   (plcopen.interface_outputVars,   ITEM_VAR_OUTPUT),
-                   "InOut" :    (plcopen.interface_inOutVars,    ITEM_VAR_INOUT)
-                  }
+VAR_CLASS_INFOS = dict(
+    [(name, (PLCOpenParser.GetElementClass(classname, "interface"), symbol))
+     for name, classname, symbol in 
+     [("Local",    "localVars",    ITEM_VAR_LOCAL),
+      ("Global",   "globalVars",   ITEM_VAR_GLOBAL),
+      ("External", "externalVars", ITEM_VAR_EXTERNAL),
+      ("Temp",     "tempVars",     ITEM_VAR_TEMP),
+      ("Input",    "inputVars",    ITEM_VAR_INPUT),
+      ("Output",   "outputVars",   ITEM_VAR_OUTPUT),
+      ("InOut",    "inOutVars",    ITEM_VAR_INOUT)]])
 
 POU_TYPES = {"program": ITEM_PROGRAM,
              "functionBlock": ITEM_FUNCTIONBLOCK,
@@ -234,7 +236,7 @@ class PLCControler:
     # Create a new project by replacing the current one
     def CreateNewProject(self, properties):
         # Create the project
-        self.Project = plcopen.project()
+        self.Project = PLCOpenParser.CreateRoot()
         properties["creationDateTime"] = datetime.datetime(*localtime()[:6])
         self.Project.setfileHeader(properties)
         self.Project.setcontentHeader(properties)
@@ -3136,31 +3138,27 @@ class PLCControler:
             return tasks_data, instances_data
 
     def OpenXMLFile(self, filepath):
-        xmlfile = open(filepath, 'r')
-        tree = minidom.parse(xmlfile)
-        xmlfile.close()
+        try:
+            self.Project = LoadProject(filepath)
+        except Exception, e:
+            return _("Project file syntax error:\n\n") + str(e)
+        self.SetFilePath(filepath)
+        self.Project.RefreshElementUsingTree()
+        self.Project.RefreshDataTypeHierarchy()
+        self.Project.RefreshCustomBlockTypes()
         
-        self.Project = plcopen.project()
-        for child in tree.childNodes:
-            if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "project":
-                try:
-                    result = self.Project.loadXMLTree(child)
-                except ValueError, e:
-                    return _("Project file syntax error:\n\n") + str(e)
-                self.SetFilePath(filepath)
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshDataTypeHierarchy()
-                self.Project.RefreshCustomBlockTypes()
-                self.CreateProjectBuffer(True)
-                self.ProgramChunks = []
-                self.ProgramOffset = 0
-                self.NextCompiledProject = self.Copy(self.Project)
-                self.CurrentCompiledProject = None
-                self.Buffering = False
-                self.CurrentElementEditing = None
-                return None
-        return _("No PLC project found")
-
+        ## To remove when project buffering ready
+        self.ProjectBufferEnabled = False
+        
+        self.CreateProjectBuffer(True)
+        self.ProgramChunks = []
+        self.ProgramOffset = 0
+        self.NextCompiledProject = self.Project ## self.Copy(self.Project)
+        self.CurrentCompiledProject = None
+        self.Buffering = False
+        self.CurrentElementEditing = None
+        return None
+        
     def SaveXMLFile(self, filepath = None):
         if not filepath and self.FilePath == "":
             return False
@@ -3168,19 +3166,11 @@ class PLCControler:
             contentheader = {"modificationDateTime": datetime.datetime(*localtime()[:6])}
             self.Project.setcontentHeader(contentheader)
             
-            text = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            extras = {"xmlns" : "http://www.plcopen.org/xml/tc6.xsd",
-                      "xmlns:xhtml" : "http://www.w3.org/1999/xhtml",
-                      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance",
-                      "xsi:schemaLocation" : "http://www.plcopen.org/xml/tc6.xsd"}
-            text += self.Project.generateXMLText("project", 0, extras)
-            
             if filepath:
-                xmlfile = open(filepath,"w")
+                SaveProject(self.Project, filepath)
             else:
-                xmlfile = open(self.FilePath,"w")
-            xmlfile.write(text.encode("utf-8"))
-            xmlfile.close()
+                SaveProject(self.Project, self.FilePath)
+            
             self.MarkProjectAsSaved()
             if filepath:
                 self.SetFilePath(filepath)

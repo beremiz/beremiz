@@ -25,9 +25,6 @@
 # Package initialisation
 
 # plcopen module dynamically creates its classes
-import plcopen
-for classname, cls in plcopen.PLCOpenClasses.items():
-    plcopen.__dict__[classname] = cls
-from plcopen import VarOrder, ElementNameToClass, rect
+from plcopen import PLCOpenParser, LoadProject, SaveProject, VarOrder, rect
 
 from structures import *
