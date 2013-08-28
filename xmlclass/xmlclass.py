@@ -549,18 +549,19 @@ def GenerateAnyInfos(infos):
         p.text = etree.CDATA(value)
         
     def InitialAny():
-        text = etree.CDATA(value)
         if infos["namespace"][0] == "##any":
             element_name = "p"
         else:
             element_name = "{%s}p" % infos["namespace"][0]
-        return etree.Element(element_name, text)
+        p = etree.Element(element_name)
+        p.text = etree.CDATA("")
+        return p
         
     return {
         "type": COMPLEXTYPE, 
         "extract": ExtractAny,
         "generate": GenerateAny,
-        "initial": lambda: GenerateAny(""),
+        "initial": InitialAny,
         "check": lambda x: isinstance(x, (StringType, UnicodeType, etree.ElementBase))
     }
 
@@ -600,7 +601,7 @@ def GetElementInitialValue(factory, infos):
     infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
     if infos["minOccurs"] == 1:
         element_name = factory.etreeNamespaceFormat % infos["name"]
-        if infos["type"] == SIMPLETYPE:
+        if infos["elmt_type"]["type"] == SIMPLETYPE:
             def initial_value():
                 value = etree.Element(element_name)
                 value.text = (infos["elmt_type"]["generate"](infos["elmt_type"]["initial"]()))
@@ -608,7 +609,9 @@ def GetElementInitialValue(factory, infos):
         else:
             def initial_value():
                 value = infos["elmt_type"]["initial"]()
-                DefaultElementClass.__setattr__(value, "tag", element_name)
+                if infos["type"] != ANY:
+                    DefaultElementClass.__setattr__(value, "tag", element_name)
+                    value.init()
                 return value
         return [initial_value() for i in xrange(infos["minOccurs"])]
     else:
@@ -1115,9 +1118,12 @@ class ClassFactory:
     def ExtractTypeInfos(self, name, parent, typeinfos):
         if isinstance(typeinfos, (StringType, UnicodeType)):
             namespace, type_name = DecomposeQualifiedName(typeinfos)
-            if namespace == self.TargetNamespace and name != "base":
-                self.AddToLookupClass(name, parent, type_name)
             infos = self.GetQualifiedNameInfos(type_name, namespace)
+            if name != "base":
+                if infos["type"] == SIMPLETYPE:
+                    self.AddToLookupClass(name, parent, DefaultElementClass)
+                elif namespace == self.TargetNamespace:
+                    self.AddToLookupClass(name, parent, type_name)
             if infos["type"] == COMPLEXTYPE:
                 type_name, parent = self.SplitQualifiedName(type_name, namespace)
                 result = self.CreateClass(type_name, parent, infos)
@@ -1874,10 +1880,7 @@ def generateInitMethod(factory, classinfos):
                     else factory.etreeNamespaceFormat % element["name"])
                 initial = GetElementInitialValue(factory, element)
                 if initial is not None:
-                    for value in initial:
-                        DefaultElementClass.__setattr__(value, "tag", element_name)
-                        value.init()
-                        self.append(value)
+                    map(self.append, initial)
     return initMethod
 
 def generateSetMethod(attr):
@@ -1894,16 +1897,16 @@ def generateAddMethod(attr, factory, infos):
     def addMethod(self):
         if infos["type"] == ATTRIBUTE:
             infos["attr_type"] = FindTypeInfos(factory, infos["attr_type"])
-            initial = infos["attr_type"]["initial"]
-            extract = infos["attr_type"]["extract"]
+            if not infos.has_key("default"):
+                setattr(self, attr, infos["attr_type"]["initial"]())
         elif infos["type"] == ELEMENT:
             infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
-            initial = infos["elmt_type"]["initial"]
-            extract = infos["elmt_type"]["extract"]
+            value = infos["elmt_type"]["initial"]()
+            DefaultElementClass.__setattr__(value, "tag", factory.etreeNamespaceFormat % attr)
+            setattr(self, attr, value)
+            value.init()
         else:
             raise ValueError("Invalid class attribute!")
-        if not infos.has_key("default"):
-            setattr(self, attr, initial())
     return addMethod
 
 def generateDeleteMethod(attr):
