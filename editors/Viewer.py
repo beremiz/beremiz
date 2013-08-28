@@ -2423,11 +2423,12 @@ class Viewer(EditorPanel, DebugViewer):
                     executionOrder = values["executionOrder"])
             self.Controler.AddEditedElementBlock(self.TagName, id, values["type"], values.get("name", None))
             connector = None
-            for input_connector in block.GetConnectors()["inputs"]:
-                if input_connector.IsCompatible(
-                        wire.GetStartConnectedType()):
-                    connector = input_connector
-                    break
+            if wire is not None:
+                for input_connector in block.GetConnectors()["inputs"]:
+                    if input_connector.IsCompatible(
+                            wire.GetStartConnectedType()):
+                        connector = input_connector
+                        break
             self.AddNewElement(block, bbox, wire, connector)
         dialog.Destroy()
     
