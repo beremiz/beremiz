@@ -186,7 +186,7 @@ if cls:
     setattr(cls, "hasblock", hasblock)
     
     def Search(self, criteria, parent_infos):
-        return [(tuple(parent_infos),) + result for result in TestTextElement(self.gettext(), criteria)]
+        return [(tuple(parent_infos),) + result for result in TestTextElement(self.getanyText(), criteria)]
     setattr(cls, "Search", Search)
     
 cls = PLCOpenParser.GetElementClass("project")
@@ -473,9 +473,9 @@ if cls:
         block_infos = {"name" : pou_name, "type" : pou_type, "extensible" : False,
                        "inputs" : [], "outputs" : [], "comment" : pou.getdescription(),
                        "generate" : generate_block, "initialise" : initialise_block}
-        if pou.getinterface():
+        if pou.interface is not None:
             return_type = pou.interface.getreturnType()
-            if return_type:
+            if return_type is not None:
                 var_type = return_type.getcontent()
                 var_type_name = var_type.getLocalTag()
                 if var_type_name == "derived":
@@ -553,7 +553,7 @@ if cls:
         # Analyze each pou
         for pou in self.getpous():
             name = pou.getname()
-            if pou.interface:
+            if pou.interface is not None:
                 # Extract variables from every varLists
                 for varlist_type, varlist in pou.getvars():
                     for var in varlist.getvariable():
@@ -869,14 +869,11 @@ if cls:
         var.setname(name)
         var_type_obj = PLCOpenParser.CreateElement("dataType")
         if var_type in [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]:
-            if var_type == "STRING":
-                var_type_obj.setcontent(PLCOpenParser.CreateElement("string", "elementaryTypes"))
-            elif var_type == "WSTRING":
-                var_type_obj.setcontent(PLCOpenParser.CreateElement("wstring", "elementaryTypes"))
-            else:
-                var_type_obj.setcontent(PLCOpenParser.CreateElement(var_type))
+            var_type_obj.setcontent(PLCOpenParser.CreateElement(
+                var_type.lower() if var_type in ["STRING", "WSTRING"]
+                else vartype, "dataType"))
         else:
-            derived_type = PLCOpenParser.CreateElement("derived", "derivedTypes")
+            derived_type = PLCOpenParser.CreateElement("derived", "dataType")
             derived_type.setname(var_type)
             var_type_obj.setcontent(derived_type)
         var.settype(var_type_obj)
@@ -884,7 +881,7 @@ if cls:
             var.setaddress(location)
         if description != "":
             ft = PLCOpenParser.CreateElementClass("formattedText")
-            ft.settext(description)
+            ft.setanyText(description)
             var.setdocumentation(ft)
         globalvars[-1].appendvariable(var)
     setattr(cls, "addglobalVar", addglobalVar)
@@ -1197,7 +1194,7 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("array", "derivedTypes")
+cls = PLCOpenParser.GetElementClass("array", "dataType")
 if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
     
@@ -1217,17 +1214,17 @@ def _SearchInSubrange(self, criteria, parent_infos=[]):
                                  criteria, parent_infos))
     return search_result
 
-cls = PLCOpenParser.GetElementClass("subrangeSigned", "derivedTypes")
+cls = PLCOpenParser.GetElementClass("subrangeSigned", "dataType")
 if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
     setattr(cls, "Search", _SearchInSubrange)
 
-cls = PLCOpenParser.GetElementClass("subrangeUnsigned", "derivedTypes")
+cls = PLCOpenParser.GetElementClass("subrangeUnsigned", "dataType")
 if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
     setattr(cls, "Search", _SearchInSubrange)
 
-cls = PLCOpenParser.GetElementClass("enum", "derivedTypes")
+cls = PLCOpenParser.GetElementClass("enum", "dataType")
 if cls:
     
     def updateElementName(self, old_name, new_name):
@@ -1250,13 +1247,13 @@ if cls:
         if doc is None:
             doc = PLCOpenParser.CreateElement("formattedText")
             self.setdocumentation(doc)
-        doc.settext(description)
+        doc.setanyText(description)
     setattr(cls, "setdescription", setdescription)
     
     def getdescription(self):
         doc = self.getdocumentation()
         if doc is not None:
-            return doc.gettext()
+            return doc.getanyText()
         return ""
     setattr(cls, "getdescription", getdescription)
     
@@ -1348,6 +1345,7 @@ if cls:
         if self.interface is None:
             self.interface = PLCOpenParser.CreateElement("interface", "pou")
         self.interface.setcontent(vars)
+        print self.interface.tostring()
     setattr(cls, "setvars", setvars)
     
     def addpouLocalVar(self, var_type, name, location="", description=""):
@@ -1373,14 +1371,11 @@ if cls:
         var.setname(name)
         var_type_obj = PLCOpenParser.CreateElement("dataType")
         if var_type in [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]:
-            if var_type == "STRING":
-                var_type_obj.setcontent(PLCOpenParser.CreateElement("string", "elementaryTypes"))
-            elif var_type == "WSTRING":
-                var_type_obj.setcontent(PLCOpenParser.CreateElement("wstring", "elementaryTypes"))
-            else:
-                var_type_obj.setcontent(PLCOpenParser.CreateElement(var_type))
+            var_type_obj.setcontent(PLCOpenParser.CreateElement(
+                var_type.lower() if var_type in ["STRING", "WSTRING"]
+                else var_type, "dataType"))
         else:
-            derived_type = PLCOpenParser.CreateElement("derived", "derivedTypes")
+            derived_type = PLCOpenParser.CreateElement("derived", "dataType")
             derived_type.setname(var_type)
             var_type_obj.setcontent(derived_type)
         var.settype(var_type_obj)
@@ -1388,7 +1383,7 @@ if cls:
             var.setaddress(location)
         if description != "":
             ft = PLCOpenParser.GetElementClass("formattedText")()
-            ft.settext(description)
+            ft.setanyText(description)
             var.setdocumentation(ft)
         
         content[-1]["value"].appendvariable(var)
@@ -1453,9 +1448,9 @@ if cls:
         transition.setname(name)
         transition.setbodyType(body_type)
         if body_type == "ST":
-            transition.settext(":= ;")
+            transition.setanyText(":= ;")
         elif body_type == "IL":
-            transition.settext("\tST\t%s"%name)
+            transition.setanyText("\tST\t%s"%name)
         self.transitions.appendtransition(transition)
     setattr(cls, "addtransition", addtransition)
     
@@ -1832,7 +1827,10 @@ if cls:
     
     def getcontentRandomInstance(self, exclude):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = self.content.xpath("*[regexp:test(@localId,'(%s)')]" % "|".join(map(str, exclude)))
+            instance = self.content.xpath("*%s[position()=1]" %  
+                ("[not(%s)]" % " or ".join(
+                    map(lambda x: "@localId=%d" % x, exclude))
+                if len(exclude) > 0 else ""))
             if len(instance) > 0:
                 return instance[0]
             return None
@@ -1863,14 +1861,14 @@ if cls:
     
     def settext(self, text):
         if self.content.getLocalTag() in ["IL","ST"]:
-            self.content.settext(text)
+            self.content.setanyText(text)
         else:
             raise TypeError, _("%s body don't have text!")%self.content["name"]
     setattr(cls, "settext", settext)
 
     def gettext(self):
         if self.content.getLocalTag() in ["IL","ST"]:
-            return self.content.gettext()
+            return self.content.getanyText()
         else:
             raise TypeError, _("%s body don't have text!")%self.content["name"]
     setattr(cls, "gettext", gettext)
@@ -2103,7 +2101,7 @@ def _getvariableinfosFunction(type, input, output):
         infos = _getelementinfos(self)
         infos["type"] = type
         specific_values = infos["specific_values"]
-        specific_values["name"] = self.getexpression()
+        specific_values["name"] = self.getexpression().text
         _getexecutionOrder(self, specific_values)
         if input and output:
             infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True, "input"))
@@ -2116,7 +2114,7 @@ def _getvariableinfosFunction(type, input, output):
     return getvariableinfos
 
 def _getconnectorinfosFunction(type):
-    def getvariableinfos(self):
+    def getconnectorinfos(self):
         infos = _getelementinfos(self)
         infos["type"] = type
         infos["specific_values"]["name"] = self.getname()
@@ -2125,7 +2123,7 @@ def _getconnectorinfosFunction(type):
         elif type == "continuation":
             infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
         return infos
-    return getvariableinfos
+    return getconnectorinfos
 
 def _getpowerrailinfosFunction(type):
     def getpowerrailinfos(self):
@@ -2190,11 +2188,11 @@ if cls:
     setattr(cls, "getinfos", getinfos)
     
     def setcontentText(self, text):
-        self.content.settext(text)
+        self.content.setanyText(text)
     setattr(cls, "setcontentText", setcontentText)
         
     def getcontentText(self):
-        return self.content.gettext()
+        return self.content.getanyText()
     setattr(cls, "getcontentText", getcontentText)
     
     def updateElementName(self, old_name, new_name):
@@ -2378,7 +2376,7 @@ if cls:
         elif condition_type == "inline":
             condition = PLCOpenParser.CreateElement("inline", "condition")
             condition.setcontent(PLCOpenParser.GetElementClass("ST", "inline"))
-            condition.settext(value)
+            condition.setanyText(value)
         elif condition_type == "connection":
             condition = PLCOpenParser.CreateElementClass("connectionPointIn")
         self.condition.setcontent(condition)
@@ -2391,7 +2389,7 @@ if cls:
             if values["type"] == "reference":
                 values["value"] = content.getname()
             elif values["type"] == "inline":
-                values["value"] = content.gettext()
+                values["value"] = content.getanyText()
             elif values["type"] == "connectionPointIn":
                 values["type"] = "connection"
                 values["value"] = content
@@ -2479,23 +2477,23 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
     
-cls = _initElementClass("selectionDivergence", "sfcObjects_selectionDivergence", "single")
+cls = _initElementClass("selectionDivergence", "sfcObjects", "single")
 if cls:
     setattr(cls, "getinfos", _getdivergenceinfosFunction(True, False))
 
-cls = _initElementClass("selectionConvergence", "sfcObjects_selectionConvergence", "multiple")
+cls = _initElementClass("selectionConvergence", "sfcObjects", "multiple")
 if cls:
     setattr(cls, "getinfos", _getdivergenceinfosFunction(False, False))
 
-cls = _initElementClass("simultaneousDivergence", "sfcObjects_simultaneousDivergence", "single")
+cls = _initElementClass("simultaneousDivergence", "sfcObjects", "single")
 if cls:
     setattr(cls, "getinfos", _getdivergenceinfosFunction(True, True))
 
-cls = _initElementClass("simultaneousConvergence", "sfcObjects_simultaneousConvergence", "multiple")
+cls = _initElementClass("simultaneousConvergence", "sfcObjects", "multiple")
 if cls:
     setattr(cls, "getinfos", _getdivergenceinfosFunction(False, True))
 
-cls = _initElementClass("jumpStep", "sfcObjects_jumpStep", "single")
+cls = _initElementClass("jumpStep", "sfcObjects", "single")
 if cls:
     def getinfos(self):
         infos = _getelementinfos(self)
@@ -2536,12 +2534,12 @@ if cls:
     def setinlineContent(self, content):
         if self.inline:
             self.inline.setcontent(PLCOpenParser.CreateElementClass("ST", "action"))
-            self.inline.settext(content)
+            self.inline.setanyText(content)
     setattr(cls, "setinlineContent", setinlineContent)
     
     def getinlineContent(self):
         if self.inline:
-            return self.inline.gettext()
+            return self.inline.getanyText()
         return None
     setattr(cls, "getinlineContent", getinlineContent)
 
@@ -2571,7 +2569,7 @@ if cls:
                        criteria, parent_infos)
     setattr(cls, "Search", Search)
 
-cls = _initElementClass("actionBlock", "commonObjects_actionBlock", "single")
+cls = _initElementClass("actionBlock", "commonObjects", "single")
 if cls:
     def compatibility(self, tree):
         for child in tree.childNodes[:]:
@@ -2649,7 +2647,7 @@ if cls:
 def _SearchInIOVariable(self, criteria, parent_infos=[]):
     return _Search([("expression", self.getexpression())], criteria, parent_infos + ["io_variable", self.getlocalId()])
 
-cls = _initElementClass("inVariable", "fbdObjects_inVariable")
+cls = _initElementClass("inVariable", "fbdObjects")
 if cls:
     setattr(cls, "getinfos", _getvariableinfosFunction("input", False, True))
     
@@ -2664,7 +2662,7 @@ if cls:
 
     setattr(cls, "Search", _SearchInIOVariable)
 
-cls = _initElementClass("outVariable", "fbdObjects_outVariable", "single")
+cls = _initElementClass("outVariable", "fbdObjects", "single")
 if cls:
     setattr(cls, "getinfos", _getvariableinfosFunction("output", True, False))
     
@@ -2679,7 +2677,7 @@ if cls:
 
     setattr(cls, "Search", _SearchInIOVariable)
 
-cls = _initElementClass("inOutVariable", "fbdObjects_inOutVariable", "single")
+cls = _initElementClass("inOutVariable", "fbdObjects", "single")
 if cls:
     setattr(cls, "getinfos", _getvariableinfosFunction("inout", True, True))
     
@@ -2698,7 +2696,7 @@ if cls:
 def _SearchInConnector(self, criteria, parent_infos=[]):
     return _Search([("name", self.getname())], criteria, parent_infos + ["connector", self.getlocalId()])
 
-cls = _initElementClass("continuation", "commonObjects_continuation")
+cls = _initElementClass("continuation", "commonObjects")
 if cls:
     setattr(cls, "getinfos", _getconnectorinfosFunction("continuation"))
     setattr(cls, "Search", _SearchInConnector)
@@ -2708,7 +2706,7 @@ if cls:
             self.name = new_name
     setattr(cls, "updateElementName", updateElementName)
 
-cls = _initElementClass("connector", "commonObjects_connector", "single")
+cls = _initElementClass("connector", "commonObjects", "single")
 if cls:
     setattr(cls, "getinfos", _getconnectorinfosFunction("connector"))
     setattr(cls, "Search", _SearchInConnector)
@@ -2746,10 +2744,9 @@ if cls:
     setattr(cls, "setrelPositionXY", setrelPositionXY)
 
     def getrelPositionXY(self):
-        if self.relPosition:
+        if self.relPosition is not None:
             return self.relPosition.getx(), self.relPosition.gety()
-        else:
-            return self.relPosition
+        return self.relPosition
     setattr(cls, "getrelPositionXY", getrelPositionXY)
 
     def addconnection(self):
@@ -2766,7 +2763,7 @@ if cls:
     setattr(cls, "removeconnections", removeconnections)
     
     def getconnections(self):
-        return self.content
+        return self.xpath("ppx:connection", namespaces=PLCOpenParser.NSMAP)
     setattr(cls, "getconnections", getconnections)
     
     def setconnectionId(self, idx, local_id):
@@ -2811,7 +2808,7 @@ if cls:
     setattr(cls, "setrelPositionXY", setrelPositionXY)
 
     def getrelPositionXY(self):
-        if self.relPosition:
+        if self.relPosition is not None:
             return self.relPosition.getx(), self.relPosition.gety()
         return self.relPosition
     setattr(cls, "getrelPositionXY", getrelPositionXY)
@@ -2821,12 +2818,13 @@ if cls:
     def setvalue(self, value):
         value = value.strip()
         if value.startswith("[") and value.endswith("]"):
-            self.content = PLCOpenParser.CreateElement("arrayValue", "value")
+            content = PLCOpenParser.CreateElement("arrayValue", "value")
         elif value.startswith("(") and value.endswith(")"):
-            self.content = PLCOpenParser.CreateElement("structValue", "value")
+            content = PLCOpenParser.CreateElement("structValue", "value")
         else:
-            self.content = PLCOpenParser.CreateElement("simpleValue", "value")
-        self.content.setvalue(value)
+            content = PLCOpenParser.CreateElement("simpleValue", "value")
+        content.setvalue(value)
+        self.setcontent(content)
     setattr(cls, "setvalue", setvalue)
     
     def getvalue(self):

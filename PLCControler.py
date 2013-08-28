@@ -66,16 +66,14 @@ ITEMS_VARIABLE = [ITEM_VAR_LOCAL,
                   ITEM_VAR_INOUT
                  ] = range(17, 24)
 
-VAR_CLASS_INFOS = dict(
-    [(name, (PLCOpenParser.GetElementClass(classname, "interface"), symbol))
-     for name, classname, symbol in 
-     [("Local",    "localVars",    ITEM_VAR_LOCAL),
-      ("Global",   "globalVars",   ITEM_VAR_GLOBAL),
-      ("External", "externalVars", ITEM_VAR_EXTERNAL),
-      ("Temp",     "tempVars",     ITEM_VAR_TEMP),
-      ("Input",    "inputVars",    ITEM_VAR_INPUT),
-      ("Output",   "outputVars",   ITEM_VAR_OUTPUT),
-      ("InOut",    "inOutVars",    ITEM_VAR_INOUT)]])
+VAR_CLASS_INFOS = {
+    "Local":    ("localVars",    ITEM_VAR_LOCAL),
+    "Global":   ("globalVars",   ITEM_VAR_GLOBAL),
+    "External": ("externalVars", ITEM_VAR_EXTERNAL),
+    "Temp":     ("tempVars",     ITEM_VAR_TEMP),
+    "Input":    ("inputVars",    ITEM_VAR_INPUT),
+    "Output":   ("outputVars",   ITEM_VAR_OUTPUT),
+    "InOut":    ("inOutVars",    ITEM_VAR_INOUT)}
 
 POU_TYPES = {"program": ITEM_PROGRAM,
              "functionBlock": ITEM_FUNCTIONBLOCK,
@@ -241,11 +239,15 @@ class PLCControler:
         self.Project.setfileHeader(properties)
         self.Project.setcontentHeader(properties)
         self.SetFilePath("")
+        
+        ## To remove when project buffering ready
+        self.ProjectBufferEnabled = False
+        
         # Initialize the project buffer
         self.CreateProjectBuffer(False)
         self.ProgramChunks = []
         self.ProgramOffset = 0
-        self.NextCompiledProject = self.Copy(self.Project)
+        self.NextCompiledProject = self.Project #self.Copy(self.Project)
         self.CurrentCompiledProject = None
         self.Buffering = False
     
@@ -392,8 +394,9 @@ class PLCControler:
 
     def GetPouVariableInfos(self, project, variable, var_class, debug=False):
         vartype_content = variable.gettype().getcontent()
-        if vartype_content["name"] == "derived":
-            var_type = vartype_content["value"].getname()
+        vartype_content_type = vartype_content.getLocalTag()
+        if vartype_content_type == "derived":
+            var_type = vartype_content.getname()
             pou_type = None
             pou = project.getpou(var_type)
             if pou is not None:
@@ -421,15 +424,15 @@ class PLCControler:
                         "class": var_class,
                         "edit": False,
                         "debug": False}
-        elif vartype_content["name"] in ["string", "wstring"]:
+        elif vartype_content_type in ["string", "wstring"]:
             return {"name": variable.getname(), 
-                    "type": vartype_content["name"].upper(), 
+                    "type": vartype_content_type.upper(), 
                     "class": var_class,
                     "edit": False,
                     "debug": True}
         else:
             return {"name": variable.getname(),
-                    "type": vartype_content["name"], 
+                    "type": vartype_content_type, 
                     "class": var_class,
                     "edit": False,
                     "debug": True}
@@ -558,9 +561,9 @@ class PLCControler:
         for varlist in varlists:
             for variable in varlist.getvariable():
                 vartype_content = variable.gettype().getcontent()
-                if vartype_content["name"] == "derived":
+                if vartype_content.getLocalTag() == "derived":
                     var_path = "%s.%s" % (parent_path, variable.getname())
-                    var_type = vartype_content["value"].getname()
+                    var_type = vartype_content.getname()
                     if var_type == pou_type:
                         instances.append(var_path)
                     else:
@@ -627,7 +630,7 @@ class PLCControler:
                 for variable in varlist.getvariable():
                     if variable.getname() == parts[0]:
                         vartype_content = variable.gettype().getcontent()
-                        if vartype_content["name"] == "derived":
+                        if vartype_content.getLocalTag() == "derived":
                             return self.RecursiveGetPouInstanceTagName(
                                             project, 
                                             vartype_content["value"].getname(),
@@ -658,14 +661,14 @@ class PLCControler:
             for variable in varlist.getvariable():
                 if variable.getname() == parts[0]:
                     vartype_content = variable.gettype().getcontent()
-                    if vartype_content["name"] == "derived":                        
+                    if vartype_content.getLocalTag() == "derived":                        
                         if len(parts) == 1:
                             return self.ComputePouName(
-                                        vartype_content["value"].getname())
+                                        vartype_content.getname())
                         else:
                             return self.RecursiveGetPouInstanceTagName(
                                         project, 
-                                        vartype_content["value"].getname(),
+                                        vartype_content.getname(),
                                         parts[1:], debug)
         return None
     
@@ -1172,9 +1175,9 @@ class PLCControler:
                 current_type = next_type
                 infos = VAR_CLASS_INFOS.get(var["Class"], None)
                 if infos is not None:
-                    current_varlist = infos[0]()
+                    current_varlist = PLCOpenParser.CreateElement(infos[0], "interface")
                 else:
-                    current_varlist = plcopen.varList()
+                    current_varlist = PLCOpenParser.CreateElement("varList")
                 varlist_list.append((var["Class"], current_varlist))
                 if var["Option"] == "Constant":
                     current_varlist.setconstant(True)
@@ -1183,14 +1186,14 @@ class PLCControler:
                 elif var["Option"] == "Non-Retain":
                     current_varlist.setnonretain(True)
             # Create variable and change its properties
-            tempvar = plcopen.varListPlain_variable()
+            tempvar = PLCOpenParser.CreateElement("variable", "varListPlain")
             tempvar.setname(var["Name"])
             
-            var_type = plcopen.dataType()
+            var_type = PLCOpenParser.CreateElement("type", "variable")
             if isinstance(var["Type"], TupleType):
                 if var["Type"][0] == "array":
                     array_type, base_type_name, dimensions = var["Type"]
-                    array = plcopen.derivedTypes_array()
+                    array = PLCOpenParser.CreateElement("array", "dataType")
                     for i, dimension in enumerate(dimensions):
                         dimension_range = plcopen.rangeSigned()
                         dimension_range.setlower(dimension[0])
@@ -1200,32 +1203,28 @@ class PLCControler:
                         else:
                             array.appenddimension(dimension_range)
                     if base_type_name in self.GetBaseTypes():
-                        if base_type_name == "STRING":
-                            array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                        elif base_type_name == "WSTRING":
-                            array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                        else:
-                            array.baseType.setcontent({"name" : base_type_name, "value" : None})
+                        array.baseType.setcontent(PLCOpenParser.CreateElement(
+                            base_type_name.lower()
+                            if base_type_name in ["STRING", "WSTRING"]
+                            else base_type_name, "dataType"))
                     else:
-                        derived_datatype = plcopen.derivedTypes_derived()
+                        derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                         derived_datatype.setname(base_type_name)
-                        array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
-                    var_type.setcontent({"name" : "array", "value" : array})
+                        array.baseType.setcontent(derived_datatype)
+                    var_type.setcontent(array)
             elif var["Type"] in self.GetBaseTypes():
-                if var["Type"] == "STRING":
-                    var_type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                elif var["Type"] == "WSTRING":
-                    var_type.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                else:
-                    var_type.setcontent({"name" : var["Type"], "value" : None})
+                var_type.setcontent(PLCOpenParser.CreateElement(
+                    var["Type"].lower()
+                    if var["Type"] in ["STRING", "WSTRING"]
+                    else var["Type"], "dataType"))
             else:
-                derived_type = plcopen.derivedTypes_derived()
+                derived_type = PLCOpenParser.CreateElement("derived", "dataType")
                 derived_type.setname(var["Type"])
-                var_type.setcontent({"name" : "derived", "value" : derived_type})
+                var_type.setcontent(derived_type)
             tempvar.settype(var_type)
 
             if var["Initial Value"] != "":
-                value = plcopen.value()
+                value = PLCOpenParser.CreateElement("initialValue", "variable")
                 value.setvalue(var["Initial Value"])
                 tempvar.setinitialValue(value)
             if var["Location"] != "":
@@ -1234,7 +1233,7 @@ class PLCControler:
                 tempvar.setaddress(None)
             if var['Documentation'] != "":
                 ft = plcopen.formattedText()
-                ft.settext(var['Documentation'])
+                ft.setanyText(var['Documentation'])
                 tempvar.setdocumentation(ft)
 
             # Add variable to varList
@@ -1250,27 +1249,27 @@ class PLCControler:
         tempvar = {"Name": var.getname()}
 
         vartype_content = var.gettype().getcontent()
-        if vartype_content["name"] == "derived":
-            tempvar["Type"] = vartype_content["value"].getname()
-        elif vartype_content["name"] == "array":
+        vartype_content_type = vartype_content.getLocalTag()
+        if vartype_content_type == "derived":
+            tempvar["Type"] = vartype_content.getname()
+        elif vartype_content_type == "array":
             dimensions = []
-            for dimension in vartype_content["value"].getdimension():
+            for dimension in vartype_content.getdimension():
                 dimensions.append((dimension.getlower(), dimension.getupper()))
-            base_type = vartype_content["value"].baseType.getcontent()
-            if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
-                base_type_name = base_type["name"].upper()
+            base_type = vartype_content.baseType.getcontent()
+            base_type_type = base_type.getLocalTag()
+            if base_type is None or base_type_type in ["string", "wstring"]:
+                base_type_name = base_type_type.upper()
             else:
-                base_type_name = base_type["value"].getname()
+                base_type_name = base_type.getname()
             tempvar["Type"] = ("array", base_type_name, dimensions)
-        elif vartype_content["name"] in ["string", "wstring"]:
-            tempvar["Type"] = vartype_content["name"].upper()
         else:
-            tempvar["Type"] = vartype_content["name"]
-
+            tempvar["Type"] = vartype_content_type.upper()
+        
         tempvar["Edit"] = True
 
         initial = var.getinitialValue()
-        if initial:
+        if initial is not None:
             tempvar["Initial Value"] = initial.getvalue()
         else:
             tempvar["Initial Value"] = ""
@@ -1291,8 +1290,8 @@ class PLCControler:
             tempvar["Option"] = ""
 
         doc = var.getdocumentation()
-        if doc:
-            tempvar["Documentation"] = doc.gettext()
+        if doc is not None:
+            tempvar["Documentation"] = doc.getanyText()
         else:
             tempvar["Documentation"] = ""
 
@@ -1315,9 +1314,9 @@ class PLCControler:
             configuration = self.Project.getconfiguration(name)
             if configuration is not None:
                 # Set configuration global vars
-                configuration.setglobalVars([])
-                for vartype, varlist in self.ExtractVarLists(vars):
-                    configuration.globalVars.append(varlist)
+                configuration.setglobalVars([
+                    varlist for vartype, varlist
+                    in self.ExtractVarLists(vars)])
     
     # Return the configuration globalvars
     def GetConfigurationGlobalVars(self, name, debug = False):
@@ -1356,9 +1355,9 @@ class PLCControler:
             resource = self.Project.getconfigurationResource(config_name, name)
             # Set resource global vars
             if resource is not None:
-                resource.setglobalVars([])
-                for vartype, varlist in self.ExtractVarLists(vars):
-                    resource.globalVars.append(varlist)
+                resource.setglobalVars([
+                    varlist for vartype, varlist
+                    in self.ExtractVarLists(vars)])
     
     # Return the resource globalvars
     def GetConfigurationResourceGlobalVars(self, config_name, name, debug = False):
@@ -1417,25 +1416,27 @@ class PLCControler:
             if datatype is not None:
                 tree = []
                 basetype_content = datatype.baseType.getcontent()
-                if basetype_content["name"] == "derived":
-                    return self.GenerateVarTree(basetype_content["value"].getname())
-                elif basetype_content["name"] == "array":
+                basetype_content_type = basetype_content.getLocalTag()
+                if basetype_content_type == "derived":
+                    return self.GenerateVarTree(basetype_content.getname())
+                elif basetype_content_type == "array":
                     dimensions = []
-                    base_type = basetype_content["value"].baseType.getcontent()
-                    if base_type["name"] == "derived":
-                        tree = self.GenerateVarTree(base_type["value"].getname())
+                    base_type = basetype_content.baseType.getcontent()
+                    if base_type.getLocalTag() == "derived":
+                        tree = self.GenerateVarTree(base_type.getname())
                         if len(tree[1]) == 0:
                             tree = tree[0]
-                        for dimension in basetype_content["value"].getdimension():
+                        for dimension in basetype_content.getdimension():
                             dimensions.append((dimension.getlower(), dimension.getupper()))
                     return tree, dimensions
-                elif basetype_content["name"] == "struct":
-                    for element in basetype_content["value"].getvariable():
+                elif basetype_content_type == "struct":
+                    for element in basetype_content.getvariable():
                         element_type = element.type.getcontent()
-                        if element_type["name"] == "derived":
-                            tree.append((element.getname(), element_type["value"].getname(), self.GenerateVarTree(element_type["value"].getname())))
+                        element_type_type = element_type.getLocalTag()
+                        if element_type_type == "derived":
+                            tree.append((element.getname(), element_type.getname(), self.GenerateVarTree(element_type.getname())))
                         else:
-                            tree.append((element.getname(), element_type["name"], ([], [])))
+                            tree.append((element.getname(), element_type_type, ([], [])))
                     return tree, []
         return [], []
 
@@ -1453,7 +1454,7 @@ class PLCControler:
                     tempvar["Tree"] = ([], [])
 
                     vartype_content = var.gettype().getcontent()
-                    if vartype_content["name"] == "derived":
+                    if vartype_content.getLocalTag() == "derived":
                         tempvar["Edit"] = not pou.hasblock(tempvar["Name"])
                         tempvar["Tree"] = self.GenerateVarTree(tempvar["Type"], debug)
 
@@ -1467,36 +1468,34 @@ class PLCControler:
             pou = self.Project.getpou(name)
             if pou is not None:
                 if pou.interface is None:
-                    pou.interface = plcopen.pou_interface()
+                    pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # Set Pou interface
-                pou.setvars(self.ExtractVarLists(vars))
+                pou.setvars([varlist for varlist_type, varlist in self.ExtractVarLists(vars)])
                 self.Project.RefreshElementUsingTree()
                 self.Project.RefreshCustomBlockTypes()
     
     # Replace the return type of the pou given by its name (only for functions)
-    def SetPouInterfaceReturnType(self, name, type):
+    def SetPouInterfaceReturnType(self, name, return_type):
         if self.Project is not None:
             pou = self.Project.getpou(name)
             if pou is not None:
                 if pou.interface is None:
-                    pou.interface = plcopen.pou_interface()
+                    pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # If there isn't any return type yet, add it
-                return_type = pou.interface.getreturnType()
-                if not return_type:
-                    return_type = plcopen.dataType()
-                    pou.interface.setreturnType(return_type)
+                return_type_obj = pou.interface.getreturnType()
+                if not return_type_obj:
+                    return_type_obj = PLCOpenParser.CreateElement("returnType", "interface")
+                    pou.interface.setreturnType(return_type_obj)
                 # Change return type
-                if type in self.GetBaseTypes():
-                    if type == "STRING":
-                        return_type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                    elif type == "WSTRING":
-                        return_type.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                    else:
-                        return_type.setcontent({"name" : type, "value" : None})
+                if return_type in self.GetBaseTypes():
+                    return_type_obj.setcontent(PLCOpenParser.CreateElement(
+                        return_type.lower()
+                        if return_type in ["STRING", "WSTRING"]
+                        else return_type, "dataType"))
                 else:
-                    derived_type = plcopen.derivedTypes_derived()
-                    derived_type.setname(type)
-                    return_type.setcontent({"name" : "derived", "value" : derived_type})
+                    derived_type = PLCOpenParser.CreateElement("derived", "dataType")
+                    derived_type.setname(return_type)
+                    return_type.setcontent(derived_type)
                 self.Project.RefreshElementUsingTree()
                 self.Project.RefreshCustomBlockTypes()
     
@@ -1525,14 +1524,13 @@ class PLCControler:
         if pou.interface is not None:
             # Return the return type if there is one
             return_type = pou.interface.getreturnType()
-            if return_type:
+            if return_type is not None:
                 returntype_content = return_type.getcontent()
-                if returntype_content["name"] == "derived":
-                    return returntype_content["value"].getname()
-                elif returntype_content["name"] in ["string", "wstring"]:
-                    return returntype_content["name"].upper()
+                returntype_content_type = returntype_content.getLocalTag()
+                if returntype_content_type == "derived":
+                    return returntype_content.getname()
                 else:
-                    return returntype_content["name"]
+                    return returntype_content_type.upper()
         return None
 
     # Function that add a new confnode to the confnode list
@@ -1579,25 +1577,23 @@ class PLCControler:
     def GetConfigurationExtraVariables(self):
         global_vars = []
         for var_name, var_type, var_initial in self.GetConfNodeGlobalInstances():
-            tempvar = plcopen.varListPlain_variable()
+            tempvar = PLCOpenParser.CreateElement("variable", "globalVars")
             tempvar.setname(var_name)
             
-            tempvartype = plcopen.dataType()
+            tempvartype = PLCOpenParser.CreateElement("dataType", "variable")
             if var_type in self.GetBaseTypes():
-                if var_type == "STRING":
-                    tempvartype.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                elif var_type == "WSTRING":
-                    tempvartype.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                else:
-                    tempvartype.setcontent({"name" : var_type, "value" : None})
+                tempvar.setcontent(PLCOpenParser.CreateElement(
+                    var_type.lower()
+                    if var_type in ["STRING", "WSTRING"]
+                    else var_type, "dataType"))
             else:
-                tempderivedtype = plcopen.derivedTypes_derived()
+                tempderivedtype = PLCOpenParser.CreateElement("derived", "dataType")
                 tempderivedtype.setname(var_type)
-                tempvartype.setcontent({"name" : "derived", "value" : tempderivedtype})
+                tempvartype.setcontent(tempderivedtype)
             tempvar.settype(tempvartype)
             
             if var_initial != "":
-                value = plcopen.value()
+                value = PLCOpenParser.CreateElement("initialValue", "variable")
                 value.setvalue(var_initial)
                 tempvar.setinitialValue(value)
             
@@ -1766,7 +1762,7 @@ class PLCControler:
                 datatype = self.GetConfNodeDataType(type)
             if datatype is not None:
                 basetype_content = datatype.baseType.getcontent()
-                return basetype_content["name"] == "enum"
+                return basetype_content.getLocalTag() == "enum"
         return False
 
     def IsNumType(self, type, debug = False):
@@ -1861,62 +1857,64 @@ class PLCControler:
                 if datatype is None:
                     return None
                 basetype_content = datatype.baseType.getcontent()
-                if basetype_content["value"] is None or basetype_content["name"] in ["string", "wstring"]:
-                    infos["type"] = "Directly"
-                    infos["base_type"] = basetype_content["name"].upper()
-                elif basetype_content["name"] == "derived":
-                    infos["type"] = "Directly"
-                    infos["base_type"] = basetype_content["value"].getname()
-                elif basetype_content["name"] in ["subrangeSigned", "subrangeUnsigned"]:
+                basetype_content_type = basetype_content.getLocalTag()
+                if basetype_content_type in ["subrangeSigned", "subrangeUnsigned"]:
                     infos["type"] = "Subrange"
-                    infos["min"] = basetype_content["value"].range.getlower()
-                    infos["max"] = basetype_content["value"].range.getupper()
-                    base_type = basetype_content["value"].baseType.getcontent()
-                    if base_type["value"] is None:
-                        infos["base_type"] = base_type["name"]
-                    else:
-                        infos["base_type"] = base_type["value"].getname()
-                elif basetype_content["name"] == "enum":
+                    infos["min"] = basetype_content.range.getlower()
+                    infos["max"] = basetype_content.range.getupper()
+                    base_type = basetype_content.baseType.getcontent()
+                    base_type_type = base_type.getLocalTag()
+                    infos["base_type"] = (base_type.getname()
+                        if base_type_type == "derived"
+                        else base_type_type)
+                elif basetype_content_type == "enum":
                     infos["type"] = "Enumerated"
                     infos["values"] = []
-                    for value in basetype_content["value"].values.getvalue():
+                    for value in basetype_content.xpath("ppx:values/ppx:value", namespaces=PLCOpenParser.NSMAP):
                         infos["values"].append(value.getname())
-                elif basetype_content["name"] == "array":
+                elif basetype_content_type == "array":
                     infos["type"] = "Array"
                     infos["dimensions"] = []
-                    for dimension in basetype_content["value"].getdimension():
+                    for dimension in basetype_content.getdimension():
                         infos["dimensions"].append((dimension.getlower(), dimension.getupper()))
-                    base_type = basetype_content["value"].baseType.getcontent()
-                    if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
-                        infos["base_type"] = base_type["name"].upper()
-                    else:
-                        infos["base_type"] = base_type["value"].getname()
-                elif basetype_content["name"] == "struct":
+                    base_type = basetype_content.baseType.getcontent()
+                    base_type_type = base_type.getLocalTag()
+                    infos["base_type"] = (base_type.getname()
+                        if base_type_type == "derived"
+                        else base_type_type.upper())
+                elif basetype_content_type == "struct":
                     infos["type"] = "Structure"
                     infos["elements"] = []
-                    for element in basetype_content["value"].getvariable():
+                    for element in basetype_content.getvariable():
                         element_infos = {}
                         element_infos["Name"] = element.getname()
                         element_type = element.type.getcontent()
-                        if element_type["value"] is None or element_type["name"] in ["string", "wstring"]:
-                            element_infos["Type"] = element_type["name"].upper()
-                        elif element_type["name"] == "array":
+                        element_type_type = element_type.getLocalTag()
+                        if element_type_type == "array":
                             dimensions = []
-                            for dimension in element_type["value"].getdimension():
+                            for dimension in element_type.getdimension():
                                 dimensions.append((dimension.getlower(), dimension.getupper()))
-                            base_type = element_type["value"].baseType.getcontent()
-                            if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
-                                base_type_name = base_type["name"].upper()
-                            else:
-                                base_type_name = base_type["value"].getname()
-                            element_infos["Type"] = ("array", base_type_name, dimensions)
+                            base_type = element_type.baseType.getcontent()
+                            base_type_type = element_type.getLocalTag()
+                            element_infos["Type"] = ("array", 
+                                base_type.getname()
+                                if base_type_type == "derived"
+                                else base_type_type.upper(), dimensions)
+                        elif element_type_type == "derived":
+                            element_infos["Type"] = element_type.getname()
                         else:
-                            element_infos["Type"] = element_type["value"].getname()
+                            element_infos["Type"] = element_type_type.upper()
                         if element.initialValue is not None:
                             element_infos["Initial Value"] = str(element.initialValue.getvalue())
                         else:
                             element_infos["Initial Value"] = ""
                         infos["elements"].append(element_infos)
+                else:
+                    infos["type"] = "Directly"
+                    infos["base_type"] = (basetype_content.getname()
+                        if basetype_content_type == "derived"
+                        else basetype_content_type.upper())
+                
                 if datatype.initialValue is not None:
                     infos["initial"] = str(datatype.initialValue.getvalue())
                 else:
@@ -1931,45 +1929,44 @@ class PLCControler:
             datatype = self.Project.getdataType(words[1])
             if infos["type"] == "Directly":
                 if infos["base_type"] in self.GetBaseTypes():
-                    if infos["base_type"] == "STRING":
-                        datatype.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                    elif infos["base_type"] == "WSTRING":
-                        datatype.baseType.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                    else:
-                        datatype.baseType.setcontent({"name" : infos["base_type"], "value" : None})
+                    datatype.baseType.setcontent(PLCOpenParser.CreateElement(
+                        infos["base_type"].lower()
+                        if infos["base_type"] in ["STRING", "WSTRING"]
+                        else infos["base_type"], "dataType"))
                 else:
-                    derived_datatype = plcopen.derivedTypes_derived()
+                    derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
-                    datatype.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
+                    datatype.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Subrange":
-                if infos["base_type"] in GetSubTypes("ANY_UINT"):
-                    subrange = plcopen.derivedTypes_subrangeUnsigned()
-                    datatype.baseType.setcontent({"name" : "subrangeUnsigned", "value" : subrange})
-                else:
-                    subrange = plcopen.derivedTypes_subrangeSigned()
-                    datatype.baseType.setcontent({"name" : "subrangeSigned", "value" : subrange})
+                datatype.baseType.setcontent(PLCOpenParser.CreateElement(
+                    "subrangeUnsigned" 
+                    if infos["base_type"] in GetSubTypes("ANY_UINT")
+                    else "subrangeSigned", "dataType"))
                 subrange.range.setlower(infos["min"])
                 subrange.range.setupper(infos["max"])
                 if infos["base_type"] in self.GetBaseTypes():
-                    subrange.baseType.setcontent({"name" : infos["base_type"], "value" : None})
+                    subrange.baseType.setcontent(
+                        PLCOpenParser.CreateElement(infos["base_type"]))
                 else:
-                    derived_datatype = plcopen.derivedTypes_derived()
+                    derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
-                    subrange.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
+                    subrange.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Enumerated":
-                enumerated = plcopen.derivedTypes_enum()
+                enumerated = PLCOpenParser.CreateElement("enum", "dataType")
+                values = PLCOpenParser.CreateElement("values", "enum")
+                enumerated.setvalues(values)
                 for i, enum_value in enumerate(infos["values"]):
-                    value = plcopen.values_value()
+                    value = PLCOpenParser.CreateElement("value", "values")
                     value.setname(enum_value)
                     if i == 0:
-                        enumerated.values.setvalue([value])
+                        values.setvalue([value])
                     else:
-                        enumerated.values.appendvalue(value)
-                datatype.baseType.setcontent({"name" : "enum", "value" : enumerated})
+                        values.appendvalue(value)
+                datatype.baseType.setcontent(enumerated)
             elif infos["type"] == "Array":
-                array = plcopen.derivedTypes_array()
+                array = PLCOpenParser.CreateElement("array", "dataType")
                 for i, dimension in enumerate(infos["dimensions"]):
-                    dimension_range = plcopen.rangeSigned()
+                    dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                     dimension_range.setlower(dimension[0])
                     dimension_range.setupper(dimension[1])
                     if i == 0:
@@ -1977,28 +1974,27 @@ class PLCControler:
                     else:
                         array.appenddimension(dimension_range)
                 if infos["base_type"] in self.GetBaseTypes():
-                    if infos["base_type"] == "STRING":
-                        array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                    elif infos["base_type"] == "WSTRING":
-                        array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                    else:
-                        array.baseType.setcontent({"name" : infos["base_type"], "value" : None})
+                    array.baseType.setcontent(PLCOpenParser.CreateElement(
+                        infos["base_type"].lower()
+                        if infos["base_type"] in ["STRING", "WSTRING"]
+                        else infos["base_type"], "dataType"))
                 else:
-                    derived_datatype = plcopen.derivedTypes_derived()
+                    derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
-                    array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
-                datatype.baseType.setcontent({"name" : "array", "value" : array})
+                    array.baseType.setcontent(derived_datatype)
+                datatype.baseType.setcontent(array)
             elif infos["type"] == "Structure":
-                struct = plcopen.varListPlain()
+                struct = PLCOpenParser.CreateElement("struct", "dataType")
                 for i, element_infos in enumerate(infos["elements"]):
-                    element = plcopen.varListPlain_variable()
+                    element = PLCOpenParser.CreateElement("variable", "struct")
                     element.setname(element_infos["Name"])
+                    element_type = PLCOpenParser.CreateElement("type", "variable")
                     if isinstance(element_infos["Type"], TupleType):
                         if element_infos["Type"][0] == "array":
                             array_type, base_type_name, dimensions = element_infos["Type"]
-                            array = plcopen.derivedTypes_array()
+                            array = PLCOpenParser.CreateElement("array", "dataType")
                             for j, dimension in enumerate(dimensions):
-                                dimension_range = plcopen.rangeSigned()
+                                dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                                 dimension_range.setlower(dimension[0])
                                 dimension_range.setupper(dimension[1])
                                 if j == 0:
@@ -2006,40 +2002,38 @@ class PLCControler:
                                 else:
                                     array.appenddimension(dimension_range)
                             if base_type_name in self.GetBaseTypes():
-                                if base_type_name == "STRING":
-                                    array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                                elif base_type_name == "WSTRING":
-                                    array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                                else:
-                                    array.baseType.setcontent({"name" : base_type_name, "value" : None})
+                                array.baseType.setcontent(PLCOpenParser.CreateElement(
+                                    base_type_name.lower()
+                                    if base_type_name in ["STRING", "WSTRING"]
+                                    else base_type_name, "dataType"))
                             else:
-                                derived_datatype = plcopen.derivedTypes_derived()
+                                derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                                 derived_datatype.setname(base_type_name)
-                                array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
-                            element.type.setcontent({"name" : "array", "value" : array})
+                                array.baseType.setcontent(derived_datatype)
+                            element_type.setcontent(array)
                     elif element_infos["Type"] in self.GetBaseTypes():
-                        if element_infos["Type"] == "STRING":
-                            element.type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                        elif element_infos["Type"] == "WSTRING":
-                            element.type.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                        else:
-                            element.type.setcontent({"name" : element_infos["Type"], "value" : None})
+                        element_type.setcontent(
+                            PLCOpenParser.CreateElement(
+                                element_infos["Type"].lower()
+                                if element_infos["Type"] in ["STRING", "WSTRING"]
+                                else element_infos["Type"], "dataType"))
                     else:
-                        derived_datatype = plcopen.derivedTypes_derived()
+                        derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                         derived_datatype.setname(element_infos["Type"])
-                        element.type.setcontent({"name" : "derived", "value" : derived_datatype})
+                        element_type.setcontent(derived_datatype)
+                    element.settype(element_type)
                     if element_infos["Initial Value"] != "":
-                        value = plcopen.value()
+                        value = PLCOpenParser.CreateElement("initialValue", "variable")
                         value.setvalue(element_infos["Initial Value"])
                         element.setinitialValue(value)
                     if i == 0:
                         struct.setvariable([element])
                     else:
                         struct.appendvariable(element)
-                datatype.baseType.setcontent({"name" : "struct", "value" : struct})
+                datatype.baseType.setcontent(struct)
             if infos["initial"] != "":
                 if datatype.initialValue is None:
-                    datatype.initialValue = plcopen.value()
+                    datatype.initialValue = PLCOpenParser.CreateElement("initialValue", "dataType")
                 datatype.initialValue.setvalue(infos["initial"])
             else:
                 datatype.initialValue = None
@@ -2203,9 +2197,10 @@ class PLCControler:
                 element = self.GetEditedElement(tagname, debug)
                 if element is not None and element.getbodyType() not in ["ST", "IL"]:
                     for instance in element.getinstances():
-                        if isinstance(instance, (plcopen.sfcObjects_step, 
-                                                 plcopen.commonObjects_connector, 
-                                                 plcopen.commonObjects_continuation)):
+                        if isinstance(instance, 
+                            (PLCOpenParser.GetElementClass("step", "sfcObjects"), 
+                             PLCOpenParser.GetElementClass("connector", "commonObjects"), 
+                             PLCOpenParser.GetElementClass("continuation", "commonObjects"))):
                             names[instance.getname().upper()] = True
         else:
             project = self.GetProject(debug)
@@ -2394,12 +2389,11 @@ class PLCControler:
                         for var in varlist.getvariable():
                             if var.getname() == varname:
                                 vartype_content = var.gettype().getcontent()
-                                if vartype_content["name"] == "derived":
-                                    return vartype_content["value"].getname()
-                                elif vartype_content["name"] in ["string", "wstring"]:
-                                    return vartype_content["name"].upper()
+                                vartype_content_type = vartype_content.getLocalTag()
+                                if vartype_content_type == "derived":
+                                    return vartype_content.getname()
                                 else:
-                                    return vartype_content["name"]
+                                    return vartype_content_type.upper()
         return None
     
     def SetConnectionWires(self, connection, connector):
@@ -2459,7 +2453,7 @@ class PLCControler:
     def AddEditedElementBlock(self, tagname, id, blocktype, blockname = None):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            block = plcopen.fbdObjects_block()
+            block = PLCOpenParser.CreateElement("block", "fbdObjects")
             block.setlocalId(id)
             block.settypeName(blocktype)
             blocktype_infos = self.GetBlockType(blocktype)
