@@ -1258,16 +1258,16 @@ class PLCControler:
                 dimensions.append((dimension.getlower(), dimension.getupper()))
             base_type = vartype_content.baseType.getcontent()
             base_type_type = base_type.getLocalTag()
-            if base_type is None or base_type_type in ["string", "wstring"]:
-                base_type_name = base_type_type.upper()
-            else:
+            if base_type_type == "derived":
                 base_type_name = base_type.getname()
+            else:
+                base_type_name = base_type_type.upper()
             tempvar["Type"] = ("array", base_type_name, dimensions)
         else:
             tempvar["Type"] = vartype_content_type.upper()
         
         tempvar["Edit"] = True
-
+        
         initial = var.getinitialValue()
         if initial is not None:
             tempvar["Initial Value"] = initial.getvalue()
@@ -2460,7 +2460,7 @@ class PLCControler:
             if blocktype_infos["type"] != "function" and blockname is not None:
                 block.setinstanceName(blockname)
                 self.AddEditedElementPouVar(tagname, blocktype, blockname)
-            element.addinstance("block", block)
+            element.addinstance(block)
             self.Project.RefreshElementUsingTree()
     
     def SetEditedElementBlockInfos(self, tagname, id, infos):
@@ -2506,7 +2506,8 @@ class PLCControler:
                     block.inputVariables.setvariable([])
                     block.outputVariables.setvariable([])
                     for connector in value["inputs"]:
-                        variable = plcopen.inputVariables_variable()
+                        variable = PLCOpenParser.CreateElement("variable", "inputVariables")
+                        block.inputVariables.appendvariable(variable)
                         variable.setformalParameter(connector.GetName())
                         if connector.IsNegated():
                             variable.setnegated(True)
@@ -2515,9 +2516,9 @@ class PLCControler:
                         position = connector.GetRelPosition()
                         variable.connectionPointIn.setrelPositionXY(position.x, position.y)
                         self.SetConnectionWires(variable.connectionPointIn, connector)
-                        block.inputVariables.appendvariable(variable)
                     for connector in value["outputs"]:
-                        variable = plcopen.outputVariables_variable()
+                        variable = PLCOpenParser.CreateElement("variable", "outputVariables")
+                        block.outputVariables.appendvariable(variable)
                         variable.setformalParameter(connector.GetName())
                         if connector.IsNegated():
                             variable.setnegated(True)
@@ -2526,23 +2527,18 @@ class PLCControler:
                         position = connector.GetRelPosition()
                         variable.addconnectionPointOut()
                         variable.connectionPointOut.setrelPositionXY(position.x, position.y)
-                        block.outputVariables.appendvariable(variable)
+            block.tostring()
             self.Project.RefreshElementUsingTree()
         
-    def AddEditedElementVariable(self, tagname, id, type):
+    def AddEditedElementVariable(self, tagname, id, var_type):
         element = self.GetEditedElement(tagname)
-        if element is not None:            
-            if type == INPUT:
-                name = "inVariable"
-                variable = plcopen.fbdObjects_inVariable()
-            elif type == OUTPUT:
-                name = "outVariable"
-                variable = plcopen.fbdObjects_outVariable()
-            elif type == INOUT:
-                name = "inOutVariable"
-                variable = plcopen.fbdObjects_inOutVariable()
+        if element is not None:
+            variable = PLCOpenParser.CreateElement(
+                {INPUT: "inVariable",
+                 OUTPUT: "outVariable",
+                 INOUT: "inOutVariable"}[var_type], "fbdObjects")
             variable.setlocalId(id)
-            element.addinstance(name, variable)
+            element.addinstance(variable)
         
     def SetEditedElementVariableInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2552,7 +2548,9 @@ class PLCControler:
                 return 
             for param, value in infos.items():
                 if param == "name":
-                    variable.setexpression(value)    
+                    expression = PLCOpenParser.CreateElement("expression", variable.getLocalTag())
+                    expression.text = value
+                    variable.setexpression(expression)
                 elif param == "executionOrder" and variable.getexecutionOrderId() != value:
                     element.setelementExecutionOrder(variable, value)
                 elif param == "height":
@@ -2588,17 +2586,14 @@ class PLCControler:
                         variable.connectionPointIn.setrelPositionXY(position.x, position.y)
                         self.SetConnectionWires(variable.connectionPointIn, input)
 
-    def AddEditedElementConnection(self, tagname, id, type):
+    def AddEditedElementConnection(self, tagname, id, connection_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            if type == CONNECTOR:
-                name = "connector"
-                connection = plcopen.commonObjects_connector()
-            elif type == CONTINUATION:
-                name = "continuation"
-                connection = plcopen.commonObjects_continuation()
+            connection = PLCOpenParser.CreateElement(
+                {CONNECTOR: "connector",
+                 CONTINUATION: "continuation"}[connection_type], "commonObjects")
             connection.setlocalId(id)
-            element.addinstance(name, connection)
+            element.addinstance(connection)
         
     def SetEditedElementConnectionInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2619,10 +2614,10 @@ class PLCControler:
                     connection.sety(value)
                 elif param == "connector":
                     position = value.GetRelPosition()
-                    if isinstance(connection, plcopen.commonObjects_continuation):
+                    if isinstance(connection, PLCOpenParser.GetElementClass("continuation", "commonObjects")):
                         connection.addconnectionPointOut()
                         connection.connectionPointOut.setrelPositionXY(position.x, position.y)
-                    elif isinstance(connection, plcopen.commonObjects_connector):
+                    elif isinstance(connection, PLCOpenParser.GetElementClass("connector", "commonObjects")):
                         connection.addconnectionPointIn()
                         connection.connectionPointIn.setrelPositionXY(position.x, position.y)
                         self.SetConnectionWires(connection.connectionPointIn, value)
@@ -2630,9 +2625,9 @@ class PLCControler:
     def AddEditedElementComment(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            comment = plcopen.commonObjects_comment()
+            comment = PLCOpenParser.CreateElement("comment", "commonObjects")
             comment.setlocalId(id)
-            element.addinstance("comment", comment)
+            element.addinstance(comment)
     
     def SetEditedElementCommentInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2650,17 +2645,14 @@ class PLCControler:
                 elif param == "y":
                     comment.sety(value)
 
-    def AddEditedElementPowerRail(self, tagname, id, type):
+    def AddEditedElementPowerRail(self, tagname, id, powerrail_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            if type == LEFTRAIL:
-                name = "leftPowerRail"
-                powerrail = plcopen.ldObjects_leftPowerRail()
-            elif type == RIGHTRAIL:
-                name = "rightPowerRail"
-                powerrail = plcopen.ldObjects_rightPowerRail()
+            powerrail = PLCOpenParser.CreateElement(
+                {LEFTRAIL: "leftPowerRail",
+                 RIGHTRAIL: "rightPowerRail"}[powerrail_type], "ldObjects")
             powerrail.setlocalId(id)
-            element.addinstance(name, powerrail)
+            element.addinstance(powerrail)
     
     def SetEditedElementPowerRailInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2678,28 +2670,28 @@ class PLCControler:
                 elif param == "y":
                     powerrail.sety(value)
                 elif param == "connectors":
-                    if isinstance(powerrail, plcopen.ldObjects_leftPowerRail):
+                    if isinstance(powerrail, PLCOpenParser.GetElementClass("leftPowerRail", "ldObjects")):
                         powerrail.setconnectionPointOut([])
                         for connector in value["outputs"]:
                             position = connector.GetRelPosition()
-                            connection = plcopen.leftPowerRail_connectionPointOut()
+                            connection = PLCOpenParser.CreateElement("connectionPointOut", "leftPowerRail")
+                            powerrail.appendconnectionPointOut(connection)
                             connection.setrelPositionXY(position.x, position.y)
-                            powerrail.connectionPointOut.append(connection)
-                    elif isinstance(powerrail, plcopen.ldObjects_rightPowerRail):
+                    elif isinstance(powerrail, PLCOpenParser.GetElementClass("rightPowerRail", "ldObjects")):
                         powerrail.setconnectionPointIn([])
                         for connector in value["inputs"]:
                             position = connector.GetRelPosition()
-                            connection = plcopen.connectionPointIn()
+                            connection = PLCOpenParser.CreateElement("connectionPointIn", "rightPowerRail")
+                            powerrail.appendconnectionPointIn(connection)
                             connection.setrelPositionXY(position.x, position.y)
                             self.SetConnectionWires(connection, connector)
-                            powerrail.connectionPointIn.append(connection)
-
+                            
     def AddEditedElementContact(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            contact = plcopen.ldObjects_contact()
+            contact = PLCOpenParser.CreateElement("contact", "ldObjects")
             contact.setlocalId(id)
-            element.addinstance("contact", contact)
+            element.addinstance(contact)
 
     def SetEditedElementContactInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2709,7 +2701,9 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    contact.setvariable(value)
+                    variable = PLCOpenParser.CreateElement("variable", "contact")
+                    variable.text = value
+                    contact.setvariable(variable)
                 elif param == "type":
                     if value == CONTACT_NORMAL:
                         contact.setnegated(False)
@@ -2745,9 +2739,9 @@ class PLCControler:
     def AddEditedElementCoil(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            coil = plcopen.ldObjects_coil()
+            coil = PLCOpenParser.CreateElement("coil", "ldObjects")
             coil.setlocalId(id)
-            element.addinstance("coil", coil)
+            element.addinstance(coil)
 
     def SetEditedElementCoilInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2757,7 +2751,9 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    coil.setvariable(value)
+                    variable = PLCOpenParser.CreateElement("variable", "coil")
+                    variable.text = value
+                    coil.setvariable(variable)
                 elif param == "type":
                     if value == COIL_NORMAL:
                         coil.setnegated(False)
@@ -2805,9 +2801,9 @@ class PLCControler:
     def AddEditedElementStep(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            step = plcopen.sfcObjects_step()
+            step = PLCOpenParser.CreateElement("step", "sfcObjects")
             step.setlocalId(id)
-            element.addinstance("step", step)
+            element.addinstance(step)
     
     def SetEditedElementStepInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2855,9 +2851,9 @@ class PLCControler:
     def AddEditedElementTransition(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            transition = plcopen.sfcObjects_transition()
+            transition = PLCOpenParser.CreateElement("transition", "sfcObjects")
             transition.setlocalId(id)
-            element.addinstance("transition", transition)
+            element.addinstance(transition)
     
     def SetEditedElementTransitionInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2893,25 +2889,31 @@ class PLCControler:
                     transition.connectionPointOut.setrelPositionXY(position.x, position.y)
                 elif infos.get("type", None) == "connection" and param == "connection" and value:
                     transition.setconditionContent("connection", None)
-                    self.SetConnectionWires(transition.condition.content["value"], value)
+                    self.SetConnectionWires(transition.condition.content, value)
     
-    def AddEditedElementDivergence(self, tagname, id, type):
+    def AddEditedElementDivergence(self, tagname, id, divergence_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            if type == SELECTION_DIVERGENCE:
-                name = "selectionDivergence"
-                divergence = plcopen.sfcObjects_selectionDivergence()
-            elif type == SELECTION_CONVERGENCE:
-                name = "selectionConvergence"
-                divergence = plcopen.sfcObjects_selectionConvergence()
-            elif type == SIMULTANEOUS_DIVERGENCE:
-                name = "simultaneousDivergence"
-                divergence = plcopen.sfcObjects_simultaneousDivergence()
-            elif type == SIMULTANEOUS_CONVERGENCE:
-                name = "simultaneousConvergence"
-                divergence = plcopen.sfcObjects_simultaneousConvergence()
+            divergence = PLCOpenParser.CreateElement(
+                {SELECTION_DIVERGENCE: "selectionDivergence",
+                 SELECTION_CONVERGENCE: "selectionConvergence",
+                 SIMULTANEOUS_DIVERGENCE: "simultaneousDivergence",
+                 SIMULTANEOUS_CONVERGENCE: "simultaneousConvergence"}.get(
+                    divergence_type), "sfcObjects")
             divergence.setlocalId(id)
-            element.addinstance(name, divergence)
+            element.addinstance(divergence)
+    
+    DivergenceTypes = [
+        (divergence_type, 
+         PLCOpenParser.GetElementClass(divergence_type, "sfcObjects"))
+        for divergence_type in ["selectionDivergence", "simultaneousDivergence",
+                                "selectionConvergence", "simultaneousConvergence"]]
+    
+    def GetDivergenceType(self, divergence):
+        for divergence_type, divergence_class in self.DivergenceTypes:
+            if isinstance(divergence, divergence_class):
+                return divergence_type
+        return None
     
     def SetEditedElementDivergenceInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2930,7 +2932,8 @@ class PLCControler:
                     divergence.sety(value)
                 elif param == "connectors":
                     input_connectors = value["inputs"]
-                    if isinstance(divergence, (plcopen.sfcObjects_selectionDivergence, plcopen.sfcObjects_simultaneousDivergence)):
+                    divergence_type = self.GetDivergenceType(divergence)
+                    if divergence_type in ["selectionDivergence", "simultaneousDivergence"]:
                         position = input_connectors[0].GetRelPosition()
                         divergence.addconnectionPointIn()
                         divergence.connectionPointIn.setrelPositionXY(position.x, position.y)
@@ -2939,15 +2942,12 @@ class PLCControler:
                         divergence.setconnectionPointIn([])
                         for input_connector in input_connectors:
                             position = input_connector.GetRelPosition()
-                            if isinstance(divergence, plcopen.sfcObjects_selectionConvergence):
-                                connection = plcopen.selectionConvergence_connectionPointIn()
-                            else:
-                                connection = plcopen.connectionPointIn()
+                            connection = PLCOpenParser.CreateElement("connectionPointIn", divergence_type)
+                            divergence.appendconnectionPointIn(connection)
                             connection.setrelPositionXY(position.x, position.y)
                             self.SetConnectionWires(connection, input_connector)
-                            divergence.appendconnectionPointIn(connection)
                     output_connectors = value["outputs"]
-                    if isinstance(divergence, (plcopen.sfcObjects_selectionConvergence, plcopen.sfcObjects_simultaneousConvergence)):
+                    if divergence_type in ["selectionConvergence", "simultaneousConvergence"]:
                         position = output_connectors[0].GetRelPosition()
                         divergence.addconnectionPointOut()
                         divergence.connectionPointOut.setrelPositionXY(position.x, position.y)
@@ -2955,19 +2955,16 @@ class PLCControler:
                         divergence.setconnectionPointOut([])
                         for output_connector in output_connectors:
                             position = output_connector.GetRelPosition()
-                            if isinstance(divergence, plcopen.sfcObjects_selectionDivergence):
-                                connection = plcopen.selectionDivergence_connectionPointOut()
-                            else:
-                                connection = plcopen.simultaneousDivergence_connectionPointOut()
-                            connection.setrelPositionXY(position.x, position.y)
+                            connection = PLCOpenParser.CreateElement("connectionPointOut", divergence_type)
                             divergence.appendconnectionPointOut(connection)
-    
+                            connection.setrelPositionXY(position.x, position.y)
+                            
     def AddEditedElementJump(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            jump = plcopen.sfcObjects_jumpStep()
+            jump = PLCOpenParser.CreateElement("jumpStep", "sfcObjects")
             jump.setlocalId(id)
-            element.addinstance("jumpStep", jump)
+            element.addinstance(jump)
     
     def SetEditedElementJumpInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2995,9 +2992,9 @@ class PLCControler:
     def AddEditedElementActionBlock(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            actionBlock = plcopen.commonObjects_actionBlock()
+            actionBlock = PLCOpenParser.CreateElement("actionBlock", "commonObjects")
             actionBlock.setlocalId(id)
-            element.addinstance("actionBlock", actionBlock)
+            element.addinstance(actionBlock)
     
     def SetEditedElementActionBlockInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -3026,7 +3023,7 @@ class PLCControler:
         element = self.GetEditedElement(tagname)
         if element is not None:
             instance = element.getinstance(id)
-            if isinstance(instance, plcopen.fbdObjects_block):
+            if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")):
                 self.RemoveEditedElementPouVar(tagname, instance.gettypeName(), instance.getinstanceName())
             element.removeinstance(id)
             self.Project.RefreshElementUsingTree()

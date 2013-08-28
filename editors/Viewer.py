@@ -1074,7 +1074,7 @@ class Viewer(EditorPanel, DebugViewer):
     def RefreshView(self, variablepanel=True, selection=None):
         EditorPanel.RefreshView(self, variablepanel)
         
-        if self.TagName.split("::")[0] == "A":
+        if self.TagName.split("::")[0] == "A" and self.Debug:
             self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self)
         
         if self.ToolTipElement is not None:
