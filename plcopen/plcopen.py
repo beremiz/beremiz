@@ -127,11 +127,13 @@ PLCOpenParser = GenerateParserFromXSD(os.path.join(os.path.split(__file__)[0], "
 
 def LoadProject(filepath):
     project_file = open(filepath)
-    project_xml = project_file.read()\
-        .replace("http://www.plcopen.org/xml/tc6.xsd", 
-                 "http://www.plcopen.org/xml/tc6_0201")\
-        .replace("<![CDATA[", "<xhtml:p><![CDATA[")\
-        .replace("]]>", "]]></xhtml:p>")
+    project_xml = project_file.read().replace(
+        "http://www.plcopen.org/xml/tc6.xsd", 
+        "http://www.plcopen.org/xml/tc6_0201")
+    for cre, repl in [
+        (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+        (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+        project_xml = cre.sub(repl, project_xml)
     project_file.close()
     
     return etree.fromstring(project_xml, PLCOpenParser)
@@ -148,7 +150,7 @@ def SaveProject(project, filepath):
 cls = PLCOpenParser.GetElementClass("formattedText")
 if cls:
     def updateElementName(self, old_name, new_name):
-        text = self.text
+        text = self.getanyText()
         index = text.find(old_name)
         while index != -1:
             if index > 0 and (text[index - 1].isalnum() or text[index - 1] == "_"):
@@ -158,11 +160,11 @@ if cls:
             else:
                 text = text[:index] + new_name + text[index + len(old_name):]
                 index = text.find(old_name, index + len(new_name))
-        self.text = text
+        self.setanyText(text)
     setattr(cls, "updateElementName", updateElementName)
     
     def updateElementAddress(self, address_model, new_leading):
-        text = self.text
+        text = self.getanyText()
         startpos = 0
         result = address_model.search(text, startpos)
         while result is not None:
@@ -171,11 +173,11 @@ if cls:
             text = text[:result.start()] + new_address + text[result.end():]
             startpos = result.start() + len(new_address)
             result = address_model.search(self.text, startpos)
-        self.text = text
+        self.setanyText(text)
     setattr(cls, "updateElementAddress", updateElementAddress)
     
     def hasblock(self, block_type):
-        text = self.text.upper()
+        text = self.getanyText().upper()
         index = text.find(block_type.upper())
         while index != -1:
             if (not (index > 0 and (text[index - 1].isalnum() or text[index - 1] == "_")) and 
@@ -326,7 +328,7 @@ if cls:
 
     def getconfigurations(self):
         configurations = self.instances.configurations.getconfiguration()
-        if configurations:
+        if configurations is not None:
             return configurations
         return []
     setattr(cls, "getconfigurations", getconfigurations)
@@ -360,7 +362,7 @@ if cls:
 
     def getconfigurationResource(self, config_name, name):
         configuration = self.getconfiguration(config_name)
-        if configuration:
+        if configuration is not None:
             for resource in configuration.getresource():
                 if resource.getname() == name:
                     return resource
@@ -369,7 +371,7 @@ if cls:
 
     def addconfigurationResource(self, config_name, name):
         configuration = self.getconfiguration(config_name)
-        if configuration:
+        if configuration is not None:
             for resource in configuration.getresource():
                 if resource.getname() == name:
                     raise ValueError, _("\"%s\" resource already exists in \"%s\" configuration !!!")%(name, config_name)
@@ -380,7 +382,7 @@ if cls:
 
     def removeconfigurationResource(self, config_name, name):
         configuration = self.getconfiguration(config_name)
-        if configuration:
+        if configuration is not None:
             found = False
             for idx, resource in enumerate(configuration.getresource()):
                 if resource.getname() == name:
@@ -447,7 +449,7 @@ if cls:
             self.CustomDataTypeRange[name] = range
             base_type = basetype_content.baseType.getcontent()
             if base_type.__class__ == DefaultElementClass:
-                self.CustomTypeHierarchy[name] = basetype.getLocalTag()
+                self.CustomTypeHierarchy[name] = base_type.getLocalTag()
             else:
                 self.CustomTypeHierarchy[name] = base_type.getname()
         else:
@@ -880,7 +882,7 @@ if cls:
         if location != "":
             var.setaddress(location)
         if description != "":
-            ft = PLCOpenParser.CreateElement("formattedText")
+            ft = PLCOpenParser.CreateElement("documentation", "variable")
             ft.setanyText(description)
             var.setdocumentation(ft)
         globalvars[-1].appendvariable(var)
@@ -1081,7 +1083,7 @@ if cls:
         new_datatype = PLCOpenParser.CreateElement("dataType", "dataTypes")
         self.dataTypes.appenddataType(new_datatype)
         new_datatype.setname(name)
-        new_datatype.baseType.setcontent(PLCOpenParser.CreateElement("BOOL"))
+        new_datatype.baseType.setcontent(PLCOpenParser.CreateElement("BOOL", "dataType"))
     setattr(cls, "appenddataTypeElement", appenddataTypeElement)
     
     def insertdataTypeElement(self, index, dataType):
@@ -1183,15 +1185,26 @@ if cls:
         search_result = []
         content_name = self.content.getLocalTag()
         if content_name in ["derived", "array", "enum", "subrangeSigned", "subrangeUnsigned"]:
-            search_result.extend(self.content["value"].Search(criteria, parent_infos))
+            search_result.extend(self.content.Search(criteria, parent_infos + ["base"]))
         elif content_name == "struct":
-            for i, element in enumerate(self.content["value"].getvariable()):
+            for i, element in enumerate(self.content.getvariable()):
                 search_result.extend(element.Search(criteria, parent_infos + ["struct", i]))
         else:
             if content_name in ["string", "wstring"]:
                 content_name = content_name.upper()
             search_result.extend(_Search([("base", content_name)], criteria, parent_infos))
         return search_result
+    setattr(cls, "Search", Search)
+
+cls = PLCOpenParser.GetElementClass("derived", "dataType")
+if cls:
+    def updateElementName(self, old_name, new_name):
+        if self.name == old_name:
+            self.name = new_name
+    setattr(cls, "updateElementName", updateElementName)
+    
+    def Search(self, criteria, parent_infos=[]):
+        return [(tuple(parent_infos),) + result for result in TestTextElement(self.name, criteria)]
     setattr(cls, "Search", Search)
 
 cls = PLCOpenParser.GetElementClass("array", "dataType")
@@ -1233,7 +1246,7 @@ if cls:
     
     def Search(self, criteria, parent_infos=[]):
         search_result = []
-        for i, value in enumerate(self.values.getvalue()):
+        for i, value in enumerate(self.xpath("ppx:values/ppx:value", namespaces=PLCOpenParser.NSMAP)):
             for result in TestTextElement(value.getname(), criteria):
                 search_result.append((tuple(parent_infos + ["value", i]),) + result)
         return search_result
@@ -1245,7 +1258,7 @@ if cls:
     def setdescription(self, description):
         doc = self.getdocumentation()
         if doc is None:
-            doc = PLCOpenParser.CreateElement("formattedText")
+            doc = PLCOpenParser.CreateElement("documentation", "pou")
             self.setdocumentation(doc)
         doc.setanyText(description)
     setattr(cls, "setdescription", setdescription)
@@ -1359,16 +1372,21 @@ if cls:
         if self.interface is None:
             self.interface = PLCOpenParser.CreateElement("interface", "pou")
         content = self.interface.getcontent()
-        if len(content) == 0 or content[-1]["name"] != var_class:
-            self.appendcontent(PLCOpenParser.CreateElement(var_class, "interface"))
+        if len(content) == 0:
+            varlist = PLCOpenParser.CreateElement(var_class, "interface")
+            self.interface.setcontent([varlist])
+        elif content[-1] != var_class:
+            varlist = PLCOpenParser.CreateElement(var_class, "interface")
+            content[-1].addnext(varlist)
         else:
-            varlist = content[-1]["value"]
+            varlist = content[-1]
             variables = varlist.getvariable()
             if varlist.getconstant() or varlist.getretain() or len(variables) > 0 and variables[0].getaddress():
-                self.appendcontent(PLCOpenParser.CreateElement(var_class, "interface"))
+                varlist = PLCOpenParser.CreateElement(var_class, "interface")
+                content[-1].addnext(varlist)
         var = PLCOpenParser.CreateElement("variable", "varListPlain")
         var.setname(name)
-        var_type_obj = PLCOpenParser.CreateElement("dataType")
+        var_type_obj = PLCOpenParser.CreateElement("type", "variable")
         if var_type in [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]:
             var_type_obj.setcontent(PLCOpenParser.CreateElement(
                 var_type.lower() if var_type in ["STRING", "WSTRING"]
@@ -1381,18 +1399,18 @@ if cls:
         if location != "":
             var.setaddress(location)
         if description != "":
-            ft = PLCOpenParser.GetElementClass("formattedText")()
+            ft = PLCOpenParser.CreateElement("documentation", "variable")
             ft.setanyText(description)
             var.setdocumentation(ft)
         
-        content[-1]["value"].appendvariable(var)
+        varlist.appendvariable(var)
     setattr(cls, "addpouVar", addpouVar)
     
     def changepouVar(self, old_type, old_name, new_type, new_name):
         if self.interface is not None:
             content = self.interface.getcontent()
             for varlist in content:
-                variables = varlist["value"].getvariable()
+                variables = varlist.getvariable()
                 for var in variables:
                     if var.getname() == old_name:
                         vartype_content = var.gettype().getcontent()
@@ -1785,7 +1803,7 @@ if cls:
     setattr(cls, "compileelementExecutionOrder", compileelementExecutionOrder)
     
     def setelementExecutionOrder(self, instance, new_executionOrder):
-        if self.contentLgetLocalTag() == "FBD":
+        if self.content.getLocalTag() == "FBD":
             old_executionOrder = instance.getexecutionOrderId()
             if old_executionOrder is not None and old_executionOrder != 0 and new_executionOrder != 0:
                 for element in self.content.getcontent():
@@ -2148,7 +2166,7 @@ def _getldelementinfosFunction(ld_element_type):
         _getexecutionOrder(self, specific_values)
         specific_values["negated"] = self.getnegated()
         specific_values["edge"] = self.getedge()
-        if type == "coil":
+        if ld_element_type == "coil":
             specific_values["storage"] = self.getstorage()
         infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
         infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
@@ -2350,9 +2368,9 @@ if cls:
         condition = self.getconditionContent()
         specific_values["condition_type"] = condition["type"]
         if specific_values["condition_type"] == "connection":
-            specific_values["connection"] = _getconnectioninfos(self, condition["value"], True)
+            specific_values["connection"] = _getconnectioninfos(self, condition, True)
         else:
-            specific_values["condition"] = condition["value"]
+            specific_values["condition"] = condition
         infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
         infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
         return infos
