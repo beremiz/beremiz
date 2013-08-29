@@ -2302,7 +2302,6 @@ class IDEFrame(wx.Frame):
         if tagname is not None:
             self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL)
             self.EditProjectElement(ITEM_CONFIGURATION, tagname)
-        dialog.Destroy()
 
     def GenerateAddResourceFunction(self, config_name):
         def OnAddResourceMenu(event):
