@@ -536,17 +536,16 @@ def GenerateModelNameListExtraction(type, model):
 
 def GenerateAnyInfos(infos):
     
-    def ExtractAny(tree):
+    def GetTextElement(tree):
         if infos["namespace"][0] == "##any":
-            return tree.xpath("p/text()")[0]
-        return tree.xpath("ns:p/text()", namespaces={"ns": infos["namespace"][0]})[0]
+            return tree.xpath("p")[0]
+        return tree.xpath("ns:p", namespaces={"ns": infos["namespace"][0]})[0]
+    
+    def ExtractAny(tree):
+        return GetTextElement(tree).text
     
     def GenerateAny(tree, value):
-        if infos["namespace"][0] == "##any":
-            p = tree.xpath("p")[0]
-        else:
-            p = tree.xpath("ns:p", namespaces={"ns": infos["namespace"][0]})[0]
-        p.text = etree.CDATA(value)
+        GetTextElement(tree).text = etree.CDATA(value)
         
     def InitialAny():
         if infos["namespace"][0] == "##any":
@@ -1395,7 +1394,9 @@ def generateGetattrMethod(factory, class_definition, classinfos):
                 return attribute_infos["attr_type"]["extract"](value, extract=False)
             elif attribute_infos.has_key("fixed"):
                 return attribute_infos["attr_type"]["extract"](attribute_infos["fixed"], extract=False)
-            return attribute_infos["attr_type"]["initial"]()
+            elif attribute_infos.has_key("default"):
+                return attribute_infos["attr_type"]["extract"](attribute_infos["default"], extract=False)
+            return None
         
         elif elements.has_key(name):
             element_infos = elements[name]
@@ -1460,13 +1461,17 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                     self.remove(element)
                 
                 if value is not None:
-                    previous_elements_xpath = "|".join(map(
-                        lambda x: "%s:%s" % (factory.TargetNamespace, x)
-                                  if x != "content"
-                                  else elements["content"]["elmt_type"]["choices_xpath"](),
-                        elements.keys()[elements.keys().index(name)]))
-                    
-                    insertion_point = len(self.xpath(previous_elements_xpath, namespaces=factory.NSMAP))
+                    element_idx = elements.keys().index(name)
+                    if element_idx > 0:
+                        previous_elements_xpath = "|".join(map(
+                            lambda x: "%s:%s" % (factory.TargetNamespace, x)
+                                      if x != "content"
+                                      else elements["content"]["elmt_type"]["choices_xpath"](),
+                            elements.keys()[:element_idx]))
+                        
+                        insertion_point = len(self.xpath(previous_elements_xpath, namespaces=factory.NSMAP))
+                    else:
+                        insertion_point = 0
                     
                     if not isinstance(value, ListType):
                         value = [value]

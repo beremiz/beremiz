@@ -1232,7 +1232,7 @@ class PLCControler:
             else:
                 tempvar.setaddress(None)
             if var['Documentation'] != "":
-                ft = plcopen.formattedText()
+                ft = PLCOpenParser.CreateElement("documentation", "variable")
                 ft.setanyText(var['Documentation'])
                 tempvar.setdocumentation(ft)
 
@@ -1366,7 +1366,7 @@ class PLCControler:
         if project is not None:
             # Found the resource corresponding to name
             resource = project.getconfigurationResource(config_name, name)
-            if resource:
+            if resource is not None:
                 # Extract variables from every varLists
                 for varlist in resource.getglobalVars():
                     for var in varlist.getvariable():
@@ -1483,7 +1483,7 @@ class PLCControler:
                     pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # If there isn't any return type yet, add it
                 return_type_obj = pou.interface.getreturnType()
-                if not return_type_obj:
+                if return_type_obj is None:
                     return_type_obj = PLCOpenParser.CreateElement("returnType", "interface")
                     pou.interface.setreturnType(return_type_obj)
                 # Change return type
@@ -1500,12 +1500,12 @@ class PLCControler:
                 self.Project.RefreshCustomBlockTypes()
     
     def UpdateProjectUsedPous(self, old_name, new_name):
-        if self.Project:
+        if self.Project is not None:
             self.Project.updateElementName(old_name, new_name)
     
     def UpdateEditedElementUsedVariable(self, tagname, old_name, new_name):
         pou = self.GetEditedElement(tagname)
-        if pou:
+        if pou is not None:
             pou.updateElementName(old_name, new_name)
     
     # Return the return type of the pou given by its name
@@ -1938,21 +1938,23 @@ class PLCControler:
                     derived_datatype.setname(infos["base_type"])
                     datatype.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Subrange":
-                datatype.baseType.setcontent(PLCOpenParser.CreateElement(
+                subrange = PLCOpenParser.CreateElement(
                     "subrangeUnsigned" 
                     if infos["base_type"] in GetSubTypes("ANY_UINT")
-                    else "subrangeSigned", "dataType"))
+                    else "subrangeSigned", "dataType")
+                datatype.baseType.setcontent(subrange)
                 subrange.range.setlower(infos["min"])
                 subrange.range.setupper(infos["max"])
                 if infos["base_type"] in self.GetBaseTypes():
                     subrange.baseType.setcontent(
-                        PLCOpenParser.CreateElement(infos["base_type"]))
+                        PLCOpenParser.CreateElement(infos["base_type"], "dataType"))
                 else:
                     derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
                     subrange.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Enumerated":
                 enumerated = PLCOpenParser.CreateElement("enum", "dataType")
+                datatype.baseType.setcontent(enumerated)
                 values = PLCOpenParser.CreateElement("values", "enum")
                 enumerated.setvalues(values)
                 for i, enum_value in enumerate(infos["values"]):
@@ -1962,9 +1964,9 @@ class PLCControler:
                         values.setvalue([value])
                     else:
                         values.appendvalue(value)
-                datatype.baseType.setcontent(enumerated)
             elif infos["type"] == "Array":
                 array = PLCOpenParser.CreateElement("array", "dataType")
+                datatype.baseType.setcontent(array)
                 for i, dimension in enumerate(infos["dimensions"]):
                     dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                     dimension_range.setlower(dimension[0])
@@ -1982,9 +1984,9 @@ class PLCControler:
                     derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
                     array.baseType.setcontent(derived_datatype)
-                datatype.baseType.setcontent(array)
             elif infos["type"] == "Structure":
                 struct = PLCOpenParser.CreateElement("struct", "dataType")
+                datatype.baseType.setcontent(struct)
                 for i, element_infos in enumerate(infos["elements"]):
                     element = PLCOpenParser.CreateElement("variable", "struct")
                     element.setname(element_infos["Name"])
@@ -1993,6 +1995,7 @@ class PLCControler:
                         if element_infos["Type"][0] == "array":
                             array_type, base_type_name, dimensions = element_infos["Type"]
                             array = PLCOpenParser.CreateElement("array", "dataType")
+                            element_type.setcontent(array)
                             for j, dimension in enumerate(dimensions):
                                 dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                                 dimension_range.setlower(dimension[0])
@@ -2010,7 +2013,6 @@ class PLCControler:
                                 derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                                 derived_datatype.setname(base_type_name)
                                 array.baseType.setcontent(derived_datatype)
-                            element_type.setcontent(array)
                     elif element_infos["Type"] in self.GetBaseTypes():
                         element_type.setcontent(
                             PLCOpenParser.CreateElement(
@@ -2030,7 +2032,6 @@ class PLCControler:
                         struct.setvariable([element])
                     else:
                         struct.appendvariable(element)
-                datatype.baseType.setcontent(struct)
             if infos["initial"] != "":
                 if datatype.initialValue is None:
                     datatype.initialValue = PLCOpenParser.CreateElement("initialValue", "dataType")
@@ -2705,18 +2706,13 @@ class PLCControler:
                     variable.text = value
                     contact.setvariable(variable)
                 elif param == "type":
-                    if value == CONTACT_NORMAL:
-                        contact.setnegated(False)
-                        contact.setedge("none")
-                    elif value == CONTACT_REVERSE:
-                        contact.setnegated(True)
-                        contact.setedge("none")
-                    elif value == CONTACT_RISING:
-                        contact.setnegated(False)
-                        contact.setedge("rising")
-                    elif value == CONTACT_FALLING:
-                        contact.setnegated(False)
-                        contact.setedge("falling")
+                    negated, edge = {
+                        CONTACT_NORMAL: (False, "none"),
+                        CONTACT_REVERSE: (True, "none"),
+                        CONTACT_RISING: (False, "rising"),
+                        CONTACT_FALLING: (False, "falling")}[value]
+                    contact.setnegated(negated)
+                    contact.setedge(edge)
                 elif param == "height":
                     contact.setheight(value)
                 elif param == "width":
@@ -2755,30 +2751,16 @@ class PLCControler:
                     variable.text = value
                     coil.setvariable(variable)
                 elif param == "type":
-                    if value == COIL_NORMAL:
-                        coil.setnegated(False)
-                        coil.setstorage("none")
-                        coil.setedge("none")
-                    elif value == COIL_REVERSE:
-                        coil.setnegated(True)
-                        coil.setstorage("none")
-                        coil.setedge("none")
-                    elif value == COIL_SET:
-                        coil.setnegated(False)
-                        coil.setstorage("set")
-                        coil.setedge("none")
-                    elif value == COIL_RESET:
-                        coil.setnegated(False)
-                        coil.setstorage("reset")
-                        coil.setedge("none")
-                    elif value == COIL_RISING:
-                        coil.setnegated(False)
-                        coil.setstorage("none")
-                        coil.setedge("rising")
-                    elif value == COIL_FALLING:
-                        coil.setnegated(False)
-                        coil.setstorage("none")
-                        coil.setedge("falling")
+                    negated, storage, edge = {
+                        COIL_NORMAL: (False, "none", "none"),
+                        COIL_REVERSE: (True, "none", "none"),
+                        COIL_SET: (False, "set", "none"),
+                        COIL_RESET: (False, "reset", "none"),
+                        COIL_RISING: (False, "none", "rising"),
+                        COIL_FALLING: (False, "none", "falling")}[value]
+                    coil.setnegated(negated)
+                    coil.setstorage(storage)
+                    coil.setedge(edge)
                 elif param == "height":
                     coil.setheight(value)
                 elif param == "width":
@@ -3046,7 +3028,8 @@ class PLCControler:
             resource.setpouInstance([])
             task_list = {}
             for task in tasks:
-                new_task = plcopen.resource_task()
+                new_task = PLCOpenParser.CreateElement("task", "resource")
+                resource.appendtask(new_task)
                 new_task.setname(task["Name"])
                 if task["Triggering"] == "Interrupt":
                     new_task.setsingle(task["Single"])
@@ -3066,12 +3049,16 @@ class PLCControler:
                 new_task.setpriority(int(task["Priority"]))
                 if task["Name"] != "":
                     task_list[task["Name"]] = new_task
-                resource.appendtask(new_task)
             for instance in instances:
-                new_instance = plcopen.pouInstance()
+                task = task_list.get(instance["Task"])
+                if task is not None:
+                    new_instance = PLCOpenParser.CreateElement("pouInstance", "task")
+                    task.appendpouInstance(new_instance)
+                else:
+                    new_instance = PLCOpenParser.CreateElement("pouInstance", "resource")
+                    resource.appendpouInstance(new_instance)
                 new_instance.setname(instance["Name"])
                 new_instance.settypeName(instance["Type"])
-                task_list.get(instance["Task"], resource).appendpouInstance(new_instance)
 
     def GetEditedResourceInfos(self, tagname, debug = False):
         resource = self.GetEditedElement(tagname, debug)
