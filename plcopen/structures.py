@@ -42,7 +42,7 @@ def JoinList(separator, mylist):
         return mylist
 
 def generate_block(generator, block, block_infos, body, link, order=False, to_inout=False):
-    body_type = body.getcontent()["name"]
+    body_type = body.getcontent().getLocalTag()
     name = block.getinstanceName()
     type = block.gettypeName()
     executionOrderId = block.getexecutionOrderId()
