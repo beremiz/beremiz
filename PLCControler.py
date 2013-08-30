@@ -758,7 +758,7 @@ class PLCControler:
         if self.Project is not None:
             try:
                 self.ProgramChunks = GenerateCurrentProgram(self, self.Project, errors, warnings)
-                self.NextCompiledProject = self.Copy(self.Project)
+                self.NextCompiledProject = self.Project #self.Copy(self.Project)
                 program_text = "".join([item[0] for item in self.ProgramChunks])
                 if filepath is not None:
                     programfile = open(filepath, "w")
