@@ -25,12 +25,12 @@
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
 import cPickle
+from copy import deepcopy
 import os,sys,re
 import datetime
 from time import localtime
 
-from plcopen import PLCOpenParser, LoadProject, SaveProject, QualifierList, rect
-from plcopen.structures import *
+from plcopen import*
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -247,7 +247,7 @@ class PLCControler:
         self.CreateProjectBuffer(False)
         self.ProgramChunks = []
         self.ProgramOffset = 0
-        self.NextCompiledProject = self.Project #self.Copy(self.Project)
+        self.NextCompiledProject = self.Copy(self.Project)
         self.CurrentCompiledProject = None
         self.Buffering = False
     
@@ -758,7 +758,7 @@ class PLCControler:
         if self.Project is not None:
             try:
                 self.ProgramChunks = GenerateCurrentProgram(self, self.Project, errors, warnings)
-                self.NextCompiledProject = self.Project #self.Copy(self.Project)
+                self.NextCompiledProject = self.Copy(self.Project)
                 program_text = "".join([item[0] for item in self.ProgramChunks])
                 if filepath is not None:
                     programfile = open(filepath, "w")
@@ -844,7 +844,7 @@ class PLCControler:
         if self.Project is not None:
             pou = self.Project.getpou(pou_name)
             if pou is not None:
-                return pou.generateXMLText('pou', 0)
+                return pou.tostring()
         return None
     
     def PastePou(self, pou_type, pou_xml):
@@ -852,47 +852,40 @@ class PLCControler:
         Adds the POU defined by 'pou_xml' to the current project with type 'pou_type'
         '''
         try:
-            tree = minidom.parseString(pou_xml.encode("utf-8"))
-            root = tree.childNodes[0]
+            new_pou = LoadPou(pou_xml)
         except:
             return _("Couldn't paste non-POU object.")
-
-        if root.nodeName == "pou":
-            new_pou = plcopen.pous_pou()
-            new_pou.loadXMLTree(root)
-
-            name = new_pou.getname()
+        
+        name = new_pou.getname()
+        
+        idx = 0
+        new_name = name
+        while self.Project.getpou(new_name):
+            # a POU with that name already exists.
+            # make a new name and test if a POU with that name exists.
+            # append an incrementing numeric suffix to the POU name.
+            idx += 1
+            new_name = "%s%d" % (name, idx)
             
-            idx = 0
-            new_name = name
-            while self.Project.getpou(new_name):
-                # a POU with that name already exists.
-                # make a new name and test if a POU with that name exists.
-                # append an incrementing numeric suffix to the POU name.
-                idx += 1
-                new_name = "%s%d" % (name, idx)
-                
-            # we've found a name that does not already exist, use it
-            new_pou.setname(new_name)
-            
-            if pou_type is not None:
-                orig_type = new_pou.getpouType()
-    
-                # prevent violations of POU content restrictions:
-                # function blocks cannot be pasted as functions,
-                # programs cannot be pasted as functions or function blocks
-                if orig_type == 'functionBlock' and pou_type == 'function' or \
-                   orig_type == 'program' and pou_type in ['function', 'functionBlock']:
-                    return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
-                
-                new_pou.setpouType(pou_type)
+        # we've found a name that does not already exist, use it
+        new_pou.setname(new_name)
+        
+        if pou_type is not None:
+            orig_type = new_pou.getpouType()
 
-            self.Project.insertpou(-1, new_pou)
-            self.BufferProject()
+            # prevent violations of POU content restrictions:
+            # function blocks cannot be pasted as functions,
+            # programs cannot be pasted as functions or function blocks
+            if orig_type == 'functionBlock' and pou_type == 'function' or \
+               orig_type == 'program' and pou_type in ['function', 'functionBlock']:
+                return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
             
-            return self.ComputePouName(new_name),
-        else:
-            return _("Couldn't paste non-POU object.")
+            new_pou.setpouType(pou_type)
+
+        self.Project.insertpou(-1, new_pou)
+        self.BufferProject()
+        
+        return self.ComputePouName(new_name),
 
     # Remove a Pou from project
     def ProjectRemovePou(self, pou_name):
@@ -2170,22 +2163,28 @@ class PLCControler:
     def GetEditedElementCopy(self, tagname, debug = False):
         element = self.GetEditedElement(tagname, debug)
         if element is not None:
-            name = element.__class__.__name__
-            return element.generateXMLText(name.split("_")[-1], 0)
+            return element.tostring()
         return ""
         
     def GetEditedElementInstancesCopy(self, tagname, blocks_id = None, wires = None, debug = False):
         element = self.GetEditedElement(tagname, debug)
         text = ""
         if element is not None:
-            wires = dict([(wire, True) for wire in wires if wire[0] in blocks_id and wire[1] in blocks_id])
+            wires = dict([(wire, True) 
+                          for wire in wires 
+                          if wire[0] in blocks_id and wire[1] in blocks_id])
+            copy_body = PLCOpenParser.CreateElement("body", "pou")
+            element.append(copy_body)
+            copy_body.setcontent(
+                PLCOpenParser.CreateElement(element.getbodyType(), "body"))
             for id in blocks_id:
                 instance = element.getinstance(id)
                 if instance is not None:
-                    instance_copy = self.Copy(instance)
+                    copy_body.appendcontentInstance(self.Copy(instance))
+                    instance_copy = copy_body.getcontentInstance(id)
                     instance_copy.filterConnections(wires)
-                    name = instance_copy.__class__.__name__
-                    text += instance_copy.generateXMLText(name.split("_")[-1], 0)
+                    text += instance_copy.tostring()
+            element.remove(copy_body)
         return text
     
     def GenerateNewName(self, tagname, name, format, start_idx=0, exclude={}, debug=False):
@@ -2227,10 +2226,6 @@ class PLCControler:
             i += 1
         return name
     
-    CheckPasteCompatibility = {"SFC": lambda name: True,
-                               "LD": lambda name: not name.startswith("sfcObjects"),
-                               "FBD": lambda name: name.startswith("fbdObjects") or name.startswith("commonObjects")}
-    
     def PasteEditedElementInstances(self, tagname, text, new_pos, middle=False, debug=False):
         element = self.GetEditedElement(tagname, debug)
         element_name, element_type = self.GetEditedElementType(tagname, debug)
@@ -2248,62 +2243,46 @@ class PLCControler:
             used_id = dict([(instance.getlocalId(), True) for instance in element.getinstances()])
             new_id = {}
             
-            text = "<paste>%s</paste>"%text
-            
             try:
-                tree = minidom.parseString(text.encode("utf-8"))
+                instances = LoadPouInstances(text.encode("utf-8"), bodytype)
+                if len(instances) == 0:
+                    raise ValueError
             except:
                 return _("Invalid plcopen element(s)!!!")
-            instances = []
-            exclude = {}
-            for root in tree.childNodes:
-                if root.nodeType == tree.ELEMENT_NODE and root.nodeName == "paste":
-                    for child in root.childNodes:
-                        if child.nodeType == tree.ELEMENT_NODE:
-                            if not child.nodeName in plcopen.ElementNameToClass:
-                                return _("\"%s\" element can't be pasted here!!!")%child.nodeName
-
-                            classname = plcopen.ElementNameToClass[child.nodeName]
-                            if not self.CheckPasteCompatibility[bodytype](classname):
-                                return _("\"%s\" element can't be pasted here!!!")%child.nodeName
-
-                            classobj = getattr(plcopen, classname, None)
-                            if classobj is not None:
-                                instance = classobj()
-                                instance.loadXMLTree(child)
-                                if child.nodeName == "block":
-                                    blockname = instance.getinstanceName()
-                                    if blockname is not None:
-                                        blocktype = instance.gettypeName()
-                                        if element_type == "function":
-                                            return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
-                                        blockname = self.GenerateNewName(tagname, 
-                                                                         blockname, 
-                                                                         "%s%%d"%blocktype, 
-                                                                         debug=debug)
-                                        exclude[blockname] = True
-                                        instance.setinstanceName(blockname)
-                                        self.AddEditedElementPouVar(tagname, blocktype, blockname)
-                                elif child.nodeName == "step":
-                                    stepname = self.GenerateNewName(tagname, 
-                                                                    instance.getname(), 
-                                                                    "Step%d", 
-                                                                    exclude=exclude, 
-                                                                    debug=debug)
-                                    exclude[stepname] = True
-                                    instance.setname(stepname)
-                                localid = instance.getlocalId()
-                                if not used_id.has_key(localid):
-                                    new_id[localid] = True
-                                instances.append((child.nodeName, instance))
             
-            if len(instances) == 0:
-                return _("Invalid plcopen element(s)!!!")
+            exclude = {}
+            for instance in instances:
+                element.addinstance(instance)
+                instance_type = instance.getLocalTag()
+                if instance_type == "block":
+                    blockname = instance.getinstanceName()
+                    if blockname is not None:
+                        blocktype = instance.gettypeName()
+                        if element_type == "function":
+                            return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
+                        blockname = self.GenerateNewName(tagname, 
+                                                         blockname, 
+                                                         "%s%%d"%blocktype, 
+                                                         debug=debug)
+                        exclude[blockname] = True
+                        instance.setinstanceName(blockname)
+                        self.AddEditedElementPouVar(tagname, blocktype, blockname)
+                elif instance_type == "step":
+                    stepname = self.GenerateNewName(tagname, 
+                                                    instance.getname(), 
+                                                    "Step%d", 
+                                                    exclude=exclude, 
+                                                    debug=debug)
+                    exclude[stepname] = True
+                    instance.setname(stepname)
+                localid = instance.getlocalId()
+                if not used_id.has_key(localid):
+                    new_id[localid] = True
             
             idx = 1
             translate_id = {}
-            bbox = plcopen.rect()
-            for name, instance in instances:
+            bbox = rect()
+            for instance in instances:
                 localId = instance.getlocalId()
                 bbox.union(instance.getBoundingBox())
                 if used_id.has_key(localId):
@@ -2336,12 +2315,11 @@ class PLCControler:
             diff = (new_pos[0] - x, new_pos[1] - y)
             
             connections = {}
-            for name, instance in instances:
+            for instance in instances:
                 connections.update(instance.updateConnectionsId(translate_id))
                 if getattr(instance, "setexecutionOrderId", None) is not None:
                     instance.setexecutionOrderId(0)
                 instance.translate(*diff)
-                element.addinstance(name, instance)
             
             return new_id, connections
                 
@@ -3131,7 +3109,7 @@ class PLCControler:
         self.CreateProjectBuffer(True)
         self.ProgramChunks = []
         self.ProgramOffset = 0
-        self.NextCompiledProject = self.Project ## self.Copy(self.Project)
+        self.NextCompiledProject = self.Copy(self.Project)
         self.CurrentCompiledProject = None
         self.Buffering = False
         self.CurrentElementEditing = None
@@ -3175,7 +3153,7 @@ class PLCControler:
     Return a copy of the project
     """
     def Copy(self, model):
-        return cPickle.loads(cPickle.dumps(model))
+        return deepcopy(model)
 
     def CreateProjectBuffer(self, saved):
         if self.ProjectBufferEnabled:

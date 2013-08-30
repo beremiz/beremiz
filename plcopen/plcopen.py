@@ -125,6 +125,38 @@ def TestTextElement(text, criteria):
 
 PLCOpenParser = GenerateParserFromXSD(os.path.join(os.path.split(__file__)[0], "tc6_xml_v201.xsd"))
 
+LOAD_POU_PROJECT_TEMPLATE = """
+<project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" 
+         xmlns:xhtml="http://www.w3.org/1999/xhtml" 
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+         xmlns="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="" productName="" productVersion="" 
+              creationDateTime="1970-01-01T00:00:00"/>
+  <contentHeader name="paste_project">
+    <coordinateInfo>
+      <fbd><scaling x="0" y="0"/></fbd>
+      <ld><scaling x="0" y="0"/></ld>
+      <sfc><scaling x="0" y="0"/></sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>%s</pous>
+  </types>
+  <instances>
+    <configurations/>
+  </instances>
+</project>
+"""
+
+def LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type):
+    return LOAD_POU_PROJECT_TEMPLATE % """
+<pou name="paste_pou" pouType="program">
+  <body>
+    <%(body_type)s>%%s</%(body_type)s>
+  </body>
+</pou>""" % locals()
+
 def LoadProject(filepath):
     project_file = open(filepath)
     project_xml = project_file.read().replace(
@@ -137,6 +169,22 @@ def LoadProject(filepath):
     project_file.close()
     
     return etree.fromstring(project_xml, PLCOpenParser)
+
+def LoadPou(xml_string):
+    root = etree.fromstring(
+        LOAD_POU_PROJECT_TEMPLATE % xml_string, 
+        PLCOpenParser)
+    return root.xpath(
+        "/ppx:project/ppx:types/ppx:pous/ppx:pou",
+        namespaces=PLCOpenParser.NSMAP)[0]
+
+def LoadPouInstances(xml_string, body_type):
+    root = etree.fromstring(
+        LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type) % xml_string, 
+        PLCOpenParser)
+    return root.xpath(
+        "/ppx:project/ppx:types/ppx:pous/ppx:pou[@name='paste_pou']/ppx:body/ppx:%s/*" % body_type,
+        namespaces=PLCOpenParser.NSMAP)
 
 def SaveProject(project, filepath):
     project_file = open(filepath, 'w')
@@ -2409,7 +2457,7 @@ if cls:
     def getconditionConnection(self):
         if self.condition is not None:
             content = self.condition.getcontent()
-            if content.getLocalTag() == "connection":
+            if content.getLocalTag() == "connectionPointIn":
                 return content
         return None
     setattr(cls, "getconditionConnection", getconditionConnection)
@@ -2425,7 +2473,7 @@ if cls:
     def translate(self, dx, dy):
         _translateSingle(self, dx, dy)
         condition_connection = self.getconditionConnection()
-        if condition_connection:
+        if condition_connection is not None:
             _translateConnections(condition_connection, dx, dy)
     setattr(cls, "translate", translate)
     
