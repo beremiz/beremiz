@@ -2325,11 +2325,11 @@ if cls:
         specific_values = infos["specific_values"]
         specific_values["name"] = self.getname()
         specific_values["initial"] = self.getinitialStep()
-        if self.connectionPointIn:
+        if self.connectionPointIn is not None:
             infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        if self.connectionPointOut:
+        if self.connectionPointOut is not None:
             infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
-        if self.connectionPointOutAction:
+        if self.connectionPointOutAction is not None:
             specific_values["action"] = _getconnectioninfos(self, self.connectionPointOutAction)
         return infos
     setattr(cls, "getinfos", getinfos)
@@ -2368,16 +2368,16 @@ if cls:
         condition = self.getconditionContent()
         specific_values["condition_type"] = condition["type"]
         if specific_values["condition_type"] == "connection":
-            specific_values["connection"] = _getconnectioninfos(self, condition, True)
+            specific_values["connection"] = _getconnectioninfos(self, condition["value"], True)
         else:
-            specific_values["condition"] = condition
+            specific_values["condition"] = condition["value"]
         infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
         infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
         return infos
     setattr(cls, "getinfos", getinfos)
 
     def setconditionContent(self, condition_type, value):
-        if not self.condition:
+        if self.condition is None:
             self.addcondition()
         if condition_type == "connection":
             condition = PLCOpenParser.CreateElement("connectionPointIn", "condition")
@@ -2392,7 +2392,7 @@ if cls:
     setattr(cls, "setconditionContent", setconditionContent)
         
     def getconditionContent(self):
-        if self.condition:
+        if self.condition is not None:
             content = self.condition.getcontent()
             values = {"type" : content.getLocalTag()}
             if values["type"] == "reference":
@@ -2407,7 +2407,7 @@ if cls:
     setattr(cls, "getconditionContent", getconditionContent)
 
     def getconditionConnection(self):
-        if self.condition:
+        if self.condition is not None:
             content = self.condition.getcontent()
             if content.getLocalTag() == "connection":
                 return content
@@ -2530,39 +2530,39 @@ if cls:
     setattr(cls, "compatibility", compatibility)
     
     def setreferenceName(self, name):
-        if self.reference:
+        if self.reference is not None:
             self.reference.setname(name)
     setattr(cls, "setreferenceName", setreferenceName)
     
     def getreferenceName(self):
-        if self.reference:
+        if self.reference is not None:
             return self.reference.getname()
         return None
     setattr(cls, "getreferenceName", getreferenceName)
 
     def setinlineContent(self, content):
-        if self.inline:
-            self.inline.setcontent(PLCOpenParser.CreateElement("ST", "action"))
-            self.inline.setanyText(content)
+        if self.inline is not None:
+            self.inline.setcontent(PLCOpenParser.CreateElement("ST", "inline"))
+            self.inline.settext(content)
     setattr(cls, "setinlineContent", setinlineContent)
     
     def getinlineContent(self):
-        if self.inline:
-            return self.inline.getanyText()
+        if self.inline is not None:
+            return self.inline.gettext()
         return None
     setattr(cls, "getinlineContent", getinlineContent)
 
     def updateElementName(self, old_name, new_name):
-        if self.reference and self.reference.getname() == old_name:
+        if self.reference is not None and self.reference.getname() == old_name:
             self.reference.setname(new_name)
-        if self.inline:
+        if self.inline is not None:
             self.inline.updateElementName(old_name, new_name)
     setattr(cls, "updateElementName", updateElementName)
 
     def updateElementAddress(self, address_model, new_leading):
-        if self.reference:
+        if self.reference is not None:
             self.reference.setname(update_address(self.reference.getname(), address_model, new_leading))
-        if self.inline:
+        if self.inline is not None:
             self.inline.updateElementAddress(address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
@@ -2597,7 +2597,8 @@ if cls:
     def setactions(self, actions):
         self.action = []
         for params in actions:
-            action = PLCOpenParser.GetElementClass("action", "actionBlock")()
+            action = PLCOpenParser.CreateElement("action", "actionBlock")
+            self.appendaction(action)
             action.setqualifier(params["qualifier"])
             if params["type"] == "reference":
                 action.addreference()
@@ -2609,7 +2610,6 @@ if cls:
                 action.setduration(params["duration"])
             if params.has_key("indicator"):
                 action.setindicator(params["indicator"])
-            self.action.append(action)
     setattr(cls, "setactions", setactions)
 
     def getactions(self):
@@ -2619,17 +2619,17 @@ if cls:
             params["qualifier"] = action.getqualifier()
             if params["qualifier"] is None:
                 params["qualifier"] = "N"
-            if action.getreference():
+            if action.getreference() is not None:
                 params["type"] = "reference"
                 params["value"] = action.getreferenceName()
-            elif action.getinline():
+            elif action.getinline() is not None:
                 params["type"] = "inline"
                 params["value"] = action.getinlineContent()
             duration = action.getduration()
             if duration:
                 params["duration"] = duration
             indicator = action.getindicator()
-            if indicator:
+            if indicator is not None:
                 params["indicator"] = indicator
             actions.append(params)
         return actions
