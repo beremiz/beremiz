@@ -554,7 +554,7 @@ class PouProgramGenerator:
     # Return connectors linked by a connection to the given connector
     def GetConnectedConnector(self, connector, body):
         links = connector.getconnections()
-        if links and len(links) == 1:
+        if links is not None and len(links) == 1:
             return self.GetLinkedConnector(links[0], body)
         return None        
 
@@ -720,17 +720,18 @@ class PouProgramGenerator:
                         if isinstance(instance, (OutVariableClass, InOutVariableClass)):
                             self.ConnectionTypes[instance.connectionPointIn] = var_type
                             connected = self.GetConnectedConnector(instance.connectionPointIn, body)
-                            if connected and not self.ConnectionTypes.has_key(connected):
-                                for connection in self.ExtractRelatedConnections(connected):
-                                    self.ConnectionTypes[connection] = var_type
+                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                                for related in self.ExtractRelatedConnections(connected):
+                                    self.ConnectionTypes[related] = var_type
                 elif isinstance(instance, (ContactClass, CoilClass)):
                     for connection in self.ExtractRelatedConnections(instance.connectionPointOut):
                         self.ConnectionTypes[connection] = "BOOL"
                     self.ConnectionTypes[instance.connectionPointIn] = "BOOL"
-                    connected = self.GetConnectedConnector(instance.connectionPointIn, body)
-                    if connected and not self.ConnectionTypes.has_key(connected):
-                        for connection in self.ExtractRelatedConnections(connected):
-                            self.ConnectionTypes[connection] = "BOOL"
+                    for link in instance.connectionPointIn.getconnections():
+                        connected = self.GetLinkedConnector(link, body)
+                        if connected is not None and not self.ConnectionTypes.has_key(connected):
+                            for related in self.ExtractRelatedConnections(connected):
+                                self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, LeftPowerRailClass):
                     for connection in instance.getconnectionPointOut():
                         for related in self.ExtractRelatedConnections(connection):
@@ -738,17 +739,20 @@ class PouProgramGenerator:
                 elif isinstance(instance, RightPowerRailClass):
                     for connection in instance.getconnectionPointIn():
                         self.ConnectionTypes[connection] = "BOOL"
-                        connected = self.GetConnectedConnector(connection, body)
-                        if connected and not self.ConnectionTypes.has_key(connected):
-                            for connection in self.ExtractRelatedConnections(connected):
-                                self.ConnectionTypes[connection] = "BOOL"
+                        for link in connection.getconnections():
+                            connected = self.GetLinkedConnector(link, body)
+                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                                for related in self.ExtractRelatedConnections(connected):
+                                    self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, TransitionClass):
                     content = instance.getconditionContent()
                     if content["type"] == "connection":
-                        connected = self.GetLinkedConnector(content["value"], body)
-                        if connected and not self.ConnectionTypes.has_key(connected):
-                            for connection in self.ExtractRelatedConnections(connected):
-                                self.ConnectionTypes[connection] = "BOOL"
+                        self.ConnectionTypes[content["value"]] = "BOOL"
+                        for link in content["value"].getconnections():
+                            connected = self.GetLinkedConnector(link, body)
+                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                                for related in self.ExtractRelatedConnections(connected):
+                                    self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, ContinuationClass):
                     name = instance.getname()
                     connector = None
@@ -761,7 +765,7 @@ class PouProgramGenerator:
                     if connector is not None:
                         undefined = [instance.connectionPointOut, connector.connectionPointIn]
                         connected = self.GetConnectedConnector(connector.connectionPointIn, body)
-                        if connected:
+                        if connected is not None:
                             undefined.append(connected)
                         related = []
                         for connection in undefined:
@@ -838,11 +842,11 @@ class PouProgramGenerator:
                             if not undefined.has_key(itype):
                                 undefined[itype] = []
                             undefined[itype].append(variable.connectionPointIn)
-                            if connected:
+                            if connected is not None:
                                 undefined[itype].append(connected)
                         else:
                             self.ConnectionTypes[variable.connectionPointIn] = itype
-                            if connected and not self.ConnectionTypes.has_key(connected):
+                            if connected is not None and not self.ConnectionTypes.has_key(connected):
                                 for connection in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[connection] = itype
         for var_type, connections in undefined.items():
@@ -879,7 +883,7 @@ class PouProgramGenerator:
                     self.GenerateSFCStepActions(instance, pou)
                 elif isinstance(instance, TransitionClass):
                     self.GenerateSFCTransition(instance, pou)
-                elif isinstance(instance, JumpClass):
+                elif isinstance(instance, JumpStepClass):
                     self.GenerateSFCJump(instance, pou)
             if len(self.InitialSteps) > 0 and len(self.SFCComputedBlocks) > 0:
                 action_name = "COMPUTE_FUNCTION_BLOCKS"
@@ -1108,7 +1112,7 @@ class PouProgramGenerator:
     
     def ExtractDivergenceInput(self, divergence, pou):
         connectionPointIn = divergence.getconnectionPointIn()
-        if connectionPointIn:
+        if connectionPointIn is not None:
             connections = connectionPointIn.getconnections()
             if connections is not None and len(connections) == 1:
                 instanceLocalId = connections[0].getrefLocalId()
@@ -1140,7 +1144,7 @@ class PouProgramGenerator:
                           "transitions" : [], 
                           "actions" : []}
             self.SFCNetworks["Steps"][step_name] = step_infos
-            if step.connectionPointIn:
+            if step.connectionPointIn is not None:
                 instances = []
                 connections = step.connectionPointIn.getconnections()
                 if connections is not None and len(connections) == 1:
@@ -1155,7 +1159,7 @@ class PouProgramGenerator:
                         instances.extend(self.ExtractConvergenceInputs(instance, pou))
                     elif isinstance(instance, SimultaneousDivergenceClass):
                         transition = self.ExtractDivergenceInput(instance, pou)
-                        if transition:
+                        if transition is not None:
                             if isinstance(transition, TransitionClass):
                                 instances.append(transition)
                             elif isinstance(transition, SelectionConvergenceClass):
@@ -1168,7 +1172,7 @@ class PouProgramGenerator:
     
     def GenerateSFCJump(self, jump, pou):
         jump_target = jump.gettargetName()
-        if jump.connectionPointIn:
+        if jump.connectionPointIn is not None:
             instances = []
             connections = jump.connectionPointIn.getconnections()
             if connections is not None and len(connections) == 1:
@@ -1183,7 +1187,7 @@ class PouProgramGenerator:
                     instances.extend(self.ExtractConvergenceInputs(instance, pou))
                 elif isinstance(instance, SimultaneousDivergenceClass):
                     transition = self.ExtractDivergenceInput(instance, pou)
-                    if transition:
+                    if transition is not None:
                         if isinstance(transition, TransitionClass):
                             instances.append(transition)
                         elif isinstance(transition, SelectionConvergenceClass):
@@ -1228,7 +1232,7 @@ class PouProgramGenerator:
     def GenerateSFCAction(self, action_name, pou):
         if action_name not in self.SFCNetworks["Actions"].keys():
             actionContent = pou.getaction(action_name)
-            if actionContent:
+            if actionContent is not None:
                 previous_tagname = self.TagName
                 self.TagName = self.ParentGenerator.Controler.ComputePouActionName(self.Name, action_name)
                 self.ComputeProgram(actionContent)
@@ -1250,7 +1254,7 @@ class PouProgramGenerator:
                     steps.append(instance)
                 elif isinstance(instance, SelectionDivergenceClass):
                     step = self.ExtractDivergenceInput(instance, pou)
-                    if step:
+                    if step is not None:
                         if isinstance(step, StepClass):
                             steps.append(step)
                         elif isinstance(step, SimultaneousConvergenceClass):
@@ -1260,7 +1264,8 @@ class PouProgramGenerator:
             transition_infos = {"id" : transition.getlocalId(), 
                                 "priority": transition.getpriority(), 
                                 "from": [], 
-                                "to" : []}
+                                "to" : [],
+                                "content": []}
             self.SFCNetworks["Transitions"][transition] = transition_infos
             transitionValues = transition.getconditionContent()
             if transitionValues["type"] == "inline":
@@ -1297,7 +1302,7 @@ class PouProgramGenerator:
                 body = pou.getbody()
                 if isinstance(body, ListType):
                     body = body[0]
-                connections = transition.getconnections()
+                connections = transitionValues["value"].getconnections()
                 if connections is not None:
                     expression = self.ComputeExpression(body, connections)
                     if expression is not None:
@@ -1351,7 +1356,7 @@ class PouProgramGenerator:
             action_content, action_info = self.SFCNetworks["Actions"].pop(action_name)
             self.Program += [("%sACTION "%self.CurrentIndent, ()),
                              (action_name, action_info),
-                             (" :\n", ())]
+                             (":\n", ())]
             self.Program += action_content
             self.Program += [("%sEND_ACTION\n\n"%self.CurrentIndent, ())]
     

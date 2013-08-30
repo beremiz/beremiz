@@ -158,7 +158,7 @@ def generate_block(generator, block, block_infos, body, link, order=False, to_in
             generator.Program += JoinList([(", ", ())], vars)
             generator.Program += [(");\n", ())]
     
-    if link:
+    if link is not None:
         connectionPoint = link.getposition()[-1]
         output_parameter = link.getformalParameter()
     else:
@@ -177,7 +177,7 @@ def generate_block(generator, block, block_infos, body, link, order=False, to_in
     else:
         for i, variable in enumerate(output_variables):
             blockPointx, blockPointy = variable.connectionPointOut.getrelPositionXY()
-            if (not connectionPoint or 
+            if (connectionPoint is None or 
                 block.getx() + blockPointx == connectionPoint.getx() and 
                 block.gety() + blockPointy == connectionPoint.gety()):
                 output_variable = variable

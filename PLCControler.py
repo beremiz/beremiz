@@ -29,7 +29,7 @@ import os,sys,re
 import datetime
 from time import localtime
 
-from plcopen import PLCOpenParser, LoadProject, SaveProject
+from plcopen import PLCOpenParser, LoadProject, SaveProject, QualifierList, rect
 from plcopen.structures import *
 from graphics.GraphicCommons import *
 from PLCGenerator import *
@@ -215,7 +215,7 @@ class PLCControler:
         self.ProgramFilePath = ""
             
     def GetQualifierTypes(self):
-        return plcopen.QualifierList
+        return QualifierList
 
     def GetProject(self, debug = False):
         if debug and self.CurrentCompiledProject is not None:
@@ -1195,13 +1195,13 @@ class PLCControler:
                     array_type, base_type_name, dimensions = var["Type"]
                     array = PLCOpenParser.CreateElement("array", "dataType")
                     for i, dimension in enumerate(dimensions):
-                        dimension_range = plcopen.rangeSigned()
-                        dimension_range.setlower(dimension[0])
-                        dimension_range.setupper(dimension[1])
+                        dimension_range = PLCOpenParser.CreateElement("range", "dimension")
                         if i == 0:
                             array.setdimension([dimension_range])
                         else:
                             array.appenddimension(dimension_range)
+                        dimension_range.setlower(dimension[0])
+                        dimension_range.setupper(dimension[1])
                     if base_type_name in self.GetBaseTypes():
                         array.baseType.setcontent(PLCOpenParser.CreateElement(
                             base_type_name.lower()
