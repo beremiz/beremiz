@@ -241,9 +241,6 @@ if cls:
     
 cls = PLCOpenParser.GetElementClass("project")
 if cls:
-    cls.EnumeratedDataTypeValues = {}
-    cls.CustomDataTypeRange = {}
-    cls.CustomTypeHierarchy = {}
     cls.ElementUsingTree = {}
     cls.CustomBlockTypes = OrderedDict()
     
@@ -256,106 +253,98 @@ if cls:
     setattr(cls, "getname", getname)
     
     def getfileHeader(self):
-        fileheader = {}
-        for name, value in [("companyName", self.fileHeader.getcompanyName()),
-                            ("companyURL", self.fileHeader.getcompanyURL()),
-                            ("productName", self.fileHeader.getproductName()),
-                            ("productVersion", self.fileHeader.getproductVersion()),
-                            ("productRelease", self.fileHeader.getproductRelease()),
-                            ("creationDateTime", self.fileHeader.getcreationDateTime()),
-                            ("contentDescription", self.fileHeader.getcontentDescription())]:
-            if value is not None:
-                fileheader[name] = value
-            else:
-                fileheader[name] = ""
-        return fileheader
+        fileheader_obj = self.fileHeader
+        return {
+            attr: value if value is not None else ""
+            for attr, value in [
+                ("companyName", fileheader_obj.getcompanyName()),
+                ("companyURL", fileheader_obj.getcompanyURL()),
+                ("productName", fileheader_obj.getproductName()),
+                ("productVersion", fileheader_obj.getproductVersion()),
+                ("productRelease", fileheader_obj.getproductRelease()),
+                ("creationDateTime", fileheader_obj.getcreationDateTime()),
+                ("contentDescription", fileheader_obj.getcontentDescription())]
+        }
     setattr(cls, "getfileHeader", getfileHeader)
     
     def setfileHeader(self, fileheader):
-        if fileheader.has_key("companyName"):
-            self.fileHeader.setcompanyName(fileheader["companyName"])
-        if fileheader.has_key("companyURL"):
-            self.fileHeader.setcompanyURL(fileheader["companyURL"])
-        if fileheader.has_key("productName"):
-            self.fileHeader.setproductName(fileheader["productName"])
-        if fileheader.has_key("productVersion"):
-            self.fileHeader.setproductVersion(fileheader["productVersion"])
-        if fileheader.has_key("productRelease"):
-            self.fileHeader.setproductRelease(fileheader["productRelease"])
-        if fileheader.has_key("creationDateTime"):
-            self.fileHeader.setcreationDateTime(fileheader["creationDateTime"])
-        if fileheader.has_key("contentDescription"):
-            self.fileHeader.setcontentDescription(fileheader["contentDescription"])
+        fileheader_obj = self.fileHeader
+        for attr, value in fileheader.iteritems():
+            setattr(fileheader_obj, attr, value)
     setattr(cls, "setfileHeader", setfileHeader)
     
     def getcontentHeader(self):
-        contentheader = {}
-        for name, value in [("projectName", self.contentHeader.getname()),
-                            ("projectVersion", self.contentHeader.getversion()),
-                            ("modificationDateTime", self.contentHeader.getmodificationDateTime()),
-                            ("organization", self.contentHeader.getorganization()),
-                            ("authorName", self.contentHeader.getauthor()),
-                            ("language", self.contentHeader.getlanguage())]:
-            if value is not None:
-                contentheader[name] = value
-            else:
-                contentheader[name] = ""
+        contentheader_obj = self.contentHeader
+        contentheader = {
+            attr: value if value is not None else ""
+            for attr, value in [
+                ("projectName", contentheader_obj.getname()),
+                ("projectVersion", contentheader_obj.getversion()),
+                ("modificationDateTime", contentheader_obj.getmodificationDateTime()),
+                ("organization", contentheader_obj.getorganization()),
+                ("authorName", contentheader_obj.getauthor()),
+                ("language", contentheader_obj.getlanguage())]
+        }
         contentheader["pageSize"] = self.contentHeader.getpageSize()
         contentheader["scaling"] = self.contentHeader.getscaling()
         return contentheader
     setattr(cls, "getcontentHeader", getcontentHeader)
     
     def setcontentHeader(self, contentheader):
-        if contentheader.has_key("projectName"):
-            self.contentHeader.setname(contentheader["projectName"])
-        if contentheader.has_key("projectVersion"):
-            self.contentHeader.setversion(contentheader["projectVersion"])
-        if contentheader.has_key("modificationDateTime"):
-            self.contentHeader.setmodificationDateTime(contentheader["modificationDateTime"])
-        if contentheader.has_key("organization"):
-            self.contentHeader.setorganization(contentheader["organization"])
-        if contentheader.has_key("authorName"):
-            self.contentHeader.setauthor(contentheader["authorName"])
-        if contentheader.has_key("language"):
-            self.contentHeader.setlanguage(contentheader["language"])
-        if contentheader.has_key("pageSize"):
-            self.contentHeader.setpageSize(*contentheader["pageSize"])
-        if contentheader.has_key("scaling"):
-            self.contentHeader.setscaling(contentheader["scaling"])
+        contentheader_obj = self.contentHeader
+        for attr, value in contentheader.iteritems():
+            if attr == "projectName":
+                contentheader_obj.setname(value)
+            elif attr == "projectVersion":
+                contentheader_obj.setversion(value)
+            elif attr == "pageSize":
+                contentheader_obj.setpageSize(*contentheader["pageSize"])
+            elif attr == "scaling":
+                contentheader_obj.setscaling(contentheader["scaling"])
+            else:
+                setattr(contentheader_obj, attr, value)
     setattr(cls, "setcontentHeader", setcontentHeader)
     
+    def gettypeElement(self, element_type, name=None):
+        filter = "[@name='%s']" % name if name is not None else ""
+        elements = self.xpath("ppx:types/ppx:%(element_type)ss/ppx:%(element_type)s%(filter)s" % locals(),
+                namespaces=PLCOpenParser.NSMAP)
+        if name is None:
+            return elements
+        elif len(elements) == 1:
+            return elements[0]
+        return None
+    setattr(cls, "gettypeElement", gettypeElement)
+    
     def getdataTypes(self):
-        return self.types.getdataTypeElements()
+        return self.getdataType()
     setattr(cls, "getdataTypes", getdataTypes)
     
-    def getdataType(self, name):
-        return self.types.getdataTypeElement(name)
+    def getdataType(self, name=None):
+        return self.gettypeElement("dataType", name)
     setattr(cls, "getdataType", getdataType)
     
     def appenddataType(self, name):
-        if self.CustomTypeHierarchy.has_key(name):
+        if self.getdataType(name) is not None:
             raise ValueError, "\"%s\" Data Type already exists !!!"%name
         self.types.appenddataTypeElement(name)
-        self.AddCustomDataType(self.getdataType(name))
     setattr(cls, "appenddataType", appenddataType)
         
     def insertdataType(self, index, datatype):
         self.types.insertdataTypeElement(index, datatype)
-        self.AddCustomDataType(datatype)
     setattr(cls, "insertdataType", insertdataType)
     
     def removedataType(self, name):
         self.types.removedataTypeElement(name)
-        self.RefreshDataTypeHierarchy()
         self.RefreshElementUsingTree()
     setattr(cls, "removedataType", removedataType)
     
     def getpous(self):
-        return self.types.getpouElements()
+        return self.getpou()
     setattr(cls, "getpous", getpous)
     
-    def getpou(self, name):
-        return self.types.getpouElement(name)
+    def getpou(self, name=None):
+        return self.gettypeElement("pou", name)
     setattr(cls, "getpou", getpou)
     
     def appendpou(self, name, pou_type, body_type):
@@ -375,54 +364,51 @@ if cls:
     setattr(cls, "removepou", removepou)
 
     def getconfigurations(self):
-        configurations = self.instances.configurations.getconfiguration()
-        if configurations is not None:
-            return configurations
-        return []
+        return self.getconfiguration()
     setattr(cls, "getconfigurations", getconfigurations)
 
-    def getconfiguration(self, name):
-        for configuration in self.instances.configurations.getconfiguration():
-            if configuration.getname() == name:
-                return configuration
+    def getconfiguration(self, name=None):
+        configurations = self.xpath(
+            "ppx:instances/ppx:configurations/ppx:configuration%s" %
+                ("[@name='%s']" % name if name is not None else ""),
+            namespaces=PLCOpenParser.NSMAP)
+        if name is None:
+            return configurations
+        elif len(configurations) == 1:
+            return configurations[0]
         return None
     setattr(cls, "getconfiguration", getconfiguration)
 
     def addconfiguration(self, name):
-        for configuration in self.instances.configurations.getconfiguration():
-            if configuration.getname() == name:
-                raise ValueError, _("\"%s\" configuration already exists !!!")%name
+        if self.getconfiguration(name) is not None:
+            raise ValueError, _("\"%s\" configuration already exists !!!") % name
         new_configuration = PLCOpenParser.CreateElement("configuration", "configurations")
         new_configuration.setname(name)
         self.instances.configurations.appendconfiguration(new_configuration)
     setattr(cls, "addconfiguration", addconfiguration)    
 
     def removeconfiguration(self, name):
-        found = False
-        for idx, configuration in enumerate(self.instances.configurations.getconfiguration()):
-            if configuration.getname() == name:
-                self.instances.configurations.removeconfiguration(idx)
-                found = True
-                break
-        if not found:
-            raise ValueError, ("\"%s\" configuration doesn't exist !!!")%name
+        configuration = self.getconfiguration(name)
+        if configuration is None:
+            raise ValueError, ("\"%s\" configuration doesn't exist !!!") % name
+        self.instances.configurations.remove(configuration)
     setattr(cls, "removeconfiguration", removeconfiguration)
 
     def getconfigurationResource(self, config_name, name):
-        configuration = self.getconfiguration(config_name)
-        if configuration is not None:
-            for resource in configuration.getresource():
-                if resource.getname() == name:
-                    return resource
+        resources = self.xpath(
+            "ppx:instances/ppx:configurations/ppx:configuration[@name='%s']/ppx:resource[@name='%s']" % 
+            (config_name, name),
+            namespaces=PLCOpenParser.NSMAP)
+        if len(resources) == 1:
+            return resources[0]
         return None
     setattr(cls, "getconfigurationResource", getconfigurationResource)
 
     def addconfigurationResource(self, config_name, name):
+        if self.getconfigurationResource(config_name, name) is not None:
+            raise ValueError, _("\"%s\" resource already exists in \"%s\" configuration !!!") % (name, config_name)
         configuration = self.getconfiguration(config_name)
         if configuration is not None:
-            for resource in configuration.getresource():
-                if resource.getname() == name:
-                    raise ValueError, _("\"%s\" resource already exists in \"%s\" configuration !!!")%(name, config_name)
             new_resource = PLCOpenParser.CreateElement("resource", "configuration")
             new_resource.setname(name)
             configuration.appendresource(new_resource)
@@ -430,84 +416,47 @@ if cls:
 
     def removeconfigurationResource(self, config_name, name):
         configuration = self.getconfiguration(config_name)
+        found = False
         if configuration is not None:
-            found = False
-            for idx, resource in enumerate(configuration.getresource()):
-                if resource.getname() == name:
-                    configuration.removeresource(idx)
-                    found = True
-                    break
-            if not found:
-                raise ValueError, _("\"%s\" resource doesn't exist in \"%s\" configuration !!!")%(name, config_name)
+            resource = self.getconfigurationResource(config_name, name)
+            if resource is not None:
+                configuration.remove(resource)
+                found = True
+        if not found:
+            raise ValueError, _("\"%s\" resource doesn't exist in \"%s\" configuration !!!")%(name, config_name)
     setattr(cls, "removeconfigurationResource", removeconfigurationResource)
 
     def updateElementName(self, old_name, new_name):
-        for datatype in self.types.getdataTypeElements():
+        for datatype in self.getdataTypes():
             datatype.updateElementName(old_name, new_name)
-        for pou in self.types.getpouElements():
+        for pou in self.getpous():
             pou.updateElementName(old_name, new_name)
-        for configuration in self.instances.configurations.getconfiguration():
+        for configuration in self.getconfigurations():
             configuration.updateElementName(old_name, new_name)
     setattr(cls, "updateElementName", updateElementName)
 
     def updateElementAddress(self, old_leading, new_leading):
         address_model = re.compile(FILTER_ADDRESS_MODEL % old_leading)
-        for pou in self.types.getpouElements():
+        for pou in self.getpous():
             pou.updateElementAddress(address_model, new_leading)
-        for configuration in self.instances.configurations.getconfiguration():
+        for configuration in self.getconfigurations():
             configuration.updateElementAddress(address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
     def removeVariableByAddress(self, address):
-        for pou in self.types.getpouElements():
+        for pou in self.getpous():
             pou.removeVariableByAddress(address)
-        for configuration in self.instances.configurations.getconfiguration():
+        for configuration in self.getconfigurations():
             configuration.removeVariableByAddress(address)
     setattr(cls, "removeVariableByAddress", removeVariableByAddress)
 
     def removeVariableByFilter(self, leading):
         address_model = re.compile(FILTER_ADDRESS_MODEL % leading)
-        for pou in self.types.getpouElements():
+        for pou in self.getpous():
             pou.removeVariableByFilter(address_model)
-        for configuration in self.instances.configurations.getconfiguration():
+        for configuration in self.getconfigurations():
             configuration.removeVariableByFilter(address_model)
     setattr(cls, "removeVariableByFilter", removeVariableByFilter)
-
-    def RefreshDataTypeHierarchy(self):
-        self.EnumeratedDataTypeValues = {}
-        self.CustomDataTypeRange = {}
-        self.CustomTypeHierarchy = {}
-        for datatype in self.getdataTypes():
-            self.AddCustomDataType(datatype)
-    setattr(cls, "RefreshDataTypeHierarchy", RefreshDataTypeHierarchy)
-
-    def AddCustomDataType(self, datatype):
-        name = datatype.getname()
-        basetype_content = datatype.getbaseType().getcontent()
-        basetype_content_name = basetype_content.getLocalTag()
-        if basetype_content.__class__ == DefaultElementClass:
-            self.CustomTypeHierarchy[name] = basetype_content_name
-        elif basetype_content_name in ["string", "wstring"]:
-            self.CustomTypeHierarchy[name] = basetype_content_name.upper()
-        elif basetype_content_name == "derived":
-            self.CustomTypeHierarchy[name] = basetype_content.getname()
-        elif basetype_content_name in ["subrangeSigned", "subrangeUnsigned"]:
-            range = (basetype_content.range.getlower(), 
-                     basetype_content.range.getupper())
-            self.CustomDataTypeRange[name] = range
-            base_type = basetype_content.baseType.getcontent()
-            if base_type.__class__ == DefaultElementClass:
-                self.CustomTypeHierarchy[name] = base_type.getLocalTag()
-            else:
-                self.CustomTypeHierarchy[name] = base_type.getname()
-        else:
-            if basetype_content_name == "enum":
-                values = []
-                for value in basetype_content.xpath("ppx:values/ppx:value", namespaces=PLCOpenParser.NSMAP):
-                    values.append(value.getname())
-                self.EnumeratedDataTypeValues[name] = values
-            self.CustomTypeHierarchy[name] = "ANY_DERIVED"
-    setattr(cls, "AddCustomDataType", AddCustomDataType)
 
     # Update Block types with user-defined pou added
     def RefreshCustomBlockTypes(self):
@@ -613,58 +562,11 @@ if cls:
         
     setattr(cls, "RefreshElementUsingTree", RefreshElementUsingTree)
 
-    def GetParentType(self, type):
-        if self.CustomTypeHierarchy.has_key(type):
-            return self.CustomTypeHierarchy[type]
-        elif TypeHierarchy.has_key(type):
-            return TypeHierarchy[type]
-        return None
-    setattr(cls, "GetParentType", GetParentType)
-
-    def GetBaseType(self, type):
-        parent_type = self.GetParentType(type)
-        if parent_type is not None:
-            if parent_type.startswith("ANY"):
-                return type
-            else:
-                return self.GetBaseType(parent_type)
-        return None
-    setattr(cls, "GetBaseType", GetBaseType)
-
-    def GetSubrangeBaseTypes(self, exclude):
-        derived = []
-        for type in self.CustomTypeHierarchy.keys():
-            for base_type in DataTypeRange.keys():
-                if self.IsOfType(type, base_type) and not self.IsOfType(type, exclude):
-                    derived.append(type)
-                    break
-        return derived
-    setattr(cls, "GetSubrangeBaseTypes", GetSubrangeBaseTypes)
-
-    """
-    returns true if the given data type is the same that "reference" meta-type or one of its types.
-    """
-    def IsOfType(self, type, reference):
-        if reference is None:
-            return True
-        elif type == reference:
-            return True
-        else:
-            parent_type = self.GetParentType(type)
-            if parent_type is not None:
-                return self.IsOfType(parent_type, reference)
-        return False
-    setattr(cls, "IsOfType", IsOfType)
-
     # Return if pou given by name is used by another pou
     def ElementIsUsed(self, name):
         elements = self.ElementUsingTree.get(name, None)
         return elements is not None
     setattr(cls, "ElementIsUsed", ElementIsUsed)
-
-    def DataTypeIsDerived(self, name):
-        return name in self.CustomTypeHierarchy.values()
-    setattr(cls, "DataTypeIsDerived", DataTypeIsDerived)
 
     # Return if pou given by name is directly or undirectly used by the reference pou
     def ElementIsUsedBy(self, name, reference):
@@ -682,27 +584,12 @@ if cls:
         return False
     setattr(cls, "ElementIsUsedBy", ElementIsUsedBy)
 
-    def GetDataTypeRange(self, type):
-        if self.CustomDataTypeRange.has_key(type):
-            return self.CustomDataTypeRange[type]
-        elif DataTypeRange.has_key(type):
-            return DataTypeRange[type]
-        else:
-            parent_type = self.GetParentType(type)
-            if parent_type is not None:
-                return self.GetDataTypeRange(parent_type)
-        return None
-    setattr(cls, "GetDataTypeRange", GetDataTypeRange)
-
-    def GetEnumeratedDataTypeValues(self, type = None):
-        if type is None:
-            all_values = []
-            for values in self.EnumeratedDataTypeValues.values():
-                all_values.extend(values)
-            return all_values
-        elif self.EnumeratedDataTypeValues.has_key(type):
-            return self.EnumeratedDataTypeValues[type]
-        return []
+    def GetEnumeratedDataTypeValues(self):
+        return [
+            value.getname() 
+            for value in self.xpath(
+                "ppx:types/ppx:dataTypes/ppx:dataType/ppx:baseType/ppx:enum/ppx:values/ppx:value",
+                namespaces=PLCOpenParser.NSMAP)]
     setattr(cls, "GetEnumeratedDataTypeValues", GetEnumeratedDataTypeValues)
 
     # Function that returns the block definition associated to the block type given
@@ -734,17 +621,17 @@ if cls:
     # Return Function Block types checking for recursion
     def GetCustomFunctionBlockTypes(self, exclude = None):
         if exclude is not None:
-            return [customblocktype for name,customblocktype in self.CustomBlockTypes.iteritems()
+            return [name for name,customblocktype in self.CustomBlockTypes.iteritems()
                 if (customblocktype["type"] == "functionBlock" 
                     and name != exclude 
                     and not self.ElementIsUsedBy(exclude, name))]
-        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
+        return [name for customblocktype in self.CustomBlockTypes.itervalues()
             if customblocktype["type"] == "functionBlock"]
     setattr(cls, "GetCustomFunctionBlockTypes", GetCustomFunctionBlockTypes)
 
     # Return Block types checking for recursion
     def GetCustomBlockResource(self):
-        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
+        return [customblocktype["name"] for customblocktype in self.CustomBlockTypes.itervalues()
             if customblocktype["type"] == "program"]
     setattr(cls, "GetCustomBlockResource", GetCustomBlockResource)
 
@@ -758,25 +645,6 @@ if cls:
                     customdatatypes.append({"name": customdatatype_name, "infos": customdatatype})
         return customdatatypes
     setattr(cls, "GetCustomDataTypes", GetCustomDataTypes)
-
-    # Return if Data Type can be used for located variables
-    def IsLocatableType(self, datatype):
-        basetype_content = datatype.baseType.getcontent()
-        basetype_content_name = basetype_content.getLocalTag()
-        if basetype_content_name in ["enum", "struct"]:
-            return False
-        elif basetype_content_name == "derived":
-            base_type = self.getdataType(basetype_content.getname())
-            if base_type is not None:
-                return self.IsLocatableType(base_type)
-        elif basetype_content_name == "array":
-            array_base_type = basetype_content.baseType.getcontent()
-            if array_base_type == DefaultElementClass and array_base_type.getLocalTag() not in ["string", "wstring"]:
-                base_type = self.getdataType(array_base_type.getname())
-                if base_type is not None:
-                    return self.IsLocatableType(base_type)
-        return True
-    setattr(cls, "IsLocatableType", IsLocatableType)
 
     def Search(self, criteria, parent_infos=[]):
         result = self.types.Search(criteria, parent_infos)
@@ -2480,7 +2348,7 @@ if cls:
     def filterConnections(self, connections):
         _filterConnectionsSingle(self, connections)
         condition_connection = self.getconditionConnection()
-        if condition_connection:
+        if condition_connection is not None:
             _filterConnections(condition_connection, self.localId, connections)
     setattr(cls, "filterConnections", filterConnections)
     
@@ -2489,13 +2357,13 @@ if cls:
         if self.connectionPointIn is not None:
             connections_end = _updateConnectionsId(self.connectionPointIn, translation)
         condition_connection = self.getconditionConnection()
-        if condition_connection:
+        if condition_connection is not None:
             connections_end.extend(_updateConnectionsId(condition_connection, translation))
         return _getconnectionsdefinition(self, connections_end)
     setattr(cls, "updateConnectionsId", updateConnectionsId)
 
     def updateElementName(self, old_name, new_name):
-        if self.condition:
+        if self.condition is not None:
             content = self.condition.getcontent()
             content_name = content.getLocalTag()
             if content_name == "reference":
@@ -2506,7 +2374,7 @@ if cls:
     setattr(cls, "updateElementName", updateElementName)
 
     def updateElementAddress(self, address_model, new_leading):
-        if self.condition:
+        if self.condition is not None:
             content = self.condition.getcontent()
             content_name = content.getLocalTag()
             if content_name == "reference":
@@ -2517,7 +2385,7 @@ if cls:
 
     def getconnections(self):
         condition_connection = self.getconditionConnection()
-        if condition_connection:
+        if condition_connection is not None:
             return condition_connection.getconnections()
         return None
     setattr(cls, "getconnections", getconnections)
