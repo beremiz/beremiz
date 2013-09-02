@@ -2009,6 +2009,8 @@ def generateCountMethod(attr):
 This function generate a xml parser from a class factory
 """
 
+NAMESPACE_PATTERN = re.compile("xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
+
 class DefaultElementClass(etree.ElementBase):
     
     def init(self):
@@ -2018,7 +2020,7 @@ class DefaultElementClass(etree.ElementBase):
         return etree.QName(self.tag).localname
         
     def tostring(self):
-        return etree.tostring(self, pretty_print=True)
+        return NAMESPACE_PATTERN.sub("", etree.tostring(self, pretty_print=True))
 
 class XMLElementClassLookUp(etree.PythonElementClassLookup):
     
