@@ -735,7 +735,7 @@ class PLCControler:
     def DataTypeIsUsed(self, name, debug = False):
         project = self.GetProject(debug)
         if project is not None:
-            return project.ElementIsUsed(name) or project.DataTypeIsDerived(name)
+            return project.ElementIsUsed(name)
         return False
 
     # Return if pou given by name is used by another pou
@@ -981,7 +981,6 @@ class PLCControler:
                 datatype.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
                 self.Project.RefreshElementUsingTree()
-                self.Project.RefreshDataTypeHierarchy()
                 self.BufferProject()
     
     # Change the name of a pou
@@ -1691,17 +1690,44 @@ class PLCControler:
                 datatypes.extend(category["list"])
         return datatypes
 
-    # Return Base Type of given possible derived type
-    def GetBaseType(self, type, debug = False):
+    # Return Data Type Object
+    def GetDataType(self, typename, debug = False):
         project = self.GetProject(debug)
         if project is not None:
-            result = project.GetBaseType(type)
+            result = project.getdataType(typename)
             if result is not None:
                 return result
         for confnodetype in self.ConfNodeTypes:
-            result = confnodetype["types"].GetBaseType(type)
+            result = confnodetype["types"].getdataType(typename)
             if result is not None:
                 return result
+        return None
+
+    # Return Data Type Object Base Type
+    def GetDataTypeBaseType(self, datatype):
+        basetype_content = datatype.baseType.getcontent()
+        basetype_content_type = basetype_content.getLocalTag()
+        if basetype_content_type in ["array", "subrangeSigned", "subrangeUnsigned"]:
+            basetype = basetype_content.baseType.getcontent()
+            basetype_type = basetype.getLocalTag()
+            return (basetype.getname() if basetype_type == "derived"
+                    else basetype_type.upper())
+        elif basetype_content_type == "derived":
+            return basetype_content_type.getname()
+        return None
+
+    # Return Base Type of given possible derived type
+    def GetBaseType(self, typename, debug = False):
+        if TypeHierarchy.has_key(typename):
+            return typename
+        
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype = self.GetDataTypeBaseType(datatype)
+            if basetype is not None:
+                return self.GetBaseType(basetype, debug)
+            return typename
+        
         return None
 
     def GetBaseTypes(self):
@@ -1712,93 +1738,124 @@ class PLCControler:
         '''
         return [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]
 
-    def IsOfType(self, type, reference, debug = False):
-        if reference is None:
+    def IsOfType(self, typename, reference, debug = False):
+        if reference is None or typename == reference:
             return True
-        elif type == reference:
-            return True
-        elif type in TypeHierarchy:
-            return self.IsOfType(TypeHierarchy[type], reference)
-        else:
-            project = self.GetProject(debug)
-            if project is not None and project.IsOfType(type, reference):
-                return True
-            for confnodetype in self.ConfNodeTypes:
-                if confnodetype["types"].IsOfType(type, reference):
-                    return True
+        
+        basetype = TypeHierarchy.get(typename)
+        if basetype is not None:
+            return self.IsOfType(basetype, reference)
+        
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype = self.GetDataTypeBaseType(datatype)
+            if basetype is not None:
+                return self.IsOfType(basetype, reference, debug)
+        
         return False
     
-    def IsEndType(self, type):
-        if type is not None:
-            return not type.startswith("ANY")
+    def IsEndType(self, typename):
+        if typename is not None:
+            return not typename.startswith("ANY")
         return True
 
-    def IsLocatableType(self, type, debug = False):
-        if isinstance(type, TupleType):
-            return False 
-        if self.GetBlockType(type) is not None:
+    def IsLocatableType(self, typename, debug = False):
+        if isinstance(typename, TupleType) or self.GetBlockType(type) is not None:
             return False
-        project = self.GetProject(debug)
-        if project is not None:
-            datatype = project.getdataType(type)
-            if datatype is None:
-                datatype = self.GetConfNodeDataType(type)
-            if datatype is not None:
-                return project.IsLocatableType(datatype)
+        
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type in ["enum", "struct"]:
+                return False
+            elif basetype_content_type == "derived":
+                return self.IsLocatableType(basetype_content.getname())
+            elif basetype_content_name == "array":
+                array_base_type = basetype_content.baseType.getcontent()
+                if array_base_type.getLocalTag() == "derived":
+                    return self.IsLocatableType(array_base_type.getname(), debug)
+        
         return True
     
-    def IsEnumeratedType(self, type, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            datatype = project.getdataType(type)
-            if datatype is None:
-                datatype = self.GetConfNodeDataType(type)
-            if datatype is not None:
-                basetype_content = datatype.baseType.getcontent()
-                return basetype_content.getLocalTag() == "enum"
+    def IsEnumeratedType(self, typename, debug = False):
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type == "derived":
+                return self.IsEnumeratedType(basetype_content_type, debug)
+            return basetype_content_type == "enum"
         return False
 
-    def IsNumType(self, type, debug = False):
-        return self.IsOfType(type, "ANY_NUM", debug) or\
-               self.IsOfType(type, "ANY_BIT", debug)
+    def IsSubrangeType(self, typename, exclude=None, debug = False):
+        if typename == exclude:
+            return False
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type == "derived":
+                return self.IsSubrangeType(basetype_content_type, exclude, debug)
+            elif basetype_content_type in ["subrangeSigned", "subrangeUnsigned"]:
+                return not self.IsOfType(
+                    self.GetDataTypeBaseType(datatype), exclude)
+        return False
+
+    def IsNumType(self, typename, debug = False):
+        return self.IsOfType(typename, "ANY_NUM", debug) or\
+               self.IsOfType(typename, "ANY_BIT", debug)
             
-    def GetDataTypeRange(self, type, debug = False):
-        if type in DataTypeRange:
-            return DataTypeRange[type]
-        else:
-            project = self.GetProject(debug)
-            if project is not None:
-                result = project.GetDataTypeRange(type)
-                if result is not None:
-                    return result
-            for confnodetype in self.ConfNodeTypes:
-                result = confnodetype["types"].GetDataTypeRange(type)
-                if result is not None:
-                    return result
+    def GetDataTypeRange(self, typename, debug = False):
+        range = DataTypeRange.get(typename)
+        if range is not None:
+            return range
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type in ["subrangeSigned", "subrangeUnsigned"]:
+                return (basetype_content.range.getlower(),
+                        basetype_content.range.getupper())
+            elif basetype_content_type == "derived":
+                return self.GetDataTypeRange(basetype_content.getname(), debug)
         return None
     
     # Return Subrange types
     def GetSubrangeBaseTypes(self, exclude, debug = False):
-        subrange_basetypes = []
+        subrange_basetypes = DataTypeRange.keys()
         project = self.GetProject(debug)
         if project is not None:
-            subrange_basetypes.extend(project.GetSubrangeBaseTypes(exclude))
+            subrange_basetypes.extend(
+                [datatype.getname() for datatype in project.getdataTypes()
+                 if self.IsSubrangeType(datatype.getname(), exclude, debug)])
         for confnodetype in self.ConfNodeTypes:
-            subrange_basetypes.extend(confnodetype["types"].GetSubrangeBaseTypes(exclude))
-        return DataTypeRange.keys() + subrange_basetypes
+            subrange_basetypes.extend(
+                [datatype.getname() for datatype in confnodetype["types"].getdataTypes()
+                 if self.IsSubrangeType(datatype.getname(), exclude, debug)])
+        return subrange_basetypes
     
     # Return Enumerated Values
-    def GetEnumeratedDataValues(self, type = None, debug = False):
+    def GetEnumeratedDataValues(self, typename = None, debug = False):
         values = []
-        project = self.GetProject(debug)
-        if project is not None:
-            values.extend(project.GetEnumeratedDataTypeValues(type))
-            if type is None and len(values) > 0:
-                return values
-        for confnodetype in self.ConfNodeTypes:
-            values.extend(confnodetype["types"].GetEnumeratedDataTypeValues(type))
-            if type is None and len(values) > 0:
-                return values
+        if typename is not None:
+            datatype_obj = self.GetDataType(typename, debug)
+            if datatype_obj is not None:
+                basetype_content = datatype_obj.baseType.getcontent()
+                basetype_content_type = basetype_content.getLocalTag()
+                if basetype_content_type == "enum":
+                    return [value.getname() 
+                            for value in basetype_content.xpath(
+                                "ppx:values/ppx:value",
+                                namespaces=PLCOpenParser.NSMAP)]
+                elif basetype_content_type == "derived":
+                    return self.GetEnumeratedDataValues(basetype_content.getname(), debug)
+        else:
+            project = self.GetProject(debug)
+            if project is not None:
+                values.extend(project.GetEnumeratedDataTypeValues())
+            for confnodetype in self.ConfNodeTypes:
+                values.extend(confnodetype["types"].GetEnumeratedDataTypeValues())
         return values
 
 #-------------------------------------------------------------------------------
@@ -2031,7 +2088,6 @@ class PLCControler:
                 datatype.initialValue.setvalue(infos["initial"])
             else:
                 datatype.initialValue = None
-            self.Project.RefreshDataTypeHierarchy()
             self.Project.RefreshElementUsingTree()
             self.BufferProject()
     
@@ -3100,7 +3156,6 @@ class PLCControler:
             return _("Project file syntax error:\n\n") + str(e)
         self.SetFilePath(filepath)
         self.Project.RefreshElementUsingTree()
-        self.Project.RefreshDataTypeHierarchy()
         self.Project.RefreshCustomBlockTypes()
         
         ## To remove when project buffering ready
