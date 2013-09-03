@@ -616,29 +616,6 @@ def GetElementInitialValue(factory, infos):
     else:
         return []
 
-def HandleError(message, raise_exception):
-    if raise_exception:
-        raise ValueError(message)
-    return False
-
-def CheckElementValue(factory, name, infos, value, raise_exception=True):
-    infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
-    if value is None and raise_exception:
-        if not (infos["minOccurs"] == 0 and infos["maxOccurs"] == 1):
-            return HandleError("Attribute '%s' isn't optional." % name, raise_exception)
-    elif infos["maxOccurs"] == "unbounded" or infos["maxOccurs"] > 1:
-        if not isinstance(value, ListType):
-            return HandleError("Attribute '%s' must be a list." % name, raise_exception)
-        if len(value) < infos["minOccurs"] or infos["maxOccurs"] != "unbounded" and len(value) > infos["maxOccurs"]:
-            return HandleError("List out of bounds for attribute '%s'." % name, raise_exception)
-        if not reduce(lambda x, y: x and y, map(infos["elmt_type"]["check"], value), True):
-            return HandleError("Attribute '%s' must be a list of valid elements." % name, raise_exception)
-    elif infos.has_key("fixed") and value != infos["fixed"]:
-        return HandleError("Value of attribute '%s' can only be '%s'." % (name, str(infos["fixed"])), raise_exception)
-    else:
-        return infos["elmt_type"]["check"](value)
-    return True
-
 def GetContentInfos(name, choices):
     for choice_infos in choices:
         if choices_infos["type"] == "sequence":
@@ -671,26 +648,6 @@ def ComputeContentChoices(factory, name, infos):
                 choice["elmt_type"] = choice_infos
         choices.append((choice["name"], choice))
     return choices
-
-def ExtractContentElement(factory, tree, infos, content):
-    infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
-    if infos["maxOccurs"] == "unbounded" or infos["maxOccurs"] > 1:
-        if isinstance(content, ListType) and len(content) > 0 and \
-           content[-1]["name"] == tree.nodeName:
-            content_item = content.pop(-1)
-            content_item["value"].append(infos["elmt_type"]["extract"](tree))
-            return content_item
-        elif not isinstance(content, ListType) and \
-             content is not None and \
-             content["name"] == tree.nodeName:
-            return {"name": tree.nodeName, 
-                    "value": content["value"] + [infos["elmt_type"]["extract"](tree)]}
-        else:
-            return {"name": tree.nodeName, 
-                    "value": [infos["elmt_type"]["extract"](tree)]}
-    else:
-        return {"name": tree.nodeName, 
-                "value": infos["elmt_type"]["extract"](tree)}
 
 def GenerateContentInfos(factory, name, choices):
     choices_dict = {}
@@ -728,131 +685,10 @@ def GenerateContentInfos(factory, name, choices):
             content_value = GetElementInitialValue(factory, infos)
         return {"name": content_name, "value": content_value}
         
-    def CheckContent(value):
-        if value["name"] != "sequence":
-            infos = choices_dict.get(value["name"], None)
-            if infos is not None:
-                return CheckElementValue(factory, value["name"], infos, value["value"], False)
-        elif len(value["value"]) > 0:
-            infos = choices_dict.get(value["value"][0]["name"], None)
-            if infos is None:
-                for choice_name, infos in choices:
-                    if infos["type"] == "sequence":
-                        for element_infos in infos["elements"]:
-                            if element_infos["type"] == CHOICE:
-                                infos = GetContentInfos(value["value"][0]["name"], element_infos["choices"])
-            if infos is not None:
-                sequence_number = 0
-                element_idx = 0
-                while element_idx < len(value["value"]):
-                    for element_infos in infos["elements"]:
-                        element_value = None
-                        if element_infos["type"] == CHOICE:
-                            choice_infos = None
-                            if element_idx < len(value["value"]):
-                                for choice in element_infos["choices"]:
-                                    if choice["name"] == value["value"][element_idx]["name"]:
-                                        choice_infos = choice
-                                        element_value = value["value"][element_idx]["value"]
-                                        element_idx += 1
-                                        break
-                            if ((choice_infos is not None and 
-                                 not CheckElementValue(factory, choice_infos["name"], choice_infos, element_value, False)) or
-                                (choice_infos is None and element_infos["minOccurs"] > 0)):
-                                raise ValueError("Invalid sequence value in attribute 'content'")
-                        else:
-                            if element_idx < len(value["value"]) and element_infos["name"] == value["value"][element_idx]["name"]:
-                                element_value = value["value"][element_idx]["value"]
-                                element_idx += 1
-                            if not CheckElementValue(factory, element_infos["name"], element_infos, element_value, False):
-                                raise ValueError("Invalid sequence value in attribute 'content'")
-                    sequence_number += 1
-                if sequence_number < infos["minOccurs"] or infos["maxOccurs"] != "unbounded" and sequence_number > infos["maxOccurs"]:
-                    raise ValueError("Invalid sequence value in attribute 'content'")
-                return True
-        else:
-            for element_name, infos in choices:
-                if element_name == "sequence":
-                    required = 0
-                    for element in infos["elements"]:
-                        if element["minOccurs"] > 0:
-                            required += 1
-                    if required == 0:
-                        return True
-        return False
-    
-    def ExtractContent(tree, content):
-        infos = choices_dict.get(tree.nodeName, None)
-        if infos is not None:
-            if infos["name"] == "sequence":
-                sequence_dict = dict([(element_infos["name"], element_infos) for element_infos in infos["elements"] if element_infos["type"] != CHOICE])
-                element_infos = sequence_dict.get(tree.nodeName)
-                if content is not None and \
-                   content["name"] == "sequence" and \
-                   len(content["value"]) > 0 and \
-                   choices_dict.get(content["value"][-1]["name"]) == infos:
-                    return {"name": "sequence",
-                            "value": content["value"] + [ExtractContentElement(factory, tree, element_infos, content["value"][-1])]}
-                else:
-                    return {"name": "sequence",
-                            "value": [ExtractContentElement(factory, tree, element_infos, None)]}
-            else:
-                return ExtractContentElement(factory, tree, infos, content)
-        else:
-            for choice_name, infos in choices:
-                if infos["type"] == "sequence":
-                    for element_infos in infos["elements"]:
-                        if element_infos["type"] == CHOICE:
-                            try:
-                                if content is not None and \
-                                    content["name"] == "sequence" and \
-                                    len(content["value"]) > 0:
-                                    return {"name": "sequence",
-                                            "value": content["value"] + [element_infos["elmt_type"]["extract"](tree, content["value"][-1])]}
-                                else:
-                                    return {"name": "sequence",
-                                            "value": [element_infos["elmt_type"]["extract"](tree, None)]}
-                            except:
-                                pass
-        raise ValueError("Invalid element \"%s\" for content!" % tree.nodeName)
-    
-    def GenerateContent(value, name=None, indent=0):
-        text = ""
-        if value["name"] != "sequence":
-            infos = choices_dict.get(value["name"], None)
-            if infos is not None:
-                infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
-                if infos["maxOccurs"] == "unbounded" or infos["maxOccurs"] > 1:
-                    for item in value["value"]:
-                        text += infos["elmt_type"]["generate"](item, value["name"], indent)
-                else:
-                    text += infos["elmt_type"]["generate"](value["value"], value["name"], indent)
-        elif len(value["value"]) > 0:
-            infos = choices_dict.get(value["value"][0]["name"], None)
-            if infos is None:
-                for choice_name, infos in choices:
-                    if infos["type"] == "sequence":
-                        for element_infos in infos["elements"]:
-                            if element_infos["type"] == CHOICE:
-                                infos = GetContentInfos(value["value"][0]["name"], element_infos["choices"])
-            if infos is not None:
-                sequence_dict = dict([(element_infos["name"], element_infos) for element_infos in infos["elements"]]) 
-                for element_value in value["value"]:
-                    element_infos = sequence_dict.get(element_value["name"])
-                    if element_infos["maxOccurs"] == "unbounded" or element_infos["maxOccurs"] > 1:
-                        for item in element_value["value"]:
-                            text += element_infos["elmt_type"]["generate"](item, element_value["name"], indent)
-                    else:
-                        text += element_infos["elmt_type"]["generate"](element_value["value"], element_infos["name"], indent)
-        return text
-        
     return {
         "type": COMPLEXTYPE,
         "choices_xpath": GetContentChoicesXPath,
         "initial": GetContentInitial,
-        "check": CheckContent,
-        "extract": ExtractContent,
-        "generate": GenerateContent
     }
 
 #-------------------------------------------------------------------------------
@@ -1300,25 +1136,17 @@ class ClassFactory:
             classmembers["get%s" % elmtname] = generateGetMethod(elmtname)
             
         classmembers["init"] = generateInitMethod(self, classinfos)
-        classmembers["getStructure"] = generateStructureMethod(classinfos)
-        classmembers["loadXMLTree"] = generateLoadXMLTree(self, classinfos)
-        classmembers["generateXMLText"] = generateGenerateXMLText(self, classinfos)
         classmembers["getElementAttributes"] = generateGetElementAttributes(self, classinfos)
         classmembers["getElementInfos"] = generateGetElementInfos(self, classinfos)
         classmembers["setElementValue"] = generateSetElementValue(self, classinfos)
-        classmembers["singleLineAttributes"] = True
-        classmembers["compatibility"] = lambda x, y: None
-        classmembers["extraAttrs"] = {}
         
         class_definition = classobj(str(classname), bases, classmembers)
         setattr(class_definition, "__getattr__", generateGetattrMethod(self, class_definition, classinfos))
         setattr(class_definition, "__setattr__", generateSetattrMethod(self, class_definition, classinfos))
         class_infos = {"type": COMPILEDCOMPLEXTYPE,
                        "name": classname,
-                       "check": generateClassCheckFunction(class_definition),
                        "initial": generateClassCreateFunction(class_definition),
-                       "extract": generateClassExtractFunction(class_definition),
-                       "generate": class_definition.generateXMLText}
+        }
         
         if self.FileName is not None:
             self.ComputedClasses[self.FileName][classname] = class_definition
@@ -1355,30 +1183,12 @@ class ClassFactory:
             print classname
 
 """
-Method that generate the method for checking a class instance
-"""
-def generateClassCheckFunction(class_definition):
-    def classCheckfunction(instance):
-        return isinstance(instance, class_definition)
-    return classCheckfunction
-
-"""
 Method that generate the method for creating a class instance
 """
 def generateClassCreateFunction(class_definition):
     def classCreatefunction():
         return class_definition()
     return classCreatefunction
-
-"""
-Method that generate the method for extracting a class instance
-"""
-def generateClassExtractFunction(class_definition):
-    def classExtractfunction(node):
-        instance = class_definition()
-        instance.loadXMLTree(node)
-        return instance
-    return classExtractfunction
 
 def generateGetattrMethod(factory, class_definition, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
@@ -1424,10 +1234,6 @@ def generateGetattrMethod(factory, class_definition, classinfos):
     
     return getattrMethod
 
-"""
-Method that generate the method for loading an xml tree by following the
-attributes list defined
-"""
 def generateSetattrMethod(factory, class_definition, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
     optional_attributes = dict([(attr["name"], True) for attr in classinfos["attributes"] if attr["use"] == "optional"])
@@ -1482,225 +1288,10 @@ def generateSetattrMethod(factory, class_definition, classinfos):
         elif classinfos.has_key("base"):
             return classinfos["base"].__setattr__(self, name, value)
         
-        elif class_definition.__dict__.has_key(name):
-            return DefaultElementClass.__setattr__(self, name, value)
-        
         else:
             raise AttributeError("'%s' can't have an attribute '%s'." % (self.__class__.__name__, name))
         
     return setattrMethod
-
-"""
-Method that generate the method for generating the xml tree structure model by 
-following the attributes list defined
-"""
-def ComputeMultiplicity(name, infos):
-    if infos["minOccurs"] == 0:
-        if infos["maxOccurs"] == "unbounded":
-            return "(?:%s)*" % name
-        elif infos["maxOccurs"] == 1:
-            return "(?:%s)?" % name
-        else:
-            return "(?:%s){,%d}" % (name, infos["maxOccurs"])
-    elif infos["minOccurs"] == 1:
-        if infos["maxOccurs"] == "unbounded":
-            return "(?:%s)+" % name
-        elif infos["maxOccurs"] == 1:
-            return "(?:%s)" % name
-        else:
-            return "(?:%s){1,%d}" % (name, infos["maxOccurs"])
-    else:
-        if infos["maxOccurs"] == "unbounded":
-            return "(?:%s){%d,}" % (name, infos["minOccurs"], name)
-        else:
-            return "(?:%s){%d,%d}" % (name, infos["minOccurs"], 
-                                       infos["maxOccurs"])
-
-def GetStructure(classinfos):
-    elements = []
-    for element in classinfos["elements"]:
-        if element["type"] == ANY:
-            infos = element.copy()
-            infos["minOccurs"] = 0
-            elements.append(ComputeMultiplicity("#text |#cdata-section |\w* ", infos))
-        elif element["type"] == CHOICE:
-            choices = []
-            for infos in element["choices"]:
-                if infos["type"] == "sequence":
-                    structure = "(?:%s)" % GetStructure(infos)
-                else:
-                    structure = "%s " % infos["name"]
-                choices.append(ComputeMultiplicity(structure, infos))
-            elements.append(ComputeMultiplicity("|".join(choices), element))
-        elif element["name"] == "content" and element["elmt_type"]["type"] == SIMPLETYPE:
-            elements.append("(?:#text |#cdata-section )?")
-        else:
-            elements.append(ComputeMultiplicity("%s " % element["name"], element))
-    if classinfos.get("order", True) or len(elements) == 0:
-        return "".join(elements)
-    else:
-        raise ValueError("XSD structure not yet supported!")
-
-def generateStructureMethod(classinfos):
-    def getStructureMethod(self):
-        structure = GetStructure(classinfos)
-        if classinfos.has_key("base"):
-            return classinfos["base"].getStructure(self) + structure
-        return structure
-    return getStructureMethod
-
-"""
-Method that generate the method for loading an xml tree by following the
-attributes list defined
-"""
-def generateLoadXMLTree(factory, classinfos):
-    attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
-    elements = dict([(element["name"], element) for element in classinfos["elements"]])
-    
-    def loadXMLTreeMethod(self, tree, extras=[], derived=False):
-        self.extraAttrs = {}
-        self.compatibility(tree)
-        if not derived:
-            children_structure = ""
-            for node in tree.childNodes:
-                if not (node.nodeName == "#text" and node.data.strip() == "") and node.nodeName != "#comment":
-                    children_structure += "%s " % node.nodeName
-            structure_pattern = self.getStructure()
-            if structure_pattern != "":
-                structure_model = re.compile("(%s)$" % structure_pattern)
-                result = structure_model.match(children_structure)
-                if not result:
-                    raise ValueError("Invalid structure for \"%s\" children!." % tree.nodeName)
-        required_attributes = dict([(attr["name"], True) for attr in classinfos["attributes"] if attr["use"] == "required"])
-        if classinfos.has_key("base"):
-            extras.extend([attr["name"] for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
-            classinfos["base"].loadXMLTree(self, tree, extras, True)
-        for attrname, attr in tree._attrs.iteritems():
-            if attributes.has_key(attrname):
-                attributes[attrname]["attr_type"] = FindTypeInfos(factory, attributes[attrname]["attr_type"])
-                object.__setattr__(self, attrname, attributes[attrname]["attr_type"]["extract"](attr))
-            elif not classinfos.has_key("base") and not attrname in extras and not self.extraAttrs.has_key(attrname):
-                self.extraAttrs[attrname] = GetAttributeValue(attr)
-            required_attributes.pop(attrname, None)
-        if len(required_attributes) > 0:
-            raise ValueError("Required attributes %s missing for \"%s\" element!" % (", ".join(["\"%s\""%name for name in required_attributes]), tree.nodeName))
-        first = {}
-        for node in tree.childNodes:
-            name = node.nodeName
-            if name == "#text" and node.data.strip() == "" or name == "#comment":
-                continue
-            elif elements.has_key(name):
-                elements[name]["elmt_type"] = FindTypeInfos(factory, elements[name]["elmt_type"])
-                if elements[name]["maxOccurs"] == "unbounded" or elements[name]["maxOccurs"] > 1:
-                    if first.get(name, True):
-                        object.__setattr__(self, name, [elements[name]["elmt_type"]["extract"](node)])
-                        first[name] = False
-                    else:
-                        getattr(self, name).append(elements[name]["elmt_type"]["extract"](node))
-                else:
-                    object.__setattr__(self, name, elements[name]["elmt_type"]["extract"](node))
-            elif elements.has_key("text"):
-                if elements["text"]["maxOccurs"] == "unbounded" or elements["text"]["maxOccurs"] > 1:
-                    if first.get("text", True):
-                        object.__setattr__(self, "text", [elements["text"]["elmt_type"]["extract"](node)])
-                        first["text"] = False
-                    else:
-                        getattr(self, "text").append(elements["text"]["elmt_type"]["extract"](node))
-                else:
-                    object.__setattr__(self, "text", elements["text"]["elmt_type"]["extract"](node))
-            elif elements.has_key("content"):
-                if name in ["#cdata-section", "#text"]:
-                    if elements["content"]["elmt_type"]["type"] == SIMPLETYPE:
-                        object.__setattr__(self, "content", elements["content"]["elmt_type"]["extract"](node.data, False))
-                else:
-                    content = getattr(self, "content")
-                    if elements["content"]["maxOccurs"] == "unbounded" or elements["content"]["maxOccurs"] > 1:
-                        if first.get("content", True):
-                            object.__setattr__(self, "content", [elements["content"]["elmt_type"]["extract"](node, None)])
-                            first["content"] = False
-                        else:
-                            content.append(elements["content"]["elmt_type"]["extract"](node, content))
-                    else:
-                        object.__setattr__(self, "content", elements["content"]["elmt_type"]["extract"](node, content))
-    return loadXMLTreeMethod
-        
-
-"""
-Method that generates the method for generating an xml text by following the
-attributes list defined
-"""
-def generateGenerateXMLText(factory, classinfos):
-    def generateXMLTextMethod(self, name, indent=0, extras={}, derived=False):
-        ind1, ind2 = getIndent(indent, name)
-        if not derived:
-            text = ind1 + u'<%s' % name
-        else:
-            text = u''
-        
-        first = True
-        
-        if not classinfos.has_key("base"):
-            extras.update(self.extraAttrs)
-            for attr, value in extras.iteritems():
-                if not first and not self.singleLineAttributes:
-                    text += u'\n%s' % (ind2)
-                text += u' %s=%s' % (attr, quoteattr(value))
-                first = False
-            extras.clear()
-        for attr in classinfos["attributes"]:
-            if attr["use"] != "prohibited":
-                attr["attr_type"] = FindTypeInfos(factory, attr["attr_type"])
-                value = getattr(self, attr["name"], None)
-                if value != None:
-                    computed_value = attr["attr_type"]["generate"](value)
-                else:
-                    computed_value = None
-                if attr["use"] != "optional" or (value != None and \
-                   computed_value != attr.get("default", attr["attr_type"]["generate"](attr["attr_type"]["initial"]()))):
-                    if classinfos.has_key("base"):
-                        extras[attr["name"]] = computed_value
-                    else:
-                        if not first and not self.singleLineAttributes:
-                            text += u'\n%s' % (ind2)
-                        text += ' %s=%s' % (attr["name"], quoteattr(computed_value))
-                    first = False
-        if classinfos.has_key("base"):
-            first, new_text = classinfos["base"].generateXMLText(self, name, indent, extras, True)
-            text += new_text
-        else:
-            first = True
-        for element in classinfos["elements"]:
-            element["elmt_type"] = FindTypeInfos(factory, element["elmt_type"])
-            value = getattr(self, element["name"], None)
-            if element["minOccurs"] == 0 and element["maxOccurs"] == 1:
-                if value is not None:
-                    if first:
-                        text += u'>\n'
-                        first = False
-                    text += element["elmt_type"]["generate"](value, element["name"], indent + 1)
-            elif element["minOccurs"] == 1 and element["maxOccurs"] == 1:
-                if first:
-                    text += u'>\n'
-                    first = False
-                if element["name"] == "content" and element["elmt_type"]["type"] == SIMPLETYPE:
-                    text += element["elmt_type"]["generate"](value)
-                else:
-                    text += element["elmt_type"]["generate"](value, element["name"], indent + 1)
-            else:
-                if first and len(value) > 0:
-                    text += u'>\n'
-                    first = False
-                for item in value:
-                    text += element["elmt_type"]["generate"](item, element["name"], indent + 1)
-        if not derived:
-            if first:
-                text += u'/>\n'
-            else:
-                text += ind1 + u'</%s>\n' % (name)
-            return text
-        else:
-            return first, text
-    return generateXMLTextMethod
 
 def gettypeinfos(name, facets):
     if facets.has_key("enumeration") and facets["enumeration"][0] is not None:
@@ -1870,7 +1461,6 @@ Methods that generates the different methods for setting and getting the attribu
 """
 def generateInitMethod(factory, classinfos):
     def initMethod(self):
-        self.extraAttrs = {}
         if classinfos.has_key("base"):
             classinfos["base"].init(self)
         for attribute in classinfos["attributes"]:
