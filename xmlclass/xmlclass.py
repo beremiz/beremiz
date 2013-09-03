@@ -1654,6 +1654,12 @@ class XMLClassParser(etree.XMLParser):
         etree.XMLParser.set_element_class_lookup(self, class_lookup)
         self.ClassLookup = class_lookup
     
+    def Dumps(self, xml_obj):
+        return etree.tostring(xml_obj)
+    
+    def Loads(self, xml_string):
+        return etree.fromstring(xml_string, self)
+    
     def CreateRoot(self):
         if self.BaseClass is not None:
             root = self.makeelement(

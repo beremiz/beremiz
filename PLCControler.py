@@ -240,9 +240,6 @@ class PLCControler:
         self.Project.setcontentHeader(properties)
         self.SetFilePath("")
         
-        ## To remove when project buffering ready
-        self.ProjectBufferEnabled = False
-        
         # Initialize the project buffer
         self.CreateProjectBuffer(False)
         self.ProgramChunks = []
@@ -3144,10 +3141,6 @@ class PLCControler:
         except Exception, e:
             return _("Project file syntax error:\n\n") + str(e)
         self.SetFilePath(filepath)
-        
-        ## To remove when project buffering ready
-        self.ProjectBufferEnabled = False
-        
         self.CreateProjectBuffer(True)
         self.ProgramChunks = []
         self.ProgramOffset = 0
@@ -3199,7 +3192,7 @@ class PLCControler:
 
     def CreateProjectBuffer(self, saved):
         if self.ProjectBufferEnabled:
-            self.ProjectBuffer = UndoBuffer(cPickle.dumps(self.Project), saved)
+            self.ProjectBuffer = UndoBuffer(PLCOpenParser.Dumps(self.Project), saved)
         else:
             self.ProjectBuffer = None
             self.ProjectSaved = saved
@@ -3218,7 +3211,7 @@ class PLCControler:
 
     def BufferProject(self):
         if self.ProjectBuffer is not None:
-            self.ProjectBuffer.Buffering(cPickle.dumps(self.Project))
+            self.ProjectBuffer.Buffering(PLCOpenParser.Dumps(self.Project))
         else:
             self.ProjectSaved = False
 
@@ -3230,7 +3223,7 @@ class PLCControler:
         
     def EndBuffering(self):
         if self.ProjectBuffer is not None and self.Buffering:
-            self.ProjectBuffer.Buffering(cPickle.dumps(self.Project))
+            self.ProjectBuffer.Buffering(PLCOpenParser.Dumps(self.Project))
             self.Buffering = False
 
     def MarkProjectAsSaved(self):
@@ -3250,11 +3243,11 @@ class PLCControler:
     def LoadPrevious(self):
         self.EndBuffering()
         if self.ProjectBuffer is not None:
-            self.Project = cPickle.loads(self.ProjectBuffer.Previous())
+            self.Project = PLCOpenParser.Loads(self.ProjectBuffer.Previous())
     
     def LoadNext(self):
         if self.ProjectBuffer is not None:
-            self.Project = cPickle.loads(self.ProjectBuffer.Next())
+            self.Project = PLCOpenParser.Loads(self.ProjectBuffer.Next())
     
     def GetBufferState(self):
         if self.ProjectBuffer is not None:
