@@ -671,7 +671,7 @@ if cls:
 
     # Return Block types checking for recursion
     def GetCustomBlockResource(self):
-        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
+        return [customblocktype["name"] for customblocktype in self.CustomBlockTypes.itervalues()
             if customblocktype["type"] == "program"]
     setattr(cls, "GetCustomBlockResource", GetCustomBlockResource)
 
