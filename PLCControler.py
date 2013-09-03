@@ -568,7 +568,7 @@ class PLCControler:
                         instances.append(var_path)
                     else:
                         pou = project.getpou(var_type)
-                        if pou is not None and project.ElementIsUsedBy(pou_type, var_type):
+                        if pou is not None:# and project.ElementIsUsedBy(pou_type, var_type):
                             instances.extend(
                                 self.RecursiveSearchPouInstances(
                                     project, pou_type, var_path, 
@@ -603,7 +603,7 @@ class PLCControler:
                             if pou_type == words[1]:
                                 instances.append(pou_path)
                             pou = project.getpou(pou_type)
-                            if pou is not None and project.ElementIsUsedBy(words[1], pou_type):
+                            if pou is not None:# and project.ElementIsUsedBy(words[1], pou_type):
                                 instances.extend(
                                     self.RecursiveSearchPouInstances(
                                         project, words[1], pou_path, 
@@ -733,23 +733,23 @@ class PLCControler:
     
     # Return if data type given by name is used by another data type or pou
     def DataTypeIsUsed(self, name, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return project.ElementIsUsed(name)
+        #project = self.GetProject(debug)
+        #if project is not None:
+        #    return project.ElementIsUsed(name)
         return False
 
     # Return if pou given by name is used by another pou
     def PouIsUsed(self, name, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return project.ElementIsUsed(name)
+        #project = self.GetProject(debug)
+        #if project is not None:
+        #    return project.ElementIsUsed(name)
         return False
 
     # Return if pou given by name is directly or undirectly used by the reference pou
     def PouIsUsedBy(self, name, reference, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return project.ElementIsUsedBy(name, reference)
+        #project = self.GetProject(debug)
+        #if project is not None:
+        #    return project.ElementIsUsedBy(name, reference)
         return False
 
     def GenerateProgram(self, filepath=None):
@@ -837,7 +837,6 @@ class PLCControler:
             pou = self.Project.getpou(name)
             if pou is not None:
                 pou.setpouType(pou_type)
-                self.Project.RefreshCustomBlockTypes()
                 self.BufferProject()
                 
     def GetPouXml(self, pou_name):
@@ -980,7 +979,6 @@ class PLCControler:
             if datatype is not None:
                 datatype.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
-                self.Project.RefreshElementUsingTree()
                 self.BufferProject()
     
     # Change the name of a pou
@@ -991,8 +989,6 @@ class PLCControler:
             if pou is not None:
                 pou.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshCustomBlockTypes()
                 self.BufferProject()
     
     # Change the name of a pou transition
@@ -1029,7 +1025,6 @@ class PLCControler:
                     for var in varlist.getvariable():
                         if var.getname() == old_name:
                             var.setname(new_name)
-                self.Project.RefreshCustomBlockTypes()
                 self.BufferProject()
         
     # Change the name of a configuration
@@ -1068,7 +1063,6 @@ class PLCControler:
             pou = project.getpou(name)
             if pou is not None:
                 pou.setdescription(description)
-                project.RefreshCustomBlockTypes()
                 self.BufferProject()
     
     # Return the type of the pou given by its name
@@ -1402,9 +1396,7 @@ class PLCControler:
                 if not en:
                     tree.insert(0, ("EN", "BOOL", ([], [])))
                 return tree, []
-            datatype = project.getdataType(typename)
-            if datatype is None:
-                datatype = self.GetConfNodeDataType(typename)
+            datatype = self.GetDataType(typename)
             if datatype is not None:
                 tree = []
                 basetype_content = datatype.baseType.getcontent()
@@ -1463,9 +1455,7 @@ class PLCControler:
                     pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # Set Pou interface
                 pou.setvars([varlist for varlist_type, varlist in self.ExtractVarLists(vars)])
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshCustomBlockTypes()
-    
+                
     # Replace the return type of the pou given by its name (only for functions)
     def SetPouInterfaceReturnType(self, name, return_type):
         if self.Project is not None:
@@ -1488,9 +1478,7 @@ class PLCControler:
                     derived_type = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_type.setname(return_type)
                     return_type.setcontent(derived_type)
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshCustomBlockTypes()
-    
+                
     def UpdateProjectUsedPous(self, old_name, new_name):
         if self.Project is not None:
             self.Project.updateElementName(old_name, new_name)
@@ -1529,7 +1517,8 @@ class PLCControler:
     def AddConfNodeTypesList(self, typeslist):
         self.ConfNodeTypes.extend(typeslist)
         addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
-                     "list": confnodetypes["types"].GetCustomBlockTypes()}
+                     "list": [pou.getblockInfos()
+                              for pou in confnodetypes["types"].getpous()]}
                      for confnodetypes in typeslist]
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
@@ -1543,22 +1532,13 @@ class PLCControler:
         self.TotalTypesDict = StdBlckDct.copy()
         self.TotalTypes = StdBlckLst[:]
 
-    def GetConfNodeBlockTypes(self):
-        return [{"name": _("%s POUs") % confnodetypes["name"],
-                 "list": confnodetypes["types"].GetCustomBlockTypes()}
-                for confnodetypes in self.ConfNodeTypes]
-        
     def GetConfNodeDataTypes(self, exclude = None, only_locatables = False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
-                 "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude, only_locatables)]}
+                 "list": [
+                    datatype.getname() 
+                    for datatype in confnodetypes["types"].getdataTypes()
+                    if not only_locatables or self.IsLocatableDataType(datatype, debug)]}
                 for confnodetypes in self.ConfNodeTypes]
-    
-    def GetConfNodeDataType(self, typename):
-        for confnodetype in self.ConfNodeTypes:
-            datatype = confnodetype["types"].getdataType(typename)
-            if datatype is not None:
-                return datatype
-        return None
     
     def GetVariableLocationTree(self):
         return []
@@ -1613,7 +1593,16 @@ class PLCControler:
             return result_blocktype
         project = self.GetProject(debug)
         if project is not None:
-            return project.GetCustomBlockType(typename, inputs)
+            blocktype = project.getpou(typename)
+            if blocktype is not None:
+                blocktype_infos = blocktype.getblockInfos()
+                if inputs in [None, "undefined"]:
+                    return blocktype_infos
+            
+                if inputs == tuple([var_type 
+                    for name, var_type, modifier in blocktype_infos["inputs"]]):
+                    return blocktype_infos
+        
         return None
 
     # Return Block types checking for recursion
@@ -1625,22 +1614,19 @@ class PLCControler:
         if project is not None:
             pou_type = None
             if words[0] in ["P","T","A"]:
-                blocktypes = []
                 name = words[1]
                 pou_type = self.GetPouType(name, debug)
-            if pou_type == "function":
-                for category in self.TotalTypes:
-                    cat = {"name" : category["name"], "list" : []}
-                    for block in category["list"]:
-                        if block["type"] == "function":
-                            cat["list"].append(block)
-                    if len(cat["list"]) > 0:
-                        blocktypes.append(cat)
-            else:
-                blocktypes = [category for category in self.TotalTypes]
+            filter = (["function"] 
+                      if pou_type == "function" or words[0] == "T" 
+                      else ["functionBlock", "function"])
+            blocktypes = [
+                {"name": category["name"],
+                 "list": [block for block in category["list"]
+                          if block["type"] in filter]}
+                for category in self.TotalTypes]
             blocktypes.append({"name" : USER_DEFINED_POUS, 
-                "list": project.GetCustomBlockTypes(name, 
-                    pou_type == "function" or words[0] == "T")})
+                "list": [pou.getblockInfos()
+                         for pou in project.getpous(name, filter)]})
             return blocktypes
         return self.TotalTypes
 
@@ -1653,11 +1639,11 @@ class PLCControler:
                     blocktypes.append(block["name"])
         project = self.GetProject(debug)
         if project is not None:
-            name = ""
             words = tagname.split("::")
-            if words[0] in ["P","T","A"]:
-                name = words[1]
-            blocktypes.extend(project.GetCustomFunctionBlockTypes(name))
+            blocktypes.extend([pou.getname()
+                for pou in project.getpous(
+                    words[1] if words[0] in ["P","T","A"] else None,
+                    ["functionBlock"])])
         return blocktypes
 
     # Return Block types checking for recursion
@@ -1669,7 +1655,9 @@ class PLCControler:
                     blocktypes.append(blocktype["name"])
         project = self.GetProject(debug)
         if project is not None:
-            blocktypes.extend(project.GetCustomBlockResource())
+            blocktypes.extend(
+                [pou.getblockInfos()
+                 for pou in project.getpous(filter=["program"])])
         return blocktypes
 
     # Return Data Types checking for recursion
@@ -1684,7 +1672,10 @@ class PLCControler:
             words = tagname.split("::")
             if words[0] in ["D"]:
                 name = words[1]
-            datatypes.extend([datatype["name"] for datatype in project.GetCustomDataTypes(name, only_locatables)])
+            datatypes.extend([
+                datatype.getname() 
+                for datatype in project.getdataTypes(name)
+                if not only_locatables or self.IsLocatableDataType(datatype, debug)])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])
@@ -1759,23 +1750,26 @@ class PLCControler:
             return not typename.startswith("ANY")
         return True
 
+    def IsLocatableDataType(self, datatype, debug = False):
+        basetype_content = datatype.baseType.getcontent()
+        basetype_content_type = basetype_content.getLocalTag()
+        if basetype_content_type in ["enum", "struct"]:
+            return False
+        elif basetype_content_type == "derived":
+            return self.IsLocatableType(basetype_content.getname())
+        elif basetype_content_name == "array":
+            array_base_type = basetype_content.baseType.getcontent()
+            if array_base_type.getLocalTag() == "derived":
+                return self.IsLocatableType(array_base_type.getname(), debug)
+        return True
+        
     def IsLocatableType(self, typename, debug = False):
-        if isinstance(typename, TupleType) or self.GetBlockType(type) is not None:
+        if isinstance(typename, TupleType) or self.GetBlockType(typename) is not None:
             return False
         
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
-            basetype_content = datatype.baseType.getcontent()
-            basetype_content_type = basetype_content.getLocalTag()
-            if basetype_content_type in ["enum", "struct"]:
-                return False
-            elif basetype_content_type == "derived":
-                return self.IsLocatableType(basetype_content.getname())
-            elif basetype_content_name == "array":
-                array_base_type = basetype_content.baseType.getcontent()
-                if array_base_type.getLocalTag() == "derived":
-                    return self.IsLocatableType(array_base_type.getname(), debug)
-        
+            return self.IsLocatableDataType(datatype)
         return True
     
     def IsEnumeratedType(self, typename, debug = False):
@@ -2088,7 +2082,6 @@ class PLCControler:
                 datatype.initialValue.setvalue(infos["initial"])
             else:
                 datatype.initialValue = None
-            self.Project.RefreshElementUsingTree()
             self.BufferProject()
     
 #-------------------------------------------------------------------------------
@@ -2174,7 +2167,6 @@ class PLCControler:
             element = self.GetEditedElement(tagname)
             if element is not None:
                 element.settext(text)
-                self.Project.RefreshElementUsingTree()
     
     # Return the edited element text
     def GetEditedElementText(self, tagname, debug = False):
@@ -2496,7 +2488,6 @@ class PLCControler:
                 block.setinstanceName(blockname)
                 self.AddEditedElementPouVar(tagname, blocktype, blockname)
             element.addinstance(block)
-            self.Project.RefreshElementUsingTree()
     
     def SetEditedElementBlockInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2563,7 +2554,6 @@ class PLCControler:
                         variable.addconnectionPointOut()
                         variable.connectionPointOut.setrelPositionXY(position.x, position.y)
             block.tostring()
-            self.Project.RefreshElementUsingTree()
         
     def AddEditedElementVariable(self, tagname, id, var_type):
         element = self.GetEditedElement(tagname)
@@ -3042,7 +3032,6 @@ class PLCControler:
             if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")):
                 self.RemoveEditedElementPouVar(tagname, instance.gettypeName(), instance.getinstanceName())
             element.removeinstance(id)
-            self.Project.RefreshElementUsingTree()
 
     def GetEditedResourceVariables(self, tagname, debug = False):
         varlist = []
@@ -3155,8 +3144,6 @@ class PLCControler:
         except Exception, e:
             return _("Project file syntax error:\n\n") + str(e)
         self.SetFilePath(filepath)
-        self.Project.RefreshElementUsingTree()
-        self.Project.RefreshCustomBlockTypes()
         
         ## To remove when project buffering ready
         self.ProjectBufferEnabled = False

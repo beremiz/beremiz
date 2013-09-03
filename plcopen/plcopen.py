@@ -241,8 +241,6 @@ if cls:
     
 cls = PLCOpenParser.GetElementClass("project")
 if cls:
-    cls.ElementUsingTree = {}
-    cls.CustomBlockTypes = OrderedDict()
     
     def setname(self, name):
         self.contentHeader.setname(name)
@@ -305,10 +303,10 @@ if cls:
                 setattr(contentheader_obj, attr, value)
     setattr(cls, "setcontentHeader", setcontentHeader)
     
-    def gettypeElement(self, element_type, name=None):
-        filter = "[@name='%s']" % name if name is not None else ""
-        elements = self.xpath("ppx:types/ppx:%(element_type)ss/ppx:%(element_type)s%(filter)s" % locals(),
-                namespaces=PLCOpenParser.NSMAP)
+    def gettypeElement(self, element_type, name):
+        elements = self.xpath(
+            "ppx:types/ppx:%(element_type)ss/ppx:%(element_type)s[@name='%(name)s']" % locals(),
+            namespaces=PLCOpenParser.NSMAP)
         if name is None:
             return elements
         elif len(elements) == 1:
@@ -316,11 +314,14 @@ if cls:
         return None
     setattr(cls, "gettypeElement", gettypeElement)
     
-    def getdataTypes(self):
-        return self.getdataType()
+    def getdataTypes(self, exclude=None):
+        return self.xpath(
+            "ppx:types/ppx:dataTypes/ppx:dataType%s" % 
+                ("[@name!='%s']" % exclude if exclude is not None else ""),
+            namespaces=PLCOpenParser.NSMAP)
     setattr(cls, "getdataTypes", getdataTypes)
     
-    def getdataType(self, name=None):
+    def getdataType(self, name):
         return self.gettypeElement("dataType", name)
     setattr(cls, "getdataType", getdataType)
     
@@ -336,31 +337,32 @@ if cls:
     
     def removedataType(self, name):
         self.types.removedataTypeElement(name)
-        self.RefreshElementUsingTree()
     setattr(cls, "removedataType", removedataType)
     
-    def getpous(self):
-        return self.getpou()
+    def getpous(self, exclude=None, filter=None):
+        return self.xpath(
+            "ppx:types/ppx:pous/ppx:pou%s%s" % 
+                (("[@name!='%s']" % exclude) if exclude is not None else '',
+                 ("[%s]" % " or ".join(
+                    map(lambda x: "@pouType='%s'" % x, filter)))
+                 if filter is not None else ""),
+            namespaces=PLCOpenParser.NSMAP)
     setattr(cls, "getpous", getpous)
     
-    def getpou(self, name=None):
+    def getpou(self, name):
         return self.gettypeElement("pou", name)
     setattr(cls, "getpou", getpou)
     
     def appendpou(self, name, pou_type, body_type):
         self.types.appendpouElement(name, pou_type, body_type)
-        self.AddCustomBlockType(self.getpou(name))
     setattr(cls, "appendpou", appendpou)
         
     def insertpou(self, index, pou):
         self.types.insertpouElement(index, pou)
-        self.AddCustomBlockType(pou)
     setattr(cls, "insertpou", insertpou)
     
     def removepou(self, name):
         self.types.removepouElement(name)
-        self.RefreshCustomBlockTypes()
-        self.RefreshElementUsingTree()
     setattr(cls, "removepou", removepou)
 
     def getconfigurations(self):
@@ -458,132 +460,6 @@ if cls:
             configuration.removeVariableByFilter(address_model)
     setattr(cls, "removeVariableByFilter", removeVariableByFilter)
 
-    # Update Block types with user-defined pou added
-    def RefreshCustomBlockTypes(self):
-        # Reset the tree of user-defined pou cross-use
-        self.CustomBlockTypes = OrderedDict()
-        for pou in self.getpous():
-            self.AddCustomBlockType(pou)
-    setattr(cls, "RefreshCustomBlockTypes", RefreshCustomBlockTypes)
-
-    def AddCustomBlockType(self, pou): 
-        pou_name = pou.getname()
-        pou_type = pou.getpouType()
-        block_infos = {"name" : pou_name, "type" : pou_type, "extensible" : False,
-                       "inputs" : [], "outputs" : [], "comment" : pou.getdescription(),
-                       "generate" : generate_block, "initialise" : initialise_block}
-        if pou.interface is not None:
-            return_type = pou.interface.getreturnType()
-            if return_type is not None:
-                var_type = return_type.getcontent()
-                var_type_name = var_type.getLocalTag()
-                if var_type_name == "derived":
-                    block_infos["outputs"].append(("OUT", var_type.getname(), "none"))
-                elif var_type_name in ["string", "wstring"]:
-                    block_infos["outputs"].append(("OUT", var_type_name.upper(), "none"))
-                else:
-                    block_infos["outputs"].append(("OUT", var_type_name, "none"))
-            for type, varlist in pou.getvars():
-                if type == "InOut":
-                    for var in varlist.getvariable():
-                        var_type = var.type.getcontent()
-                        var_type_name = var_type.getLocalTag()
-                        if var_type_name == "derived":
-                            block_infos["inputs"].append((var.getname(), var_type.getname(), "none"))
-                            block_infos["outputs"].append((var.getname(), var_type.getname(), "none"))
-                        elif var_type_name in ["string", "wstring"]:
-                            block_infos["inputs"].append((var.getname(), var_type_name.upper(), "none"))
-                            block_infos["outputs"].append((var.getname(), var_type_name.upper(), "none"))
-                        else:
-                            block_infos["inputs"].append((var.getname(), var_type_name, "none"))
-                            block_infos["outputs"].append((var.getname(), var_type_name, "none"))
-                elif type == "Input":
-                    for var in varlist.getvariable():
-                        var_type = var.type.getcontent()
-                        var_type_name = var_type.getLocalTag()
-                        if var_type_name == "derived":
-                            block_infos["inputs"].append((var.getname(), var_type.getname(), "none"))
-                        elif var_type_name in ["string", "wstring"]:
-                            block_infos["inputs"].append((var.getname(), var_type_name.upper(), "none"))
-                        else:
-                            block_infos["inputs"].append((var.getname(), var_type_name, "none"))
-                elif type == "Output":
-                    for var in varlist.getvariable():
-                        var_type = var.type.getcontent()
-                        var_type_name = var_type.getLocalTag()
-                        if var_type_name == "derived":
-                            block_infos["outputs"].append((var.getname(), var_type.getname(), "none"))
-                        elif var_type_name in ["string", "wstring"]:
-                            block_infos["outputs"].append((var.getname(), var_type_name.upper(), "none"))
-                        else:
-                            block_infos["outputs"].append((var.getname(), var_type_name, "none"))    
-        block_infos["usage"] = "\n (%s) => (%s)" % (", ".join(["%s:%s" % (input[1], input[0]) for input in block_infos["inputs"]]),
-                                                    ", ".join(["%s:%s" % (output[1], output[0]) for output in block_infos["outputs"]]))
-        self.CustomBlockTypes[pou_name]=block_infos
-    setattr(cls, "AddCustomBlockType", AddCustomBlockType)
-
-    def AddElementUsingTreeInstance(self, name, type_infos):
-        typename = type_infos.getname()
-        elements = self.ElementUsingTree.setdefault(typename, set())
-        elements.add(name)
-    setattr(cls, "AddElementUsingTreeInstance", AddElementUsingTreeInstance)
-    
-    def RefreshElementUsingTree(self):
-        # Reset the tree of user-defined element cross-use
-        self.ElementUsingTree = {}
-        
-        # Analyze each datatype
-        for datatype in self.getdataTypes():
-            name = datatype.getname()
-            basetype_content = datatype.baseType.getcontent()
-            basetype_content_name = basetype_content.getLocalTag()
-            if basetype_content_name == "derived":
-                self.AddElementUsingTreeInstance(name, basetype_content)
-            elif basetype_content_name in ["subrangeSigned", "subrangeUnsigned", "array"]:
-                base_type = basetype_content.baseType.getcontent()
-                if base_type.getLocalTag() == "derived":
-                    self.AddElementUsingTreeInstance(name, base_type)
-            elif basetype_content_name == "struct":
-                for element in basetype_content.getvariable():
-                    type_content = element.type.getcontent()
-                    if type_content.getLocalTag() == "derived":
-                        self.AddElementUsingTreeInstance(name, type_content)
-            
-        # Analyze each pou
-        for pou in self.getpous():
-            name = pou.getname()
-            if pou.interface is not None:
-                # Extract variables from every varLists
-                for varlist_type, varlist in pou.getvars():
-                    for var in varlist.getvariable():
-                        vartype_content = var.gettype().getcontent()
-                        if vartype_content.getLocalTag() == "derived":
-                            self.AddElementUsingTreeInstance(name, vartype_content)
-        
-    setattr(cls, "RefreshElementUsingTree", RefreshElementUsingTree)
-
-    # Return if pou given by name is used by another pou
-    def ElementIsUsed(self, name):
-        elements = self.ElementUsingTree.get(name, None)
-        return elements is not None
-    setattr(cls, "ElementIsUsed", ElementIsUsed)
-
-    # Return if pou given by name is directly or undirectly used by the reference pou
-    def ElementIsUsedBy(self, name, reference):
-        elements = self.ElementUsingTree.get(name, set())
-        # Test if pou is directly used by reference
-        if reference in elements:
-            return True
-        else:
-            # Test if pou is undirectly used by reference, by testing if pous
-            # that directly use pou is directly or undirectly used by reference
-            selffn = self.ElementIsUsedBy
-            for element in elements:
-                if selffn(element, reference):
-                    return True
-        return False
-    setattr(cls, "ElementIsUsedBy", ElementIsUsedBy)
-
     def GetEnumeratedDataTypeValues(self):
         return [
             value.getname() 
@@ -591,60 +467,6 @@ if cls:
                 "ppx:types/ppx:dataTypes/ppx:dataType/ppx:baseType/ppx:enum/ppx:values/ppx:value",
                 namespaces=PLCOpenParser.NSMAP)]
     setattr(cls, "GetEnumeratedDataTypeValues", GetEnumeratedDataTypeValues)
-
-    # Function that returns the block definition associated to the block type given
-    def GetCustomBlockType(self, typename, inputs = None):
-        customblocktype = self.CustomBlockTypes.get(typename,None)
-        if customblocktype is not None:
-            if inputs is not None and inputs != "undefined":
-                customblock_inputs = tuple([var_type for name, var_type, modifier in customblocktype["inputs"]])
-                if inputs == customblock_inputs:
-                    return customblocktype
-            else:
-                return customblocktype
-        return None
-    setattr(cls, "GetCustomBlockType", GetCustomBlockType)
-
-    # Return Block types checking for recursion
-    def GetCustomBlockTypes(self, exclude = None, onlyfunctions = False):
-        if exclude is not None:
-            return [customblocktype for name,customblocktype in self.CustomBlockTypes.iteritems()
-                if (customblocktype["type"] != "program"
-                    and name != exclude
-                    and not self.ElementIsUsedBy(exclude, name)
-                    and not (onlyfunctions and customblocktype["type"] != "function"))]
-        return [customblocktype for customblocktype in self.CustomBlockTypes.itervalues()
-            if (customblocktype["type"] != "program"
-                and not (onlyfunctions and customblocktype["type"] != "function"))]
-    setattr(cls, "GetCustomBlockTypes", GetCustomBlockTypes)
-
-    # Return Function Block types checking for recursion
-    def GetCustomFunctionBlockTypes(self, exclude = None):
-        if exclude is not None:
-            return [name for name,customblocktype in self.CustomBlockTypes.iteritems()
-                if (customblocktype["type"] == "functionBlock" 
-                    and name != exclude 
-                    and not self.ElementIsUsedBy(exclude, name))]
-        return [name for customblocktype in self.CustomBlockTypes.itervalues()
-            if customblocktype["type"] == "functionBlock"]
-    setattr(cls, "GetCustomFunctionBlockTypes", GetCustomFunctionBlockTypes)
-
-    # Return Block types checking for recursion
-    def GetCustomBlockResource(self):
-        return [customblocktype["name"] for customblocktype in self.CustomBlockTypes.itervalues()
-            if customblocktype["type"] == "program"]
-    setattr(cls, "GetCustomBlockResource", GetCustomBlockResource)
-
-    # Return Data Types checking for recursion
-    def GetCustomDataTypes(self, exclude = "", only_locatable = False):
-        customdatatypes = []
-        for customdatatype in self.getdataTypes():
-            if not only_locatable or self.IsLocatableType(customdatatype):
-                customdatatype_name = customdatatype.getname()
-                if customdatatype_name != exclude and not self.ElementIsUsedBy(exclude, customdatatype_name):
-                    customdatatypes.append({"name": customdatatype_name, "infos": customdatatype})
-        return customdatatypes
-    setattr(cls, "GetCustomDataTypes", GetCustomDataTypes)
 
     def Search(self, criteria, parent_infos=[]):
         result = self.types.Search(criteria, parent_infos)
@@ -1168,8 +990,49 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+def _getvariableTypeinfos(variable_type):
+    type_content = variable_type.getcontent()
+    type_content_type = type_content.getLocalTag()
+    if type_content_type == "derived":
+        return type_content.getname()
+    return type_content_type.upper()
+    
 cls = PLCOpenParser.GetElementClass("pou", "pous")
 if cls:
+    
+    def getblockInfos(self): 
+        block_infos = {
+            "name" : self.getname(), 
+            "type" : self.getpouType(), 
+            "extensible" : False,
+            "inputs" : [], 
+            "outputs" : [], 
+            "comment" : self.getdescription(),
+            "generate" : generate_block, 
+            "initialise" : initialise_block}
+        if self.interface is not None:
+            return_type = self.interface.getreturnType()
+            if return_type is not None:
+                block_infos["outputs"].append(
+                    ("OUT", _getvariableTypeinfos(return_type), "none"))
+            for var in self.xpath(
+                "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars]/ppx:variable",
+                namespaces=PLCOpenParser.NSMAP):
+                block_infos["inputs"].append(
+                    (var.getname(), _getvariableTypeinfos(var.type), "none"))
+            for var in self.xpath(
+                "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable",
+                namespaces=PLCOpenParser.NSMAP):
+                block_infos["outputs"].append(
+                    (var.getname(), _getvariableTypeinfos(var.type), "none"))
+            
+        block_infos["usage"] = ("\n (%s) => (%s)" % 
+            (", ".join(["%s:%s" % (input[1], input[0]) 
+                        for input in block_infos["inputs"]]),
+             ", ".join(["%s:%s" % (output[1], output[0]) 
+                        for output in block_infos["outputs"]])))
+        return block_infos
+    setattr(cls, "getblockInfos", getblockInfos)
     
     def setdescription(self, description):
         doc = self.getdocumentation()
@@ -2333,7 +2196,7 @@ if cls:
     def getBoundingBox(self):
         bbox = _getBoundingBoxSingle(self)
         condition_connection = self.getconditionConnection()
-        if condition_connection:
+        if condition_connection is not None:
             bbox.union(_getConnectionsBoundingBox(condition_connection))
         return bbox
     setattr(cls, "getBoundingBox", getBoundingBox)
