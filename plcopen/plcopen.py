@@ -124,6 +124,7 @@ def TestTextElement(text, criteria):
     return test_result
 
 PLCOpenParser = GenerateParserFromXSD(os.path.join(os.path.split(__file__)[0], "tc6_xml_v201.xsd"))
+PLCOpen_XPath = lambda xpath: etree.XPath(xpath, namespaces=PLCOpenParser.NSMAP)
 
 LOAD_POU_PROJECT_TEMPLATE = """
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" 
@@ -170,21 +171,22 @@ def LoadProject(filepath):
     
     return etree.fromstring(project_xml, PLCOpenParser)
 
+project_pou_xpath = PLCOpen_XPath("/ppx:project/ppx:types/ppx:pous/ppx:pou")
 def LoadPou(xml_string):
     root = etree.fromstring(
         LOAD_POU_PROJECT_TEMPLATE % xml_string, 
         PLCOpenParser)
-    return root.xpath(
-        "/ppx:project/ppx:types/ppx:pous/ppx:pou",
-        namespaces=PLCOpenParser.NSMAP)[0]
+    return project_pou_xpath(root)[0]
 
+project_pou_instances_xpath = {
+    body_type: PLCOpen_XPath(
+        "/ppx:project/ppx:types/ppx:pous/ppx:pou[@name='paste_pou']/ppx:body/ppx:%s/*" % body_type)
+    for body_type in ["FBD", "LD", "SFC"]}
 def LoadPouInstances(xml_string, body_type):
     root = etree.fromstring(
         LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type) % xml_string, 
         PLCOpenParser)
-    return root.xpath(
-        "/ppx:project/ppx:types/ppx:pous/ppx:pou[@name='paste_pou']/ppx:body/ppx:%s/*" % body_type,
-        namespaces=PLCOpenParser.NSMAP)
+    return project_pou_instances_xpath[body_type](root)
 
 def SaveProject(project, filepath):
     project_file = open(filepath, 'w')
@@ -303,27 +305,26 @@ if cls:
                 setattr(contentheader_obj, attr, value)
     setattr(cls, "setcontentHeader", setcontentHeader)
     
-    def gettypeElement(self, element_type, name):
-        elements = self.xpath(
-            "ppx:types/ppx:%(element_type)ss/ppx:%(element_type)s[@name='%(name)s']" % locals(),
-            namespaces=PLCOpenParser.NSMAP)
-        if name is None:
-            return elements
-        elif len(elements) == 1:
-            return elements[0]
-        return None
-    setattr(cls, "gettypeElement", gettypeElement)
+    def gettypeElementFunc(element_type):
+        elements_xpath = PLCOpen_XPath(
+            "ppx:types/ppx:%(element_type)ss/ppx:%(element_type)s[@name=$name]" % locals())
+        def gettypeElement(self, name):
+            elements = elements_xpath(self, name=name)
+            if len(elements) == 1:
+                return elements[0]
+            return None
+        return gettypeElement
     
+    datatypes_xpath = PLCOpen_XPath("ppx:types/ppx:dataTypes/ppx:dataType")
+    filtered_datatypes_xpath = PLCOpen_XPath(
+        "ppx:types/ppx:dataTypes/ppx:dataType[@name!=$exclude]")
     def getdataTypes(self, exclude=None):
-        return self.xpath(
-            "ppx:types/ppx:dataTypes/ppx:dataType%s" % 
-                ("[@name!='%s']" % exclude if exclude is not None else ""),
-            namespaces=PLCOpenParser.NSMAP)
+        if exclude is not None:
+            return filtered_datatypes_xpath(self, exclude=exclude)
+        return datatypes_xpath(self)
     setattr(cls, "getdataTypes", getdataTypes)
     
-    def getdataType(self, name):
-        return self.gettypeElement("dataType", name)
-    setattr(cls, "getdataType", getdataType)
+    setattr(cls, "getdataType", gettypeElementFunc("dataType"))
     
     def appenddataType(self, name):
         if self.getdataType(name) is not None:
@@ -339,19 +340,17 @@ if cls:
         self.types.removedataTypeElement(name)
     setattr(cls, "removedataType", removedataType)
     
-    def getpous(self, exclude=None, filter=None):
+    def getpous(self, exclude=None, filter=[]):
         return self.xpath(
             "ppx:types/ppx:pous/ppx:pou%s%s" % 
                 (("[@name!='%s']" % exclude) if exclude is not None else '',
                  ("[%s]" % " or ".join(
                     map(lambda x: "@pouType='%s'" % x, filter)))
-                 if filter is not None else ""),
+                 if len(filter) > 0 else ""),
             namespaces=PLCOpenParser.NSMAP)
     setattr(cls, "getpous", getpous)
     
-    def getpou(self, name):
-        return self.gettypeElement("pou", name)
-    setattr(cls, "getpou", getpou)
+    setattr(cls, "getpou", gettypeElementFunc("pou"))
     
     def appendpou(self, name, pou_type, body_type):
         self.types.appendpouElement(name, pou_type, body_type)
@@ -365,18 +364,17 @@ if cls:
         self.types.removepouElement(name)
     setattr(cls, "removepou", removepou)
 
+    configurations_xpath = PLCOpen_XPath(
+        "ppx:instances/ppx:configurations/ppx:configuration")
     def getconfigurations(self):
-        return self.getconfiguration()
+        return configurations_xpath(self)
     setattr(cls, "getconfigurations", getconfigurations)
 
-    def getconfiguration(self, name=None):
-        configurations = self.xpath(
-            "ppx:instances/ppx:configurations/ppx:configuration%s" %
-                ("[@name='%s']" % name if name is not None else ""),
-            namespaces=PLCOpenParser.NSMAP)
-        if name is None:
-            return configurations
-        elif len(configurations) == 1:
+    configuration_xpath = PLCOpen_XPath(
+        "ppx:instances/ppx:configurations/ppx:configuration[@name=$name]")
+    def getconfiguration(self, name):
+        configurations = configuration_xpath(self, name=name)
+        if len(configurations) == 1:
             return configurations[0]
         return None
     setattr(cls, "getconfiguration", getconfiguration)
@@ -395,12 +393,11 @@ if cls:
             raise ValueError, ("\"%s\" configuration doesn't exist !!!") % name
         self.instances.configurations.remove(configuration)
     setattr(cls, "removeconfiguration", removeconfiguration)
-
+    
+    resources_xpath = PLCOpen_XPath(
+        "ppx:instances/ppx:configurations/ppx:configuration[@name=$configname]/ppx:resource[@name=$name]")
     def getconfigurationResource(self, config_name, name):
-        resources = self.xpath(
-            "ppx:instances/ppx:configurations/ppx:configuration[@name='%s']/ppx:resource[@name='%s']" % 
-            (config_name, name),
-            namespaces=PLCOpenParser.NSMAP)
+        resources = resources_xpath(self, configname=config_name, name=name)
         if len(resources) == 1:
             return resources[0]
         return None
@@ -460,12 +457,10 @@ if cls:
             configuration.removeVariableByFilter(address_model)
     setattr(cls, "removeVariableByFilter", removeVariableByFilter)
 
+    enumerated_values_xpath = PLCOpen_XPath(
+        "ppx:types/ppx:dataTypes/ppx:dataType/ppx:baseType/ppx:enum/ppx:values/ppx:value")
     def GetEnumeratedDataTypeValues(self):
-        return [
-            value.getname() 
-            for value in self.xpath(
-                "ppx:types/ppx:dataTypes/ppx:dataType/ppx:baseType/ppx:enum/ppx:values/ppx:value",
-                namespaces=PLCOpenParser.NSMAP)]
+        return [value.getname() for value in enumerated_values_xpath(self)]
     setattr(cls, "GetEnumeratedDataTypeValues", GetEnumeratedDataTypeValues)
 
     def Search(self, criteria, parent_infos=[]):
@@ -982,9 +977,10 @@ if cls:
         pass
     setattr(cls, "updateElementName", updateElementName)
     
+    enumerated_datatype_values_xpath = PLCOpen_XPath("ppx:values/ppx:value")
     def Search(self, criteria, parent_infos=[]):
         search_result = []
-        for i, value in enumerate(self.xpath("ppx:values/ppx:value", namespaces=PLCOpenParser.NSMAP)):
+        for i, value in enumerate(enumerated_datatype_values_xpath(self)):
             for result in TestTextElement(value.getname(), criteria):
                 search_result.append((tuple(parent_infos + ["value", i]),) + result)
         return search_result
@@ -1000,6 +996,10 @@ def _getvariableTypeinfos(variable_type):
 cls = PLCOpenParser.GetElementClass("pou", "pous")
 if cls:
     
+    block_inputs_xpath = PLCOpen_XPath(
+        "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars]/ppx:variable")
+    block_outputs_xpath = PLCOpen_XPath(
+        "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable")
     def getblockInfos(self): 
         block_infos = {
             "name" : self.getname(), 
@@ -1015,16 +1015,12 @@ if cls:
             if return_type is not None:
                 block_infos["outputs"].append(
                     ("OUT", _getvariableTypeinfos(return_type), "none"))
-            for var in self.xpath(
-                "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars]/ppx:variable",
-                namespaces=PLCOpenParser.NSMAP):
-                block_infos["inputs"].append(
-                    (var.getname(), _getvariableTypeinfos(var.type), "none"))
-            for var in self.xpath(
-                "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable",
-                namespaces=PLCOpenParser.NSMAP):
-                block_infos["outputs"].append(
-                    (var.getname(), _getvariableTypeinfos(var.type), "none"))
+            block_infos["inputs"].extend(
+                [(var.getname(), _getvariableTypeinfos(var.type), "none")
+                 for var in block_inputs_xpath(self)])
+            block_infos["outputs"].extend(
+                [(var.getname(), _getvariableTypeinfos(var.type), "none")
+                 for var in block_outputs_xpath(self)])
             
         block_infos["usage"] = ("\n (%s) => (%s)" % 
             (", ".join(["%s:%s" % (input[1], input[0]) 
@@ -1610,10 +1606,12 @@ if cls:
         else:
             raise TypeError, _("%s body don't have instances!")%self.content.getLocalTag()
     setattr(cls, "getcontentInstances", getcontentInstances)
-
+    
+    instance_by_id_xpath = PLCOpen_XPath("*[@localId=$localId]")
+    instance_by_name_xpath = PLCOpen_XPath("ppx:block[@instanceName=$name]")
     def getcontentInstance(self, local_id):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = self.content.xpath("*[@localId=%d]" % local_id)
+            instance = instance_by_id_xpath(self.content, localId=local_id)
             if len(instance) > 0:
                 return instance[0]
             return None
@@ -1636,7 +1634,7 @@ if cls:
     
     def getcontentInstanceByName(self, name):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = self.content.xpath("ppx:block[@instanceName=%s]" % name, namespaces=PLCOpenParser.NSMAP)
+            instance = instance_by_name_xpath(self.content)
             if len(instance) > 0:
                 return instance[0]
             return None
@@ -1646,7 +1644,7 @@ if cls:
     
     def removecontentInstance(self, local_id):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = self.content.xpath("*[@localId=%d]" % local_id)
+            instance = instance_by_id_xpath(self.content)
             if len(instance) > 0:
                 self.content.remove(instance[0])
             else:
@@ -2533,13 +2531,14 @@ if cls:
         self.content = None
     setattr(cls, "removeconnections", removeconnections)
     
+    connection_xpath = PLCOpen_XPath("ppx:connection")
+    connection_by_position_xpath = PLCOpen_XPath("ppx:connection[position()=$pos]")
     def getconnections(self):
-        return self.xpath("ppx:connection", namespaces=PLCOpenParser.NSMAP)
+        return connection_xpath(self)
     setattr(cls, "getconnections", getconnections)
     
     def getconnection(self, idx):
-        connection = self.xpath("ppx:connection[position()=%d]" % (idx + 1), 
-                                namespaces=PLCOpenParser.NSMAP)
+        connection = connection_by_position_xpath(self, pos=idx+1)
         if len(connection) > 0:
             return connection[0]
         return None
