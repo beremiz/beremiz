@@ -666,28 +666,20 @@ def GenerateContentInfos(factory, name, choices):
             choices_dict[choice_name] = infos
     choices_xpath = "|".join(map(lambda x: "%s:%s" % (factory.TargetNamespace, x), choices_dict.keys()))
     
-    def GetContentChoicesXPath():
-        return choices_xpath
-    
     def GetContentInitial():
         content_name, infos = choices[0]
         if content_name == "sequence":
             content_value = []
             for i in xrange(infos["minOccurs"]):
                 for element_infos in infos["elements"]:
-                    value = GetElementInitialValue(factory, element_infos)
-                    if value is not None:
-                        if element_infos["type"] == CHOICE:
-                            content_value.append(value)
-                        else:
-                            content_value.append({"name": element_infos["name"], "value": value})
+                    content_value.extend(GetElementInitialValue(factory, element_infos))
         else:
             content_value = GetElementInitialValue(factory, infos)
-        return {"name": content_name, "value": content_value}
+        return content_value
         
     return {
         "type": COMPLEXTYPE,
-        "choices_xpath": GetContentChoicesXPath,
+        "choices_xpath": etree.XPath(choices_xpath, namespaces=factory.NSMAP),
         "initial": GetContentInitial,
     }
 
@@ -1212,7 +1204,7 @@ def generateGetattrMethod(factory, class_definition, classinfos):
             element_infos = elements[name]
             element_infos["elmt_type"] = FindTypeInfos(factory, element_infos["elmt_type"])
             if element_infos["type"] == CHOICE:
-                content = self.xpath(element_infos["elmt_type"]["choices_xpath"](), namespaces=factory.NSMAP)
+                content = element_infos["elmt_type"]["choices_xpath"](self)
                 if element_infos["maxOccurs"] == "unbounded" or element_infos["maxOccurs"] > 1:
                     return content
                 elif len(content) > 0:
@@ -1261,7 +1253,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
             else:
                 element_xpath = ("%s:%s" % (factory.TargetNamespace, name)
                                  if name != "content"
-                                 else elements["content"]["elmt_type"]["choices_xpath"]())
+                                 else elements["content"]["elmt_type"]["choices_xpath"].path)
                 
                 for element in self.xpath(element_xpath, namespaces=factory.NSMAP):
                     self.remove(element)
@@ -1272,7 +1264,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                         previous_elements_xpath = "|".join(map(
                             lambda x: "%s:%s" % (factory.TargetNamespace, x)
                                       if x != "content"
-                                      else elements["content"]["elmt_type"]["choices_xpath"](),
+                                      else elements["content"]["elmt_type"]["choices_xpath"].path,
                             elements.keys()[:element_idx]))
                         
                         insertion_point = len(self.xpath(previous_elements_xpath, namespaces=factory.NSMAP))
