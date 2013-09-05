@@ -24,7 +24,6 @@
 
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
-import cPickle
 from copy import deepcopy
 import os,sys,re
 import datetime
@@ -1177,8 +1176,10 @@ class PLCControler:
                 if var["Type"][0] == "array":
                     array_type, base_type_name, dimensions = var["Type"]
                     array = PLCOpenParser.CreateElement("array", "dataType")
+                    baseType = PLCOpenParser.CreateElement("baseType", "array")
+                    array.setbaseType(baseType)
                     for i, dimension in enumerate(dimensions):
-                        dimension_range = PLCOpenParser.CreateElement("range", "dimension")
+                        dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                         if i == 0:
                             array.setdimension([dimension_range])
                         else:
@@ -1186,14 +1187,14 @@ class PLCControler:
                         dimension_range.setlower(dimension[0])
                         dimension_range.setupper(dimension[1])
                     if base_type_name in self.GetBaseTypes():
-                        array.baseType.setcontent(PLCOpenParser.CreateElement(
+                        baseType.setcontent(PLCOpenParser.CreateElement(
                             base_type_name.lower()
                             if base_type_name in ["STRING", "WSTRING"]
                             else base_type_name, "dataType"))
                     else:
                         derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                         derived_datatype.setname(base_type_name)
-                        array.baseType.setcontent(derived_datatype)
+                        baseType.setcontent(derived_datatype)
                     var_type.setcontent(array)
             elif var["Type"] in self.GetBaseTypes():
                 var_type.setcontent(PLCOpenParser.CreateElement(
@@ -1770,6 +1771,8 @@ class PLCControler:
         return True
     
     def IsEnumeratedType(self, typename, debug = False):
+        if isinstance(typename, TupleType):
+            typename = typename[1]
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
             basetype_content = datatype.baseType.getcontent()
@@ -1782,6 +1785,8 @@ class PLCControler:
     def IsSubrangeType(self, typename, exclude=None, debug = False):
         if typename == exclude:
             return False
+        if isinstance(typename, TupleType):
+            typename = typename[1]
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
             basetype_content = datatype.baseType.getcontent()
