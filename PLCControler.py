@@ -24,13 +24,12 @@
 
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
-import cPickle
+from copy import deepcopy
 import os,sys,re
 import datetime
 from time import localtime
 
-from plcopen import plcopen
-from plcopen.structures import *
+from plcopen import*
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -66,14 +65,14 @@ ITEMS_VARIABLE = [ITEM_VAR_LOCAL,
                   ITEM_VAR_INOUT
                  ] = range(17, 24)
 
-VAR_CLASS_INFOS = {"Local" :    (plcopen.interface_localVars,    ITEM_VAR_LOCAL),
-                   "Global" :   (plcopen.interface_globalVars,   ITEM_VAR_GLOBAL),
-                   "External" : (plcopen.interface_externalVars, ITEM_VAR_EXTERNAL),
-                   "Temp" :     (plcopen.interface_tempVars,     ITEM_VAR_TEMP),
-                   "Input" :    (plcopen.interface_inputVars,    ITEM_VAR_INPUT),
-                   "Output" :   (plcopen.interface_outputVars,   ITEM_VAR_OUTPUT),
-                   "InOut" :    (plcopen.interface_inOutVars,    ITEM_VAR_INOUT)
-                  }
+VAR_CLASS_INFOS = {
+    "Local":    ("localVars",    ITEM_VAR_LOCAL),
+    "Global":   ("globalVars",   ITEM_VAR_GLOBAL),
+    "External": ("externalVars", ITEM_VAR_EXTERNAL),
+    "Temp":     ("tempVars",     ITEM_VAR_TEMP),
+    "Input":    ("inputVars",    ITEM_VAR_INPUT),
+    "Output":   ("outputVars",   ITEM_VAR_OUTPUT),
+    "InOut":    ("inOutVars",    ITEM_VAR_INOUT)}
 
 POU_TYPES = {"program": ITEM_PROGRAM,
              "functionBlock": ITEM_FUNCTIONBLOCK,
@@ -215,7 +214,7 @@ class PLCControler:
         self.ProgramFilePath = ""
             
     def GetQualifierTypes(self):
-        return plcopen.QualifierList
+        return QualifierList
 
     def GetProject(self, debug = False):
         if debug and self.CurrentCompiledProject is not None:
@@ -234,11 +233,12 @@ class PLCControler:
     # Create a new project by replacing the current one
     def CreateNewProject(self, properties):
         # Create the project
-        self.Project = plcopen.project()
+        self.Project = PLCOpenParser.CreateRoot()
         properties["creationDateTime"] = datetime.datetime(*localtime()[:6])
         self.Project.setfileHeader(properties)
         self.Project.setcontentHeader(properties)
         self.SetFilePath("")
+        
         # Initialize the project buffer
         self.CreateProjectBuffer(False)
         self.ProgramChunks = []
@@ -390,8 +390,9 @@ class PLCControler:
 
     def GetPouVariableInfos(self, project, variable, var_class, debug=False):
         vartype_content = variable.gettype().getcontent()
-        if vartype_content["name"] == "derived":
-            var_type = vartype_content["value"].getname()
+        vartype_content_type = vartype_content.getLocalTag()
+        if vartype_content_type == "derived":
+            var_type = vartype_content.getname()
             pou_type = None
             pou = project.getpou(var_type)
             if pou is not None:
@@ -419,15 +420,15 @@ class PLCControler:
                         "class": var_class,
                         "edit": False,
                         "debug": False}
-        elif vartype_content["name"] in ["string", "wstring"]:
+        elif vartype_content_type in ["string", "wstring"]:
             return {"name": variable.getname(), 
-                    "type": vartype_content["name"].upper(), 
+                    "type": vartype_content_type.upper(), 
                     "class": var_class,
                     "edit": False,
                     "debug": True}
         else:
             return {"name": variable.getname(),
-                    "type": vartype_content["name"], 
+                    "type": vartype_content_type, 
                     "class": var_class,
                     "edit": False,
                     "debug": True}
@@ -556,14 +557,14 @@ class PLCControler:
         for varlist in varlists:
             for variable in varlist.getvariable():
                 vartype_content = variable.gettype().getcontent()
-                if vartype_content["name"] == "derived":
+                if vartype_content.getLocalTag() == "derived":
                     var_path = "%s.%s" % (parent_path, variable.getname())
-                    var_type = vartype_content["value"].getname()
+                    var_type = vartype_content.getname()
                     if var_type == pou_type:
                         instances.append(var_path)
                     else:
                         pou = project.getpou(var_type)
-                        if pou is not None and project.ElementIsUsedBy(pou_type, var_type):
+                        if pou is not None:# and project.ElementIsUsedBy(pou_type, var_type):
                             instances.extend(
                                 self.RecursiveSearchPouInstances(
                                     project, pou_type, var_path, 
@@ -598,7 +599,7 @@ class PLCControler:
                             if pou_type == words[1]:
                                 instances.append(pou_path)
                             pou = project.getpou(pou_type)
-                            if pou is not None and project.ElementIsUsedBy(words[1], pou_type):
+                            if pou is not None:# and project.ElementIsUsedBy(words[1], pou_type):
                                 instances.extend(
                                     self.RecursiveSearchPouInstances(
                                         project, words[1], pou_path, 
@@ -625,7 +626,7 @@ class PLCControler:
                 for variable in varlist.getvariable():
                     if variable.getname() == parts[0]:
                         vartype_content = variable.gettype().getcontent()
-                        if vartype_content["name"] == "derived":
+                        if vartype_content.getLocalTag() == "derived":
                             return self.RecursiveGetPouInstanceTagName(
                                             project, 
                                             vartype_content["value"].getname(),
@@ -656,14 +657,14 @@ class PLCControler:
             for variable in varlist.getvariable():
                 if variable.getname() == parts[0]:
                     vartype_content = variable.gettype().getcontent()
-                    if vartype_content["name"] == "derived":                        
+                    if vartype_content.getLocalTag() == "derived":                        
                         if len(parts) == 1:
                             return self.ComputePouName(
-                                        vartype_content["value"].getname())
+                                        vartype_content.getname())
                         else:
                             return self.RecursiveGetPouInstanceTagName(
                                         project, 
-                                        vartype_content["value"].getname(),
+                                        vartype_content.getname(),
                                         parts[1:], debug)
         return None
     
@@ -728,23 +729,23 @@ class PLCControler:
     
     # Return if data type given by name is used by another data type or pou
     def DataTypeIsUsed(self, name, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return project.ElementIsUsed(name) or project.DataTypeIsDerived(name)
+        #project = self.GetProject(debug)
+        #if project is not None:
+        #    return project.ElementIsUsed(name)
         return False
 
     # Return if pou given by name is used by another pou
     def PouIsUsed(self, name, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return project.ElementIsUsed(name)
+        #project = self.GetProject(debug)
+        #if project is not None:
+        #    return project.ElementIsUsed(name)
         return False
 
     # Return if pou given by name is directly or undirectly used by the reference pou
     def PouIsUsedBy(self, name, reference, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return project.ElementIsUsedBy(name, reference)
+        #project = self.GetProject(debug)
+        #if project is not None:
+        #    return project.ElementIsUsedBy(name, reference)
         return False
 
     def GenerateProgram(self, filepath=None):
@@ -832,14 +833,13 @@ class PLCControler:
             pou = self.Project.getpou(name)
             if pou is not None:
                 pou.setpouType(pou_type)
-                self.Project.RefreshCustomBlockTypes()
                 self.BufferProject()
                 
     def GetPouXml(self, pou_name):
         if self.Project is not None:
             pou = self.Project.getpou(pou_name)
             if pou is not None:
-                return pou.generateXMLText('pou', 0)
+                return pou.tostring()
         return None
     
     def PastePou(self, pou_type, pou_xml):
@@ -847,47 +847,40 @@ class PLCControler:
         Adds the POU defined by 'pou_xml' to the current project with type 'pou_type'
         '''
         try:
-            tree = minidom.parseString(pou_xml.encode("utf-8"))
-            root = tree.childNodes[0]
+            new_pou = LoadPou(pou_xml)
         except:
             return _("Couldn't paste non-POU object.")
-
-        if root.nodeName == "pou":
-            new_pou = plcopen.pous_pou()
-            new_pou.loadXMLTree(root)
-
-            name = new_pou.getname()
+        
+        name = new_pou.getname()
+        
+        idx = 0
+        new_name = name
+        while self.Project.getpou(new_name):
+            # a POU with that name already exists.
+            # make a new name and test if a POU with that name exists.
+            # append an incrementing numeric suffix to the POU name.
+            idx += 1
+            new_name = "%s%d" % (name, idx)
             
-            idx = 0
-            new_name = name
-            while self.Project.getpou(new_name):
-                # a POU with that name already exists.
-                # make a new name and test if a POU with that name exists.
-                # append an incrementing numeric suffix to the POU name.
-                idx += 1
-                new_name = "%s%d" % (name, idx)
-                
-            # we've found a name that does not already exist, use it
-            new_pou.setname(new_name)
-            
-            if pou_type is not None:
-                orig_type = new_pou.getpouType()
-    
-                # prevent violations of POU content restrictions:
-                # function blocks cannot be pasted as functions,
-                # programs cannot be pasted as functions or function blocks
-                if orig_type == 'functionBlock' and pou_type == 'function' or \
-                   orig_type == 'program' and pou_type in ['function', 'functionBlock']:
-                    return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
-                
-                new_pou.setpouType(pou_type)
+        # we've found a name that does not already exist, use it
+        new_pou.setname(new_name)
+        
+        if pou_type is not None:
+            orig_type = new_pou.getpouType()
 
-            self.Project.insertpou(-1, new_pou)
-            self.BufferProject()
+            # prevent violations of POU content restrictions:
+            # function blocks cannot be pasted as functions,
+            # programs cannot be pasted as functions or function blocks
+            if orig_type == 'functionBlock' and pou_type == 'function' or \
+               orig_type == 'program' and pou_type in ['function', 'functionBlock']:
+                return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
             
-            return self.ComputePouName(new_name),
-        else:
-            return _("Couldn't paste non-POU object.")
+            new_pou.setpouType(pou_type)
+
+        self.Project.insertpou(-1, new_pou)
+        self.BufferProject()
+        
+        return self.ComputePouName(new_name),
 
     # Remove a Pou from project
     def ProjectRemovePou(self, pou_name):
@@ -982,8 +975,6 @@ class PLCControler:
             if datatype is not None:
                 datatype.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshDataTypeHierarchy()
                 self.BufferProject()
     
     # Change the name of a pou
@@ -994,8 +985,6 @@ class PLCControler:
             if pou is not None:
                 pou.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshCustomBlockTypes()
                 self.BufferProject()
     
     # Change the name of a pou transition
@@ -1032,7 +1021,6 @@ class PLCControler:
                     for var in varlist.getvariable():
                         if var.getname() == old_name:
                             var.setname(new_name)
-                self.Project.RefreshCustomBlockTypes()
                 self.BufferProject()
         
     # Change the name of a configuration
@@ -1071,7 +1059,6 @@ class PLCControler:
             pou = project.getpou(name)
             if pou is not None:
                 pou.setdescription(description)
-                project.RefreshCustomBlockTypes()
                 self.BufferProject()
     
     # Return the type of the pou given by its name
@@ -1170,9 +1157,9 @@ class PLCControler:
                 current_type = next_type
                 infos = VAR_CLASS_INFOS.get(var["Class"], None)
                 if infos is not None:
-                    current_varlist = infos[0]()
+                    current_varlist = PLCOpenParser.CreateElement(infos[0], "interface")
                 else:
-                    current_varlist = plcopen.varList()
+                    current_varlist = PLCOpenParser.CreateElement("varList")
                 varlist_list.append((var["Class"], current_varlist))
                 if var["Option"] == "Constant":
                     current_varlist.setconstant(True)
@@ -1181,49 +1168,47 @@ class PLCControler:
                 elif var["Option"] == "Non-Retain":
                     current_varlist.setnonretain(True)
             # Create variable and change its properties
-            tempvar = plcopen.varListPlain_variable()
+            tempvar = PLCOpenParser.CreateElement("variable", "varListPlain")
             tempvar.setname(var["Name"])
             
-            var_type = plcopen.dataType()
+            var_type = PLCOpenParser.CreateElement("type", "variable")
             if isinstance(var["Type"], TupleType):
                 if var["Type"][0] == "array":
                     array_type, base_type_name, dimensions = var["Type"]
-                    array = plcopen.derivedTypes_array()
+                    array = PLCOpenParser.CreateElement("array", "dataType")
+                    baseType = PLCOpenParser.CreateElement("baseType", "array")
+                    array.setbaseType(baseType)
                     for i, dimension in enumerate(dimensions):
-                        dimension_range = plcopen.rangeSigned()
-                        dimension_range.setlower(dimension[0])
-                        dimension_range.setupper(dimension[1])
+                        dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                         if i == 0:
                             array.setdimension([dimension_range])
                         else:
                             array.appenddimension(dimension_range)
+                        dimension_range.setlower(dimension[0])
+                        dimension_range.setupper(dimension[1])
                     if base_type_name in self.GetBaseTypes():
-                        if base_type_name == "STRING":
-                            array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                        elif base_type_name == "WSTRING":
-                            array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                        else:
-                            array.baseType.setcontent({"name" : base_type_name, "value" : None})
+                        baseType.setcontent(PLCOpenParser.CreateElement(
+                            base_type_name.lower()
+                            if base_type_name in ["STRING", "WSTRING"]
+                            else base_type_name, "dataType"))
                     else:
-                        derived_datatype = plcopen.derivedTypes_derived()
+                        derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                         derived_datatype.setname(base_type_name)
-                        array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
-                    var_type.setcontent({"name" : "array", "value" : array})
+                        baseType.setcontent(derived_datatype)
+                    var_type.setcontent(array)
             elif var["Type"] in self.GetBaseTypes():
-                if var["Type"] == "STRING":
-                    var_type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                elif var["Type"] == "WSTRING":
-                    var_type.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                else:
-                    var_type.setcontent({"name" : var["Type"], "value" : None})
+                var_type.setcontent(PLCOpenParser.CreateElement(
+                    var["Type"].lower()
+                    if var["Type"] in ["STRING", "WSTRING"]
+                    else var["Type"], "dataType"))
             else:
-                derived_type = plcopen.derivedTypes_derived()
+                derived_type = PLCOpenParser.CreateElement("derived", "dataType")
                 derived_type.setname(var["Type"])
-                var_type.setcontent({"name" : "derived", "value" : derived_type})
+                var_type.setcontent(derived_type)
             tempvar.settype(var_type)
 
             if var["Initial Value"] != "":
-                value = plcopen.value()
+                value = PLCOpenParser.CreateElement("initialValue", "variable")
                 value.setvalue(var["Initial Value"])
                 tempvar.setinitialValue(value)
             if var["Location"] != "":
@@ -1231,8 +1216,8 @@ class PLCControler:
             else:
                 tempvar.setaddress(None)
             if var['Documentation'] != "":
-                ft = plcopen.formattedText()
-                ft.settext(var['Documentation'])
+                ft = PLCOpenParser.CreateElement("documentation", "variable")
+                ft.setanyText(var['Documentation'])
                 tempvar.setdocumentation(ft)
 
             # Add variable to varList
@@ -1248,27 +1233,27 @@ class PLCControler:
         tempvar = {"Name": var.getname()}
 
         vartype_content = var.gettype().getcontent()
-        if vartype_content["name"] == "derived":
-            tempvar["Type"] = vartype_content["value"].getname()
-        elif vartype_content["name"] == "array":
+        vartype_content_type = vartype_content.getLocalTag()
+        if vartype_content_type == "derived":
+            tempvar["Type"] = vartype_content.getname()
+        elif vartype_content_type == "array":
             dimensions = []
-            for dimension in vartype_content["value"].getdimension():
+            for dimension in vartype_content.getdimension():
                 dimensions.append((dimension.getlower(), dimension.getupper()))
-            base_type = vartype_content["value"].baseType.getcontent()
-            if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
-                base_type_name = base_type["name"].upper()
+            base_type = vartype_content.baseType.getcontent()
+            base_type_type = base_type.getLocalTag()
+            if base_type_type == "derived":
+                base_type_name = base_type.getname()
             else:
-                base_type_name = base_type["value"].getname()
+                base_type_name = base_type_type.upper()
             tempvar["Type"] = ("array", base_type_name, dimensions)
-        elif vartype_content["name"] in ["string", "wstring"]:
-            tempvar["Type"] = vartype_content["name"].upper()
         else:
-            tempvar["Type"] = vartype_content["name"]
-
+            tempvar["Type"] = vartype_content_type.upper()
+        
         tempvar["Edit"] = True
-
+        
         initial = var.getinitialValue()
-        if initial:
+        if initial is not None:
             tempvar["Initial Value"] = initial.getvalue()
         else:
             tempvar["Initial Value"] = ""
@@ -1289,8 +1274,8 @@ class PLCControler:
             tempvar["Option"] = ""
 
         doc = var.getdocumentation()
-        if doc:
-            tempvar["Documentation"] = doc.gettext()
+        if doc is not None:
+            tempvar["Documentation"] = doc.getanyText()
         else:
             tempvar["Documentation"] = ""
 
@@ -1313,9 +1298,9 @@ class PLCControler:
             configuration = self.Project.getconfiguration(name)
             if configuration is not None:
                 # Set configuration global vars
-                configuration.setglobalVars([])
-                for vartype, varlist in self.ExtractVarLists(vars):
-                    configuration.globalVars.append(varlist)
+                configuration.setglobalVars([
+                    varlist for vartype, varlist
+                    in self.ExtractVarLists(vars)])
     
     # Return the configuration globalvars
     def GetConfigurationGlobalVars(self, name, debug = False):
@@ -1354,9 +1339,9 @@ class PLCControler:
             resource = self.Project.getconfigurationResource(config_name, name)
             # Set resource global vars
             if resource is not None:
-                resource.setglobalVars([])
-                for vartype, varlist in self.ExtractVarLists(vars):
-                    resource.globalVars.append(varlist)
+                resource.setglobalVars([
+                    varlist for vartype, varlist
+                    in self.ExtractVarLists(vars)])
     
     # Return the resource globalvars
     def GetConfigurationResourceGlobalVars(self, config_name, name, debug = False):
@@ -1365,7 +1350,7 @@ class PLCControler:
         if project is not None:
             # Found the resource corresponding to name
             resource = project.getconfigurationResource(config_name, name)
-            if resource:
+            if resource is not None:
                 # Extract variables from every varLists
                 for varlist in resource.getglobalVars():
                     for var in varlist.getvariable():
@@ -1409,31 +1394,31 @@ class PLCControler:
                 if not en:
                     tree.insert(0, ("EN", "BOOL", ([], [])))
                 return tree, []
-            datatype = project.getdataType(typename)
-            if datatype is None:
-                datatype = self.GetConfNodeDataType(typename)
+            datatype = self.GetDataType(typename)
             if datatype is not None:
                 tree = []
                 basetype_content = datatype.baseType.getcontent()
-                if basetype_content["name"] == "derived":
-                    return self.GenerateVarTree(basetype_content["value"].getname())
-                elif basetype_content["name"] == "array":
+                basetype_content_type = basetype_content.getLocalTag()
+                if basetype_content_type == "derived":
+                    return self.GenerateVarTree(basetype_content.getname())
+                elif basetype_content_type == "array":
                     dimensions = []
-                    base_type = basetype_content["value"].baseType.getcontent()
-                    if base_type["name"] == "derived":
-                        tree = self.GenerateVarTree(base_type["value"].getname())
+                    base_type = basetype_content.baseType.getcontent()
+                    if base_type.getLocalTag() == "derived":
+                        tree = self.GenerateVarTree(base_type.getname())
                         if len(tree[1]) == 0:
                             tree = tree[0]
-                        for dimension in basetype_content["value"].getdimension():
+                        for dimension in basetype_content.getdimension():
                             dimensions.append((dimension.getlower(), dimension.getupper()))
                     return tree, dimensions
-                elif basetype_content["name"] == "struct":
-                    for element in basetype_content["value"].getvariable():
+                elif basetype_content_type == "struct":
+                    for element in basetype_content.getvariable():
                         element_type = element.type.getcontent()
-                        if element_type["name"] == "derived":
-                            tree.append((element.getname(), element_type["value"].getname(), self.GenerateVarTree(element_type["value"].getname())))
+                        element_type_type = element_type.getLocalTag()
+                        if element_type_type == "derived":
+                            tree.append((element.getname(), element_type.getname(), self.GenerateVarTree(element_type.getname())))
                         else:
-                            tree.append((element.getname(), element_type["name"], ([], [])))
+                            tree.append((element.getname(), element_type_type, ([], [])))
                     return tree, []
         return [], []
 
@@ -1451,7 +1436,7 @@ class PLCControler:
                     tempvar["Tree"] = ([], [])
 
                     vartype_content = var.gettype().getcontent()
-                    if vartype_content["name"] == "derived":
+                    if vartype_content.getLocalTag() == "derived":
                         tempvar["Edit"] = not pou.hasblock(tempvar["Name"])
                         tempvar["Tree"] = self.GenerateVarTree(tempvar["Type"], debug)
 
@@ -1465,46 +1450,40 @@ class PLCControler:
             pou = self.Project.getpou(name)
             if pou is not None:
                 if pou.interface is None:
-                    pou.interface = plcopen.pou_interface()
+                    pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # Set Pou interface
-                pou.setvars(self.ExtractVarLists(vars))
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshCustomBlockTypes()
-    
+                pou.setvars([varlist for varlist_type, varlist in self.ExtractVarLists(vars)])
+                
     # Replace the return type of the pou given by its name (only for functions)
-    def SetPouInterfaceReturnType(self, name, type):
+    def SetPouInterfaceReturnType(self, name, return_type):
         if self.Project is not None:
             pou = self.Project.getpou(name)
             if pou is not None:
                 if pou.interface is None:
-                    pou.interface = plcopen.pou_interface()
+                    pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # If there isn't any return type yet, add it
-                return_type = pou.interface.getreturnType()
-                if not return_type:
-                    return_type = plcopen.dataType()
-                    pou.interface.setreturnType(return_type)
+                return_type_obj = pou.interface.getreturnType()
+                if return_type_obj is None:
+                    return_type_obj = PLCOpenParser.CreateElement("returnType", "interface")
+                    pou.interface.setreturnType(return_type_obj)
                 # Change return type
-                if type in self.GetBaseTypes():
-                    if type == "STRING":
-                        return_type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                    elif type == "WSTRING":
-                        return_type.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                    else:
-                        return_type.setcontent({"name" : type, "value" : None})
+                if return_type in self.GetBaseTypes():
+                    return_type_obj.setcontent(PLCOpenParser.CreateElement(
+                        return_type.lower()
+                        if return_type in ["STRING", "WSTRING"]
+                        else return_type, "dataType"))
                 else:
-                    derived_type = plcopen.derivedTypes_derived()
-                    derived_type.setname(type)
-                    return_type.setcontent({"name" : "derived", "value" : derived_type})
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshCustomBlockTypes()
-    
+                    derived_type = PLCOpenParser.CreateElement("derived", "dataType")
+                    derived_type.setname(return_type)
+                    return_type.setcontent(derived_type)
+                
     def UpdateProjectUsedPous(self, old_name, new_name):
-        if self.Project:
+        if self.Project is not None:
             self.Project.updateElementName(old_name, new_name)
     
     def UpdateEditedElementUsedVariable(self, tagname, old_name, new_name):
         pou = self.GetEditedElement(tagname)
-        if pou:
+        if pou is not None:
             pou.updateElementName(old_name, new_name)
     
     # Return the return type of the pou given by its name
@@ -1523,21 +1502,21 @@ class PLCControler:
         if pou.interface is not None:
             # Return the return type if there is one
             return_type = pou.interface.getreturnType()
-            if return_type:
+            if return_type is not None:
                 returntype_content = return_type.getcontent()
-                if returntype_content["name"] == "derived":
-                    return returntype_content["value"].getname()
-                elif returntype_content["name"] in ["string", "wstring"]:
-                    return returntype_content["name"].upper()
+                returntype_content_type = returntype_content.getLocalTag()
+                if returntype_content_type == "derived":
+                    return returntype_content.getname()
                 else:
-                    return returntype_content["name"]
+                    return returntype_content_type.upper()
         return None
 
     # Function that add a new confnode to the confnode list
     def AddConfNodeTypesList(self, typeslist):
         self.ConfNodeTypes.extend(typeslist)
         addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
-                     "list": confnodetypes["types"].GetCustomBlockTypes()}
+                     "list": [pou.getblockInfos()
+                              for pou in confnodetypes["types"].getpous()]}
                      for confnodetypes in typeslist]
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
@@ -1551,22 +1530,13 @@ class PLCControler:
         self.TotalTypesDict = StdBlckDct.copy()
         self.TotalTypes = StdBlckLst[:]
 
-    def GetConfNodeBlockTypes(self):
-        return [{"name": _("%s POUs") % confnodetypes["name"],
-                 "list": confnodetypes["types"].GetCustomBlockTypes()}
-                for confnodetypes in self.ConfNodeTypes]
-        
     def GetConfNodeDataTypes(self, exclude = None, only_locatables = False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
-                 "list": [datatype["name"] for datatype in confnodetypes["types"].GetCustomDataTypes(exclude, only_locatables)]}
+                 "list": [
+                    datatype.getname() 
+                    for datatype in confnodetypes["types"].getdataTypes()
+                    if not only_locatables or self.IsLocatableDataType(datatype, debug)]}
                 for confnodetypes in self.ConfNodeTypes]
-    
-    def GetConfNodeDataType(self, typename):
-        for confnodetype in self.ConfNodeTypes:
-            datatype = confnodetype["types"].getdataType(typename)
-            if datatype is not None:
-                return datatype
-        return None
     
     def GetVariableLocationTree(self):
         return []
@@ -1577,25 +1547,23 @@ class PLCControler:
     def GetConfigurationExtraVariables(self):
         global_vars = []
         for var_name, var_type, var_initial in self.GetConfNodeGlobalInstances():
-            tempvar = plcopen.varListPlain_variable()
+            tempvar = PLCOpenParser.CreateElement("variable", "globalVars")
             tempvar.setname(var_name)
             
-            tempvartype = plcopen.dataType()
+            tempvartype = PLCOpenParser.CreateElement("dataType", "variable")
             if var_type in self.GetBaseTypes():
-                if var_type == "STRING":
-                    tempvartype.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                elif var_type == "WSTRING":
-                    tempvartype.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                else:
-                    tempvartype.setcontent({"name" : var_type, "value" : None})
+                tempvar.setcontent(PLCOpenParser.CreateElement(
+                    var_type.lower()
+                    if var_type in ["STRING", "WSTRING"]
+                    else var_type, "dataType"))
             else:
-                tempderivedtype = plcopen.derivedTypes_derived()
+                tempderivedtype = PLCOpenParser.CreateElement("derived", "dataType")
                 tempderivedtype.setname(var_type)
-                tempvartype.setcontent({"name" : "derived", "value" : tempderivedtype})
+                tempvartype.setcontent(tempderivedtype)
             tempvar.settype(tempvartype)
             
             if var_initial != "":
-                value = plcopen.value()
+                value = PLCOpenParser.CreateElement("initialValue", "variable")
                 value.setvalue(var_initial)
                 tempvar.setinitialValue(value)
             
@@ -1623,7 +1591,16 @@ class PLCControler:
             return result_blocktype
         project = self.GetProject(debug)
         if project is not None:
-            return project.GetCustomBlockType(typename, inputs)
+            blocktype = project.getpou(typename)
+            if blocktype is not None:
+                blocktype_infos = blocktype.getblockInfos()
+                if inputs in [None, "undefined"]:
+                    return blocktype_infos
+            
+                if inputs == tuple([var_type 
+                    for name, var_type, modifier in blocktype_infos["inputs"]]):
+                    return blocktype_infos
+        
         return None
 
     # Return Block types checking for recursion
@@ -1635,22 +1612,19 @@ class PLCControler:
         if project is not None:
             pou_type = None
             if words[0] in ["P","T","A"]:
-                blocktypes = []
                 name = words[1]
                 pou_type = self.GetPouType(name, debug)
-            if pou_type == "function":
-                for category in self.TotalTypes:
-                    cat = {"name" : category["name"], "list" : []}
-                    for block in category["list"]:
-                        if block["type"] == "function":
-                            cat["list"].append(block)
-                    if len(cat["list"]) > 0:
-                        blocktypes.append(cat)
-            else:
-                blocktypes = [category for category in self.TotalTypes]
+            filter = (["function"] 
+                      if pou_type == "function" or words[0] == "T" 
+                      else ["functionBlock", "function"])
+            blocktypes = [
+                {"name": category["name"],
+                 "list": [block for block in category["list"]
+                          if block["type"] in filter]}
+                for category in self.TotalTypes]
             blocktypes.append({"name" : USER_DEFINED_POUS, 
-                "list": project.GetCustomBlockTypes(name, 
-                    pou_type == "function" or words[0] == "T")})
+                "list": [pou.getblockInfos()
+                         for pou in project.getpous(name, filter)]})
             return blocktypes
         return self.TotalTypes
 
@@ -1663,11 +1637,11 @@ class PLCControler:
                     blocktypes.append(block["name"])
         project = self.GetProject(debug)
         if project is not None:
-            name = ""
             words = tagname.split("::")
-            if words[0] in ["P","T","A"]:
-                name = words[1]
-            blocktypes.extend(project.GetCustomFunctionBlockTypes(name))
+            blocktypes.extend([pou.getname()
+                for pou in project.getpous(
+                    words[1] if words[0] in ["P","T","A"] else None,
+                    ["functionBlock"])])
         return blocktypes
 
     # Return Block types checking for recursion
@@ -1679,7 +1653,9 @@ class PLCControler:
                     blocktypes.append(blocktype["name"])
         project = self.GetProject(debug)
         if project is not None:
-            blocktypes.extend(project.GetCustomBlockResource())
+            blocktypes.extend(
+                [pou.getblockInfos()
+                 for pou in project.getpous(filter=["program"])])
         return blocktypes
 
     # Return Data Types checking for recursion
@@ -1694,23 +1670,53 @@ class PLCControler:
             words = tagname.split("::")
             if words[0] in ["D"]:
                 name = words[1]
-            datatypes.extend([datatype["name"] for datatype in project.GetCustomDataTypes(name, only_locatables)])
+            datatypes.extend([
+                datatype.getname() 
+                for datatype in project.getdataTypes(name)
+                if not only_locatables or self.IsLocatableDataType(datatype, debug)])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])
         return datatypes
 
-    # Return Base Type of given possible derived type
-    def GetBaseType(self, type, debug = False):
+    # Return Data Type Object
+    def GetDataType(self, typename, debug = False):
         project = self.GetProject(debug)
         if project is not None:
-            result = project.GetBaseType(type)
+            result = project.getdataType(typename)
             if result is not None:
                 return result
         for confnodetype in self.ConfNodeTypes:
-            result = confnodetype["types"].GetBaseType(type)
+            result = confnodetype["types"].getdataType(typename)
             if result is not None:
                 return result
+        return None
+
+    # Return Data Type Object Base Type
+    def GetDataTypeBaseType(self, datatype):
+        basetype_content = datatype.baseType.getcontent()
+        basetype_content_type = basetype_content.getLocalTag()
+        if basetype_content_type in ["array", "subrangeSigned", "subrangeUnsigned"]:
+            basetype = basetype_content.baseType.getcontent()
+            basetype_type = basetype.getLocalTag()
+            return (basetype.getname() if basetype_type == "derived"
+                    else basetype_type.upper())
+        elif basetype_content_type == "derived":
+            return basetype_content_type.getname()
+        return None
+
+    # Return Base Type of given possible derived type
+    def GetBaseType(self, typename, debug = False):
+        if TypeHierarchy.has_key(typename):
+            return typename
+        
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype = self.GetDataTypeBaseType(datatype)
+            if basetype is not None:
+                return self.GetBaseType(basetype, debug)
+            return typename
+        
         return None
 
     def GetBaseTypes(self):
@@ -1721,93 +1727,131 @@ class PLCControler:
         '''
         return [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]
 
-    def IsOfType(self, type, reference, debug = False):
-        if reference is None:
+    def IsOfType(self, typename, reference, debug = False):
+        if reference is None or typename == reference:
             return True
-        elif type == reference:
-            return True
-        elif type in TypeHierarchy:
-            return self.IsOfType(TypeHierarchy[type], reference)
-        else:
-            project = self.GetProject(debug)
-            if project is not None and project.IsOfType(type, reference):
-                return True
-            for confnodetype in self.ConfNodeTypes:
-                if confnodetype["types"].IsOfType(type, reference):
-                    return True
+        
+        basetype = TypeHierarchy.get(typename)
+        if basetype is not None:
+            return self.IsOfType(basetype, reference)
+        
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype = self.GetDataTypeBaseType(datatype)
+            if basetype is not None:
+                return self.IsOfType(basetype, reference, debug)
+        
         return False
     
-    def IsEndType(self, type):
-        if type is not None:
-            return not type.startswith("ANY")
+    def IsEndType(self, typename):
+        if typename is not None:
+            return not typename.startswith("ANY")
         return True
 
-    def IsLocatableType(self, type, debug = False):
-        if isinstance(type, TupleType):
-            return False 
-        if self.GetBlockType(type) is not None:
+    def IsLocatableDataType(self, datatype, debug = False):
+        basetype_content = datatype.baseType.getcontent()
+        basetype_content_type = basetype_content.getLocalTag()
+        if basetype_content_type in ["enum", "struct"]:
             return False
-        project = self.GetProject(debug)
-        if project is not None:
-            datatype = project.getdataType(type)
-            if datatype is None:
-                datatype = self.GetConfNodeDataType(type)
-            if datatype is not None:
-                return project.IsLocatableType(datatype)
+        elif basetype_content_type == "derived":
+            return self.IsLocatableType(basetype_content.getname())
+        elif basetype_content_name == "array":
+            array_base_type = basetype_content.baseType.getcontent()
+            if array_base_type.getLocalTag() == "derived":
+                return self.IsLocatableType(array_base_type.getname(), debug)
+        return True
+        
+    def IsLocatableType(self, typename, debug = False):
+        if isinstance(typename, TupleType) or self.GetBlockType(typename) is not None:
+            return False
+        
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            return self.IsLocatableDataType(datatype)
         return True
     
-    def IsEnumeratedType(self, type, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            datatype = project.getdataType(type)
-            if datatype is None:
-                datatype = self.GetConfNodeDataType(type)
-            if datatype is not None:
-                basetype_content = datatype.baseType.getcontent()
-                return basetype_content["name"] == "enum"
+    def IsEnumeratedType(self, typename, debug = False):
+        if isinstance(typename, TupleType):
+            typename = typename[1]
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type == "derived":
+                return self.IsEnumeratedType(basetype_content_type, debug)
+            return basetype_content_type == "enum"
         return False
 
-    def IsNumType(self, type, debug = False):
-        return self.IsOfType(type, "ANY_NUM", debug) or\
-               self.IsOfType(type, "ANY_BIT", debug)
+    def IsSubrangeType(self, typename, exclude=None, debug = False):
+        if typename == exclude:
+            return False
+        if isinstance(typename, TupleType):
+            typename = typename[1]
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type == "derived":
+                return self.IsSubrangeType(basetype_content_type, exclude, debug)
+            elif basetype_content_type in ["subrangeSigned", "subrangeUnsigned"]:
+                return not self.IsOfType(
+                    self.GetDataTypeBaseType(datatype), exclude)
+        return False
+
+    def IsNumType(self, typename, debug = False):
+        return self.IsOfType(typename, "ANY_NUM", debug) or\
+               self.IsOfType(typename, "ANY_BIT", debug)
             
-    def GetDataTypeRange(self, type, debug = False):
-        if type in DataTypeRange:
-            return DataTypeRange[type]
-        else:
-            project = self.GetProject(debug)
-            if project is not None:
-                result = project.GetDataTypeRange(type)
-                if result is not None:
-                    return result
-            for confnodetype in self.ConfNodeTypes:
-                result = confnodetype["types"].GetDataTypeRange(type)
-                if result is not None:
-                    return result
+    def GetDataTypeRange(self, typename, debug = False):
+        range = DataTypeRange.get(typename)
+        if range is not None:
+            return range
+        datatype = self.GetDataType(typename, debug)
+        if datatype is not None:
+            basetype_content = datatype.baseType.getcontent()
+            basetype_content_type = basetype_content.getLocalTag()
+            if basetype_content_type in ["subrangeSigned", "subrangeUnsigned"]:
+                return (basetype_content.range.getlower(),
+                        basetype_content.range.getupper())
+            elif basetype_content_type == "derived":
+                return self.GetDataTypeRange(basetype_content.getname(), debug)
         return None
     
     # Return Subrange types
     def GetSubrangeBaseTypes(self, exclude, debug = False):
-        subrange_basetypes = []
+        subrange_basetypes = DataTypeRange.keys()
         project = self.GetProject(debug)
         if project is not None:
-            subrange_basetypes.extend(project.GetSubrangeBaseTypes(exclude))
+            subrange_basetypes.extend(
+                [datatype.getname() for datatype in project.getdataTypes()
+                 if self.IsSubrangeType(datatype.getname(), exclude, debug)])
         for confnodetype in self.ConfNodeTypes:
-            subrange_basetypes.extend(confnodetype["types"].GetSubrangeBaseTypes(exclude))
-        return DataTypeRange.keys() + subrange_basetypes
+            subrange_basetypes.extend(
+                [datatype.getname() for datatype in confnodetype["types"].getdataTypes()
+                 if self.IsSubrangeType(datatype.getname(), exclude, debug)])
+        return subrange_basetypes
     
     # Return Enumerated Values
-    def GetEnumeratedDataValues(self, type = None, debug = False):
+    def GetEnumeratedDataValues(self, typename = None, debug = False):
         values = []
-        project = self.GetProject(debug)
-        if project is not None:
-            values.extend(project.GetEnumeratedDataTypeValues(type))
-            if type is None and len(values) > 0:
-                return values
-        for confnodetype in self.ConfNodeTypes:
-            values.extend(confnodetype["types"].GetEnumeratedDataTypeValues(type))
-            if type is None and len(values) > 0:
-                return values
+        if typename is not None:
+            datatype_obj = self.GetDataType(typename, debug)
+            if datatype_obj is not None:
+                basetype_content = datatype_obj.baseType.getcontent()
+                basetype_content_type = basetype_content.getLocalTag()
+                if basetype_content_type == "enum":
+                    return [value.getname() 
+                            for value in basetype_content.xpath(
+                                "ppx:values/ppx:value",
+                                namespaces=PLCOpenParser.NSMAP)]
+                elif basetype_content_type == "derived":
+                    return self.GetEnumeratedDataValues(basetype_content.getname(), debug)
+        else:
+            project = self.GetProject(debug)
+            if project is not None:
+                values.extend(project.GetEnumeratedDataTypeValues())
+            for confnodetype in self.ConfNodeTypes:
+                values.extend(confnodetype["types"].GetEnumeratedDataTypeValues())
         return values
 
 #-------------------------------------------------------------------------------
@@ -1859,62 +1903,64 @@ class PLCControler:
                 if datatype is None:
                     return None
                 basetype_content = datatype.baseType.getcontent()
-                if basetype_content["value"] is None or basetype_content["name"] in ["string", "wstring"]:
-                    infos["type"] = "Directly"
-                    infos["base_type"] = basetype_content["name"].upper()
-                elif basetype_content["name"] == "derived":
-                    infos["type"] = "Directly"
-                    infos["base_type"] = basetype_content["value"].getname()
-                elif basetype_content["name"] in ["subrangeSigned", "subrangeUnsigned"]:
+                basetype_content_type = basetype_content.getLocalTag()
+                if basetype_content_type in ["subrangeSigned", "subrangeUnsigned"]:
                     infos["type"] = "Subrange"
-                    infos["min"] = basetype_content["value"].range.getlower()
-                    infos["max"] = basetype_content["value"].range.getupper()
-                    base_type = basetype_content["value"].baseType.getcontent()
-                    if base_type["value"] is None:
-                        infos["base_type"] = base_type["name"]
-                    else:
-                        infos["base_type"] = base_type["value"].getname()
-                elif basetype_content["name"] == "enum":
+                    infos["min"] = basetype_content.range.getlower()
+                    infos["max"] = basetype_content.range.getupper()
+                    base_type = basetype_content.baseType.getcontent()
+                    base_type_type = base_type.getLocalTag()
+                    infos["base_type"] = (base_type.getname()
+                        if base_type_type == "derived"
+                        else base_type_type)
+                elif basetype_content_type == "enum":
                     infos["type"] = "Enumerated"
                     infos["values"] = []
-                    for value in basetype_content["value"].values.getvalue():
+                    for value in basetype_content.xpath("ppx:values/ppx:value", namespaces=PLCOpenParser.NSMAP):
                         infos["values"].append(value.getname())
-                elif basetype_content["name"] == "array":
+                elif basetype_content_type == "array":
                     infos["type"] = "Array"
                     infos["dimensions"] = []
-                    for dimension in basetype_content["value"].getdimension():
+                    for dimension in basetype_content.getdimension():
                         infos["dimensions"].append((dimension.getlower(), dimension.getupper()))
-                    base_type = basetype_content["value"].baseType.getcontent()
-                    if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
-                        infos["base_type"] = base_type["name"].upper()
-                    else:
-                        infos["base_type"] = base_type["value"].getname()
-                elif basetype_content["name"] == "struct":
+                    base_type = basetype_content.baseType.getcontent()
+                    base_type_type = base_type.getLocalTag()
+                    infos["base_type"] = (base_type.getname()
+                        if base_type_type == "derived"
+                        else base_type_type.upper())
+                elif basetype_content_type == "struct":
                     infos["type"] = "Structure"
                     infos["elements"] = []
-                    for element in basetype_content["value"].getvariable():
+                    for element in basetype_content.getvariable():
                         element_infos = {}
                         element_infos["Name"] = element.getname()
                         element_type = element.type.getcontent()
-                        if element_type["value"] is None or element_type["name"] in ["string", "wstring"]:
-                            element_infos["Type"] = element_type["name"].upper()
-                        elif element_type["name"] == "array":
+                        element_type_type = element_type.getLocalTag()
+                        if element_type_type == "array":
                             dimensions = []
-                            for dimension in element_type["value"].getdimension():
+                            for dimension in element_type.getdimension():
                                 dimensions.append((dimension.getlower(), dimension.getupper()))
-                            base_type = element_type["value"].baseType.getcontent()
-                            if base_type["value"] is None or base_type["name"] in ["string", "wstring"]:
-                                base_type_name = base_type["name"].upper()
-                            else:
-                                base_type_name = base_type["value"].getname()
-                            element_infos["Type"] = ("array", base_type_name, dimensions)
+                            base_type = element_type.baseType.getcontent()
+                            base_type_type = element_type.getLocalTag()
+                            element_infos["Type"] = ("array", 
+                                base_type.getname()
+                                if base_type_type == "derived"
+                                else base_type_type.upper(), dimensions)
+                        elif element_type_type == "derived":
+                            element_infos["Type"] = element_type.getname()
                         else:
-                            element_infos["Type"] = element_type["value"].getname()
+                            element_infos["Type"] = element_type_type.upper()
                         if element.initialValue is not None:
                             element_infos["Initial Value"] = str(element.initialValue.getvalue())
                         else:
                             element_infos["Initial Value"] = ""
                         infos["elements"].append(element_infos)
+                else:
+                    infos["type"] = "Directly"
+                    infos["base_type"] = (basetype_content.getname()
+                        if basetype_content_type == "derived"
+                        else basetype_content_type.upper())
+                
                 if datatype.initialValue is not None:
                     infos["initial"] = str(datatype.initialValue.getvalue())
                 else:
@@ -1929,45 +1975,46 @@ class PLCControler:
             datatype = self.Project.getdataType(words[1])
             if infos["type"] == "Directly":
                 if infos["base_type"] in self.GetBaseTypes():
-                    if infos["base_type"] == "STRING":
-                        datatype.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                    elif infos["base_type"] == "WSTRING":
-                        datatype.baseType.setcontent({"name" : "wstring", "value" : plcopen.elementaryTypes_wstring()})
-                    else:
-                        datatype.baseType.setcontent({"name" : infos["base_type"], "value" : None})
+                    datatype.baseType.setcontent(PLCOpenParser.CreateElement(
+                        infos["base_type"].lower()
+                        if infos["base_type"] in ["STRING", "WSTRING"]
+                        else infos["base_type"], "dataType"))
                 else:
-                    derived_datatype = plcopen.derivedTypes_derived()
+                    derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
-                    datatype.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
+                    datatype.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Subrange":
-                if infos["base_type"] in GetSubTypes("ANY_UINT"):
-                    subrange = plcopen.derivedTypes_subrangeUnsigned()
-                    datatype.baseType.setcontent({"name" : "subrangeUnsigned", "value" : subrange})
-                else:
-                    subrange = plcopen.derivedTypes_subrangeSigned()
-                    datatype.baseType.setcontent({"name" : "subrangeSigned", "value" : subrange})
+                subrange = PLCOpenParser.CreateElement(
+                    "subrangeUnsigned" 
+                    if infos["base_type"] in GetSubTypes("ANY_UINT")
+                    else "subrangeSigned", "dataType")
+                datatype.baseType.setcontent(subrange)
                 subrange.range.setlower(infos["min"])
                 subrange.range.setupper(infos["max"])
                 if infos["base_type"] in self.GetBaseTypes():
-                    subrange.baseType.setcontent({"name" : infos["base_type"], "value" : None})
+                    subrange.baseType.setcontent(
+                        PLCOpenParser.CreateElement(infos["base_type"], "dataType"))
                 else:
-                    derived_datatype = plcopen.derivedTypes_derived()
+                    derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
-                    subrange.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
+                    subrange.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Enumerated":
-                enumerated = plcopen.derivedTypes_enum()
+                enumerated = PLCOpenParser.CreateElement("enum", "dataType")
+                datatype.baseType.setcontent(enumerated)
+                values = PLCOpenParser.CreateElement("values", "enum")
+                enumerated.setvalues(values)
                 for i, enum_value in enumerate(infos["values"]):
-                    value = plcopen.values_value()
+                    value = PLCOpenParser.CreateElement("value", "values")
                     value.setname(enum_value)
                     if i == 0:
-                        enumerated.values.setvalue([value])
+                        values.setvalue([value])
                     else:
-                        enumerated.values.appendvalue(value)
-                datatype.baseType.setcontent({"name" : "enum", "value" : enumerated})
+                        values.appendvalue(value)
             elif infos["type"] == "Array":
-                array = plcopen.derivedTypes_array()
+                array = PLCOpenParser.CreateElement("array", "dataType")
+                datatype.baseType.setcontent(array)
                 for i, dimension in enumerate(infos["dimensions"]):
-                    dimension_range = plcopen.rangeSigned()
+                    dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                     dimension_range.setlower(dimension[0])
                     dimension_range.setupper(dimension[1])
                     if i == 0:
@@ -1975,28 +2022,28 @@ class PLCControler:
                     else:
                         array.appenddimension(dimension_range)
                 if infos["base_type"] in self.GetBaseTypes():
-                    if infos["base_type"] == "STRING":
-                        array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                    elif infos["base_type"] == "WSTRING":
-                        array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                    else:
-                        array.baseType.setcontent({"name" : infos["base_type"], "value" : None})
+                    array.baseType.setcontent(PLCOpenParser.CreateElement(
+                        infos["base_type"].lower()
+                        if infos["base_type"] in ["STRING", "WSTRING"]
+                        else infos["base_type"], "dataType"))
                 else:
-                    derived_datatype = plcopen.derivedTypes_derived()
+                    derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_datatype.setname(infos["base_type"])
-                    array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
-                datatype.baseType.setcontent({"name" : "array", "value" : array})
+                    array.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Structure":
-                struct = plcopen.varListPlain()
+                struct = PLCOpenParser.CreateElement("struct", "dataType")
+                datatype.baseType.setcontent(struct)
                 for i, element_infos in enumerate(infos["elements"]):
-                    element = plcopen.varListPlain_variable()
+                    element = PLCOpenParser.CreateElement("variable", "struct")
                     element.setname(element_infos["Name"])
+                    element_type = PLCOpenParser.CreateElement("type", "variable")
                     if isinstance(element_infos["Type"], TupleType):
                         if element_infos["Type"][0] == "array":
                             array_type, base_type_name, dimensions = element_infos["Type"]
-                            array = plcopen.derivedTypes_array()
+                            array = PLCOpenParser.CreateElement("array", "dataType")
+                            element_type.setcontent(array)
                             for j, dimension in enumerate(dimensions):
-                                dimension_range = plcopen.rangeSigned()
+                                dimension_range = PLCOpenParser.CreateElement("dimension", "array")
                                 dimension_range.setlower(dimension[0])
                                 dimension_range.setupper(dimension[1])
                                 if j == 0:
@@ -2004,45 +2051,39 @@ class PLCControler:
                                 else:
                                     array.appenddimension(dimension_range)
                             if base_type_name in self.GetBaseTypes():
-                                if base_type_name == "STRING":
-                                    array.baseType.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                                elif base_type_name == "WSTRING":
-                                    array.baseType.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                                else:
-                                    array.baseType.setcontent({"name" : base_type_name, "value" : None})
+                                array.baseType.setcontent(PLCOpenParser.CreateElement(
+                                    base_type_name.lower()
+                                    if base_type_name in ["STRING", "WSTRING"]
+                                    else base_type_name, "dataType"))
                             else:
-                                derived_datatype = plcopen.derivedTypes_derived()
+                                derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                                 derived_datatype.setname(base_type_name)
-                                array.baseType.setcontent({"name" : "derived", "value" : derived_datatype})
-                            element.type.setcontent({"name" : "array", "value" : array})
+                                array.baseType.setcontent(derived_datatype)
                     elif element_infos["Type"] in self.GetBaseTypes():
-                        if element_infos["Type"] == "STRING":
-                            element.type.setcontent({"name" : "string", "value" : plcopen.elementaryTypes_string()})
-                        elif element_infos["Type"] == "WSTRING":
-                            element.type.setcontent({"name" : "wstring", "value" : plcopen.wstring()})
-                        else:
-                            element.type.setcontent({"name" : element_infos["Type"], "value" : None})
+                        element_type.setcontent(
+                            PLCOpenParser.CreateElement(
+                                element_infos["Type"].lower()
+                                if element_infos["Type"] in ["STRING", "WSTRING"]
+                                else element_infos["Type"], "dataType"))
                     else:
-                        derived_datatype = plcopen.derivedTypes_derived()
+                        derived_datatype = PLCOpenParser.CreateElement("derived", "dataType")
                         derived_datatype.setname(element_infos["Type"])
-                        element.type.setcontent({"name" : "derived", "value" : derived_datatype})
+                        element_type.setcontent(derived_datatype)
+                    element.settype(element_type)
                     if element_infos["Initial Value"] != "":
-                        value = plcopen.value()
+                        value = PLCOpenParser.CreateElement("initialValue", "variable")
                         value.setvalue(element_infos["Initial Value"])
                         element.setinitialValue(value)
                     if i == 0:
                         struct.setvariable([element])
                     else:
                         struct.appendvariable(element)
-                datatype.baseType.setcontent({"name" : "struct", "value" : struct})
             if infos["initial"] != "":
                 if datatype.initialValue is None:
-                    datatype.initialValue = plcopen.value()
+                    datatype.initialValue = PLCOpenParser.CreateElement("initialValue", "dataType")
                 datatype.initialValue.setvalue(infos["initial"])
             else:
                 datatype.initialValue = None
-            self.Project.RefreshDataTypeHierarchy()
-            self.Project.RefreshElementUsingTree()
             self.BufferProject()
     
 #-------------------------------------------------------------------------------
@@ -2128,7 +2169,6 @@ class PLCControler:
             element = self.GetEditedElement(tagname)
             if element is not None:
                 element.settext(text)
-                self.Project.RefreshElementUsingTree()
     
     # Return the edited element text
     def GetEditedElementText(self, tagname, debug = False):
@@ -2173,22 +2213,28 @@ class PLCControler:
     def GetEditedElementCopy(self, tagname, debug = False):
         element = self.GetEditedElement(tagname, debug)
         if element is not None:
-            name = element.__class__.__name__
-            return element.generateXMLText(name.split("_")[-1], 0)
+            return element.tostring()
         return ""
         
     def GetEditedElementInstancesCopy(self, tagname, blocks_id = None, wires = None, debug = False):
         element = self.GetEditedElement(tagname, debug)
         text = ""
         if element is not None:
-            wires = dict([(wire, True) for wire in wires if wire[0] in blocks_id and wire[1] in blocks_id])
+            wires = dict([(wire, True) 
+                          for wire in wires 
+                          if wire[0] in blocks_id and wire[1] in blocks_id])
+            copy_body = PLCOpenParser.CreateElement("body", "pou")
+            element.append(copy_body)
+            copy_body.setcontent(
+                PLCOpenParser.CreateElement(element.getbodyType(), "body"))
             for id in blocks_id:
                 instance = element.getinstance(id)
                 if instance is not None:
-                    instance_copy = self.Copy(instance)
+                    copy_body.appendcontentInstance(self.Copy(instance))
+                    instance_copy = copy_body.getcontentInstance(id)
                     instance_copy.filterConnections(wires)
-                    name = instance_copy.__class__.__name__
-                    text += instance_copy.generateXMLText(name.split("_")[-1], 0)
+                    text += instance_copy.tostring()
+            element.remove(copy_body)
         return text
     
     def GenerateNewName(self, tagname, name, format, start_idx=0, exclude={}, debug=False):
@@ -2201,9 +2247,10 @@ class PLCControler:
                 element = self.GetEditedElement(tagname, debug)
                 if element is not None and element.getbodyType() not in ["ST", "IL"]:
                     for instance in element.getinstances():
-                        if isinstance(instance, (plcopen.sfcObjects_step, 
-                                                 plcopen.commonObjects_connector, 
-                                                 plcopen.commonObjects_continuation)):
+                        if isinstance(instance, 
+                            (PLCOpenParser.GetElementClass("step", "sfcObjects"), 
+                             PLCOpenParser.GetElementClass("connector", "commonObjects"), 
+                             PLCOpenParser.GetElementClass("continuation", "commonObjects"))):
                             names[instance.getname().upper()] = True
         else:
             project = self.GetProject(debug)
@@ -2229,10 +2276,6 @@ class PLCControler:
             i += 1
         return name
     
-    CheckPasteCompatibility = {"SFC": lambda name: True,
-                               "LD": lambda name: not name.startswith("sfcObjects"),
-                               "FBD": lambda name: name.startswith("fbdObjects") or name.startswith("commonObjects")}
-    
     def PasteEditedElementInstances(self, tagname, text, new_pos, middle=False, debug=False):
         element = self.GetEditedElement(tagname, debug)
         element_name, element_type = self.GetEditedElementType(tagname, debug)
@@ -2250,62 +2293,46 @@ class PLCControler:
             used_id = dict([(instance.getlocalId(), True) for instance in element.getinstances()])
             new_id = {}
             
-            text = "<paste>%s</paste>"%text
-            
             try:
-                tree = minidom.parseString(text.encode("utf-8"))
+                instances = LoadPouInstances(text.encode("utf-8"), bodytype)
+                if len(instances) == 0:
+                    raise ValueError
             except:
                 return _("Invalid plcopen element(s)!!!")
-            instances = []
-            exclude = {}
-            for root in tree.childNodes:
-                if root.nodeType == tree.ELEMENT_NODE and root.nodeName == "paste":
-                    for child in root.childNodes:
-                        if child.nodeType == tree.ELEMENT_NODE:
-                            if not child.nodeName in plcopen.ElementNameToClass:
-                                return _("\"%s\" element can't be pasted here!!!")%child.nodeName
-
-                            classname = plcopen.ElementNameToClass[child.nodeName]
-                            if not self.CheckPasteCompatibility[bodytype](classname):
-                                return _("\"%s\" element can't be pasted here!!!")%child.nodeName
-
-                            classobj = getattr(plcopen, classname, None)
-                            if classobj is not None:
-                                instance = classobj()
-                                instance.loadXMLTree(child)
-                                if child.nodeName == "block":
-                                    blockname = instance.getinstanceName()
-                                    if blockname is not None:
-                                        blocktype = instance.gettypeName()
-                                        if element_type == "function":
-                                            return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
-                                        blockname = self.GenerateNewName(tagname, 
-                                                                         blockname, 
-                                                                         "%s%%d"%blocktype, 
-                                                                         debug=debug)
-                                        exclude[blockname] = True
-                                        instance.setinstanceName(blockname)
-                                        self.AddEditedElementPouVar(tagname, blocktype, blockname)
-                                elif child.nodeName == "step":
-                                    stepname = self.GenerateNewName(tagname, 
-                                                                    instance.getname(), 
-                                                                    "Step%d", 
-                                                                    exclude=exclude, 
-                                                                    debug=debug)
-                                    exclude[stepname] = True
-                                    instance.setname(stepname)
-                                localid = instance.getlocalId()
-                                if not used_id.has_key(localid):
-                                    new_id[localid] = True
-                                instances.append((child.nodeName, instance))
             
-            if len(instances) == 0:
-                return _("Invalid plcopen element(s)!!!")
+            exclude = {}
+            for instance in instances:
+                element.addinstance(instance)
+                instance_type = instance.getLocalTag()
+                if instance_type == "block":
+                    blockname = instance.getinstanceName()
+                    if blockname is not None:
+                        blocktype = instance.gettypeName()
+                        if element_type == "function":
+                            return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
+                        blockname = self.GenerateNewName(tagname, 
+                                                         blockname, 
+                                                         "%s%%d"%blocktype, 
+                                                         debug=debug)
+                        exclude[blockname] = True
+                        instance.setinstanceName(blockname)
+                        self.AddEditedElementPouVar(tagname, blocktype, blockname)
+                elif instance_type == "step":
+                    stepname = self.GenerateNewName(tagname, 
+                                                    instance.getname(), 
+                                                    "Step%d", 
+                                                    exclude=exclude, 
+                                                    debug=debug)
+                    exclude[stepname] = True
+                    instance.setname(stepname)
+                localid = instance.getlocalId()
+                if not used_id.has_key(localid):
+                    new_id[localid] = True
             
             idx = 1
             translate_id = {}
-            bbox = plcopen.rect()
-            for name, instance in instances:
+            bbox = rect()
+            for instance in instances:
                 localId = instance.getlocalId()
                 bbox.union(instance.getBoundingBox())
                 if used_id.has_key(localId):
@@ -2338,12 +2365,11 @@ class PLCControler:
             diff = (new_pos[0] - x, new_pos[1] - y)
             
             connections = {}
-            for name, instance in instances:
+            for instance in instances:
                 connections.update(instance.updateConnectionsId(translate_id))
                 if getattr(instance, "setexecutionOrderId", None) is not None:
                     instance.setexecutionOrderId(0)
                 instance.translate(*diff)
-                element.addinstance(name, instance)
             
             return new_id, connections
                 
@@ -2392,12 +2418,11 @@ class PLCControler:
                         for var in varlist.getvariable():
                             if var.getname() == varname:
                                 vartype_content = var.gettype().getcontent()
-                                if vartype_content["name"] == "derived":
-                                    return vartype_content["value"].getname()
-                                elif vartype_content["name"] in ["string", "wstring"]:
-                                    return vartype_content["name"].upper()
+                                vartype_content_type = vartype_content.getLocalTag()
+                                if vartype_content_type == "derived":
+                                    return vartype_content.getname()
                                 else:
-                                    return vartype_content["name"]
+                                    return vartype_content_type.upper()
         return None
     
     def SetConnectionWires(self, connection, connector):
@@ -2457,15 +2482,14 @@ class PLCControler:
     def AddEditedElementBlock(self, tagname, id, blocktype, blockname = None):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            block = plcopen.fbdObjects_block()
+            block = PLCOpenParser.CreateElement("block", "fbdObjects")
             block.setlocalId(id)
             block.settypeName(blocktype)
             blocktype_infos = self.GetBlockType(blocktype)
             if blocktype_infos["type"] != "function" and blockname is not None:
                 block.setinstanceName(blockname)
                 self.AddEditedElementPouVar(tagname, blocktype, blockname)
-            element.addinstance("block", block)
-            self.Project.RefreshElementUsingTree()
+            element.addinstance(block)
     
     def SetEditedElementBlockInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2510,7 +2534,8 @@ class PLCControler:
                     block.inputVariables.setvariable([])
                     block.outputVariables.setvariable([])
                     for connector in value["inputs"]:
-                        variable = plcopen.inputVariables_variable()
+                        variable = PLCOpenParser.CreateElement("variable", "inputVariables")
+                        block.inputVariables.appendvariable(variable)
                         variable.setformalParameter(connector.GetName())
                         if connector.IsNegated():
                             variable.setnegated(True)
@@ -2519,9 +2544,9 @@ class PLCControler:
                         position = connector.GetRelPosition()
                         variable.connectionPointIn.setrelPositionXY(position.x, position.y)
                         self.SetConnectionWires(variable.connectionPointIn, connector)
-                        block.inputVariables.appendvariable(variable)
                     for connector in value["outputs"]:
-                        variable = plcopen.outputVariables_variable()
+                        variable = PLCOpenParser.CreateElement("variable", "outputVariables")
+                        block.outputVariables.appendvariable(variable)
                         variable.setformalParameter(connector.GetName())
                         if connector.IsNegated():
                             variable.setnegated(True)
@@ -2530,23 +2555,17 @@ class PLCControler:
                         position = connector.GetRelPosition()
                         variable.addconnectionPointOut()
                         variable.connectionPointOut.setrelPositionXY(position.x, position.y)
-                        block.outputVariables.appendvariable(variable)
-            self.Project.RefreshElementUsingTree()
+            block.tostring()
         
-    def AddEditedElementVariable(self, tagname, id, type):
+    def AddEditedElementVariable(self, tagname, id, var_type):
         element = self.GetEditedElement(tagname)
-        if element is not None:            
-            if type == INPUT:
-                name = "inVariable"
-                variable = plcopen.fbdObjects_inVariable()
-            elif type == OUTPUT:
-                name = "outVariable"
-                variable = plcopen.fbdObjects_outVariable()
-            elif type == INOUT:
-                name = "inOutVariable"
-                variable = plcopen.fbdObjects_inOutVariable()
+        if element is not None:
+            variable = PLCOpenParser.CreateElement(
+                {INPUT: "inVariable",
+                 OUTPUT: "outVariable",
+                 INOUT: "inOutVariable"}[var_type], "fbdObjects")
             variable.setlocalId(id)
-            element.addinstance(name, variable)
+            element.addinstance(variable)
         
     def SetEditedElementVariableInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2556,7 +2575,9 @@ class PLCControler:
                 return 
             for param, value in infos.items():
                 if param == "name":
-                    variable.setexpression(value)    
+                    expression = PLCOpenParser.CreateElement("expression", variable.getLocalTag())
+                    expression.text = value
+                    variable.setexpression(expression)
                 elif param == "executionOrder" and variable.getexecutionOrderId() != value:
                     element.setelementExecutionOrder(variable, value)
                 elif param == "height":
@@ -2592,17 +2613,14 @@ class PLCControler:
                         variable.connectionPointIn.setrelPositionXY(position.x, position.y)
                         self.SetConnectionWires(variable.connectionPointIn, input)
 
-    def AddEditedElementConnection(self, tagname, id, type):
+    def AddEditedElementConnection(self, tagname, id, connection_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            if type == CONNECTOR:
-                name = "connector"
-                connection = plcopen.commonObjects_connector()
-            elif type == CONTINUATION:
-                name = "continuation"
-                connection = plcopen.commonObjects_continuation()
+            connection = PLCOpenParser.CreateElement(
+                {CONNECTOR: "connector",
+                 CONTINUATION: "continuation"}[connection_type], "commonObjects")
             connection.setlocalId(id)
-            element.addinstance(name, connection)
+            element.addinstance(connection)
         
     def SetEditedElementConnectionInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2623,10 +2641,10 @@ class PLCControler:
                     connection.sety(value)
                 elif param == "connector":
                     position = value.GetRelPosition()
-                    if isinstance(connection, plcopen.commonObjects_continuation):
+                    if isinstance(connection, PLCOpenParser.GetElementClass("continuation", "commonObjects")):
                         connection.addconnectionPointOut()
                         connection.connectionPointOut.setrelPositionXY(position.x, position.y)
-                    elif isinstance(connection, plcopen.commonObjects_connector):
+                    elif isinstance(connection, PLCOpenParser.GetElementClass("connector", "commonObjects")):
                         connection.addconnectionPointIn()
                         connection.connectionPointIn.setrelPositionXY(position.x, position.y)
                         self.SetConnectionWires(connection.connectionPointIn, value)
@@ -2634,9 +2652,9 @@ class PLCControler:
     def AddEditedElementComment(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            comment = plcopen.commonObjects_comment()
+            comment = PLCOpenParser.CreateElement("comment", "commonObjects")
             comment.setlocalId(id)
-            element.addinstance("comment", comment)
+            element.addinstance(comment)
     
     def SetEditedElementCommentInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2654,17 +2672,14 @@ class PLCControler:
                 elif param == "y":
                     comment.sety(value)
 
-    def AddEditedElementPowerRail(self, tagname, id, type):
+    def AddEditedElementPowerRail(self, tagname, id, powerrail_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            if type == LEFTRAIL:
-                name = "leftPowerRail"
-                powerrail = plcopen.ldObjects_leftPowerRail()
-            elif type == RIGHTRAIL:
-                name = "rightPowerRail"
-                powerrail = plcopen.ldObjects_rightPowerRail()
+            powerrail = PLCOpenParser.CreateElement(
+                {LEFTRAIL: "leftPowerRail",
+                 RIGHTRAIL: "rightPowerRail"}[powerrail_type], "ldObjects")
             powerrail.setlocalId(id)
-            element.addinstance(name, powerrail)
+            element.addinstance(powerrail)
     
     def SetEditedElementPowerRailInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2682,28 +2697,28 @@ class PLCControler:
                 elif param == "y":
                     powerrail.sety(value)
                 elif param == "connectors":
-                    if isinstance(powerrail, plcopen.ldObjects_leftPowerRail):
+                    if isinstance(powerrail, PLCOpenParser.GetElementClass("leftPowerRail", "ldObjects")):
                         powerrail.setconnectionPointOut([])
                         for connector in value["outputs"]:
                             position = connector.GetRelPosition()
-                            connection = plcopen.leftPowerRail_connectionPointOut()
+                            connection = PLCOpenParser.CreateElement("connectionPointOut", "leftPowerRail")
+                            powerrail.appendconnectionPointOut(connection)
                             connection.setrelPositionXY(position.x, position.y)
-                            powerrail.connectionPointOut.append(connection)
-                    elif isinstance(powerrail, plcopen.ldObjects_rightPowerRail):
+                    elif isinstance(powerrail, PLCOpenParser.GetElementClass("rightPowerRail", "ldObjects")):
                         powerrail.setconnectionPointIn([])
                         for connector in value["inputs"]:
                             position = connector.GetRelPosition()
-                            connection = plcopen.connectionPointIn()
+                            connection = PLCOpenParser.CreateElement("connectionPointIn", "rightPowerRail")
+                            powerrail.appendconnectionPointIn(connection)
                             connection.setrelPositionXY(position.x, position.y)
                             self.SetConnectionWires(connection, connector)
-                            powerrail.connectionPointIn.append(connection)
-
+                            
     def AddEditedElementContact(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            contact = plcopen.ldObjects_contact()
+            contact = PLCOpenParser.CreateElement("contact", "ldObjects")
             contact.setlocalId(id)
-            element.addinstance("contact", contact)
+            element.addinstance(contact)
 
     def SetEditedElementContactInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2713,20 +2728,17 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    contact.setvariable(value)
+                    variable = PLCOpenParser.CreateElement("variable", "contact")
+                    variable.text = value
+                    contact.setvariable(variable)
                 elif param == "type":
-                    if value == CONTACT_NORMAL:
-                        contact.setnegated(False)
-                        contact.setedge("none")
-                    elif value == CONTACT_REVERSE:
-                        contact.setnegated(True)
-                        contact.setedge("none")
-                    elif value == CONTACT_RISING:
-                        contact.setnegated(False)
-                        contact.setedge("rising")
-                    elif value == CONTACT_FALLING:
-                        contact.setnegated(False)
-                        contact.setedge("falling")
+                    negated, edge = {
+                        CONTACT_NORMAL: (False, "none"),
+                        CONTACT_REVERSE: (True, "none"),
+                        CONTACT_RISING: (False, "rising"),
+                        CONTACT_FALLING: (False, "falling")}[value]
+                    contact.setnegated(negated)
+                    contact.setedge(edge)
                 elif param == "height":
                     contact.setheight(value)
                 elif param == "width":
@@ -2749,9 +2761,9 @@ class PLCControler:
     def AddEditedElementCoil(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            coil = plcopen.ldObjects_coil()
+            coil = PLCOpenParser.CreateElement("coil", "ldObjects")
             coil.setlocalId(id)
-            element.addinstance("coil", coil)
+            element.addinstance(coil)
 
     def SetEditedElementCoilInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2761,32 +2773,20 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    coil.setvariable(value)
+                    variable = PLCOpenParser.CreateElement("variable", "coil")
+                    variable.text = value
+                    coil.setvariable(variable)
                 elif param == "type":
-                    if value == COIL_NORMAL:
-                        coil.setnegated(False)
-                        coil.setstorage("none")
-                        coil.setedge("none")
-                    elif value == COIL_REVERSE:
-                        coil.setnegated(True)
-                        coil.setstorage("none")
-                        coil.setedge("none")
-                    elif value == COIL_SET:
-                        coil.setnegated(False)
-                        coil.setstorage("set")
-                        coil.setedge("none")
-                    elif value == COIL_RESET:
-                        coil.setnegated(False)
-                        coil.setstorage("reset")
-                        coil.setedge("none")
-                    elif value == COIL_RISING:
-                        coil.setnegated(False)
-                        coil.setstorage("none")
-                        coil.setedge("rising")
-                    elif value == COIL_FALLING:
-                        coil.setnegated(False)
-                        coil.setstorage("none")
-                        coil.setedge("falling")
+                    negated, storage, edge = {
+                        COIL_NORMAL: (False, "none", "none"),
+                        COIL_REVERSE: (True, "none", "none"),
+                        COIL_SET: (False, "set", "none"),
+                        COIL_RESET: (False, "reset", "none"),
+                        COIL_RISING: (False, "none", "rising"),
+                        COIL_FALLING: (False, "none", "falling")}[value]
+                    coil.setnegated(negated)
+                    coil.setstorage(storage)
+                    coil.setedge(edge)
                 elif param == "height":
                     coil.setheight(value)
                 elif param == "width":
@@ -2809,9 +2809,9 @@ class PLCControler:
     def AddEditedElementStep(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            step = plcopen.sfcObjects_step()
+            step = PLCOpenParser.CreateElement("step", "sfcObjects")
             step.setlocalId(id)
-            element.addinstance("step", step)
+            element.addinstance(step)
     
     def SetEditedElementStepInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2859,9 +2859,9 @@ class PLCControler:
     def AddEditedElementTransition(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            transition = plcopen.sfcObjects_transition()
+            transition = PLCOpenParser.CreateElement("transition", "sfcObjects")
             transition.setlocalId(id)
-            element.addinstance("transition", transition)
+            element.addinstance(transition)
     
     def SetEditedElementTransitionInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2897,25 +2897,31 @@ class PLCControler:
                     transition.connectionPointOut.setrelPositionXY(position.x, position.y)
                 elif infos.get("type", None) == "connection" and param == "connection" and value:
                     transition.setconditionContent("connection", None)
-                    self.SetConnectionWires(transition.condition.content["value"], value)
+                    self.SetConnectionWires(transition.condition.content, value)
     
-    def AddEditedElementDivergence(self, tagname, id, type):
+    def AddEditedElementDivergence(self, tagname, id, divergence_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            if type == SELECTION_DIVERGENCE:
-                name = "selectionDivergence"
-                divergence = plcopen.sfcObjects_selectionDivergence()
-            elif type == SELECTION_CONVERGENCE:
-                name = "selectionConvergence"
-                divergence = plcopen.sfcObjects_selectionConvergence()
-            elif type == SIMULTANEOUS_DIVERGENCE:
-                name = "simultaneousDivergence"
-                divergence = plcopen.sfcObjects_simultaneousDivergence()
-            elif type == SIMULTANEOUS_CONVERGENCE:
-                name = "simultaneousConvergence"
-                divergence = plcopen.sfcObjects_simultaneousConvergence()
+            divergence = PLCOpenParser.CreateElement(
+                {SELECTION_DIVERGENCE: "selectionDivergence",
+                 SELECTION_CONVERGENCE: "selectionConvergence",
+                 SIMULTANEOUS_DIVERGENCE: "simultaneousDivergence",
+                 SIMULTANEOUS_CONVERGENCE: "simultaneousConvergence"}.get(
+                    divergence_type), "sfcObjects")
             divergence.setlocalId(id)
-            element.addinstance(name, divergence)
+            element.addinstance(divergence)
+    
+    DivergenceTypes = [
+        (divergence_type, 
+         PLCOpenParser.GetElementClass(divergence_type, "sfcObjects"))
+        for divergence_type in ["selectionDivergence", "simultaneousDivergence",
+                                "selectionConvergence", "simultaneousConvergence"]]
+    
+    def GetDivergenceType(self, divergence):
+        for divergence_type, divergence_class in self.DivergenceTypes:
+            if isinstance(divergence, divergence_class):
+                return divergence_type
+        return None
     
     def SetEditedElementDivergenceInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2934,7 +2940,8 @@ class PLCControler:
                     divergence.sety(value)
                 elif param == "connectors":
                     input_connectors = value["inputs"]
-                    if isinstance(divergence, (plcopen.sfcObjects_selectionDivergence, plcopen.sfcObjects_simultaneousDivergence)):
+                    divergence_type = self.GetDivergenceType(divergence)
+                    if divergence_type in ["selectionDivergence", "simultaneousDivergence"]:
                         position = input_connectors[0].GetRelPosition()
                         divergence.addconnectionPointIn()
                         divergence.connectionPointIn.setrelPositionXY(position.x, position.y)
@@ -2943,15 +2950,12 @@ class PLCControler:
                         divergence.setconnectionPointIn([])
                         for input_connector in input_connectors:
                             position = input_connector.GetRelPosition()
-                            if isinstance(divergence, plcopen.sfcObjects_selectionConvergence):
-                                connection = plcopen.selectionConvergence_connectionPointIn()
-                            else:
-                                connection = plcopen.connectionPointIn()
+                            connection = PLCOpenParser.CreateElement("connectionPointIn", divergence_type)
+                            divergence.appendconnectionPointIn(connection)
                             connection.setrelPositionXY(position.x, position.y)
                             self.SetConnectionWires(connection, input_connector)
-                            divergence.appendconnectionPointIn(connection)
                     output_connectors = value["outputs"]
-                    if isinstance(divergence, (plcopen.sfcObjects_selectionConvergence, plcopen.sfcObjects_simultaneousConvergence)):
+                    if divergence_type in ["selectionConvergence", "simultaneousConvergence"]:
                         position = output_connectors[0].GetRelPosition()
                         divergence.addconnectionPointOut()
                         divergence.connectionPointOut.setrelPositionXY(position.x, position.y)
@@ -2959,19 +2963,16 @@ class PLCControler:
                         divergence.setconnectionPointOut([])
                         for output_connector in output_connectors:
                             position = output_connector.GetRelPosition()
-                            if isinstance(divergence, plcopen.sfcObjects_selectionDivergence):
-                                connection = plcopen.selectionDivergence_connectionPointOut()
-                            else:
-                                connection = plcopen.simultaneousDivergence_connectionPointOut()
-                            connection.setrelPositionXY(position.x, position.y)
+                            connection = PLCOpenParser.CreateElement("connectionPointOut", divergence_type)
                             divergence.appendconnectionPointOut(connection)
-    
+                            connection.setrelPositionXY(position.x, position.y)
+                            
     def AddEditedElementJump(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            jump = plcopen.sfcObjects_jumpStep()
+            jump = PLCOpenParser.CreateElement("jumpStep", "sfcObjects")
             jump.setlocalId(id)
-            element.addinstance("jumpStep", jump)
+            element.addinstance(jump)
     
     def SetEditedElementJumpInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -2999,9 +3000,9 @@ class PLCControler:
     def AddEditedElementActionBlock(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
-            actionBlock = plcopen.commonObjects_actionBlock()
+            actionBlock = PLCOpenParser.CreateElement("actionBlock", "commonObjects")
             actionBlock.setlocalId(id)
-            element.addinstance("actionBlock", actionBlock)
+            element.addinstance(actionBlock)
     
     def SetEditedElementActionBlockInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
@@ -3030,10 +3031,9 @@ class PLCControler:
         element = self.GetEditedElement(tagname)
         if element is not None:
             instance = element.getinstance(id)
-            if isinstance(instance, plcopen.fbdObjects_block):
+            if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")):
                 self.RemoveEditedElementPouVar(tagname, instance.gettypeName(), instance.getinstanceName())
             element.removeinstance(id)
-            self.Project.RefreshElementUsingTree()
 
     def GetEditedResourceVariables(self, tagname, debug = False):
         varlist = []
@@ -3053,7 +3053,8 @@ class PLCControler:
             resource.setpouInstance([])
             task_list = {}
             for task in tasks:
-                new_task = plcopen.resource_task()
+                new_task = PLCOpenParser.CreateElement("task", "resource")
+                resource.appendtask(new_task)
                 new_task.setname(task["Name"])
                 if task["Triggering"] == "Interrupt":
                     new_task.setsingle(task["Single"])
@@ -3073,12 +3074,16 @@ class PLCControler:
                 new_task.setpriority(int(task["Priority"]))
                 if task["Name"] != "":
                     task_list[task["Name"]] = new_task
-                resource.appendtask(new_task)
             for instance in instances:
-                new_instance = plcopen.pouInstance()
+                task = task_list.get(instance["Task"])
+                if task is not None:
+                    new_instance = PLCOpenParser.CreateElement("pouInstance", "task")
+                    task.appendpouInstance(new_instance)
+                else:
+                    new_instance = PLCOpenParser.CreateElement("pouInstance", "resource")
+                    resource.appendpouInstance(new_instance)
                 new_instance.setname(instance["Name"])
                 new_instance.settypeName(instance["Type"])
-                task_list.get(instance["Task"], resource).appendpouInstance(new_instance)
 
     def GetEditedResourceInfos(self, tagname, debug = False):
         resource = self.GetEditedElement(tagname, debug)
@@ -3136,31 +3141,20 @@ class PLCControler:
             return tasks_data, instances_data
 
     def OpenXMLFile(self, filepath):
-        xmlfile = open(filepath, 'r')
-        tree = minidom.parse(xmlfile)
-        xmlfile.close()
+        try:
+            self.Project = LoadProject(filepath)
+        except Exception, e:
+            return _("Project file syntax error:\n\n") + str(e)
+        self.SetFilePath(filepath)
+        self.CreateProjectBuffer(True)
+        self.ProgramChunks = []
+        self.ProgramOffset = 0
+        self.NextCompiledProject = self.Copy(self.Project)
+        self.CurrentCompiledProject = None
+        self.Buffering = False
+        self.CurrentElementEditing = None
+        return None
         
-        self.Project = plcopen.project()
-        for child in tree.childNodes:
-            if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "project":
-                try:
-                    result = self.Project.loadXMLTree(child)
-                except ValueError, e:
-                    return _("Project file syntax error:\n\n") + str(e)
-                self.SetFilePath(filepath)
-                self.Project.RefreshElementUsingTree()
-                self.Project.RefreshDataTypeHierarchy()
-                self.Project.RefreshCustomBlockTypes()
-                self.CreateProjectBuffer(True)
-                self.ProgramChunks = []
-                self.ProgramOffset = 0
-                self.NextCompiledProject = self.Copy(self.Project)
-                self.CurrentCompiledProject = None
-                self.Buffering = False
-                self.CurrentElementEditing = None
-                return None
-        return _("No PLC project found")
-
     def SaveXMLFile(self, filepath = None):
         if not filepath and self.FilePath == "":
             return False
@@ -3168,19 +3162,11 @@ class PLCControler:
             contentheader = {"modificationDateTime": datetime.datetime(*localtime()[:6])}
             self.Project.setcontentHeader(contentheader)
             
-            text = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            extras = {"xmlns" : "http://www.plcopen.org/xml/tc6.xsd",
-                      "xmlns:xhtml" : "http://www.w3.org/1999/xhtml",
-                      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance",
-                      "xsi:schemaLocation" : "http://www.plcopen.org/xml/tc6.xsd"}
-            text += self.Project.generateXMLText("project", 0, extras)
-            
             if filepath:
-                xmlfile = open(filepath,"w")
+                SaveProject(self.Project, filepath)
             else:
-                xmlfile = open(self.FilePath,"w")
-            xmlfile.write(text.encode("utf-8"))
-            xmlfile.close()
+                SaveProject(self.Project, self.FilePath)
+            
             self.MarkProjectAsSaved()
             if filepath:
                 self.SetFilePath(filepath)
@@ -3207,11 +3193,11 @@ class PLCControler:
     Return a copy of the project
     """
     def Copy(self, model):
-        return cPickle.loads(cPickle.dumps(model))
+        return deepcopy(model)
 
     def CreateProjectBuffer(self, saved):
         if self.ProjectBufferEnabled:
-            self.ProjectBuffer = UndoBuffer(cPickle.dumps(self.Project), saved)
+            self.ProjectBuffer = UndoBuffer(PLCOpenParser.Dumps(self.Project), saved)
         else:
             self.ProjectBuffer = None
             self.ProjectSaved = saved
@@ -3230,7 +3216,7 @@ class PLCControler:
 
     def BufferProject(self):
         if self.ProjectBuffer is not None:
-            self.ProjectBuffer.Buffering(cPickle.dumps(self.Project))
+            self.ProjectBuffer.Buffering(PLCOpenParser.Dumps(self.Project))
         else:
             self.ProjectSaved = False
 
@@ -3242,7 +3228,7 @@ class PLCControler:
         
     def EndBuffering(self):
         if self.ProjectBuffer is not None and self.Buffering:
-            self.ProjectBuffer.Buffering(cPickle.dumps(self.Project))
+            self.ProjectBuffer.Buffering(PLCOpenParser.Dumps(self.Project))
             self.Buffering = False
 
     def MarkProjectAsSaved(self):
@@ -3262,11 +3248,11 @@ class PLCControler:
     def LoadPrevious(self):
         self.EndBuffering()
         if self.ProjectBuffer is not None:
-            self.Project = cPickle.loads(self.ProjectBuffer.Previous())
+            self.Project = PLCOpenParser.Loads(self.ProjectBuffer.Previous())
     
     def LoadNext(self):
         if self.ProjectBuffer is not None:
-            self.Project = cPickle.loads(self.ProjectBuffer.Next())
+            self.Project = PLCOpenParser.Loads(self.ProjectBuffer.Next())
     
     def GetBufferState(self):
         if self.ProjectBuffer is not None:

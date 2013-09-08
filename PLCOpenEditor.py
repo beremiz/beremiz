@@ -276,6 +276,7 @@ class PLCOpenEditor(IDEFrame):
             self.Controler = PLCControler()
             self.Controler.CreateNewProject(properties)
             self.LibraryPanel.SetController(self.Controler)
+            self.ProjectTree.Enable(True)
             self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, 
                           LIBRARYTREE)
 
