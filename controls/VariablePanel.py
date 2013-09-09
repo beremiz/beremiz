@@ -173,7 +173,7 @@ class VariableTable(CustomTable):
                             if var_class not in ["External", "InOut"]:
                                 if self.Parent.Controler.IsEnumeratedType(var_type):
                                     editor = wx.grid.GridCellChoiceEditor()
-                                    editor.SetParameters(",".join(self.Parent.Controler.GetEnumeratedDataValues(var_type)))
+                                    editor.SetParameters(",".join([""] + self.Parent.Controler.GetEnumeratedDataValues(var_type)))
                                 else:
                                     editor = wx.grid.GridCellTextEditor()
                                 renderer = wx.grid.GridCellStringRenderer()
@@ -635,7 +635,7 @@ class VariablePanel(wx.Panel):
                 self.ReturnType.Clear()
                 for data_type in self.Controler.GetDataTypes(self.TagName, debug=self.Debug):
                     self.ReturnType.Append(data_type)
-                returnType = self.Controler.GetEditedElementInterfaceReturnType(self.TagName)
+                returnType, (var_tree, dimensions) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName)
             description = self.Controler.GetPouDescription(words[1])
             self.Values = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
         
