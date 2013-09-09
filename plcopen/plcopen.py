@@ -27,7 +27,6 @@ from structures import *
 from types import *
 import os, re
 from lxml import etree
-from collections import OrderedDict
 """
 Dictionary that makes the relation between var names in plcopen and displayed values
 """
@@ -269,8 +268,12 @@ if cls:
     
     def setfileHeader(self, fileheader):
         fileheader_obj = self.fileHeader
-        for attr, value in fileheader.iteritems():
-            setattr(fileheader_obj, attr, value)
+        for attr in ["companyName", "companyURL", "productName",
+                     "productVersion", "productRelease", "creationDateTime",
+                     "contentDescription"]:
+            value = fileheader.get(attr)
+            if value is not None:
+                setattr(fileheader_obj, attr, value)
     setattr(cls, "setfileHeader", setfileHeader)
     
     def getcontentHeader(self):
@@ -297,11 +300,13 @@ if cls:
                 contentheader_obj.setname(value)
             elif attr == "projectVersion":
                 contentheader_obj.setversion(value)
+            elif attr == "authorName":
+                contentheader_obj.setauthor(value)
             elif attr == "pageSize":
                 contentheader_obj.setpageSize(*contentheader["pageSize"])
             elif attr == "scaling":
                 contentheader_obj.setscaling(contentheader["scaling"])
-            else:
+            elif attr in ["modificationDateTime", "organization", "language"]:
                 setattr(contentheader_obj, attr, value)
     setattr(cls, "setcontentHeader", setcontentHeader)
     
@@ -603,7 +608,7 @@ if cls:
         var = PLCOpenParser.CreateElement("variable", "varListPlain")
         var.setname(name)
         var_type_obj = PLCOpenParser.CreateElement("dataType")
-        if var_type in [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]:
+        if not var_type.startswith("ANY") and TypeHierarchy.get(var_type):
             var_type_obj.setcontent(PLCOpenParser.CreateElement(
                 var_type.lower() if var_type in ["STRING", "WSTRING"]
                 else vartype, "dataType"))
@@ -1162,7 +1167,7 @@ if cls:
         var = PLCOpenParser.CreateElement("variable", "varListPlain")
         var.setname(name)
         var_type_obj = PLCOpenParser.CreateElement("type", "variable")
-        if var_type in [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]:
+        if not var_type.startswith("ANY") and TypeHierarchy.get(var_type):
             var_type_obj.setcontent(PLCOpenParser.CreateElement(
                 var_type.lower() if var_type in ["STRING", "WSTRING"]
                 else var_type, "dataType"))
