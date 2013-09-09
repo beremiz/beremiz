@@ -24,6 +24,7 @@
 
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
+from lxml import etree
 from copy import deepcopy
 import os,sys,re
 import datetime
@@ -97,6 +98,66 @@ UNEDITABLE_NAMES = GetUneditableNames()
 [USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS, 
  DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS, 
  RESOURCES, PROPERTIES] = UNEDITABLE_NAMES
+
+#-------------------------------------------------------------------------------
+#                 Helpers object for generating pou var list
+#-------------------------------------------------------------------------------
+
+def compute_dimensions(el):
+    return [
+        (dimension.get("lower"), dimension.get("upper"))
+        for dimension in el.findall("dimension")]
+
+def extract_param(el):
+    if el.tag == "Type" and el.text is None:
+        array = el.find("array")
+        return ('array', array.text, compute_dimensions(array))
+    elif el.tag == "Tree":
+        return generate_var_tree(el)
+    elif el.tag == "Edit":
+        return True
+    elif el.text is None:
+        return ''
+    return el.text
+
+def generate_var_tree(tree):
+    return ([
+        (var.get("name"), var.text, generate_var_tree(var))
+         for var in tree.findall("var")],
+        compute_dimensions(tree))
+
+class AddVariable(etree.XSLTExtension):
+    
+    def __init__(self, variables):
+        etree.XSLTExtension.__init__(self)
+        self.Variables = variables
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        infos = etree.Element('var_infos')
+        self.process_children(context, infos)
+        self.Variables.append(
+            {el.tag.replace("_", " "): extract_param(el) for el in infos})
+
+class VarTree(etree.XSLTExtension):
+    
+    def __init__(self, controller):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        typename = input_node.get("name")
+        pou_infos = self.Controller.GetPou(typename)
+        if pou_infos is not None:
+            self.apply_templates(context, pou_infos, output_parent)
+            return
+        
+        datatype_infos = self.Controller.GetDataType(typename)
+        if datatype_infos is not None:
+            self.apply_templates(context, datatype_infos, output_parent)
+            return
+
+variables_infos_xslt = etree.parse(
+    os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"))
 
 #-------------------------------------------------------------------------------
 #                         Undo Buffer for PLCOpenEditor
@@ -1224,63 +1285,17 @@ class PLCControler:
             current_varlist.appendvariable(tempvar)
         return varlist_list
     
-    def GetVariableDictionary(self, varlist, var):
-        '''
-        convert a PLC variable to the dictionary representation
-        returned by Get*Vars)
-        '''
-
-        tempvar = {"Name": var.getname()}
-
-        vartype_content = var.gettype().getcontent()
-        vartype_content_type = vartype_content.getLocalTag()
-        if vartype_content_type == "derived":
-            tempvar["Type"] = vartype_content.getname()
-        elif vartype_content_type == "array":
-            dimensions = []
-            for dimension in vartype_content.getdimension():
-                dimensions.append((dimension.getlower(), dimension.getupper()))
-            base_type = vartype_content.baseType.getcontent()
-            base_type_type = base_type.getLocalTag()
-            if base_type_type == "derived":
-                base_type_name = base_type.getname()
-            else:
-                base_type_name = base_type_type.upper()
-            tempvar["Type"] = ("array", base_type_name, dimensions)
-        else:
-            tempvar["Type"] = vartype_content_type.upper()
+    def GetVariableDictionary(self, object_with_vars):
+        variables = []
         
-        tempvar["Edit"] = True
+        variables_infos_xslt_tree = etree.XSLT(
+            variables_infos_xslt, extensions = {
+                ("var_infos_ns", "add_variable"): AddVariable(variables),
+                ("var_infos_ns", "var_tree"): VarTree(self)})
+        variables_infos_xslt_tree(object_with_vars)
         
-        initial = var.getinitialValue()
-        if initial is not None:
-            tempvar["Initial Value"] = initial.getvalue()
-        else:
-            tempvar["Initial Value"] = ""
-
-        address = var.getaddress()
-        if address:
-            tempvar["Location"] = address
-        else:
-            tempvar["Location"] = ""
-
-        if varlist.getconstant():
-            tempvar["Option"] = "Constant"
-        elif varlist.getretain():
-            tempvar["Option"] = "Retain"
-        elif varlist.getnonretain():
-            tempvar["Option"] = "Non-Retain"
-        else:
-            tempvar["Option"] = ""
-
-        doc = var.getdocumentation()
-        if doc is not None:
-            tempvar["Documentation"] = doc.getanyText()
-        else:
-            tempvar["Documentation"] = ""
-
-        return tempvar
-    
+        return variables
+            
     # Add a global var to configuration to configuration
     def AddConfigurationGlobalVar(self, config_name, type, var_name, 
                                            location="", description=""):
@@ -1304,19 +1319,15 @@ class PLCControler:
     
     # Return the configuration globalvars
     def GetConfigurationGlobalVars(self, name, debug = False):
-        vars = []
         project = self.GetProject(debug)
         if project is not None:
             # Found the configuration corresponding to name
             configuration = project.getconfiguration(name)
             if configuration is not None:
-                # Extract variables from every varLists
-                for varlist in configuration.getglobalVars():
-                    for var in varlist.getvariable():
-                        tempvar = self.GetVariableDictionary(varlist, var)
-                        tempvar["Class"] = "Global"
-                        vars.append(tempvar)
-        return vars
+                # Extract variables defined in configuration
+                return self.GetVariableDictionary(configuration)
+        
+        return []
 
     # Return configuration variable names
     def GetConfigurationVariableNames(self, config_name = None, debug = False):
@@ -1345,19 +1356,15 @@ class PLCControler:
     
     # Return the resource globalvars
     def GetConfigurationResourceGlobalVars(self, config_name, name, debug = False):
-        vars = []
         project = self.GetProject(debug)
         if project is not None:
             # Found the resource corresponding to name
             resource = project.getconfigurationResource(config_name, name)
             if resource is not None:
-                # Extract variables from every varLists
-                for varlist in resource.getglobalVars():
-                    for var in varlist.getvariable():
-                        tempvar = self.GetVariableDictionary(varlist, var)
-                        tempvar["Class"] = "Global"
-                        vars.append(tempvar)
-        return vars
+                # Extract variables defined in configuration
+                return self.GetVariableDictionary(resource)
+        
+        return []
     
     # Return resource variable names
     def GetConfigurationResourceVariableNames(self, 
@@ -1375,73 +1382,15 @@ class PLCControler:
                                         for varlist in resource.globalVars],
                                     [])])
         return variables
-    
-    # Recursively generate element name tree for a structured variable
-    def GenerateVarTree(self, typename, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            blocktype = self.GetBlockType(typename, debug = debug)
-            if blocktype is not None:
-                tree = []
-                en = False
-                eno = False
-                for var_name, var_type, var_modifier in blocktype["inputs"] + blocktype["outputs"]:
-                    en |= var_name.upper() == "EN"
-                    eno |= var_name.upper() == "ENO"    
-                    tree.append((var_name, var_type, self.GenerateVarTree(var_type, debug)))
-                if not eno:
-                    tree.insert(0, ("ENO", "BOOL", ([], [])))
-                if not en:
-                    tree.insert(0, ("EN", "BOOL", ([], [])))
-                return tree, []
-            datatype = self.GetDataType(typename)
-            if datatype is not None:
-                tree = []
-                basetype_content = datatype.baseType.getcontent()
-                basetype_content_type = basetype_content.getLocalTag()
-                if basetype_content_type == "derived":
-                    return self.GenerateVarTree(basetype_content.getname())
-                elif basetype_content_type == "array":
-                    dimensions = []
-                    base_type = basetype_content.baseType.getcontent()
-                    if base_type.getLocalTag() == "derived":
-                        tree = self.GenerateVarTree(base_type.getname())
-                        if len(tree[1]) == 0:
-                            tree = tree[0]
-                        for dimension in basetype_content.getdimension():
-                            dimensions.append((dimension.getlower(), dimension.getupper()))
-                    return tree, dimensions
-                elif basetype_content_type == "struct":
-                    for element in basetype_content.getvariable():
-                        element_type = element.type.getcontent()
-                        element_type_type = element_type.getLocalTag()
-                        if element_type_type == "derived":
-                            tree.append((element.getname(), element_type.getname(), self.GenerateVarTree(element_type.getname())))
-                        else:
-                            tree.append((element.getname(), element_type_type, ([], [])))
-                    return tree, []
-        return [], []
 
     # Return the interface for the given pou
     def GetPouInterfaceVars(self, pou, debug = False):
-        vars = []
+        interface = pou.interface
         # Verify that the pou has an interface
-        if pou.interface is not None:
-            # Extract variables from every varLists
-            for type, varlist in pou.getvars():
-                for var in varlist.getvariable():
-                    tempvar = self.GetVariableDictionary(varlist, var)
-
-                    tempvar["Class"] = type
-                    tempvar["Tree"] = ([], [])
-
-                    vartype_content = var.gettype().getcontent()
-                    if vartype_content.getLocalTag() == "derived":
-                        tempvar["Edit"] = not pou.hasblock(tempvar["Name"])
-                        tempvar["Tree"] = self.GenerateVarTree(tempvar["Type"], debug)
-
-                    vars.append(tempvar)
-        return vars
+        if interface is not None:
+            # Extract variables defined in interface
+            return self.GetVariableDictionary(interface)
+        return []
 
     # Replace the Pou interface by the one given
     def SetPouInterfaceVars(self, name, vars):
@@ -1503,13 +1452,13 @@ class PLCControler:
             # Return the return type if there is one
             return_type = pou.interface.getreturnType()
             if return_type is not None:
-                returntype_content = return_type.getcontent()
-                returntype_content_type = returntype_content.getLocalTag()
-                if returntype_content_type == "derived":
-                    return returntype_content.getname()
-                else:
-                    return returntype_content_type.upper()
-        return None
+                return_type_infos_xslt_tree = etree.XSLT(
+                    variables_infos_xslt, extensions = {
+                          ("var_infos_ns", "var_tree"): VarTree(self)})
+            return [extract_param(el) 
+                   for el in return_type_infos_xslt_tree(return_type).getroot()]
+                
+        return [None, ([], [])] 
 
     # Function that add a new confnode to the confnode list
     def AddConfNodeTypesList(self, typeslist):
@@ -1678,6 +1627,20 @@ class PLCControler:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])
         return datatypes
+
+    # Return Data Type Object
+    def GetPou(self, typename, debug = False):
+        project = self.GetProject(debug)
+        if project is not None:
+            result = project.getpou(typename)
+            if result is not None:
+                return result
+        for confnodetype in self.ConfNodeTypes:
+            result = confnodetype["types"].getpou(typename)
+            if result is not None:
+                return result
+        return None
+
 
     # Return Data Type Object
     def GetDataType(self, typename, debug = False):
