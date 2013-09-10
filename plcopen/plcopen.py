@@ -23,7 +23,6 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from xmlclass import *
-from structures import *
 from types import *
 import os, re
 from lxml import etree
@@ -296,16 +295,13 @@ if cls:
     def setcontentHeader(self, contentheader):
         contentheader_obj = self.contentHeader
         for attr, value in contentheader.iteritems():
-            if attr == "projectName":
-                contentheader_obj.setname(value)
-            elif attr == "projectVersion":
-                contentheader_obj.setversion(value)
-            elif attr == "authorName":
-                contentheader_obj.setauthor(value)
-            elif attr == "pageSize":
-                contentheader_obj.setpageSize(*contentheader["pageSize"])
-            elif attr == "scaling":
-                contentheader_obj.setscaling(contentheader["scaling"])
+            func = {"projectName": contentheader_obj.setname,
+                    "projectVersion": contentheader_obj.setversion,
+                    "authorName": contentheader_obj.setauthor,
+                    "pageSize": lambda v: contentheader_obj.setpageSize(*v),
+                    "scaling": contentheader_obj.setscaling}.get(attr)
+            if func is not None:
+                func(value)
             elif attr in ["modificationDateTime", "organization", "language"]:
                 setattr(contentheader_obj, attr, value)
     setattr(cls, "setcontentHeader", setcontentHeader)
@@ -607,16 +603,7 @@ if cls:
             globalvars.append(PLCOpenParser.CreateElement("varList"))
         var = PLCOpenParser.CreateElement("variable", "varListPlain")
         var.setname(name)
-        var_type_obj = PLCOpenParser.CreateElement("dataType")
-        if not var_type.startswith("ANY") and TypeHierarchy.get(var_type):
-            var_type_obj.setcontent(PLCOpenParser.CreateElement(
-                var_type.lower() if var_type in ["STRING", "WSTRING"]
-                else vartype, "dataType"))
-        else:
-            derived_type = PLCOpenParser.CreateElement("derived", "dataType")
-            derived_type.setname(var_type)
-            var_type_obj.setcontent(derived_type)
-        var.settype(var_type_obj)
+        var.settype(var_type)
         if location != "":
             var.setaddress(location)
         if description != "":
@@ -1164,16 +1151,7 @@ if cls:
                 content[-1].addnext(varlist)
         var = PLCOpenParser.CreateElement("variable", "varListPlain")
         var.setname(name)
-        var_type_obj = PLCOpenParser.CreateElement("type", "variable")
-        if not var_type.startswith("ANY") and TypeHierarchy.get(var_type):
-            var_type_obj.setcontent(PLCOpenParser.CreateElement(
-                var_type.lower() if var_type in ["STRING", "WSTRING"]
-                else var_type, "dataType"))
-        else:
-            derived_type = PLCOpenParser.CreateElement("derived", "dataType")
-            derived_type.setname(var_type)
-            var_type_obj.setcontent(derived_type)
-        var.settype(var_type_obj)
+        var.settype(var_type)
         if location != "":
             var.setaddress(location)
         if description != "":

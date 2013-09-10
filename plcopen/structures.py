@@ -23,6 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import string, os, sys, re
+from plcopen import LoadProject
 
 LANGUAGES = ["IL","ST","FBD","LD","SFC"]
 
@@ -38,6 +39,44 @@ _ = lambda x:x
 #                        Function Block Types definitions
 #-------------------------------------------------------------------------------
 
+ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
+
+StdBlockLibrary = LoadProject(os.path.join(ScriptDirectory, "Standard_Function_Blocks.xml"))
+AddnlBlockLibrary = LoadProject(os.path.join(ScriptDirectory, "Additional_Function_Blocks.xml"))
+
+StdBlockComments = {
+    "SR": _("SR bistable\nThe SR bistable is a latch where the Set dominates."),
+    "RS": _("RS bistable\nThe RS bistable is a latch where the Reset dominates."),
+    "SEMA": _("Semaphore\nThe semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."),
+    "R_TRIG": _("Rising edge detector\nThe output produces a single pulse when a rising edge is detected."),
+    "F_TRIG": _("Falling edge detector\nThe output produces a single pulse when a falling edge is detected."),
+    "CTU": _("Up-counter\nThe up-counter can be used to signal when a count has reached a maximum value."),
+    "CTD": _("Down-counter\nThe down-counter can be used to signal when a count has reached zero, on counting down from a preset value."),
+    "CTUD": _("Up-down counter\nThe up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."),
+    "TP": _("Pulse timer\nThe pulse timer can be used to generate output pulses of a given time duration."),
+    "TON": _("On-delay timer\nThe on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."),
+    "TOF": _("Off-delay timer\nThe off-delay timer can be used to delay setting an output false, for fixed period after input goes false."),
+    "RTC": _("Real time clock\nThe real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."),
+    "INTEGRAL": _("Integral\nThe integral function block integrates the value of input XIN over time."),
+    "DERIVATIVE": _("Derivative\nThe derivative function block produces an output XOUT proportional to the rate of change of the input XIN."),
+    "PID": _("PID\nThe PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."),
+    "RAMP": _("Ramp\nThe RAMP function block is modelled on example given in the standard."),
+    "HYSTERESIS": _("Hysteresis\nThe hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."),
+}
+
+for block_type in ["CTU", "CTD", "CTUD"]:
+    for return_type in ["DINT", "LINT", "UDINT", "ULINT"]:
+        StdBlockComments["%s_%s" % (block_type, return_type)] = StdBlockComments[block_type]
+
+def GetBlockInfos(pou):
+    infos = pou.getblockInfos()
+    infos["comment"] = StdBlockComments[infos["name"]]
+    infos["inputs"] = [
+        (var_name, var_type, "rising")
+        if var_name in ["CU", "CD"]
+        else (var_name, var_type, var_modifier)
+        for var_name, var_type, var_modifier in infos["inputs"]]
+    return infos
 
 """
 Ordored list of common Function Blocks defined in the IEC 61131-3
@@ -56,81 +95,9 @@ Inputs and outputs are a tuple of characteristics that are in order:
 """
 
 StdBlckLst = [{"name" : _("Standard function blocks"), "list":
-               [{"name" : "SR", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("S1","BOOL","none"),("R","BOOL","none")], 
-                    "outputs" : [("Q1","BOOL","none")],
-                    "comment" : _("SR bistable\nThe SR bistable is a latch where the Set dominates.")},
-                {"name" : "RS", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("S","BOOL","none"),("R1","BOOL","none")], 
-                    "outputs" : [("Q1","BOOL","none")],
-                    "comment" : _("RS bistable\nThe RS bistable is a latch where the Reset dominates.")},
-                {"name" : "SEMA", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("CLAIM","BOOL","none"),("RELEASE","BOOL","none")], 
-                    "outputs" : [("BUSY","BOOL","none")],
-                    "comment" : _("Semaphore\nThe semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources.")},
-                {"name" : "R_TRIG", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("CLK","BOOL","none")], 
-                    "outputs" : [("Q","BOOL","none")],
-                    "comment" : _("Rising edge detector\nThe output produces a single pulse when a rising edge is detected.")},
-                {"name" : "F_TRIG", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("CLK","BOOL","none")], 
-                    "outputs" : [("Q","BOOL","none")],
-                    "comment" : _("Falling edge detector\nThe output produces a single pulse when a falling edge is detected.")},
-                {"name" : "CTU", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("CU","BOOL","rising"),("R","BOOL","none"),("PV","INT","none")], 
-                    "outputs" : [("Q","BOOL","none"),("CV","INT","none")],
-                    "comment" : _("Up-counter\nThe up-counter can be used to signal when a count has reached a maximum value.")},
-                {"name" : "CTD", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("CD","BOOL","rising"),("LD","BOOL","none"),("PV","INT","none")], 
-                    "outputs" : [("Q","BOOL","none"),("CV","INT","none")],
-                    "comment" : _("Down-counter\nThe down-counter can be used to signal when a count has reached zero, on counting down from a preset value.")},
-                {"name" : "CTUD", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("CU","BOOL","rising"),("CD","BOOL","rising"),("R","BOOL","none"),("LD","BOOL","none"),("PV","INT","none")], 
-                    "outputs" : [("QU","BOOL","none"),("QD","BOOL","none"),("CV","INT","none")],
-                    "comment" : _("Up-down counter\nThe up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other.")},
-                {"name" : "TP", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("IN","BOOL","none"),("PT","TIME","none")], 
-                    "outputs" : [("Q","BOOL","none"),("ET","TIME","none")],
-                    "comment" : _("Pulse timer\nThe pulse timer can be used to generate output pulses of a given time duration.")},
-                {"name" : "TON", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("IN","BOOL","none"),("PT","TIME","none")], 
-                    "outputs" : [("Q","BOOL","none"),("ET","TIME","none")],
-                    "comment" : _("On-delay timer\nThe on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true.")},
-                {"name" : "TOF", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("IN","BOOL","none"),("PT","TIME","none")], 
-                    "outputs" : [("Q","BOOL","none"),("ET","TIME","none")],
-                    "comment" : _("Off-delay timer\nThe off-delay timer can be used to delay setting an output false, for fixed period after input goes false.")},
-                ]},
+               [GetBlockInfos(pou) for pou in StdBlockLibrary.getpous()]},
               {"name" : _("Additional function blocks"), "list":
-               [{"name" : "RTC", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("IN","BOOL","none"),("PDT","DATE_AND_TIME","none")], 
-                    "outputs" : [("Q","BOOL","none"),("CDT","DATE_AND_TIME","none")],
-                    "comment" : _("Real time clock\nThe real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on.")},
-                {"name" : "INTEGRAL", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("RUN","BOOL","none"),("R1","BOOL","none"),("XIN","REAL","none"),("X0","REAL","none"),("CYCLE","TIME","none")], 
-                    "outputs" : [("Q","BOOL","none"),("XOUT","REAL","none")],
-                    "comment" : _("Integral\nThe integral function block integrates the value of input XIN over time.")},
-                {"name" : "DERIVATIVE", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("RUN","BOOL","none"),("XIN","REAL","none"),("CYCLE","TIME","none")], 
-                    "outputs" : [("XOUT","REAL","none")],
-                    "comment" : _("Derivative\nThe derivative function block produces an output XOUT proportional to the rate of change of the input XIN.")},
-                {"name" : "PID", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("AUTO","BOOL","none"),("PV","REAL","none"),("SP","REAL","none"),("X0","REAL","none"),("KP","REAL","none"),("TR","REAL","none"),("TD","REAL","none"),("CYCLE","TIME","none")], 
-                    "outputs" : [("XOUT","REAL","none")],
-                    "comment" : _("PID\nThe PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control.")},
-                {"name" : "RAMP", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("RUN","BOOL","none"),("X0","REAL","none"),("X1","REAL","none"),("TR","TIME","none"),("CYCLE","TIME","none")], 
-                    "outputs" : [("BUSY","BOOL","none"),("XOUT","REAL","none")],
-                    "comment" : _("Ramp\nThe RAMP function block is modelled on example given in the standard.")},
-                {"name" : "HYSTERESIS", "type" : "functionBlock", "extensible" : False, 
-                    "inputs" : [("XIN1","REAL","none"),("XIN2","REAL","none"),("EPS","REAL","none")], 
-                    "outputs" : [("Q","BOOL","none")],
-                    "comment" : _("Hysteresis\nThe hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2.")},
-##                {"name" : "RATIO_MONITOR", "type" : "functionBlock", "extensible" : False, 
-##                    "inputs" : [("PV1","REAL","none"),("PV2","REAL","none"),("RATIO","REAL","none"),("TIMON","TIME","none"),("TIMOFF","TIME","none"),("TOLERANCE","BOOL","none"),("RESET","BOOL","none"),("CYCLE","TIME","none")], 
-##                    "outputs" : [("ALARM","BOOL","none"),("TOTAL_ERR","BOOL","none")],
-##                    "comment" : _("Ratio monitor\nThe ratio_monitor function block checks that one process value PV1 is always a given ratio (defined by input RATIO) of a second process value PV2.")}
-                ]},
+               [GetBlockInfos(pou) for pou in AddnlBlockLibrary.getpous()]},
              ]
 
 
@@ -446,7 +413,7 @@ def get_standard_funtions(table):
     
     return Standard_Functions_Decl
 
-std_decl = get_standard_funtions(csv_file_to_table(open(os.path.join(os.path.split(__file__)[0],"iec_std.csv"))))#, True)
+std_decl = get_standard_funtions(csv_file_to_table(open(os.path.join(ScriptDirectory,"iec_std.csv"))))#, True)
 
 StdBlckLst.extend(std_decl)
 
@@ -458,12 +425,11 @@ for section in StdBlckLst:
         words = desc["comment"].split('"')
         if len(words) > 1:
             desc["comment"] = words[1]
-        desc["usage"] = (
-            "\n (" +
-            str([ " " + fctdecl[1]+":"+fctdecl[0] for fctdecl in desc["inputs"]]).strip("[]").replace("'",'') +
-            " ) => (" +
-            str([ " " + fctdecl[1]+":"+fctdecl[0] for fctdecl in desc["outputs"]]).strip("[]").replace("'",'') +
-            " )")
+        desc["usage"] = ("\n (%s) => (%s)" % 
+            (", ".join(["%s:%s" % (input[1], input[0]) 
+                        for input in desc["inputs"]]),
+             ", ".join(["%s:%s" % (output[1], output[0]) 
+                        for output in desc["outputs"]])))
         BlkLst = StdBlckDct.setdefault(desc["name"],[])
         BlkLst.append((section["name"], desc))
 

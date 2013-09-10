@@ -30,7 +30,7 @@ import os,sys,re
 import datetime
 from time import localtime
 
-from plcopen import*
+from plcopen import *
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -1297,14 +1297,16 @@ class PLCControler:
         return variables
             
     # Add a global var to configuration to configuration
-    def AddConfigurationGlobalVar(self, config_name, type, var_name, 
+    def AddConfigurationGlobalVar(self, config_name, var_type, var_name, 
                                            location="", description=""):
         if self.Project is not None:
             # Found the configuration corresponding to name
             configuration = self.Project.getconfiguration(config_name)
             if configuration is not None:
                 # Set configuration global vars
-                configuration.addglobalVar(type, var_name, location, description)
+                configuration.addglobalVar(
+                    self.GetVarTypeObject(var_type), 
+                    var_name, location, description)
 
     # Replace the configuration globalvars by those given
     def SetConfigurationGlobalVars(self, name, vars):
@@ -1633,6 +1635,10 @@ class PLCControler:
         project = self.GetProject(debug)
         if project is not None:
             result = project.getpou(typename)
+            if result is not None:
+                return result
+        for standardlibrary in [StdBlockLibrary, AddnlBlockLibrary]:
+            result = standardlibrary.getpou(typename)
             if result is not None:
                 return result
         for confnodetype in self.ConfNodeTypes:
@@ -2410,21 +2416,36 @@ class PLCControler:
                     connection.setconnectionParameter(idx, None)
                 idx += 1
     
-    def AddEditedElementPouVar(self, tagname, type, name, location="", description=""):
-        if self.Project is not None:
-            words = tagname.split("::")
-            if words[0] in ['P', 'T', 'A']:
-                pou = self.Project.getpou(words[1])
-                if pou is not None:
-                    pou.addpouLocalVar(type, name, location, description)
+    def GetVarTypeObject(self, var_type):
+        var_type_obj = PLCOpenParser.CreateElement("type", "variable")
+        if not var_type.startswith("ANY") and TypeHierarchy.get(var_type):
+            var_type_obj.setcontent(PLCOpenParser.CreateElement(
+                var_type.lower() if var_type in ["STRING", "WSTRING"]
+                else var_type, "dataType"))
+        else:
+            derived_type = PLCOpenParser.CreateElement("derived", "dataType")
+            derived_type.setname(var_type)
+            var_type_obj.setcontent(derived_type)
+        return var_type_obj
     
-    def AddEditedElementPouExternalVar(self, tagname, type, name):
+    def AddEditedElementPouVar(self, tagname, var_type, name, location="", description=""):
         if self.Project is not None:
             words = tagname.split("::")
             if words[0] in ['P', 'T', 'A']:
                 pou = self.Project.getpou(words[1])
                 if pou is not None:
-                    pou.addpouExternalVar(type, name)
+                    pou.addpouLocalVar(
+                        self.GetVarTypeObject(var_type), 
+                        name, location, description)
+    
+    def AddEditedElementPouExternalVar(self, tagname, var_type, name):
+        if self.Project is not None:
+            words = tagname.split("::")
+            if words[0] in ['P', 'T', 'A']:
+                pou = self.Project.getpou(words[1])
+                if pou is not None:
+                    pou.addpouExternalVar(
+                        self.GetVarTypeObject(var_type), name)
             
     def ChangeEditedElementPouVar(self, tagname, old_type, old_name, new_type, new_name):
         if self.Project is not None:
