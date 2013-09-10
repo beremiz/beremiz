@@ -332,9 +332,9 @@ class PLCOpenEditor(IDEFrame):
             header, icon = _("Done"), wx.ICON_INFORMATION
             if os.path.isdir(os.path.dirname(filepath)):
                 program, errors, warnings = self.Controler.GenerateProgram(filepath)
-                message_text += "".join([_("warning: %s\n") for warning in warnings])
+                message_text += "".join([_("warning: %s\n") % warning for warning in warnings])
                 if len(errors) > 0:
-                    message_text += "".join([_("error: %s\n") for error in errors])
+                    message_text += "".join([_("error: %s\n") % error for error in errors])
                     message_text += _("Can't generate program to file %s!")%filepath
                     header, icon = _("Error"), wx.ICON_ERROR
                 else:
