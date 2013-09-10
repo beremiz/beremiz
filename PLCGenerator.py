@@ -75,6 +75,13 @@ def SortInstances(a, b):
     else:
         return cmp(ay, by)
 
+# Helper for emulate join on element list
+def JoinList(separator, mylist):
+    if len(mylist) > 0 :
+        return reduce(lambda x, y: x + separator + y, mylist)
+    else :
+        return mylist
+
 #-------------------------------------------------------------------------------
 #                  Specific exception for PLC generating errors
 #-------------------------------------------------------------------------------
@@ -624,19 +631,11 @@ class PouProgramGenerator:
                         blocktype = self.GetBlockType(var_type)
                         if blocktype is not None:
                             self.ParentGenerator.GeneratePouProgram(var_type)
-                            if body_type in ["FBD", "LD", "SFC"]:
-                                block = pou.getinstanceByName(var.getname())
-                            else:
-                                block = None
-                            for variable in blocktype["initialise"](var_type, var.getname(), block):
-                                if variable[2] is not None:
-                                    located.append(variable)
-                                else:
-                                    variables.append(variable)
+                            variables.append((var_type, var.getname(), None, None))
                         else:
                             self.ParentGenerator.GenerateDataType(var_type)
                             initial = var.getinitialValue()
-                            if initial:
+                            if initial is not None:
                                 initial_value = initial.getvalue()
                             else:
                                 initial_value = None
@@ -648,7 +647,7 @@ class PouProgramGenerator:
                     else:
                         var_type = var.gettypeAsText()
                         initial = var.getinitialValue()
-                        if initial:
+                        if initial is not None:
                             initial_value = initial.getvalue()
                         else:
                             initial_value = None
@@ -935,7 +934,7 @@ class PouProgramGenerator:
                     if block_infos is None:
                         raise PLCGenException, _("Undefined block type \"%s\" in \"%s\" POU")%(block_type, self.Name)
                     try:
-                        block_infos["generate"](self, instance, block_infos, body, None)
+                        self.GenerateBlock(instance, block_infos, body, None)
                     except ValueError, e:
                         raise PLCGenException, e.message
                 elif isinstance(instance, ConnectorClass):
@@ -983,6 +982,191 @@ class PouProgramGenerator:
         factorized_paths.sort()
         return factorized_paths
 
+    def GenerateBlock(self, block, block_infos, body, link, order=False, to_inout=False):
+        body_type = body.getcontent().getLocalTag()
+        name = block.getinstanceName()
+        type = block.gettypeName()
+        executionOrderId = block.getexecutionOrderId()
+        input_variables = block.inputVariables.getvariable()
+        output_variables = block.outputVariables.getvariable()
+        inout_variables = {}
+        for input_variable in input_variables:
+            for output_variable in output_variables:
+                if input_variable.getformalParameter() == output_variable.getformalParameter():
+                    inout_variables[input_variable.getformalParameter()] = ""
+        input_names = [input[0] for input in block_infos["inputs"]]
+        output_names = [output[0] for output in block_infos["outputs"]]
+        if block_infos["type"] == "function":
+            if not self.ComputedBlocks.get(block, False) and not order:
+                self.ComputedBlocks[block] = True
+                connected_vars = []
+                if not block_infos["extensible"]:
+                    input_connected = dict([("EN", None)] + 
+                                           [(input_name, None) for input_name in input_names])
+                    for variable in input_variables:
+                        parameter = variable.getformalParameter()
+                        if input_connected.has_key(parameter):
+                            input_connected[parameter] = variable
+                    if input_connected["EN"] is None:
+                        input_connected.pop("EN")
+                        input_parameters = input_names
+                    else:
+                        input_parameters = ["EN"] + input_names
+                else:
+                    input_connected = dict([(variable.getformalParameter(), variable)
+                                            for variable in input_variables])
+                    input_parameters = [variable.getformalParameter()
+                                        for variable in input_variables]
+                one_input_connected = False
+                all_input_connected = True
+                for i, parameter in enumerate(input_parameters):
+                    variable = input_connected.get(parameter)
+                    if variable is not None:
+                        input_info = (self.TagName, "block", block.getlocalId(), "input", i)
+                        connections = variable.connectionPointIn.getconnections()
+                        if connections is not None:
+                            if parameter != "EN":
+                                one_input_connected = True
+                            if inout_variables.has_key(parameter):
+                                expression = self.ComputeExpression(body, connections, executionOrderId > 0, True)
+                                if expression is not None:
+                                    inout_variables[parameter] = value
+                            else:
+                                expression = self.ComputeExpression(body, connections, executionOrderId > 0)
+                            if expression is not None:
+                                connected_vars.append(([(parameter, input_info), (" := ", ())],
+                                                       self.ExtractModifier(variable, expression, input_info)))
+                        else:
+                            all_input_connected = False
+                    else:
+                        all_input_connected = False
+                if len(output_variables) > 1 or not all_input_connected:
+                    vars = [name + value for name, value in connected_vars]
+                else:
+                    vars = [value for name, value in connected_vars]
+                if one_input_connected:
+                    for i, variable in enumerate(output_variables):
+                        parameter = variable.getformalParameter()
+                        if not inout_variables.has_key(parameter) and parameter in output_names + ["", "ENO"]:
+                            if variable.getformalParameter() == "":
+                                variable_name = "%s%d"%(type, block.getlocalId())
+                            else:
+                                variable_name = "%s%d_%s"%(type, block.getlocalId(), parameter)
+                            if self.Interface[-1][0] != "VAR" or self.Interface[-1][1] is not None or self.Interface[-1][2]:
+                                self.Interface.append(("VAR", None, False, []))
+                            if variable.connectionPointOut in self.ConnectionTypes:
+                                self.Interface[-1][3].append((self.ConnectionTypes[variable.connectionPointOut], variable_name, None, None))
+                            else:
+                                self.Interface[-1][3].append(("ANY", variable_name, None, None))
+                            if len(output_variables) > 1 and parameter not in ["", "OUT"]:
+                                vars.append([(parameter, (self.TagName, "block", block.getlocalId(), "output", i)), 
+                                             (" => %s"%variable_name, ())])
+                            else:
+                                output_info = (self.TagName, "block", block.getlocalId(), "output", i)
+                                output_name = variable_name
+                    self.Program += [(self.CurrentIndent, ()),
+                                     (output_name, output_info),
+                                     (" := ", ()),
+                                     (type, (self.TagName, "block", block.getlocalId(), "type")),
+                                     ("(", ())]
+                    self.Program += JoinList([(", ", ())], vars)
+                    self.Program += [(");\n", ())]
+                else:
+                    self.Warnings.append(_("\"%s\" function cancelled in \"%s\" POU: No input connected")%(type, self.TagName.split("::")[-1]))
+        elif block_infos["type"] == "functionBlock":
+            if not self.ComputedBlocks.get(block, False) and not order:
+                self.ComputedBlocks[block] = True
+                vars = []
+                offset_idx = 0
+                for variable in input_variables:
+                    parameter = variable.getformalParameter()
+                    if parameter in input_names or parameter == "EN":
+                        if parameter == "EN":
+                            input_idx = 0
+                            offset_idx = 1
+                        else:
+                            input_idx = offset_idx + input_names.index(parameter)
+                        input_info = (self.TagName, "block", block.getlocalId(), "input", input_idx)
+                        connections = variable.connectionPointIn.getconnections()
+                        if connections is not None:
+                            expression = self.ComputeExpression(body, connections, executionOrderId > 0, inout_variables.has_key(parameter))
+                            if expression is not None:
+                                vars.append([(parameter, input_info),
+                                             (" := ", ())] + self.ExtractModifier(variable, expression, input_info))
+                self.Program += [(self.CurrentIndent, ()), 
+                                 (name, (self.TagName, "block", block.getlocalId(), "name")),
+                                 ("(", ())]
+                self.Program += JoinList([(", ", ())], vars)
+                self.Program += [(");\n", ())]
+        
+        if link is not None:
+            connectionPoint = link.getposition()[-1]
+            output_parameter = link.getformalParameter()
+        else:
+            connectionPoint = None
+            output_parameter = None
+        
+        output_variable = None
+        output_idx = 0
+        if output_parameter is not None:
+            if output_parameter in output_names or output_parameter == "ENO":
+                for variable in output_variables:
+                    if variable.getformalParameter() == output_parameter:
+                        output_variable = variable
+                        if output_parameter != "ENO":
+                            output_idx = output_names.index(output_parameter)
+        else:
+            for i, variable in enumerate(output_variables):
+                blockPointx, blockPointy = variable.connectionPointOut.getrelPositionXY()
+                if (connectionPoint is None or 
+                    block.getx() + blockPointx == connectionPoint.getx() and 
+                    block.gety() + blockPointy == connectionPoint.gety()):
+                    output_variable = variable
+                    output_parameter = variable.getformalParameter()
+                    output_idx = i
+        
+        if output_variable is not None:
+            if block_infos["type"] == "function":
+                output_info = (self.TagName, "block", block.getlocalId(), "output", output_idx)
+                if inout_variables.has_key(output_parameter):
+                    output_value = inout_variables[output_parameter]
+                else:
+                    if output_parameter == "":
+                        output_name = "%s%d"%(type, block.getlocalId())
+                    else:
+                        output_name = "%s%d_%s"%(type, block.getlocalId(), output_parameter)
+                    output_value = [(output_name, output_info)]
+                return self.ExtractModifier(output_variable, output_value, output_info)
+            
+            if block_infos["type"] == "functionBlock":
+                output_info = (self.TagName, "block", block.getlocalId(), "output", output_idx)
+                output_name = self.ExtractModifier(output_variable, [("%s.%s"%(name, output_parameter), output_info)], output_info)
+                if to_inout:
+                    variable_name = "%s_%s"%(name, output_parameter)
+                    if not self.IsAlreadyDefined(variable_name):
+                        if self.Interface[-1][0] != "VAR" or self.Interface[-1][1] is not None or self.Interface[-1][2]:
+                            self.Interface.append(("VAR", None, False, []))
+                        if variable.connectionPointOut in self.ConnectionTypes:
+                            self.Interface[-1][3].append(
+                                (self.ConnectionTypes[output_variable.connectionPointOut], variable_name, None, None))
+                        else:
+                            self.Interface[-1][3].append(("ANY", variable_name, None, None))
+                        self.Program += [(self.CurrentIndent, ()),
+                                         ("%s := "%variable_name, ())]
+                        self.Program += output_name
+                        self.Program += [(";\n", ())]
+                    return [(variable_name, ())]
+                return output_name 
+        if link is not None:
+            if output_parameter is None:
+                output_parameter = ""
+            if name:
+                blockname = "%s(%s)" % (name, type)
+            else:
+                blockname = type
+            raise ValueError, _("No output %s variable found in block %s in POU %s. Connection must be broken")  % \
+                              (output_parameter, blockname, self.Name)
+
     def GeneratePaths(self, connections, body, order = False, to_inout = False):
         paths = []
         for connection in connections:
@@ -1001,7 +1185,7 @@ class PouProgramGenerator:
                 if block_infos is None:
                     raise PLCGenException, _("Undefined block type \"%s\" in \"%s\" POU")%(block_type, self.Name)
                 try:
-                    paths.append(str(block_infos["generate"](self, next, block_infos, body, connection, order, to_inout)))
+                    paths.append(str(self.GenerateBlock(next, block_infos, body, connection, order, to_inout)))
                 except ValueError, e:
                     raise PLCGenException, e.message
             elif isinstance(next, ContinuationClass):
@@ -1398,7 +1582,7 @@ class PouProgramGenerator:
         
         program = [("%s "%self.Type, ()),
                    (self.Name, (self.TagName, "name"))]
-        if self.ReturnType:
+        if self.ReturnType is not None:
             program += [(" : ", ()),
                         (self.ReturnType, (self.TagName, "return"))]
         program += [("\n", ())]

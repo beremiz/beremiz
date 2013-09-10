@@ -34,201 +34,6 @@ LOCATIONDATATYPES = {"X" : ["BOOL"],
 
 _ = lambda x:x
 
-# Helper for emulate join on element list
-def JoinList(separator, mylist):
-    if len(mylist) > 0 :
-        return reduce(lambda x, y: x + separator + y, mylist)
-    else :
-        return mylist
-
-def generate_block(generator, block, block_infos, body, link, order=False, to_inout=False):
-    body_type = body.getcontent().getLocalTag()
-    name = block.getinstanceName()
-    type = block.gettypeName()
-    executionOrderId = block.getexecutionOrderId()
-    input_variables = block.inputVariables.getvariable()
-    output_variables = block.outputVariables.getvariable()
-    inout_variables = {}
-    for input_variable in input_variables:
-        for output_variable in output_variables:
-            if input_variable.getformalParameter() == output_variable.getformalParameter():
-                inout_variables[input_variable.getformalParameter()] = ""
-    input_names = [input[0] for input in block_infos["inputs"]]
-    output_names = [output[0] for output in block_infos["outputs"]]
-    if block_infos["type"] == "function":
-        if not generator.ComputedBlocks.get(block, False) and not order:
-            generator.ComputedBlocks[block] = True
-            connected_vars = []
-            if not block_infos["extensible"]:
-                input_connected = dict([("EN", None)] + 
-                                       [(input_name, None) for input_name in input_names])
-                for variable in input_variables:
-                    parameter = variable.getformalParameter()
-                    if input_connected.has_key(parameter):
-                        input_connected[parameter] = variable
-                if input_connected["EN"] is None:
-                    input_connected.pop("EN")
-                    input_parameters = input_names
-                else:
-                    input_parameters = ["EN"] + input_names
-            else:
-                input_connected = dict([(variable.getformalParameter(), variable)
-                                        for variable in input_variables])
-                input_parameters = [variable.getformalParameter()
-                                    for variable in input_variables]
-            one_input_connected = False
-            all_input_connected = True
-            for i, parameter in enumerate(input_parameters):
-                variable = input_connected.get(parameter)
-                if variable is not None:
-                    input_info = (generator.TagName, "block", block.getlocalId(), "input", i)
-                    connections = variable.connectionPointIn.getconnections()
-                    if connections is not None:
-                        if parameter != "EN":
-                            one_input_connected = True
-                        if inout_variables.has_key(parameter):
-                            expression = generator.ComputeExpression(body, connections, executionOrderId > 0, True)
-                            if expression is not None:
-                                inout_variables[parameter] = value
-                        else:
-                            expression = generator.ComputeExpression(body, connections, executionOrderId > 0)
-                        if expression is not None:
-                            connected_vars.append(([(parameter, input_info), (" := ", ())],
-                                                   generator.ExtractModifier(variable, expression, input_info)))
-                    else:
-                        all_input_connected = False
-                else:
-                    all_input_connected = False
-            if len(output_variables) > 1 or not all_input_connected:
-                vars = [name + value for name, value in connected_vars]
-            else:
-                vars = [value for name, value in connected_vars]
-            if one_input_connected:
-                for i, variable in enumerate(output_variables):
-                    parameter = variable.getformalParameter()
-                    if not inout_variables.has_key(parameter) and parameter in output_names + ["", "ENO"]:
-                        if variable.getformalParameter() == "":
-                            variable_name = "%s%d"%(type, block.getlocalId())
-                        else:
-                            variable_name = "%s%d_%s"%(type, block.getlocalId(), parameter)
-                        if generator.Interface[-1][0] != "VAR" or generator.Interface[-1][1] is not None or generator.Interface[-1][2]:
-                            generator.Interface.append(("VAR", None, False, []))
-                        if variable.connectionPointOut in generator.ConnectionTypes:
-                            generator.Interface[-1][3].append((generator.ConnectionTypes[variable.connectionPointOut], variable_name, None, None))
-                        else:
-                            generator.Interface[-1][3].append(("ANY", variable_name, None, None))
-                        if len(output_variables) > 1 and parameter not in ["", "OUT"]:
-                            vars.append([(parameter, (generator.TagName, "block", block.getlocalId(), "output", i)), 
-                                         (" => %s"%variable_name, ())])
-                        else:
-                            output_info = (generator.TagName, "block", block.getlocalId(), "output", i)
-                            output_name = variable_name
-                generator.Program += [(generator.CurrentIndent, ()),
-                                      (output_name, output_info),
-                                      (" := ", ()),
-                                      (type, (generator.TagName, "block", block.getlocalId(), "type")),
-                                      ("(", ())]
-                generator.Program += JoinList([(", ", ())], vars)
-                generator.Program += [(");\n", ())]
-            else:
-                generator.Warnings.append(_("\"%s\" function cancelled in \"%s\" POU: No input connected")%(type, generator.TagName.split("::")[-1]))
-    elif block_infos["type"] == "functionBlock":
-        if not generator.ComputedBlocks.get(block, False) and not order:
-            generator.ComputedBlocks[block] = True
-            vars = []
-            offset_idx = 0
-            for variable in input_variables:
-                parameter = variable.getformalParameter()
-                if parameter in input_names or parameter == "EN":
-                    if parameter == "EN":
-                        input_idx = 0
-                        offset_idx = 1
-                    else:
-                        input_idx = offset_idx + input_names.index(parameter)
-                    input_info = (generator.TagName, "block", block.getlocalId(), "input", input_idx)
-                    connections = variable.connectionPointIn.getconnections()
-                    if connections is not None:
-                        expression = generator.ComputeExpression(body, connections, executionOrderId > 0, inout_variables.has_key(parameter))
-                        if expression is not None:
-                            vars.append([(parameter, input_info),
-                                         (" := ", ())] + generator.ExtractModifier(variable, expression, input_info))
-            generator.Program += [(generator.CurrentIndent, ()), 
-                                  (name, (generator.TagName, "block", block.getlocalId(), "name")),
-                                  ("(", ())]
-            generator.Program += JoinList([(", ", ())], vars)
-            generator.Program += [(");\n", ())]
-    
-    if link is not None:
-        connectionPoint = link.getposition()[-1]
-        output_parameter = link.getformalParameter()
-    else:
-        connectionPoint = None
-        output_parameter = None
-    
-    output_variable = None
-    output_idx = 0
-    if output_parameter is not None:
-        if output_parameter in output_names or output_parameter == "ENO":
-            for variable in output_variables:
-                if variable.getformalParameter() == output_parameter:
-                    output_variable = variable
-                    if output_parameter != "ENO":
-                        output_idx = output_names.index(output_parameter)
-    else:
-        for i, variable in enumerate(output_variables):
-            blockPointx, blockPointy = variable.connectionPointOut.getrelPositionXY()
-            if (connectionPoint is None or 
-                block.getx() + blockPointx == connectionPoint.getx() and 
-                block.gety() + blockPointy == connectionPoint.gety()):
-                output_variable = variable
-                output_parameter = variable.getformalParameter()
-                output_idx = i
-    
-    if output_variable is not None:
-        if block_infos["type"] == "function":
-            output_info = (generator.TagName, "block", block.getlocalId(), "output", output_idx)
-            if inout_variables.has_key(output_parameter):
-                output_value = inout_variables[output_parameter]
-            else:
-                if output_parameter == "":
-                    output_name = "%s%d"%(type, block.getlocalId())
-                else:
-                    output_name = "%s%d_%s"%(type, block.getlocalId(), output_parameter)
-                output_value = [(output_name, output_info)]
-            return generator.ExtractModifier(output_variable, output_value, output_info)
-        
-        if block_infos["type"] == "functionBlock":
-            output_info = (generator.TagName, "block", block.getlocalId(), "output", output_idx)
-            output_name = generator.ExtractModifier(output_variable, [("%s.%s"%(name, output_parameter), output_info)], output_info)
-            if to_inout:
-                variable_name = "%s_%s"%(name, output_parameter)
-                if not generator.IsAlreadyDefined(variable_name):
-                    if generator.Interface[-1][0] != "VAR" or generator.Interface[-1][1] is not None or generator.Interface[-1][2]:
-                        generator.Interface.append(("VAR", None, False, []))
-                    if variable.connectionPointOut in generator.ConnectionTypes:
-                        generator.Interface[-1][3].append(
-                            (generator.ConnectionTypes[output_variable.connectionPointOut], variable_name, None, None))
-                    else:
-                        generator.Interface[-1][3].append(("ANY", variable_name, None, None))
-                    generator.Program += [(generator.CurrentIndent, ()),
-                                          ("%s := "%variable_name, ())]
-                    generator.Program += output_name
-                    generator.Program += [(";\n", ())]
-                return [(variable_name, ())]
-            return output_name 
-    if link is not None:
-        if output_parameter is None:
-            output_parameter = ""
-        if name:
-            blockname = "%s(%s)" % (name, type)
-        else:
-            blockname = type
-        raise ValueError, _("No output %s variable found in block %s in POU %s. Connection must be broken")  % \
-                          (output_parameter, blockname, generator.Name)
-
-def initialise_block(type, name, block = None):
-    return [(type, name, None, None)]
-
 #-------------------------------------------------------------------------------
 #                        Function Block Types definitions
 #-------------------------------------------------------------------------------
@@ -254,95 +59,77 @@ StdBlckLst = [{"name" : _("Standard function blocks"), "list":
                [{"name" : "SR", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("S1","BOOL","none"),("R","BOOL","none")], 
                     "outputs" : [("Q1","BOOL","none")],
-                    "comment" : _("SR bistable\nThe SR bistable is a latch where the Set dominates."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("SR bistable\nThe SR bistable is a latch where the Set dominates.")},
                 {"name" : "RS", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("S","BOOL","none"),("R1","BOOL","none")], 
                     "outputs" : [("Q1","BOOL","none")],
-                    "comment" : _("RS bistable\nThe RS bistable is a latch where the Reset dominates."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("RS bistable\nThe RS bistable is a latch where the Reset dominates.")},
                 {"name" : "SEMA", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("CLAIM","BOOL","none"),("RELEASE","BOOL","none")], 
                     "outputs" : [("BUSY","BOOL","none")],
-                    "comment" : _("Semaphore\nThe semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Semaphore\nThe semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources.")},
                 {"name" : "R_TRIG", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("CLK","BOOL","none")], 
                     "outputs" : [("Q","BOOL","none")],
-                    "comment" : _("Rising edge detector\nThe output produces a single pulse when a rising edge is detected."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Rising edge detector\nThe output produces a single pulse when a rising edge is detected.")},
                 {"name" : "F_TRIG", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("CLK","BOOL","none")], 
                     "outputs" : [("Q","BOOL","none")],
-                    "comment" : _("Falling edge detector\nThe output produces a single pulse when a falling edge is detected."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Falling edge detector\nThe output produces a single pulse when a falling edge is detected.")},
                 {"name" : "CTU", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("CU","BOOL","rising"),("R","BOOL","none"),("PV","INT","none")], 
                     "outputs" : [("Q","BOOL","none"),("CV","INT","none")],
-                    "comment" : _("Up-counter\nThe up-counter can be used to signal when a count has reached a maximum value."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Up-counter\nThe up-counter can be used to signal when a count has reached a maximum value.")},
                 {"name" : "CTD", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("CD","BOOL","rising"),("LD","BOOL","none"),("PV","INT","none")], 
                     "outputs" : [("Q","BOOL","none"),("CV","INT","none")],
-                    "comment" : _("Down-counter\nThe down-counter can be used to signal when a count has reached zero, on counting down from a preset value."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Down-counter\nThe down-counter can be used to signal when a count has reached zero, on counting down from a preset value.")},
                 {"name" : "CTUD", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("CU","BOOL","rising"),("CD","BOOL","rising"),("R","BOOL","none"),("LD","BOOL","none"),("PV","INT","none")], 
                     "outputs" : [("QU","BOOL","none"),("QD","BOOL","none"),("CV","INT","none")],
-                    "comment" : _("Up-down counter\nThe up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Up-down counter\nThe up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other.")},
                 {"name" : "TP", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("IN","BOOL","none"),("PT","TIME","none")], 
                     "outputs" : [("Q","BOOL","none"),("ET","TIME","none")],
-                    "comment" : _("Pulse timer\nThe pulse timer can be used to generate output pulses of a given time duration."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Pulse timer\nThe pulse timer can be used to generate output pulses of a given time duration.")},
                 {"name" : "TON", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("IN","BOOL","none"),("PT","TIME","none")], 
                     "outputs" : [("Q","BOOL","none"),("ET","TIME","none")],
-                    "comment" : _("On-delay timer\nThe on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("On-delay timer\nThe on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true.")},
                 {"name" : "TOF", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("IN","BOOL","none"),("PT","TIME","none")], 
                     "outputs" : [("Q","BOOL","none"),("ET","TIME","none")],
-                    "comment" : _("Off-delay timer\nThe off-delay timer can be used to delay setting an output false, for fixed period after input goes false."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Off-delay timer\nThe off-delay timer can be used to delay setting an output false, for fixed period after input goes false.")},
                 ]},
               {"name" : _("Additional function blocks"), "list":
                [{"name" : "RTC", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("IN","BOOL","none"),("PDT","DATE_AND_TIME","none")], 
                     "outputs" : [("Q","BOOL","none"),("CDT","DATE_AND_TIME","none")],
-                    "comment" : _("Real time clock\nThe real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Real time clock\nThe real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on.")},
                 {"name" : "INTEGRAL", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("RUN","BOOL","none"),("R1","BOOL","none"),("XIN","REAL","none"),("X0","REAL","none"),("CYCLE","TIME","none")], 
                     "outputs" : [("Q","BOOL","none"),("XOUT","REAL","none")],
-                    "comment" : _("Integral\nThe integral function block integrates the value of input XIN over time."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Integral\nThe integral function block integrates the value of input XIN over time.")},
                 {"name" : "DERIVATIVE", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("RUN","BOOL","none"),("XIN","REAL","none"),("CYCLE","TIME","none")], 
                     "outputs" : [("XOUT","REAL","none")],
-                    "comment" : _("Derivative\nThe derivative function block produces an output XOUT proportional to the rate of change of the input XIN."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Derivative\nThe derivative function block produces an output XOUT proportional to the rate of change of the input XIN.")},
                 {"name" : "PID", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("AUTO","BOOL","none"),("PV","REAL","none"),("SP","REAL","none"),("X0","REAL","none"),("KP","REAL","none"),("TR","REAL","none"),("TD","REAL","none"),("CYCLE","TIME","none")], 
                     "outputs" : [("XOUT","REAL","none")],
-                    "comment" : _("PID\nThe PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("PID\nThe PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control.")},
                 {"name" : "RAMP", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("RUN","BOOL","none"),("X0","REAL","none"),("X1","REAL","none"),("TR","TIME","none"),("CYCLE","TIME","none")], 
                     "outputs" : [("BUSY","BOOL","none"),("XOUT","REAL","none")],
-                    "comment" : _("Ramp\nThe RAMP function block is modelled on example given in the standard."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Ramp\nThe RAMP function block is modelled on example given in the standard.")},
                 {"name" : "HYSTERESIS", "type" : "functionBlock", "extensible" : False, 
                     "inputs" : [("XIN1","REAL","none"),("XIN2","REAL","none"),("EPS","REAL","none")], 
                     "outputs" : [("Q","BOOL","none")],
-                    "comment" : _("Hysteresis\nThe hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."),
-                    "generate" : generate_block, "initialise" : initialise_block},
+                    "comment" : _("Hysteresis\nThe hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2.")},
 ##                {"name" : "RATIO_MONITOR", "type" : "functionBlock", "extensible" : False, 
 ##                    "inputs" : [("PV1","REAL","none"),("PV2","REAL","none"),("RATIO","REAL","none"),("TIMON","TIME","none"),("TIMOFF","TIME","none"),("TOLERANCE","BOOL","none"),("RESET","BOOL","none"),("CYCLE","TIME","none")], 
 ##                    "outputs" : [("ALARM","BOOL","none"),("TOTAL_ERR","BOOL","none")],
-##                    "comment" : _("Ratio monitor\nThe ratio_monitor function block checks that one process value PV1 is always a given ratio (defined by input RATIO) of a second process value PV2."),
-##                    "generate" : generate_block, "initialise" : initialise_block}
+##                    "comment" : _("Ratio monitor\nThe ratio_monitor function block checks that one process value PV1 is always a given ratio (defined by input RATIO) of a second process value PV2.")}
                 ]},
              ]
 
@@ -601,8 +388,6 @@ def get_standard_funtions(table):
                 Function_decl_list = []
             if Current_section:
                 Function_decl = dict([(champ, val) for champ, val in zip(fonctions, fields[1:]) if champ])
-                Function_decl["generate"] = generate_block
-                Function_decl["initialise"] = lambda x,y:[]
                 baseinputnumber = int(Function_decl.get("baseinputnumber",1))
                 Function_decl["baseinputnumber"] = baseinputnumber
                 for param, value in Function_decl.iteritems():
