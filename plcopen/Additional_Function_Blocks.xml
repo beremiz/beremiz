@@ -437,7 +437,7 @@ XOUT := KP * (ERROR + ITERM.XOUT/TR + DTERM.XOUT*TD);]]></xhtml:p>
                 <xhtml:p><![CDATA[Initial value]]></xhtml:p>
               </documentation>
             </variable>
-            <variable name="T0">
+            <variable name="T">
               <type>
                 <TIME/>
               </type>
