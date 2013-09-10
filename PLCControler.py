@@ -2376,7 +2376,7 @@ class PLCControler:
                     if words[0] == "T" and varname == words[2]:
                         return "BOOL"
                     if words[1] == varname:
-                        return self.GetPouInterfaceReturnType(pou)
+                        return self.GetPouInterfaceReturnType(pou)[0]
                     for type, varlist in pou.getvars():
                         for var in varlist.getvariable():
                             if var.getname() == varname:
