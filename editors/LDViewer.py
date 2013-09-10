@@ -487,7 +487,7 @@ class LD_Viewer(Viewer):
             for var in vars:
                 if var["Class"] != "Input" and var["Type"] == "BOOL":
                     varlist.append(var["Name"])
-        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
+        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)[0]
         if returntype == "BOOL":
             varlist.append(self.Controler.GetEditedElementName(self.TagName))
         dialog.SetVariables(varlist)
@@ -801,7 +801,7 @@ class LD_Viewer(Viewer):
                             for var in vars:
                                 if var["Class"] != "Input" and var["Type"] == "BOOL":
                                     varlist.append(var["Name"])
-                        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
+                        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)[0]
                         if returntype == "BOOL":
                             varlist.append(self.Controler.GetEditedElementName(self.TagName))
                         dialog.SetVariables(varlist)
