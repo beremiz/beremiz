@@ -1012,9 +1012,7 @@ if cls:
             "extensible" : False,
             "inputs" : [], 
             "outputs" : [], 
-            "comment" : self.getdescription(),
-            "generate" : generate_block, 
-            "initialise" : initialise_block}
+            "comment" : self.getdescription()}
         if self.interface is not None:
             return_type = self.interface.getreturnType()
             if return_type is not None:
