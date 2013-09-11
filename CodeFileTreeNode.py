@@ -1,13 +1,14 @@
-import os
-from xml.dom import minidom
-import cPickle
+import os, re
 
-from xmlclass import GenerateClassesFromXSDstring, UpdateXMLClassGlobals
+from copy import deepcopy
+from lxml import etree
+from xmlclass import GenerateParserFromXSDstring
 
 from PLCControler import UndoBuffer
 
 CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <xsd:element name="%(codefile_name)s">
     <xsd:complexType>
       <xsd:sequence>
@@ -65,22 +66,29 @@ class CodeFile:
             [SECTION_TAG_ELEMENT % name
              for name in self.SECTIONS_NAMES if name != "includes"])
         
-        self.CodeFileClasses = GenerateClassesFromXSDstring(
+        self.CodeFileParser = GenerateParserFromXSDstring(
             CODEFILE_XSD % sections_str)
+        self.CodeFileVariables = etree.XPath("variables/variable")
         
         filepath = self.CodeFileName()
         
-        self.CodeFile = self.CodeFileClasses[self.CODEFILE_NAME]()
         if os.path.isfile(filepath):
             xmlfile = open(filepath, 'r')
-            tree = minidom.parse(xmlfile)
+            codefile_xml = xmlfile.read()
             xmlfile.close()
             
-            for child in tree.childNodes:
-                if child.nodeType == tree.ELEMENT_NODE and child.nodeName in [self.CODEFILE_NAME]:
-                    self.CodeFile.loadXMLTree(child, ["xmlns", "xmlns:xsi", "xsi:schemaLocation"])
-                    self.CreateCodeFileBuffer(True)
+            codefile_xml = codefile_xml.replace(
+                '<%s>' % self.CODEFILE_NAME, 
+                '<%s xmlns:xhtml="http://www.w3.org/1999/xhtml">' % self.CODEFILE_NAME)
+            for cre, repl in [
+                (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+                (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+                codefile_xml = cre.sub(repl, codefile_xml)
+            self.CodeFile = etree.fromstring(codefile_xml, self.CodeFileParser)    
+            self.CreateCodeFileBuffer(True)
+        
         else:
+            self.CodeFile = self.CodeFileParser.CreateRoot()
             self.CreateCodeFileBuffer(False)
             self.OnCTNSave()
 
@@ -99,7 +107,7 @@ class CodeFile:
     def SetVariables(self, variables):
         self.CodeFile.variables.setvariable([])
         for var in variables:
-            variable = self.CodeFileClasses["variables_variable"]()
+            variable = self.CodeFileParser.CreateElement("variable", "variables")
             variable.setname(var["Name"])
             variable.settype(var["Type"])
             variable.setinitial(var["Initial"])
@@ -107,7 +115,7 @@ class CodeFile:
     
     def GetVariables(self):
         datas = []
-        for var in self.CodeFile.variables.getvariable():
+        for var in self.CodeFileVariables(self.CodeFile):
             datas.append({"Name" : var.getname(), 
                           "Type" : var.gettype(), 
                           "Initial" : var.getinitial()})
@@ -117,10 +125,10 @@ class CodeFile:
         for section in self.SECTIONS_NAMES:
             section_code = parts.get(section)
             if section_code is not None:
-                getattr(self.CodeFile, section).settext(section_code)
+                getattr(self.CodeFile, section).setanyText(section_code)
     
     def GetTextParts(self):
-        return dict([(section, getattr(self.CodeFile, section).gettext())
+        return dict([(section, getattr(self.CodeFile, section).getanyText())
                      for section in self.SECTIONS_NAMES])
             
     def CTNTestModified(self):
@@ -129,11 +137,12 @@ class CodeFile:
     def OnCTNSave(self, from_project_path=None):
         filepath = self.CodeFileName()
         
-        text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-        text += self.CodeFile.generateXMLText(self.CODEFILE_NAME, 0)
-
         xmlfile = open(filepath,"w")
-        xmlfile.write(text.encode("utf-8"))
+        xmlfile.write(etree.tostring(
+            self.CodeFile, 
+            pretty_print=True, 
+            xml_declaration=True, 
+            encoding='utf-8'))
         xmlfile.close()
         
         self.MarkCodeFileAsSaved()
@@ -144,39 +153,31 @@ class CodeFile:
         return [(variable.getname(),
                  variable.gettype(),
                  variable.getinitial())
-                for variable in self.CodeFile.variables.variable]
+                for variable in self.CodeFileVariables(self.CodeFile)]
 
 #-------------------------------------------------------------------------------
 #                      Current Buffering Management Functions
 #-------------------------------------------------------------------------------
 
-    def cPickle_loads(self, str_obj):
-        UpdateXMLClassGlobals(self.CodeFileClasses)
-        return cPickle.loads(str_obj)
-
-    def cPickle_dumps(self, obj):
-        UpdateXMLClassGlobals(self.CodeFileClasses)
-        return cPickle.dumps(obj)
-
     """
     Return a copy of the codefile model
     """
     def Copy(self, model):
-        return self.cPickle_loads(self.cPickle_dumps(model))
+        return deepcopy(model)
 
     def CreateCodeFileBuffer(self, saved):
         self.Buffering = False
-        self.CodeFileBuffer = UndoBuffer(self.cPickle_dumps(self.CodeFile), saved)
+        self.CodeFileBuffer = UndoBuffer(self.CodeFileParser.Dumps(self.CodeFile), saved)
 
     def BufferCodeFile(self):
-        self.CodeFileBuffer.Buffering(self.cPickle_dumps(self.CodeFile))
+        self.CodeFileBuffer.Buffering(self.CodeFileParser.Dumps(self.CodeFile))
     
     def StartBuffering(self):
         self.Buffering = True
         
     def EndBuffering(self):
         if self.Buffering:
-            self.CodeFileBuffer.Buffering(self.cPickle_dumps(self.CodeFile))
+            self.CodeFileBuffer.Buffering(self.CodeFileParser.Dumps(self.CodeFile))
             self.Buffering = False
     
     def MarkCodeFileAsSaved(self):
@@ -188,10 +189,10 @@ class CodeFile:
         
     def LoadPrevious(self):
         self.EndBuffering()
-        self.CodeFile = self.cPickle_loads(self.CodeFileBuffer.Previous())
+        self.CodeFile = self.CodeFileParser.Loads(self.CodeFileBuffer.Previous())
     
     def LoadNext(self):
-        self.CodeFile = self.cPickle_loads(self.CodeFileBuffer.Next())
+        self.CodeFile = self.CodeFileParser.Loads(self.CodeFileBuffer.Next())
     
     def GetBufferState(self):
         first = self.CodeFileBuffer.IsFirst() and not self.Buffering

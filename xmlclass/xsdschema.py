@@ -939,9 +939,10 @@ def ReduceSchema(factory, attributes, elements):
     factory.BlockDefault = attributes["blockDefault"]
     factory.FinalDefault = attributes["finalDefault"]
     
-    factory.TargetNamespace = factory.DefinedNamespaces.get(attributes["targetNamespace"], None)
+    targetNamespace = attributes.get("targetNamespace", None)
+    factory.TargetNamespace = factory.DefinedNamespaces.get(targetNamespace, None)
     if factory.TargetNamespace is not None:
-        factory.etreeNamespaceFormat = "{%s}%%s" % attributes["targetNamespace"]
+        factory.etreeNamespaceFormat = "{%s}%%s" % targetNamespace
     factory.Namespaces[factory.TargetNamespace] = {}
     
     annotations, children = factory.ReduceElements(elements, True)
@@ -1097,7 +1098,7 @@ def GenerateParserFromXSD(filepath):
 This function generate a xml from the xsd given as a string
 """
 def GenerateParserFromXSDstring(xsdstring):
-    return GenerateParser(XSDClassFactory(minidom.parseString(xsdstring)))
+    return GenerateParser(XSDClassFactory(minidom.parseString(xsdstring)), xsdstring)
 
 
 #-------------------------------------------------------------------------------
@@ -2521,19 +2522,3 @@ XSD_NAMESPACE = {
     "anyType": {"type": COMPLEXTYPE, "extract": lambda x:None},
 }
 
-if __name__ == '__main__':
-    classes = GenerateClassesFromXSD("test.xsd")
-    
-    # Code for test of test.xsd
-    xmlfile = open("po.xml", 'r')
-    tree = minidom.parse(xmlfile)
-    xmlfile.close()
-    test = classes["PurchaseOrderType"]()
-    for child in tree.childNodes:
-        if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "purchaseOrder":
-            test.loadXMLTree(child)
-    test.items.item[0].setquantity(2)
-    testfile = open("test.xml", 'w')
-    testfile.write(u'<?xml version=\"1.0\"?>\n')
-    testfile.write(test.generateXMLText("purchaseOrder").encode("utf-8"))
-    testfile.close()
