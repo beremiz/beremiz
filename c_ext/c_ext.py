@@ -25,9 +25,6 @@ class CFile(CodeFile):
         "publishFunction"]
     EditorType = CFileEditor
     
-    def GenerateClassesFromXSDstring(self, xsd_string):
-        return GenerateClassesFromXSDstring(xsd_string)
-    
     def GetIconName(self):
         return "Cfile"
 
@@ -56,7 +53,7 @@ class CFile(CodeFile):
         
         # Adding includes
         text += "/* User includes */\n"
-        text += self.CodeFile.includes.gettext().strip()
+        text += self.CodeFile.includes.getanyText().strip()
         text += "\n"
         
         text += '#include "iec_types_all.h"\n\n'
@@ -76,25 +73,25 @@ class CFile(CodeFile):
         
         # Adding user global variables and routines
         text += "/* User internal user variables and routines */\n"
-        text += self.CodeFile.globals.gettext().strip()
+        text += self.CodeFile.globals.getanyText().strip()
         text += "\n"
         
         # Adding Beremiz confnode functions
         text += "/* Beremiz confnode functions */\n"
         text += "int __init_%s(int argc,char **argv)\n{\n"%location_str
-        text += self.CodeFile.initFunction.gettext().strip()
+        text += self.CodeFile.initFunction.getanyText().strip()
         text += "  return 0;\n}\n\n"
         
         text += "void __cleanup_%s(void)\n{\n"%location_str
-        text += self.CodeFile.cleanUpFunction.gettext().strip()
+        text += self.CodeFile.cleanUpFunction.getanyText().strip()
         text += "\n}\n\n"
         
         text += "void __retrieve_%s(void)\n{\n"%location_str
-        text += self.CodeFile.retrieveFunction.gettext().strip()
+        text += self.CodeFile.retrieveFunction.getanyText().strip()
         text += "\n}\n\n"
         
         text += "void __publish_%s(void)\n{\n"%location_str
-        text += self.CodeFile.publishFunction.gettext().strip()
+        text += self.CodeFile.publishFunction.getanyText().strip()
         text += "\n}\n\n"
         
         Gen_Cfile_path = os.path.join(buildpath, "CFile_%s.c"%location_str)

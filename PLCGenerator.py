@@ -271,10 +271,15 @@ class ProgramGenerator:
         varlists = [(varlist, varlist.getvariable()[:]) for varlist in configuration.getglobalVars()]
         
         extra_variables = self.Controler.GetConfigurationExtraVariables()
-        if len(extra_variables) > 0:
-            if len(varlists) == 0:
-                varlists = [(PLCOpenParser.CreateElement("globalVars", "interface"), [])]
-            varlists[-1][1].extend(extra_variables)
+        extra_global_vars = None
+        if len(extra_variables) > 0 and len(varlists) == 0:
+            extra_global_vars = PLCOpenParser.CreateElement("globalVars", "interface")
+            configuration.setglobalVars([extra_global_vars])
+            varlists = [(extra_global_vars, [])]
+            
+        for variable in extra_variables:
+            varlists[-1][0].appendvariable(variable)
+            varlists[-1][1].append(variable)
             
         # Generate any global variable in configuration
         for varlist, varlist_variables in varlists:
@@ -310,12 +315,19 @@ class ProgramGenerator:
                            (var.gettypeAsText(), (tagname, variable_type, var_number, "type"))]
                 # Generate variable initial value if exists
                 initial = var.getinitialValue()
-                if initial:
+                if initial is not None:
                     config += [(" := ", ()),
                                (self.ComputeValue(initial.getvalue(), var_type), (tagname, variable_type, var_number, "initial value"))]
                 config += [(";\n", ())]
                 var_number += 1
             config += [("  END_VAR\n", ())]
+        
+        if extra_global_vars is not None:
+            configuration.remove(extra_global_vars)
+        else:
+            for variable in extra_variables:
+                varlists[-1][1].remove(variable)
+        
         # Generate any resource in the configuration
         for resource in configuration.getresource():
             config += self.GenerateResource(resource, configuration.getname())
@@ -363,7 +375,7 @@ class ProgramGenerator:
                            (var.gettypeAsText(), (tagname, variable_type, var_number, "type"))]
                 # Generate variable initial value if exists
                 initial = var.getinitialValue()
-                if initial:
+                if initial is not None:
                     resrce += [(" := ", ()),
                                (self.ComputeValue(initial.getvalue(), var_type), (tagname, variable_type, var_number, "initial value"))]
                 resrce += [(";\n", ())]
@@ -380,13 +392,13 @@ class ProgramGenerator:
             args = []
             single = task.getsingle()
             # Single argument if exists
-            if single:
+            if single is not None:
                 resrce += [("SINGLE := ", ()),
                            (single, (tagname, "task", task_number, "single")),
                            (",", ())]
             # Interval argument if exists
             interval = task.getinterval()
-            if interval:
+            if interval is not None:
                 resrce += [("INTERVAL := ", ()),
                            (interval, (tagname, "task", task_number, "interval")),
                            (",", ())]

@@ -610,7 +610,7 @@ def GetElementInitialValue(factory, infos):
                 value = infos["elmt_type"]["initial"]()
                 if infos["type"] != ANY:
                     DefaultElementClass.__setattr__(value, "tag", element_name)
-                    value.init()
+                    value._init_()
                 return value
         return [initial_value() for i in xrange(infos["minOccurs"])]
     else:
@@ -664,7 +664,9 @@ def GenerateContentInfos(factory, name, choices):
             if choices_dict.has_key(choice_name):
                 raise ValueError("'%s' element defined two times in choice" % choice_name)
             choices_dict[choice_name] = infos
-    choices_xpath = "|".join(map(lambda x: "%s:%s" % (factory.TargetNamespace, x), choices_dict.keys()))
+    prefix = ("%s:" % factory.TargetNamespace
+              if factory.TargetNamespace is not None else "")
+    choices_xpath = "|".join(map(lambda x: prefix + x, choices_dict.keys()))
     
     def GetContentInitial():
         content_name, infos = choices[0]
@@ -1127,7 +1129,7 @@ class ClassFactory:
             classmembers["set%s" % elmtname] = generateSetMethod(elmtname)
             classmembers["get%s" % elmtname] = generateGetMethod(elmtname)
             
-        classmembers["init"] = generateInitMethod(self, classinfos)
+        classmembers["_init_"] = generateInitMethod(self, classinfos)
         classmembers["getElementAttributes"] = generateGetElementAttributes(self, classinfos)
         classmembers["getElementInfos"] = generateGetElementInfos(self, classinfos)
         classmembers["setElementValue"] = generateSetElementValue(self, classinfos)
@@ -1251,7 +1253,9 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                 element_infos["elmt_type"]["generate"](self, value)
             
             else:
-                element_xpath = ("%s:%s" % (factory.TargetNamespace, name)
+                prefix = ("%s:" % factory.TargetNamespace
+                          if factory.TargetNamespace is not None else "")
+                element_xpath = (prefix + name
                                  if name != "content"
                                  else elements["content"]["elmt_type"]["choices_xpath"].path)
                 
@@ -1262,7 +1266,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                     element_idx = elements.keys().index(name)
                     if element_idx > 0:
                         previous_elements_xpath = "|".join(map(
-                            lambda x: "%s:%s" % (factory.TargetNamespace, x)
+                            lambda x: prefix + x
                                       if x != "content"
                                       else elements["content"]["elmt_type"]["choices_xpath"].path,
                             elements.keys()[:element_idx]))
@@ -1341,7 +1345,7 @@ def generateGetElementInfos(factory, classinfos):
                                              elements[parts[0]]["elmt_type"]["facets"])
                     value = getattr(self, parts[0], "")
                 elif parts[0] == "content":
-                    return self.content["value"].getElementInfos(self.content["name"], path)
+                    return self.content.getElementInfos(self.content.getLocalTag(), path)
                 else:
                     attr = getattr(self, parts[0], None)
                     if attr is None:
@@ -1352,7 +1356,7 @@ def generateGetElementInfos(factory, classinfos):
                         return attr.getElementInfos(parts[0], parts[1])
             elif elements.has_key("content"):
                 if len(parts) > 0:
-                    return self.content["value"].getElementInfos(name, path)
+                    return self.content.getElementInfos(name, path)
             elif classinfos.has_key("base"):
                 classinfos["base"].getElementInfos(name, path)
             else:
@@ -1370,15 +1374,9 @@ def generateGetElementInfos(factory, classinfos):
                     if self.content is None:
                         value = ""
                     else:
-                        value = self.content["name"]
-                        if self.content["value"] is not None:
-                            if self.content["name"] == "sequence":
-                                choices_dict = dict([(choice["name"], choice) for choice in element["choices"]])
-                                sequence_infos = choices_dict.get("sequence", None)
-                                if sequence_infos is not None:
-                                    children.extend([item.getElementInfos(infos["name"]) for item, infos in zip(self.content["value"], sequence_infos["elements"])])
-                            else:
-                                children.extend(self.content["value"].getElementInfos(self.content["name"])["children"])
+                        value = self.content.getLocalTag()
+                        if self.content is not None:
+                            children.extend(self.content.getElementInfos(value)["children"])
                 elif element["elmt_type"]["type"] == SIMPLETYPE:
                     children.append({"name": element_name, "require": element["minOccurs"] != 0, 
                         "type": gettypeinfos(element["elmt_type"]["basename"], 
@@ -1435,13 +1433,13 @@ def generateSetElementValue(factory, classinfos):
                             instance.setElementValue(None, value)
             elif elements.has_key("content"):
                 if len(parts) > 0:
-                    self.content["value"].setElementValue(path, value)
+                    self.content.setElementValue(path, value)
             elif classinfos.has_key("base"):
                 classinfos["base"].setElementValue(self, path, value)
         elif elements.has_key("content"):
             if value == "":
                 if elements["content"]["minOccurs"] == 0:
-                    self.setcontent(None)
+                    self.setcontent([])
                 else:
                     raise ValueError("\"content\" element is required!")
             else:
@@ -1454,7 +1452,7 @@ Methods that generates the different methods for setting and getting the attribu
 def generateInitMethod(factory, classinfos):
     def initMethod(self):
         if classinfos.has_key("base"):
-            classinfos["base"].init(self)
+            classinfos["base"]._init_(self)
         for attribute in classinfos["attributes"]:
             attribute["attr_type"] = FindTypeInfos(factory, attribute["attr_type"])
             if attribute["use"] == "required":
@@ -1491,7 +1489,7 @@ def generateAddMethod(attr, factory, infos):
             value = infos["elmt_type"]["initial"]()
             DefaultElementClass.__setattr__(value, "tag", factory.etreeNamespaceFormat % attr)
             setattr(self, attr, value)
-            value.init()
+            value._init_()
         else:
             raise ValueError("Invalid class attribute!")
     return addMethod
@@ -1541,6 +1539,7 @@ def generateSetChoiceByTypeMethod(factory, choice_types):
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[content_type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         new_content = choices[content_type]["elmt_type"]["initial"]()
+        DefaultElementClass.__setattr__(new_content, "tag", factory.etreeNamespaceFormat % content_type)
         self.content = new_content
         return new_content
     return setChoiceMethod
@@ -1553,6 +1552,7 @@ def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
         choices[content_type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         if maxOccurs == "unbounded" or len(self.content) < maxOccurs:
             new_element = choices[content_type]["elmt_type"]["initial"]()
+            DefaultElementClass.__setattr__(new_element, "tag", factory.etreeNamespaceFormat % content_type)
             self.appendcontent(new_element)
             return new_element
         else:
@@ -1567,6 +1567,7 @@ def generateInsertChoiceByTypeMethod(maxOccurs, factory, choice_types):
         choices[type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         if maxOccurs == "unbounded" or len(self.content) < maxOccurs:
             new_element = choices[content_type]["elmt_type"]["initial"]()
+            DefaultElementClass.__setattr__(new_element, "tag", factory.etreeNamespaceFormat % content_type)
             self.insertcontent(index, new_element)
             return new_element
         else:
@@ -1595,7 +1596,7 @@ NAMESPACE_PATTERN = re.compile("xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
 
 class DefaultElementClass(etree.ElementBase):
     
-    def init(self):
+    def _init_(self):
         pass
     
     def getLocalTag(self):
@@ -1657,7 +1658,7 @@ class XMLClassParser(etree.XMLParser):
             root = self.makeelement(
                 self.DefaultNamespaceFormat % self.BaseClass[0],
                 nsmap=self.RootNSMAP)
-            root.init()
+            root._init_()
             return root
         return None
     
@@ -1671,16 +1672,14 @@ class XMLClassParser(etree.XMLParser):
     def CreateElement(self, element_tag, parent_tag=None):
         new_element = self.GetElementClass(element_tag, parent_tag)()
         DefaultElementClass.__setattr__(new_element, "tag", self.DefaultNamespaceFormat % element_tag)
-        new_element.init()
+        new_element._init_()
         return new_element
     
 def GenerateParser(factory, xsdstring):
     ComputedClasses = factory.CreateClasses()
     if factory.FileName is not None and len(ComputedClasses) == 1:
         ComputedClasses = ComputedClasses[factory.FileName]
-        BaseClass = [(name, XSDclass) for name, XSDclass in ComputedClasses.items() if XSDclass.IsBaseClass]
-    else:
-        BaseClass = []
+    BaseClass = [(name, XSDclass) for name, XSDclass in ComputedClasses.items() if XSDclass.IsBaseClass]
     UpdateXMLClassGlobals(ComputedClasses)
     
     parser = XMLClassParser(

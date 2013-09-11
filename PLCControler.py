@@ -1501,9 +1501,9 @@ class PLCControler:
             tempvar = PLCOpenParser.CreateElement("variable", "globalVars")
             tempvar.setname(var_name)
             
-            tempvartype = PLCOpenParser.CreateElement("dataType", "variable")
+            tempvartype = PLCOpenParser.CreateElement("type", "variable")
             if var_type in self.GetBaseTypes():
-                tempvar.setcontent(PLCOpenParser.CreateElement(
+                tempvartype.setcontent(PLCOpenParser.CreateElement(
                     var_type.lower()
                     if var_type in ["STRING", "WSTRING"]
                     else var_type, "dataType"))
