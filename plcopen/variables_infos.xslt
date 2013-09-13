@@ -41,7 +41,7 @@
       <xsl:with-param name="var_class" select="'Output'"/>
     </xsl:call-template>
   </xsl:template>
-  <xsl:template match="inOutVars">
+  <xsl:template match="ppx:inOutVars">
     <xsl:call-template name="variables_infos">
       <xsl:with-param name="var_class" select="'InOut'"/>
     </xsl:call-template>
