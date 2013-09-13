@@ -160,6 +160,74 @@ variables_infos_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"))
 
 #-------------------------------------------------------------------------------
+#            Helpers object for generating pou variable instance list
+#-------------------------------------------------------------------------------
+
+def class_extraction(el, prt):
+    if prt == "pou":
+        return POU_TYPES[el.text]
+    elif prt == "variable":
+        return VAR_CLASS_INFOS[el.text][1]
+    return {
+        "configuration": ITEM_CONFIGURATION,
+        "resource": ITEM_RESOURCE,
+        "action": ITEM_ACTION,
+        "transition": ITEM_TRANSITION,
+        "program": ITEM_PROGRAM}.get(prt)
+
+PARAM_VALUE_EXTRACTION = {
+    "name": lambda el, prt: el.text,
+    "class": class_extraction,
+    "type": lambda el, prt: None if el.text == "None" else el.text,
+    "edit": lambda el, prt: el.text == "True",
+    "debug": lambda el, prt: el.text == "True",
+    "variables": lambda el, prt: [
+        compute_instance_tree(chld)
+        for chld in el]}
+
+def compute_instance_tree(tree):
+    return {el.tag:
+        PARAM_VALUE_EXTRACTION[el.tag](el, tree.tag)
+        for el in tree}
+
+class IsEdited(etree.XSLTExtension):
+    
+    def __init__(self, controller, debug):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+        self.Debug = debug
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        typename = input_node.get("name")
+        project = self.Controller.GetProject(self.Debug)
+        infos = etree.Element('{http://www.w3.org/1999/XSL/Transform}text')
+        infos.text = str(project.getpou(typename) is not None)
+        self.process_children(context, infos)
+
+class IsDebugged(etree.XSLTExtension):
+    
+    def __init__(self, controller, debug):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+        self.Debug = debug
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        typename = input_node.get("name")
+        project = self.Controller.GetProject(self.Debug)
+        pou_infos = project.getpou(typename)
+        if pou_infos is not None:
+            self.apply_templates(context, pou_infos, output_parent)
+            return
+        
+        datatype_infos = self.Controller.GetDataType(typename, self.Debug)
+        if datatype_infos is not None:
+            self.apply_templates(context, datatype_infos, output_parent)
+            return
+
+pou_variables_xslt = etree.parse(
+    os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"))
+
+#-------------------------------------------------------------------------------
 #                         Undo Buffer for PLCOpenEditor
 #-------------------------------------------------------------------------------
 
@@ -449,169 +517,18 @@ class PLCControler:
             return infos
         return None
 
-    def GetPouVariableInfos(self, project, variable, var_class, debug=False):
-        vartype_content = variable.gettype().getcontent()
-        vartype_content_type = vartype_content.getLocalTag()
-        if vartype_content_type == "derived":
-            var_type = vartype_content.getname()
-            pou_type = None
-            pou = project.getpou(var_type)
-            if pou is not None:
-                pou_type = pou.getpouType()
-            edit = debug = pou_type is not None
-            if pou_type is None:
-                block_infos = self.GetBlockType(var_type, debug = debug)
-                if block_infos is not None:
-                    pou_type = block_infos["type"]
-            if pou_type is not None:
-                var_class = None
-                if pou_type == "program":
-                    var_class = ITEM_PROGRAM
-                elif pou_type != "function":
-                    var_class = ITEM_FUNCTIONBLOCK
-                if var_class is not None:
-                    return {"name": variable.getname(), 
-                            "type": var_type, 
-                            "class": var_class,
-                            "edit": edit,
-                            "debug": debug}
-            elif var_type in self.GetDataTypes(debug = debug):
-                return {"name": variable.getname(), 
-                        "type": var_type, 
-                        "class": var_class,
-                        "edit": False,
-                        "debug": False}
-        elif vartype_content_type in ["string", "wstring"]:
-            return {"name": variable.getname(), 
-                    "type": vartype_content_type.upper(), 
-                    "class": var_class,
-                    "edit": False,
-                    "debug": True}
-        else:
-            return {"name": variable.getname(),
-                    "type": vartype_content_type, 
-                    "class": var_class,
-                    "edit": False,
-                    "debug": True}
-        return None
-
     def GetPouVariables(self, tagname, debug = False):
         vars = []
         pou_type = None
         project = self.GetProject(debug)
         if project is not None:
-            words = tagname.split("::")
-            if words[0] == "P":
-                pou = project.getpou(words[1])
-                if pou is not None:
-                    pou_type = pou.getpouType()
-                    if (pou_type in ["program", "functionBlock"] and 
-                        pou.interface is not None):
-                        # Extract variables from every varLists
-                        for varlist_type, varlist in pou.getvars():
-                            var_infos = VAR_CLASS_INFOS.get(varlist_type, None)
-                            if var_infos is not None:
-                                var_class = var_infos[1]
-                            else:
-                                var_class = ITEM_VAR_LOCAL
-                            for variable in varlist.getvariable():
-                                var_infos = self.GetPouVariableInfos(project, variable, var_class, debug)
-                                if var_infos is not None:
-                                    vars.append(var_infos)
-                        if pou.getbodyType() == "SFC":
-                            for transition in pou.gettransitionList():
-                                vars.append({
-                                    "name": transition.getname(),
-                                    "type": None, 
-                                    "class": ITEM_TRANSITION,
-                                    "edit": True,
-                                    "debug": True})
-                            for action in pou.getactionList():
-                                vars.append({
-                                    "name": action.getname(),
-                                    "type": None, 
-                                    "class": ITEM_ACTION,
-                                    "edit": True,
-                                    "debug": True})
-                        return {"class": POU_TYPES[pou_type],
-                                "type": words[1],
-                                "variables": vars,
-                                "edit": True,
-                                "debug": True}
-                else:
-                    block_infos = self.GetBlockType(words[1], debug = debug)
-                    if (block_infos is not None and 
-                        block_infos["type"] in ["program", "functionBlock"]):
-                        for varname, vartype, varmodifier in block_infos["inputs"]:
-                            vars.append({"name" : varname, 
-                                         "type" : vartype, 
-                                         "class" : ITEM_VAR_INPUT,
-                                         "edit": False,
-                                         "debug": True})
-                        for varname, vartype, varmodifier in block_infos["outputs"]:
-                            vars.append({"name" : varname, 
-                                         "type" : vartype, 
-                                         "class" : ITEM_VAR_OUTPUT,
-                                         "edit": False,
-                                         "debug": True})
-                        return {"class": POU_TYPES[block_infos["type"]],
-                                "type": None,
-                                "variables": vars,
-                                "edit": False,
-                                "debug": False}
-            elif words[0] in ['A', 'T']:
-                pou_vars = self.GetPouVariables(self.ComputePouName(words[1]), debug)
-                if pou_vars is not None:
-                    if words[0] == 'A':
-                        element_type = ITEM_ACTION
-                    elif words[0] == 'T':
-                        element_type = ITEM_TRANSITION
-                    return {"class": element_type,
-                            "type": None,
-                            "variables": [var for var in pou_vars["variables"] 
-                                          if var["class"] not in [ITEM_ACTION, ITEM_TRANSITION]],
-                            "edit": True,
-                            "debug": True}
-            elif words[0] in ['C', 'R']:
-                if words[0] == 'C':
-                    element_type = ITEM_CONFIGURATION
-                    element = project.getconfiguration(words[1])
-                    if element is not None:
-                        for resource in element.getresource():
-                            vars.append({"name": resource.getname(),
-                                         "type": None,
-                                         "class": ITEM_RESOURCE,
-                                         "edit": True,
-                                         "debug": False})
-                elif words[0] == 'R':
-                    element_type = ITEM_RESOURCE
-                    element = project.getconfigurationResource(words[1], words[2])
-                    if element is not None:
-                        for task in element.gettask():
-                            for pou in task.getpouInstance():
-                                vars.append({"name": pou.getname(),
-                                             "type": pou.gettypeName(),
-                                             "class": ITEM_PROGRAM,
-                                             "edit": True,
-                                             "debug": True})
-                        for pou in element.getpouInstance():
-                            vars.append({"name": pou.getname(),
-                                         "type": pou.gettypeName(),
-                                         "class": ITEM_PROGRAM,
-                                         "edit": True,
-                                         "debug": True})
-                if element is not None:
-                    for varlist in element.getglobalVars():
-                        for variable in varlist.getvariable():
-                            var_infos = self.GetPouVariableInfos(project, variable, ITEM_VAR_GLOBAL, debug)
-                            if var_infos is not None:
-                                vars.append(var_infos)
-                    return {"class": element_type,
-                            "type": None,
-                            "variables": vars,
-                            "edit": True,
-                            "debug": False}
-        return None
+            pou_variable_xslt_tree = etree.XSLT(
+                pou_variables_xslt, extensions = {
+                    ("pou_vars_ns", "is_edited"): IsEdited(self, debug),
+                    ("pou_vars_ns", "is_debugged"): IsDebugged(self, debug)})
+            return compute_instance_tree(
+                pou_variable_xslt_tree(
+                    self.GetEditedElement(tagname, debug)).getroot())
 
     def RecursiveSearchPouInstances(self, project, pou_type, parent_path, varlists, debug = False):
         instances = []
