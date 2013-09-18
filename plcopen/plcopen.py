@@ -1625,7 +1625,7 @@ if cls:
     
     def removecontentInstance(self, local_id):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = instance_by_id_xpath(self.content)
+            instance = instance_by_id_xpath(self.content, localId=local_id)
             if len(instance) > 0:
                 self.content.remove(instance[0])
             else:
