@@ -24,6 +24,7 @@
 
 import string, os, sys, re
 from plcopen import LoadProject
+from collections import OrderedDict
 
 LANGUAGES = ["IL","ST","FBD","LD","SFC"]
 
@@ -418,7 +419,7 @@ std_decl = get_standard_funtions(csv_file_to_table(open(os.path.join(ScriptDirec
 StdBlckLst.extend(std_decl)
 
 # Dictionary to speedup block type fetching by name
-StdBlckDct = {}
+StdBlckDct = OrderedDict()
 
 for section in StdBlckLst:
     for desc in section["list"]:
