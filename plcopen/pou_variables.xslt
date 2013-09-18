@@ -102,7 +102,13 @@
 	<xsl:for-each select="ppx:variable">
       <variable>
 	    <name><xsl:value-of select="@name"/></name>
-	    <class><xsl:value-of select="$var_class"/></class>
+	    <class>
+	      <xsl:apply-templates mode="var_class">
+	        <xsl:with-param name="default_class">
+	          <xsl:value-of select="$var_class"/>
+	        </xsl:with-param>
+	      </xsl:apply-templates>
+	    </class>
 	    <type><xsl:apply-templates mode="var_type"/></type>
 	    <edit><xsl:apply-templates mode="var_edit"/></edit>
 	    <debug><xsl:apply-templates mode="var_debug"/></debug>
@@ -145,6 +151,20 @@
       <debug><xsl:text>True</xsl:text></debug>
     </program>
   </xsl:template>
+  <xsl:template match="*[self::ppx:type or self::ppx:baseType]/ppx:derived" mode="var_class">
+    <xsl:param name="default_class"/>
+    <ns:pou_class>
+      <xsl:value-of select="$default_class"/>
+    </ns:pou_class>
+  </xsl:template>
+  <xsl:template match="ppx:pou" mode="var_class">
+    <xsl:param name="default_class"/>
+    <xsl:value-of select="@pouType"/>
+  </xsl:template>
+  <xsl:template match="*[self::ppx:type or self::ppx:baseType]/*" mode="var_class">
+    <xsl:param name="default_class"/>
+    <xsl:value-of select="$default_class"/>
+  </xsl:template>
   <xsl:template match="*[self::ppx:type or self::ppx:baseType]/ppx:derived" mode="var_type">
     <xsl:value-of select="@name"/>
   </xsl:template>
@@ -178,14 +198,6 @@
   </xsl:template>
     <xsl:template match="*[self::ppx:type or self::ppx:baseType]/ppx:derived" mode="var_debug">
     <ns:is_debugged/>
-    <xsl:choose>
-      <xsl:when test="count(./*) > 0">
-        <xsl:apply-templates mode="var_debug"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:text>False</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
   </xsl:template>
   <xsl:template match="ppx:pou" mode="var_debug">
     <xsl:text>True</xsl:text>
@@ -200,6 +212,7 @@
     <xsl:text>True</xsl:text>
   </xsl:template>
   <xsl:template match="text()"/>
+  <xsl:template match="text()" mode="var_class"/>
   <xsl:template match="text()" mode="var_type"/>
   <xsl:template match="text()" mode="var_edit"/>
   <xsl:template match="text()" mode="var_debug"/>

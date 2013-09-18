@@ -140,18 +140,19 @@ class AddVariable(etree.XSLTExtension):
 
 class VarTree(etree.XSLTExtension):
     
-    def __init__(self, controller):
+    def __init__(self, controller, debug):
         etree.XSLTExtension.__init__(self)
         self.Controller = controller
+        self.Debug = debug
     
     def execute(self, context, self_node, input_node, output_parent):
         typename = input_node.get("name")
-        pou_infos = self.Controller.GetPou(typename)
+        pou_infos = self.Controller.GetPou(typename, self.Debug)
         if pou_infos is not None:
             self.apply_templates(context, pou_infos, output_parent)
             return
         
-        datatype_infos = self.Controller.GetDataType(typename)
+        datatype_infos = self.Controller.GetDataType(typename, self.Debug)
         if datatype_infos is not None:
             self.apply_templates(context, datatype_infos, output_parent)
             return
@@ -164,9 +165,10 @@ variables_infos_xslt = etree.parse(
 #-------------------------------------------------------------------------------
 
 def class_extraction(el, prt):
-    if prt == "pou":
-        return POU_TYPES[el.text]
-    elif prt == "variable":
+    if prt in ["pou", "variable"]:
+        pou_type = POU_TYPES.get(el.text)
+        if pou_type is not None:
+            return pou_type
         return VAR_CLASS_INFOS[el.text][1]
     return {
         "configuration": ITEM_CONFIGURATION,
@@ -200,10 +202,8 @@ class IsEdited(etree.XSLTExtension):
     def execute(self, context, self_node, input_node, output_parent):
         typename = input_node.get("name")
         project = self.Controller.GetProject(self.Debug)
-        infos = etree.Element('{http://www.w3.org/1999/XSL/Transform}text')
-        infos.text = str(project.getpou(typename) is not None)
-        self.process_children(context, infos)
-
+        output_parent.text = str(project.getpou(typename) is not None)
+        
 class IsDebugged(etree.XSLTExtension):
     
     def __init__(self, controller, debug):
@@ -223,9 +223,60 @@ class IsDebugged(etree.XSLTExtension):
         if datatype_infos is not None:
             self.apply_templates(context, datatype_infos, output_parent)
             return
-
+        
+        output_parent.text = "False"
+        
+class PouVariableClass(etree.XSLTExtension):
+    
+    def __init__(self, controller, debug):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+        self.Debug = debug
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        pou_infos = self.Controller.GetPou(input_node.get("name"), self.Debug)
+        if pou_infos is not None:
+            self.apply_templates(context, pou_infos, output_parent)
+            return
+        
+        self.process_children(context, output_parent)
+        
 pou_variables_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"))
+
+#-------------------------------------------------------------------------------
+#            Helpers object for generating instances path list
+#-------------------------------------------------------------------------------
+
+class InstanceDefinition(etree.XSLTExtension):
+    
+    def __init__(self, controller, debug):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+        self.Debug = debug
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        instance_infos = etree.Element('infos')
+        self.process_children(context, instance_infos)
+        
+        pou_infos = self.Controller.GetPou(instance_infos.get("name"), self.Debug)
+        if pou_infos is not None:
+            pou_instance = etree.Element('pou_instance',
+                pou_path=instance_infos.get("path"))
+            pou_instance.append(deepcopy(pou_infos))
+            self.apply_templates(context, pou_instance, output_parent)
+            return
+            
+        datatype_infos = self.Controller.GetDataType(instance_infos.get("name"), self.Debug)
+        if datatype_infos is not None:
+            datatype_instance = etree.Element('datatype_instance',
+                datatype_path=instance_infos.get("path"))
+            datatype_instance.append(deepcopy(datatype_infos))
+            self.apply_templates(context, datatype_instance, output_parent)
+            return
+
+instances_path_xslt = etree.parse(
+    os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"))
 
 #-------------------------------------------------------------------------------
 #                         Undo Buffer for PLCOpenEditor
@@ -525,65 +576,41 @@ class PLCControler:
             pou_variable_xslt_tree = etree.XSLT(
                 pou_variables_xslt, extensions = {
                     ("pou_vars_ns", "is_edited"): IsEdited(self, debug),
-                    ("pou_vars_ns", "is_debugged"): IsDebugged(self, debug)})
-            return compute_instance_tree(
-                pou_variable_xslt_tree(
-                    self.GetEditedElement(tagname, debug)).getroot())
+                    ("pou_vars_ns", "is_debugged"): IsDebugged(self, debug),
+                    ("pou_vars_ns", "pou_class"): PouVariableClass(self, debug)})
+            
+            words = tagname.split("::")
+            if words[0] == "P":
+                obj = self.GetPou(words[1], debug)
+            else:
+                obj = self.GetEditedElement(tagname, debug)
+            if obj is not None:
+                return compute_instance_tree(
+                        pou_variable_xslt_tree(obj).getroot())
+        return []
 
-    def RecursiveSearchPouInstances(self, project, pou_type, parent_path, varlists, debug = False):
-        instances = []
-        for varlist in varlists:
-            for variable in varlist.getvariable():
-                vartype_content = variable.gettype().getcontent()
-                if vartype_content.getLocalTag() == "derived":
-                    var_path = "%s.%s" % (parent_path, variable.getname())
-                    var_type = vartype_content.getname()
-                    if var_type == pou_type:
-                        instances.append(var_path)
-                    else:
-                        pou = project.getpou(var_type)
-                        if pou is not None:# and project.ElementIsUsedBy(pou_type, var_type):
-                            instances.extend(
-                                self.RecursiveSearchPouInstances(
-                                    project, pou_type, var_path, 
-                                    [varlist for type, varlist in pou.getvars()], 
-                                    debug))
-        return instances
-                        
+    def GetInstanceList(self, root, name, debug = False):
+        project = self.GetProject(debug)
+        if project is not None:
+            instances_path_xslt_tree = etree.XSLT(
+                instances_path_xslt, 
+                extensions = {
+                    ("instances_ns", "instance_definition"): 
+                    InstanceDefinition(self, debug)})
+            
+            return instances_path_xslt_tree(root, 
+                instance_type=etree.XSLT.strparam(name)).getroot()
+        return None
+
     def SearchPouInstances(self, tagname, debug = False):
         project = self.GetProject(debug)
         if project is not None:
             words = tagname.split("::")
             if words[0] == "P":
-                instances = []
-                for config in project.getconfigurations():
-                    config_name = config.getname()
-                    instances.extend(
-                        self.RecursiveSearchPouInstances(
-                            project, words[1], config_name, 
-                            config.getglobalVars(), debug))
-                    for resource in config.getresource():
-                        res_path = "%s.%s" % (config_name, resource.getname())
-                        instances.extend(
-                            self.RecursiveSearchPouInstances(
-                                project, words[1], res_path, 
-                                resource.getglobalVars(), debug))
-                        pou_instances = resource.getpouInstance()[:]
-                        for task in resource.gettask():
-                            pou_instances.extend(task.getpouInstance())
-                        for pou_instance in pou_instances:
-                            pou_path = "%s.%s" % (res_path, pou_instance.getname())
-                            pou_type = pou_instance.gettypeName()
-                            if pou_type == words[1]:
-                                instances.append(pou_path)
-                            pou = project.getpou(pou_type)
-                            if pou is not None:# and project.ElementIsUsedBy(words[1], pou_type):
-                                instances.extend(
-                                    self.RecursiveSearchPouInstances(
-                                        project, words[1], pou_path, 
-                                        [varlist for type, varlist in pou.getvars()], 
-                                        debug))
-                return instances
+                result = self.GetInstanceList(project, words[1])
+                if result is not None:
+                    return [instance.get("path") for instance in result]
+                return []
             elif words[0] == 'C':
                 return [words[1]]
             elif words[0] == 'R':
@@ -607,7 +634,7 @@ class PLCControler:
                         if vartype_content.getLocalTag() == "derived":
                             return self.RecursiveGetPouInstanceTagName(
                                             project, 
-                                            vartype_content["value"].getname(),
+                                            vartype_content.getname(),
                                             parts[1:], debug)
             
             if pou.getbodyType() == "SFC" and len(parts) == 1:
@@ -707,23 +734,23 @@ class PLCControler:
     
     # Return if data type given by name is used by another data type or pou
     def DataTypeIsUsed(self, name, debug = False):
-        #project = self.GetProject(debug)
-        #if project is not None:
-        #    return project.ElementIsUsed(name)
+        project = self.GetProject(debug)
+        if project is not None:
+            return self.GetInstanceList(project, name, debug) is not None
         return False
 
     # Return if pou given by name is used by another pou
     def PouIsUsed(self, name, debug = False):
-        #project = self.GetProject(debug)
-        #if project is not None:
-        #    return project.ElementIsUsed(name)
+        project = self.GetProject(debug)
+        if project is not None:
+            return self.GetInstanceList(project, name, debug) is not None
         return False
 
     # Return if pou given by name is directly or undirectly used by the reference pou
     def PouIsUsedBy(self, name, reference, debug = False):
-        #project = self.GetProject(debug)
-        #if project is not None:
-        #    return project.ElementIsUsedBy(name, reference)
+        pou_infos = self.GetPou(reference, debug)
+        if pou_infos is not None:
+            return self.GetInstanceList(pou_infos, name, debug) is not None
         return False
 
     def GenerateProgram(self, filepath=None):
@@ -1202,13 +1229,13 @@ class PLCControler:
             current_varlist.appendvariable(tempvar)
         return varlist_list
     
-    def GetVariableDictionary(self, object_with_vars):
+    def GetVariableDictionary(self, object_with_vars, debug=False):
         variables = []
         
         variables_infos_xslt_tree = etree.XSLT(
             variables_infos_xslt, extensions = {
                 ("var_infos_ns", "add_variable"): AddVariable(variables),
-                ("var_infos_ns", "var_tree"): VarTree(self)})
+                ("var_infos_ns", "var_tree"): VarTree(self, debug)})
         variables_infos_xslt_tree(object_with_vars)
         
         return variables
@@ -1244,7 +1271,7 @@ class PLCControler:
             configuration = project.getconfiguration(name)
             if configuration is not None:
                 # Extract variables defined in configuration
-                return self.GetVariableDictionary(configuration)
+                return self.GetVariableDictionary(configuration, debug)
         
         return []
 
@@ -1281,7 +1308,7 @@ class PLCControler:
             resource = project.getconfigurationResource(config_name, name)
             if resource is not None:
                 # Extract variables defined in configuration
-                return self.GetVariableDictionary(resource)
+                return self.GetVariableDictionary(resource, debug)
         
         return []
     
@@ -1308,7 +1335,7 @@ class PLCControler:
         # Verify that the pou has an interface
         if interface is not None:
             # Extract variables defined in interface
-            return self.GetVariableDictionary(interface)
+            return self.GetVariableDictionary(interface, debug)
         return []
 
     # Replace the Pou interface by the one given
@@ -1492,24 +1519,29 @@ class PLCControler:
                 for category in self.TotalTypes]
             blocktypes.append({"name" : USER_DEFINED_POUS, 
                 "list": [pou.getblockInfos()
-                         for pou in project.getpous(name, filter)]})
+                         for pou in project.getpous(name, filter)
+                         if (name is None or 
+                             self.GetInstanceList(pou, name, debug) is None)]})
             return blocktypes
         return self.TotalTypes
 
     # Return Function Block types checking for recursion
     def GetFunctionBlockTypes(self, tagname = "", debug = False):
+        project = self.GetProject(debug)
+        words = tagname.split("::")
+        name = None
+        if project is not None and words[0] in ["P","T","A"]:
+            name = words[1]
         blocktypes = []
         for blocks in self.TotalTypesDict.itervalues():
             for sectioname,block in blocks:
                 if block["type"] == "functionBlock":
                     blocktypes.append(block["name"])
-        project = self.GetProject(debug)
         if project is not None:
-            words = tagname.split("::")
             blocktypes.extend([pou.getname()
-                for pou in project.getpous(
-                    words[1] if words[0] in ["P","T","A"] else None,
-                    ["functionBlock"])])
+                for pou in project.getpous(name, ["functionBlock"])
+                if (name is None or 
+                    self.GetInstanceList(pou, name, debug) is None)])
         return blocktypes
 
     # Return Block types checking for recursion
@@ -1541,7 +1573,9 @@ class PLCControler:
             datatypes.extend([
                 datatype.getname() 
                 for datatype in project.getdataTypes(name)
-                if not only_locatables or self.IsLocatableDataType(datatype, debug)])
+                if (not only_locatables or self.IsLocatableDataType(datatype, debug))
+                    and (name is None or 
+                         self.GetInstanceList(datatype, name, debug) is None)])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])
