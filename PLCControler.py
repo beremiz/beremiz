@@ -279,6 +279,57 @@ instances_path_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"))
 
 #-------------------------------------------------------------------------------
+#            Helpers object for generating instance tagname
+#-------------------------------------------------------------------------------
+
+class InstanceTagName(etree.XSLTExtension):
+
+    def __init__(self, controller):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+    
+    def GetTagName(self, infos):
+        return ""
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        tagname_infos = etree.Element('infos')
+        self.process_children(context, tagname_infos)
+        tagname = etree.Element('tagname')
+        tagname.text = self.GetTagName(tagname_infos)
+        output_parent.append(tagname)
+
+class ConfigTagName(InstanceTagName):
+    
+    def GetTagName(self, infos):
+        return self.Controller.ComputeConfigurationName(infos.get("name"))
+        
+class ResourceTagName(InstanceTagName):
+    
+    def GetTagName(self, infos):
+        return self.Controller.ComputeConfigurationResourceName(
+            infos.get("config_name"), infos.get("name"))
+
+class PouTagName(InstanceTagName):
+    
+    def GetTagName(self, infos):
+        return self.Controller.ComputePouName(infos.get("name"))
+
+class ActionTagName(InstanceTagName):
+    
+    def GetTagName(self, infos):
+        return self.Controller.ComputePouActionName(
+            infos.get("pou_name"), infos.get("name"))
+
+class TransitionTagName(InstanceTagName):
+    
+    def GetTagName(self, infos):
+        return self.Controller.ComputePouTransitionName(
+            infos.get("pou_name"), infos.get("name"))
+
+instance_tagname_xslt = etree.parse(
+    os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"))
+
+#-------------------------------------------------------------------------------
 #                         Undo Buffer for PLCOpenEditor
 #-------------------------------------------------------------------------------
 
@@ -587,7 +638,7 @@ class PLCControler:
             if obj is not None:
                 return compute_instance_tree(
                         pou_variable_xslt_tree(obj).getroot())
-        return []
+        return None
 
     def GetInstanceList(self, root, name, debug = False):
         project = self.GetProject(debug)
@@ -621,99 +672,24 @@ class PLCControler:
                             self.ComputePouName(words[1]), debug)]
         return []
     
-    def RecursiveGetPouInstanceTagName(self, project, pou_type, parts, debug = False):
-        pou = project.getpou(pou_type)
-        if pou is not None:
-            if len(parts) == 0:
-                return self.ComputePouName(pou_type)
-            
-            for varlist_type, varlist in pou.getvars():
-                for variable in varlist.getvariable():
-                    if variable.getname() == parts[0]:
-                        vartype_content = variable.gettype().getcontent()
-                        if vartype_content.getLocalTag() == "derived":
-                            return self.RecursiveGetPouInstanceTagName(
-                                            project, 
-                                            vartype_content.getname(),
-                                            parts[1:], debug)
-            
-            if pou.getbodyType() == "SFC" and len(parts) == 1:
-                for action in pou.getactionList():
-                    if action.getname() == parts[0]:
-                        return self.ComputePouActionName(pou_type, parts[0])
-                for transition in pou.gettransitionList():
-                    if transition.getname() == parts[0]:
-                        return self.ComputePouTransitionName(pou_type, parts[0])
-        else:
-            block_infos = self.GetBlockType(pou_type, debug=debug)
-            if (block_infos is not None and 
-                block_infos["type"] in ["program", "functionBlock"]):
-                
-                if len(parts) == 0:
-                    return self.ComputePouName(pou_type)
-                
-                for varname, vartype, varmodifier in block_infos["inputs"] + block_infos["outputs"]:
-                    if varname == parts[0]:
-                        return self.RecursiveGetPouInstanceTagName(project, vartype, parts[1:], debug)
-        return None
-    
-    def GetGlobalInstanceTagName(self, project, element, parts, debug = False):
-        for varlist in element.getglobalVars():
-            for variable in varlist.getvariable():
-                if variable.getname() == parts[0]:
-                    vartype_content = variable.gettype().getcontent()
-                    if vartype_content.getLocalTag() == "derived":                        
-                        if len(parts) == 1:
-                            return self.ComputePouName(
-                                        vartype_content.getname())
-                        else:
-                            return self.RecursiveGetPouInstanceTagName(
-                                        project, 
-                                        vartype_content.getname(),
-                                        parts[1:], debug)
-        return None
-    
     def GetPouInstanceTagName(self, instance_path, debug = False):
         project = self.GetProject(debug)
-        parts = instance_path.split(".")
-        if len(parts) == 1:
-            return self.ComputeConfigurationName(parts[0])
-        elif len(parts) == 2:
-            for config in project.getconfigurations():
-                if config.getname() == parts[0]:
-                    result = self.GetGlobalInstanceTagName(project, 
-                                                           config, 
-                                                           parts[1:],
-                                                           debug)
-                    if result is not None:
-                        return result
-            return self.ComputeConfigurationResourceName(parts[0], parts[1])
-        else:
-            for config in project.getconfigurations():
-                if config.getname() == parts[0]:
-                    for resource in config.getresource():
-                        if resource.getname() == parts[1]:
-                            pou_instances = resource.getpouInstance()[:]
-                            for task in resource.gettask():
-                                pou_instances.extend(task.getpouInstance())
-                            for pou_instance in pou_instances:
-                                if pou_instance.getname() == parts[2]:
-                                    if len(parts) == 3:
-                                        return self.ComputePouName(
-                                                    pou_instance.gettypeName())
-                                    else:
-                                        return self.RecursiveGetPouInstanceTagName(
-                                                    project,
-                                                    pou_instance.gettypeName(),
-                                                    parts[3:], debug)
-                            return self.GetGlobalInstanceTagName(project, 
-                                                                 resource, 
-                                                                 parts[2:], 
-                                                                 debug)
-                    return self.GetGlobalInstanceTagName(project, 
-                                                         config, 
-                                                         parts[1:],
-                                                         debug)
+        
+        instance_tagname_xslt_tree = etree.XSLT(
+            instance_tagname_xslt, 
+            extensions = {
+                ("instance_tagname_ns", "instance_definition"): InstanceDefinition(self, debug),
+                ("instance_tagname_ns", "config_tagname"): ConfigTagName(self),
+                ("instance_tagname_ns", "resource_tagname"): ResourceTagName(self),
+                ("instance_tagname_ns", "pou_tagname"): PouTagName(self),
+                ("instance_tagname_ns", "action_tagname"): ActionTagName(self),
+                ("instance_tagname_ns", "transition_tagname"): TransitionTagName(self)})
+        
+        result = instance_tagname_xslt_tree(project, 
+                instance_path=etree.XSLT.strparam(instance_path)).getroot()
+        if result is not None:
+            return result.text
+        
         return None
     
     def GetInstanceInfos(self, instance_path, debug = False):
@@ -1675,7 +1651,7 @@ class PLCControler:
             return False
         elif basetype_content_type == "derived":
             return self.IsLocatableType(basetype_content.getname())
-        elif basetype_content_name == "array":
+        elif basetype_content_type == "array":
             array_base_type = basetype_content.baseType.getcontent()
             if array_base_type.getLocalTag() == "derived":
                 return self.IsLocatableType(array_base_type.getname(), debug)
@@ -3076,10 +3052,10 @@ class PLCControler:
             return tasks_data, instances_data
 
     def OpenXMLFile(self, filepath):
-        try:
-            self.Project = LoadProject(filepath)
-        except Exception, e:
-            return _("Project file syntax error:\n\n") + str(e)
+        #try:
+        self.Project = LoadProject(filepath)
+        #except Exception, e:
+        #    return _("Project file syntax error:\n\n") + str(e)
         self.SetFilePath(filepath)
         self.CreateProjectBuffer(True)
         self.ProgramChunks = []
