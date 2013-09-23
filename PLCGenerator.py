@@ -701,7 +701,7 @@ class PouProgramGenerator:
             for instance in body.getcontentInstances():
                 if isinstance(instance, (InVariableClass, OutVariableClass, 
                                          InOutVariableClass)):
-                    expression = instance.getexpression().text
+                    expression = instance.getexpression()
                     var_type = self.GetVariableType(expression)
                     if (isinstance(pou, TransitionObjClass) 
                         and expression == pou.getname()):
@@ -933,7 +933,7 @@ class PouProgramGenerator:
                         expression = self.ComputeExpression(body, connections)
                         if expression is not None:
                             self.Program += [(self.CurrentIndent, ()),
-                                             (instance.getexpression().text, (self.TagName, "io_variable", instance.getlocalId(), "expression")),
+                                             (instance.getexpression(), (self.TagName, "io_variable", instance.getlocalId(), "expression")),
                                              (" := ", ())]
                             self.Program += expression
                             self.Program += [(";\n", ())]
@@ -964,7 +964,7 @@ class PouProgramGenerator:
                         if expression is not None:
                             expression = self.ExtractModifier(instance, expression, coil_info)
                             self.Program += [(self.CurrentIndent, ())]
-                            self.Program += [(instance.getvariable().text, coil_info + ("reference",))]
+                            self.Program += [(instance.getvariable(), coil_info + ("reference",))]
                             self.Program += [(" := ", ())] + expression + [(";\n", ())]
                         
     def FactorizePaths(self, paths):
@@ -1187,7 +1187,7 @@ class PouProgramGenerator:
             if isinstance(next, LeftPowerRailClass):
                 paths.append(None)
             elif isinstance(next, (InVariableClass, InOutVariableClass)):
-                paths.append(str([(next.getexpression().text, (self.TagName, "io_variable", localId, "expression"))]))
+                paths.append(str([(next.getexpression(), (self.TagName, "io_variable", localId, "expression"))]))
             elif isinstance(next, BlockClass):
                 block_type = next.gettypeName()
                 self.ParentGenerator.GeneratePouProgram(block_type)
@@ -1223,7 +1223,7 @@ class PouProgramGenerator:
                         raise PLCGenException, _("No connector found corresponding to \"%s\" continuation in \"%s\" POU")%(name, self.Name)
             elif isinstance(next, ContactClass):
                 contact_info = (self.TagName, "contact", next.getlocalId())
-                variable = str(self.ExtractModifier(next, [(next.getvariable().text, contact_info + ("reference",))], contact_info))
+                variable = str(self.ExtractModifier(next, [(next.getvariable(), contact_info + ("reference",))], contact_info))
                 result = self.GeneratePaths(next.connectionPointIn.getconnections(), body, order)
                 if len(result) > 1:
                     factorized_paths = self.FactorizePaths(result)
@@ -1482,8 +1482,8 @@ class PouProgramGenerator:
                                                    (ReIndentText(transitionBody.getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]
                 else:
                     for instance in transitionBody.getcontentInstances():
-                        if isinstance(instance, OutVariableClass) and instance.getexpression().text == transitionValues["value"]\
-                            or isinstance(instance, CoilClass) and instance.getvariable().text == transitionValues["value"]:
+                        if isinstance(instance, OutVariableClass) and instance.getexpression() == transitionValues["value"]\
+                            or isinstance(instance, CoilClass) and instance.getvariable() == transitionValues["value"]:
                             connections = instance.connectionPointIn.getconnections()
                             if connections is not None:
                                 expression = self.ComputeExpression(transitionBody, connections)

@@ -925,7 +925,21 @@ class ClassFactory:
         if name != base:
             equivalences = self.EquivalentClassesParent.setdefault(self.etreeNamespaceFormat % base, {})
             equivalences[self.etreeNamespaceFormat % name] = True
-        
+    
+    def AddDistinctionBetweenParentsInLookupClass(
+                                    self, lookup_classes, parent, typeinfos):
+        parent = (self.etreeNamespaceFormat % parent 
+                  if parent is not None else None)
+        parent_class = lookup_classes.get(parent)
+        if parent_class is not None:
+            if isinstance(parent_class, ListType):
+                if typeinfos not in parent_class:
+                    lookup_classes[parent].append(typeinfos)
+            elif parent_class != typeinfos:
+                lookup_classes[parent] = [parent_class, typeinfos]
+        else:
+            lookup_classes[parent] = typeinfos
+    
     def AddToLookupClass(self, name, parent, typeinfos):
         lookup_name = self.etreeNamespaceFormat % name
         if isinstance(typeinfos, (StringType, UnicodeType)):
@@ -935,13 +949,14 @@ class ClassFactory:
         if lookup_classes is None:
             self.ComputedClassesLookUp[lookup_name] = (typeinfos, parent)
         elif isinstance(lookup_classes, DictType):
-            lookup_classes[self.etreeNamespaceFormat % parent 
-                           if parent is not None else None] = typeinfos
+            self.AddDistinctionBetweenParentsInLookupClass(
+                lookup_classes, parent, typeinfos)
         else:
-            lookup_classes = {self.etreeNamespaceFormat % lookup_classes[1]
-                              if lookup_classes[1] is not None else None: lookup_classes[0]}
-            lookup_classes[self.etreeNamespaceFormat % parent
-                           if parent is not None else None] = typeinfos
+            lookup_classes = {
+                self.etreeNamespaceFormat % lookup_classes[1]
+                if lookup_classes[1] is not None else None: lookup_classes[0]}
+            self.AddDistinctionBetweenParentsInLookupClass(
+                lookup_classes, parent, typeinfos)
             self.ComputedClassesLookUp[lookup_name] = lookup_classes
     
     def ExtractTypeInfos(self, name, parent, typeinfos):
@@ -1130,6 +1145,7 @@ class ClassFactory:
             classmembers["get%s" % elmtname] = generateGetMethod(elmtname)
             
         classmembers["_init_"] = generateInitMethod(self, classinfos)
+        classmembers["StructurePattern"] = GetStructurePattern(classinfos)
         classmembers["getElementAttributes"] = generateGetElementAttributes(self, classinfos)
         classmembers["getElementInfos"] = generateGetElementInfos(self, classinfos)
         classmembers["setElementValue"] = generateSetElementValue(self, classinfos)
@@ -1177,6 +1193,60 @@ class ClassFactory:
             print classname
 
 """
+Method that generate the method for generating the xml tree structure model by 
+following the attributes list defined
+"""
+def ComputeMultiplicity(name, infos):
+    if infos["minOccurs"] == 0:
+        if infos["maxOccurs"] == "unbounded":
+            return "(?:%s)*" % name
+        elif infos["maxOccurs"] == 1:
+            return "(?:%s)?" % name
+        else:
+            return "(?:%s){,%d}" % (name, infos["maxOccurs"])
+    elif infos["minOccurs"] == 1:
+        if infos["maxOccurs"] == "unbounded":
+            return "(?:%s)+" % name
+        elif infos["maxOccurs"] == 1:
+            return "(?:%s)" % name
+        else:
+            return "(?:%s){1,%d}" % (name, infos["maxOccurs"])
+    else:
+        if infos["maxOccurs"] == "unbounded":
+            return "(?:%s){%d,}" % (name, infos["minOccurs"], name)
+        else:
+            return "(?:%s){%d,%d}" % (name, infos["minOccurs"], 
+                                       infos["maxOccurs"])
+
+def GetStructurePattern(classinfos):
+    base_structure_pattern = (
+        classinfos["base"].StructurePattern.pattern[:-1]
+        if classinfos.has_key("base") else "")
+    elements = []
+    for element in classinfos["elements"]:
+        if element["type"] == ANY:
+            infos = element.copy()
+            infos["minOccurs"] = 0
+            elements.append(ComputeMultiplicity("#text |#cdata-section |\w* ", infos))
+        elif element["type"] == CHOICE:
+            choices = []
+            for infos in element["choices"]:
+                if infos["type"] == "sequence":
+                    structure = "(?:%s)" % GetStructurePattern(infos)
+                else:
+                    structure = "%s " % infos["name"]
+                choices.append(ComputeMultiplicity(structure, infos))
+            elements.append(ComputeMultiplicity("|".join(choices), element))
+        elif element["name"] == "content" and element["elmt_type"]["type"] == SIMPLETYPE:
+            elements.append("(?:#text |#cdata-section )?")
+        else:
+            elements.append(ComputeMultiplicity("%s " % element["name"], element))
+    if classinfos.get("order", True) or len(elements) == 0:
+        return re.compile(base_structure_pattern + "".join(elements) + "$")
+    else:
+        raise ValueError("XSD structure not yet supported!")
+
+"""
 Method that generate the method for creating a class instance
 """
 def generateClassCreateFunction(class_definition):
@@ -1214,12 +1284,22 @@ def generateGetattrMethod(factory, class_definition, classinfos):
                 return None 
             elif element_infos["type"] == ANY:
                 return element_infos["elmt_type"]["extract"](self)
+            elif name == "content" and element_infos["elmt_type"]["type"] == SIMPLETYPE:
+                return element_infos["elmt_type"]["extract"](self.text, extract=False)
             else:
                 element_name = factory.etreeNamespaceFormat % name
                 if element_infos["maxOccurs"] == "unbounded" or element_infos["maxOccurs"] > 1:
-                    return self.findall(element_name)
+                    values = self.findall(element_name)
+                    if element_infos["elmt_type"]["type"] == SIMPLETYPE:
+                        return map(lambda value:
+                            element_infos["elmt_type"]["extract"](value.text, extract=False), 
+                            values)
+                    return values
                 else:
-                    return self.find(element_name)
+                    value = self.find(element_name)
+                    if element_infos["elmt_type"]["type"] == SIMPLETYPE:
+                        return element_infos["elmt_type"]["extract"](value.text, extract=False)
+                    return value
             
         elif classinfos.has_key("base"):
             return classinfos["base"].__getattr__(self, name)
@@ -1252,6 +1332,9 @@ def generateSetattrMethod(factory, class_definition, classinfos):
             if element_infos["type"] == ANY:
                 element_infos["elmt_type"]["generate"](self, value)
             
+            elif name == "content" and element_infos["elmt_type"]["type"] == SIMPLETYPE:
+                self.text = element_infos["elmt_type"]["generate"](value)
+            
             else:
                 prefix = ("%s:" % factory.TargetNamespace
                           if factory.TargetNamespace is not None else "")
@@ -1277,8 +1360,12 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                     
                     if not isinstance(value, ListType):
                         value = [value]
-                        
+                    
                     for element in reversed(value):
+                        if element_infos["elmt_type"]["type"] == SIMPLETYPE:
+                            tmp_element = etree.Element(factory.etreeNamespaceFormat % name)
+                            tmp_element.text = element_infos["elmt_type"]["generate"](element)
+                            element = tmp_element
                         self.insert(insertion_point, element)
         
         elif classinfos.has_key("base"):
@@ -1596,6 +1683,8 @@ NAMESPACE_PATTERN = re.compile("xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
 
 class DefaultElementClass(etree.ElementBase):
     
+    StructurePattern = re.compile("$")
+    
     def _init_(self):
         pass
     
@@ -1625,8 +1714,19 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
         
     def lookup(self, document, element):
         parent = element.getparent()
-        return self.GetElementClass(element.tag, 
+        element_class = self.GetElementClass(element.tag, 
             parent.tag if parent is not None else None)
+        if isinstance(element_class, ListType):
+            children = "".join([
+                "%s " % etree.QName(child.tag).localname
+                for child in element])
+            for possible_class in element_class:
+                if isinstance(possible_class, (StringType, UnicodeType)):
+                    possible_class = self.GetElementClass(possible_class)
+                if possible_class.StructurePattern.match(children) is not None:
+                    return possible_class
+            return element_class[0]
+        return element_class
 
 class XMLClassParser(etree.XMLParser):
 
@@ -1669,19 +1769,26 @@ class XMLClassParser(etree.XMLParser):
             if parent_tag is not None else parent_tag, 
             None)
     
-    def CreateElement(self, element_tag, parent_tag=None):
-        new_element = self.GetElementClass(element_tag, parent_tag)()
+    def CreateElement(self, element_tag, parent_tag=None, class_idx=None):
+        element_class = self.GetElementClass(element_tag, parent_tag)
+        if isinstance(element_class, ListType):
+            if class_idx is not None and class_idx < len(element_class):
+                new_element = element_class[class_idx]()
+            else:
+                raise ValueError, "No corresponding class found!"
+        else:
+            new_element = element_class()
         DefaultElementClass.__setattr__(new_element, "tag", self.DefaultNamespaceFormat % element_tag)
         new_element._init_()
         return new_element
     
 def GenerateParser(factory, xsdstring):
     ComputedClasses = factory.CreateClasses()
-    if factory.FileName is not None and len(ComputedClasses) == 1:
+    
+    if factory.FileName is not None:
         ComputedClasses = ComputedClasses[factory.FileName]
     BaseClass = [(name, XSDclass) for name, XSDclass in ComputedClasses.items() if XSDclass.IsBaseClass]
-    UpdateXMLClassGlobals(ComputedClasses)
-    
+       
     parser = XMLClassParser(
         factory.NSMAP,
         factory.etreeNamespaceFormat,
@@ -1692,7 +1799,4 @@ def GenerateParser(factory, xsdstring):
     parser.set_element_class_lookup(class_lookup)
     
     return parser
-
-def UpdateXMLClassGlobals(classes):
-    globals().update(classes)
 
