@@ -1377,8 +1377,8 @@ class PLCControler:
                 return_type_infos_xslt_tree = etree.XSLT(
                     variables_infos_xslt, extensions = {
                           ("var_infos_ns", "var_tree"): VarTree(self)})
-            return [extract_param(el) 
-                   for el in return_type_infos_xslt_tree(return_type).getroot()]
+                return [extract_param(el) 
+                       for el in return_type_infos_xslt_tree(return_type).getroot()]
                 
         return [None, ([], [])] 
 
@@ -2486,9 +2486,7 @@ class PLCControler:
                 return 
             for param, value in infos.items():
                 if param == "name":
-                    expression = PLCOpenParser.CreateElement("expression", variable.getLocalTag())
-                    expression.text = value
-                    variable.setexpression(expression)
+                    variable.setexpression(value)
                 elif param == "executionOrder" and variable.getexecutionOrderId() != value:
                     element.setelementExecutionOrder(variable, value)
                 elif param == "height":
@@ -2639,9 +2637,7 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    variable = PLCOpenParser.CreateElement("variable", "contact")
-                    variable.text = value
-                    contact.setvariable(variable)
+                    contact.setvariable(value)
                 elif param == "type":
                     negated, edge = {
                         CONTACT_NORMAL: (False, "none"),
@@ -2684,9 +2680,7 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    variable = PLCOpenParser.CreateElement("variable", "coil")
-                    variable.text = value
-                    coil.setvariable(variable)
+                    coil.setvariable(value)
                 elif param == "type":
                     negated, storage, edge = {
                         COIL_NORMAL: (False, "none", "none"),

@@ -220,7 +220,7 @@ if cls:
             new_address = groups[0] + new_leading + groups[2]
             text = text[:result.start()] + new_address + text[result.end():]
             startpos = result.start() + len(new_address)
-            result = address_model.search(self.text, startpos)
+            result = address_model.search(text, startpos)
         self.setanyText(text)
     setattr(cls, "updateElementAddress", updateElementAddress)
     
@@ -1876,7 +1876,7 @@ def _getvariableinfosFunction(type, input, output):
         infos = _getelementinfos(self)
         infos["type"] = type
         specific_values = infos["specific_values"]
-        specific_values["name"] = self.getexpression().text
+        specific_values["name"] = self.getexpression()
         _getexecutionOrder(self, specific_values)
         if input and output:
             infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True, "input"))
@@ -1920,7 +1920,7 @@ def _getldelementinfosFunction(ld_element_type):
         infos = _getelementinfos(self)
         infos["type"] = ld_element_type
         specific_values = infos["specific_values"]
-        specific_values["name"] = self.getvariable().text
+        specific_values["name"] = self.getvariable()
         _getexecutionOrder(self, specific_values)
         specific_values["negated"] = self.getnegated()
         specific_values["edge"] = self.getedge()
@@ -2050,15 +2050,15 @@ if cls:
     setattr(cls, "getinfos", _getpowerrailinfosFunction("rightPowerRail"))
 
 def _UpdateLDElementName(self, old_name, new_name):
-    if self.variable.text == old_name:
-        self.variable.text = new_name
+    if self.variable == old_name:
+        self.variable = new_name
 
 def _UpdateLDElementAddress(self, address_model, new_leading):
-    self.variable.text = update_address(self.variable.text, address_model, new_leading)
+    self.variable = update_address(self.variable, address_model, new_leading)
 
 def _getSearchInLDElement(ld_element_type):
     def SearchInLDElement(self, criteria, parent_infos=[]):
-        return _Search([("reference", self.variable.text)], criteria, parent_infos + [ld_element_type, self.getlocalId()])
+        return _Search([("reference", self.variable)], criteria, parent_infos + [ld_element_type, self.getlocalId()])
     return SearchInLDElement
 
 cls = _initElementClass("contact", "ldObjects", "single")
@@ -2412,14 +2412,14 @@ if cls:
     setattr(cls, "Search", Search)
 
 def _SearchInIOVariable(self, criteria, parent_infos=[]):
-    return _Search([("expression", self.expression.text)], criteria, parent_infos + ["io_variable", self.getlocalId()])
+    return _Search([("expression", self.expression)], criteria, parent_infos + ["io_variable", self.getlocalId()])
 
 def _UpdateIOElementName(self, old_name, new_name):
-    if self.expression.text == old_name:
-        self.expression.text = new_name
+    if self.expression == old_name:
+        self.expression = new_name
 
 def _UpdateIOElementAddress(self, old_name, new_name):
-    self.expression.text = update_address(self.expression.text, address_model, new_leading)
+    self.expression = update_address(self.expression, address_model, new_leading)
 
 cls = _initElementClass("inVariable", "fbdObjects")
 if cls:

@@ -924,6 +924,8 @@ def ReduceInclude(factory, attributes, elements):
     else:
         factory.Namespaces[include_factory.TargetNamespace] = include_factory.Namespaces[include_factory.TargetNamespace]
     factory.ComputedClasses.update(include_factory.ComputedClasses)
+    factory.ComputedClassesLookUp.update(include_factory.ComputedClassesLookUp)
+    factory.EquivalentClassesParent.update(include_factory.EquivalentClassesParent)
     return None
     
 def ReduceRedefine(factory, attributes, elements):
@@ -1092,7 +1094,11 @@ def GenerateParserFromXSD(filepath):
     xsdfile = open(filepath, 'r')
     xsdstring = xsdfile.read()
     xsdfile.close()
-    return GenerateParser(XSDClassFactory(minidom.parseString(xsdstring), filepath), xsdstring)
+    cwd = os.getcwd()
+    os.chdir(os.path.dirname(filepath))
+    parser = GenerateParser(XSDClassFactory(minidom.parseString(xsdstring), filepath), xsdstring)
+    os.chdir(cwd)
+    return parser
 
 """
 This function generate a xml from the xsd given as a string
