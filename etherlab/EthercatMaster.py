@@ -1,6 +1,7 @@
 import os
 import cPickle
-from xml.dom import minidom
+from lxml import etree
+from copy import deepcopy
 
 import wx
 
@@ -81,14 +82,14 @@ class EtherlabLibrary(POULibrary):
 #                 Ethercat MASTER
 #--------------------------------------------------
 
-EtherCATConfigClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd")) 
+EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd")) 
 
 def sort_commands(x, y):
     if x["Index"] == y["Index"]:
         return cmp(x["Subindex"], y["Subindex"])
     return cmp(x["Index"], y["Index"])
 
-cls = EtherCATConfigClasses.get("Config_Slave", None)
+cls = EtherCATConfigParser.GetElementClass("Slave", "Config")
 if cls:
     
     def getType(self):
@@ -152,12 +153,12 @@ if cls:
     
     def appendStartupCommand(self, command_infos):
         InitCmds = self.getInitCmds(True)
-        command = EtherCATConfigClasses["InitCmds_InitCmd"]()
+        command = EtherCATConfigParser.CreateElement("InitCmd", "InitCmds", 1)
+        InitCmds.appendInitCmd(command)
         command.setIndex(command_infos["Index"])
         command.setSubIndex(command_infos["Subindex"])
         command.setData(command_infos["Value"])
         command.setComment(command_infos["Description"])
-        InitCmds.appendInitCmd(command)
         return len(InitCmds.getInitCmd()) - 1
     setattr(cls, "appendStartupCommand", appendStartupCommand)
     
@@ -206,7 +207,7 @@ ProcessVariablesXSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     </xsd:schema>
 """
 
-ProcessVariablesClasses = GenerateClassesFromXSDstring(ProcessVariablesXSD) 
+ProcessVariablesParser = GenerateParserFromXSDstring(ProcessVariablesXSD) 
 
 class _EthercatCTN:
 
@@ -218,29 +219,27 @@ class _EthercatCTN:
     def __init__(self):
         config_filepath = self.ConfigFileName()
         config_is_saved = False
-        self.Config = EtherCATConfigClasses["EtherCATConfig"]()
         if os.path.isfile(config_filepath):
             config_xmlfile = open(config_filepath, 'r')
-            config_tree = minidom.parse(config_xmlfile)
+            self.Config = etree.fromstring(
+                config_xmlfile.read(), EtherCATConfigParser)
+            config_is_saved = True
             config_xmlfile.close()
-            
-            for child in config_tree.childNodes:
-                if child.nodeType == config_tree.ELEMENT_NODE and child.nodeName == "EtherCATConfig":
-                    self.Config.loadXMLTree(child)
-                    config_is_saved = True
+        
+        else:
+            self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
         
         process_filepath = self.ProcessVariablesFileName()
         process_is_saved = False
-        self.ProcessVariables = ProcessVariablesClasses["ProcessVariables"]()
         if os.path.isfile(process_filepath):
             process_xmlfile = open(process_filepath, 'r')
-            process_tree = minidom.parse(process_xmlfile)
+            self.ProcessVariables = etree.fromstring(
+                process_xmlfile.read(), ProcessVariablesParser)
+            process_is_saved = True
             process_xmlfile.close()
             
-            for child in process_tree.childNodes:
-                if child.nodeType == process_tree.ELEMENT_NODE and child.nodeName == "ProcessVariables":
-                    self.ProcessVariables.loadXMLTree(child)
-                    process_is_saved = True
+        else:
+            self.ProcessVariables = ProcessVariablesParser.CreateElement("ProcessVariables")
         
         if config_is_saved and process_is_saved:
             self.CreateBuffer(True)
@@ -352,7 +351,7 @@ class _EthercatCTN:
     def SetProcessVariables(self, variables):
         vars = []
         for var in variables:
-            variable = ProcessVariablesClasses["ProcessVariables_variable"]()
+            variable = ProcessVariablesParser.CreateElement("variable", "ProcessVariables")
             variable.setName(var["Name"])
             variable.setComment(var["Description"])
             if var["ReadFrom"] != "":
@@ -456,12 +455,12 @@ class _EthercatCTN:
         
         slave = self.GetSlave(newConfNodeOpj.BaseParams.getIEC_Channel())
         if slave is None:
-            slave = EtherCATConfigClasses["Config_Slave"]()
+            slave = EtherCATConfigParser.CreateElement("Slave", "Config")
+            self.Config.getConfig().appendSlave(slave)
             slave_infos = slave.getInfo()
             slave_infos.setName("undefined")
             slave_infos.setPhysAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
             slave_infos.setAutoIncAddr(0)
-            self.Config.getConfig().appendSlave(slave)
             self.BufferModel()
             self.OnCTNSave()
         
@@ -542,6 +541,7 @@ class _EthercatCTN:
                 type_infos = slave.getType()
                 device, module_extra_params = self.GetModuleInfos(type_infos)
         if device is not None:
+            print "Get Entries List", limits
             entries = device.GetEntriesList(limits)
             #print entries
             entries_list = entries.items()
@@ -647,23 +647,22 @@ class _EthercatCTN:
     def OnCTNSave(self, from_project_path=None):
         config_filepath = self.ConfigFileName()
         
-        config_text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-        config_extras = {"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
-                  "xsi:noNamespaceSchemaLocation" : "EtherCATInfo.xsd"}
-        config_text += self.Config.generateXMLText("EtherCATConfig", 0, config_extras)
-
         config_xmlfile = open(config_filepath,"w")
-        config_xmlfile.write(config_text.encode("utf-8"))
+        config_xmlfile.write(etree.tostring(
+            self.Config, 
+            pretty_print=True, 
+            xml_declaration=True, 
+            encoding='utf-8'))
         config_xmlfile.close()
         
         process_filepath = self.ProcessVariablesFileName()
         
-        process_text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-        process_extras = {"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance"}
-        process_text += self.ProcessVariables.generateXMLText("ProcessVariables", 0, process_extras)
-
         process_xmlfile = open(process_filepath,"w")
-        process_xmlfile.write(process_text.encode("utf-8"))
+        process_xmlfile.write(etree.tostring(
+            self.ProcessVariables, 
+            pretty_print=True, 
+            xml_declaration=True, 
+            encoding='utf-8'))
         process_xmlfile.close()
         
         self.Buffer.CurrentSaved()
@@ -751,13 +750,18 @@ class _EthercatCTN:
     Return a copy of the config
     """
     def Copy(self, model):
-        return cPickle.loads(cPickle.dumps(model))
+        return deepcopy(model)
     
     def CreateBuffer(self, saved):
-        self.Buffer = UndoBuffer(cPickle.dumps((self.Config, self.ProcessVariables)), saved)
+        self.Buffer = UndoBuffer(
+            (EtherCATConfigParser.Dumps(self.Config), 
+             ProcessVariablesParser.Dumps(self.ProcessVariables)), 
+            saved)
         
     def BufferModel(self):
-        self.Buffer.Buffering(cPickle.dumps((self.Config, self.ProcessVariables)))
+        self.Buffer.Buffering(
+            (EtherCATConfigParser.Dumps(self.Config), 
+             ProcessVariablesParser.Dumps(self.ProcessVariables)))
     
     def ModelIsSaved(self):
         if self.Buffer is not None:
@@ -766,10 +770,14 @@ class _EthercatCTN:
             return True
 
     def LoadPrevious(self):
-        self.Config, self.ProcessVariables = cPickle.loads(self.Buffer.Previous())
+        config, process_variables = self.Buffer.Previous()
+        self.Config = EtherCATConfigParser.Loads(config)
+        self.ProcessVariables = ProcessVariablesParser.Loads(process_variables)
     
     def LoadNext(self):
-        self.Config, self.ProcessVariables = cPickle.loads(self.Buffer.Next())
+        config, process_variables = self.Buffer.Next()
+        self.Config = EtherCATConfigParser.Loads(config)
+        self.ProcessVariables = ProcessVariablesParser.Loads(process_variables)
     
     def GetBufferState(self):
         first = self.Buffer.IsFirst()
