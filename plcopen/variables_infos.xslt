@@ -69,7 +69,7 @@
         <Option><xsl:value-of select="$var_option"/></Option>
         <Location><xsl:value-of select="@address"/></Location>
         <Initial_Value><xsl:apply-templates select="ppx:initialValue"/></Initial_Value>
-        <Edit/>
+        <Edit><xsl:apply-templates select="ppx:type" mode="var_edit"/></Edit>
         <Tree><xsl:apply-templates select="ppx:type" mode="var_tree"/></Tree>
         <Documentation>
           <xsl:value-of select="ppx:documentation/xhtml:p/text()"/>
@@ -104,7 +104,13 @@
   <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
     <xsl:value-of select="local-name()"/>
   </xsl:template>
-    <xsl:template match="ppx:initialValue">
+  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived" mode="var_edit">
+    <ns:is_edited/>
+  </xsl:template>
+  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*" mode="var_edit">
+    <xsl:text>True</xsl:text>
+  </xsl:template>
+  <xsl:template match="ppx:initialValue">
     <xsl:apply-templates/>
   </xsl:template>
   <xsl:template match="ppx:value">
