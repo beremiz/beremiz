@@ -25,7 +25,11 @@ EtherCATInfo_XPath = lambda xpath: etree.XPath(xpath)
 def extract_param(el):
     if el.tag == "Index":
         return "#x%4.4X" % int(el.text)
-    if el.tag == "PDOMapping":
+    elif el.tag == "BitSize":
+        if el.text is None:
+            return 0
+        return int(el.text)
+    elif el.tag == "PDOMapping":
         if el.text is None:
             return ""
         return el.text.upper()
