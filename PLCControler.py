@@ -308,7 +308,11 @@ class InstanceTagName(etree.XSLTExtension):
         self.process_children(context, tagname_infos)
         tagname = etree.Element('tagname')
         tagname.text = self.GetTagName(tagname_infos)
-        output_parent.append(tagname)
+        print etree.tostring(tagname)
+        try:
+            output_parent.append(tagname)
+        except:
+            pass
 
 class ConfigTagName(InstanceTagName):
     
