@@ -74,7 +74,7 @@
 	        <xsl:with-param name="path" select="$element_path"/>
 	      </xsl:call-template>
 	    </xsl:variable>
-        <xsl:apply-templates select="ppx:pouInstance[@name=$child_name] | ppx:task|ppx:pouInstance[@name=$child_name] | ppx:globalVars/ppx:variable[@name=$child_name]/ppx:type/*[self::ppx:derived or self::ppx:struct or self::ppx:array]">
+        <xsl:apply-templates select="ppx:pouInstance[@name=$child_name] | ppx:task/ppx:pouInstance[@name=$child_name] | ppx:globalVars/ppx:variable[@name=$child_name]/ppx:type/*[self::ppx:derived or self::ppx:struct or self::ppx:array]">
           <xsl:with-param name="element_path">
             <xsl:call-template name="next_path">
               <xsl:with-param name="path" select="$element_path"/>
@@ -112,20 +112,15 @@
         <xsl:with-param name="path" select="$element_path"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="next_child_path">
-      <xsl:call-template name="next_path">
-        <xsl:with-param name="path" select="$element_path"/>
-      </xsl:call-template>
-    </xsl:variable>
     <xsl:apply-templates select="ppx:interface/*/ppx:variable[@name=$child_name]/ppx:type/*[self::ppx:derived or self::ppx:struct or self::ppx:array]">
-      <xsl:with-param name="next_child_path" select="next_child_path"/>
+      <xsl:with-param name="element_path">
+        <xsl:call-template name="next_path">
+          <xsl:with-param name="path" select="$element_path"/>
+        </xsl:call-template>
+      </xsl:with-param>
     </xsl:apply-templates>
-    <xsl:apply-templates select="ppx:actions/ppx:action[@name=$child_name]">
-      <xsl:with-param name="next_child_path" select="next_child_path"/>
-    </xsl:apply-templates>
-    <xsl:apply-templates select="ppx:transitions/ppx:transition[@name=$child_name]">
-      <xsl:with-param name="next_child_path" select="next_child_path"/>
-    </xsl:apply-templates>
+    <xsl:apply-templates select="ppx:actions/ppx:action[@name=$child_name]"/>
+    <xsl:apply-templates select="ppx:transitions/ppx:transition[@name=$child_name]"/>
   </xsl:template>
   <xsl:template match="ppx:action">
     <ns:action_tagname>
