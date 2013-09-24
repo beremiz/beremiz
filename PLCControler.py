@@ -115,7 +115,7 @@ def extract_param(el):
     elif el.tag == "Tree":
         return generate_var_tree(el)
     elif el.tag == "Edit":
-        return True
+        return el.text == "True"
     elif el.text is None:
         return ''
     return el.text
@@ -156,6 +156,18 @@ class VarTree(etree.XSLTExtension):
         if datatype_infos is not None:
             self.apply_templates(context, datatype_infos, output_parent)
             return
+
+class VarIsEdited(etree.XSLTExtension):
+    
+    def __init__(self, controller, debug):
+        etree.XSLTExtension.__init__(self)
+        self.Controller = controller
+        self.Debug = debug
+    
+    def execute(self, context, self_node, input_node, output_parent):
+        typename = input_node.get("name")
+        output_parent.text = str(
+            self.Controller.GetPou(typename, self.Debug) is None)
 
 variables_infos_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"))
@@ -1211,7 +1223,8 @@ class PLCControler:
         variables_infos_xslt_tree = etree.XSLT(
             variables_infos_xslt, extensions = {
                 ("var_infos_ns", "add_variable"): AddVariable(variables),
-                ("var_infos_ns", "var_tree"): VarTree(self, debug)})
+                ("var_infos_ns", "var_tree"): VarTree(self, debug),
+                ("var_infos_ns", "is_edited"): VarIsEdited(self, debug)})
         variables_infos_xslt_tree(object_with_vars)
         
         return variables
