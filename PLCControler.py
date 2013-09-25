@@ -1547,7 +1547,7 @@ class PLCControler:
         project = self.GetProject(debug)
         if project is not None:
             blocktypes.extend(
-                [pou.getblockInfos()
+                [pou.getname()
                  for pou in project.getpous(filter=["program"])])
         return blocktypes
 
