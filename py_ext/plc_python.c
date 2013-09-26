@@ -163,7 +163,6 @@ char* PythonIterator(char* result, void** id)
 	LockPython();
 	/* Get current FB */
 	data__ = EvalFBs[Current_Python_EvalFB];
-	*id=data__;
 	if(data__ && /* may be null at first run */
 	    __GET_VAR(data__->STATE) == PYTHON_FB_PROCESSING){ /* some answer awaited*/
 	   	/* If result not None */
@@ -209,6 +208,7 @@ char* PythonIterator(char* result, void** id)
 	__SET_VAR(data__->, BUFFER, 0, .body[__GET_VAR(data__->BUFFER, .len)]);
 	/* next command is BUFFER */
 	next_command = (char*)__GET_VAR(data__->BUFFER, .body);
+	*id=data__;
 	/* free python mutex */
 	UnLockPython();
 	/* return the next command to eval */

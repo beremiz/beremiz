@@ -329,7 +329,7 @@ class PLCObject(pyro.ObjBase):
                 if ccmd is None or ccmd!=cmd:
                     AST = compile(cmd, '<plc>', 'eval')
                     compile_cache[FBID]=(cmd,AST)
-                result,exp = self.evaluator(eval,cmd,self.python_runtime_vars)
+                result,exp = self.evaluator(eval,AST,self.python_runtime_vars)
                 if exp is not None: 
                     res = "#EXCEPTION : "+str(exp[1])
                     self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,
