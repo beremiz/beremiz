@@ -26,6 +26,8 @@ from xmlclass import *
 from types import *
 import os, re
 from lxml import etree
+from collections import OrderedDict
+
 """
 Dictionary that makes the relation between var names in plcopen and displayed values
 """
@@ -1089,11 +1091,11 @@ if cls:
         return None
     setattr(cls, "getinstance", getinstance)
     
-    def getrandomInstance(self, exclude):
+    def getinstancesIds(self):
         if len(self.body) > 0:
-            return self.body[0].getcontentRandomInstance(exclude)
-        return None
-    setattr(cls, "getrandomInstance", getrandomInstance)
+            return self.body[0].getcontentInstancesIds()
+        return []
+    setattr(cls, "getinstancesIds", getinstancesIds)
     
     def getinstanceByName(self, name):
         if len(self.body) > 0:
@@ -1609,18 +1611,13 @@ if cls:
             raise TypeError, _("%s body don't have instances!")%self.content.getLocalTag()
     setattr(cls, "getcontentInstance", getcontentInstance)
     
-    def getcontentRandomInstance(self, exclude):
+    def getcontentInstancesIds(self):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = self.content.xpath("*%s[position()=1]" %  
-                ("[not(%s)]" % " or ".join(
-                    map(lambda x: "@localId=%d" % x, exclude))
-                if len(exclude) > 0 else ""))
-            if len(instance) > 0:
-                return instance[0]
-            return None
+            return OrderedDict([(instance.getlocalId(), True)
+                                for instance in self.content])
         else:
             raise TypeError, _("%s body don't have instances!")%self.content.getLocalTag()
-    setattr(cls, "getcontentRandomInstance", getcontentRandomInstance)
+    setattr(cls, "getcontentInstancesIds", getcontentInstancesIds)
     
     def getcontentInstanceByName(self, name):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
