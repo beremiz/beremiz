@@ -2287,24 +2287,25 @@ class PLCControler:
                 instance.translate(*diff)
             
             return new_id, connections
-                
-    # Return the current pou editing informations
-    def GetEditedElementInstanceInfos(self, tagname, id = None, exclude = [], debug = False):
-        infos = {}
-        instance = None
+    
+    # Return the current pou editing instances idx
+    def GetEditedElementInstancesIds(self, tagname, debug = False):
         element = self.GetEditedElement(tagname, debug)
         if element is not None:
-            # if id is defined
-            if id is not None:
-                instance = element.getinstance(id)
-            else:
-                instance = element.getrandomInstance(exclude)
-        if instance is not None:
-            infos = instance.getinfos()
-            if infos["type"] in ["input", "output", "inout"]:
-                var_type = self.GetEditedElementVarValueType(tagname, infos["specific_values"]["name"], debug)
-                infos["specific_values"]["value_type"] = var_type
-            return infos
+            return element.getinstancesIds()
+        return []
+    
+    # Return the current pou editing informations
+    def GetEditedElementInstanceInfos(self, tagname, id, debug = False):
+        element = self.GetEditedElement(tagname, debug)
+        if element is not None:
+            instance = element.getinstance(id)
+            if instance is not None:
+                infos = instance.getinfos()
+                if infos["type"] in ["input", "output", "inout"]:
+                    var_type = self.GetEditedElementVarValueType(tagname, infos["specific_values"]["name"], debug)
+                    infos["specific_values"]["value_type"] = var_type
+                return infos
         return None
     
     def ClearEditedElementExecutionOrder(self, tagname):
