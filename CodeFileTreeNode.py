@@ -1,10 +1,11 @@
-import os, re
+import os, re, traceback
 
 from copy import deepcopy
 from lxml import etree
 from xmlclass import GenerateParserFromXSDstring
 
 from PLCControler import UndoBuffer
+from ConfigTreeNode import XSDSchemaErrorMessage
 
 CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -84,9 +85,16 @@ class CodeFile:
                 (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
                 (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 codefile_xml = cre.sub(repl, codefile_xml)
-            self.CodeFile = etree.fromstring(codefile_xml, self.CodeFileParser)    
-            self.CreateCodeFileBuffer(True)
-        
+            
+            try:
+                self.CodeFile, error = self.CodeFileParser.LoadXMLString(codefile_xml)
+                if error is not None:
+                    self.GetCTRoot().logger.write_warning(
+                        XMLSyntaxErrorMessage % ((self.CODEFILE_NAME,) + error))
+                self.CreateCodeFileBuffer(True)
+            except Exception, exc:
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))
+                self.GetCTRoot().logger.write_error(traceback.format_exc())
         else:
             self.CodeFile = self.CodeFileParser.CreateRoot()
             self.CreateCodeFileBuffer(False)

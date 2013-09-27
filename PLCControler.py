@@ -844,8 +844,10 @@ class PLCControler:
         Adds the POU defined by 'pou_xml' to the current project with type 'pou_type'
         '''
         try:
-            new_pou = LoadPou(pou_xml)
+            new_pou, error = LoadPou(pou_xml)
         except:
+            error = ""
+        if error is not None:
             return _("Couldn't paste non-POU object.")
         
         name = new_pou.getname()
@@ -2207,10 +2209,10 @@ class PLCControler:
             new_id = {}
             
             try:
-                instances = LoadPouInstances(text.encode("utf-8"), bodytype)
-                if len(instances) == 0:
-                    raise ValueError
+                instances, error = LoadPouInstances(text.encode("utf-8"), bodytype)
             except:
+                instances, error = [], ""
+            if error is not None or len(instances) == 0:
                 return _("Invalid plcopen element(s)!!!")
             
             exclude = {}
@@ -3063,10 +3065,9 @@ class PLCControler:
             return tasks_data, instances_data
 
     def OpenXMLFile(self, filepath):
-        #try:
-        self.Project = LoadProject(filepath)
-        #except Exception, e:
-        #    return _("Project file syntax error:\n\n") + str(e)
+        self.Project, error = LoadProject(filepath)
+        if self.Project is None:
+            return _("Project file syntax error:\n\n") + error
         self.SetFilePath(filepath)
         self.CreateProjectBuffer(True)
         self.ProgramChunks = []
@@ -3075,7 +3076,7 @@ class PLCControler:
         self.CurrentCompiledProject = None
         self.Buffering = False
         self.CurrentElementEditing = None
-        return None
+        return error
         
     def SaveXMLFile(self, filepath = None):
         if not filepath and self.FilePath == "":

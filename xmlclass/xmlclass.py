@@ -1730,7 +1730,7 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
 class XMLClassParser(etree.XMLParser):
 
-    def __init__(self, namespaces, default_namespace_format, base_class, *args, **kwargs):
+    def __init__(self, namespaces, default_namespace_format, base_class, xsd_schema, *args, **kwargs):
         etree.XMLParser.__init__(self, *args, **kwargs)
         self.DefaultNamespaceFormat = default_namespace_format
         self.NSMAP = namespaces
@@ -1742,10 +1742,18 @@ class XMLClassParser(etree.XMLParser):
         else:
             self.RootNSMAP = namespaces
         self.BaseClass = base_class
+        self.XSDSchema = xsd_schema
     
     def set_element_class_lookup(self, class_lookup):
         etree.XMLParser.set_element_class_lookup(self, class_lookup)
         self.ClassLookup = class_lookup
+    
+    def LoadXMLString(self, xml_string):
+        tree = etree.fromstring(xml_string, self)
+        if not self.XSDSchema.validate(tree):
+            error = self.XSDSchema.error_log.last_error
+            return tree, (error.line, error.message)
+        return tree, None 
     
     def Dumps(self, xml_obj):
         return etree.tostring(xml_obj)
@@ -1793,7 +1801,7 @@ def GenerateParser(factory, xsdstring):
         factory.NSMAP,
         factory.etreeNamespaceFormat,
         BaseClass[0] if len(BaseClass) == 1 else None,
-        schema = etree.XMLSchema(etree.fromstring(xsdstring)),
+        etree.XMLSchema(etree.fromstring(xsdstring)),
         strip_cdata = False, remove_blank_text=True)
     class_lookup = XMLElementClassLookUp(factory.ComputedClassesLookUp)
     parser.set_element_class_lookup(class_lookup)

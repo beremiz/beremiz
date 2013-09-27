@@ -27,7 +27,7 @@ from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize, LogLevelsCount, LogLevels
-from ConfigTreeNode import ConfigTreeNode
+from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
 base_folder = os.path.split(sys.path[0])[0]
 
@@ -318,9 +318,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if not os.path.isfile(plc_file):
             return _("Chosen folder doesn't contain a program. It's not a valid project!")
         # Load PLCOpen file
-        result = self.OpenXMLFile(plc_file)
-        if result:
-            return result
+        error = self.OpenXMLFile(plc_file)
+        if error is not None:
+            if self.Project is not None:
+                self.logger.write_warning(
+                    XSDSchemaErrorMessage % (("PLC",) + error))
+            else:
+                return error
         if len(self.GetProjectConfigNames()) == 0:
             self.AddProjectDefaultConfiguration()
         # Change XSD into class members
