@@ -582,6 +582,8 @@ class ConfigTreeNode:
         if os.path.isfile(methode_name):
             execfile(methode_name)
         
+        ConfNodeName = CTNName if CTNName is not None else self.CTNName()
+        
         # Get the base xml tree
         if self.MandatoryParams:
             try:
@@ -589,11 +591,11 @@ class ConfigTreeNode:
                 self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
                 if error is not None:
                     self.GetCTRoot().logger.write_warning(
-                        XSDSchemaErrorMessage % ((CTNName + " BaseParams",) + error))
+                        XSDSchemaErrorMessage % ((ConfNodeName + " BaseParams",) + error))
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (CTNName, unicode(exc)))
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (ConfNodeName, unicode(exc)))
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
@@ -603,13 +605,13 @@ class ConfigTreeNode:
                 obj, error = self.Parser.LoadXMLString(xmlfile.read())
                 if error is not None:
                     self.GetCTRoot().logger.write_warning(
-                        XSDSchemaErrorMessage % ((CTNName,) + error))
+                        XSDSchemaErrorMessage % ((ConfNodeName,) + error))
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (ConfNodeName, unicode(exc)))
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
     def LoadChildren(self):

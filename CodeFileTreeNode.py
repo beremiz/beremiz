@@ -90,7 +90,7 @@ class CodeFile:
                 self.CodeFile, error = self.CodeFileParser.LoadXMLString(codefile_xml)
                 if error is not None:
                     self.GetCTRoot().logger.write_warning(
-                        XMLSyntaxErrorMessage % ((self.CODEFILE_NAME,) + error))
+                        XSDSchemaErrorMessage % ((self.CODEFILE_NAME,) + error))
                 self.CreateCodeFileBuffer(True)
             except Exception, exc:
                 self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))
