@@ -19,14 +19,14 @@ class toolchain_gcc():
         """
         Returns list of builder specific CFLAGS
         """
-        return [self.CTRInstance.GetTarget().getcontent()["value"].getCFLAGS()]
+        return [self.CTRInstance.GetTarget().getcontent().getCFLAGS()]
 
     def getBuilderLDFLAGS(self):
         """
         Returns list of builder specific LDFLAGS
         """
         return self.CTRInstance.LDFLAGS + \
-               [self.CTRInstance.GetTarget().getcontent()["value"].getLDFLAGS()]
+               [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
 
     def GetBinaryCode(self):
         try:
@@ -89,7 +89,7 @@ class toolchain_gcc():
                 
     def build(self):
         # Retrieve toolchain user parameters
-        toolchain_params = self.CTRInstance.GetTarget().getcontent()["value"]
+        toolchain_params = self.CTRInstance.GetTarget().getcontent()
         self.compiler = toolchain_params.getCompiler()
         self.linker = toolchain_params.getLinker()
 

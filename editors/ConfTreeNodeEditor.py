@@ -496,6 +496,8 @@ class ConfTreeNodeEditor(EditorPanel):
     def GetChoiceCallBackFunction(self, choicectrl, path):
         def OnChoiceChanged(event):
             res = self.SetConfNodeParamsAttribute(path, choicectrl.GetStringSelection())
+            if res is None:
+                res = ""
             choicectrl.SetStringSelection(res)
             event.Skip()
         return OnChoiceChanged

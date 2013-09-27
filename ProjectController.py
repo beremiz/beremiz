@@ -221,9 +221,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def GetTarget(self):
         target = self.BeremizRoot.getTargetType()
         if target.getcontent() is None:
-            target = self.Classes["BeremizRoot_TargetType"]()
+            temp_root = self.Parser.CreateRoot()
+            target = self.Parser.CreateElement("TargetType", "BeremizRoot")
+            temp_root.setTargetType(target)
             target_name = self.GetDefaultTargetName()
-            target.setcontent({"name": target_name, "value": self.Classes["TargetType_%s"%target_name]()})
+            target.setcontent(self.Parser.CreateElement(target_name, "TargetType"))
         return target
     
     def GetParamsAttributes(self, path = None):
@@ -659,7 +661,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Return a Builder (compile C code into machine code)
         """
         # Get target, module and class name
-        targetname = self.GetTarget().getcontent()["name"]
+        targetname = self.GetTarget().getcontent().getLocalTag()
         targetclass = targets.GetBuilder(targetname)
 
         # if target already 
@@ -861,7 +863,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 "init_calls":"\n",
                 "cleanup_calls":"\n"
                 }
-        plc_main_code += targets.GetTargetCode(self.GetTarget().getcontent()["name"])
+        plc_main_code += targets.GetTargetCode(self.GetTarget().getcontent().getLocalTag())
         plc_main_code += targets.GetCode("plc_main_tail")
         return plc_main_code
 

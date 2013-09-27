@@ -160,6 +160,11 @@ class FBDBlockDialog(BlockPreviewDialog):
         # Extract block type defined in parameters
         blocktype = values.get("type", None)
         
+        # Select block type in library panel    
+        if blocktype is not None:
+            self.LibraryPanel.SelectTreeItem(blocktype, 
+                                             values.get("inputs", None))
+        
         # Define regular expression for determine if block name is block
         # default name
         default_name_model = GetBlockTypeDefaultNameModel(blocktype)
@@ -185,11 +190,6 @@ class FBDBlockDialog(BlockPreviewDialog):
                 control = self.ParamsControl.get(name, None)
                 if control is not None:
                     control.SetValue(value)
-        
-        # Select block type in library panel    
-        if blocktype is not None:
-            self.LibraryPanel.SelectTreeItem(blocktype, 
-                                             values.get("inputs", None))
         
         # Refresh preview panel
         self.RefreshPreview()

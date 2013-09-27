@@ -924,6 +924,8 @@ def ReduceInclude(factory, attributes, elements):
     else:
         factory.Namespaces[include_factory.TargetNamespace] = include_factory.Namespaces[include_factory.TargetNamespace]
     factory.ComputedClasses.update(include_factory.ComputedClasses)
+    factory.ComputedClassesLookUp.update(include_factory.ComputedClassesLookUp)
+    factory.EquivalentClassesParent.update(include_factory.EquivalentClassesParent)
     return None
     
 def ReduceRedefine(factory, attributes, elements):
@@ -939,8 +941,10 @@ def ReduceSchema(factory, attributes, elements):
     factory.BlockDefault = attributes["blockDefault"]
     factory.FinalDefault = attributes["finalDefault"]
     
-    if attributes.has_key("targetNamespace"):
-        factory.TargetNamespace = factory.DefinedNamespaces.get(attributes["targetNamespace"], None)
+    targetNamespace = attributes.get("targetNamespace", None)
+    factory.TargetNamespace = factory.DefinedNamespaces.get(targetNamespace, None)
+    if factory.TargetNamespace is not None:
+        factory.etreeNamespaceFormat = "{%s}%%s" % targetNamespace
     factory.Namespaces[factory.TargetNamespace] = {}
     
     annotations, children = factory.ReduceElements(elements, True)
@@ -1030,15 +1034,14 @@ class XSDClassFactory(ClassFactory):
                 schema = child
                 break
         for qualified_name, attr in schema._attrs.items():
-            value = GetAttributeValue(attr)
-            if value == "http://www.w3.org/2001/XMLSchema":
-                namespace, name = DecomposeQualifiedName(qualified_name)
-                if namespace == "xmlns":
-                    self.DefinedNamespaces["http://www.w3.org/2001/XMLSchema"] = name
+            namespace, name = DecomposeQualifiedName(qualified_name)
+            if namespace == "xmlns":
+                value = GetAttributeValue(attr)
+                self.DefinedNamespaces[value] = name
+                self.NSMAP[name] = value
+                if value == "http://www.w3.org/2001/XMLSchema":
                     self.SchemaNamespace = name
-                else:
-                    self.DefinedNamespaces["http://www.w3.org/2001/XMLSchema"] = self.SchemaNamespace
-                self.Namespaces[self.SchemaNamespace] = XSD_NAMESPACE
+                    self.Namespaces[self.SchemaNamespace] = XSD_NAMESPACE
         self.Schema = XSD_NAMESPACE["schema"]["extract"]["default"](self, schema)
         ReduceSchema(self, self.Schema[1], self.Schema[2])
 
@@ -1084,19 +1087,24 @@ class XSDClassFactory(ClassFactory):
         return None
 
 """
-This function opens the xsd file and generate the classes from the xml tree
+This function opens the xsd file and generate a xml parser with class lookup from 
+the xml tree
 """
-def GenerateClassesFromXSD(filepath):
+def GenerateParserFromXSD(filepath):
     xsdfile = open(filepath, 'r')
-    factory = XSDClassFactory(minidom.parse(xsdfile), filepath)
+    xsdstring = xsdfile.read()
     xsdfile.close()
-    return GenerateClasses(factory)
+    cwd = os.getcwd()
+    os.chdir(os.path.dirname(filepath))
+    parser = GenerateParser(XSDClassFactory(minidom.parseString(xsdstring), filepath), xsdstring)
+    os.chdir(cwd)
+    return parser
 
 """
-This function generate the classes from the xsd given as a string
+This function generate a xml from the xsd given as a string
 """
-def GenerateClassesFromXSDstring(xsdstring):
-    return GenerateClasses(XSDClassFactory(minidom.parseString(xsdstring)))
+def GenerateParserFromXSDstring(xsdstring):
+    return GenerateParser(XSDClassFactory(minidom.parseString(xsdstring)), xsdstring)
 
 
 #-------------------------------------------------------------------------------
@@ -2520,19 +2528,3 @@ XSD_NAMESPACE = {
     "anyType": {"type": COMPLEXTYPE, "extract": lambda x:None},
 }
 
-if __name__ == '__main__':
-    classes = GenerateClassesFromXSD("test.xsd")
-    
-    # Code for test of test.xsd
-    xmlfile = open("po.xml", 'r')
-    tree = minidom.parse(xmlfile)
-    xmlfile.close()
-    test = classes["PurchaseOrderType"]()
-    for child in tree.childNodes:
-        if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "purchaseOrder":
-            test.loadXMLTree(child)
-    test.items.item[0].setquantity(2)
-    testfile = open("test.xml", 'w')
-    testfile.write(u'<?xml version=\"1.0\"?>\n')
-    testfile.write(test.generateXMLText("purchaseOrder").encode("utf-8"))
-    testfile.close()

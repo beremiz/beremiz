@@ -1,14 +1,10 @@
-import os
-from PLCControler import UndoBuffer
-from PythonEditor import PythonEditor
+import os, re
+from lxml import etree
 
-from xml.dom import minidom
-from xmlclass import GenerateClassesFromXSD
-import cPickle
+from xmlclass import GenerateParserFromXSD
 
 from CodeFileTreeNode import CodeFile
-
-PythonClasses = GenerateClassesFromXSD(os.path.join(os.path.dirname(__file__), "py_ext_xsd.xsd")) 
+from PythonEditor import PythonEditor
 
 class PythonFileCTNMixin(CodeFile):
     
@@ -26,19 +22,27 @@ class PythonFileCTNMixin(CodeFile):
         
         filepath = self.PythonFileName()
         
-        python_code = PythonClasses["Python"]()
         if os.path.isfile(filepath):
+            PythonParser = GenerateParserFromXSD(
+                os.path.join(os.path.dirname(__file__), "py_ext_xsd.xsd")) 
+            
             xmlfile = open(filepath, 'r')
-            tree = minidom.parse(xmlfile)
+            pythonfile_xml = xmlfile.read()
             xmlfile.close()
             
-            for child in tree.childNodes:
-                if child.nodeType == tree.ELEMENT_NODE and child.nodeName == "Python":
-                    python_code.loadXMLTree(child, ["xmlns", "xmlns:xsi", "xsi:schemaLocation"])
-                    self.CodeFile.globals.settext(python_code.gettext())
-                    os.remove(filepath)
-                    self.CreateCodeFileBuffer(False)
-                    self.OnCTNSave()
+            pythonfile_xml = pythonfile_xml.replace(
+                'xmlns="http://www.w3.org/2001/XMLSchema"', 
+                'xmlns:xhtml="http://www.w3.org/1999/xhtml"')
+            for cre, repl in [
+                (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+                (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+                pythonfile_xml = cre.sub(repl, pythonfile_xml)
+            python_code = etree.fromstring(pythonfile_xml, PythonParser)
+            
+            self.CodeFile.globals.setanyText(python_code.getanyText())
+            os.remove(filepath)
+            self.CreateCodeFileBuffer(False)
+            self.OnCTNSave()
     
     def CodeFileName(self):
         return os.path.join(self.CTNPath(), "pyfile.xml")
@@ -50,7 +54,7 @@ class PythonFileCTNMixin(CodeFile):
     PostSectionsTexts = {}
     def GetSection(self,section):
         return self.PreSectionsTexts.get(section,"") + "\n" + \
-               getattr(self.CodeFile, section).gettext() + "\n" + \
+               getattr(self.CodeFile, section).getanyText() + "\n" + \
                self.PostSectionsTexts.get(section,"")
         
 
