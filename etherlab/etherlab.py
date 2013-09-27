@@ -6,7 +6,7 @@ import csv
 
 from xmlclass import *
 
-from ConfigTreeNode import ConfigTreeNode
+from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 from EthercatSlave import ExtractHexDecValue, ExtractName
@@ -203,10 +203,12 @@ for mapping needed location variables
                 
                 xmlfile = open(filepath, 'r')
                 try:
-                    self.modules_infos = etree.fromstring(
-                        xmlfile.read(), EtherCATInfoParser)
-                except:
-                    pass
+                    self.modules_infos, error = EtherCATInfoParser.LoadXMLString(xmlfile.read())
+                    if error is not None:
+                        self.GetCTRoot().logger.write_warning(
+                            XSDSchemaErrorMessage % (filepath + error))
+                except Exception, exc:
+                    self.modules_infos, error = None, unicode(exc)
                 xmlfile.close()
                 
                 if self.modules_infos is not None:
@@ -233,8 +235,13 @@ for mapping needed location variables
                             raise ValueError, "Not such group \"%\"" % device_group
                         vendor_category["groups"][device_group]["devices"].append(
                             (device.getType().getcontent(), device))
-
-        return self.Library 
+                
+                else:
+                        
+                    self.GetCTRoot().logger.write_error(
+                        _("Couldn't load %s XML file:\n%s") % (filepath, error))
+                
+        return self.Library
 
     def GetModulesLibrary(self, profile_filter=None):
         if self.Library is None:

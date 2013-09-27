@@ -219,26 +219,44 @@ class _EthercatCTN:
     def __init__(self):
         config_filepath = self.ConfigFileName()
         config_is_saved = False
+        self.Config = None
         if os.path.isfile(config_filepath):
             config_xmlfile = open(config_filepath, 'r')
-            self.Config = etree.fromstring(
-                config_xmlfile.read(), EtherCATConfigParser)
-            config_is_saved = True
+            try:
+                self.Config, error = \
+                    EtherCATConfigParser.LoadXMLString(config_xmlfile.read())
+                if error is None:
+                    config_is_saved = True
+            except Exception, e:
+                error = e.message
             config_xmlfile.close()
-        
-        else:
+            
+            if error is not None:
+                self.GetCTRoot().logger.write_error(
+                    _("Couldn't load %s network configuration file.") % CTNName)    
+            
+        if self.Config is None:
             self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
         
         process_filepath = self.ProcessVariablesFileName()
         process_is_saved = False
+        self.ProcessVariables = None
         if os.path.isfile(process_filepath):
             process_xmlfile = open(process_filepath, 'r')
-            self.ProcessVariables = etree.fromstring(
-                process_xmlfile.read(), ProcessVariablesParser)
-            process_is_saved = True
+            try:
+                self.ProcessVariables, error = \
+                    ProcessVariablesParser.LoadXMLString(process_xmlfile.read())
+                if error is None:
+                    process_is_saved = True
+            except Exception, e:
+                error = e.message
             process_xmlfile.close()
             
-        else:
+            if error is not None:
+                self.GetCTRoot().logger.write_error(
+                    _("Couldn't load %s network process variables file.") % CTNName)    
+            
+        if self.ProcessVariables is None:
             self.ProcessVariables = ProcessVariablesParser.CreateElement("ProcessVariables")
         
         if config_is_saved and process_is_saved:
@@ -541,7 +559,6 @@ class _EthercatCTN:
                 type_infos = slave.getType()
                 device, module_extra_params = self.GetModuleInfos(type_infos)
         if device is not None:
-            print "Get Entries List", limits
             entries = device.GetEntriesList(limits)
             #print entries
             entries_list = entries.items()
