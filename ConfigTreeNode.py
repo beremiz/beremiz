@@ -29,6 +29,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
         </xsd:schema>""")
 
 NameTypeSeparator = '@'
+XSDSchemaErrorMessage = _("%s XML file doesn't follow XSD schema at line %d:\n%s")
 
 class ConfigTreeNode:
     """
@@ -585,8 +586,10 @@ class ConfigTreeNode:
         if self.MandatoryParams:
             try:
                 basexmlfile = open(self.ConfNodeBaseXmlFilePath(CTNName), 'r')
-                self.BaseParams = etree.fromstring(
-                    basexmlfile.read(), _BaseParamsParser)
+                self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
+                if error is not None:
+                    self.GetCTRoot().logger.write_warning(
+                        XSDSchemaErrorMessage % ((CTNName + " BaseParams",) + error))
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception, exc:
@@ -597,7 +600,10 @@ class ConfigTreeNode:
         if self.CTNParams:
             try:
                 xmlfile = open(self.ConfNodeXmlFilePath(CTNName), 'r')
-                obj = etree.fromstring(xmlfile.read(), self.Parser)
+                obj, error = self.Parser.LoadXMLString(xmlfile.read())
+                if error is not None:
+                    self.GetCTRoot().logger.write_warning(
+                        XSDSchemaErrorMessage % ((CTNName,) + error))
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)

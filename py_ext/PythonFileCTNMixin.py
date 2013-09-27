@@ -37,12 +37,20 @@ class PythonFileCTNMixin(CodeFile):
                 (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
                 (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 pythonfile_xml = cre.sub(repl, pythonfile_xml)
-            python_code = etree.fromstring(pythonfile_xml, PythonParser)
             
-            self.CodeFile.globals.setanyText(python_code.getanyText())
-            os.remove(filepath)
-            self.CreateCodeFileBuffer(False)
-            self.OnCTNSave()
+            try:
+                python_code, error = PythonParser.LoadXMLString(pythonfile_xml)
+                if error is None:    
+                    self.CodeFile.globals.setanyText(python_code.getanyText())
+                    os.remove(filepath)
+                    self.CreateCodeFileBuffer(False)
+                    self.OnCTNSave()
+            except Exception, exc:
+                error = unicode(exc)
+            
+            if error is not None:
+                self.GetCTRoot().logger.write_error(
+                    _("Couldn't import old %s file.") % CTNName)
     
     def CodeFileName(self):
         return os.path.join(self.CTNPath(), "pyfile.xml")
