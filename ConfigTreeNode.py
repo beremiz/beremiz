@@ -9,15 +9,15 @@ Config Tree Node base class.
 
 import os,traceback,types
 import shutil
-from xml.dom import minidom
+from lxml import etree
 
-from xmlclass import GenerateClassesFromXSDstring
+from xmlclass import GenerateParserFromXSDstring
 from util.misc import GetClassImporter
 
 from PLCControler import PLCControler, LOCATION_CONFNODE
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
-_BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
+_BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
           <xsd:element name="BaseParams">
             <xsd:complexType>
@@ -26,7 +26,7 @@ _BaseParamsClass = GenerateClassesFromXSDstring("""<?xml version="1.0" encoding=
               <xsd:attribute name="Enabled" type="xsd:boolean" use="optional" default="true"/>
             </xsd:complexType>
           </xsd:element>
-        </xsd:schema>""")["BaseParams"]
+        </xsd:schema>""")
 
 NameTypeSeparator = '@'
 
@@ -46,17 +46,15 @@ class ConfigTreeNode:
     def _AddParamsMembers(self):
         self.CTNParams = None
         if self.XSD:
-            self.Classes = GenerateClassesFromXSDstring(self.XSD)
-            Classes = [(name, XSDclass) for name, XSDclass in self.Classes.items() if XSDclass.IsBaseClass]
-            if len(Classes) == 1:
-                name, XSDclass = Classes[0]
-                obj = XSDclass()
-                self.CTNParams = (name, obj)
-                setattr(self, name, obj)
+            self.Parser = GenerateParserFromXSDstring(self.XSD)
+            obj = self.Parser.CreateRoot()
+            name = obj.getLocalTag()
+            self.CTNParams = (name, obj)
+            setattr(self, name, obj)
 
     def __init__(self):
         # Create BaseParam 
-        self.BaseParams = _BaseParamsClass()
+        self.BaseParams = _BaseParamsParser.CreateRoot()
         self.MandatoryParams = ("BaseParams", self.BaseParams)
         self._AddParamsMembers()
         self.Children = {}
@@ -170,15 +168,21 @@ class ConfigTreeNode:
             # generate XML for base XML parameters controller of the confnode
             if self.MandatoryParams:
                 BaseXMLFile = open(self.ConfNodeBaseXmlFilePath(),'w')
-                BaseXMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                BaseXMLFile.write(self.MandatoryParams[1].generateXMLText(self.MandatoryParams[0], 0).encode("utf-8"))
+                BaseXMLFile.write(etree.tostring(
+                    self.MandatoryParams[1], 
+                    pretty_print=True, 
+                    xml_declaration=True, 
+                    encoding='utf-8'))
                 BaseXMLFile.close()
             
             # generate XML for XML parameters controller of the confnode
             if self.CTNParams:
                 XMLFile = open(self.ConfNodeXmlFilePath(),'w')
-                XMLFile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-                XMLFile.write(self.CTNParams[1].generateXMLText(self.CTNParams[0], 0).encode("utf-8"))
+                XMLFile.write(etree.tostring(
+                    self.CTNParams[1], 
+                    pretty_print=True, 
+                    xml_declaration=True, 
+                    encoding='utf-8'))
                 XMLFile.close()
             
             # Call the confnode specific OnCTNSave method
@@ -581,8 +585,9 @@ class ConfigTreeNode:
         if self.MandatoryParams:
             try:
                 basexmlfile = open(self.ConfNodeBaseXmlFilePath(CTNName), 'r')
-                basetree = minidom.parse(basexmlfile)
-                self.MandatoryParams[1].loadXMLTree(basetree.childNodes[0])
+                self.BaseParams = etree.fromstring(
+                    basexmlfile.read(), _BaseParamsParser)
+                self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception, exc:
                 self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (CTNName, unicode(exc)))
@@ -592,8 +597,10 @@ class ConfigTreeNode:
         if self.CTNParams:
             try:
                 xmlfile = open(self.ConfNodeXmlFilePath(CTNName), 'r')
-                tree = minidom.parse(xmlfile)
-                self.CTNParams[1].loadXMLTree(tree.childNodes[0])
+                obj = etree.fromstring(xmlfile.read(), self.Parser)
+                name = obj.getLocalTag()
+                setattr(self, name, obj)
+                self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception, exc:
                 self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))

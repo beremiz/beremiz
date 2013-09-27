@@ -177,7 +177,7 @@ class BlockPreviewDialog(wx.Dialog):
         
         # Add POU name to variable list if POU is a function 
         returntype = self.Controller.GetEditedElementInterfaceReturnType(
-                                                            self.TagName)
+                                                            self.TagName)[0]
         if returntype is not None:
             self.VariableList[
                 self.Controller.GetEditedElementName(self.TagName)] = \
