@@ -1089,10 +1089,11 @@ class Viewer(EditorPanel, DebugViewer):
         self.ResetBuffer()
         instance = {}
         # List of ids of already loaded blocks
-        ids = []
+        ids = self.Controler.GetEditedElementInstancesIds(self.TagName, debug = self.Debug)
         # Load Blocks until they are all loaded
-        while instance is not None:
-            instance = self.Controler.GetEditedElementInstanceInfos(self.TagName, exclude = ids, debug = self.Debug)
+        while len(ids) > 0:
+            instance = self.Controler.GetEditedElementInstanceInfos(
+                self.TagName, ids.popitem(0)[0], debug = self.Debug)
             if instance is not None:
                 self.loadInstance(instance, ids, selection)
         
@@ -1221,7 +1222,6 @@ class Viewer(EditorPanel, DebugViewer):
         
     # Load instance from given informations
     def loadInstance(self, instance, ids, selection):
-        ids.append(instance["id"])
         self.current_id = max(self.current_id, instance["id"])
         creation_function = ElementCreationFunctions.get(instance["type"], None)
         connectors = {"inputs" : [], "outputs" : []}
@@ -1319,7 +1319,7 @@ class Viewer(EditorPanel, DebugViewer):
                 links_connected = False
                 continue
             
-            if refLocalId not in ids:
+            if ids.pop(refLocalId, False):
                 new_instance = self.Controler.GetEditedElementInstanceInfos(self.TagName, refLocalId, debug = self.Debug)
                 if new_instance is not None:
                     self.loadInstance(new_instance, ids, selection)

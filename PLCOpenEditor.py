@@ -182,12 +182,11 @@ class PLCOpenEditor(IDEFrame):
                 # Create a new controller
                 controler = PLCControler()
                 result = controler.OpenXMLFile(fileOpen)
-                if result is None:
-                    self.Controler = controler
-                    self.LibraryPanel.SetController(controler)
-                    self.ProjectTree.Enable(True)
-                    self.PouInstanceVariablesPanel.SetController(controler)
-                    self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                self.Controler = controler
+                self.LibraryPanel.SetController(controler)
+                self.ProjectTree.Enable(True)
+                self.PouInstanceVariablesPanel.SetController(controler)
+                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         
         # Define PLCOpenEditor icon
         self.SetIcon(wx.Icon(os.path.join(CWD, "images", "poe.ico"),wx.BITMAP_TYPE_ICO))
@@ -197,7 +196,8 @@ class PLCOpenEditor(IDEFrame):
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         
         if result is not None:
-            self.ShowErrorMessage(result)
+            self.ShowErrorMessage(
+                _("PLC syntax error at line %d:\n%s") % result)
 
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
@@ -300,17 +300,17 @@ class PLCOpenEditor(IDEFrame):
                 self.ResetView()
                 controler = PLCControler()
                 result = controler.OpenXMLFile(filepath)
-                if result is None:
-                    self.Controler = controler
-                    self.LibraryPanel.SetController(controler)
-                    self.ProjectTree.Enable(True)
-                    self.PouInstanceVariablesPanel.SetController(controler)
-                    self._Refresh(PROJECTTREE, LIBRARYTREE)
+                self.Controler = controler
+                self.LibraryPanel.SetController(controler)
+                self.ProjectTree.Enable(True)
+                self.PouInstanceVariablesPanel.SetController(controler)
+                self._Refresh(PROJECTTREE, LIBRARYTREE)
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
         
         if result is not None:
-            self.ShowErrorMessage(result)
+            self.ShowErrorMessage(
+                _("PLC syntax error at line %d:\n%s") % result)
     
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():
