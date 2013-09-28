@@ -29,6 +29,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
         </xsd:schema>""")
 
 NameTypeSeparator = '@'
+XSDSchemaErrorMessage = _("%s XML file doesn't follow XSD schema at line %d:\n%s")
 
 class ConfigTreeNode:
     """
@@ -581,29 +582,36 @@ class ConfigTreeNode:
         if os.path.isfile(methode_name):
             execfile(methode_name)
         
+        ConfNodeName = CTNName if CTNName is not None else self.CTNName()
+        
         # Get the base xml tree
         if self.MandatoryParams:
             try:
                 basexmlfile = open(self.ConfNodeBaseXmlFilePath(CTNName), 'r')
-                self.BaseParams = etree.fromstring(
-                    basexmlfile.read(), _BaseParamsParser)
+                self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
+                if error is not None:
+                    self.GetCTRoot().logger.write_warning(
+                        XSDSchemaErrorMessage % ((ConfNodeName + " BaseParams",) + error))
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (CTNName, unicode(exc)))
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (ConfNodeName, unicode(exc)))
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
         if self.CTNParams:
             try:
                 xmlfile = open(self.ConfNodeXmlFilePath(CTNName), 'r')
-                obj = etree.fromstring(xmlfile.read(), self.Parser)
+                obj, error = self.Parser.LoadXMLString(xmlfile.read())
+                if error is not None:
+                    self.GetCTRoot().logger.write_warning(
+                        XSDSchemaErrorMessage % ((ConfNodeName,) + error))
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))
+                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (ConfNodeName, unicode(exc)))
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
     def LoadChildren(self):

@@ -42,8 +42,10 @@ _ = lambda x:x
 
 ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 
-StdBlockLibrary = LoadProject(os.path.join(ScriptDirectory, "Standard_Function_Blocks.xml"))
-AddnlBlockLibrary = LoadProject(os.path.join(ScriptDirectory, "Additional_Function_Blocks.xml"))
+StdBlockLibrary, error = LoadProject(
+    os.path.join(ScriptDirectory, "Standard_Function_Blocks.xml"))
+AddnlBlockLibrary, error = LoadProject(
+    os.path.join(ScriptDirectory, "Additional_Function_Blocks.xml"))
 
 StdBlockComments = {
     "SR": _("SR bistable\nThe SR bistable is a latch where the Set dominates."),

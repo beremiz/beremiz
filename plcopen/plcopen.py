@@ -26,6 +26,8 @@ from xmlclass import *
 from types import *
 import os, re
 from lxml import etree
+from collections import OrderedDict
+
 """
 Dictionary that makes the relation between var names in plcopen and displayed values
 """
@@ -156,35 +158,44 @@ def LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type):
   </body>
 </pou>""" % locals()
 
-def LoadProject(filepath):
-    project_file = open(filepath)
-    project_xml = project_file.read().replace(
+def LoadProjectXML(project_xml):
+    project_xml = project_xml.replace(
         "http://www.plcopen.org/xml/tc6.xsd", 
         "http://www.plcopen.org/xml/tc6_0201")
     for cre, repl in [
         (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
         (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
         project_xml = cre.sub(repl, project_xml)
-    project_file.close()
     
-    return etree.fromstring(project_xml, PLCOpenParser)
+    try:
+        tree, error = PLCOpenParser.LoadXMLString(project_xml)
+        if error is not None:
+            # TODO Validate file according to PLCOpen v1 and modify it for
+            # compatibility with PLCOpen v2
+            return tree, error
+        return tree, None
+    except Exception, e:
+        return None, e.message
+
+def LoadProject(filepath):
+    project_file = open(filepath)
+    project_xml = project_file.read()
+    project_file.close()
+    return LoadProjectXML(project_xml)
 
 project_pou_xpath = PLCOpen_XPath("/ppx:project/ppx:types/ppx:pous/ppx:pou")
 def LoadPou(xml_string):
-    root = etree.fromstring(
-        LOAD_POU_PROJECT_TEMPLATE % xml_string, 
-        PLCOpenParser)
-    return project_pou_xpath(root)[0]
+    root, error = LoadProjectXML(LOAD_POU_PROJECT_TEMPLATE % xml_string)
+    return project_pou_xpath(root)[0], error
 
 project_pou_instances_xpath = {
     body_type: PLCOpen_XPath(
         "/ppx:project/ppx:types/ppx:pous/ppx:pou[@name='paste_pou']/ppx:body/ppx:%s/*" % body_type)
     for body_type in ["FBD", "LD", "SFC"]}
 def LoadPouInstances(xml_string, body_type):
-    root = etree.fromstring(
-        LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type) % xml_string, 
-        PLCOpenParser)
-    return project_pou_instances_xpath[body_type](root)
+    root, error = LoadProjectXML(
+        LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type) % xml_string)
+    return project_pou_instances_xpath[body_type](root), error
 
 def SaveProject(project, filepath):
     project_file = open(filepath, 'w')
@@ -1080,11 +1091,11 @@ if cls:
         return None
     setattr(cls, "getinstance", getinstance)
     
-    def getrandomInstance(self, exclude):
+    def getinstancesIds(self):
         if len(self.body) > 0:
-            return self.body[0].getcontentRandomInstance(exclude)
-        return None
-    setattr(cls, "getrandomInstance", getrandomInstance)
+            return self.body[0].getcontentInstancesIds()
+        return []
+    setattr(cls, "getinstancesIds", getinstancesIds)
     
     def getinstanceByName(self, name):
         if len(self.body) > 0:
@@ -1600,18 +1611,13 @@ if cls:
             raise TypeError, _("%s body don't have instances!")%self.content.getLocalTag()
     setattr(cls, "getcontentInstance", getcontentInstance)
     
-    def getcontentRandomInstance(self, exclude):
+    def getcontentInstancesIds(self):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
-            instance = self.content.xpath("*%s[position()=1]" %  
-                ("[not(%s)]" % " or ".join(
-                    map(lambda x: "@localId=%d" % x, exclude))
-                if len(exclude) > 0 else ""))
-            if len(instance) > 0:
-                return instance[0]
-            return None
+            return OrderedDict([(instance.getlocalId(), True)
+                                for instance in self.content])
         else:
             raise TypeError, _("%s body don't have instances!")%self.content.getLocalTag()
-    setattr(cls, "getcontentRandomInstance", getcontentRandomInstance)
+    setattr(cls, "getcontentInstancesIds", getcontentInstancesIds)
     
     def getcontentInstanceByName(self, name):
         if self.content.getLocalTag() in ["LD","FBD","SFC"]:
