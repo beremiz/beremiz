@@ -158,6 +158,22 @@ def LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type):
   </body>
 </pou>""" % locals()
 
+PLCOpen_v1_file = open(os.path.join(os.path.split(__file__)[0], "TC6_XML_V10_B.xsd"))
+PLCOpen_v1_xml = PLCOpen_v1_file.read()
+PLCOpen_v1_file.close()
+PLCOpen_v1_xml = PLCOpen_v1_xml.replace(
+        "http://www.plcopen.org/xml/tc6.xsd", 
+        "http://www.plcopen.org/xml/tc6_0201") 
+PLCOpen_v1_xsd = etree.XMLSchema(etree.fromstring(PLCOpen_v1_xml))
+
+# XPath for file compatibility process
+ProjectResourcesXPath = PLCOpen_XPath("ppx:instances/ppx:configurations/ppx:configuration/ppx:resource")
+ResourceInstancesXpath = PLCOpen_XPath("ppx:pouInstance | ppx:task/ppx:pouInstance")
+TransitionsConditionXPath = PLCOpen_XPath("ppx:types/ppx:pous/ppx:pou/ppx:body/*/ppx:transition/ppx:condition")
+ConditionConnectionsXPath = PLCOpen_XPath("ppx:connection")
+ActionBlocksXPath = PLCOpen_XPath("ppx:types/ppx:pous/ppx:pou/ppx:body/*/ppx:actionBlock")
+ActionBlocksConnectionPointOutXPath = PLCOpen_XPath("ppx:connectionPointOut")
+
 def LoadProjectXML(project_xml):
     project_xml = project_xml.replace(
         "http://www.plcopen.org/xml/tc6.xsd", 
@@ -169,11 +185,69 @@ def LoadProjectXML(project_xml):
     
     try:
         tree, error = PLCOpenParser.LoadXMLString(project_xml)
-        if error is not None:
-            # TODO Validate file according to PLCOpen v1 and modify it for
-            # compatibility with PLCOpen v2
-            return tree, error
-        return tree, None
+        if error is None:
+            return tree, None
+        
+        if PLCOpen_v1_xsd.validate(tree):
+            # Make file compatible with PLCOpen v2
+            
+            # Update resource interval value
+            for resource in ProjectResourcesXPath(tree):
+                for task in resource.gettask():
+                    interval = task.get("interval")
+                    if interval is not None:
+                        result = time_model.match(interval)
+                        if result is not None:
+                            values = result.groups()
+                            time_values = [int(v) for v in values[:2]]
+                            seconds = float(values[2])
+                            time_values.extend([int(seconds), int((seconds % 1) * 1000000)])
+                            text = "T#"
+                            if time_values[0] != 0:
+                                text += "%dh"%time_values[0]
+                            if time_values[1] != 0:
+                                text += "%dm"%time_values[1]
+                            if time_values[2] != 0:
+                                text += "%ds"%time_values[2]
+                            if time_values[3] != 0:
+                                if time_values[3] % 1000 != 0:
+                                    text += "%.3fms"%(float(time_values[3]) / 1000)
+                                else:
+                                    text += "%dms"%(time_values[3] / 1000)
+                            task.set("interval", text)
+                
+                # Update resources pou instance attributes
+                for pouInstance in ResourceInstancesXpath(resource):
+                    type_name = pouInstance.get("type")
+                    if type_name is not None:
+                        pouInstance.set("typeName", type_name)
+            
+            # Update transitions condition
+            for transition_condition in TransitionsConditionXPath(tree):
+                connections = ConditionConnectionsXPath(transition_condition)
+                if len(connections) > 0:
+                    connectionPointIn = PLCOpenParser.CreateElement("connectionPointIn", "condition")
+                    transition_condition.setcontent(connectionPointIn)
+                    connectionPointIn.setrelPositionXY(0, 0)
+                    for connection in connections:
+                        connectionPointIn.append(connection)
+            
+            # Update actionBlocks
+            for actionBlock in ActionBlocksXPath(tree):
+                for connectionPointOut in ActionBlocksConnectionPointOutXPath(actionBlock):
+                    actionBlock.remove(connectionPointOut)
+                    
+                for action in actionBlock.getaction():
+                    action.set("localId", "0")
+                    relPosition = PLCOpenParser.CreateElement("relPosition", "action")
+                    relPosition.set("x", "0")
+                    relPosition.set("y", "0")
+                    action.setrelPosition(relPosition)
+            
+            return tree, None
+        
+        return tree, error
+    
     except Exception, e:
         return None, e.message
 
@@ -693,30 +767,6 @@ if cls:
 
 cls = PLCOpenParser.GetElementClass("task", "resource")
 if cls:
-    def compatibility(self, tree):
-        if tree.hasAttribute("interval"):
-            interval = GetAttributeValue(tree._attrs["interval"])
-            result = time_model.match(interval)
-            if result is not None:
-                values = result.groups()
-                time_values = [int(v) for v in values[:2]]
-                seconds = float(values[2])
-                time_values.extend([int(seconds), int((seconds % 1) * 1000000)])
-                text = "t#"
-                if time_values[0] != 0:
-                    text += "%dh"%time_values[0]
-                if time_values[1] != 0:
-                    text += "%dm"%time_values[1]
-                if time_values[2] != 0:
-                    text += "%ds"%time_values[2]
-                if time_values[3] != 0:
-                    if time_values[3] % 1000 != 0:
-                        text += "%.3fms"%(float(time_values[3]) / 1000)
-                    else:
-                        text += "%dms"%(time_values[3] / 1000)
-                NodeSetAttr(tree, "interval", text)
-    setattr(cls, "compatibility", compatibility)
-    
     def updateElementName(self, old_name, new_name):
         if self.single == old_name:
             self.single = new_name
@@ -742,11 +792,6 @@ if cls:
 
 cls = PLCOpenParser.GetElementClass("pouInstance")
 if cls:
-    def compatibility(self, tree):
-        if tree.hasAttribute("type"):
-            NodeRenameAttr(tree, "type", "typeName")
-    setattr(cls, "compatibility", compatibility)
-    
     def updateElementName(self, old_name, new_name):
         if self.typeName == old_name:
             self.typeName = new_name
@@ -2102,23 +2147,6 @@ if cls:
         return _Search([("name", self.getname())], criteria, parent_infos + ["step", self.getlocalId()])
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("condition", "transition")
-if cls:
-    def compatibility(self, tree):
-        connections = []
-        for child in tree.childNodes:
-            if child.nodeName == "connection":
-                connections.append(child)
-        if len(connections) > 0:
-            node = CreateNode("connectionPointIn")
-            relPosition = CreateNode("relPosition")
-            NodeSetAttr(relPosition, "x", "0")
-            NodeSetAttr(relPosition, "y", "0")
-            node.childNodes.append(relPosition)
-            node.childNodes.extend(connections)
-            tree.childNodes = [node]
-    setattr(cls, "compatibility", compatibility)
-
 cls = _initElementClass("transition", "sfcObjects")
 if cls:
     def getinfos(self):
@@ -2282,17 +2310,6 @@ if cls:
 
 cls = PLCOpenParser.GetElementClass("action", "actionBlock")
 if cls:
-    def compatibility(self, tree):
-        relPosition = reduce(lambda x, y: x | (y.nodeName == "relPosition"), tree.childNodes, False)
-        if not tree.hasAttribute("localId"):
-            NodeSetAttr(tree, "localId", "0")
-        if not relPosition:
-            node = CreateNode("relPosition")
-            NodeSetAttr(node, "x", "0")
-            NodeSetAttr(node, "y", "0")
-            tree.childNodes.insert(0, node)
-    setattr(cls, "compatibility", compatibility)
-    
     def setreferenceName(self, name):
         if self.reference is not None:
             self.reference.setname(name)
@@ -2344,12 +2361,6 @@ if cls:
 
 cls = _initElementClass("actionBlock", "commonObjects", "single")
 if cls:
-    def compatibility(self, tree):
-        for child in tree.childNodes[:]:
-            if child.nodeName == "connectionPointOut":
-                tree.childNodes.remove(child)
-    setattr(cls, "compatibility", compatibility)
-    
     def getinfos(self):
         infos = _getelementinfos(self)
         infos["type"] = "actionBlock"
