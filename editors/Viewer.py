@@ -1330,10 +1330,20 @@ class Viewer(EditorPanel, DebugViewer):
                 continue
             
             points = link["points"]
-            end_connector = connected.GetConnector(wx.Point(points[-1][0], points[-1][1]), link["formalParameter"])
+            end_connector = connected.GetConnector(
+                wx.Point(points[-1][0], points[-1][1])
+                if len(points) > 0 else wx.Point(0, 0), 
+                link["formalParameter"])
             if end_connector is not None:
-                wire = Wire(self)
-                wire.SetPoints(points)
+                if len(points) > 0:
+                    wire = Wire(self)
+                    wire.SetPoints(points)
+                else:
+                    wire = Wire(self,
+                        [wx.Point(*start_connector.GetPosition()), 
+                         start_connector.GetDirection()],
+                        [wx.Point(*end_connector.GetPosition()),
+                         end_connector.GetDirection()])
                 start_connector.Connect((wire, 0), False)
                 end_connector.Connect((wire, -1), False)
                 wire.ConnectStartPoint(None, start_connector)
