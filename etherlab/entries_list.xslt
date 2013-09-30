@@ -97,7 +97,7 @@
             <Index><xsl:value-of select="$index"/></Index>
             <SubIndex><xsl:value-of select="ns:HexDecValue(SubIndex/text())"/></SubIndex>
             <Name><xsl:value-of select="ns:EntryName(Name)"/></Name>
-            <Type><xsl:value-of select="Type/text()"/></Type>
+            <Type><xsl:value-of select="DataType/text()"/></Type>
             <BitSize><xsl:value-of select="BitLen/text()"/></BitSize>
             <xsl:choose>
               <xsl:when test="$direction='Transmit'">
