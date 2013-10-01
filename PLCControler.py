@@ -2220,9 +2220,10 @@ class PLCControler:
                 element.addinstance(instance)
                 instance_type = instance.getLocalTag()
                 if instance_type == "block":
+                    blocktype = instance.gettypeName()
+                    blocktype_infos = self.GetBlockType(blocktype)
                     blockname = instance.getinstanceName()
-                    if blockname is not None:
-                        blocktype = instance.gettypeName()
+                    if blocktype_infos["type"] != "function" and blockname is not None:
                         if element_type == "function":
                             return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
                         blockname = self.GenerateNewName(tagname, 
@@ -2448,7 +2449,10 @@ class PLCControler:
                 self.ChangeEditedElementPouVar(tagname, old_type, old_name, new_type, new_name)
             for param, value in infos.items():
                 if param == "name":
-                    block.setinstanceName(value)
+                    if value != "":
+                        block.setinstanceName(value)
+                    else:
+                        block.attrib.pop("instanceName", None)
                 elif param == "type":
                     block.settypeName(value)
                 elif param == "executionOrder" and block.getexecutionOrderId() != value:
