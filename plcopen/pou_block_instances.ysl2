@@ -1,0 +1,358 @@
+include yslt.yml2
+estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
+            xmlns:xhtml="http://www.w3.org/1999/xhtml"
+            xmlns:ns="pou_block_instances_ns" 
+            extension-element-prefixes="ns" 
+            exclude-result-prefixes="ns" {
+
+    template "text()";
+    
+    template "ppx:pou" {
+        apply "ppx:body/*[self::ppx:FBD or self::ppx:LD or self::ppx:SFC]/*";
+    }
+    
+    function "add_instance" {
+        param "type";
+        variable "instance" {
+            > «ns:AddBlockInstance($type, @localId, ppx:position/@x, ppx:position/@y, @width, @height)»
+        }
+    }
+    
+    function "execution_order" {
+        choose {
+            when "@executionOrderId" > «@executionOrderId»
+            otherwise > 0
+        }
+    }
+    
+    function "ConnectionInfos" {
+        param "type";
+        param "modifiers";
+        param "formalParameter";
+        variable "negated" {
+            choose {
+                when "$modifiers='input'" > «@negatedIn»
+                when "$modifiers='output'" > «@negatedOut»
+                otherwise > «@negated»
+            }
+        }
+        variable "edge" {
+            choose {
+                when "$modifiers='input'" > «@edgeIn»
+                when "$modifiers='output'" > «@edgeOut»
+                otherwise > «@edge»
+            }
+        }
+        variable "instance_connection" {
+            > «ns:AddInstanceConnection($type, $formalParameter, $negated, $edge, ppx:relPosition/@x, ppx:relPosition/@y)»
+        }
+    }
+    
+    template "ppx:position" {
+        variable "link_point" {
+            > «ns:AddLinkPoint(@x, @y)»
+        }
+    }
+    
+    template "ppx:connection" {
+        variable "connection_link" {
+            > «ns:AddConnectionLink(@refLocalId, @formalParameter)»
+        }
+        apply "ppx:position";
+    }
+    
+    template "ppx:connectionPointIn" {
+        param "modifiers";
+        param "formalParameter";
+        call "ConnectionInfos" {
+            with "type" > input
+            with "modifiers" > «$modifiers»
+            with "formalParameter" > «$formalParameter»
+        }
+        apply "ppx:connection";
+    }
+    
+    template "ppx:connectionPointOut" {
+        param "modifiers";
+        param "formalParameter";
+        call "ConnectionInfos" {
+            with "type" > output
+            with "modifiers" > «$modifiers»
+            with "formalParameter" > «$formalParameter»
+        }
+    }
+    
+    template "ppx:connectionPointOutAction" {
+        call "ConnectionInfos" {
+            with "type" > output
+        }
+    }
+    
+    template "ppx:comment" {
+        variable "type" > «local-name()»
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues(ppx:content/xhtml:p/text())»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+    }
+    
+    template "ppx:block" {
+        variable "execution_order" {
+            call "execution_order";
+        }
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues(@instanceName, $execution_order)»
+        }
+        call "add_instance" {
+            with "type" > «@typeName»
+        }
+        foreach "ppx:inputVariables/ppx:variable" {
+            apply "ppx:connectionPointIn" {
+                with "formalParameter" > «@formalParameter»
+            }
+        }
+        foreach "ppx:outputVariables/ppx:variable" {
+            apply "ppx:connectionPointOut" {
+                with "formalParameter" > «@formalParameter»
+            }
+        }
+    }
+    
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived" {
+        > «@name»
+    }
+  
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:string" {
+        > STRING
+    }
+  
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring" {
+        > WSTRING
+    }
+    
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*" {
+        > «local-name()»
+    }
+    
+    function "VariableBlockInfos" {
+        param "type";
+        variable "expression" > «ppx:expression/text()»
+        variable "value_type" {
+            choose {
+                when "ancestor::ppx:transition[@name=$expression]" > BOOL
+                when "ancestor::ppx:pou[@name=$expression]" {
+                    apply "ancestor::ppx:pou/child::ppx:interface/ppx:returnType"
+                }
+                otherwise {
+                    apply "ancestor::ppx:pou/child::ppx:interface/*/ppx:variable[@name=$expression]/ppx:type"
+                }
+            }
+        }
+        variable "execution_order" {
+            call "execution_order";
+        }
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues($expression, $value_type, $execution_order)»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn" {
+            with "modifiers" {
+                choose {
+                    when "$type='inout'" > input
+                    otherwise > 
+                }
+            }
+        }
+        apply "ppx:connectionPointOut" {
+            with "modifiers" {
+                choose {
+                    when "$type='inout'" > output
+                    otherwise > 
+                }
+            }
+        }
+    }
+    
+    template "ppx:inVariable" {
+        call "VariableBlockInfos" with "type", "'input'";
+    }
+    
+    template "ppx:outVariable" {
+        call "VariableBlockInfos" with "type", "'output'";
+    }
+    
+    template "ppx:inOutVariable" {
+        call "VariableBlockInfos" with "type", "'inout'";
+    }
+    
+    template "ppx:connector|ppx:continuation" {
+        variable "type" > «local-name()»
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues(@name)»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+        apply "ppx:connectionPointOut";
+    }
+    
+    template "ppx:leftPowerRail|ppx:rightPowerRail" {
+        variable "type" > «local-name()»
+        variable "connectors" {
+            choose {
+                when "$type='leftPowerRail'" > «count(ppx:connectionPointOut)»
+                otherwise > «count(ppx:connectionPointIn)»
+            }
+        }
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues($connectors)»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        choose {
+            when "$type='leftPowerRail'" {
+                apply "ppx:connectionPointOut";
+            }
+            otherwise {
+                apply "ppx:connectionPointIn";
+            }
+        }
+    }
+    
+    template "ppx:contact|ppx:coil" {
+        variable "type" > «local-name()»
+        variable "storage" {
+            choose {
+                when "$type='coil'" > «@storage»
+                otherwise > 
+            }
+        }
+        variable "execution_order" {
+            call "execution_order";
+        }
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues(ppx:variable/text(), @negated, @edge, $storage, $execution_order)»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+        apply "ppx:connectionPointOut";
+    }
+    
+    template "ppx:step" {
+        variable "type" > «local-name()»
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues(@name, @initialStep)»
+        }
+        apply "ppx:connectionPointOutAction";
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+        apply "ppx:connectionPointOut";
+    }
+    
+    template "ppx:transition" {
+        variable "type" > «local-name()»
+        variable "priority" {
+            choose {
+                when "@priority" > «@priority»
+                otherwise > 0
+            }
+        }
+        variable "condition_type" {
+            choose {
+                when "ppx:condition/ppx:connectionPointIn" > connection
+                when "ppx:condition/ppx:reference" > reference
+                when "ppx:condition/ppx:inline" > inline
+                otherwise > 
+            }
+        }
+        variable "condition" {
+            choose {
+                when "ppx:reference" > «ppx:condition/ppx:reference/@name»
+                when "ppx:inline" > «ppx:condition/ppx:inline/ppx:body/ppx:ST/xhtml:p/text()»
+                otherwise > 
+            }
+        }
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues($priority, $condition_type, $condition)»
+        }
+        apply "ppx:condition/ppx:connectionPointIn";
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+        apply "ppx:connectionPointOut";
+    }
+    
+    template "ppx:selectionDivergence|ppx:selectionConvergence|ppx:simultaneousDivergence|ppx:simultaneousConvergence" {
+        variable "type" > «local-name()»
+        variable "connectors" {
+            choose {
+                when "ppx:selectionDivergence|ppx:simultaneousDivergence" {
+                    > «count(ppx:connectionPointOut)»
+                }
+                otherwise > «count(ppx:connectionPointIn)»
+            }
+        }
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues($connectors)»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+        apply "ppx:connectionPointOut";
+    }
+    
+    template "ppx:jumpStep" {
+        variable "type" > jump
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues(@targetName)»
+        }
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+    }
+    
+    template "ppx:action" {
+        variable "type" {
+            choose {
+                when "ppx:reference" > reference
+                when "ppx:inline" > inline
+                otherwise > 
+            }
+        }
+        variable "value" {
+            choose {
+                when "ppx:reference" > «ppx:reference/@name»
+                when "ppx:inline" > «ppx:inline/ppx:ST/xhtml:p/text()»
+                otherwise > 
+            }
+        }
+        variable "actionBlock_action" {
+            > «ns:AddAction(@qualifier, $type, $value, @duration, @indicator)»
+        }
+    }
+    
+    template "ppx:actionBlock" {
+        variable "type" > «local-name()»
+        variable "instance_specific_values" {
+            > «ns:SetSpecificValues()»
+        }
+        apply "ppx:action";
+        call "add_instance" {
+            with "type" > «$type»
+        }
+        apply "ppx:connectionPointIn";
+    }
+}

@@ -29,6 +29,7 @@ from copy import deepcopy
 import os,sys,re
 import datetime
 from time import localtime
+from collections import OrderedDict, namedtuple
 
 from plcopen import *
 from graphics.GraphicCommons import *
@@ -308,7 +309,6 @@ class InstanceTagName(etree.XSLTExtension):
         self.process_children(context, tagname_infos)
         tagname = etree.Element('tagname')
         tagname.text = self.GetTagName(tagname_infos)
-        print etree.tostring(tagname)
         try:
             output_parent.append(tagname)
         except:
@@ -344,6 +344,158 @@ class TransitionTagName(InstanceTagName):
 
 instance_tagname_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"))
+
+#-------------------------------------------------------------------------------
+#           Helpers object for generating pou block instances list
+#-------------------------------------------------------------------------------
+
+_BoolValue = lambda x: x in ["true", "0"]
+
+_Point = namedtuple("Point", ["x", "y"])
+
+_BlockInstanceInfos = namedtuple("BlockInstanceInfos", 
+    ["type", "id", "x", "y", "width", "height", "specific_values", "inputs", "outputs"])
+
+_BlockSpecificValues = (
+    namedtuple("BlockSpecificValues", 
+               ["name", "execution_order"]),
+    [str, int])
+_VariableSpecificValues = (
+    namedtuple("VariableSpecificValues", 
+               ["name", "value_type", "execution_order"]),
+    [str, str, int])
+_ConnectionSpecificValues = (
+    namedtuple("ConnectionSpecificValues", ["name"]),
+    [str])
+
+_PowerRailSpecificValues = (
+    namedtuple("PowerRailSpecificValues", ["connectors"]),
+    [int])
+
+_LDElementSpecificValues = (
+    namedtuple("LDElementSpecificValues", 
+               ["name", "negated", "edge", "storage", "execution_order"]),
+    [str, _BoolValue, str, str, int])
+
+_DivergenceSpecificValues = (
+    namedtuple("DivergenceSpecificValues", ["connectors"]),
+    [int])
+
+_SpecificValuesTuples = {
+    "comment": (
+        namedtuple("CommentSpecificValues", ["content"]),
+        [str]),
+    "input": _VariableSpecificValues,
+    "output": _VariableSpecificValues,
+    "inout": _VariableSpecificValues,
+    "connector": _ConnectionSpecificValues,
+    "continuation": _ConnectionSpecificValues,
+    "leftPowerRail": _PowerRailSpecificValues,
+    "rightPowerRail": _PowerRailSpecificValues,
+    "contact": _LDElementSpecificValues,
+    "coil": _LDElementSpecificValues,
+    "step": (
+        namedtuple("StepSpecificValues", ["name", "initial", "action"]),
+        [str, _BoolValue, lambda x: x]),
+    "transition": (
+        namedtuple("TransitionSpecificValues", 
+                   ["priority", "condition_type", "condition", "connection"]),
+        [int, str, str, lambda x: x]),
+    "selectionDivergence": _DivergenceSpecificValues,
+    "selectionConvergence": _DivergenceSpecificValues,
+    "simultaneousDivergence": _DivergenceSpecificValues,
+    "simultaneousConvergence": _DivergenceSpecificValues,
+    "jump": (
+        namedtuple("JumpSpecificValues", ["target"]),
+        [str]),
+    "actionBlock": (
+        namedtuple("ActionBlockSpecificValues", ["actions"]),
+        [lambda x: x]),
+}
+
+_InstanceConnectionInfos = namedtuple("InstanceConnectionInfos",
+    ["name", "negated", "edge", "position", "links"])
+
+_ConnectionLinkInfos = namedtuple("ConnectionLinkInfos",
+    ["refLocalId", "formalParameter", "points"])
+
+_ActionInfos = namedtuple("ActionInfos",
+    ["qualifier", "type", "value", "duration", "indicator"])
+
+def _translate_args(translations, args):
+    return [translate(arg[0]) if len(arg) > 0 else None 
+            for translate, arg in
+            zip(translations, args)]
+
+class BlockInstanceFactory:
+    
+    def __init__(self, block_instances):
+        self.BlockInstances = block_instances
+        self.CurrentInstance = None
+        self.SpecificValues = None
+        self.CurrentConnection = None
+        self.CurrentLink = None
+    
+    def SetSpecificValues(self, context, *args):
+        self.SpecificValues = list(args)
+        self.CurrentInstance = None
+        self.CurrentConnection = None
+        self.CurrentLink = None
+    
+    def AddBlockInstance(self, context, *args):
+        specific_values_tuple, specific_values_translation = \
+            _SpecificValuesTuples.get(args[0][0], _BlockSpecificValues)
+        
+        if (args[0][0] == "step" and len(self.SpecificValues) < 3 or
+            args[0][0] == "transition" and len(self.SpecificValues) < 4):
+            self.SpecificValues.append([None])
+        elif args[0][0] == "actionBlock" and len(self.SpecificValues) < 1:
+            self.SpecificValues.append([[]])
+        specific_values = specific_values_tuple(*_translate_args(
+            specific_values_translation, self.SpecificValues))
+        self.SpecificValues = None
+        
+        self.CurrentInstance = _BlockInstanceInfos(
+            *(_translate_args([str] + [int] * 5, args) + 
+              [specific_values, [], []]))
+        
+        self.BlockInstances[self.CurrentInstance.id] = self.CurrentInstance
+        
+    def AddInstanceConnection(self, context, *args):
+        connection_args = _translate_args(
+            [str, str, _BoolValue, str, int, int], args)
+        
+        self.CurrentConnection = _InstanceConnectionInfos(
+            *(connection_args[1:4] + [
+                _Point(*connection_args[4:6]), []]))
+        
+        if self.CurrentInstance is not None:
+            if connection_args[0] == "input":
+                self.CurrentInstance.inputs.append(self.CurrentConnection)
+            else:
+                self.CurrentInstance.outputs.append(self.CurrentConnection)
+        else:
+            self.SpecificValues.append([self.CurrentConnection])
+    
+    def AddConnectionLink(self, context, *args):
+        self.CurrentLink = _ConnectionLinkInfos(
+            *(_translate_args([int, str], args) + [[]]))
+        self.CurrentConnection.links.append(self.CurrentLink)
+    
+    def AddLinkPoint(self, context, *args):
+        self.CurrentLink.points.append(_Point(
+            *_translate_args([int, int], args)))
+    
+    def AddAction(self, context, *args):
+        if len(self.SpecificValues) == 0:
+            self.SpecificValues.append([[]])
+        translated_args = _translate_args([str] * 5, args)
+        if translated_args[0] is None:
+            translated_args[0] = ""
+        self.SpecificValues[0][0].append(_ActionInfos(*translated_args))
+    
+pou_block_instances_xslt = etree.parse(
+    os.path.join(ScriptDirectory, "plcopen", "pou_block_instances.xslt"))
 
 #-------------------------------------------------------------------------------
 #                         Undo Buffer for PLCOpenEditor
@@ -636,7 +788,6 @@ class PLCControler:
         return None
 
     def GetPouVariables(self, tagname, debug = False):
-        vars = []
         pou_type = None
         project = self.GetProject(debug)
         if project is not None:
@@ -1616,8 +1767,8 @@ class PLCControler:
             basetype_type = basetype.getLocalTag()
             return (basetype.getname() if basetype_type == "derived"
                     else basetype_type.upper())
-        elif basetype_content_type == "derived":
-            return basetype_content_type.getname()
+        return (basetype_content.getname() if basetype_content_type == "derived"
+                else basetype_content_type.upper())
         return None
 
     # Return Base Type of given possible derived type
@@ -2289,25 +2440,22 @@ class PLCControler:
             
             return new_id, connections
     
-    # Return the current pou editing instances idx
-    def GetEditedElementInstancesIds(self, tagname, debug = False):
+    def GetEditedElementInstancesInfos(self, tagname, debug = False):
+        element_instances = OrderedDict()
         element = self.GetEditedElement(tagname, debug)
         if element is not None:
-            return element.getinstancesIds()
-        return []
-    
-    # Return the current pou editing informations
-    def GetEditedElementInstanceInfos(self, tagname, id, debug = False):
-        element = self.GetEditedElement(tagname, debug)
-        if element is not None:
-            instance = element.getinstance(id)
-            if instance is not None:
-                infos = instance.getinfos()
-                if infos["type"] in ["input", "output", "inout"]:
-                    var_type = self.GetEditedElementVarValueType(tagname, infos["specific_values"]["name"], debug)
-                    infos["specific_values"]["value_type"] = var_type
-                return infos
-        return None
+            factory = BlockInstanceFactory(element_instances)
+            
+            pou_block_instances_xslt_tree = etree.XSLT(
+                pou_block_instances_xslt, 
+                extensions = {
+                    ("pou_block_instances_ns", name): getattr(factory, name)
+                    for name in ["AddBlockInstance", "SetSpecificValues",
+                                 "AddInstanceConnection", "AddConnectionLink",
+                                 "AddLinkPoint", "AddAction"]})
+        
+            pou_block_instances_xslt_tree(element)
+        return element_instances
     
     def ClearEditedElementExecutionOrder(self, tagname):
         element = self.GetEditedElement(tagname)
@@ -2318,29 +2466,6 @@ class PLCControler:
         element = self.GetEditedElement(tagname)
         if element is not None:
             element.compileexecutionOrder()
-    
-    # Return the variable type of the given pou
-    def GetEditedElementVarValueType(self, tagname, varname, debug = False):
-        project = self.GetProject(debug)
-        if project is not None:
-            words = tagname.split("::")
-            if words[0] in ["P","T","A"]:
-                pou = self.Project.getpou(words[1])
-                if pou is not None:
-                    if words[0] == "T" and varname == words[2]:
-                        return "BOOL"
-                    if words[1] == varname:
-                        return self.GetPouInterfaceReturnType(pou)[0]
-                    for type, varlist in pou.getvars():
-                        for var in varlist.getvariable():
-                            if var.getname() == varname:
-                                vartype_content = var.gettype().getcontent()
-                                vartype_content_type = vartype_content.getLocalTag()
-                                if vartype_content_type == "derived":
-                                    return vartype_content.getname()
-                                else:
-                                    return vartype_content_type.upper()
-        return None
     
     def SetConnectionWires(self, connection, connector):
         wires = connector.GetWires()

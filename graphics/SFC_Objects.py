@@ -1894,18 +1894,18 @@ class SFC_ActionBlock(Graphic_Element):
         self.ColSize = [0, 0, 0]
         min_height = 0
         for action in self.Actions:
-            width, height = self.Parent.GetTextExtent(action["qualifier"])
+            width, height = self.Parent.GetTextExtent(action.qualifier)
             self.ColSize[0] = max(self.ColSize[0], width + 10)
             row_height = height
-            if action.has_key("duration"):
-                width, height = self.Parent.GetTextExtent(action["duration"])
+            if action.duration is not None:
+                width, height = self.Parent.GetTextExtent(action.duration)
                 row_height = max(row_height, height)
                 self.ColSize[0] = max(self.ColSize[0], width + 10)
-            width, height = self.Parent.GetTextExtent(action["value"])
+            width, height = self.Parent.GetTextExtent(action.value)
             row_height = max(row_height, height)
             self.ColSize[1] = max(self.ColSize[1], width + 10)
-            if action.get("indicator", "") != "":
-                width, height = self.Parent.GetTextExtent(action["indicator"])
+            if action.indicator is not None:
+                width, height = self.Parent.GetTextExtent(action.indicator)
                 row_height = max(row_height, height)
                 self.ColSize[2] = max(self.ColSize[2], width + 10)
             min_height += row_height + 5
@@ -2022,39 +2022,39 @@ class SFC_ActionBlock(Graphic_Element):
             if i != 0:
                 dc.DrawLine(self.Pos.x, self.Pos.y + i * line_size, 
                     self.Pos.x + self.Size[0], self.Pos.y + i * line_size)
-            qualifier_size = dc.GetTextExtent(action["qualifier"])
-            if action.has_key("duration"):
+            qualifier_size = dc.GetTextExtent(action.qualifier)
+            if action.duration is not None:
                 qualifier_pos = (self.Pos.x + (colsize[0] - qualifier_size[0]) / 2,
                                  self.Pos.y + i * line_size + line_size / 2 - qualifier_size[1])
-                duration_size = dc.GetTextExtent(action["duration"])
+                duration_size = dc.GetTextExtent(action.duration)
                 duration_pos = (self.Pos.x + (colsize[0] - duration_size[0]) / 2,
                                 self.Pos.y + i * line_size + line_size / 2)
-                dc.DrawText(action["duration"], duration_pos[0], duration_pos[1])
+                dc.DrawText(action.duration, duration_pos[0], duration_pos[1])
             else:
                 qualifier_pos = (self.Pos.x + (colsize[0] - qualifier_size[0]) / 2,
                                  self.Pos.y + i * line_size + (line_size - qualifier_size[1]) / 2)
-            dc.DrawText(action["qualifier"], qualifier_pos[0], qualifier_pos[1])
-            content_size = dc.GetTextExtent(action["value"])
+            dc.DrawText(action.qualifier, qualifier_pos[0], qualifier_pos[1])
+            content_size = dc.GetTextExtent(action.value)
             content_pos = (self.Pos.x + colsize[0] + (colsize[1] - content_size[0]) / 2,
                            self.Pos.y + i * line_size + (line_size - content_size[1]) / 2)
-            dc.DrawText(action["value"], content_pos[0], content_pos[1])
-            if action.has_key("indicator"):
-                indicator_size = dc.GetTextExtent(action["indicator"])
+            dc.DrawText(action.value, content_pos[0], content_pos[1])
+            if action.indicator is not None:
+                indicator_size = dc.GetTextExtent(action.indicator)
                 indicator_pos = (self.Pos.x + colsize[0] + colsize[1] + (colsize[2] - indicator_size[0]) / 2,
                                  self.Pos.y + i * line_size + (line_size - indicator_size[1]) / 2)
-                dc.DrawText(action["indicator"], indicator_pos[0], indicator_pos[1])
+                dc.DrawText(action.indicator, indicator_pos[0], indicator_pos[1])
             
             if not getattr(dc, "printing", False):
                 action_highlights = self.Highlights.get(i, {})
                 for name, attribute_highlights in action_highlights.iteritems():
                     if name == "qualifier":
-                        DrawHighlightedText(dc, action["qualifier"], attribute_highlights, qualifier_pos[0], qualifier_pos[1])
+                        DrawHighlightedText(dc, action.qualifier, attribute_highlights, qualifier_pos[0], qualifier_pos[1])
                     elif name == "duration":
-                        DrawHighlightedText(dc, action["duration"], attribute_highlights, duration_pos[0], duration_pos[1])
+                        DrawHighlightedText(dc, action.duration, attribute_highlights, duration_pos[0], duration_pos[1])
                     elif name in ["reference", "inline"]:
-                        DrawHighlightedText(dc, action["value"], attribute_highlights, content_pos[0], content_pos[1])
+                        DrawHighlightedText(dc, action.value, attribute_highlights, content_pos[0], content_pos[1])
                     elif name == "indicator":
-                        DrawHighlightedText(dc, action["indicator"], attribute_highlights, indicator_pos[0], indicator_pos[1])
+                        DrawHighlightedText(dc, action.indicator, attribute_highlights, indicator_pos[0], indicator_pos[1])
         
         # Draw input connector
         self.Input.Draw(dc)
