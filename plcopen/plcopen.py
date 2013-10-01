@@ -1874,145 +1874,8 @@ def _initElementClass(name, parent, connectionPointInType="none"):
         setattr(cls, "Search", _SearchInElement)
     return cls
 
-def _getexecutionOrder(instance, specific_values):
-    executionOrder = instance.getexecutionOrderId()
-    if executionOrder is None:
-        executionOrder = 0
-    specific_values["executionOrder"] = executionOrder
-    
-def _getdefaultmodifiers(instance, infos):
-    infos["negated"] = instance.getnegated()
-    infos["edge"] = instance.getedge()
-
-def _getinputmodifiers(instance, infos):
-    infos["negated"] = instance.getnegatedIn()
-    infos["edge"] = instance.getedgeIn()
-
-def _getoutputmodifiers(instance, infos):
-    infos["negated"] = instance.getnegatedOut()
-    infos["edge"] = instance.getedgeOut()
-
-MODIFIERS_FUNCTIONS = {"default": _getdefaultmodifiers,
-                       "input": _getinputmodifiers,
-                       "output": _getoutputmodifiers}
-
-def _getconnectioninfos(instance, connection, links=False, modifiers=None, parameter=False):
-    infos = {"position": connection.getrelPositionXY()}
-    if parameter:
-        infos["name"] = instance.getformalParameter()
-    MODIFIERS_FUNCTIONS.get(modifiers, lambda x, y: None)(instance, infos)
-    if links:
-        infos["links"] = []
-        connections = connection.getconnections()
-        if connections is not None:
-            for link in connections:
-                dic = {"refLocalId": link.getrefLocalId(),
-                       "points": link.getpoints(),
-                       "formalParameter": link.getformalParameter()}
-                infos["links"].append(dic)
-    return infos
-
-def _getelementinfos(instance):
-    return {"id": instance.getlocalId(),
-            "x": instance.getx(),
-            "y": instance.gety(),
-            "height": instance.getheight(),
-            "width": instance.getwidth(),
-            "specific_values": {},
-            "inputs": [],
-            "outputs": []}
-
-def _getvariableinfosFunction(type, input, output):
-    def getvariableinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = type
-        specific_values = infos["specific_values"]
-        specific_values["name"] = self.getexpression()
-        _getexecutionOrder(self, specific_values)
-        if input and output:
-            infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True, "input"))
-            infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut, False, "output"))
-        elif input:
-            infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True, "default"))
-        elif output:
-            infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut, False, "default"))
-        return infos
-    return getvariableinfos
-
-def _getconnectorinfosFunction(type):
-    def getconnectorinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = type
-        infos["specific_values"]["name"] = self.getname()
-        if type == "connector":
-            infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        elif type == "continuation":
-            infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
-        return infos
-    return getconnectorinfos
-
-def _getpowerrailinfosFunction(type):
-    def getpowerrailinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = type
-        if type == "rightPowerRail":
-            for connectionPointIn in self.getconnectionPointIn():
-                infos["inputs"].append(_getconnectioninfos(self, connectionPointIn, True))
-            infos["specific_values"]["connectors"] = len(infos["inputs"])
-        elif type == "leftPowerRail":
-            for connectionPointOut in self.getconnectionPointOut():
-                infos["outputs"].append(_getconnectioninfos(self, connectionPointOut))
-            infos["specific_values"]["connectors"] = len(infos["outputs"])
-        return infos
-    return getpowerrailinfos
-
-def _getldelementinfosFunction(ld_element_type):
-    def getldelementinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = ld_element_type
-        specific_values = infos["specific_values"]
-        specific_values["name"] = self.getvariable()
-        _getexecutionOrder(self, specific_values)
-        specific_values["negated"] = self.getnegated()
-        specific_values["edge"] = self.getedge()
-        if ld_element_type == "coil":
-            specific_values["storage"] = self.getstorage()
-        infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
-        return infos
-    return getldelementinfos
-
-DIVERGENCE_TYPES = {(True, True): "simultaneousDivergence",
-                    (True, False): "selectionDivergence",
-                    (False, True): "simultaneousConvergence",
-                    (False, False): "selectionConvergence"}
-
-def _getdivergenceinfosFunction(divergence, simultaneous):
-    def getdivergenceinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = DIVERGENCE_TYPES[(divergence, simultaneous)]
-        if divergence:
-            infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-            for connectionPointOut in self.getconnectionPointOut():
-                infos["outputs"].append(_getconnectioninfos(self, connectionPointOut))
-            infos["specific_values"]["connectors"] = len(infos["outputs"])
-        else:
-            for connectionPointIn in self.getconnectionPointIn():
-                infos["inputs"].append(_getconnectioninfos(self, connectionPointIn, True))
-            infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
-            infos["specific_values"]["connectors"] = len(infos["inputs"])
-        return infos
-    return getdivergenceinfos
-
 cls = _initElementClass("comment", "commonObjects")
 if cls:
-    def getinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = "comment"
-        infos["specific_values"]["content"] = self.getcontentText()
-        return infos
-    setattr(cls, "getinfos", getinfos)
-    
     def setcontentText(self, text):
         self.content.setanyText(text)
     setattr(cls, "setcontentText", setcontentText)
@@ -2041,19 +1904,6 @@ if cls:
             bbox.union(_getConnectionsBoundingBox(input.connectionPointIn))
         return bbox
     setattr(cls, "getBoundingBox", getBoundingBox)
-
-    def getinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = self.gettypeName()
-        specific_values = infos["specific_values"]
-        specific_values["name"] = self.getinstanceName()
-        _getexecutionOrder(self, specific_values)
-        for variable in self.inputVariables.getvariable():
-            infos["inputs"].append(_getconnectioninfos(variable, variable.connectionPointIn, True, "default", True))
-        for variable in self.outputVariables.getvariable():
-            infos["outputs"].append(_getconnectioninfos(variable, variable.connectionPointOut, False, "default", True))
-        return infos
-    setattr(cls, "getinfos", getinfos)
 
     def updateElementName(self, old_name, new_name):
         if self.typeName == old_name:
@@ -2092,14 +1942,6 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = _initElementClass("leftPowerRail", "ldObjects")
-if cls:
-    setattr(cls, "getinfos", _getpowerrailinfosFunction("leftPowerRail"))
-
-cls = _initElementClass("rightPowerRail", "ldObjects", "multiple")
-if cls:
-    setattr(cls, "getinfos", _getpowerrailinfosFunction("rightPowerRail"))
-
 def _UpdateLDElementName(self, old_name, new_name):
     if self.variable == old_name:
         self.variable = new_name
@@ -2114,60 +1956,24 @@ def _getSearchInLDElement(ld_element_type):
 
 cls = _initElementClass("contact", "ldObjects", "single")
 if cls:
-    setattr(cls, "getinfos", _getldelementinfosFunction("contact"))
     setattr(cls, "updateElementName", _UpdateLDElementName)
     setattr(cls, "updateElementAddress", _UpdateLDElementAddress)
     setattr(cls, "Search", _getSearchInLDElement("contact"))
 
 cls = _initElementClass("coil", "ldObjects", "single")
 if cls:
-    setattr(cls, "getinfos", _getldelementinfosFunction("coil"))
     setattr(cls, "updateElementName", _UpdateLDElementName)
     setattr(cls, "updateElementAddress", _UpdateLDElementAddress)
     setattr(cls, "Search", _getSearchInLDElement("coil"))
 
 cls = _initElementClass("step", "sfcObjects", "single")
 if cls:
-    def getinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = "step"
-        specific_values = infos["specific_values"]
-        specific_values["name"] = self.getname()
-        specific_values["initial"] = self.getinitialStep()
-        if self.connectionPointIn is not None:
-            infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        if self.connectionPointOut is not None:
-            infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
-        if self.connectionPointOutAction is not None:
-            specific_values["action"] = _getconnectioninfos(self, self.connectionPointOutAction)
-        return infos
-    setattr(cls, "getinfos", getinfos)
-
     def Search(self, criteria, parent_infos=[]):
         return _Search([("name", self.getname())], criteria, parent_infos + ["step", self.getlocalId()])
     setattr(cls, "Search", Search)
 
 cls = _initElementClass("transition", "sfcObjects")
 if cls:
-    def getinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = "transition"
-        specific_values = infos["specific_values"]
-        priority = self.getpriority()
-        if priority is None:
-            priority = 0
-        specific_values["priority"] = priority
-        condition = self.getconditionContent()
-        specific_values["condition_type"] = condition["type"]
-        if specific_values["condition_type"] == "connection":
-            specific_values["connection"] = _getconnectioninfos(self, condition["value"], True)
-        else:
-            specific_values["condition"] = condition["value"]
-        infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        infos["outputs"].append(_getconnectioninfos(self, self.connectionPointOut))
-        return infos
-    setattr(cls, "getinfos", getinfos)
-
     def setconditionContent(self, condition_type, value):
         if self.condition is None:
             self.addcondition()
@@ -2278,32 +2084,8 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
     
-cls = _initElementClass("selectionDivergence", "sfcObjects", "single")
-if cls:
-    setattr(cls, "getinfos", _getdivergenceinfosFunction(True, False))
-
-cls = _initElementClass("selectionConvergence", "sfcObjects", "multiple")
-if cls:
-    setattr(cls, "getinfos", _getdivergenceinfosFunction(False, False))
-
-cls = _initElementClass("simultaneousDivergence", "sfcObjects", "single")
-if cls:
-    setattr(cls, "getinfos", _getdivergenceinfosFunction(True, True))
-
-cls = _initElementClass("simultaneousConvergence", "sfcObjects", "multiple")
-if cls:
-    setattr(cls, "getinfos", _getdivergenceinfosFunction(False, True))
-
 cls = _initElementClass("jumpStep", "sfcObjects", "single")
 if cls:
-    def getinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = "jump"
-        infos["specific_values"]["target"] = self.gettargetName()
-        infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        return infos
-    setattr(cls, "getinfos", getinfos)
-
     def Search(self, criteria, parent_infos):
         return _Search([("target", self.gettargetName())], criteria, parent_infos + ["jump", self.getlocalId()])
     setattr(cls, "Search", Search)
@@ -2361,14 +2143,6 @@ if cls:
 
 cls = _initElementClass("actionBlock", "commonObjects", "single")
 if cls:
-    def getinfos(self):
-        infos = _getelementinfos(self)
-        infos["type"] = "actionBlock"
-        infos["specific_values"]["actions"] = self.getactions()
-        infos["inputs"].append(_getconnectioninfos(self, self.connectionPointIn, True))
-        return infos
-    setattr(cls, "getinfos", getinfos)
-    
     def setactions(self, actions):
         self.action = []
         for params in actions:
@@ -2440,21 +2214,18 @@ def _UpdateIOElementAddress(self, old_name, new_name):
 
 cls = _initElementClass("inVariable", "fbdObjects")
 if cls:
-    setattr(cls, "getinfos", _getvariableinfosFunction("input", False, True))
     setattr(cls, "updateElementName", _UpdateIOElementName)
     setattr(cls, "updateElementAddress", _UpdateIOElementAddress)
     setattr(cls, "Search", _SearchInIOVariable)
 
 cls = _initElementClass("outVariable", "fbdObjects", "single")
 if cls:
-    setattr(cls, "getinfos", _getvariableinfosFunction("output", True, False))
     setattr(cls, "updateElementName", _UpdateIOElementName)
     setattr(cls, "updateElementAddress", _UpdateIOElementAddress)
     setattr(cls, "Search", _SearchInIOVariable)
 
 cls = _initElementClass("inOutVariable", "fbdObjects", "single")
 if cls:
-    setattr(cls, "getinfos", _getvariableinfosFunction("inout", True, True))
     setattr(cls, "updateElementName", _UpdateIOElementName)
     setattr(cls, "updateElementAddress", _UpdateIOElementAddress)
     setattr(cls, "Search", _SearchInIOVariable)
@@ -2465,7 +2236,6 @@ def _SearchInConnector(self, criteria, parent_infos=[]):
 
 cls = _initElementClass("continuation", "commonObjects")
 if cls:
-    setattr(cls, "getinfos", _getconnectorinfosFunction("continuation"))
     setattr(cls, "Search", _SearchInConnector)
 
     def updateElementName(self, old_name, new_name):
@@ -2475,7 +2245,6 @@ if cls:
 
 cls = _initElementClass("connector", "commonObjects", "single")
 if cls:
-    setattr(cls, "getinfos", _getconnectorinfosFunction("connector"))
     setattr(cls, "Search", _SearchInConnector)
 
     def updateElementName(self, old_name, new_name):

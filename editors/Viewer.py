@@ -84,36 +84,38 @@ ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, MAX_ZOOMIN)]
 def GetVariableCreationFunction(variable_type):
     def variableCreationFunction(viewer, id, specific_values):
         return FBD_Variable(viewer, variable_type, 
-                                    specific_values["name"], 
-                                    specific_values["value_type"], 
+                                    specific_values.name, 
+                                    specific_values.value_type, 
                                     id,
-                                    specific_values["executionOrder"])
+                                    specific_values.execution_order)
     return variableCreationFunction
 
 def GetConnectorCreationFunction(connector_type):
     def connectorCreationFunction(viewer, id, specific_values):
         return FBD_Connector(viewer, connector_type, 
-                                     specific_values["name"], id)
+                                     specific_values.name, id)
     return connectorCreationFunction
 
 def commentCreationFunction(viewer, id, specific_values):
-    return Comment(viewer, specific_values["content"], id)
+    return Comment(viewer, specific_values.content, id)
 
 def GetPowerRailCreationFunction(powerrail_type):
     def powerRailCreationFunction(viewer, id, specific_values):
         return LD_PowerRail(viewer, powerrail_type, id, 
-                                    specific_values["connectors"])
+                                    specific_values.connectors)
     return powerRailCreationFunction
+
+MODIFIER_VALUE = lambda x: x if x is not None else 'none'
 
 CONTACT_TYPES = {(True, "none"): CONTACT_REVERSE,
                  (False, "rising"): CONTACT_RISING,
                  (False, "falling"): CONTACT_FALLING}
 
 def contactCreationFunction(viewer, id, specific_values):
-    contact_type = CONTACT_TYPES.get((specific_values.get("negated", False), 
-                                      specific_values.get("edge", "none")),
+    contact_type = CONTACT_TYPES.get((specific_values.negated, 
+                                      MODIFIER_VALUE(specific_values.edge)),
                                      CONTACT_NORMAL)
-    return LD_Contact(viewer, contact_type, specific_values["name"], id)
+    return LD_Contact(viewer, contact_type, specific_values.name, id)
 
 COIL_TYPES = {(True, "none", "none"): COIL_REVERSE,
               (False, "none", "set"): COIL_SET,
@@ -122,38 +124,38 @@ COIL_TYPES = {(True, "none", "none"): COIL_REVERSE,
               (False, "falling", "none"): COIL_FALLING}
 
 def coilCreationFunction(viewer, id, specific_values):
-    coil_type = COIL_TYPES.get((specific_values.get("negated", False), 
-                                specific_values.get("edge", "none"),
-                                specific_values.get("storage", "none")),
+    coil_type = COIL_TYPES.get((specific_values.negated, 
+                                MODIFIER_VALUE(specific_values.edge),
+                                MODIFIER_VALUE(specific_values.storage)),
                                COIL_NORMAL)
-    return LD_Coil(viewer, coil_type, specific_values["name"], id)
+    return LD_Coil(viewer, coil_type, specific_values.name, id)
 
 def stepCreationFunction(viewer, id, specific_values):
-    step = SFC_Step(viewer, specific_values["name"], 
-                            specific_values.get("initial", False), id)
-    if specific_values.get("action", None):
+    step = SFC_Step(viewer, specific_values.name, 
+                            specific_values.initial, id)
+    if specific_values.action is not None:
         step.AddAction()
         connector = step.GetActionConnector()
-        connector.SetPosition(wx.Point(*specific_values["action"]["position"]))
+        connector.SetPosition(wx.Point(*specific_values.action.position))
     return step
 
 def transitionCreationFunction(viewer, id, specific_values):
-    transition = SFC_Transition(viewer, specific_values["condition_type"], 
-                                        specific_values.get("condition", None), 
-                                        specific_values["priority"], id)
+    transition = SFC_Transition(viewer, specific_values.condition_type, 
+                                        specific_values.condition, 
+                                        specific_values.priority, id)
     return transition
 
 def GetDivergenceCreationFunction(divergence_type):
     def divergenceCreationFunction(viewer, id, specific_values):
         return SFC_Divergence(viewer, divergence_type, 
-                                      specific_values["connectors"], id)
+                                      specific_values.connectors, id)
     return divergenceCreationFunction
 
 def jumpCreationFunction(viewer, id, specific_values):
-    return SFC_Jump(viewer, specific_values["target"], id)
+    return SFC_Jump(viewer, specific_values.target, id)
 
 def actionBlockCreationFunction(viewer, id, specific_values):
-    return SFC_ActionBlock(viewer, specific_values["actions"], id)
+    return SFC_ActionBlock(viewer, specific_values.actions, id)
 
 ElementCreationFunctions = {
     "input": GetVariableCreationFunction(INPUT),
@@ -1089,13 +1091,10 @@ class Viewer(EditorPanel, DebugViewer):
         self.ResetBuffer()
         instance = {}
         # List of ids of already loaded blocks
-        ids = self.Controler.GetEditedElementInstancesIds(self.TagName, debug = self.Debug)
+        instances = self.Controler.GetEditedElementInstancesInfos(self.TagName, debug = self.Debug)
         # Load Blocks until they are all loaded
-        while len(ids) > 0:
-            instance = self.Controler.GetEditedElementInstanceInfos(
-                self.TagName, ids.popitem(0)[0], debug = self.Debug)
-            if instance is not None:
-                self.loadInstance(instance, ids, selection)
+        while len(instances) > 0:
+            self.loadInstance(instances.popitem(0)[1], instances, selection)
         
         if (selection is not None and 
             isinstance(self.SelectedElement, Graphic_Group)):
@@ -1221,119 +1220,119 @@ class Viewer(EditorPanel, DebugViewer):
             self.SelectedElement = group
         
     # Load instance from given informations
-    def loadInstance(self, instance, ids, selection):
-        self.current_id = max(self.current_id, instance["id"])
-        creation_function = ElementCreationFunctions.get(instance["type"], None)
+    def loadInstance(self, instance, remaining_instances, selection):
+        self.current_id = max(self.current_id, instance.id)
+        creation_function = ElementCreationFunctions.get(instance.type, None)
         connectors = {"inputs" : [], "outputs" : []}
-        specific_values = instance["specific_values"]
+        specific_values = instance.specific_values
         if creation_function is not None:
-            element = creation_function(self, instance["id"], specific_values)
+            element = creation_function(self, instance.id, specific_values)
             if isinstance(element, SFC_Step):
-                if len(instance["inputs"]) > 0:
+                if len(instance.inputs) > 0:
                     element.AddInput()
                 else:
                     element.RemoveInput()
-                if len(instance["outputs"]) > 0:
+                if len(instance.outputs) > 0:
                     element.AddOutput()
-            if isinstance(element, SFC_Transition) and specific_values["condition_type"] == "connection":
+            if isinstance(element, SFC_Transition) and specific_values.condition_type == "connection":
                 connector = element.GetConditionConnector()
-                self.CreateWires(connector, instance["id"], specific_values["connection"]["links"], ids, selection)
+                self.CreateWires(connector, instance.id, specific_values.connection.links, remaining_instances, selection)
         else:
             executionControl = False
-            for input in instance["inputs"]:
-                if input["negated"]:
-                    connectors["inputs"].append((input["name"], None, "negated"))
-                elif input["edge"]:
-                    connectors["inputs"].append((input["name"], None, input["edge"]))
+            for input in instance.inputs:
+                input_edge = MODIFIER_VALUE(input.edge)
+                if input.negated:
+                    connectors["inputs"].append((input.name, None, "negated"))
+                elif input_edge:
+                    connectors["inputs"].append((input.name, None, input_edge))
                 else:
-                    connectors["inputs"].append((input["name"], None, "none"))
-            for output in instance["outputs"]:
-                if output["negated"]:
-                    connectors["outputs"].append((output["name"], None, "negated"))
-                elif output["edge"]:
-                    connectors["outputs"].append((output["name"], None, output["edge"]))
+                    connectors["inputs"].append((input.name, None, "none"))
+            for output in instance.outputs:
+                output_edge = MODIFIER_VALUE(output.edge)
+                if output.negated:
+                    connectors["outputs"].append((output.name, None, "negated"))
+                elif output_edge:
+                    connectors["outputs"].append((output.name, None, output_edge))
                 else:
-                    connectors["outputs"].append((output["name"], None, "none"))
+                    connectors["outputs"].append((output.name, None, "none"))
             if len(connectors["inputs"]) > 0 and connectors["inputs"][0][0] == "EN":
                 connectors["inputs"].pop(0)
                 executionControl = True
             if len(connectors["outputs"]) > 0 and connectors["outputs"][0][0] == "ENO":
                 connectors["outputs"].pop(0)
                 executionControl = True
-            if specific_values["name"] is None:
-                specific_values["name"] = ""
-            element = FBD_Block(self, instance["type"], specific_values["name"], 
-                      instance["id"], len(connectors["inputs"]), 
+            block_name = specific_values.name if specific_values.name is not None else ""
+            element = FBD_Block(self, instance.type, block_name, 
+                      instance.id, len(connectors["inputs"]), 
                       connectors=connectors, executionControl=executionControl, 
-                      executionOrder=specific_values["executionOrder"])
+                      executionOrder=specific_values.execution_order)
         if isinstance(element, Comment):
             self.AddComment(element)
         else:
             self.AddBlock(element)
             connectors = element.GetConnectors()
-        element.SetPosition(instance["x"], instance["y"])
-        element.SetSize(instance["width"], instance["height"])
-        for i, output_connector in enumerate(instance["outputs"]):
+        element.SetPosition(instance.x, instance.y)
+        element.SetSize(instance.width, instance.height)
+        for i, output_connector in enumerate(instance.outputs):
+            connector_pos = wx.Point(*output_connector.position)
             if isinstance(element, FBD_Block):
-                connector = element.GetConnector(
-                    wx.Point(*output_connector["position"]),
-                    output_name = output_connector["name"])
+                connector = element.GetConnector(connector_pos,
+                    output_name = output_connector.name)
             elif i < len(connectors["outputs"]):
                 connector = connectors["outputs"][i]
             else:
                 connector = None
             if connector is not None:
-                if output_connector.get("negated", False):
+                if output_connector.negated:
                     connector.SetNegated(True)
-                if output_connector.get("edge", "none") != "none":
-                    connector.SetEdge(output_connector["edge"])
+                if output_connector.edge is not None:
+                    connector.SetEdge(output_connector.edge)
                 if connectors["outputs"].index(connector) == i:
-                    connector.SetPosition(wx.Point(*output_connector["position"]))
-        for i, input_connector in enumerate(instance["inputs"]):
+                    connector.SetPosition(connector_pos)
+        for i, input_connector in enumerate(instance.inputs):
+            connector_pos = wx.Point(*input_connector.position)
             if isinstance(element, FBD_Block):
-                connector = element.GetConnector(
-                    wx.Point(*input_connector["position"]),
-                    input_name = input_connector["name"])
+                connector = element.GetConnector(connector_pos,
+                    input_name = input_connector.name)
             elif i < len(connectors["inputs"]):
                 connector = connectors["inputs"][i]
             else:
                 connector = None
             if connector is not None:
                 if connectors["inputs"].index(connector) == i:
-                    connector.SetPosition(wx.Point(*input_connector["position"]))
-                if input_connector.get("negated", False):
+                    connector.SetPosition(connector_pos)
+                if input_connector.negated:
                     connector.SetNegated(True)
-                if input_connector.get("edge", "none") != "none":
-                    connector.SetEdge(input_connector["edge"])
-                if not self.CreateWires(connector, instance["id"], input_connector["links"], ids, selection):
+                if input_connector.edge is not None:
+                    connector.SetEdge(input_connector.edge)
+                if not self.CreateWires(connector, instance.id, input_connector.links, remaining_instances, selection):
                     element.RefreshModel()
         element.RefreshConnectors()
-        if selection is not None and selection[0].get(instance["id"], False):
+        if selection is not None and selection[0].get(instance.id, False):
             self.SelectInGroup(element)
 
-    def CreateWires(self, start_connector, id, links, ids, selection=None):
+    def CreateWires(self, start_connector, id, links, remaining_instances, selection=None):
         links_connected = True
         for link in links:
-            refLocalId = link["refLocalId"]
+            refLocalId = link.refLocalId
             if refLocalId is None:
                 links_connected = False
                 continue
             
-            if ids.pop(refLocalId, False):
-                new_instance = self.Controler.GetEditedElementInstanceInfos(self.TagName, refLocalId, debug = self.Debug)
-                if new_instance is not None:
-                    self.loadInstance(new_instance, ids, selection)
+            new_instance = remaining_instances.pop(refLocalId, None)
+            if new_instance is not None:
+                self.loadInstance(new_instance, remaining_instances, selection)
             
             connected = self.FindElementById(refLocalId)
             if connected is None:
                 links_connected = False
                 continue
             
-            points = link["points"]
+            points = link.points
             end_connector = connected.GetConnector(
-                wx.Point(points[-1][0], points[-1][1])
+                wx.Point(points[-1].x, points[-1].y)
                 if len(points) > 0 else wx.Point(0, 0), 
-                link["formalParameter"])
+                link.formalParameter)
             if end_connector is not None:
                 if len(points) > 0:
                     wire = Wire(self)
