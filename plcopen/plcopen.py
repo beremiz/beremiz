@@ -49,8 +49,9 @@ VarOrder = ["Local","Temp","Input","Output","InOut","External","Global","Access"
 """
 Define which action qualifier must be associated with a duration 
 """
-QualifierList = {"N" : False, "R" : False, "S" : False, "L" : True, "D" : True, 
-    "P" : False, "P0" : False, "P1" : False, "SD" : True, "DS" : True, "SL" : True}
+QualifierList = OrderedDict([("N", False), ("R", False), ("S", False), 
+    ("L", True), ("D", True), ("P", False), ("P0", False), 
+    ("P1", False), ("SD", True), ("DS", True), ("SL", True)])
 
 
 FILTER_ADDRESS_MODEL = "(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)" 
@@ -218,7 +219,7 @@ def LoadProjectXML(project_xml):
                 
                 # Update resources pou instance attributes
                 for pouInstance in ResourceInstancesXpath(resource):
-                    type_name = pouInstance.get("type")
+                    type_name = pouInstance.attrib.pop("type")
                     if type_name is not None:
                         pouInstance.set("typeName", type_name)
             
@@ -2148,17 +2149,17 @@ if cls:
         for params in actions:
             action = PLCOpenParser.CreateElement("action", "actionBlock")
             self.appendaction(action)
-            action.setqualifier(params["qualifier"])
-            if params["type"] == "reference":
+            action.setqualifier(params.qualifier)
+            if params.type == "reference":
                 action.addreference()
-                action.setreferenceName(params["value"])
+                action.setreferenceName(params.value)
             else:
                 action.addinline()
-                action.setinlineContent(params["value"])
-            if params.has_key("duration"):
-                action.setduration(params["duration"])
-            if params.has_key("indicator"):
-                action.setindicator(params["indicator"])
+                action.setinlineContent(params.value)
+            if params.duration != "":
+                action.setduration(params.duration)
+            if params.indicator != "":
+                action.setindicator(params.indicator)
     setattr(cls, "setactions", setactions)
 
     def getactions(self):

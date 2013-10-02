@@ -339,8 +339,14 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
                 otherwise > 
             }
         }
+        variable "qualifier" {
+            choose {
+                when "@qualifier" > «@qualifier»
+                otherwise > N
+            }
+        }
         variable "actionBlock_action" {
-            > «ns:AddAction(@qualifier, $type, $value, @duration, @indicator)»
+            > «ns:AddAction($qualifier, $type, $value, @duration, @indicator)»
         }
     }
     

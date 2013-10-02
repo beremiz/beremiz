@@ -1894,17 +1894,18 @@ class SFC_ActionBlock(Graphic_Element):
         self.ColSize = [0, 0, 0]
         min_height = 0
         for action in self.Actions:
-            width, height = self.Parent.GetTextExtent(action.qualifier)
+            width, height = self.Parent.GetTextExtent(
+                action.qualifier if action.qualifier != "" else "N")
             self.ColSize[0] = max(self.ColSize[0], width + 10)
             row_height = height
-            if action.duration is not None:
+            if action.duration != "":
                 width, height = self.Parent.GetTextExtent(action.duration)
                 row_height = max(row_height, height)
                 self.ColSize[0] = max(self.ColSize[0], width + 10)
             width, height = self.Parent.GetTextExtent(action.value)
             row_height = max(row_height, height)
             self.ColSize[1] = max(self.ColSize[1], width + 10)
-            if action.indicator is not None:
+            if action.indicator != "":
                 width, height = self.Parent.GetTextExtent(action.indicator)
                 row_height = max(row_height, height)
                 self.ColSize[2] = max(self.ColSize[2], width + 10)
@@ -1920,7 +1921,7 @@ class SFC_ActionBlock(Graphic_Element):
             self.MinSize = max(self.ColSize[0] + self.ColSize[1] + self.ColSize[2],
                 SFC_ACTION_MIN_SIZE[0]), len(self.Actions) * SFC_ACTION_MIN_SIZE[1]
             self.RefreshBoundingBox()
-            if self.Input:
+            if self.Input is not None:
                 wires = self.Input.GetWires()
                 if len(wires) == 1:
                     input_block = wires[0][0].GetOtherConnected(self.Input).GetParentBlock()
@@ -2023,7 +2024,7 @@ class SFC_ActionBlock(Graphic_Element):
                 dc.DrawLine(self.Pos.x, self.Pos.y + i * line_size, 
                     self.Pos.x + self.Size[0], self.Pos.y + i * line_size)
             qualifier_size = dc.GetTextExtent(action.qualifier)
-            if action.duration is not None:
+            if action.duration != "":
                 qualifier_pos = (self.Pos.x + (colsize[0] - qualifier_size[0]) / 2,
                                  self.Pos.y + i * line_size + line_size / 2 - qualifier_size[1])
                 duration_size = dc.GetTextExtent(action.duration)
@@ -2038,7 +2039,7 @@ class SFC_ActionBlock(Graphic_Element):
             content_pos = (self.Pos.x + colsize[0] + (colsize[1] - content_size[0]) / 2,
                            self.Pos.y + i * line_size + (line_size - content_size[1]) / 2)
             dc.DrawText(action.value, content_pos[0], content_pos[1])
-            if action.indicator is not None:
+            if action.indicator != "":
                 indicator_size = dc.GetTextExtent(action.indicator)
                 indicator_pos = (self.Pos.x + colsize[0] + colsize[1] + (colsize[2] - indicator_size[0]) / 2,
                                  self.Pos.y + i * line_size + (line_size - indicator_size[1]) / 2)

@@ -27,6 +27,7 @@ import wx.lib.buttons
 
 from controls import CustomGrid, CustomTable
 from util.BitmapLibrary import GetBitmap
+from PLCControler import _ActionInfos
 
 #-------------------------------------------------------------------------------
 #                                  Helpers
@@ -49,17 +50,19 @@ class ActionTable(CustomTable):
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             colname = self.GetColLabelValue(col, False)
-            name = str(self.data[row].get(colname, ""))
+            value = getattr(self.data[row], colname.lower())
             if colname == "Type":
-                return _(name)
-            return name
+                return _(value)
+            return value
     
     def SetValue(self, row, col, value):
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
             if colname == "Type":
                 value = self.Parent.TranslateType[value]
-            self.data[row][colname] = value
+            elif colname == "Qualifier" and not self.Parent.DurationList[value]:
+                self.data[row].duration = ""
+            setattr(self.data[row], colname.lower(), value)
         
     def _updateColAttrs(self, grid):
         """
@@ -81,23 +84,19 @@ class ActionTable(CustomTable):
                 if colname == "Duration":
                     editor = wx.grid.GridCellTextEditor()
                     renderer = wx.grid.GridCellStringRenderer()
-                    if self.Parent.DurationList[self.data[row]["Qualifier"]]:
-                        readonly = False
-                    else:
-                        readonly = True
-                        self.data[row]["Duration"] = ""
+                    readonly = not self.Parent.DurationList[self.data[row].qualifier]
                 elif colname == "Type":
                     editor = wx.grid.GridCellChoiceEditor()
                     editor.SetParameters(self.Parent.TypeList)
                 elif colname == "Value":
-                    type = self.data[row]["Type"]
-                    if type == "Action":
+                    value_type = self.data[row].type
+                    if value_type == "Action":
                         editor = wx.grid.GridCellChoiceEditor()
                         editor.SetParameters(self.Parent.ActionList)
-                    elif type == "Variable":
+                    elif value_type == "Variable":
                         editor = wx.grid.GridCellChoiceEditor()
                         editor.SetParameters(self.Parent.VariableList)
-                    elif type == "Inline":
+                    elif value_type == "Inline":
                         editor = wx.grid.GridCellTextEditor()
                         renderer = wx.grid.GridCellStringRenderer()
                 elif colname == "Indicator":
@@ -168,11 +167,7 @@ class ActionBlockDialog(wx.Dialog):
         self.ColAlignements = [wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
         
         self.ActionsGrid.SetTable(self.Table)
-        self.ActionsGrid.SetDefaultValue({"Qualifier" : "N", 
-                                          "Duration" : "", 
-                                          "Type" : "Action", 
-                                          "Value" : "", 
-                                          "Indicator" : ""})
+        self.ActionsGrid.SetDefaultValue(_ActionInfos("N", "Action", "", "", ""))
         self.ActionsGrid.SetButtons({"Add": self.AddButton,
                                      "Delete": self.DeleteButton,
                                      "Up": self.UpButton,
@@ -199,7 +194,7 @@ class ActionBlockDialog(wx.Dialog):
         event.Skip()
     
     def SetQualifierList(self, list):
-        self.QualifierList = "," + ",".join(list)
+        self.QualifierList = ",".join(list)
         self.DurationList = list
 
     def SetVariableList(self, list):
@@ -210,41 +205,23 @@ class ActionBlockDialog(wx.Dialog):
 
     def SetValues(self, actions):
         for action in actions:
-            row = {"Qualifier" : action["qualifier"], "Value" : action["value"]}
-            if action["type"] == "reference":
-                if action["value"] in self.ActionList:
-                    row["Type"] = "Action"
-                elif action["value"] in self.VariableList:
-                    row["Type"] = "Variable"
-                else:
-                    row["Type"] = "Inline"
+            if action.type == "reference" and action.value in self.ActionList:
+                action.type = "Action"
+            elif action.type == "reference" and action.value in self.VariableList:
+                action.type = "Variable"
             else:
-                row["Type"] = "Inline"
-            if "duration" in action:
-                row["Duration"] = action["duration"]
-            else:
-                row["Duration"] = ""
-            if "indicator" in action:
-                row["Indicator"] = action["indicator"]
-            else:
-                row["Indicator"] = ""
-            self.Table.AppendRow(row)
+                action.type = "Inline"
+        self.Table.SetData(actions)
         self.Table.ResetView(self.ActionsGrid)
         if len(actions) > 0:
             self.ActionsGrid.SetGridCursor(0, 0)
         self.ActionsGrid.RefreshButtons()
     
     def GetValues(self):
-        values = []
-        for data in self.Table.GetData():
-            action = {"qualifier" : data["Qualifier"], "value" : data["Value"]}
-            if data["Type"] in ["Action", "Variable"]:
-                action["type"] = "reference"
+        actions = self.Table.GetData()
+        for action in actions:
+            if action.type in ["Action", "Variable"]:
+                action.type = "reference"
             else:
-                action["type"] = "inline"
-            if data["Duration"] != "":
-                action["duration"] = data["Duration"]
-            if data["Indicator"] != "":
-                action["indicator"] = data["Indicator"]
-            values.append(action)
-        return values
+                action.type = "inline"
+        return actions
