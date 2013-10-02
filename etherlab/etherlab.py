@@ -22,60 +22,44 @@ ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 EtherCATInfoParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd")) 
 EtherCATInfo_XPath = lambda xpath: etree.XPath(xpath)
 
-def extract_param(el):
-    if el.tag == "Index":
-        return "#x%4.4X" % int(el.text)
-    elif el.tag == "BitSize":
-        if el.text is None:
-            return 0
-        return int(el.text)
-    elif el.tag == "PDOMapping":
-        if el.text is None:
-            return ""
-        return el.text.upper()
-    if el.text is None:
-        return ""
-    return el.text
+def HexDecValue(context, *args):
+    return str(ExtractHexDecValue(args[0][0]))
 
-def extract_pdo_infos(pdo_infos):
-    return {
-        pdo_infos.tag + " " + el.tag: extract_param(el)
-        for el in pdo_infos}
+def EntryName(context, *args):
+    return ExtractName(args[0], 
+        args[1][0] if len(args) > 1 else None)
 
-def HexDecValue(ctxt, values):
-    return str(ExtractHexDecValue(values[0]))
+ENTRY_INFOS_KEYS = [
+    ("Index", lambda x: "#x%4.4X" % int(x), "#x0000"),
+    ("SubIndex", str, "0"),
+    ("Name", str, ""),
+    ("Type", str, ""),
+    ("BitSize", int, 0),
+    ("Access", str, ""),
+    ("PDOMapping", str, ""),
+    ("PDO index", str, ""),
+    ("PDO name", str, ""),
+    ("PDO type", str, "")]
 
-def EntryName(ctxt, values):
-    default=None
-    names = []
-    for element in values:
-        if element.tag == "Default":
-            default = element.text
-        else:
-            names.append(element)
-    return ExtractName(names, default)
-
-class AddEntry(etree.XSLTExtension):
+class EntryListFactory:
 
     def __init__(self, entries):
-        etree.XSLTExtension.__init__(self)
         self.Entries = entries
     
-    def execute(self, context, self_node, input_node, output_parent):
-        infos = etree.Element('entry_infos')
-        self.process_children(context, infos)
-        index, subindex = map(
-            lambda x: int(infos.find(x).text),
-            ["Index", "SubIndex"])
+    def AddEntry(self, context, *args):
+        index, subindex = map(lambda x: int(x[0]), args[:2])
         new_entry_infos = {
-            el.tag: extract_param(el)
-            for el in infos if el.tag != "PDO"}
+            key: translate(arg[0]) if len(arg) > 0 else default
+            for (key, translate, default), arg
+            in zip(ENTRY_INFOS_KEYS, args)}
+        
         if (index, subindex) != (0, 0):
             entry_infos = self.Entries.get((index, subindex))
             if entry_infos is not None:
-                PDO_infos = infos.find("PDO")
-                if PDO_infos is not None:
-                    entry_infos.update(extract_pdo_infos(PDO_infos))
+                for param in ["PDO index", "PDO name", "PDO type"]:
+                    value = new_entry_infos.get(param)
+                    if value is not None:
+                        entry_infos[param] = value
             else:
                 self.Entries[(index, subindex)] = new_entry_infos
 
@@ -100,9 +84,11 @@ if cls:
     def GetEntriesList(self, limits=None):
         entries = {}
         
+        factory = EntryListFactory(entries)
+        
         entries_list_xslt_tree = etree.XSLT(
             entries_list_xslt, extensions = {
-                ("entries_list_ns", "add_entry"): AddEntry(entries),
+                ("entries_list_ns", "AddEntry"): factory.AddEntry,
                 ("entries_list_ns", "HexDecValue"): HexDecValue,
                 ("entries_list_ns", "EntryName"): EntryName})
         entries_list_xslt_tree(self, **dict(zip(
