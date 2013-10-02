@@ -419,7 +419,7 @@ _InstanceConnectionInfos = namedtuple("InstanceConnectionInfos",
 _ConnectionLinkInfos = namedtuple("ConnectionLinkInfos",
     ["refLocalId", "formalParameter", "points"])
 
-class _ActionInfos:
+class _ActionInfos(object):
     __slots__ = ["qualifier", "type", "value", "duration", "indicator"]
     def __init__(self, *args):
         for attr, value in zip(self.__slots__, args):
