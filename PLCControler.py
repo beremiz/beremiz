@@ -419,8 +419,13 @@ _InstanceConnectionInfos = namedtuple("InstanceConnectionInfos",
 _ConnectionLinkInfos = namedtuple("ConnectionLinkInfos",
     ["refLocalId", "formalParameter", "points"])
 
-_ActionInfos = namedtuple("ActionInfos",
-    ["qualifier", "type", "value", "duration", "indicator"])
+class _ActionInfos:
+    __slots__ = ["qualifier", "type", "value", "duration", "indicator"]
+    def __init__(self, *args):
+        for attr, value in zip(self.__slots__, args):
+            setattr(self, attr, value if value is not None else "")
+    def copy(self):
+        return _ActionInfos(*[getattr(self, attr) for attr in self.__slots__])
 
 def _translate_args(translations, args):
     return [translate(arg[0]) if len(arg) > 0 else None 
@@ -490,8 +495,6 @@ class BlockInstanceFactory:
         if len(self.SpecificValues) == 0:
             self.SpecificValues.append([[]])
         translated_args = _translate_args([str] * 5, args)
-        if translated_args[0] is None:
-            translated_args[0] = ""
         self.SpecificValues[0][0].append(_ActionInfos(*translated_args))
     
 pou_block_instances_xslt = etree.parse(
