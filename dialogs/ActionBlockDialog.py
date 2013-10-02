@@ -205,13 +205,14 @@ class ActionBlockDialog(wx.Dialog):
 
     def SetValues(self, actions):
         for action in actions:
-            if action.type == "reference" and action.value in self.ActionList:
-                action.type = "Action"
-            elif action.type == "reference" and action.value in self.VariableList:
-                action.type = "Variable"
+            row = action.copy()
+            if row.type == "reference" and row.value in self.ActionList:
+                row.type = "Action"
+            elif row.type == "reference" and row.value in self.VariableList:
+                row.type = "Variable"
             else:
-                action.type = "Inline"
-        self.Table.SetData(actions)
+                row.type = "Inline"
+            self.Table.AppendRow(row)
         self.Table.ResetView(self.ActionsGrid)
         if len(actions) > 0:
             self.ActionsGrid.SetGridCursor(0, 0)
