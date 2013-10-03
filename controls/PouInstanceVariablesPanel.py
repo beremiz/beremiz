@@ -22,30 +22,11 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+from collections import namedtuple
+
 import wx
 import wx.lib.agw.customtreectrl as CT
-
-import wx.lib.imageutils
 import wx.lib.buttons
-GrayedBitmapCache = {}
-def SetBitmapLabel(self, bitmap, createOthers=True):
-    """
-    Set the bitmap to display normally.
-    This is the only one that is required. If
-    createOthers is True, then the other bitmaps
-    will be generated on the fly.  Currently,
-    only the disabled bitmap is generated.
-    """
-    self.bmpLabel = bitmap
-    if bitmap is not None and createOthers:
-        GrayBitmap=GrayedBitmapCache.get(bitmap,None)
-        if GrayBitmap is None:
-            image = wx.ImageFromBitmap(bitmap)
-            wx.lib.imageutils.grayOut(image)
-            GrayBitmap = wx.BitmapFromImage(image)
-            GrayedBitmapCache[bitmap] = GrayBitmap
-        self.SetBitmapDisabled(GrayBitmap)
-wx.lib.buttons.GenBitmapButton.SetBitmapLabel = SetBitmapLabel
 
 try:
     import matplotlib
@@ -53,6 +34,87 @@ try:
     USE_MPL = True
 except:
     USE_MPL = False
+
+# Customize CustomTreeItem for adding icon on item right
+CT.GenericTreeItem._rightimages = []
+
+def SetRightImages(self, images):
+    self._rightimages = images
+CT.GenericTreeItem.SetRightImages = SetRightImages
+
+def GetRightImages(self):
+    return self._rightimages
+CT.GenericTreeItem.GetRightImages = GetRightImages
+
+
+class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
+
+    def SetRightImageList(self, imageList):
+        self._imageListRight = imageList
+
+    def GetLineHeight(self, item):
+        height = CT.CustomTreeCtrl.GetLineHeight(self, item)
+        rightimages = item.GetRightImages()
+        if len(rightimages) > 0:
+            r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
+            return max(height, r_image_h + 8)
+        return height
+
+    def GetItemRightImagesBBox(self, item):
+        rightimages = item.GetRightImages()
+        if len(rightimages) > 0:
+            w, h = self.GetClientSize()
+            total_h = self.GetLineHeight(item)
+            r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
+            
+            bbox_width = (r_image_w + 4) * len(rightimages) + 4
+            bbox_height = r_image_h + 8
+            bbox_x = w - bbox_width
+            bbox_y = item.GetY() + ((total_h > r_image_h) and [(total_h-r_image_h)/2] or [0])[0]
+            
+            return wx.Rect(bbox_x, bbox_y, bbox_width, bbox_height)
+        
+        return None
+
+    def IsOverItemRightImage(self, item, point):
+        rightimages = item.GetRightImages()
+        if len(rightimages) > 0:
+            point = self.CalcUnscrolledPosition(point)
+            r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
+            images_bbx = self.GetItemRightImagesBBox(item)
+            
+            rect = wx.Rect(images_bbx.x + 4, images_bbx.y + 4,
+                           r_image_w, r_image_h)
+            for r_image in rightimages:
+                if rect.Inside(point):
+                    return r_image
+                rect.x += r_image_w + 4
+            
+            return None
+                
+    def PaintItem(self, item, dc, level, align):
+        CT.CustomTreeCtrl.PaintItem(self, item, dc, level, align)
+        
+        rightimages = item.GetRightImages()
+        if len(rightimages) > 0:
+            images_bbx = self.GetItemRightImagesBBox(item)
+            r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
+            
+            dc.SetBrush(wx.WHITE_BRUSH)
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            
+            bg_width = (r_image_w + 4) * len(rightimages) + 4
+            bg_height = r_image_h + 8
+            dc.DrawRectangle(images_bbx.x, images_bbx.y, 
+                             images_bbx.width, images_bbx.height)
+            x_pos = images_bbx.x + 4
+            for r_image in rightimages:
+                self._imageListRight.Draw(
+                    r_image, dc, x_pos, images_bbx.y + 4,
+                    wx.IMAGELIST_DRAW_TRANSPARENT)
+                x_pos += r_image_w + 4
+    
+_ButtonCallbacks = namedtuple("ButtonCallbacks", ["leftdown", "dclick"])
 
 from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM_POU, ITEM_TRANSITION, ITEM_ACTION
 from util.BitmapLibrary import GetBitmap
@@ -80,7 +142,7 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnDebugButtonClick, 
                 self.DebugButton)
         
-        self.VariablesList = CT.CustomTreeCtrl(self,
+        self.VariablesList = CustomTreeCtrlWithRightImage(self,
               style=wx.SUNKEN_BORDER,
               agwStyle=CT.TR_NO_BUTTONS|
                        CT.TR_SINGLE|
@@ -95,6 +157,20 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.OnVariablesListItemActivated)
         self.VariablesList.Bind(wx.EVT_LEFT_DOWN, self.OnVariablesListLeftDown)
         self.VariablesList.Bind(wx.EVT_KEY_DOWN, self.OnVariablesListKeyDown)
+        
+        self.TreeRightImageList = wx.ImageList(24, 24)
+        self.InstanceGraphImage = self.TreeRightImageList.Add(GetBitmap("instance_graph"))
+        self.EditImage = self.TreeRightImageList.Add(GetBitmap("edit"))
+        self.DebugInstanceImage = self.TreeRightImageList.Add(GetBitmap("debug_instance"))
+        self.VariablesList.SetRightImageList(self.TreeRightImageList)
+        
+        self.ButtonCallBacks = {
+            self.InstanceGraphImage: _ButtonCallbacks(
+                self.GraphButtonCallback, None),
+            self.EditImage: _ButtonCallbacks(
+                self.EditButtonCallback, None),
+            self.DebugInstanceImage: _ButtonCallbacks(
+                self.DebugButtonCallback, self.DebugButtonDClickCallback)}
         
         buttons_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
         buttons_sizer.AddWindow(self.ParentButton)
@@ -174,49 +250,20 @@ class PouInstanceVariablesPanel(wx.Panel):
                 else:
                     text = var_infos["name"]
                 
-                panel = wx.Panel(self.VariablesList)
-                    
-                buttons = []
+                right_images = []
                 if var_infos["class"] in ITEMS_VARIABLE:
                     if (not USE_MPL and var_infos["debug"] and self.Debug and
                         (self.Controller.IsOfType(var_infos["type"], "ANY_NUM", True) or
                          self.Controller.IsOfType(var_infos["type"], "ANY_BIT", True))):
-                        graph_button = wx.lib.buttons.GenBitmapButton(panel, 
-                              bitmap=GetBitmap("instance_graph"), 
-                              size=wx.Size(28, 28), style=wx.NO_BORDER)
-                        self.Bind(wx.EVT_BUTTON, self.GenGraphButtonCallback(var_infos), graph_button)
-                        buttons.append(graph_button)
+                        right_images.append(self.InstanceGraphImage)
                 elif var_infos["edit"]:
-                    edit_button = wx.lib.buttons.GenBitmapButton(panel, 
-                          bitmap=GetBitmap("edit"), 
-                          size=wx.Size(28, 28), style=wx.NO_BORDER)
-                    self.Bind(wx.EVT_BUTTON, self.GenEditButtonCallback(var_infos), edit_button)
-                    buttons.append(edit_button)
+                    right_images.append(self.EditImage)
                 
                 if var_infos["debug"] and self.Debug:
-                    debug_button = wx.lib.buttons.GenBitmapButton(panel, 
-                          bitmap=GetBitmap("debug_instance"), 
-                          size=wx.Size(28, 28), style=wx.NO_BORDER)
-                    self.Bind(wx.EVT_BUTTON, self.GenDebugButtonCallback(var_infos), debug_button)
-                    debug_button.Bind(wx.EVT_LEFT_DCLICK, self.GenDebugButtonDClickCallback(var_infos))
-                    buttons.append(debug_button)
+                    right_images.append(self.DebugInstanceImage)
                 
-                button_num = len(buttons)
-                if button_num > 0:
-                    panel.SetSize(wx.Size(button_num * 32, 28))
-                    panel.SetBackgroundColour(self.VariablesList.GetBackgroundColour())
-                    panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                    panel.SetSizer(panel_sizer)
-                    
-                    for button in buttons:
-                        panel_sizer.AddWindow(button, 0, border=4, flag=wx.LEFT)
-                    panel_sizer.Layout()
-                    
-                else:
-                    panel.Destroy()
-                    panel = None
-                
-                item = self.VariablesList.AppendItem(root, text, wnd=panel)
+                item = self.VariablesList.AppendItem(root, text)
+                item.SetRightImages(right_images)
                 self.VariablesList.SetItemImage(item, self.ParentWindow.GetTreeImage(var_infos["class"]))
                 self.VariablesList.SetPyData(item, var_infos)
             
@@ -259,79 +306,67 @@ class PouInstanceVariablesPanel(wx.Panel):
                             child.Enable(enabled)
                 item, item_cookie = self.VariablesList.GetNextChild(root, item_cookie)
     
-    def GenEditButtonCallback(self, infos):
-        def EditButtonCallback(event):
-            var_class = infos["class"]
-            if var_class == ITEM_RESOURCE:
-                tagname = self.Controller.ComputeConfigurationResourceName(
-                    self.InstanceChoice.GetStringSelection(), 
-                    infos["name"])
-            elif var_class == ITEM_TRANSITION:
-                tagname = self.Controller.ComputePouTransitionName(
-                    self.PouTagName.split("::")[1],
-                    infos["name"])
-            elif var_class == ITEM_ACTION:
-                tagname = self.Controller.ComputePouActionName(
-                    self.PouTagName.split("::")[1],
-                    infos["name"])
-            else:
-                var_class = ITEM_POU
-                tagname = self.Controller.ComputePouName(infos["type"])
-            self.ParentWindow.EditProjectElement(var_class, tagname)
-            event.Skip()
-        return EditButtonCallback
+    def EditButtonCallback(self, infos):
+        var_class = infos["class"]
+        if var_class == ITEM_RESOURCE:
+            tagname = self.Controller.ComputeConfigurationResourceName(
+                self.InstanceChoice.GetStringSelection(), 
+                infos["name"])
+        elif var_class == ITEM_TRANSITION:
+            tagname = self.Controller.ComputePouTransitionName(
+                self.PouTagName.split("::")[1],
+                infos["name"])
+        elif var_class == ITEM_ACTION:
+            tagname = self.Controller.ComputePouActionName(
+                self.PouTagName.split("::")[1],
+                infos["name"])
+        else:
+            var_class = ITEM_POU
+            tagname = self.Controller.ComputePouName(infos["type"])
+        self.ParentWindow.EditProjectElement(var_class, tagname)
     
-    def GenDebugButtonCallback(self, infos):
-        def DebugButtonCallback(event):
-            if self.InstanceChoice.GetSelection() != -1:
-                var_class = infos["class"]
+    def DebugButtonCallback(self, infos):
+        if self.InstanceChoice.GetSelection() != -1:
+            var_class = infos["class"]
+            var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
+                                  infos["name"])
+            if var_class in ITEMS_VARIABLE:
+                self.ParentWindow.AddDebugVariable(var_path, force=True)
+            elif var_class == ITEM_TRANSITION:
+                self.ParentWindow.OpenDebugViewer(
+                    var_class,
+                    var_path,
+                    self.Controller.ComputePouTransitionName(
+                        self.PouTagName.split("::")[1],
+                        infos["name"]))
+            elif var_class == ITEM_ACTION:
+                self.ParentWindow.OpenDebugViewer(
+                    var_class,
+                    var_path,
+                    self.Controller.ComputePouActionName(
+                        self.PouTagName.split("::")[1],
+                        infos["name"]))
+            else:
+                self.ParentWindow.OpenDebugViewer(
+                    var_class,
+                    var_path,
+                    self.Controller.ComputePouName(infos["type"]))
+    
+    def DebugButtonDClickCallback(self, infos):
+        if self.InstanceChoice.GetSelection() != -1:
+            if infos["class"] in ITEMS_VARIABLE:
+                self.ParentWindow.AddDebugVariable(
+                    "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
+                               infos["name"]), 
+                    force=True,
+                    graph=True)
+    
+    def GraphButtonCallback(self, infos):
+        if self.InstanceChoice.GetSelection() != -1:
+            if infos["class"] in ITEMS_VARIABLE:
                 var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
                                       infos["name"])
-                if var_class in ITEMS_VARIABLE:
-                    self.ParentWindow.AddDebugVariable(var_path, force=True)
-                elif var_class == ITEM_TRANSITION:
-                    self.ParentWindow.OpenDebugViewer(
-                        var_class,
-                        var_path,
-                        self.Controller.ComputePouTransitionName(
-                            self.PouTagName.split("::")[1],
-                            infos["name"]))
-                elif var_class == ITEM_ACTION:
-                    self.ParentWindow.OpenDebugViewer(
-                        var_class,
-                        var_path,
-                        self.Controller.ComputePouActionName(
-                            self.PouTagName.split("::")[1],
-                            infos["name"]))
-                else:
-                    self.ParentWindow.OpenDebugViewer(
-                        var_class,
-                        var_path,
-                        self.Controller.ComputePouName(infos["type"]))
-            event.Skip()
-        return DebugButtonCallback
-    
-    def GenDebugButtonDClickCallback(self, infos):
-        def DebugButtonDClickCallback(event):
-            if self.InstanceChoice.GetSelection() != -1:
-                if infos["class"] in ITEMS_VARIABLE:
-                    self.ParentWindow.AddDebugVariable(
-                        "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                                   infos["name"]), 
-                        force=True,
-                        graph=True)
-            event.Skip()
-        return DebugButtonDClickCallback
-    
-    def GenGraphButtonCallback(self, infos):
-        def GraphButtonCallback(event):
-            if self.InstanceChoice.GetSelection() != -1:
-                if infos["class"] in ITEMS_VARIABLE:
-                    var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                                          infos["name"])
-                    self.ParentWindow.OpenDebugViewer(infos["class"], var_path, infos["type"])
-            event.Skip()
-        return GraphButtonCallback
+                self.ParentWindow.OpenDebugViewer(infos["class"], var_path, infos["type"])
     
     def ShowInstanceChoicePopup(self):
         self.InstanceChoice.SetFocusFromKbd()
@@ -364,29 +399,38 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.InstanceChoice.GetStringSelection(),
                 self.PouTagName)
         event.Skip()
-        
+    
     def OnVariablesListItemActivated(self, event):
         selected_item = event.GetItem()
         if selected_item is not None and selected_item.IsOk():
             item_infos = self.VariablesList.GetPyData(selected_item)
-            if item_infos is not None and item_infos["class"] not in ITEMS_VARIABLE:
-                instance_path = self.InstanceChoice.GetStringSelection()
-                if item_infos["class"] == ITEM_RESOURCE:
-                    if instance_path != "":
-                        tagname = self.Controller.ComputeConfigurationResourceName(
-                                       instance_path, 
-                                       item_infos["name"])
+            if item_infos is not None:
+                
+                item_button = self.VariablesList.IsOverItemRightImage(
+                    selected_item, event.GetPoint())
+                if item_button is not None:
+                    callback = self.ButtonCallBacks[item_button].dclick
+                    if callback is not None:
+                        callback(item_infos)
+                
+                elif item_infos["class"] not in ITEMS_VARIABLE:
+                    instance_path = self.InstanceChoice.GetStringSelection()
+                    if item_infos["class"] == ITEM_RESOURCE:
+                        if instance_path != "":
+                            tagname = self.Controller.ComputeConfigurationResourceName(
+                                           instance_path, 
+                                           item_infos["name"])
+                        else:
+                            tagname = None
                     else:
-                        tagname = None
-                else:
-                    tagname = self.Controller.ComputePouName(item_infos["type"])
-                if tagname is not None:
-                    if instance_path != "":
-                        item_path = "%s.%s" % (instance_path, item_infos["name"])
-                    else:
-                        item_path = None
-                    self.SetPouType(tagname, item_path)
-                    self.ParentWindow.SelectProjectTreeItem(tagname)
+                        tagname = self.Controller.ComputePouName(item_infos["type"])
+                    if tagname is not None:
+                        if instance_path != "":
+                            item_path = "%s.%s" % (instance_path, item_infos["name"])
+                        else:
+                            item_path = None
+                        self.SetPouType(tagname, item_path)
+                        self.ParentWindow.SelectProjectTreeItem(tagname)
         event.Skip()
     
     def OnVariablesListLeftDown(self, event):
@@ -395,9 +439,18 @@ class PouInstanceVariablesPanel(wx.Panel):
         else:
             instance_path = self.InstanceChoice.GetStringSelection()
             item, flags = self.VariablesList.HitTest(event.GetPosition())
-            if item is not None and flags & CT.TREE_HITTEST_ONITEMLABEL:
+            if item is not None:
                 item_infos = self.VariablesList.GetPyData(item)
-                if item_infos is not None and item_infos["class"] in ITEMS_VARIABLE:
+                if item_infos is not None:
+                    
+                    item_button = self.VariablesList.IsOverItemRightImage(
+                        item, event.GetPosition())
+                    if item_button is not None:
+                        callback = self.ButtonCallBacks[item_button].leftdown
+                        if callback is not None:
+                            callback(item_infos)
+                
+                elif flags & CT.TREE_HITTEST_ONITEMLABEL and item_infos["class"] in ITEMS_VARIABLE:
                     self.ParentWindow.EnsureTabVisible(
                         self.ParentWindow.DebugVariablePanel)
                     item_path = "%s.%s" % (instance_path, item_infos["name"])
