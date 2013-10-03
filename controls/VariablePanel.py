@@ -457,7 +457,7 @@ class VariablePanel(wx.Panel):
              "Documentation" : "", 
              "Edit" : True
         }
-
+        
         if element_type in ["config", "resource"]:
             self.DefaultTypes = {"All" : "Global"}
         else:
@@ -503,7 +503,10 @@ class VariablePanel(wx.Panel):
             #                      Num  Name    Class   Type    Init    Option   Doc
             self.ColSizes       = [40,  80,     70,     80,     80,     100,     160]
             self.ColAlignements = [c,   l,      l,      l,      l,      l,       l]
-
+            
+        self.ElementType = element_type
+        self.BodyType = None
+        
         for choice in self.FilterChoices:
             self.ClassFilter.Append(_(choice))
 
@@ -608,14 +611,13 @@ class VariablePanel(wx.Panel):
     
     def SetTagName(self, tagname):
         self.TagName = tagname
+        self.BodyType = self.Controler.GetEditedElementBodyType(self.TagName)
     
     def GetTagName(self):
         return self.TagName
     
     def IsFunctionBlockType(self, name):
-        bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
-        pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
-        if poutype != "function" and bodytype in ["ST", "IL"]:
+        if self.ElementType != "function" and self.BodyType in ["ST", "IL"]:
             return False
         else:
             return self.Controler.GetBlockType(name, debug=self.Debug) is not None

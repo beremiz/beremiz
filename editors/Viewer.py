@@ -570,6 +570,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.Editor.SetBackgroundColour(wx.Colour(255,255,255))
         self.Editor.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.ResetView()
+        self.LastClientSize = None
         self.Scaling = None
         self.DrawGrid = True
         self.GridBrush = wx.TRANSPARENT_BRUSH
@@ -1343,10 +1344,10 @@ class Viewer(EditorPanel, DebugViewer):
                          start_connector.GetDirection()],
                         [wx.Point(*end_connector.GetPosition()),
                          end_connector.GetDirection()])
-                start_connector.Connect((wire, 0), False)
-                end_connector.Connect((wire, -1), False)
-                wire.ConnectStartPoint(None, start_connector)
-                wire.ConnectEndPoint(None, end_connector)
+                start_connector.Wires.append((wire, 0))
+                end_connector.Wires.append((wire, -1))
+                wire.StartConnected = start_connector
+                wire.EndConnected = end_connector
                 connected.RefreshConnectors()
                 self.AddWire(wire)
                 if selection is not None and (\
@@ -2223,7 +2224,6 @@ class Viewer(EditorPanel, DebugViewer):
                     movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)
                     if movex != 0 or movey != 0:
                         self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(movex, movey)), False)
-                    self.RefreshVisibleElements()
             elif self.Debug and self.StartMousePos is not None and event.Dragging():
                 pos = event.GetPosition()
                 if abs(self.StartMousePos.x - pos.x) > 5 or abs(self.StartMousePos.y - pos.y) > 5:
@@ -3468,8 +3468,11 @@ class Viewer(EditorPanel, DebugViewer):
                 self.Scroll(x, yp)
             
     def OnMoveWindow(self, event):
-        self.RefreshScrollBars()
-        self.RefreshVisibleElements()
+        client_size = self.GetClientSize()
+        if self.LastClientSize != client_size:
+            self.LastClientSize = client_size
+            self.RefreshScrollBars()
+            self.RefreshVisibleElements()
         event.Skip()
 
     def DoDrawing(self, dc, printing = False):

@@ -18,6 +18,11 @@
 import wx
 import wx.grid
 
+if wx.Platform == '__WXMSW__':
+    ROW_HEIGHT = 20
+else:
+    ROW_HEIGHT = 28
+
 class CustomTable(wx.grid.PyGridTableBase):
     
     """
@@ -124,11 +129,9 @@ class CustomTable(wx.grid.PyGridTableBase):
             self.ResizeRow(grid, row)
     
     def ResizeRow(self, grid, row):
-        if wx.Platform == '__WXMSW__':
-            grid.SetRowMinimalHeight(row, 20)
-        else:
-            grid.SetRowMinimalHeight(row, 28)
-        grid.AutoSizeRow(row, False)
+        if grid.GetRowSize(row) < ROW_HEIGHT:
+            grid.SetRowMinimalHeight(row, ROW_HEIGHT)
+            grid.AutoSizeRow(row, False)
     
     def SetData(self, data):
         self.data = data
