@@ -2084,6 +2084,11 @@ if cls:
             search_result.extend(content.Search(criteria, parent_infos + ["inline"]))
         return search_result
     setattr(cls, "Search", Search)
+
+_initElementClass("selectionDivergence", "sfcObjects", "single")
+_initElementClass("selectionConvergence", "sfcObjects", "multiple")
+_initElementClass("simultaneousDivergence", "sfcObjects", "single")
+_initElementClass("simultaneousConvergence", "sfcObjects", "multiple")
     
 cls = _initElementClass("jumpStep", "sfcObjects", "single")
 if cls:
