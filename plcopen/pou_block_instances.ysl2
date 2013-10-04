@@ -27,22 +27,9 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     function "ConnectionInfos" {
         param "type";
-        param "modifiers";
+        param "negated";
+        param "edge";
         param "formalParameter";
-        variable "negated" {
-            choose {
-                when "$modifiers='input'" > «@negatedIn»
-                when "$modifiers='output'" > «@negatedOut»
-                otherwise > «@negated»
-            }
-        }
-        variable "edge" {
-            choose {
-                when "$modifiers='input'" > «@edgeIn»
-                when "$modifiers='output'" > «@edgeOut»
-                otherwise > «@edge»
-            }
-        }
         variable "instance_connection" {
             > «ns:AddInstanceConnection($type, $formalParameter, $negated, $edge, ppx:relPosition/@x, ppx:relPosition/@y)»
         }
@@ -62,22 +49,26 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     template "ppx:connectionPointIn" {
-        param "modifiers";
+        param "negated";
+        param "edge";
         param "formalParameter";
         call "ConnectionInfos" {
             with "type" > input
-            with "modifiers" > «$modifiers»
+            with "negated" > «$negated»
+            with "edge" > «$edge»
             with "formalParameter" > «$formalParameter»
         }
         apply "ppx:connection";
     }
     
     template "ppx:connectionPointOut" {
-        param "modifiers";
+        param "negated";
+        param "edge";
         param "formalParameter";
         call "ConnectionInfos" {
             with "type" > output
-            with "modifiers" > «$modifiers»
+            with "negated" > «$negated»
+            with "edge" > «$edge»
             with "formalParameter" > «$formalParameter»
         }
     }
@@ -110,11 +101,15 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         }
         foreach "ppx:inputVariables/ppx:variable" {
             apply "ppx:connectionPointIn" {
+                with "negated" > «@negated»
+                with "edge" > «@edge»
                 with "formalParameter" > «@formalParameter»
             }
         }
         foreach "ppx:outputVariables/ppx:variable" {
             apply "ppx:connectionPointOut" {
+                with "negated" > «@negated»
+                with "edge" > «@edge»
                 with "formalParameter" > «@formalParameter»
             }
         }
@@ -160,20 +155,12 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             with "type" > «$type»
         }
         apply "ppx:connectionPointIn" {
-            with "modifiers" {
-                choose {
-                    when "$type='inout'" > input
-                    otherwise > 
-                }
-            }
+            with "negated" > «@negatedIn»
+            with "edge" > «@edgeIn»
         }
         apply "ppx:connectionPointOut" {
-            with "modifiers" {
-                choose {
-                    when "$type='inout'" > output
-                    otherwise > 
-                }
-            }
+            with "negated" > «@negatedOut»
+            with "edge" > «@edgeOut»
         }
     }
     
@@ -251,7 +238,9 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "instance_specific_values" {
             > «ns:SetSpecificValues(@name, @initialStep)»
         }
-        apply "ppx:connectionPointOutAction";
+        apply "ppx:connectionPointOutAction" {
+            with "negated" > «@negated»
+        }
         call "add_instance" {
             with "type" > «$type»
         }
@@ -285,7 +274,9 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "instance_specific_values" {
             > «ns:SetSpecificValues($priority, $condition_type, $condition)»
         }
-        apply "ppx:condition/ppx:connectionPointIn";
+        apply "ppx:condition/ppx:connectionPointIn" {
+            with "negated" > «ppx:condition/@negated»
+        }
         call "add_instance" {
             with "type" > «$type»
         }
@@ -359,6 +350,8 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         call "add_instance" {
             with "type" > «$type»
         }
-        apply "ppx:connectionPointIn";
+        apply "ppx:connectionPointIn" {
+            with "negated" > «@negated»
+        }
     }
 }
