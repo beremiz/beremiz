@@ -4,7 +4,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             xmlns:ns="pou_block_instances_ns" 
             extension-element-prefixes="ns" 
             exclude-result-prefixes="ns" {
-
+    
     template "text()";
     
     template "ppx:pou" {
@@ -13,9 +13,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     function "add_instance" {
         param "type";
-        variable "instance" {
-            > «ns:AddBlockInstance($type, @localId, ppx:position/@x, ppx:position/@y, @width, @height)»
-        }
+        value "ns:AddBlockInstance($type, @localId, ppx:position/@x, ppx:position/@y, @width, @height)";
     }
     
     function "execution_order" {
@@ -30,21 +28,15 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         param "negated";
         param "edge";
         param "formalParameter";
-        variable "instance_connection" {
-            > «ns:AddInstanceConnection($type, $formalParameter, $negated, $edge, ppx:relPosition/@x, ppx:relPosition/@y)»
-        }
+        value "ns:AddInstanceConnection($type, $formalParameter, $negated, $edge, ppx:relPosition/@x, ppx:relPosition/@y)";
     }
     
     template "ppx:position" {
-        variable "link_point" {
-            > «ns:AddLinkPoint(@x, @y)»
-        }
+        value "ns:AddLinkPoint(@x, @y)";
     }
     
     template "ppx:connection" {
-        variable "connection_link" {
-            > «ns:AddConnectionLink(@refLocalId, @formalParameter)»
-        }
+        value "ns:AddConnectionLink(@refLocalId, @formalParameter)";
         apply "ppx:position";
     }
     
@@ -80,12 +72,9 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     template "ppx:comment" {
-        variable "type" > «local-name()»
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues(ppx:content/xhtml:p/text())»
-        }
+        value "ns:SetSpecificValues(ppx:content/xhtml:p/text())";
         call "add_instance" {
-            with "type" > «$type»
+            with "type" > «local-name()»
         }
     }
     
@@ -93,24 +82,22 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "execution_order" {
             call "execution_order";
         }
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues(@instanceName, $execution_order)»
-        }
+        value "ns:SetSpecificValues(@instanceName, $execution_order)";
         call "add_instance" {
             with "type" > «@typeName»
         }
         foreach "ppx:inputVariables/ppx:variable" {
             apply "ppx:connectionPointIn" {
-                with "negated" > «@negated»
-                with "edge" > «@edge»
-                with "formalParameter" > «@formalParameter»
+                with "negated", "@negated";
+                with "edge", "@edge";
+                with "formalParameter", "@formalParameter";
             }
         }
         foreach "ppx:outputVariables/ppx:variable" {
             apply "ppx:connectionPointOut" {
-                with "negated" > «@negated»
-                with "edge" > «@edge»
-                with "formalParameter" > «@formalParameter»
+                with "negated", "@negated";
+                with "edge", "@edge";
+                with "formalParameter", "@formalParameter";
             }
         }
     }
@@ -148,19 +135,17 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "execution_order" {
             call "execution_order";
         }
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues($expression, $value_type, $execution_order)»
-        }
+        value "ns:SetSpecificValues($expression, $value_type, $execution_order)";
         call "add_instance" {
             with "type" > «$type»
         }
         apply "ppx:connectionPointIn" {
-            with "negated" > «@negatedIn»
-            with "edge" > «@edgeIn»
+            with "negated", "@negatedIn";
+            with "edge", "@edgeIn";
         }
         apply "ppx:connectionPointOut" {
-            with "negated" > «@negatedOut»
-            with "edge" > «@edgeOut»
+            with "negated", "@negatedOut";
+            with "edge", "@edgeOut";
         }
     }
     
@@ -177,28 +162,23 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     template "ppx:connector|ppx:continuation" {
-        variable "type" > «local-name()»
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues(@name)»
-        }
+        value "ns:SetSpecificValues(@name)";
         call "add_instance" {
-            with "type" > «$type»
+            with "type" > «local-name()»
         }
         apply "ppx:connectionPointIn";
         apply "ppx:connectionPointOut";
     }
     
     template "ppx:leftPowerRail|ppx:rightPowerRail" {
-        variable "type" > «local-name()»
+        variable "type", "local-name()";
         variable "connectors" {
             choose {
                 when "$type='leftPowerRail'" > «count(ppx:connectionPointOut)»
                 otherwise > «count(ppx:connectionPointIn)»
             }
         }
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues($connectors)»
-        }
+        value "ns:SetSpecificValues($connectors)";
         call "add_instance" {
             with "type" > «$type»
         }
@@ -213,19 +193,16 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     template "ppx:contact|ppx:coil" {
-        variable "type" > «local-name()»
+        variable "type", "local-name()";
         variable "storage" {
             choose {
                 when "$type='coil'" > «@storage»
-                otherwise > 
             }
         }
         variable "execution_order" {
             call "execution_order";
         }
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues(ppx:variable/text(), @negated, @edge, $storage, $execution_order)»
-        }
+        value "ns:SetSpecificValues(ppx:variable/text(), @negated, @edge, $storage, $execution_order)";
         call "add_instance" {
             with "type" > «$type»
         }
@@ -234,22 +211,18 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     template "ppx:step" {
-        variable "type" > «local-name()»
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues(@name, @initialStep)»
-        }
+        value "ns:SetSpecificValues(@name, @initialStep)";
         apply "ppx:connectionPointOutAction" {
-            with "negated" > «@negated»
+            with "negated", "@negated";
         }
         call "add_instance" {
-            with "type" > «$type»
+            with "type" > «local-name()»
         }
         apply "ppx:connectionPointIn";
         apply "ppx:connectionPointOut";
     }
     
     template "ppx:transition" {
-        variable "type" > «local-name()»
         variable "priority" {
             choose {
                 when "@priority" > «@priority»
@@ -261,24 +234,20 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
                 when "ppx:condition/ppx:connectionPointIn" > connection
                 when "ppx:condition/ppx:reference" > reference
                 when "ppx:condition/ppx:inline" > inline
-                otherwise > 
             }
         }
         variable "condition" {
             choose {
                 when "ppx:reference" > «ppx:condition/ppx:reference/@name»
                 when "ppx:inline" > «ppx:condition/ppx:inline/ppx:body/ppx:ST/xhtml:p/text()»
-                otherwise > 
             }
         }
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues($priority, $condition_type, $condition)»
-        }
+        value "ns:SetSpecificValues($priority, $condition_type, $condition)";
         apply "ppx:condition/ppx:connectionPointIn" {
-            with "negated" > «ppx:condition/@negated»
+            with "negated", "ppx:condition/@negated";
         }
         call "add_instance" {
-            with "type" > «$type»
+            with "type" > «local-name()»
         }
         apply "ppx:connectionPointIn";
         apply "ppx:connectionPointOut";
@@ -288,15 +257,13 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "type" > «local-name()»
         variable "connectors" {
             choose {
-                when "ppx:selectionDivergence|ppx:simultaneousDivergence" {
+                when "$type='selectionDivergence' or $type='simultaneousDivergence'" {
                     > «count(ppx:connectionPointOut)»
                 }
                 otherwise > «count(ppx:connectionPointIn)»
             }
         }
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues($connectors)»
-        }
+        value "ns:SetSpecificValues($connectors)";
         call "add_instance" {
             with "type" > «$type»
         }
@@ -306,9 +273,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "ppx:jumpStep" {
         variable "type" > jump
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues(@targetName)»
-        }
+        value "ns:SetSpecificValues(@targetName)";
         call "add_instance" {
             with "type" > «$type»
         }
@@ -320,14 +285,12 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             choose {
                 when "ppx:reference" > reference
                 when "ppx:inline" > inline
-                otherwise > 
             }
         }
         variable "value" {
             choose {
                 when "ppx:reference" > «ppx:reference/@name»
                 when "ppx:inline" > «ppx:inline/ppx:ST/xhtml:p/text()»
-                otherwise > 
             }
         }
         variable "qualifier" {
@@ -336,22 +299,17 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
                 otherwise > N
             }
         }
-        variable "actionBlock_action" {
-            > «ns:AddAction($qualifier, $type, $value, @duration, @indicator)»
-        }
+        value "ns:AddAction($qualifier, $type, $value, @duration, @indicator)";
     }
     
     template "ppx:actionBlock" {
-        variable "type" > «local-name()»
-        variable "instance_specific_values" {
-            > «ns:SetSpecificValues()»
-        }
+        value "ns:SetSpecificValues()";
         apply "ppx:action";
         call "add_instance" {
-            with "type" > «$type»
+            with "type" > «local-name()»
         }
         apply "ppx:connectionPointIn" {
-            with "negated" > «@negated»
+            with "negated", "@negated";
         }
     }
 }
