@@ -67,7 +67,7 @@ class SFCStepNameDialog(wx.TextEntryDialog):
         self.PouNames = [pou_name.upper() for pou_name in pou_names]
 
     def SetVariables(self, variables):
-        self.Variables = [var["Name"].upper() for var in variables]
+        self.Variables = [var.Name.upper() for var in variables]
 
     def SetStepNames(self, step_names):
         self.StepNames = [step_name.upper() for step_name in step_names]

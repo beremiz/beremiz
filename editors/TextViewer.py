@@ -458,9 +458,12 @@ class TextViewer(EditorPanel):
             
     def RefreshVariableTree(self):
         words = self.TagName.split("::")
-        self.Variables = self.GenerateVariableTree([(variable["Name"], variable["Type"], variable["Tree"]) for variable in self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)])
+        self.Variables = self.GenerateVariableTree(
+            [(variable.Name, variable.Type, variable.Tree) 
+             for variable in self.Controler.GetEditedElementInterfaceVars(
+                self.TagName, True, self.Debug)])
         if self.Controler.GetEditedElementType(self.TagName, self.Debug)[1] == "function" or words[0] == "T" and self.TextSyntax == "IL":
-            return_type, (var_tree, var_dimension) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
+            return_type, (var_tree, var_dimension) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, True, self.Debug)
             if return_type is not None:
                 self.Variables[words[-1].upper()] = self.GenerateVariableTree(var_tree)
             else:

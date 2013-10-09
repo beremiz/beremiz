@@ -482,12 +482,12 @@ class LD_Viewer(Viewer):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, "coil")
         dialog.SetPreviewFont(self.GetFont())
         varlist = []
-        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
+        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
         if vars:
             for var in vars:
-                if var["Class"] != "Input" and var["Type"] == "BOOL":
-                    varlist.append(var["Name"])
-        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)[0]
+                if var.Class != "Input" and var.Type == "BOOL":
+                    varlist.append(var.Name)
+        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, debug=self.Debug)
         if returntype == "BOOL":
             varlist.append(self.Controler.GetEditedElementName(self.TagName))
         dialog.SetVariables(varlist)
@@ -582,11 +582,11 @@ class LD_Viewer(Viewer):
             dialog = LDElementDialog(self.ParentWindow, self.Controler, "contact")
             dialog.SetPreviewFont(self.GetFont())
             varlist = []
-            vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
+            vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
             if vars:
                 for var in vars:
-                    if var["Class"] != "Output" and var["Type"] == "BOOL":
-                        varlist.append(var["Name"])
+                    if var.Class != "Output" and var.Type == "BOOL":
+                        varlist.append(var.Name)
             dialog.SetVariables(varlist)
             dialog.SetValues({"name":"","type":CONTACT_NORMAL})
             if dialog.ShowModal() == wx.ID_OK:
@@ -796,12 +796,12 @@ class LD_Viewer(Viewer):
                         dialog = LDElementDialog(self.ParentWindow, self.Controleur, "coil")
                         dialog.SetPreviewFont(self.GetFont())
                         varlist = []
-                        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
+                        vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
                         if vars:
                             for var in vars:
-                                if var["Class"] != "Input" and var["Type"] == "BOOL":
-                                    varlist.append(var["Name"])
-                        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)[0]
+                                if var.Class != "Input" and var.Type == "BOOL":
+                                    varlist.append(var.Name)
+                        returntype = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, debug=self.Debug)
                         if returntype == "BOOL":
                             varlist.append(self.Controler.GetEditedElementName(self.TagName))
                         dialog.SetVariables(varlist)
