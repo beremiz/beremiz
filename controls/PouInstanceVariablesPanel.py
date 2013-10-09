@@ -244,27 +244,27 @@ class PouInstanceVariablesPanel(wx.Panel):
             self.PouInfos = None
         if self.PouInfos is not None:
             root = self.VariablesList.AddRoot("")
-            for var_infos in self.PouInfos["variables"]:
-                if var_infos.get("type", None) is not None:
-                    text = "%(name)s (%(type)s)" % var_infos
+            for var_infos in self.PouInfos.variables:
+                if var_infos.type is not None:
+                    text = "%s (%s)" % (var_infos.name, var_infos.type)
                 else:
-                    text = var_infos["name"]
+                    text = var_infos.name
                 
                 right_images = []
-                if var_infos["class"] in ITEMS_VARIABLE:
-                    if (not USE_MPL and var_infos["debug"] and self.Debug and
-                        (self.Controller.IsOfType(var_infos["type"], "ANY_NUM", True) or
-                         self.Controller.IsOfType(var_infos["type"], "ANY_BIT", True))):
+                if var_infos.var_class in ITEMS_VARIABLE:
+                    if (not USE_MPL and var_infos.debug and self.Debug and
+                        (self.Controller.IsOfType(var_infos.type, "ANY_NUM", True) or
+                         self.Controller.IsOfType(var_infos.type, "ANY_BIT", True))):
                         right_images.append(self.InstanceGraphImage)
-                elif var_infos["edit"]:
+                elif var_infos.edit:
                     right_images.append(self.EditImage)
                 
-                if var_infos["debug"] and self.Debug:
+                if var_infos.debug and self.Debug:
                     right_images.append(self.DebugInstanceImage)
                 
                 item = self.VariablesList.AppendItem(root, text)
                 item.SetRightImages(right_images)
-                self.VariablesList.SetItemImage(item, self.ParentWindow.GetTreeImage(var_infos["class"]))
+                self.VariablesList.SetItemImage(item, self.ParentWindow.GetTreeImage(var_infos.var_class))
                 self.VariablesList.SetPyData(item, var_infos)
             
         self.RefreshInstanceChoice()
@@ -281,7 +281,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.InstanceChoice.Append(instance)
             if len(instances) == 1:
                 self.PouInstance = instances[0]
-            if self.PouInfos["class"] in [ITEM_CONFIGURATION, ITEM_RESOURCE]:
+            if self.PouInfos.var_class in [ITEM_CONFIGURATION, ITEM_RESOURCE]:
                 self.PouInstance = None
                 self.InstanceChoice.SetSelection(0)
             elif self.PouInstance in instances:
@@ -292,8 +292,8 @@ class PouInstanceVariablesPanel(wx.Panel):
     
     def RefreshButtons(self):
         enabled = self.InstanceChoice.GetSelection() != -1
-        self.ParentButton.Enable(enabled and self.PouInfos["class"] != ITEM_CONFIGURATION)
-        self.DebugButton.Enable(enabled and self.PouInfos["debug"] and self.Debug)
+        self.ParentButton.Enable(enabled and self.PouInfos.var_class != ITEM_CONFIGURATION)
+        self.DebugButton.Enable(enabled and self.PouInfos.debug and self.Debug)
         
         root = self.VariablesList.GetRootItem()
         if root is not None and root.IsOk():
@@ -307,29 +307,29 @@ class PouInstanceVariablesPanel(wx.Panel):
                 item, item_cookie = self.VariablesList.GetNextChild(root, item_cookie)
     
     def EditButtonCallback(self, infos):
-        var_class = infos["class"]
+        var_class = infos.var_class
         if var_class == ITEM_RESOURCE:
             tagname = self.Controller.ComputeConfigurationResourceName(
                 self.InstanceChoice.GetStringSelection(), 
-                infos["name"])
+                infos.name)
         elif var_class == ITEM_TRANSITION:
             tagname = self.Controller.ComputePouTransitionName(
                 self.PouTagName.split("::")[1],
-                infos["name"])
+                infos.name)
         elif var_class == ITEM_ACTION:
             tagname = self.Controller.ComputePouActionName(
                 self.PouTagName.split("::")[1],
-                infos["name"])
+                infos.name)
         else:
             var_class = ITEM_POU
-            tagname = self.Controller.ComputePouName(infos["type"])
+            tagname = self.Controller.ComputePouName(infos.type)
         self.ParentWindow.EditProjectElement(var_class, tagname)
     
     def DebugButtonCallback(self, infos):
         if self.InstanceChoice.GetSelection() != -1:
-            var_class = infos["class"]
+            var_class = infos.var_class
             var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                                  infos["name"])
+                                  infos.name)
             if var_class in ITEMS_VARIABLE:
                 self.ParentWindow.AddDebugVariable(var_path, force=True)
             elif var_class == ITEM_TRANSITION:
@@ -338,35 +338,35 @@ class PouInstanceVariablesPanel(wx.Panel):
                     var_path,
                     self.Controller.ComputePouTransitionName(
                         self.PouTagName.split("::")[1],
-                        infos["name"]))
+                        infos.name))
             elif var_class == ITEM_ACTION:
                 self.ParentWindow.OpenDebugViewer(
                     var_class,
                     var_path,
                     self.Controller.ComputePouActionName(
                         self.PouTagName.split("::")[1],
-                        infos["name"]))
+                        infos.name))
             else:
                 self.ParentWindow.OpenDebugViewer(
                     var_class,
                     var_path,
-                    self.Controller.ComputePouName(infos["type"]))
+                    self.Controller.ComputePouName(infos.type))
     
     def DebugButtonDClickCallback(self, infos):
         if self.InstanceChoice.GetSelection() != -1:
-            if infos["class"] in ITEMS_VARIABLE:
+            if infos.var_class in ITEMS_VARIABLE:
                 self.ParentWindow.AddDebugVariable(
                     "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                               infos["name"]), 
+                               infos.name), 
                     force=True,
                     graph=True)
     
     def GraphButtonCallback(self, infos):
         if self.InstanceChoice.GetSelection() != -1:
-            if infos["class"] in ITEMS_VARIABLE:
+            if infos.var_class in ITEMS_VARIABLE:
                 var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                                      infos["name"])
-                self.ParentWindow.OpenDebugViewer(infos["class"], var_path, infos["type"])
+                                      infos.name)
+                self.ParentWindow.OpenDebugViewer(infos.var_class, var_path, infos.type)
     
     def ShowInstanceChoicePopup(self):
         self.InstanceChoice.SetFocusFromKbd()
@@ -395,7 +395,7 @@ class PouInstanceVariablesPanel(wx.Panel):
     def OnDebugButtonClick(self, event):
         if self.InstanceChoice.GetSelection() != -1:
             self.ParentWindow.OpenDebugViewer(
-                self.PouInfos["class"],
+                self.PouInfos.var_class,
                 self.InstanceChoice.GetStringSelection(),
                 self.PouTagName)
         event.Skip()
@@ -413,20 +413,20 @@ class PouInstanceVariablesPanel(wx.Panel):
                     if callback is not None:
                         callback(item_infos)
                 
-                elif item_infos["class"] not in ITEMS_VARIABLE:
+                elif item_infos.var_class not in ITEMS_VARIABLE:
                     instance_path = self.InstanceChoice.GetStringSelection()
-                    if item_infos["class"] == ITEM_RESOURCE:
+                    if item_infos.var_class == ITEM_RESOURCE:
                         if instance_path != "":
                             tagname = self.Controller.ComputeConfigurationResourceName(
                                            instance_path, 
-                                           item_infos["name"])
+                                           item_infos.name)
                         else:
                             tagname = None
                     else:
-                        tagname = self.Controller.ComputePouName(item_infos["type"])
+                        tagname = self.Controller.ComputePouName(item_infos.type)
                     if tagname is not None:
                         if instance_path != "":
-                            item_path = "%s.%s" % (instance_path, item_infos["name"])
+                            item_path = "%s.%s" % (instance_path, item_infos.name)
                         else:
                             item_path = None
                         self.SetPouType(tagname, item_path)
@@ -450,10 +450,10 @@ class PouInstanceVariablesPanel(wx.Panel):
                         if callback is not None:
                             callback(item_infos)
                 
-                elif flags & CT.TREE_HITTEST_ONITEMLABEL and item_infos["class"] in ITEMS_VARIABLE:
+                elif flags & CT.TREE_HITTEST_ONITEMLABEL and item_infos.var_class in ITEMS_VARIABLE:
                     self.ParentWindow.EnsureTabVisible(
                         self.ParentWindow.DebugVariablePanel)
-                    item_path = "%s.%s" % (instance_path, item_infos["name"])
+                    item_path = "%s.%s" % (instance_path, item_infos.name)
                     data = wx.TextDataObject(str((item_path, "debug")))
                     dragSource = wx.DropSource(self.VariablesList)
                     dragSource.SetData(data)

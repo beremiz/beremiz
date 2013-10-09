@@ -189,85 +189,54 @@ class VariablesInfosFactory:
 #            Helpers object for generating pou variable instance list
 #-------------------------------------------------------------------------------
 
-def class_extraction(el, prt):
-    if prt in ["pou", "variable"]:
-        pou_type = POU_TYPES.get(el.text)
-        if pou_type is not None:
-            return pou_type
-        return VAR_CLASS_INFOS[el.text][1]
-    return {
+def class_extraction(value):
+    class_type = {
         "configuration": ITEM_CONFIGURATION,
         "resource": ITEM_RESOURCE,
         "action": ITEM_ACTION,
         "transition": ITEM_TRANSITION,
-        "program": ITEM_PROGRAM}.get(prt)
+        "program": ITEM_PROGRAM}.get(value)
+    if class_type is not None:
+        return class_type
+    
+    pou_type = POU_TYPES.get(value)
+    if pou_type is not None:
+        return pou_type
+    
+    var_type = VAR_CLASS_INFOS.get(value)
+    if var_type is not None:
+        return var_type[1]
+    
+    return None
 
-PARAM_VALUE_EXTRACTION = {
-    "name": lambda el, prt: el.text,
-    "class": class_extraction,
-    "type": lambda el, prt: None if el.text == "None" else el.text,
-    "edit": lambda el, prt: el.text == "True",
-    "debug": lambda el, prt: el.text == "True",
-    "variables": lambda el, prt: [
-        compute_instance_tree(chld)
-        for chld in el]}
+class _VariablesTreeItemInfos(object):
+    __slots__ = ["name", "var_class", "type", "edit", "debug", "variables"]
+    def __init__(self, *args):
+        for attr, value in zip(self.__slots__, args):
+            setattr(self, attr, value if value is not None else "")
+    def copy(self):
+        return _VariableTreeItem(*[getattr(self, attr) for attr in self.__slots__])
 
-def compute_instance_tree(tree):
-    return {el.tag:
-        PARAM_VALUE_EXTRACTION[el.tag](el, tree.tag)
-        for el in tree}
+class VariablesTreeInfosFactory:
+    
+    def __init__(self):
+        self.Root = None
+    
+    def GetRoot(self):
+        return self.Root
+    
+    def SetRoot(self, context, *args):
+        self.Root = _VariablesTreeItemInfos(
+            *([''] + _translate_args(
+                [class_extraction, str] + [_BoolValue] * 2, 
+                args) + [[]]))
 
-class IsEdited(etree.XSLTExtension):
-    
-    def __init__(self, controller, debug):
-        etree.XSLTExtension.__init__(self)
-        self.Controller = controller
-        self.Debug = debug
-    
-    def execute(self, context, self_node, input_node, output_parent):
-        typename = input_node.get("name")
-        project = self.Controller.GetProject(self.Debug)
-        output_parent.text = str(project.getpou(typename) is not None)
-        
-class IsDebugged(etree.XSLTExtension):
-    
-    def __init__(self, controller, debug):
-        etree.XSLTExtension.__init__(self)
-        self.Controller = controller
-        self.Debug = debug
-    
-    def execute(self, context, self_node, input_node, output_parent):
-        typename = input_node.get("name")
-        project = self.Controller.GetProject(self.Debug)
-        pou_infos = project.getpou(typename)
-        if pou_infos is not None:
-            self.apply_templates(context, pou_infos, output_parent)
-            return
-        
-        datatype_infos = self.Controller.GetDataType(typename, self.Debug)
-        if datatype_infos is not None:
-            self.apply_templates(context, datatype_infos, output_parent)
-            return
-        
-        output_parent.text = "False"
-        
-class PouVariableClass(etree.XSLTExtension):
-    
-    def __init__(self, controller, debug):
-        etree.XSLTExtension.__init__(self)
-        self.Controller = controller
-        self.Debug = debug
-    
-    def execute(self, context, self_node, input_node, output_parent):
-        pou_infos = self.Controller.GetPou(input_node.get("name"), self.Debug)
-        if pou_infos is not None:
-            self.apply_templates(context, pou_infos, output_parent)
-            return
-        
-        self.process_children(context, output_parent)
-        
-pou_variables_xslt = etree.parse(
-    os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"))
+    def AddVariable(self, context, *args):
+        if self.Root is not None:
+            self.Root.variables.append(_VariablesTreeItemInfos(
+                *(_translate_args(
+                    [str, class_extraction, str] + [_BoolValue] * 2, 
+                    args) + [[]])))
 
 #-------------------------------------------------------------------------------
 #            Helpers object for generating instances path list
@@ -799,20 +768,28 @@ class PLCControler:
         pou_type = None
         project = self.GetProject(debug)
         if project is not None:
-            pou_variable_xslt_tree = etree.XSLT(
-                pou_variables_xslt, extensions = {
-                    ("pou_vars_ns", "is_edited"): IsEdited(self, debug),
-                    ("pou_vars_ns", "is_debugged"): IsDebugged(self, debug),
-                    ("pou_vars_ns", "pou_class"): PouVariableClass(self, debug)})
+            factory = VariablesTreeInfosFactory()
             
+            parser = etree.XMLParser()
+            parser.resolvers.add(LibraryResolver(self, debug))
+            
+            pou_variable_xslt_tree = etree.XSLT(
+                etree.parse(
+                    os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"),
+                    parser), 
+                extensions = {("pou_vars_ns", name): getattr(factory, name)
+                              for name in ["SetRoot", "AddVariable"]})
+            
+            obj = None
             words = tagname.split("::")
             if words[0] == "P":
                 obj = self.GetPou(words[1], debug)
-            else:
+            elif words[0] != "D":
                 obj = self.GetEditedElement(tagname, debug)
             if obj is not None:
-                return compute_instance_tree(
-                        pou_variable_xslt_tree(obj).getroot())
+                pou_variable_xslt_tree(obj)
+                return factory.GetRoot()
+            
         return None
 
     def GetInstanceList(self, root, name, debug = False):
