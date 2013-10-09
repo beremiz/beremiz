@@ -101,77 +101,89 @@ UNEDITABLE_NAMES = GetUneditableNames()
  RESOURCES, PROPERTIES] = UNEDITABLE_NAMES
 
 #-------------------------------------------------------------------------------
+#                 Helper object for loading library in xslt stylesheets
+#-------------------------------------------------------------------------------
+
+class LibraryResolver(etree.Resolver):
+
+    def __init__(self, controller, debug=False):
+        self.Controller = controller
+        self.Debug = debug
+
+    def resolve(self, url, pubid, context):
+        lib_name = os.path.basename(url)
+        if lib_name in ["project", "stdlib", "extensions"]:
+            lib_el = etree.Element(lib_name)
+            if lib_name == "project":
+                lib_el.append(deepcopy(self.Controller.GetProject(self.Debug)))
+            elif lib_name == "stdlib":
+                for lib in [StdBlockLibrary, AddnlBlockLibrary]:
+                    lib_el.append(deepcopy(lib))
+            else:
+                for ctn in self.Controller.ConfNodeTypes:
+                    lib_el.append(deepcopy(ctn["types"]))
+            return self.resolve_string(etree.tostring(lib_el), context)
+
+#-------------------------------------------------------------------------------
+#           Helpers functions for translating list of arguments
+#                       from xslt to valid arguments
+#-------------------------------------------------------------------------------
+
+_BoolValue = lambda x: x in ["true", "0"]
+
+def _translate_args(translations, args):
+    return [translate(arg[0]) if len(arg) > 0 else None 
+            for translate, arg in
+            zip(translations, args)]
+
+#-------------------------------------------------------------------------------
 #                 Helpers object for generating pou var list
 #-------------------------------------------------------------------------------
 
-def compute_dimensions(el):
-    return [
-        (dimension.get("lower"), dimension.get("upper"))
-        for dimension in el.findall("dimension")]
+class _VariableInfos(object):
+    __slots__ = ["Name", "Class", "Option", "Location", "InitialValue", 
+                 "Edit", "Documentation", "Type", "Tree", "Number"]
+    def __init__(self, *args):
+        for attr, value in zip(self.__slots__, args):
+            setattr(self, attr, value if value is not None else "")
+    def copy(self):
+        return _VariableInfos(*[getattr(self, attr) for attr in self.__slots__])
 
-def extract_param(el):
-    if el.tag == "Type" and el.text is None:
-        array = el.find("array")
-        return ('array', array.text, compute_dimensions(array))
-    elif el.tag == "Tree":
-        return generate_var_tree(el)
-    elif el.tag == "Edit":
-        return el.text == "True"
-    elif el.text is None:
-        return ''
-    return el.text
-
-def generate_var_tree(tree):
-    return ([
-        (var.get("name"), var.text, generate_var_tree(var))
-         for var in tree.findall("var")],
-        compute_dimensions(tree))
-
-class AddVariable(etree.XSLTExtension):
+class VariablesInfosFactory:
     
     def __init__(self, variables):
-        etree.XSLTExtension.__init__(self)
         self.Variables = variables
+        self.TreeStack = []
+        self.Type = None
+        self.Dimensions = None
     
-    def execute(self, context, self_node, input_node, output_parent):
-        infos = etree.Element('var_infos')
-        self.process_children(context, infos)
-        self.Variables.append(
-            {el.tag.replace("_", " "): extract_param(el) for el in infos})
-
-class VarTree(etree.XSLTExtension):
-    
-    def __init__(self, controller, debug):
-        etree.XSLTExtension.__init__(self)
-        self.Controller = controller
-        self.Debug = debug
-    
-    def execute(self, context, self_node, input_node, output_parent):
-        typename = input_node.get("name")
-        pou_infos = self.Controller.GetPou(typename, self.Debug)
-        if pou_infos is not None:
-            self.apply_templates(context, pou_infos, output_parent)
-            return
+    def SetType(self, context, *args):
+        self.Type = args[0][0]
         
-        datatype_infos = self.Controller.GetDataType(typename, self.Debug)
-        if datatype_infos is not None:
-            self.apply_templates(context, datatype_infos, output_parent)
-            return
-
-class VarIsEdited(etree.XSLTExtension):
+    def GetType(self):
+        if len(self.Dimensions) > 0:
+            return ("array", self.Type, self.Dimensions)
+        return self.Type
     
-    def __init__(self, controller, debug):
-        etree.XSLTExtension.__init__(self)
-        self.Controller = controller
-        self.Debug = debug
+    def GetTree(self):
+        return (self.TreeStack.pop(-1), self.Dimensions)
     
-    def execute(self, context, self_node, input_node, output_parent):
-        typename = input_node.get("name")
-        output_parent.text = str(
-            self.Controller.GetPou(typename, self.Debug) is None)
-
-variables_infos_xslt = etree.parse(
-    os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"))
+    def AddDimension(self, context, *args):
+        self.Dimensions.append(tuple(
+            _translate_args([str] * 2, args)))
+    
+    def AddTree(self, context, *args):
+        self.TreeStack.append([])
+        self.Dimensions = []
+    
+    def AddVarToTree(self, context, *args):
+        var = (args[0][0], self.Type, self.GetTree())
+        self.TreeStack[-1].append(var)
+    
+    def AddVariable(self, context, *args):
+        self.Variables.append(_VariableInfos(*(_translate_args(
+            [str] * 5 + [_BoolValue] + [str], args) + 
+            [self.GetType(), self.GetTree()])))
 
 #-------------------------------------------------------------------------------
 #            Helpers object for generating pou variable instance list
@@ -349,8 +361,6 @@ instance_tagname_xslt = etree.parse(
 #           Helpers object for generating pou block instances list
 #-------------------------------------------------------------------------------
 
-_BoolValue = lambda x: x in ["true", "0"]
-
 _Point = namedtuple("Point", ["x", "y"])
 
 _BlockInstanceInfos = namedtuple("BlockInstanceInfos", 
@@ -426,11 +436,6 @@ class _ActionInfos(object):
             setattr(self, attr, value if value is not None else "")
     def copy(self):
         return _ActionInfos(*[getattr(self, attr) for attr in self.__slots__])
-
-def _translate_args(translations, args):
-    return [translate(arg[0]) if len(arg) > 0 else None 
-            for translate, arg in
-            zip(translations, args)]
 
 class BlockInstanceFactory:
     
@@ -677,7 +682,7 @@ class PLCControler:
         if project is not None:
             for pou in project.getpous():
                 if pou_name is None or pou_name == pou.getname():
-                    variables.extend([var["Name"] for var in self.GetPouInterfaceVars(pou, debug)])
+                    variables.extend([var.Name for var in self.GetPouInterfaceVars(pou, debug=debug)])
                     for transition in pou.gettransitionList():
                         variables.append(transition.getname())
                     for action in pou.getactionList():
@@ -1299,35 +1304,35 @@ class PLCControler:
         current_varlist = None
         current_type = None
         for var in vars:
-            next_type = (var["Class"], 
-                         var["Option"], 
-                         var["Location"] in ["", None] or 
+            next_type = (var.Class, 
+                         var.Option, 
+                         var.Location in ["", None] or 
                          # When declaring globals, located 
                          # and not located variables are 
                          # in the same declaration block
-                         var["Class"] == "Global")
+                         var.Class == "Global")
             if current_type != next_type:
                 current_type = next_type
-                infos = VAR_CLASS_INFOS.get(var["Class"], None)
+                infos = VAR_CLASS_INFOS.get(var.Class, None)
                 if infos is not None:
                     current_varlist = PLCOpenParser.CreateElement(infos[0], "interface")
                 else:
                     current_varlist = PLCOpenParser.CreateElement("varList")
-                varlist_list.append((var["Class"], current_varlist))
-                if var["Option"] == "Constant":
+                varlist_list.append((var.Class, current_varlist))
+                if var.Option == "Constant":
                     current_varlist.setconstant(True)
-                elif var["Option"] == "Retain":
+                elif var.Option == "Retain":
                     current_varlist.setretain(True)
-                elif var["Option"] == "Non-Retain":
+                elif var.Option == "Non-Retain":
                     current_varlist.setnonretain(True)
             # Create variable and change its properties
             tempvar = PLCOpenParser.CreateElement("variable", "varListPlain")
-            tempvar.setname(var["Name"])
+            tempvar.setname(var.Name)
             
             var_type = PLCOpenParser.CreateElement("type", "variable")
-            if isinstance(var["Type"], TupleType):
-                if var["Type"][0] == "array":
-                    array_type, base_type_name, dimensions = var["Type"]
+            if isinstance(var.Type, TupleType):
+                if var.Type[0] == "array":
+                    array_type, base_type_name, dimensions = var.Type
                     array = PLCOpenParser.CreateElement("array", "dataType")
                     baseType = PLCOpenParser.CreateElement("baseType", "array")
                     array.setbaseType(baseType)
@@ -1349,43 +1354,51 @@ class PLCControler:
                         derived_datatype.setname(base_type_name)
                         baseType.setcontent(derived_datatype)
                     var_type.setcontent(array)
-            elif var["Type"] in self.GetBaseTypes():
+            elif var.Type in self.GetBaseTypes():
                 var_type.setcontent(PLCOpenParser.CreateElement(
-                    var["Type"].lower()
-                    if var["Type"] in ["STRING", "WSTRING"]
-                    else var["Type"], "dataType"))
+                    var.Type.lower()
+                    if var.Type in ["STRING", "WSTRING"]
+                    else var.Type, "dataType"))
             else:
                 derived_type = PLCOpenParser.CreateElement("derived", "dataType")
-                derived_type.setname(var["Type"])
+                derived_type.setname(var.Type)
                 var_type.setcontent(derived_type)
             tempvar.settype(var_type)
 
-            if var["Initial Value"] != "":
+            if var.InitialValue != "":
                 value = PLCOpenParser.CreateElement("initialValue", "variable")
-                value.setvalue(var["Initial Value"])
+                value.setvalue(var.InitialValue)
                 tempvar.setinitialValue(value)
-            if var["Location"] != "":
-                tempvar.setaddress(var["Location"])
+            if var.Location != "":
+                tempvar.setaddress(var.Location)
             else:
                 tempvar.setaddress(None)
-            if var['Documentation'] != "":
+            if var.Documentation != "":
                 ft = PLCOpenParser.CreateElement("documentation", "variable")
-                ft.setanyText(var['Documentation'])
+                ft.setanyText(var.Documentation)
                 tempvar.setdocumentation(ft)
 
             # Add variable to varList
             current_varlist.appendvariable(tempvar)
         return varlist_list
     
-    def GetVariableDictionary(self, object_with_vars, debug=False):
+    def GetVariableDictionary(self, object_with_vars, tree=False, debug=False):
         variables = []
+        factory = VariablesInfosFactory(variables)
+        
+        parser = etree.XMLParser()
+        if tree:
+            parser.resolvers.add(LibraryResolver(self, debug))
         
         variables_infos_xslt_tree = etree.XSLT(
-            variables_infos_xslt, extensions = {
-                ("var_infos_ns", "add_variable"): AddVariable(variables),
-                ("var_infos_ns", "var_tree"): VarTree(self, debug),
-                ("var_infos_ns", "is_edited"): VarIsEdited(self, debug)})
-        variables_infos_xslt_tree(object_with_vars)
+            etree.parse(
+                os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
+                parser), 
+            extensions = {("var_infos_ns", name): getattr(factory, name)
+                for name in ["SetType", "AddDimension", "AddTree",
+                             "AddVarToTree", "AddVariable"]})
+        variables_infos_xslt_tree(object_with_vars,
+            tree=etree.XSLT.strparam(str(tree)))
         
         return variables
             
@@ -1479,12 +1492,12 @@ class PLCControler:
         return variables
 
     # Return the interface for the given pou
-    def GetPouInterfaceVars(self, pou, debug = False):
+    def GetPouInterfaceVars(self, pou, tree=False, debug = False):
         interface = pou.interface
         # Verify that the pou has an interface
         if interface is not None:
             # Extract variables defined in interface
-            return self.GetVariableDictionary(interface, debug)
+            return self.GetVariableDictionary(interface, tree, debug)
         return []
 
     # Replace the Pou interface by the one given
@@ -1530,30 +1543,35 @@ class PLCControler:
         if pou is not None:
             pou.updateElementName(old_name, new_name)
     
-    # Return the return type of the pou given by its name
-    def GetPouInterfaceReturnTypeByName(self, name):
-        project = self.GetProject(debug)
-        if project is not None:
-            # Found the pou correponding to name and return the return type
-            pou = project.getpou(name)
-            if pou is not None:
-                return self.GetPouInterfaceReturnType(pou)
-        return False
-    
     # Return the return type of the given pou
-    def GetPouInterfaceReturnType(self, pou):
+    def GetPouInterfaceReturnType(self, pou, tree=False, debug=False):
         # Verify that the pou has an interface
         if pou.interface is not None:
             # Return the return type if there is one
             return_type = pou.interface.getreturnType()
             if return_type is not None:
-                return_type_infos_xslt_tree = etree.XSLT(
-                    variables_infos_xslt, extensions = {
-                          ("var_infos_ns", "var_tree"): VarTree(self)})
-                return [extract_param(el) 
-                       for el in return_type_infos_xslt_tree(return_type).getroot()]
+                factory = VariablesInfosFactory([])
+        
+                parser = etree.XMLParser()
+                if tree:
+                    parser.resolvers.add(LibraryResolver(self))
                 
-        return [None, ([], [])] 
+                return_type_infos_xslt_tree = etree.XSLT(
+                    etree.parse(
+                        os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
+                        parser), 
+                    extensions = {("var_infos_ns", name): getattr(factory, name)
+                                  for name in ["SetType", "AddDimension", 
+                                               "AddTree", "AddVarToTree"]})
+                return_type_infos_xslt_tree(return_type,
+                    tree=etree.XSLT.strparam(str(tree)))
+                if tree:
+                    return [factory.GetType(), factory.GetTree()]
+                return factory.GetType()
+        
+        if tree:
+            return [None, ([], [])]
+        return None
 
     # Function that add a new confnode to the confnode list
     def AddConfNodeTypesList(self, typeslist):
@@ -2209,25 +2227,25 @@ class PLCControler:
         return None
 
     # Return the edited element variables
-    def GetEditedElementInterfaceVars(self, tagname, debug = False):
+    def GetEditedElementInterfaceVars(self, tagname, tree=False, debug = False):
         words = tagname.split("::")
         if words[0] in ["P","T","A"]:
             project = self.GetProject(debug)
             if project is not None:
                 pou = project.getpou(words[1])
                 if pou is not None:
-                    return self.GetPouInterfaceVars(pou, debug)
+                    return self.GetPouInterfaceVars(pou, tree, debug)
         return []
 
     # Return the edited element return type
-    def GetEditedElementInterfaceReturnType(self, tagname, debug = False):
+    def GetEditedElementInterfaceReturnType(self, tagname, tree=False, debug = False):
         words = tagname.split("::")
         if words[0] == "P":
             project = self.GetProject(debug)
             if project is not None:
                 pou = self.Project.getpou(words[1])
                 if pou is not None:
-                    return self.GetPouInterfaceReturnType(pou)
+                    return self.GetPouInterfaceReturnType(pou, tree, debug)
         elif words[0] == 'T':
             return "BOOL"
         return None
@@ -2328,8 +2346,8 @@ class PLCControler:
                     names[datatype.getname().upper()] = True
                 for pou in project.getpous():
                     names[pou.getname().upper()] = True
-                    for var in self.GetPouInterfaceVars(pou, debug):
-                        names[var["Name"].upper()] = True
+                    for var in self.GetPouInterfaceVars(pou, debug=debug):
+                        names[var.Name.upper()] = True
                     for transition in pou.gettransitionList():
                         names[transition.getname().upper()] = True
                     for action in pou.getactionList():

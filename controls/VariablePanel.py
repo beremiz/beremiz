@@ -37,6 +37,7 @@ from CustomGrid import CustomGrid
 from CustomTable import CustomTable
 from LocationCellEditor import LocationCellEditor
 from util.BitmapLibrary import GetBitmap
+from PLCControler import _VariableInfos
 
 #-------------------------------------------------------------------------------
 #                                 Helpers
@@ -105,12 +106,22 @@ class VariableTable(CustomTable):
         CustomTable.__init__(self, parent, data, colnames)
         self.old_value = None
     
+    def GetValueByName(self, row, colname):
+        if row < self.GetNumberRows():
+            return getattr(self.data[row], colname)
+
+    def SetValueByName(self, row, colname, value):
+        if row < self.GetNumberRows():
+            setattr(self.data[row], colname, value)
+    
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             if col == 0:
-                return self.data[row]["Number"]
+                return self.data[row].Number
             colname = self.GetColLabelValue(col, False)
-            value = self.data[row].get(colname, "")
+            if colname == "Initial Value":
+                colname = "InitialValue"
+            value = getattr(self.data[row], colname, "")
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
                     return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "..".join(x), value[2])), value[1])
@@ -124,15 +135,17 @@ class VariableTable(CustomTable):
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
             if colname == "Name":
-                self.old_value = self.data[row][colname]
+                self.old_value = getattr(self.data[row], colname)
             elif colname == "Class":
                 value = VARIABLE_CLASSES_DICT[value]
                 self.SetValueByName(row, "Option", CheckOptionForClass[value](self.GetValueByName(row, "Option")))
                 if value == "External":
-                    self.SetValueByName(row, "Initial Value", "")
+                    self.SetValueByName(row, "InitialValue", "")
             elif colname == "Option":
                 value = OPTIONS_DICT[value]
-            self.data[row][colname] = value
+            elif colname == "Initial Value":
+                colname = "InitialValue"
+            setattr(self.data[row], colname, value)
 
     def GetOldValue(self):
         return self.old_value
@@ -314,8 +327,8 @@ class VariableDropTarget(wx.TextDropTarget):
                         for name in self.ParentWindow.Controler.\
                             GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     var_infos = self.ParentWindow.DefaultValue.copy()
-                    var_infos["Name"] = var_name
-                    var_infos["Type"] = values[2]
+                    var_infos.Name = var_name
+                    var_infos.Type = values[2]
                     if values[1] == "location":
                         location = values[0]
                         if not location.startswith("%"):
@@ -346,16 +359,16 @@ class VariableDropTarget(wx.TextDropTarget):
                                     GetConfigurationVariableNames(configs[0])]:
                                 self.ParentWindow.Controler.AddConfigurationGlobalVar(
                                     configs[0], values[2], var_name, location, "")
-                            var_infos["Class"] = "External"
+                            var_infos.Class = "External"
                         else:
                             if element_type == "program":
-                                var_infos["Class"] = "Local"
+                                var_infos.Class = "Local"
                             else:
-                                var_infos["Class"] = "Global"
-                            var_infos["Location"] = location
+                                var_infos.Class = "Global"
+                            var_infos.Location = location
                     else:
-                        var_infos["Class"] = "External"
-                    var_infos["Number"] = len(self.ParentWindow.Values)
+                        var_infos.Class = "External"
+                    var_infos.Number = len(self.ParentWindow.Values)
                     self.ParentWindow.Values.append(var_infos)
                     self.ParentWindow.SaveValues()
                     self.ParentWindow.RefreshValues()
@@ -447,16 +460,7 @@ class VariablePanel(wx.Panel):
         self.FilterChoices = []
         self.FilterChoiceTransfer = GetFilterChoiceTransfer()
         
-        self.DefaultValue = {
-             "Name" : "", 
-             "Class" : "", 
-             "Type" : "INT", 
-             "Location" : "",
-             "Initial Value" : "", 
-             "Option" : "",
-             "Documentation" : "", 
-             "Edit" : True
-        }
+        self.DefaultValue = _VariableInfos("", "", "", "", "", True, "", "INT", ([], []), 0)
         
         if element_type in ["config", "resource"]:
             self.DefaultTypes = {"All" : "Global"}
@@ -527,32 +531,32 @@ class VariablePanel(wx.Panel):
             if new_row > 0:
                 row_content = self.Values[new_row - 1].copy()
                 
-                result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
+                result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content.Name)
                 if result is not None:
-                    name = row_content["Name"][:result.start(1)]
+                    name = row_content.Name[:result.start(1)]
                     suffix = result.group(1)
                     if suffix != "":
                         start_idx = int(suffix)
                     else:
                         start_idx = 0
                 else:
-                    name = row_content["Name"]
+                    name = row_content.Name
                     start_idx = 0
             else:
                 row_content = None
                 start_idx = 0
                 name = "LocalVar"
                 
-            if row_content is not None and row_content["Edit"]: 
+            if row_content is not None and row_content.Edit: 
                 row_content = self.Values[new_row - 1].copy()
             else:
                 row_content = self.DefaultValue.copy()
                 if self.Filter in self.DefaultTypes:
-                    row_content["Class"] = self.DefaultTypes[self.Filter]
+                    row_content.Class = self.DefaultTypes[self.Filter]
                 else:
-                    row_content["Class"] = self.Filter
+                    row_content.Class = self.Filter
             
-            row_content["Name"] = self.Controler.GenerateNewName(
+            row_content.Name = self.Controler.GenerateNewName(
                     self.TagName, None, name + "%d", start_idx)
             
             if self.Filter == "All" and len(self.Values) > 0:
@@ -637,9 +641,9 @@ class VariablePanel(wx.Panel):
                 self.ReturnType.Clear()
                 for data_type in self.Controler.GetDataTypes(self.TagName, debug=self.Debug):
                     self.ReturnType.Append(data_type)
-                returnType, (var_tree, dimensions) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, self.Debug)
+                returnType = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, debug=self.Debug)
             description = self.Controler.GetPouDescription(words[1])
-            self.Values = self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug)
+            self.Values = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
         
         if returnType is not None:
             self.ReturnType.SetStringSelection(returnType)
@@ -712,7 +716,7 @@ class VariablePanel(wx.Panel):
                 message = _("\"%s\" is a keyword. It can't be used!") % value
             elif value.upper() in self.PouNames:
                 message = _("A POU named \"%s\" already exists!") % value
-            elif value.upper() in [var["Name"].upper() for var in self.Values if var != self.Table.data[row]]:
+            elif value.upper() in [var.Name.upper() for var in self.Values if var != self.Table.data[row]]:
                 message = _("A variable with \"%s\" as name already exists in this pou!") % value
             else:
                 self.SaveValues(False)
@@ -846,8 +850,8 @@ class VariablePanel(wx.Panel):
     def RefreshValues(self):
         data = []
         for num, variable in enumerate(self.Values):
-            if variable["Class"] in self.ClassList:
-                variable["Number"] = num + 1
+            if variable.Class in self.ClassList:
+                variable.Number = num + 1
                 data.append(variable)
         self.Table.SetData(data)
         self.Table.ResetView(self.VariablesGrid)

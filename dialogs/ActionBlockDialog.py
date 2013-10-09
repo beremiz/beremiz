@@ -198,7 +198,7 @@ class ActionBlockDialog(wx.Dialog):
         self.DurationList = list
 
     def SetVariableList(self, list):
-        self.VariableList = "," + ",".join([variable["Name"] for variable in list])
+        self.VariableList = "," + ",".join([variable.Name for variable in list])
         
     def SetActionList(self, list):
         self.ActionList = "," + ",".join(list)

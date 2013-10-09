@@ -332,7 +332,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     var_class = INPUT
                 else:
                     var_class = INPUT
-                tree = dict([(var["Name"], var["Tree"]) for var in self.ParentWindow.Controler.GetEditedElementInterfaceVars(tagname, self.ParentWindow.Debug)]).get(values[0], None)
+                tree = dict([(var.Name, var.Tree) for var in self.ParentWindow.Controler.GetEditedElementInterfaceVars(tagname, True, self.ParentWindow.Debug)]).get(values[0], None)
                 if tree is not None:
                     if len(tree[0]) > 0:
                         menu = wx.Menu(title='')
@@ -2620,7 +2620,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = ActionBlockDialog(self.ParentWindow)
         dialog.SetQualifierList(self.Controler.GetQualifierTypes())
         dialog.SetActionList(self.Controler.GetEditedElementActions(self.TagName, self.Debug))
-        dialog.SetVariableList(self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug))
+        dialog.SetVariableList(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             actionblock = SFC_ActionBlock(self, dialog.GetValues(), id)
@@ -2870,7 +2870,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = ActionBlockDialog(self.ParentWindow)
         dialog.SetQualifierList(self.Controler.GetQualifierTypes())
         dialog.SetActionList(self.Controler.GetEditedElementActions(self.TagName, self.Debug))
-        dialog.SetVariableList(self.Controler.GetEditedElementInterfaceVars(self.TagName, self.Debug))
+        dialog.SetVariableList(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
         dialog.SetValues(actionblock.GetActions())
         if dialog.ShowModal() == wx.ID_OK:
             actions = dialog.GetValues()

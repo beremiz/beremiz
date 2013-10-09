@@ -29,7 +29,7 @@ class MiniTextControler:
             return text
         return ""
     
-    def GetEditedElementInterfaceVars(self, tagname, debug = False):
+    def GetEditedElementInterfaceVars(self, tagname, tree=False, debug = False):
         return []
     
     def GetEditedElementType(self, tagname, debug = False):
