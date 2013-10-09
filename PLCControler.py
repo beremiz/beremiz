@@ -242,35 +242,13 @@ class VariablesTreeInfosFactory:
 #            Helpers object for generating instances path list
 #-------------------------------------------------------------------------------
 
-class InstanceDefinition(etree.XSLTExtension):
+class InstancesPathFactory:
     
-    def __init__(self, controller, debug):
-        etree.XSLTExtension.__init__(self)
-        self.Controller = controller
-        self.Debug = debug
-    
-    def execute(self, context, self_node, input_node, output_parent):
-        instance_infos = etree.Element('infos')
-        self.process_children(context, instance_infos)
+    def __init__(self, instances):
+        self.Instances = instances
         
-        pou_infos = self.Controller.GetPou(instance_infos.get("name"), self.Debug)
-        if pou_infos is not None:
-            pou_instance = etree.Element('pou_instance',
-                pou_path=instance_infos.get("path"))
-            pou_instance.append(deepcopy(pou_infos))
-            self.apply_templates(context, pou_instance, output_parent)
-            return
-            
-        datatype_infos = self.Controller.GetDataType(instance_infos.get("name"), self.Debug)
-        if datatype_infos is not None:
-            datatype_instance = etree.Element('datatype_instance',
-                datatype_path=instance_infos.get("path"))
-            datatype_instance.append(deepcopy(datatype_infos))
-            self.apply_templates(context, datatype_instance, output_parent)
-            return
-
-instances_path_xslt = etree.parse(
-    os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"))
+    def AddInstance(self, context, *args):
+        self.Instances.append(args[0][0])
 
 #-------------------------------------------------------------------------------
 #            Helpers object for generating instance tagname
@@ -795,14 +773,25 @@ class PLCControler:
     def GetInstanceList(self, root, name, debug = False):
         project = self.GetProject(debug)
         if project is not None:
-            instances_path_xslt_tree = etree.XSLT(
-                instances_path_xslt, 
-                extensions = {
-                    ("instances_ns", "instance_definition"): 
-                    InstanceDefinition(self, debug)})
+            instances = []
+            factory = InstancesPathFactory(instances)
             
-            return instances_path_xslt_tree(root, 
-                instance_type=etree.XSLT.strparam(name)).getroot()
+            parser = etree.XMLParser()
+            parser.resolvers.add(LibraryResolver(self, debug))
+            
+            instances_path_xslt_tree = etree.XSLT(
+                etree.parse(
+                    os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"),
+                    parser), 
+                extensions = {
+                    ("instances_ns", "AddInstance"): factory.AddInstance})
+            
+            instances_path_xslt_tree(root, 
+                instance_type=etree.XSLT.strparam(name))
+            
+            if len(instances) > 0:
+                return instances
+        
         return None
 
     def SearchPouInstances(self, tagname, debug = False):
@@ -810,10 +799,7 @@ class PLCControler:
         if project is not None:
             words = tagname.split("::")
             if words[0] == "P":
-                result = self.GetInstanceList(project, words[1])
-                if result is not None:
-                    return [instance.get("path") for instance in result]
-                return []
+                return self.GetInstanceList(project, words[1])
             elif words[0] == 'C':
                 return [words[1]]
             elif words[0] == 'R':
