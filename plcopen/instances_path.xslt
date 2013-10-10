@@ -155,22 +155,4 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="pou_instance">
-    <xsl:param name="_indent" select="0"/>
-    <xsl:apply-templates>
-      <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
-      <xsl:with-param name="instance_path">
-        <xsl:value-of select="@pou_path"/>
-      </xsl:with-param>
-    </xsl:apply-templates>
-  </xsl:template>
-  <xsl:template match="datatype_instance">
-    <xsl:param name="_indent" select="0"/>
-    <xsl:apply-templates>
-      <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
-      <xsl:with-param name="instance_path">
-        <xsl:value-of select="@datatype_path"/>
-      </xsl:with-param>
-    </xsl:apply-templates>
-  </xsl:template>
 </xsl:stylesheet>
