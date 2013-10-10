@@ -254,55 +254,30 @@ class InstancesPathFactory:
 #            Helpers object for generating instance tagname
 #-------------------------------------------------------------------------------
 
-class InstanceTagName(etree.XSLTExtension):
+class InstanceTagName:
 
     def __init__(self, controller):
-        etree.XSLTExtension.__init__(self)
         self.Controller = controller
+        self.TagName = None
     
-    def GetTagName(self, infos):
-        return ""
+    def GetTagName(self):
+        return self.TagName
     
-    def execute(self, context, self_node, input_node, output_parent):
-        tagname_infos = etree.Element('infos')
-        self.process_children(context, tagname_infos)
-        tagname = etree.Element('tagname')
-        tagname.text = self.GetTagName(tagname_infos)
-        try:
-            output_parent.append(tagname)
-        except:
-            pass
-
-class ConfigTagName(InstanceTagName):
-    
-    def GetTagName(self, infos):
-        return self.Controller.ComputeConfigurationName(infos.get("name"))
+    def ConfigTagName(self, context, *args):
+        self.TagName = self.Controller.ComputeConfigurationName(args[0][0])
         
-class ResourceTagName(InstanceTagName):
-    
-    def GetTagName(self, infos):
-        return self.Controller.ComputeConfigurationResourceName(
-            infos.get("config_name"), infos.get("name"))
+    def ResourceTagName(self, context, *args):
+        self.TagName = self.Controller.ComputeConfigurationResourceName(args[0][0], args[1][0])
 
-class PouTagName(InstanceTagName):
-    
-    def GetTagName(self, infos):
-        return self.Controller.ComputePouName(infos.get("name"))
+    def PouTagName(self, context, *args):
+        #print "PouTagName", etree.tostring(args[0][0])
+        self.TagName = self.Controller.ComputePouName(args[0][0])
 
-class ActionTagName(InstanceTagName):
-    
-    def GetTagName(self, infos):
-        return self.Controller.ComputePouActionName(
-            infos.get("pou_name"), infos.get("name"))
+    def ActionTagName(self, context, *args):
+        self.TagName = self.Controller.ComputePouActionName(args[0][0], args[0][1])
 
-class TransitionTagName(InstanceTagName):
-    
-    def GetTagName(self, infos):
-        return self.Controller.ComputePouTransitionName(
-            infos.get("pou_name"), infos.get("name"))
-
-instance_tagname_xslt = etree.parse(
-    os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"))
+    def TransitionTagName(self, context, *args):
+        self.TagName = self.Controller.ComputePouTransitionName(args[0][0], args[0][1])
 
 #-------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
@@ -812,23 +787,24 @@ class PLCControler:
     
     def GetPouInstanceTagName(self, instance_path, debug = False):
         project = self.GetProject(debug)
+        factory = InstanceTagName(self)
+        
+        parser = etree.XMLParser()
+        parser.resolvers.add(LibraryResolver(self, debug))
         
         instance_tagname_xslt_tree = etree.XSLT(
-            instance_tagname_xslt, 
-            extensions = {
-                ("instance_tagname_ns", "instance_definition"): InstanceDefinition(self, debug),
-                ("instance_tagname_ns", "config_tagname"): ConfigTagName(self),
-                ("instance_tagname_ns", "resource_tagname"): ResourceTagName(self),
-                ("instance_tagname_ns", "pou_tagname"): PouTagName(self),
-                ("instance_tagname_ns", "action_tagname"): ActionTagName(self),
-                ("instance_tagname_ns", "transition_tagname"): TransitionTagName(self)})
+            etree.parse(
+                os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"),
+                parser), 
+            extensions = {("instance_tagname_ns", name): getattr(factory, name)
+                          for name in ["ConfigTagName", "ResourceTagName",
+                                       "PouTagName", "ActionTagName", 
+                                       "TransitionTagName"]})
         
-        result = instance_tagname_xslt_tree(project, 
-                instance_path=etree.XSLT.strparam(instance_path)).getroot()
-        if result is not None:
-            return result.text
+        instance_tagname_xslt_tree(project, 
+            instance_path=etree.XSLT.strparam(instance_path))
         
-        return None
+        return factory.GetTagName()
     
     def GetInstanceInfos(self, instance_path, debug = False):
         tagname = self.GetPouInstanceTagName(instance_path)
