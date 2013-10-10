@@ -75,6 +75,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         # Create spin control for defining power rail pin number
         self.PinNumber = wx.SpinCtrl(self, min=1, max=50,
               style=wx.SP_ARROW_KEYS)
+        self.PinNumber.SetValue(1)
         self.Bind(wx.EVT_SPINCTRL, self.OnPinNumberChanged, self.PinNumber)
         self.LeftGridSizer.AddWindow(self.PinNumber, flag=wx.GROW)
         
