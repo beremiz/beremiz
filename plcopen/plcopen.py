@@ -1943,6 +1943,9 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+_initElementClass("leftPowerRail", "ldObjects")
+_initElementClass("rightPowerRail", "ldObjects", "multiple")
+
 def _UpdateLDElementName(self, old_name, new_name):
     if self.variable == old_name:
         self.variable = new_name
