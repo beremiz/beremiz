@@ -774,8 +774,8 @@ class LD_Coil(Graphic_Element):
     
     # Unconnect input and output
     def Clean(self):
-        self.Input.UnConnect()
-        self.Output.UnConnect()
+        self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
                 
     # Refresh the size of text for name
     def RefreshNameSize(self):
