@@ -120,16 +120,4 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         }
     }
     
-    template "pou_instance" {
-        apply {
-            with "instance_path" > «@pou_path»
-        }
-    }
-    
-    template "datatype_instance" {
-        apply {
-            with "instance_path" > «@datatype_path»
-        }
-    }
-    
 }
