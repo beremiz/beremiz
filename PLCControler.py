@@ -746,9 +746,9 @@ class PLCControler:
         return None
 
     def GetInstanceList(self, root, name, debug = False):
+        instances = []
         project = self.GetProject(debug)
         if project is not None:
-            instances = []
             factory = InstancesPathFactory(instances)
             
             parser = etree.XMLParser()
@@ -764,11 +764,8 @@ class PLCControler:
             instances_path_xslt_tree(root, 
                 instance_type=etree.XSLT.strparam(name))
             
-            if len(instances) > 0:
-                return instances
+        return instances
         
-        return None
-
     def SearchPouInstances(self, tagname, debug = False):
         project = self.GetProject(debug)
         if project is not None:
@@ -826,21 +823,21 @@ class PLCControler:
     def DataTypeIsUsed(self, name, debug = False):
         project = self.GetProject(debug)
         if project is not None:
-            return self.GetInstanceList(project, name, debug) is not None
+            return len(self.GetInstanceList(project, name, debug)) > 0
         return False
 
     # Return if pou given by name is used by another pou
     def PouIsUsed(self, name, debug = False):
         project = self.GetProject(debug)
         if project is not None:
-            return self.GetInstanceList(project, name, debug) is not None
+            return len(self.GetInstanceList(project, name, debug)) > 0
         return False
 
     # Return if pou given by name is directly or undirectly used by the reference pou
     def PouIsUsedBy(self, name, reference, debug = False):
         pou_infos = self.GetPou(reference, debug)
         if pou_infos is not None:
-            return self.GetInstanceList(pou_infos, name, debug) is not None
+            return len(self.GetInstanceList(pou_infos, name, debug)) > 0
         return False
 
     def GenerateProgram(self, filepath=None):
@@ -1627,7 +1624,7 @@ class PLCControler:
                 "list": [pou.getblockInfos()
                          for pou in project.getpous(name, filter)
                          if (name is None or 
-                             self.GetInstanceList(pou, name, debug) is None)]})
+                             len(self.GetInstanceList(pou, name, debug)) > 0)]})
             return blocktypes
         return self.TotalTypes
 
@@ -1647,7 +1644,7 @@ class PLCControler:
             blocktypes.extend([pou.getname()
                 for pou in project.getpous(name, ["functionBlock"])
                 if (name is None or 
-                    self.GetInstanceList(pou, name, debug) is None)])
+                    len(self.GetInstanceList(pou, name, debug)) > 0)])
         return blocktypes
 
     # Return Block types checking for recursion
@@ -1681,7 +1678,7 @@ class PLCControler:
                 for datatype in project.getdataTypes(name)
                 if (not only_locatables or self.IsLocatableDataType(datatype, debug))
                     and (name is None or 
-                         self.GetInstanceList(datatype, name, debug) is None)])
+                         len(self.GetInstanceList(datatype, name, debug)) > 0)])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])
