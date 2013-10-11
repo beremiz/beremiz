@@ -257,7 +257,7 @@
     <xsl:param name="_indent" select="0"/>
     <xsl:param name="start_bracket"/>
     <xsl:param name="end_bracket"/>
-    <xsl:value-of select="@start_bracket"/>
+    <xsl:value-of select="$start_bracket"/>
     <xsl:for-each select="ppx:value">
       <xsl:apply-templates select=".">
         <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
@@ -268,7 +268,7 @@
         </xsl:when>
       </xsl:choose>
     </xsl:for-each>
-    <xsl:value-of select="@end_bracket"/>
+    <xsl:value-of select="$end_bracket"/>
   </xsl:template>
   <xsl:template match="ppx:arrayValue">
     <xsl:param name="_indent" select="0"/>
