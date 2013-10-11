@@ -203,14 +203,14 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     function "complex_type_value" {
         param "start_bracket";
         param "end_bracket";
-        > «@start_bracket»
+        > «$start_bracket»
         foreach "ppx:value" {
             apply ".";
             choose {
                 when "position()!=last()" > , 
             }
         }
-        > «@end_bracket»
+        > «$end_bracket»
     }
     
     template "ppx:arrayValue" {
