@@ -807,15 +807,15 @@ class PLCControler:
         tagname = self.GetPouInstanceTagName(instance_path)
         if tagname is not None:
             infos = self.GetPouVariables(tagname, debug)
-            infos["type"] = tagname
+            infos.type = tagname
             return infos
         else:
             pou_path, var_name = instance_path.rsplit(".", 1)
             tagname = self.GetPouInstanceTagName(pou_path)
             if tagname is not None:
                 pou_infos = self.GetPouVariables(tagname, debug)
-                for var_infos in pou_infos["variables"]:
-                    if var_infos["name"] == var_name:
+                for var_infos in pou_infos.variables:
+                    if var_infos.name == var_name:
                         return var_infos
         return None
     
