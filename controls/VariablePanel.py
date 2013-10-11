@@ -573,6 +573,8 @@ class VariablePanel(wx.Panel):
             if self.Table.GetValueByName(row, "Edit"):
                 self.Values.remove(self.Table.GetRow(row))
                 self.SaveValues()
+                if self.ElementType == "resource":
+                    self.ParentWindow.RefreshView(variablepanel = False)
                 self.RefreshValues()
         setattr(self.VariablesGrid, "_DeleteRow", _DeleteVariable)
             
