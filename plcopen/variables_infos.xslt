@@ -28,10 +28,28 @@
       </xsl:when>
     </xsl:choose>
   </xsl:variable>
+  <xsl:template match="ppx:configuration">
+    <xsl:param name="_indent" select="0"/>
+    <xsl:apply-templates select="ppx:globalVars">
+      <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template match="ppx:resource">
+    <xsl:param name="_indent" select="0"/>
+    <xsl:apply-templates select="ppx:globalVars">
+      <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template match="ppx:pou">
+    <xsl:param name="_indent" select="0"/>
+    <xsl:apply-templates select="ppx:interface/*">
+      <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
+    </xsl:apply-templates>
+  </xsl:template>
   <xsl:template match="ppx:returnType">
     <xsl:param name="_indent" select="0"/>
     <xsl:value-of select="ns:AddTree()"/>
-    <xsl:apply-templates>
+    <xsl:apply-templates mode="var_type" select=".">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
   </xsl:template>
@@ -70,7 +88,7 @@
         </xsl:choose>
       </xsl:variable>
       <xsl:value-of select="ns:AddTree()"/>
-      <xsl:apply-templates select="ppx:type">
+      <xsl:apply-templates mode="var_type" select="ppx:type">
         <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
       </xsl:apply-templates>
       <xsl:value-of select="ns:AddVariable(@name, $var_class, $var_option, @address, $initial_value, $edit, ppx:documentation/xhtml:p/text())"/>
@@ -132,73 +150,73 @@
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
-  <xsl:template match="ppx:pou">
+  <xsl:template mode="var_type" match="ppx:pou">
     <xsl:param name="_indent" select="0"/>
-    <xsl:apply-templates select="ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars or self::ppx:outputVars]/ppx:variable">
+    <xsl:apply-templates mode="var_type" select="ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars or self::ppx:outputVars]/ppx:variable">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="ppx:variable">
+  <xsl:template mode="var_type" match="ppx:variable">
     <xsl:param name="_indent" select="0"/>
     <xsl:variable name="name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
     <xsl:value-of select="ns:AddTree($name)"/>
-    <xsl:apply-templates select="ppx:type">
+    <xsl:apply-templates mode="var_type" select="ppx:type">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
     <xsl:value-of select="ns:AddVarToTree($name)"/>
   </xsl:template>
-  <xsl:template match="ppx:dataType">
+  <xsl:template mode="var_type" match="ppx:dataType">
     <xsl:param name="_indent" select="0"/>
-    <xsl:apply-templates select="ppx:baseType">
+    <xsl:apply-templates mode="var_type" select="ppx:baseType">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:struct">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:struct">
     <xsl:param name="_indent" select="0"/>
-    <xsl:apply-templates select="ppx:variable">
+    <xsl:apply-templates mode="var_type" select="ppx:variable">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived">
     <xsl:param name="_indent" select="0"/>
     <xsl:variable name="type_name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
     <xsl:choose>
       <xsl:when test="$tree='True'">
-        <xsl:apply-templates select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+        <xsl:apply-templates mode="var_type" select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
           <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
         </xsl:apply-templates>
       </xsl:when>
     </xsl:choose>
     <xsl:value-of select="ns:SetType($type_name)"/>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:array">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:array">
     <xsl:param name="_indent" select="0"/>
-    <xsl:apply-templates select="ppx:baseType">
+    <xsl:apply-templates mode="var_type" select="ppx:baseType">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
     <xsl:for-each select="ppx:dimension">
       <xsl:value-of select="ns:AddDimension(@lower, @upper)"/>
     </xsl:for-each>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:string">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:string">
     <xsl:param name="_indent" select="0"/>
     <xsl:variable name="name">
       <xsl:text>STRING</xsl:text>
     </xsl:variable>
     <xsl:value-of select="ns:SetType($name)"/>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring">
     <xsl:param name="_indent" select="0"/>
     <xsl:variable name="name">
       <xsl:text>WSTRING</xsl:text>
     </xsl:variable>
     <xsl:value-of select="ns:SetType($name)"/>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
     <xsl:param name="_indent" select="0"/>
     <xsl:variable name="name">
       <xsl:value-of select="local-name()"/>

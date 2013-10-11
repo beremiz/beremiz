@@ -32,9 +32,21 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         }
     }
     
+    template "ppx:configuration" {
+        apply "ppx:globalVars";
+    }
+    
+    template "ppx:resource" {
+        apply "ppx:globalVars";
+    }
+    
+    template "ppx:pou" {
+        apply "ppx:interface/*";
+    }
+    
     template "ppx:returnType" {
         value "ns:AddTree()";
-        apply;
+        apply ".", mode="var_type";
     }
     
     function "variables_infos" {
@@ -59,7 +71,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
                 }
             }
             value "ns:AddTree()";
-            apply "ppx:type";
+            apply "ppx:type", mode="var_type";
             value "ns:AddVariable(@name, $var_class, $var_option, @address, $initial_value, $edit, ppx:documentation/xhtml:p/text())";
         }
     }
@@ -106,26 +118,26 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         }
     }
     
-    template "ppx:pou" {
-        apply "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars or self::ppx:outputVars]/ppx:variable";
+    template "ppx:pou", mode="var_type" {
+        apply "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars or self::ppx:outputVars]/ppx:variable", mode="var_type";
     }
     
-    template "ppx:variable" {
+    template "ppx:variable", mode="var_type" {
         variable "name" > «@name»
         value "ns:AddTree($name)";
-        apply "ppx:type";
+        apply "ppx:type", mode="var_type";
         value "ns:AddVarToTree($name)";
     }
     
-    template "ppx:dataType" {
-        apply "ppx:baseType";
+    template "ppx:dataType", mode="var_type" {
+        apply "ppx:baseType", mode="var_type";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:struct" {
-        apply "ppx:variable";
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:struct", mode="var_type" {
+        apply "ppx:variable", mode="var_type";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived" {
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived", mode="var_type" {
         variable "type_name" > «@name»
         choose {
             when "$tree='True'" {
@@ -134,30 +146,30 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
                          exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
                          exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
                          exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""";
+                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""", mode="var_type";
             }
         }
         value "ns:SetType($type_name)";
     }
      
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:array" {
-        apply "ppx:baseType";
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:array", mode="var_type" {
+        apply "ppx:baseType", mode="var_type";
         foreach "ppx:dimension" {
             value "ns:AddDimension(@lower, @upper)";
         }
     }
     
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:string" {
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:string", mode="var_type" {
         variable "name" > STRING
         value "ns:SetType($name)";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring" {
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring", mode="var_type" {
         variable "name" > WSTRING
         value "ns:SetType($name)";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*" {
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*", mode="var_type" {
         variable "name" > «local-name()»
         value "ns:SetType($name)";
     }

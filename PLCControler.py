@@ -3050,11 +3050,11 @@ class PLCControler:
         varlist = []
         words = tagname.split("::")
         for var in self.GetConfigurationGlobalVars(words[1], debug):
-            if var["Type"] == "BOOL":
-                varlist.append(var["Name"])
+            if var.Type == "BOOL":
+                varlist.append(var.Name)
         for var in self.GetConfigurationResourceGlobalVars(words[1], words[2], debug):
-            if var["Type"] == "BOOL":
-                varlist.append(var["Name"])
+            if var.Type == "BOOL":
+                varlist.append(var.Name)
         return varlist
 
     def SetEditedResourceInfos(self, tagname, tasks, instances):
