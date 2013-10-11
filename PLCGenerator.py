@@ -326,7 +326,7 @@ class ProgramGenerator:
             configuration.remove(extra_global_vars)
         else:
             for variable in extra_variables:
-                varlists[-1][1].remove(variable)
+                varlists[-1][0].remove(variable)
         
         # Generate any resource in the configuration
         for resource in configuration.getresource():
