@@ -30,7 +30,6 @@ import wx
 import wx.lib.buttons
 
 import matplotlib
-matplotlib.use('WX')
 import matplotlib.pyplot
 from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
 

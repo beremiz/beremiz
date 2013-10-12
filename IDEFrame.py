@@ -27,6 +27,8 @@ from controls.DebugVariablePanel import DebugVariablePanel
 from dialogs import ProjectDialog, PouDialog, PouTransitionDialog, PouActionDialog, FindInPouDialog, SearchInProjectDialog
 from util.BitmapLibrary import GetBitmap
 
+PouInstanceVariablesPanel.USE_MPL = USE_MPL
+
 # Define PLCOpenEditor controls id
 [ID_PLCOPENEDITOR, ID_PLCOPENEDITORLEFTNOTEBOOK, 
  ID_PLCOPENEDITORBOTTOMNOTEBOOK, ID_PLCOPENEDITORRIGHTNOTEBOOK, 
