@@ -27,7 +27,6 @@ from collections import OrderedDict
 import wx
 
 import matplotlib
-matplotlib.use('WX')
 import matplotlib.pyplot
 from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
 

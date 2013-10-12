@@ -28,13 +28,6 @@ import wx
 import wx.lib.agw.customtreectrl as CT
 import wx.lib.buttons
 
-try:
-    import matplotlib
-    matplotlib.use('WX')
-    USE_MPL = True
-except:
-    USE_MPL = False
-
 # Customize CustomTreeItem for adding icon on item right
 CT.GenericTreeItem._rightimages = []
 
@@ -120,6 +113,8 @@ from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM
 from util.BitmapLibrary import GetBitmap
 
 class PouInstanceVariablesPanel(wx.Panel):
+
+    USE_MPL = False
     
     def __init__(self, parent, window, controller, debug):
         wx.Panel.__init__(self, name='PouInstanceTreePanel', 
@@ -252,7 +247,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                 
                 right_images = []
                 if var_infos.var_class in ITEMS_VARIABLE:
-                    if (not USE_MPL and var_infos.debug and self.Debug and
+                    if (not self.USE_MPL and var_infos.debug and self.Debug and
                         (self.Controller.IsOfType(var_infos.type, "ANY_NUM", True) or
                          self.Controller.IsOfType(var_infos.type, "ANY_BIT", True))):
                         right_images.append(self.InstanceGraphImage)
