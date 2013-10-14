@@ -7,6 +7,7 @@ import features
 import shutil
 import wx
 import re, tempfile
+from math import ceil
 from types import ListType
 from threading import Timer, Lock, Thread
 from time import localtime
@@ -1407,12 +1408,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECdebug_lock.acquire()
         debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
         self.IECdebug_lock.release()
+        start_time = time.time()
         if len(self.TracedIECPath) == len(buffers):
             for IECPath, values in zip(self.TracedIECPath, buffers):
                 if len(values) > 0:
                     self.CallWeakcallables(IECPath, "NewValues", debug_ticks, values)
             if len(debug_ticks) > 0:
                 self.CallWeakcallables("__tick__", "NewDataAvailable", debug_ticks)
+        
+        delay = time.time() - start_time
+        next_refresh = max(REFRESH_PERIOD - delay, 0.2 * delay)
+        if self.DispatchDebugValuesTimer is not None and self.DebugThread is not None:
+            self.DispatchDebugValuesTimer.Start(
+                int(next_refresh * 1000), oneShot=True)
         event.Skip()
 
     def KillDebugThread(self):
@@ -1435,7 +1443,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.AppFrame.ResetGraphicViewers()
         self.RegisterDebugVarToConnector()
         if self.DispatchDebugValuesTimer is not None:
-            self.DispatchDebugValuesTimer.Start(int(REFRESH_PERIOD * 1000))
+            self.DispatchDebugValuesTimer.Start(
+                int(REFRESH_PERIOD * 1000), oneShot=True)
         if self.DebugThread is None:
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()
