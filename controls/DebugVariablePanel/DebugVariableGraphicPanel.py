@@ -330,7 +330,7 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         
         DebugViewer.RefreshNewData(self, *args, **kwargs)
     
-    def NewDataAvailable(self, tick, *args, **kwargs):
+    def NewDataAvailable(self, ticks, *args, **kwargs):
         """
         Called by DataProducer for each tick captured or by panel to refresh
         graphs
@@ -338,15 +338,15 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
         All other parameters are passed to refresh function 
         """
         # If tick given
-        if tick is not None:
-            self.HasNewData = True
+        if ticks is not None:
+            tick = ticks[-1]
             
             # Save tick as start tick for range if data is still empty
             if len(self.Ticks) == 0:
-                self.StartTick = tick 
+                self.StartTick = ticks[0]
             
             # Add tick to list of ticks received
-            self.Ticks = numpy.append(self.Ticks, [tick])
+            self.Ticks = numpy.append(self.Ticks, ticks)
             
             # Update start tick for range if range follow ticks received
             if not self.Fixed or tick < self.StartTick + self.CurrentRange:
@@ -357,8 +357,12 @@ class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
             if self.Fixed and \
                self.Ticks[-1] - self.Ticks[0] < self.CurrentRange:
                 self.Force = True
-        
-        DebugViewer.NewDataAvailable(self, tick, *args, **kwargs)
+            
+            self.HasNewData = False
+            self.RefreshView()
+            
+        else:
+            DebugViewer.NewDataAvailable(self, ticks, *args, **kwargs)
     
     def ForceRefresh(self):
         """
