@@ -1054,19 +1054,20 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList_lock.release()
         
     def NewDataAvailable(self, ticks, *args, **kwargs):
-        refresh_rect = None
-        self.ElementRefreshList_lock.acquire()
-        for element in self.ElementRefreshList:
-            if refresh_rect is None:
-                refresh_rect = element.GetRedrawRect()
-            else:
-                refresh_rect.Union(element.GetRedrawRect())
-        self.ElementRefreshList = []
-        self.ElementRefreshList_lock.release()
+        if self.IsShown():
+            refresh_rect = None
+            self.ElementRefreshList_lock.acquire()
+            for element in self.ElementRefreshList:
+                if refresh_rect is None:
+                    refresh_rect = element.GetRedrawRect()
+                else:
+                    refresh_rect.Union(element.GetRedrawRect())
+            self.ElementRefreshList = []
+            self.ElementRefreshList_lock.release()
+            
+            if refresh_rect is not None:
+                self.RefreshRect(self.GetScrolledRect(refresh_rect), False)
         
-        if refresh_rect is not None:
-            self.RefreshRect(self.GetScrolledRect(refresh_rect), False)
-    
     def SubscribeAllDataConsumers(self):
         self.RefreshView()
         DebugViewer.SubscribeAllDataConsumers(self)
