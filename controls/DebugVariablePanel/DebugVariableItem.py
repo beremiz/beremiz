@@ -232,14 +232,14 @@ class DebugVariableItem(DebugDataConsumer):
         return (self.Parent.IsNumType(self.VariableType) or 
                 self.VariableType in ["STRING", "WSTRING"])
     
-    def NewValues(self, ticks, values, forced=False):
+    def NewValues(self, ticks, values):
         """
         Function called by debug thread when a new debug value is available
         @param tick: PLC tick when value was captured
         @param value: Value captured
         @param forced: Forced flag, True if value is forced (default: False)
         """
-        DebugDataConsumer.NewValues(self, ticks, values, forced, raw=None)
+        DebugDataConsumer.NewValues(self, ticks[-1], values[-1], raw=None)
         
         if self.Data is not None:
             
@@ -247,13 +247,12 @@ class DebugVariableItem(DebugDataConsumer):
                 last_raw_data = (self.RawData[-1]
                                  if len(self.RawData) > 0 else None)
                 last_raw_data_idx = len(self.RawData) - 1
-                
-            # Translate forced flag to float for storing in Data table
-            forced_value = float(forced)
             
             data_values = []
-            for tick, value in zip(ticks, values):
-            
+            for tick, (value, forced) in zip(ticks, values):
+                # Translate forced flag to float for storing in Data table
+                forced_value = float(forced)
+                
                 # String data value is CRC
                 num_value = (binascii.crc32(value) & STRING_CRC_MASK
                              if self.VariableType in ["STRING", "WSTRING"]

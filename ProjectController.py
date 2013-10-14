@@ -1202,7 +1202,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.IECdebug_lock.acquire()
             IECPathsToPop = []
             for IECPath,data_tuple in self.IECdebug_datas.iteritems():
-                WeakCallableDict, data_log, status, fvalue = data_tuple
+                WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
                     # This variable is not needed anymore!
@@ -1268,10 +1268,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     WeakKeyDictionary(), # Callables
                     [],                  # Data storage [(tick, data),...]
                     "Registered",        # Variable status
-                    None]                # Forced value
+                    None,
+                    buffer_list]                # Forced value
             self.IECdebug_datas[IECPath] = IECdebug_data
+        else:
+            IECdebug_data[4] |= buffer_list
         
-        IECdebug_data[0][callableobj]=(args, kwargs)
+        IECdebug_data[0][callableobj]=(buffer_list, args, kwargs)
 
         self.IECdebug_lock.release()
         
@@ -1286,6 +1289,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             IECdebug_data[0].pop(callableobj,None)
             if len(IECdebug_data[0]) == 0:
                 self.IECdebug_datas.pop(IECPath)
+            else:
+                IECdebug_data[4] = reduce(
+                    lambda x, y: x|y,
+                    [buffer_list for buffer_list,args,kwargs 
+                     in IECdebug_data[0].itervalues()],
+                    False)
         self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
@@ -1330,16 +1339,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def CallWeakcallables(self, IECPath, function_name, *cargs):
         data_tuple = self.IECdebug_datas.get(IECPath, None)
         if data_tuple is not None:
-            WeakCallableDict, data_log, status, fvalue = data_tuple
+            WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
             #data_log.append((debug_tick, value))
-            for weakcallable,(args,kwargs) in WeakCallableDict.iteritems():
+            for weakcallable,(buffer_list,args,kwargs) in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
-                    if status == "Forced" and cargs[1] == fvalue:
-                        function(*(cargs + (True,) + args), **kwargs)
-                    else:
+                    if buffer_list:
                         function(*(cargs + args), **kwargs)
-                # This will block thread if more than one call is waiting
+                    else:
+                        function(*(tuple([lst[-1] for lst in cargs]) + args), **kwargs)
 
     def GetTicktime(self):
         return self._Ticktime
@@ -1365,13 +1373,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
             if plc_status == "Started":
                 self.IECdebug_lock.acquire()
-                if len(debug_vars) == len(self.DebugValuesBuffers):
+                if (len(debug_vars) == len(self.DebugValuesBuffers) and
+                    len(debug_vars) == len(self.TracedIECPath)):
                     if debug_getvar_retry > DEBUG_RETRIES_WARN:
                         self.logger.write(_("... debugger recovered\n"))
                     debug_getvar_retry = 0
-                    for values_buffer, value in zip(self.DebugValuesBuffers, debug_vars):
-                        if value is not None:
-                            values_buffer.append(value)
+                    for IECPath, values_buffer, value in zip(self.TracedIECPath, self.DebugValuesBuffers, debug_vars):
+                        IECdebug_data = self.IECdebug_datas.get(IECPath, None)
+                        if IECdebug_data is not None and value is not None:
+                            forced = IECdebug_data[2:4] == ["Forced", value]
+                            if not IECdebug_data[4] and len(values_buffer) > 0:
+                                values_buffer[-1] = (value, forced)
+                            else:
+                                values_buffer.append((value, forced))
                     self.DebugTicks.append(debug_tick)
                 self.IECdebug_lock.release()
                 if debug_getvar_retry == DEBUG_RETRIES_WARN:

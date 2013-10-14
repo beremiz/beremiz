@@ -754,7 +754,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if idx is None:
             idx = len(self.GraphicPanels)
         item = DebugVariableItem(self, iec_path, True)
-        result = self.AddDataConsumer(iec_path.upper(), item)
+        result = self.AddDataConsumer(iec_path.upper(), item, True)
         if result is not None or force:
             
             self.Freeze()
@@ -832,7 +832,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if source_item is None:
             item = DebugVariableItem(self, source, True)
             if item.IsNumVariable():
-                result = self.AddDataConsumer(source.upper(), item)
+                result = self.AddDataConsumer(source.upper(), item, True)
                 if result is not None or force:
                     source_item = item
         if source_item is not None and source_item.IsNumVariable():

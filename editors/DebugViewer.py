@@ -106,7 +106,7 @@ class DebugViewer:
             
             # Subscribe tick to new data producer
             if producer is not None:
-                producer.SubscribeDebugIECVariable("__tick__", self)
+                producer.SubscribeDebugIECVariable("__tick__", self, True)
             
             # Unsubscribe tick from old data producer
             if getattr(self, "DataProducer", None) is not None:
@@ -134,7 +134,7 @@ class DebugViewer:
         # Save inhibit flag
         self.Inhibited = inhibit
     
-    def AddDataConsumer(self, iec_path, consumer):
+    def AddDataConsumer(self, iec_path, consumer, buffer_list=False):
         """
         Subscribe data consumer to DataProducer
         @param iec_path: Path in PLC of variable needed by data consumer
@@ -148,7 +148,7 @@ class DebugViewer:
         
         # Subscribe data consumer to DataProducer
         result = self.DataProducer.SubscribeDebugIECVariable(
-                        iec_path, consumer)
+                        iec_path, consumer, buffer_list)
         if result is not None and consumer != self:
             
             # Store data consumer if successfully subscribed and inform
@@ -178,7 +178,7 @@ class DebugViewer:
         """
         # Subscribe tick if needed
         if self.SubscribeTick and self.Debug and self.DataProducer is not None:
-            self.DataProducer.SubscribeDebugIECVariable("__tick__", self)
+            self.DataProducer.SubscribeDebugIECVariable("__tick__", self, True)
     
     def UnsubscribeAllDataConsumers(self, tick=True):
         """
