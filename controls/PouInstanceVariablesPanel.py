@@ -114,8 +114,6 @@ from util.BitmapLibrary import GetBitmap
 
 class PouInstanceVariablesPanel(wx.Panel):
 
-    USE_MPL = False
-    
     def __init__(self, parent, window, controller, debug):
         wx.Panel.__init__(self, name='PouInstanceTreePanel', 
                 parent=parent, pos=wx.Point(0, 0), 
@@ -154,14 +152,11 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.VariablesList.Bind(wx.EVT_KEY_DOWN, self.OnVariablesListKeyDown)
         
         self.TreeRightImageList = wx.ImageList(24, 24)
-        self.InstanceGraphImage = self.TreeRightImageList.Add(GetBitmap("instance_graph"))
         self.EditImage = self.TreeRightImageList.Add(GetBitmap("edit"))
         self.DebugInstanceImage = self.TreeRightImageList.Add(GetBitmap("debug_instance"))
         self.VariablesList.SetRightImageList(self.TreeRightImageList)
         
         self.ButtonCallBacks = {
-            self.InstanceGraphImage: _ButtonCallbacks(
-                self.GraphButtonCallback, None),
             self.EditImage: _ButtonCallbacks(
                 self.EditButtonCallback, None),
             self.DebugInstanceImage: _ButtonCallbacks(
@@ -246,12 +241,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                     text = var_infos.name
                 
                 right_images = []
-                if var_infos.var_class in ITEMS_VARIABLE:
-                    if (not self.USE_MPL and var_infos.debug and self.Debug and
-                        (self.Controller.IsOfType(var_infos.type, "ANY_NUM", True) or
-                         self.Controller.IsOfType(var_infos.type, "ANY_BIT", True))):
-                        right_images.append(self.InstanceGraphImage)
-                elif var_infos.edit:
+                if var_infos.edit:
                     right_images.append(self.EditImage)
                 
                 if var_infos.debug and self.Debug:
@@ -355,13 +345,6 @@ class PouInstanceVariablesPanel(wx.Panel):
                                infos.name), 
                     force=True,
                     graph=True)
-    
-    def GraphButtonCallback(self, infos):
-        if self.InstanceChoice.GetSelection() != -1:
-            if infos.var_class in ITEMS_VARIABLE:
-                var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                                      infos.name)
-                self.ParentWindow.OpenDebugViewer(infos.var_class, var_path, infos.type)
     
     def ShowInstanceChoicePopup(self):
         self.InstanceChoice.SetFocusFromKbd()
