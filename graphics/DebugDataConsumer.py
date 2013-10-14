@@ -197,7 +197,7 @@ class DebugDataConsumer:
         """
         self.DataType = data_type
     
-    def NewValue(self, tick, value, forced=False, raw="BOOL"):
+    def NewValues(self, ticks, values, forced=False, raw="BOOL"):
         """
         Function called by debug thread when a new debug value is available
         @param tick: PLC tick when value was captured
@@ -205,6 +205,8 @@ class DebugDataConsumer:
         @param forced: Forced flag, True if value is forced (default: False)
         @param raw: Data type of values not translated (default: 'BOOL')
         """
+        tick, value = ticks[-1], values[-1]
+        
         # Translate value to IEC literal
         if self.DataType != raw:
             value = TYPE_TRANSLATOR.get(self.DataType, str)(value)

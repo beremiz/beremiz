@@ -22,7 +22,7 @@ from util.BitmapLibrary import GetBitmap
 from editors.FileManagementPanel import FileManagementPanel
 from editors.ProjectNodeEditor import ProjectNodeEditor
 from editors.IECCodeViewer import IECCodeViewer
-from editors.DebugViewer import DebugViewer
+from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
@@ -110,6 +110,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.MandatoryParams = None
         self._builder = None
         self._connector = None
+        self.DispatchDebugValuesTimer = None
+        self.DebugValuesBuffers = []
+        self.DebugTicks = []
         self.SetAppFrame(frame, logger)
         
         self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
@@ -157,15 +160,23 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.AppFrame = frame
         self.logger = logger
         self.StatusTimer = None
+        if self.DispatchDebugValuesTimer is not None:
+            self.DispatchDebugValuesTimer.Stop()
+        self.DispatchDebugValuesTimer = None
         
         if frame is not None:
             frame.LogViewer.SetLogSource(self._connector)
             
             # Timer to pull PLC status
-            ID_STATUSTIMER = wx.NewId()
-            self.StatusTimer = wx.Timer(self.AppFrame, ID_STATUSTIMER)
-            self.AppFrame.Bind(wx.EVT_TIMER, self.PullPLCStatusProc, self.StatusTimer)
-        
+            self.StatusTimer = wx.Timer(self.AppFrame, -1)
+            self.AppFrame.Bind(wx.EVT_TIMER, 
+                self.PullPLCStatusProc, self.StatusTimer)
+            
+            # Timer to dispatch debug values to consumers
+            self.DispatchDebugValuesTimer = wx.Timer(self.AppFrame, -1)
+            self.AppFrame.Bind(wx.EVT_TIMER, 
+                self.DispatchDebugValuesProc, self.DispatchDebugValuesTimer)
+            
             self.RefreshConfNodesBlockLists()
 
     def ResetAppFrame(self, logger):
@@ -1177,6 +1188,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
         
+    def SnapshotAndResetDebugValuesBuffers(self):
+        buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers, 
+            [list() for iec_path in self.TracedIECPath])
+        ticks, self.DebugTicks = self.DebugTicks, []
+        return ticks, buffers
+    
     def RegisterDebugVarToConnector(self):
         self.DebugTimer=None
         Idxs = []
@@ -1210,11 +1227,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
+            self.SnapshotAndResetDebugValuesBuffers()
             self.IECdebug_lock.release()
     
     def IsPLCStarted(self):
         return self.previous_plcstate == "Started"
-     
+    
     def ReArmDebugRegisterTimer(self):
         if self.DebugTimer is not None:
             self.DebugTimer.cancel()
@@ -1233,7 +1251,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
         return IEC_Type
         
-    def SubscribeDebugIECVariable(self, IECPath, callableobj, *args, **kwargs):
+    def SubscribeDebugIECVariable(self, IECPath, callableobj, buffer_list=False, *args, **kwargs):
         """
         Dispatching use a dictionnary linking IEC variable paths
         to a WeakKeyDictionary linking 
@@ -1250,7 +1268,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     WeakKeyDictionary(), # Callables
                     [],                  # Data storage [(tick, data),...]
                     "Registered",        # Variable status
-                    None]                # Forced value
+                    None,
+                    buffer_list]                # Forced value
             self.IECdebug_datas[IECPath] = IECdebug_data
         
         IECdebug_data[0][callableobj]=(args, kwargs)
@@ -1347,14 +1366,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
             if plc_status == "Started":
                 self.IECdebug_lock.acquire()
-                if len(debug_vars) == len(self.TracedIECPath):
+                if len(debug_vars) == len(self.DebugValuesBuffers):
                     if debug_getvar_retry > DEBUG_RETRIES_WARN:
                         self.logger.write(_("... debugger recovered\n"))
                     debug_getvar_retry = 0
-                    for IECPath,value in zip(self.TracedIECPath, debug_vars):
+                    for values_buffer, value in zip(self.DebugValuesBuffers, debug_vars):
                         if value is not None:
-                            self.CallWeakcallables(IECPath, "NewValue", debug_tick, value)
-                    self.CallWeakcallables("__tick__", "NewDataAvailable", debug_tick)
+                            values_buffer.append(value)
+                    self.DebugTicks.append(debug_tick)
                 self.IECdebug_lock.release()
                 if debug_getvar_retry == DEBUG_RETRIES_WARN:
                     self.logger.write(_("Waiting debugger to recover...\n"))
@@ -1368,6 +1387,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.debug_break = True
         self.logger.write(_("Debugger disabled\n"))
         self.DebugThread = None
+        if self.DispatchDebugValuesTimer is not None:
+            self.DispatchDebugValuesTimer.Stop()
+
+    def DispatchDebugValuesProc(self, event):
+        self.IECdebug_lock.acquire()
+        debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
+        self.IECdebug_lock.release()
+        if len(self.TracedIECPath) == len(buffers):
+            for IECPath, values in zip(self.TracedIECPath, buffers):
+                if len(values) > 0:
+                    self.CallWeakcallables(IECPath, "NewValues", debug_ticks, values)
+            if len(debug_ticks) > 0:
+                self.CallWeakcallables("__tick__", "NewDataAvailable", debug_ticks)
+        event.Skip()
 
     def KillDebugThread(self):
         tmp_debugthread = self.DebugThread
@@ -1380,12 +1413,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 self.logger.write(_("Debugger stopped.\n"))
         self.DebugThread = None
+        if self.DispatchDebugValuesTimer is not None:
+            self.DispatchDebugValuesTimer.Stop()
 
     def _connect_debug(self): 
         self.previous_plcstate = None
         if self.AppFrame:
             self.AppFrame.ResetGraphicViewers()
         self.RegisterDebugVarToConnector()
+        if self.DispatchDebugValuesTimer is not None:
+            self.DispatchDebugValuesTimer.Start(int(REFRESH_PERIOD * 1000))
         if self.DebugThread is None:
             self.DebugThread = Thread(target=self.DebugThreadProc)
             self.DebugThread.start()

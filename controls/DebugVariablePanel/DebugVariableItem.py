@@ -232,52 +232,63 @@ class DebugVariableItem(DebugDataConsumer):
         return (self.Parent.IsNumType(self.VariableType) or 
                 self.VariableType in ["STRING", "WSTRING"])
     
-    def NewValue(self, tick, value, forced=False):
+    def NewValues(self, ticks, values, forced=False):
         """
         Function called by debug thread when a new debug value is available
         @param tick: PLC tick when value was captured
         @param value: Value captured
         @param forced: Forced flag, True if value is forced (default: False)
         """
-        DebugDataConsumer.NewValue(self, tick, value, forced, raw=None)
+        DebugDataConsumer.NewValues(self, ticks, values, forced, raw=None)
         
         if self.Data is not None:
-            # String data value is CRC
-            num_value = (binascii.crc32(value) & STRING_CRC_MASK
-                         if self.VariableType in ["STRING", "WSTRING"]
-                         else float(value))
             
-            # Update variable range values
-            self.MinValue = (min(self.MinValue, num_value)
-                             if self.MinValue is not None
-                             else num_value)
-            self.MaxValue = (max(self.MaxValue, num_value)
-                             if self.MaxValue is not None
-                             else num_value)
-            
+            if self.VariableType in ["STRING", "WSTRING"]:
+                last_raw_data = (self.RawData[-1]
+                                 if len(self.RawData) > 0 else None)
+                last_raw_data_idx = len(self.RawData) - 1
+                
             # Translate forced flag to float for storing in Data table
             forced_value = float(forced)
             
-            # In the case of string variables, we store raw string value and
-            # forced flag in raw data table. Only changes in this two values
-            # are stored. Index to the corresponding raw value is stored in 
-            # data third column
-            if self.VariableType in ["STRING", "WSTRING"]:
-                raw_data = (value, forced_value)
-                if len(self.RawData) == 0 or self.RawData[-1] != raw_data:
-                    extra_value = len(self.RawData)
-                    self.RawData.append(raw_data)
-                else:
-                    extra_value = len(self.RawData) - 1
+            data_values = []
+            for tick, value in zip(ticks, values):
             
-            # In other case, data third column is forced flag
-            else:
-                extra_value = forced_value
+                # String data value is CRC
+                num_value = (binascii.crc32(value) & STRING_CRC_MASK
+                             if self.VariableType in ["STRING", "WSTRING"]
+                             else float(value))
+            
+                # Update variable range values
+                self.MinValue = (min(self.MinValue, num_value)
+                                 if self.MinValue is not None
+                                 else num_value)
+                self.MaxValue = (max(self.MaxValue, num_value)
+                                 if self.MaxValue is not None
+                                 else num_value)
+            
+                # In the case of string variables, we store raw string value and
+                # forced flag in raw data table. Only changes in this two values
+                # are stored. Index to the corresponding raw value is stored in 
+                # data third column
+                if self.VariableType in ["STRING", "WSTRING"]:
+                    raw_data = (value, forced_value)
+                    if len(self.RawData) == 0 or last_raw_data != raw_data:
+                        last_raw_data_idx += 1
+                        last_raw_data = raw_data
+                        self.RawData.append(raw_data)
+                    extra_value = last_raw_data_idx
+                
+                # In other case, data third column is forced flag
+                else:
+                    extra_value = forced_value
+            
+                data_values.append(
+                    [float(tick), num_value, extra_value])
             
             # Add New data to stored data table
-            self.Data = numpy.append(self.Data, 
-                    [[float(tick), num_value, extra_value]], axis=0)
-        
+            self.Data = numpy.append(self.Data, data_values, axis=0)
+            
             # Signal to debug variable panel to refresh
             self.Parent.HasNewData = True
         

@@ -1053,7 +1053,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList.append(element)
         self.ElementRefreshList_lock.release()
         
-    def RefreshNewData(self):
+    def NewDataAvailable(self, ticks, *args, **kwargs):
         refresh_rect = None
         self.ElementRefreshList_lock.acquire()
         for element in self.ElementRefreshList:
@@ -1066,8 +1066,6 @@ class Viewer(EditorPanel, DebugViewer):
         
         if refresh_rect is not None:
             self.RefreshRect(self.GetScrolledRect(refresh_rect), False)
-        else:
-            DebugViewer.RefreshNewData(self)
     
     def SubscribeAllDataConsumers(self):
         self.RefreshView()

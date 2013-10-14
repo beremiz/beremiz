@@ -214,7 +214,7 @@ class DebugViewer:
             # Search for variable informations in project data
             infos = self.DataProducer.GetInstanceInfos(iec_path)
             if infos is not None:
-                return infos["type"]
+                return infos.type
         
         return None
     
@@ -246,7 +246,7 @@ class DebugViewer:
         if self.DataProducer is not None:
             self.DataProducer.ReleaseDebugIECVariable(iec_path)
     
-    def NewDataAvailable(self, tick, *args, **kwargs):
+    def NewDataAvailable(self, ticks, *args, **kwargs):
         """
         Called by DataProducer for each tick captured
         @param tick: PLC tick captured
