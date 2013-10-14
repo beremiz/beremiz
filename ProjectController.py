@@ -1268,8 +1268,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     WeakKeyDictionary(), # Callables
                     [],                  # Data storage [(tick, data),...]
                     "Registered",        # Variable status
-                    None,
-                    buffer_list]                # Forced value
+                    None]                # Forced value
             self.IECdebug_datas[IECPath] = IECdebug_data
         
         IECdebug_data[0][callableobj]=(args, kwargs)

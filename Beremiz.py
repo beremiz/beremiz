@@ -141,7 +141,6 @@ from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 from editors.EditorPanel import EditorPanel
 from editors.Viewer import Viewer
 from editors.TextViewer import TextViewer
-from editors.GraphicViewer import GraphicViewer
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
 from util.MiniTextControler import MiniTextControler
@@ -617,7 +616,6 @@ class Beremiz(IDEFrame):
         if (isinstance(tab, EditorPanel) and 
             not isinstance(tab, (Viewer, 
                                  TextViewer, 
-                                 GraphicViewer, 
                                  ResourceEditor, 
                                  ConfigurationEditor, 
                                  DataTypeEditor))):

@@ -6,19 +6,11 @@ from types import TupleType
 import wx, wx.grid
 import wx.aui
 
-try:
-    import matplotlib
-    matplotlib.use('WX')
-    USE_MPL = True
-except:
-    USE_MPL = False
-
 from editors.EditorPanel import EditorPanel
 from editors.SFCViewer import SFC_Viewer
 from editors.LDViewer import LD_Viewer
 from editors.TextViewer import TextViewer
 from editors.Viewer import Viewer, ZOOM_FACTORS
-from editors.GraphicViewer import GraphicViewer
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
 from PLCControler import *
@@ -26,8 +18,6 @@ from controls import CustomTree, LibraryPanel, PouInstanceVariablesPanel, Search
 from controls.DebugVariablePanel import DebugVariablePanel
 from dialogs import ProjectDialog, PouDialog, PouTransitionDialog, PouActionDialog, FindInPouDialog, SearchInProjectDialog
 from util.BitmapLibrary import GetBitmap
-
-PouInstanceVariablesPanel.USE_MPL = USE_MPL
 
 # Define PLCOpenEditor controls id
 [ID_PLCOPENEDITOR, ID_PLCOPENEDITORLEFTNOTEBOOK, 
@@ -1954,11 +1944,7 @@ class IDEFrame(wx.Frame):
         
         elif instance_category in ITEMS_VARIABLE:
             if self.Controler.IsNumType(instance_type, True):
-                if USE_MPL:
-                    self.AddDebugVariable(instance_path, True)
-                else:
-                    new_window = GraphicViewer(self.TabsOpened, self, self.Controler, instance_path)
-                    icon = GetBitmap("GRAPH")
+                self.AddDebugVariable(instance_path, True)
         
         else:
             bodytype = self.Controler.GetEditedElementBodyType(instance_type, True)
@@ -1998,10 +1984,6 @@ class IDEFrame(wx.Frame):
 
     def ResetGraphicViewers(self):
         if self.EnableDebug:
-            for i in xrange(self.TabsOpened.GetPageCount()):
-                editor = self.TabsOpened.GetPage(i)
-                if isinstance(editor, GraphicViewer):
-                    editor.ResetView()
             self.DebugVariablePanel.ResetGraphicsValues()
 
     def CloseObsoleteDebugTabs(self):
@@ -2010,12 +1992,10 @@ class IDEFrame(wx.Frame):
             idxs.reverse()
             for idx in idxs:
                 editor = self.TabsOpened.GetPage(idx)
-                if isinstance(editor, (Viewer, GraphicViewer)) and editor.IsDebugging():
+                if isinstance(editor, Viewer) and editor.IsDebugging():
                     instance_infos = self.Controler.GetInstanceInfos(editor.GetInstancePath(), self.EnableDebug)
                     if instance_infos is None:
                         self.TabsOpened.DeletePage(idx)
-                    elif isinstance(editor, GraphicViewer):
-                        editor.ResetView(True)
                     else:
                         editor.SubscribeAllDataConsumers()
                 elif editor.IsDebugging():
@@ -2076,7 +2056,7 @@ class IDEFrame(wx.Frame):
         menu = None
         if selected != -1:
             window = self.TabsOpened.GetPage(selected)
-            if isinstance(window, (Viewer, TextViewer, GraphicViewer)):
+            if isinstance(window, (Viewer, TextViewer)):
                 if not window.IsDebugging():
                     menu = self.Controler.GetEditedElementBodyType(window.GetTagName())
                 else:

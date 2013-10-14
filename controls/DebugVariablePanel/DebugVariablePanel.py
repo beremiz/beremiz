@@ -176,7 +176,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
 Class that implements a Viewer that display variable values as a graphs
 """
 
-class DebugVariableGraphicPanel(wx.Panel, DebugViewer):
+class DebugVariablePanel(wx.Panel, DebugViewer):
     
     def __init__(self, parent, producer, window):
         """
