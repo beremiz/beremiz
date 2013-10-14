@@ -149,7 +149,7 @@ class DebugVariableViewer:
                 self.RemoveItem(item)
             else:
                 # If it exist, resubscribe and refresh data type
-                self.ParentWindow.AddDataConsumer(iec_path.upper(), item)
+                self.ParentWindow.AddDataConsumer(iec_path.upper(), item, True)
                 item.RefreshVariableType()
     
     def ResetItemsData(self):
