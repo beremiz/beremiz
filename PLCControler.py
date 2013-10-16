@@ -2386,7 +2386,7 @@ class PLCControler:
                            max(miny, round(new_pos[1] / scaling[1]) * scaling[1]))
             else:
                 new_pos = (max(30, new_pos[0]), max(30, new_pos[1]))
-            diff = (new_pos[0] - x, new_pos[1] - y)
+            diff = (int(new_pos[0] - x), int(new_pos[1] - y))
             
             connections = {}
             for instance in instances:
