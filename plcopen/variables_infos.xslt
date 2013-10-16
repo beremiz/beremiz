@@ -8,25 +8,13 @@
     <xsl:param name="_indent" select="0"/>
   </xsl:template>
   <xsl:variable name="project">
-    <xsl:choose>
-      <xsl:when test="$tree='True'">
-        <xsl:copy-of select="document('project')/project/*"/>
-      </xsl:when>
-    </xsl:choose>
+    <xsl:copy-of select="document('project')/project/*"/>
   </xsl:variable>
   <xsl:variable name="stdlib">
-    <xsl:choose>
-      <xsl:when test="$tree='True'">
-        <xsl:copy-of select="document('stdlib')/stdlib/*"/>
-      </xsl:when>
-    </xsl:choose>
+    <xsl:copy-of select="document('stdlib')/stdlib/*"/>
   </xsl:variable>
   <xsl:variable name="extensions">
-    <xsl:choose>
-      <xsl:when test="$tree='True'">
-        <xsl:copy-of select="document('extensions')/extensions/*"/>
-      </xsl:when>
-    </xsl:choose>
+    <xsl:copy-of select="document('extensions')/extensions/*"/>
   </xsl:variable>
   <xsl:template match="ppx:configuration">
     <xsl:param name="_indent" select="0"/>
@@ -161,7 +149,7 @@
     <xsl:variable name="name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
-    <xsl:value-of select="ns:AddTree($name)"/>
+    <xsl:value-of select="ns:AddTree()"/>
     <xsl:apply-templates mode="var_type" select="ppx:type">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
@@ -199,7 +187,13 @@
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
     </xsl:apply-templates>
     <xsl:for-each select="ppx:dimension">
-      <xsl:value-of select="ns:AddDimension(@lower, @upper)"/>
+      <xsl:variable name="lower">
+        <xsl:value-of select="@lower"/>
+      </xsl:variable>
+      <xsl:variable name="upper">
+        <xsl:value-of select="@upper"/>
+      </xsl:variable>
+      <xsl:value-of select="ns:AddDimension($lower, $upper)"/>
     </xsl:for-each>
   </xsl:template>
   <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:string">
@@ -225,7 +219,9 @@
   </xsl:template>
   <xsl:template mode="var_edit" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived">
     <xsl:param name="_indent" select="0"/>
-    <xsl:variable name="type_name" select="@name"/>
+    <xsl:variable name="type_name">
+      <xsl:value-of select="@name"/>
+    </xsl:variable>
     <xsl:variable name="pou_infos">
       <xsl:copy-of select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                    exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                    exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
     </xsl:variable>

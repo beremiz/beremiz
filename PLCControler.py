@@ -270,7 +270,6 @@ class InstanceTagName:
         self.TagName = self.Controller.ComputeConfigurationResourceName(args[0][0], args[1][0])
 
     def PouTagName(self, context, *args):
-        #print "PouTagName", etree.tostring(args[0][0])
         self.TagName = self.Controller.ComputePouName(args[0][0])
 
     def ActionTagName(self, context, *args):
@@ -1323,8 +1322,7 @@ class PLCControler:
         factory = VariablesInfosFactory(variables)
         
         parser = etree.XMLParser()
-        if tree:
-            parser.resolvers.add(LibraryResolver(self, debug))
+        parser.resolvers.add(LibraryResolver(self, debug))
         
         variables_infos_xslt_tree = etree.XSLT(
             etree.parse(
