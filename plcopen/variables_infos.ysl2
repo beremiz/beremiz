@@ -10,26 +10,14 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     template "text()";
     
     variable "project" {
-        choose {
-            when "$tree='True'" {
-                copy "document('project')/project/*";
-            }
-        }
+        copy "document('project')/project/*";
     }
     
     variable "stdlib" {
-        choose {
-            when "$tree='True'" {
-                copy "document('stdlib')/stdlib/*";
-            }
-        }
+        copy "document('stdlib')/stdlib/*";
     }
     variable "extensions" {
-        choose {
-            when "$tree='True'" {
-                copy "document('extensions')/extensions/*";
-            }
-        }
+        copy "document('extensions')/extensions/*";
     }
     
     template "ppx:configuration" {
@@ -124,7 +112,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "ppx:variable", mode="var_type" {
         variable "name" > «@name»
-        value "ns:AddTree($name)";
+        value "ns:AddTree()";
         apply "ppx:type", mode="var_type";
         value "ns:AddVarToTree($name)";
     }
@@ -155,7 +143,9 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:array", mode="var_type" {
         apply "ppx:baseType", mode="var_type";
         foreach "ppx:dimension" {
-            value "ns:AddDimension(@lower, @upper)";
+            variable "lower" > «@lower»
+            variable "upper" > «@upper»
+            value "ns:AddDimension($lower, $upper)";
         }
     }
     
@@ -175,7 +165,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived", mode="var_edit" {
-        variable "type_name", "@name";
+        variable "type_name" > «@name»
         variable "pou_infos" {
             copy """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
                     exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
