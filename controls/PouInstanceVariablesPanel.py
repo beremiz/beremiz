@@ -428,14 +428,15 @@ class PouInstanceVariablesPanel(wx.Panel):
                         if callback is not None:
                             callback(item_infos)
                 
-                elif flags & CT.TREE_HITTEST_ONITEMLABEL and item_infos.var_class in ITEMS_VARIABLE:
-                    self.ParentWindow.EnsureTabVisible(
-                        self.ParentWindow.DebugVariablePanel)
-                    item_path = "%s.%s" % (instance_path, item_infos.name)
-                    data = wx.TextDataObject(str((item_path, "debug")))
-                    dragSource = wx.DropSource(self.VariablesList)
-                    dragSource.SetData(data)
-                    dragSource.DoDragDrop()
+                    elif (flags & CT.TREE_HITTEST_ONITEMLABEL and 
+                          item_infos.var_class in ITEMS_VARIABLE):
+                        self.ParentWindow.EnsureTabVisible(
+                            self.ParentWindow.DebugVariablePanel)
+                        item_path = "%s.%s" % (instance_path, item_infos.name)
+                        data = wx.TextDataObject(str((item_path, "debug")))
+                        dragSource = wx.DropSource(self.VariablesList)
+                        dragSource.SetData(data)
+                        dragSource.DoDragDrop()
         event.Skip()
 
     def OnVariablesListKeyDown(self, event):
