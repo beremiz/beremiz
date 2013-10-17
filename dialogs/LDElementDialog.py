@@ -91,7 +91,7 @@ class LDElementDialog(BlockPreviewDialog):
               flag=wx.GROW|wx.TOP)
         
         # Create a combo box for defining LD element variable
-        self.ElementVariable = wx.ComboBox(self, style=wx.CB_READONLY|wx.CB_SORT)
+        self.ElementVariable = wx.ComboBox(self, style=wx.CB_SORT)
         self.Bind(wx.EVT_COMBOBOX, self.OnVariableChanged, 
                   self.ElementVariable)
         self.LeftGridSizer.AddWindow(self.ElementVariable, border=5,
@@ -117,7 +117,6 @@ class LDElementDialog(BlockPreviewDialog):
             if (type == "contact" or var_type != "Input") and \
                value_type == "BOOL":
                 self.ElementVariable.Append(name)
-        self.ElementVariable.Enable(self.ElementVariable.GetCount() > 0)
         
         # Normal radio button is default control having keyboard focus
         self.ModifierRadioButtons[element_modifiers[0]].SetFocus()
@@ -144,7 +143,7 @@ class LDElementDialog(BlockPreviewDialog):
             
             # Parameter is LD element variable
             if name == "variable":
-                self.ElementVariable.SetStringSelection(value)
+                self.ElementVariable.SetValue(value)
             
             # Set value of other controls
             elif name == "modifier":
@@ -189,7 +188,7 @@ class LDElementDialog(BlockPreviewDialog):
         self.Element = self.ElementClass(
                 self.Preview, 
                 self.GetElementModifier(),
-                self.ElementVariable.GetStringSelection())
+                self.ElementVariable.GetValue())
         
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)
