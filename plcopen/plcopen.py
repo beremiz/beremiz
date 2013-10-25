@@ -1197,7 +1197,7 @@ if cls:
         if len(content) == 0:
             varlist = PLCOpenParser.CreateElement(var_class, "interface")
             self.interface.setcontent([varlist])
-        elif content[-1] != var_class:
+        elif content[-1].getLocalTag() != var_class:
             varlist = PLCOpenParser.CreateElement(var_class, "interface")
             content[-1].addnext(varlist)
         else:
@@ -1242,10 +1242,9 @@ if cls:
                         vartype_content = var.gettype().getcontent()
                         if vartype_content.getLocalTag() == "derived" and vartype_content.getname() == var_type:
                             varlist.remove(var)
+                            if len(varlist.getvariable()) == 0:
+                                self.interface.remove(varlist)
                             break
-                if len(varlist.getvariable()) == 0:
-                    content.remove(varlist)
-                    break
     setattr(cls, "removepouVar", removepouVar)
     
     def hasblock(self, name=None, block_type=None):
