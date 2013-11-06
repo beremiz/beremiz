@@ -44,14 +44,15 @@ def GenerateSimpleTypeXMLText(function):
         return text
     return generateXMLTextMethod
 
-def GenerateFloatXMLText(extra_values=[]):
+def GenerateFloatXMLText(extra_values=[], decimal=None):
+    float_format = ("{:.%dg}" % decimal).format if decimal is not None else str
     def generateXMLTextMethod(value, name=None, indent=0):
         text = ""
         if name is not None:
             ind1, ind2 = getIndent(indent, name)
             text += ind1 + "<%s>" % name
         if value in extra_values or value % 1 != 0 or isinstance(value, IntType):
-            text += str(value)
+            text += float_format(value)
         else:
             text += "%.0f" % value
         if name is not None:
@@ -2269,7 +2270,7 @@ XSD_NAMESPACE = {
         "basename": "decimal",
         "extract": GenerateFloatExtraction("decimal"),
         "facets": DECIMAL_FACETS,
-        "generate": GenerateFloatXMLText(),
+        "generate": GenerateFloatXMLText(decimal=3),
         "initial": lambda: 0.,
         "check": lambda x: isinstance(x, (IntType, FloatType))
     },
