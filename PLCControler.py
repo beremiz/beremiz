@@ -387,14 +387,14 @@ class BlockInstanceFactory:
         self.SpecificValues = None
         
         self.CurrentInstance = _BlockInstanceInfos(
-            *(_translate_args([str] + [int] * 5, args) + 
+            *(_translate_args([str, int] + [float] * 4, args) + 
               [specific_values, [], []]))
         
         self.BlockInstances[self.CurrentInstance.id] = self.CurrentInstance
         
     def AddInstanceConnection(self, context, *args):
         connection_args = _translate_args(
-            [str, str, _BoolValue, str, int, int], args)
+            [str, str, _BoolValue, str, float, float], args)
         
         self.CurrentConnection = _InstanceConnectionInfos(
             *(connection_args[1:4] + [
@@ -415,7 +415,7 @@ class BlockInstanceFactory:
     
     def AddLinkPoint(self, context, *args):
         self.CurrentLink.points.append(_Point(
-            *_translate_args([int, int], args)))
+            *_translate_args([float] * 2, args)))
     
     def AddAction(self, context, *args):
         if len(self.SpecificValues) == 0:
