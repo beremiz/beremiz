@@ -1622,7 +1622,7 @@ class PLCControler:
                 "list": [pou.getblockInfos()
                          for pou in project.getpous(name, filter)
                          if (name is None or 
-                             len(self.GetInstanceList(pou, name, debug)) > 0)]})
+                             len(self.GetInstanceList(pou, name, debug)) == 0)]})
             return blocktypes
         return self.TotalTypes
 
@@ -1642,7 +1642,7 @@ class PLCControler:
             blocktypes.extend([pou.getname()
                 for pou in project.getpous(name, ["functionBlock"])
                 if (name is None or 
-                    len(self.GetInstanceList(pou, name, debug)) > 0)])
+                    len(self.GetInstanceList(pou, name, debug)) == 0)])
         return blocktypes
 
     # Return Block types checking for recursion
@@ -1676,7 +1676,7 @@ class PLCControler:
                 for datatype in project.getdataTypes(name)
                 if (not only_locatables or self.IsLocatableDataType(datatype, debug))
                     and (name is None or 
-                         len(self.GetInstanceList(datatype, name, debug)) > 0)])
+                         len(self.GetInstanceList(datatype, name, debug)) == 0)])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])
