@@ -52,10 +52,12 @@ def GenerateFloatXMLText(extra_values=[], decimal=None):
         if name is not None:
             ind1, ind2 = getIndent(indent, name)
             text += ind1 + "<%s>" % name
-        if value in extra_values or value % 1 != 0 or isinstance(value, IntType):
+        if isinstance(value, IntType):
+            text += str(value)
+        elif value in extra_values or value % 1 != 0:
             text += float_format(value)
         else:
-            text += "%.0f" % value
+            text += "{:.0f}".format(value)
         if name is not None:
             text += "</%s>\n" % name
         return text
