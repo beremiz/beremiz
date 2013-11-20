@@ -897,7 +897,23 @@ class Viewer(EditorPanel, DebugViewer):
             next_steps = self.GetNextSteps(connectors["outputs"])
             iec_path = "%s.%s->%s"%(instance_path, ",".join(previous_steps), ",".join(next_steps))
         return iec_path
-       
+    
+    def GetWireModifier(self, wire):
+        connector = wire.EndConnected
+        block = connector.GetParentBlock()
+        if isinstance(block, FBD_Connector):
+            connection = self.GetConnectorByName(block.GetName())
+            if connection is not None:
+                connector = connection.GetConnector()
+                if len(connector.Wires) == 1:
+                    return self.GetWireModifier(connector.Wires[0][0])
+        else:
+            if connector.IsNegated():
+                return "negated"
+            else:
+                return connector.GetEdge()
+        return "none"
+        
 #-------------------------------------------------------------------------------
 #                              Reset functions
 #-------------------------------------------------------------------------------
@@ -1114,6 +1130,8 @@ class Viewer(EditorPanel, DebugViewer):
                         wire.SetValue(True)
                 elif self.AddDataConsumer(iec_path.upper(), wire) is None:
                     wire.SetValue("undefined")
+                else:
+                    wire.SetModifier(self.GetWireModifier(wire))
 
         if self.Debug:
             for block in self.Blocks.itervalues():
