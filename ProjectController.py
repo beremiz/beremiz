@@ -1374,7 +1374,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
             if plc_status == "Started":
                 self.IECdebug_lock.acquire()
-                if (len(debug_vars) == len(self.DebugValuesBuffers) and
+                if (debug_tick is not None and
+                    len(debug_vars) == len(self.DebugValuesBuffers) and
                     len(debug_vars) == len(self.TracedIECPath)):
                     if debug_getvar_retry > DEBUG_RETRIES_WARN:
                         self.logger.write(_("... debugger recovered\n"))
