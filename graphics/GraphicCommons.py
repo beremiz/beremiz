@@ -1045,14 +1045,21 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         parent_pos = self.ParentBlock.GetPosition()
         x = min(parent_pos[0] + self.Pos.x, parent_pos[0] + self.Pos.x + self.Direction[0] * CONNECTOR_SIZE)
         y = min(parent_pos[1] + self.Pos.y, parent_pos[1] + self.Pos.y + self.Direction[1] * CONNECTOR_SIZE)
+        has_modifier = self.Negated or self.Edge != "none"
         if self.Direction[0] == 0:
-            width = 5
+            width = 10 if has_modifier else 5
         else:
             width = CONNECTOR_SIZE
+            if self.Edge == "rising" and self.Direction[0] == 1:
+                x -= 5
+                width += 5
         if self.Direction[1] == 0:
-            height = 5
+            height = 10 if has_modifier else 5
         else:
             height = CONNECTOR_SIZE
+            if self.Edge == "rising" and self.Direction[1] == 1:
+                y -= 5
+                height += 5
         rect =  wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
         if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
@@ -1536,6 +1543,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.Segments = []
         self.SelectedSegment = None
         self.Valid = True
+        self.Modifier = "none"
+        self.PreviousValue = None
         self.ValueSize = None
         self.ComputedValue = None
         self.OverStart = False
@@ -1719,7 +1728,16 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def GetToolTipValue(self):
         return self.GetComputedValue()
 
+    def SetModifier(self, modifier):
+        self.Modifier = modifier
+
     def SetValue(self, value):
+        if self.Modifier == "rising":
+            value, self.PreviousValue = value and not self.PreviousValue, value
+        elif self.Modifier == "falling":
+            value, self.PreviousValue = not value and self.PreviousValue, value
+        elif self.Modifier == "negated":
+            value = not value
         if self.Value != value:
             self.Value = value
             computed_value = self.GetComputedValue()
