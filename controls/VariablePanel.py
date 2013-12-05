@@ -623,7 +623,8 @@ class VariablePanel(wx.Panel):
         return self.TagName
     
     def IsFunctionBlockType(self, name):
-        if self.ElementType != "function" and self.BodyType in ["ST", "IL"]:
+        if (isinstance(name, TupleType) or 
+            self.ElementType != "function" and self.BodyType in ["ST", "IL"]):
             return False
         else:
             return self.Controler.GetBlockType(name, debug=self.Debug) is not None
