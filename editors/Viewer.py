@@ -105,6 +105,7 @@ def GetPowerRailCreationFunction(powerrail_type):
                                     specific_values.connectors)
     return powerRailCreationFunction
 
+NEGATED_VALUE = lambda x: x if x is not None else False
 MODIFIER_VALUE = lambda x: x if x is not None else 'none'
 
 CONTACT_TYPES = {(True, "none"): CONTACT_REVERSE,
@@ -112,7 +113,7 @@ CONTACT_TYPES = {(True, "none"): CONTACT_REVERSE,
                  (False, "falling"): CONTACT_FALLING}
 
 def contactCreationFunction(viewer, id, specific_values):
-    contact_type = CONTACT_TYPES.get((specific_values.negated, 
+    contact_type = CONTACT_TYPES.get((NEGATED_VALUE(specific_values.negated), 
                                       MODIFIER_VALUE(specific_values.edge)),
                                      CONTACT_NORMAL)
     return LD_Contact(viewer, contact_type, specific_values.name, id)
@@ -124,7 +125,7 @@ COIL_TYPES = {(True, "none", "none"): COIL_REVERSE,
               (False, "falling", "none"): COIL_FALLING}
 
 def coilCreationFunction(viewer, id, specific_values):
-    coil_type = COIL_TYPES.get((specific_values.negated, 
+    coil_type = COIL_TYPES.get((NEGATED_VALUE(specific_values.negated), 
                                 MODIFIER_VALUE(specific_values.edge),
                                 MODIFIER_VALUE(specific_values.storage)),
                                COIL_NORMAL)
