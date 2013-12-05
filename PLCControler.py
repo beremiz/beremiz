@@ -129,6 +129,7 @@ class LibraryResolver(etree.Resolver):
 #                       from xslt to valid arguments
 #-------------------------------------------------------------------------------
 
+_StringValue = lambda x: x
 _BoolValue = lambda x: x in ["true", "0"]
 
 def _translate_args(translations, args):
@@ -170,7 +171,7 @@ class VariablesInfosFactory:
     
     def AddDimension(self, context, *args):
         self.Dimensions.append(tuple(
-            _translate_args([str] * 2, args)))
+            _translate_args([_StringValue] * 2, args)))
     
     def AddTree(self, context, *args):
         self.TreeStack.append([])
@@ -182,7 +183,7 @@ class VariablesInfosFactory:
     
     def AddVariable(self, context, *args):
         self.Variables.append(_VariableInfos(*(_translate_args(
-            [str] * 5 + [_BoolValue] + [str], args) + 
+            [_StringValue] * 5 + [_BoolValue] + [_StringValue], args) + 
             [self.GetType(), self.GetTree()])))
 
 #-------------------------------------------------------------------------------
@@ -228,15 +229,15 @@ class VariablesTreeInfosFactory:
     def SetRoot(self, context, *args):
         self.Root = _VariablesTreeItemInfos(
             *([''] + _translate_args(
-                [class_extraction, str] + [_BoolValue] * 2, 
+                [class_extraction, _StringValue] + [_BoolValue] * 2, 
                 args) + [[]]))
 
     def AddVariable(self, context, *args):
         if self.Root is not None:
             self.Root.variables.append(_VariablesTreeItemInfos(
                 *(_translate_args(
-                    [str, class_extraction, str] + [_BoolValue] * 2, 
-                    args) + [[]])))
+                    [_StringValue, class_extraction, _StringValue] + 
+                    [_BoolValue] * 2, args) + [[]])))
 
 #-------------------------------------------------------------------------------
 #            Helpers object for generating instances path list
@@ -290,14 +291,14 @@ _BlockInstanceInfos = namedtuple("BlockInstanceInfos",
 _BlockSpecificValues = (
     namedtuple("BlockSpecificValues", 
                ["name", "execution_order"]),
-    [str, int])
+    [_StringValue, int])
 _VariableSpecificValues = (
     namedtuple("VariableSpecificValues", 
                ["name", "value_type", "execution_order"]),
-    [str, str, int])
+    [_StringValue, _StringValue, int])
 _ConnectionSpecificValues = (
     namedtuple("ConnectionSpecificValues", ["name"]),
-    [str])
+    [_StringValue])
 
 _PowerRailSpecificValues = (
     namedtuple("PowerRailSpecificValues", ["connectors"]),
@@ -306,7 +307,7 @@ _PowerRailSpecificValues = (
 _LDElementSpecificValues = (
     namedtuple("LDElementSpecificValues", 
                ["name", "negated", "edge", "storage", "execution_order"]),
-    [str, _BoolValue, str, str, int])
+    [_StringValue, _BoolValue, _StringValue, _StringValue, int])
 
 _DivergenceSpecificValues = (
     namedtuple("DivergenceSpecificValues", ["connectors"]),
@@ -315,7 +316,7 @@ _DivergenceSpecificValues = (
 _SpecificValuesTuples = {
     "comment": (
         namedtuple("CommentSpecificValues", ["content"]),
-        [str]),
+        [_StringValue]),
     "input": _VariableSpecificValues,
     "output": _VariableSpecificValues,
     "inout": _VariableSpecificValues,
@@ -327,18 +328,18 @@ _SpecificValuesTuples = {
     "coil": _LDElementSpecificValues,
     "step": (
         namedtuple("StepSpecificValues", ["name", "initial", "action"]),
-        [str, _BoolValue, lambda x: x]),
+        [_StringValue, _BoolValue, lambda x: x]),
     "transition": (
         namedtuple("TransitionSpecificValues", 
                    ["priority", "condition_type", "condition", "connection"]),
-        [int, str, str, lambda x: x]),
+        [int, _StringValue, _StringValue, lambda x: x]),
     "selectionDivergence": _DivergenceSpecificValues,
     "selectionConvergence": _DivergenceSpecificValues,
     "simultaneousDivergence": _DivergenceSpecificValues,
     "simultaneousConvergence": _DivergenceSpecificValues,
     "jump": (
         namedtuple("JumpSpecificValues", ["target"]),
-        [str]),
+        [_StringValue]),
     "actionBlock": (
         namedtuple("ActionBlockSpecificValues", ["actions"]),
         [lambda x: x]),
@@ -387,14 +388,14 @@ class BlockInstanceFactory:
         self.SpecificValues = None
         
         self.CurrentInstance = _BlockInstanceInfos(
-            *(_translate_args([str, int] + [float] * 4, args) + 
+            *(_translate_args([_StringValue, int] + [float] * 4, args) + 
               [specific_values, [], []]))
         
         self.BlockInstances[self.CurrentInstance.id] = self.CurrentInstance
         
     def AddInstanceConnection(self, context, *args):
         connection_args = _translate_args(
-            [str, str, _BoolValue, str, float, float], args)
+            [_StringValue] * 2 + [_BoolValue, _StringValue] + [float] * 2, args)
         
         self.CurrentConnection = _InstanceConnectionInfos(
             *(connection_args[1:4] + [
@@ -410,7 +411,7 @@ class BlockInstanceFactory:
     
     def AddConnectionLink(self, context, *args):
         self.CurrentLink = _ConnectionLinkInfos(
-            *(_translate_args([int, str], args) + [[]]))
+            *(_translate_args([int, _StringValue], args) + [[]]))
         self.CurrentConnection.links.append(self.CurrentLink)
     
     def AddLinkPoint(self, context, *args):
@@ -420,7 +421,7 @@ class BlockInstanceFactory:
     def AddAction(self, context, *args):
         if len(self.SpecificValues) == 0:
             self.SpecificValues.append([[]])
-        translated_args = _translate_args([str] * 5, args)
+        translated_args = _translate_args([_StringValue] * 5, args)
         self.SpecificValues[0][0].append(_ActionInfos(*translated_args))
     
 pou_block_instances_xslt = etree.parse(
