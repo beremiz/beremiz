@@ -6,7 +6,7 @@
   <xsl:template match="text()">
     <xsl:param name="_indent" select="0"/>
   </xsl:template>
-  <xsl:template match="ppx:pou">
+  <xsl:template match="ppx:pou[ppx:body]|ppx:transition[ppx:body]|ppx:action[ppx:body]">
     <xsl:param name="_indent" select="0"/>
     <xsl:apply-templates select="ppx:body/*[self::ppx:FBD or self::ppx:LD or self::ppx:SFC]/*">
       <xsl:with-param name="_indent" select="$_indent + (1) * $autoindent"/>
@@ -331,11 +331,11 @@
     </xsl:variable>
     <xsl:variable name="condition">
       <xsl:choose>
-        <xsl:when test="ppx:reference">
+        <xsl:when test="ppx:condition/ppx:reference">
           <xsl:value-of select="ppx:condition/ppx:reference/@name"/>
         </xsl:when>
-        <xsl:when test="ppx:inline">
-          <xsl:value-of select="ppx:condition/ppx:inline/ppx:body/ppx:ST/xhtml:p/text()"/>
+        <xsl:when test="ppx:condition/ppx:inline">
+          <xsl:value-of select="ppx:condition/ppx:inline/ppx:ST/xhtml:p/text()"/>
         </xsl:when>
       </xsl:choose>
     </xsl:variable>

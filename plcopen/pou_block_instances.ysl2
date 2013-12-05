@@ -7,7 +7,7 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "text()";
     
-    template "ppx:pou" {
+    template "ppx:pou[ppx:body]|ppx:transition[ppx:body]|ppx:action[ppx:body]" {
         apply "ppx:body/*[self::ppx:FBD or self::ppx:LD or self::ppx:SFC]/*";
     }
     
@@ -238,8 +238,8 @@ estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         }
         variable "condition" {
             choose {
-                when "ppx:reference" > «ppx:condition/ppx:reference/@name»
-                when "ppx:inline" > «ppx:condition/ppx:inline/ppx:body/ppx:ST/xhtml:p/text()»
+                when "ppx:condition/ppx:reference" > «ppx:condition/ppx:reference/@name»
+                when "ppx:condition/ppx:inline" > «ppx:condition/ppx:inline/ppx:ST/xhtml:p/text()»
             }
         }
         value "ns:SetSpecificValues($priority, $condition_type, $condition)";
