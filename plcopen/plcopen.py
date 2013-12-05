@@ -1333,7 +1333,7 @@ if cls:
     setattr(cls, "getaction", getaction)
     
     def getactionList(self):
-        if self.actions:
+        if self.actions is not None:
             return self.actions.getaction()
         return []
     setattr(cls, "getactionList", getactionList)
