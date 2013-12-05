@@ -1488,8 +1488,7 @@ class PLCControler:
                 factory = VariablesInfosFactory([])
         
                 parser = etree.XMLParser()
-                if tree:
-                    parser.resolvers.add(LibraryResolver(self))
+                parser.resolvers.add(LibraryResolver(self))
                 
                 return_type_infos_xslt_tree = etree.XSLT(
                     etree.parse(
