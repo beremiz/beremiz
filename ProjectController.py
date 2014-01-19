@@ -494,10 +494,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self.ConfNodeTypesFactory()
 
     def _setBuildPath(self, buildpath):
-        if CheckPathPerm(buildpath):
-            self.BuildPath = buildpath
-        else:
-            self.BuildPath = None
         self.BuildPath = buildpath
         self.DefaultBuildPath = None
         if self._builder is not None:
