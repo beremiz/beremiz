@@ -1053,8 +1053,6 @@ class ClassFactory:
         
         # Checks that classe haven't been generated yet
         if self.AlreadyComputed.get(classname, False):
-            if baseclass:
-                self.AlreadyComputed[classname].IsBaseClass = baseclass
             return self.ComputedClassesInfos.get(classname, None)
         
         # If base classes haven't been generated
@@ -1150,7 +1148,7 @@ class ClassFactory:
         classmembers["getElementInfos"] = generateGetElementInfos(self, classinfos)
         classmembers["setElementValue"] = generateSetElementValue(self, classinfos)
         
-        class_definition = classobj(str(classname), bases, classmembers)
+        class_definition = classobj(str(name), bases, classmembers)
         setattr(class_definition, "__getattr__", generateGetattrMethod(self, class_definition, classinfos))
         setattr(class_definition, "__setattr__", generateSetattrMethod(self, class_definition, classinfos))
         class_infos = {"type": COMPILEDCOMPLEXTYPE,
