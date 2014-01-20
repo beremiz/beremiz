@@ -665,7 +665,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = "\"-I"+self.ieclib_path+"\""
+        self.plcCFLAGS = "-I"+self.ieclib_path
         return True
 
     def GetBuilder(self):
