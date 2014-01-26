@@ -62,21 +62,10 @@ if __name__ == '__main__':
     # Windows) 
     app = wx.PySimpleApp()
 
+    from util.misc import InstallLocalRessources
+    InstallLocalRessources(CWD)
+
 from docutil import *
-
-from util.TranslationCatalogs import AddCatalog
-from util.BitmapLibrary import AddBitmapFolder, GetBitmap
-
-AddCatalog(os.path.join(CWD, "locale"))
-AddBitmapFolder(os.path.join(CWD, "images"))
-
-if __name__ == '__main__':
-    # Import module for internationalization
-    import gettext
-    import __builtin__
-    
-    __builtin__.__dict__['_'] = wx.GetTranslation
-
 from IDEFrame import IDEFrame, AppendMenu
 from IDEFrame import TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, PAGETITLES
 from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath

@@ -110,18 +110,9 @@ if __name__ == '__main__':
         splash.SetText(text=updateinfo)
         wx.Yield()
 
-from util.TranslationCatalogs import AddCatalog
-from util.BitmapLibrary import AddBitmapFolder, GetBitmap
+    from util.misc import InstallLocalRessources
+    InstallLocalRessources(CWD)
 
-AddCatalog(os.path.join(CWD, "locale"))
-AddBitmapFolder(os.path.join(CWD, "images"))
-
-if __name__ == '__main__':
-    # Import module for internationalization
-    import gettext
-    
-    __builtin__.__dict__['_'] = wx.GetTranslation
-    
     # Load extensions
     for extfilename in extensions:
         extension_folder = os.path.split(os.path.realpath(extfilename))[0]
@@ -130,14 +121,12 @@ if __name__ == '__main__':
         AddBitmapFolder(os.path.join(extension_folder, "images"))
         execfile(extfilename, locals())
 
+
 import wx.lib.buttons, wx.lib.statbmp, wx.stc
 import cPickle
 import types, time, re, platform, time, traceback, commands
 
 from docutil import OpenHtmlFrame
-from IDEFrame import IDEFrame, AppendMenu
-from IDEFrame import TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES 
-from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 from editors.EditorPanel import EditorPanel
 from editors.Viewer import Viewer
 from editors.TextViewer import TextViewer
@@ -277,6 +266,20 @@ class LogPseudoFile:
         return False
 
 ID_FILEMENURECENTPROJECTS = wx.NewId()
+
+from IDEFrame import TITLE,\
+                     EDITORTOOLBAR,\
+                     FILEMENU,\
+                     EDITMENU,\
+                     DISPLAYMENU,\
+                     PROJECTTREE,\
+                     POUINSTANCEVARIABLESPANEL,\
+                     LIBRARYTREE,\
+                     SCALING,\
+                     PAGETITLES,\
+                     IDEFrame, AppendMenu,\
+                     EncodeFileSystemPath, DecodeFileSystemPath
+from util.BitmapLibrary import GetBitmap
 
 class Beremiz(IDEFrame):
     

@@ -22,3 +22,19 @@ def GetClassImporter(classpath):
         return fac
     else:
         return classpath
+
+def InstallLocalRessources(CWD):
+    from BitmapLibrary import AddBitmapFolder
+    from TranslationCatalogs import AddCatalog
+    import wx
+
+    # Beremiz bitmaps
+    AddBitmapFolder(os.path.join(CWD, "images"))
+
+    # Internationalization
+    AddCatalog(os.path.join(CWD, "locale"))
+    import gettext
+    import __builtin__
+    
+    __builtin__.__dict__['_'] = wx.GetTranslation
+
