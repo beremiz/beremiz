@@ -13,6 +13,7 @@ void config_init__(void);
 /*
  * Prototypes of functions provided by generated target C code
  * */
+long long AtomicCompareExchange64(long long*, long long, long long);
 void __init_debug(void);
 void __cleanup_debug(void);
 /*void __retrieve_debug(void);*/
