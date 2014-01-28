@@ -3,6 +3,7 @@
  **/
 
 #include "beremiz.h"
+#include <string.h>
 /*
  * Prototypes of functions provided by generated C softPLC
  **/
