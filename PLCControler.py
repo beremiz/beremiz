@@ -117,7 +117,7 @@ class LibraryResolver(etree.Resolver):
             if lib_name == "project":
                 lib_el.append(deepcopy(self.Controller.GetProject(self.Debug)))
             elif lib_name == "stdlib":
-                for lib in [StdBlockLibrary, AddnlBlockLibrary]:
+                for lib in StdBlckLibs.values():
                     lib_el.append(deepcopy(lib))
             else:
                 for ctn in self.Controller.ConfNodeTypes:
@@ -1689,7 +1689,7 @@ class PLCControler:
             result = project.getpou(typename)
             if result is not None:
                 return result
-        for standardlibrary in [StdBlockLibrary, AddnlBlockLibrary]:
+        for standardlibrary in StdBlckLibs.values():
             result = standardlibrary.getpou(typename)
             if result is not None:
                 return result

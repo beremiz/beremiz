@@ -22,133 +22,10 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import string, os, sys, re
+import string, re
 from plcopen import LoadProject
 from collections import OrderedDict
-
-LANGUAGES = ["IL","ST","FBD","LD","SFC"]
-
-LOCATIONDATATYPES = {"X" : ["BOOL"],
-                     "B" : ["SINT", "USINT", "BYTE", "STRING"],
-                     "W" : ["INT", "UINT", "WORD", "WSTRING"],
-                     "D" : ["DINT", "UDINT", "REAL", "DWORD"],
-                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]} 
-
-_ = lambda x:x
-
-#-------------------------------------------------------------------------------
-#                        Function Block Types definitions
-#-------------------------------------------------------------------------------
-
-ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
-
-StdBlockLibrary, error = LoadProject(
-    os.path.join(ScriptDirectory, "Standard_Function_Blocks.xml"))
-AddnlBlockLibrary, error = LoadProject(
-    os.path.join(ScriptDirectory, "Additional_Function_Blocks.xml"))
-
-StdBlockComments = {
-    "SR": _("SR bistable\nThe SR bistable is a latch where the Set dominates."),
-    "RS": _("RS bistable\nThe RS bistable is a latch where the Reset dominates."),
-    "SEMA": _("Semaphore\nThe semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."),
-    "R_TRIG": _("Rising edge detector\nThe output produces a single pulse when a rising edge is detected."),
-    "F_TRIG": _("Falling edge detector\nThe output produces a single pulse when a falling edge is detected."),
-    "CTU": _("Up-counter\nThe up-counter can be used to signal when a count has reached a maximum value."),
-    "CTD": _("Down-counter\nThe down-counter can be used to signal when a count has reached zero, on counting down from a preset value."),
-    "CTUD": _("Up-down counter\nThe up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."),
-    "TP": _("Pulse timer\nThe pulse timer can be used to generate output pulses of a given time duration."),
-    "TON": _("On-delay timer\nThe on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."),
-    "TOF": _("Off-delay timer\nThe off-delay timer can be used to delay setting an output false, for fixed period after input goes false."),
-    "RTC": _("Real time clock\nThe real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."),
-    "INTEGRAL": _("Integral\nThe integral function block integrates the value of input XIN over time."),
-    "DERIVATIVE": _("Derivative\nThe derivative function block produces an output XOUT proportional to the rate of change of the input XIN."),
-    "PID": _("PID\nThe PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."),
-    "RAMP": _("Ramp\nThe RAMP function block is modelled on example given in the standard."),
-    "HYSTERESIS": _("Hysteresis\nThe hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."),
-}
-
-for block_type in ["CTU", "CTD", "CTUD"]:
-    for return_type in ["DINT", "LINT", "UDINT", "ULINT"]:
-        StdBlockComments["%s_%s" % (block_type, return_type)] = StdBlockComments[block_type]
-
-def GetBlockInfos(pou):
-    infos = pou.getblockInfos()
-    infos["comment"] = StdBlockComments[infos["name"]]
-    infos["inputs"] = [
-        (var_name, var_type, "rising")
-        if var_name in ["CU", "CD"]
-        else (var_name, var_type, var_modifier)
-        for var_name, var_type, var_modifier in infos["inputs"]]
-    return infos
-
-"""
-Ordored list of common Function Blocks defined in the IEC 61131-3
-Each block have this attributes:
-    - "name" : The block name
-    - "type" : The block type. It can be "function", "functionBlock" or "program"
-    - "extensible" : Boolean that define if the block is extensible
-    - "inputs" : List of the block inputs
-    - "outputs" : List of the block outputs
-    - "comment" : Comment that will be displayed in the block popup
-    - "generate" : Method that generator will call for generating ST block code
-Inputs and outputs are a tuple of characteristics that are in order:
-    - The name
-    - The data type
-    - The default modifier which can be "none", "negated", "rising" or "falling"
-"""
-
-StdBlckLst = [{"name" : _("Standard function blocks"), "list":
-               [GetBlockInfos(pou) for pou in StdBlockLibrary.getpous()]},
-              {"name" : _("Additional function blocks"), "list":
-               [GetBlockInfos(pou) for pou in AddnlBlockLibrary.getpous()]},
-             ]
-
-
-#-------------------------------------------------------------------------------
-#                           Data Types definitions
-#-------------------------------------------------------------------------------
-
-"""
-Ordored list of common data types defined in the IEC 61131-3
-Each type is associated to his direct parent type. It defines then a hierarchy
-between type that permits to make a comparison of two types
-"""
-TypeHierarchy_list = [
-    ("ANY", None),
-    ("ANY_DERIVED", "ANY"),
-    ("ANY_ELEMENTARY", "ANY"),
-    ("ANY_MAGNITUDE", "ANY_ELEMENTARY"),
-    ("ANY_BIT", "ANY_ELEMENTARY"),
-    ("ANY_NBIT", "ANY_BIT"),
-    ("ANY_STRING", "ANY_ELEMENTARY"),
-    ("ANY_DATE", "ANY_ELEMENTARY"),
-    ("ANY_NUM", "ANY_MAGNITUDE"),
-    ("ANY_REAL", "ANY_NUM"),
-    ("ANY_INT", "ANY_NUM"),
-    ("ANY_SINT", "ANY_INT"),
-    ("ANY_UINT", "ANY_INT"),
-    ("BOOL", "ANY_BIT"),
-    ("SINT", "ANY_SINT"),
-    ("INT", "ANY_SINT"),
-    ("DINT", "ANY_SINT"),
-    ("LINT", "ANY_SINT"),
-    ("USINT", "ANY_UINT"),
-    ("UINT", "ANY_UINT"),
-    ("UDINT", "ANY_UINT"),
-    ("ULINT", "ANY_UINT"),
-    ("REAL", "ANY_REAL"),
-    ("LREAL", "ANY_REAL"),
-    ("TIME", "ANY_MAGNITUDE"),
-    ("DATE", "ANY_DATE"),
-    ("TOD", "ANY_DATE"),
-    ("DT", "ANY_DATE"),
-    ("STRING", "ANY_STRING"),
-    ("BYTE", "ANY_NBIT"),
-    ("WORD", "ANY_NBIT"),
-    ("DWORD", "ANY_NBIT"),
-    ("LWORD", "ANY_NBIT")
-    #("WSTRING", "ANY_STRING") # TODO
-]
+from definitions import *
 
 TypeHierarchy = dict(TypeHierarchy_list)
 
@@ -172,21 +49,29 @@ returns list of all types that correspont to the ANY* meta type
 def GetSubTypes(type):
     return [typename for typename, parenttype in TypeHierarchy.items() if not typename.startswith("ANY") and IsOfType(typename, type)]
 
-
-DataTypeRange_list = [
-    ("SINT", (-2**7, 2**7 - 1)),
-    ("INT", (-2**15, 2**15 - 1)),
-    ("DINT", (-2**31, 2**31 - 1)),
-    ("LINT", (-2**31, 2**31 - 1)),
-    ("USINT", (0, 2**8 - 1)),
-    ("UINT", (0, 2**16 - 1)),
-    ("UDINT", (0, 2**31 - 1)),
-    ("ULINT", (0, 2**31 - 1))
-]
-
 DataTypeRange = dict(DataTypeRange_list)
 
+"""
+Ordered list of common Function Blocks defined in the IEC 61131-3
+Each block have this attributes:
+    - "name" : The block name
+    - "type" : The block type. It can be "function", "functionBlock" or "program"
+    - "extensible" : Boolean that define if the block is extensible
+    - "inputs" : List of the block inputs
+    - "outputs" : List of the block outputs
+    - "comment" : Comment that will be displayed in the block popup
+    - "generate" : Method that generator will call for generating ST block code
+Inputs and outputs are a tuple of characteristics that are in order:
+    - The name
+    - The data type
+    - The default modifier which can be "none", "negated", "rising" or "falling"
+"""
 
+StdBlckLibs = {libname : LoadProject(tc6fname)[0]
+             for libname, tc6fname in StdTC6Libs}
+StdBlckLst = [{"name" : libname, "list":
+               [GetBlockInfos(pous) for pous in lib.getpous()]}
+             for libname, lib in StdBlckLibs.iteritems()]
 
 #-------------------------------------------------------------------------------
 #                             Test identifier
@@ -257,64 +142,6 @@ def csv_input_translate(str_decl, variables, base):
             param_name = "IN"
         params.append((param_name, param_type, "none"))
     return params
-
-
-ANY_TO_ANY_LIST=[
-        # simple type conv are let as C cast
-        (("ANY_INT","ANY_BIT"),("ANY_NUM","ANY_BIT"), ("return_type", "__move_", "IN_type")),
-        (("ANY_REAL",),("ANY_REAL",), ("return_type", "__move_", "IN_type")),
-        # REAL_TO_INT
-        (("ANY_REAL",),("ANY_SINT",), ("return_type", "__real_to_sint", None)),
-        (("ANY_REAL",),("ANY_UINT",), ("return_type", "__real_to_uint", None)),
-        (("ANY_REAL",),("ANY_BIT",), ("return_type", "__real_to_bit", None)),
-        # TO_TIME
-        (("ANY_INT","ANY_BIT"),("ANY_DATE","TIME"), ("return_type", "__int_to_time", None)),
-        (("ANY_REAL",),("ANY_DATE","TIME"), ("return_type", "__real_to_time", None)),
-        (("ANY_STRING",), ("ANY_DATE","TIME"), ("return_type", "__string_to_time", None)),
-        # FROM_TIME
-        (("ANY_DATE","TIME"), ("ANY_REAL",), ("return_type", "__time_to_real", None)),
-        (("ANY_DATE","TIME"), ("ANY_INT","ANY_NBIT"), ("return_type", "__time_to_int", None)),
-        (("TIME",), ("ANY_STRING",), ("return_type", "__time_to_string", None)),
-        (("DATE",), ("ANY_STRING",), ("return_type", "__date_to_string", None)),
-        (("TOD",), ("ANY_STRING",), ("return_type", "__tod_to_string", None)),
-        (("DT",), ("ANY_STRING",), ("return_type", "__dt_to_string", None)),
-        # TO_STRING
-        (("BOOL",), ("ANY_STRING",), ("return_type", "__bool_to_string", None)),
-        (("ANY_BIT",), ("ANY_STRING",), ("return_type", "__bit_to_string", None)),
-        (("ANY_REAL",), ("ANY_STRING",), ("return_type", "__real_to_string", None)),
-        (("ANY_SINT",), ("ANY_STRING",), ("return_type", "__sint_to_string", None)),
-        (("ANY_UINT",), ("ANY_STRING",), ("return_type", "__uint_to_string", None)),
-        # FROM_STRING
-        (("ANY_STRING",), ("BOOL",), ("return_type", "__string_to_bool", None)),
-        (("ANY_STRING",), ("ANY_BIT",), ("return_type", "__string_to_bit", None)),
-        (("ANY_STRING",), ("ANY_SINT",), ("return_type", "__string_to_sint", None)),
-        (("ANY_STRING",), ("ANY_UINT",), ("return_type", "__string_to_uint", None)),
-        (("ANY_STRING",), ("ANY_REAL",), ("return_type", "__string_to_real", None))]
-
-
-BCD_TO_ANY_LIST=[
-        (("BYTE",),("USINT",), ("return_type", "__bcd_to_uint", None)),
-        (("WORD",),("UINT",), ("return_type", "__bcd_to_uint", None)),
-        (("DWORD",),("UDINT",), ("return_type", "__bcd_to_uint", None)),
-        (("LWORD",),("ULINT",), ("return_type", "__bcd_to_uint", None))]
-
-
-ANY_TO_BCD_LIST=[
-        (("USINT",),("BYTE",), ("return_type", "__uint_to_bcd", None)),
-        (("UINT",),("WORD",), ("return_type", "__uint_to_bcd", None)),
-        (("UDINT",),("DWORD",), ("return_type", "__uint_to_bcd", None)),
-        (("ULINT",),("LWORD",), ("return_type", "__uint_to_bcd", None))]
-
-
-def ANY_TO_ANY_FORMAT_GEN(any_to_any_list, fdecl):
-
-    for (InTypes, OutTypes, Format) in any_to_any_list:
-        outs = reduce(lambda a,b: a or b, map(lambda testtype : IsOfType(fdecl["outputs"][0][1],testtype), OutTypes))
-        inps = reduce(lambda a,b: a or b, map(lambda testtype : IsOfType(fdecl["inputs"][0][1],testtype), InTypes))
-        if inps and outs and fdecl["outputs"][0][1] != fdecl["inputs"][0][1]:
-             return Format
-    
-    return None
 
 
 """
@@ -403,11 +230,24 @@ def get_standard_funtions(table):
                             funcdeclout =  funcdeclin
                         Function_decl["name"] = funcdeclout
 
-
-                        fdecl = Function_decl
-                        res = eval(Function_decl["python_eval_c_code_format"])
-
-                        if res != None :
+                        # apply filter given in "filter" column
+                        filter_name = Function_decl["filter"]
+                        store = True
+                        for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name,[]):
+                            outs = reduce(lambda a,b: a or b, 
+                                       map(lambda testtype : IsOfType(
+                                           Function_decl["outputs"][0][1],
+                                           testtype), OutTypes))
+                            inps = reduce(lambda a,b: a or b,
+                                       map(lambda testtype : IsOfType(
+                                           Function_decl["inputs"][0][1],
+                                           testtype), InTypes))
+                            if inps and outs and Function_decl["outputs"][0][1] != Function_decl["inputs"][0][1]:
+                                store = True
+                                break
+                            else:
+                                store = False
+                        if store :
                             # create the copy of decl dict to be appended to section
                             Function_decl_copy = Function_decl.copy()
                             Current_section["list"].append(Function_decl_copy)
@@ -416,9 +256,7 @@ def get_standard_funtions(table):
     
     return Standard_Functions_Decl
 
-std_decl = get_standard_funtions(csv_file_to_table(open(os.path.join(ScriptDirectory,"iec_std.csv"))))#, True)
-
-StdBlckLst.extend(std_decl)
+StdBlckLst.extend(get_standard_funtions(csv_file_to_table(open(StdFuncsCSV))))
 
 # Dictionary to speedup block type fetching by name
 StdBlckDct = OrderedDict()
@@ -439,7 +277,6 @@ for section in StdBlckLst:
 #-------------------------------------------------------------------------------
 #                            Languages Keywords
 #-------------------------------------------------------------------------------
-
 
 # Keywords for Pou Declaration
 POU_BLOCK_START_KEYWORDS = ["FUNCTION", "FUNCTION_BLOCK", "PROGRAM"]
@@ -501,4 +338,5 @@ for all_keywords, keywords_list in [(IEC_BLOCK_START_KEYWORDS, [POU_BLOCK_START_
                                                     SFC_KEYWORDS, IL_KEYWORDS, ST_KEYWORDS])]:
     for keywords in keywords_list:
         all_keywords.extend([keyword for keyword in keywords if keyword not in all_keywords])
+
 
