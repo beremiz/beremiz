@@ -115,6 +115,8 @@ if __name__ == '__main__':
 
     # Load extensions
     for extfilename in extensions:
+        from util.TranslationCatalogs import AddCatalog
+        from util.BitmapLibrary import AddBitmapFolder
         extension_folder = os.path.split(os.path.realpath(extfilename))[0]
         sys.path.append(extension_folder)
         AddCatalog(os.path.join(extension_folder, "locale"))
