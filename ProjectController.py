@@ -1478,11 +1478,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self.AppFrame is not None:
             self.AppFrame.LogViewer.SetLogSource(connector)
         if connector is not None:
-            # Start the status Timer
-            self.StatusTimer.Start(milliseconds=500, oneShot=False)
-        else:
-            # Stop the status Timer
             if self.StatusTimer is not None:
+                # Start the status Timer
+                self.StatusTimer.Start(milliseconds=500, oneShot=False)
+        else:
+            if self.StatusTimer is not None:
+                # Stop the status Timer
                 self.StatusTimer.Stop()
             if update_status:
                 wx.CallAfter(self.UpdateMethodsFromPLCStatus)
