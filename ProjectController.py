@@ -166,12 +166,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DispatchDebugValuesTimer = None
         
         if frame is not None:
-            frame.LogViewer.SetLogSource(self._connector)
             
             # Timer to pull PLC status
             self.StatusTimer = wx.Timer(self.AppFrame, -1)
             self.AppFrame.Bind(wx.EVT_TIMER, 
                 self.PullPLCStatusProc, self.StatusTimer)
+
+            if self._connector is not None:
+                frame.LogViewer.SetLogSource(self._connector)
+                self.StatusTimer.Start(milliseconds=500, oneShot=False)
             
             # Timer to dispatch debug values to consumers
             self.DispatchDebugValuesTimer = wx.Timer(self.AppFrame, -1)
@@ -1479,7 +1482,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.StatusTimer.Start(milliseconds=500, oneShot=False)
         else:
             # Stop the status Timer
-            self.StatusTimer.Stop()
+            if self.StatusTimer is not None:
+                self.StatusTimer.Stop()
             if update_status:
                 wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
