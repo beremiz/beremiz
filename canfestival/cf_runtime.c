@@ -36,11 +36,15 @@ extern int common_ticktime__;
     *nodename##_Data.COB_ID_Sync = 0x40000080;\
     *nodename##_Data.Sync_Cycle_Period = common_ticktime__ * 1000;
 
+static void DeferedInitAlarm(CO_Data* d, UNS32 id){
+    /* Node will start beeing active on the network after this */
+    setState(d, Initialisation);
+}
+
 #define NODE_INIT(nodename, nodeid) \
     /* Defining the node Id */\
     setNodeId(&nodename##_Data, nodeid);\
-    /* init */\
-    setState(&nodename##_Data, Initialisation);
+    SetAlarm(&nodename##_Data,0,&DeferedInitAlarm,MS_TO_TIMEVAL(100),0);
 
 #define NODE_MASTER_INIT(nodename, nodeid) \
     NODE_FORCE_SYNC(nodename) \
@@ -49,7 +53,7 @@ extern int common_ticktime__;
 #define NODE_SLAVE_INIT(nodename, nodeid) \
     NODE_INIT(nodename, nodeid)
 
-void InitNodes(CO_Data* d, UNS32 id)
+static void InitNodes(CO_Data* d, UNS32 id)
 {
     %(slavebootup_register)s
     %(post_sync_register)s
@@ -64,7 +68,7 @@ void InitNodes(CO_Data* d, UNS32 id)
         setState(&nodename##_Data, Stopped);\
     }
 
-void Exit(CO_Data* d, UNS32 id)
+static void Exit(CO_Data* d, UNS32 id)
 {
     %(nodes_stop)s
 }
