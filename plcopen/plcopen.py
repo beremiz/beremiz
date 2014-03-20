@@ -2217,7 +2217,7 @@ def _UpdateIOElementName(self, old_name, new_name):
     if self.expression == old_name:
         self.expression = new_name
 
-def _UpdateIOElementAddress(self, old_name, new_name):
+def _UpdateIOElementAddress(self, address_model, new_leading):
     self.expression = update_address(self.expression, address_model, new_leading)
 
 cls = _initElementClass("inVariable", "fbdObjects")
