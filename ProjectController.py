@@ -440,7 +440,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if len(self.Libraries)==0:
             return [],[],()
         self.GetIECProgramsAndVariables()
-        LibIECCflags = '"-I%s"'%os.path.abspath(self.GetIECLibPath())
+        LibIECCflags = '"-I%s" -Wno-unused-function'%os.path.abspath(self.GetIECLibPath())
         LocatedCCodeAndFlags=[]
         Extras=[]
         for lib in self.Libraries:
@@ -668,7 +668,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s"'%self.ieclib_path
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%self.ieclib_path
         return True
 
     def GetBuilder(self):

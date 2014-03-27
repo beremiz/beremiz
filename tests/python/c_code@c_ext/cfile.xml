@@ -1,15 +1,15 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<CFile>
+<?xml version='1.0' encoding='utf-8'?>
+<CFile xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <includes>
-<![CDATA[
-]]>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
   </includes>
   <variables>
     <variable name="TestInput" type="SINT" initial="0"/>
     <variable name="TestOutput" type="SINT"/>
   </variables>
   <globals>
-<![CDATA[
+    <xhtml:p><![CDATA[
 volatile long Lock=0;
 volatile char PtoC=1,CtoP=2;
 
@@ -48,26 +48,26 @@ int PLC_C_Call(char fromPLC, char *toPLC){
   }
   return 0;
 }
-]]>
+]]></xhtml:p>
   </globals>
   <initFunction>
-<![CDATA[
-]]>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
   </initFunction>
   <cleanUpFunction>
-<![CDATA[
-]]>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
   </cleanUpFunction>
   <retrieveFunction>
-<![CDATA[
-]]>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
   </retrieveFunction>
   <publishFunction>
-<![CDATA[
+    <xhtml:p><![CDATA[
 if(!AtomicCompareExchange((long*)&Lock, 0, 1)){
     TestInput = CtoP + PtoC + TestOutput;
     AtomicCompareExchange((long*)&Lock, 1, 0);
 }
-]]>
+]]></xhtml:p>
   </publishFunction>
 </CFile>
