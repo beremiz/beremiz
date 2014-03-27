@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<PyFile>
+<?xml version='1.0' encoding='utf-8'?>
+<PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <variables>
     <variable name="Test_Python_Var" type="INT" initial="4"/>
     <variable name="Second_Python_Var" type="INT" initial="5"/>
   </variables>
   <globals>
-<![CDATA[
+    <xhtml:p><![CDATA[
 import time,sys,ctypes
 Python_to_C_Call = PLCBinary.Python_to_C_Call
 Python_to_C_Call.restype = ctypes.c_int
@@ -39,30 +39,30 @@ a.start()
 b = Timer(6, badaboomwx)
 b.start()
 """
-]]>
+]]></xhtml:p>
   </globals>
   <init>
-<![CDATA[
+    <xhtml:p><![CDATA[
 global x, y
 x = 2
 y = 5
 print "py_runtime init:", x, ",", y
-]]>
+]]></xhtml:p>
   </init>
   <cleanup>
-<![CDATA[
+    <xhtml:p><![CDATA[
 print "py_runtime cleanup"
-]]>
+]]></xhtml:p>
   </cleanup>
   <start>
-<![CDATA[
+    <xhtml:p><![CDATA[
 global x, y
 print "py_runtime start", x * x + y * y
-]]>
+]]></xhtml:p>
   </start>
   <stop>
-<![CDATA[
+    <xhtml:p><![CDATA[
 print "py_runtime stop"
-]]>
+]]></xhtml:p>
   </stop>
 </PyFile>

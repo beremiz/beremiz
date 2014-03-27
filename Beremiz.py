@@ -349,13 +349,6 @@ class Beremiz(IDEFrame):
     
     def _init_coll_AddMenu_Items(self, parent):
         IDEFrame._init_coll_AddMenu_Items(self, parent, False)
-        
-        # Disable add resource until matiec is able to handle multiple ressource definition
-        #new_id = wx.NewId()
-        #AppendMenu(parent, help='', id=new_id,
-        #          kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
-        #self.Bind(wx.EVT_MENU, self.AddResourceMenu, id=new_id)
-        
         self._RecursiveAddMenuItems(parent, GetAddMenuItems())
     
     def _init_coll_HelpMenu_Items(self, parent):
@@ -1010,10 +1003,11 @@ class Beremiz(IDEFrame):
             confnode_menu.Destroy()
             
             event.Skip()
-        elif item_infos["type"] != ITEM_PROJECT:
+        elif item_infos["type"] == ITEM_RESOURCE:
+            # prevent last resource to be delted
             parent = self.ProjectTree.GetItemParent(item)
             parent_name = self.ProjectTree.GetItemText(parent)
-            if item_infos["type"] != ITEM_RESOURCE or parent_name == _("Resources"):
+            if parent_name == _("Resources"):
                 IDEFrame.OnProjectTreeRightUp(self, event)
         else:
             IDEFrame.OnProjectTreeRightUp(self, event)

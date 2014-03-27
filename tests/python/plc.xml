@@ -1,14 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
-         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <fileHeader companyName=""
-              productName="Beremiz"
-              productVersion="0.0"
-              creationDateTime="2008-12-14T16:21:19"/>
-  <contentHeader name="Beremiz Python Support Tests"
-                 modificationDateTime="2013-05-15T18:19:52">
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:21:19"/>
+  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2014-03-27T09:15:55">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -428,7 +421,7 @@
             <comment localId="16" height="90" width="680">
               <position x="50" y="25"/>
               <content>
-<![CDATA[This example test that, despite of 2T period clock stimulating TRIG pin of pyth_eval blocks, blocks keep executing one after the other, in respect of execution order.]]>
+                <xhtml:p><![CDATA[This example test that, despite of 2T period clock stimulating TRIG pin of pyth_eval blocks, blocks keep executing one after the other, in respect of execution order.]]></xhtml:p>
               </content>
             </comment>
             <block localId="17" width="80" height="120" typeName="MUX">
@@ -674,32 +667,32 @@
             <comment localId="30" height="90" width="405">
               <position x="245" y="825"/>
               <content>
-<![CDATA[You will be ready to use beremiz with C and Python when you will understand why "FromInput" is equal  to 75.
-Enjoy. ]]>
+                <xhtml:p><![CDATA[You will be ready to use beremiz with C and Python when you will understand why "FromInput" is equal  to 75.
+Enjoy. ]]></xhtml:p>
               </content>
             </comment>
             <comment localId="31" height="60" width="345">
               <position x="295" y="265"/>
               <content>
-<![CDATA[Sleep here is bad. It blocks other py_eval instances. Whith a wxGlade GUI, GUI freeze for a second.]]>
+                <xhtml:p><![CDATA[Sleep here is bad. It blocks other py_eval instances. Whith a wxGlade GUI, GUI freeze for a second.]]></xhtml:p>
               </content>
             </comment>
             <comment localId="6" height="60" width="345">
               <position x="295" y="380"/>
               <content>
-<![CDATA[Prints FBID to stdout of PLC runtime. FBID is a unique reference to py_eval instance.]]>
+                <xhtml:p><![CDATA[Prints FBID to stdout of PLC runtime. FBID is a unique reference to py_eval instance.]]></xhtml:p>
               </content>
             </comment>
             <comment localId="10" height="60" width="345">
               <position x="295" y="500"/>
               <content>
-<![CDATA[Simple_C_Call is declared in C_File "1.x:c_code". See python ctypes manual for details on typing.]]>
+                <xhtml:p><![CDATA[Simple_C_Call is declared in C_File "1.x:c_code". See python ctypes manual for details on typing.]]></xhtml:p>
               </content>
             </comment>
             <comment localId="32" height="105" width="235">
               <position x="25" y="285"/>
               <content>
-<![CDATA[Fast clock, at least faster that sleep(1). See what happens when python takes time to answer : PLC continues.]]>
+                <xhtml:p><![CDATA[Fast clock, at least faster that sleep(1). See what happens when python takes time to answer : PLC continues.]]></xhtml:p>
               </content>
             </comment>
             <outVariable localId="33" height="30" width="130">
@@ -889,23 +882,19 @@ Enjoy. ]]>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="50" height="30" width="105">
+            <inVariable localId="50" height="30" width="105" executionOrderId="0" negated="false">
               <position x="200" y="1085"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>Global_RS.Q1</expression>
             </inVariable>
-            <block localId="51" width="70" height="85" typeName="AND">
+            <block localId="51" width="70" height="85" typeName="AND" executionOrderId="0">
               <position x="365" y="1065"/>
               <inputVariables>
                 <variable formalParameter="IN1" negated="true">
                   <connectionPointIn>
                     <relPosition x="0" y="35"/>
-                    <connection refLocalId="50">
-                      <position x="365" y="1100"/>
-                      <position x="305" y="1100"/>
-                    </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
@@ -934,45 +923,33 @@ Enjoy. ]]>
               </connectionPointOut>
               <expression>BOOL#TRUE</expression>
             </inVariable>
-            <outVariable localId="13" height="30" width="105">
+            <outVariable localId="13" height="30" width="105" executionOrderId="0" negated="false">
               <position x="510" y="1085"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="51" formalParameter="OUT">
-                  <position x="510" y="1100"/>
-                  <position x="435" y="1100"/>
-                </connection>
               </connectionPointIn>
               <expression>Global_RS.S</expression>
             </outVariable>
-            <outVariable localId="20" height="30" width="105">
+            <outVariable localId="20" height="30" width="105" executionOrderId="0" negated="false">
               <position x="510" y="1200"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="41" formalParameter="OUT">
-                  <position x="510" y="1215"/>
-                  <position x="435" y="1215"/>
-                </connection>
               </connectionPointIn>
               <expression>Global_RS.R1</expression>
             </outVariable>
-            <inVariable localId="24" height="30" width="105">
+            <inVariable localId="24" height="30" width="105" executionOrderId="0" negated="false">
               <position x="200" y="1200"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>Global_RS.Q1</expression>
             </inVariable>
-            <block localId="41" width="70" height="85" typeName="OR">
+            <block localId="41" width="70" height="85" typeName="OR" executionOrderId="0">
               <position x="365" y="1180"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
                     <relPosition x="0" y="35"/>
-                    <connection refLocalId="24">
-                      <position x="365" y="1215"/>
-                      <position x="305" y="1215"/>
-                    </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
@@ -1117,6 +1094,12 @@ Enjoy. ]]>
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
+            <comment localId="60" height="40" width="500">
+              <position x="120" y="1020"/>
+              <content>
+                <xhtml:p><![CDATA[Test for access to Gobal FB variables is disabled, as broken in matiec]]></xhtml:p>
+              </content>
+            </comment>
           </FBD>
         </body>
       </pou>
@@ -1185,7 +1168,7 @@ Enjoy. ]]>
         </interface>
         <body>
           <ST>
-<![CDATA[(* hereafter is a C pragma accessing FB interface in a clean way *)
+            <xhtml:p><![CDATA[(* hereafter is a C pragma accessing FB interface in a clean way *)
 {{
   char toPLC;
   char fromPLC = GetFbVar(IN);
@@ -1202,7 +1185,7 @@ Enjoy. ]]>
 }}
 (* If you do not use __GET_VAR and _SET_VAR macro, expect unexpected *)
 Global_RS();
-]]>
+]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -1226,7 +1209,7 @@ Global_RS();
         </interface>
         <body>
           <ST>
-<![CDATA[NORM := SQRT(IN1 * IN1 + IN2 * IN2);]]>
+            <xhtml:p><![CDATA[NORM := SQRT(IN1 * IN1 + IN2 * IN2);]]></xhtml:p>
           </ST>
         </body>
       </pou>

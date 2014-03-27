@@ -36,8 +36,8 @@ from util.BitmapLibrary import GetBitmap
  ID_PLCOPENEDITOREDITMENUADDFUNCTION, ID_PLCOPENEDITOREDITMENUADDFUNCTIONBLOCK, 
  ID_PLCOPENEDITOREDITMENUADDPROGRAM, ID_PLCOPENEDITOREDITMENUADDCONFIGURATION,
  ID_PLCOPENEDITOREDITMENUFINDNEXT, ID_PLCOPENEDITOREDITMENUFINDPREVIOUS,
- ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, 
-] = [wx.NewId() for _init_coll_EditMenu_Items in range(9)]
+ ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, ID_PLCOPENEDITOREDITMENUADDRESOURCE
+] = [wx.NewId() for _init_coll_EditMenu_Items in range(10)]
 
 # Define PLCOpenEditor DisplayMenu extra items id
 [ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE, 
@@ -325,6 +325,8 @@ class IDEFrame(wx.Frame):
               kind=wx.ITEM_NORMAL, text=_(u'Function &Block'))
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDPROGRAM,
               kind=wx.ITEM_NORMAL, text=_(u'&Program'))
+        AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDRESOURCE,
+                  kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
         if add_config:
             AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDCONFIGURATION,
                   kind=wx.ITEM_NORMAL, text=_(u'&Configuration'))
@@ -385,6 +387,8 @@ class IDEFrame(wx.Frame):
               id=ID_PLCOPENEDITOREDITMENUADDFUNCTIONBLOCK)
         self.Bind(wx.EVT_MENU, self.GenerateAddPouFunction("program"),
               id=ID_PLCOPENEDITOREDITMENUADDPROGRAM)
+        self.Bind(wx.EVT_MENU, self.AddResourceMenu, 
+              id=ID_PLCOPENEDITOREDITMENUADDRESOURCE)
         self.Bind(wx.EVT_MENU, self.OnAddConfigurationMenu,
               id=ID_PLCOPENEDITOREDITMENUADDCONFIGURATION)
         self.Bind(wx.EVT_MENU, self.OnSelectAllMenu, id=wx.ID_SELECTALL)
