@@ -291,8 +291,7 @@ void ResetDebugVariables(void)
 void FreeDebugData(void)
 {
     /* atomically mark buffer as free */
-    long latest_state;
-    latest_state = AtomicCompareExchange(
+    AtomicCompareExchange(
         &buffer_state,
         BUFFER_BUSY,
         BUFFER_FREE);
