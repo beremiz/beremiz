@@ -1142,7 +1142,7 @@ You should now restart Beremiz.
 
 Traceback:
 """) % bug_report_path +
-        str(e_type) + " : " + str(e_value), 
+        repr(e_type) + " : " + repr(e_value), 
         _("Error"),
         trcbck_lst)
     try:
@@ -1194,7 +1194,10 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
                     exception_locals = last_tb.tb_frame.f_locals # the locals at the level of the stack trace where the exception actually occurred
                     info['locals'] = format_namespace(exception_locals)
                     if 'self' in exception_locals:
-                        info['self'] = format_namespace(exception_locals['self'].__dict__)
+                        try :
+                            info['self'] = format_namespace(exception_locals['self'].__dict__)
+                        except :
+                            pass
                 
                 output = open(bug_report_path,'w')
                 lst = info.keys()
