@@ -5,8 +5,12 @@ import wx
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 
 from MotionLibrary import Headers, AxisXSD
-from EthercatSlave import _EthercatSlaveCTN
+from EthercatSlave import _EthercatSlaveCTN, _CommonSlave
 from ConfigEditor import CIA402NodeEditor
+
+#------------------------------------------
+#from CommonSlave import _CommonSlave 
+#------------------------------------------
 
 NODE_VARIABLES = [
     ("ControlWord", 0x6040, 0x00, "UINT", "Q"),
@@ -103,6 +107,14 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
          "method" : "_getCIA402AxisRef",
          "push": True},
     ]
+    
+#--------------------------------------------------
+#    class code
+#--------------------------------------------------    
+    
+    def __init__(self):
+        # ----------- call ethercat mng. function --------------
+        self.CommonMethod = _CommonSlave(self)
     
     def GetIconName(self):
         return "CIA402Slave"
@@ -268,3 +280,4 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         cia402nodefile.close()
         
         return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))],"",True
+    

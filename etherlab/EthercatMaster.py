@@ -11,7 +11,7 @@ from ConfigTreeNode import ConfigTreeNode
 from dialogs import BrowseValuesLibraryDialog
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE
 
-from EthercatSlave import _EthercatSlaveCTN, ExtractHexDecValue, GenerateHexDecValue, TYPECONVERSION, VARCLASSCONVERSION
+from EthercatSlave import _EthercatSlaveCTN, ExtractHexDecValue, GenerateHexDecValue, TYPECONVERSION, VARCLASSCONVERSION, _CommonSlave
 from EthercatCFileGenerator import _EthercatCFileGenerator
 from ConfigEditor import MasterEditor
 from POULibrary import POULibrary
@@ -73,6 +73,7 @@ class EtherlabLibrary(POULibrary):
         ethelabfile.write(etherlab_ext_code)
         ethelabfile.close()
         
+        runtimefile_path = os.path.join(os.path.split(__file__)[0], "runtime_etherlab.py")
         return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "", 
                 ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
     
@@ -208,7 +209,7 @@ ProcessVariablesXSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 ProcessVariablesClasses = GenerateClassesFromXSDstring(ProcessVariablesXSD) 
 
 class _EthercatCTN:
-    
+
     CTNChildrenTypes = [("EthercatSlave", _EthercatSlaveCTN, "Ethercat Slave")]
     if HAS_MCL:
         CTNChildrenTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlaveCTN, "Ethercat CIA402 Slave"))
@@ -246,6 +247,9 @@ class _EthercatCTN:
         else:
             self.CreateBuffer(False)
             self.OnCTNSave()
+         
+        # ----------- call ethercat mng. function --------------
+        self.CommonMethod = _CommonSlave(self)
     
     def GetIconName(self):
         return "Ethercat"
@@ -539,6 +543,7 @@ class _EthercatCTN:
                 device, module_extra_params = self.GetModuleInfos(type_infos)
         if device is not None:
             entries = device.GetEntriesList(limits)
+            #print entries
             entries_list = entries.items()
             entries_list.sort()
             entries = []

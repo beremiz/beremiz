@@ -13,6 +13,10 @@ from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import NAVIGATION_KEYS
 
+# -----------------------------------------------------------------------
+from EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePanelClass
+# -----------------------------------------------------------------------
+
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
 def AppendMenu(parent, help, id, kind, text):
@@ -240,7 +244,10 @@ class NodeVariablesSizer(wx.FlexGridSizer):
 class NodeEditor(ConfTreeNodeEditor):
     
     CONFNODEEDITOR_TABS = [
-        (_("Ethercat node"), "_create_EthercatNodeEditor")]
+        (_("Ethercat node"), "_create_EthercatNodeEditor"),
+        # Add Notebook Tab for EtherCAT Management Treebook
+        (_("EtherCAT Management"), "_create_EtherCATManagementEditor")
+        ]
     
     def _create_EthercatNodeEditor(self, prnt):
         self.EthercatNodeEditor = wx.Panel(prnt, style=wx.TAB_TRAVERSAL)
@@ -264,6 +271,9 @@ class NodeEditor(ConfTreeNodeEditor):
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
         
+        # add Contoler for use EthercatSlave.py Method
+        self.Controler = controler
+        
     def GetBufferState(self):
         return False, False
         
@@ -272,7 +282,38 @@ class NodeEditor(ConfTreeNodeEditor):
     
         self.NodeVariables.RefreshView()
 
+    # -------------------For EtherCAT Management ----------------------------------------------    
+    def _create_EtherCATManagementEditor(self, prnt):
+        self.EtherCATManagementEditor = wx.ScrolledWindow(prnt,
+            style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
+        self.EtherCATManagementEditor.Bind(wx.EVT_SIZE, self.OnResize)
+
+        self.EtherCATManagermentEditor_Main_Sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
+        self.EtherCATManagermentEditor_Main_Sizer.AddGrowableCol(0)
+        self.EtherCATManagermentEditor_Main_Sizer.AddGrowableRow(0)
+        
+        self.EtherCATManagementTreebook = EtherCATManagementTreebook(self.EtherCATManagementEditor, self.Controler, self)
+          
+        self.EtherCATManagermentEditor_Main_Sizer.AddSizer(self.EtherCATManagementTreebook, border=10, flag=wx.GROW)
+
+        self.EtherCATManagementEditor.SetSizer(self.EtherCATManagermentEditor_Main_Sizer)
+        return self.EtherCATManagementEditor
+    
+    def OnResize(self, event):
+        self.EtherCATManagementEditor.GetBestSize()
+        xstart, ystart = self.EtherCATManagementEditor.GetViewStart()
+        window_size = self.EtherCATManagementEditor.GetClientSize()
+        maxx, maxy = self.EtherCATManagementEditor.GetMinSize()
+        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        self.EtherCATManagementEditor.Scroll(posx, posy)
+        self.EtherCATManagementEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
+                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+        event.Skip()
+    # -------------------------------------------------------------------------------------------------------
+
 CIA402NodeEditor = NodeEditor
+
 
 def GetProcessVariablesTableColnames():
     _ = lambda x : x
@@ -537,7 +578,36 @@ NODE_POSITION_FILTER_FORMAT = _("Node Position: %d")
 class MasterEditor(ConfTreeNodeEditor):
     
     CONFNODEEDITOR_TABS = [
-        (_("Network"), "_create_EthercatMasterEditor")]
+        (_("Network"), "_create_EthercatMasterEditor"),
+        (_("Master State"), "_create_MasterStateEditor")
+        ]
+    
+    def _create_MasterStateEditor(self, prnt):
+        self.MasterStateEditor = wx.ScrolledWindow(prnt, style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
+        self.MasterStateEditor.Bind(wx.EVT_SIZE, self.OnResize)
+        
+        self.MasterStateEditor_Panel_Main_Sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
+        self.MasterStateEditor_Panel_Main_Sizer.AddGrowableCol(0)
+        self.MasterStateEditor_Panel_Main_Sizer.AddGrowableRow(0)
+        
+        self.MasterStateEditor_Panel = MasterStatePanelClass(self.MasterStateEditor, self.Controler)
+        
+        self.MasterStateEditor_Panel_Main_Sizer.AddSizer(self.MasterStateEditor_Panel, border=10, flag=wx.GROW)
+         
+        self.MasterStateEditor.SetSizer(self.MasterStateEditor_Panel_Main_Sizer)
+        return self.MasterStateEditor
+    
+    def OnResize(self, event):
+        self.MasterStateEditor.GetBestSize()
+        xstart, ystart = self.MasterStateEditor.GetViewStart()
+        window_size = self.MasterStateEditor.GetClientSize()
+        maxx, maxy = self.MasterStateEditor.GetMinSize()
+        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        self.MasterStateEditor.Scroll(posx, posy)
+        self.MasterStateEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
+                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+        event.Skip()
     
     def _create_EthercatMasterEditor(self, prnt):
         self.EthercatMasterEditor = wx.ScrolledWindow(prnt, 
@@ -638,6 +708,10 @@ class MasterEditor(ConfTreeNodeEditor):
 
     def __init__(self, parent, controler, window):
         ConfTreeNodeEditor.__init__(self, parent, controler, window)
+        
+        # ------------------------------------------------------------------
+        self.Controler = controler
+        # ------------------------------------------------------------------
         
         self.ProcessVariables = []
         self.CellShown = None
@@ -968,6 +1042,33 @@ class MasterEditor(ConfTreeNodeEditor):
         self.EthercatMasterEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT, 
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
+        
+    #def OnButtonClick(self, event):
+    #    self.MasterState = self.Controler.getMasterState()
+    #    if self.MasterState:
+    #        self.Phase.SetValue(self.MasterState["phase"])
+    #        self.Active.SetValue(self.MasterState["active"])
+    #        self.SlaveCount.SetValue(self.MasterState["slave"])
+    #        self.MacAddress.SetValue(self.MasterState["MAC"])
+    #        self.LinkState.SetValue(self.MasterState["link"])
+    #        self.TxFrames.SetValue(self.MasterState["TXframe"])
+    #        self.RxFrames.SetValue(self.MasterState["RXframe"])
+    #        self.TxByte.SetValue(self.MasterState["TXbyte"])
+    #        self.TxError.SetValue(self.MasterState["TXerror"])
+    #        self.LostFrames.SetValue(self.MasterState["lost"])
+            
+    #        self.TxFrameRate1.SetValue(self.MasterState["TXframerate1"])
+    #        self.TxFrameRate2.SetValue(self.MasterState["TXframerate2"])
+    #        self.TxFrameRate3.SetValue(self.MasterState["TXframerate3"])
+    #        self.TxRate1.SetValue(self.MasterState["TXrate1"])
+    #        self.TxRate2.SetValue(self.MasterState["TXrate2"])
+    #        self.TxRate3.SetValue(self.MasterState["TXrate3"])
+    #        self.LossRate1.SetValue(self.MasterState["loss1"])
+    #        self.LossRate2.SetValue(self.MasterState["loss2"])
+    #        self.LossRate3.SetValue(self.MasterState["loss3"])
+    #        self.FrameLoss1.SetValue(self.MasterState["frameloss1"])
+    #        self.FrameLoss2.SetValue(self.MasterState["frameloss2"])
+    #        self.FrameLoss3.SetValue(self.MasterState["frameloss3"])
     
 class LibraryEditorSizer(wx.FlexGridSizer):
     
@@ -1290,4 +1391,3 @@ class LibraryEditor(ConfTreeNodeEditor):
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
         
-
