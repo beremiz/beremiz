@@ -159,7 +159,7 @@ if cls:
                              "BitSize": object.getBitSize(),
                              "Access": entry_access,
                              "PDOMapping": entry_pdomapping}
-        
+
         for TxPdo in self.getTxPdo():
             ExtractPdoInfos(TxPdo, "Transmit", entries, limits)
         for RxPdo in self.getRxPdo():
@@ -167,7 +167,7 @@ if cls:
         
         return entries
     setattr(cls, "GetEntriesList", GetEntriesList)
-
+    
     def GetSyncManagers(self):
         sync_managers = []
         for sync_manager in self.getSm():
@@ -287,32 +287,35 @@ for mapping needed location variables
                 xml_tree = minidom.parse(xmlfile)
                 xmlfile.close()
                 
-                modules_infos = None
+                self.modules_infos = None
                 for child in xml_tree.childNodes:
                     if child.nodeType == xml_tree.ELEMENT_NODE and child.nodeName == "EtherCATInfo":
-                        modules_infos = EtherCATInfoClasses["EtherCATInfo.xsd"]["EtherCATInfo"]()
-                        modules_infos.loadXMLTree(child)
+                        self.modules_infos = EtherCATInfoClasses["EtherCATInfo.xsd"]["EtherCATInfo"]()
+                        self.modules_infos.loadXMLTree(child)
                 
-                if modules_infos is not None:
-                    vendor = modules_infos.getVendor()
+                if self.modules_infos is not None:
+                    vendor = self.modules_infos.getVendor()
                     
                     vendor_category = self.Library.setdefault(ExtractHexDecValue(vendor.getId()), 
                                                               {"name": ExtractName(vendor.getName(), _("Miscellaneous")), 
                                                                "groups": {}})
                     
-                    for group in modules_infos.getDescriptions().getGroups().getGroup():
+                    for group in self.modules_infos.getDescriptions().getGroups().getGroup():
                         group_type = group.getType()
                         
                         vendor_category["groups"].setdefault(group_type, {"name": ExtractName(group.getName(), group_type), 
                                                                           "parent": group.getParentGroup(),
                                                                           "order": group.getSortOrder(), 
+                                                                          "value": group.getcontent()["value"],
                                                                           "devices": []})
                     
-                    for device in modules_infos.getDescriptions().getDevices().getDevice():
+                    for device in self.modules_infos.getDescriptions().getDevices().getDevice():
                         device_group = device.getGroupType()
                         if not vendor_category["groups"].has_key(device_group):
                             raise ValueError, "Not such group \"%\"" % device_group
                         vendor_category["groups"][device_group]["devices"].append((device.getType().getcontent(), device))
+
+        return self.Library 
 
     def GetModulesLibrary(self, profile_filter=None):
         if self.Library is None:
@@ -375,6 +378,8 @@ for mapping needed location variables
                     revision_number = ExtractHexDecValue(device_infos.getType().getRevisionNo())
                     if (product_code == ExtractHexDecValue(module_infos["product_code"]) and
                         revision_number == ExtractHexDecValue(module_infos["revision_number"])):
+                        self.cntdevice = device_infos 
+                        self.cntdeviceType = device_type  
                         return device_infos, self.GetModuleExtraParams(vendor, product_code, revision_number)
         return None, None
     
@@ -459,6 +464,7 @@ class RootClass:
     
     CTNChildrenTypes = [("EthercatNode",_EthercatCTN,"Ethercat Master")]
     EditorType = LibraryEditor
+       
     
     def __init__(self):
         self.ModulesLibrary = None
@@ -502,4 +508,3 @@ class RootClass:
     def GetModuleInfos(self, module_infos):
         return self.ModulesLibrary.GetModuleInfos(module_infos)
 
-            

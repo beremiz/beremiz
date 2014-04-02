@@ -5,6 +5,11 @@ from ConfigTreeNode import ConfigTreeNode
 
 from ConfigEditor import NodeEditor
 
+#------------------------------------------
+from CommonEtherCATFunction import _CommonSlave 
+#------------------------------------------
+
+
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
     "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
     "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L"}
@@ -42,14 +47,18 @@ def ExtractName(names, default=None):
                 return name.getcontent()
     return default
 
+
 #--------------------------------------------------
 #                    Ethercat Node
 #--------------------------------------------------
 
 class _EthercatSlaveCTN:
-    
     NODE_PROFILE = None
     EditorType = NodeEditor
+    
+    def __init__(self):
+        # ----------- call ethercat mng. function --------------
+        self.CommonMethod = _CommonSlave(self)
     
     def GetIconName(self):
         return "Slave"
@@ -97,12 +106,18 @@ class _EthercatSlaveCTN:
             return params
         
     def SetParamsAttribute(self, path, value):
+        self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
         
         if path == "SlaveParams.Type":
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             value = (slave_type["device_type"], slave_type)
+            #if self._View is not None:
+                #wx.CallAfter(self._View.EtherCATManagementTreebook.SlaveStatePanel.RefreshSlaveInfos())
+                #self._View.EtherCATManagementTreebook.SlaveStatePanel.RefreshSlaveInfos()
+                #self._View.EtherCATManagementTreebook.PDOMonitoringPanel.PDOInfoUpdate()
+                #self._View.EtherCATManagementTreebook.SmartView.Create_SmartView()
             return value, True
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)
