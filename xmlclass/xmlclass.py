@@ -936,7 +936,7 @@ class ClassFactory:
                 if typeinfos not in parent_class:
                     lookup_classes[parent].append(typeinfos)
             elif parent_class != typeinfos:
-                lookup_classes[parent] = [parent_class, typeinfos]
+                lookup_classes[parent] = [typeinfos, parent_class]
         else:
             lookup_classes[parent] = typeinfos
     
