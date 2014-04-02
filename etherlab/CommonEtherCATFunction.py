@@ -26,6 +26,8 @@
 import os
 import wx
 
+mailbox_protocols =  ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
+
 def ExtractHexDecValue(value):
     """
      convert numerical value in string format into decimal or hex format.
@@ -475,13 +477,13 @@ class _CommonSlave:
 
         # 'device' represents current slave device selected by user
         if device is not None:
-            for eeprom_element in device.getEeprom().getcontent()["value"]:
+            for eeprom_element in device.getEeprom().getcontent():
                 # get EEPROM size; <Device>-<Eeprom>-<ByteSize>
                 if eeprom_element["name"] == "ByteSize":
-                    smartview_infos["eeprom_size"] = eeprom_element["value"]
+                    smartview_infos["eeprom_size"] = eeprom_element
                         
                 elif eeprom_element["name"] == "ConfigData":
-                    configData_data = self.DecimalToHex(eeprom_element["value"])
+                    configData_data = self.DecimalToHex(eeprom_element)
                     # get PDI type; <Device>-<Eeprom>-<ConfigData> address 0x00
                     smartview_infos["pdi_type"] = int(configData_data[0:2], 16)
                     # get state of device emulation; <Device>-<Eeprom>-<ConfigData> address 0x01
@@ -489,7 +491,7 @@ class _CommonSlave:
                         smartview_infos["device_emulation"] = "True"
 
                 elif eeprom_element["name"] == "BootStrap":
-                    bootstrap_data = "{:0>16x}".format(eeprom_element["value"])
+                    bootstrap_data = "{:0>16x}".format(eeprom_element)
                     # get bootstrap configuration; <Device>-<Eeprom>-<BootStrap>
                     for cfg, iter in [("mailbox_bootstrapconf_outstart", 0), 
                                       ("mailbox_bootstrapconf_outlength", 1),
@@ -498,9 +500,11 @@ class _CommonSlave:
                         smartview_infos[cfg] = str(int(bootstrap_data[4*iter+2:4*(iter+1)]+bootstrap_data[4*iter:4*iter+2], 16))
             
             # get protocol (profile) types supported by mailbox; <Device>-<Mailbox>
-            for mailbox_protocol in ["VoE", "SoE", "FoE", "CoE", "EoE", "AoE"]:
-                if eval("device.getMailbox().get%s()"%mailbox_protocol) is not None:
-                    smartview_infos["supported_mailbox"] += "%s,  "%mailbox_protocol
+            mb = device.getMailbox()
+            if mb is not None:
+                for mailbox_protocol in mailbox_protocols:
+                    if getattr(mb,"get%s"%mailbox_protocol)() is not None:
+                        smartview_infos["supported_mailbox"] += "%s,  "%mailbox_protocol
             smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(",  ")
                 
             # get standard configuration of mailbox; <Device>-<Sm>
@@ -682,9 +686,9 @@ class _CommonSlave:
         
         if device is not None:
             # get ConfigData for EEPROM offset 0x0000-0x000d; <Device>-<Eeprom>-<ConfigData>
-            for eeprom_element in device.getEeprom().getcontent()["value"]:
+            for eeprom_element in device.getEeprom().getcontent():
                 if eeprom_element["name"] == "ConfigData":
-                    data = self.DecimalToHex(eeprom_element["value"])
+                    data = self.DecimalToHex(eeprom_element)
             eeprom += self.GenerateEEPROMList(data, 0, 28)
             
             # calculate CRC for EEPROM offset 0x000e-0x000f
@@ -745,13 +749,17 @@ class _CommonSlave:
 
             # get BootStrap for EEPROM offset 0x0028-0x002e; <Device>-<Eeprom>-<BootStrap>
             data = ""
-            for eeprom_element in device.getEeprom().getcontent()["value"]:
+            for eeprom_element in device.getEeprom().getcontent():
                 if eeprom_element["name"] == "BootStrap":
-                    data = "{:0>16x}".format(eeprom_element["value"])
+                    data = "{:0>16x}".format(eeprom_element)
             eeprom += self.GenerateEEPROMList(data, 0, 16)
             
             # get Standard Mailbox for EEPROM offset 0x0030-0x0037; <Device>-<sm>
             data = ""
+            standard_send_mailbox_offset = None
+            standard_send_mailbox_size = None
+            standard_receive_mailbox_offset = None
+            standard_receive_mailbox_size = None
             for sm_element in device.getSm():
                 if sm_element.getcontent() == "MBoxOut":
                     standard_receive_mailbox_offset = "{:0>4x}".format(ExtractHexDecValue(sm_element.getStartAddress()))
@@ -787,14 +795,11 @@ class _CommonSlave:
             
             # get supported mailbox protocols for EEPROM offset 0x0038-0x0039;
             data = 0
-            for mbox, bit in [(device.getMailbox().getAoE(), 0),
-                              (device.getMailbox().getEoE(), 1),
-                              (device.getMailbox().getCoE(), 2),
-                              (device.getMailbox().getFoE(), 3),
-                              (device.getMailbox().getSoE(), 4),
-                              (device.getMailbox().getVoE(), 5)]:
-                if mbox is not None:
-                    data += 1<<bit
+            mb = device.getMailbox()
+            if mb is not None :
+                for bit,mbprot in enumerate(mailbox_protocols):
+                    if getattr(mb,"get%s"%mbprot)() is not None:
+                        data += 1<<bit
             data = "{:0>4x}".format(data)
             eeprom.append(data[2:4])
             eeprom.append(data[0:2])
@@ -805,10 +810,10 @@ class _CommonSlave:
             
             # get EEPROM size for EEPROM offset 0x007c-0x007d;
             data = ""
-            for eeprom_element in device.getEeprom().getcontent()["value"]:
+            for eeprom_element in device.getEeprom().getcontent():
                 if eeprom_element["name"] == "ByteSize":
-                    eeprom_size = int(str(eeprom_element["value"]))
-                    data = "{:0>4x}".format(int(eeprom_element["value"])/1024*8-1)
+                    eeprom_size = int(str(eeprom_element))
+                    data = "{:0>4x}".format(int(eeprom_element)/1024*8-1)
 
             if data == "":
                 eeprom.append("00")
@@ -1001,7 +1006,7 @@ class _CommonSlave:
         
         #  element5-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Image16x14>
         if device.getcontent() is not None:
-            data = device.getcontent()["value"]
+            data = device.getcontent()
             if data is not None and type(data) == unicode:
                 for vendor_spec_string in vendor_spec_strings:
                     if data == vendor_spec_string:
@@ -1025,7 +1030,7 @@ class _CommonSlave:
                     for group_type, group_etc in vendor["groups"].iteritems():
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
-                                data = group_etc["value"]
+                                data = group_etc
                 if data is not None and type(data) == unicode:
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
@@ -1183,41 +1188,42 @@ class _CommonSlave:
         eeprom.append("01") # Physical Layer Port info - assume 01
         #  CoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>
         coe_details = 0
-        if device.getMailbox().getCoE() is not None:
-            coe_details = 1 # sdo enabled
-            for attr, bit in [(device.getMailbox().getCoE().getSdoInfo(), 1),
-                               (device.getMailbox().getCoE().getPdoAssign(), 2),
-                               (device.getMailbox().getCoE().getPdoConfig(), 3),
-                               (device.getMailbox().getCoE().getPdoUpload(), 4),
-                               (device.getMailbox().getCoE().getCompleteAccess(), 5)]:
-                if attr==1 or attr==True:
-                    coe_details += 1<<bit        
+        mb = device.getMailbox()
+        coe_details = 1 # sdo enabled
+        if mb is not None :
+            coe = mb.getCoE()
+            if coe is not None:
+                for bit,flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig", 
+                                           "PdoUpload", "CompleteAccess"]):
+                    if getattr(coe,"get%s"%flag)() is not None:
+                        coe_details += 1<<bit        
         eeprom.append("{:0>2x}".format(coe_details))
         
         # word 4 : FoE Details and EoE Details
         #  FoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<FoE>
-        if device.getMailbox().getFoE() is not None:
+        if mb is not None and mb.getFoE() is not None:
             eeprom.append("01")
         else:
             eeprom.append("00")
         #  EoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<EoE>
-        if device.getMailbox().getEoE() is not None:
+        if mb is not None and mb.getEoE() is not None:
             eeprom.append("01")
         else:
             eeprom.append("00")
             
         # word 5 : SoE Channels(reserved) and DS402 Channels
         #  SoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<SoE>
-        if device.getMailbox().getSoE() is not None:
+        if mb is not None and mb.getSoE() is not None:
             eeprom.append("01")
         else:
             eeprom.append("00")
         #  DS402Channels; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>: DS402Channels
-        if device.getMailbox().getCoE().getDS402Channels() == True \
-        or device.getMailbox().getCoE().getDS402Channels() == 1:
-            eeprom.append("01")
-        else:
-            eeprom.append("00")
+        ds402ch = False
+        if mb is not None :
+            coe = mb.getCoE()
+            if coe is not None :
+                ds402ch = coe.getDS402Channels()
+        eeprom.append("01" if ds402ch in [True,1] else "00")
             
         # word 6 : SysmanClass(reserved) and Flags
         eeprom.append("00") # reserved
