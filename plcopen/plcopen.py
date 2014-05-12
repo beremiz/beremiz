@@ -1181,16 +1181,12 @@ if cls:
             self.interface = PLCOpenParser.CreateElement("interface", "pou")
         self.interface.setcontent(vars)
     setattr(cls, "setvars", setvars)
-    
-    def addpouLocalVar(self, var_type, name, location="", description=""):
-        self.addpouVar(var_type, name, location=location, description=description)
-    setattr(cls, "addpouLocalVar", addpouLocalVar)
         
     def addpouExternalVar(self, var_type, name):
-        self.addpouVar(type, name, "externalVars")
+        self.addpouVar(var_type, name, "externalVars")
     setattr(cls, "addpouExternalVar", addpouExternalVar)
     
-    def addpouVar(self, var_type, name, var_class="localVars", location="", description=""):
+    def addpouVar(self, var_type, name, var_class="localVars", location="", description="", initval=""):
         if self.interface is None:
             self.interface = PLCOpenParser.CreateElement("interface", "pou")
         content = self.interface.getcontent()
@@ -1215,9 +1211,14 @@ if cls:
             ft = PLCOpenParser.CreateElement("documentation", "variable")
             ft.setanyText(description)
             var.setdocumentation(ft)
+        if initval != "":
+            el = PLCOpenParser.CreateElement("initialValue", "variable")
+            el.setvalue(initval)
+            var.setinitialValue(el)
         
         varlist.appendvariable(var)
     setattr(cls, "addpouVar", addpouVar)
+    setattr(cls, "addpouLocalVar", addpouVar)
     
     def changepouVar(self, old_type, old_name, new_type, new_name):
         if self.interface is not None:
