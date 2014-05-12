@@ -313,7 +313,9 @@ class TextViewer(EditorPanel):
                             var_type = values[2]
                         else:
                             var_type = LOCATIONDATATYPES.get(location[2], ["BOOL"])[0]
-                        self.Controler.AddEditedElementPouVar(self.TagName, var_type, var_name, location, values[4])
+                        self.Controler.AddEditedElementPouVar(self.TagName,
+                            var_type, var_name, 
+                            location=location, description=values[4])
                         self.RefreshVariablePanel()
                         self.RefreshVariableTree()
                         event.SetDragText(var_name)

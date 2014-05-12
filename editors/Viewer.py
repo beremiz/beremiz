@@ -310,7 +310,21 @@ class ViewerDropTarget(wx.TextDropTarget):
                         else:
                             var_type = LOCATIONDATATYPES.get(location[2], ["BOOL"])[0]
                         if not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
-                            self.ParentWindow.Controler.AddEditedElementPouVar(tagname, var_type, var_name, location, values[4])
+                            self.ParentWindow.Controler.AddEditedElementPouVar(tagname, var_type, var_name, location=location, description=values[4])
+                            self.ParentWindow.RefreshVariablePanel()
+                            self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
+                        self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)
+            elif values[1] == "NamedConstant":
+                if pou_type == "program":
+                    initval = values[0]
+                    var_name = values[3]
+                    if var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
+                        message = _("\"%s\" pou already exists!")%var_name
+                    else:
+                        var_class = INPUT
+                        var_type = values[2]
+                        if not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
+                            self.ParentWindow.Controler.AddEditedElementPouVar(tagname, var_type, var_name, description=values[4], initval=initval)
                             self.ParentWindow.RefreshVariablePanel()
                             self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)

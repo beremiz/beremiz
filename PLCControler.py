@@ -2456,7 +2456,7 @@ class PLCControler:
             var_type_obj.setcontent(derived_type)
         return var_type_obj
     
-    def AddEditedElementPouVar(self, tagname, var_type, name, location="", description=""):
+    def AddEditedElementPouVar(self, tagname, var_type, name,**args):
         if self.Project is not None:
             words = tagname.split("::")
             if words[0] in ['P', 'T', 'A']:
@@ -2464,7 +2464,7 @@ class PLCControler:
                 if pou is not None:
                     pou.addpouLocalVar(
                         self.GetVarTypeObject(var_type), 
-                        name, location, description)
+                        name, **args)
     
     def AddEditedElementPouExternalVar(self, tagname, var_type, name):
         if self.Project is not None:
