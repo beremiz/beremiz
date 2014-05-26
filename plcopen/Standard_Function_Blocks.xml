@@ -1194,7 +1194,7 @@ QD := (CV <= 0);]]></xhtml:p>
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,__CURRENT_TIME)}
+            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,,__CURRENT_TIME)}
 
 IF ((STATE = 0) AND NOT(PREV_IN) AND IN)   (* found rising edge on IN *)
 THEN
@@ -1307,7 +1307,7 @@ PREV_IN := IN;
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,__CURRENT_TIME)}
+            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,,__CURRENT_TIME)}
 
 IF ((STATE = 0) AND NOT(PREV_IN) AND IN)   (* found rising edge on IN *)
 THEN
@@ -1424,7 +1424,7 @@ PREV_IN := IN;
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,__CURRENT_TIME)}
+            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,,__CURRENT_TIME)}
 
 IF ((STATE = 0) AND PREV_IN AND NOT(IN))   (* found falling edge on IN *)
 THEN

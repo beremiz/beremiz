@@ -96,30 +96,30 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 	    /* trig only if not already trigged */
 	    __GET_VAR(data__->TRIGGED) == 0){
 		/* mark as trigged */
-	    __SET_VAR(data__->, TRIGGED, 1);
+	    __SET_VAR(data__->, TRIGGED,, 1);
 		/* make a safe copy of the code */
-		__SET_VAR(data__->, PREBUFFER, __GET_VAR(data__->CODE));
+		__SET_VAR(data__->, PREBUFFER,, __GET_VAR(data__->CODE));
 	}
 	/* retain value for next rising edge detection */
-	__SET_VAR(data__->, TRIGM1, __GET_VAR(data__->TRIG));
+	__SET_VAR(data__->, TRIGM1,, __GET_VAR(data__->TRIG));
 
 	/* python thread is not in ? */
 	if( PythonState & PYTHON_LOCKED_BY_PLC){
 		/* if some answer are waiting, publish*/
 		if(__GET_VAR(data__->STATE) == PYTHON_FB_ANSWERED){
 			/* Copy buffer content into result*/
-			__SET_VAR(data__->, RESULT, __GET_VAR(data__->BUFFER));
+			__SET_VAR(data__->, RESULT,, __GET_VAR(data__->BUFFER));
 			/* signal result presece to PLC*/
-			__SET_VAR(data__->, ACK, 1);
+			__SET_VAR(data__->, ACK,, 1);
 			/* Mark as free */
-			__SET_VAR(data__->, STATE, PYTHON_FB_FREE);
+			__SET_VAR(data__->, STATE,, PYTHON_FB_FREE);
 			/* mark as not trigged */
 			if(!poll)
-			    __SET_VAR(data__->, TRIGGED, 0);
+			    __SET_VAR(data__->, TRIGGED,, 0);
 			/*printf("__PythonEvalFB pop %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
 		}else if(poll){
 			/* when in polling, no answer == ack down */
-		    __SET_VAR(data__->, ACK, 0);
+		    __SET_VAR(data__->, ACK., 0);
 		}
 		/* got the order to act ?*/
 		if(__GET_VAR(data__->TRIGGED) == 1 &&
@@ -132,17 +132,17 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 			 * be requested twice */
 			EvalFBs[Current_PLC_EvalFB] = data__;
 			/* copy into BUFFER local*/
-			__SET_VAR(data__->, BUFFER, __GET_VAR(data__->PREBUFFER));
+			__SET_VAR(data__->, BUFFER,, __GET_VAR(data__->PREBUFFER));
 			/* Set ACK pin to low so that we can set a rising edge on result */
 			if(!poll){
 				/* when not polling, a new answer imply reseting ack*/
-			    __SET_VAR(data__->, ACK, 0);
+			    __SET_VAR(data__->, ACK,, 0);
 			}else{
 				/* when in polling, acting reset trigger */
-			    __SET_VAR(data__->, TRIGGED, 0);
+			    __SET_VAR(data__->, TRIGGED,, 0);
 			}
 			/* Mark FB busy */
-			__SET_VAR(data__->, STATE, PYTHON_FB_REQUESTED);
+			__SET_VAR(data__->, STATE,, PYTHON_FB_REQUESTED);
 			/* Have to wakeup python thread in case he was asleep */
 			PythonState |= PYTHON_MUSTWAKEUP;
 			/*printf("__PythonEvalFB push %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
@@ -168,22 +168,22 @@ char* PythonIterator(char* result, void** id)
 	   	/* If result not None */
 	   	if(result){
 			/* Get results len */
-	   	    __SET_VAR(data__->, BUFFER, strlen(result), .len);
+	   	    __SET_VAR(data__->, BUFFER, .len, strlen(result));
 			/* prevent results overrun */
 			if(__GET_VAR(data__->BUFFER, .len) > STR_MAX_LEN)
 			{
-			    __SET_VAR(data__->, BUFFER, STR_MAX_LEN, .len );
+			    __SET_VAR(data__->, BUFFER, .len, STR_MAX_LEN);
 				/* TODO : signal error */
 			}
 			/* Copy results to buffer */
 			strncpy((char*)__GET_VAR(data__->BUFFER, .body), result, __GET_VAR(data__->BUFFER,.len));
 	   	}else{
-	   	    __SET_VAR(data__->, BUFFER, 0, .len);
+	   	    __SET_VAR(data__->, BUFFER, .len, 0);
 	   	}
 		/* remove block from fifo*/
 		EvalFBs[Current_Python_EvalFB] = NULL;
 		/* Mark block as answered */
-		__SET_VAR(data__->, STATE, PYTHON_FB_ANSWERED);
+		__SET_VAR(data__->, STATE,, PYTHON_FB_ANSWERED);
 		/* Get a new line */
 		Current_Python_EvalFB = (Current_Python_EvalFB + 1) %% %(python_eval_fb_count)d;
 		//printf("PythonIterator ++ Current_Python_EvalFB %%d\n", Current_Python_EvalFB);
@@ -202,10 +202,10 @@ char* PythonIterator(char* result, void** id)
 		LockPython();
 	}
 	/* Mark block as processing */
-	__SET_VAR(data__->, STATE, PYTHON_FB_PROCESSING);
+	__SET_VAR(data__->, STATE,, PYTHON_FB_PROCESSING);
 	//printf("PythonIterator\n");
 	/* make BUFFER a null terminated string */
-	__SET_VAR(data__->, BUFFER, 0, .body[__GET_VAR(data__->BUFFER, .len)]);
+	__SET_VAR(data__->, BUFFER, .body[__GET_VAR(data__->BUFFER, .len)], 0);
 	/* next command is BUFFER */
 	next_command = (char*)__GET_VAR(data__->BUFFER, .body);
 	*id=data__;
