@@ -81,7 +81,7 @@
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,__CURRENT_TIME)}
+            <xhtml:p><![CDATA[{__SET_VAR(data__->,CURRENT_TIME,,__CURRENT_TIME)}
 
  IF IN
  THEN
