@@ -12,7 +12,7 @@ LOCATIONDATATYPES = {"X" : ["BOOL"],
                      "B" : ["SINT", "USINT", "BYTE", "STRING"],
                      "W" : ["INT", "UINT", "WORD", "WSTRING"],
                      "D" : ["DINT", "UDINT", "REAL", "DWORD"],
-                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]} 
+                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]}
 
 #-------------------------------------------------------------------------------
 #                        Function Block Types definitions
