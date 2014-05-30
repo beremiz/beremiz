@@ -105,6 +105,8 @@ TypeHierarchy_list = [
     #("WSTRING", "ANY_STRING") # TODO
 ]
 
+DefaultType = "DINT"
+
 DataTypeRange_list = [
     ("SINT", (-2**7, 2**7 - 1)),
     ("INT", (-2**15, 2**15 - 1)),

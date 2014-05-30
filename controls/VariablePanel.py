@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+#based on the plcopen standard.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -30,7 +30,7 @@ import wx
 import wx.grid
 import wx.lib.buttons
 
-from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS
+from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
 from dialogs.ArrayTypeDialog import ArrayTypeDialog
 from CustomGrid import CustomGrid
@@ -49,7 +49,7 @@ def AppendMenu(parent, help, id, kind, text):
     else:
         parent.Append(helpString=help, id=id, kind=kind, item=text)
 
-[TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, 
+[TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
  POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
 ] = range(10)
 
@@ -73,8 +73,8 @@ OPTIONS_DICT = dict([(_(option), option) for option in GetOptions()])
 
 def GetFilterChoiceTransfer():
     _ = lambda x : x
-    return {_("All"): _("All"), _("Interface"): _("Interface"), 
-            _("   Input"): _("Input"), _("   Output"): _("Output"), _("   InOut"): _("InOut"), 
+    return {_("All"): _("All"), _("Interface"): _("Interface"),
+            _("   Input"): _("Input"), _("   Output"): _("Output"), _("   InOut"): _("InOut"),
             _("   External"): _("External"), _("Variables"): _("Variables"), _("   Local"): _("Local"),
             _("   Temp"): _("Temp"), _("Global"): _("Global")}#, _("Access") : _("Access")}
 VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().iterkeys()])
@@ -97,7 +97,7 @@ VARIABLE_NAME_SUFFIX_MODEL = re.compile("([0-9]*)$")
 #-------------------------------------------------------------------------------
 
 class VariableTable(CustomTable):
-    
+
     """
     A custom wx.grid.Grid Table using user supplied data
     """
@@ -105,7 +105,7 @@ class VariableTable(CustomTable):
         # The base class must be initialized *first*
         CustomTable.__init__(self, parent, data, colnames)
         self.old_value = None
-    
+
     def GetValueByName(self, row, colname):
         if row < self.GetNumberRows():
             return getattr(self.data[row], colname)
@@ -113,7 +113,7 @@ class VariableTable(CustomTable):
     def SetValueByName(self, row, colname, value):
         if row < self.GetNumberRows():
             setattr(self.data[row], colname, value)
-    
+
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             if col == 0:
@@ -130,7 +130,7 @@ class VariableTable(CustomTable):
             if colname in ["Class", "Option"]:
                 return _(value)
             return value
-    
+
     def SetValue(self, row, col, value):
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
@@ -209,10 +209,10 @@ class VariableTable(CustomTable):
                                 editor.SetParameters(",".join([_(choice) for choice in self.Parent.ClassList if choice not in excluded]))
                     elif colname != "Documentation":
                         grid.SetReadOnly(row, col, True)
-                
+
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
-                
+
                 if colname == "Location" and LOCATION_MODEL.match(self.GetValueByName(row, colname)) is None:
                     highlight_colours = ERROR_HIGHLIGHT
                 else:
@@ -223,23 +223,23 @@ class VariableTable(CustomTable):
 
 #-------------------------------------------------------------------------------
 #                         Variable Panel Drop Target
-#-------------------------------------------------------------------------------   
+#-------------------------------------------------------------------------------
 
 class VariableDropTarget(wx.TextDropTarget):
     '''
     This allows dragging a variable location from somewhere to the Location
     column of a variable row.
-    
+
     The drag source should be a TextDataObject containing a Python tuple like:
         ('%ID0.0.0', 'location', 'REAL')
-    
+
     c_ext/CFileEditor.py has an example of this (you can drag a C extension
     variable to the Location column of the variable panel).
     '''
     def __init__(self, parent):
         wx.TextDropTarget.__init__(self)
         self.ParentWindow = parent
-    
+
     def OnDropText(self, x, y, data):
         self.ParentWindow.ParentWindow.Select()
         x, y = self.ParentWindow.VariablesGrid.CalcUnscrolledPosition(x, y)
@@ -248,7 +248,7 @@ class VariableDropTarget(wx.TextDropTarget):
         message = None
         element_type = self.ParentWindow.ElementType
         try:
-            values = eval(data)    
+            values = eval(data)
         except:
             message = _("Invalid value \"%s\" for variable grid element")%data
             values = None
@@ -267,12 +267,12 @@ class VariableDropTarget(wx.TextDropTarget):
                         location = values[0]
                         variable_type = self.ParentWindow.Table.GetValueByName(row, "Type")
                         base_type = self.ParentWindow.Controler.GetBaseType(variable_type)
-                        
+
                         if values[2] is not None:
                             base_location_type = self.ParentWindow.Controler.GetBaseType(values[2])
                             if values[2] != variable_type and base_type != base_location_type:
                                 message = _("Incompatible data types between \"%s\" and \"%s\"")%(values[2], variable_type)
-                        
+
                         if message is None:
                             if not location.startswith("%"):
                                 if location[0].isdigit() and base_type != "BOOL":
@@ -282,9 +282,9 @@ class VariableDropTarget(wx.TextDropTarget):
                                 elif base_type not in LOCATIONDATATYPES[location[0]]:
                                     message = _("Incompatible size of data between \"%s\" and \"%s\"")%(location, variable_type)
                                 else:
-                                    dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow, 
-                                          _("Select a variable class:"), _("Variable class"), 
-                                          ["Input", "Output", "Memory"], 
+                                    dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
+                                          _("Select a variable class:"), _("Variable class"),
+                                          ["Input", "Output", "Memory"],
                                           wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                                     if dialog.ShowModal() == wx.ID_OK:
                                         selected = dialog.GetSelection()
@@ -299,7 +299,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                         location = "%Q" + location
                                     else:
                                         location = "%M" + location
-                                        
+
                             if message is None:
                                 self.ParentWindow.Table.SetValue(row, col, location)
                                 self.ParentWindow.Table.ResetView(self.ParentWindow.VariablesGrid)
@@ -311,7 +311,7 @@ class VariableDropTarget(wx.TextDropTarget):
                         self.ParentWindow.Table.SetValue(row, col, values[0])
                         self.ParentWindow.Table.ResetView(self.ParentWindow.VariablesGrid)
                         self.ParentWindow.SaveValues()
-            elif (element_type not in ["config", "resource", "function"] and values[1] == "Global" and 
+            elif (element_type not in ["config", "resource", "function"] and values[1] == "Global" and
                   self.ParentWindow.Filter in ["All", "Interface", "External"] or
                   element_type != "function" and values[1] == "location"):
                 if values[1] == "location":
@@ -319,11 +319,11 @@ class VariableDropTarget(wx.TextDropTarget):
                 else:
                     var_name = values[0]
                 tagname = self.ParentWindow.GetTagName()
-                if var_name.upper() in [name.upper() 
+                if var_name.upper() in [name.upper()
                         for name in self.ParentWindow.Controler.\
                             GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!")%var_name
-                elif not var_name.upper() in [name.upper() 
+                elif not var_name.upper() in [name.upper()
                         for name in self.ParentWindow.Controler.\
                             GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     var_infos = self.ParentWindow.DefaultValue.copy()
@@ -332,9 +332,9 @@ class VariableDropTarget(wx.TextDropTarget):
                     if values[1] == "location":
                         location = values[0]
                         if not location.startswith("%"):
-                            dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow, 
-                                  _("Select a variable class:"), _("Variable class"), 
-                                  ["Input", "Output", "Memory"], 
+                            dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
+                                  _("Select a variable class:"), _("Variable class"),
+                                  ["Input", "Output", "Memory"],
                                   wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
@@ -354,7 +354,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                                                 self.ParentWindow.Debug)
                             if len(configs) == 0:
                                 return
-                            if not var_name.upper() in [name.upper() 
+                            if not var_name.upper() in [name.upper()
                                 for name in self.ParentWindow.Controler.\
                                     GetConfigurationVariableNames(configs[0])]:
                                 self.ParentWindow.Controler.AddConfigurationGlobalVar(
@@ -372,10 +372,10 @@ class VariableDropTarget(wx.TextDropTarget):
                     self.ParentWindow.Values.append(var_infos)
                     self.ParentWindow.SaveValues()
                     self.ParentWindow.RefreshValues()
-        
+
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
-    
+
     def ShowMessage(self, message):
         message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
         message.ShowModal()
@@ -383,85 +383,85 @@ class VariableDropTarget(wx.TextDropTarget):
 
 #-------------------------------------------------------------------------------
 #                               Variable Panel
-#-------------------------------------------------------------------------------   
+#-------------------------------------------------------------------------------
 
 class VariablePanel(wx.Panel):
-    
+
     def __init__(self, parent, window, controler, element_type, debug=False):
         wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
-        
+
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=0)
         self.MainSizer.AddGrowableCol(0)
         self.MainSizer.AddGrowableRow(1)
-        
+
         controls_sizer = wx.FlexGridSizer(cols=10, hgap=5, rows=1, vgap=5)
         controls_sizer.AddGrowableCol(5)
         controls_sizer.AddGrowableRow(0)
         self.MainSizer.AddSizer(controls_sizer, border=5, flag=wx.GROW|wx.ALL)
-        
+
         self.ReturnTypeLabel = wx.StaticText(self, label=_('Return Type:'))
         controls_sizer.AddWindow(self.ReturnTypeLabel, flag=wx.ALIGN_CENTER_VERTICAL)
-        
+
         self.ReturnType = wx.ComboBox(self,
               size=wx.Size(145, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnReturnTypeChanged, self.ReturnType)
         controls_sizer.AddWindow(self.ReturnType)
-        
+
         self.DescriptionLabel = wx.StaticText(self, label=_('Description:'))
         controls_sizer.AddWindow(self.DescriptionLabel, flag=wx.ALIGN_CENTER_VERTICAL)
-        
+
         self.Description = wx.TextCtrl(self,
               size=wx.Size(250, -1), style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnDescriptionChanged, self.Description)
         self.Description.Bind(wx.EVT_KILL_FOCUS, self.OnDescriptionChanged)
-        controls_sizer.AddWindow(self.Description) 
-        
+        controls_sizer.AddWindow(self.Description)
+
         class_filter_label = wx.StaticText(self, label=_('Class Filter:'))
         controls_sizer.AddWindow(class_filter_label, flag=wx.ALIGN_CENTER_VERTICAL)
-        
-        self.ClassFilter = wx.ComboBox(self, 
+
+        self.ClassFilter = wx.ComboBox(self,
               size=wx.Size(145, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnClassFilter, self.ClassFilter)
         controls_sizer.AddWindow(self.ClassFilter)
-        
+
         for name, bitmap, help in [
                 ("AddButton", "add_element", _("Add variable")),
                 ("DeleteButton", "remove_element", _("Remove variable")),
                 ("UpButton", "up", _("Move variable up")),
                 ("DownButton", "down", _("Move variable down"))]:
-            button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap), 
+            button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
                   size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             controls_sizer.AddWindow(button)
-        
+
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL)
         self.VariablesGrid.SetDropTarget(VariableDropTarget(self))
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, 
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
               self.OnVariablesGridCellChange)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, 
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,
               self.OnVariablesGridCellLeftClick)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, 
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
               self.OnVariablesGridEditorShown)
         self.MainSizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
-        
+
         self.SetSizer(self.MainSizer)
-        
+
         self.ParentWindow = window
         self.Controler = controler
         self.ElementType = element_type
         self.Debug = debug
-        
+
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
-        self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, 
+        self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer,
               self.RefreshHighlightsTimer)
-        
+
         self.Filter = "All"
         self.FilterChoices = []
         self.FilterChoiceTransfer = GetFilterChoiceTransfer()
-        
-        self.DefaultValue = _VariableInfos("", "", "", "", "", True, "", "INT", ([], []), 0)
-        
+
+        self.DefaultValue = _VariableInfos("", "", "", "", "", True, "", DefaultType, ([], []), 0)
+
         if element_type in ["config", "resource"]:
             self.DefaultTypes = {"All" : "Global"}
         else:
@@ -481,7 +481,7 @@ class VariablePanel(wx.Panel):
 
             # these condense the ColAlignements list
             l = wx.ALIGN_LEFT
-            c = wx.ALIGN_CENTER 
+            c = wx.ALIGN_CENTER
 
             #                      Num  Name    Class   Type    Loc     Init    Option   Doc
             self.ColSizes       = [40,  80,     70,     80,     80,     80,     100,     80]
@@ -502,15 +502,15 @@ class VariablePanel(wx.Panel):
 
             # these condense the ColAlignements list
             l = wx.ALIGN_LEFT
-            c = wx.ALIGN_CENTER 
+            c = wx.ALIGN_CENTER
 
             #                      Num  Name    Class   Type    Init    Option   Doc
             self.ColSizes       = [40,  80,     70,     80,     80,     100,     160]
             self.ColAlignements = [c,   l,      l,      l,      l,      l,       l]
-            
+
         self.ElementType = element_type
         self.BodyType = None
-        
+
         for choice in self.FilterChoices:
             self.ClassFilter.Append(_(choice))
 
@@ -526,11 +526,11 @@ class VariablePanel(wx.Panel):
                                        "Up": self.UpButton,
                                        "Down": self.DownButton})
         self.VariablesGrid.SetEditable(not self.Debug)
-        
+
         def _AddVariable(new_row):
             if new_row > 0:
                 row_content = self.Values[new_row - 1].copy()
-                
+
                 result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content.Name)
                 if result is not None:
                     name = row_content.Name[:result.start(1)]
@@ -546,8 +546,8 @@ class VariablePanel(wx.Panel):
                 row_content = None
                 start_idx = 0
                 name = "LocalVar"
-                
-            if row_content is not None and row_content.Edit: 
+
+            if row_content is not None and row_content.Edit:
                 row_content = self.Values[new_row - 1].copy()
             else:
                 row_content = self.DefaultValue.copy()
@@ -555,10 +555,10 @@ class VariablePanel(wx.Panel):
                     row_content.Class = self.DefaultTypes[self.Filter]
                 else:
                     row_content.Class = self.Filter
-            
+
             row_content.Name = self.Controler.GenerateNewName(
                     self.TagName, None, name + "%d", start_idx)
-            
+
             if self.Filter == "All" and len(self.Values) > 0:
                 self.Values.insert(new_row, row_content)
             else:
@@ -568,7 +568,7 @@ class VariablePanel(wx.Panel):
             self.RefreshValues()
             return new_row
         setattr(self.VariablesGrid, "_AddRow", _AddVariable)
-        
+
         def _DeleteVariable(row):
             if self.Table.GetValueByName(row, "Edit"):
                 self.Values.remove(self.Table.GetRow(row))
@@ -577,7 +577,7 @@ class VariablePanel(wx.Panel):
                     self.ParentWindow.RefreshView(variablepanel = False)
                 self.RefreshValues()
         setattr(self.VariablesGrid, "_DeleteRow", _DeleteVariable)
-            
+
         def _MoveVariable(row, move):
             if self.Filter == "All":
                 new_row = max(0, min(row + move, len(self.Values) - 1))
@@ -588,7 +588,7 @@ class VariablePanel(wx.Panel):
                 return new_row
             return row
         setattr(self.VariablesGrid, "_MoveRow", _MoveVariable)
-        
+
         def _RefreshButtons():
             if self:
                 table_length = len(self.Table.data)
@@ -603,7 +603,7 @@ class VariablePanel(wx.Panel):
                 self.UpButton.Enable(not self.Debug and (table_length > 0 and row > 0 and self.Filter == "All"))
                 self.DownButton.Enable(not self.Debug and (table_length > 0 and row < table_length - 1 and self.Filter == "All"))
         setattr(self.VariablesGrid, "RefreshButtons", _RefreshButtons)
-        
+
         self.VariablesGrid.SetRowLabelSize(0)
         for col in range(self.Table.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
@@ -611,29 +611,29 @@ class VariablePanel(wx.Panel):
             self.VariablesGrid.SetColAttr(col, attr)
             self.VariablesGrid.SetColMinimalWidth(col, self.ColSizes[col])
             self.VariablesGrid.AutoSizeColumn(col, False)
-    
+
     def __del__(self):
         self.RefreshHighlightsTimer.Stop()
-    
+
     def SetTagName(self, tagname):
         self.TagName = tagname
         self.BodyType = self.Controler.GetEditedElementBodyType(self.TagName)
-    
+
     def GetTagName(self):
         return self.TagName
-    
+
     def IsFunctionBlockType(self, name):
-        if (isinstance(name, TupleType) or 
+        if (isinstance(name, TupleType) or
             self.ElementType != "function" and self.BodyType in ["ST", "IL"]):
             return False
         else:
             return self.Controler.GetBlockType(name, debug=self.Debug) is not None
-    
+
     def RefreshView(self):
         self.PouNames = self.Controler.GetProjectPouNames(self.Debug)
         returnType = None
         description = None
-        
+
         words = self.TagName.split("::")
         if self.ElementType == "config":
             self.Values = self.Controler.GetConfigurationGlobalVars(words[1], self.Debug)
@@ -647,7 +647,7 @@ class VariablePanel(wx.Panel):
                 returnType = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, debug=self.Debug)
             description = self.Controler.GetPouDescription(words[1])
             self.Values = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
-        
+
         if returnType is not None:
             self.ReturnType.SetStringSelection(returnType)
             self.ReturnType.Enable(not self.Debug)
@@ -657,7 +657,7 @@ class VariablePanel(wx.Panel):
             self.ReturnType.Enable(False)
             self.ReturnTypeLabel.Hide()
             self.ReturnType.Hide()
-        
+
         if description is not None:
             self.Description.SetValue(description)
             self.Description.Enable(not self.Debug)
@@ -667,11 +667,11 @@ class VariablePanel(wx.Panel):
             self.Description.Enable(False)
             self.DescriptionLabel.Hide()
             self.Description.Hide()
-        
+
         self.RefreshValues()
         self.VariablesGrid.RefreshButtons()
         self.MainSizer.Layout()
-    
+
     def OnReturnTypeChanged(self, event):
         words = self.TagName.split("::")
         self.Controler.SetPouInterfaceReturnType(words[1], self.ReturnType.GetStringSelection())
@@ -679,7 +679,7 @@ class VariablePanel(wx.Panel):
         self.ParentWindow.RefreshView(variablepanel = False)
         self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         event.Skip()
-    
+
     def OnDescriptionChanged(self, event):
         words = self.TagName.split("::")
         old_description = self.Controler.GetPouDescription(words[1])
@@ -688,7 +688,7 @@ class VariablePanel(wx.Panel):
             self.Controler.SetPouDescription(words[1], new_description)
             self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         event.Skip()
-    
+
     def OnClassFilter(self, event):
         self.Filter = self.FilterChoiceTransfer[VARIABLE_CHOICES_DICT[self.ClassFilter.GetStringSelection()]]
         self.RefreshTypeList()
@@ -711,7 +711,7 @@ class VariablePanel(wx.Panel):
         colname = self.Table.GetColLabelValue(col, False)
         value = self.Table.GetValue(row, col)
         message = None
-        
+
         if colname == "Name" and value != "":
             if not TestIdentifier(value):
                 message = _("\"%s\" is not a valid identifier!") % value
@@ -735,7 +735,7 @@ class VariablePanel(wx.Panel):
                 wx.CallAfter(self.ParentWindow.RefreshView, False)
             elif colname == "Location":
                 wx.CallAfter(self.ParentWindow.RefreshView)
-            
+
         if message is not None:
             dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
             dialog.ShowModal()
@@ -743,9 +743,9 @@ class VariablePanel(wx.Panel):
             event.Veto()
         else:
             event.Skip()
-    
+
     def OnVariablesGridEditorShown(self, event):
-        row, col = event.GetRow(), event.GetCol() 
+        row, col = event.GetRow(), event.GetCol()
 
         label_value = self.Table.GetColLabelValue(col, False)
         if label_value == "Type":
@@ -769,9 +769,9 @@ class VariablePanel(wx.Panel):
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
 
             type_menu.AppendMenu(wx.NewId(), _("User Data Types"), datatype_menu)
-            
+
             for category in self.Controler.GetConfNodeDataTypes():
-               
+
                if len(category["list"]) > 0:
                    # build a submenu containing confnode types
                    confnode_datatype_menu = wx.Menu(title='')
@@ -779,18 +779,18 @@ class VariablePanel(wx.Panel):
                        new_id = wx.NewId()
                        AppendMenu(confnode_datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
                        self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
-                   
+
                    type_menu.AppendMenu(wx.NewId(), category["name"], confnode_datatype_menu)
 
             # build a submenu containing function block types
             bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
             pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
             classtype = self.Table.GetValueByName(row, "Class")
-            
+
             new_id = wx.NewId()
             AppendMenu(type_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Array"))
             self.Bind(wx.EVT_MENU, self.VariableArrayTypeFunction, id=new_id)
-            
+
             if classtype in ["Input", "Output", "InOut", "External", "Global"] or \
             poutype != "function" and bodytype in ["ST", "IL"]:
                 functionblock_menu = wx.Menu(title='')
@@ -812,7 +812,7 @@ class VariablePanel(wx.Panel):
             event.Veto()
         else:
             event.Skip()
-    
+
     def GetVariableTypeFunction(self, base_type):
         def VariableTypeFunction(event):
             row = self.VariablesGrid.GetGridCursorRow()
@@ -823,11 +823,11 @@ class VariablePanel(wx.Panel):
             self.Controler.BufferProject()
             self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         return VariableTypeFunction
-    
+
     def VariableArrayTypeFunction(self, event):
         row = self.VariablesGrid.GetGridCursorRow()
-        dialog = ArrayTypeDialog(self, 
-                                 self.Controler.GetDataTypes(self.TagName), 
+        dialog = ArrayTypeDialog(self,
+                                 self.Controler.GetDataTypes(self.TagName),
                                  self.Table.GetValueByName(row, "Type"))
         if dialog.ShowModal() == wx.ID_OK:
             self.Table.SetValueByName(row, "Type", dialog.GetValue())
@@ -837,7 +837,7 @@ class VariablePanel(wx.Panel):
             self.Controler.BufferProject()
             self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         dialog.Destroy()
-    
+
     def OnVariablesGridCellLeftClick(self, event):
         row = event.GetRow()
         if not self.Debug and (event.GetCol() == 0 and self.Table.GetValueByName(row, "Edit")):
@@ -849,7 +849,7 @@ class VariablePanel(wx.Panel):
             dragSource.SetData(data)
             dragSource.DoDragDrop()
         event.Skip()
-    
+
     def RefreshValues(self):
         data = []
         for num, variable in enumerate(self.Values):
@@ -858,7 +858,7 @@ class VariablePanel(wx.Panel):
                 data.append(variable)
         self.Table.SetData(data)
         self.Table.ResetView(self.VariablesGrid)
-            
+
     def SaveValues(self, buffer = True):
         words = self.TagName.split("::")
         if self.ElementType == "config":
@@ -871,7 +871,7 @@ class VariablePanel(wx.Panel):
             self.Controler.SetPouInterfaceVars(words[1], self.Values)
         if buffer:
             self.Controler.BufferProject()
-            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)            
+            self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
 
 #-------------------------------------------------------------------------------
 #                        Highlights showing functions
