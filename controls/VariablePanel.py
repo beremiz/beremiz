@@ -43,12 +43,6 @@ from PLCControler import _VariableInfos
 #                                 Helpers
 #-------------------------------------------------------------------------------
 
-def AppendMenu(parent, help, id, kind, text):
-    if wx.VERSION >= (2, 6, 0):
-        parent.Append(help=help, id=id, kind=kind, text=text)
-    else:
-        parent.Append(helpString=help, id=id, kind=kind, item=text)
-
 [TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
  POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
 ] = range(10)
@@ -744,63 +738,76 @@ class VariablePanel(wx.Panel):
         else:
             event.Skip()
 
-    def OnVariablesGridEditorShown(self, event):
-        row, col = event.GetRow(), event.GetCol()
-
-        label_value = self.Table.GetColLabelValue(col, False)
-        if label_value == "Type":
-            type_menu = wx.Menu(title='')   # the root menu
-
+    def BuildStdIECTypesMenu(self,type_menu):
             # build a submenu containing standard IEC types
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():
                 new_id = wx.NewId()
-                AppendMenu(base_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=base_type)
+                base_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=base_type)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), id=new_id)
 
             type_menu.AppendMenu(wx.NewId(), _("Base Types"), base_menu)
 
+    def BuildUserTypesMenu(self,type_menu):
             # build a submenu containing user-defined types
             datatype_menu = wx.Menu(title='')
             datatypes = self.Controler.GetDataTypes(basetypes = False, confnodetypes = False)
             for datatype in datatypes:
                 new_id = wx.NewId()
-                AppendMenu(datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
+                datatype_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
 
             type_menu.AppendMenu(wx.NewId(), _("User Data Types"), datatype_menu)
 
-            for category in self.Controler.GetConfNodeDataTypes():
-
-               if len(category["list"]) > 0:
-                   # build a submenu containing confnode types
-                   confnode_datatype_menu = wx.Menu(title='')
-                   for datatype in category["list"]:
-                       new_id = wx.NewId()
-                       AppendMenu(confnode_datatype_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
-                       self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
-
-                   type_menu.AppendMenu(wx.NewId(), category["name"], confnode_datatype_menu)
-
-            # build a submenu containing function block types
-            bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
-            pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
-            classtype = self.Table.GetValueByName(row, "Class")
-
-            new_id = wx.NewId()
-            AppendMenu(type_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Array"))
-            self.Bind(wx.EVT_MENU, self.VariableArrayTypeFunction, id=new_id)
-
-            if classtype in ["Input", "Output", "InOut", "External", "Global"] or \
-            poutype != "function" and bodytype in ["ST", "IL"]:
-                functionblock_menu = wx.Menu(title='')
-                fbtypes = self.Controler.GetFunctionBlockTypes(self.TagName)
-                for functionblock_type in fbtypes:
+    def BuildLibsTypesMenu(self, type_menu):
+        for category in self.Controler.GetConfNodeDataTypes():
+            if len(category["list"]) > 0:
+                # build a submenu containing confnode types
+                confnode_datatype_menu = wx.Menu(title='')
+                for datatype in category["list"]:
                     new_id = wx.NewId()
-                    AppendMenu(functionblock_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=functionblock_type)
-                    self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(functionblock_type), id=new_id)
+                    confnode_datatype_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
+                    self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), id=new_id)
 
-                type_menu.AppendMenu(wx.NewId(), _("Function Block Types"), functionblock_menu)
+                type_menu.AppendMenu(wx.NewId(), category["name"], confnode_datatype_menu)
+
+    def BuildProjectTypesMenu(self, type_menu, classtype):
+        # build a submenu containing function block types
+        bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
+        pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
+        if classtype in ["Input", "Output", "InOut", "External", "Global"] or \
+        poutype != "function" and bodytype in ["ST", "IL"]:
+            functionblock_menu = wx.Menu(title='')
+            fbtypes = self.Controler.GetFunctionBlockTypes(self.TagName)
+            for functionblock_type in fbtypes:
+                new_id = wx.NewId()
+                functionblock_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=functionblock_type)
+                self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(functionblock_type), id=new_id)
+
+            type_menu.AppendMenu(wx.NewId(), _("Function Block Types"), functionblock_menu)
+
+    def BuildArrayTypesMenu(self, type_menu):
+        new_id = wx.NewId()
+        type_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Array"))
+        self.Bind(wx.EVT_MENU, self.VariableArrayTypeFunction, id=new_id)
+
+    def OnVariablesGridEditorShown(self, event):
+        row, col = event.GetRow(), event.GetCol()
+
+        label_value = self.Table.GetColLabelValue(col, False)
+        if label_value == "Type":
+            classtype = self.Table.GetValueByName(row, "Class")
+            type_menu = wx.Menu(title='')   # the root menu
+
+            self.BuildStdIECTypesMenu(type_menu)
+
+            self.BuildUserTypesMenu(type_menu)
+
+            self.BuildLibsTypesMenu(type_menu)
+
+            self.BuildProjectTypesMenu(type_menu,classtype)
+
+            self.BuildArrayTypesMenu(type_menu)
 
             rect = self.VariablesGrid.BlockToDeviceRect((row, col), (row, col))
             corner_x = rect.x + rect.width
