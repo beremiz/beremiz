@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+#based on the plcopen standard.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -57,7 +57,7 @@ ITEMS_UNEDITABLE = [ITEM_DATATYPES,
                     ITEM_RESOURCES,
                     ITEM_PROPERTIES
                    ] = range(8, 17)
- 
+
 ITEMS_VARIABLE = [ITEM_VAR_LOCAL,
                   ITEM_VAR_GLOBAL,
                   ITEM_VAR_EXTERNAL,
@@ -92,12 +92,12 @@ ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 
 def GetUneditableNames():
     _ = lambda x:x
-    return [_("User-defined POUs"), _("Functions"), _("Function Blocks"), 
-            _("Programs"), _("Data Types"), _("Transitions"), _("Actions"), 
+    return [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
+            _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
             _("Configurations"), _("Resources"), _("Properties")]
 UNEDITABLE_NAMES = GetUneditableNames()
-[USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS, 
- DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS, 
+[USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS,
+ DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS,
  RESOURCES, PROPERTIES] = UNEDITABLE_NAMES
 
 #-------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ _StringValue = lambda x: x
 _BoolValue = lambda x: x in ["true", "0"]
 
 def _translate_args(translations, args):
-    return [translate(arg[0]) if len(arg) > 0 else None 
+    return [translate(arg[0]) if len(arg) > 0 else None
             for translate, arg in
             zip(translations, args)]
 
@@ -142,7 +142,7 @@ def _translate_args(translations, args):
 #-------------------------------------------------------------------------------
 
 class _VariableInfos(object):
-    __slots__ = ["Name", "Class", "Option", "Location", "InitialValue", 
+    __slots__ = ["Name", "Class", "Option", "Location", "InitialValue",
                  "Edit", "Documentation", "Type", "Tree", "Number"]
     def __init__(self, *args):
         for attr, value in zip(self.__slots__, args):
@@ -151,39 +151,39 @@ class _VariableInfos(object):
         return _VariableInfos(*[getattr(self, attr) for attr in self.__slots__])
 
 class VariablesInfosFactory:
-    
+
     def __init__(self, variables):
         self.Variables = variables
         self.TreeStack = []
         self.Type = None
         self.Dimensions = None
-    
+
     def SetType(self, context, *args):
         self.Type = args[0][0]
-        
+
     def GetType(self):
         if len(self.Dimensions) > 0:
             return ("array", self.Type, self.Dimensions)
         return self.Type
-    
+
     def GetTree(self):
         return (self.TreeStack.pop(-1), self.Dimensions)
-    
+
     def AddDimension(self, context, *args):
         self.Dimensions.append(tuple(
             _translate_args([_StringValue] * 2, args)))
-    
+
     def AddTree(self, context, *args):
         self.TreeStack.append([])
         self.Dimensions = []
-    
+
     def AddVarToTree(self, context, *args):
         var = (args[0][0], self.Type, self.GetTree())
         self.TreeStack[-1].append(var)
-    
+
     def AddVariable(self, context, *args):
         self.Variables.append(_VariableInfos(*(_translate_args(
-            [_StringValue] * 5 + [_BoolValue] + [_StringValue], args) + 
+            [_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
             [self.GetType(), self.GetTree()])))
 
 #-------------------------------------------------------------------------------
@@ -199,15 +199,15 @@ def class_extraction(value):
         "program": ITEM_PROGRAM}.get(value)
     if class_type is not None:
         return class_type
-    
+
     pou_type = POU_TYPES.get(value)
     if pou_type is not None:
         return pou_type
-    
+
     var_type = VAR_CLASS_INFOS.get(value)
     if var_type is not None:
         return var_type[1]
-    
+
     return None
 
 class _VariablesTreeItemInfos(object):
@@ -219,24 +219,24 @@ class _VariablesTreeItemInfos(object):
         return _VariableTreeItem(*[getattr(self, attr) for attr in self.__slots__])
 
 class VariablesTreeInfosFactory:
-    
+
     def __init__(self):
         self.Root = None
-    
+
     def GetRoot(self):
         return self.Root
-    
+
     def SetRoot(self, context, *args):
         self.Root = _VariablesTreeItemInfos(
             *([''] + _translate_args(
-                [class_extraction, _StringValue] + [_BoolValue] * 2, 
+                [class_extraction, _StringValue] + [_BoolValue] * 2,
                 args) + [[]]))
 
     def AddVariable(self, context, *args):
         if self.Root is not None:
             self.Root.variables.append(_VariablesTreeItemInfos(
                 *(_translate_args(
-                    [_StringValue, class_extraction, _StringValue] + 
+                    [_StringValue, class_extraction, _StringValue] +
                     [_BoolValue] * 2, args) + [[]])))
 
 #-------------------------------------------------------------------------------
@@ -244,10 +244,10 @@ class VariablesTreeInfosFactory:
 #-------------------------------------------------------------------------------
 
 class InstancesPathFactory:
-    
+
     def __init__(self, instances):
         self.Instances = instances
-        
+
     def AddInstance(self, context, *args):
         self.Instances.append(args[0][0])
 
@@ -260,13 +260,13 @@ class InstanceTagName:
     def __init__(self, controller):
         self.Controller = controller
         self.TagName = None
-    
+
     def GetTagName(self):
         return self.TagName
-    
+
     def ConfigTagName(self, context, *args):
         self.TagName = self.Controller.ComputeConfigurationName(args[0][0])
-        
+
     def ResourceTagName(self, context, *args):
         self.TagName = self.Controller.ComputeConfigurationResourceName(args[0][0], args[1][0])
 
@@ -285,15 +285,15 @@ class InstanceTagName:
 
 _Point = namedtuple("Point", ["x", "y"])
 
-_BlockInstanceInfos = namedtuple("BlockInstanceInfos", 
+_BlockInstanceInfos = namedtuple("BlockInstanceInfos",
     ["type", "id", "x", "y", "width", "height", "specific_values", "inputs", "outputs"])
 
 _BlockSpecificValues = (
-    namedtuple("BlockSpecificValues", 
+    namedtuple("BlockSpecificValues",
                ["name", "execution_order"]),
     [_StringValue, int])
 _VariableSpecificValues = (
-    namedtuple("VariableSpecificValues", 
+    namedtuple("VariableSpecificValues",
                ["name", "value_type", "execution_order"]),
     [_StringValue, _StringValue, int])
 _ConnectionSpecificValues = (
@@ -305,7 +305,7 @@ _PowerRailSpecificValues = (
     [int])
 
 _LDElementSpecificValues = (
-    namedtuple("LDElementSpecificValues", 
+    namedtuple("LDElementSpecificValues",
                ["name", "negated", "edge", "storage", "execution_order"]),
     [_StringValue, _BoolValue, _StringValue, _StringValue, int])
 
@@ -330,7 +330,7 @@ _SpecificValuesTuples = {
         namedtuple("StepSpecificValues", ["name", "initial", "action"]),
         [_StringValue, _BoolValue, lambda x: x]),
     "transition": (
-        namedtuple("TransitionSpecificValues", 
+        namedtuple("TransitionSpecificValues",
                    ["priority", "condition_type", "condition", "connection"]),
         [int, _StringValue, _StringValue, lambda x: x]),
     "selectionDivergence": _DivergenceSpecificValues,
@@ -360,24 +360,24 @@ class _ActionInfos(object):
         return _ActionInfos(*[getattr(self, attr) for attr in self.__slots__])
 
 class BlockInstanceFactory:
-    
+
     def __init__(self, block_instances):
         self.BlockInstances = block_instances
         self.CurrentInstance = None
         self.SpecificValues = None
         self.CurrentConnection = None
         self.CurrentLink = None
-    
+
     def SetSpecificValues(self, context, *args):
         self.SpecificValues = list(args)
         self.CurrentInstance = None
         self.CurrentConnection = None
         self.CurrentLink = None
-    
+
     def AddBlockInstance(self, context, *args):
         specific_values_tuple, specific_values_translation = \
             _SpecificValuesTuples.get(args[0][0], _BlockSpecificValues)
-        
+
         if (args[0][0] == "step" and len(self.SpecificValues) < 3 or
             args[0][0] == "transition" and len(self.SpecificValues) < 4):
             self.SpecificValues.append([None])
@@ -386,21 +386,21 @@ class BlockInstanceFactory:
         specific_values = specific_values_tuple(*_translate_args(
             specific_values_translation, self.SpecificValues))
         self.SpecificValues = None
-        
+
         self.CurrentInstance = _BlockInstanceInfos(
-            *(_translate_args([_StringValue, int] + [float] * 4, args) + 
+            *(_translate_args([_StringValue, int] + [float] * 4, args) +
               [specific_values, [], []]))
-        
+
         self.BlockInstances[self.CurrentInstance.id] = self.CurrentInstance
-        
+
     def AddInstanceConnection(self, context, *args):
         connection_args = _translate_args(
             [_StringValue] * 2 + [_BoolValue, _StringValue] + [float] * 2, args)
-        
+
         self.CurrentConnection = _InstanceConnectionInfos(
             *(connection_args[1:4] + [
                 _Point(*connection_args[4:6]), []]))
-        
+
         if self.CurrentInstance is not None:
             if connection_args[0] == "input":
                 self.CurrentInstance.inputs.append(self.CurrentConnection)
@@ -408,22 +408,22 @@ class BlockInstanceFactory:
                 self.CurrentInstance.outputs.append(self.CurrentConnection)
         else:
             self.SpecificValues.append([self.CurrentConnection])
-    
+
     def AddConnectionLink(self, context, *args):
         self.CurrentLink = _ConnectionLinkInfos(
             *(_translate_args([int, _StringValue], args) + [[]]))
         self.CurrentConnection.links.append(self.CurrentLink)
-    
+
     def AddLinkPoint(self, context, *args):
         self.CurrentLink.points.append(_Point(
             *_translate_args([float] * 2, args)))
-    
+
     def AddAction(self, context, *args):
         if len(self.SpecificValues) == 0:
             self.SpecificValues.append([[]])
         translated_args = _translate_args([_StringValue] * 5, args)
         self.SpecificValues[0][0].append(_ActionInfos(*translated_args))
-    
+
 pou_block_instances_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "pou_block_instances.xslt"))
 
@@ -461,7 +461,7 @@ class UndoBuffer:
             self.LastSave = 0
         else:
             self.LastSave = -1
-    
+
     # Add a new state in buffer
     def Buffering(self, currentstate):
         self.CurrentIndex = (self.CurrentIndex + 1) % UNDO_BUFFER_LENGTH
@@ -474,29 +474,29 @@ class UndoBuffer:
                 self.LastSave = -1
             self.MinIndex = (self.MinIndex + 1) % UNDO_BUFFER_LENGTH
         self.MinIndex = max(self.MinIndex, 0)
-    
+
     # Return current state of buffer
     def Current(self):
         return self.Buffer[self.CurrentIndex]
-    
+
     # Change current state to previous in buffer and return new current state
     def Previous(self):
         if self.CurrentIndex != self.MinIndex:
             self.CurrentIndex = (self.CurrentIndex - 1) % UNDO_BUFFER_LENGTH
             return self.Buffer[self.CurrentIndex]
         return None
-    
+
     # Change current state to next in buffer and return new current state
     def Next(self):
         if self.CurrentIndex != self.MaxIndex:
             self.CurrentIndex = (self.CurrentIndex + 1) % UNDO_BUFFER_LENGTH
             return self.Buffer[self.CurrentIndex]
         return None
-    
+
     # Return True if current state is the first in buffer
     def IsFirst(self):
         return self.CurrentIndex == self.MinIndex
-    
+
     # Return True if current state is the last in buffer
     def IsLast(self):
         return self.CurrentIndex == self.MaxIndex
@@ -504,7 +504,7 @@ class UndoBuffer:
     # Note that current state is saved
     def CurrentSaved(self):
         self.LastSave = self.CurrentIndex
-        
+
     # Return True if current state is saved
     def IsCurrentSaved(self):
         return self.LastSave == self.CurrentIndex
@@ -518,12 +518,12 @@ class UndoBuffer:
 Class which controls the operations made on the plcopen model and answers to view requests
 """
 class PLCControler:
-    
+
     # Create a new PLCControler
     def __init__(self):
         self.LastNewIndex = 0
         self.Reset()
-    
+
     # Reset PLCControler internal variables
     def Reset(self):
         self.Project = None
@@ -541,7 +541,7 @@ class PLCControler:
         self.TotalTypesDict = StdBlckDct.copy()
         self.TotalTypes = StdBlckLst[:]
         self.ProgramFilePath = ""
-            
+
     def GetQualifierTypes(self):
         return QualifierList
 
@@ -567,7 +567,7 @@ class PLCControler:
         self.Project.setfileHeader(properties)
         self.Project.setcontentHeader(properties)
         self.SetFilePath("")
-        
+
         # Initialize the project buffer
         self.CreateProjectBuffer(False)
         self.ProgramChunks = []
@@ -575,28 +575,28 @@ class PLCControler:
         self.NextCompiledProject = self.Copy(self.Project)
         self.CurrentCompiledProject = None
         self.Buffering = False
-    
+
     # Return project data type names
     def GetProjectDataTypeNames(self, debug = False):
         project = self.GetProject(debug)
         if project is not None:
             return [datatype.getname() for datatype in project.getdataTypes()]
         return []
-    
+
     # Return project pou names
     def GetProjectPouNames(self, debug = False):
         project = self.GetProject(debug)
         if project is not None:
             return [pou.getname() for pou in project.getpous()]
         return []
-    
+
     # Return project pou names
     def GetProjectConfigNames(self, debug = False):
         project = self.GetProject(debug)
         if project is not None:
             return [config.getname() for config in project.getconfigurations()]
         return []
-    
+
     # Return project pou variable names
     def GetProjectPouVariableNames(self, pou_name = None, debug = False):
         variables = []
@@ -610,15 +610,15 @@ class PLCControler:
                     for action in pou.getactionList():
                         variables.append(action.getname())
         return variables
-    
+
     # Return file path if project is an open file
     def GetFilePath(self):
         return self.FilePath
-    
+
     # Return file path if project is an open file
     def GetProgramFilePath(self):
         return self.ProgramFilePath
-    
+
     # Return file name and point out if file is up to date
     def GetFilename(self):
         if self.Project is not None:
@@ -627,7 +627,7 @@ class PLCControler:
             else:
                 return "~%s~"%self.FileName
         return ""
-    
+
     # Change file path and save file name or create a default one if file path not defined
     def SetFilePath(self, filepath):
         self.FilePath = filepath
@@ -636,7 +636,7 @@ class PLCControler:
             self.FileName = _("Unnamed%d")%self.LastNewIndex
         else:
             self.FileName = os.path.splitext(os.path.basename(filepath))[0]
-    
+
     # Change project properties
     def SetProjectProperties(self, name = None, properties = None, buffer = True):
         if self.Project is not None:
@@ -647,14 +647,14 @@ class PLCControler:
                 self.Project.setcontentHeader(properties)
             if buffer and (name is not None or properties is not None):
                 self.BufferProject()
-    
+
     # Return project name
     def GetProjectName(self, debug=False):
         project = self.GetProject(debug)
         if project is not None:
             return project.getname()
         return None
-    
+
     # Return project properties
     def GetProjectProperties(self, debug = False):
         project = self.GetProject(debug)
@@ -663,7 +663,7 @@ class PLCControler:
             properties.update(project.getcontentHeader())
             return properties
         return None
-    
+
     # Return project informations
     def GetProjectInfos(self, debug = False):
         project = self.GetProject(debug)
@@ -671,7 +671,7 @@ class PLCControler:
             infos = {"name": project.getname(), "type": ITEM_PROJECT}
             datatypes = {"name": DATA_TYPES, "type": ITEM_DATATYPES, "values":[]}
             for datatype in project.getdataTypes():
-                datatypes["values"].append({"name": datatype.getname(), "type": ITEM_DATATYPE, 
+                datatypes["values"].append({"name": datatype.getname(), "type": ITEM_DATATYPE,
                     "tagname": self.ComputeDataTypeName(datatype.getname()), "values": []})
             pou_types = {"function": {"name": FUNCTIONS, "type": ITEM_FUNCTION, "values":[]},
                          "functionBlock": {"name": FUNCTION_BLOCKS, "type": ITEM_FUNCTIONBLOCK, "values":[]},
@@ -684,14 +684,14 @@ class PLCControler:
                 if pou.getbodyType() == "SFC":
                     transitions = []
                     for transition in pou.gettransitionList():
-                        transitions.append({"name": transition.getname(), "type": ITEM_TRANSITION, 
-                            "tagname": self.ComputePouTransitionName(pou.getname(), transition.getname()), 
+                        transitions.append({"name": transition.getname(), "type": ITEM_TRANSITION,
+                            "tagname": self.ComputePouTransitionName(pou.getname(), transition.getname()),
                             "values": []})
                     pou_values.append({"name": TRANSITIONS, "type": ITEM_TRANSITIONS, "values": transitions})
                     actions = []
                     for action in pou.getactionList():
-                        actions.append({"name": action.getname(), "type": ITEM_ACTION, 
-                            "tagname": self.ComputePouActionName(pou.getname(), action.getname()), 
+                        actions.append({"name": action.getname(), "type": ITEM_ACTION,
+                            "tagname": self.ComputePouActionName(pou.getname(), action.getname()),
                             "values": []})
                     pou_values.append({"name": ACTIONS, "type": ITEM_ACTIONS, "values": actions})
                 if pou_type in pou_types:
@@ -700,19 +700,19 @@ class PLCControler:
             configurations = {"name": CONFIGURATIONS, "type": ITEM_CONFIGURATIONS, "values": []}
             for config in project.getconfigurations():
                 config_name = config.getname()
-                config_infos = {"name": config_name, "type": ITEM_CONFIGURATION, 
-                    "tagname": self.ComputeConfigurationName(config.getname()), 
+                config_infos = {"name": config_name, "type": ITEM_CONFIGURATION,
+                    "tagname": self.ComputeConfigurationName(config.getname()),
                     "values": []}
                 resources = {"name": RESOURCES, "type": ITEM_RESOURCES, "values": []}
                 for resource in config.getresource():
                     resource_name = resource.getname()
-                    resource_infos = {"name": resource_name, "type": ITEM_RESOURCE, 
-                        "tagname": self.ComputeConfigurationResourceName(config.getname(), resource.getname()), 
+                    resource_infos = {"name": resource_name, "type": ITEM_RESOURCE,
+                        "tagname": self.ComputeConfigurationResourceName(config.getname(), resource.getname()),
                         "values": []}
                     resources["values"].append(resource_infos)
                 config_infos["values"] = [resources]
                 configurations["values"].append(config_infos)
-            infos["values"] = [datatypes, pou_types["function"], pou_types["functionBlock"], 
+            infos["values"] = [datatypes, pou_types["function"], pou_types["functionBlock"],
                                pou_types["program"], configurations]
             return infos
         return None
@@ -722,17 +722,17 @@ class PLCControler:
         project = self.GetProject(debug)
         if project is not None:
             factory = VariablesTreeInfosFactory()
-            
+
             parser = etree.XMLParser()
             parser.resolvers.add(LibraryResolver(self, debug))
-            
+
             pou_variable_xslt_tree = etree.XSLT(
                 etree.parse(
                     os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"),
-                    parser), 
+                    parser),
                 extensions = {("pou_vars_ns", name): getattr(factory, name)
                               for name in ["SetRoot", "AddVariable"]})
-            
+
             obj = None
             words = tagname.split("::")
             if words[0] == "P":
@@ -742,7 +742,7 @@ class PLCControler:
             if obj is not None:
                 pou_variable_xslt_tree(obj)
                 return factory.GetRoot()
-            
+
         return None
 
     def GetInstanceList(self, root, name, debug = False):
@@ -750,22 +750,22 @@ class PLCControler:
         project = self.GetProject(debug)
         if project is not None:
             factory = InstancesPathFactory(instances)
-            
+
             parser = etree.XMLParser()
             parser.resolvers.add(LibraryResolver(self, debug))
-            
+
             instances_path_xslt_tree = etree.XSLT(
                 etree.parse(
                     os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"),
-                    parser), 
+                    parser),
                 extensions = {
                     ("instances_ns", "AddInstance"): factory.AddInstance})
-            
-            instances_path_xslt_tree(root, 
+
+            instances_path_xslt_tree(root,
                 instance_type=etree.XSLT.strparam(name))
-            
+
         return instances
-        
+
     def SearchPouInstances(self, tagname, debug = False):
         project = self.GetProject(debug)
         if project is not None:
@@ -781,28 +781,28 @@ class PLCControler:
                         for instance in self.SearchPouInstances(
                             self.ComputePouName(words[1]), debug)]
         return []
-    
+
     def GetPouInstanceTagName(self, instance_path, debug = False):
         project = self.GetProject(debug)
         factory = InstanceTagName(self)
-        
+
         parser = etree.XMLParser()
         parser.resolvers.add(LibraryResolver(self, debug))
-        
+
         instance_tagname_xslt_tree = etree.XSLT(
             etree.parse(
                 os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"),
-                parser), 
+                parser),
             extensions = {("instance_tagname_ns", name): getattr(factory, name)
                           for name in ["ConfigTagName", "ResourceTagName",
-                                       "PouTagName", "ActionTagName", 
+                                       "PouTagName", "ActionTagName",
                                        "TransitionTagName"]})
-        
-        instance_tagname_xslt_tree(project, 
+
+        instance_tagname_xslt_tree(project,
             instance_path=etree.XSLT.strparam(instance_path))
-        
+
         return factory.GetTagName()
-    
+
     def GetInstanceInfos(self, instance_path, debug = False):
         tagname = self.GetPouInstanceTagName(instance_path)
         if tagname is not None:
@@ -818,7 +818,7 @@ class PLCControler:
                     if var_infos.name == var_name:
                         return var_infos
         return None
-    
+
     # Return if data type given by name is used by another data type or pou
     def DataTypeIsUsed(self, name, debug = False):
         project = self.GetProject(debug)
@@ -887,11 +887,11 @@ class PLCControler:
                 return infos
             row, col = next_row, next_col
         return infos
-        
+
 #-------------------------------------------------------------------------------
 #                        Project Pous management functions
 #-------------------------------------------------------------------------------
-    
+
     # Add a Data Type to Project
     def ProjectAddDataType(self, datatype_name=None):
         if self.Project is not None:
@@ -902,13 +902,13 @@ class PLCControler:
             self.BufferProject()
             return self.ComputeDataTypeName(datatype_name)
         return None
-        
+
     # Remove a Data Type from project
     def ProjectRemoveDataType(self, datatype_name):
         if self.Project is not None:
             self.Project.removedataType(datatype_name)
             self.BufferProject()
-    
+
     # Add a Pou to Project
     def ProjectAddPou(self, pou_name, pou_type, body_type):
         if self.Project is not None:
@@ -919,21 +919,21 @@ class PLCControler:
             self.BufferProject()
             return self.ComputePouName(pou_name)
         return None
-    
+
     def ProjectChangePouType(self, name, pou_type):
         if self.Project is not None:
             pou = self.Project.getpou(name)
             if pou is not None:
                 pou.setpouType(pou_type)
                 self.BufferProject()
-                
+
     def GetPouXml(self, pou_name):
         if self.Project is not None:
             pou = self.Project.getpou(pou_name)
             if pou is not None:
                 return pou.tostring()
         return None
-    
+
     def PastePou(self, pou_type, pou_xml):
         '''
         Adds the POU defined by 'pou_xml' to the current project with type 'pou_type'
@@ -944,21 +944,21 @@ class PLCControler:
             error = ""
         if error is not None:
             return _("Couldn't paste non-POU object.")
-        
+
         name = new_pou.getname()
-        
+
         idx = 0
         new_name = name
-        while self.Project.getpou(new_name):
+        while self.Project.getpou(new_name) is not None:
             # a POU with that name already exists.
             # make a new name and test if a POU with that name exists.
             # append an incrementing numeric suffix to the POU name.
             idx += 1
             new_name = "%s%d" % (name, idx)
-            
+
         # we've found a name that does not already exist, use it
         new_pou.setname(new_name)
-        
+
         if pou_type is not None:
             orig_type = new_pou.getpouType()
 
@@ -968,12 +968,12 @@ class PLCControler:
             if orig_type == 'functionBlock' and pou_type == 'function' or \
                orig_type == 'program' and pou_type in ['function', 'functionBlock']:
                 return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
-            
+
             new_pou.setpouType(pou_type)
 
-        self.Project.insertpou(-1, new_pou)
+        self.Project.insertpou(0, new_pou)
         self.BufferProject()
-        
+
         return self.ComputePouName(new_name),
 
     # Remove a Pou from project
@@ -981,7 +981,7 @@ class PLCControler:
         if self.Project is not None:
             self.Project.removepou(pou_name)
             self.BufferProject()
-    
+
     # Return the name of the configuration if only one exist
     def GetProjectMainConfigurationName(self):
         if self.Project is not None:
@@ -990,7 +990,7 @@ class PLCControler:
             if len(configurations) == 1:
                 return configurations[0].getname()
         return None
-                
+
     # Add a configuration to Project
     def ProjectAddConfiguration(self, config_name=None):
         if self.Project is not None:
@@ -1000,13 +1000,13 @@ class PLCControler:
             self.BufferProject()
             return self.ComputeConfigurationName(config_name)
         return None
-    
+
     # Remove a configuration from project
     def ProjectRemoveConfiguration(self, config_name):
         if self.Project is not None:
             self.Project.removeconfiguration(config_name)
             self.BufferProject()
-    
+
     # Add a resource to a configuration of the Project
     def ProjectAddConfigurationResource(self, config_name, resource_name=None):
         if self.Project is not None:
@@ -1016,13 +1016,13 @@ class PLCControler:
             self.BufferProject()
             return self.ComputeConfigurationResourceName(config_name, resource_name)
         return None
-    
+
     # Remove a resource from a configuration of the project
     def ProjectRemoveConfigurationResource(self, config_name, resource_name):
         if self.Project is not None:
             self.Project.removeconfigurationResource(config_name, resource_name)
             self.BufferProject()
-    
+
     # Add a Transition to a Project Pou
     def ProjectAddPouTransition(self, pou_name, transition_name, transition_type):
         if self.Project is not None:
@@ -1032,7 +1032,7 @@ class PLCControler:
                 self.BufferProject()
                 return self.ComputePouTransitionName(pou_name, transition_name)
         return None
-    
+
     # Remove a Transition from a Project Pou
     def ProjectRemovePouTransition(self, pou_name, transition_name):
         # Search if the pou removed is currently opened
@@ -1041,7 +1041,7 @@ class PLCControler:
             if pou is not None:
                 pou.removetransition(transition_name)
                 self.BufferProject()
-    
+
     # Add an Action to a Project Pou
     def ProjectAddPouAction(self, pou_name, action_name, action_type):
         if self.Project is not None:
@@ -1051,7 +1051,7 @@ class PLCControler:
                 self.BufferProject()
                 return self.ComputePouActionName(pou_name, action_name)
         return None
-    
+
     # Remove an Action from a Project Pou
     def ProjectRemovePouAction(self, pou_name, action_name):
         # Search if the pou removed is currently opened
@@ -1060,7 +1060,7 @@ class PLCControler:
             if pou is not None:
                 pou.removeaction(action_name)
                 self.BufferProject()
-    
+
     # Change the name of a pou
     def ChangeDataTypeName(self, old_name, new_name):
         if self.Project is not None:
@@ -1070,7 +1070,7 @@ class PLCControler:
                 datatype.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
                 self.BufferProject()
-    
+
     # Change the name of a pou
     def ChangePouName(self, old_name, new_name):
         if self.Project is not None:
@@ -1080,7 +1080,7 @@ class PLCControler:
                 pou.setname(new_name)
                 self.Project.updateElementName(old_name, new_name)
                 self.BufferProject()
-    
+
     # Change the name of a pou transition
     def ChangePouTransitionName(self, pou_name, old_name, new_name):
         if self.Project is not None:
@@ -1092,7 +1092,7 @@ class PLCControler:
                     transition.setname(new_name)
                     pou.updateElementName(old_name, new_name)
                     self.BufferProject()
-    
+
     # Change the name of a pou action
     def ChangePouActionName(self, pou_name, old_name, new_name):
         if self.Project is not None:
@@ -1104,7 +1104,7 @@ class PLCControler:
                     action.setname(new_name)
                     pou.updateElementName(old_name, new_name)
                     self.BufferProject()
-    
+
     # Change the name of a pou variable
     def ChangePouVariableName(self, pou_name, old_name, new_name):
         if self.Project is not None:
@@ -1116,7 +1116,7 @@ class PLCControler:
                         if var.getname() == old_name:
                             var.setname(new_name)
                 self.BufferProject()
-        
+
     # Change the name of a configuration
     def ChangeConfigurationName(self, old_name, new_name):
         if self.Project is not None:
@@ -1125,7 +1125,7 @@ class PLCControler:
             if configuration is not None:
                 configuration.setname(new_name)
                 self.BufferProject()
-    
+
     # Change the name of a configuration resource
     def ChangeConfigurationResourceName(self, config_name, old_name, new_name):
         if self.Project is not None:
@@ -1134,7 +1134,7 @@ class PLCControler:
             if resource is not None:
                 resource.setname(new_name)
                 self.BufferProject()
-    
+
     # Return the description of the pou given by its name
     def GetPouDescription(self, name, debug = False):
         project = self.GetProject(debug)
@@ -1144,7 +1144,7 @@ class PLCControler:
             if pou is not None:
                 return pou.getdescription()
         return ""
-    
+
     # Return the description of the pou given by its name
     def SetPouDescription(self, name, description, debug = False):
         project = self.GetProject(debug)
@@ -1154,7 +1154,7 @@ class PLCControler:
             if pou is not None:
                 pou.setdescription(description)
                 self.BufferProject()
-    
+
     # Return the type of the pou given by its name
     def GetPouType(self, name, debug = False):
         project = self.GetProject(debug)
@@ -1164,7 +1164,7 @@ class PLCControler:
             if pou is not None:
                 return pou.getpouType()
         return None
-    
+
     # Return pous with SFC language
     def GetSFCPous(self, debug = False):
         list = []
@@ -1174,7 +1174,7 @@ class PLCControler:
                 if pou.getBodyType() == "SFC":
                     list.append(pou.getname())
         return list
-    
+
     # Return the body language of the pou given by its name
     def GetPouBodyType(self, name, debug = False):
         project = self.GetProject(debug)
@@ -1184,7 +1184,7 @@ class PLCControler:
             if pou is not None:
                 return pou.getbodyType()
         return None
-    
+
     # Return the actions of a pou
     def GetPouTransitions(self, pou_name, debug = False):
         transitions = []
@@ -1196,7 +1196,7 @@ class PLCControler:
                 for transition in pou.gettransitionList():
                     transitions.append(transition.getname())
         return transitions
-    
+
     # Return the body language of the transition given by its name
     def GetTransitionBodyType(self, pou_name, pou_transition, debug = False):
         project = self.GetProject(debug)
@@ -1209,7 +1209,7 @@ class PLCControler:
                 if transition is not None:
                     return transition.getbodyType()
         return None
-    
+
     # Return the actions of a pou
     def GetPouActions(self, pou_name, debug = False):
         actions = []
@@ -1221,7 +1221,7 @@ class PLCControler:
                 for action in pou.getactionList():
                     actions.append(action.getname())
         return actions
-    
+
     # Return the body language of the pou given by its name
     def GetActionBodyType(self, pou_name, pou_action, debug = False):
         project = self.GetProject(debug)
@@ -1233,18 +1233,18 @@ class PLCControler:
                 if action is not None:
                     return action.getbodyType()
         return None
-    
+
     # Extract varlists from a list of vars
     def ExtractVarLists(self, vars):
         varlist_list = []
         current_varlist = None
         current_type = None
         for var in vars:
-            next_type = (var.Class, 
-                         var.Option, 
-                         var.Location in ["", None] or 
-                         # When declaring globals, located 
-                         # and not located variables are 
+            next_type = (var.Class,
+                         var.Option,
+                         var.Location in ["", None] or
+                         # When declaring globals, located
+                         # and not located variables are
                          # in the same declaration block
                          var.Class == "Global")
             if current_type != next_type:
@@ -1264,7 +1264,7 @@ class PLCControler:
             # Create variable and change its properties
             tempvar = PLCOpenParser.CreateElement("variable", "varListPlain")
             tempvar.setname(var.Name)
-            
+
             var_type = PLCOpenParser.CreateElement("type", "variable")
             if isinstance(var.Type, TupleType):
                 if var.Type[0] == "array":
@@ -1317,28 +1317,28 @@ class PLCControler:
             # Add variable to varList
             current_varlist.appendvariable(tempvar)
         return varlist_list
-    
+
     def GetVariableDictionary(self, object_with_vars, tree=False, debug=False):
         variables = []
         factory = VariablesInfosFactory(variables)
-        
+
         parser = etree.XMLParser()
         parser.resolvers.add(LibraryResolver(self, debug))
-        
+
         variables_infos_xslt_tree = etree.XSLT(
             etree.parse(
                 os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
-                parser), 
+                parser),
             extensions = {("var_infos_ns", name): getattr(factory, name)
                 for name in ["SetType", "AddDimension", "AddTree",
                              "AddVarToTree", "AddVariable"]})
         variables_infos_xslt_tree(object_with_vars,
             tree=etree.XSLT.strparam(str(tree)))
-        
+
         return variables
-            
+
     # Add a global var to configuration to configuration
-    def AddConfigurationGlobalVar(self, config_name, var_type, var_name, 
+    def AddConfigurationGlobalVar(self, config_name, var_type, var_name,
                                            location="", description=""):
         if self.Project is not None:
             # Found the configuration corresponding to name
@@ -1346,7 +1346,7 @@ class PLCControler:
             if configuration is not None:
                 # Set configuration global vars
                 configuration.addglobalVar(
-                    self.GetVarTypeObject(var_type), 
+                    self.GetVarTypeObject(var_type),
                     var_name, location, description)
 
     # Replace the configuration globalvars by those given
@@ -1359,7 +1359,7 @@ class PLCControler:
                 configuration.setglobalVars([
                     varlist for vartype, varlist
                     in self.ExtractVarLists(vars)])
-    
+
     # Return the configuration globalvars
     def GetConfigurationGlobalVars(self, name, debug = False):
         project = self.GetProject(debug)
@@ -1369,7 +1369,7 @@ class PLCControler:
             if configuration is not None:
                 # Extract variables defined in configuration
                 return self.GetVariableDictionary(configuration, debug)
-        
+
         return []
 
     # Return configuration variable names
@@ -1381,7 +1381,7 @@ class PLCControler:
                 if config_name is None or config_name == configuration.getname():
                     variables.extend(
                         [var.getname() for var in reduce(
-                            lambda x, y: x + y, [varlist.getvariable() 
+                            lambda x, y: x + y, [varlist.getvariable()
                                 for varlist in configuration.globalVars],
                             [])])
         return variables
@@ -1396,7 +1396,7 @@ class PLCControler:
                 resource.setglobalVars([
                     varlist for vartype, varlist
                     in self.ExtractVarLists(vars)])
-    
+
     # Return the resource globalvars
     def GetConfigurationResourceGlobalVars(self, config_name, name, debug = False):
         project = self.GetProject(debug)
@@ -1406,11 +1406,11 @@ class PLCControler:
             if resource is not None:
                 # Extract variables defined in configuration
                 return self.GetVariableDictionary(resource, debug)
-        
+
         return []
-    
+
     # Return resource variable names
-    def GetConfigurationResourceVariableNames(self, 
+    def GetConfigurationResourceVariableNames(self,
                 config_name = None, resource_name = None, debug = False):
         variables = []
         project = self.GetProject(debug)
@@ -1421,7 +1421,7 @@ class PLCControler:
                         if resource_name is None or resource.getname() == resource_name:
                             variables.extend(
                                 [var.getname() for var in reduce(
-                                    lambda x, y: x + y, [varlist.getvariable() 
+                                    lambda x, y: x + y, [varlist.getvariable()
                                         for varlist in resource.globalVars],
                                     [])])
         return variables
@@ -1445,7 +1445,7 @@ class PLCControler:
                     pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # Set Pou interface
                 pou.setvars([varlist for varlist_type, varlist in self.ExtractVarLists(vars)])
-                
+
     # Replace the return type of the pou given by its name (only for functions)
     def SetPouInterfaceReturnType(self, name, return_type):
         if self.Project is not None:
@@ -1468,16 +1468,16 @@ class PLCControler:
                     derived_type = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_type.setname(return_type)
                     return_type.setcontent(derived_type)
-                
+
     def UpdateProjectUsedPous(self, old_name, new_name):
         if self.Project is not None:
             self.Project.updateElementName(old_name, new_name)
-    
+
     def UpdateEditedElementUsedVariable(self, tagname, old_name, new_name):
         pou = self.GetEditedElement(tagname)
         if pou is not None:
             pou.updateElementName(old_name, new_name)
-    
+
     # Return the return type of the given pou
     def GetPouInterfaceReturnType(self, pou, tree=False, debug=False):
         # Verify that the pou has an interface
@@ -1486,23 +1486,23 @@ class PLCControler:
             return_type = pou.interface.getreturnType()
             if return_type is not None:
                 factory = VariablesInfosFactory([])
-        
+
                 parser = etree.XMLParser()
                 parser.resolvers.add(LibraryResolver(self))
-                
+
                 return_type_infos_xslt_tree = etree.XSLT(
                     etree.parse(
                         os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
-                        parser), 
+                        parser),
                     extensions = {("var_infos_ns", name): getattr(factory, name)
-                                  for name in ["SetType", "AddDimension", 
+                                  for name in ["SetType", "AddDimension",
                                                "AddTree", "AddVarToTree"]})
                 return_type_infos_xslt_tree(return_type,
                     tree=etree.XSLT.strparam(str(tree)))
                 if tree:
                     return [factory.GetType(), factory.GetTree()]
                 return factory.GetType()
-        
+
         if tree:
             return [None, ([], [])]
         return None
@@ -1519,7 +1519,7 @@ class PLCControler:
             for desc in cat["list"]:
                 BlkLst = self.TotalTypesDict.setdefault(desc["name"],[])
                 BlkLst.append((section["name"], desc))
-        
+
     # Function that clear the confnode list
     def ClearConfNodeTypes(self):
         self.ConfNodeTypes = []
@@ -1529,11 +1529,11 @@ class PLCControler:
     def GetConfNodeDataTypes(self, exclude = None, only_locatables = False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
                  "list": [
-                    datatype.getname() 
+                    datatype.getname()
                     for datatype in confnodetypes["types"].getdataTypes()
                     if not only_locatables or self.IsLocatableDataType(datatype, debug)]}
                 for confnodetypes in self.ConfNodeTypes]
-    
+
     def GetVariableLocationTree(self):
         return []
 
@@ -1545,7 +1545,7 @@ class PLCControler:
         for var_name, var_type, var_initial in self.GetConfNodeGlobalInstances():
             tempvar = PLCOpenParser.CreateElement("variable", "globalVars")
             tempvar.setname(var_name)
-            
+
             tempvartype = PLCOpenParser.CreateElement("type", "variable")
             if var_type in self.GetBaseTypes():
                 tempvartype.setcontent(PLCOpenParser.CreateElement(
@@ -1557,12 +1557,12 @@ class PLCControler:
                 tempderivedtype.setname(var_type)
                 tempvartype.setcontent(tempderivedtype)
             tempvar.settype(tempvartype)
-            
+
             if var_initial != "":
                 value = PLCOpenParser.CreateElement("initialValue", "variable")
                 value.setvalue(var_initial)
                 tempvar.setinitialValue(value)
-            
+
             global_vars.append(tempvar)
         return global_vars
 
@@ -1592,11 +1592,11 @@ class PLCControler:
                 blocktype_infos = blocktype.getblockInfos()
                 if inputs in [None, "undefined"]:
                     return blocktype_infos
-            
-                if inputs == tuple([var_type 
+
+                if inputs == tuple([var_type
                     for name, var_type, modifier in blocktype_infos["inputs"]]):
                     return blocktype_infos
-        
+
         return None
 
     # Return Block types checking for recursion
@@ -1610,18 +1610,18 @@ class PLCControler:
             if words[0] in ["P","T","A"]:
                 name = words[1]
                 pou_type = self.GetPouType(name, debug)
-            filter = (["function"] 
-                      if pou_type == "function" or words[0] == "T" 
+            filter = (["function"]
+                      if pou_type == "function" or words[0] == "T"
                       else ["functionBlock", "function"])
             blocktypes = [
                 {"name": category["name"],
                  "list": [block for block in category["list"]
                           if block["type"] in filter]}
                 for category in self.TotalTypes]
-            blocktypes.append({"name" : USER_DEFINED_POUS, 
+            blocktypes.append({"name" : USER_DEFINED_POUS,
                 "list": [pou.getblockInfos()
                          for pou in project.getpous(name, filter)
-                         if (name is None or 
+                         if (name is None or
                              len(self.GetInstanceList(pou, name, debug)) == 0)]})
             return blocktypes
         return self.TotalTypes
@@ -1641,7 +1641,7 @@ class PLCControler:
         if project is not None:
             blocktypes.extend([pou.getname()
                 for pou in project.getpous(name, ["functionBlock"])
-                if (name is None or 
+                if (name is None or
                     len(self.GetInstanceList(pou, name, debug)) == 0)])
         return blocktypes
 
@@ -1672,10 +1672,10 @@ class PLCControler:
             if words[0] in ["D"]:
                 name = words[1]
             datatypes.extend([
-                datatype.getname() 
+                datatype.getname()
                 for datatype in project.getdataTypes(name)
                 if (not only_locatables or self.IsLocatableDataType(datatype, debug))
-                    and (name is None or 
+                    and (name is None or
                          len(self.GetInstanceList(datatype, name, debug)) == 0)])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
@@ -1730,14 +1730,14 @@ class PLCControler:
     def GetBaseType(self, typename, debug = False):
         if TypeHierarchy.has_key(typename):
             return typename
-        
+
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
             basetype = self.GetDataTypeBaseType(datatype)
             if basetype is not None:
                 return self.GetBaseType(basetype, debug)
             return typename
-        
+
         return None
 
     def GetBaseTypes(self):
@@ -1751,19 +1751,19 @@ class PLCControler:
     def IsOfType(self, typename, reference, debug = False):
         if reference is None or typename == reference:
             return True
-        
+
         basetype = TypeHierarchy.get(typename)
         if basetype is not None:
             return self.IsOfType(basetype, reference)
-        
+
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
             basetype = self.GetDataTypeBaseType(datatype)
             if basetype is not None:
                 return self.IsOfType(basetype, reference, debug)
-        
+
         return False
-    
+
     def IsEndType(self, typename):
         if typename is not None:
             return not typename.startswith("ANY")
@@ -1781,16 +1781,16 @@ class PLCControler:
             if array_base_type.getLocalTag() == "derived":
                 return self.IsLocatableType(array_base_type.getname(), debug)
         return True
-        
+
     def IsLocatableType(self, typename, debug = False):
         if isinstance(typename, TupleType) or self.GetBlockType(typename) is not None:
             return False
-        
+
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
             return self.IsLocatableDataType(datatype)
         return True
-    
+
     def IsEnumeratedType(self, typename, debug = False):
         if isinstance(typename, TupleType):
             typename = typename[1]
@@ -1822,7 +1822,7 @@ class PLCControler:
     def IsNumType(self, typename, debug = False):
         return self.IsOfType(typename, "ANY_NUM", debug) or\
                self.IsOfType(typename, "ANY_BIT", debug)
-            
+
     def GetDataTypeRange(self, typename, debug = False):
         range = DataTypeRange.get(typename)
         if range is not None:
@@ -1837,7 +1837,7 @@ class PLCControler:
             elif basetype_content_type == "derived":
                 return self.GetDataTypeRange(basetype_content.getname(), debug)
         return None
-    
+
     # Return Subrange types
     def GetSubrangeBaseTypes(self, exclude, debug = False):
         subrange_basetypes = DataTypeRange.keys()
@@ -1851,7 +1851,7 @@ class PLCControler:
                 [datatype.getname() for datatype in confnodetype["types"].getdataTypes()
                  if self.IsSubrangeType(datatype.getname(), exclude, debug)])
         return subrange_basetypes
-    
+
     # Return Enumerated Values
     def GetEnumeratedDataValues(self, typename = None, debug = False):
         values = []
@@ -1861,7 +1861,7 @@ class PLCControler:
                 basetype_content = datatype_obj.baseType.getcontent()
                 basetype_content_type = basetype_content.getLocalTag()
                 if basetype_content_type == "enum":
-                    return [value.getname() 
+                    return [value.getname()
                             for value in basetype_content.xpath(
                                 "ppx:values/ppx:value",
                                 namespaces=PLCOpenParser.NSMAP)]
@@ -1878,19 +1878,19 @@ class PLCControler:
 #-------------------------------------------------------------------------------
 #                   Project Element tag name computation functions
 #-------------------------------------------------------------------------------
-    
+
     # Compute a data type name
     def ComputeDataTypeName(self, datatype):
         return "D::%s" % datatype
-    
+
     # Compute a pou name
     def ComputePouName(self, pou):
         return "P::%s" % pou
-    
+
     # Compute a pou transition name
     def ComputePouTransitionName(self, pou, transition):
         return "T::%s::%s" % (pou, transition)
-    
+
     # Compute a pou action name
     def ComputePouActionName(self, pou, action):
         return "A::%s::%s" % (pou, action)
@@ -1905,7 +1905,7 @@ class PLCControler:
 
     def GetElementType(self, tagname):
         words = tagname.split("::")
-        return {"D" : ITEM_DATATYPE, "P" : ITEM_POU, 
+        return {"D" : ITEM_DATATYPE, "P" : ITEM_POU,
                 "T" : ITEM_TRANSITION, "A" : ITEM_ACTION,
                 "C" : ITEM_CONFIGURATION, "R" : ITEM_RESOURCE}[words[0]]
 
@@ -1963,7 +1963,7 @@ class PLCControler:
                                 dimensions.append((dimension.getlower(), dimension.getupper()))
                             base_type = element_type.baseType.getcontent()
                             base_type_type = element_type.getLocalTag()
-                            element_infos["Type"] = ("array", 
+                            element_infos["Type"] = ("array",
                                 base_type.getname()
                                 if base_type_type == "derived"
                                 else base_type_type.upper(), dimensions)
@@ -1981,14 +1981,14 @@ class PLCControler:
                     infos["base_type"] = (basetype_content.getname()
                         if basetype_content_type == "derived"
                         else basetype_content_type.upper())
-                
+
                 if datatype.initialValue is not None:
                     infos["initial"] = str(datatype.initialValue.getvalue())
                 else:
                     infos["initial"] = ""
                 return infos
         return None
-    
+
     # Change the data type informations
     def SetDataTypeInfos(self, tagname, infos):
         words = tagname.split("::")
@@ -2006,7 +2006,7 @@ class PLCControler:
                     datatype.baseType.setcontent(derived_datatype)
             elif infos["type"] == "Subrange":
                 subrange = PLCOpenParser.CreateElement(
-                    "subrangeUnsigned" 
+                    "subrangeUnsigned"
                     if infos["base_type"] in GetSubTypes("ANY_UINT")
                     else "subrangeSigned", "dataType")
                 datatype.baseType.setcontent(subrange)
@@ -2106,7 +2106,7 @@ class PLCControler:
             else:
                 datatype.initialValue = None
             self.BufferProject()
-    
+
 #-------------------------------------------------------------------------------
 #                       Project opened Pous management functions
 #-------------------------------------------------------------------------------
@@ -2132,7 +2132,7 @@ class PLCControler:
             elif words[0] == 'R':
                 return project.getconfigurationResource(words[1], words[2])
         return None
-    
+
     # Return edited element name
     def GetEditedElementName(self, tagname):
         words = tagname.split("::")
@@ -2141,7 +2141,7 @@ class PLCControler:
         else:
             return words[2]
         return None
-    
+
     # Return edited element name and type
     def GetEditedElementType(self, tagname, debug = False):
         words = tagname.split("::")
@@ -2183,14 +2183,14 @@ class PLCControler:
         elif words[0] == 'T':
             return "BOOL"
         return None
-    
+
     # Change the edited element text
     def SetEditedElementText(self, tagname, text):
         if self.Project is not None:
             element = self.GetEditedElement(tagname)
             if element is not None:
                 element.settext(text)
-    
+
     # Return the edited element text
     def GetEditedElementText(self, tagname, debug = False):
         element = self.GetEditedElement(tagname, debug)
@@ -2236,13 +2236,13 @@ class PLCControler:
         if element is not None:
             return element.tostring()
         return ""
-        
+
     def GetEditedElementInstancesCopy(self, tagname, blocks_id = None, wires = None, debug = False):
         element = self.GetEditedElement(tagname, debug)
         text = ""
         if element is not None:
-            wires = dict([(wire, True) 
-                          for wire in wires 
+            wires = dict([(wire, True)
+                          for wire in wires
                           if wire[0] in blocks_id and wire[1] in blocks_id])
             copy_body = PLCOpenParser.CreateElement("body", "pou")
             element.append(copy_body)
@@ -2257,20 +2257,20 @@ class PLCControler:
                     text += instance_copy.tostring()
             element.remove(copy_body)
         return text
-    
+
     def GenerateNewName(self, tagname, name, format, start_idx=0, exclude={}, debug=False):
         names = exclude.copy()
         if tagname is not None:
-            names.update(dict([(varname.upper(), True) 
+            names.update(dict([(varname.upper(), True)
                                for varname in self.GetEditedElementVariables(tagname, debug)]))
             words = tagname.split("::")
             if words[0] in ["P","T","A"]:
                 element = self.GetEditedElement(tagname, debug)
                 if element is not None and element.getbodyType() not in ["ST", "IL"]:
                     for instance in element.getinstances():
-                        if isinstance(instance, 
-                            (PLCOpenParser.GetElementClass("step", "sfcObjects"), 
-                             PLCOpenParser.GetElementClass("connector", "commonObjects"), 
+                        if isinstance(instance,
+                            (PLCOpenParser.GetElementClass("step", "sfcObjects"),
+                             PLCOpenParser.GetElementClass("connector", "commonObjects"),
                              PLCOpenParser.GetElementClass("continuation", "commonObjects"))):
                             names[instance.getname().upper()] = True
         else:
@@ -2290,37 +2290,37 @@ class PLCControler:
                     names[config.getname().upper()] = True
                     for resource in config.getresource():
                         names[resource.getname().upper()] = True
-            
+
         i = start_idx
         while name is None or names.get(name.upper(), False):
             name = (format%i)
             i += 1
         return name
-    
+
     def PasteEditedElementInstances(self, tagname, text, new_pos, middle=False, debug=False):
         element = self.GetEditedElement(tagname, debug)
         element_name, element_type = self.GetEditedElementType(tagname, debug)
         if element is not None:
             bodytype = element.getbodyType()
-            
+
             # Get edited element type scaling
             scaling = None
             project = self.GetProject(debug)
             if project is not None:
                 properties = project.getcontentHeader()
                 scaling = properties["scaling"][bodytype]
-            
+
             # Get ids already by all the instances in edited element
             used_id = dict([(instance.getlocalId(), True) for instance in element.getinstances()])
             new_id = {}
-            
+
             try:
                 instances, error = LoadPouInstances(text.encode("utf-8"), bodytype)
             except:
                 instances, error = [], ""
             if error is not None or len(instances) == 0:
                 return _("Invalid plcopen element(s)!!!")
-            
+
             exclude = {}
             for instance in instances:
                 element.addinstance(instance)
@@ -2332,25 +2332,25 @@ class PLCControler:
                     if blocktype_infos["type"] != "function" and blockname is not None:
                         if element_type == "function":
                             return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
-                        blockname = self.GenerateNewName(tagname, 
-                                                         blockname, 
-                                                         "%s%%d"%blocktype, 
+                        blockname = self.GenerateNewName(tagname,
+                                                         blockname,
+                                                         "%s%%d"%blocktype,
                                                          debug=debug)
                         exclude[blockname] = True
                         instance.setinstanceName(blockname)
                         self.AddEditedElementPouVar(tagname, blocktype, blockname)
                 elif instance_type == "step":
-                    stepname = self.GenerateNewName(tagname, 
-                                                    instance.getname(), 
-                                                    "Step%d", 
-                                                    exclude=exclude, 
+                    stepname = self.GenerateNewName(tagname,
+                                                    instance.getname(),
+                                                    "Step%d",
+                                                    exclude=exclude,
                                                     debug=debug)
                     exclude[stepname] = True
                     instance.setname(stepname)
                 localid = instance.getlocalId()
                 if not used_id.has_key(localid):
                     new_id[localid] = True
-            
+
             idx = 1
             translate_id = {}
             bbox = rect()
@@ -2363,7 +2363,7 @@ class PLCControler:
                     new_id[idx] = True
                     instance.setlocalId(idx)
                     translate_id[localId] = idx
-            
+
             x, y, width, height = bbox.bounding_box()
             if middle:
                 new_pos[0] -= width / 2
@@ -2385,43 +2385,43 @@ class PLCControler:
             else:
                 new_pos = (max(30, new_pos[0]), max(30, new_pos[1]))
             diff = (int(new_pos[0] - x), int(new_pos[1] - y))
-            
+
             connections = {}
             for instance in instances:
                 connections.update(instance.updateConnectionsId(translate_id))
                 if getattr(instance, "setexecutionOrderId", None) is not None:
                     instance.setexecutionOrderId(0)
                 instance.translate(*diff)
-            
+
             return new_id, connections
-    
+
     def GetEditedElementInstancesInfos(self, tagname, debug = False):
         element_instances = OrderedDict()
         element = self.GetEditedElement(tagname, debug)
         if element is not None:
             factory = BlockInstanceFactory(element_instances)
-            
+
             pou_block_instances_xslt_tree = etree.XSLT(
-                pou_block_instances_xslt, 
+                pou_block_instances_xslt,
                 extensions = {
                     ("pou_block_instances_ns", name): getattr(factory, name)
                     for name in ["AddBlockInstance", "SetSpecificValues",
                                  "AddInstanceConnection", "AddConnectionLink",
                                  "AddLinkPoint", "AddAction"]})
-        
+
             pou_block_instances_xslt_tree(element)
         return element_instances
-    
+
     def ClearEditedElementExecutionOrder(self, tagname):
         element = self.GetEditedElement(tagname)
         if element is not None:
             element.resetexecutionOrder()
-    
+
     def ResetEditedElementExecutionOrder(self, tagname):
         element = self.GetEditedElement(tagname)
         if element is not None:
             element.compileexecutionOrder()
-    
+
     def SetConnectionWires(self, connection, connector):
         wires = connector.GetWires()
         idx = 0
@@ -2443,7 +2443,7 @@ class PLCControler:
                 else:
                     connection.setconnectionParameter(idx, None)
                 idx += 1
-    
+
     def GetVarTypeObject(self, var_type):
         var_type_obj = PLCOpenParser.CreateElement("type", "variable")
         if not var_type.startswith("ANY") and TypeHierarchy.get(var_type):
@@ -2455,7 +2455,7 @@ class PLCControler:
             derived_type.setname(var_type)
             var_type_obj.setcontent(derived_type)
         return var_type_obj
-    
+
     def AddEditedElementPouVar(self, tagname, var_type, name,**args):
         if self.Project is not None:
             words = tagname.split("::")
@@ -2463,9 +2463,9 @@ class PLCControler:
                 pou = self.Project.getpou(words[1])
                 if pou is not None:
                     pou.addpouLocalVar(
-                        self.GetVarTypeObject(var_type), 
+                        self.GetVarTypeObject(var_type),
                         name, **args)
-    
+
     def AddEditedElementPouExternalVar(self, tagname, var_type, name):
         if self.Project is not None:
             words = tagname.split("::")
@@ -2474,7 +2474,7 @@ class PLCControler:
                 if pou is not None:
                     pou.addpouExternalVar(
                         self.GetVarTypeObject(var_type), name)
-            
+
     def ChangeEditedElementPouVar(self, tagname, old_type, old_name, new_type, new_name):
         if self.Project is not None:
             words = tagname.split("::")
@@ -2482,7 +2482,7 @@ class PLCControler:
                 pou = self.Project.getpou(words[1])
                 if pou is not None:
                     pou.changepouVar(old_type, old_name, new_type, new_name)
-    
+
     def RemoveEditedElementPouVar(self, tagname, type, name):
         if self.Project is not None:
             words = tagname.split("::")
@@ -2490,7 +2490,7 @@ class PLCControler:
                 pou = self.Project.getpou(words[1])
                 if pou is not None:
                     pou.removepouVar(type, name)
-    
+
     def AddEditedElementBlock(self, tagname, id, blocktype, blockname = None):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2502,13 +2502,13 @@ class PLCControler:
                 block.setinstanceName(blockname)
                 self.AddEditedElementPouVar(tagname, blocktype, blockname)
             element.addinstance(block)
-    
+
     def SetEditedElementBlockInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
             block = element.getinstance(id)
             if block is None:
-                return 
+                return
             old_name = block.getinstanceName()
             old_type = block.gettypeName()
             new_name = infos.get("name", old_name)
@@ -2571,7 +2571,7 @@ class PLCControler:
                         variable.addconnectionPointOut()
                         variable.connectionPointOut.setrelPositionXY(position.x, position.y)
             block.tostring()
-        
+
     def AddEditedElementVariable(self, tagname, id, var_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2581,13 +2581,13 @@ class PLCControler:
                  INOUT: "inOutVariable"}[var_type], "fbdObjects")
             variable.setlocalId(id)
             element.addinstance(variable)
-        
+
     def SetEditedElementVariableInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
             variable = element.getinstance(id)
             if variable is None:
-                return 
+                return
             for param, value in infos.items():
                 if param == "name":
                     variable.setexpression(value)
@@ -2634,7 +2634,7 @@ class PLCControler:
                  CONTINUATION: "continuation"}[connection_type], "commonObjects")
             connection.setlocalId(id)
             element.addinstance(connection)
-        
+
     def SetEditedElementConnectionInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2643,7 +2643,7 @@ class PLCControler:
                 return
             for param, value in infos.items():
                 if param == "name":
-                    connection.setname(value)    
+                    connection.setname(value)
                 elif param == "height":
                     connection.setheight(value)
                 elif param == "width":
@@ -2668,7 +2668,7 @@ class PLCControler:
             comment = PLCOpenParser.CreateElement("comment", "commonObjects")
             comment.setlocalId(id)
             element.addinstance(comment)
-    
+
     def SetEditedElementCommentInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2693,7 +2693,7 @@ class PLCControler:
                  RIGHTRAIL: "rightPowerRail"}[powerrail_type], "ldObjects")
             powerrail.setlocalId(id)
             element.addinstance(powerrail)
-    
+
     def SetEditedElementPowerRailInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2725,7 +2725,7 @@ class PLCControler:
                             powerrail.appendconnectionPointIn(connection)
                             connection.setrelPositionXY(position.x, position.y)
                             self.SetConnectionWires(connection, connector)
-                            
+
     def AddEditedElementContact(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2821,7 +2821,7 @@ class PLCControler:
             step = PLCOpenParser.CreateElement("step", "sfcObjects")
             step.setlocalId(id)
             element.addinstance(step)
-    
+
     def SetEditedElementStepInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2864,14 +2864,14 @@ class PLCControler:
                         step.connectionPointOutAction.setrelPositionXY(position.x, position.y)
                     else:
                         step.deleteconnectionPointOutAction()
-    
+
     def AddEditedElementTransition(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
             transition = PLCOpenParser.CreateElement("transition", "sfcObjects")
             transition.setlocalId(id)
             element.addinstance(transition)
-    
+
     def SetEditedElementTransitionInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2907,7 +2907,7 @@ class PLCControler:
                 elif infos.get("type", None) == "connection" and param == "connection" and value:
                     transition.setconditionContent("connection", None)
                     self.SetConnectionWires(transition.condition.content, value)
-    
+
     def AddEditedElementDivergence(self, tagname, id, divergence_type):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2919,19 +2919,19 @@ class PLCControler:
                     divergence_type), "sfcObjects")
             divergence.setlocalId(id)
             element.addinstance(divergence)
-    
+
     DivergenceTypes = [
-        (divergence_type, 
+        (divergence_type,
          PLCOpenParser.GetElementClass(divergence_type, "sfcObjects"))
         for divergence_type in ["selectionDivergence", "simultaneousDivergence",
                                 "selectionConvergence", "simultaneousConvergence"]]
-    
+
     def GetDivergenceType(self, divergence):
         for divergence_type, divergence_class in self.DivergenceTypes:
             if isinstance(divergence, divergence_class):
                 return divergence_type
         return None
-    
+
     def SetEditedElementDivergenceInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -2975,14 +2975,14 @@ class PLCControler:
                             connection = PLCOpenParser.CreateElement("connectionPointOut", divergence_type)
                             divergence.appendconnectionPointOut(connection)
                             connection.setrelPositionXY(position.x, position.y)
-                            
+
     def AddEditedElementJump(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
             jump = PLCOpenParser.CreateElement("jumpStep", "sfcObjects")
             jump.setlocalId(id)
             element.addinstance(jump)
-    
+
     def SetEditedElementJumpInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -3005,14 +3005,14 @@ class PLCControler:
                     jump.addconnectionPointIn()
                     jump.connectionPointIn.setrelPositionXY(position.x, position.y)
                     self.SetConnectionWires(jump.connectionPointIn, value)
- 
+
     def AddEditedElementActionBlock(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
             actionBlock = PLCOpenParser.CreateElement("actionBlock", "commonObjects")
             actionBlock.setlocalId(id)
             element.addinstance(actionBlock)
-    
+
     def SetEditedElementActionBlockInfos(self, tagname, id, infos):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -3035,7 +3035,7 @@ class PLCControler:
                     actionBlock.addconnectionPointIn()
                     actionBlock.connectionPointIn.setrelPositionXY(position.x, position.y)
                     self.SetConnectionWires(actionBlock.connectionPointIn, value)
-    
+
     def RemoveEditedElementInstance(self, tagname, id):
         element = self.GetEditedElement(tagname)
         if element is not None:
@@ -3162,19 +3162,19 @@ class PLCControler:
         self.Buffering = False
         self.CurrentElementEditing = None
         return error
-        
+
     def SaveXMLFile(self, filepath = None):
         if not filepath and self.FilePath == "":
             return False
         else:
             contentheader = {"modificationDateTime": datetime.datetime(*localtime()[:6])}
             self.Project.setcontentHeader(contentheader)
-            
+
             if filepath:
                 SaveProject(self.Project, filepath)
             else:
                 SaveProject(self.Project, self.FilePath)
-            
+
             self.MarkProjectAsSaved()
             if filepath:
                 self.SetFilePath(filepath)
@@ -3233,7 +3233,7 @@ class PLCControler:
             self.Buffering = True
         else:
             self.ProjectSaved = False
-        
+
     def EndBuffering(self):
         if self.ProjectBuffer is not None and self.Buffering:
             self.ProjectBuffer.Buffering(PLCOpenParser.Dumps(self.Project))
@@ -3245,7 +3245,7 @@ class PLCControler:
             self.ProjectBuffer.CurrentSaved()
         else:
             self.ProjectSaved = True
-    
+
     # Return if project is saved
     def ProjectIsSaved(self):
         if self.ProjectBuffer is not None:
@@ -3257,11 +3257,11 @@ class PLCControler:
         self.EndBuffering()
         if self.ProjectBuffer is not None:
             self.Project = PLCOpenParser.Loads(self.ProjectBuffer.Previous())
-    
+
     def LoadNext(self):
         if self.ProjectBuffer is not None:
             self.Project = PLCOpenParser.Loads(self.ProjectBuffer.Next())
-    
+
     def GetBufferState(self):
         if self.ProjectBuffer is not None:
             first = self.ProjectBuffer.IsFirst() and not self.Buffering

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+#based on the plcopen standard.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -45,8 +45,8 @@ for i in xrange(26):
     LETTERS.append(chr(ord('a') + i))
     LETTERS.append(chr(ord('A') + i))
 
-[STC_PLC_WORD, STC_PLC_COMMENT, STC_PLC_NUMBER, STC_PLC_STRING, 
- STC_PLC_VARIABLE, STC_PLC_PARAMETER, STC_PLC_FUNCTION, STC_PLC_JUMP, 
+[STC_PLC_WORD, STC_PLC_COMMENT, STC_PLC_NUMBER, STC_PLC_STRING,
+ STC_PLC_VARIABLE, STC_PLC_PARAMETER, STC_PLC_FUNCTION, STC_PLC_JUMP,
  STC_PLC_ERROR, STC_PLC_SEARCH_RESULT] = range(10)
 [SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
 
@@ -70,35 +70,35 @@ def LineStartswith(line, symbols):
     return reduce(lambda x, y: x or y, map(lambda x: line.startswith(x), symbols), False)
 
 class TextViewer(EditorPanel):
-    
+
     ID = ID_TEXTVIEWER
-    
+
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id = None):
             if id is not None:
                 event(self, id, function)
             else:
                 event(self, function)
-    
+
     def _init_Editor(self, prnt):
-        self.Editor = CustomStyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL, 
+        self.Editor = CustomStyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL,
                 parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
         self.Editor.ParentWindow = self
-        
+
         self.Editor.CmdKeyAssign(ord('+'), wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMIN)
         self.Editor.CmdKeyAssign(ord('-'), wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMOUT)
-        
+
         self.Editor.SetViewWhiteSpace(False)
-        
+
         self.Editor.SetLexer(wx.stc.STC_LEX_CONTAINER)
-        
+
         # Global default styles for all languages
         self.Editor.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, "face:%(mono)s,size:%(size)d" % faces)
         self.Editor.StyleClearAll()  # Reset all to be like the default
-        
+
         self.Editor.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "back:#C0C0C0,size:%(size)d" % faces)
         self.Editor.SetSelBackground(1, "#E0E0E0")
-        
+
         # Highlighting styles
         self.Editor.StyleSetSpec(STC_PLC_WORD, "fore:#00007F,bold,size:%(size)d" % faces)
         self.Editor.StyleSetSpec(STC_PLC_VARIABLE, "fore:#7F0000,size:%(size)d" % faces)
@@ -110,18 +110,18 @@ class TextViewer(EditorPanel):
         self.Editor.StyleSetSpec(STC_PLC_JUMP, "fore:#FF7FFF,size:%(size)d" % faces)
         self.Editor.StyleSetSpec(STC_PLC_ERROR, "fore:#FF0000,back:#FFFF00,size:%(size)d" % faces)
         self.Editor.StyleSetSpec(STC_PLC_SEARCH_RESULT, "fore:#FFFFFF,back:#FFA500,size:%(size)d" % faces)
-        
+
         # Indicators styles
         self.Editor.IndicatorSetStyle(0, wx.stc.STC_INDIC_SQUIGGLE)
         if self.ParentWindow is not None and self.Controler is not None:
             self.Editor.IndicatorSetForeground(0, wx.RED)
         else:
             self.Editor.IndicatorSetForeground(0, wx.WHITE)
-        
+
         # Line numbers in the margin
         self.Editor.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         self.Editor.SetMarginWidth(1, 50)
-        
+
         # Folding
         self.Editor.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,    wx.stc.STC_MARK_BOXMINUS,          "white", "#808080")
         self.Editor.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,        wx.stc.STC_MARK_BOXPLUS,           "white", "#808080")
@@ -130,11 +130,11 @@ class TextViewer(EditorPanel):
         self.Editor.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,     wx.stc.STC_MARK_BOXPLUSCONNECTED,  "white", "#808080")
         self.Editor.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUSCONNECTED, "white", "#808080")
         self.Editor.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_TCORNER,           "white", "#808080")
-        
+
         # Indentation size
         self.Editor.SetTabWidth(2)
         self.Editor.SetUseTabs(0)
-        
+
         self.Editor.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|
                                     wx.stc.STC_MOD_BEFOREDELETE|
                                     wx.stc.STC_PERFORMED_USER)
@@ -147,13 +147,13 @@ class TextViewer(EditorPanel):
             self.Editor.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
             self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_TEXTVIEWERTEXTCTRL)
             self.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, id=ID_TEXTVIEWERTEXTCTRL)
-        
+
     def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
         if tagname != "" and controler is not None:
             self.VARIABLE_PANEL_TYPE = controler.GetPouType(tagname.split("::")[1])
-        
+
         EditorPanel.__init__(self, parent, tagname, window, controler, debug)
-        
+
         self.Keywords = []
         self.Variables = {}
         self.Functions = {}
@@ -163,62 +163,62 @@ class TextViewer(EditorPanel):
         self.DisableEvents = True
         self.TextSyntax = None
         self.CurrentAction = None
-        
+
         self.InstancePath = instancepath
         self.ContextStack = []
         self.CallStack = []
-        
+
         self.ResetSearchResults()
-        
+
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
-        
+
     def __del__(self):
         self.RefreshHighlightsTimer.Stop()
-    
+
     def GetTitle(self):
         if self.Debug or self.TagName == "":
             if len(self.InstancePath) > 15:
                 return "..." + self.InstancePath[-12:]
             return self.InstancePath
         return EditorPanel.GetTitle(self)
-    
+
     def GetInstancePath(self):
         return self.InstancePath
-    
+
     def IsViewing(self, tagname):
         if self.Debug or self.TagName == "":
             return self.InstancePath == tagname
         else:
             return self.TagName == tagname
-    
+
     def GetText(self):
         return self.Editor.GetText()
-    
+
     def SetText(self, text):
         self.Editor.SetText(text)
-    
+
     def SelectAll(self):
         self.Editor.SelectAll()
-    
+
     def Colourise(self, start, end):
         self.Editor.Colourise(start, end)
-    
+
     def StartStyling(self, pos, mask):
         self.Editor.StartStyling(pos, mask)
-    
+
     def SetStyling(self, length, style):
         self.Editor.SetStyling(length, style)
-    
+
     def GetCurrentPos(self):
         return self.Editor.GetCurrentPos()
-    
+
     def ResetSearchResults(self):
         self.Highlights = []
         self.SearchParams = None
         self.SearchResults = None
         self.CurrentFindHighlight = None
-    
+
     def OnModification(self, event):
         if not self.DisableEvents:
             mod_type = event.GetModificationType()
@@ -239,7 +239,7 @@ class TextViewer(EditorPanel):
                 self.CurrentAction = ("Delete", event.GetPosition())
                 wx.CallAfter(self.RefreshModel)
         event.Skip()
-    
+
     def OnDoDrop(self, event):
         try:
             values = eval(event.GetDragText())
@@ -256,7 +256,7 @@ class TextViewer(EditorPanel):
                     blockinputs = values[3]
                 else:
                     blockinputs = None
-                if values[1] != "function": 
+                if values[1] != "function":
                     if blockname == "":
                         dialog = wx.TextEntryDialog(self.ParentWindow, "Block name", "Please enter a block name", "", wx.OK|wx.CANCEL|wx.CENTRE)
                         if dialog.ShowModal() == wx.ID_OK:
@@ -291,9 +291,9 @@ class TextViewer(EditorPanel):
                     else:
                         location = values[0]
                         if not location.startswith("%"):
-                            dialog = wx.SingleChoiceDialog(self.ParentWindow, 
-                                  _("Select a variable class:"), _("Variable class"), 
-                                  ["Input", "Output", "Memory"], 
+                            dialog = wx.SingleChoiceDialog(self.ParentWindow,
+                                  _("Select a variable class:"), _("Variable class"),
+                                  ["Input", "Output", "Memory"],
                                   wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
@@ -314,13 +314,30 @@ class TextViewer(EditorPanel):
                         else:
                             var_type = LOCATIONDATATYPES.get(location[2], ["BOOL"])[0]
                         self.Controler.AddEditedElementPouVar(self.TagName,
-                            var_type, var_name, 
+                            var_type, var_name,
                             location=location, description=values[4])
                         self.RefreshVariablePanel()
                         self.RefreshVariableTree()
                         event.SetDragText(var_name)
                 else:
                     event.SetDragText("")
+            elif values[1] == "NamedConstant":
+                pou_name, pou_type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
+                if pou_type == "program":
+                    initval = values[0]
+                    var_name = values[3]
+                    if var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
+                        message = _("\"%s\" pou already exists!")%var_name
+                    else:
+                        var_type = values[2]
+                        if not var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
+                            self.Controler.AddEditedElementPouVar(self.TagName,
+                                                                  var_type,
+                                                                  var_name,
+                                                                  description=values[4], initval=initval)
+                            self.RefreshVariablePanel()
+                            self.RefreshVariableTree()
+                        event.SetDragText(var_name)
             elif values[1] == "Global":
                 var_name = values[0]
                 if var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
@@ -345,7 +362,7 @@ class TextViewer(EditorPanel):
                 dialog.Destroy()
                 event.SetDragText("")
         event.Skip()
-    
+
     def SetTextSyntax(self, syntax):
         self.TextSyntax = syntax
         if syntax in ["ST", "ALL"]:
@@ -362,16 +379,16 @@ class TextViewer(EditorPanel):
         else:
             self.BlockStartKeywords = []
             self.BlockEndKeywords = []
-    
+
     def SetKeywords(self, keywords):
         self.Keywords = [keyword.upper() for keyword in keywords]
         self.Colourise(0, -1)
-    
+
     def RefreshJumpList(self):
         if self.TextSyntax != "IL":
             self.Jumps = [jump.upper() for jump in LABEL_MODEL.findall(self.GetText())]
             self.Colourise(0, -1)
-    
+
     # Buffer the last model state
     def RefreshBuffer(self):
         self.Controler.BufferProject()
@@ -379,42 +396,42 @@ class TextViewer(EditorPanel):
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
-    
+
     def StartBuffering(self):
         self.Controler.StartBuffering()
         if self.ParentWindow:
             self.ParentWindow.RefreshTitle()
             self.ParentWindow.RefreshFileMenu()
             self.ParentWindow.RefreshEditMenu()
-    
+
     def ResetBuffer(self):
         if self.CurrentAction != None:
             self.Controler.EndBuffering()
             self.CurrentAction = None
-    
+
     def GetBufferState(self):
         if not self.Debug and self.TextSyntax != "ALL":
             return self.Controler.GetBufferState()
         return False, False
-    
+
     def Undo(self):
         if not self.Debug and self.TextSyntax != "ALL":
             self.Controler.LoadPrevious()
             self.ParentWindow.CloseTabsWithoutModel()
-            
+
     def Redo(self):
         if not self.Debug and self.TextSyntax != "ALL":
             self.Controler.LoadNext()
             self.ParentWindow.CloseTabsWithoutModel()
-        
+
     def HasNoModel(self):
         if not self.Debug and self.TextSyntax != "ALL":
             return self.Controler.GetEditedElement(self.TagName) is None
         return False
-    
+
     def RefreshView(self, variablepanel=True):
         EditorPanel.RefreshView(self, variablepanel)
-        
+
         if self.Controler is not None:
             self.ResetBuffer()
             self.DisableEvents = True
@@ -434,12 +451,12 @@ class TextViewer(EditorPanel):
                 self.RefreshJumpList()
                 self.Editor.EmptyUndoBuffer()
             self.DisableEvents = False
-            
+
             self.RefreshVariableTree()
-            
+
             self.TypeNames = [typename.upper() for typename in self.Controler.GetDataTypes(self.TagName, True, self.Debug)]
             self.EnumeratedValues = [value.upper() for value in self.Controler.GetEnumeratedDataValues()]
-            
+
             self.Functions = {}
             for category in self.Controler.GetBlockTypes(self.TagName, self.Debug):
                 for blocktype in category["list"]:
@@ -455,13 +472,13 @@ class TextViewer(EditorPanel):
                         else:
                             self.Functions[blockname] = {"interface": interface,
                                                          "extensible": blocktype["extensible"]}
-        
+
         self.Colourise(0, -1)
-            
+
     def RefreshVariableTree(self):
         words = self.TagName.split("::")
         self.Variables = self.GenerateVariableTree(
-            [(variable.Name, variable.Type, variable.Tree) 
+            [(variable.Name, variable.Type, variable.Tree)
              for variable in self.Controler.GetEditedElementInterfaceVars(
                 self.TagName, True, self.Debug)])
         if self.Controler.GetEditedElementType(self.TagName, self.Debug)[1] == "function" or words[0] == "T" and self.TextSyntax == "IL":
@@ -470,22 +487,22 @@ class TextViewer(EditorPanel):
                 self.Variables[words[-1].upper()] = self.GenerateVariableTree(var_tree)
             else:
                 self.Variables[words[-1].upper()] = {}
-    
+
     def GenerateVariableTree(self, list):
         tree = {}
         for var_name, var_type, (var_tree, var_dimension) in list:
             tree[var_name.upper()] = self.GenerateVariableTree(var_tree)
         return tree
-    
+
     def IsValidVariable(self, name, context):
         return context is not None and context.get(name, None) is not None
 
     def IsCallParameter(self, name, call):
         if call is not None:
-            return (call["interface"].get(name.upper(), None) is not None or 
+            return (call["interface"].get(name.upper(), None) is not None or
                     call["extensible"] and EXTENSIBLE_PARAMETER.match(name.upper()) is not None)
         return False
-    
+
     def RefreshLineFolding(self, line_number):
         if self.TextSyntax in ["ST", "ALL"]:
             level = wx.stc.STC_FOLDLEVELBASE + self.Editor.GetLineIndentation(line_number)
@@ -497,7 +514,7 @@ class TextViewer(EditorPanel):
                     else:
                         level = self.Editor.GetFoldLevel(line_number - 1) & wx.stc.STC_FOLDLEVELNUMBERMASK
                 if level != wx.stc.STC_FOLDLEVELBASE:
-                    level |=  wx.stc.STC_FOLDLEVELWHITEFLAG 
+                    level |=  wx.stc.STC_FOLDLEVELWHITEFLAG
             elif LineStartswith(line, self.BlockStartKeywords):
                 level |= wx.stc.STC_FOLDLEVELHEADERFLAG
             elif LineStartswith(line, self.BlockEndKeywords):
@@ -506,7 +523,7 @@ class TextViewer(EditorPanel):
                 else:
                     level = self.Editor.GetFoldLevel(line_number - 1) & wx.stc.STC_FOLDLEVELNUMBERMASK
             self.Editor.SetFoldLevel(line_number, level)
-    
+
     def OnStyleNeeded(self, event):
         self.TextChanged = True
         line_number = self.Editor.LineFromPosition(self.Editor.GetEndStyled())
@@ -517,10 +534,10 @@ class TextViewer(EditorPanel):
         self.RefreshLineFolding(line_number)
         end_pos = event.GetPosition()
         self.StartStyling(start_pos, 0xff)
-        
+
         current_context = self.Variables
         current_call = None
-        
+
         current_pos = last_styled_pos
         state = SPACE
         line = ""
@@ -642,7 +659,7 @@ class TextViewer(EditorPanel):
                     elif self.IsCallParameter(word, current_call):
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_PARAMETER)
                     elif word in self.Functions:
-                        self.SetStyling(current_pos - last_styled_pos, STC_PLC_FUNCTION)    
+                        self.SetStyling(current_pos - last_styled_pos, STC_PLC_FUNCTION)
                     elif self.TextSyntax == "IL" and word in self.Jumps:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_JUMP)
                     elif word in self.EnumeratedValues:
@@ -670,7 +687,7 @@ class TextViewer(EditorPanel):
                         if char == '[' and current_context is not None:
                             self.ContextStack.append(current_context.get(word, None))
                         current_context = self.Variables
-                    
+
                     word = ""
                     last_styled_pos = current_pos
                     state = SPACE
@@ -717,20 +734,20 @@ class TextViewer(EditorPanel):
             self.SetStyling(current_pos - start_pos, 31)
         self.ShowHighlights(start_pos, end_pos)
         event.Skip()
-    
+
     def OnMarginClick(self, event):
         if event.GetMargin() == 2:
             line = self.Editor.LineFromPosition(event.GetPosition())
             if self.Editor.GetFoldLevel(line) & wx.stc.STC_FOLDLEVELHEADERFLAG:
                 self.Editor.ToggleFold(line)
         event.Skip()
-    
+
     def OnUpdateUI(self, event):
         selected = self.Editor.GetSelectedText()
         if self.ParentWindow and selected != "":
             self.ParentWindow.SetCopyBuffer(selected, True)
         event.Skip()
-    
+
     def Cut(self):
         self.ResetBuffer()
         self.DisableEvents = True
@@ -738,12 +755,12 @@ class TextViewer(EditorPanel):
         self.DisableEvents = False
         self.RefreshModel()
         self.RefreshBuffer()
-    
+
     def Copy(self):
         self.Editor.CmdKeyExecute(wx.stc.STC_CMD_COPY)
         if self.ParentWindow:
             self.ParentWindow.RefreshEditMenu()
-    
+
     def Paste(self):
         self.ResetBuffer()
         self.DisableEvents = True
@@ -751,28 +768,28 @@ class TextViewer(EditorPanel):
         self.DisableEvents = False
         self.RefreshModel()
         self.RefreshBuffer()
-    
+
     def Search(self, criteria):
         return self.Controler.SearchInPou(self.TagName, criteria, self.Debug)
-    
+
     def Find(self, direction, search_params):
         if self.SearchParams != search_params:
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
-            
+
             self.SearchParams = search_params
             criteria = {
-                "raw_pattern": search_params["find_pattern"], 
+                "raw_pattern": search_params["find_pattern"],
                 "pattern": re.compile(search_params["find_pattern"]),
                 "case_sensitive": search_params["case_sensitive"],
                 "regular_expression": search_params["regular_expression"],
                 "filter": "all"}
-            
+
             self.SearchResults = [
                 (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)
-                for infos, start, end, text in 
+                for infos, start, end, text in
                 self.Search(criteria)]
             self.CurrentFindHighlight = None
-        
+
         if len(self.SearchResults) > 0:
             if self.CurrentFindHighlight is not None:
                 old_idx = self.SearchResults.index(self.CurrentFindHighlight)
@@ -787,24 +804,24 @@ class TextViewer(EditorPanel):
             else:
                 self.CurrentFindHighlight = self.SearchResults[0]
                 self.AddHighlight(*self.CurrentFindHighlight)
-            
+
         else:
             if self.CurrentFindHighlight is not None:
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
-    
+
     def RefreshModel(self):
         self.RefreshJumpList()
         self.Controler.SetEditedElementText(self.TagName, self.GetText())
         self.ResetSearchResults()
-    
+
     def OnKeyDown(self, event):
         key = event.GetKeyCode()
         if self.Controler is not None:
-        
+
             if self.Editor.CallTipActive():
                 self.Editor.CallTipCancel()
-            
+
             key_handled = False
 
             line = self.Editor.GetCurrentLine()
@@ -814,15 +831,15 @@ class TextViewer(EditorPanel):
                 start_pos = self.Editor.GetLineEndPosition(line - 1) + 1
             end_pos = self.GetCurrentPos()
             lineText = self.Editor.GetTextRange(start_pos, end_pos).replace("\t", " ")
-            
+
             # Code completion
             if key == wx.WXK_SPACE and event.ControlDown():
-                
+
                 words = lineText.split(" ")
                 words = [word for i, word in enumerate(words) if word != '' or i == len(words) - 1]
-                            
+
                 kw = []
-                
+
                 if self.TextSyntax == "IL":
                     if len(words) == 1:
                         kw = self.Keywords
@@ -875,7 +892,7 @@ class TextViewer(EditorPanel):
 
     def ClearHighlights(self, highlight_type=None):
         EditorPanel.ClearHighlights(self, highlight_type)
-        
+
         if highlight_type is None:
             self.Highlights = []
         else:
@@ -886,7 +903,7 @@ class TextViewer(EditorPanel):
 
     def AddHighlight(self, infos, start, end, highlight_type):
         EditorPanel.AddHighlight(self, infos, start, end, highlight_type)
-        
+
         highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
         if infos[0] == "body" and highlight_type is not None:
             self.Highlights.append((infos[1], start, end, highlight_type))
@@ -895,13 +912,13 @@ class TextViewer(EditorPanel):
 
     def RemoveHighlight(self, infos, start, end, highlight_type):
         EditorPanel.RemoveHighlight(self, infos, start, end, highlight_type)
-        
+
         highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
-        if (infos[0] == "body" and highlight_type is not None and 
+        if (infos[0] == "body" and highlight_type is not None and
             (infos[1], start, end, highlight_type) in self.Highlights):
             self.Highlights.remove((infos[1], start, end, highlight_type))
             self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
-    
+
     def ShowHighlights(self, start_pos, end_pos):
         for indent, start, end, highlight_type in self.Highlights:
             if start[0] == 0:
@@ -917,4 +934,4 @@ class TextViewer(EditorPanel):
                 self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
                 self.StartStyling(highlight_start_pos, 0x00)
                 self.SetStyling(len(self.Editor.GetText()) - highlight_end_pos, wx.stc.STC_STYLE_DEFAULT)
-                
+
