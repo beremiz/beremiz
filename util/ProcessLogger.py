@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival. 
+#programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -31,7 +31,7 @@ import os, sys
 if os.name == 'posix':
     from signal import SIGTERM, SIGKILL
 
-    
+
 class outputThread(Thread):
     """
     Thread is used to print the output of a command to the stdout
@@ -66,10 +66,10 @@ class outputThread(Thread):
                 err = self.retval
             self.finished = True
             self.endcallback(self.Proc.pid, err)
-        
+
 class ProcessLogger:
-    def __init__(self, logger, Command, finish_callback = None, 
-                 no_stdout = False, no_stderr = False, no_gui = True, 
+    def __init__(self, logger, Command, finish_callback = None,
+                 no_stdout = False, no_stderr = False, no_gui = True,
                  timeout = None, outlimit = None, errlimit = None,
                  endlog = None, keyword = None, kill_it = False, cwd = None):
         self.logger = logger
@@ -86,10 +86,10 @@ class ProcessLogger:
         else:
             self.Command = Command
             self.Command_str = subprocess.list2cmdline(self.Command)
-        
+
         self.Command = map(lambda x: x.encode(sys.getfilesystemencoding()),
                            self.Command)
-        
+
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
         self.no_stderr = no_stderr
@@ -105,27 +105,27 @@ class ProcessLogger:
         self.kill_it = kill_it
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
-        
+
         popenargs= {
                "cwd":os.getcwd() if cwd is None else cwd,
-               "stdin":subprocess.PIPE, 
-               "stdout":subprocess.PIPE, 
+               "stdin":subprocess.PIPE,
+               "stdout":subprocess.PIPE,
                "stderr":subprocess.PIPE}
-        
+
         if no_gui == True and wx.Platform == '__WXMSW__':
             self.startupinfo = subprocess.STARTUPINFO()
             self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             popenargs["startupinfo"] = self.startupinfo
         elif wx.Platform == '__WXGTK__':
             popenargs["shell"] = False
-        
+
         self.Proc = subprocess.Popen( self.Command, **popenargs )
 
         self.outt = outputThread(
                       self.Proc,
                       self.Proc.stdout,
                       self.output,
-                      self.finish) 
+                      self.finish)
         self.outt.start()
 
         self.errt = outputThread(
@@ -147,7 +147,7 @@ class ProcessLogger:
             self.logger.write(v)
         if (self.keyword and v.find(self.keyword)!=-1) or (self.outlimit and self.outlen > self.outlimit):
             self.endlog()
-            
+
     def errors(self,v):
         self.errdata.append(v)
         self.errlen += 1
@@ -195,7 +195,7 @@ class ProcessLogger:
             if not self.outt.finished and self.kill_it:
                self.kill()
 
-        
+
     def spin(self):
         self.finishsem.acquire()
         return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]

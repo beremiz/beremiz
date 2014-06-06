@@ -119,7 +119,7 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 			/*printf("__PythonEvalFB pop %%d - %%*s\n",Current_PLC_EvalFB, data__->BUFFER.len, data__->BUFFER.body);*/
 		}else if(poll){
 			/* when in polling, no answer == ack down */
-		    __SET_VAR(data__->, ACK., 0);
+		    __SET_VAR(data__->, ACK,, 0);
 		}
 		/* got the order to act ?*/
 		if(__GET_VAR(data__->TRIGGED) == 1 &&

@@ -12,7 +12,7 @@ LOCATIONDATATYPES = {"X" : ["BOOL"],
                      "B" : ["SINT", "USINT", "BYTE", "STRING"],
                      "W" : ["INT", "UINT", "WORD", "WSTRING"],
                      "D" : ["DINT", "UDINT", "REAL", "DWORD"],
-                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]} 
+                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]}
 
 #-------------------------------------------------------------------------------
 #                        Function Block Types definitions
@@ -104,6 +104,8 @@ TypeHierarchy_list = [
     ("LWORD", "ANY_NBIT")
     #("WSTRING", "ANY_STRING") # TODO
 ]
+
+DefaultType = "DINT"
 
 DataTypeRange_list = [
     ("SINT", (-2**7, 2**7 - 1)),
