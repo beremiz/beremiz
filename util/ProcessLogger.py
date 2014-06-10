@@ -71,7 +71,8 @@ class ProcessLogger:
     def __init__(self, logger, Command, finish_callback = None,
                  no_stdout = False, no_stderr = False, no_gui = True,
                  timeout = None, outlimit = None, errlimit = None,
-                 endlog = None, keyword = None, kill_it = False, cwd = None):
+                 endlog = None, keyword = None, kill_it = False, cwd = None,
+                 encoding = None):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -87,8 +88,12 @@ class ProcessLogger:
             self.Command = Command
             self.Command_str = subprocess.list2cmdline(self.Command)
 
-        self.Command = map(lambda x: x.encode(sys.getfilesystemencoding()),
-                           self.Command)
+        fsencoding = sys.getfilesystemencoding()
+
+        if encoding is None:
+            encoding = fsencoding
+        self.Command = [self.Command[0].encode(fsencoding)]+map(
+            lambda x: x.encode(encoding), self.Command[1:])
 
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
