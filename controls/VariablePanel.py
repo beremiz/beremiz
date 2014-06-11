@@ -307,8 +307,8 @@ class VariableDropTarget(wx.TextDropTarget):
                         self.ParentWindow.SaveValues()
             elif (element_type not in ["config", "resource", "function"] and values[1] == "Global" and
                   self.ParentWindow.Filter in ["All", "Interface", "External"] or
-                  element_type != "function" and values[1] == "location"):
-                if values[1] == "location":
+                  element_type != "function" and values[1] in ["location", "NamedConstant"]):
+                if values[1] in  ["location","NamedConstant"]:
                     var_name = values[3]
                 else:
                     var_name = values[0]
@@ -323,6 +323,7 @@ class VariableDropTarget(wx.TextDropTarget):
                     var_infos = self.ParentWindow.DefaultValue.copy()
                     var_infos.Name = var_name
                     var_infos.Type = values[2]
+                    var_infos.Documentation = values[4]
                     if values[1] == "location":
                         location = values[0]
                         if not location.startswith("%"):
@@ -360,6 +361,13 @@ class VariableDropTarget(wx.TextDropTarget):
                             else:
                                 var_infos.Class = "Global"
                             var_infos.Location = location
+                    elif values[1] == "NamedConstant":
+                        print "Fuck"
+                        if element_type in ["functionBlock","program"]:
+                            var_infos.Class = "Local"
+                            var_infos.InitialValue = values[0]
+                        else :
+                            return
                     else:
                         var_infos.Class = "External"
                     var_infos.Number = len(self.ParentWindow.Values)
