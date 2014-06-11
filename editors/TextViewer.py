@@ -284,7 +284,16 @@ class TextViewer(EditorPanel):
                 pou_name, pou_type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
                 if len(values) > 2 and pou_type == "program":
                     var_name = values[3]
-                    if var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
+                    dlg = wx.TextEntryDialog(
+                        self.ParentWindow,
+                        _("Confirm or change variable name"),
+                        'Variable Drop', var_name)
+                    dlg.SetValue(var_name)
+                    var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
+                    dlg.Destroy()
+                    if var_name is None:
+                        return
+                    elif var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
                         message = _("\"%s\" pou already exists!")%var_name
                     elif var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
                         message = _("\"%s\" element for this pou already exists!")%var_name
@@ -326,7 +335,16 @@ class TextViewer(EditorPanel):
                 if pou_type == "program":
                     initval = values[0]
                     var_name = values[3]
-                    if var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
+                    dlg = wx.TextEntryDialog(
+                        self.ParentWindow,
+                        _("Confirm or change variable name"),
+                        'Variable Drop', var_name)
+                    dlg.SetValue(var_name)
+                    var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
+                    dlg.Destroy()
+                    if var_name is None:
+                        return
+                    elif var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
                         message = _("\"%s\" pou already exists!")%var_name
                     else:
                         var_type = values[2]
@@ -340,7 +358,16 @@ class TextViewer(EditorPanel):
                         event.SetDragText(var_name)
             elif values[1] == "Global":
                 var_name = values[0]
-                if var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
+                dlg = wx.TextEntryDialog(
+                    self.ParentWindow,
+                    _("Confirm or change variable name"),
+                    'Variable Drop', var_name)
+                dlg.SetValue(var_name)
+                var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
+                dlg.Destroy()
+                if var_name is None:
+                    return
+                elif var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
                     message = _("\"%s\" pou already exists!")%var_name
                 else:
                     if not var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
