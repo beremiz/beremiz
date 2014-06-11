@@ -313,7 +313,16 @@ class VariableDropTarget(wx.TextDropTarget):
                 else:
                     var_name = values[0]
                 tagname = self.ParentWindow.GetTagName()
-                if var_name.upper() in [name.upper()
+                dlg = wx.TextEntryDialog(
+                    self.ParentWindow.ParentWindow.ParentWindow,
+                    _("Confirm or change variable name"),
+                    'Variable Drop', var_name)
+                dlg.SetValue(var_name)
+                var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
+                dlg.Destroy()
+                if var_name is None:
+                    return
+                elif var_name.upper() in [name.upper()
                         for name in self.ParentWindow.Controler.\
                             GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!")%var_name
@@ -362,7 +371,6 @@ class VariableDropTarget(wx.TextDropTarget):
                                 var_infos.Class = "Global"
                             var_infos.Location = location
                     elif values[1] == "NamedConstant":
-                        print "Fuck"
                         if element_type in ["functionBlock","program"]:
                             var_infos.Class = "Local"
                             var_infos.InitialValue = values[0]
@@ -374,6 +382,8 @@ class VariableDropTarget(wx.TextDropTarget):
                     self.ParentWindow.Values.append(var_infos)
                     self.ParentWindow.SaveValues()
                     self.ParentWindow.RefreshValues()
+                else:
+                    message = _("\"%s\" element for this pou already exists!")%var_name
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
