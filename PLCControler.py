@@ -1467,7 +1467,7 @@ class PLCControler:
                 else:
                     derived_type = PLCOpenParser.CreateElement("derived", "dataType")
                     derived_type.setname(return_type)
-                    return_type.setcontent(derived_type)
+                    return_type_obj.setcontent(derived_type)
 
     def UpdateProjectUsedPous(self, old_name, new_name):
         if self.Project is not None:
