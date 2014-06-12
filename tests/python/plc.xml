@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:21:19"/>
-  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2014-03-27T09:15:55">
+  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2014-06-12T17:48:28">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -44,6 +44,11 @@
           </enum>
         </baseType>
       </dataType>
+      <dataType name="datatype0">
+        <baseType>
+          <BOOL/>
+        </baseType>
+      </dataType>
     </dataTypes>
     <pous>
       <pou name="main_pytest" pouType="program">
@@ -52,6 +57,11 @@
             <variable name="pytest_var1">
               <type>
                 <string/>
+              </type>
+            </variable>
+            <variable name="fefvsd">
+              <type>
+                <derived name="datatype0"/>
               </type>
             </variable>
             <variable name="pytest_var2">
@@ -895,6 +905,10 @@ Enjoy. ]]></xhtml:p>
                 <variable formalParameter="IN1" negated="true">
                   <connectionPointIn>
                     <relPosition x="0" y="35"/>
+                    <connection refLocalId="50">
+                      <position x="365" y="1100"/>
+                      <position x="305" y="1100"/>
+                    </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
@@ -927,6 +941,10 @@ Enjoy. ]]></xhtml:p>
               <position x="510" y="1085"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
+                <connection refLocalId="51" formalParameter="OUT">
+                  <position x="510" y="1100"/>
+                  <position x="435" y="1100"/>
+                </connection>
               </connectionPointIn>
               <expression>Global_RS.S</expression>
             </outVariable>
@@ -934,6 +952,10 @@ Enjoy. ]]></xhtml:p>
               <position x="510" y="1200"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
+                <connection refLocalId="41" formalParameter="OUT">
+                  <position x="510" y="1215"/>
+                  <position x="435" y="1215"/>
+                </connection>
               </connectionPointIn>
               <expression>Global_RS.R1</expression>
             </outVariable>
@@ -950,6 +972,10 @@ Enjoy. ]]></xhtml:p>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
                     <relPosition x="0" y="35"/>
+                    <connection refLocalId="24">
+                      <position x="365" y="1215"/>
+                      <position x="305" y="1215"/>
+                    </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
@@ -1094,12 +1120,46 @@ Enjoy. ]]></xhtml:p>
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
-            <comment localId="60" height="40" width="500">
-              <position x="120" y="1020"/>
-              <content>
-                <xhtml:p><![CDATA[Test for access to Gobal FB variables is disabled, as broken in matiec]]></xhtml:p>
-              </content>
-            </comment>
+            <block localId="61" typeName="function0" executionOrderId="0" height="45" width="110">
+              <position x="1680" y="255"/>
+              <inputVariables>
+                <variable formalParameter="LocalVar0">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="62">
+                      <position x="1680" y="285"/>
+                      <position x="1640" y="285"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="110" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="62" executionOrderId="0" height="30" width="55" negated="false">
+              <position x="1585" y="270"/>
+              <connectionPointOut>
+                <relPosition x="55" y="15"/>
+              </connectionPointOut>
+              <expression>fefvsd</expression>
+            </inVariable>
+            <outVariable localId="63" executionOrderId="0" height="30" width="55" negated="false">
+              <position x="1825" y="270"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="61" formalParameter="OUT">
+                  <position x="1825" y="285"/>
+                  <position x="1790" y="285"/>
+                </connection>
+              </connectionPointIn>
+              <expression>fefvsd</expression>
+            </outVariable>
           </FBD>
         </body>
       </pou>
@@ -1210,6 +1270,26 @@ Global_RS();
         <body>
           <ST>
             <xhtml:p><![CDATA[NORM := SQRT(IN1 * IN1 + IN2 * IN2);]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+      <pou name="function0" pouType="function">
+        <interface>
+          <returnType>
+            <derived name="datatype0"/>
+          </returnType>
+          <inputVars>
+            <variable name="LocalVar0">
+              <type>
+                <derived name="datatype0"/>
+              </type>
+            </variable>
+          </inputVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[function0 := LocalVar0;
+]]></xhtml:p>
           </ST>
         </body>
       </pou>
