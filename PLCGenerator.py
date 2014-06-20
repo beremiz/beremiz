@@ -393,7 +393,11 @@ class ProgramGenerator:
             single = task.getsingle()
             # Single argument if exists
             if single is not None:
-                resrce += [("SINGLE := ", ()),
+                if single[0]=='[' and single[-1]==']' :
+                    SNGLKW = "MULTI"
+                else:
+                    SNGLKW = "SINGLE"
+                resrce += [(SNGLKW + " := ", ()),
                            (single, (tagname, "task", task_number, "single")),
                            (",", ())]
             # Interval argument if exists
