@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+#based on the plcopen standard.
 #
 #Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
 #
@@ -34,54 +34,56 @@ POU_TYPES_DICT = dict([(_(pou_type), pou_type) for pou_type in GetPouTypes()])
 def GetPouLanguages():
     _ = lambda x : x
     return [_("IL"), _("ST"), _("LD"), _("FBD"), _("SFC")]
-POU_LANGUAGES_DICT = dict([(_(language), language) for language in GetPouLanguages()])
 
 class PouDialog(wx.Dialog):
-    
+
+    POU_LANGUAGES = GetPouLanguages()
+    POU_LANGUAGES_DICT = dict([(_(language), language) for language in POU_LANGUAGES])
+
     def __init__(self, parent, pou_type = None):
         wx.Dialog.__init__(self, id=-1, parent=parent,
-              name='PouDialog', title=_('Create a new POU'), 
+              name='PouDialog', title=_('Create a new POU'),
               size=wx.Size(300, 200), style=wx.DEFAULT_DIALOG_STYLE)
         self.SetClientSize(wx.Size(300, 200))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
-        
+
         infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=15)
         infos_sizer.AddGrowableCol(1)
-        main_sizer.AddSizer(infos_sizer, border=20, 
+        main_sizer.AddSizer(infos_sizer, border=20,
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
+
         pouname_label = wx.StaticText(self, label=_('POU Name:'))
-        infos_sizer.AddWindow(pouname_label, border=4, 
+        infos_sizer.AddWindow(pouname_label, border=4,
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
-        
+
         self.PouName = wx.TextCtrl(self)
         infos_sizer.AddWindow(self.PouName, flag=wx.GROW)
-        
+
         poutype_label = wx.StaticText(self, label=_('POU Type:'))
-        infos_sizer.AddWindow(poutype_label, border=4, 
+        infos_sizer.AddWindow(poutype_label, border=4,
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
-        
+
         self.PouType = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnTypeChanged, self.PouType)
         infos_sizer.AddWindow(self.PouType, flag=wx.GROW)
-        
+
         language_label = wx.StaticText(self, label=_('Language:'))
-        infos_sizer.AddWindow(language_label, border=4, 
+        infos_sizer.AddWindow(language_label, border=4,
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
-        
+
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
         infos_sizer.AddWindow(self.Language, flag=wx.GROW)
-        
+
         button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        main_sizer.AddSizer(button_sizer, border=20,
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-            
+
         self.SetSizer(main_sizer)
-        
+
         for option in GetPouTypes():
             self.PouType.Append(_(option))
         if pou_type is not None:
@@ -110,7 +112,7 @@ class PouDialog(wx.Dialog):
                 elif i == len(error) - 1:
                     text += _(" and %s")%item
                 else:
-                    text += _(", %s")%item 
+                    text += _(", %s")%item
             message = _("Form isn't complete. %s must be filled!") % text
         elif not TestIdentifier(pou_name):
             message = _("\"%s\" is not a valid identifier!") % pou_name
@@ -136,9 +138,9 @@ class PouDialog(wx.Dialog):
             self.EndModal(wx.ID_OK)
 
     def RefreshLanguage(self):
-        selection = POU_LANGUAGES_DICT.get(self.Language.GetStringSelection(), "")
+        selection = self.POU_LANGUAGES_DICT.get(self.Language.GetStringSelection(), "")
         self.Language.Clear()
-        for language in GetPouLanguages():
+        for language in self.POU_LANGUAGES:
             if language != "SFC" or POU_TYPES_DICT[self.PouType.GetStringSelection()] != "function":
                 self.Language.Append(_(language))
         if self.Language.FindString(_(selection)) != wx.NOT_FOUND:
@@ -162,10 +164,10 @@ class PouDialog(wx.Dialog):
                 self.PouType.SetStringSelection(_(value))
             elif item == "language":
                 self.Language.SetStringSelection(_(value))
-                
+
     def GetValues(self):
         values = {}
         values["pouName"] = self.PouName.GetValue()
         values["pouType"] = POU_TYPES_DICT[self.PouType.GetStringSelection()]
-        values["language"] = POU_LANGUAGES_DICT[self.Language.GetStringSelection()]
+        values["language"] = self.POU_LANGUAGES_DICT[self.Language.GetStringSelection()]
         return values
