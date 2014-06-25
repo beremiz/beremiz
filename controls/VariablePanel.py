@@ -577,6 +577,8 @@ class VariablePanel(wx.Panel):
                 self.Values.append(row_content)
                 new_row = self.Table.GetNumberRows()
             self.SaveValues()
+            if self.ElementType == "resource":
+                self.ParentWindow.RefreshView(variablepanel = False)
             self.RefreshValues()
             return new_row
         setattr(self.VariablesGrid, "_AddRow", _AddVariable)
