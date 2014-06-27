@@ -72,6 +72,12 @@ def GetTaskTriggeringOptions():
     return [_("Interrupt"), _("Cyclic")]
 TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option) for option in GetTaskTriggeringOptions()])
 
+SingleCellEditor = lambda *x : wx.grid.GridCellChoiceEditor()
+
+def CheckSingle(single, varlist):
+    return single in varlist
+
+
 def GetInstancesTableColnames():
     _ = lambda x : x
     return [_("Name"), _("Type"), _("Task")]
@@ -114,8 +120,6 @@ class ResourceTable(CustomTable):
                 value = TASKTRIGGERINGOPTIONS_DICT[value]
             self.data[row][colname] = value
 
-    SingleCellEditor = lambda x,c : wx.grid.GridCellChoiceEditor(x)
-
     def _updateColAttrs(self, grid):
         """
         wx.grid.Grid -> update the column attributes to add the
@@ -150,10 +154,13 @@ class ResourceTable(CustomTable):
                     if interval != "" and IEC_TIME_MODEL.match(interval.upper()) is None:
                         error = True
                 elif colname == "Single":
-                    editor = self.SingleCellEditor(self,colname)
+                    editor = SingleCellEditor(self,colname)
                     editor.SetParameters(self.Parent.VariableList)
                     if self.GetValueByName(row, "Triggering") != "Interrupt":
                         grid.SetReadOnly(row, col, True)
+                    single = self.GetValueByName(row, colname)
+                    if single != "" and not CheckSingle(single,self.Parent.VariableList):
+                        error = True
                 elif colname == "Triggering":
                     editor = wx.grid.GridCellChoiceEditor()
                     editor.SetParameters(",".join(map(_, GetTaskTriggeringOptions())))
@@ -441,7 +448,7 @@ class ResourceEditor(EditorPanel):
                         self.InstancesTable.SetValueByName(i, "Task", new_name)
         self.RefreshModel()
         colname = self.TasksTable.GetColLabelValue(col, False)
-        if colname in ["Triggering", "Name", "Interval"]:
+        if colname in ["Triggering", "Name", "Single", "Interval"]:
             wx.CallAfter(self.RefreshView, False)
         event.Skip()
 
