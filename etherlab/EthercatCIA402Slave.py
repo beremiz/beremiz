@@ -207,7 +207,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             blockname = "_".join([ucase_blocktype, location_str])
             
             extract_inputs = "\n".join(["""\
-    __SET_VAR(%s->, %s, %s);""" % (blockname, input_name, input_value)
+    __SET_VAR(%s->, %s,, %s);""" % (blockname, input_name, input_value)
                 for (input_name, input_value) in [
                     ("EXECUTE", "__GET_VAR(data__->EXECUTE)")] + [
                     (input["name"].upper(), 
@@ -217,7 +217,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             
             
             return_outputs = "\n".join(["""\
-    __SET_VAR(data__->,%(output_name)s, 
+    __SET_VAR(data__->,%(output_name)s,, 
               __GET_VAR(%(blockname)s->%(output_name)s));""" % locals()
                     for output_name in ["DONE", "BUSY", "ERROR"] + [
                         output["name"].upper()
@@ -229,7 +229,7 @@ extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s* data
 void __%(blocktype)s_%(location_str)s(MC_%(ucase_blocktype)s *data__) {
 __DECLARE_GLOBAL_PROTOTYPE(ETHERLAB%(ucase_blocktype)s, %(blockname)s);
 ETHERLAB%(ucase_blocktype)s* %(blockname)s = __GET_GLOBAL_%(blockname)s();
-__SET_VAR(%(blockname)s->, POS, AxsPub.axis->NetworkPosition);
+__SET_VAR(%(blockname)s->, POS,, AxsPub.axis->NetworkPosition);
 %(extract_inputs)s
 ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
 %(return_outputs)s
