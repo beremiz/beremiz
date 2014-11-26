@@ -99,7 +99,7 @@ class CFile(CodeFile):
         cfile.write(text)
         cfile.close()
         
-        matiec_flags = '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath())
+        matiec_flags = '"-l -I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_flags))],str(self.CExtension.getLDFLAGS()),True
 
