@@ -614,7 +614,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # files are listed to stdout, and errors to stderr.
         status, result, err_result = ProcessLogger(
                self.logger,
-               "\"%s\" -f -l -I \"%s\" -T \"%s\" \"%s\""%(
+               "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
                          self.iec2c_path,
                          self.ieclib_path,
                          buildpath,
