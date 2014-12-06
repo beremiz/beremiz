@@ -214,7 +214,7 @@ void __publish_%(location_str)s(void){
         pycfile.write(PyCFileContent)
         pycfile.close()
         
-        matiec_flags = '"-l -I%s"'%os.path.abspath(
+        matiec_flags = '"-l -p -I%s"'%os.path.abspath(
             self.GetCTRoot().GetIECLibPath())
         
         return ([(Gen_PyCfile_path, matiec_flags)],
