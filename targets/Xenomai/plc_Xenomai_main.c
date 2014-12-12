@@ -13,7 +13,6 @@
 
 #include <native/task.h>
 #include <native/timer.h>
-#include <native/mutex.h>
 #include <native/sem.h>
 #include <native/pipe.h>
 
@@ -75,7 +74,7 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 
 void PLC_task_proc(void *arg)
 {
-    PLC_SetTimer(Ttick, Ttick);
+    PLC_SetTimer(common_ticktime__, common_ticktime__);
 
     while (!PLC_shutdown) {
         PLC_GetTime(&__CURRENT_TIME);

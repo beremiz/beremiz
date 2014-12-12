@@ -136,7 +136,7 @@ int startPLC(int argc,char **argv)
     }
     if( __init(argc,argv) == 0 )
     {
-        PLC_SetTimer(Ttick,Ttick);
+        PLC_SetTimer(common_ticktime__,common_ticktime__);
         PLC_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PlcLoop, NULL, 0, &thread_id);
     }
     else{
