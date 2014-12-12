@@ -31,9 +31,6 @@ unsigned long __tick = 0;
  **/
 extern unsigned long greatest_tick_count__;
 
-/* Effective tick time with 1ms default value */
-static long long Ttick = 1000000;
-
 /* Help to quit cleanly when init fail at a certain level */
 static int init_level = 0;
 
@@ -72,8 +69,9 @@ int __init(int argc,char **argv)
     int res = 0;
     init_level = 0;
     
-    if(common_ticktime__)
-        Ttick = common_ticktime__;
+    /* Effective tick time with 1ms default value */
+    if(!common_ticktime__)
+        common_ticktime__ = 1000000;
 
     config_init__();
     __init_debug();

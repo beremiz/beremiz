@@ -14,7 +14,7 @@
 /* Keep track of init level to cleanup correctly */
 static int init_level=0;
 /* Retrieve PLC cycle time */
-extern int common_ticktime__;
+extern unsigned long long common_ticktime__;
 
 /* Per master node slavebootup callbacks. Checks that
  * every node have booted before calling Master_post_SlaveBootup */
@@ -34,7 +34,7 @@ extern int common_ticktime__;
     nodename##_Data.CurrentCommunicationState.csSYNC = -1;\
     /* Force sync period to common_ticktime__ so that other node can read it*/\
     *nodename##_Data.COB_ID_Sync = 0x40000080;\
-    *nodename##_Data.Sync_Cycle_Period = common_ticktime__ * 1000;
+    *nodename##_Data.Sync_Cycle_Period = common_ticktime__ / 1000;
 
 static void DeferedInitAlarm(CO_Data* d, UNS32 id){
     /* Node will start beeing active on the network after this */
