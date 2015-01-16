@@ -118,6 +118,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
         self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
+        self.ieclib_c_path = os.path.join(base_folder, "matiec", "lib", "C")
 
         # Setup debug information
         self.IECdebug_datas = {}
@@ -204,7 +205,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self
 
     def GetIECLibPath(self):
-        return self.ieclib_path
+        return self.ieclib_c_path
 
     def GetIEC2cPath(self):
         return self.iec2c_path
@@ -613,7 +614,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # files are listed to stdout, and errors to stderr.
         status, result, err_result = ProcessLogger(
                self.logger,
-               "\"%s\" -f -I \"%s\" -T \"%s\" \"%s\""%(
+               "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
                          self.iec2c_path,
                          self.ieclib_path,
                          buildpath,
@@ -675,7 +676,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%self.ieclib_path
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%self.ieclib_c_path
         return True
 
     def GetBuilder(self):
