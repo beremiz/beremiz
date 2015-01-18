@@ -74,6 +74,6 @@ def GetHeader():
     return open(filename).read()
 
 def GetCode(name):
-    filename = path.join(path.split(__file__)[0],name + ".c")
+    filename = path.join(path.split(__file__)[0],name)
     return open(filename).read()
 

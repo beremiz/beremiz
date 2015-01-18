@@ -816,7 +816,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.GetIECProgramsAndVariables()
 
         # prepare debug code
-        debug_code = targets.GetCode("plc_debug") % {
+        debug_code = targets.GetCode("plc_debug.c") % {
            "buffer_size": reduce(lambda x, y: x + y, [DebugTypesSize.get(v["type"], 0) for v in self._VariablesList], 0),
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
@@ -859,7 +859,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Generate main, based on template
         if not self.BeremizRoot.getDisable_Extensions():
-            plc_main_code = targets.GetCode("plc_main_head") % {
+            plc_main_code = targets.GetCode("plc_main_head.c") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
                       "void __cleanup_%(s)s(void);\n"+
@@ -879,7 +879,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
-            plc_main_code = targets.GetCode("plc_main_head") % {
+            plc_main_code = targets.GetCode("plc_main_head.c") % {
                 "calls_prototypes":"\n",
                 "retrieve_calls":"\n",
                 "publish_calls":"\n",
@@ -887,7 +887,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 "cleanup_calls":"\n"
                 }
         plc_main_code += targets.GetTargetCode(self.GetTarget().getcontent().getLocalTag())
-        plc_main_code += targets.GetCode("plc_main_tail")
+        plc_main_code += targets.GetCode("plc_main_tail.c")
         return plc_main_code
 
 
@@ -1267,11 +1267,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
         return IEC_Type
 
-    def SubscribeDebugIECVariable(self, IECPath, callableobj, buffer_list=False, *args, **kwargs):
+    def SubscribeDebugIECVariable(self, IECPath, callableobj, buffer_list=False):
         """
         Dispatching use a dictionnary linking IEC variable paths
         to a WeakKeyDictionary linking
-        weakly referenced callables to optionnal args
+        weakly referenced callables
         """
         if IECPath != "__tick__" and not self._IECPathToIdx.has_key(IECPath):
             return None
@@ -1290,7 +1290,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             IECdebug_data[4] |= buffer_list
 
-        IECdebug_data[0][callableobj]=(buffer_list, args, kwargs)
+        IECdebug_data[0][callableobj]=buffer_list
 
         self.IECdebug_lock.release()
 
@@ -1307,9 +1307,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.IECdebug_datas.pop(IECPath)
             else:
                 IECdebug_data[4] = reduce(
-                    lambda x, y: x|y,
-                    [buffer_list for buffer_list,args,kwargs
-                     in IECdebug_data[0].itervalues()],
+                    lambda x, y: x|y, 
+                    IECdebug_data[0].itervalues(),
                     False)
         self.IECdebug_lock.release()
 
@@ -1357,13 +1356,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if data_tuple is not None:
             WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
             #data_log.append((debug_tick, value))
-            for weakcallable,(buffer_list,args,kwargs) in WeakCallableDict.iteritems():
+            for weakcallable,buffer_list in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
                     if buffer_list:
-                        function(*(cargs + args), **kwargs)
+                        function(*cargs)
                     else:
-                        function(*(tuple([lst[-1] for lst in cargs]) + args), **kwargs)
+                        function(*tuple([lst[-1] for lst in cargs]))
 
     def GetTicktime(self):
         return self._Ticktime
