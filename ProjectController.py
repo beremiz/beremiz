@@ -732,6 +732,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         self._ProgramList = None
         self._VariablesList = None
+        self._DbgVariablesList = None
         self._IECPathToIdx = {}
         self._Ticktime = 0
         self.TracedIECPath = []
@@ -750,6 +751,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 VariablesListAttributeName = ["num", "vartype", "IEC_path", "C_path", "type"]
                 self._ProgramList = []
                 self._VariablesList = []
+                self._DbgVariablesList = []
                 self._IECPathToIdx = {}
 
                 # Separate sections
@@ -774,6 +776,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                 # second section contains all variables
                 config_FBs = {}
+                Idx = 0
                 for line in ListGroup[1]:
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(zip(VariablesListAttributeName,line.strip().split(';')))
@@ -790,12 +793,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         attrs["C_path"] = '__'.join(parts)
                         if attrs["vartype"] == "FB":
                             config_FBs[tuple(parts)] = attrs["C_path"]
-                    # Push this dictionnary into result.
+                    if attrs["vartype"] != "FB":
+                        # Push this dictionnary into result.
+                        self._DbgVariablesList.append(attrs)
+                        # Fill in IEC<->C translation dicts
+                        IEC_path=attrs["IEC_path"]
+                        self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
+                        # Ignores numbers given in CSV file
+                        # Idx=int(attrs["num"])
+                        # Count variables only, ignore FBs
+                        Idx+=1
                     self._VariablesList.append(attrs)
-                    # Fill in IEC<->C translation dicts
-                    IEC_path=attrs["IEC_path"]
-                    Idx=int(attrs["num"])
-                    self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
 
                 # third section contains ticktime
                 if len(ListGroup) > 2:
@@ -816,8 +824,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.GetIECProgramsAndVariables()
 
         # prepare debug code
+        variable_decl_array = []
+        bofs = 0
+        for v in self._DbgVariablesList :
+            sz = DebugTypesSize.get(v["type"], 0)
+            variable_decl_array += [
+                "{&(%(C_path)s), "%v+
+                {"EXT":"%(type)s_P_ENUM",
+                 "IN":"%(type)s_P_ENUM",
+                 "MEM":"%(type)s_O_ENUM",
+                 "OUT":"%(type)s_O_ENUM",
+                 "VAR":"%(type)s_ENUM"}[v["vartype"]]%v +
+                 "}"]
+            bofs += sz
         debug_code = targets.GetCode("plc_debug.c") % {
-           "buffer_size": reduce(lambda x, y: x + y, [DebugTypesSize.get(v["type"], 0) for v in self._VariablesList], 0),
+           "buffer_size":bofs,
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
@@ -828,22 +849,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                "VAR":"extern __IEC_%(type)s_t %(C_path)s;",
                "FB":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v
                for v in self._VariablesList if v["C_path"].find('.')<0]),
-           "for_each_variable_do_code":"\n".join([
-               {"EXT":"    (*fp)((void*)&(%(C_path)s),%(type)s_P_ENUM);\n",
-                "IN":"    (*fp)((void*)&(%(C_path)s),%(type)s_P_ENUM);\n",
-                "MEM":"    (*fp)((void*)&(%(C_path)s),%(type)s_O_ENUM);\n",
-                "OUT":"    (*fp)((void*)&(%(C_path)s),%(type)s_O_ENUM);\n",
-                "VAR":"    (*fp)((void*)&(%(C_path)s),%(type)s_ENUM);\n"}[v["vartype"]]%v
-                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ]),
-           "find_variable_case_code":"\n".join([
-               "    case %(num)s:\n"%v+
-               "        *varp = (void*)&(%(C_path)s);\n"%v+
-               {"EXT":"        return %(type)s_P_ENUM;\n",
-                "IN":"        return %(type)s_P_ENUM;\n",
-                "MEM":"        return %(type)s_O_ENUM;\n",
-                "OUT":"        return %(type)s_O_ENUM;\n",
-                "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
-                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ])}
+           "variable_decl_array": ",\n".join(variable_decl_array)
+           }
 
         return debug_code
 
@@ -1307,7 +1314,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.IECdebug_datas.pop(IECPath)
             else:
                 IECdebug_data[4] = reduce(
-                    lambda x, y: x|y, 
+                    lambda x, y: x|y,
                     IECdebug_data[0].itervalues(),
                     False)
         self.IECdebug_lock.release()

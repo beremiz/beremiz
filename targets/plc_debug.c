@@ -39,19 +39,23 @@ static unsigned int retain_offset = 0;
  **/
 %(extern_variables_declarations)s
 
-typedef void(*__for_each_variable_do_fp)(void*, __IEC_types_enum);
+typedef const struct {
+    void *ptr;
+    __IEC_types_enum type;
+} dbgvardsc_t;
+
+static dbgvardsc_t dbgvardsc[] = {
+%(variable_decl_array)s
+};
+
+typedef void(*__for_each_variable_do_fp)(dbgvardsc_t*);
 void __for_each_variable_do(__for_each_variable_do_fp fp)
 {
-%(for_each_variable_do_code)s
-}
-
-__IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
-{
-    switch(varindex){
-%(find_variable_case_code)s
-     default:
-      *varp = NULL;
-      return UNKNOWN_ENUM;
+    int i;
+    for(i = 0; i < sizeof(dbgvardsc)/sizeof(dbgvardsc_t); i++){
+        dbgvardsc_t *dsc = &dbgvardsc[i];
+        if(dsc->type != UNKNOWN_ENUM) 
+            (*fp)(dsc);
     }
 }
 
@@ -70,12 +74,13 @@ __IEC_types_enum __find_variable(unsigned int varindex, void ** varp)
             forced_value_p = &((__IEC_##TYPENAME##_p *)varp)->fvalue;\
             break;
 
-void* UnpackVar(void* varp, __IEC_types_enum vartype, void **real_value_p, char *flags)
+void* UnpackVar(dbgvardsc_t *dsc, void **real_value_p, char *flags)
 {
+    void *varp = dsc->ptr;
     void *forced_value_p = NULL;
     *flags = 0;
     /* find data to copy*/
-    switch(vartype){
+    switch(dsc->type){
         __ANY(__Unpack_case_t)
         __ANY(__Unpack_case_p)
     default:
@@ -88,14 +93,14 @@ void* UnpackVar(void* varp, __IEC_types_enum vartype, void **real_value_p, char 
 
 void Remind(unsigned int offset, unsigned int count, void * p);
 
-void RemindIterator(void* varp, __IEC_types_enum vartype)
+void RemindIterator(dbgvardsc_t *dsc)
 {
     void *real_value_p = NULL;
     char flags = 0;
-    UnpackVar(varp, vartype, &real_value_p, &flags);
+    UnpackVar(dsc, &real_value_p, &flags);
 
     if(flags & __IEC_RETAIN_FLAG){
-        USINT size = __get_type_enum_size(vartype);
+        USINT size = __get_type_enum_size(dsc->type);
         /* compute next cursor positon*/
         unsigned int next_retain_offset = retain_offset + size;
         /* if buffer not full */
@@ -136,23 +141,23 @@ void __retrieve_debug(void)
 
 void Retain(unsigned int offset, unsigned int count, void * p);
 
-inline void BufferIterator(void* varp, __IEC_types_enum vartype, int do_debug)
+inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
 {
     void *real_value_p = NULL;
     void *visible_value_p = NULL;
     char flags = 0;
 
-    visible_value_p = UnpackVar(varp, vartype, &real_value_p, &flags);
+    visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
 
     if(flags & ( __IEC_DEBUG_FLAG | __IEC_RETAIN_FLAG)){
-        USINT size = __get_type_enum_size(vartype);
+        USINT size = __get_type_enum_size(dsc->type);
         if(flags & __IEC_DEBUG_FLAG){
             /* copy visible variable to buffer */;
             if(do_debug){
                 /* compute next cursor positon.
                    No need to check overflow, as BUFFER_SIZE
                    is computed large enough */
-                if(vartype == STRING_ENUM){
+                if(dsc->type == STRING_ENUM){
                     /* optimization for strings */
                     size = ((STRING*)visible_value_p)->len + 1;
                 }
@@ -178,12 +183,12 @@ inline void BufferIterator(void* varp, __IEC_types_enum vartype, int do_debug)
     }
 }
 
-void DebugIterator(void* varp, __IEC_types_enum vartype){
-    BufferIterator(varp, vartype, 1);
+void DebugIterator(dbgvardsc_t *dsc){
+    BufferIterator(dsc, 1);
 }
 
-void RetainIterator(void* varp, __IEC_types_enum vartype){
-    BufferIterator(varp, vartype, 0);
+void RetainIterator(dbgvardsc_t *dsc){
+    BufferIterator(dsc, 0);
 }
 
 extern void PLC_GetTime(IEC_TIME*);
@@ -251,13 +256,18 @@ void __publish_debug(void)
             break;
 void RegisterDebugVariable(int idx, void* force)
 {
-    void *varp = NULL;
-    unsigned char flags = force ? __IEC_DEBUG_FLAG | __IEC_FORCE_FLAG : __IEC_DEBUG_FLAG;
-    switch(__find_variable(idx, &varp)){
-        __ANY(__RegisterDebugVariable_case_t)
-        __ANY(__RegisterDebugVariable_case_p)
-    default:
-        break;
+    if(idx  < sizeof(dbgvardsc)/sizeof(dbgvardsc_t)){
+        unsigned char flags = force ?
+            __IEC_DEBUG_FLAG | __IEC_FORCE_FLAG :
+            __IEC_DEBUG_FLAG;
+        dbgvardsc_t *dsc = &dbgvardsc[idx];
+        void *varp = dsc->ptr;
+        switch(dsc->type){
+            __ANY(__RegisterDebugVariable_case_t)
+            __ANY(__RegisterDebugVariable_case_p)
+        default:
+            break;
+        }
     }
 }
 
@@ -272,10 +282,11 @@ void RegisterDebugVariable(int idx, void* force)
             ((__IEC_##TYPENAME##_p *)varp)->flags &= ~(__IEC_DEBUG_FLAG|__IEC_FORCE_FLAG);\
             break;
 
-void ResetDebugVariablesIterator(void* varp, __IEC_types_enum vartype)
+void ResetDebugVariablesIterator(dbgvardsc_t *dsc)
 {
     /* force debug flag to 0*/
-    switch(vartype){
+    void *varp = dsc->ptr;
+    switch(dsc->type){
         __ANY(__ResetDebugVariablesIterator_case_t)
         __ANY(__ResetDebugVariablesIterator_case_p)
     default:
