@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival. 
+#programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -68,7 +68,7 @@ class PLCObject(pyro.ObjBase):
         self.website = website
         self._loading_error = None
         self.python_runtime_vars = None
-        
+
         # Get the last transfered PLC if connector must be restart
         try:
             self.CurrentPLCFilename=open(
@@ -107,7 +107,7 @@ class PLCObject(pyro.ObjBase):
         tv_nsec = ctypes.c_uint32()
         if self._GetLogMessage is not None:
             maxsz = len(self._log_read_buffer)-1
-            sz = self._GetLogMessage(level, msgid, 
+            sz = self._GetLogMessage(level, msgid,
                 self._log_read_buffer, maxsz,
                 ctypes.byref(tick),
                 ctypes.byref(tv_sec),
@@ -134,23 +134,23 @@ class PLCObject(pyro.ObjBase):
         try:
             self._PLClibraryHandle = dlopen(self._GetLibFileName())
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
-    
+
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int
             self._startPLC.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
-            
+
             self._stopPLC_real = self.PLClibraryHandle.stopPLC
             self._stopPLC_real.restype = None
-            
+
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
             if self._PythonIterator is not None:
                 self._PythonIterator.restype = ctypes.c_char_p
                 self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
-                
+
                 self._stopPLC = self._stopPLC_real
             else:
                 # If python confnode is not enabled, we reuse _PythonIterator
-                # as a call that block pythonthread until StopPLC 
+                # as a call that block pythonthread until StopPLC
                 self.PythonIteratorLock = Lock()
                 self.PythonIteratorLock.acquire()
                 def PythonIterator(res, blkid):
@@ -158,25 +158,25 @@ class PLCObject(pyro.ObjBase):
                     self.PythonIteratorLock.release()
                     return None
                 self._PythonIterator = PythonIterator
-                
+
                 def __StopPLC():
                     self._stopPLC_real()
                     self.PythonIteratorLock.release()
                 self._stopPLC = __StopPLC
-            
-    
+
+
             self._ResetDebugVariables = self.PLClibraryHandle.ResetDebugVariables
             self._ResetDebugVariables.restype = None
-    
+
             self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
             self._RegisterDebugVariable.restype = None
             self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p]
-    
+
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
-            
+
             self._GetDebugData = self.PLClibraryHandle.GetDebugData
-            self._GetDebugData.restype = ctypes.c_int  
+            self._GetDebugData.restype = ctypes.c_int
             self._GetDebugData.argtypes = [ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_void_p)]
 
             self._suspendDebug = self.PLClibraryHandle.suspendDebug
@@ -233,7 +233,7 @@ class PLCObject(pyro.ObjBase):
         self._suspendDebug = lambda x:-1
         self._resumeDebug = lambda:None
         self._PythonIterator = lambda:""
-        self._GetLogCount = None 
+        self._GetLogCount = None
         self._LogMessage = lambda l,m,s:PLCprint("OFF LOG :"+m)
         self._GetLogMessage = None
         self.PLClibraryHandle = None
@@ -241,18 +241,18 @@ class PLCObject(pyro.ObjBase):
         if getattr(self,"_PLClibraryHandle",None) is not None:
             dlclose(self._PLClibraryHandle)
             self._PLClibraryHandle = None
-        
+
         self.PLClibraryLock.release()
         return False
 
     def PythonRuntimeCall(self, methodname):
-        """ 
-        Calls init, start, stop or cleanup method provided by 
+        """
+        Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
         """
         for method in self.python_runtime_vars.get("_runtime_%s"%methodname, []):
             res,exp = self.evaluator(method)
-            if exp is not None: 
+            if exp is not None:
                 self.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
 
     def PythonRuntimeInit(self):
@@ -286,14 +286,14 @@ class PLCObject(pyro.ObjBase):
                 name, ext = os.path.splitext(filename)
                 if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
                     execfile(os.path.join(self.workingdir, filename), self.python_runtime_vars)
-                    for methodname in MethodNames: 
+                    for methodname in MethodNames:
                         method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
                         if method is not None:
                             self.python_runtime_vars["_runtime_%s"%methodname].append(method)
         except:
             self.LogMessage(0,traceback.format_exc())
             raise
-            
+
         self.PythonRuntimeCall("init")
 
         if self.website is not None:
@@ -319,7 +319,7 @@ class PLCObject(pyro.ObjBase):
         while True:
             # print "_PythonIterator(", res, ")",
             cmd = self._PythonIterator(res,blkid)
-            FBID = blkid.value 
+            FBID = blkid.value
             # print " -> ", cmd, blkid
             if cmd is None:
                 break
@@ -330,7 +330,7 @@ class PLCObject(pyro.ObjBase):
                     AST = compile(cmd, '<plc>', 'eval')
                     compile_cache[FBID]=(cmd,AST)
                 result,exp = self.evaluator(eval,AST,self.python_runtime_vars)
-                if exp is not None: 
+                if exp is not None:
                     res = "#EXCEPTION : "+str(exp[1])
                     self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,
                         '\n'.join(traceback.format_exception(*exp))))
@@ -343,7 +343,7 @@ class PLCObject(pyro.ObjBase):
         self.PLCStatus = "Stopped"
         self.StatusChange()
         self.PythonRuntimeCall("stop")
-    
+
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
@@ -359,7 +359,7 @@ class PLCObject(pyro.ObjBase):
                 self.LogMessage(0,_("Problem starting PLC : error %d" % res))
                 self.PLCStatus = "Broken"
                 self.StatusChange()
-            
+
     def StopPLC(self):
         if self.PLCStatus == "Started":
             self.LogMessage("PLC stopped")
@@ -382,7 +382,7 @@ class PLCObject(pyro.ObjBase):
 
     def GetPLCstatus(self):
         return self.PLCStatus, map(self.GetLogCount,xrange(LogLevelsCount))
-    
+
     def NewPLC(self, md5sum, data, extrafiles):
         if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext
@@ -403,15 +403,15 @@ class PLCObject(pyro.ObjBase):
                         pass
             except:
                 pass
-                        
+
             try:
                 # Create new PLC file
                 open(os.path.join(self.workingdir,NewFileName),
                      'wb').write(data)
-        
+
                 # Store new PLC filename based on md5 key
                 open(self._GetMD5FileName(), "w").write(md5sum)
-        
+
                 # Then write the files
                 log = file(extra_files_log, "w")
                 for fname,fdata in extrafiles:
@@ -443,12 +443,10 @@ class PLCObject(pyro.ObjBase):
             return last_md5 == MD5
         except:
             return False
-    
 
-    
     def SetTraceVariablesList(self, idxs):
         """
-        Call ctype imported function to append 
+        Call ctype imported function to append
         these indexes to registred variables in PLC debugger
         """
         if idxs:
@@ -462,7 +460,7 @@ class PLCObject(pyro.ObjBase):
                         c_type,unpack_func, pack_func = \
                             TypeTranslator.get(iectype,
                                                     (None,None,None))
-                        force = ctypes.byref(pack_func(c_type,force)) 
+                        force = ctypes.byref(pack_func(c_type,force))
                     self._RegisterDebugVariable(idx, force)
                 self._resumeDebug()
         else:
@@ -477,18 +475,18 @@ class PLCObject(pyro.ObjBase):
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buff = ctypes.c_void_p()
-            TraceVariables = None
+            TraceBuffer = None
             if self.PLClibraryLock.acquire(False):
                 if self._GetDebugData(ctypes.byref(tick),
                                       ctypes.byref(size),
                                       ctypes.byref(buff)) == 0:
                     if size.value:
-                        TraceVariables = UnpackDebugBuffer(buff, size.value, self._Idxs)
+                        TraceBuffer = ctypes.string_at(buff.value, size.value)
                     self._FreeDebugData()
                 self.PLClibraryLock.release()
-            if TraceVariables is not None:
-                return self.PLCStatus, tick.value, TraceVariables
-        return self.PLCStatus, None, []
+            if TraceBuffer is not None:
+                return self.PLCStatus, tick.value, TraceBuffer
+        return self.PLCStatus, None, None
 
     def RemoteExec(self, script, **kwargs):
         try:
@@ -496,8 +494,8 @@ class PLCObject(pyro.ObjBase):
         except:
             e_type, e_value, e_traceback = sys.exc_info()
             line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
-            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" % 
+            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
                         (line_no, e_value, script.splitlines()[line_no - 1]))
         return (0, kwargs.get("returnVal", None))
-    
-        
+
+
