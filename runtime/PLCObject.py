@@ -23,9 +23,10 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import Pyro.core as pyro
-from threading import Timer, Thread, Lock, Semaphore
+from threading import Timer, Thread, Lock, Semaphore, Event
 import ctypes, os, commands, types, sys
 from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator, UnpackDebugBuffer
+from time import time
 
 
 if os.name in ("nt", "ce"):
@@ -50,7 +51,6 @@ def PLCprint(message):
     sys.stdout.flush()
 
 class PLCObject(pyro.ObjBase):
-    _Idxs = []
     def __init__(self, workingdir, daemon, argv, statuschange, evaluator, website):
         pyro.ObjBase.__init__(self)
         self.evaluator = evaluator
@@ -68,6 +68,10 @@ class PLCObject(pyro.ObjBase):
         self.website = website
         self._loading_error = None
         self.python_runtime_vars = None
+        self.TraceThread = None
+        self.TraceLock = Lock()
+        self.TraceWakeup = Event()
+        self.Traces = []
 
         # Get the last transfered PLC if connector must be restart
         try:
@@ -365,6 +369,10 @@ class PLCObject(pyro.ObjBase):
             self.LogMessage("PLC stopped")
             self._stopPLC()
             self.PythonThread.join()
+            if self.TraceThread is not None :
+                self.TraceWakeup.set()
+                self.TraceThread.join()
+                self.TraceThread = None
             return True
         return False
 
@@ -453,7 +461,6 @@ class PLCObject(pyro.ObjBase):
             # suspend but dont disable
             if self._suspendDebug(False) == 0:
                 # keep a copy of requested idx
-                self._Idxs = idxs[:]
                 self._ResetDebugVariables()
                 for idx,iectype,force in idxs:
                     if force !=None:
@@ -462,16 +469,55 @@ class PLCObject(pyro.ObjBase):
                                                     (None,None,None))
                         force = ctypes.byref(pack_func(c_type,force))
                     self._RegisterDebugVariable(idx, force)
+                self._TracesSwap()
                 self._resumeDebug()
         else:
             self._suspendDebug(True)
-            self._Idxs =  []
+
+    def _TracesPush(self, trace):
+        self.TraceLock.acquire()
+        lT = len(self.Traces)
+        if lT != 0 and lT * len(self.Traces[0]) > 1024 * 1024 :
+            self.Traces.pop(0)
+        self.Traces.append(trace)
+        self.TraceLock.release()
+
+    def _TracesSwap(self):
+        self.LastSwapTrace = time()
+        if self.TraceThread is None and self.PLCStatus == "Started":
+            self.TraceThread = Thread(target=self.TraceThreadProc)
+            self.TraceThread.start()
+        self.TraceLock.acquire()
+        Traces = self.Traces
+        self.Traces = []
+        self.TraceLock.release()
+        self.TraceWakeup.set()
+        return Traces
+
+    def _TracesAutoSuspend(self):
+        # TraceProc stops here if Traces not polled for 3 seconds
+        traces_age = time() - self.LastSwapTrace
+        if traces_age > 3:
+            self.TraceLock.acquire()
+            self.Traces = []
+            self.TraceLock.release()
+            self._suspendDebug(True) # Disable debugger
+            self.TraceWakeup.wait()
+            self._resumeDebug() # Re-enable debugger
+
+    def _TracesFlush(self):
+        self.TraceLock.acquire()
+        self.Traces = []
+        self.TraceLock.release()
 
     def GetTraceVariables(self):
+        return self.PLCStatus, self._TracesSwap()
+
+    def TraceThreadProc(self):
         """
-        Return a list of variables, corresponding to the list of required idx
+        Return a list of traces, corresponding to the list of required idx
         """
-        if self.PLCStatus == "Started":
+        while self.PLCStatus == "Started" :
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buff = ctypes.c_void_p()
@@ -485,8 +531,10 @@ class PLCObject(pyro.ObjBase):
                     self._FreeDebugData()
                 self.PLClibraryLock.release()
             if TraceBuffer is not None:
-                return self.PLCStatus, tick.value, TraceBuffer
-        return self.PLCStatus, None, None
+                self._TracesPush((tick.value, TraceBuffer))
+            self._TracesAutoSuspend()
+        self._TracesFlush()
+
 
     def RemoteExec(self, script, **kwargs):
         try:
