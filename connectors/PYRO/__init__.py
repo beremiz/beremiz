@@ -56,7 +56,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n")%location)
             confnodesroot.logger.write_error(traceback.format_exc())
             return None
-    
+
     # Try to get the proxy object
     try :
         RemotePLCObjectProxy = pyro.getAttrProxyForURI("PYROLOC://"+location+"/PLCObject")
@@ -87,7 +87,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             return default
         return catcher_func
 
-    # Check connection is effective. 
+    # Check connection is effective.
     # lambda is for getattr of GetPLCstatus to happen inside catcher
     if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() is None:
         confnodesroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
@@ -112,9 +112,9 @@ def PYRO_connector_factory(uri, confnodesroot):
 
         def _PyroStartPLC(self, *args, **kwargs):
             """
-            confnodesroot._connector.GetPyroProxy() is used 
+            confnodesroot._connector.GetPyroProxy() is used
             rather than RemotePLCObjectProxy because
-            object is recreated meanwhile, 
+            object is recreated meanwhile,
             so we must not keep ref to it here
             """
             current_status, log_count = confnodesroot._connector.GetPyroProxy().GetPLCstatus()
@@ -141,7 +141,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             if self.RemotePLCObjectProxyCopy is None:
                 self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
             return self.RemotePLCObjectProxyCopy.GetTraceVariables()
-        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",None,None))
+        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",None))
 
         def _PyroGetPLCstatus(self):
             return RemotePLCObjectProxy.GetPLCstatus()
@@ -161,5 +161,5 @@ def PYRO_connector_factory(uri, confnodesroot):
             return member
 
     return PyroProxyProxy()
-    
+
 

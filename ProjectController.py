@@ -36,9 +36,6 @@ base_folder = os.path.split(sys.path[0])[0]
 
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
-DEBUG_RETRIES_WARN = 3
-DEBUG_RETRIES_REREGISTER = 4
-
 ITEM_CONFNODE = 25
 
 def ExtractChildrenTypesFromCatalog(catalog):
@@ -1392,41 +1389,34 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.debug_break = False
         debug_getvar_retry = 0
         while (not self.debug_break) and (self._connector is not None):
-            Trace = self._connector.GetTraceVariables()
-            if(Trace):
-                plc_status, debug_tick, debug_buff = Trace
-            else:
-                plc_status = None
+            plc_status, Traces = self._connector.GetTraceVariables()
             debug_getvar_retry += 1
             #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
-            if plc_status == "Started" and debug_buff is not None:
-                self.IECdebug_lock.acquire()
-                debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
-                if (debug_tick is not None and debug_vars is not None and
-                    len(debug_vars) == len(self.TracedIECPath)):
-                    if debug_getvar_retry > DEBUG_RETRIES_WARN:
-                        self.logger.write(_("... debugger recovered\n"))
-                    debug_getvar_retry = 0
-                    for IECPath, values_buffer, value in izip(
-                            self.TracedIECPath,
-                            self.DebugValuesBuffers,
-                            debug_vars):
-                        IECdebug_data = self.IECdebug_datas.get(IECPath, None) #FIXME get
-                        if IECdebug_data is not None and value is not None:
-                            forced = IECdebug_data[2:4] == ["Forced", value]
-                            if not IECdebug_data[4] and len(values_buffer) > 0:
-                                values_buffer[-1] = (value, forced)
-                            else:
-                                values_buffer.append((value, forced))
-                    self.DebugTicks.append(debug_tick)
-                self.IECdebug_lock.release()
-                if debug_getvar_retry == DEBUG_RETRIES_WARN:
-                    self.logger.write(_("Waiting debugger to recover...\n"))
-                if debug_getvar_retry == DEBUG_RETRIES_REREGISTER:
-                    # re-register debug registry to PLC
-                    wx.CallAfter(self.RegisterDebugVarToConnector)
+            if plc_status == "Started" :
+                if len(Traces) > 0:
+                    Failed = False
+                    self.IECdebug_lock.acquire()
+                    for debug_tick, debug_buff in Traces :
+                        debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
+                        if (debug_vars is not None and
+                            len(debug_vars) == len(self.TracedIECPath)):
+                            for IECPath, values_buffer, value in izip(
+                                    self.TracedIECPath,
+                                    self.DebugValuesBuffers,
+                                    debug_vars):
+                                IECdebug_data = self.IECdebug_datas.get(IECPath, None) #FIXME get
+                                if IECdebug_data is not None and value is not None:
+                                    forced = IECdebug_data[2:4] == ["Forced", value]
+                                    if not IECdebug_data[4] and len(values_buffer) > 0:
+                                        values_buffer[-1] = (value, forced)
+                                    else:
+                                        values_buffer.append((value, forced))
+                            self.DebugTicks.append(debug_tick)
+                            debug_getvar_retry = 0
+                    self.IECdebug_lock.release()
+
                 if debug_getvar_retry != 0:
-                    # Be patient, tollerate PLC to come up before debugging
+                    # Be patient, tollerate PLC to come with fresh samples
                     time.sleep(0.1)
             else:
                 self.debug_break = True

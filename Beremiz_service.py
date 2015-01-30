@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival. 
+#programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -36,7 +36,7 @@ Usage of Beremiz PLC execution service :\n
            -a        - autostart PLC (0:disable 1:enable) (default:0)
            -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
            -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
-           
+
            working_dir - directory where are stored PLC files
 """%sys.argv[0]
 
@@ -83,6 +83,8 @@ for o, a in opts:
         usage()
         sys.exit()
 
+CWD = os.path.split(os.path.realpath(__file__))[0]
+
 if len(argv) > 1:
     usage()
     sys.exit()
@@ -109,14 +111,13 @@ if enablewx:
 
     if havewx:
         app=wx.App(redirect=False)
-        
+
         # Import module for internationalization
         import gettext
-        
-        CWD = os.path.split(os.path.realpath(__file__))[0]
+
         def Bpath(*args):
             return os.path.join(CWD,*args)
-        
+
         # Get folder containing translation files
         localedir = os.path.join(CWD,"locale")
         # Get the default language
@@ -139,11 +140,11 @@ if enablewx:
 
         if __name__ == '__main__':
             __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
-        
+
         defaulticon = wx.Image(Bpath("images", "brz.png"))
         starticon = wx.Image(Bpath("images", "icoplay24.png"))
         stopicon = wx.Image(Bpath("images", "icostop24.png"))
-        
+
         class ParamsEntryDialog(wx.TextEntryDialog):
             if wx.VERSION < (2, 6, 0):
                 def Bind(self, event, function, id = None):
@@ -151,12 +152,12 @@ if enablewx:
                         event(self, id, function)
                     else:
                         event(self, function)
-            
-            
-            def __init__(self, parent, message, caption = "Please enter text", defaultValue = "", 
+
+
+            def __init__(self, parent, message, caption = "Please enter text", defaultValue = "",
                                style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
-                
+
                 self.Tests = []
                 if wx.VERSION >= (2, 8, 0):
                     self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
@@ -164,7 +165,7 @@ if enablewx:
                     self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetAffirmativeButton().GetId())
                 else:
                     self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetChildren()[0].GetSizer().GetChildren()[0].GetWindow().GetId())
-            
+
             def OnOK(self, event):
                 value = self.GetValue()
                 texts = {"value" : value}
@@ -176,13 +177,13 @@ if enablewx:
                         return
                 self.EndModal(wx.ID_OK)
                 event.Skip()
-            
+
             def GetValue(self):
                 return self.GetSizer().GetItem(1).GetWindow().GetValue()
-            
+
             def SetTests(self, tests):
                 self.Tests = tests
-        
+
         class BeremizTaskBarIcon(wx.TaskBarIcon):
             TBMENU_START = wx.NewId()
             TBMENU_STOP = wx.NewId()
@@ -193,14 +194,14 @@ if enablewx:
             TBMENU_WXINSPECTOR = wx.NewId()
             TBMENU_CHANGE_WD = wx.NewId()
             TBMENU_QUIT = wx.NewId()
-            
+
             def __init__(self, pyroserver, level):
                 wx.TaskBarIcon.__init__(self)
                 self.pyroserver = pyroserver
                 # Set the image
                 self.UpdateIcon(None)
                 self.level = level
-                
+
                 # bind some events
                 self.Bind(wx.EVT_MENU, self.OnTaskBarStartPLC, id=self.TBMENU_START)
                 self.Bind(wx.EVT_MENU, self.OnTaskBarStopPLC, id=self.TBMENU_STOP)
@@ -211,7 +212,7 @@ if enablewx:
                 self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
                 self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
                 self.Bind(wx.EVT_MENU, self.OnTaskBarQuit, id=self.TBMENU_QUIT)
-            
+
             def CreatePopupMenu(self):
                 """
                 This method is called by the base class when it needs to popup
@@ -234,7 +235,7 @@ if enablewx:
                 menu.AppendSeparator()
                 menu.Append(self.TBMENU_QUIT, _("Quit"))
                 return menu
-            
+
             def MakeIcon(self, img):
                 """
                 The various platforms have different requirements for the
@@ -247,15 +248,15 @@ if enablewx:
                 # wxMac can be any size upto 128x128, so leave the source img alone....
                 icon = wx.IconFromBitmap(img.ConvertToBitmap() )
                 return icon
-            
+
             def OnTaskBarStartPLC(self, evt):
-                if self.pyroserver.plcobj is not None: 
+                if self.pyroserver.plcobj is not None:
                     self.pyroserver.plcobj.StartPLC()
-            
+
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
                     Thread(target=self.pyroserver.plcobj.StopPLC).start()
-            
+
             def OnTaskBarChangeInterface(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip_addr)
                 dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
@@ -264,38 +265,38 @@ if enablewx:
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip_addr = dlg.GetValue()
                     self.pyroserver.Stop()
-            
+
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
                 dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port : 0 <= int(port) <= 65535 , _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Stop()
-            
+
             def OnTaskBarChangeWorkingDir(self, evt):
                 dlg = wx.DirDialog(None, _("Choose a working directory "), self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.workdir = dlg.GetPath()
                     self.pyroserver.Stop()
-            
+
             def OnTaskBarChangeName(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=self.pyroserver.name)
                 dlg.SetTests([(lambda name : len(name) is not 0 , _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.name = dlg.GetValue()
                     self.pyroserver.Restart()
-            
+
             def _LiveShellLocals(self):
                 if self.pyroserver.plcobj is not None:
                     return {"locals":self.pyroserver.plcobj.python_runtime_vars}
                 else:
                     return {}
-            
+
             def OnTaskBarLiveShell(self, evt):
                 from wx import py
                 frame = py.crust.CrustFrame(**self._LiveShellLocals())
                 frame.Show()
-            
+
             def OnTaskBarWXInspector(self, evt):
                 # Activate the widget inspection tool
                 from wx.lib.inspection import InspectionTool
@@ -304,13 +305,13 @@ if enablewx:
 
                 wnd = wx.GetApp()
                 InspectionTool().Show(wnd, True)
-            
+
             def OnTaskBarQuit(self, evt):
                 if wx.Platform == '__WXMSW__':
                     Thread(target=self.pyroserver.Quit).start()
                 self.RemoveIcon()
                 wx.CallAfter(wx.GetApp().ExitMainLoop)
-            
+
             def UpdateIcon(self, plcstatus):
                 if plcstatus is "Started" :
                     currenticon = self.MakeIcon(starticon)
@@ -348,11 +349,11 @@ class Server():
         self.statuschange = statuschange
         self.evaluator = evaluator
         self.website = website
-    
+
     def Loop(self):
         while self.continueloop:
             self.Start()
-        
+
     def Restart(self):
         self.Stop()
 
@@ -367,28 +368,28 @@ class Server():
         self.daemon=pyro.Daemon(host=self.ip_addr, port=self.port)
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator, self.website)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
-    
+
         print "Pyro port :",self.port
         print "Pyro object's uri :",uri
         print "Current working directory :",self.workdir
-        
+
         # Configure and publish service
         # Not publish service if localhost in address params
-        if (self.servicename is not None and 
-            self.ip_addr is not None and 
-            self.ip_addr != "localhost" and 
+        if (self.servicename is not None and
+            self.ip_addr is not None and
+            self.ip_addr != "localhost" and
             self.ip_addr != "127.0.0.1"):
             print "Publishing service on local network"
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
-        
+
         if self.autostart and self.plcobj.GetPLCstatus()[0] != "Empty":
             self.plcobj.StartPLC()
-        
+
         sys.stdout.flush()
-        
+
         self.daemon.requestLoop()
-    
+
     def Stop(self):
         if self.plcobj is not None:
             self.plcobj.StopPLC()
@@ -410,78 +411,78 @@ if enabletwisted:
             from twisted.python import log, util
             from nevow import rend, appserver, inevow, tags, loaders, athena
             from nevow.page import renderer
-            
+
             havetwisted = True
         except:
             print "Twisted unavailable !"
             havetwisted = False
 
 if havetwisted:
-    
+
     xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 '''
 
     class PLCHMI(athena.LiveElement):
-    
+
         initialised = False
-    
+
         def HMIinitialised(self, result):
             self.initialised = True
-        
+
         def HMIinitialisation(self):
             self.HMIinitialised(None)
-    
+
     class DefaultPLCStartedHMI(PLCHMI):
-        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[                                    
+        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                              tags.h1["PLC IS NOW STARTED"],
                                              ])
-        
+
     class PLCStoppedHMI(PLCHMI):
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                              tags.h1["PLC IS STOPPED"],
                                              ])
-    
+
     class MainPage(athena.LiveElement):
         jsClass = u"WebInterface.PLC"
         docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                                        tags.div(id='content')[                         
+                                                        tags.div(id='content')[
                                                         tags.div(render = tags.directive('PLCElement')),
                                                         ]])
-        
+
         def __init__(self, *a, **kw):
             athena.LiveElement.__init__(self, *a, **kw)
             self.pcl_state = False
             self.HMI = None
             self.resetPLCStartedHMI()
-        
+
         def setPLCState(self, state):
             self.pcl_state = state
             if self.HMI is not None:
                 self.callRemote('updateHMI')
-        
+
         def setPLCStartedHMI(self, hmi):
             self.PLCStartedHMIClass = hmi
-        
+
         def resetPLCStartedHMI(self):
             self.PLCStartedHMIClass = DefaultPLCStartedHMI
-        
+
         def getHMI(self):
             return self.HMI
-        
+
         def HMIexec(self, function, *args, **kwargs):
             if self.HMI is not None:
                 getattr(self.HMI, function, lambda:None)(*args, **kwargs)
         athena.expose(HMIexec)
-        
+
         def resetHMI(self):
             self.HMI = None
-        
+
         def PLCElement(self, ctx, data):
             return self.getPLCElement()
         renderer(PLCElement)
-        
+
         def getPLCElement(self):
             self.detachFragmentChildren()
             if self.pcl_state:
@@ -496,7 +497,7 @@ if havetwisted:
         def detachFragmentChildren(self):
             for child in self.liveFragmentChildren[:]:
                 child.detach()
-    
+
     class WebInterface(athena.LivePage):
 
         docFactory = loaders.stan([tags.raw(xhtml_header),
@@ -508,7 +509,7 @@ if havetwisted:
                                                    ]]]])
         MainPage = MainPage()
         PLCHMI = PLCHMI
-        
+
         def __init__(self, plcState=False, *a, **kw):
             super(WebInterface, self).__init__(*a, **kw)
             self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, os.path.join('runtime', 'webinterface.js'))
@@ -517,23 +518,23 @@ if havetwisted:
 
         def getHMI(self):
             return self.MainPage.getHMI()
-        
+
         def LoadHMI(self, hmi, jsmodules):
             for name, path in jsmodules.iteritems():
                 self.jsModules.mapping[name] = os.path.join(WorkingDir, path)
             self.MainPage.setPLCStartedHMI(hmi)
-        
+
         def UnLoadHMI(self):
             self.MainPage.resetPLCStartedHMI()
-        
+
         def PLCStarted(self):
             self.plcState = True
             self.MainPage.setPLCState(True)
-        
+
         def PLCStopped(self):
             self.plcState = False
             self.MainPage.setPLCState(False)
-            
+
         def renderHTTP(self, ctx):
             """
             Force content type to fit with SVG
@@ -550,21 +551,21 @@ if havetwisted:
         def child_(self, ctx):
             self.MainPage.detachFragmentChildren()
             return WebInterface(plcState=self.plcState)
-            
+
         def beforeRender(self, ctx):
             d = self.notifyOnDisconnect()
             d.addErrback(self.disconnected)
-        
+
         def disconnected(self, reason):
             self.MainPage.resetHMI()
             #print reason
             #print "We will be called back when the client disconnects"
-        
+
     if havewx:
         reactor.registerWxApp(app)
     website = WebInterface()
     site = appserver.NevowSite(website)
-    
+
     website_port = 8009
     listening = False
     while not listening:
@@ -584,23 +585,23 @@ if havewx:
 
     def statuschange(status):
         wx.CallAfter(taskbar_instance.UpdateIcon,status)
-        
+
     def wx_evaluator(obj, *args, **kwargs):
         tocall,args,kwargs = obj.call
         obj.res = default_evaluator(tocall, *args, **kwargs)
         wx_eval_lock.release()
-        
+
     def evaluator(tocall, *args, **kwargs):
         global main_thread
         if(main_thread == currentThread()):
-            # avoid dead lock if called from the wx mainloop 
+            # avoid dead lock if called from the wx mainloop
             return default_evaluator(tocall, *args, **kwargs)
         else:
             o=type('',(object,),dict(call=(tocall, args, kwargs), res=None))
             wx.CallAfter(wx_evaluator,o)
             wx_eval_lock.acquire()
             return o.res
-    
+
     pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
     taskbar_instance = BeremizTaskBarIcon(pyroserver, enablewx)
 else:
