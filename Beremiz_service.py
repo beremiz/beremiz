@@ -36,12 +36,13 @@ Usage of Beremiz PLC execution service :\n
            -a        - autostart PLC (0:disable 1:enable) (default:0)
            -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
            -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
+           -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
 """%sys.argv[0]
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:h")
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:e:h")
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
@@ -57,6 +58,8 @@ enablewx = True
 havewx = False
 enabletwisted = True
 havetwisted = False
+
+extensions=[]
 
 for o, a in opts:
     if o == "-h":
@@ -79,6 +82,8 @@ for o, a in opts:
         enabletwisted = int(a)
     elif o == "-a":
         autostart = int(a)
+    elif o == "-e":
+        extensions.append(a)
     else:
         usage()
         sys.exit()
@@ -631,6 +636,12 @@ def installThreadExcepthook():
         self.run = run_with_except_hook
     threading.Thread.__init__ = init
 installThreadExcepthook()
+
+# Load extensions
+for extfilename in extensions:
+    extension_folder = os.path.split(os.path.realpath(extfilename))[0]
+    sys.path.append(extension_folder)
+    execfile(extfilename, locals())
 
 if havetwisted or havewx:
     pyro_thread=Thread(target=pyroserver.Loop)
