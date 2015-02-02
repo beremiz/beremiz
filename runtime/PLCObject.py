@@ -502,6 +502,7 @@ class PLCObject(pyro.ObjBase):
             self.Traces = []
             self.TraceLock.release()
             self._suspendDebug(True) # Disable debugger
+            self.TraceWakeup.clear()
             self.TraceWakeup.wait()
             self._resumeDebug() # Re-enable debugger
 
