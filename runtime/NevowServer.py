@@ -2,6 +2,7 @@ import os
 from nevow import rend, appserver, inevow, tags, loaders, athena
 from nevow.page import renderer
 from twisted.python import util
+from twisted.internet import reactor
 
 xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -145,25 +146,14 @@ class WebInterface(athena.LivePage):
         #print reason
         #print "We will be called back when the client disconnects"
 
-def RegisterWebsite(reactor):
+def RegisterWebsite(port):
     website = WebInterface()
     site = appserver.NevowSite(website)
 
-    website_port = 8009
-    website_port_range = 10
-
     listening = False
-    port_offset = 0
-    while not listening and port_offset < website_port_range:
-        try:
-            reactor.listenTCP(website_port + port_offset, site)
-            listening = True
-            print "Http interface port :",website_port + port_offset
-            return website
-        except: # TODO narrow exception
-            port_offset += 1
-
-    return None
+    reactor.listenTCP(port, site)
+    print "Http interface port :",port
+    return website
 
 class statuslistener:
     def __init__(self, site):

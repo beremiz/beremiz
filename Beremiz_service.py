@@ -36,13 +36,15 @@ Usage of Beremiz PLC execution service :\n
            -a        - autostart PLC (0:disable 1:enable) (default:0)
            -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
            -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
+           -w        - web server port or "off" (default:8009)
+           -c        - WAMP client config file or "off" (default:wampconf.json)
            -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
 """%sys.argv[0]
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:e:h")
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err) # will print something like "option -a not recognized"
@@ -52,6 +54,8 @@ except getopt.GetoptError, err:
 # default values
 given_ip = None
 port = 3000
+webport = 8009
+wampconf = "wampconf.json"
 servicename = None
 autostart = False
 enablewx = True
@@ -82,6 +86,10 @@ for o, a in opts:
         enabletwisted = int(a)
     elif o == "-a":
         autostart = int(a)
+    elif o == "-w":
+        webport = None if a == "off" else int(a)
+    elif o == "-c":
+        wampconf = None if a == "off" else a
     elif o == "-e":
         extensions.append(a)
     else:
@@ -433,15 +441,23 @@ if havetwisted:
     if havewx:
         reactor.registerWxApp(app)
 
-    # TODO add command line switch
-    try:
-        import runtime.NevowServer as NS
-        website = NS.RegisterWebsite(reactor)
-        pyruntimevars["website"] = website
-        statuschange.append(NS.website_statuslistener_factory(website))
-    except:
-        print "Nevow Web service failed."
+    if webport is not None :
+        try:
+            import runtime.NevowServer as NS
+            website = NS.RegisterWebsite(webport)
+            pyruntimevars["website"] = website
+            statuschange.append(NS.website_statuslistener_factory(website))
+        except Exception, e:
+            print "Nevow Web service failed.", e
 
+    if wampconf is not None :
+        try:
+            import runtime.WampClient as WC
+            WC.RegisterWampClient(wampconf)
+            pyruntimevars["wampsession"] = WC.GetSession
+            registerserverto.append(WC.SetServer)
+        except Exception, e:
+            print "WAMP client startup failed.", e
 
 if havewx:
     from threading import Semaphore

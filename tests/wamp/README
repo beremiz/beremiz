@@ -1,0 +1,12 @@
+This project contains wamp client config to be loaded at runtime startup.  
+
+project_files/wampconf.json
+
+wampconf.json is in "Project Files", so it is copied to runtime's working directory, and then loaded after program transfer + runtime restart.
+
+Otherwise, wamp config file path can be forced :
+./Beremiz_service.py -c  /path/to/my/wampconf.json /working/dir
+
+Crossbar test router configuration is available in .crossbar directory. Start with :
+crossbar -d start
+
