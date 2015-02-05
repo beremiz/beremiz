@@ -340,7 +340,10 @@ def default_evaluator(tocall, *args, **kwargs):
     return res
 
 class Server():
-    def __init__(self, servicename, ip_addr, port, workdir, argv, autostart=False, statuschange=None, evaluator=default_evaluator, website=None):
+    def __init__(self, servicename, ip_addr, port,
+                 workdir, argv, autostart=False,
+                 statuschange=None, evaluator=default_evaluator,
+                 website=None):
         self.continueloop = True
         self.daemon = None
         self.servicename = servicename
@@ -371,7 +374,9 @@ class Server():
     def Start(self):
         pyro.initServer()
         self.daemon=pyro.Daemon(host=self.ip_addr, port=self.port)
-        self.plcobj = PLCObject(self.workdir, self.daemon, self.argv, self.statuschange, self.evaluator, self.website)
+        self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
+                                self.statuschange, self.evaluator,
+                                self.website)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
 
         print "Pyro port :",self.port
@@ -412,184 +417,41 @@ if enabletwisted:
             if havewx:
                 from twisted.internet import wxreactor
                 wxreactor.install()
-            from twisted.internet import reactor, task
-            from twisted.python import log, util
-            from nevow import rend, appserver, inevow, tags, loaders, athena
-            from nevow.page import renderer
+            from twisted.internet import reactor
 
             havetwisted = True
         except:
-            print "Twisted unavailable !"
+            print "Twisted unavailable."
             havetwisted = False
+
+pyruntimevars = {}
+statuschange = []
+registerserverto = []
 
 if havetwisted:
 
-    xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-'''
-
-    class PLCHMI(athena.LiveElement):
-
-        initialised = False
-
-        def HMIinitialised(self, result):
-            self.initialised = True
-
-        def HMIinitialisation(self):
-            self.HMIinitialised(None)
-
-    class DefaultPLCStartedHMI(PLCHMI):
-        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                             tags.h1["PLC IS NOW STARTED"],
-                                             ])
-
-    class PLCStoppedHMI(PLCHMI):
-        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                             tags.h1["PLC IS STOPPED"],
-                                             ])
-
-    class MainPage(athena.LiveElement):
-        jsClass = u"WebInterface.PLC"
-        docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                                        tags.div(id='content')[
-                                                        tags.div(render = tags.directive('PLCElement')),
-                                                        ]])
-
-        def __init__(self, *a, **kw):
-            athena.LiveElement.__init__(self, *a, **kw)
-            self.pcl_state = False
-            self.HMI = None
-            self.resetPLCStartedHMI()
-
-        def setPLCState(self, state):
-            self.pcl_state = state
-            if self.HMI is not None:
-                self.callRemote('updateHMI')
-
-        def setPLCStartedHMI(self, hmi):
-            self.PLCStartedHMIClass = hmi
-
-        def resetPLCStartedHMI(self):
-            self.PLCStartedHMIClass = DefaultPLCStartedHMI
-
-        def getHMI(self):
-            return self.HMI
-
-        def HMIexec(self, function, *args, **kwargs):
-            if self.HMI is not None:
-                getattr(self.HMI, function, lambda:None)(*args, **kwargs)
-        athena.expose(HMIexec)
-
-        def resetHMI(self):
-            self.HMI = None
-
-        def PLCElement(self, ctx, data):
-            return self.getPLCElement()
-        renderer(PLCElement)
-
-        def getPLCElement(self):
-            self.detachFragmentChildren()
-            if self.pcl_state:
-                f = self.PLCStartedHMIClass()
-            else:
-                f = PLCStoppedHMI()
-            f.setFragmentParent(self)
-            self.HMI = f
-            return f
-        athena.expose(getPLCElement)
-
-        def detachFragmentChildren(self):
-            for child in self.liveFragmentChildren[:]:
-                child.detach()
-
-    class WebInterface(athena.LivePage):
-
-        docFactory = loaders.stan([tags.raw(xhtml_header),
-                                   tags.html(xmlns="http://www.w3.org/1999/xhtml")[
-                                       tags.head(render=tags.directive('liveglue')),
-                                       tags.body[
-                                           tags.div[
-                                                   tags.div( render = tags.directive( "MainPage" ))
-                                                   ]]]])
-        MainPage = MainPage()
-        PLCHMI = PLCHMI
-
-        def __init__(self, plcState=False, *a, **kw):
-            super(WebInterface, self).__init__(*a, **kw)
-            self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, os.path.join('runtime', 'webinterface.js'))
-            self.plcState = plcState
-            self.MainPage.setPLCState(plcState)
-
-        def getHMI(self):
-            return self.MainPage.getHMI()
-
-        def LoadHMI(self, hmi, jsmodules):
-            for name, path in jsmodules.iteritems():
-                self.jsModules.mapping[name] = os.path.join(WorkingDir, path)
-            self.MainPage.setPLCStartedHMI(hmi)
-
-        def UnLoadHMI(self):
-            self.MainPage.resetPLCStartedHMI()
-
-        def PLCStarted(self):
-            self.plcState = True
-            self.MainPage.setPLCState(True)
-
-        def PLCStopped(self):
-            self.plcState = False
-            self.MainPage.setPLCState(False)
-
-        def renderHTTP(self, ctx):
-            """
-            Force content type to fit with SVG
-            """
-            req = inevow.IRequest(ctx)
-            req.setHeader('Content-type', 'application/xhtml+xml')
-            return super(WebInterface, self).renderHTTP(ctx)
-
-        def render_MainPage(self, ctx, data):
-            f = self.MainPage
-            f.setFragmentParent(self)
-            return ctx.tag[f]
-
-        def child_(self, ctx):
-            self.MainPage.detachFragmentChildren()
-            return WebInterface(plcState=self.plcState)
-
-        def beforeRender(self, ctx):
-            d = self.notifyOnDisconnect()
-            d.addErrback(self.disconnected)
-
-        def disconnected(self, reason):
-            self.MainPage.resetHMI()
-            #print reason
-            #print "We will be called back when the client disconnects"
-
     if havewx:
         reactor.registerWxApp(app)
-    website = WebInterface()
-    site = appserver.NevowSite(website)
 
-    website_port = 8009
-    listening = False
-    while not listening:
-        try:
-            reactor.listenTCP(website_port, site)
-            listening = True
-        except:
-            website_port += 1
-    print "Http interface port :",website_port
-else:
-    website = None
+    # TODO add command line switch
+    try:
+        import runtime.NevowServer as NS
+        website = NS.RegisterWebsite(reactor)
+        pyruntimevars["website"] = website
+        statuschange.append(NS.website_statuslistener_factory(website))
+    except:
+        print "Nevow Web service failed."
+
 
 if havewx:
     from threading import Semaphore
     wx_eval_lock = Semaphore(0)
     main_thread = currentThread()
 
-    def statuschange(status):
+    def statuschangeTskBar(status):
         wx.CallAfter(taskbar_instance.UpdateIcon,status)
+
+    statuschange.append(statuschangeTskBar)
 
     def wx_evaluator(obj, *args, **kwargs):
         tocall,args,kwargs = obj.call
@@ -607,10 +469,18 @@ if havewx:
             wx_eval_lock.acquire()
             return o.res
 
-    pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, statuschange, evaluator, website)
+    pyroserver = Server(servicename, given_ip, port,
+                        WorkingDir, argv, autostart,
+                        statuschange, evaluator, pyruntimevars)
+
     taskbar_instance = BeremizTaskBarIcon(pyroserver, enablewx)
 else:
-    pyroserver = Server(servicename, given_ip, port, WorkingDir, argv, autostart, website=website)
+    pyroserver = Server(servicename, given_ip, port,
+                        WorkingDir, argv, autostart,
+                        statuschange, pyruntimevars=pyruntimevars)
+
+for registrar in registerserverto :
+    registrar(pyroserver)
 
 # Exception hooks s
 import threading, traceback

@@ -51,7 +51,7 @@ def PLCprint(message):
     sys.stdout.flush()
 
 class PLCObject(pyro.ObjBase):
-    def __init__(self, workingdir, daemon, argv, statuschange, evaluator, website):
+    def __init__(self, workingdir, daemon, argv, statuschange, evaluator, pyruntimevars):
         pyro.ObjBase.__init__(self)
         self.evaluator = evaluator
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
@@ -65,7 +65,7 @@ class PLCObject(pyro.ObjBase):
         self.daemon = daemon
         self.statuschange = statuschange
         self.hmi_frame = None
-        self.website = website
+        self.pyruntimevars = pyruntimevars
         self._loading_error = None
         self.python_runtime_vars = None
         self.TraceThread = None
@@ -85,7 +85,8 @@ class PLCObject(pyro.ObjBase):
 
     def StatusChange(self):
         if self.statuschange is not None:
-            self.statuschange(self.PLCStatus)
+            for callee in self.statuschange:
+                callee(self.PLCStatus)
 
     def LogMessage(self, *args):
         if len(args) == 2:
@@ -262,8 +263,9 @@ class PLCObject(pyro.ObjBase):
     def PythonRuntimeInit(self):
         MethodNames = ["init", "start", "stop", "cleanup"]
         self.python_runtime_vars = globals().copy()
+        self.python_runtime_vars.update(self.pyruntimevars)
+
         self.python_runtime_vars["WorkingDir"] = self.workingdir
-        self.python_runtime_vars["website"] = self.website
         for methodname in MethodNames :
             self.python_runtime_vars["_runtime_%s"%methodname] = []
         self.python_runtime_vars["PLCObject"] = self
@@ -300,16 +302,11 @@ class PLCObject(pyro.ObjBase):
 
         self.PythonRuntimeCall("init")
 
-        if self.website is not None:
-            self.website.PLCStarted()
 
 
     def PythonRuntimeCleanup(self):
         if self.python_runtime_vars is not None:
             self.PythonRuntimeCall("cleanup")
-
-        if self.website is not None:
-            self.website.PLCStopped()
 
         self.python_runtime_vars = None
 
