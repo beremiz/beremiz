@@ -2,38 +2,59 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from twisted.python import log
-
-from twisted.internet import reactor, ssl
+#from twisted.python import log
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
+from twisted.internet.defer import inlineCallbacks
 from autobahn.wamp import types
+from autobahn.wamp.serializer import MsgPackSerializer
 import json
 
 _WampSession = None
 _PySrv = None
 
+ExposedCalls = ["StartPLC",
+                "StopPLC",
+                "ForceReload",
+                "GetPLCstatus",
+                "NewPLC",
+                "MatchMD5",
+                "SetTraceVariablesList",
+                "GetTraceVariables",
+                "RemoteExec",
+                "GetLogMessage",
+                ]
+
+def MakeCallee(name):
+    global _PySrv
+    def Callee(*args,**kwargs):
+        return getattr(_PySrv.plcobj, name)(*args,**kwargs)
+    return Callee
+
+
 class WampSession(wamp.ApplicationSession):
+
+    @inlineCallbacks
     def onJoin(self, details):
         global _WampSession
         _WampSession = self
         print 'WAMP session joined by :', self.config.extra["ID"]
+        for name in ExposedCalls:
+            reg = yield self.register(MakeCallee(name), name)
 
     def onLeave(self, details):
         global _WampSession
         _WampSession = None
         print 'WAMP session left'
 
-
 def RegisterWampClient(wampconf):
 
     WSClientConf = json.load(open(wampconf))
 
-    ## TODO log to PLC console instead
-    ## 0) start logging to console
-    log.startLogging(sys.stdout)
+    ## start logging to console
+    # log.startLogging(sys.stdout)
 
-    ## 1) create a WAMP application session factory
+    # create a WAMP application session factory
     component_config = types.ComponentConfig(
         realm = WSClientConf["realm"],
         extra = {"ID":WSClientConf["ID"]})
@@ -41,27 +62,17 @@ def RegisterWampClient(wampconf):
         config = component_config)
     session_factory.session = WampSession
 
-    ## TODO select optimum serializer for passing session lists
-    ## optional: use specific set of serializers
-    #from autobahn.wamp.serializer import *
-    #serializers = []
-    ##serializers.append(JsonSerializer(batched = True))
-    ##serializers.append(MsgPackSerializer(batched = True))
-    #serializers.append(JsonSerializer())
-    ##serializers.append(MsgPackSerializer())
-    serializers = None
-
-    ## 2) create a WAMP-over-WebSocket transport client factory
+    # create a WAMP-over-WebSocket transport client factory
     transport_factory = WampWebSocketClientFactory(
         session_factory,
         url = WSClientConf["url"],
-        serializers = serializers,
+        serializers = [MsgPackSerializer()],
         debug = False,
         debug_wamp = False)
 
-    ## 3) start the client from a Twisted endpoint
+    # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
-    print "WAMP clien connecting to :",WSClientConf["url"]
+    print "WAMP client connecting to :",WSClientConf["url"]
     return conn
 
 def GetSession():

@@ -447,7 +447,8 @@ class PLCObject(pyro.ObjBase):
             last_md5 = open(self._GetMD5FileName(), "r").read()
             return last_md5 == MD5
         except:
-            return False
+            pass
+        return False
 
     def SetTraceVariablesList(self, idxs):
         """
@@ -534,7 +535,7 @@ class PLCObject(pyro.ObjBase):
         self._TracesFlush()
 
 
-    def RemoteExec(self, script, **kwargs):
+    def RemoteExec(self, script, *kwargs):
         try:
             exec script in kwargs
         except:

@@ -37,7 +37,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     """
     This returns the connector to Pyro style PLCobject
     """
-    confnodesroot.logger.write(_("Connecting to URI : %s\n")%uri)
+    confnodesroot.logger.write(_("PYRO connecting to URI : %s\n")%uri)
 
     servicetype, location = uri.split("://")
     if location.find(service_type) != -1:
