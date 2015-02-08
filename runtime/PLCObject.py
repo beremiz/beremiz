@@ -156,17 +156,16 @@ class PLCObject(pyro.ObjBase):
             else:
                 # If python confnode is not enabled, we reuse _PythonIterator
                 # as a call that block pythonthread until StopPLC
-                self.PythonIteratorLock = Lock()
-                self.PythonIteratorLock.acquire()
+                self.PlcStopping = Event()
                 def PythonIterator(res, blkid):
-                    self.PythonIteratorLock.acquire()
-                    self.PythonIteratorLock.release()
+                    self.PlcStopping.clear()
+                    self.PlcStopping.wait()
                     return None
                 self._PythonIterator = PythonIterator
 
                 def __StopPLC():
                     self._stopPLC_real()
-                    self.PythonIteratorLock.release()
+                    self.PlcStopping.set()
                 self._stopPLC = __StopPLC
 
 
@@ -311,10 +310,7 @@ class PLCObject(pyro.ObjBase):
         self.python_runtime_vars = None
 
     def PythonThreadProc(self):
-        self.PLCStatus = "Started"
-        self.StatusChange()
         self.StartSem.release()
-        self.PythonRuntimeCall("start")
         res,cmd,blkid = "None","None",ctypes.c_void_p()
         compile_cache={}
         while True:
@@ -341,9 +337,6 @@ class PLCObject(pyro.ObjBase):
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,str(e)))
-        self.PLCStatus = "Stopped"
-        self.StatusChange()
-        self.PythonRuntimeCall("stop")
 
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
@@ -351,6 +344,9 @@ class PLCObject(pyro.ObjBase):
             error = None
             res = self._startPLC(len(self.argv),c_argv(*self.argv))
             if res == 0:
+                self.PLCStatus = "Started"
+                self.StatusChange()
+                self.PythonRuntimeCall("start")
                 self.StartSem=Semaphore(0)
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
@@ -366,6 +362,9 @@ class PLCObject(pyro.ObjBase):
             self.LogMessage("PLC stopped")
             self._stopPLC()
             self.PythonThread.join()
+            self.PLCStatus = "Stopped"
+            self.StatusChange()
+            self.PythonRuntimeCall("stop")
             if self.TraceThread is not None :
                 self.TraceWakeup.set()
                 self.TraceThread.join()
