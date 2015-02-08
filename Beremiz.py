@@ -36,6 +36,7 @@ from types import ListType
 
 CWD = os.path.split(os.path.realpath(__file__))[0]
 
+
 def Bpath(*args):
     return os.path.join(CWD,*args)
 
@@ -634,6 +635,14 @@ class Beremiz(IDEFrame):
         else:
             return IDEFrame.LoadTab(self, notebook, page_infos)
 
+    # Strange hack required by WAMP connector, using twisted.
+    # Twisted reactor needs to be stopped only before quit,
+    # since it cannot be restarted
+    ToDoBeforeQuit = []
+    def AddToDoBeforeQuit(self, Thing):
+        self.ToDoBeforeQuit.append(Thing)
+        print self.ToDoBeforeQuit
+
     def OnCloseFrame(self, event):
         for evt_type in [wx.EVT_SET_FOCUS,
                          wx.EVT_KILL_FOCUS,
@@ -645,6 +654,10 @@ class Beremiz(IDEFrame):
             self.KillLocalRuntime()
 
             self.SaveLastState()
+
+            for Thing in self.ToDoBeforeQuit :
+                Thing()
+            self.ToDoBeforeQuit = []
 
             event.Skip()
         else:
