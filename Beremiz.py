@@ -641,7 +641,6 @@ class Beremiz(IDEFrame):
     ToDoBeforeQuit = []
     def AddToDoBeforeQuit(self, Thing):
         self.ToDoBeforeQuit.append(Thing)
-        print self.ToDoBeforeQuit
 
     def OnCloseFrame(self, event):
         for evt_type in [wx.EVT_SET_FOCUS,
