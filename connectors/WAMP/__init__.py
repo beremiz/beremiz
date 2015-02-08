@@ -19,7 +19,7 @@
 #License along with this library; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import sys, traceback
+import sys, traceback, atexit
 #from twisted.python import log
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
@@ -30,18 +30,18 @@ from autobahn.wamp.serializer import MsgPackSerializer
 from threading import Thread, Event
 
 _WampSession = None
-_ReactorThread = None
+_WampConnection = None
 _WampSessionEvent = Event()
 
 class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
-        global _WampSession
+        global _WampSession, _WampSessionEvent
         _WampSession = self
         _WampSessionEvent.set()
         print 'WAMP session joined for :', self.config.extra["ID"]
 
     def onLeave(self, details):
-        global _WampSession
+        global _WampSession, _WampSessionEvent
         _WampSessionEvent.clear()
         _WampSession = None
         print 'WAMP session left'
@@ -56,8 +56,6 @@ def WAMP_connector_factory(uri, confnodesroot):
     WAMP://127.0.0.1:12345/path#realm#ID
     WAMPS://127.0.0.1:12345/path#realm#ID
     """
-    global _WampSession, _ReactorThread, _WampSessionEvent
-
     servicetype, location = uri.split("://")
     urlpath, realm, ID = location.split('#')
     urlprefix = {"WAMP":"ws",
@@ -90,8 +88,16 @@ def WAMP_connector_factory(uri, confnodesroot):
         confnodesroot.logger.write(_("WAMP connecting to URL : %s\n")%url)
         return conn
 
+    AddToDoBeforeQuit = confnodesroot.AppFrame.AddToDoBeforeQuit
+    def ThreadProc():
+        global _WampConnection
+        _WampConnection = RegisterWampClient()
+        AddToDoBeforeQuit(reactor.stop)
+        reactor.run(installSignalHandlers=False)
+
     def WampSessionProcMapper(funcname):
         def catcher_func(*args,**kwargs):
+            global _WampSession
             if _WampSession is not None :
                 try:
                     return threads.blockingCallFromThread(
@@ -110,21 +116,21 @@ def WAMP_connector_factory(uri, confnodesroot):
 
     class WampPLCObjectProxy(object):
         def __init__(self):
+            global _WampSessionEvent, _WampConnection
             if not reactor.running:
-                def ThreadProc():
-                    self.connection = RegisterWampClient()
-                    reactor.run(installSignalHandlers=False)
                 Thread(target=ThreadProc).start()
             else:
-                self.connection = threads.blockingCallFromThread(
+                _WampConnection = threads.blockingCallFromThread(
                     reactor, RegisterWampClient)
             if not _WampSessionEvent.wait(5):
-                self.connection.stopConnecting()
+                _WampConnection = stopConnecting()
                 raise Exception, _("WAMP connection timeout")
 
         def __del__(self):
-            self.connection.disconnect()
-            #reactor.Stop()
+            global _WampConnection
+            _WampConnection.disconnect()
+            #
+            # reactor.stop()
 
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)

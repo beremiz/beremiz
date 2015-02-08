@@ -94,7 +94,7 @@ def PYRO_connector_factory(uri, confnodesroot):
         return None
 
 
-    class PyroProxyProxy:
+    class PyroProxyProxy(object):
         """
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
         And to put pyro exception catcher in between caller and pyro proxy

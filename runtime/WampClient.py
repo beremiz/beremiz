@@ -8,6 +8,7 @@ from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from twisted.internet.defer import inlineCallbacks
 from autobahn.wamp import types
 from autobahn.wamp.serializer import MsgPackSerializer
+from twisted.internet.protocol import ReconnectingClientFactory
 import json
 
 _WampSession = None
@@ -23,6 +24,7 @@ ExposedCalls = ["StartPLC",
                 "GetTraceVariables",
                 "RemoteExec",
                 "GetLogMessage",
+                "ResetLogCount",
                 ]
 
 def MakeCallee(name):
@@ -47,6 +49,14 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print 'WAMP session left'
 
+class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
+    def clientConnectionFailed(self, connector, reason):
+        print("WAMP Client connection failed .. retrying ..")
+        self.retry(connector)
+    def clientConnectionLost(self, connector, reason):
+        print("WAMP Client connection lost .. retrying ..")
+        self.retry(connector)
+
 def RegisterWampClient(wampconf):
 
     WSClientConf = json.load(open(wampconf))
@@ -63,7 +73,7 @@ def RegisterWampClient(wampconf):
     session_factory.session = WampSession
 
     # create a WAMP-over-WebSocket transport client factory
-    transport_factory = WampWebSocketClientFactory(
+    transport_factory = ReconnectingWampWebSocketClientFactory(
         session_factory,
         url = WSClientConf["url"],
         serializers = [MsgPackSerializer()],
