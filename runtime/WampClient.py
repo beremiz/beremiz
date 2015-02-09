@@ -27,12 +27,12 @@ ExposedCalls = ["StartPLC",
                 "ResetLogCount",
                 ]
 
-def MakeCallee(name):
+def GetCallee(name):
     global _PySrv
-    def Callee(*args,**kwargs):
-        return getattr(_PySrv.plcobj, name)(*args,**kwargs)
-    return Callee
-
+    names = name.split('.')
+    obj = _PySrv.plcobj
+    while names: obj = getattr(obj, names.pop(0))
+    return obj
 
 class WampSession(wamp.ApplicationSession):
 
@@ -43,7 +43,7 @@ class WampSession(wamp.ApplicationSession):
         ID = self.config.extra["ID"]
         print 'WAMP session joined by :', ID
         for name in ExposedCalls:
-            reg = yield self.register(MakeCallee(name), '.'.join((ID,name)))
+            reg = yield self.register(GetCallee(name), '.'.join((ID,name)))
 
     def onLeave(self, details):
         global _WampSession
