@@ -96,12 +96,13 @@ def WAMP_connector_factory(uri, confnodesroot):
         reactor.run(installSignalHandlers=False)
 
     def WampSessionProcMapper(funcname):
+        wampfuncname = '.'.join((ID,funcname))
         def catcher_func(*args,**kwargs):
             global _WampSession
             if _WampSession is not None :
                 try:
                     return threads.blockingCallFromThread(
-                        reactor, _WampSession.call, funcname,
+                        reactor, _WampSession.call, wampfuncname,
                         *args,**kwargs)
                 except TransportLost, e:
                     confnodesroot.logger.write_error("Connection lost!\n")

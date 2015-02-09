@@ -40,9 +40,10 @@ class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
         global _WampSession
         _WampSession = self
-        print 'WAMP session joined by :', self.config.extra["ID"]
+        ID = self.config.extra["ID"]
+        print 'WAMP session joined by :', ID
         for name in ExposedCalls:
-            reg = yield self.register(MakeCallee(name), name)
+            reg = yield self.register(MakeCallee(name), '.'.join((ID,name)))
 
     def onLeave(self, details):
         global _WampSession
