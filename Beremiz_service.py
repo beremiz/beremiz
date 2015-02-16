@@ -434,30 +434,11 @@ if enabletwisted:
 
 pyruntimevars = {}
 statuschange = []
-registerserverto = []
 
 if havetwisted:
 
     if havewx:
         reactor.registerWxApp(app)
-
-    if webport is not None :
-        try:
-            import runtime.NevowServer as NS
-            website = NS.RegisterWebsite(webport)
-            pyruntimevars["website"] = website
-            statuschange.append(NS.website_statuslistener_factory(website))
-        except Exception, e:
-            print "Nevow Web service failed.", e
-
-    if wampconf is not None :
-        try:
-            import runtime.WampClient as WC
-            WC.RegisterWampClient(wampconf)
-            pyruntimevars["wampsession"] = WC.GetSession
-            registerserverto.append(WC.SetServer)
-        except Exception, e:
-            print "WAMP client startup failed.", e
 
 if havewx:
     from threading import Semaphore
@@ -495,8 +476,6 @@ else:
                         WorkingDir, argv, autostart,
                         statuschange, pyruntimevars=pyruntimevars)
 
-for registrar in registerserverto :
-    registrar(pyroserver)
 
 # Exception hooks s
 import threading, traceback
@@ -523,11 +502,44 @@ def installThreadExcepthook():
     threading.Thread.__init__ = init
 installThreadExcepthook()
 
+if havetwisted:
+    if webport is not None :
+        try:
+            import runtime.NevowServer as NS
+        except Exception, e:
+            print "Nevow/Athena import failed :", e
+            webport = None
+
+    if wampconf is not None :
+        try:
+            import runtime.WampClient as WC
+        except Exception, e:
+            print "WAMP import failed :", e
+            wampconf = None
+
 # Load extensions
 for extfilename in extensions:
     extension_folder = os.path.split(os.path.realpath(extfilename))[0]
     sys.path.append(extension_folder)
     execfile(extfilename, locals())
+
+if havetwisted:
+    if webport is not None :
+        try:
+            website = NS.RegisterWebsite(webport)
+            pyruntimevars["website"] = website
+            statuschange.append(NS.website_statuslistener_factory(website))
+        except Exception, e:
+            print "Nevow Web service failed.", e
+
+    if wampconf is not None :
+        try:
+            WC.RegisterWampClient(wampconf)
+            pyruntimevars["wampsession"] = WC.GetSession
+            WC.SetServer(pyroserver)
+        except Exception, e:
+            print "WAMP client startup failed.", e
+
 
 if havetwisted or havewx:
     pyro_thread=Thread(target=pyroserver.Loop)
