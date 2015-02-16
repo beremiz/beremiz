@@ -27,7 +27,12 @@ ExposedCalls = ["StartPLC",
                 "ResetLogCount",
                 ]
 
+SubscribedEvents = []
+
+DoOnJoin = []
+
 def GetCallee(name):
+    """ Get Callee or Subscriber corresponding to '.' spearated object path """
     global _PySrv
     names = name.split('.')
     obj = _PySrv.plcobj
@@ -45,6 +50,12 @@ class WampSession(wamp.ApplicationSession):
         for name in ExposedCalls:
             reg = yield self.register(GetCallee(name), '.'.join((ID,name)))
 
+        for name in SubscribedEvents:
+            reg = yield self.subscribe(GetCallee(name), name)
+
+        for func in DoOnJoin:
+            yield func(self)
+
     def onLeave(self, details):
         global _WampSession
         _WampSession = None
@@ -58,9 +69,14 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         print("WAMP Client connection lost .. retrying ..")
         self.retry(connector)
 
-def RegisterWampClient(wampconf):
+def LoadWampClientConf(wampconf):
 
     WSClientConf = json.load(open(wampconf))
+    return WSClientConf
+
+def RegisterWampClient(wampconf):
+
+    WSClientConf = LoadWampClientConf(wampconf)
 
     ## start logging to console
     # log.startLogging(sys.stdout)
