@@ -56,7 +56,7 @@ class PLCObject(pyro.ObjBase):
         self.evaluator = evaluator
         self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
         self.workingdir = workingdir
-        self.PLCStatus = "Stopped"
+        self.PLCStatus = "Empty"
         self.PLClibraryHandle = None
         self.PLClibraryLock = Lock()
         self.DummyIteratorLock = None
@@ -73,6 +73,7 @@ class PLCObject(pyro.ObjBase):
         self.TraceWakeup = Event()
         self.Traces = []
 
+    def AutoLoad(self):
         # Get the last transfered PLC if connector must be restart
         try:
             self.CurrentPLCFilename=open(
@@ -264,11 +265,6 @@ class PLCObject(pyro.ObjBase):
         self.python_runtime_vars = globals().copy()
         self.python_runtime_vars.update(self.pyruntimevars)
 
-        self.python_runtime_vars["WorkingDir"] = self.workingdir
-        for methodname in MethodNames :
-            self.python_runtime_vars["_runtime_%s"%methodname] = []
-        self.python_runtime_vars["PLCObject"] = self
-        self.python_runtime_vars["PLCBinary"] = self.PLClibraryHandle
         class PLCSafeGlobals:
             def __getattr__(_self, name):
                 try :
@@ -285,9 +281,21 @@ class PLCObject(pyro.ObjBase):
                     raise KeyError("Try to set unknown shared global variable : %s"%name)
                 v = self.python_runtime_vars["_"+name+"_pack"](t,value)
                 self.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
-        self.python_runtime_vars["PLCGlobals"] = PLCSafeGlobals()
+
+        self.python_runtime_vars.update({
+            "PLCGlobals" : PLCSafeGlobals(),
+            "WorkingDir" : self.workingdir,
+            "PLCObject"  : self,
+            "PLCBinary"  : self.PLClibraryHandle,
+            "PLCGlobalsDesc" : []})
+
+        for methodname in MethodNames :
+            self.python_runtime_vars["_runtime_%s"%methodname] = []
+
         try:
-            for filename in os.listdir(self.workingdir):
+            filenames = os.listdir(self.workingdir)
+            filenames.sort()
+            for filename in filenames:
                 name, ext = os.path.splitext(filename)
                 if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
                     execfile(os.path.join(self.workingdir, filename), self.python_runtime_vars)
