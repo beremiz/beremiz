@@ -72,6 +72,7 @@ class PythonFileCTNMixin(CodeFile):
                                 self.GetCurrentLocation()))
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
+        pyextname = self.CTNName()
 
         # python side PLC global variables access stub
         globalstubs = "\n".join(["""\
@@ -83,11 +84,12 @@ _PySafeGetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
 _PySafeSetPLCGlob_%(name)s = PLCBinary.__SafeSetPLCGlob_%(name)s
 _PySafeSetPLCGlob_%(name)s.restype = None
 _PySafeSetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
-_PySafePLCGlobals.append(("%(name)s","%(IECtype)s"))
+_%(pyextname)sGlobalsDesc.append(("%(name)s","%(IECtype)s"))
 """ % { "name": variable.getname(),
         "configname": configname.upper(),
         "uppername": variable.getname().upper(),
-        "IECtype": variable.gettype()}
+        "IECtype": variable.gettype(),
+        "pyextname":pyextname}
             for variable in self.CodeFile.variables.variable])
 
         # Runtime calls (start, stop, init, and cleanup)
@@ -104,8 +106,6 @@ _PySafePLCGlobals.append(("%(name)s","%(IECtype)s"))
 
         globalsection = self.GetSection("globals")
 
-        pyextname = self.CTNName()
-
         PyFileContent = """\
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -115,8 +115,8 @@ _PySafePLCGlobals.append(("%(name)s","%(IECtype)s"))
 ## Code for PLC global variable access
 from targets.typemapping import TypeTranslator
 import ctypes
-_PyExtName = "%(pyextname)s"
-_PySafePLCGlobals = []
+_%(pyextname)sGlobalsDesc = []
+PLCGlobalsDesc.append(( "_%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
 %(globalstubs)s
 
 ## User code in "global" scope
