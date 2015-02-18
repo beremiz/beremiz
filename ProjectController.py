@@ -982,7 +982,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.ResetBuildMD5()
             return False
 
-        self.LocationCFilesAndCFLAGS =  CTNLocationCFilesAndCFLAGS + LibCFilesAndCFLAGS
+        self.LocationCFilesAndCFLAGS =  LibCFilesAndCFLAGS + CTNLocationCFilesAndCFLAGS
         self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
         ExtraFiles = CTNExtraFiles + LibExtraFiles
 
