@@ -65,7 +65,6 @@ class PythonFileCTNMixin(CodeFile):
                getattr(self.CodeFile, section).getanyText() + "\n" + \
                self.PostSectionsTexts.get(section,"")
 
-
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
         location_str = "_".join(map(lambda x:str(x),
@@ -73,7 +72,17 @@ class PythonFileCTNMixin(CodeFile):
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
         pyextname = self.CTNName()
-
+        varinfos = map(lambda variable : {
+                    "name": variable.getname(),
+                    "desc" : repr(variable.getdesc()),   
+                    "onchange" : '"'+variable.getonchange()+"('"+variable.getname()+"')\"" \
+                                 if variable.getonchange() else "",
+                    "opts" : repr(variable.getopts()),
+                    "configname" : configname.upper(),
+                    "uppername" : variable.getname().upper(),
+                    "IECtype" : variable.gettype(),
+                    "pyextname" :pyextname},
+                    self.CodeFile.variables.variable)
         # python side PLC global variables access stub
         globalstubs = "\n".join(["""\
 _%(name)s_ctype, _%(name)s_unpack, _%(name)s_pack = \\
@@ -84,13 +93,12 @@ _PySafeGetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
 _PySafeSetPLCGlob_%(name)s = PLCBinary.__SafeSetPLCGlob_%(name)s
 _PySafeSetPLCGlob_%(name)s.restype = None
 _PySafeSetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
-_%(pyextname)sGlobalsDesc.append(("%(name)s","%(IECtype)s"))
-""" % { "name": variable.getname(),
-        "configname": configname.upper(),
-        "uppername": variable.getname().upper(),
-        "IECtype": variable.gettype(),
-        "pyextname":pyextname}
-            for variable in self.CodeFile.variables.variable])
+_%(pyextname)sGlobalsDesc.append((
+    "%(name)s",
+    "%(IECtype)s",
+    %(desc)s,
+    %(opts)s))
+""" % varinfo for varinfo in varinfos])
 
         # Runtime calls (start, stop, init, and cleanup)
         rtcalls = ""
@@ -156,6 +164,11 @@ void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
 }
 
 """
+
+        vardeconchangefmt = """\
+PYTHON_POLL* __%(name)s_notifier;
+"""
+
         varretfmt = """\
     if(!AtomicCompareExchange(&__%(name)s_wlock, 0, 1)){
         if(__%(name)s_wbuffer_written == 1){
@@ -167,24 +180,36 @@ void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
 """
         varpubfmt = """\
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
-        __%(name)s_rbuffer = %(configname)s__%(uppername)s.value;
+        __%(name)s_rbuffer = __GET_VAR(%(configname)s__%(uppername)s);
         AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
     }
 """
 
-        var_str = map("\n".join, zip(*[
-            map(lambda f : f % varinfo,
-                (vardecfmt, varretfmt, varpubfmt))
-                for varinfo in map(lambda variable : {
-                    "name": variable.getname(),
-                    "configname": configname.upper(),
-                    "uppername": variable.getname().upper(),
-                    "IECtype": variable.gettype()},
-                    self.CodeFile.variables.variable)]))
-        if len(var_str) > 0:
-            vardec, varret, varpub = var_str
-        else:
-            vardec = varret = varpub = ""
+        varpubonchangefmt = """\
+    if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
+        IEC_%(IECtype)s tmp = __GET_VAR(%(configname)s__%(uppername)s);
+        if(__%(name)s_rbuffer != tmp){
+            __%(name)s_rbuffer = %(configname)s__%(uppername)s.value;
+            PYTHON_POLL_body__(__%(name)s_notifier);
+        }
+        AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+    }
+"""
+        varinitonchangefmt = """\
+    __%(name)s_notifier = __GET_GLOBAL_ON%(uppername)sCHANGE();
+    __SET_VAR(__%(name)s_notifier->,TRIG,,__BOOL_LITERAL(TRUE));
+    __SET_VAR(__%(name)s_notifier->,CODE,,__STRING_LITERAL(%(onchangelen)d,%(onchange)s));
+"""
+        vardec = "\n".join([(vardecfmt + vardeconchangefmt 
+                             if varinfo["onchange"] else vardecfmt)% varinfo 
+                            for varinfo in varinfos])
+        varret = "\n".join([varretfmt % varinfo for varinfo in varinfos])
+        varpub = "\n".join([(varpubonchangefmt if varinfo["onchange"] else
+                             varpubfmt) % varinfo
+                            for varinfo in varinfos])
+        varinit = "\n".join([varinitonchangefmt % dict(
+                                onchangelen = len(varinfo["onchange"]),**varinfo)
+                            for varinfo in varinfos if varinfo["onchange"]])
 
         PyCFileContent = """\
 /*
@@ -192,6 +217,8 @@ void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
  * for safe global variables access
  */
 #include "iec_types_all.h"
+#include "POUS.h"
+#include "config.h"
 #include "beremiz.h"
 
 /* User variables reference */
@@ -199,6 +226,7 @@ void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
 
 /* Beremiz confnode functions */
 int __init_%(location_str)s(int argc,char **argv){
+%(varinit)s
     return 0;
 }
 
