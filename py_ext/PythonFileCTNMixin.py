@@ -75,8 +75,11 @@ class PythonFileCTNMixin(CodeFile):
         varinfos = map(lambda variable : {
                     "name": variable.getname(),
                     "desc" : repr(variable.getdesc()),   
-                    "onchange" : '"'+variable.getonchange()+"('"+variable.getname()+"')\"" \
-                                 if variable.getonchange() else "",
+                    "onchangecode" : '"'+variable.getonchange()+\
+                                         "('"+variable.getname()+"')\"" \
+                                     if variable.getonchange() else '""',
+                    "onchange" : repr(variable.getonchange()) \
+                                 if variable.getonchange() else None,
                     "opts" : repr(variable.getopts()),
                     "configname" : configname.upper(),
                     "uppername" : variable.getname().upper(),
@@ -97,8 +100,10 @@ _%(pyextname)sGlobalsDesc.append((
     "%(name)s",
     "%(IECtype)s",
     %(desc)s,
+    %(onchange)s,
     %(opts)s))
-""" % varinfo for varinfo in varinfos])
+""" % varinfo 
+      for varinfo in varinfos])
 
         # Runtime calls (start, stop, init, and cleanup)
         rtcalls = ""
@@ -124,6 +129,7 @@ _%(pyextname)sGlobalsDesc.append((
 from targets.typemapping import TypeTranslator
 import ctypes
 _%(pyextname)sGlobalsDesc = []
+__ext_name__ = "%(pyextname)s"
 PLCGlobalsDesc.append(( "_%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
 %(globalstubs)s
 
@@ -132,6 +138,8 @@ PLCGlobalsDesc.append(( "_%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
 
 ## Beremiz python runtime calls
 %(rtcalls)s
+
+del __ext_name__
 
 """ % locals()
 
@@ -198,7 +206,7 @@ PYTHON_POLL* __%(name)s_notifier;
         varinitonchangefmt = """\
     __%(name)s_notifier = __GET_GLOBAL_ON%(uppername)sCHANGE();
     __SET_VAR(__%(name)s_notifier->,TRIG,,__BOOL_LITERAL(TRUE));
-    __SET_VAR(__%(name)s_notifier->,CODE,,__STRING_LITERAL(%(onchangelen)d,%(onchange)s));
+    __SET_VAR(__%(name)s_notifier->,CODE,,__STRING_LITERAL(%(onchangelen)d,%(onchangecode)s));
 """
         vardec = "\n".join([(vardecfmt + vardeconchangefmt 
                              if varinfo["onchange"] else vardecfmt)% varinfo 
@@ -208,7 +216,7 @@ PYTHON_POLL* __%(name)s_notifier;
                              varpubfmt) % varinfo
                             for varinfo in varinfos])
         varinit = "\n".join([varinitonchangefmt % dict(
-                                onchangelen = len(varinfo["onchange"]),**varinfo)
+                                onchangelen = len(varinfo["onchangecode"]),**varinfo)
                             for varinfo in varinfos if varinfo["onchange"]])
 
         PyCFileContent = """\
