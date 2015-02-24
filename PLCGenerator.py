@@ -1480,10 +1480,10 @@ class PouProgramGenerator:
                 self.TagName = self.ParentGenerator.Controler.ComputePouTransitionName(self.Name, transitionValues["value"])
                 if transitionType == "IL":
                     transition_infos["content"] = [(":\n", ()),
-                                                   (ReIndentText(transitionBody.getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]
+                                                   (ReIndentText(transitionBody.getcontent().getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]
                 elif transitionType == "ST":
                     transition_infos["content"] = [("\n", ()),
-                                                   (ReIndentText(transitionBody.getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]
+                                                   (ReIndentText(transitionBody.getcontent().getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]
                 else:
                     for instance in transitionBody.getcontentInstances():
                         if isinstance(instance, OutVariableClass) and instance.getexpression() == transitionValues["value"]\
