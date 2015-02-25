@@ -6,12 +6,12 @@
   </variables>
   <globals>
     <xhtml:p><![CDATA[
+print "All python PLC globals variables :", PLCGlobalsDesc
+print "Current extention name :", __ext_name__
 ]]></xhtml:p>
   </globals>
   <init>
     <xhtml:p><![CDATA[
-print "Exposed variables :", _PySafePLCGlobals
-print "PyExtName :", _PyExtName
 ]]></xhtml:p>
   </init>
   <cleanup>
