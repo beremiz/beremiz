@@ -96,7 +96,7 @@ for o, a in opts:
         usage()
         sys.exit()
 
-CWD = os.path.split(os.path.realpath(__file__))[0]
+beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
 if len(argv) > 1:
     usage()
@@ -114,25 +114,28 @@ if __name__ == '__main__':
 
 if enablewx:
     try:
-        import wx, re
-        from threading import Thread, currentThread
-        from types import *
+        import wxversion
+        wxversion.select('2.8')
+        import wx
         havewx = True
     except:
         print "Wx unavailable !"
         havewx = False
 
     if havewx:
+        import re
+        from threading import Thread, currentThread
+        from types import *
         app=wx.App(redirect=False)
 
         # Import module for internationalization
         import gettext
 
         def Bpath(*args):
-            return os.path.join(CWD,*args)
+            return os.path.join(beremiz_dir,*args)
 
         # Get folder containing translation files
-        localedir = os.path.join(CWD,"locale")
+        localedir = os.path.join(beremiz_dir,"locale")
         # Get the default language
         langid = wx.LANGUAGE_DEFAULT
         # Define translation domain (name of translation files)
