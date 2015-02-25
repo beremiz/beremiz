@@ -25,20 +25,23 @@
 
 updateinfo_url = None
 
-import os, sys, getopt, wx
+import os, sys, getopt
 import __builtin__
-from wx.lib.agw.advancedsplash import AdvancedSplash
 import tempfile
 import shutil
 import random
 import time
 from types import ListType
 
-CWD = os.path.split(os.path.realpath(__file__))[0]
+beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
+import wxversion
+wxversion.select('2.8')
+import wx
+from wx.lib.agw.advancedsplash import AdvancedSplash
 
 def Bpath(*args):
-    return os.path.join(CWD,*args)
+    return os.path.join(beremiz_dir,*args)
 
 if __name__ == '__main__':
     def usage():
@@ -112,7 +115,7 @@ if __name__ == '__main__':
         wx.Yield()
 
     from util.misc import InstallLocalRessources
-    InstallLocalRessources(CWD)
+    InstallLocalRessources(beremiz_dir)
 
     # Load extensions
     for extfilename in extensions:

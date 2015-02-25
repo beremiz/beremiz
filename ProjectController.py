@@ -32,7 +32,7 @@ from targets.typemapping import DebugTypesSize, LogLevelsCount, LogLevels
 from targets.typemapping import UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
-base_folder = os.path.split(sys.path[0])[0]
+base_folder = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
@@ -608,17 +608,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
-
-        # Now compile IEC code into many C files
-        # files are listed to stdout, and errors to stderr.
-        status, result, err_result = ProcessLogger(
-               self.logger,
-               "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
+        buildcmd = "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
                          self.iec2c_path,
                          self.ieclib_path,
                          buildpath,
-                         self._getIECcodepath()),
-               no_stdout=True, no_stderr=True).spin()
+                         self._getIECcodepath())
+
+        try:
+            # Invoke compiler. Output files are listed to stdout, errors to stderr
+            status, result, err_result = ProcessLogger(self.logger, buildcmd,
+                no_stdout=True, no_stderr=True).spin()
+        except Exception,e:
+            self.logger.write_error(buildcmd + "\n")
+            self.logger.write_error(repr(e) + "\n")
+            return False
+
         if status:
             # Failed !
 
