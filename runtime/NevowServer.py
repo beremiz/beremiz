@@ -9,6 +9,8 @@ xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 '''
 
+WorkingDir = None
+
 class PLCHMI(athena.LiveElement):
 
     initialised = False
@@ -162,8 +164,9 @@ class statuslistener:
 
     def listen(self, state):
         if state != self.oldstate:
-            {'Started': self.site.PLCStarted,
-            'Stopped': self.site.PLCStopped}[state]()
+            action = {'Started': self.site.PLCStarted,
+                      'Stopped': self.site.PLCStopped}.get(state, None)
+            if action is not None: action ()
             self.oldstate = state
 
 def website_statuslistener_factory(site):

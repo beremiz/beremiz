@@ -514,6 +514,7 @@ if havetwisted:
         except Exception, e:
             print "Nevow/Athena import failed :", e
             webport = None
+        NS.WorkingDir = WorkingDir
 
     if wampconf is not None :
         try:
