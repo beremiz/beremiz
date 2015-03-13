@@ -38,7 +38,9 @@ def _GetLocalTargetClassFactory(name):
 
 targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"), 
                         "class":_GetLocalTargetClassFactory(name),
-                        "code": path.join(path.split(__file__)[0],name,"plc_%s_main.c"%name)})
+                        "code": { fname: path.join(_base_path, name, fname) 
+                                    for fname in listdir(path.join(_base_path, name))
+                                      if fname.startswith("plc_%s_main.c"%name)}})
                 for name in listdir(_base_path) 
                     if path.isdir(path.join(_base_path, name)) 
                        and not name.startswith("__")])
@@ -67,7 +69,9 @@ def GetTargetChoices():
     return targetchoices
 
 def GetTargetCode(targetname):
-    return open(targets[targetname]["code"]).read()
+    codedesc = targets[targetname]["code"]
+    code = "\n".join([open(fpath).read() for fname, fpath in sorted(codedesc.items())])
+    return code
 
 def GetHeader():
     filename = path.join(path.split(__file__)[0],"beremiz.h")
