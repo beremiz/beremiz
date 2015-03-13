@@ -111,6 +111,7 @@ void RemindIterator(dbgvardsc_t *dsc)
 }
 
 extern int CheckRetainBuffer(void);
+extern void InitRetain(void);
 
 void __init_debug(void)
 {
@@ -118,6 +119,7 @@ void __init_debug(void)
     buffer_cursor = debug_buffer;
     retain_offset = 0;
     buffer_state = BUFFER_FREE;
+    InitRetain();
     /* Iterate over all variables to fill debug buffer */
     if(CheckRetainBuffer())
     	__for_each_variable_do(RemindIterator);
@@ -125,6 +127,7 @@ void __init_debug(void)
 }
 
 extern void InitiateDebugTransfer(void);
+extern void CleanupRetain(void);
 
 extern unsigned long __tick;
 
@@ -132,6 +135,7 @@ void __cleanup_debug(void)
 {
     buffer_cursor = debug_buffer;
     InitiateDebugTransfer();
+    CleanupRetain();
 }
 
 void __retrieve_debug(void)

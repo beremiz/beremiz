@@ -232,6 +232,14 @@ void LockPython(void)
     pthread_mutex_lock(&python_mutex);
 }
 
+void InitRetain(void)
+{
+}
+
+void CleanupRetain(void)
+{
+}
+
 int CheckRetainBuffer(void)
 {
 	return 1;
