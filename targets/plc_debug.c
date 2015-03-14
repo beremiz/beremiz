@@ -121,8 +121,12 @@ void __init_debug(void)
     buffer_state = BUFFER_FREE;
     InitRetain();
     /* Iterate over all variables to fill debug buffer */
-    if(CheckRetainBuffer())
+    if(CheckRetainBuffer()){
     	__for_each_variable_do(RemindIterator);
+    }else{
+    	char mstr[] = "RETAIN memory invalid - defaults used";
+        LogMessage(LOG_WARNING, mstr, sizeof(mstr));
+    }
     retain_offset = 0;
 }
 
