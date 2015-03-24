@@ -419,7 +419,7 @@
   </types>
   <instances>
     <configurations>
-      <configuration name="conf_pytest">
+      <configuration name="config">
         <resource name="res_pytest">
           <task name="pytest_task" interval="t#100ms" priority="0"/>
           <pouInstance name="pytest_instance" typeName="main_pytest"/>
