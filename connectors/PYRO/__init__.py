@@ -1,32 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-import Pyro.core as pyro
-from Pyro.errors import PyroError
+# You should have received a copy of the GNU General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+import Pyro
+import Pyro.core
 import Pyro.util
+from Pyro.errors import PyroError
 import traceback
 from time import sleep
 import copy
 import socket
 service_type = '_PYRO._tcp.local.'
-
+import os.path
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
 #
@@ -37,51 +38,84 @@ def PYRO_connector_factory(uri, confnodesroot):
     """
     This returns the connector to Pyro style PLCobject
     """
-    confnodesroot.logger.write(_("PYRO connecting to URI : %s\n")%uri)
+    confnodesroot.logger.write(_("PYRO connecting to URI : %s\n") % uri)
 
     servicetype, location = uri.split("://")
+    if servicetype == "PYROS":
+        schemename = "PYROLOCSSL"
+        # Protect against name->IP substitution in Pyro3
+        Pyro.config.PYRO_DNS_URI = True
+        # Beware Pyro lib need str path, not unicode
+        # don't rely on PYRO_STORAGE ! see documentation
+        Pyro.config.PYROSSL_CERTDIR = os.path.abspath(str(confnodesroot.ProjectPath) + '/certs')
+        if not os.path.exists(Pyro.config.PYROSSL_CERTDIR):
+            confnodesroot.logger.write_error(
+                'Error : the directory %s is missing for SSL certificates (certs_dir).'
+                'Please fix it in your project.\n' % Pyro.config.PYROSSL_CERTDIR)
+            return None
+        else:
+            confnodesroot.logger.write(_("PYRO using certificates in '%s' \n")
+                                       % (Pyro.config.PYROSSL_CERTDIR))
+        Pyro.config.PYROSSL_CERT = "client.crt"
+        Pyro.config.PYROSSL_KEY = "client.key"
+        # Ugly Monkey Patching
+        def _gettimeout(self):
+            return self.timeout
+
+        def _settimeout(self, timeout):
+            self.timeout = timeout
+        from M2Crypto.SSL import Connection
+        Connection.timeout = None
+        Connection.gettimeout = _gettimeout
+        Connection.settimeout = _settimeout
+        # M2Crypto.SSL.Checker.WrongHost: Peer certificate commonName does not
+        # match host, expected 127.0.0.1, got server
+        Connection.clientPostConnectionCheck = None
+    else:
+        schemename = "PYROLOC"
     if location.find(service_type) != -1:
-        try :
+        try:
             from util.Zeroconf import Zeroconf
             r = Zeroconf()
-            i=r.getServiceInfo(service_type, location)
-            if i is None : raise Exception, "'%s' not found"%location
+            i = r.getServiceInfo(service_type, location)
+            if i is None:
+                raise Exception("'%s' not found" % location)
             ip = str(socket.inet_ntoa(i.getAddress()))
             port = str(i.getPort())
-            newlocation = ip+':'+port
-            confnodesroot.logger.write(_("'%s' is located at %s\n")%(location, newlocation))
+            newlocation = ip + ':' + port
+            confnodesroot.logger.write(_("'%s' is located at %s\n") % (location, newlocation))
             location = newlocation
             r.close()
         except Exception, msg:
-            confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n")%location)
+            confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n") % location)
             confnodesroot.logger.write_error(traceback.format_exc())
             return None
 
     # Try to get the proxy object
-    try :
-        RemotePLCObjectProxy = pyro.getAttrProxyForURI("PYROLOC://"+location+"/PLCObject")
+    try:
+        RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
     except Exception, msg:
-        confnodesroot.logger.write_error(_("Connection to '%s' failed.\n")%location)
+        confnodesroot.logger.write_error(_("Connection to '%s' failed.\n") % location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None
 
     def PyroCatcher(func, default=None):
         """
-        A function that catch a pyro exceptions, write error to logger
-        and return defaul value when it happen
+        A function that catch a Pyro exceptions, write error to logger
+        and return default value when it happen
         """
-        def catcher_func(*args,**kwargs):
+        def catcher_func(*args, **kwargs):
             try:
-                return func(*args,**kwargs)
+                return func(*args, **kwargs)
             except Pyro.errors.ConnectionClosedError, e:
                 confnodesroot.logger.write_error("Connection lost!\n")
                 confnodesroot._SetConnector(None)
             except Pyro.errors.ProtocolError, e:
-                confnodesroot.logger.write_error("Pyro exception: "+str(e)+"\n")
-            except Exception,e:
-                #confnodesroot.logger.write_error(traceback.format_exc())
+                confnodesroot.logger.write_error("Pyro exception: " + str(e) + "\n")
+            except Exception, e:
+                # confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
-                confnodesroot.logger.write_error(errmess+"\n")
+                confnodesroot.logger.write_error(errmess + "\n")
                 print errmess
                 confnodesroot._SetConnector(None)
             return default
@@ -89,15 +123,14 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     # Check connection is effective.
     # lambda is for getattr of GetPLCstatus to happen inside catcher
-    if PyroCatcher(lambda:RemotePLCObjectProxy.GetPLCstatus())() is None:
+    if PyroCatcher(lambda: RemotePLCObjectProxy.GetPLCstatus())() is None:
         confnodesroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
         return None
-
 
     class PyroProxyProxy(object):
         """
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
-        And to put pyro exception catcher in between caller and pyro proxy
+        And to put Pyro exception catcher in between caller and Pyro proxy
         """
         def __init__(self):
             # for safe use in from debug thread, must create a copy
@@ -133,7 +166,6 @@ def PYRO_connector_factory(uri, confnodesroot):
             return confnodesroot._connector.GetPyroProxy().StartPLC(*args, **kwargs)
         StartPLC = PyroCatcher(_PyroStartPLC, False)
 
-
         def _PyroGetTraceVariables(self):
             """
             for safe use in from debug thread, must use the copy
@@ -141,11 +173,11 @@ def PYRO_connector_factory(uri, confnodesroot):
             if self.RemotePLCObjectProxyCopy is None:
                 self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
             return self.RemotePLCObjectProxyCopy.GetTraceVariables()
-        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables,("Broken",None))
+        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables, ("Broken", None))
 
         def _PyroGetPLCstatus(self):
             return RemotePLCObjectProxy.GetPLCstatus()
-        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, ("Broken",None))
+        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, ("Broken", None))
 
         def _PyroRemoteExec(self, script, **kwargs):
             return RemotePLCObjectProxy.RemoteExec(script, **kwargs)
@@ -154,12 +186,10 @@ def PYRO_connector_factory(uri, confnodesroot):
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:
-                def my_local_func(*args,**kwargs):
-                    return RemotePLCObjectProxy.__getattr__(attrName)(*args,**kwargs)
+                def my_local_func(*args, **kwargs):
+                    return RemotePLCObjectProxy.__getattr__(attrName)(*args, **kwargs)
                 member = PyroCatcher(my_local_func, None)
                 self.__dict__[attrName] = member
             return member
 
     return PyroProxyProxy()
-
-
