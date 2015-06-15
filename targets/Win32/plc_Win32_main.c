@@ -244,6 +244,14 @@ void LockPython(void)
 	WaitForSingleObject(python_sem, INFINITE);
 }
 
+void InitRetain(void)
+{
+}
+
+void CleanupRetain(void)
+{
+}
+
 int CheckRetainBuffer(void)
 {
 	return 1;
