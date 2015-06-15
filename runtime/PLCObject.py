@@ -137,9 +137,14 @@ class PLCObject(pyro.ObjBase):
         Load PLC library
         Declare all functions, arguments and return values
         """
+        md5 = open(self._GetMD5FileName(), "r").read()
         try:
             self._PLClibraryHandle = dlopen(self._GetLibFileName())
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
+
+            self.PLCID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLCID")
+            if len(md5) == 32 : 
+                self.PLCID.value = md5 
 
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int

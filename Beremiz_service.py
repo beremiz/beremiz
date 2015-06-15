@@ -354,7 +354,7 @@ class Server():
     def __init__(self, servicename, ip_addr, port,
                  workdir, argv, autostart=False,
                  statuschange=None, evaluator=default_evaluator,
-                 website=None):
+                 pyruntimevars=None):
         self.continueloop = True
         self.daemon = None
         self.servicename = servicename
@@ -367,7 +367,7 @@ class Server():
         self.autostart = autostart
         self.statuschange = statuschange
         self.evaluator = evaluator
-        self.website = website
+        self.pyruntimevars = pyruntimevars
 
     def Loop(self):
         while self.continueloop:
@@ -387,7 +387,7 @@ class Server():
         self.daemon=pyro.Daemon(host=self.ip_addr, port=self.port)
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
                                 self.statuschange, self.evaluator,
-                                self.website)
+                                self.pyruntimevars)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
 
         print "Pyro port :",self.port

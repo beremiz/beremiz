@@ -14,6 +14,7 @@ volatile long Lock=0;
 volatile char PtoC=1,CtoP=2;
 
 extern long AtomicCompareExchange(long*,long, long);
+extern char *PLCID;
 
 int Simple_C_Call(int val){
   return val+1;
@@ -34,6 +35,7 @@ int Python_to_C_Call(char toC, char *fromC){
     res=1;
   }
   printf("C code called by Python: toC %d fromC %d\n",toC,*fromC);
+  printf("PLCID id %s\n",PLCID);
   return res;
 }
 
