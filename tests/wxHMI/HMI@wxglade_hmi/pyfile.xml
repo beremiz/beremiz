@@ -72,16 +72,23 @@ def MakeButtonFunc(window, sizer, btname):
     obj.Bind(wx.EVT_LEFT_UP, ButtonUp)
     return obj
 
-def UpdatePositions(self, event):
-
-    # TODO : uncomment
+def UpdPos(self):
     positions = [getattr(PLCGlobals,axname+"axisPos") for axname in AxisList]
 
     self.window_1.UpdatePositions(positions)
 
-    event.Skip()
+Class_wxglade_hmi.UpdPos = UpdPos
 
-Class_wxglade_hmi.UpdatePositions = UpdatePositions
+
+#def UpdatePositions(self, event):
+#
+#    positions = [getattr(PLCGlobals,axname+"axisPos") for axname in AxisList]
+#
+#    self.window_1.UpdatePositions(positions)
+#
+#    event.Skip()
+
+#Class_wxglade_hmi.UpdatePositions = UpdatePositions
 
 initorig = Class_wxglade_hmi.__init__
 def Init(self,*args,**kargs):
@@ -96,26 +103,16 @@ def Init(self,*args,**kargs):
         lambda axis:( MakeButtonFunc(self, sizer, axis+"axisMinus"), 
                         MakeButtonFunc(self, sizer, axis+"axisPlus")),
         AxisList)
-    self.timer = wx.Timer(self, -1)
-    self.Bind(wx.EVT_TIMER, self.UpdatePositions, self.timer)
+    # self.timer = wx.Timer(self, -1)
+    # self.Bind(wx.EVT_TIMER, self.UpdatePositions, self.timer)
     self.ShowFullScreen(True,wx.FULLSCREEN_ALL)
-    wx.CallAfter(self.timer.Start,200)
+    # wx.CallAfter(self.timer.Start,200)
     
 Class_wxglade_hmi.__init__ = Init
 
-def GUIMessage(message):
-    try:
-       wxglade_hmi.window_1.Message = message
-    except:
-       # sometime get some wxpydeadobject
-       pass
-
-def SetNegLimits(*args):
-    wxglade_hmi.window_1.NegLimits = args
-
-def SetDisk(*args):
-    wxglade_hmi.window_1.Disk = args
-    GUIMessage("DiskOK")
+def SetPLCGlobalVar(self, evt):
+    tglbtname = evt.GetEventObject().GetName()
+    setattr(PLCGlobals, tglbtname, evt.GetEventObject().GetValue())
 
 ]]></xhtml:p>
   </globals>
