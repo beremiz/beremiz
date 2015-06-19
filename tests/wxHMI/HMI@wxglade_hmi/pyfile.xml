@@ -23,7 +23,6 @@
   <globals>
     <xhtml:p><![CDATA[
 import ctypes
-import Image
 import wx, sys
 
 AxisList = ["X","Y","Z","T"]
@@ -105,7 +104,7 @@ def Init(self,*args,**kargs):
         AxisList)
     # self.timer = wx.Timer(self, -1)
     # self.Bind(wx.EVT_TIMER, self.UpdatePositions, self.timer)
-    self.ShowFullScreen(True,wx.FULLSCREEN_ALL)
+    # self.ShowFullScreen(True,wx.FULLSCREEN_ALL)
     # wx.CallAfter(self.timer.Start,200)
     
 Class_wxglade_hmi.__init__ = Init
