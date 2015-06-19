@@ -142,9 +142,9 @@ class PLCObject(pyro.ObjBase):
             self._PLClibraryHandle = dlopen(self._GetLibFileName())
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
 
-            self.PLCID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLCID")
+            self.PLC_ID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLC_ID")
             if len(md5) == 32 : 
-                self.PLCID.value = md5 
+                self.PLC_ID.value = md5 
 
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int
