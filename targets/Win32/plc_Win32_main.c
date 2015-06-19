@@ -279,7 +279,6 @@ void Remind(unsigned int offset, unsigned int count, void *p)
 static void __attribute__((constructor))
 beremiz_dll_init(void)
 {
-    ResetLogCount();
     InitializeCriticalSection(&Atomic64CS);
 
 }
