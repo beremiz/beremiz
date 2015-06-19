@@ -1,6 +1,6 @@
 import os, sys, shutil
 
-base_folder = os.path.split(sys.path[0])[0]
+base_folder = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 
