@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+#based on the plcopen standard.
 #
 #Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
@@ -25,12 +25,12 @@
 import wx
 import os, sys, platform, time, traceback, getopt
 
-CWD = os.path.split(os.path.realpath(__file__))[0]
+beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
 __version__ = "$Revision: 1.130 $"
 
 if __name__ == '__main__':
-    # Usage message displayed when help request or when error detected in 
+    # Usage message displayed when help request or when error detected in
     # command line
     def usage():
         print "\nUsage of PLCOpenEditor.py :"
@@ -43,13 +43,13 @@ if __name__ == '__main__':
         # print help information and exit:
         usage()
         sys.exit(2)
-    
+
     # Extract if help has been requested
     for o, a in opts:
         if o in ("-h", "--help"):
             usage()
             sys.exit()
-    
+
     # Extract the optional filename to open
     fileOpen = None
     if len(args) > 1:
@@ -57,13 +57,13 @@ if __name__ == '__main__':
         sys.exit()
     elif len(args) == 1:
         fileOpen = args[0]
-    
+
     # Create wxApp (Need to create App before internationalization because of
-    # Windows) 
+    # Windows)
     app = wx.PySimpleApp()
 
     from util.misc import InstallLocalRessources
-    InstallLocalRessources(CWD)
+    InstallLocalRessources(beremiz_dir)
 
 from docutil import *
 from IDEFrame import IDEFrame, AppendMenu
@@ -78,7 +78,7 @@ from dialogs import ProjectDialog
 #-------------------------------------------------------------------------------
 
 # Define PLCOpenEditor FileMenu extra items id
-[ID_PLCOPENEDITORFILEMENUGENERATE, 
+[ID_PLCOPENEDITORFILEMENUGENERATE,
 ] = [wx.NewId() for _init_coll_FileMenu_Items in range(1)]
 
 class PLCOpenEditor(IDEFrame):
@@ -120,7 +120,7 @@ class PLCOpenEditor(IDEFrame):
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
               kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
-        
+
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.OnCloseTabMenu, id=wx.ID_CLOSE)
@@ -134,15 +134,15 @@ class PLCOpenEditor(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
-        
+
         self.AddToMenuToolBar([(wx.ID_NEW, "new", _(u'New'), None),
                                (wx.ID_OPEN, "open", _(u'Open'), None),
                                (wx.ID_SAVE, "save", _(u'Save'), None),
                                (wx.ID_SAVEAS, "saveas", _(u'Save As...'), None),
                                (wx.ID_PRINT, "print", _(u'Print'), None)])
-            
+
     def _init_coll_HelpMenu_Items(self, parent):
-        AppendMenu(parent, help='', id=wx.ID_HELP, 
+        AppendMenu(parent, help='', id=wx.ID_HELP,
             kind=wx.ITEM_NORMAL, text=_(u'PLCOpenEditor') + '\tF1')
         #AppendMenu(parent, help='', id=wx.ID_HELP_CONTENTS,
         #      kind=wx.ITEM_NORMAL, text=u'PLCOpen\tF2')
@@ -161,9 +161,9 @@ class PLCOpenEditor(IDEFrame):
     #  @param debug The filepath to open if no controler defined (default: False).
     def __init__(self, parent, fileOpen = None):
         IDEFrame.__init__(self, parent)
-        
+
         result = None
-        
+
         # Open the filepath if defined
         if fileOpen is not None:
             fileOpen = DecodeFileSystemPath(fileOpen, False)
@@ -176,14 +176,14 @@ class PLCOpenEditor(IDEFrame):
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(controler)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-        
+
         # Define PLCOpenEditor icon
-        self.SetIcon(wx.Icon(os.path.join(CWD, "images", "poe.ico"),wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"),wx.BITMAP_TYPE_ICO))
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-        
+
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
-        
+
         if result is not None:
             self.ShowErrorMessage(
                 _("PLC syntax error at line %d:\n%s") % result)
@@ -191,9 +191,9 @@ class PLCOpenEditor(IDEFrame):
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
             self.AUIManager.UnInit()
-            
+
             self.SaveLastState()
-            
+
             event.Skip()
         else:
             event.Veto()
@@ -266,7 +266,7 @@ class PLCOpenEditor(IDEFrame):
             self.Controler.CreateNewProject(properties)
             self.LibraryPanel.SetController(self.Controler)
             self.ProjectTree.Enable(True)
-            self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, 
+            self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL,
                           LIBRARYTREE)
 
     def OnOpenProjectMenu(self, event):
@@ -279,9 +279,9 @@ class PLCOpenEditor(IDEFrame):
             directory = os.path.dirname(filepath)
         else:
             directory = os.getcwd()
-        
+
         result = None
-        
+
         dialog = wx.FileDialog(self, _("Choose a file"), directory, "",  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
@@ -296,11 +296,11 @@ class PLCOpenEditor(IDEFrame):
                 self._Refresh(PROJECTTREE, LIBRARYTREE)
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         dialog.Destroy()
-        
+
         if result is not None:
             self.ShowErrorMessage(
                 _("PLC syntax error at line %d:\n%s") % result)
-    
+
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():
             return
@@ -338,12 +338,12 @@ class PLCOpenEditor(IDEFrame):
 
     def OnPLCOpenEditorMenu(self, event):
         wx.MessageBox(_("No documentation available.\nComing soon."))
-        
+
     def OnPLCOpenMenu(self, event):
-        open_pdf(os.path.join(CWD, "plcopen", "TC6_XML_V101.pdf"))
-    
+        open_pdf(os.path.join(beremiz_dir, "plcopen", "TC6_XML_V101.pdf"))
+
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About PLCOpenEditor"), os.path.join(CWD, "doc", "plcopen_about.html"), wx.Size(350, 350))
+        OpenHtmlFrame(self,_("About PLCOpenEditor"), os.path.join(beremiz_dir, "doc", "plcopen_about.html"), wx.Size(350, 350))
 
     def SaveProject(self):
         result = self.Controler.SaveXMLFile()
@@ -351,7 +351,7 @@ class PLCOpenEditor(IDEFrame):
             self.SaveProjectAs()
         else:
             self._Refresh(TITLE, FILEMENU, PAGETITLES)
-        
+
     def SaveProjectAs(self):
         filepath = self.Controler.GetFilePath()
         if filepath != "":
@@ -386,13 +386,13 @@ def Display_Exception_Dialog(e_type,e_value,e_tb):
             trcbck += _("file : ") + str(line[0][len(os.getcwd()):]) + _(",   ")
         trcbck += _("line : ") + str(line[1]) + _(",   ") + _("function : ") + str(line[2])
         trcbck_lst.append(trcbck)
-        
+
     # Allow clicking....
     cap = wx.Window_GetCapture()
     if cap:
         cap.ReleaseMouse()
 
-    dlg = wx.SingleChoiceDialog(None, 
+    dlg = wx.SingleChoiceDialog(None,
         _("""
 An error has occurred.
 
@@ -403,7 +403,7 @@ edouard.tisserant@gmail.com
 
 Error:
 """) +
-        str(e_type) + _(" : ") + str(e_value), 
+        str(e_type) + _(" : ") + str(e_value),
         _("Error"),
         trcbck_lst)
     try:
@@ -431,7 +431,7 @@ def format_namespace(d, indent='    '):
 ignored_exceptions = [] # a problem with a line in a module is only reported once per session
 
 def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
-    
+
     def handle_exception(e_type, e_value, e_traceback):
         traceback.print_exception(e_type, e_value, e_traceback) # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
@@ -461,7 +461,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
                     info['locals'] = format_namespace(exception_locals)
                     if 'self' in exception_locals:
                         info['self'] = format_namespace(exception_locals['self'].__dict__)
-                
+
                 output = open(path+os.sep+"bug_report_"+info['date'].replace(':','-').replace(' ','_')+".txt",'w')
                 lst = info.keys()
                 lst.sort()
@@ -473,12 +473,12 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 
 if __name__ == '__main__':
     wx.InitAllImageHandlers()
-    
+
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),__version__)
-    
+
     frame = PLCOpenEditor(None, fileOpen=fileOpen)
 
     frame.Show()
     app.MainLoop()
-    
+

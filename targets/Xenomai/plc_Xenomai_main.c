@@ -13,7 +13,6 @@
 
 #include <native/task.h>
 #include <native/timer.h>
-#include <native/mutex.h>
 #include <native/sem.h>
 #include <native/pipe.h>
 
@@ -75,7 +74,7 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 
 void PLC_task_proc(void *arg)
 {
-    PLC_SetTimer(Ttick, Ttick);
+    PLC_SetTimer(common_ticktime__, common_ticktime__);
 
     while (!PLC_shutdown) {
         PLC_GetTime(&__CURRENT_TIME);
@@ -364,23 +363,3 @@ void UnLockPython(void)
     }    /* as plc does not wait for lock. */
 }
 
-int CheckRetainBuffer(void)
-{
-	return 1;
-}
-
-void ValidateRetainBuffer(void)
-{
-}
-
-void InValidateRetainBuffer(void)
-{
-}
-
-void Retain(unsigned int offset, unsigned int count, void *p)
-{
-}
-
-void Remind(unsigned int offset, unsigned int count, void *p)
-{
-}

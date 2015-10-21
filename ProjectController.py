@@ -13,6 +13,7 @@ from threading import Timer, Lock, Thread
 from time import localtime
 from datetime import datetime
 from weakref import WeakKeyDictionary
+from itertools import izip
 
 import targets
 import connectors
@@ -28,14 +29,12 @@ from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 from targets.typemapping import DebugTypesSize, LogLevelsCount, LogLevels
+from targets.typemapping import UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
-base_folder = os.path.split(sys.path[0])[0]
+base_folder = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
-
-DEBUG_RETRIES_WARN = 3
-DEBUG_RETRIES_REREGISTER = 4
 
 ITEM_CONFNODE = 25
 
@@ -609,17 +608,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
-
-        # Now compile IEC code into many C files
-        # files are listed to stdout, and errors to stderr.
-        status, result, err_result = ProcessLogger(
-               self.logger,
-               "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
+        buildcmd = "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
                          self.iec2c_path,
                          self.ieclib_path,
                          buildpath,
-                         self._getIECcodepath()),
-               no_stdout=True, no_stderr=True).spin()
+                         self._getIECcodepath())
+
+        try:
+            # Invoke compiler. Output files are listed to stdout, errors to stderr
+            status, result, err_result = ProcessLogger(self.logger, buildcmd,
+                no_stdout=True, no_stderr=True).spin()
+        except Exception,e:
+            self.logger.write_error(buildcmd + "\n")
+            self.logger.write_error(repr(e) + "\n")
+            return False
+
         if status:
             # Failed !
 
@@ -732,9 +735,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         self._ProgramList = None
         self._VariablesList = None
+        self._DbgVariablesList = None
         self._IECPathToIdx = {}
         self._Ticktime = 0
         self.TracedIECPath = []
+        self.TracedIECTypes = []
 
     def GetIECProgramsAndVariables(self):
         """
@@ -750,6 +755,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 VariablesListAttributeName = ["num", "vartype", "IEC_path", "C_path", "type"]
                 self._ProgramList = []
                 self._VariablesList = []
+                self._DbgVariablesList = []
                 self._IECPathToIdx = {}
 
                 # Separate sections
@@ -774,6 +780,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                 # second section contains all variables
                 config_FBs = {}
+                Idx = 0
                 for line in ListGroup[1]:
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(zip(VariablesListAttributeName,line.strip().split(';')))
@@ -790,12 +797,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         attrs["C_path"] = '__'.join(parts)
                         if attrs["vartype"] == "FB":
                             config_FBs[tuple(parts)] = attrs["C_path"]
-                    # Push this dictionnary into result.
+                    if attrs["vartype"] != "FB":
+                        # Push this dictionnary into result.
+                        self._DbgVariablesList.append(attrs)
+                        # Fill in IEC<->C translation dicts
+                        IEC_path=attrs["IEC_path"]
+                        self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
+                        # Ignores numbers given in CSV file
+                        # Idx=int(attrs["num"])
+                        # Count variables only, ignore FBs
+                        Idx+=1
                     self._VariablesList.append(attrs)
-                    # Fill in IEC<->C translation dicts
-                    IEC_path=attrs["IEC_path"]
-                    Idx=int(attrs["num"])
-                    self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
 
                 # third section contains ticktime
                 if len(ListGroup) > 2:
@@ -816,8 +828,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.GetIECProgramsAndVariables()
 
         # prepare debug code
-        debug_code = targets.GetCode("plc_debug") % {
-           "buffer_size": reduce(lambda x, y: x + y, [DebugTypesSize.get(v["type"], 0) for v in self._VariablesList], 0),
+        variable_decl_array = []
+        bofs = 0
+        for v in self._DbgVariablesList :
+            sz = DebugTypesSize.get(v["type"], 0)
+            variable_decl_array += [
+                "{&(%(C_path)s), "%v+
+                {"EXT":"%(type)s_P_ENUM",
+                 "IN":"%(type)s_P_ENUM",
+                 "MEM":"%(type)s_O_ENUM",
+                 "OUT":"%(type)s_O_ENUM",
+                 "VAR":"%(type)s_ENUM"}[v["vartype"]]%v +
+                 "}"]
+            bofs += sz
+        debug_code = targets.GetCode("plc_debug.c") % {
+           "buffer_size":bofs,
            "programs_declarations":
                "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
@@ -828,22 +853,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                "VAR":"extern __IEC_%(type)s_t %(C_path)s;",
                "FB":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v
                for v in self._VariablesList if v["C_path"].find('.')<0]),
-           "for_each_variable_do_code":"\n".join([
-               {"EXT":"    (*fp)((void*)&(%(C_path)s),%(type)s_P_ENUM);\n",
-                "IN":"    (*fp)((void*)&(%(C_path)s),%(type)s_P_ENUM);\n",
-                "MEM":"    (*fp)((void*)&(%(C_path)s),%(type)s_O_ENUM);\n",
-                "OUT":"    (*fp)((void*)&(%(C_path)s),%(type)s_O_ENUM);\n",
-                "VAR":"    (*fp)((void*)&(%(C_path)s),%(type)s_ENUM);\n"}[v["vartype"]]%v
-                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ]),
-           "find_variable_case_code":"\n".join([
-               "    case %(num)s:\n"%v+
-               "        *varp = (void*)&(%(C_path)s);\n"%v+
-               {"EXT":"        return %(type)s_P_ENUM;\n",
-                "IN":"        return %(type)s_P_ENUM;\n",
-                "MEM":"        return %(type)s_O_ENUM;\n",
-                "OUT":"        return %(type)s_O_ENUM;\n",
-                "VAR":"        return %(type)s_ENUM;\n"}[v["vartype"]]%v
-                for v in self._VariablesList if v["vartype"] != "FB" and v["type"] in DebugTypesSize ])}
+           "variable_decl_array": ",\n".join(variable_decl_array)
+           }
 
         return debug_code
 
@@ -859,7 +870,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Generate main, based on template
         if not self.BeremizRoot.getDisable_Extensions():
-            plc_main_code = targets.GetCode("plc_main_head") % {
+            plc_main_code = targets.GetCode("plc_main_head.c") % {
                 "calls_prototypes":"\n".join([(
                       "int __init_%(s)s(int argc,char **argv);\n"+
                       "void __cleanup_%(s)s(void);\n"+
@@ -879,7 +890,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
-            plc_main_code = targets.GetCode("plc_main_head") % {
+            plc_main_code = targets.GetCode("plc_main_head.c") % {
                 "calls_prototypes":"\n",
                 "retrieve_calls":"\n",
                 "publish_calls":"\n",
@@ -887,7 +898,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 "cleanup_calls":"\n"
                 }
         plc_main_code += targets.GetTargetCode(self.GetTarget().getcontent().getLocalTag())
-        plc_main_code += targets.GetCode("plc_main_tail")
+        plc_main_code += targets.GetCode("plc_main_tail.c")
         return plc_main_code
 
 
@@ -975,7 +986,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.ResetBuildMD5()
             return False
 
-        self.LocationCFilesAndCFLAGS =  CTNLocationCFilesAndCFLAGS + LibCFilesAndCFLAGS
+        self.LocationCFilesAndCFLAGS =  LibCFilesAndCFLAGS + CTNLocationCFilesAndCFLAGS
         self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
         ExtraFiles = CTNExtraFiles + LibExtraFiles
 
@@ -1206,7 +1217,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def SnapshotAndResetDebugValuesBuffers(self):
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
-            [list() for iec_path in self.TracedIECPath])
+            [list() for n in xrange(len(self.TracedIECPath))])
         ticks, self.DebugTicks = self.DebugTicks, []
         return ticks, buffers
 
@@ -1214,6 +1225,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugTimer=None
         Idxs = []
         self.TracedIECPath = []
+        self.TracedIECTypes = []
         if self._connector is not None:
             self.IECdebug_lock.acquire()
             IECPathsToPop = []
@@ -1238,8 +1250,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             if Idxs:
                 Idxs.sort()
-                self.TracedIECPath = zip(*Idxs)[3]
-                self._connector.SetTraceVariablesList(zip(*zip(*Idxs)[0:3]))
+                IdxsT = zip(*Idxs)
+                self.TracedIECPath = IdxsT[3]
+                self.TracedIECTypes = IdxsT[1]
+                self._connector.SetTraceVariablesList(zip(*IdxsT[0:3]))
             else:
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
@@ -1267,11 +1281,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Idx, IEC_Type = self._IECPathToIdx.get(IECPath,(None,None))
         return IEC_Type
 
-    def SubscribeDebugIECVariable(self, IECPath, callableobj, buffer_list=False, *args, **kwargs):
+    def SubscribeDebugIECVariable(self, IECPath, callableobj, buffer_list=False):
         """
         Dispatching use a dictionnary linking IEC variable paths
         to a WeakKeyDictionary linking
-        weakly referenced callables to optionnal args
+        weakly referenced callables
         """
         if IECPath != "__tick__" and not self._IECPathToIdx.has_key(IECPath):
             return None
@@ -1290,7 +1304,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             IECdebug_data[4] |= buffer_list
 
-        IECdebug_data[0][callableobj]=(buffer_list, args, kwargs)
+        IECdebug_data[0][callableobj]=buffer_list
 
         self.IECdebug_lock.release()
 
@@ -1308,8 +1322,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 IECdebug_data[4] = reduce(
                     lambda x, y: x|y,
-                    [buffer_list for buffer_list,args,kwargs
-                     in IECdebug_data[0].itervalues()],
+                    IECdebug_data[0].itervalues(),
                     False)
         self.IECdebug_lock.release()
 
@@ -1357,13 +1370,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if data_tuple is not None:
             WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
             #data_log.append((debug_tick, value))
-            for weakcallable,(buffer_list,args,kwargs) in WeakCallableDict.iteritems():
+            for weakcallable,buffer_list in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
                     if buffer_list:
-                        function(*(cargs + args), **kwargs)
+                        function(*cargs)
                     else:
-                        function(*(tuple([lst[-1] for lst in cargs]) + args), **kwargs)
+                        function(*tuple([lst[-1] for lst in cargs]))
 
     def GetTicktime(self):
         return self._Ticktime
@@ -1380,38 +1393,34 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.debug_break = False
         debug_getvar_retry = 0
         while (not self.debug_break) and (self._connector is not None):
-            Trace = self._connector.GetTraceVariables()
-            if(Trace):
-                plc_status, debug_tick, debug_vars = Trace
-            else:
-                plc_status = None
+            plc_status, Traces = self._connector.GetTraceVariables()
             debug_getvar_retry += 1
             #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
-            if plc_status == "Started":
-                self.IECdebug_lock.acquire()
-                if (debug_tick is not None and
-                    len(debug_vars) == len(self.DebugValuesBuffers) and
-                    len(debug_vars) == len(self.TracedIECPath)):
-                    if debug_getvar_retry > DEBUG_RETRIES_WARN:
-                        self.logger.write(_("... debugger recovered\n"))
-                    debug_getvar_retry = 0
-                    for IECPath, values_buffer, value in zip(self.TracedIECPath, self.DebugValuesBuffers, debug_vars):
-                        IECdebug_data = self.IECdebug_datas.get(IECPath, None)
-                        if IECdebug_data is not None and value is not None:
-                            forced = IECdebug_data[2:4] == ["Forced", value]
-                            if not IECdebug_data[4] and len(values_buffer) > 0:
-                                values_buffer[-1] = (value, forced)
-                            else:
-                                values_buffer.append((value, forced))
-                    self.DebugTicks.append(debug_tick)
-                self.IECdebug_lock.release()
-                if debug_getvar_retry == DEBUG_RETRIES_WARN:
-                    self.logger.write(_("Waiting debugger to recover...\n"))
-                if debug_getvar_retry == DEBUG_RETRIES_REREGISTER:
-                    # re-register debug registry to PLC
-                    wx.CallAfter(self.RegisterDebugVarToConnector)
+            if plc_status == "Started" :
+                if len(Traces) > 0:
+                    Failed = False
+                    self.IECdebug_lock.acquire()
+                    for debug_tick, debug_buff in Traces :
+                        debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
+                        if (debug_vars is not None and
+                            len(debug_vars) == len(self.TracedIECPath)):
+                            for IECPath, values_buffer, value in izip(
+                                    self.TracedIECPath,
+                                    self.DebugValuesBuffers,
+                                    debug_vars):
+                                IECdebug_data = self.IECdebug_datas.get(IECPath, None) #FIXME get
+                                if IECdebug_data is not None and value is not None:
+                                    forced = IECdebug_data[2:4] == ["Forced", value]
+                                    if not IECdebug_data[4] and len(values_buffer) > 0:
+                                        values_buffer[-1] = (value, forced)
+                                    else:
+                                        values_buffer.append((value, forced))
+                            self.DebugTicks.append(debug_tick)
+                            debug_getvar_retry = 0
+                    self.IECdebug_lock.release()
+
                 if debug_getvar_retry != 0:
-                    # Be patient, tollerate PLC to come up before debugging
+                    # Be patient, tollerate PLC to come with fresh samples
                     time.sleep(0.1)
             else:
                 self.debug_break = True
@@ -1426,7 +1435,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECdebug_lock.release()
         start_time = time.time()
         if len(self.TracedIECPath) == len(buffers):
-            for IECPath, values in zip(self.TracedIECPath, buffers):
+            for IECPath, values in izip(self.TracedIECPath, buffers):
                 if len(values) > 0:
                     self.CallWeakcallables(IECPath, "NewValues", debug_ticks, values)
             if len(debug_ticks) > 0:

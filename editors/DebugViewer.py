@@ -246,7 +246,7 @@ class DebugViewer:
         if self.DataProducer is not None:
             self.DataProducer.ReleaseDebugIECVariable(iec_path)
     
-    def NewDataAvailable(self, ticks, *args, **kwargs):
+    def NewDataAvailable(self, ticks):
         """
         Called by DataProducer for each tick captured
         @param tick: PLC tick captured
@@ -267,19 +267,19 @@ class DebugViewer:
             # two refresh has expired
             if gettime() - self.LastRefreshTime > REFRESH_PERIOD and \
                DEBUG_REFRESH_LOCK.acquire(False):
-                self.StartRefreshing(*args, **kwargs)
+                self.StartRefreshing()
             
             # If common lock wasn't acquired for any reason, restart last
             # refresh timer
             else:
-                self.StartLastRefreshTimer(*args, **kwargs)
+                self.StartLastRefreshTimer()
         
         # In the case that DebugViewer isn't visible on screen and has already
         # acquired common refresh lock, reset DebugViewer
         elif not self.IsShown() and self.HasAcquiredLock:
             DebugViewer.RefreshNewData(self)
     
-    def ShouldRefresh(self, *args, **kwargs):
+    def ShouldRefresh(self):
         """
         Callback function called when last refresh timer expired
         All parameters are passed to refresh function
@@ -289,13 +289,13 @@ class DebugViewer:
             
             # Try to acquire common refresh lock
             if DEBUG_REFRESH_LOCK.acquire(False):
-                self.StartRefreshing(*args, **kwargs)
+                self.StartRefreshing()
             
             # Restart last refresh timer if common refresh lock acquired failed
             else:
-                self.StartLastRefreshTimer(*args, **kwargs)
+                self.StartLastRefreshTimer()
     
-    def StartRefreshing(self, *args, **kwargs):
+    def StartRefreshing(self):
         """
         Called to initiate a refresh of DebugViewer
         All parameters are passed to refresh function
@@ -311,9 +311,9 @@ class DebugViewer:
         self.Inhibit(True)
         
         # Initiate DebugViewer refresh
-        wx.CallAfter(self.RefreshNewData, *args, **kwargs)
+        wx.CallAfter(self.RefreshNewData)
     
-    def StartLastRefreshTimer(self, *args, **kwargs):
+    def StartLastRefreshTimer(self):
         """
         Called to start last refresh timer for the minimum time between 2
         refresh
@@ -321,11 +321,11 @@ class DebugViewer:
         """
         self.TimerAccessLock.acquire()
         self.LastRefreshTimer = Timer(
-            REFRESH_PERIOD, self.ShouldRefresh, args, kwargs)
+            REFRESH_PERIOD, self.ShouldRefresh)
         self.LastRefreshTimer.start()
         self.TimerAccessLock.release()
     
-    def RefreshNewData(self, *args, **kwargs):
+    def RefreshNewData(self):
         """
         Called to refresh DebugViewer according to values received by data
         consumers

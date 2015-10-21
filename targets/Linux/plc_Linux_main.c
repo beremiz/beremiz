@@ -119,7 +119,7 @@ int startPLC(int argc,char **argv)
 
     timer_create (CLOCK_REALTIME, &sigev, &PLC_timer);
     if(  __init(argc,argv) == 0 ){
-        PLC_SetTimer(Ttick,Ttick);
+        PLC_SetTimer(common_ticktime__,common_ticktime__);
 
         /* install signal handler for manual break */
         signal(SIGINT, catch_signal);
@@ -230,6 +230,14 @@ void UnLockPython(void)
 void LockPython(void)
 {
     pthread_mutex_lock(&python_mutex);
+}
+
+void InitRetain(void)
+{
+}
+
+void CleanupRetain(void)
+{
 }
 
 int CheckRetainBuffer(void)

@@ -175,10 +175,10 @@ void align_tick(int sync_align_ratio)
 			/* compute mean of Tsync, over calibration period */
 			Tsync = ((long long)(cal_end.tv_sec - cal_begin.tv_sec) * (long long)1000000000 +
 					(cal_end.tv_nsec - cal_begin.tv_nsec)) / calibration_count;
-			if( (Nticks = (Tsync / Ttick)) > 0){
-				FreqCorr = (Tsync % Ttick); /* to be divided by Nticks */
+			if( (Nticks = (Tsync / common_ticktime__)) > 0){
+				FreqCorr = (Tsync % common_ticktime__); /* to be divided by Nticks */
 			}else{
-				FreqCorr = Tsync - (Ttick % Tsync);
+				FreqCorr = Tsync - (common_ticktime__ % Tsync);
 			}
 			/*
 			printf("Tsync = %ld\n", Tsync);
@@ -197,19 +197,19 @@ void align_tick(int sync_align_ratio)
 			PLC_GetTime(&now);
 			elapsed = (now.tv_sec - __CURRENT_TIME.tv_sec) * 1000000000 + now.tv_nsec - __CURRENT_TIME.tv_nsec;
 			if(Nticks > 0){
-				PhaseCorr = elapsed - (Ttick + FreqCorr/Nticks)*sync_align_ratio/100; /* to be divided by Nticks */
-				Tcorr = Ttick + (PhaseCorr + FreqCorr) / Nticks;
+				PhaseCorr = elapsed - (common_ticktime__ + FreqCorr/Nticks)*sync_align_ratio/100; /* to be divided by Nticks */
+				Tcorr = common_ticktime__ + (PhaseCorr + FreqCorr) / Nticks;
 				if(Nticks < 2){
 					/* When Sync source period is near Tick time */
 					/* PhaseCorr may not be applied to Periodic time given to timer */
-					PeriodicTcorr = Ttick + FreqCorr / Nticks;
+					PeriodicTcorr = common_ticktime__ + FreqCorr / Nticks;
 				}else{
 					PeriodicTcorr = Tcorr;
 				}
 			}else if(__tick > last_tick){
 				last_tick = __tick;
 				PhaseCorr = elapsed - (Tsync*sync_align_ratio/100);
-				PeriodicTcorr = Tcorr = Ttick + PhaseCorr + FreqCorr;
+				PeriodicTcorr = Tcorr = common_ticktime__ + PhaseCorr + FreqCorr;
 			}else{
 				/*PLC did not run meanwhile. Nothing to do*/
 				return;

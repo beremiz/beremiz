@@ -607,7 +607,7 @@ class VariablesTable(CustomTable):
                 renderer = None
                 colname = self.GetColLabelValue(col, False)
 
-                if colname in ["Name", "Initial"]:
+                if colname in ["Name", "Initial", "Description", "OnChange", "Options"]:
                     editor = wx.grid.GridCellTextEditor()
                 elif colname == "Class":
                     editor = wx.grid.GridCellChoiceEditor()
@@ -658,10 +658,13 @@ class VariablesEditor(wx.Panel):
         self.ParentWindow = window
         self.Controler = controler
 
-        self.VariablesDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial": ""}
-        self.Table = VariablesTable(self, [], ["#", "Name", "Type", "Initial"])
-        self.ColAlignements = [wx.ALIGN_RIGHT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
-        self.ColSizes = [40, 200, 150, 150]
+        self.VariablesDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial": "",
+                                      "Description":"", "OnChange":"", "Options":""}
+        self.Table = VariablesTable(self, [], ["#", "Name", "Type", "Initial",
+                                    "Description", "OnChange", "Options"])
+        self.ColAlignements = [wx.ALIGN_RIGHT] +  \
+                              [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
+        self.ColSizes = [20, 150] + [100]*(len(self.VariablesDefaultValue)-1)
         self.VariablesGrid.SetTable(self.Table)
         self.VariablesGrid.SetButtons({"Add": self.AddVariableButton,
                                        "Delete": self.DeleteVariableButton,
