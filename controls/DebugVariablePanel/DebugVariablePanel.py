@@ -319,7 +319,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if self.DataProducer is not None:
             self.SetTickTime(self.DataProducer.GetTicktime())
     
-    def RefreshNewData(self, *args, **kwargs):
+    def RefreshNewData(self):
         """
         Called to refresh Panel according to values received by variables
         Can receive any parameters (not used here)
@@ -329,9 +329,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.HasNewData = False
             self.RefreshView()
         
-        DebugViewer.RefreshNewData(self, *args, **kwargs)
+        DebugViewer.RefreshNewData(self)
     
-    def NewDataAvailable(self, ticks, *args, **kwargs):
+    def NewDataAvailable(self, ticks):
         """
         Called by DataProducer for each tick captured or by panel to refresh
         graphs
@@ -363,14 +363,14 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.RefreshView()
             
         else:
-            DebugViewer.NewDataAvailable(self, ticks, *args, **kwargs)
+            DebugViewer.NewDataAvailable(self, ticks)
     
     def ForceRefresh(self):
         """
         Called to force refresh of graphs
         """
         self.Force = True
-        wx.CallAfter(self.NewDataAvailable, None, True)
+        wx.CallAfter(self.NewDataAvailable, None)
     
     def SetCursorTick(self, cursor_tick):
         """

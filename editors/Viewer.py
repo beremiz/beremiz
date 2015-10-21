@@ -1114,7 +1114,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList.append(element)
         self.ElementRefreshList_lock.release()
 
-    def NewDataAvailable(self, ticks, *args, **kwargs):
+    def NewDataAvailable(self, ticks):
         if self.IsShown():
             refresh_rect = None
             self.ElementRefreshList_lock.acquire()

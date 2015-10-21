@@ -76,8 +76,6 @@ int startPLC(int argc,char **argv)
     BOOL tmp;
     setlocale(LC_NUMERIC, "C");
 
-    InitializeCriticalSection(&Atomic64CS);
-
     debug_sem = CreateSemaphore(
                             NULL,           // default security attributes
                             1,  			// initial count
@@ -136,7 +134,7 @@ int startPLC(int argc,char **argv)
     }
     if( __init(argc,argv) == 0 )
     {
-        PLC_SetTimer(Ttick,Ttick);
+        PLC_SetTimer(common_ticktime__,common_ticktime__);
         PLC_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PlcLoop, NULL, 0, &thread_id);
     }
     else{
@@ -170,7 +168,6 @@ int stopPLC()
     CloseHandle(PLC_timer);
     WaitForSingleObject(PLC_thread, INFINITE);
     __cleanup();
-    DeleteCriticalSection(&Atomic64CS);
     CloseHandle(debug_wait_sem);
     CloseHandle(debug_sem);
     CloseHandle(python_wait_sem);
@@ -244,6 +241,14 @@ void LockPython(void)
 	WaitForSingleObject(python_sem, INFINITE);
 }
 
+void InitRetain(void)
+{
+}
+
+void CleanupRetain(void)
+{
+}
+
 int CheckRetainBuffer(void)
 {
 	return 1;
@@ -269,5 +274,18 @@ void Retain(unsigned int offset, unsigned int count, void * p)
 
 void Remind(unsigned int offset, unsigned int count, void *p)
 {
+}
+
+static void __attribute__((constructor))
+beremiz_dll_init(void)
+{
+    InitializeCriticalSection(&Atomic64CS);
+
+}
+
+static void __attribute__((destructor))
+beremiz_dll_destroy(void)
+{
+    DeleteCriticalSection(&Atomic64CS);
 }
 

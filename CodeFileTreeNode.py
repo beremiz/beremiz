@@ -31,6 +31,9 @@ CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
                     </xsd:simpleType>
                   </xsd:attribute>
                   <xsd:attribute name="initial" type="xsd:string" use="optional" default=""/>
+                  <xsd:attribute name="desc" type="xsd:string" use="optional" default=""/>
+                  <xsd:attribute name="onchange" type="xsd:string" use="optional" default=""/>
+                  <xsd:attribute name="opts" type="xsd:string" use="optional" default=""/>
                 </xsd:complexType>
               </xsd:element>
             </xsd:sequence>
@@ -119,6 +122,9 @@ class CodeFile:
             variable.setname(var["Name"])
             variable.settype(var["Type"])
             variable.setinitial(var["Initial"])
+            variable.setdesc(var["Description"])
+            variable.setonchange(var["OnChange"])
+            variable.setopts(var["Options"])
             self.CodeFile.variables.appendvariable(variable)
     
     def GetVariables(self):
@@ -126,7 +132,11 @@ class CodeFile:
         for var in self.CodeFileVariables(self.CodeFile):
             datas.append({"Name" : var.getname(), 
                           "Type" : var.gettype(), 
-                          "Initial" : var.getinitial()})
+                          "Initial" : var.getinitial(),
+                          "Description" : var.getdesc(),
+                          "OnChange"    : var.getonchange(),
+                          "Options"     : var.getopts(),
+                         })
         return datas
 
     def SetTextParts(self, parts):
@@ -157,11 +167,15 @@ class CodeFile:
         return True
 
     def CTNGlobalInstances(self):
-        current_location = self.GetCurrentLocation()
-        return [(variable.getname(),
+        variables = self.CodeFileVariables(self.CodeFile)
+        ret =  [(variable.getname(),
                  variable.gettype(),
-                 variable.getinitial())
-                for variable in self.CodeFileVariables(self.CodeFile)]
+                 variable.getinitial()) 
+                for variable in variables]
+        ret.extend([("On"+variable.getname()+"Change", "python_poll", "")
+                for variable in variables
+                if variable.getonchange()])
+        return ret
 
 #-------------------------------------------------------------------------------
 #                      Current Buffering Management Functions

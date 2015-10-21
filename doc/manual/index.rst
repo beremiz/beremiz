@@ -10,7 +10,5 @@ Contents:
    start
    edit
    build
+   connectors
    debug
-
-
-
