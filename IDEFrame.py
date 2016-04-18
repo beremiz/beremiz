@@ -1918,7 +1918,7 @@ class IDEFrame(wx.Frame):
                 self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=new_id)
 
         if menu is not None:
-            self.PopupMenu(menu)
+            self.FindFocus().PopupMenu(menu)
             menu.Destroy()
 
         self.ResetSelectedItem()
