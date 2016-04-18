@@ -2062,6 +2062,8 @@ class PLCControler:
                         if element_infos["Type"][0] == "array":
                             array_type, base_type_name, dimensions = element_infos["Type"]
                             array = PLCOpenParser.CreateElement("array", "dataType")
+                            baseType = PLCOpenParser.CreateElement("baseType", "array")
+                            array.setbaseType(baseType)
                             element_type.setcontent(array)
                             for j, dimension in enumerate(dimensions):
                                 dimension_range = PLCOpenParser.CreateElement("dimension", "array")
@@ -2072,7 +2074,7 @@ class PLCControler:
                                 else:
                                     array.appenddimension(dimension_range)
                             if base_type_name in self.GetBaseTypes():
-                                array.baseType.setcontent(PLCOpenParser.CreateElement(
+                                baseType.setcontent(PLCOpenParser.CreateElement(
                                     base_type_name.lower()
                                     if base_type_name in ["STRING", "WSTRING"]
                                     else base_type_name, "dataType"))
