@@ -95,7 +95,12 @@ __version__= "$Revision: 1.5 $"
 
 def getlanguageDict():
     languageDict = {}
-    
+
+    if wx.VERSION >= (3, 0, 0):
+        app = wx.App()
+    else:
+        app = wx.PySimpleApp()
+
     for lang in [x for x in dir(wx) if x.startswith("LANGUAGE")]:
         i = wx.Locale(wx.LANGUAGE_DEFAULT).GetLanguageInfo(getattr(wx, lang))
         if i:
