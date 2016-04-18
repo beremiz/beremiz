@@ -149,7 +149,7 @@ void __retrieve_debug(void)
 
 void Retain(unsigned int offset, unsigned int count, void * p);
 
-inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
+static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
 {
     void *real_value_p = NULL;
     void *visible_value_p = NULL;
