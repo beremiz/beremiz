@@ -600,7 +600,7 @@ class Viewer(EditorPanel, DebugViewer):
     def _init_Editor(self, prnt):
         self.Editor = wx.ScrolledWindow(prnt, name="Viewer",
             pos=wx.Point(0, 0), size=wx.Size(0, 0),
-            style=wx.HSCROLL | wx.VSCROLL | wx.ALWAYS_SHOW_SB)
+            style=wx.HSCROLL | wx.VSCROLL)
         self.Editor.ParentWindow = self
 
     # Create a new Viewer
