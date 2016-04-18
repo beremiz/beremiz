@@ -36,7 +36,7 @@ from types import ListType
 beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
 import wxversion
-wxversion.select('2.8')
+wxversion.select(['2.8', '3.0'])
 import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash
 
@@ -84,9 +84,14 @@ if __name__ == '__main__':
     else :
         __builtin__.__dict__["BMZ_DBG"] = False
 
-    app = wx.PySimpleApp(redirect=BMZ_DBG)
+    if wx.VERSION >= (3, 0, 0):
+        app = wx.App(redirect=BMZ_DBG)
+    else:
+        app = wx.PySimpleApp(redirect=BMZ_DBG)
+
     app.SetAppName('beremiz')
-    wx.InitAllImageHandlers()
+    if wx.VERSION < (3, 0, 0):
+	wx.InitAllImageHandlers()
 
     # popup splash
     bmp = wx.Image(Bpath("images", "splash.png")).ConvertToBitmap()
