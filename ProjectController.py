@@ -1505,7 +1505,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if connector is not None:
             if self.StatusTimer is not None:
                 # Start the status Timer
-                self.StatusTimer.Start(milliseconds=500, oneShot=False)
+                # Suppress WXDEBUG assertions, as happens by default with wx2.8
+                try:
+                    self.StatusTimer.Start(milliseconds=500, oneShot=False)
+                except:
+                    pass
         else:
             if self.StatusTimer is not None:
                 # Stop the status Timer
