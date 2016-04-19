@@ -1363,7 +1363,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         
         # Get bitmap of figure rendered
         self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
-        self.bitmap.UseAlpha()
+        if wx.VERSION < (3, 0, 0):        
+            self.bitmap.UseAlpha()
         
         # Create DC for rendering graphics in bitmap
         destDC = wx.MemoryDC()
