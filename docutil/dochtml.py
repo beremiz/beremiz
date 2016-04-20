@@ -63,6 +63,7 @@ class HtmlFrame(wx.Frame):
             wx.Frame.__init__(self, id=ID_HTMLFRAME, name='HtmlFrame',
                   parent=prnt, pos=wx.Point(320, 231), size=wx.Size(853, 616),
                   style=wx.DEFAULT_FRAME_STYLE, title='')
+            self.SetIcon(prnt.icon)
             self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
             
             self.HtmlContent = UrlClickHtmlWindow(id=ID_HTMLFRAMEHTMLCONTENT,

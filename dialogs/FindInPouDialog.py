@@ -26,6 +26,11 @@ import wx
 
 class FindInPouDialog(wx.Frame):
 
+    def _init_icon(self, parent):
+        if parent and parent.icon:
+                self.SetIcon(parent.icon)
+
+    
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, title=_("Find"), 
               size=wx.Size(400, 250), style=wx.CAPTION|
@@ -34,6 +39,7 @@ class FindInPouDialog(wx.Frame):
                                             wx.RESIZE_BORDER|
                                             wx.STAY_ON_TOP)
         
+        self._init_icon(parent)
         panel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=5, rows=2, vgap=5)
@@ -101,7 +107,7 @@ class FindInPouDialog(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnFindButton, self.FindButton)
         buttons_sizer.AddWindow(self.FindButton, border=5, flag=wx.RIGHT)
         
-        self.CloseButton = wx.Button(panel, label=("Close"))
+        self.CloseButton = wx.Button(panel, label=_("Close"))
         self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.CloseButton)
         buttons_sizer.AddWindow(self.CloseButton)
         
