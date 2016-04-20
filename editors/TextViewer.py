@@ -258,7 +258,7 @@ class TextViewer(EditorPanel):
                     blockinputs = None
                 if values[1] != "function":
                     if blockname == "":
-                        dialog = wx.TextEntryDialog(self.ParentWindow, "Block name", "Please enter a block name", "", wx.OK|wx.CANCEL|wx.CENTRE)
+                        dialog = wx.TextEntryDialog(self.ParentWindow, _("Block name"), _("Please enter a block name"), "", wx.OK|wx.CANCEL|wx.CENTRE)
                         if dialog.ShowModal() == wx.ID_OK:
                             blockname = dialog.GetValue()
                         else:
