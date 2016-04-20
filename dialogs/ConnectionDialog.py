@@ -49,7 +49,7 @@ class ConnectionDialog(BlockPreviewDialog):
         to all connector having the same name in POU (default: False)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname, 
-              size=wx.Size(350, 220), title=_('Connection Properties'))
+              size=wx.Size(350, 250), title=_('Connection Properties'))
         
         # Init common sizers
         self._init_sizers(2, 0, 5, None, 2, 1)
