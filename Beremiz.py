@@ -459,6 +459,9 @@ class Beremiz(IDEFrame):
         self.SetStatusBar(self.ConnectionStatusBar)
 
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
+        # Add beremiz's icon in top left corner of the frame
+        self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
+        
         IDEFrame.__init__(self, parent, debug)
         self.Log = LogPseudoFile(self.LogConsole,self.SelectTab)
 
@@ -486,9 +489,6 @@ class Beremiz(IDEFrame):
         for imgname, itemtype in [
             ("Extension", ITEM_CONFNODE)]:
             self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
-
-        # Add beremiz's icon in top left corner of the frame
-        self.SetIcon(wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO))
 
         if projectOpen is not None:
             projectOpen = DecodeFileSystemPath(projectOpen, False)
