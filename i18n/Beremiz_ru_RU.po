@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-20 13:39+0300\n"
-"PO-Revision-Date: 2016-04-20 16:06+0300\n"
+"POT-Creation-Date: 2016-04-21 17:11+0300\n"
+"PO-Revision-Date: 2016-04-21 17:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: Andrey Skvortsov <andrej.skvortzov@gmail.com>\n"
 "Language: ru_RU\n"
@@ -39,7 +39,7 @@ msgstr ""
 "\n"
 "Ошибка:\n"
 
-#: ../Beremiz.py:1157
+#: ../Beremiz.py:1155
 #, python-format
 msgid ""
 "\n"
@@ -92,8 +92,8 @@ msgstr "Временный"
 msgid " : "
 msgstr ""
 
-#: ../dialogs/PouTransitionDialog.py:94 ../dialogs/PouActionDialog.py:91
-#: ../dialogs/PouDialog.py:113
+#: ../dialogs/PouTransitionDialog.py:94 ../dialogs/ProjectDialog.py:66
+#: ../dialogs/PouActionDialog.py:91 ../dialogs/PouDialog.py:113
 #, python-format
 msgid " and %s"
 msgstr "и %s"
@@ -122,7 +122,7 @@ msgstr "POU \"%s\"  не найден!!!"
 msgid "\"%s\" can't use itself!"
 msgstr "\"%s\" не может использовать сам себя!!!"
 
-#: ../IDEFrame.py:1618 ../IDEFrame.py:1637
+#: ../IDEFrame.py:1615 ../IDEFrame.py:1634
 #, python-format
 msgid "\"%s\" config already exists!"
 msgstr "Конфигурация \"%s\"  уже существует!!!"
@@ -132,7 +132,7 @@ msgstr "Конфигурация \"%s\"  уже существует!!!"
 msgid "\"%s\" configuration already exists !!!"
 msgstr "Конфигурация \"%s\"  уже существует!!!"
 
-#: ../IDEFrame.py:1572
+#: ../IDEFrame.py:1569
 #, python-format
 msgid "\"%s\" data type already exists!"
 msgstr "Тип данных \"%s\"  уже существует!!!"
@@ -146,7 +146,7 @@ msgstr "Тип данных \"%s\"  уже существует!!!"
 msgid "\"%s\" element for this pou already exists!"
 msgstr "Элемент с именем \"%s\" уже существует в этом POU!!!"
 
-#: ../Beremiz.py:964
+#: ../Beremiz.py:962
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr "Директория \"%s\" не является проектом Beremiz\n"
@@ -161,7 +161,7 @@ msgstr "Функция \"%s\" не используется  в POU \"%s\": вх
 #: ../dialogs/PouActionDialog.py:98 ../dialogs/PouDialog.py:120
 #: ../editors/DataTypeEditor.py:554 ../editors/DataTypeEditor.py:583
 #: ../editors/CodeFileEditor.py:750 ../controls/VariablePanel.py:733
-#: ../IDEFrame.py:1563
+#: ../IDEFrame.py:1560
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
 msgstr "\"%s\" является ключевым словом и не может быть использован!"
@@ -185,12 +185,12 @@ msgstr "\"%s\" не является директорией!"
 #: ../dialogs/BlockPreviewDialog.py:203 ../dialogs/PouNameDialog.py:47
 #: ../dialogs/PouActionDialog.py:96 ../dialogs/PouDialog.py:118
 #: ../editors/DataTypeEditor.py:578 ../editors/CodeFileEditor.py:748
-#: ../controls/VariablePanel.py:731 ../IDEFrame.py:1561
+#: ../controls/VariablePanel.py:731 ../IDEFrame.py:1558
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
 msgstr "\"%s\" неверный идентификатор!"
 
-#: ../IDEFrame.py:2364
+#: ../IDEFrame.py:2362
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
 msgstr "\"%s\" используется более чем одним POU. Продолжить?"
@@ -200,7 +200,7 @@ msgstr "\"%s\" используется более чем одним POU. Про
 #: ../editors/Viewer.py:363 ../editors/TextViewer.py:268
 #: ../editors/TextViewer.py:297 ../editors/TextViewer.py:348
 #: ../editors/TextViewer.py:371 ../controls/VariablePanel.py:328
-#: ../IDEFrame.py:1581
+#: ../IDEFrame.py:1578
 #, python-format
 msgid "\"%s\" pou already exists!"
 msgstr "POU \"%s\" уже существует!"
@@ -236,6 +236,10 @@ msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
 msgstr "\"%s\" не является корректной размерностью массива! Правое значение должно быть больше левого."
+
+#: ../editors/CodeFileEditor.py:663
+msgid "#"
+msgstr ""
 
 msgid "%(codefile_name)s"
 msgstr "%(codefile_name)"
@@ -384,15 +388,15 @@ msgstr "1 мин"
 msgid "1s"
 msgstr "1 сек"
 
-#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1584 ../IDEFrame.py:1626
-#: ../IDEFrame.py:1645
+#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1581 ../IDEFrame.py:1623
+#: ../IDEFrame.py:1642
 #, python-format
 msgid "A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr "В POU присутствует элемент с именем \"%s\". Это может вызвать конфликт. Хотите продолжить?"
 
 #: ../dialogs/SFCStepNameDialog.py:53 ../dialogs/PouTransitionDialog.py:103
 #: ../dialogs/PouNameDialog.py:51 ../dialogs/PouActionDialog.py:100
-#: ../controls/VariablePanel.py:735 ../IDEFrame.py:1596 ../IDEFrame.py:1607
+#: ../controls/VariablePanel.py:735 ../IDEFrame.py:1593 ../IDEFrame.py:1604
 #, python-format
 msgid "A POU named \"%s\" already exists!"
 msgstr "POU с именем \"%s\" уже существует!"
@@ -407,7 +411,7 @@ msgid "A location must be selected!"
 msgstr "Необходимо выбрать размещение!"
 
 #: ../dialogs/SFCStepNameDialog.py:55 ../controls/VariablePanel.py:737
-#: ../IDEFrame.py:1598 ../IDEFrame.py:1609
+#: ../IDEFrame.py:1595 ../IDEFrame.py:1606
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
 msgstr "Переменная с именем \"%s\" уже существует в этом POU!"
@@ -421,7 +425,7 @@ msgstr "Переменная с именем \"%s\" уже существует!
 msgid "About"
 msgstr "О программе"
 
-#: ../Beremiz.py:999
+#: ../Beremiz.py:997
 msgid "About Beremiz"
 msgstr "О Beremiz"
 
@@ -467,11 +471,11 @@ msgid "Active"
 msgstr "Активный"
 
 #: ../canfestival/SlaveEditor.py:57 ../canfestival/NetworkEditor.py:78
-#: ../editors/Viewer.py:584 ../Beremiz.py:1026
+#: ../editors/Viewer.py:584 ../Beremiz.py:1024
 msgid "Add"
 msgstr "Добавить"
 
-#: ../IDEFrame.py:1858 ../IDEFrame.py:1893
+#: ../IDEFrame.py:1856 ../IDEFrame.py:1891
 msgid "Add Action"
 msgstr "Добавить действие"
 
@@ -479,11 +483,11 @@ msgstr "Добавить действие"
 msgid "Add C code accessing located variables synchronously"
 msgstr "Добавить C-код с синхронным доступом к локальным переменным"
 
-#: ../IDEFrame.py:1841
+#: ../IDEFrame.py:1839
 msgid "Add Configuration"
 msgstr "Добавить конфигурацию"
 
-#: ../IDEFrame.py:1821
+#: ../IDEFrame.py:1819
 msgid "Add DataType"
 msgstr "Добавить тип данных"
 
@@ -495,7 +499,7 @@ msgstr "Добавить ветвление"
 msgid "Add IP"
 msgstr "Добавить IP адрес"
 
-#: ../IDEFrame.py:1829
+#: ../IDEFrame.py:1827
 msgid "Add POU"
 msgstr "Добавить POU"
 
@@ -503,11 +507,11 @@ msgstr "Добавить POU"
 msgid "Add Python code executed asynchronously"
 msgstr "Добавить асинхронно вызываемый код на Python"
 
-#: ../IDEFrame.py:1869 ../IDEFrame.py:1919
+#: ../IDEFrame.py:1867 ../IDEFrame.py:1917
 msgid "Add Resource"
 msgstr "Добавить ресурс"
 
-#: ../IDEFrame.py:1847 ../IDEFrame.py:1890
+#: ../IDEFrame.py:1845 ../IDEFrame.py:1888
 msgid "Add Transition"
 msgstr "Добавить переход"
 
@@ -662,7 +666,7 @@ msgstr "Базовые типы"
 msgid "BaseParams"
 msgstr "Базовые параметры"
 
-#: ../Beremiz.py:529
+#: ../Beremiz.py:527
 msgid "Beremiz"
 msgstr ""
 
@@ -863,7 +867,7 @@ msgstr "Сменить IP-адрес интерфейса для привязк�
 msgid "Change Name"
 msgstr "Сменить имя"
 
-#: ../IDEFrame.py:1911
+#: ../IDEFrame.py:1909
 msgid "Change POU Type To"
 msgstr "Сменить тип POU на"
 
@@ -877,7 +881,7 @@ msgstr "Сменить рабочую директорию"
 
 #: ../plcopen/iec_std.csv:81
 msgid "Character string"
-msgstr "Символьные строки"
+msgstr "Строковые операции"
 
 #: ../svgui/svgui.py:101
 msgid "Choose a SVG file"
@@ -892,7 +896,7 @@ msgstr "Выберете директорию, чтобы сохранить п�
 msgid "Choose a file"
 msgstr "Выберете файл"
 
-#: ../Beremiz.py:901 ../Beremiz.py:936
+#: ../Beremiz.py:899 ../Beremiz.py:934
 msgid "Choose a project"
 msgstr "Выберете проект"
 
@@ -953,12 +957,12 @@ msgstr "Очистить порядок исполнения"
 msgid "Close"
 msgstr "Закрыть"
 
-#: ../PLCOpenEditor.py:192 ../Beremiz.py:669
+#: ../PLCOpenEditor.py:192 ../Beremiz.py:667
 msgid "Close Application"
 msgstr "Закрыть приложение"
 
-#: ../PLCOpenEditor.py:102 ../Beremiz.py:326 ../Beremiz.py:613
-#: ../IDEFrame.py:984
+#: ../PLCOpenEditor.py:102 ../Beremiz.py:326 ../Beremiz.py:611
+#: ../IDEFrame.py:981
 msgid "Close Project"
 msgstr "Закрыть проект"
 
@@ -976,6 +980,10 @@ msgstr "Комманда"
 #: ../editors/Viewer.py:557 ../editors/LDViewer.py:506
 msgid "Comment"
 msgstr "Комментарий"
+
+#: ../dialogs/ProjectDialog.py:57
+msgid "Company Name"
+msgstr "Имя компании"
 
 #: ../controls/ProjectPropertiesPanel.py:94
 msgid "Company Name (required):"
@@ -1107,7 +1115,7 @@ msgstr "Преобразование во время суток"
 msgid "Copy"
 msgstr "Копировать"
 
-#: ../IDEFrame.py:1898
+#: ../IDEFrame.py:1896
 msgid "Copy POU"
 msgstr "Копировать POU"
 
@@ -1319,7 +1327,7 @@ msgstr "Отладка: неизвестная переменная '%s'\n"
 msgid "Debug: Unsupported type to debug '%s'\n"
 msgstr "Отладка: неподдерживамый отладкой тип '%s'\n"
 
-#: ../IDEFrame.py:614
+#: ../IDEFrame.py:611
 msgid "Debugger"
 msgstr "Отладчик"
 
@@ -1335,7 +1343,7 @@ msgstr "Отладчик готов\n"
 msgid "Debugger stopped.\n"
 msgstr "Отладчик остановлен.\n"
 
-#: ../editors/Viewer.py:568 ../Beremiz.py:1030 ../IDEFrame.py:1927
+#: ../editors/Viewer.py:568 ../Beremiz.py:1028 ../IDEFrame.py:1925
 msgid "Delete"
 msgstr "Удалить"
 
@@ -1370,6 +1378,10 @@ msgid ""
 msgstr ""
 "Производная\n"
 "Функциональный блок формирует выход XOUT пропорционально частоте изменения входа XIN."
+
+#: ../editors/CodeFileEditor.py:664
+msgid "Description"
+msgstr "Описание"
 
 #: ../controls/VariablePanel.py:422
 msgid "Description:"
@@ -1499,7 +1511,7 @@ msgstr "Редактировать имя шага"
 msgid "Edit transition"
 msgstr "Редактировать переход"
 
-#: ../IDEFrame.py:586
+#: ../IDEFrame.py:583
 msgid "Editor ToolBar"
 msgstr "Редактор панели инструментов"
 
@@ -1559,9 +1571,9 @@ msgstr "Равно"
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:137
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:225
 #: ../controls/VariablePanel.py:392 ../controls/VariablePanel.py:754
-#: ../Beremiz.py:1169 ../IDEFrame.py:978 ../IDEFrame.py:1584
-#: ../IDEFrame.py:1621 ../IDEFrame.py:1626 ../IDEFrame.py:1640
-#: ../IDEFrame.py:1645 ../Beremiz_service.py:190
+#: ../Beremiz.py:1167 ../IDEFrame.py:975 ../IDEFrame.py:1581
+#: ../IDEFrame.py:1618 ../IDEFrame.py:1623 ../IDEFrame.py:1637
+#: ../IDEFrame.py:1642 ../Beremiz_service.py:190
 msgid "Error"
 msgstr "Ошибка"
 
@@ -1744,7 +1756,7 @@ msgstr "Форма заполнена неполностью. Должен бы�
 msgid "Forward"
 msgstr "Вперед"
 
-#: ../dialogs/SearchInProjectDialog.py:44 ../IDEFrame.py:1714
+#: ../dialogs/SearchInProjectDialog.py:44 ../IDEFrame.py:1712
 msgid "Function"
 msgstr "Функция"
 
@@ -1752,8 +1764,8 @@ msgstr "Функция"
 msgid "Function &Block"
 msgstr "Функциональный &блок"
 
-#: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:1713
-#: ../IDEFrame.py:1906
+#: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:1711
+#: ../IDEFrame.py:1904
 msgid "Function Block"
 msgstr "Функциональный блок"
 
@@ -1845,6 +1857,10 @@ msgstr "МЭК-канал"
 msgid "IL"
 msgstr ""
 
+#: ../dialogs/DiscoveryDialog.py:93
+msgid "IP"
+msgstr ""
+
 #: ../Beremiz_service.py:278 ../Beremiz_service.py:279
 msgid "IP is not valid!"
 msgstr "Неверный IP-адрес"
@@ -1880,6 +1896,10 @@ msgstr "Несовместимый размер данных \"%s\" с типо�
 #: ../dialogs/ActionBlockDialog.py:38
 msgid "Indicator"
 msgstr "Индикатор"
+
+#: ../editors/CodeFileEditor.py:663
+msgid "Initial"
+msgstr "Исходное значение"
 
 #: ../editors/Viewer.py:548 ../editors/Viewer.py:2058
 msgid "Initial Step"
@@ -2051,7 +2071,7 @@ msgstr "Меньше либо равно"
 msgid "Libraries"
 msgstr "Библиотеки"
 
-#: ../IDEFrame.py:606
+#: ../IDEFrame.py:603
 msgid "Library"
 msgstr "Библиотека"
 
@@ -2127,7 +2147,7 @@ msgstr "Максимум:"
 msgid "Memory"
 msgstr "Память"
 
-#: ../IDEFrame.py:574
+#: ../IDEFrame.py:571
 msgid "Menu ToolBar"
 msgstr "Меню"
 
@@ -2232,9 +2252,13 @@ msgstr "Умножение"
 msgid "My Computer:"
 msgstr "Мой компьютер:"
 
+#: ../dialogs/DiscoveryDialog.py:91
+msgid "NAME"
+msgstr "Имя"
+
 #: ../editors/ResourceEditor.py:68 ../editors/ResourceEditor.py:83
-#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
-#: ../controls/VariablePanel.py:54
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:663
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Name"
 msgstr "Имя"
 
@@ -2377,6 +2401,10 @@ msgstr ""
 "Таймер включения\n"
 "Таймер выключения может быть использован, чтобы внести задержку установки выхода в TRUE на фиксированный период времени после того, как вход стал TRUE."
 
+#: ../editors/CodeFileEditor.py:664
+msgid "OnChange"
+msgstr ""
+
 #: ../dialogs/SearchInProjectDialog.py:93
 msgid "Only Elements"
 msgstr "Только элементы"
@@ -2402,7 +2430,7 @@ msgstr "Открыть wxGlade"
 msgid "Option"
 msgstr "Настройка"
 
-#: ../dialogs/FindInPouDialog.py:82
+#: ../dialogs/FindInPouDialog.py:82 ../editors/CodeFileEditor.py:664
 msgid "Options"
 msgstr "Настройки"
 
@@ -2465,6 +2493,10 @@ msgstr "PLCOpen файлы (*.xml)|*.xml|All files|*.*"
 msgid "PLCOpenEditor"
 msgstr ""
 
+#: ../dialogs/DiscoveryDialog.py:94
+msgid "PORT"
+msgstr "Порт"
+
 #: ../dialogs/PouDialog.py:100
 msgid "POU Name"
 msgstr "Имя POU"
@@ -2499,7 +2531,7 @@ msgstr "Настройки страницы"
 msgid "Page Size (optional):"
 msgstr "Размер страницы (опционально):"
 
-#: ../IDEFrame.py:2567
+#: ../IDEFrame.py:2565
 #, python-format
 msgid "Page: %d"
 msgstr "Страница: %d"
@@ -2512,7 +2544,7 @@ msgstr "Родительский экземпляр"
 msgid "Paste"
 msgstr "Вставить"
 
-#: ../IDEFrame.py:1833
+#: ../IDEFrame.py:1831
 msgid "Paste POU"
 msgstr "Вставить POU"
 
@@ -2576,7 +2608,7 @@ msgstr "Просмотр:"
 msgid "Print"
 msgstr "Печать"
 
-#: ../IDEFrame.py:1050
+#: ../IDEFrame.py:1047
 msgid "Print preview"
 msgstr "Предварительный просмотр"
 
@@ -2593,6 +2625,10 @@ msgstr "Приоритет:"
 msgid "Problem starting PLC : error %d"
 msgstr "Проблема запуска ПЛК: ошибка %d"
 
+#: ../dialogs/ProjectDialog.py:55
+msgid "Product Name"
+msgstr "Имя продукта"
+
 #: ../controls/ProjectPropertiesPanel.py:80
 msgid "Product Name (required):"
 msgstr "Имя продукта (обязательно):"
@@ -2601,12 +2637,16 @@ msgstr "Имя продукта (обязательно):"
 msgid "Product Release (optional):"
 msgstr "Релиз продукта (опцинально):"
 
+#: ../dialogs/ProjectDialog.py:56
+msgid "Product Version"
+msgstr "Версия продукта"
+
 #: ../controls/ProjectPropertiesPanel.py:81
 msgid "Product Version (required):"
 msgstr "Версия продукта (обязательно):"
 
-#: ../dialogs/SearchInProjectDialog.py:46 ../IDEFrame.py:1712
-#: ../IDEFrame.py:1909
+#: ../dialogs/SearchInProjectDialog.py:46 ../IDEFrame.py:1710
+#: ../IDEFrame.py:1907
 msgid "Program"
 msgstr "Программа"
 
@@ -2622,7 +2662,7 @@ msgstr "Программы"
 msgid "Programs can't be used by other POUs!"
 msgstr "Программы не могут использоваться другими POU!"
 
-#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:559
+#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:556
 msgid "Project"
 msgstr "Проект"
 
@@ -2634,6 +2674,10 @@ msgstr "Проект '%s':"
 #: ../ProjectController.py:1713
 msgid "Project Files"
 msgstr "Файлы проекта"
+
+#: ../dialogs/ProjectDialog.py:54
+msgid "Project Name"
+msgstr "Имя проекта"
 
 #: ../controls/ProjectPropertiesPanel.py:78
 msgid "Project Name (required):"
@@ -2724,7 +2768,7 @@ msgstr ""
 "RTC часы\n"
 "Часы реального времени используется для получения меток времени, установки даты и времени дня в отчетах, сообщениях об авариях и пр."
 
-#: ../Beremiz.py:1109
+#: ../Beremiz.py:1107
 #, python-format
 msgid "Really delete node '%s'?"
 msgstr "Действительно удалить элемент '%s'?"
@@ -2757,16 +2801,16 @@ msgstr "Освободить значение"
 msgid "Remainder (modulo)"
 msgstr "Остаток от деления (modulo)"
 
-#: ../Beremiz.py:1110
+#: ../Beremiz.py:1108
 #, python-format
 msgid "Remove %s node"
 msgstr "Удалить %s элемент"
 
-#: ../IDEFrame.py:2373
+#: ../IDEFrame.py:2371
 msgid "Remove Datatype"
 msgstr "Удалить тип данных"
 
-#: ../IDEFrame.py:2378
+#: ../IDEFrame.py:2376
 msgid "Remove Pou"
 msgstr "Удалить POU"
 
@@ -2798,7 +2842,7 @@ msgstr "Удалить задачу"
 msgid "Remove variable"
 msgstr "Удалить переменную"
 
-#: ../IDEFrame.py:1913
+#: ../IDEFrame.py:1911
 msgid "Rename"
 msgstr "Переименовать"
 
@@ -2830,7 +2874,7 @@ msgstr "Сбросить представление"
 msgid "Reset search result"
 msgstr "Сбросить результаты поиска"
 
-#: ../PLCControler.py:97 ../Beremiz.py:1041
+#: ../PLCControler.py:97 ../Beremiz.py:1039
 msgid "Resources"
 msgstr "Ресурсы"
 
@@ -2940,7 +2984,7 @@ msgstr "Сохранить как"
 msgid "Scope"
 msgstr "Область действия"
 
-#: ../dialogs/SearchInProjectDialog.py:105 ../IDEFrame.py:598
+#: ../dialogs/SearchInProjectDialog.py:105 ../IDEFrame.py:595
 msgid "Search"
 msgstr "Поиск"
 
@@ -2970,7 +3014,7 @@ msgstr "Выберете редактор:"
 msgid "Select an instance"
 msgstr "Выберете экземпляр"
 
-#: ../IDEFrame.py:582
+#: ../IDEFrame.py:579
 msgid "Select an object"
 msgstr "Выберете объект"
 
@@ -2993,6 +3037,10 @@ msgid ""
 msgstr ""
 "Семафор\n"
 "Семафор предоставляет собой программный механизм синхронизации для обеспечения исключительного доступа к определенным ресурсам."
+
+#: ../dialogs/DiscoveryDialog.py:81
+msgid "Service Discovery"
+msgstr "Поиск сервиса"
 
 #: ../dialogs/DiscoveryDialog.py:84
 msgid "Services available:"
@@ -3120,6 +3168,10 @@ msgstr ""
 msgid "Syntax error in regular expression of pattern to search!"
 msgstr "Синтаксическая ошибка в регулярном выражении шаблона поиска!"
 
+#: ../dialogs/DiscoveryDialog.py:92
+msgid "TYPE"
+msgstr "Тип"
+
 #: ../plcopen/iec_std.csv:29
 msgid "Tangent"
 msgstr "Тангенс"
@@ -3152,16 +3204,16 @@ msgstr ""
 msgid "The group of block must be coherent!"
 msgstr ""
 
-#: ../Beremiz.py:616 ../IDEFrame.py:986
+#: ../Beremiz.py:614 ../IDEFrame.py:983
 msgid "There are changes, do you want to save?"
 msgstr "Хотите сохранить изменения?"
 
-#: ../IDEFrame.py:1621 ../IDEFrame.py:1640
+#: ../IDEFrame.py:1618 ../IDEFrame.py:1637
 #, python-format
 msgid "There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr "Существует POU с именем \"%s\". Это может вызвать конфликт. Хотите продолжить?"
 
-#: ../IDEFrame.py:1073
+#: ../IDEFrame.py:1070
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
@@ -3267,8 +3319,8 @@ msgid "Triggering"
 msgstr "Запуск"
 
 #: ../dialogs/ActionBlockDialog.py:38 ../editors/ResourceEditor.py:83
-#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
-#: ../controls/VariablePanel.py:54
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:663
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Type"
 msgstr "Тип"
 
@@ -3511,8 +3563,16 @@ msgstr "Введите значение!"
 msgid "Zoom"
 msgstr "Приближение"
 
+#: ../Beremiz.py:997
+msgid "about.html"
+msgstr "about.ru.html"
+
 msgid "class"
 msgstr "класс"
+
+#: ../dialogs/DurationEditorDialog.py:151
+msgid "days"
+msgstr "дни"
 
 msgid "desc"
 msgstr ""
@@ -3543,12 +3603,24 @@ msgstr "функция: "
 msgid "functionBlock"
 msgstr "функциональный блок"
 
+#: ../dialogs/DurationEditorDialog.py:151
+msgid "hours"
+msgstr "часы"
+
 msgid "initial"
 msgstr "исходный"
 
 #: ../PLCOpenEditor.py:387
 msgid "line : "
 msgstr "строка:"
+
+#: ../dialogs/DurationEditorDialog.py:153
+msgid "milliseconds"
+msgstr "милисекунды"
+
+#: ../dialogs/DurationEditorDialog.py:152
+msgid "minutes"
+msgstr "минуты"
 
 msgid "name"
 msgstr "имя"
@@ -3559,9 +3631,17 @@ msgstr ""
 msgid "opts"
 msgstr ""
 
+#: ../PLCOpenEditor.py:346
+msgid "plcopen_about.html"
+msgstr "plcopen_about.ru.html"
+
 #: ../dialogs/PouDialog.py:31
 msgid "program"
 msgstr "программа"
+
+#: ../dialogs/DurationEditorDialog.py:152
+msgid "seconds"
+msgstr "секунды"
 
 #: ../plcopen/iec_std.csv:84
 msgid "string from the middle"
