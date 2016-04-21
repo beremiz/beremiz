@@ -757,8 +757,8 @@ class Viewer(EditorPanel, DebugViewer):
                     client_size = self.Editor.GetClientSize()
                     mouse_pos = wx.Point(client_size[0] / 2, client_size[1] / 2)
                     mouse_event = wx.MouseEvent(wx.EVT_MOUSEWHEEL.typeId)
-                    mouse_event.m_x = mouse_pos.x
-                    mouse_event.m_y = mouse_pos.y
+                    mouse_event.x = mouse_pos.x
+                    mouse_event.y = mouse_pos.y
                 else:
                     mouse_pos = mouse_event.GetPosition()
                 pos = mouse_event.GetLogicalPosition(dc)
@@ -2398,7 +2398,7 @@ class Viewer(EditorPanel, DebugViewer):
             if self.IsBlock(self.SelectedElement) or self.IsComment(self.SelectedElement):
                 block = self.CopyBlock(self.SelectedElement, wx.Point(*self.SelectedElement.GetPosition()))
                 event = wx.MouseEvent()
-                event.m_x, event.m_y = self.Editor.ScreenToClient(wx.GetMousePosition())
+                event.x, event.y = self.Editor.ScreenToClient(wx.GetMousePosition())
                 dc = self.GetLogicalDC()
                 self.SelectedElement.OnLeftUp(event, dc, self.Scaling)
                 self.SelectedElement.SetSelected(False)
