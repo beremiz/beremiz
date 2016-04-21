@@ -34,7 +34,7 @@ ACTION_LANGUAGES_DICT = dict([(_(language), language) for language in GetActionL
 class PouActionDialog(wx.Dialog):
     
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, size=wx.Size(320, 160), 
+        wx.Dialog.__init__(self, parent, size=wx.Size(320, 200), 
               title=_('Create a new action'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)

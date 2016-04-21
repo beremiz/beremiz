@@ -46,7 +46,7 @@ class SFCStepDialog(BlockPreviewDialog):
         @param initial: True if step is initial (default: False)
         """
         BlockPreviewDialog.__init__(self,parent, controller, tagname,  
-              size=wx.Size(400, 250), title=_('Edit Step'))
+              size=wx.Size(400, 280), title=_('Edit Step'))
         
         # Init common sizers
         self._init_sizers(2, 0, 6, None, 2, 1)

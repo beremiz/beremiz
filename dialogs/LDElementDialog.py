@@ -50,7 +50,7 @@ class LDElementDialog(BlockPreviewDialog):
         @param type: Type of LD element ('contact or 'coil')
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname, 
-              size=wx.Size(350, 280 if type == "contact" else 330),
+              size=wx.Size(350, 320 if type == "contact" else 380),
               title=(_("Edit Contact Values")
                      if type == "contact"
                      else _("Edit Coil Values")))
