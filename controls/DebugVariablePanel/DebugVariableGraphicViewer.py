@@ -41,6 +41,12 @@ from DebugVariableItem import DebugVariableItem
 from DebugVariableViewer import *
 from GraphButton import GraphButton
 
+
+from distutils.version import LooseVersion
+if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
+    from cycler import cycler
+
+
 # Graph variable display type
 GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
 
@@ -975,7 +981,13 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             kwargs["transform"] = self.Axes.transAxes
             return text_func(*args, **kwargs)
         return AddText
-    
+
+    def SetAxesColor(self, color):
+        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
+            self.Axes.set_prop_cycle(cycler('color',color))
+        else:
+            self.Axes.set_color_cycle(color)
+        
     def ResetGraphics(self):
         """
         Reset figure and graphical elements displayed in it
@@ -987,7 +999,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Add 3D projection if graph is in 3D
         if self.Is3DCanvas():
             self.Axes = self.Figure.gca(projection='3d')
-            self.Axes.set_color_cycle(['b'])
+            self.SetAxesColor(['b'])
             
             # Override function to prevent too much refresh when graph is 
             # rotated
@@ -1002,7 +1014,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         
         else:
             self.Axes = self.Figure.gca()
-            self.Axes.set_color_cycle(COLOR_CYCLE)
+            self.SetAxesColor(COLOR_CYCLE)
         
         # Set size of X and Y axis labels
         self.Axes.tick_params(axis='x', labelsize='small')
