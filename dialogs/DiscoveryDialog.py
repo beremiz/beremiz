@@ -61,7 +61,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableCol(1)
-        parent.AddGrowableRow(1)
+        parent.AddGrowableRow(0)
     
     def _init_sizers(self):
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
