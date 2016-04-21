@@ -343,7 +343,7 @@ class PLCOpenEditor(IDEFrame):
         open_pdf(os.path.join(beremiz_dir, "plcopen", "TC6_XML_V101.pdf"))
 
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About PLCOpenEditor"), os.path.join(beremiz_dir, "doc", "plcopen_about.html"), wx.Size(350, 350))
+        OpenHtmlFrame(self,_("About PLCOpenEditor"), os.path.join(beremiz_dir, "doc", _("plcopen_about.html")), wx.Size(350, 350))
 
     def SaveProject(self):
         result = self.Controler.SaveXMLFile()
