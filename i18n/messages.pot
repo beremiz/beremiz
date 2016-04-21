@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-20 13:39+0300\n"
+"POT-Creation-Date: 2016-04-21 17:11+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgid ""
 "Error:\n"
 msgstr ""
 
-#: ../Beremiz.py:1157
+#: ../Beremiz.py:1155
 #, python-format
 msgid ""
 "\n"
@@ -73,8 +73,8 @@ msgstr ""
 msgid " : "
 msgstr ""
 
-#: ../dialogs/PouTransitionDialog.py:94 ../dialogs/PouActionDialog.py:91
-#: ../dialogs/PouDialog.py:113
+#: ../dialogs/PouTransitionDialog.py:94 ../dialogs/ProjectDialog.py:66
+#: ../dialogs/PouActionDialog.py:91 ../dialogs/PouDialog.py:113
 #, python-format
 msgid " and %s"
 msgstr ""
@@ -103,7 +103,7 @@ msgstr ""
 msgid "\"%s\" can't use itself!"
 msgstr ""
 
-#: ../IDEFrame.py:1618 ../IDEFrame.py:1637
+#: ../IDEFrame.py:1615 ../IDEFrame.py:1634
 #, python-format
 msgid "\"%s\" config already exists!"
 msgstr ""
@@ -113,7 +113,7 @@ msgstr ""
 msgid "\"%s\" configuration already exists !!!"
 msgstr ""
 
-#: ../IDEFrame.py:1572
+#: ../IDEFrame.py:1569
 #, python-format
 msgid "\"%s\" data type already exists!"
 msgstr ""
@@ -127,7 +127,7 @@ msgstr ""
 msgid "\"%s\" element for this pou already exists!"
 msgstr ""
 
-#: ../Beremiz.py:964
+#: ../Beremiz.py:962
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr ""
@@ -142,7 +142,7 @@ msgstr ""
 #: ../dialogs/PouActionDialog.py:98 ../dialogs/PouDialog.py:120
 #: ../editors/DataTypeEditor.py:554 ../editors/DataTypeEditor.py:583
 #: ../editors/CodeFileEditor.py:750 ../controls/VariablePanel.py:733
-#: ../IDEFrame.py:1563
+#: ../IDEFrame.py:1560
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
 msgstr ""
@@ -166,12 +166,12 @@ msgstr ""
 #: ../dialogs/BlockPreviewDialog.py:203 ../dialogs/PouNameDialog.py:47
 #: ../dialogs/PouActionDialog.py:96 ../dialogs/PouDialog.py:118
 #: ../editors/DataTypeEditor.py:578 ../editors/CodeFileEditor.py:748
-#: ../controls/VariablePanel.py:731 ../IDEFrame.py:1561
+#: ../controls/VariablePanel.py:731 ../IDEFrame.py:1558
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
 msgstr ""
 
-#: ../IDEFrame.py:2364
+#: ../IDEFrame.py:2362
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
 msgstr ""
@@ -181,7 +181,7 @@ msgstr ""
 #: ../editors/Viewer.py:363 ../editors/TextViewer.py:268
 #: ../editors/TextViewer.py:297 ../editors/TextViewer.py:348
 #: ../editors/TextViewer.py:371 ../controls/VariablePanel.py:328
-#: ../IDEFrame.py:1581
+#: ../IDEFrame.py:1578
 #, python-format
 msgid "\"%s\" pou already exists!"
 msgstr ""
@@ -216,6 +216,10 @@ msgstr ""
 msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
+msgstr ""
+
+#: ../editors/CodeFileEditor.py:663
+msgid "#"
 msgstr ""
 
 #: ../PLCControler.py:970
@@ -360,15 +364,15 @@ msgstr ""
 msgid "1s"
 msgstr ""
 
-#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1584 ../IDEFrame.py:1626
-#: ../IDEFrame.py:1645
+#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1581 ../IDEFrame.py:1623
+#: ../IDEFrame.py:1642
 #, python-format
 msgid "A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr ""
 
 #: ../dialogs/SFCStepNameDialog.py:53 ../dialogs/PouTransitionDialog.py:103
 #: ../dialogs/PouNameDialog.py:51 ../dialogs/PouActionDialog.py:100
-#: ../controls/VariablePanel.py:735 ../IDEFrame.py:1596 ../IDEFrame.py:1607
+#: ../controls/VariablePanel.py:735 ../IDEFrame.py:1593 ../IDEFrame.py:1604
 #, python-format
 msgid "A POU named \"%s\" already exists!"
 msgstr ""
@@ -383,7 +387,7 @@ msgid "A location must be selected!"
 msgstr ""
 
 #: ../dialogs/SFCStepNameDialog.py:55 ../controls/VariablePanel.py:737
-#: ../IDEFrame.py:1598 ../IDEFrame.py:1609
+#: ../IDEFrame.py:1595 ../IDEFrame.py:1606
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
 msgstr ""
@@ -397,7 +401,7 @@ msgstr ""
 msgid "About"
 msgstr ""
 
-#: ../Beremiz.py:999
+#: ../Beremiz.py:997
 msgid "About Beremiz"
 msgstr ""
 
@@ -443,11 +447,11 @@ msgid "Active"
 msgstr ""
 
 #: ../canfestival/SlaveEditor.py:57 ../canfestival/NetworkEditor.py:78
-#: ../editors/Viewer.py:584 ../Beremiz.py:1026
+#: ../editors/Viewer.py:584 ../Beremiz.py:1024
 msgid "Add"
 msgstr ""
 
-#: ../IDEFrame.py:1858 ../IDEFrame.py:1893
+#: ../IDEFrame.py:1856 ../IDEFrame.py:1891
 msgid "Add Action"
 msgstr ""
 
@@ -455,11 +459,11 @@ msgstr ""
 msgid "Add C code accessing located variables synchronously"
 msgstr ""
 
-#: ../IDEFrame.py:1841
+#: ../IDEFrame.py:1839
 msgid "Add Configuration"
 msgstr ""
 
-#: ../IDEFrame.py:1821
+#: ../IDEFrame.py:1819
 msgid "Add DataType"
 msgstr ""
 
@@ -471,7 +475,7 @@ msgstr ""
 msgid "Add IP"
 msgstr ""
 
-#: ../IDEFrame.py:1829
+#: ../IDEFrame.py:1827
 msgid "Add POU"
 msgstr ""
 
@@ -479,11 +483,11 @@ msgstr ""
 msgid "Add Python code executed asynchronously"
 msgstr ""
 
-#: ../IDEFrame.py:1869 ../IDEFrame.py:1919
+#: ../IDEFrame.py:1867 ../IDEFrame.py:1917
 msgid "Add Resource"
 msgstr ""
 
-#: ../IDEFrame.py:1847 ../IDEFrame.py:1890
+#: ../IDEFrame.py:1845 ../IDEFrame.py:1888
 msgid "Add Transition"
 msgstr ""
 
@@ -635,7 +639,7 @@ msgstr ""
 msgid "Base Types"
 msgstr ""
 
-#: ../Beremiz.py:529
+#: ../Beremiz.py:527
 msgid "Beremiz"
 msgstr ""
 
@@ -811,7 +815,7 @@ msgstr ""
 msgid "Change Name"
 msgstr ""
 
-#: ../IDEFrame.py:1911
+#: ../IDEFrame.py:1909
 msgid "Change POU Type To"
 msgstr ""
 
@@ -840,7 +844,7 @@ msgstr ""
 msgid "Choose a file"
 msgstr ""
 
-#: ../Beremiz.py:901 ../Beremiz.py:936
+#: ../Beremiz.py:899 ../Beremiz.py:934
 msgid "Choose a project"
 msgstr ""
 
@@ -901,12 +905,12 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: ../PLCOpenEditor.py:192 ../Beremiz.py:669
+#: ../PLCOpenEditor.py:192 ../Beremiz.py:667
 msgid "Close Application"
 msgstr ""
 
-#: ../PLCOpenEditor.py:102 ../Beremiz.py:326 ../Beremiz.py:613
-#: ../IDEFrame.py:984
+#: ../PLCOpenEditor.py:102 ../Beremiz.py:326 ../Beremiz.py:611
+#: ../IDEFrame.py:981
 msgid "Close Project"
 msgstr ""
 
@@ -920,6 +924,10 @@ msgstr ""
 
 #: ../editors/Viewer.py:557 ../editors/LDViewer.py:506
 msgid "Comment"
+msgstr ""
+
+#: ../dialogs/ProjectDialog.py:57
+msgid "Company Name"
 msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:94
@@ -1049,7 +1057,7 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: ../IDEFrame.py:1898
+#: ../IDEFrame.py:1896
 msgid "Copy POU"
 msgstr ""
 
@@ -1259,7 +1267,7 @@ msgstr ""
 msgid "Debug: Unsupported type to debug '%s'\n"
 msgstr ""
 
-#: ../IDEFrame.py:614
+#: ../IDEFrame.py:611
 msgid "Debugger"
 msgstr ""
 
@@ -1275,7 +1283,7 @@ msgstr ""
 msgid "Debugger stopped.\n"
 msgstr ""
 
-#: ../editors/Viewer.py:568 ../Beremiz.py:1030 ../IDEFrame.py:1927
+#: ../editors/Viewer.py:568 ../Beremiz.py:1028 ../IDEFrame.py:1925
 msgid "Delete"
 msgstr ""
 
@@ -1307,6 +1315,10 @@ msgstr ""
 msgid ""
 "Derivative\n"
 "The derivative function block produces an output XOUT proportional to the rate of change of the input XIN."
+msgstr ""
+
+#: ../editors/CodeFileEditor.py:664
+msgid "Description"
 msgstr ""
 
 #: ../controls/VariablePanel.py:422
@@ -1432,7 +1444,7 @@ msgstr ""
 msgid "Edit transition"
 msgstr ""
 
-#: ../IDEFrame.py:586
+#: ../IDEFrame.py:583
 msgid "Editor ToolBar"
 msgstr ""
 
@@ -1489,9 +1501,9 @@ msgstr ""
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:137
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:225
 #: ../controls/VariablePanel.py:392 ../controls/VariablePanel.py:754
-#: ../Beremiz.py:1169 ../IDEFrame.py:978 ../IDEFrame.py:1584
-#: ../IDEFrame.py:1621 ../IDEFrame.py:1626 ../IDEFrame.py:1640
-#: ../IDEFrame.py:1645 ../Beremiz_service.py:190
+#: ../Beremiz.py:1167 ../IDEFrame.py:975 ../IDEFrame.py:1581
+#: ../IDEFrame.py:1618 ../IDEFrame.py:1623 ../IDEFrame.py:1637
+#: ../IDEFrame.py:1642 ../Beremiz_service.py:190
 msgid "Error"
 msgstr ""
 
@@ -1672,7 +1684,7 @@ msgstr ""
 msgid "Forward"
 msgstr ""
 
-#: ../dialogs/SearchInProjectDialog.py:44 ../IDEFrame.py:1714
+#: ../dialogs/SearchInProjectDialog.py:44 ../IDEFrame.py:1712
 msgid "Function"
 msgstr ""
 
@@ -1680,8 +1692,8 @@ msgstr ""
 msgid "Function &Block"
 msgstr ""
 
-#: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:1713
-#: ../IDEFrame.py:1906
+#: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:1711
+#: ../IDEFrame.py:1904
 msgid "Function Block"
 msgstr ""
 
@@ -1765,6 +1777,10 @@ msgstr ""
 msgid "IL"
 msgstr ""
 
+#: ../dialogs/DiscoveryDialog.py:93
+msgid "IP"
+msgstr ""
+
 #: ../Beremiz_service.py:278 ../Beremiz_service.py:279
 msgid "IP is not valid!"
 msgstr ""
@@ -1799,6 +1815,10 @@ msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:38
 msgid "Indicator"
+msgstr ""
+
+#: ../editors/CodeFileEditor.py:663
+msgid "Initial"
 msgstr ""
 
 #: ../editors/Viewer.py:548 ../editors/Viewer.py:2058
@@ -1961,7 +1981,7 @@ msgstr ""
 msgid "Less than or equal to"
 msgstr ""
 
-#: ../IDEFrame.py:606
+#: ../IDEFrame.py:603
 msgid "Library"
 msgstr ""
 
@@ -2031,7 +2051,7 @@ msgstr ""
 msgid "Memory"
 msgstr ""
 
-#: ../IDEFrame.py:574
+#: ../IDEFrame.py:571
 msgid "Menu ToolBar"
 msgstr ""
 
@@ -2136,9 +2156,13 @@ msgstr ""
 msgid "My Computer:"
 msgstr ""
 
+#: ../dialogs/DiscoveryDialog.py:91
+msgid "NAME"
+msgstr ""
+
 #: ../editors/ResourceEditor.py:68 ../editors/ResourceEditor.py:83
-#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
-#: ../controls/VariablePanel.py:54
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:663
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Name"
 msgstr ""
 
@@ -2272,6 +2296,10 @@ msgid ""
 "The on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."
 msgstr ""
 
+#: ../editors/CodeFileEditor.py:664
+msgid "OnChange"
+msgstr ""
+
 #: ../dialogs/SearchInProjectDialog.py:93
 msgid "Only Elements"
 msgstr ""
@@ -2297,7 +2325,7 @@ msgstr ""
 msgid "Option"
 msgstr ""
 
-#: ../dialogs/FindInPouDialog.py:82
+#: ../dialogs/FindInPouDialog.py:82 ../editors/CodeFileEditor.py:664
 msgid "Options"
 msgstr ""
 
@@ -2356,6 +2384,10 @@ msgstr ""
 msgid "PLCOpenEditor"
 msgstr ""
 
+#: ../dialogs/DiscoveryDialog.py:94
+msgid "PORT"
+msgstr ""
+
 #: ../dialogs/PouDialog.py:100
 msgid "POU Name"
 msgstr ""
@@ -2390,7 +2422,7 @@ msgstr ""
 msgid "Page Size (optional):"
 msgstr ""
 
-#: ../IDEFrame.py:2567
+#: ../IDEFrame.py:2565
 #, python-format
 msgid "Page: %d"
 msgstr ""
@@ -2403,7 +2435,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: ../IDEFrame.py:1833
+#: ../IDEFrame.py:1831
 msgid "Paste POU"
 msgstr ""
 
@@ -2467,7 +2499,7 @@ msgstr ""
 msgid "Print"
 msgstr ""
 
-#: ../IDEFrame.py:1050
+#: ../IDEFrame.py:1047
 msgid "Print preview"
 msgstr ""
 
@@ -2484,6 +2516,10 @@ msgstr ""
 msgid "Problem starting PLC : error %d"
 msgstr ""
 
+#: ../dialogs/ProjectDialog.py:55
+msgid "Product Name"
+msgstr ""
+
 #: ../controls/ProjectPropertiesPanel.py:80
 msgid "Product Name (required):"
 msgstr ""
@@ -2492,12 +2528,16 @@ msgstr ""
 msgid "Product Release (optional):"
 msgstr ""
 
+#: ../dialogs/ProjectDialog.py:56
+msgid "Product Version"
+msgstr ""
+
 #: ../controls/ProjectPropertiesPanel.py:81
 msgid "Product Version (required):"
 msgstr ""
 
-#: ../dialogs/SearchInProjectDialog.py:46 ../IDEFrame.py:1712
-#: ../IDEFrame.py:1909
+#: ../dialogs/SearchInProjectDialog.py:46 ../IDEFrame.py:1710
+#: ../IDEFrame.py:1907
 msgid "Program"
 msgstr ""
 
@@ -2513,7 +2553,7 @@ msgstr ""
 msgid "Programs can't be used by other POUs!"
 msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:559
+#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:556
 msgid "Project"
 msgstr ""
 
@@ -2524,6 +2564,10 @@ msgstr ""
 
 #: ../ProjectController.py:1713
 msgid "Project Files"
+msgstr ""
+
+#: ../dialogs/ProjectDialog.py:54
+msgid "Project Name"
 msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:78
@@ -2605,7 +2649,7 @@ msgid ""
 "The real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."
 msgstr ""
 
-#: ../Beremiz.py:1109
+#: ../Beremiz.py:1107
 #, python-format
 msgid "Really delete node '%s'?"
 msgstr ""
@@ -2638,16 +2682,16 @@ msgstr ""
 msgid "Remainder (modulo)"
 msgstr ""
 
-#: ../Beremiz.py:1110
+#: ../Beremiz.py:1108
 #, python-format
 msgid "Remove %s node"
 msgstr ""
 
-#: ../IDEFrame.py:2373
+#: ../IDEFrame.py:2371
 msgid "Remove Datatype"
 msgstr ""
 
-#: ../IDEFrame.py:2378
+#: ../IDEFrame.py:2376
 msgid "Remove Pou"
 msgstr ""
 
@@ -2679,7 +2723,7 @@ msgstr ""
 msgid "Remove variable"
 msgstr ""
 
-#: ../IDEFrame.py:1913
+#: ../IDEFrame.py:1911
 msgid "Rename"
 msgstr ""
 
@@ -2711,7 +2755,7 @@ msgstr ""
 msgid "Reset search result"
 msgstr ""
 
-#: ../PLCControler.py:97 ../Beremiz.py:1041
+#: ../PLCControler.py:97 ../Beremiz.py:1039
 msgid "Resources"
 msgstr ""
 
@@ -2817,7 +2861,7 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#: ../dialogs/SearchInProjectDialog.py:105 ../IDEFrame.py:598
+#: ../dialogs/SearchInProjectDialog.py:105 ../IDEFrame.py:595
 msgid "Search"
 msgstr ""
 
@@ -2847,7 +2891,7 @@ msgstr ""
 msgid "Select an instance"
 msgstr ""
 
-#: ../IDEFrame.py:582
+#: ../IDEFrame.py:579
 msgid "Select an object"
 msgstr ""
 
@@ -2867,6 +2911,10 @@ msgstr ""
 msgid ""
 "Semaphore\n"
 "The semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."
+msgstr ""
+
+#: ../dialogs/DiscoveryDialog.py:81
+msgid "Service Discovery"
 msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:84
@@ -2986,6 +3034,10 @@ msgstr ""
 msgid "Syntax error in regular expression of pattern to search!"
 msgstr ""
 
+#: ../dialogs/DiscoveryDialog.py:92
+msgid "TYPE"
+msgstr ""
+
 #: ../plcopen/iec_std.csv:29
 msgid "Tangent"
 msgstr ""
@@ -3013,16 +3065,16 @@ msgstr ""
 msgid "The group of block must be coherent!"
 msgstr ""
 
-#: ../Beremiz.py:616 ../IDEFrame.py:986
+#: ../Beremiz.py:614 ../IDEFrame.py:983
 msgid "There are changes, do you want to save?"
 msgstr ""
 
-#: ../IDEFrame.py:1621 ../IDEFrame.py:1640
+#: ../IDEFrame.py:1618 ../IDEFrame.py:1637
 #, python-format
 msgid "There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr ""
 
-#: ../IDEFrame.py:1073
+#: ../IDEFrame.py:1070
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
@@ -3126,8 +3178,8 @@ msgid "Triggering"
 msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:38 ../editors/ResourceEditor.py:83
-#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
-#: ../controls/VariablePanel.py:54
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:663
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Type"
 msgstr ""
 
@@ -3348,6 +3400,14 @@ msgstr ""
 msgid "Zoom"
 msgstr ""
 
+#: ../Beremiz.py:997
+msgid "about.html"
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:151
+msgid "days"
+msgstr ""
+
 #: ../PLCOpenEditor.py:326
 #, python-format
 msgid "error: %s\n"
@@ -3374,12 +3434,32 @@ msgstr ""
 msgid "functionBlock"
 msgstr ""
 
+#: ../dialogs/DurationEditorDialog.py:151
+msgid "hours"
+msgstr ""
+
 #: ../PLCOpenEditor.py:387
 msgid "line : "
 msgstr ""
 
+#: ../dialogs/DurationEditorDialog.py:153
+msgid "milliseconds"
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:152
+msgid "minutes"
+msgstr ""
+
+#: ../PLCOpenEditor.py:346
+msgid "plcopen_about.html"
+msgstr ""
+
 #: ../dialogs/PouDialog.py:31
 msgid "program"
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:152
+msgid "seconds"
 msgstr ""
 
 #: ../plcopen/iec_std.csv:84
