@@ -350,8 +350,8 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.InstanceChoice.SetFocusFromKbd()
         size = self.InstanceChoice.GetSize()
         event = wx.MouseEvent(wx.EVT_LEFT_DOWN._getEvtType())
-        event.m_x = size.width / 2
-        event.m_y = size.height / 2
+        event.x = size.width / 2
+        event.y = size.height / 2
         event.SetEventObject(self.InstanceChoice)
         #event = wx.KeyEvent(wx.EVT_KEY_DOWN._getEvtType())
         #event.m_keyCode = wx.WXK_SPACE

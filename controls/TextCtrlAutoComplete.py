@@ -87,13 +87,13 @@ class PopupWithListbox(wx.PopupWindow):
         return self.ListBox.GetStringSelection()
     
     def OnLeftDown(self, event):
-        selected = self.ListBox.HitTest(wx.Point(event.m_x, event.m_y))
+        selected = self.ListBox.HitTest(wx.Point(event.GetX(), event.GetY()))
         parent_size = self.Parent.GetSize()
         parent_rect = wx.Rect(0, -parent_size[1], parent_size[0], parent_size[1])
         if selected != wx.NOT_FOUND:
             wx.CallAfter(self.Parent.SetValueFromSelected, self.ListBox.GetString(selected))
-        elif parent_rect.InsideXY(event.m_x, event.m_y):
-            result, x, y = self.Parent.HitTest(wx.Point(event.m_x, event.m_y + parent_size[1]))
+        elif parent_rect.InsideXY(event.GetX(), event.GetY()):
+            result, x, y = self.Parent.HitTest(wx.Point(event.GetX(), event.GetY() + parent_size[1]))
             if result != wx.TE_HT_UNKNOWN:
                 self.Parent.SetInsertionPoint(self.Parent.XYToPosition(x, y))
         else:
@@ -102,7 +102,7 @@ class PopupWithListbox(wx.PopupWindow):
     
     def OnMotion(self, event):
         self.ListBox.SetSelection(
-            self.ListBox.HitTest(wx.Point(event.m_x, event.m_y)))
+            self.ListBox.HitTest(wx.Point(event.GetX(), event.GetY())))
         event.Skip()
     
 class TextCtrlAutoComplete(wx.TextCtrl):
