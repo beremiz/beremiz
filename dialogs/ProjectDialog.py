@@ -51,10 +51,10 @@ class ProjectDialog(wx.Dialog):
     def OnOK(self, event):
         values = self.ProjectProperties.GetValues()
         error = []
-        for param, name in [("projectName", "Project Name"),
-                            ("productName", "Product Name"),
-                            ("productVersion", "Product Version"),
-                            ("companyName", "Company Name")]:
+        for param, name in [("projectName", _("Project Name")),
+                            ("productName", _("Product Name")),
+                            ("productVersion", _("Product Version")),
+                            ("companyName", _("Company Name"))]:
             if values[param] == "":
                 error.append(name)
         if len(error) > 0:
@@ -63,7 +63,7 @@ class ProjectDialog(wx.Dialog):
                 if i == 0:
                     text += item
                 elif i == len(error) - 1:
-                    text += " and %s"%item
+                    text += _(" and %s")%item
                 else:
                     text += ", %s"%item
             dialog = wx.MessageDialog(self, 

@@ -148,9 +148,9 @@ class DurationEditorDialog(wx.Dialog):
     
     def OnOK(self, event):
         errors = []
-        for control, name in [(self.Days, "days"), (self.Hours, "hours"), 
-                              (self.Minutes, "minutes"), (self.Seconds, "seconds"),
-                              (self.Milliseconds, "milliseconds")]:
+        for control, name in [(self.Days, _("days")), (self.Hours, _("hours")), 
+                              (self.Minutes, _("minutes")), (self.Seconds, _("seconds")),
+                              (self.Milliseconds, _("milliseconds"))]:
             try:
                 value = float(control.GetValue())
             except ValueError, e:

@@ -78,7 +78,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         wx.Dialog.__init__(self, id=ID_DISCOVERYDIALOG, 
               name='DiscoveryDialog', parent=prnt,  
               size=wx.Size(600, 600), style=wx.DEFAULT_DIALOG_STYLE,
-              title='Service Discovery')
+              title=_('Service Discovery'))
         
         self.staticText1 = wx.StaticText(id=ID_DISCOVERYDIALOGSTATICTEXT1,
               label=_('Services available:'), name='staticText1', parent=self,
@@ -88,10 +88,10 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.ServicesList = AutoWidthListCtrl(id=ID_DISCOVERYDIALOGSERVICESLIST,
               name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0), 
               style=wx.LC_REPORT|wx.LC_EDIT_LABELS|wx.LC_SORT_ASCENDING|wx.LC_SINGLE_SEL)
-        self.ServicesList.InsertColumn(0, 'NAME')
-        self.ServicesList.InsertColumn(1, 'TYPE')
-        self.ServicesList.InsertColumn(2, 'IP')
-        self.ServicesList.InsertColumn(3, 'PORT')
+        self.ServicesList.InsertColumn(0, _('NAME'))
+        self.ServicesList.InsertColumn(1, _('TYPE'))
+        self.ServicesList.InsertColumn(2, _('IP'))
+        self.ServicesList.InsertColumn(3, _('PORT'))
         self.ServicesList.SetColumnWidth(0, 150)
         self.ServicesList.SetColumnWidth(1, 150)
         self.ServicesList.SetColumnWidth(2, 150)

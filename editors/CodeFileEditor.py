@@ -660,11 +660,13 @@ class VariablesEditor(wx.Panel):
 
         self.VariablesDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial": "",
                                       "Description":"", "OnChange":"", "Options":""}
-        self.Table = VariablesTable(self, [], ["#", "Name", "Type", "Initial",
-                                    "Description", "OnChange", "Options"])
+        self.Table = VariablesTable(self, [], ["#", "Name","Type", "Initial",
+                                               "Description", "OnChange", "Options"])        
+        # self.Table = VariablesTable(self, [], [_("#"), _("Name"), _("Type"), _("Initial"),
+        #                                        _("Description"), _("OnChange"), _("Options")])
         self.ColAlignements = [wx.ALIGN_RIGHT] +  \
                               [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
-        self.ColSizes = [20, 150] + [100]*(len(self.VariablesDefaultValue)-1)
+        self.ColSizes = [20, 150] + [130]*(len(self.VariablesDefaultValue)-1)
         self.VariablesGrid.SetTable(self.Table)
         self.VariablesGrid.SetButtons({"Add": self.AddVariableButton,
                                        "Delete": self.DeleteVariableButton,
