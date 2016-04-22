@@ -258,10 +258,10 @@ void __publish_%(location_str)s(void){
         pycfile.write(PyCFileContent)
         pycfile.close()
 
-        matiec_flags = '"-l -p -I%s"'%os.path.abspath(
+        matiec_CFLAGS = '"-I%s"'%os.path.abspath(
             self.GetCTRoot().GetIECLibPath())
 
-        return ([(Gen_PyCfile_path, matiec_flags)],
+        return ([(Gen_PyCfile_path, matiec_CFLAGS)],
                 "",
                 True,
                 ("runtime_%s.py"%location_str, file(runtimefile_path,"rb")))
