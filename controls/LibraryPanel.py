@@ -397,7 +397,7 @@ class LibraryPanel(wx.Panel):
             item_pydata = self.Tree.GetPyData(item)
             
             # Item is a block category
-            if item_pydata["type"] == CATEGORY:
+            if (item == root) or item_pydata["type"] == CATEGORY:
                 
                 # Get category first or last child according to search mode 
                 # defined
