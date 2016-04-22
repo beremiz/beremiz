@@ -1962,7 +1962,7 @@ class PLCControler:
                             for dimension in element_type.getdimension():
                                 dimensions.append((dimension.getlower(), dimension.getupper()))
                             base_type = element_type.baseType.getcontent()
-                            base_type_type = element_type.getLocalTag()
+                            base_type_type = base_type.getLocalTag()
                             element_infos["Type"] = ("array",
                                 base_type.getname()
                                 if base_type_type == "derived"
