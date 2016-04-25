@@ -262,6 +262,7 @@ class TextViewer(EditorPanel):
                         if dialog.ShowModal() == wx.ID_OK:
                             blockname = dialog.GetValue()
                         else:
+                            event.SetDragText("")                            
                             return
                         dialog.Destroy()
                     if blockname.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
