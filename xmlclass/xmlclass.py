@@ -1690,7 +1690,7 @@ class DefaultElementClass(etree.ElementBase):
         return etree.QName(self.tag).localname
         
     def tostring(self):
-        return NAMESPACE_PATTERN.sub("", etree.tostring(self, pretty_print=True))
+        return NAMESPACE_PATTERN.sub("", etree.tostring(self, pretty_print=True, encoding='utf-8')).decode('utf-8')
 
 class XMLElementClassLookUp(etree.PythonElementClassLookup):
     
