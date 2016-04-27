@@ -2317,7 +2317,7 @@ class PLCControler:
             new_id = {}
 
             try:
-                instances, error = LoadPouInstances(text.encode("utf-8"), bodytype)
+                instances, error = LoadPouInstances(text, bodytype)
             except:
                 instances, error = [], ""
             if error is not None or len(instances) == 0:
