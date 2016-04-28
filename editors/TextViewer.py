@@ -47,7 +47,8 @@ for i in xrange(26):
 
 [STC_PLC_WORD, STC_PLC_COMMENT, STC_PLC_NUMBER, STC_PLC_STRING,
  STC_PLC_VARIABLE, STC_PLC_PARAMETER, STC_PLC_FUNCTION, STC_PLC_JUMP,
- STC_PLC_ERROR, STC_PLC_SEARCH_RESULT] = range(10)
+ STC_PLC_ERROR, STC_PLC_SEARCH_RESULT,
+ STC_PLC_EMPTY] = range(11)
 [SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
 
 [ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
@@ -577,7 +578,7 @@ class TextViewer(EditorPanel):
                 self.ContextStack = []
                 current_context = self.Variables
                 if state == COMMENT:
-                    self.SetStyling(current_pos - last_styled_pos + 1, STC_PLC_COMMENT)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_COMMENT)
                 elif state == NUMBER:
                     self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
                 elif state == WORD:
@@ -594,33 +595,33 @@ class TextViewer(EditorPanel):
                     elif word in self.EnumeratedValues:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
                     else:
-                        self.SetStyling(current_pos - last_styled_pos, 31)
+                        self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                         if word not in ["]", ")"] and (self.GetCurrentPos() < last_styled_pos or self.GetCurrentPos() > current_pos):
                             self.StartStyling(last_styled_pos, wx.stc.STC_INDICS_MASK)
                             self.SetStyling(current_pos - last_styled_pos, wx.stc.STC_INDIC0_MASK)
                             self.StartStyling(current_pos, 0xff)
                 else:
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
-                if state != DPRAGMA:
+                if (state != DPRAGMA) and (state != COMMENT):
                     state = SPACE
                 line = ""
                 line_number += 1
                 self.RefreshLineFolding(line_number)
             elif line.endswith("(*") and state != COMMENT:
-                self.SetStyling(current_pos - last_styled_pos - 1, 31)
+                self.SetStyling(current_pos - last_styled_pos - 1, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
                 state = COMMENT
             elif line.endswith("{") and state not in [PRAGMA, DPRAGMA]:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
                 state = PRAGMA
             elif line.endswith("{{") and state == PRAGMA:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 state = DPRAGMA
             elif state == COMMENT:
@@ -630,16 +631,16 @@ class TextViewer(EditorPanel):
                     state = SPACE
             elif state == PRAGMA:
                 if line.endswith("}"):
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                     last_styled_pos = current_pos
                     state = SPACE
             elif state == DPRAGMA:
                 if line.endswith("}}"):
-                    self.SetStyling(current_pos - last_styled_pos + 1, 31)
+                    self.SetStyling(current_pos - last_styled_pos + 1, STC_PLC_EMPTY)
                     last_styled_pos = current_pos + 1
                     state = SPACE
             elif (line.endswith("'") or line.endswith('"')) and state not in [STRING, WSTRING]:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
@@ -662,7 +663,7 @@ class TextViewer(EditorPanel):
                     word = "#"
                     state = WORD
                 elif state == SPACE:
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                     word = char
                     last_styled_pos = current_pos
                     state = WORD
@@ -670,7 +671,7 @@ class TextViewer(EditorPanel):
                     word += char
             elif char in NUMBERS or char == '.' and state != WORD:
                 if state == SPACE:
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                     last_styled_pos = current_pos
                     state = NUMBER
                 elif state == WORD and char != '.':
@@ -693,7 +694,7 @@ class TextViewer(EditorPanel):
                     elif word in self.EnumeratedValues:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
                     else:
-                        self.SetStyling(current_pos - last_styled_pos, 31)
+                        self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                         if word not in ["]", ")"] and (self.GetCurrentPos() < last_styled_pos or self.GetCurrentPos() > current_pos):
                             self.StartStyling(last_styled_pos, wx.stc.STC_INDICS_MASK)
                             self.SetStyling(current_pos - last_styled_pos, wx.stc.STC_INDIC0_MASK)
@@ -757,9 +758,9 @@ class TextViewer(EditorPanel):
             elif word in self.EnumeratedValues:
                 self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
             else:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
         else:
-            self.SetStyling(current_pos - start_pos, 31)
+            self.SetStyling(current_pos - start_pos, STC_PLC_EMPTY)
         self.ShowHighlights(start_pos, end_pos)
         event.Skip()
 
