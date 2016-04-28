@@ -124,6 +124,12 @@ class ProcessLogger:
         elif wx.Platform == '__WXGTK__':
             popenargs["shell"] = False
 
+        if timeout:
+            self.timeout = Timer(timeout,self.endlog)
+            self.timeout.start()
+        else:
+            self.timeout = None
+            
         self.Proc = subprocess.Popen( self.Command, **popenargs )
 
         self.outt = outputThread(
@@ -139,11 +145,6 @@ class ProcessLogger:
                       self.errors)
         self.errt.start()
 
-        if timeout:
-            self.timeout = Timer(timeout,self.endlog)
-            self.timeout.start()
-        else:
-            self.timeout = None
 
     def output(self,v):
         self.outdata.append(v)
