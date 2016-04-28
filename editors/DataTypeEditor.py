@@ -74,10 +74,11 @@ class ElementsTable(CustomTable):
                 return row + 1
             colname = self.GetColLabelValue(col, False)
             value = self.data[row].get(colname, "")
+               
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
                     return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "..".join(x), value[2])), value[1])
-            return str(value)
+            return value
 
     def SetValue(self, row, col, value):
         if col < len(self.colnames):

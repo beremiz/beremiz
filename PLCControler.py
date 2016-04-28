@@ -1972,7 +1972,7 @@ class PLCControler:
                         else:
                             element_infos["Type"] = element_type_type.upper()
                         if element.initialValue is not None:
-                            element_infos["Initial Value"] = str(element.initialValue.getvalue())
+                            element_infos["Initial Value"] = element.initialValue.getvalue()
                         else:
                             element_infos["Initial Value"] = ""
                         infos["elements"].append(element_infos)
@@ -1983,7 +1983,7 @@ class PLCControler:
                         else basetype_content_type.upper())
 
                 if datatype.initialValue is not None:
-                    infos["initial"] = str(datatype.initialValue.getvalue())
+                    infos["initial"] = datatype.initialValue.getvalue()
                 else:
                     infos["initial"] = ""
                 return infos
