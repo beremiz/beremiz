@@ -49,11 +49,12 @@ class outputThread(Thread):
     def run(self):
         outchunk = None
         self.retval = None
-        while outchunk != '' and not self.killed :
-            outchunk = self.fd.readline()
-            if self.callback : self.callback(outchunk)
         while self.retval is None and not self.killed :
-            self.retval = self.Proc.poll()
+            if self.endcallback:
+                self.retval = self.Proc.poll()
+            else:
+                self.retval = self.Proc.returncode
+                
             outchunk = self.fd.readline()
             if self.callback : self.callback(outchunk)
         while outchunk != '' and not self.killed :
@@ -205,5 +206,7 @@ class ProcessLogger:
 
     def spin(self):
         self.finishsem.acquire()
+        self.outt.join()
+        self.errt.join()
         return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]
 
