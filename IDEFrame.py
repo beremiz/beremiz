@@ -1675,8 +1675,6 @@ class IDEFrame(wx.Frame):
             if message or abort:
                 if message:
                     self.ShowErrorMessage(message)
-                item = event.GetItem()
-                wx.CallAfter(self.ProjectTree.EditLabel, item)
                 event.Veto()
             else:
                 wx.CallAfter(self.RefreshProjectTree)
