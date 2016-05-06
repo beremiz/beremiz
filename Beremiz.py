@@ -994,7 +994,7 @@ class Beremiz(IDEFrame):
         self.Close()
 
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc", _("about.html")), wx.Size(550, 500))
+        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc", _("about.html")), wx.Size(550, 550))
 
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()
