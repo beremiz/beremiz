@@ -584,7 +584,7 @@ class VariablePanel(wx.Panel):
         setattr(self.VariablesGrid, "_AddRow", _AddVariable)
 
         def _DeleteVariable(row):
-            if self.Table.GetValueByName(row, "Edit"):
+            if _GetRowEdit(row):
                 self.Values.remove(self.Table.GetRow(row))
                 self.SaveValues()
                 if self.ElementType == "resource":
@@ -603,6 +603,14 @@ class VariablePanel(wx.Panel):
             return row
         setattr(self.VariablesGrid, "_MoveRow", _MoveVariable)
 
+        def _GetRowEdit(row):
+            row_edit = False
+            if self:
+                row_edit = self.Table.GetValueByName(row, "Edit")
+                bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
+                row_edit = row_edit or (bodytype in ["ST", "IL"])
+            return row_edit
+
         def _RefreshButtons():
             if self:
                 table_length = len(self.Table.data)
@@ -611,7 +619,7 @@ class VariablePanel(wx.Panel):
                 row = 0
                 if table_length > 0:
                     row = self.VariablesGrid.GetGridCursorRow()
-                    row_edit = self.Table.GetValueByName(row, "Edit")
+                    row_edit = _GetRowEdit(row)
                 self.AddButton.Enable(not self.Debug)
                 self.DeleteButton.Enable(not self.Debug and (table_length > 0 and row_edit))
                 self.UpButton.Enable(not self.Debug and (table_length > 0 and row > 0 and self.Filter == "All"))
