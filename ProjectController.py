@@ -141,7 +141,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
         self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
-        self.ieclib_c_path = os.path.join(base_folder, "matiec", "lib", "C")
+        self.ieclib_c_path = self._getMatIecCPath()
 
         # Setup debug information
         self.IECdebug_datas = {}
@@ -629,11 +629,43 @@ class ProjectController(ConfigTreeNode, PLCControler):
         plc_file.close()
         return True
 
+
+    def _getMatIecCPath(self):
+        path=''
+        paths=[
+            os.path.join(base_folder, "matiec", "lib", "C"),
+            os.path.join(base_folder, "matiec", "lib") ]
+        for p in paths:
+            filename=os.path.join(p, "iec_types.h")
+            if (os.path.isfile(filename)):
+                path = p
+                break
+        return path
+
+    def _getMatIecOptions(self):
+        buildpath = self._getBuildPath()
+        buildcmd = "\"%s\" -h"%(self.iec2c_path)
+        options =["-f", "-l", "-p"]
+
+        buildopt = ""
+        try:
+            # Invoke compiler. Output files are listed to stdout, errors to stderr
+            status, result, err_result = ProcessLogger(self.logger, buildcmd,
+                no_stdout=True, no_stderr=True).spin()
+        except Exception,e:
+            return buildopt
+
+        for opt in options:
+            if opt in result:
+                buildopt = buildopt + " " + opt
+        return buildopt
+
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
-        buildcmd = "\"%s\" -f -l -p -I \"%s\" -T \"%s\" \"%s\""%(
+        buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\""%(
                          self.iec2c_path,
+                         self._getMatIecOptions(),
                          self.ieclib_path,
                          buildpath,
                          self._getIECcodepath())
