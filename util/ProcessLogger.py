@@ -175,6 +175,7 @@ class ProcessLogger:
             self.log_the_end(ecode,pid)
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
+        self.errt.join()
         self.finishsem.release()
 
     def kill(self,gently=True):
@@ -199,14 +200,12 @@ class ProcessLogger:
 
     def endlog(self):
         if self.endlock.acquire(False):
-            self.finishsem.release()
             if not self.outt.finished and self.kill_it:
                self.kill()
+            self.finishsem.release()
 
 
     def spin(self):
         self.finishsem.acquire()
-        self.outt.join()
-        self.errt.join()
         return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]
 
