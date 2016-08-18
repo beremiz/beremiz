@@ -853,7 +853,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         attrs["C_path"] = '__'.join(parts)
                         if attrs["vartype"] == "FB":
                             config_FBs[tuple(parts)] = attrs["C_path"]
-                    if attrs["vartype"] != "FB":
+                    if attrs["vartype"] != "FB" and attrs["type"] in DebugTypesSize:
                         # Push this dictionnary into result.
                         self._DbgVariablesList.append(attrs)
                         # Fill in IEC<->C translation dicts
