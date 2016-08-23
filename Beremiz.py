@@ -35,9 +35,11 @@ from types import ListType
 
 beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
-import wxversion
-wxversion.select(['2.8', '3.0'])
-import wx
+if __name__ == '__main__':
+    import wxversion
+    wxversion.select(['2.8', '3.0'])
+    import wx
+    
 from wx.lib.agw.advancedsplash import AdvancedSplash
 
 def Bpath(*args):
