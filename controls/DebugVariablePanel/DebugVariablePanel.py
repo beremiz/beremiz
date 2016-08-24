@@ -291,6 +291,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         DebugViewer.__init__(self, producer, True)
         
         self.SetSizer(main_sizer)
+        self.SetTickTime()
     
     def SetTickTime(self, ticktime=0):
         """
