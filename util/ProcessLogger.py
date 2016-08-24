@@ -109,6 +109,7 @@ class ProcessLogger:
         self.errdata = []
         self.keyword = keyword
         self.kill_it = kill_it
+        self.startsem = Semaphore(0)        
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
 
@@ -145,6 +146,7 @@ class ProcessLogger:
                       self.Proc.stderr,
                       self.errors)
         self.errt.start()
+        self.startsem.release()
 
 
     def output(self,v):
@@ -168,6 +170,7 @@ class ProcessLogger:
         self.logger.write_warning(_("exited with status %s (pid %s)\n")%(str(ecode),str(pid)))
 
     def finish(self, pid,ecode):
+        self.startsem.acquire()
         if self.timeout:
             self.timeout.cancel()
         self.exitcode = ecode
@@ -179,6 +182,7 @@ class ProcessLogger:
         self.finishsem.release()
 
     def kill(self,gently=True):
+        self.startsem.acquire()        
         self.outt.killed = True
         self.errt.killed = True
         if wx.Platform == '__WXMSW__':
