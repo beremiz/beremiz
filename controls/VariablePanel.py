@@ -144,6 +144,14 @@ class VariableTable(CustomTable):
     def GetOldValue(self):
         return self.old_value
 
+    def _GetRowEdit(self, row):
+        row_edit = self.GetValueByName(row, "Edit")
+        var_type = self.Parent.GetTagName()
+        bodytype = self.Parent.Controler.GetEditedElementBodyType(var_type)
+        if bodytype in ["ST", "IL"]:
+            row_edit = True;
+        return row_edit
+
     def _updateColAttrs(self, grid):
         """
         wx.grid.Grid -> update the column attributes to add the
@@ -171,7 +179,7 @@ class VariableTable(CustomTable):
                             editor.SetParameters(",".join(map(_, options)))
                         else:
                             grid.SetReadOnly(row, col, True)
-                    elif col != 0 and self.GetValueByName(row, "Edit"):
+                    elif col != 0 and self._GetRowEdit(row):
                         grid.SetReadOnly(row, col, False)
                         if colname == "Name":
                             editor = wx.grid.GridCellTextEditor()
