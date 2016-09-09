@@ -629,6 +629,10 @@ class TextViewer(EditorPanel):
                     self.SetStyling(current_pos - last_styled_pos + 2, STC_PLC_COMMENT)
                     last_styled_pos = current_pos + 1
                     state = SPACE
+                    if len(self.CallStack) > 0:
+                        current_call = self.CallStack.pop()
+                    else:
+                        current_call = None                    
             elif state == PRAGMA:
                 if line.endswith("}"):
                     self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
