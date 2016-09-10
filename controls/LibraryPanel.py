@@ -67,8 +67,12 @@ class LibraryPanel(wx.Panel):
                   self.OnSearchButtonClick, self.SearchCtrl)
         # Bind keyboard event on SearchCtrl text control to catch UP and DOWN
         # for search previous and next occurrence
-        search_textctrl = self.SearchCtrl.GetChildren()[0]
-        search_textctrl.Bind(wx.EVT_CHAR, self.OnKeyDown)
+
+        # This protects from fail to start when no children[0] available (possible for wxPython 3.0)
+        if self.SearchCtrl.GetChildren():
+            search_textctrl = self.SearchCtrl.GetChildren()[0]
+            search_textctrl.Bind(wx.EVT_CHAR, self.OnKeyDown)
+
         main_sizer.AddWindow(self.SearchCtrl, flag=wx.GROW)
         
         # Add Splitter window for tree and block comment to main sizer
