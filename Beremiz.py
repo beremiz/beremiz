@@ -393,6 +393,11 @@ class Beremiz(IDEFrame):
         inspectorID = wx.NewId()
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=inspectorID)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), inspectorID)]
+
+        keyID = wx.NewId()
+        self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=keyID)
+        accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F12, keyID)]
+
         for method,shortcut in [("Stop",     wx.WXK_F4),
                                 ("Run",      wx.WXK_F5),
                                 ("Transfer", wx.WXK_F6),
