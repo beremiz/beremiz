@@ -64,7 +64,8 @@ from util.BitmapLibrary import GetBitmap
 
 # Define PLCOpenEditor DisplayMenu extra items id
 [ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
-] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(1)]
+ ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
+] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(2)]
 
 #-------------------------------------------------------------------------------
 #                            EditorToolBar definitions
@@ -442,6 +443,10 @@ class IDEFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, self.GenerateZoomFunction(idx), id=new_id)
 
         parent.AppendSeparator()
+        AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
+                   kind=wx.ITEM_NORMAL, text=_(u'Switch perspective') + '\tF12')
+        self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
+
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
               kind=wx.ITEM_NORMAL, text=_(u'Reset Perspective'))
         self.Bind(wx.EVT_MENU, self.OnResetPerspective, id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE)
@@ -1438,14 +1443,17 @@ class IDEFrame(wx.Frame):
         def OnTabsOpenedDClick(event):
             pos = event.GetPosition()
             if tabctrl.TabHitTest(pos.x, pos.y, None):
-                pane = self.AUIManager.GetPane(self.TabsOpened)
-                if pane.IsMaximized():
-                    self.AUIManager.RestorePane(pane)
-                else:
-                    self.AUIManager.MaximizePane(pane)
-                self.AUIManager.Update()
+                self.SwitchFullScrMode(event)
             event.Skip()
         return OnTabsOpenedDClick
+
+    def SwitchFullScrMode(self,evt):
+        pane = self.AUIManager.GetPane(self.TabsOpened)
+        if pane.IsMaximized():
+            self.AUIManager.RestorePane(pane)
+        else:
+            self.AUIManager.MaximizePane(pane)
+        self.AUIManager.Update()
 
 #-------------------------------------------------------------------------------
 #                         Types Tree Management Functions
