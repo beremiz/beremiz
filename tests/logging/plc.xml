@@ -1,14 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
-         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <fileHeader companyName="Unknown"
-              productName="Unnamed"
-              productVersion="1"
-              creationDateTime="2013-01-29T14:01:00"/>
-  <contentHeader name="Unnamed"
-                 modificationDateTime="2013-04-04T11:06:06">
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="Unknown" productName="Generic PLC" productVersion="1" creationDateTime="2013-01-29T14:01:00" contentDescription="This example shows logging functionality in Beremiz.&#10;Here are shown two ways of logging:&#10;- from IEC PLC program;&#10;- from python extension.&#10;"/>
+  <contentHeader name="Logging example" modificationDateTime="2016-09-09T17:54:15">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -47,29 +40,34 @@
                 <derived name="LOGLEVEL"/>
               </type>
               <initialValue>
-                <simpleValue value="WARNING"/>
+                <simpleValue value="INFO"/>
               </initialValue>
+            </variable>
+            <variable name="Timer">
+              <type>
+                <derived name="TOF"/>
+              </type>
             </variable>
           </localVars>
         </interface>
         <body>
           <FBD>
-            <inVariable localId="2" height="27" width="85">
-              <position x="732" y="188"/>
+            <inVariable localId="2" height="30" width="170" executionOrderId="0" negated="false">
+              <position x="507" y="347"/>
               <connectionPointOut>
-                <relPosition x="85" y="13"/>
+                <relPosition x="170" y="15"/>
               </connectionPointOut>
-              <expression>'Moooooo'</expression>
+              <expression>'IEC side logging: beat #'</expression>
             </inVariable>
-            <block localId="3" width="59" height="40" typeName="NOT">
-              <position x="213" y="64"/>
+            <block localId="3" width="59" height="40" typeName="NOT" executionOrderId="0">
+              <position x="241" y="269"/>
               <inputVariables>
                 <variable formalParameter="IN">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
-                    <connection refLocalId="4">
-                      <position x="213" y="94"/>
-                      <position x="179" y="94"/>
+                    <connection refLocalId="14" formalParameter="Q">
+                      <position x="241" y="299"/>
+                      <position x="195" y="299"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -83,44 +81,46 @@
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="4" height="27" width="41">
-              <position x="138" y="81"/>
+            <inOutVariable localId="4" height="27" width="51" executionOrderId="0" negatedOut="false" negatedIn="false">
+              <position x="66" y="286"/>
               <connectionPointIn>
                 <relPosition x="0" y="13"/>
                 <connection refLocalId="3" formalParameter="OUT">
-                  <position x="138" y="94"/>
-                  <position x="123" y="94"/>
-                  <position x="123" y="124"/>
-                  <position x="282" y="124"/>
-                  <position x="282" y="94"/>
-                  <position x="272" y="94"/>
+                  <position x="66" y="299"/>
+                  <position x="37" y="299"/>
+                  <position x="37" y="372"/>
+                  <position x="314" y="372"/>
+                  <position x="314" y="299"/>
+                  <position x="300" y="299"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="41" y="13"/>
+                <relPosition x="51" y="13"/>
               </connectionPointOut>
               <expression>beat</expression>
             </inOutVariable>
-            <block localId="5" width="68" height="80" typeName="ADD">
-              <position x="482" y="209"/>
+            <block localId="5" width="68" height="98" typeName="ADD" executionOrderId="0">
+              <position x="463" y="385"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
-                    <relPosition x="0" y="35"/>
+                    <relPosition x="0" y="39"/>
                     <connection refLocalId="10" formalParameter="OUT">
-                      <position x="482" y="244"/>
-                      <position x="459" y="244"/>
-                      <position x="459" y="230"/>
-                      <position x="449" y="230"/>
+                      <position x="463" y="424"/>
+                      <position x="452" y="424"/>
+                      <position x="452" y="424"/>
+                      <position x="454" y="424"/>
+                      <position x="454" y="424"/>
+                      <position x="444" y="424"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
                   <connectionPointIn>
-                    <relPosition x="0" y="65"/>
+                    <relPosition x="0" y="78"/>
                     <connection refLocalId="6">
-                      <position x="482" y="274"/>
-                      <position x="397" y="274"/>
+                      <position x="463" y="463"/>
+                      <position x="444" y="463"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -129,51 +129,47 @@
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="68" y="35"/>
+                    <relPosition x="68" y="39"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="6" height="27" width="48">
-              <position x="349" y="261"/>
+            <inOutVariable localId="6" height="27" width="103" executionOrderId="0" negatedOut="false" negatedIn="false">
+              <position x="341" y="450"/>
               <connectionPointIn>
                 <relPosition x="0" y="13"/>
                 <connection refLocalId="5" formalParameter="OUT">
-                  <position x="349" y="274"/>
-                  <position x="339" y="274"/>
-                  <position x="339" y="306"/>
-                  <position x="563" y="306"/>
-                  <position x="563" y="244"/>
-                  <position x="550" y="244"/>
+                  <position x="341" y="463"/>
+                  <position x="320" y="463"/>
+                  <position x="320" y="500"/>
+                  <position x="544" y="500"/>
+                  <position x="544" y="424"/>
+                  <position x="531" y="424"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="48" y="13"/>
+                <relPosition x="103" y="13"/>
               </connectionPointOut>
               <expression>count</expression>
             </inOutVariable>
-            <block localId="8" width="67" height="60" typeName="CONCAT">
-              <position x="868" y="174"/>
+            <block localId="8" width="67" height="144" typeName="CONCAT" executionOrderId="0">
+              <position x="727" y="311"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="51"/>
                     <connection refLocalId="2">
-                      <position x="868" y="204"/>
-                      <position x="843" y="204"/>
-                      <position x="843" y="201"/>
-                      <position x="817" y="201"/>
+                      <position x="727" y="362"/>
+                      <position x="677" y="362"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="113"/>
                     <connection refLocalId="9" formalParameter="OUT">
-                      <position x="868" y="224"/>
-                      <position x="765" y="224"/>
-                      <position x="765" y="232"/>
-                      <position x="712" y="232"/>
+                      <position x="727" y="424"/>
+                      <position x="677" y="424"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -182,22 +178,20 @@
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="67" y="30"/>
+                    <relPosition x="67" y="51"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="9" width="116" height="40" typeName="INT_TO_STRING">
-              <position x="596" y="202"/>
+            <block localId="9" width="116" height="40" typeName="INT_TO_STRING" executionOrderId="0">
+              <position x="561" y="394"/>
               <inputVariables>
                 <variable formalParameter="IN">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="5" formalParameter="OUT">
-                      <position x="596" y="232"/>
-                      <position x="573" y="232"/>
-                      <position x="573" y="244"/>
-                      <position x="550" y="244"/>
+                      <position x="561" y="424"/>
+                      <position x="531" y="424"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -211,19 +205,17 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="10" width="105" height="40" typeName="BOOL_TO_INT">
-              <position x="344" y="200"/>
+            <block localId="10" width="105" height="40" typeName="BOOL_TO_INT" executionOrderId="0">
+              <position x="339" y="394"/>
               <inputVariables>
                 <variable formalParameter="IN" edge="rising">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="3" formalParameter="OUT">
-                      <position x="344" y="230"/>
-                      <position x="242" y="230"/>
-                      <position x="242" y="163"/>
-                      <position x="282" y="163"/>
-                      <position x="282" y="94"/>
-                      <position x="272" y="94"/>
+                      <position x="339" y="424"/>
+                      <position x="314" y="424"/>
+                      <position x="314" y="299"/>
+                      <position x="300" y="299"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -237,39 +229,33 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="11" width="65" height="80" typeName="LOGGER" instanceName="LOGGER0">
-              <position x="1100" y="98"/>
+            <block localId="11" width="65" height="209" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0">
+              <position x="907" y="248"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
                   <connectionPointIn>
-                    <relPosition x="0" y="30"/>
+                    <relPosition x="0" y="52"/>
                     <connection refLocalId="3" formalParameter="OUT">
-                      <position x="1100" y="128"/>
-                      <position x="631" y="128"/>
-                      <position x="631" y="94"/>
-                      <position x="272" y="94"/>
+                      <position x="907" y="300"/>
+                      <position x="300" y="300"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="MSG">
                   <connectionPointIn>
-                    <relPosition x="0" y="50"/>
+                    <relPosition x="0" y="112"/>
                     <connection refLocalId="8" formalParameter="OUT">
-                      <position x="1100" y="148"/>
-                      <position x="963" y="148"/>
-                      <position x="963" y="204"/>
-                      <position x="935" y="204"/>
+                      <position x="907" y="360"/>
+                      <position x="794" y="360"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="LEVEL">
                   <connectionPointIn>
-                    <relPosition x="0" y="70"/>
+                    <relPosition x="0" y="177"/>
                     <connection refLocalId="12">
-                      <position x="1100" y="168"/>
-                      <position x="1090" y="168"/>
-                      <position x="1090" y="168"/>
-                      <position x="1057" y="168"/>
+                      <position x="907" y="425"/>
+                      <position x="879" y="425"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -277,13 +263,72 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="12" height="27" width="79">
-              <position x="978" y="155"/>
+            <inVariable localId="12" height="27" width="79" executionOrderId="0" negated="false">
+              <position x="800" y="412"/>
               <connectionPointOut>
                 <relPosition x="79" y="13"/>
               </connectionPointOut>
-              <expression>WARNING</expression>
+              <expression>lvl</expression>
             </inVariable>
+            <block localId="14" typeName="TOF" instanceName="Timer" executionOrderId="0" height="98" width="45">
+              <position x="150" y="260"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="39"/>
+                    <connection refLocalId="4">
+                      <position x="150" y="299"/>
+                      <position x="117" y="299"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="PT">
+                  <connectionPointIn>
+                    <relPosition x="0" y="78"/>
+                    <connection refLocalId="1">
+                      <position x="150" y="338"/>
+                      <position x="117" y="338"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Q">
+                  <connectionPointOut>
+                    <relPosition x="45" y="39"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ET">
+                  <connectionPointOut>
+                    <relPosition x="45" y="78"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="1" executionOrderId="0" height="24" width="52" negated="false">
+              <position x="65" y="326"/>
+              <connectionPointOut>
+                <relPosition x="52" y="12"/>
+              </connectionPointOut>
+              <expression>T#3s</expression>
+            </inVariable>
+            <comment localId="15" height="212" width="675">
+              <position x="27" y="16"/>
+              <content>
+                <xhtml:p><![CDATA[This example shows logging functionality in Beremiz.
+Here are shown two ways of logging:
+- from IEC PLC program;
+- from python extension.
+
+In IEC PLC program every third second (beat) new message is generated and put in PLC log.
+See function blocks below.
+
+Every 15 seconds status of PLC program is put in PLC log from python extension.
+For more information about logging from python look at 0.x: py_ext_0 implementation in project tree. 
+]]></xhtml:p>
+              </content>
+            </comment>
           </FBD>
         </body>
       </pou>
@@ -293,8 +338,8 @@
     <configurations>
       <configuration name="config">
         <resource name="resource1">
-          <task name="blob" interval="T#100ms" priority="0">
-            <pouInstance name="blub" typeName="program0"/>
+          <task name="task0" priority="0" interval="T#100ms">
+            <pouInstance name="prg" typeName="program0"/>
           </task>
         </resource>
       </configuration>
