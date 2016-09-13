@@ -60,7 +60,11 @@ if __name__ == '__main__':
 
     # Create wxApp (Need to create App before internationalization because of
     # Windows)
-    app = wx.PySimpleApp()
+    if wx.VERSION >= (3, 0, 0):
+        app = wx.App()
+    else:
+        app = wx.PySimpleApp()
+
 
     from util.misc import InstallLocalRessources
     InstallLocalRessources(beremiz_dir)
@@ -160,6 +164,7 @@ class PLCOpenEditor(IDEFrame):
     #  @param fileOpen The filepath to open if no controler defined (default: None).
     #  @param debug The filepath to open if no controler defined (default: False).
     def __init__(self, parent, fileOpen = None):
+        self.icon = wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"), wx.BITMAP_TYPE_ICO)
         IDEFrame.__init__(self, parent)
 
         result = None
@@ -178,7 +183,7 @@ class PLCOpenEditor(IDEFrame):
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
 
         # Define PLCOpenEditor icon
-        self.SetIcon(wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"),wx.BITMAP_TYPE_ICO))
+        self.SetIcon(self.icon)
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
@@ -472,7 +477,8 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
     sys.excepthook = handle_exception
 
 if __name__ == '__main__':
-    wx.InitAllImageHandlers()
+    if wx.VERSION < (3, 0, 0):
+        wx.InitAllImageHandlers()
 
     # Install a exception handle for bug reports
     AddExceptHook(os.getcwd(),__version__)
