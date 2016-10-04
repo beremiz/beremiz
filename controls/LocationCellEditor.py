@@ -161,15 +161,22 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
             self.CellControl.SetVarType(self.Table.GetValueByName(row, 'Type'))
         self.CellControl.SetFocus()
 
-    def EndEdit(self, row, col, grid):
+    def EndEditInternal(self, row, col, grid, old_loc):
         loc = self.CellControl.GetValue()
-        old_loc = self.Table.GetValueByName(row, 'Location')
         changed = loc != old_loc
         if changed:
             self.Table.SetValueByName(row, 'Location', loc)
             self.Table.SetValueByName(row, 'Type', self.CellControl.GetVarType())
         self.CellControl.Disable()
         return changed
+        
+    if wx.VERSION >= (3, 0, 0):
+        def EndEdit(self, row, col, grid, oldval):
+            self.EndEditInternal(row, col, grid, oldval)
+    else:
+        def EndEdit(self, row, col, grid):
+            old_loc = self.Table.GetValueByName(row, 'Location')            
+            self.EndEditInternal(row, col, grid, oldval)
     
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,
