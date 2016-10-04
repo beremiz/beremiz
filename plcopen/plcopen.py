@@ -1559,7 +1559,7 @@ if cls:
 cls = PLCOpenParser.GetElementClass("body")
 if cls:
     cls.currentExecutionOrderId = 0
-    
+    checkedBlocksDict = {}
     def resetcurrentExecutionOrderId(self):
         object.__setattr__(self, "currentExecutionOrderId", 0)
     setattr(cls, "resetcurrentExecutionOrderId", resetcurrentExecutionOrderId)
@@ -1576,6 +1576,7 @@ if cls:
                                             PLCOpenParser.GetElementClass("connector", "commonObjects"), 
                                             PLCOpenParser.GetElementClass("continuation", "commonObjects"))):
                     element.setexecutionOrderId(0)
+            checkedBlocksDict.clear()
         else:
             raise TypeError, _("Can only generate execution order on FBD networks!")
     setattr(cls, "resetexecutionOrder", resetexecutionOrder)
@@ -1598,12 +1599,15 @@ if cls:
         if self.content.getLocalTag() == "FBD":
             localid = link.getrefLocalId()
             instance = self.getcontentInstance(localid)
+            checkedBlocksDict[localid] = True
             if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) and instance.getexecutionOrderId() == 0:
                 for variable in instance.inputVariables.getvariable():
                     connections = variable.connectionPointIn.getconnections()
                     if connections and len(connections) == 1:
-                        self.compileelementExecutionOrder(connections[0])
-                instance.setexecutionOrderId(self.getnewExecutionOrderId())
+                        if (checkedBlocksDict.has_key(connections[0].getrefLocalId()) == False):
+                            self.compileelementExecutionOrder(connections[0])
+                if instance.getexecutionOrderId() == 0:
+                    instance.setexecutionOrderId(self.getnewExecutionOrderId())
             elif isinstance(instance, PLCOpenParser.GetElementClass("continuation", "commonObjects")) and instance.getexecutionOrderId() == 0:
                 name = instance.getname()
                 for tmp_instance in self.getcontentInstances():
