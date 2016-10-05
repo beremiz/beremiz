@@ -212,7 +212,7 @@ class ProjectPropertiesPanel(wx.Notebook):
         for param in REQUIRED_PARAMS:
             getattr(self, param).Enable(enable_required)
            
-        languages = ["", "en-US", "fr-FR", "zh-CN"]
+        languages = ["", "en-US", "fr-FR", "zh-CN", "ru-RU"]
         
         for language in languages:
             self.Language.Append(language)
