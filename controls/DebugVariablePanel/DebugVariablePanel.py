@@ -562,7 +562,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         else:
             tick = None
         if tick is not None:
-            self.TickLabel.SetLabel("Tick: %d" % tick)
+            self.TickLabel.SetLabel(label=_("Tick: %d") % tick)
             tick_duration = int(tick * self.Ticktime)
             not_null = False
             duration = ""
