@@ -2740,6 +2740,11 @@ msgstr ""
 msgid "Range:"
 msgstr "Диапазон:"
 
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:565
+#, python-format
+msgid "Tick: %d"
+msgstr "Цикл: %d"
+
 #: ../ProjectController.py:1762
 msgid "Raw IEC code"
 msgstr "МЭК-код"
