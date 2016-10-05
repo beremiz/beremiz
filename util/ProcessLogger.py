@@ -170,6 +170,7 @@ class ProcessLogger:
         self.logger.write_warning(_("exited with status %s (pid %s)\n")%(str(ecode),str(pid)))
 
     def finish(self, pid,ecode):
+        # avoid running function before start is finished        
         self.startsem.acquire()
         if self.timeout:
             self.timeout.cancel()
@@ -182,7 +183,10 @@ class ProcessLogger:
         self.finishsem.release()
 
     def kill(self,gently=True):
-        self.startsem.acquire()        
+        # avoid running kill before start is finished
+        self.startsem.acquire()
+        self.startsem.release()
+        
         self.outt.killed = True
         self.errt.killed = True
         if wx.Platform == '__WXMSW__':
