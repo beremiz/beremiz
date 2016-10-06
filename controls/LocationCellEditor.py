@@ -176,7 +176,7 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
     else:
         def EndEdit(self, row, col, grid):
             old_loc = self.Table.GetValueByName(row, 'Location')            
-            self.EndEditInternal(row, col, grid, oldval)
+            self.EndEditInternal(row, col, grid, old_loc)
     
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,
