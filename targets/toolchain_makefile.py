@@ -122,7 +122,10 @@ class toolchain_makefile():
                               "buildpath": self.buildpath
                              }
             
-            command = [ token % beremizcommand for token in target.getCommand().split(' ')]
+            # clean sequence of multiple whitespaces 
+            cmd = re.sub(r"[ ]+", " ", target.getCommand())
+
+            command = [ token % beremizcommand for token in cmd.split(' ')]
 
             # Call Makefile to build PLC code and link it with target specific code
             status, result, err_result = ProcessLogger(self.CTRInstance.logger,
