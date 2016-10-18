@@ -1462,12 +1462,20 @@ class Viewer(EditorPanel, DebugViewer):
         return None
 
     def FindBlockConnector(self, pos, direction = None, exclude = None):
-        for block in self.Blocks.itervalues():
-            result = block.TestConnector(pos, direction, exclude)
-            if result:
-                return result
-        return None
+        result, error = self.FindBlockConnectorWithError(pos, direction, exclude)
+        return result
 
+    def FindBlockConnectorWithError(self, pos, direction = None, exclude = None):
+        error = False        
+        for block in self.Blocks.itervalues():
+            connector = block.TestConnector(pos, direction, exclude)
+            if connector:
+                avail, error = connector.ConnectionAvailable(direction, exclude)
+                if not avail:
+                    connector = None
+                return connector, error
+        return None, error
+    
     def FindElementById(self, id):
         block = self.Blocks.get(id, None)
         if block is not None:
@@ -2273,7 +2281,8 @@ class Viewer(EditorPanel, DebugViewer):
                 self.rubberBand.OnMotion(event, dc, self.Scaling)
             elif not self.Debug and self.Mode == MODE_SELECTION and self.SelectedElement is not None:
                 if self.DrawingWire:
-                    connector = self.FindBlockConnector(pos, self.SelectedElement.GetConnectionDirection(), self.SelectedElement.EndConnected)
+                    connector, errorHighlight = self.FindBlockConnectorWithError(pos, self.SelectedElement.GetConnectionDirection(), self.SelectedElement.EndConnected)
+                    self.SelectedElement.ErrHighlight = errorHighlight;
                     if not connector or self.SelectedElement.EndConnected == None:
                         self.SelectedElement.ResetPoints()
                         movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)

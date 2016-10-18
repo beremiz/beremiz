@@ -1351,19 +1351,35 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             self.Edge = edge    
             self.Negated = False
     
+    # assume that pointer is already inside of this connector
+    def ConnectionAvailable(self, direction=None, exclude=True):
+        wire_nums = len(self.Wires)
+        
+        connector_free = (wire_nums<= 0)
+        connector_max_used = ((wire_nums > 0) and self.OneConnected)
+        if (self.Parent.CurrentLanguage in ["SFC", "LD"]) and (self.Type == "BOOL"):
+            connector_max_used = False;
+
+        # connector is available for new connection
+        connect  = connector_free or not connector_max_used
+        return connect, connector_max_used
+                           
     # Tests if the point given is near from the end point of this connector
-    def TestPoint(self, pt, direction = None, exclude = True):
-        parent_pos = self.ParentBlock.GetPosition()
-        if (not (len(self.Wires) > 0 and self.OneConnected and exclude) or self.Type == "BOOL")\
-            and direction is None or self.Direction == direction:
+    def TestPoint(self, pt, direction=None, exclude=True):
+        inside = False;
+        check_point = (not exclude) and (direction is None or self.Direction == direction);
+
+        if check_point:
             # Calculate a square around the end point of this connector
+            parent_pos = self.ParentBlock.GetPosition()
             x = parent_pos[0] + self.Pos.x + self.Direction[0] * CONNECTOR_SIZE - ANCHOR_DISTANCE
             y = parent_pos[1] + self.Pos.y + self.Direction[1] * CONNECTOR_SIZE - ANCHOR_DISTANCE
             width = ANCHOR_DISTANCE * 2 + abs(self.Direction[0]) * CONNECTOR_SIZE
             height = ANCHOR_DISTANCE * 2 + abs(self.Direction[1]) * CONNECTOR_SIZE
             rect = wx.Rect(x, y, width, height)
-            return rect.InsideXY(pt.x, pt.y)
-        return False
+            inside = rect.InsideXY(pt.x, pt.y);
+                           
+        return inside
     
     # Draws the highlightment of this element if it is highlighted
     def DrawHighlightment(self, dc):
@@ -1551,6 +1567,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.OverEnd = False
         self.ComputingType = False
         self.Font = parent.GetMiniFont()
+        self.ErrHighlight = False
     
     def GetDefinition(self):
         if self.StartConnected is not None and self.EndConnected is not None:
@@ -2590,8 +2607,13 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def DrawHighlightment(self, dc):
         scalex, scaley = dc.GetUserScale()
         dc.SetUserScale(1, 1)
-        dc.SetPen(MiterPen(HIGHLIGHTCOLOR, (2 * scalex + 5)))
-        dc.SetBrush(wx.Brush(HIGHLIGHTCOLOR))
+        # If user trying to connect wire with wrong input, highlight will become red.
+        if self.ErrHighlight == True and not (self.EndConnected):
+            highlightcolor = wx.RED
+        else:
+            highlightcolor = HIGHLIGHTCOLOR
+        dc.SetPen(MiterPen(highlightcolor, (2 * scalex + 5)))
+        dc.SetBrush(wx.Brush(highlightcolor))
         dc.SetLogicalFunction(wx.AND)
         # Draw the start and end points if they are not connected or the mouse is over them
         if len(self.Points) > 0 and (not self.StartConnected or self.OverStart):
