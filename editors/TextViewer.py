@@ -908,7 +908,7 @@ class TextViewer(EditorPanel):
                         key_handled = True
             if not key_handled:
                 event.Skip()
-        elif key in NAVIGATION_KEYS:
+        else:
             event.Skip()
 
     def OnKillFocus(self, event):

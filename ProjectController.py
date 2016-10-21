@@ -1119,6 +1119,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", self.AppFrame, None, instancepath=name)
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
+                self._IECCodeView.Editor.SetReadOnly(True)                
                 try:
                     text = file(plc_file).read()
                 except:
