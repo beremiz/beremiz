@@ -465,9 +465,20 @@ class Beremiz(IDEFrame):
         self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
         self.SetStatusBar(self.ConnectionStatusBar)
 
+    def __init_execute_path(self):
+        if os.name == 'nt':
+            # on windows, desktop shortcut launches Beremiz.py
+            # with working dir set to mingw/bin.
+            # then we prefix CWD to PATH in order to ensure that
+            # commands invoked by build process by default are
+            # found here.
+            os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
+        
+        
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
         # Add beremiz's icon in top left corner of the frame
         self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
+        self.__init_execute_path()
         
         IDEFrame.__init__(self, parent, debug)
         self.Log = LogPseudoFile(self.LogConsole,self.SelectTab)
