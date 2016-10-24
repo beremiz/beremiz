@@ -30,15 +30,6 @@ import time
 
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
-
-if os.name == 'nt':
-    # on windows, desktop shortcut launches Beremiz.py
-    # with working dir set to mingw/bin.
-    # then we prefix CWD to PATH in order to ensure that
-    # commands invoked from Makefiles will first resolve
-    # to here.
-    os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
-
 class toolchain_makefile():
     def __init__(self, CTRInstance):
         self.CTRInstance = CTRInstance
