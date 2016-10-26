@@ -1119,12 +1119,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECCodeView = IECCodeViewer(self.AppFrame.TabsOpened, "", self.AppFrame, None, instancepath=name)
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
-                self._IECCodeView.Editor.SetReadOnly(True)                
                 try:
                     text = file(plc_file).read()
                 except:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text = text)
+                self._IECCodeView.Editor.SetReadOnly(True)                                
                 self._IECCodeView.SetIcon(GetBitmap("ST"))
                 setattr(self._IECCodeView, "_OnClose", self.OnCloseEditor)
 
