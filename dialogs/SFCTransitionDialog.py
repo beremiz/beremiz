@@ -47,7 +47,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         connection (default: True)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              size=wx.Size(350, 300), title=_('Edit transition'))
+              size=wx.Size(350, 350), title=_('Edit transition'))
         
         # Init common sizers
         self._init_sizers(2, 0, 8, None, 2, 1)
