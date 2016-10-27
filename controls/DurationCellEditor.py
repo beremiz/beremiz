@@ -128,11 +128,11 @@ class DurationCellEditor(wx.grid.PyGridCellEditor):
 
     if wx.VERSION >= (3, 0, 0):
         def EndEdit(self, row, col, grid, oldval):
-            self.EndEditInternal(row, col, grid, oldval)
+            return self.EndEditInternal(row, col, grid, oldval)
     else:
         def EndEdit(self, row, col, grid):
             oldval = self.Table.GetValueByName(row, self.Colname)            
-            self.EndEditInternal(row, col, grid, oldval)    
+            return self.EndEditInternal(row, col, grid, oldval)    
 
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,
