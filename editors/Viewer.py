@@ -3408,16 +3408,9 @@ class Viewer(EditorPanel, DebugViewer):
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
 
             self.SearchParams = search_params
-            criteria = {
-                "raw_pattern": search_params["find_pattern"],
-                "pattern": re.compile(search_params["find_pattern"]),
-                "case_sensitive": search_params["case_sensitive"],
-                "regular_expression": search_params["regular_expression"],
-                "filter": "all"}
-
             self.SearchResults = []
             blocks = []
-            for infos, start, end, text in self.Controler.SearchInPou(self.TagName, criteria, self.Debug):
+            for infos, start, end, text in self.Controler.SearchInPou(self.TagName, search_params, self.Debug):
                 if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
                     self.SearchResults.append((infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT))
                 else:

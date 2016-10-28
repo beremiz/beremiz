@@ -253,7 +253,7 @@ class SearchResultPanel(wx.Panel):
             else:
                 header_format = _("'%s' - %d matches in project")
             
-            self.HeaderLabel.SetLabel(header_format % (self.Criteria["raw_pattern"], matches_number))
+            self.HeaderLabel.SetLabel(header_format % (self.Criteria["find_pattern"], matches_number))
             self.ResetButton.Enable(True)
             
             if matches_number > 0:

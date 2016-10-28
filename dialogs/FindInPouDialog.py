@@ -23,6 +23,7 @@
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import wx
+from plcopen.plcopen import *
 
 class FindInPouDialog(wx.Frame):
 
@@ -33,13 +34,14 @@ class FindInPouDialog(wx.Frame):
     
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, title=_("Find"), 
-              size=wx.Size(400, 250), style=wx.CAPTION|
+              size=wx.Size(410, 250), style=wx.CAPTION|
                                             wx.CLOSE_BOX|
                                             wx.CLIP_CHILDREN|
                                             wx.RESIZE_BORDER|
                                             wx.STAY_ON_TOP)
         
         self._init_icon(parent)
+        self.CreateStatusBar(style=wx.SB_FLAT)
         panel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=5, rows=2, vgap=5)
@@ -116,7 +118,8 @@ class FindInPouDialog(wx.Frame):
         self.ParentWindow = parent
         
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-        
+        self.infosPrev = {}
+        self.criteria = {}
         self.FindPattern.SetFocus()
         self.RefreshButtonsState()
     
@@ -141,8 +144,21 @@ class FindInPouDialog(wx.Frame):
             "find_pattern": self.FindPattern.GetValue(),
             "wrap": self.WrapSearch.GetValue(),
             "case_sensitive": self.CaseSensitive.GetValue(),
-            "regular_expression": self.RegularExpressions.GetValue()}
-        wx.CallAfter(self.ParentWindow.FindInPou,
-            {True: 1, False:-1}[self.Forward.GetValue()],
-            infos)
+            "regular_expression": self.RegularExpressions.GetValue(),
+            "filter": "all"}
+
+        if self.infosPrev != infos:
+            self.infosPrev = infos
+            message = ""
+            try:
+                self.criteria = infos
+                CompilePattern(self.criteria)
+            except:
+                self.criteria.clear()
+                message = _("Syntax error in regular expression of pattern to search!")
+            self.SetStatusText(message)
+        if len(self.criteria) > 0:
+            wx.CallAfter(self.ParentWindow.FindInPou,
+                {True: 1, False:-1}[self.Forward.GetValue()],
+                self.criteria)
         event.Skip()

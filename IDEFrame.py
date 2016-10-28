@@ -1260,6 +1260,7 @@ class IDEFrame(wx.Frame):
     def OnFindMenu(self, event):
         if not self.FindDialog.IsShown():
             self.FindDialog.Show()
+            self.FindDialog.FindPattern.SetFocus()
 
     def CloseFindInPouDialog(self):
         selected = self.TabsOpened.GetSelection()
@@ -1284,10 +1285,11 @@ class IDEFrame(wx.Frame):
         dialog = SearchInProjectDialog(self)
         if dialog.ShowModal() == wx.ID_OK:
             criteria = dialog.GetCriteria()
-            result = self.Controler.SearchInProject(criteria)
-            self.ClearSearchResults()
-            self.SearchResultPanel.SetSearchResults(criteria, result)
-            self.SelectTab(self.SearchResultPanel)
+            if len(criteria) > 0:
+                result = self.Controler.SearchInProject(criteria)
+                self.ClearSearchResults()
+                self.SearchResultPanel.SetSearchResults(criteria, result)
+                self.SelectTab(self.SearchResultPanel)
 
 #-------------------------------------------------------------------------------
 #                             Display Menu Functions
