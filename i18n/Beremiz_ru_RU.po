@@ -1385,7 +1385,7 @@ msgstr "Размеры:"
 
 #: ../dialogs/FindInPouDialog.py:67
 msgid "Direction"
-msgstr "Неправление"
+msgstr "Направление"
 
 #: ../dialogs/BrowseLocationsDialog.py:85
 msgid "Direction:"
