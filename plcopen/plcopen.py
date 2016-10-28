@@ -111,10 +111,15 @@ def TextLenInRowColumn(text):
     lines = text.split("\n")
     return len(lines) - 1, len(lines[-1])
 
+def CompilePattern(criteria):
+    flag = 0 if criteria["case_sensitive"] else re.IGNORECASE
+    find_pattern = criteria["find_pattern"]
+    if not criteria["regular_expression"]:
+        find_pattern = re.escape(find_pattern)
+    criteria["pattern"] = re.compile(find_pattern, flag)
+
 def TestTextElement(text, criteria):
     lines = text.splitlines()
-    if not criteria["case_sensitive"]:
-        text = text.upper()
     test_result = []
     result = criteria["pattern"].search(text)
     while result is not None:
