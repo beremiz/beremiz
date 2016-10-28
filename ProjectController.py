@@ -381,15 +381,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #Load and init all the children
             self.LoadChildren()
         self.RefreshConfNodesBlockLists()
-
-        if os.path.exists(self._getBuildPath()):
-            self.EnableMethod("_Clean", True)
-
-        if os.path.isfile(self._getIECcodepath()):
-            self.ShowMethod("_showIECcode", True)
-
-        self.UpdateMethodsFromPLCStatus()
-
+        self.UpdateButtons()
         return None
 
     def RecursiveConfNodeInfos(self, confnode):
@@ -971,15 +963,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Eventually create build dir
         if not os.path.exists(buildpath):
             os.mkdir(buildpath)
-        # There is something to clean
-        self.EnableMethod("_Clean", True)
 
         self.logger.flush()
         self.logger.write(_("Start build in %s\n") % buildpath)
 
         # Generate SoftPLC IEC code
         IECGenRes = self._Generate_SoftPLC()
-        self.ShowMethod("_showIECcode", True)
+        self.UpdateButtons()
 
         # If IEC code gen fail, bail out.
         if not IECGenRes:
@@ -1221,18 +1211,28 @@ class ProjectController(ConfigTreeNode, PLCControler):
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
             self.logger.write_error(_("Build directory already clean\n"))
-        self.ShowMethod("_showIECcode", False)
-        self.EnableMethod("_Clean", False)
         # kill the builder
         self._builder = None
         self.CompareLocalAndRemotePLC()
+        self.UpdateButtons()
 
+    def _UpdateButtons(self):
+        self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
+        self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
+        if not self.UpdateMethodsFromPLCStatus():
+            self.AppFrame.RefreshStatusToolBar()
+        
+    def UpdateButtons(self):
+        wx.CallAfter(self._UpdateButtons)
+
+        
     def UpdatePLCLog(self, log_count):
         if log_count:
             if self.AppFrame is not None:
                 self.AppFrame.LogViewer.SetLogCounters(log_count)
 
     def UpdateMethodsFromPLCStatus(self):
+        updated = False
         status = None
         if self._connector is not None:
             PLCstatus = self._connector.GetPLCstatus()
@@ -1260,6 +1260,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
             if self.AppFrame is not None:
+                updated = True
                 self.AppFrame.RefreshStatusToolBar()
                 if status == "Disconnected":
                     self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 1)
@@ -1268,6 +1269,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
                         _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
                     self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 2)
+        return updated
 
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
