@@ -62,7 +62,7 @@ class SearchInProjectDialog(wx.Dialog):
         self.Pattern = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.FindPatternChanged, self.Pattern)
         pattern_sizer.AddWindow(self.Pattern, flag=wx.GROW)
-        
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)
         self.RegularExpression = wx.CheckBox(self, label=_('Regular expression'))
         pattern_sizer.AddWindow(self.RegularExpression, flag=wx.GROW)
         
@@ -125,12 +125,20 @@ class SearchInProjectDialog(wx.Dialog):
     def FindPatternChanged(self, event):
         self.RefreshButtonsState()
         event.Skip()
+
     def OnScopeChanged(self, event):
         self.ElementsList.Enable(self.OnlyElements.GetValue())
         event.Skip()
 
     def OnCloseButton(self, event):
         self.EndModal(wx.ID_CANCEL)
+
+    def OnEscapeKey(self, event):
+        keycode = event.GetKeyCode()
+        if keycode == wx.WXK_ESCAPE:
+            self.OnCloseButton(event)
+        else:
+            event.Skip()
     
     def OnFindButton(self, event):
         message = None

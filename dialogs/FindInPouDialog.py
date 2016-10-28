@@ -61,6 +61,7 @@ class FindInPouDialog(wx.Frame):
         
         self.FindPattern = wx.TextCtrl(panel)
         self.Bind(wx.EVT_TEXT, self.OnFindPatternChanged, self.FindPattern)
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)
         patterns_sizer.AddWindow(self.FindPattern, flag=wx.GROW)
         
         params_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -134,6 +135,13 @@ class FindInPouDialog(wx.Frame):
     def OnCloseButton(self, event):
         self.Hide()
         event.Skip()
+
+    def OnEscapeKey(self, event):
+        keycode = event.GetKeyCode()
+        if keycode == wx.WXK_ESCAPE:
+            self.OnCloseButton(event)
+        else:
+            event.Skip()
 
     def OnFindPatternChanged(self, event):
         self.RefreshButtonsState()
