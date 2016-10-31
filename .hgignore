@@ -9,3 +9,6 @@ syntax: regexp
 ^.*~$
 syntax: regexp
 ^.*\.swp$
+
+bug_report.*\.txt
+i18n/.*.new$
