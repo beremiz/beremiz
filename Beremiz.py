@@ -31,6 +31,7 @@ import tempfile
 import shutil
 import random
 import time
+import version
 from types import ListType
 
 beremiz_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1012,7 +1013,8 @@ class Beremiz(IDEFrame):
         self.Close()
 
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc", _("about.html")), wx.Size(550, 550))
+        title=_("About Beremiz") + " " + version.app_version
+        OpenHtmlFrame(self, title, Bpath("doc", _("about.html")), wx.Size(550, 550))
 
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()
@@ -1263,7 +1265,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 
 if __name__ == '__main__':
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),updateinfo_url)
+    AddExceptHook(os.getcwd(),version.app_version)
 
     frame = Beremiz(None, projectOpen, buildpath)
     if splash:
