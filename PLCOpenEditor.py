@@ -24,6 +24,7 @@
 
 import wx
 import os, sys, platform, time, traceback, getopt
+import version
 
 beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -348,7 +349,8 @@ class PLCOpenEditor(IDEFrame):
         open_pdf(os.path.join(beremiz_dir, "plcopen", "TC6_XML_V101.pdf"))
 
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About PLCOpenEditor"), os.path.join(beremiz_dir, "doc", _("plcopen_about.html")), wx.Size(350, 350))
+        title= _("About PLCOpenEditor") + " " + version.app_version        
+        OpenHtmlFrame(self, title, os.path.join(beremiz_dir, "doc", _("plcopen_about.html")), wx.Size(350, 350))
 
     def SaveProject(self):
         result = self.Controler.SaveXMLFile()
@@ -481,7 +483,7 @@ if __name__ == '__main__':
         wx.InitAllImageHandlers()
 
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),__version__)
+    AddExceptHook(os.getcwd(), version.app_version)
 
     frame = PLCOpenEditor(None, fileOpen=fileOpen)
 
