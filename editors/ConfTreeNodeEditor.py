@@ -342,25 +342,20 @@ class ConfTreeNodeEditor(EditorPanel):
                 staticbox = wx.StaticBox(self.ParamsEditor,
                       label=_(label), size=wx.Size(10, 0))
                 staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                flags = (wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                 if first:
-                    sizer.AddSizer(staticboxsizer, border=5,
-                          flag=wx.GROW|wx.TOP|wx.BOTTOM)
-                else:
-                    sizer.AddSizer(staticboxsizer, border=5,
-                          flag=wx.GROW|wx.BOTTOM)
+                    flags |= wx.TOP
+                sizer.AddSizer(staticboxsizer, border=5, flag=flags)
                 self.GenerateSizerElements(staticboxsizer,
                                            element_infos["children"],
                                            element_path)
             else:
                 boxsizer = wx.FlexGridSizer(cols=3, rows=1)
                 boxsizer.AddGrowableCol(1)
+                flags = (wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                 if first:
-                    sizer.AddSizer(boxsizer, border=5,
-                          flag=wx.GROW|wx.ALL)
-                else:
-                    sizer.AddSizer(boxsizer, border=5,
-                          flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
-
+                    flags |= wx.TOP
+                sizer.AddSizer(boxsizer, border=5, flag=flags)
                 staticbitmap = GenStaticBitmap(ID=-1, bitmapname=element_infos["name"],
                     name="%s_bitmap"%element_infos["name"], parent=self.ParamsEditor,
                     pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
@@ -408,7 +403,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             staticbox = wx.StaticBox(self.ParamsEditor,
                                   label="%s - %s"%(_(name), _(value)), size=wx.Size(10, 0))
                             staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                            sizer.AddSizer(staticboxsizer, border=5, flag=wx.GROW|wx.BOTTOM)
+                            sizer.AddSizer(staticboxsizer, border=5, flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                             self.GenerateSizerElements(staticboxsizer, element_infos["children"], element_path)
                             callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, element_path)
                         else:
@@ -479,6 +474,8 @@ class ConfTreeNodeEditor(EditorPanel):
                         textctrl.Bind(wx.EVT_TEXT_ENTER, callback)
                         textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
             first = False
+        sizer.Layout()
+        self.RefreshScrollbars()
 
 
     def GetItemChannelChangedFunction(self, dir):
