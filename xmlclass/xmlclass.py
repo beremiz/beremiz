@@ -1754,7 +1754,7 @@ class XMLClassParser(etree.XMLParser):
         return tree, None 
     
     def Dumps(self, xml_obj):
-        return etree.tostring(xml_obj)
+        return etree.tostring(xml_obj, encoding='utf-8')
     
     def Loads(self, xml_string):
         return etree.fromstring(xml_string, self)
