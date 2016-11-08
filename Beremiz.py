@@ -248,12 +248,14 @@ class LogPseudoFile:
                 # adding text. It seems that text modifications, even
                 # programmatically, are disabled in StyledTextCtrl when read
                 # only is active
+                start_pos = self.output.GetLength()
                 self.output.SetReadOnly(False)
                 self.output.AppendText(s)
                 self.output.SetReadOnly(True)
+                text_len = self.output.GetLength() - start_pos
 
                 if style != self.black_white:
-                    self.output.SetStyling(len(s), style)
+                    self.output.SetStyling(text_len, style)
             self.stack = []
             self.lock.release()
             self.output.Thaw()
