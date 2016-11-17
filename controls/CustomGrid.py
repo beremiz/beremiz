@@ -37,8 +37,8 @@ class CustomGrid(wx.grid.Grid):
         self.UpButton = None
         self.DownButton = None
         
-        self.SetFont(wx.Font(12, 77, wx.NORMAL, wx.NORMAL, False, 'Sans'))
-        self.SetLabelFont(wx.Font(10, 77, wx.NORMAL, wx.NORMAL, False, 'Sans'))
+        self.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Sans'))
+        self.SetLabelFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Sans'))
         self.SetSelectionBackground(wx.WHITE)
         self.SetSelectionForeground(wx.BLACK)
         self.DisableDragRowSize()
