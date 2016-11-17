@@ -27,6 +27,56 @@ from types import *
 import wx
 
 from Viewer import *
+from graphics.SFC_Objects import *
+from graphics.GraphicCommons import SELECTION_DIVERGENCE, \
+    SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE, EAST, NORTH, WEST, SOUTH
+
+type = [SELECTION_DIVERGENCE, SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE]
+divergence = dict(zip(type,["SELECTION_DIVERGENCE", "SELECTION_CONVERGENCE",\
+                            "SIMULTANEOUS_DIVERGENCE", "SIMULTANEOUS_CONVERGENCE"]))
+SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Jump)
+
+StandardRules = {
+    # The key of this dict is a block that user try to connect,
+    # and the value is a list of blocks, that can be connected with the current block.
+    "SFC_Step" :                 ["SFC_ActionBlock",
+                                  "SFC_Transition",
+                                  "SELECTION_DIVERGENCE",
+                                  "SIMULTANEOUS_CONVERGENCE"],
+
+    "SFC_ActionBlock" :          ["SFC_Step"],
+
+    "SFC_Transition" :           ["SFC_Step",
+                                  "SELECTION_CONVERGENCE",
+                                  "SIMULTANEOUS_DIVERGENCE",
+                                  "SFC_Jump",
+                                  "FBD_Block",
+                                  "FBD_Variable"
+                                  "LD_Contact",
+                                  "LD_PowerRail",
+                                  "LD_Coil"],
+
+    "SELECTION_DIVERGENCE" :     ["SFC_Transition"],
+
+    "SELECTION_CONVERGENCE" :    ["SFC_Step",
+                                  "SFC_Jump"],
+
+    "SIMULTANEOUS_DIVERGENCE" :  ["SFC_Step"],
+
+    "SIMULTANEOUS_CONVERGENCE" : ["SFC_Transition"],
+
+    "SFC_Jump" :                 [],
+
+    "FBD_Block" :                ["SFC_Transition"],
+
+    "FBD_Variable" :             ["SFC_Transition"],
+
+    "LD_Contact" :               ["SFC_Transition"],
+
+    "LD_PowerRail" :             ["SFC_Transition"],
+
+    "LD_Coil" :                  ["SFC_Transition"]
+                }
 
 class SFC_Viewer(Viewer):
     
@@ -281,6 +331,25 @@ class SFC_Viewer(Viewer):
                 self.SelectedElement.Refresh()
             self.UpdateScrollPos(event)
         event.Skip()
+
+    def GetBlockName(self, block):
+        blockName = block.__class__.__name__
+        if blockName == "SFC_Divergence":
+            blockName = divergence[block.Type]
+        return blockName
+
+    # This method check the IEC 61131-3 compatibility between two SFC blocks
+    def BlockCompatibility(self,startblock = None, endblock = None, direction = None):
+        if startblock!= None and endblock != None and (isinstance(startblock,SFC_Objects)\
+                                                               or isinstance(endblock,SFC_Objects)):
+            # Full "StandardRules" table would be simmetrical and
+            # to avoid duplicate records and minimize the table only upper part is defined.
+            if (direction == SOUTH or direction == EAST):
+                startblock, endblock = endblock, startblock
+            start = self.GetBlockName(startblock)
+            end = self.GetBlockName(endblock)
+            return end in StandardRules[start]
+        return True
 
 #-------------------------------------------------------------------------------
 #                          Keyboard event functions

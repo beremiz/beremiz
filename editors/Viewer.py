@@ -1467,12 +1467,16 @@ class Viewer(EditorPanel, DebugViewer):
 
     def FindBlockConnectorWithError(self, pos, direction = None, exclude = None):
         error = False        
+        startblock = None
         for block in self.Blocks.itervalues():
             connector = block.TestConnector(pos, direction, exclude)
             if connector:
+                if self.IsWire(self.SelectedElement):
+                    startblock = self.SelectedElement.StartConnected.GetParentBlock()
                 avail, error = connector.ConnectionAvailable(direction, exclude)
-                if not avail:
+                if not avail or not self.BlockCompatibility(startblock, block, direction):
                     connector = None
+                    error = True
                 return connector, error
         return None, error
     
@@ -2348,6 +2352,9 @@ class Viewer(EditorPanel, DebugViewer):
                 self.RefreshVisibleElements(xp = xstart + move_window.x, yp = ystart + move_window.y)
                 self.Scroll(xstart + move_window.x, ystart + move_window.y)
                 self.RefreshScrollBars(move_window.x, move_window.y)
+
+    def BlockCompatibility(self, startblock=None, endblock=None, direction = None):
+        return True
 
 #-------------------------------------------------------------------------------
 #                          Keyboard event functions
