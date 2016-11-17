@@ -159,6 +159,7 @@ from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
+from dialogs.AboutDialog import ShowAboutDialog
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ITEM_CONFNODE
@@ -1015,8 +1016,8 @@ class Beremiz(IDEFrame):
         self.Close()
 
     def OnAboutMenu(self, event):
-        title=_("About Beremiz") + " " + version.app_version
-        OpenHtmlFrame(self, title, Bpath("doc", _("about.html")), wx.Size(550, 550))
+        info = version.GetAboutDialogInfo()        
+        ShowAboutDialog(self, info)
 
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()

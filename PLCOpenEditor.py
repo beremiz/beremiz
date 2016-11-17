@@ -77,6 +77,7 @@ from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 from editors.Viewer import Viewer
 from PLCControler import PLCControler
 from dialogs import ProjectDialog
+from dialogs.AboutDialog import ShowAboutDialog
 
 #-------------------------------------------------------------------------------
 #                            PLCOpenEditor Main Class
@@ -349,8 +350,12 @@ class PLCOpenEditor(IDEFrame):
         open_pdf(os.path.join(beremiz_dir, "plcopen", "TC6_XML_V101.pdf"))
 
     def OnAboutMenu(self, event):
-        title= _("About PLCOpenEditor") + " " + version.app_version        
-        OpenHtmlFrame(self, title, os.path.join(beremiz_dir, "doc", _("plcopen_about.html")), wx.Size(350, 350))
+        info = version.GetAboutDialogInfo()
+        info.Name = "PLCOpenEditor"
+        info.Description = _("PLCOpenEditor is part of Beremiz project.\n\n"
+                             "Beremiz is an ") + info.Description
+        info.Icon = wx.Icon(os.path.join(beremiz_dir, "images", "aboutlogo.png"), wx.BITMAP_TYPE_PNG)
+        ShowAboutDialog(self, info)
 
     def SaveProject(self):
         result = self.Controler.SaveXMLFile()
