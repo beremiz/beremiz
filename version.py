@@ -95,8 +95,7 @@ def GetAboutDialogInfo():
         with open(license_path) as f:
             info.License += f.read()
 
-    info.Icon = wx.Icon(os.path.join(path, "images", "__about_brz_logo.png"), wx.BITMAP_TYPE_PNG)            
-    # info.Icon = wx.Icon(os.path.join(path, "images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
+    info.Icon = wx.Icon(os.path.join(path, "images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
 
     info.Translators = ("Russian\t- Andrey Skvortsov <andrej.skvortzov@gmail.com>",
 	                "Korean\t- Reinhard Lee <lij3105@gmail.com>",
