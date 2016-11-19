@@ -53,7 +53,7 @@ def open_lin_pdf(readerexepath, pdffile, pagenum = None):
     if pagenum == None :
         os.system("%s -remote DS301 %s &"%(readerexepath, pdffile))
     else:
-    	print "Open pdf %s at page %d"%(pdffile, pagenum)
+        print "Open pdf %s at page %d"%(pdffile, pagenum)
         os.system("%s -remote DS301 %s %d &"%(readerexepath, pdffile, pagenum))
 
 def open_pdf(pdffile, pagenum = None):
