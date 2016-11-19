@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     app.SetAppName('beremiz')
     if wx.VERSION < (3, 0, 0):
-	wx.InitAllImageHandlers()
+        wx.InitAllImageHandlers()
 
     # popup splash
     splash = ShowSplashScreen()
