@@ -158,6 +158,7 @@ from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
+from controls import EnhancedStatusBar as esb
 from dialogs.AboutDialog import ShowAboutDialog
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
@@ -464,8 +465,11 @@ class Beremiz(IDEFrame):
 
         self.AUIManager.Update()
 
-        self.ConnectionStatusBar = wx.StatusBar(self, style=wx.ST_SIZEGRIP)
+        self.ConnectionStatusBar = esb.EnhancedStatusBar(self, style=wx.ST_SIZEGRIP)
         self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
+        self.ProgressStatusBar = wx.Gauge(self.ConnectionStatusBar, -1, range = 100)
+        self.ConnectionStatusBar.AddWidget(self.ProgressStatusBar, esb.ESB_EXACT_FIT, esb.ESB_EXACT_FIT, 2)        
+        self.ProgressStatusBar.Hide()
         self.SetStatusBar(self.ConnectionStatusBar)
 
     def __init_execute_path(self):
