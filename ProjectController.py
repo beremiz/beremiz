@@ -1271,6 +1271,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 2)
         return updated
 
+    def ShowPLCProgress(self, status = "", progress = 0):
+        self.AppFrame.ProgressStatusBar.Show()
+        self.AppFrame.ConnectionStatusBar.SetStatusText(status, 1)
+        self.AppFrame.ProgressStatusBar.SetValue(progress)
+
+    def HidePLCProgress(self):
+        # clear previous_plcstate to restore status
+        # in UpdateMethodsFromPLCStatus()
+        self.previous_plcstate = ""
+        self.AppFrame.ProgressStatusBar.Hide()
+        self.UpdateMethodsFromPLCStatus()
+            
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
 
@@ -1714,6 +1726,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.logger.write(_("Transfer completed successfully.\n"))
                 else:
                     self.logger.write_error(_("Transfer failed\n"))
+                self.HidePLCProgress()                    
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
 
