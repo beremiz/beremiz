@@ -177,7 +177,7 @@ class LogScrollBar(wx.Panel):
         dc.EndDrawing()
         event.Skip()
 
-BUTTON_SIZE = (30, 15)
+BUTTON_SIZE = (70, 15)
 
 class LogButton():
 
