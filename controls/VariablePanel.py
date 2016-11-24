@@ -286,7 +286,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                 else:
                                     dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                           _("Select a variable class:"), _("Variable class"),
-                                          ["Input", "Output", "Memory"],
+                                          [_("Input"), _("Output"), _("Memory")],
                                           wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                                     if dialog.ShowModal() == wx.ID_OK:
                                         selected = dialog.GetSelection()
@@ -324,7 +324,7 @@ class VariableDropTarget(wx.TextDropTarget):
                 dlg = wx.TextEntryDialog(
                     self.ParentWindow.ParentWindow.ParentWindow,
                     _("Confirm or change variable name"),
-                    'Variable Drop', var_name)
+                    _('Variable Drop'), var_name)
                 dlg.SetValue(var_name)
                 var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                 dlg.Destroy()
@@ -346,7 +346,7 @@ class VariableDropTarget(wx.TextDropTarget):
                         if not location.startswith("%"):
                             dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                   _("Select a variable class:"), _("Variable class"),
-                                  ["Input", "Output", "Memory"],
+                                  [_("Input"), _("Output"), _("Memory")],
                                   wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()

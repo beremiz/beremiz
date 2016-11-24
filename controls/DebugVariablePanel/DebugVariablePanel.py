@@ -50,10 +50,10 @@ DAY = 24 * HOUR             # Number of nanosecond in a day
 # List of values possible for graph range
 # Format is [(time_in_plain_text, value_in_nanosecond),...]
 RANGE_VALUES = \
-    [("%dms" % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
-    [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
-    [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
-    [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
+    [(_("%dms") % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
+    [(_("%ds") % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
+    [(_("%dm") % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
+    [(_("%dh") % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
 
 # Scrollbar increment in pixel
 SCROLLBAR_UNIT = 10
@@ -566,16 +566,16 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             tick_duration = int(tick * self.Ticktime)
             not_null = False
             duration = ""
-            for value, format in [(tick_duration / DAY, "%dd"),
-                                  ((tick_duration % DAY) / HOUR, "%dh"),
-                                  ((tick_duration % HOUR) / MINUTE, "%dm"),
-                                  ((tick_duration % MINUTE) / SECOND, "%ds")]:
+            for value, format in [(tick_duration / DAY, _("%dd")),
+                                  ((tick_duration % DAY) / HOUR, _("%dh")),
+                                  ((tick_duration % HOUR) / MINUTE, _("%dm")),
+                                  ((tick_duration % MINUTE) / SECOND, _("%ds"))]:
                 
                 if value > 0 or not_null:
                     duration += format % value
                     not_null = True
             
-            duration += "%gms" % (float(tick_duration % SECOND) / MILLISECOND) 
+            duration += _("%03gms") % (float(tick_duration % SECOND) / MILLISECOND) 
             self.TickTimeLabel.SetLabel("t: %s" % duration)
         else:
             self.TickLabel.SetLabel("")

@@ -95,7 +95,7 @@ class LocationCellControl(wx.PyControl):
             if not infos["location"].startswith("%"):
                 dialog = wx.SingleChoiceDialog(self, 
                       _("Select a variable class:"), _("Variable class"), 
-                      ["Input", "Output", "Memory"], 
+                      [_("Input"), _("Output"), _("Memory")], 
                       wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                 if dialog.ShowModal() == wx.ID_OK:
                     selected = dialog.GetSelection()
