@@ -95,11 +95,7 @@ class toolchain_makefile():
                         
         oldmd5 = self.md5key
         self.md5key = hashlib.md5(wholesrcdata).hexdigest()
-        props = self.CTRInstance.GetProjectProperties()
-        self.md5key += '#'.join([props[key] for key in ['companyName',
-                                                        'projectName',
-                                                        'productName']])
-        self.md5key += '#' #+','.join(map(str,time.localtime()))
+
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")
         f.write(self.md5key)
