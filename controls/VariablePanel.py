@@ -246,7 +246,7 @@ class VariableDropTarget(wx.TextDropTarget):
         self.ParentWindow.ParentWindow.Select()
         x, y = self.ParentWindow.VariablesGrid.CalcUnscrolledPosition(x, y)
         col = self.ParentWindow.VariablesGrid.XToCol(x)
-        row = self.ParentWindow.VariablesGrid.YToRow(y - self.ParentWindow.VariablesGrid.GetColLabelSize())
+        row = self.ParentWindow.VariablesGrid.YToRow(y)
         message = None
         element_type = self.ParentWindow.ElementType
         try:
