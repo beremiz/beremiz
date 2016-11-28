@@ -1080,8 +1080,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def ShowError(self, logger, from_location, to_location):
         chunk_infos = self.GetChunkInfos(from_location, to_location)
         for infos, (start_row, start_col) in chunk_infos:
-            start = (from_location[0] - start_row, from_location[1] - start_col)
-            end = (to_location[0] - start_row, to_location[1] - start_col)
+            row = 1 if from_location[0] < start_row else (from_location[0] - start_row)            
+            col = 1 if (start_row != from_location[0]) else (from_location[1] - start_col)
+            start = (row, col)
+
+            row = 1 if to_location[0] < start_row else (to_location[0] - start_row)            
+            col = 1 if (start_row != to_location[0]) else (to_location[1] - start_col)
+            end = (row, col)
+            
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
 
