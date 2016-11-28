@@ -406,16 +406,17 @@ def Display_Exception_Dialog(e_type,e_value,e_tb):
 
     dlg = wx.SingleChoiceDialog(None,
         _("""
-An error has occurred.
-
-Click OK to save an error report.
+An unhandled exception (bug) occured. Bug report saved at :
+(%s)
 
 Please be kind enough to send this file to:
-edouard.tisserant@gmail.com
+beremiz-devel@lists.sourceforge.net
 
-Error:
-""") +
-        str(e_type) + _(" : ") + str(e_value),
+You should now restart program.
+
+Traceback:
+""") % bug_report_path +
+        repr(e_type) + " : " + repr(e_value),
         _("Error"),
         trcbck_lst)
     try:
