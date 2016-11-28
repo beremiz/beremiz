@@ -1185,7 +1185,7 @@ An unhandled exception (bug) occured. Bug report saved at :
 Please be kind enough to send this file to:
 beremiz-devel@lists.sourceforge.net
 
-You should now restart Beremiz.
+You should now restart program.
 
 Traceback:
 """) % bug_report_path +
