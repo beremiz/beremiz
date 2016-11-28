@@ -87,7 +87,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             ip = str(socket.inet_ntoa(i.getAddress()))
             port = str(i.getPort())
             newlocation = ip + ':' + port
-            confnodesroot.logger.write(_("'%s' is located at %s\n") % (location, newlocation))
+            confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1 = location, a2 = newlocation))
             location = newlocation
             r.close()
         except Exception, msg:

@@ -360,8 +360,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         error = self.OpenXMLFile(plc_file)
         if error is not None:
             if self.Project is not None:
-                self.logger.write_warning(
-                    XSDSchemaErrorMessage % (("PLC",) + error))
+                (fname_err, lnum, src) = (("PLC",) + error)
+                self.logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname_err, a2 = lnum, a3 = src))
             else:
                 return error
         if len(self.GetProjectConfigNames()) == 0:

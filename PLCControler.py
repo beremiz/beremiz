@@ -967,7 +967,8 @@ class PLCControler:
             # programs cannot be pasted as functions or function blocks
             if orig_type == 'functionBlock' and pou_type == 'function' or \
                orig_type == 'program' and pou_type in ['function', 'functionBlock']:
-                return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
+                msg = _('''{a1} "{a2}" can't be pasted as a {a3}.''').format(a1 = orig_type, a2 = name, a3 = pou_type)
+                return msg
 
             new_pou.setpouType(pou_type)
 

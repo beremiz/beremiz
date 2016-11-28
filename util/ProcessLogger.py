@@ -166,7 +166,7 @@ class ProcessLogger:
 
     def log_the_end(self,ecode,pid):
         self.logger.write(self.Command_str + "\n")
-        self.logger.write_warning(_("exited with status %s (pid %s)\n")%(str(ecode),str(pid)))
+        self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1 = str(ecode), a2 = str(pid)))
 
     def finish(self, pid,ecode):
         # avoid running function before start is finished        

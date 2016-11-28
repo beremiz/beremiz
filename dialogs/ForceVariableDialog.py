@@ -174,7 +174,7 @@ class ForceVariableDialog(wx.TextEntryDialog):
         if value == "":
             message = _("You must type a value!")
         elif GetTypeValue[self.IEC_Type](value) is None:
-            message = _("Invalid value \"%s\" for \"%s\" variable!") % (value, self.IEC_Type)
+            message = _("Invalid value \"{a1}\" for \"{a2}\" variable!").format(a1 = value, a2 = self.IEC_Type)
         if message is not None:
             dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
             dialog.ShowModal()
