@@ -497,7 +497,8 @@ if cls:
 
     def addconfigurationResource(self, config_name, name):
         if self.getconfigurationResource(config_name, name) is not None:
-            raise ValueError, _("\"%s\" resource already exists in \"%s\" configuration !!!") % (name, config_name)
+            msg = _("\"{a1}\" resource already exists in \"{a2}\" configuration !!!").format(a1 = name, a2 = config_name)
+            raise ValueError, msg
         configuration = self.getconfiguration(config_name)
         if configuration is not None:
             new_resource = PLCOpenParser.CreateElement("resource", "configuration")
@@ -514,7 +515,8 @@ if cls:
                 configuration.remove(resource)
                 found = True
         if not found:
-            raise ValueError, _("\"%s\" resource doesn't exist in \"%s\" configuration !!!")%(name, config_name)
+            msg = _("\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!").format(a1 = name, a2 = config_name)
+            raise ValueError, msg
     setattr(cls, "removeconfigurationResource", removeconfigurationResource)
 
     def updateElementName(self, old_name, new_name):

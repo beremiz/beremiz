@@ -273,7 +273,8 @@ class VariableDropTarget(wx.TextDropTarget):
                         if values[2] is not None:
                             base_location_type = self.ParentWindow.Controler.GetBaseType(values[2])
                             if values[2] != variable_type and base_type != base_location_type:
-                                message = _("Incompatible data types between \"%s\" and \"%s\"")%(values[2], variable_type)
+                                message = _("Incompatible data types between \"{a1}\" and \"{a2}\"").\
+                                          format(a1 = values[2], a2 = variable_type)
 
                         if message is None:
                             if not location.startswith("%"):
@@ -282,7 +283,8 @@ class VariableDropTarget(wx.TextDropTarget):
                                 elif location[0] not in LOCATIONDATATYPES:
                                     message = _("Unrecognized data size \"%s\"")%location[0]
                                 elif base_type not in LOCATIONDATATYPES[location[0]]:
-                                    message = _("Incompatible size of data between \"%s\" and \"%s\"")%(location, variable_type)
+                                    message = _("Incompatible size of data between \"{a1}\" and \"{a2}\"").\
+                                              format(a1 = location, a2 = variable_type)
                                 else:
                                     dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                           _("Select a variable class:"), _("Variable class"),

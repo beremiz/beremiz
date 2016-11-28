@@ -192,8 +192,8 @@ class PLCOpenEditor(IDEFrame):
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
 
         if result is not None:
-            self.ShowErrorMessage(
-                _("PLC syntax error at line %d:\n%s") % result)
+            (num, line) = result
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
 
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
@@ -305,8 +305,8 @@ class PLCOpenEditor(IDEFrame):
         dialog.Destroy()
 
         if result is not None:
-            self.ShowErrorMessage(
-                _("PLC syntax error at line %d:\n%s") % result)
+            (num, line) = result
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
 
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():

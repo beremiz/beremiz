@@ -249,11 +249,11 @@ class SearchResultPanel(wx.Panel):
                     search_results_tree_children.append(element_infos)
             
             if matches_number < 2:
-                header_format = _("'%s' - %d match in project")
+                header_format = _("'{a1}' - {a2} match in project")
             else:
-                header_format = _("'%s' - %d matches in project")
+                header_format = _("'{a1}' - {a2} matches in project")
             
-            self.HeaderLabel.SetLabel(header_format % (self.Criteria["find_pattern"], matches_number))
+            self.HeaderLabel.SetLabel(header_format.format(a1 = self.Criteria["find_pattern"], a2 = matches_number))
             self.ResetButton.Enable(True)
             
             if matches_number > 0:

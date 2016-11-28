@@ -243,7 +243,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                 elif pou_type == "function" and values[1] != "function":
                     message = _("Function Blocks can't be used in Functions!")
                 elif self.ParentWindow.Controler.PouIsUsedBy(pou_name, values[0], self.ParentWindow.Debug):
-                    message = _("\"%s\" is already used by \"%s\"!")%(pou_name, values[0])
+                    message = _("\"{a1}\" is already used by \"{a2}\"!").format(a1 = pou_name, a2 = values[0])
                 else:
                     blockname = values[2]
                     if len(values) > 3:

@@ -117,11 +117,12 @@ class CodeFile:
             try:
                 self.CodeFile, error = self.CodeFileParser.LoadXMLString(codefile_xml)
                 if error is not None:
-                    self.GetCTRoot().logger.write_warning(
-                        XSDSchemaErrorMessage % ((self.CODEFILE_NAME,) + error))
+                    (fname, lnum, src) = ((self.CODEFILE_NAME,) + error)
+                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname, a2 = lnum, a3 = src))
                 self.CreateCodeFileBuffer(True)
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (CTNName, unicode(exc)))
+                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1 = CTNName, a2 = unicode(exc))
+                self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         else:
             self.CodeFile = self.CodeFileParser.CreateRoot()
