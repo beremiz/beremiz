@@ -109,9 +109,13 @@ if __name__ == '__main__':
 
     # popup splash
     splash = ShowSplashScreen()
+
+    # load internatialization files
+    from util.misc import InstallLocalRessources
+    InstallLocalRessources(beremiz_dir)
     
     if updateinfo_url is not None:
-        updateinfo = "Fetching %s" % updateinfo_url
+        updateinfo = _("Fetching %s") % updateinfo_url
         # warn for possible updates
         def updateinfoproc():
             global updateinfo
@@ -119,7 +123,7 @@ if __name__ == '__main__':
                 import urllib2
                 updateinfo = urllib2.urlopen(updateinfo_url,None).read()
             except :
-                updateinfo = "update info unavailable."
+                updateinfo = _("update info unavailable.")
 
         from threading import Thread
         splash.SetText(text=updateinfo)
@@ -129,9 +133,6 @@ if __name__ == '__main__':
         updateinfoThread.join(2)
         splash.SetText(text=updateinfo)
         wx.Yield()
-
-    from util.misc import InstallLocalRessources
-    InstallLocalRessources(beremiz_dir)
 
     # Load extensions
     for extfilename in extensions:
