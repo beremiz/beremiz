@@ -90,7 +90,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         self.LeftGridSizer.AddWindow(sequences_label, flag=wx.GROW)
         
         # Create spin control for defining number of divergence sequences
-        self.Sequences = wx.SpinCtrl(self, min=2, max=20)
+        self.Sequences = wx.SpinCtrl(self, min=2, max=20, initial=2)
         self.Bind(wx.EVT_SPINCTRL, self.OnSequencesChanged, self.Sequences)
         self.LeftGridSizer.AddWindow(self.Sequences, flag=wx.GROW)
         
