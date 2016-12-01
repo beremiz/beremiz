@@ -40,12 +40,13 @@ divergence graphic element
 
 class SFCDivergenceDialog(BlockPreviewDialog):
     
-    def __init__(self, parent, controller, tagname):
+    def __init__(self, parent, controller, tagname, poss_div_types = None):
         """
         Constructor
         @param parent: Parent wx.Window of dialog for modal
         @param controller: Reference to project controller
         @param tagname: Tagname of project POU edited
+        @param poss_div_types: Types of divergence that will be available in the dialog window
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname, 
               size=wx.Size(500, 300), 
@@ -59,19 +60,28 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
         
         # Create radio buttons for selecting divergence type
+        divergence_buttons = [
+            (SELECTION_DIVERGENCE, _('Selection Divergence')),
+            (SELECTION_CONVERGENCE, _('Selection Convergence')),
+            (SIMULTANEOUS_DIVERGENCE, _('Simultaneous Divergence')),
+            (SIMULTANEOUS_CONVERGENCE, _('Simultaneous Convergence'))]
+        poss_div_btns = []
+        if poss_div_types is not None:
+             for val in poss_div_types:
+                 poss_div_btns.append(divergence_buttons[val])
+        else:
+            poss_div_btns = divergence_buttons
         self.TypeRadioButtons = {}
         first = True
-        for type, label in [
-                (SELECTION_DIVERGENCE, _('Selection Divergence')),
-                (SELECTION_CONVERGENCE, _('Selection Convergence')),
-                (SIMULTANEOUS_DIVERGENCE, _('Simultaneous Divergence')),
-                (SIMULTANEOUS_CONVERGENCE, _('Simultaneous Convergence'))]:
+        focusbtn = None
+        for type, label in poss_div_btns:
             radio_button = wx.RadioButton(self, label=label, 
                   style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
             self.TypeRadioButtons[type] = radio_button
+            if first: focusbtn = type
             first = False
 
         # Create label for number of divergence sequences
@@ -94,7 +104,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         
         # Selection divergence radio button is default control having keyboard
         # focus
-        self.TypeRadioButtons[SELECTION_DIVERGENCE].SetFocus()
+        self.TypeRadioButtons[focusbtn].SetFocus()
     
     def GetMinElementSize(self):
         """
