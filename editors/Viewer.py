@@ -577,11 +577,11 @@ class Viewer(EditorPanel, DebugViewer):
             [ID_CLEAR_EXEC_ORDER, ID_RESET_EXEC_ORDER] = [wx.NewId() for i in xrange(2)]
 
             # Create menu items
-            self.AddMenuItems(menu, [
-                 (ID_CLEAR_EXEC_ORDER, wx.ITEM_NORMAL, _(u'Clear Execution Order'), '', self.OnClearExecutionOrderMenu),
-                 (ID_RESET_EXEC_ORDER, wx.ITEM_NORMAL, _(u'Reset Execution Order'), '', self.OnResetExecutionOrderMenu)])
-
-            menu.AppendSeparator()
+            if self.CurrentLanguage == 'FBD':
+                self.AddMenuItems(menu, [
+                    (ID_CLEAR_EXEC_ORDER, wx.ITEM_NORMAL, _(u'Clear Execution Order'), '', self.OnClearExecutionOrderMenu),
+                    (ID_RESET_EXEC_ORDER, wx.ITEM_NORMAL, _(u'Reset Execution Order'), '', self.OnResetExecutionOrderMenu)])
+                menu.AppendSeparator()
 
             add_menu = wx.Menu(title='')
             self.AddAddMenuItems(add_menu)
