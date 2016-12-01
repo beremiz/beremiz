@@ -1269,17 +1269,27 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 updated = True
                 self.AppFrame.RefreshStatusToolBar()
                 if status == "Disconnected":
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 1)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 1)
                     self.AppFrame.ConnectionStatusBar.SetStatusText('', 2)
                 else:
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
                         _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 2)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 2)
         return updated
 
+    def GetTextStatus(self, status):
+        msgs = {
+            "Started":      _("Started"),
+            "Stopped":      _("Stopped"),
+            "Empty":        _("Empty"),
+            "Broken":       _("Broken"),
+            "Disconnected": _("Disconnected")
+            }
+        return msgs.get(status, status)
+    
     def ShowPLCProgress(self, status = "", progress = 0):
         self.AppFrame.ProgressStatusBar.Show()
-        self.AppFrame.ConnectionStatusBar.SetStatusText(status, 1)
+        self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 1)
         self.AppFrame.ProgressStatusBar.SetValue(progress)
 
     def HidePLCProgress(self):
