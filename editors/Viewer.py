@@ -43,6 +43,7 @@ WINDOW_BORDER = 10
 SCROLL_ZONE = 10
 
 CURSORS = None
+SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Jump)
 
 def ResetCursors():
     global CURSORS
@@ -145,6 +146,9 @@ def transitionCreationFunction(viewer, id, specific_values):
                                         specific_values.condition,
                                         specific_values.priority, id)
     return transition
+
+divergence_types = [SELECTION_DIVERGENCE,
+                    SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE]
 
 def GetDivergenceCreationFunction(divergence_type):
     def divergenceCreationFunction(viewer, id, specific_values):
@@ -2060,47 +2064,7 @@ class Viewer(EditorPanel, DebugViewer):
                     self.SelectedElement.HighlightPoint(pos)
                     self.RefreshBuffer()
                 elif connector is None or self.SelectedElement.GetDragging():
-                    start_connector = self.SelectedElement.GetStartConnected()
-                    start_direction = start_connector.GetDirection()
-
-                    items = []
-
-                    if self.CurrentLanguage == "SFC" and start_direction == SOUTH:
-                        items.extend([
-                            (_(u'Initial Step'), self.GetAddToWireMenuCallBack(self.AddNewStep, True)),
-                            (_(u'Step'), self.GetAddToWireMenuCallBack(self.AddNewStep, False)),
-                            (_(u'Transition'), self.GetAddToWireMenuCallBack(self.AddNewTransition, False)),
-                            (_(u'Divergence'), self.GetAddToWireMenuCallBack(self.AddNewDivergence)),
-                            (_(u'Jump'), self.GetAddToWireMenuCallBack(self.AddNewJump)),
-                        ])
-
-                    elif start_direction == EAST:
-
-                        if isinstance(start_connector.GetParentBlock(), SFC_Step):
-                            items.append(
-                                (_(u'Action Block'), self.GetAddToWireMenuCallBack(self.AddNewActionBlock))
-                            )
-                        else:
-                            items.extend([
-                                (_(u'Block'), self.GetAddToWireMenuCallBack(self.AddNewBlock)),
-                                (_(u'Variable'), self.GetAddToWireMenuCallBack(self.AddNewVariable, True)),
-                                (_(u'Connection'), self.GetAddToWireMenuCallBack(self.AddNewConnection)),
-                            ])
-
-                            if self.CurrentLanguage != "FBD":
-                                items.append(
-                                    (_(u'Contact'), self.GetAddToWireMenuCallBack(self.AddNewContact))
-                                )
-                            if self.CurrentLanguage == "LD":
-                                items.extend([
-                                    (_(u'Coil'), self.GetAddToWireMenuCallBack(self.AddNewCoil)),
-                                    (_(u'Power Rail'), self.GetAddToWireMenuCallBack(self.AddNewPowerRail)),
-                                ])
-                            if self.CurrentLanguage == "SFC":
-                                items.append(
-                                    (_(u'Transition'), self.GetAddToWireMenuCallBack(self.AddNewTransition, True))
-                                )
-
+                    items = self.GetPopupMenuItems()
                     if len(items) > 0:
                         if self.Editor.HasCapture():
                             self.Editor.ReleaseMouse()
@@ -2355,6 +2319,51 @@ class Viewer(EditorPanel, DebugViewer):
 
     def BlockCompatibility(self, startblock=None, endblock=None, direction = None):
         return True
+
+    def GetPopupMenuItems(self):
+        start_connector = self.SelectedElement.GetStartConnected()
+        start_direction = start_connector.GetDirection()
+        startblock = start_connector.GetParentBlock()
+        items = []
+        if isinstance(startblock, SFC_Objects):
+            startblockname = self.GetBlockName(startblock)
+            poss_div_types = []
+
+            SFC_WireMenu_Buttons = {
+                'SFC_Step': (_(u'Step'), self.GetAddToWireMenuCallBack(self.AddNewStep, False)),
+                'SFC_Jump': (_(u'Jump'), self.GetAddToWireMenuCallBack(self.AddNewJump)),
+                'SFC_Transition': (_(u'Transition'), self.GetAddToWireMenuCallBack(self.AddNewTransition, False)),
+                'SFC_ActionBlock': (_(u'Action Block'), self.GetAddToWireMenuCallBack(self.AddNewActionBlock))}
+
+            for endblock in self.SFC_StandardRules.get(startblockname):
+                if start_direction in endblock:
+                    if endblock[0] in divergence_types:
+                        poss_div_types.append(endblock[0])
+                    else:
+                        items.append(SFC_WireMenu_Buttons[endblock[0]])
+            if len(poss_div_types) > 0:
+                items.append((_(u'Divergence'), self.GetAddToWireMenuCallBack(self.AddNewDivergence,
+                                                                              poss_div_types)))
+        elif start_direction == EAST:
+                items.extend([
+                    (_(u'Block'), self.GetAddToWireMenuCallBack(self.AddNewBlock)),
+                    (_(u'Connection'), self.GetAddToWireMenuCallBack(self.AddNewConnection))])
+
+                if self.CurrentLanguage != "FBD":
+                    items.append((_(u'Contact'), self.GetAddToWireMenuCallBack(self.AddNewContact)))
+
+                if self.CurrentLanguage == "LD":
+                    items.extend([
+                        (_(u'Coil'), self.GetAddToWireMenuCallBack(self.AddNewCoil)),
+                        (_(u'Power Rail'), self.GetAddToWireMenuCallBack(self.AddNewPowerRail))])
+
+                if self.CurrentLanguage == "SFC":
+                    items.append(
+                        (_(u'Transition'), self.GetAddToWireMenuCallBack(self.AddNewTransition, True)))
+                else:
+                    items.append(
+                        (_(u'Variable'), self.GetAddToWireMenuCallBack(self.AddNewVariable, True)))
+        return items
 
 #-------------------------------------------------------------------------------
 #                          Keyboard event functions
@@ -2667,8 +2676,8 @@ class Viewer(EditorPanel, DebugViewer):
                 connector = transition.GetConnectors()["inputs"][0]
             self.AddNewElement(transition, bbox, wire, connector)
 
-    def AddNewDivergence(self, bbox, wire=None):
-        dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler, self.TagName)
+    def AddNewDivergence(self, bbox, poss_div_types = None, wire=None):
+        dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler, self.TagName, poss_div_types)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize((bbox.width, bbox.height))
         if dialog.ShowModal() == wx.ID_OK:
