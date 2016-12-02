@@ -51,6 +51,7 @@ class AboutDialog(wx.Dialog):
 
         name = wx.StaticText(self, label="%s %s" % (info.Name, info.Version))
         description = wx.StaticText(self, label=info.Description)
+        description.Wrap(400)
         copyright = wx.StaticText(self, label=info.Copyright)
         url = HyperLinkCtrl(self, label=info.WebSite[0], URL=info.WebSite[1])
 
