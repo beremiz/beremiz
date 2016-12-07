@@ -417,6 +417,7 @@ class Server():
         sys.stdout.flush()
 
         self.daemon.requestLoop()
+        self.daemon.sock.close()
 
     def Stop(self):
         if self.plcobj is not None:
