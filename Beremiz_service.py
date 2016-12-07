@@ -441,9 +441,9 @@ class Server():
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
-        if self.autostart :
-            self.plcobj.AutoLoad()
-            if self.plcobj.GetPLCstatus()[0] != "Empty":
+        self.plcobj.AutoLoad()
+        if self.plcobj.GetPLCstatus()[0] != "Empty":
+            if self.autostart :
                 self.plcobj.StartPLC()
 
         sys.stdout.flush()
