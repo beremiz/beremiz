@@ -286,7 +286,9 @@ if enablewx:
                         print _("PLC is not started.")
 
             def OnTaskBarChangeInterface(self, evt):
-                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip_addr)
+                ip_addr = self.pyroserver.ip_addr
+                ip_addr = '' if ip_addr is None else ip_addr
+                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)                
                 dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
                                ( lambda x :len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
                                ])
