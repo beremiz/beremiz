@@ -108,7 +108,7 @@ def WAMP_connector_factory(uri, confnodesroot):
                         reactor, _WampSession.call, wampfuncname,
                         *args,**kwargs)
                 except TransportLost, e:
-                    confnodesroot.logger.write_error("Connection lost!\n")
+                    confnodesroot.logger.write_error(_("Connection lost!\n"))
                     confnodesroot._SetConnector(None)
                 except Exception,e:
                     errmess = traceback.format_exc()
