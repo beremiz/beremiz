@@ -272,11 +272,18 @@ if enablewx:
 
             def OnTaskBarStartPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
-                    self.pyroserver.plcobj.StartPLC()
+                    plcstatus = self.pyroserver.plcobj.GetPLCstatus()[0]
+                    if  plcstatus is "Stopped":
+                        self.pyroserver.plcobj.StartPLC()
+                    else:
+                        print _("PLC is empty or already started.")
 
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
-                    Thread(target=self.pyroserver.plcobj.StopPLC).start()
+                    if self.pyroserver.plcobj.GetPLCstatus()[0] == "Started":
+                        Thread(target=self.pyroserver.plcobj.StopPLC).start()
+                    else:
+                        print _("PLC is not started.")
 
             def OnTaskBarChangeInterface(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip_addr)
