@@ -445,6 +445,7 @@ class Server():
         if self.plcobj.GetPLCstatus()[0] != "Empty":
             if self.autostart :
                 self.plcobj.StartPLC()
+        self.plcobj.StatusChange()
 
         sys.stdout.flush()
 
