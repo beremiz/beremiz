@@ -112,6 +112,48 @@ import __builtin__
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
 
+def Bpath(*args):
+    return os.path.join(beremiz_dir,*args)
+
+def SetupI18n():
+    # Import module for internationalization
+    import gettext
+
+    # Get folder containing translation files
+    localedir = os.path.join(beremiz_dir,"locale")
+    # Get the default language
+    langid = wx.LANGUAGE_DEFAULT
+    # Define translation domain (name of translation files)
+    domain = "Beremiz"
+
+    # Define locale for wx
+    loc = __builtin__.__dict__.get('loc', None)
+    if loc is None:
+        loc = wx.Locale(langid)
+        __builtin__.__dict__['loc'] = loc
+        # Define location for searching translation files
+    loc.AddCatalogLookupPathPrefix(localedir)
+    # Define locale domain
+    loc.AddCatalog(domain)
+
+
+    import locale
+    global default_locale
+    default_locale = locale.getdefaultlocale()[1]
+
+
+    # sys.stdout.encoding = default_locale
+    # if Beremiz_service is started from Beremiz IDE
+    # sys.stdout.encoding is None (that means 'ascii' encoding').
+    # And unicode string returned by wx.GetTranslation() are
+    # automatically converted to 'ascii' string.
+    def unicode_translation(message):
+        return wx.GetTranslation(message).encode(default_locale)
+
+    if __name__ == '__main__':
+        __builtin__.__dict__['_'] = unicode_translation
+        # __builtin__.__dict__['_'] = wx.GetTranslation
+
 if enablewx:
     try:
         import wxversion
@@ -133,34 +175,8 @@ if enablewx:
             app = wx.PySimpleApp(redirect=False)
         app.SetTopWindow(wx.Frame(None, -1))
 
-        # Import module for internationalization
-        import gettext
-
-        def Bpath(*args):
-            return os.path.join(beremiz_dir,*args)
-
-        # Get folder containing translation files
-        localedir = os.path.join(beremiz_dir,"locale")
-        # Get the default language
-        langid = wx.LANGUAGE_DEFAULT
-        # Define translation domain (name of translation files)
-        domain = "Beremiz"
-
-        # Define locale for wx
-        loc = __builtin__.__dict__.get('loc', None)
-        if loc is None:
-            loc = wx.Locale(langid)
-            __builtin__.__dict__['loc'] = loc
-        # Define location for searching translation files
-        loc.AddCatalogLookupPathPrefix(localedir)
-        # Define locale domain
-        loc.AddCatalog(domain)
-
-        def unicode_translation(message):
-            return wx.GetTranslation(message).encode("utf-8")
-
-        if __name__ == '__main__':
-            __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
+        default_locale = None
+        SetupI18n()
 
         defaulticon = wx.Image(Bpath("images", "brz.png"))
         starticon = wx.Image(Bpath("images", "icoplay24.png"))
@@ -175,7 +191,7 @@ if enablewx:
                         event(self, function)
 
 
-            def __init__(self, parent, message, caption = "Please enter text", defaultValue = "",
+            def __init__(self, parent, message, caption = _("Please enter text"), defaultValue = "",
                                style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
@@ -406,9 +422,13 @@ class Server():
                                 self.pyruntimevars)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
 
-        print "Pyro port :",self.port
-        print "Pyro object's uri :",uri
-        print "Current working directory :",self.workdir
+        print _("Pyro port :"), self.port
+        print _("Pyro object's uri :"), uri
+
+        # Beremiz IDE detects daemon start by looking
+        # for self.workdir in the daemon's stdout.
+        # Therefore don't delete the following line
+        print _("Current working directory :"), self.workdir
 
         # Configure and publish service
         # Not publish service if localhost in address params
@@ -416,7 +436,7 @@ class Server():
             self.ip_addr is not None and
             self.ip_addr != "localhost" and
             self.ip_addr != "127.0.0.1"):
-            print "Publishing service on local network"
+            print _("Publishing service on local network")
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
@@ -451,7 +471,7 @@ if enabletwisted:
 
             havetwisted = True
         except:
-            print "Twisted unavailable."
+            print _("Twisted unavailable.")
             havetwisted = False
 
 pyruntimevars = {}
@@ -529,7 +549,7 @@ if havetwisted:
         try:
             import runtime.NevowServer as NS
         except Exception, e:
-            print "Nevow/Athena import failed :", e
+            print _("Nevow/Athena import failed :"), e
             webport = None
         NS.WorkingDir = WorkingDir
 
@@ -537,7 +557,7 @@ if havetwisted:
         try:
             import runtime.WampClient as WC
         except Exception, e:
-            print "WAMP import failed :", e
+            print _("WAMP import failed :"), e
             wampconf = None
 
 # Load extensions
@@ -553,7 +573,7 @@ if havetwisted:
             pyruntimevars["website"] = website
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception, e:
-            print "Nevow Web service failed.", e
+            print _("Nevow Web service failed. "), e
 
     if wampconf is not None :
         try:
@@ -561,7 +581,7 @@ if havetwisted:
             pyruntimevars["wampsession"] = WC.GetSession
             WC.SetServer(pyroserver)
         except Exception, e:
-            print "WAMP client startup failed.", e
+            print _("WAMP client startup failed. "), e
 
 
 if havetwisted or havewx:

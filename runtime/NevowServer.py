@@ -178,7 +178,7 @@ def RegisterWebsite(port):
 
     listening = False
     reactor.listenTCP(port, site)
-    print "Http interface port :",port
+    print _("HTTP interface port :"), port
     return website
 
 class statuslistener:

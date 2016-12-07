@@ -574,7 +574,7 @@ class Beremiz(IDEFrame):
                     {False : "-x 0", True :"-x 1"}[taskbaricon],
                     self.local_runtime_tmpdir),
                 no_gui=False,
-                timeout=500, keyword = "working",
+                timeout=500, keyword = self.local_runtime_tmpdir,
                 cwd = self.local_runtime_tmpdir)
             self.local_runtime.spin()
         return self.runtime_port

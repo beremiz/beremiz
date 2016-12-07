@@ -112,10 +112,10 @@ def PYRO_connector_factory(uri, confnodesroot):
             try:
                 return func(*args, **kwargs)
             except Pyro.errors.ConnectionClosedError, e:
-                confnodesroot.logger.write_error("Connection lost!\n")
+                confnodesroot.logger.write_error(_("Connection lost!\n"))
                 confnodesroot._SetConnector(None)
             except Pyro.errors.ProtocolError, e:
-                confnodesroot.logger.write_error("Pyro exception: " + str(e) + "\n")
+                confnodesroot.logger.write_error(_("Pyro exception: %s\n") % e)
             except Exception, e:
                 # confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
