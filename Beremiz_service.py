@@ -411,6 +411,7 @@ class Server():
     def Quit(self):
         self.continueloop = False
         if self.plcobj is not None:
+            self.plcobj.StopPLC()
             self.plcobj.UnLoadPLC()
         self.Stop()
 
