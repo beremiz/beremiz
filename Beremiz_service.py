@@ -115,7 +115,7 @@ if __name__ == '__main__':
 if enablewx:
     try:
         import wxversion
-        wxversion.select('2.8')
+        wxversion.select(['2.8', '3.0'])
         import wx
         havewx = True
     except:
@@ -126,7 +126,12 @@ if enablewx:
         import re
         from threading import Thread, currentThread
         from types import *
-        app=wx.App(redirect=False)
+
+        if wx.VERSION >= (3, 0, 0):
+            app = wx.App(redirect=False)
+        else:
+            app = wx.PySimpleApp(redirect=False)
+        app.SetTopWindow(wx.Frame(None, -1))
 
         # Import module for internationalization
         import gettext
