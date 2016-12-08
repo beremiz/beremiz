@@ -2632,7 +2632,7 @@ class Viewer(EditorPanel, DebugViewer):
                 "name": self.Controler.GenerateNewName(
                     self.TagName, None, "Step%d", 0),
                 "input": True,
-                "output": False,
+                "output": True,
                 "action":False}
         else:
             dialog = SFCStepDialog(self.ParentWindow, self.Controler, self.TagName, initial)

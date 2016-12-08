@@ -71,6 +71,8 @@ class SFCStepDialog(BlockPreviewDialog):
                             ("output", _("Output")),
                             ("action", _("Action"))]:
             check_box = wx.CheckBox(self, label=label)
+            if name == "output" or (name == "input" and not initial):
+                check_box.SetValue(True)
             self.Bind(wx.EVT_CHECKBOX, self.OnConnectorsChanged, check_box)
             self.LeftGridSizer.AddWindow(check_box, flag=wx.GROW)
             self.ConnectorsCheckBox[name] = check_box
