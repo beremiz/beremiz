@@ -1014,6 +1014,7 @@ class Beremiz(IDEFrame):
         if self.CTR is not None:
             self.CTR.SaveProjectAs()
             self.RefreshAll()
+            self.RefreshConfigRecentProjects(self.CTR.ProjectPath)
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
 
     def OnQuitMenu(self, event):
