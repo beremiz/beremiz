@@ -973,12 +973,11 @@ class Beremiz(IDEFrame):
         if os.path.isdir(projectpath):
             self.Config.Write("lastopenedfolder",
                               EncodeFileSystemPath(os.path.dirname(projectpath)))
-            err = False
             self.Config.Flush()
             self.ResetView()
             self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
-            result = self.CTR.LoadProject(projectpath)
+            result, err = self.CTR.LoadProject(projectpath)
             if not result:
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
