@@ -355,7 +355,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
-            return _("Chosen folder doesn't contain a program. It's not a valid project!")
+            return _("Chosen folder doesn't contain a program. It's not a valid project!"), True
         # Load PLCOpen file
         error = self.OpenXMLFile(plc_file)
         if error is not None:
@@ -363,7 +363,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 (fname_err, lnum, src) = (("PLC",) + error)
                 self.logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname_err, a2 = lnum, a3 = src))
             else:
-                return error
+                return error, False
         if len(self.GetProjectConfigNames()) == 0:
             self.AddProjectDefaultConfiguration()
         # Change XSD into class members
@@ -377,12 +377,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #Load the confnode.xml file into parameters members
             result = self.LoadXMLParams()
             if result:
-                return result
+                return result, False
             #Load and init all the children
             self.LoadChildren()
         self.RefreshConfNodesBlockLists()
         self.UpdateButtons()
-        return None
+        return None, False
 
     def RecursiveConfNodeInfos(self, confnode):
         values = []
