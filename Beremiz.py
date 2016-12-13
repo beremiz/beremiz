@@ -757,6 +757,11 @@ class Beremiz(IDEFrame):
                                   self.GetConfigEntry("RecentProjects", []))
         except:
             recent_projects = []
+
+        while self.RecentProjectsMenu.GetMenuItemCount() > len(recent_projects):
+            item = self.RecentProjectsMenu.FindItemByPosition(0)
+            self.RecentProjectsMenu.RemoveItem(item)
+
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
             text = u'%d: %s' % (idx + 1, projectpath)
@@ -896,7 +901,7 @@ class Beremiz(IDEFrame):
             self.DebugVariablePanel.SetDataProducer(None)
             self.ResetConnectionStatusBar()
 
-    def RefreshConfigRecentProjects(self, projectpath):
+    def RefreshConfigRecentProjects(self, projectpath, err=False):
         try:
             recent_projects = map(DecodeFileSystemPath,
                                   self.GetConfigEntry("RecentProjects", []))
@@ -904,7 +909,8 @@ class Beremiz(IDEFrame):
             recent_projects = []
         if projectpath in recent_projects:
             recent_projects.remove(projectpath)
-        recent_projects.insert(0, projectpath)
+        if not err:
+            recent_projects.insert(0, projectpath)
         self.Config.Write("RecentProjects", cPickle.dumps(
             map(EncodeFileSystemPath, recent_projects[:MAX_RECENT_PROJECTS])))
         self.Config.Flush()
@@ -967,6 +973,7 @@ class Beremiz(IDEFrame):
         if os.path.isdir(projectpath):
             self.Config.Write("lastopenedfolder",
                               EncodeFileSystemPath(os.path.dirname(projectpath)))
+            err = False
             self.Config.Flush()
             self.ResetView()
             self.CTR = ProjectController(self, self.Log)
@@ -976,7 +983,6 @@ class Beremiz(IDEFrame):
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
-                self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
@@ -986,6 +992,8 @@ class Beremiz(IDEFrame):
             self.RefreshAll()
         else:
             self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
+            err = True
+        self.RefreshConfigRecentProjects(projectpath, err)
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
 
     def OnCloseProjectMenu(self, event):
