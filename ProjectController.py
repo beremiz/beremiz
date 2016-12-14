@@ -415,6 +415,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ClearChildren()
         self.ResetAppFrame(None)
 
+    def CheckNewProjectPath(self, old_project_path, new_project_path):
+        if old_project_path == new_project_path:
+            message = (_("Save path is the same as path of a project! \n"))
+            dialog = wx.MessageDialog(self.AppFrame, message, _("Error"), wx.OK | wx.ICON_ERROR)
+            dialog.ShowModal()
+            return False
+        else:
+            plc_file = os.path.join(new_project_path, "plc.xml")
+            if os.path.isfile(plc_file):
+                message = (_("Selected directory already contains another project. Overwrite? \n"))
+                dialog = wx.MessageDialog(self.AppFrame, message, _("Error"), wx.YES_NO | wx.ICON_ERROR)
+                answer = dialog.ShowModal()
+                return answer == wx.ID_YES
+        return True
+
     def SaveProject(self, from_project_path=None):
         if self.CheckProjectPathPerm(False):
             if from_project_path is not None:
@@ -439,9 +454,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if answer == wx.ID_OK:
             newprojectpath = dirdialog.GetPath()
             if os.path.isdir(newprojectpath):
-                self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
-                self.SaveProject(old_project_path)
-                self._setBuildPath(self.BuildPath)
+                if self.CheckNewProjectPath(self.ProjectPath, newprojectpath):
+                    self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
+                    self.SaveProject(old_project_path)
+                    self._setBuildPath(self.BuildPath)
                 return True
         return False
 
