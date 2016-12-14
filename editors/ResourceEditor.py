@@ -434,7 +434,7 @@ class ResourceEditor(EditorPanel):
 
     def OnTasksGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
-        if self.TasksTable.GetColLabelValue(col) == "Name":
+        if self.TasksTable.GetColLabelValue(col, False) == "Name":
             tasklist = [name for name in self.TaskList.split(",") if name != ""]
             for i in xrange(self.TasksTable.GetNumberRows()):
                 task = self.TasksTable.GetValueByName(i, "Name")
