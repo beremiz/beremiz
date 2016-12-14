@@ -763,7 +763,10 @@ class PouProgramGenerator:
                     content = instance.getconditionContent()
                     if content["type"] == "connection":
                         self.ConnectionTypes[content["value"]] = "BOOL"
-                        for link in content["value"].getconnections():
+                        connections = content["value"].getconnections()
+                        if not connections:
+                            raise PLCGenException, _("SFC transition in POU \"%s\" must be connected.") % self.Name
+                        for link in connections:                        
                             connected = self.GetLinkedConnector(link, body)
                             if connected is not None and not self.ConnectionTypes.has_key(connected):
                                 for related in self.ExtractRelatedConnections(connected):
