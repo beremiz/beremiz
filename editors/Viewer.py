@@ -887,6 +887,15 @@ class Viewer(EditorPanel, DebugViewer):
             comments.sort(lambda x, y: cmp(x.GetId(), y.GetId()))
         return blocks + wires + comments
 
+    def GetContinuationByName(self, name):
+        blocks = []
+        for block in self.Blocks.itervalues():
+            if isinstance(block, FBD_Connector) and\
+               block.GetType() == CONTINUATION and\
+               block.GetName() == name:
+                blocks.append(block)
+        return blocks
+    
     def GetConnectorByName(self, name):
         for block in self.Blocks.itervalues():
             if isinstance(block, FBD_Connector) and\
