@@ -902,7 +902,15 @@ class FBD_Connector(Graphic_Element):
         else:
             connectors["outputs"].append(self.Connector)
         return connectors
-    
+
+    def SpreadCurrent(self):
+        if self.Type == CONNECTOR:
+            continuations = self.Parent.GetContinuationByName(self.Name)
+            if continuations is not None:
+                value = self.Connector.ReceivingCurrent()
+                for cont in continuations:
+                    cont.Connector.SpreadCurrent(value)
+
     # Changes the variable type
     def SetType(self, type):
         if type != self.Type:
