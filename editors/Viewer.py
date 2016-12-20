@@ -3263,6 +3263,17 @@ class Viewer(EditorPanel, DebugViewer):
                 if element not in elements:
                     elements.append(element)
         step.Clean()
+
+        if self.GetDrawingMode() == DRIVENDRAWING_MODE:
+            name = step.GetName().upper()
+            remove_jumps = []
+            for block in self.Blocks.itervalues():
+                if isinstance(block, SFC_Jump):
+                    if name == block.GetTarget().upper():
+                        remove_jumps.append(block)
+            for jump in remove_jumps:
+                self.DeleteJump(jump)
+
         self.RemoveBlock(step)
         self.Controler.RemoveEditedElementInstance(self.TagName, step.GetId())
         for element in elements:
