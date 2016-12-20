@@ -2902,7 +2902,20 @@ class Viewer(EditorPanel, DebugViewer):
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = step.GetRedrawRect(1, 1)
-            step.SetName(values["name"])
+
+            new_name = values["name"]
+            if self.GetDrawingMode() == DRIVENDRAWING_MODE:
+                old_name = step.GetName().upper()
+                if new_name.upper() != old_name:
+                    for block in self.Blocks.itervalues():
+                        if isinstance(block, SFC_Jump):
+                            if old_name == block.GetTarget().upper():
+                                block.SetTarget(new_name)
+                                block.RefreshModel()
+                                rect = rect.Union(block.GetRedrawRect())
+                                block.Refresh(rect)
+            step.SetName(new_name)
+            
             if values["input"]:
                 step.AddInput()
             else:
