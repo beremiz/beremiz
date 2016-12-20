@@ -1622,6 +1622,8 @@ class IDEFrame(wx.Frame):
                         self.RefreshLibraryPanel()
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_TRANSITION:
+                    pou_item = self.ProjectTree.GetItemParent(event.GetItem())
+                    pou_name = self.ProjectTree.GetItemText(pou_item)                    
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
@@ -1633,6 +1635,8 @@ class IDEFrame(wx.Frame):
                                                 self.Controler.ComputePouTransitionName(words[1], new_name))
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_ACTION:
+                    pou_item = self.ProjectTree.GetItemParent(event.GetItem())
+                    pou_name = self.ProjectTree.GetItemText(pou_item)
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
