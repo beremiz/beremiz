@@ -2962,7 +2962,12 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
               _("Edit jump target"), _("Please choose a target"),
               choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
-        dialog.SetSelection(choices.index(jump.GetTarget()))
+        try:
+            indx = choices.index(jump.GetTarget())
+            dialog.SetSelection(indx)
+        except ValueError:
+            pass
+
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetStringSelection()
             rect = jump.GetRedrawRect(1, 1)
