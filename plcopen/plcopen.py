@@ -129,6 +129,9 @@ def TestTextElement(text, criteria):
         result = criteria["pattern"].search(text, result.end())
     return test_result
 
+def TextMatched(str1, str2):
+    return str1 and str2 and (str1.upper() == str2.upper())
+
 PLCOpenParser = GenerateParserFromXSD(os.path.join(os.path.split(__file__)[0], "tc6_xml_v201.xsd"))
 PLCOpen_XPath = lambda xpath: etree.XPath(xpath, namespaces=PLCOpenParser.NSMAP)
 
@@ -290,15 +293,8 @@ cls = PLCOpenParser.GetElementClass("formattedText")
 if cls:
     def updateElementName(self, old_name, new_name):
         text = self.getanyText()
-        index = text.find(old_name)
-        while index != -1:
-            if index > 0 and (text[index - 1].isalnum() or text[index - 1] == "_"):
-                index = text.find(old_name, index + len(old_name))
-            elif index < len(text) - len(old_name) and (text[index + len(old_name)].isalnum() or text[index + len(old_name)] == "_"):
-                index = text.find(old_name, index + len(old_name))
-            else:
-                text = text[:index] + new_name + text[index + len(old_name):]
-                index = text.find(old_name, index + len(new_name))
+        pattern = re.compile('\\b' + old_name + '\\b', re.IGNORECASE)
+        text = pattern.sub(new_name, text)
         self.setanyText(text)
     setattr(cls, "updateElementName", updateElementName)
     
@@ -316,14 +312,9 @@ if cls:
     setattr(cls, "updateElementAddress", updateElementAddress)
     
     def hasblock(self, block_type):
-        text = self.getanyText().upper()
-        index = text.find(block_type.upper())
-        while index != -1:
-            if (not (index > 0 and (text[index - 1].isalnum() or text[index - 1] == "_")) and 
-                not (index < len(text) - len(block_type) and text[index + len(block_type)] != "(")):
-                return True
-            index = text.find(block_type.upper(), index + len(block_type))
-        return False
+        text = self.getanyText()        
+        pattern = re.compile('\\b' + block_type + '\\b', re.IGNORECASE)
+        return pattern.search(text) is not None
     setattr(cls, "hasblock", hasblock)
     
     def Search(self, criteria, parent_infos):
@@ -640,9 +631,9 @@ def _updateConfigurationResourceElementName(self, old_name, new_name):
         for var in varlist.getvariable():
             var_address = var.getaddress()
             if var_address is not None:
-                if var_address == old_name:
+                if TextMatched(var_address, old_name):
                     var.setaddress(new_name)
-                if var.getname() == old_name:
+                if TextMatched(var.getname(), old_name):
                     var.setname(new_name)
 
 def _updateConfigurationResourceElementAddress(self, address_model, new_leading):
@@ -776,9 +767,9 @@ if cls:
 cls = PLCOpenParser.GetElementClass("task", "resource")
 if cls:
     def updateElementName(self, old_name, new_name):
-        if self.single == old_name:
+        if TextMatched(self.single, old_name):
             self.single = new_name
-        if self.interval == old_name:
+        if TextMatched(self.interval, old_name):
             self.interval = new_name
         for instance in self.getpouInstance():
             instance.updateElementName(old_name, new_name)
@@ -801,7 +792,7 @@ if cls:
 cls = PLCOpenParser.GetElementClass("pouInstance")
 if cls:
     def updateElementName(self, old_name, new_name):
-        if self.typeName == old_name:
+        if TextMatched(self.typeName, old_name):
             self.typeName = new_name
     setattr(cls, "updateElementName", updateElementName)
 
@@ -863,7 +854,7 @@ if cls:
     def getdataTypeElement(self, name):
         elements = self.dataTypes.getdataType()
         for element in elements:
-            if element.getname() == name:
+            if TextMatched(element.getname(), name):
                 return element
         return None
     setattr(cls, "getdataTypeElement", getdataTypeElement)
@@ -882,7 +873,7 @@ if cls:
     def removedataTypeElement(self, name):
         found = False
         for element in self.dataTypes.getdataType():
-            if element.getname() == name:
+            if TextMatched(element.getname(), name):
                 self.dataTypes.remove(element)
                 found = True
                 break
@@ -897,14 +888,14 @@ if cls:
     def getpouElement(self, name):
         elements = self.pous.getpou()
         for element in elements:
-            if element.getname() == name:
+            if TextMatched(element.getname(), name):
                 return element
         return None
     setattr(cls, "getpouElement", getpouElement)
 
     def appendpouElement(self, name, pou_type, body_type):
         for element in self.pous.getpou():
-            if element.getname() == name:
+            if TextMatched(element.getname(), name):
                 raise ValueError, _("\"%s\" POU already exists !!!")%name
         new_pou = PLCOpenParser.CreateElement("pou", "pous")
         self.pous.appendpou(new_pou)
@@ -921,7 +912,7 @@ if cls:
     def removepouElement(self, name):
         found = False
         for element in self.pous.getpou():
-            if element.getname() == name:
+            if TextMatched(element.getname(), name):
                 self.pous.remove(element)
                 found = True
                 break
@@ -988,7 +979,7 @@ if cls:
 cls = PLCOpenParser.GetElementClass("derived", "dataType")
 if cls:
     def updateElementName(self, old_name, new_name):
-        if self.name == old_name:
+        if TextMatched(self.name, old_name):
             self.name = new_name
     setattr(cls, "updateElementName", updateElementName)
     
@@ -1233,9 +1224,9 @@ if cls:
             for varlist in content:
                 variables = varlist.getvariable()
                 for var in variables:
-                    if var.getname() == old_name:
+                    if TextMatched(var.getname(), old_name):
                         vartype_content = var.gettype().getcontent()
-                        if vartype_content.getLocalTag() == "derived" and vartype_content.getname() == old_type:
+                        if vartype_content.getLocalTag() == "derived" and TextMatched(vartype_content.getname(), old_type):
                             var.setname(new_name)
                             vartype_content.setname(new_type)
                             return
@@ -1246,9 +1237,9 @@ if cls:
             content = self.interface.getcontent()
             for varlist in content:
                 for var in varlist.getvariable():
-                    if var.getname() == name:
+                    if TextMatched(var.getname(), name):
                         vartype_content = var.gettype().getcontent()
-                        if vartype_content.getLocalTag() == "derived" and vartype_content.getname() == var_type:
+                        if vartype_content.getLocalTag() == "derived" and TextMatched(vartype_content.getname(), var_type):
                             varlist.remove(var)
                             if len(varlist.getvariable()) == 0:
                                 self.interface.remove(varlist)
@@ -1259,8 +1250,7 @@ if cls:
         if self.getbodyType() in ["FBD", "LD", "SFC"]:
             for instance in self.getinstances():
                 if (isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) and 
-                    (name and instance.getinstanceName() == name or
-                     block_type and instance.gettypeName() == block_type)):
+                    (TextMatched(instance.getinstanceName(), name) or TextMatched(instance.gettypeName(), block_type))):
                     return True
             if self.transitions:
                 for transition in self.transitions.gettransition():
@@ -1294,7 +1284,7 @@ if cls:
     def gettransition(self, name):
         if self.transitions is not None:
             for transition in self.transitions.gettransition():
-                if transition.getname() == name:
+                if TextMatched(transition.getname(), name):
                     return transition
         return None
     setattr(cls, "gettransition", gettransition)
@@ -1309,7 +1299,7 @@ if cls:
         if self.transitions is not None:
             removed = False
             for transition in self.transitions.gettransition():
-                if transition.getname() == name:
+                if TextMatched(transition.getname(), name):
                     if transition.getbodyType() in ["FBD", "LD", "SFC"]:
                         for instance in transition.getinstances():
                             if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")):
@@ -1335,7 +1325,7 @@ if cls:
     def getaction(self, name):
         if self.actions is not None:
             for action in self.actions.getaction():
-                if action.getname() == name:
+                if TextMatched(action.getname(), name):
                     return action
         return None
     setattr(cls, "getaction", getaction)
@@ -1350,7 +1340,7 @@ if cls:
         if self.actions is not None:
             removed = False
             for action in self.actions.getaction():
-                if action.getname() == name:
+                if TextMatched(action.getname(), name):
                     if action.getbodyType() in ["FBD", "LD", "SFC"]:
                         for instance in action.getinstances():
                             if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")):
@@ -1369,13 +1359,13 @@ if cls:
                 for var in content.getvariable():
                     var_address = var.getaddress()
                     if var_address is not None:
-                        if var_address == old_name:
+                        if TextMatched(var_address, old_name):
                             var.setaddress(new_name)
-                        if var.getname() == old_name:
+                        if TextMatched(var.getname(), old_name):
                             var.setname(new_name)
                     var_type_content = var.gettype().getcontent()
                     if var_type_content.getLocalTag() == "derived":
-                        if var_type_content.getname() == old_name:
+                        if TextMatched(var_type_content.getname(), old_name):
                             var_type_content.setname(new_name)
         self.body[0].updateElementName(old_name, new_name)
         for action in self.getactionList():
@@ -1402,7 +1392,7 @@ if cls:
         if self.interface is not None:
             for content in self.interface.getcontent():
                 for variable in content.getvariable():
-                    if variable.getaddress() == address:
+                    if TextMatched(variable.getaddress(), address):
                         content.remove(variable)
     setattr(cls, "removeVariableByAddress", removeVariableByAddress)
 
@@ -1493,8 +1483,7 @@ def hasblock(self, name=None, block_type=None):
     if self.getbodyType() in ["FBD", "LD", "SFC"]:
         for instance in self.getinstances():
             if (isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) and 
-                (name and instance.getinstanceName() == name or
-                 block_type and instance.gettypeName() == block_type)):
+                (TextMatched(instance.getinstanceName(), name) or TextMatched(instance.gettypeName(), block_type))):
                 return True
     elif block_type is not None:
         return self.body.hasblock(block_type)
@@ -1616,9 +1605,9 @@ if cls:
                 if instance.getexecutionOrderId() == 0:
                     instance.setexecutionOrderId(self.getnewExecutionOrderId())
             elif isinstance(instance, PLCOpenParser.GetElementClass("continuation", "commonObjects")) and instance.getexecutionOrderId() == 0:
-                name = instance.getname()
                 for tmp_instance in self.getcontentInstances():
-                    if isinstance(tmp_instance, PLCOpenParser.GetElementClass("connector", "commonObjects")) and tmp_instance.getname() == name and tmp_instance.getexecutionOrderId() == 0:
+                    if (isinstance(tmp_instance, PLCOpenParser.GetElementClass("connector", "commonObjects")) and
+                        TextMatched(tmp_instance.getname(), instance.getname()) and tmp_instance.getexecutionOrderId() == 0):
                         connections = tmp_instance.connectionPointIn.getconnections()
                         if connections and len(connections) == 1:
                             self.compileelementExecutionOrder(connections[0])
@@ -1918,7 +1907,7 @@ if cls:
     setattr(cls, "getBoundingBox", getBoundingBox)
 
     def updateElementName(self, old_name, new_name):
-        if self.typeName == old_name:
+        if TextMatched(self.typeName, old_name):
             self.typeName = new_name
     setattr(cls, "updateElementName", updateElementName)
 
@@ -1958,7 +1947,7 @@ _initElementClass("leftPowerRail", "ldObjects")
 _initElementClass("rightPowerRail", "ldObjects", "multiple")
 
 def _UpdateLDElementName(self, old_name, new_name):
-    if self.variable == old_name:
+    if TextMatched(self.variable, old_name):
         self.variable = new_name
 
 def _UpdateLDElementAddress(self, address_model, new_leading):
@@ -2064,7 +2053,7 @@ if cls:
             content = self.condition.getcontent()
             content_name = content.getLocalTag()
             if content_name == "reference":
-                if content.getname() == old_name:
+                if TextMatched(content.getname(), old_name):
                     content.setname(new_name)
             elif content_name == "inline":
                 content.updateElementName(old_name, new_name)
@@ -2136,7 +2125,7 @@ if cls:
     setattr(cls, "getinlineContent", getinlineContent)
 
     def updateElementName(self, old_name, new_name):
-        if self.reference is not None and self.reference.getname() == old_name:
+        if self.reference is not None and TextMatched(self.reference.getname(), old_name):
             self.reference.setname(new_name)
         if self.inline is not None:
             self.inline.updateElementName(old_name, new_name)
@@ -2226,7 +2215,7 @@ def _SearchInIOVariable(self, criteria, parent_infos=[]):
     return _Search([("expression", self.expression)], criteria, parent_infos + ["io_variable", self.getlocalId()])
 
 def _UpdateIOElementName(self, old_name, new_name):
-    if self.expression == old_name:
+    if TextMatched(self.expression, old_name):
         self.expression = new_name
 
 def _UpdateIOElementAddress(self, address_model, new_leading):
@@ -2259,7 +2248,7 @@ if cls:
     setattr(cls, "Search", _SearchInConnector)
 
     def updateElementName(self, old_name, new_name):
-        if self.name == old_name:
+        if TextMatched(self.name, old_name):
             self.name = new_name
     setattr(cls, "updateElementName", updateElementName)
 
@@ -2268,7 +2257,7 @@ if cls:
     setattr(cls, "Search", _SearchInConnector)
 
     def updateElementName(self, old_name, new_name):
-        if self.name == old_name:
+        if TextMatched(self.name, old_name):
             self.name = new_name
     setattr(cls, "updateElementName", updateElementName)
 

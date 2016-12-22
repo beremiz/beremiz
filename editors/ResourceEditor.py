@@ -441,10 +441,11 @@ class ResourceEditor(EditorPanel):
                 if task in tasklist:
                     tasklist.remove(task)
             if len(tasklist) > 0:
-                old_name = tasklist[0]
+                old_name = tasklist[0].upper()
                 new_name = self.TasksTable.GetValue(row, col)
                 for i in xrange(self.InstancesTable.GetNumberRows()):
-                    if self.InstancesTable.GetValueByName(i, "Task") == old_name:
+                    name = self.InstancesTable.GetValueByName(i, "Task").upper()
+                    if old_name == name:
                         self.InstancesTable.SetValueByName(i, "Task", new_name)
         self.RefreshModel()
         colname = self.TasksTable.GetColLabelValue(col, False)
