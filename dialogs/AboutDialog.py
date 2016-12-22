@@ -62,7 +62,7 @@ class AboutDialog(wx.Dialog):
 
         credits = wx.Button(self, id=wx.ID_ABOUT, label=_("C&redits"))
         license = wx.Button(self, label=_("&License"))
-        close = wx.Button(self, id=wx.ID_CLOSE, label=_("&Close"))
+        close = wx.Button(self, id=wx.ID_CANCEL, label=_("&Close"))
 
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
         btnSizer.Add(credits, flag=wx.CENTER | wx.LEFT | wx.RIGHT, border=5)
