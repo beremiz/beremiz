@@ -894,11 +894,12 @@ class TextViewer(EditorPanel):
                     key_handled = True
             elif key == wx.WXK_BACK:
                 if self.TextSyntax in ["ST", "ALL"]:
-                    indent = self.Editor.GetLineIndentation(line)
-                    if lineText.strip() == "" and indent > 0:
-                        self.Editor.DelLineLeft()
-                        self.Editor.AddText(" " * ((max(0, indent - 1) / 2) * 2))
-                        key_handled = True
+                    if not self.Editor.GetSelectedText():
+                        indent = self.Editor.GetColumn(self.Editor.GetCurrentPos())
+                        if lineText.strip() == "" and len(lineText) > 0 and indent > 0:
+                            self.Editor.DelLineLeft()
+                            self.Editor.AddText(" " * ((max(0, indent - 1) / 2) * 2))
+                            key_handled = True
             if not key_handled:
                 event.Skip()
         else:
