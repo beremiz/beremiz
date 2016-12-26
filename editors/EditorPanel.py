@@ -79,7 +79,7 @@ class EditorPanel(wx.SplitterWindow):
         self.ParentWindow.EditProjectElement(None, self.GetTagName(), True)
     
     def GetTitle(self):
-        return "-".join(self.TagName.split("::")[1:])
+        return ".".join(self.TagName.split("::")[1:])
     
     def GetIcon(self):
         return self.Icon
