@@ -393,6 +393,11 @@ class ProgramGenerator:
             single = task.getsingle()
             # Single argument if exists
             if single is not None:
+                if len(single) == 0:
+                    msg = _("Source signal has to be defined for single task '{a1}' in resource '{a2}.{a3}'.").\
+                          format(a1 = task.getname(), a2 = config_name, a3 = resource.getname())
+                    raise PLCGenException, msg
+
                 if single[0]=='[' and single[-1]==']' :
                     SNGLKW = "MULTI"
                 else:
