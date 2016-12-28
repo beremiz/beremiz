@@ -25,7 +25,7 @@
 import wx
 from plcopen.plcopen import *
 
-class FindInPouDialog(wx.Frame):
+class FindInPouDialog(wx.Dialog):
 
     def _init_icon(self, parent):
         if parent and parent.icon:
@@ -33,15 +33,13 @@ class FindInPouDialog(wx.Frame):
 
     
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, title=_("Find"), 
-              size=wx.Size(410, 250), style=wx.CAPTION|
+        wx.Dialog.__init__(self, parent, title=_("Find"),         
+              size=wx.Size(500, 280), style=wx.CAPTION|
                                             wx.CLOSE_BOX|
                                             wx.CLIP_CHILDREN|
-                                            wx.RESIZE_BORDER|
-                                            wx.STAY_ON_TOP)
+                                            wx.RESIZE_BORDER)
         
         self._init_icon(parent)
-        self.CreateStatusBar(style=wx.SB_FLAT)
         panel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=5, rows=2, vgap=5)
@@ -113,6 +111,9 @@ class FindInPouDialog(wx.Frame):
         self.CloseButton = wx.Button(panel, label=_("Close"))
         self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.CloseButton)
         buttons_sizer.AddWindow(self.CloseButton)
+
+        self.StatusLabel = wx.StaticText(panel, label= "")
+        controls_sizer.AddWindow(self.StatusLabel, flag=wx.ALIGN_CENTER_VERTICAL)
         
         panel.SetSizer(main_sizer)
         
@@ -147,6 +148,10 @@ class FindInPouDialog(wx.Frame):
         self.RefreshButtonsState()
         event.Skip()
 
+    def SetStatusText(self, msg):
+        self.StatusLabel.SetLabel(msg)
+        self.Layout()
+        
     def OnFindButton(self, event):
         infos = {
             "find_pattern": self.FindPattern.GetValue(),
