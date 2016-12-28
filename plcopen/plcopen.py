@@ -1276,9 +1276,7 @@ if cls:
         transition.setname(name)
         transition.setbodyType(body_type)
         if body_type == "ST":
-            transition.setanyText(":= ;")
-        elif body_type == "IL":
-            transition.setanyText("\tST\t%s"%name)
+            transition.settext(":= ;")
     setattr(cls, "addtransition", addtransition)
     
     def gettransition(self, name):

@@ -2184,7 +2184,7 @@ class PLCControler:
                 if pou is not None:
                     return self.GetPouInterfaceReturnType(pou, tree, debug)
         elif words[0] == 'T':
-            return "BOOL"
+            return ["BOOL", ([], [])]
         return None
 
     # Change the edited element text
