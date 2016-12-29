@@ -116,6 +116,7 @@ class FindInPouDialog(wx.Dialog):
         controls_sizer.AddWindow(self.StatusLabel, flag=wx.ALIGN_CENTER_VERTICAL)
         
         panel.SetSizer(main_sizer)
+        main_sizer.Fit(self)
         
         self.ParentWindow = parent
         
