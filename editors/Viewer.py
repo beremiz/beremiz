@@ -3465,12 +3465,13 @@ class Viewer(EditorPanel, DebugViewer):
             self.SearchResults = []
             blocks = []
             for infos, start, end, text in self.Controler.SearchInPou(self.TagName, search_params, self.Debug):
-                if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
-                    self.SearchResults.append((infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT))
-                else:
-                    block = self.Blocks.get(infos[2])
-                    if block is not None:
-                        blocks.append((block, (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)))
+                if (infos[0] == self.TagName or self.TagName.split("::")[0] in ['A', 'T']) and infos[1] is not 'name':
+                    if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
+                        self.SearchResults.append((infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT))
+                    else:
+                        block = self.Blocks.get(infos[2])
+                        if block is not None:
+                            blocks.append((block, (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)))
             blocks.sort(sort_blocks)
             self.SearchResults.extend([infos for block, infos in blocks])
             self.CurrentFindHighlight = None

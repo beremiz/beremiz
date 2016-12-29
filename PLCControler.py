@@ -3193,7 +3193,14 @@ class PLCControler:
     def SearchInPou(self, tagname, criteria, debug=False):
         pou = self.GetEditedElement(tagname, debug)
         if pou is not None:
-            return pou.Search(criteria)
+            search_results = pou.Search(criteria, [tagname])
+            if tagname.split("::")[0] in ['A', 'T']:
+                parent_pou_tagname = "P::%s" % (tagname.split("::")[-2])
+                parent_pou = self.GetEditedElement(parent_pou_tagname, debug)
+                for infos, start, end, text in parent_pou.Search(criteria):
+                    if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
+                        search_results.append((infos, start, end, text))
+            return search_results
         return []
 
 #-------------------------------------------------------------------------------

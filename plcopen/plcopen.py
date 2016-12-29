@@ -1409,7 +1409,8 @@ if cls:
         search_result = []
         filter = criteria["filter"]
         if filter == "all" or self.getpouType() in filter:
-            parent_infos = parent_infos + ["P::%s" % self.getname()]
+            if parent_infos == []:
+                parent_infos = parent_infos + ["P::%s" % self.getname()]
             search_result.extend(_Search([("name", self.getname())], criteria, parent_infos))
             if self.interface is not None:
                 var_number = 0
