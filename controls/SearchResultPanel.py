@@ -232,19 +232,6 @@ class SearchResultPanel(wx.Panel):
                             break
                     if element_type == ITEM_RESOURCE:
                         search_results_tree_children.append(element_infos)
-                    else:
-                        _tagname = self.ParentWindow.Controler.ComputePouName(words[1])
-                        _element_type = self.ParentWindow.Controler.GetPouType(words[1])
-                    
-                        _element_infos = {"name": words[1],
-                                          "type": _element_type,
-                                          "data": _tagname,
-                                          "text": None,
-                                          "matches": 1,
-                                          "children": [element_infos]}
-                    
-                        search_results_tree_children.append(_element_infos)
-                
                 else:
                     search_results_tree_children.append(element_infos)
             
