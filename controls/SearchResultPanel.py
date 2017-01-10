@@ -324,6 +324,7 @@ class SearchResultPanel(wx.Panel):
             search_results = [data]
         else:
             search_results = self.SearchResults.get(data, [])
+        self.ParentWindow.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
         for infos, start, end, text in search_results:
             self.ParentWindow.ShowSearchResult(infos, start, end)
     
