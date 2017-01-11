@@ -989,6 +989,7 @@ class Beremiz(IDEFrame):
                 self.ResetView()
                 self.ShowErrorMessage(result)
             self.RefreshAll()
+            self.SearchResultPanel.ResetSearchResults()
         else:
             self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
             err = True
