@@ -1245,6 +1245,14 @@ if cls:
                                 self.interface.remove(varlist)
                             break
     setattr(cls, "removepouVar", removepouVar)
+
+    def hasstep(self, name=None):
+        if self.getbodyType() in ["SFC"]:
+            for instance in self.getinstances():
+                if isinstance(instance, PLCOpenParser.GetElementClass("step", "sfcObjects")) and TextMatched(instance.getname(), name):
+                    return True         
+        return False
+    setattr(cls, "hasstep", hasstep)
     
     def hasblock(self, name=None, block_type=None):
         if self.getbodyType() in ["FBD", "LD", "SFC"]:

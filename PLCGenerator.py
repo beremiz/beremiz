@@ -1387,6 +1387,10 @@ class PouProgramGenerator:
 
     def GenerateSFCJump(self, jump, pou):
         jump_target = jump.gettargetName()
+        if not pou.hasstep(jump_target):
+            pname = pou.getname()
+            msg = _("SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\"").format( a1 = pname, a2 = jump_target)
+            raise PLCGenException, msg
         if jump.connectionPointIn is not None:
             instances = []
             connections = jump.connectionPointIn.getconnections()
