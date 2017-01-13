@@ -2895,10 +2895,15 @@ class Comment(Graphic_Element):
                    wx.Point(self.Pos.x + self.Size[0], self.Pos.y + self.Size[1]),
                    wx.Point(self.Pos.x, self.Pos.y + self.Size[1])]
         dc.DrawPolygon(polygon)
+
+        # dc.SetBrush call is workaround for the issue with wx.PrinterDC
+        # with wxPython 3.0 on GNU/Linux (don't remove it)
+        dc.SetBrush(wx.WHITE_BRUSH)
         lines = [wx.Point(self.Pos.x + self.Size[0] - 10, self.Pos.y),
                  wx.Point(self.Pos.x + self.Size[0] - 10, self.Pos.y + 10),
                  wx.Point(self.Pos.x + self.Size[0], self.Pos.y + 10)]
         dc.DrawLines(lines)
+
         # Draws the comment content
         y = self.Pos.y + 10
         for idx, line in enumerate(self.Content.splitlines()):
