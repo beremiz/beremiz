@@ -84,6 +84,60 @@ def ExtractMenuItemsFromCatalog(catalog):
 def GetAddMenuItems():
     return ExtractMenuItemsFromCatalog(features.catalog)
 
+class Iec2CSettings():
+    def __init__(self):
+        self.iec2c = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
+        self.iec2c_buildopts = None
+        self.ieclib_path   = os.path.join(base_folder, "matiec", "lib")
+        self.ieclib_c_path = None
+
+    def findLibCPath(self):
+        path=""
+        paths=[
+            os.path.join(base_folder, "matiec", "lib", "C"),
+            os.path.join(base_folder, "matiec", "lib") ]
+        for p in paths:
+            filename=os.path.join(p, "iec_types.h")
+            if (os.path.isfile(filename)):
+                path = p
+                break
+        return path
+
+    def findSupportedOptions(self):
+        buildcmd = "\"%s\" -h"%(self.iec2c)
+        options =["-f", "-l", "-p"]
+
+        buildopt = ""
+        try:
+            # Invoke compiler. Output files are listed to stdout, errors to stderr
+            status, result, err_result = ProcessLogger(self.logger, buildcmd,
+                no_stdout=True, no_stderr=True).spin()
+        except Exception,e:
+            return buildopt
+
+        for opt in options:
+            if opt in result:
+                buildopt = buildopt + " " + opt
+        return buildopt
+
+    def getCmd(self):
+        return self.iec2c
+
+    def getOptions(self):
+        if self.iec2c_buildopts is None:
+            self.iec2c_buildopts = self.findSupportedOptions()
+        return self.iec2c_buildopts
+
+    def getLibPath(self):
+        return self.ieclib_path
+
+    def getLibCPath(self):
+        if self.ieclib_c_path is None:
+            self.ieclib_c_path = self.findLibCPath()
+        return self.ieclib_c_path
+
+iec2c_cfg = Iec2CSettings()
+
 class ProjectController(ConfigTreeNode, PLCControler):
     """
     This class define Root object of the confnode tree.
@@ -138,10 +192,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugValuesBuffers = []
         self.DebugTicks = []
         self.SetAppFrame(frame, logger)
-
-        self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
-        self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
-        self.ieclib_c_path = self._getMatIecCPath()
 
         # Setup debug information
         self.IECdebug_datas = {}
@@ -228,10 +278,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self
 
     def GetIECLibPath(self):
-        return self.ieclib_c_path
+        return iec2c_cfg.getLibCPath()
 
     def GetIEC2cPath(self):
-        return self.iec2c_path
+        return iec2c_cfg.getCmd()
 
     def GetCurrentLocation(self):
         return ()
@@ -638,43 +688,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return True
 
 
-    def _getMatIecCPath(self):
-        path=''
-        paths=[
-            os.path.join(base_folder, "matiec", "lib", "C"),
-            os.path.join(base_folder, "matiec", "lib") ]
-        for p in paths:
-            filename=os.path.join(p, "iec_types.h")
-            if (os.path.isfile(filename)):
-                path = p
-                break
-        return path
-
-    def _getMatIecOptions(self):
-        buildpath = self._getBuildPath()
-        buildcmd = "\"%s\" -h"%(self.iec2c_path)
-        options =["-f", "-l", "-p"]
-
-        buildopt = ""
-        try:
-            # Invoke compiler. Output files are listed to stdout, errors to stderr
-            status, result, err_result = ProcessLogger(self.logger, buildcmd,
-                no_stdout=True, no_stderr=True).spin()
-        except Exception,e:
-            return buildopt
-
-        for opt in options:
-            if opt in result:
-                buildopt = buildopt + " " + opt
-        return buildopt
 
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
         buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\""%(
-                         self.iec2c_path,
-                         self._getMatIecOptions(),
-                         self.ieclib_path,
+                         iec2c_cfg.getCmd(),
+                         iec2c_cfg.getOptions(),
+                         iec2c_cfg.getLibPath(),
                          buildpath,
                          self._getIECcodepath())
 
@@ -743,7 +764,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%self.ieclib_c_path
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%iec2c_cfg.getLibCPath()
         return True
 
     def GetBuilder(self):
