@@ -93,7 +93,7 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
             images_bbx = self.GetItemRightImagesBBox(item)
             r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
             
-            dc.SetBrush(wx.WHITE_BRUSH)
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.TRANSPARENT_PEN)
             
             bg_width = (r_image_w + 4) * len(rightimages) + 4
