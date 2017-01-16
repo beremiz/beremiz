@@ -522,7 +522,7 @@ class Beremiz(IDEFrame):
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
-            result = self.CTR.LoadProject(projectOpen, buildpath)
+            result, err = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
