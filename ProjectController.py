@@ -1262,7 +1262,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _UpdateButtons(self):
         self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
         self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
-        if not self.UpdateMethodsFromPLCStatus():
+        if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
             self.AppFrame.RefreshStatusToolBar()
         
     def UpdateButtons(self):
