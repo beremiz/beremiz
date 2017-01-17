@@ -414,7 +414,7 @@ class TextViewer(EditorPanel):
         self.Colourise(0, -1)
 
     def RefreshJumpList(self):
-        if self.TextSyntax != "IL":
+        if self.TextSyntax == "IL":
             self.Jumps = [jump.upper() for jump in LABEL_MODEL.findall(self.GetText())]
             self.Colourise(0, -1)
 
