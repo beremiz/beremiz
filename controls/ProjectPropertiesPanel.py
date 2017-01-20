@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import
 import wx
+from wx.lib.scrolledpanel import ScrolledPanel
 
 # -------------------------------------------------------------------------------
 #                                 Helpers
@@ -74,7 +75,9 @@ class ProjectPropertiesPanel(wx.Notebook):
 
         # Project Panel elements
 
-        self.ProjectPanel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
+        self.ProjectPanel = ScrolledPanel(self,-1,style=wx.TAB_TRAVERSAL)
+        self.ProjectPanel.SetAutoLayout(1)
+        self.ProjectPanel.SetupScrolling()
         projectpanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=5, vgap=15)
         projectpanel_sizer.AddGrowableCol(1)
         self.ProjectPanel.SetSizer(projectpanel_sizer)
@@ -90,7 +93,9 @@ class ProjectPropertiesPanel(wx.Notebook):
 
         # Author Panel elements
 
-        self.AuthorPanel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
+        self.AuthorPanel = ScrolledPanel(self,-1,style=wx.TAB_TRAVERSAL)
+        self.AuthorPanel.SetAutoLayout(1)
+        self.AuthorPanel.SetupScrolling()
         authorpanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=4, vgap=15)
         authorpanel_sizer.AddGrowableCol(1)
         self.AuthorPanel.SetSizer(authorpanel_sizer)
@@ -105,7 +110,9 @@ class ProjectPropertiesPanel(wx.Notebook):
 
         # Graphics Panel elements
 
-        self.GraphicsPanel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
+        self.GraphicsPanel = ScrolledPanel(self,-1,style=wx.TAB_TRAVERSAL)
+        self.GraphicsPanel.SetAutoLayout(1)
+        self.GraphicsPanel.SetupScrolling()
         graphicpanel_sizer = wx.FlexGridSizer(cols=1, hgap=5, rows=4, vgap=5)
         graphicpanel_sizer.AddGrowableCol(0)
         graphicpanel_sizer.AddGrowableRow(3)
@@ -181,9 +188,11 @@ class ProjectPropertiesPanel(wx.Notebook):
 
         # Miscellaneous Panel elements
 
-        self.MiscellaneousPanel = wx.Panel(
-            id=-1, parent=self, name='MiscellaneousPanel', pos=wx.Point(0, 0),
-            size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        self.MiscellaneousPanel = ScrolledPanel(id=-1, parent=self,
+              name='MiscellaneousPanel', pos=wx.Point(0, 0),
+              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        self.MiscellaneousPanel.SetAutoLayout(1)
+        self.MiscellaneousPanel.SetupScrolling()
         miscellaneouspanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=2, vgap=15)
         miscellaneouspanel_sizer.AddGrowableCol(1)
         miscellaneouspanel_sizer.AddGrowableRow(1)
