@@ -110,7 +110,7 @@ class Iec2CSettings():
         buildopt = ""
         try:
             # Invoke compiler. Output files are listed to stdout, errors to stderr
-            status, result, err_result = ProcessLogger(self.logger, buildcmd,
+            status, result, err_result = ProcessLogger(None, buildcmd,
                 no_stdout=True, no_stderr=True).spin()
         except Exception,e:
             return buildopt
