@@ -972,6 +972,16 @@ class Viewer(EditorPanel, DebugViewer):
                 return connector.GetEdge()
         return "none"
 
+    def CorrectElementSize(self, element, width, height):
+        min_width, min_height = element.GetMinSize()
+        if width < min_width:
+            width = min_width
+        if height < min_height:
+            height = min_height
+        if element.Size != (width, height):
+            element.SetSize(width, height)
+            element.RefreshModel()
+
 #-------------------------------------------------------------------------------
 #                              Reset functions
 #-------------------------------------------------------------------------------
@@ -1384,6 +1394,7 @@ class Viewer(EditorPanel, DebugViewer):
                 if not self.CreateWires(connector, instance.id, input_connector.links, remaining_instances, selection):
                     element.RefreshModel()
         element.RefreshConnectors()
+        self.CorrectElementSize(element, instance.width, instance.height)
         if selection is not None and selection[0].get(instance.id, False):
             self.SelectInGroup(element)
 
