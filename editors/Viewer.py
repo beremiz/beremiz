@@ -3660,13 +3660,16 @@ class Viewer(EditorPanel, DebugViewer):
                 scalex, scaley = dc.GetUserScale()
                 dc.SetUserScale(1, 1)
 
-                is_action = self.TagName.split("::")[0] == "A"
+                # is_action = self.TagName.split("::")[0] == "A"
                 text = _("Debug: %s") % self.InstancePath
-                if is_action and self.Value is not None:
-                    text += " ("
+                '''if is_action and self.Value is not None:
+                    text += " ("'''
                 text_offset_x, text_offset_y = self.CalcUnscrolledPosition(2, 2)
                 dc.DrawText(text, text_offset_x, text_offset_y)
-                if is_action and self.Value is not None:
+                # TODO  Fix self.Value in LD_Viewer instance.
+                # This code used to highlight with green color text in upper-left corner
+                # (path to current instance) in debug mode, if current instance active. Only SFC actions are affected.
+                '''if is_action and self.Value is not None:
                     value_text = self.VALUE_TRANSLATION[self.Value]
                     tw, th = dc.GetTextExtent(text)
                     if self.Value:
@@ -3675,7 +3678,7 @@ class Viewer(EditorPanel, DebugViewer):
                     if self.Value:
                         dc.SetTextForeground(wx.BLACK)
                     vw, vh = dc.GetTextExtent(value_text)
-                    dc.DrawText(")", text_offset_x + tw + vw + 2, text_offset_y)
+                    dc.DrawText(")", text_offset_x + tw + vw + 2, text_offset_y)'''
 
                 dc.SetUserScale(scalex, scaley)
 
