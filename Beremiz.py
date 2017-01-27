@@ -1229,6 +1229,10 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
         if ex not in ignored_exceptions:
             date = time.ctime()
+            try:
+                os.mkdir(path)
+            except OSError:
+                pass
             bug_report_path = path+os.sep+"bug_report_"+date.replace(':','-').replace(' ','_')+".txt"
             result = Display_Exception_Dialog(e_type,e_value,e_traceback,bug_report_path)
             if result:
@@ -1261,6 +1265,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
                 lst.sort()
                 for a in lst:
                     output.write(a+":\n"+str(info[a])+"\n\n")
+                output.close()
 
     #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
@@ -1281,7 +1286,8 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 
 if __name__ == '__main__':
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),version.app_version)
+    logpath = tempfile.gettempdir()+os.sep+'Beremiz'
+    AddExceptHook(logpath ,version.app_version)
 
     frame = Beremiz(None, projectOpen, buildpath)
     if splash:
