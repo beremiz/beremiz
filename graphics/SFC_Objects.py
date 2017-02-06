@@ -653,8 +653,10 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
-        rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
-        rect = rect.Union(self.Output.GetRedrawRect(movex, movey))
+        if self.Input:
+            rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
+        if self.Output:
+            rect = rect.Union(self.Output.GetRedrawRect(movex, movey))
         if movex != 0 or movey != 0:
             if self.Input.IsConnected():
                 rect = rect.Union(self.Input.GetConnectedRedrawRect(movex, movey))
@@ -1547,7 +1549,8 @@ class SFC_Jump(Graphic_Element):
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
-        rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
+        if self.Input:
+            rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
         if movex != 0 or movey != 0:
             if self.Input.IsConnected():
                 rect = rect.Union(self.Input.GetConnectedRedrawRect(movex, movey))
@@ -1824,7 +1827,8 @@ class SFC_ActionBlock(Graphic_Element):
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
-        rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
+        if self.Input:
+            rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
         if movex != 0 or movey != 0:
             if self.Input.IsConnected():
                 rect = rect.Union(self.Input.GetConnectedRedrawRect(movex, movey))
