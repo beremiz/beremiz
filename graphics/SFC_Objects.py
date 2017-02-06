@@ -70,7 +70,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         if self.Output is not None:
             self.Output.Flush()
             self.Output = None
-        if self.Output is not None:
+        if self.Action is not None:
             self.Action.Flush()
             self.Action = None
     
