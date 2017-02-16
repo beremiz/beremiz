@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import wx
 
@@ -95,7 +95,7 @@ class LocationCellControl(wx.PyControl):
             if not infos["location"].startswith("%"):
                 dialog = wx.SingleChoiceDialog(self, 
                       _("Select a variable class:"), _("Variable class"), 
-                      ["Input", "Output", "Memory"], 
+                      [_("Input"), _("Output"), _("Memory")], 
                       wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                 if dialog.ShowModal() == wx.ID_OK:
                     selected = dialog.GetSelection()
@@ -161,15 +161,22 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
             self.CellControl.SetVarType(self.Table.GetValueByName(row, 'Type'))
         self.CellControl.SetFocus()
 
-    def EndEdit(self, row, col, grid):
+    def EndEditInternal(self, row, col, grid, old_loc):
         loc = self.CellControl.GetValue()
-        old_loc = self.Table.GetValueByName(row, 'Location')
         changed = loc != old_loc
         if changed:
             self.Table.SetValueByName(row, 'Location', loc)
             self.Table.SetValueByName(row, 'Type', self.CellControl.GetVarType())
         self.CellControl.Disable()
         return changed
+        
+    if wx.VERSION >= (3, 0, 0):
+        def EndEdit(self, row, col, grid, oldval):
+            return self.EndEditInternal(row, col, grid, oldval)
+    else:
+        def EndEdit(self, row, col, grid):
+            old_loc = self.Table.GetValueByName(row, 'Location')            
+            return self.EndEditInternal(row, col, grid, old_loc)
     
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,

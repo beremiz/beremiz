@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os, sys, getopt
 from threading import Thread
@@ -112,10 +112,52 @@ import __builtin__
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
 
+def Bpath(*args):
+    return os.path.join(beremiz_dir,*args)
+
+def SetupI18n():
+    # Import module for internationalization
+    import gettext
+
+    # Get folder containing translation files
+    localedir = os.path.join(beremiz_dir,"locale")
+    # Get the default language
+    langid = wx.LANGUAGE_DEFAULT
+    # Define translation domain (name of translation files)
+    domain = "Beremiz"
+
+    # Define locale for wx
+    loc = __builtin__.__dict__.get('loc', None)
+    if loc is None:
+        loc = wx.Locale(langid)
+        __builtin__.__dict__['loc'] = loc
+        # Define location for searching translation files
+    loc.AddCatalogLookupPathPrefix(localedir)
+    # Define locale domain
+    loc.AddCatalog(domain)
+
+
+    import locale
+    global default_locale
+    default_locale = locale.getdefaultlocale()[1]
+
+
+    # sys.stdout.encoding = default_locale
+    # if Beremiz_service is started from Beremiz IDE
+    # sys.stdout.encoding is None (that means 'ascii' encoding').
+    # And unicode string returned by wx.GetTranslation() are
+    # automatically converted to 'ascii' string.
+    def unicode_translation(message):
+        return wx.GetTranslation(message).encode(default_locale)
+
+    if __name__ == '__main__':
+        __builtin__.__dict__['_'] = unicode_translation
+        # __builtin__.__dict__['_'] = wx.GetTranslation
+
 if enablewx:
     try:
         import wxversion
-        wxversion.select('2.8')
+        wxversion.select(['2.8', '3.0'])
         import wx
         havewx = True
     except:
@@ -126,36 +168,15 @@ if enablewx:
         import re
         from threading import Thread, currentThread
         from types import *
-        app=wx.App(redirect=False)
 
-        # Import module for internationalization
-        import gettext
+        if wx.VERSION >= (3, 0, 0):
+            app = wx.App(redirect=False)
+        else:
+            app = wx.PySimpleApp(redirect=False)
+        app.SetTopWindow(wx.Frame(None, -1))
 
-        def Bpath(*args):
-            return os.path.join(beremiz_dir,*args)
-
-        # Get folder containing translation files
-        localedir = os.path.join(beremiz_dir,"locale")
-        # Get the default language
-        langid = wx.LANGUAGE_DEFAULT
-        # Define translation domain (name of translation files)
-        domain = "Beremiz"
-
-        # Define locale for wx
-        loc = __builtin__.__dict__.get('loc', None)
-        if loc is None:
-            loc = wx.Locale(langid)
-            __builtin__.__dict__['loc'] = loc
-        # Define location for searching translation files
-        loc.AddCatalogLookupPathPrefix(localedir)
-        # Define locale domain
-        loc.AddCatalog(domain)
-
-        def unicode_translation(message):
-            return wx.GetTranslation(message).encode("utf-8")
-
-        if __name__ == '__main__':
-            __builtin__.__dict__['_'] = wx.GetTranslation#unicode_translation
+        default_locale = None
+        SetupI18n()
 
         defaulticon = wx.Image(Bpath("images", "brz.png"))
         starticon = wx.Image(Bpath("images", "icoplay24.png"))
@@ -170,7 +191,7 @@ if enablewx:
                         event(self, function)
 
 
-            def __init__(self, parent, message, caption = "Please enter text", defaultValue = "",
+            def __init__(self, parent, message, caption = _("Please enter text"), defaultValue = "",
                                style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
@@ -267,14 +288,23 @@ if enablewx:
 
             def OnTaskBarStartPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
-                    self.pyroserver.plcobj.StartPLC()
+                    plcstatus = self.pyroserver.plcobj.GetPLCstatus()[0]
+                    if  plcstatus is "Stopped":
+                        self.pyroserver.plcobj.StartPLC()
+                    else:
+                        print _("PLC is empty or already started.")
 
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
-                    Thread(target=self.pyroserver.plcobj.StopPLC).start()
+                    if self.pyroserver.plcobj.GetPLCstatus()[0] == "Started":
+                        Thread(target=self.pyroserver.plcobj.StopPLC).start()
+                    else:
+                        print _("PLC is not started.")
 
             def OnTaskBarChangeInterface(self, evt):
-                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=self.pyroserver.ip_addr)
+                ip_addr = self.pyroserver.ip_addr
+                ip_addr = '' if ip_addr is None else ip_addr
+                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)                
                 dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
                                ( lambda x :len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
                                ])
@@ -296,10 +326,12 @@ if enablewx:
                     self.pyroserver.Stop()
 
             def OnTaskBarChangeName(self, evt):
-                dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=self.pyroserver.name)
+                servicename = self.pyroserver.servicename
+                servicename = '' if servicename is None else servicename
+                dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=servicename)
                 dlg.SetTests([(lambda name : len(name) is not 0 , _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pyroserver.name = dlg.GetValue()
+                    self.pyroserver.servicename = dlg.GetValue()
                     self.pyroserver.Restart()
 
             def _LiveShellLocals(self):
@@ -379,6 +411,7 @@ class Server():
     def Quit(self):
         self.continueloop = False
         if self.plcobj is not None:
+            self.plcobj.StopPLC()
             self.plcobj.UnLoadPLC()
         self.Stop()
 
@@ -390,9 +423,13 @@ class Server():
                                 self.pyruntimevars)
         uri = self.daemon.connect(self.plcobj,"PLCObject")
 
-        print "Pyro port :",self.port
-        print "Pyro object's uri :",uri
-        print "Current working directory :",self.workdir
+        print _("Pyro port :"), self.port
+        print _("Pyro object's uri :"), uri
+
+        # Beremiz IDE detects daemon start by looking
+        # for self.workdir in the daemon's stdout.
+        # Therefore don't delete the following line
+        print _("Current working directory :"), self.workdir
 
         # Configure and publish service
         # Not publish service if localhost in address params
@@ -400,18 +437,20 @@ class Server():
             self.ip_addr is not None and
             self.ip_addr != "localhost" and
             self.ip_addr != "127.0.0.1"):
-            print "Publishing service on local network"
+            print _("Publishing service on local network")
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
-        if self.autostart :
-            self.plcobj.AutoLoad()
-            if self.plcobj.GetPLCstatus()[0] != "Empty":
+        self.plcobj.AutoLoad()
+        if self.plcobj.GetPLCstatus()[0] != "Empty":
+            if self.autostart :
                 self.plcobj.StartPLC()
+        self.plcobj.StatusChange()
 
         sys.stdout.flush()
 
         self.daemon.requestLoop()
+        self.daemon.sock.close()
 
     def Stop(self):
         if self.plcobj is not None:
@@ -434,7 +473,7 @@ if enabletwisted:
 
             havetwisted = True
         except:
-            print "Twisted unavailable."
+            print _("Twisted unavailable.")
             havetwisted = False
 
 pyruntimevars = {}
@@ -512,7 +551,7 @@ if havetwisted:
         try:
             import runtime.NevowServer as NS
         except Exception, e:
-            print "Nevow/Athena import failed :", e
+            print _("Nevow/Athena import failed :"), e
             webport = None
         NS.WorkingDir = WorkingDir
 
@@ -520,7 +559,7 @@ if havetwisted:
         try:
             import runtime.WampClient as WC
         except Exception, e:
-            print "WAMP import failed :", e
+            print _("WAMP import failed :"), e
             wampconf = None
 
 # Load extensions
@@ -536,7 +575,7 @@ if havetwisted:
             pyruntimevars["website"] = website
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception, e:
-            print "Nevow Web service failed.", e
+            print _("Nevow Web service failed. "), e
 
     if wampconf is not None :
         try:
@@ -544,7 +583,7 @@ if havetwisted:
             pyruntimevars["wampsession"] = WC.GetSession
             WC.SetServer(pyroserver)
         except Exception, e:
-            print "WAMP client startup failed.", e
+            print _("WAMP client startup failed. "), e
 
 
 if havetwisted or havewx:

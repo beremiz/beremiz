@@ -14,6 +14,7 @@
 ../dialogs/PouTransitionDialog.py
 ../dialogs/FBDVariableDialog.py
 ../dialogs/BlockPreviewDialog.py
+../dialogs/AboutDialog.py
 ../dialogs/ProjectDialog.py
 ../dialogs/LDPowerRailDialog.py
 ../dialogs/ArrayTypeDialog.py
@@ -41,6 +42,7 @@
 ../targets/Xenomai/__init__.py
 ../targets/Xenomai/XSD
 ../targets/XSD_toolchain_gcc
+../targets/PLC/XSD
 ../targets/__init__.py
 ../targets/toolchain_gcc.py
 ../targets/toolchain_makefile.py
@@ -97,6 +99,7 @@
 ../xmlclass/xsdschema.py
 ../xmlclass/xmlclass.py
 ../Beremiz.py
+../version.py
 ../POULibrary.py
 ../util/MiniTextControler.py
 ../util/Zeroconf.py
@@ -113,3 +116,5 @@
 ../IDEFrame.py
 ../PLCGenerator.py
 ../Beremiz_service.py
+../plcopen/Additional_Function_Blocks.xml
+../plcopen/Standard_Function_Blocks.xml

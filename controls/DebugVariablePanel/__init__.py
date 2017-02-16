@@ -4,7 +4,7 @@
 # This file is part of Beremiz, a Integrated Development Environment for
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
 #
 # See COPYING file for copyrights details.
 #

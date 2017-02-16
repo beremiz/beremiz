@@ -3,6 +3,7 @@
   <variables/>
   <globals>
     <xhtml:p><![CDATA[
+
 /*
     Web interface is build as SVG file in Inkscape. 
     To edit SVG file click 'Inkscape' button on the toolbar above.

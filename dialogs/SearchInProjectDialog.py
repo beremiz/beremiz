@@ -1,38 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
-
+from plcopen.plcopen import *
 import wx
-
-RE_ESCAPED_CHARACTERS = ".*+()[]?:|{}^$<>=-,"
-
-def EscapeText(text):
-    text = text.replace('\\', '\\\\')
-    for c in RE_ESCAPED_CHARACTERS:
-        text = text.replace(c, '\\' + c)
-    return text
 
 #-------------------------------------------------------------------------------
 #                          Search In Project Dialog
@@ -68,8 +60,9 @@ class SearchInProjectDialog(wx.Dialog):
         pattern_sizer.AddWindow(self.CaseSensitive, flag=wx.GROW)
         
         self.Pattern = wx.TextCtrl(self)
+        self.Bind(wx.EVT_TEXT, self.FindPatternChanged, self.Pattern)
         pattern_sizer.AddWindow(self.Pattern, flag=wx.GROW)
-        
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)
         self.RegularExpression = wx.CheckBox(self, label=_('Regular expression'))
         pattern_sizer.AddWindow(self.RegularExpression, flag=wx.GROW)
         
@@ -99,58 +92,76 @@ class SearchInProjectDialog(wx.Dialog):
         self.ElementsList.Enable(False)
         scope_sizer.AddWindow(self.ElementsList, 1, border=5, 
               flag=wx.GROW|wx.TOP|wx.RIGHT|wx.BOTTOM)
-        
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        ok_button = self.ButtonSizer.GetAffirmativeButton()
-        ok_button.SetLabel(_('Search'))
-        self.Bind(wx.EVT_BUTTON, self.OnOK, ok_button)
-        main_sizer.AddSizer(self.ButtonSizer, border=20, 
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+
+        buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer.AddSizer(buttons_sizer, border=20,
+                            flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_RIGHT)
+
+        self.FindButton = wx.Button(self, label=_("Find"))
+        self.FindButton.SetDefault()
+        self.Bind(wx.EVT_BUTTON, self.OnFindButton, self.FindButton)
+        buttons_sizer.AddWindow(self.FindButton, border=5, flag=wx.RIGHT)
+
+        self.CloseButton = wx.Button(self, label=_("Close"))
+        self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.CloseButton)
+        buttons_sizer.AddWindow(self.CloseButton)
         
         self.SetSizer(main_sizer)
         
         for name, label in GetElementsChoices():
             self.ElementsList.Append(_(label))
-        
+        self.infosPrev = {}
+        self.criteria = {}
         self.Pattern.SetFocus()
+        self.RefreshButtonsState()
+
+    def RefreshButtonsState(self):
+        find_pattern = self.Pattern.GetValue()
+        self.FindButton.Enable(find_pattern != "")
 
     def GetCriteria(self):
-        raw_pattern = pattern = self.Pattern.GetValue()
-        if not self.CaseSensitive.GetValue():
-            pattern = pattern.upper()
-        if not self.RegularExpression.GetValue():
-            pattern = EscapeText(pattern)
-        criteria = {
-            "raw_pattern": raw_pattern, 
-            "pattern": re.compile(pattern),
+        return self.criteria
+
+    def FindPatternChanged(self, event):
+        self.RefreshButtonsState()
+        event.Skip()
+
+    def OnScopeChanged(self, event):
+        self.ElementsList.Enable(self.OnlyElements.GetValue())
+        event.Skip()
+
+    def OnCloseButton(self, event):
+        self.EndModal(wx.ID_CANCEL)
+
+    def OnEscapeKey(self, event):
+        keycode = event.GetKeyCode()
+        if keycode == wx.WXK_ESCAPE:
+            self.OnCloseButton(event)
+        else:
+            event.Skip()
+    
+    def OnFindButton(self, event):
+        message = None
+        infos = {
+            "find_pattern": self.Pattern.GetValue(),
             "case_sensitive": self.CaseSensitive.GetValue(),
             "regular_expression": self.RegularExpression.GetValue(),
         }
         if self.WholeProject.GetValue():
-            criteria["filter"] = "all"
+            infos["filter"] = "all"
         elif self.OnlyElements.GetValue():
-            criteria["filter"] = []
+            infos["filter"] = []
             for index, (name, label) in enumerate(GetElementsChoices()):
                 if self.ElementsList.IsChecked(index):
-                    criteria["filter"].append(name)
-        return criteria
-    
-    def OnScopeChanged(self, event):
-        self.ElementsList.Enable(self.OnlyElements.GetValue())
-        event.Skip()
-    
-    def OnOK(self, event):
-        message = None
-        if self.Pattern.GetValue() == "":
-            message = _("Form isn't complete. Pattern to search must be filled!")
-        else:
-            wrong_pattern = False
-            if self.RegularExpression.GetValue():
-                try:
-                    re.compile(self.Pattern.GetValue())
-                except:
-                    wrong_pattern = True
-            if wrong_pattern:
+                    infos["filter"].append(name)
+
+        if self.infosPrev != infos:
+            try:
+                self.criteria = infos
+                CompilePattern(self.criteria)
+                self.infosPrev = infos
+            except:
+                self.criteria.clear()
                 message = _("Syntax error in regular expression of pattern to search!")
         
         if message is not None:
