@@ -30,15 +30,6 @@ import time
 
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
-
-if os.name == 'nt':
-    # on windows, desktop shortcut launches Beremiz.py
-    # with working dir set to mingw/bin.
-    # then we prefix CWD to PATH in order to ensure that
-    # commands invoked from Makefiles will first resolve
-    # to here.
-    os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
-
 class toolchain_makefile():
     def __init__(self, CTRInstance):
         self.CTRInstance = CTRInstance
@@ -104,11 +95,7 @@ class toolchain_makefile():
                         
         oldmd5 = self.md5key
         self.md5key = hashlib.md5(wholesrcdata).hexdigest()
-        props = self.CTRInstance.GetProjectProperties()
-        self.md5key += '#'.join([props[key] for key in ['companyName',
-                                                        'projectName',
-                                                        'productName']])
-        self.md5key += '#' #+','.join(map(str,time.localtime()))
+
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")
         f.write(self.md5key)
@@ -122,7 +109,10 @@ class toolchain_makefile():
                               "buildpath": self.buildpath
                              }
             
-            command = [ token % beremizcommand for token in target.getCommand().split(' ')]
+            # clean sequence of multiple whitespaces 
+            cmd = re.sub(r"[ ]+", " ", target.getCommand())
+
+            command = [ token % beremizcommand for token in cmd.split(' ')]
 
             # Call Makefile to build PLC code and link it with target specific code
             status, result, err_result = ProcessLogger(self.CTRInstance.logger,

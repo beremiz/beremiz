@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
@@ -967,7 +967,8 @@ class PLCControler:
             # programs cannot be pasted as functions or function blocks
             if orig_type == 'functionBlock' and pou_type == 'function' or \
                orig_type == 'program' and pou_type in ['function', 'functionBlock']:
-                return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
+                msg = _('''{a1} "{a2}" can't be pasted as a {a3}.''').format(a1 = orig_type, a2 = name, a3 = pou_type)
+                return msg
 
             new_pou.setpouType(pou_type)
 
@@ -2183,7 +2184,7 @@ class PLCControler:
                 if pou is not None:
                     return self.GetPouInterfaceReturnType(pou, tree, debug)
         elif words[0] == 'T':
-            return "BOOL"
+            return ["BOOL", ([], [])]
         return None
 
     # Change the edited element text
@@ -3192,7 +3193,14 @@ class PLCControler:
     def SearchInPou(self, tagname, criteria, debug=False):
         pou = self.GetEditedElement(tagname, debug)
         if pou is not None:
-            return pou.Search(criteria)
+            search_results = pou.Search(criteria, [tagname])
+            if tagname.split("::")[0] in ['A', 'T']:
+                parent_pou_tagname = "P::%s" % (tagname.split("::")[-2])
+                parent_pou = self.GetEditedElement(parent_pou_tagname, debug)
+                for infos, start, end, text in parent_pou.Search(criteria):
+                    if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
+                        search_results.append((infos, start, end, text))
+            return search_results
         return []
 
 #-------------------------------------------------------------------------------

@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from types import *
 
@@ -352,14 +352,16 @@ class ConciseDCFGenerator:
                 
                 # Check Id is in slave node list
                 if nodeid not in self.NodeList.SlaveNodes.keys():
-                    raise PDOmappingException, _("Non existing node ID : %d (variable %s)") % (nodeid,name)
+                    raise PDOmappingException, _("Non existing node ID : {a1} (variable {a2})").format(a1 = nodeid, a2 = name)
                 
                 # Get the model for this node (made from EDS)
                 node = self.NodeList.SlaveNodes[nodeid]["Node"]
                 
                 # Extract and check index and subindex
                 if not node.IsEntry(index, subindex):
-                    raise PDOmappingException, _("No such index/subindex (%x,%x) in ID : %d (variable %s)") % (index,subindex,nodeid,name)
+                    msg = _("No such index/subindex ({a1},{a2}) in ID : {a3} (variable {a4})").\
+                          format(a1 = "%x" % index, a2 ="%x" % subindex, a3 = nodeid, a4 = name)
+                    raise PDOmappingException, msg
                 
                 # Get the entry info
                 subentry_infos = node.GetSubentryInfos(index, subindex)
@@ -369,19 +371,23 @@ class ConciseDCFGenerator:
                     if sizelocation == "X" and len(loc) > 3:
                         numbit = loc[3]
                     elif sizelocation != "X" and len(loc) > 3:
-                        raise PDOmappingException, _("Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))") % (name,nodeid,index,subindex)
+                        msg = _("Cannot set bit offset for non bool '{a1}' variable (ID:{a2},Idx:{a3},sIdx:{a4}))").\
+                              format(a1 = name, a2 = nodeid, a3 = "%x" % index, a4 = "%x" % subindex)
+                        raise PDOmappingException, msg
                     else:
                         numbit = None
                     
                     if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
-                        raise PDOmappingException, _("Invalid type \"%s\"-> %d != %d  for location\"%s\"") % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+                        raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3}  for location\"{a4}\"").\
+                            format(a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"] , a4 = name)
                     
                     typeinfos = node.GetEntryInfos(COlocationtype)
                     self.IECLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
                                                 "nodeid": nodeid, "index": index,"subindex": subindex,
                                                 "bit": numbit, "size": typeinfos["size"], "sizelocation": sizelocation}
                 else:
-                    raise PDOmappingException, _("Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))") % (name,nodeid,index,subindex)
+                    raise PDOmappingException, _("Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))").\
+                        format(a1 = name, a2 = nodeid, a3 = "%x" % index, a4 = "%x" % subindex)
         
         #-------------------------------------------------------------------------------
         #                         Search for locations already mapped
@@ -630,12 +636,14 @@ def LocalODPointers(locations, current_location, slave):
             
             # Extract and check index and subindex
             if not slave.IsEntry(index, subindex):
-                raise PDOmappingException, _("No such index/subindex (%x,%x) (variable %s)") % (index, subindex, name)
+                raise PDOmappingException, _("No such index/subindex ({a1},{a2}) (variable {a3})").\
+                    format(a1 = "%x" % index, a2 = "%x" % subindex, a3 = name)
             
             # Get the entry info
             subentry_infos = slave.GetSubentryInfos(index, subindex)    
             if subentry_infos["type"] != COlocationtype:
-                raise PDOmappingException, _("Invalid type \"%s\"-> %d != %d  for location\"%s\"") % (location["IEC_TYPE"], COlocationtype, subentry_infos["type"] , name)
+                raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\"").\
+                    format( a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"] , a4 = name)
             
             IECLocations[name] = COlocationtype
             pointers[(index, subindex)] = name

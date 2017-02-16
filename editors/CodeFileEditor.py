@@ -506,17 +506,11 @@ class CodeEditor(CustomStyledTextCtrl):
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
 
             self.SearchParams = search_params
-            criteria = {
-                "raw_pattern": search_params["find_pattern"],
-                "pattern": re.compile(search_params["find_pattern"]),
-                "case_sensitive": search_params["case_sensitive"],
-                "regular_expression": search_params["regular_expression"],
-                "filter": "all"}
 
             self.SearchResults = [
                 (start, end, SEARCH_RESULT_HIGHLIGHT)
                 for start, end, text in
-                TestTextElement(self.GetText(), criteria)]
+                TestTextElement(self.GetText(), search_params)]
             self.CurrentFindHighlight = None
 
         if len(self.SearchResults) > 0:

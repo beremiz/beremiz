@@ -1,27 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 updateinfo_url = None
 
@@ -31,6 +30,7 @@ import tempfile
 import shutil
 import random
 import time
+import version
 from types import ListType
 
 beremiz_dir = os.path.dirname(os.path.realpath(__file__))
@@ -105,13 +105,17 @@ if __name__ == '__main__':
 
     app.SetAppName('beremiz')
     if wx.VERSION < (3, 0, 0):
-	wx.InitAllImageHandlers()
+        wx.InitAllImageHandlers()
 
     # popup splash
     splash = ShowSplashScreen()
+
+    # load internatialization files
+    from util.misc import InstallLocalRessources
+    InstallLocalRessources(beremiz_dir)
     
     if updateinfo_url is not None:
-        updateinfo = "Fetching %s" % updateinfo_url
+        updateinfo = _("Fetching %s") % updateinfo_url
         # warn for possible updates
         def updateinfoproc():
             global updateinfo
@@ -119,7 +123,7 @@ if __name__ == '__main__':
                 import urllib2
                 updateinfo = urllib2.urlopen(updateinfo_url,None).read()
             except :
-                updateinfo = "update info unavailable."
+                updateinfo = _("update info unavailable.")
 
         from threading import Thread
         splash.SetText(text=updateinfo)
@@ -129,9 +133,6 @@ if __name__ == '__main__':
         updateinfoThread.join(2)
         splash.SetText(text=updateinfo)
         wx.Yield()
-
-    from util.misc import InstallLocalRessources
-    InstallLocalRessources(beremiz_dir)
 
     # Load extensions
     for extfilename in extensions:
@@ -158,6 +159,8 @@ from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
+from controls import EnhancedStatusBar as esb
+from dialogs.AboutDialog import ShowAboutDialog
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
 from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ITEM_CONFNODE
@@ -247,12 +250,14 @@ class LogPseudoFile:
                 # adding text. It seems that text modifications, even
                 # programmatically, are disabled in StyledTextCtrl when read
                 # only is active
+                start_pos = self.output.GetLength()
                 self.output.SetReadOnly(False)
                 self.output.AppendText(s)
                 self.output.SetReadOnly(True)
+                text_len = self.output.GetLength() - start_pos
 
                 if style != self.black_white:
-                    self.output.SetStyling(len(s), style)
+                    self.output.SetStyling(text_len, style)
             self.stack = []
             self.lock.release()
             self.output.Thaw()
@@ -393,6 +398,11 @@ class Beremiz(IDEFrame):
         inspectorID = wx.NewId()
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=inspectorID)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), inspectorID)]
+
+        keyID = wx.NewId()
+        self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=keyID)
+        accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F12, keyID)]
+
         for method,shortcut in [("Stop",     wx.WXK_F4),
                                 ("Run",      wx.WXK_F5),
                                 ("Transfer", wx.WXK_F6),
@@ -456,13 +466,27 @@ class Beremiz(IDEFrame):
 
         self.AUIManager.Update()
 
-        self.ConnectionStatusBar = wx.StatusBar(self, style=wx.ST_SIZEGRIP)
+        self.ConnectionStatusBar = esb.EnhancedStatusBar(self, style=wx.ST_SIZEGRIP)
         self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
+        self.ProgressStatusBar = wx.Gauge(self.ConnectionStatusBar, -1, range = 100)
+        self.ConnectionStatusBar.AddWidget(self.ProgressStatusBar, esb.ESB_EXACT_FIT, esb.ESB_EXACT_FIT, 2)        
+        self.ProgressStatusBar.Hide()
         self.SetStatusBar(self.ConnectionStatusBar)
 
+    def __init_execute_path(self):
+        if os.name == 'nt':
+            # on windows, desktop shortcut launches Beremiz.py
+            # with working dir set to mingw/bin.
+            # then we prefix CWD to PATH in order to ensure that
+            # commands invoked by build process by default are
+            # found here.
+            os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
+        
+        
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
         # Add beremiz's icon in top left corner of the frame
         self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
+        self.__init_execute_path()
         
         IDEFrame.__init__(self, parent, debug)
         self.Log = LogPseudoFile(self.LogConsole,self.SelectTab)
@@ -498,7 +522,7 @@ class Beremiz(IDEFrame):
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
-            result = self.CTR.LoadProject(projectOpen, buildpath)
+            result, err = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
@@ -550,7 +574,7 @@ class Beremiz(IDEFrame):
                     {False : "-x 0", True :"-x 1"}[taskbaricon],
                     self.local_runtime_tmpdir),
                 no_gui=False,
-                timeout=500, keyword = "working",
+                timeout=500, keyword = self.local_runtime_tmpdir,
                 cwd = self.local_runtime_tmpdir)
             self.local_runtime.spin()
         return self.runtime_port
@@ -733,6 +757,11 @@ class Beremiz(IDEFrame):
                                   self.GetConfigEntry("RecentProjects", []))
         except:
             recent_projects = []
+
+        while self.RecentProjectsMenu.GetMenuItemCount() > len(recent_projects):
+            item = self.RecentProjectsMenu.FindItemByPosition(0)
+            self.RecentProjectsMenu.RemoveItem(item)
+
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
             text = u'%d: %s' % (idx + 1, projectpath)
@@ -872,7 +901,7 @@ class Beremiz(IDEFrame):
             self.DebugVariablePanel.SetDataProducer(None)
             self.ResetConnectionStatusBar()
 
-    def RefreshConfigRecentProjects(self, projectpath):
+    def RefreshConfigRecentProjects(self, projectpath, err=False):
         try:
             recent_projects = map(DecodeFileSystemPath,
                                   self.GetConfigEntry("RecentProjects", []))
@@ -880,7 +909,8 @@ class Beremiz(IDEFrame):
             recent_projects = []
         if projectpath in recent_projects:
             recent_projects.remove(projectpath)
-        recent_projects.insert(0, projectpath)
+        if not err:
+            recent_projects.insert(0, projectpath)
         self.Config.Write("RecentProjects", cPickle.dumps(
             map(EncodeFileSystemPath, recent_projects[:MAX_RECENT_PROJECTS])))
         self.Config.Flush()
@@ -947,12 +977,11 @@ class Beremiz(IDEFrame):
             self.ResetView()
             self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
-            result = self.CTR.LoadProject(projectpath)
+            result, err = self.CTR.LoadProject(projectpath)
             if not result:
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
-                self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
@@ -960,8 +989,11 @@ class Beremiz(IDEFrame):
                 self.ResetView()
                 self.ShowErrorMessage(result)
             self.RefreshAll()
+            self.SearchResultPanel.ResetSearchResults()
         else:
             self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
+            err = True
+        self.RefreshConfigRecentProjects(projectpath, err)
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
 
     def OnCloseProjectMenu(self, event):
@@ -990,13 +1022,15 @@ class Beremiz(IDEFrame):
         if self.CTR is not None:
             self.CTR.SaveProjectAs()
             self.RefreshAll()
+            self.RefreshConfigRecentProjects(self.CTR.ProjectPath)
             self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
 
     def OnQuitMenu(self, event):
         self.Close()
 
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About Beremiz"), Bpath("doc", _("about.html")), wx.Size(550, 550))
+        info = version.GetAboutDialogInfo()        
+        ShowAboutDialog(self, info)
 
     def OnProjectTreeItemBeginEdit(self, event):
         selected = event.GetItem()
@@ -1161,7 +1195,7 @@ An unhandled exception (bug) occured. Bug report saved at :
 Please be kind enough to send this file to:
 beremiz-devel@lists.sourceforge.net
 
-You should now restart Beremiz.
+You should now restart program.
 
 Traceback:
 """) % bug_report_path +
@@ -1189,45 +1223,48 @@ ignored_exceptions = [] # a problem with a line in a module is only reported onc
 
 def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 
+    def save_bug_report(e_type, e_value, e_traceback, bug_report_path,date):
+        info = {
+            'app-title': wx.GetApp().GetAppName(),  # app_title
+            'app-version': app_version,
+            'wx-version': wx.VERSION_STRING,
+            'wx-platform': wx.Platform,
+            'python-version': platform.python_version(),  # sys.version.split()[0],
+            'platform': platform.platform(),
+            'e-type': e_type,
+            'e-value': e_value,
+            'date': date,
+            'cwd': os.getcwd(),
+        }
+        if e_traceback:
+            info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
+            last_tb = get_last_traceback(e_traceback)
+            exception_locals = last_tb.tb_frame.f_locals  # the locals at the level of the stack trace where the exception actually occurred
+            info['locals'] = format_namespace(exception_locals)
+            if 'self' in exception_locals:
+                try:
+                    info['self'] = format_namespace(exception_locals['self'].__dict__)
+                except:
+                    pass
+        if not os.path.exists(path):
+            os.mkdir(path)
+        output = open(bug_report_path, 'w')
+        lst = info.keys()
+        lst.sort()
+        for a in lst:
+            output.write(a + ":\n" + str(info[a]) + "\n\n")
+        output.close()
+
     def handle_exception(e_type, e_value, e_traceback):
         traceback.print_exception(e_type, e_value, e_traceback) # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
         if ex not in ignored_exceptions:
+            ignored_exceptions.append(ex)
             date = time.ctime()
-            bug_report_path = path+os.sep+"bug_report_"+date.replace(':','-').replace(' ','_')+".txt"
-            result = Display_Exception_Dialog(e_type,e_value,e_traceback,bug_report_path)
-            if result:
-                ignored_exceptions.append(ex)
-                info = {
-                    'app-title' : wx.GetApp().GetAppName(), # app_title
-                    'app-version' : app_version,
-                    'wx-version' : wx.VERSION_STRING,
-                    'wx-platform' : wx.Platform,
-                    'python-version' : platform.python_version(), #sys.version.split()[0],
-                    'platform' : platform.platform(),
-                    'e-type' : e_type,
-                    'e-value' : e_value,
-                    'date' : date,
-                    'cwd' : os.getcwd(),
-                    }
-                if e_traceback:
-                    info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
-                    last_tb = get_last_traceback(e_traceback)
-                    exception_locals = last_tb.tb_frame.f_locals # the locals at the level of the stack trace where the exception actually occurred
-                    info['locals'] = format_namespace(exception_locals)
-                    if 'self' in exception_locals:
-                        try :
-                            info['self'] = format_namespace(exception_locals['self'].__dict__)
-                        except :
-                            pass
-
-                output = open(bug_report_path,'w')
-                lst = info.keys()
-                lst.sort()
-                for a in lst:
-                    output.write(a+":\n"+str(info[a])+"\n\n")
-
+            bug_report_path = path + os.sep + "bug_report_" + date.replace(':', '-').replace(' ', '_') + ".txt"
+            save_bug_report(e_type, e_value, e_traceback, bug_report_path, date)
+            Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
     #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
 
@@ -1247,7 +1284,8 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 
 if __name__ == '__main__':
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),updateinfo_url)
+    logpath = tempfile.gettempdir()+os.sep+'Beremiz'
+    AddExceptHook(logpath ,version.app_version)
 
     frame = Beremiz(None, projectOpen, buildpath)
     if splash:

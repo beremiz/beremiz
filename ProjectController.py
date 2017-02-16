@@ -84,6 +84,60 @@ def ExtractMenuItemsFromCatalog(catalog):
 def GetAddMenuItems():
     return ExtractMenuItemsFromCatalog(features.catalog)
 
+class Iec2CSettings():
+    def __init__(self):
+        self.iec2c = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
+        self.iec2c_buildopts = None
+        self.ieclib_path   = os.path.join(base_folder, "matiec", "lib")
+        self.ieclib_c_path = None
+
+    def findLibCPath(self):
+        path=""
+        paths=[
+            os.path.join(base_folder, "matiec", "lib", "C"),
+            os.path.join(base_folder, "matiec", "lib") ]
+        for p in paths:
+            filename=os.path.join(p, "iec_types.h")
+            if (os.path.isfile(filename)):
+                path = p
+                break
+        return path
+
+    def findSupportedOptions(self):
+        buildcmd = "\"%s\" -h"%(self.iec2c)
+        options =["-f", "-l", "-p"]
+
+        buildopt = ""
+        try:
+            # Invoke compiler. Output files are listed to stdout, errors to stderr
+            status, result, err_result = ProcessLogger(None, buildcmd,
+                no_stdout=True, no_stderr=True).spin()
+        except Exception,e:
+            return buildopt
+
+        for opt in options:
+            if opt in result:
+                buildopt = buildopt + " " + opt
+        return buildopt
+
+    def getCmd(self):
+        return self.iec2c
+
+    def getOptions(self):
+        if self.iec2c_buildopts is None:
+            self.iec2c_buildopts = self.findSupportedOptions()
+        return self.iec2c_buildopts
+
+    def getLibPath(self):
+        return self.ieclib_path
+
+    def getLibCPath(self):
+        if self.ieclib_c_path is None:
+            self.ieclib_c_path = self.findLibCPath()
+        return self.ieclib_c_path
+
+iec2c_cfg = Iec2CSettings()
+
 class ProjectController(ConfigTreeNode, PLCControler):
     """
     This class define Root object of the confnode tree.
@@ -138,10 +192,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugValuesBuffers = []
         self.DebugTicks = []
         self.SetAppFrame(frame, logger)
-
-        self.iec2c_path = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
-        self.ieclib_path = os.path.join(base_folder, "matiec", "lib")
-        self.ieclib_c_path = self._getMatIecCPath()
 
         # Setup debug information
         self.IECdebug_datas = {}
@@ -228,10 +278,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self
 
     def GetIECLibPath(self):
-        return self.ieclib_c_path
+        return iec2c_cfg.getLibCPath()
 
     def GetIEC2cPath(self):
-        return self.iec2c_path
+        return iec2c_cfg.getCmd()
 
     def GetCurrentLocation(self):
         return ()
@@ -355,15 +405,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Verify that project contains a PLCOpen program
         plc_file = os.path.join(ProjectPath, "plc.xml")
         if not os.path.isfile(plc_file):
-            return _("Chosen folder doesn't contain a program. It's not a valid project!")
+            return _("Chosen folder doesn't contain a program. It's not a valid project!"), True
         # Load PLCOpen file
         error = self.OpenXMLFile(plc_file)
         if error is not None:
             if self.Project is not None:
-                self.logger.write_warning(
-                    XSDSchemaErrorMessage % (("PLC",) + error))
+                (fname_err, lnum, src) = (("PLC",) + error)
+                self.logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname_err, a2 = lnum, a3 = src))
             else:
-                return error
+                return error, False
         if len(self.GetProjectConfigNames()) == 0:
             self.AddProjectDefaultConfiguration()
         # Change XSD into class members
@@ -377,20 +427,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             #Load the confnode.xml file into parameters members
             result = self.LoadXMLParams()
             if result:
-                return result
+                return result, False
             #Load and init all the children
             self.LoadChildren()
         self.RefreshConfNodesBlockLists()
-
-        if os.path.exists(self._getBuildPath()):
-            self.EnableMethod("_Clean", True)
-
-        if os.path.isfile(self._getIECcodepath()):
-            self.ShowMethod("_showIECcode", True)
-
-        self.UpdateMethodsFromPLCStatus()
-
-        return None
+        self.UpdateButtons()
+        return None, False
 
     def RecursiveConfNodeInfos(self, confnode):
         values = []
@@ -423,6 +465,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ClearChildren()
         self.ResetAppFrame(None)
 
+    def CheckNewProjectPath(self, old_project_path, new_project_path):
+        if old_project_path == new_project_path:
+            message = (_("Save path is the same as path of a project! \n"))
+            dialog = wx.MessageDialog(self.AppFrame, message, _("Error"), wx.OK | wx.ICON_ERROR)
+            dialog.ShowModal()
+            return False
+        else:
+            plc_file = os.path.join(new_project_path, "plc.xml")
+            if os.path.isfile(plc_file):
+                message = (_("Selected directory already contains another project. Overwrite? \n"))
+                dialog = wx.MessageDialog(self.AppFrame, message, _("Error"), wx.YES_NO | wx.ICON_ERROR)
+                answer = dialog.ShowModal()
+                return answer == wx.ID_YES
+        return True
+
     def SaveProject(self, from_project_path=None):
         if self.CheckProjectPathPerm(False):
             if from_project_path is not None:
@@ -447,9 +504,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if answer == wx.ID_OK:
             newprojectpath = dirdialog.GetPath()
             if os.path.isdir(newprojectpath):
-                self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
-                self.SaveProject(old_project_path)
-                self._setBuildPath(self.BuildPath)
+                if self.CheckNewProjectPath(self.ProjectPath, newprojectpath):
+                    self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
+                    self.SaveProject(old_project_path)
+                    self._setBuildPath(self.BuildPath)
                 return True
         return False
 
@@ -630,43 +688,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return True
 
 
-    def _getMatIecCPath(self):
-        path=''
-        paths=[
-            os.path.join(base_folder, "matiec", "lib", "C"),
-            os.path.join(base_folder, "matiec", "lib") ]
-        for p in paths:
-            filename=os.path.join(p, "iec_types.h")
-            if (os.path.isfile(filename)):
-                path = p
-                break
-        return path
-
-    def _getMatIecOptions(self):
-        buildpath = self._getBuildPath()
-        buildcmd = "\"%s\" -h"%(self.iec2c_path)
-        options =["-f", "-l", "-p"]
-
-        buildopt = ""
-        try:
-            # Invoke compiler. Output files are listed to stdout, errors to stderr
-            status, result, err_result = ProcessLogger(self.logger, buildcmd,
-                no_stdout=True, no_stderr=True).spin()
-        except Exception,e:
-            return buildopt
-
-        for opt in options:
-            if opt in result:
-                buildopt = buildopt + " " + opt
-        return buildopt
 
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
         buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\""%(
-                         self.iec2c_path,
-                         self._getMatIecOptions(),
-                         self.ieclib_path,
+                         iec2c_cfg.getCmd(),
+                         iec2c_cfg.getOptions(),
+                         iec2c_cfg.getLibPath(),
                          buildpath,
                          self._getIECcodepath())
 
@@ -735,7 +764,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%self.ieclib_c_path
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%iec2c_cfg.getLibCPath()
         return True
 
     def GetBuilder(self):
@@ -971,15 +1000,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Eventually create build dir
         if not os.path.exists(buildpath):
             os.mkdir(buildpath)
-        # There is something to clean
-        self.EnableMethod("_Clean", True)
 
         self.logger.flush()
         self.logger.write(_("Start build in %s\n") % buildpath)
 
         # Generate SoftPLC IEC code
         IECGenRes = self._Generate_SoftPLC()
-        self.ShowMethod("_showIECcode", True)
+        self.UpdateButtons()
 
         # If IEC code gen fail, bail out.
         if not IECGenRes:
@@ -1090,8 +1117,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def ShowError(self, logger, from_location, to_location):
         chunk_infos = self.GetChunkInfos(from_location, to_location)
         for infos, (start_row, start_col) in chunk_infos:
-            start = (from_location[0] - start_row, from_location[1] - start_col)
-            end = (to_location[0] - start_row, to_location[1] - start_col)
+            row = 1 if from_location[0] < start_row else (from_location[0] - start_row)            
+            col = 1 if (start_row != from_location[0]) else (from_location[1] - start_col)
+            start = (row, col)
+
+            row = 1 if to_location[0] < start_row else (to_location[0] - start_row)            
+            col = 1 if (start_row != to_location[0]) else (to_location[1] - start_col)
+            end = (row, col)
+            
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
 
@@ -1124,6 +1157,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 except:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text = text)
+                self._IECCodeView.Editor.SetReadOnly(True)                                
                 self._IECCodeView.SetIcon(GetBitmap("ST"))
                 setattr(self._IECCodeView, "_OnClose", self.OnCloseEditor)
 
@@ -1220,18 +1254,28 @@ class ProjectController(ConfigTreeNode, PLCControler):
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
             self.logger.write_error(_("Build directory already clean\n"))
-        self.ShowMethod("_showIECcode", False)
-        self.EnableMethod("_Clean", False)
         # kill the builder
         self._builder = None
         self.CompareLocalAndRemotePLC()
+        self.UpdateButtons()
 
+    def _UpdateButtons(self):
+        self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
+        self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
+        if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
+            self.AppFrame.RefreshStatusToolBar()
+        
+    def UpdateButtons(self):
+        wx.CallAfter(self._UpdateButtons)
+
+        
     def UpdatePLCLog(self, log_count):
         if log_count:
             if self.AppFrame is not None:
                 self.AppFrame.LogViewer.SetLogCounters(log_count)
 
     def UpdateMethodsFromPLCStatus(self):
+        updated = False
         status = None
         if self._connector is not None:
             PLCstatus = self._connector.GetPLCstatus()
@@ -1259,15 +1303,39 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
             if self.AppFrame is not None:
+                updated = True
                 self.AppFrame.RefreshStatusToolBar()
                 if status == "Disconnected":
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 1)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 1)
                     self.AppFrame.ConnectionStatusBar.SetStatusText('', 2)
                 else:
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
                         _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(_(status), 2)
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 2)
+        return updated
 
+    def GetTextStatus(self, status):
+        msgs = {
+            "Started":      _("Started"),
+            "Stopped":      _("Stopped"),
+            "Empty":        _("Empty"),
+            "Broken":       _("Broken"),
+            "Disconnected": _("Disconnected")
+            }
+        return msgs.get(status, status)
+    
+    def ShowPLCProgress(self, status = "", progress = 0):
+        self.AppFrame.ProgressStatusBar.Show()
+        self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 1)
+        self.AppFrame.ProgressStatusBar.SetValue(progress)
+
+    def HidePLCProgress(self):
+        # clear previous_plcstate to restore status
+        # in UpdateMethodsFromPLCStatus()
+        self.previous_plcstate = ""
+        self.AppFrame.ProgressStatusBar.Hide()
+        self.UpdateMethodsFromPLCStatus()
+            
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
 
@@ -1561,11 +1629,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if connector is not None:
             if self.StatusTimer is not None:
                 # Start the status Timer
-                # Suppress WXDEBUG assertions, as happens by default with wx2.8
-                try:
-                    self.StatusTimer.Start(milliseconds=500, oneShot=False)
-                except:
-                    pass
+                wx.Yield()
+                self.StatusTimer.Start(milliseconds=500, oneShot=False)
         else:
             if self.StatusTimer is not None:
                 # Stop the status Timer
@@ -1714,6 +1779,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.logger.write(_("Transfer completed successfully.\n"))
                 else:
                     self.logger.write_error(_("Transfer failed\n"))
+                self.HidePLCProgress()                    
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
 

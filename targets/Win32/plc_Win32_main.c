@@ -84,7 +84,7 @@ int startPLC(int argc,char **argv)
     if (debug_sem == NULL)
     {
         printf("startPLC CreateSemaphore debug_sem error: %d\n", GetLastError());
-        return;
+        return 1;
     }
 
     debug_wait_sem = CreateSemaphore(
@@ -96,7 +96,7 @@ int startPLC(int argc,char **argv)
     if (debug_wait_sem == NULL)
     {
         printf("startPLC CreateSemaphore debug_wait_sem error: %d\n", GetLastError());
-        return;
+        return 1;
     }
 
     python_sem = CreateSemaphore(
@@ -108,7 +108,7 @@ int startPLC(int argc,char **argv)
     if (python_sem == NULL)
     {
         printf("startPLC CreateSemaphore python_sem error: %d\n", GetLastError());
-        return;
+        return 1;
     }
     python_wait_sem = CreateSemaphore(
                             NULL,           // default security attributes
@@ -120,7 +120,7 @@ int startPLC(int argc,char **argv)
     if (python_wait_sem == NULL)
     {
         printf("startPLC CreateSemaphore python_wait_sem error: %d\n", GetLastError());
-        return;
+        return 1;
     }
 
 

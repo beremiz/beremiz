@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
 from types import *
@@ -289,7 +289,7 @@ class TextViewer(EditorPanel):
                     dlg = wx.TextEntryDialog(
                         self.ParentWindow,
                         _("Confirm or change variable name"),
-                        'Variable Drop', var_name)
+                        _('Variable Drop'), var_name)
                     dlg.SetValue(var_name)
                     var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                     dlg.Destroy()
@@ -304,7 +304,7 @@ class TextViewer(EditorPanel):
                         if not location.startswith("%"):
                             dialog = wx.SingleChoiceDialog(self.ParentWindow,
                                   _("Select a variable class:"), _("Variable class"),
-                                  ["Input", "Output", "Memory"],
+                                  [_("Input"), _("Output"), _("Memory")],
                                   wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
@@ -340,7 +340,7 @@ class TextViewer(EditorPanel):
                     dlg = wx.TextEntryDialog(
                         self.ParentWindow,
                         _("Confirm or change variable name"),
-                        'Variable Drop', var_name)
+                        _('Variable Drop'), var_name)
                     dlg.SetValue(var_name)
                     var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                     dlg.Destroy()
@@ -363,7 +363,7 @@ class TextViewer(EditorPanel):
                 dlg = wx.TextEntryDialog(
                     self.ParentWindow,
                     _("Confirm or change variable name"),
-                    'Variable Drop', var_name)
+                    _('Variable Drop'), var_name)
                 dlg.SetValue(var_name)
                 var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                 dlg.Destroy()
@@ -414,7 +414,7 @@ class TextViewer(EditorPanel):
         self.Colourise(0, -1)
 
     def RefreshJumpList(self):
-        if self.TextSyntax != "IL":
+        if self.TextSyntax == "IL":
             self.Jumps = [jump.upper() for jump in LABEL_MODEL.findall(self.GetText())]
             self.Colourise(0, -1)
 
@@ -629,6 +629,10 @@ class TextViewer(EditorPanel):
                     self.SetStyling(current_pos - last_styled_pos + 2, STC_PLC_COMMENT)
                     last_styled_pos = current_pos + 1
                     state = SPACE
+                    if len(self.CallStack) > 0:
+                        current_call = self.CallStack.pop()
+                    else:
+                        current_call = None                    
             elif state == PRAGMA:
                 if line.endswith("}"):
                     self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
@@ -806,17 +810,10 @@ class TextViewer(EditorPanel):
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
 
             self.SearchParams = search_params
-            criteria = {
-                "raw_pattern": search_params["find_pattern"],
-                "pattern": re.compile(search_params["find_pattern"]),
-                "case_sensitive": search_params["case_sensitive"],
-                "regular_expression": search_params["regular_expression"],
-                "filter": "all"}
-
             self.SearchResults = [
                 (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)
                 for infos, start, end, text in
-                self.Search(criteria)]
+                self.Search(search_params)]
             self.CurrentFindHighlight = None
 
         if len(self.SearchResults) > 0:
@@ -897,14 +894,15 @@ class TextViewer(EditorPanel):
                     key_handled = True
             elif key == wx.WXK_BACK:
                 if self.TextSyntax in ["ST", "ALL"]:
-                    indent = self.Editor.GetLineIndentation(line)
-                    if lineText.strip() == "" and indent > 0:
-                        self.Editor.DelLineLeft()
-                        self.Editor.AddText(" " * ((max(0, indent - 1) / 2) * 2))
-                        key_handled = True
+                    if not self.Editor.GetSelectedText():
+                        indent = self.Editor.GetColumn(self.Editor.GetCurrentPos())
+                        if lineText.strip() == "" and len(lineText) > 0 and indent > 0:
+                            self.Editor.DelLineLeft()
+                            self.Editor.AddText(" " * ((max(0, indent - 1) / 2) * 2))
+                            key_handled = True
             if not key_handled:
                 event.Skip()
-        elif key in NAVIGATION_KEYS:
+        else:
             event.Skip()
 
     def OnKillFocus(self, event):
