@@ -506,8 +506,9 @@ class VariablePanel(wx.Panel):
             c = wx.ALIGN_CENTER
 
             #                      Num  Name    Class   Type    Loc     Init    Option   Doc
-            self.ColSizes       = [40,  80,     70,     80,     80,     80,     100,     80]
+            self.ColSizes       = [40,  80,     100,    80,     110,     120,    100,     160]
             self.ColAlignements = [c,   l,      l,      l,      l,      l,      l,       l]
+            self.ColFixedSizeFlag=[True,False,  True,   False,  True,   True,   True,    False]
 
         else:
             # this is an element that cannot have located variables
@@ -527,8 +528,9 @@ class VariablePanel(wx.Panel):
             c = wx.ALIGN_CENTER
 
             #                      Num  Name    Class   Type    Init    Option   Doc
-            self.ColSizes       = [40,  80,     70,     80,     80,     100,     160]
+            self.ColSizes       = [40,  80,     100,    80,     120,    100,     160]
             self.ColAlignements = [c,   l,      l,      l,      l,      l,       l]
+            self.ColFixedSizeFlag=[True,False,  True,   False,  True,   True,    False]
 
         self.ElementType = element_type
         self.BodyType = None
@@ -636,13 +638,23 @@ class VariablePanel(wx.Panel):
                 self.DownButton.Enable(not self.Debug and (table_length > 0 and row < table_length - 1 and self.Filter == "All"))
         setattr(self.VariablesGrid, "RefreshButtons", _RefreshButtons)
 
+        stretch_cols_width = window.Parent.ScreenRect.Width - 35
+        stretch_cols_sum = 0
+        for col  in range(len(self.ColFixedSizeFlag)):
+            if self.ColFixedSizeFlag[col]:
+                stretch_cols_width -= self.ColSizes[col]
+            else:
+                stretch_cols_sum += self.ColSizes[col]
         self.VariablesGrid.SetRowLabelSize(0)
         for col in range(self.Table.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
             attr.SetAlignment(self.ColAlignements[col], wx.ALIGN_CENTRE)
             self.VariablesGrid.SetColAttr(col, attr)
             self.VariablesGrid.SetColMinimalWidth(col, self.ColSizes[col])
-            self.VariablesGrid.AutoSizeColumn(col, False)
+            if not self.ColFixedSizeFlag[col]:
+                self.VariablesGrid.SetColSize(col, int((float(self.ColSizes[col])/stretch_cols_sum)*stretch_cols_width))
+            else:
+                self.VariablesGrid.SetColSize(col, self.ColSizes[col])
 
     def __del__(self):
         self.RefreshHighlightsTimer.Stop()
