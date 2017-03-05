@@ -1,5 +1,7 @@
 .project
 
+syntax: glob
+bug_report*
 syntax: regexp
 ^tests/.*/build$
 syntax: regexp
