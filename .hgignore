@@ -1,5 +1,7 @@
 .project
 
+.directory
+
 syntax: regexp
 ^tests/.*/build$
 ^.idea/.*
