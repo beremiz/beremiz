@@ -166,7 +166,7 @@ from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOC
 from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ITEM_CONFNODE
 
 
-MAX_RECENT_PROJECTS = 10
+MAX_RECENT_PROJECTS = 9
 
 if wx.Platform == '__WXMSW__':
     faces = {
@@ -764,7 +764,7 @@ class Beremiz(IDEFrame):
 
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
-            text = u'%d: %s' % (idx + 1, projectpath)
+            text = u'&%d: %s' % (idx + 1, projectpath)
 
             if idx < self.RecentProjectsMenu.GetMenuItemCount():
                 item = self.RecentProjectsMenu.FindItemByPosition(idx)
