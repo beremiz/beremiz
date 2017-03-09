@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-12 14:39+0300\n"
-"PO-Revision-Date: 2017-01-12 14:41+0300\n"
+"POT-Creation-Date: 2017-03-09 15:28+0300\n"
+"PO-Revision-Date: 2017-03-09 15:30+0300\n"
 "Last-Translator: Andrey Skvortsov <andrej.skvortzov@gmail.com>\n"
 "Language-Team: Andrey Skvortsov <andrej.skvortzov@gmail.com>\n"
 "Language: ru_RU\n"
@@ -72,7 +72,7 @@ msgstr "   Временный"
 msgid " and %s"
 msgstr "и %s"
 
-#: ../ProjectController.py:1089
+#: ../ProjectController.py:1110
 msgid " generation failed !\n"
 msgstr "неудачная генерация кода!\n"
 
@@ -96,7 +96,7 @@ msgstr "POU \"%s\"  не найден!!!"
 msgid "\"%s\" can't use itself!"
 msgstr "\"%s\" не может использовать сам себя!!!"
 
-#: ../IDEFrame.py:1652 ../IDEFrame.py:1671
+#: ../IDEFrame.py:1651 ../IDEFrame.py:1670
 #, python-format
 msgid "\"%s\" config already exists!"
 msgstr "Конфигурация \"%s\"  уже существует!!!"
@@ -106,7 +106,7 @@ msgstr "Конфигурация \"%s\"  уже существует!!!"
 msgid "\"%s\" configuration already exists !!!"
 msgstr "Конфигурация \"%s\"  уже существует!!!"
 
-#: ../IDEFrame.py:1602
+#: ../IDEFrame.py:1601
 #, python-format
 msgid "\"%s\" data type already exists!"
 msgstr "Тип данных \"%s\"  уже существует!!!"
@@ -128,9 +128,10 @@ msgstr "Директория \"%s\" не является проектом Berem
 #: ../dialogs/SFCStepNameDialog.py:52 ../dialogs/PouTransitionDialog.py:106
 #: ../dialogs/BlockPreviewDialog.py:207 ../dialogs/PouNameDialog.py:50
 #: ../dialogs/PouActionDialog.py:98 ../dialogs/PouDialog.py:120
+#: ../editors/ResourceEditor.py:449 ../editors/ResourceEditor.py:484
 #: ../editors/DataTypeEditor.py:555 ../editors/DataTypeEditor.py:584
-#: ../editors/CodeFileEditor.py:770 ../controls/VariablePanel.py:751
-#: ../IDEFrame.py:1593
+#: ../editors/CodeFileEditor.py:770 ../controls/VariablePanel.py:763
+#: ../IDEFrame.py:1592
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
 msgstr "\"%s\" является ключевым словом и не может быть использован!"
@@ -148,13 +149,14 @@ msgstr "\"%s\" не является директорией!"
 #: ../dialogs/SFCStepNameDialog.py:50 ../dialogs/PouTransitionDialog.py:104
 #: ../dialogs/BlockPreviewDialog.py:203 ../dialogs/PouNameDialog.py:48
 #: ../dialogs/PouActionDialog.py:96 ../dialogs/PouDialog.py:118
+#: ../editors/ResourceEditor.py:447 ../editors/ResourceEditor.py:482
 #: ../editors/DataTypeEditor.py:579 ../editors/CodeFileEditor.py:768
-#: ../controls/VariablePanel.py:749 ../IDEFrame.py:1591
+#: ../controls/VariablePanel.py:761 ../IDEFrame.py:1590
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
 msgstr "\"%s\" неверный идентификатор!"
 
-#: ../IDEFrame.py:2396
+#: ../IDEFrame.py:2395
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
 msgstr "\"%s\" используется более чем одним POU. Продолжить?"
@@ -164,7 +166,7 @@ msgstr "\"%s\" используется более чем одним POU. Про
 #: ../editors/Viewer.py:367 ../editors/TextViewer.py:270
 #: ../editors/TextViewer.py:299 ../editors/TextViewer.py:350
 #: ../editors/TextViewer.py:373 ../controls/VariablePanel.py:338
-#: ../IDEFrame.py:1611
+#: ../IDEFrame.py:1610
 #, python-format
 msgid "\"%s\" pou already exists!"
 msgstr "POU \"%s\" уже существует!"
@@ -279,8 +281,8 @@ msgstr "Тело %s не содержит никакой текст!"
 msgid "&Add Element"
 msgstr "&Добавить элемент"
 
-#: ../dialogs/AboutDialog.py:65 ../dialogs/AboutDialog.py:113
-#: ../dialogs/AboutDialog.py:150
+#: ../dialogs/AboutDialog.py:73 ../dialogs/AboutDialog.py:121
+#: ../dialogs/AboutDialog.py:158
 msgid "&Close"
 msgstr "&Закрыть"
 
@@ -316,7 +318,7 @@ msgstr "&Функции"
 msgid "&Help"
 msgstr "&Помощь"
 
-#: ../dialogs/AboutDialog.py:64
+#: ../dialogs/AboutDialog.py:72
 msgid "&License"
 msgstr "&Лицензия"
 
@@ -402,15 +404,15 @@ msgstr "1 мин"
 msgid "1s"
 msgstr "1 сек"
 
-#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1614 ../IDEFrame.py:1660
-#: ../IDEFrame.py:1679
+#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1613 ../IDEFrame.py:1659
+#: ../IDEFrame.py:1678
 #, python-format
 msgid "A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr "В POU присутствует элемент с именем \"%s\". Это может вызвать конфликт. Хотите продолжить?"
 
 #: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:108
 #: ../dialogs/PouNameDialog.py:52 ../dialogs/PouActionDialog.py:100
-#: ../controls/VariablePanel.py:753 ../IDEFrame.py:1628 ../IDEFrame.py:1641
+#: ../controls/VariablePanel.py:765 ../IDEFrame.py:1627 ../IDEFrame.py:1640
 #, python-format
 msgid "A POU named \"%s\" already exists!"
 msgstr "POU с именем \"%s\" уже существует!"
@@ -424,8 +426,12 @@ msgstr "Дочерний элемент с именем \"{a1}\" уже суще
 msgid "A location must be selected!"
 msgstr "Необходимо выбрать размещение!"
 
-#: ../dialogs/SFCStepNameDialog.py:56 ../controls/VariablePanel.py:755
-#: ../IDEFrame.py:1630 ../IDEFrame.py:1643
+#: ../editors/ResourceEditor.py:451
+msgid "A task with the same name already exists!"
+msgstr "Задача с таким именем уже существует!"
+
+#: ../dialogs/SFCStepNameDialog.py:56 ../controls/VariablePanel.py:767
+#: ../IDEFrame.py:1629 ../IDEFrame.py:1642
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
 msgstr "Переменная с именем \"%s\" уже существует в этом POU!"
@@ -435,7 +441,7 @@ msgstr "Переменная с именем \"%s\" уже существует 
 msgid "A variable with \"%s\" as name already exists!"
 msgstr "Переменная с именем \"%s\" уже существует!"
 
-#: ../dialogs/AboutDialog.py:40 ../PLCOpenEditor.py:158 ../Beremiz.py:381
+#: ../dialogs/AboutDialog.py:48 ../PLCOpenEditor.py:158 ../Beremiz.py:381
 msgid "About"
 msgstr "О программе"
 
@@ -447,7 +453,7 @@ msgstr "Абсолютный номер"
 msgid "Action"
 msgstr "Действие"
 
-#: ../editors/Viewer.py:555 ../editors/Viewer.py:2345
+#: ../editors/Viewer.py:555 ../editors/Viewer.py:2356
 msgid "Action Block"
 msgstr "Блок действия"
 
@@ -472,7 +478,7 @@ msgstr "Действия"
 msgid "Actions:"
 msgstr "Действия:"
 
-#: ../editors/Viewer.py:1100
+#: ../editors/Viewer.py:1110
 msgid "Active"
 msgstr "Активный"
 
@@ -481,7 +487,7 @@ msgstr "Активный"
 msgid "Add"
 msgstr "Добавить"
 
-#: ../IDEFrame.py:1890 ../IDEFrame.py:1925
+#: ../IDEFrame.py:1889 ../IDEFrame.py:1924
 msgid "Add Action"
 msgstr "Добавить действие"
 
@@ -489,11 +495,11 @@ msgstr "Добавить действие"
 msgid "Add C code accessing located variables synchronously"
 msgstr "Добавить C-код с синхронным доступом к локальным переменным"
 
-#: ../IDEFrame.py:1873
+#: ../IDEFrame.py:1872
 msgid "Add Configuration"
 msgstr "Добавить конфигурацию"
 
-#: ../IDEFrame.py:1853
+#: ../IDEFrame.py:1852
 msgid "Add DataType"
 msgstr "Добавить тип данных"
 
@@ -505,7 +511,7 @@ msgstr "Добавить ветвление"
 msgid "Add IP"
 msgstr "Добавить IP адрес"
 
-#: ../IDEFrame.py:1861
+#: ../IDEFrame.py:1860
 msgid "Add POU"
 msgstr "Добавить POU"
 
@@ -513,11 +519,11 @@ msgstr "Добавить POU"
 msgid "Add Python code executed asynchronously"
 msgstr "Добавить асинхронно вызываемый код на Python"
 
-#: ../IDEFrame.py:1901 ../IDEFrame.py:1951
+#: ../IDEFrame.py:1900 ../IDEFrame.py:1950
 msgid "Add Resource"
 msgstr "Добавить ресурс"
 
-#: ../IDEFrame.py:1879 ../IDEFrame.py:1922
+#: ../IDEFrame.py:1878 ../IDEFrame.py:1921
 msgid "Add Transition"
 msgstr "Добавить переход"
 
@@ -529,7 +535,7 @@ msgstr "Добавить провод"
 msgid "Add a new initial step"
 msgstr "Добавить новый исходный шаг"
 
-#: ../editors/Viewer.py:2706 ../editors/SFCViewer.py:770
+#: ../editors/Viewer.py:2717 ../editors/SFCViewer.py:770
 msgid "Add a new jump"
 msgstr "Добавить новый безусловный переход"
 
@@ -577,7 +583,7 @@ msgstr "Дополнительные функциональные блоки"
 msgid "Adjust Block Size"
 msgstr "Скорректировать размер элемента"
 
-#: ../editors/Viewer.py:1637
+#: ../editors/Viewer.py:1648
 msgid "Alignment"
 msgstr "Выравнивание"
 
@@ -593,7 +599,7 @@ msgstr "Все"
 msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
 msgstr "Все файлы  (*.*)|*.*|CSV files (*.csv)|*.csv"
 
-#: ../ProjectController.py:1623
+#: ../ProjectController.py:1644
 msgid "Already connected. Please disconnect\n"
 msgstr "Уже подключен. Пожалуйста, отключитесь сначала.\n"
 
@@ -601,6 +607,10 @@ msgstr "Уже подключен. Пожалуйста, отключитесь 
 #, python-format
 msgid "An element named \"%s\" already exists in this structure!"
 msgstr "Поле с именем \"%s\" уже существует в данной структуре!"
+
+#: ../editors/ResourceEditor.py:486
+msgid "An instance with the same name already exists!"
+msgstr "Экземпляр задачи с таким именем уже существует!"
 
 #: ../dialogs/ConnectionDialog.py:96
 msgid "Apply name modification to all continuations with the same name"
@@ -623,7 +633,7 @@ msgid "Arithmetic"
 msgstr "Математика"
 
 #: ../editors/DataTypeEditor.py:54 ../editors/DataTypeEditor.py:635
-#: ../controls/VariablePanel.py:829
+#: ../controls/VariablePanel.py:841
 msgid "Array"
 msgstr "Массив"
 
@@ -668,7 +678,7 @@ msgstr "Неправильный размер: %s"
 msgid "Base Type:"
 msgstr "Базовый тип:"
 
-#: ../editors/DataTypeEditor.py:625 ../controls/VariablePanel.py:787
+#: ../editors/DataTypeEditor.py:625 ../controls/VariablePanel.py:799
 msgid "Base Types"
 msgstr "Базовые типы"
 
@@ -710,7 +720,7 @@ msgstr "Исключающее ИЛИ"
 msgid "Bitwise inverting"
 msgstr "Битовое НЕ"
 
-#: ../editors/Viewer.py:525 ../editors/Viewer.py:2358
+#: ../editors/Viewer.py:525 ../editors/Viewer.py:2369
 msgid "Block"
 msgstr "Блок"
 
@@ -726,7 +736,7 @@ msgstr "Имя блока"
 msgid "Bottom"
 msgstr "Низ"
 
-#: ../ProjectController.py:1301
+#: ../ProjectController.py:1322
 msgid "Broken"
 msgstr "Ошибка"
 
@@ -739,23 +749,23 @@ msgstr "Browse %s values library"
 msgid "Browse Locations"
 msgstr "Просмотр директорий"
 
-#: ../ProjectController.py:1769
+#: ../ProjectController.py:1790
 msgid "Build"
 msgstr "Сборка"
 
-#: ../ProjectController.py:1235
+#: ../ProjectController.py:1256
 msgid "Build directory already clean\n"
 msgstr "Директория сборки уже пуста\n"
 
-#: ../ProjectController.py:1770
+#: ../ProjectController.py:1791
 msgid "Build project into build folder"
 msgstr "Сборка проекта в директории сборки"
 
-#: ../ProjectController.py:1018
+#: ../ProjectController.py:1039
 msgid "C Build crashed !\n"
 msgstr "Крэш во время сборки C-кода!\n"
 
-#: ../ProjectController.py:1015
+#: ../ProjectController.py:1036
 msgid "C Build failed.\n"
 msgstr "Ошибка сборки C-кода.\n"
 
@@ -763,7 +773,7 @@ msgstr "Ошибка сборки C-кода.\n"
 msgid "C code"
 msgstr "C код "
 
-#: ../ProjectController.py:1093
+#: ../ProjectController.py:1114
 msgid "C code generated successfully.\n"
 msgstr "C-код успешно сгенерирован.\n"
 
@@ -780,7 +790,7 @@ msgstr "Ошибка компиляции %s.\n"
 msgid "C extension"
 msgstr "С-расширение"
 
-#: ../dialogs/AboutDialog.py:63
+#: ../dialogs/AboutDialog.py:71
 msgid "C&redits"
 msgstr "&Благодарности"
 
@@ -859,7 +869,7 @@ msgstr "Не удалось найти свободный МЭК-канал с �
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr "Невозможно получить состояние ПЛК - ошибка подключения.\n"
 
-#: ../ProjectController.py:881
+#: ../ProjectController.py:902
 msgid "Cannot open/parse VARIABLES.csv!\n"
 msgstr "Не удалось открыть/прочитать VARIABLES.csv\n"
 
@@ -884,7 +894,7 @@ msgstr "Сменить IP-адрес интерфейса для привязк�
 msgid "Change Name"
 msgstr "Сменить имя"
 
-#: ../IDEFrame.py:1943
+#: ../IDEFrame.py:1942
 msgid "Change POU Type To"
 msgstr "Сменить тип POU на"
 
@@ -904,7 +914,7 @@ msgstr "Строковые операции"
 msgid "Choose a SVG file"
 msgstr "Выберите SVG-файл"
 
-#: ../ProjectController.py:451
+#: ../ProjectController.py:501
 msgid "Choose a directory to save project"
 msgstr "Выберите директорию, чтобы сохранить проект"
 
@@ -926,11 +936,11 @@ msgstr "Выберите значение для %s:"
 msgid "Choose a working directory "
 msgstr "Выберите рабочую директорию"
 
-#: ../ProjectController.py:358
+#: ../ProjectController.py:408
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
 msgstr "Выбранная директория не содержит программы. Это некорректный проект!"
 
-#: ../ProjectController.py:325
+#: ../ProjectController.py:375
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr "Выбранная директория не пуста и не может использоваться для нового проекта!"
 
@@ -946,7 +956,7 @@ msgstr "Фильтр класса:"
 msgid "Class:"
 msgstr "Класс:"
 
-#: ../ProjectController.py:1773
+#: ../ProjectController.py:1794
 msgid "Clean"
 msgstr "Очистить"
 
@@ -954,11 +964,11 @@ msgstr "Очистить"
 msgid "Clean log messages"
 msgstr "Очистить лог"
 
-#: ../ProjectController.py:1775
+#: ../ProjectController.py:1796
 msgid "Clean project build folder"
 msgstr "Очистить директорию сборки проекта"
 
-#: ../ProjectController.py:1232
+#: ../ProjectController.py:1253
 msgid "Cleaning the build directory\n"
 msgstr "Очистка директории сборки\n"
 
@@ -987,7 +997,7 @@ msgstr "Закрыть проект"
 msgid "Close Tab"
 msgstr "Закрыть вкладку"
 
-#: ../editors/Viewer.py:541 ../editors/Viewer.py:2366
+#: ../editors/Viewer.py:541 ../editors/Viewer.py:2377
 msgid "Coil"
 msgstr "Катушка"
 
@@ -1017,7 +1027,7 @@ msgstr "Сравнение"
 msgid "Compiler"
 msgstr "Компилятор"
 
-#: ../ProjectController.py:672
+#: ../ProjectController.py:693
 msgid "Compiling IEC Program into C code...\n"
 msgstr "Компиляция МЭК-программы в C-код...\n"
 
@@ -1047,21 +1057,21 @@ msgstr "Конфигурации"
 msgid "Confirm or change variable name"
 msgstr "Подтвердить или поменять имя переменной"
 
-#: ../ProjectController.py:1788
+#: ../ProjectController.py:1809
 msgid "Connect"
 msgstr "Подключиться"
 
-#: ../ProjectController.py:1789
+#: ../ProjectController.py:1810
 msgid "Connect to the target PLC"
 msgstr "Подключиться к целевому ПЛК"
 
-#: ../ProjectController.py:1292
+#: ../ProjectController.py:1313
 #, python-format
 msgid "Connected to URI: %s"
 msgstr "Подключен к URI: %s"
 
 #: ../dialogs/SFCTransitionDialog.py:76 ../editors/Viewer.py:527
-#: ../editors/Viewer.py:2359
+#: ../editors/Viewer.py:2370
 msgid "Connection"
 msgstr "Подключение"
 
@@ -1069,11 +1079,11 @@ msgstr "Подключение"
 msgid "Connection Properties"
 msgstr "Свойства подключение"
 
-#: ../ProjectController.py:1647
+#: ../ProjectController.py:1668
 msgid "Connection canceled!\n"
 msgstr "Подключение отменено!\n"
 
-#: ../ProjectController.py:1672
+#: ../ProjectController.py:1693
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr "Неудачное подключение к %s!\n"
@@ -1087,7 +1097,7 @@ msgstr "Подключение прервано!\n"
 msgid "Connection to '%s' failed.\n"
 msgstr "Неудачное подключение к %s!\n"
 
-#: ../dialogs/ConnectionDialog.py:64 ../editors/Viewer.py:1594
+#: ../dialogs/ConnectionDialog.py:64 ../editors/Viewer.py:1605
 msgid "Connector"
 msgstr "Коннектор"
 
@@ -1103,7 +1113,7 @@ msgstr "Консоль"
 msgid "Constant"
 msgstr "Константа"
 
-#: ../editors/Viewer.py:537 ../editors/Viewer.py:2362
+#: ../editors/Viewer.py:537 ../editors/Viewer.py:2373
 msgid "Contact"
 msgstr "Контакт"
 
@@ -1111,7 +1121,7 @@ msgstr "Контакт"
 msgid "Content Description (optional):"
 msgstr "Описание содержимого (опционально):"
 
-#: ../dialogs/ConnectionDialog.py:65 ../editors/Viewer.py:1595
+#: ../dialogs/ConnectionDialog.py:65 ../editors/Viewer.py:1606
 msgid "Continuation"
 msgstr "Продолжение"
 
@@ -1136,7 +1146,7 @@ msgstr "Преобразование во время суток"
 msgid "Copy"
 msgstr "Копировать"
 
-#: ../IDEFrame.py:1930
+#: ../IDEFrame.py:1929
 msgid "Copy POU"
 msgstr "Копировать POU"
 
@@ -1191,15 +1201,15 @@ msgstr ""
 msgid "Couldn't paste non-POU object."
 msgstr "Невозможно вставить не-POU."
 
-#: ../ProjectController.py:1589
+#: ../ProjectController.py:1610
 msgid "Couldn't start PLC !\n"
 msgstr "Невозможно запустить ПЛК!\n"
 
-#: ../ProjectController.py:1597
+#: ../ProjectController.py:1618
 msgid "Couldn't stop PLC !\n"
 msgstr "Невозможно остановить ПЛК!\n"
 
-#: ../ProjectController.py:1561
+#: ../ProjectController.py:1582
 msgid "Couldn't stop debugger.\n"
 msgstr "Невозможно остановить отладчик.\n"
 
@@ -1279,7 +1289,7 @@ msgstr "Создать новый переход"
 msgid "Create a new variable"
 msgstr "Создать новую переменную"
 
-#: ../dialogs/AboutDialog.py:105
+#: ../dialogs/AboutDialog.py:113
 msgid "Credits"
 msgstr "Благодарности"
 
@@ -1343,7 +1353,7 @@ msgstr "Текущие дата и время, абсолютные или от�
 msgid "Days:"
 msgstr "Дни:"
 
-#: ../ProjectController.py:1694
+#: ../ProjectController.py:1715
 msgid "Debug does not match PLC - stop/transfert/start to re-enable\n"
 msgstr "Отлаживаемая программа не соответствует программе в ПЛК - остановите/загрузите/запустите, чтобы разрешить отладку\n"
 
@@ -1351,17 +1361,17 @@ msgstr "Отлаживаемая программа не соответству�
 msgid "Debug instance"
 msgstr "Отладка экземпляра"
 
-#: ../editors/Viewer.py:1117 ../editors/Viewer.py:3653
+#: ../editors/Viewer.py:1127 ../editors/Viewer.py:3664
 #, python-format
 msgid "Debug: %s"
 msgstr "Отладка: %s"
 
-#: ../ProjectController.py:1350
+#: ../ProjectController.py:1371
 #, python-format
 msgid "Debug: Unknown variable '%s'\n"
 msgstr "Отладка: неизвестная переменная '%s'\n"
 
-#: ../ProjectController.py:1348
+#: ../ProjectController.py:1369
 #, python-format
 msgid "Debug: Unsupported type to debug '%s'\n"
 msgstr "Отладка: неподдерживамый отладкой тип '%s'\n"
@@ -1370,19 +1380,19 @@ msgstr "Отладка: неподдерживамый отладкой тип '
 msgid "Debugger"
 msgstr "Отладчик"
 
-#: ../ProjectController.py:1530
+#: ../ProjectController.py:1551
 msgid "Debugger disabled\n"
 msgstr "Отладчик запрещен\n"
 
-#: ../ProjectController.py:1691
+#: ../ProjectController.py:1712
 msgid "Debugger ready\n"
 msgstr "Отладчик готов\n"
 
-#: ../ProjectController.py:1563
+#: ../ProjectController.py:1584
 msgid "Debugger stopped.\n"
 msgstr "Отладчик остановлен.\n"
 
-#: ../editors/Viewer.py:572 ../Beremiz.py:1064 ../IDEFrame.py:1959
+#: ../editors/Viewer.py:572 ../Beremiz.py:1064 ../IDEFrame.py:1958
 msgid "Delete"
 msgstr "Удалить"
 
@@ -1439,19 +1449,19 @@ msgstr "Синоним"
 msgid "Disable_Extensions"
 msgstr "Запретить расширения"
 
-#: ../ProjectController.py:1797
+#: ../ProjectController.py:1818
 msgid "Disconnect"
 msgstr "Отключиться"
 
-#: ../ProjectController.py:1799
+#: ../ProjectController.py:1820
 msgid "Disconnect from PLC"
 msgstr "Отключиться от ПЛК"
 
-#: ../ProjectController.py:1302
+#: ../ProjectController.py:1323
 msgid "Disconnected"
 msgstr "Отключено"
 
-#: ../editors/Viewer.py:556 ../editors/Viewer.py:2354
+#: ../editors/Viewer.py:556 ../editors/Viewer.py:2365
 msgid "Divergence"
 msgstr "Ветвление"
 
@@ -1512,7 +1522,7 @@ msgstr "Редактировать свойства блока действия"
 msgid "Edit array type properties"
 msgstr "Редактировать свойства массива"
 
-#: ../editors/Viewer.py:2575 ../editors/Viewer.py:3004
+#: ../editors/Viewer.py:2586 ../editors/Viewer.py:3015
 msgid "Edit comment"
 msgstr "Редактировать комментарий"
 
@@ -1524,11 +1534,11 @@ msgstr "Редактировать файл"
 msgid "Edit item"
 msgstr "Редактировать элемент"
 
-#: ../editors/Viewer.py:2963
+#: ../editors/Viewer.py:2974
 msgid "Edit jump target"
 msgstr "Редактирование безусловного перехода"
 
-#: ../ProjectController.py:1811
+#: ../ProjectController.py:1832
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr "Редактировать МЭК-код добавленный к коду сгенерированному PLCGenerator"
 
@@ -1544,7 +1554,7 @@ msgstr "Редактировать переход"
 msgid "Editor ToolBar"
 msgstr "Редактор панели инструментов"
 
-#: ../ProjectController.py:1195
+#: ../ProjectController.py:1216
 msgid "Editor selection"
 msgstr "Редактор выделения"
 
@@ -1555,7 +1565,7 @@ msgstr "Прошедшее время нарастания"
 msgid "Elements :"
 msgstr "Элементы:"
 
-#: ../ProjectController.py:1300
+#: ../ProjectController.py:1321
 msgid "Empty"
 msgstr "Нет программы"
 
@@ -1595,35 +1605,36 @@ msgstr "Равно"
 #: ../dialogs/PouNameDialog.py:54 ../dialogs/BrowseLocationsDialog.py:216
 #: ../dialogs/BrowseValuesLibraryDialog.py:83 ../dialogs/PouActionDialog.py:104
 #: ../dialogs/PouDialog.py:134 ../PLCOpenEditor.py:335 ../PLCOpenEditor.py:340
-#: ../PLCOpenEditor.py:420 ../PLCOpenEditor.py:430 ../editors/Viewer.py:423
+#: ../PLCOpenEditor.py:420 ../PLCOpenEditor.py:430
+#: ../editors/ResourceEditor.py:436 ../editors/Viewer.py:423
 #: ../editors/LDViewer.py:666 ../editors/LDViewer.py:882
 #: ../editors/LDViewer.py:886 ../editors/DataTypeEditor.py:550
 #: ../editors/DataTypeEditor.py:555 ../editors/DataTypeEditor.py:579
 #: ../editors/DataTypeEditor.py:584 ../editors/DataTypeEditor.py:594
 #: ../editors/DataTypeEditor.py:745 ../editors/DataTypeEditor.py:752
 #: ../editors/TextViewer.py:389 ../editors/CodeFileEditor.py:783
-#: ../ProjectController.py:293 ../ProjectController.py:421
-#: ../ProjectController.py:428 ../controls/FolderTree.py:217
+#: ../ProjectController.py:343 ../ProjectController.py:471
+#: ../ProjectController.py:478 ../controls/FolderTree.py:217
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:166
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:137
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:231
-#: ../controls/VariablePanel.py:402 ../controls/VariablePanel.py:772
-#: ../Beremiz.py:1203 ../IDEFrame.py:1003 ../IDEFrame.py:1614
-#: ../IDEFrame.py:1655 ../IDEFrame.py:1660 ../IDEFrame.py:1674
-#: ../IDEFrame.py:1679 ../Beremiz_service.py:211
+#: ../controls/VariablePanel.py:402 ../controls/VariablePanel.py:784
+#: ../Beremiz.py:1203 ../IDEFrame.py:1003 ../IDEFrame.py:1613
+#: ../IDEFrame.py:1654 ../IDEFrame.py:1659 ../IDEFrame.py:1673
+#: ../IDEFrame.py:1678 ../Beremiz_service.py:211
 msgid "Error"
 msgstr "Ошибка"
 
-#: ../ProjectController.py:727
+#: ../ProjectController.py:748
 msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
 msgstr "Ошибка: Как минимум одна конфигурация и один ресурс должны быть задекларированы в ПЛК!\n"
 
-#: ../ProjectController.py:719
+#: ../ProjectController.py:740
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr "Ошибка: компилятор МЭК в C вернул код ошибки %d\n"
 
-#: ../ProjectController.py:621
+#: ../ProjectController.py:671
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
@@ -1647,7 +1658,7 @@ msgstr "Ошибка: мастер не сгенерирован\n"
 msgid "Error: No PLC built\n"
 msgstr "Ошибка: ПЛК не собран\n"
 
-#: ../ProjectController.py:1666
+#: ../ProjectController.py:1687
 #, python-format
 msgid "Exception while connecting %s!\n"
 msgstr "Исключение во время подключения %s!\n"
@@ -1692,7 +1703,7 @@ msgstr "Выражение:"
 msgid "External"
 msgstr "Внешний"
 
-#: ../ProjectController.py:740
+#: ../ProjectController.py:761
 msgid "Extracting Located Variables...\n"
 msgstr "Экспорт локальных переменных...\n"
 
@@ -1707,7 +1718,7 @@ msgstr "ФД интегрирования"
 msgid "FBD"
 msgstr "FBD"
 
-#: ../ProjectController.py:1729
+#: ../ProjectController.py:1750
 msgid "Failed : Must build before transfer.\n"
 msgstr "Ошибка: необходима сборка перед передачей.\n"
 
@@ -1715,7 +1726,7 @@ msgstr "Ошибка: необходима сборка перед переда�
 msgid "Falling Edge"
 msgstr "Спадающий фронт"
 
-#: ../ProjectController.py:1008
+#: ../ProjectController.py:1029
 msgid "Fatal : cannot get builder.\n"
 msgstr "Ошибка: невозможно получить сборщик.\n"
 
@@ -1764,7 +1775,7 @@ msgstr "Поиск:"
 msgid "Force runtime reload\n"
 msgstr "Принудительный перезапуск системы исполнения\n"
 
-#: ../editors/Viewer.py:1553
+#: ../editors/Viewer.py:1564
 msgid "Force value"
 msgstr "Фиксировать значение"
 
@@ -1792,7 +1803,7 @@ msgstr "Форма заполнена неполностью. Должен бы�
 msgid "Forward"
 msgstr "Вперед"
 
-#: ../dialogs/SearchInProjectDialog.py:36 ../IDEFrame.py:1746
+#: ../dialogs/SearchInProjectDialog.py:36 ../IDEFrame.py:1745
 msgid "Function"
 msgstr "Функция"
 
@@ -1800,12 +1811,12 @@ msgstr "Функция"
 msgid "Function &Block"
 msgstr "Функциональный &блок"
 
-#: ../dialogs/SearchInProjectDialog.py:37 ../IDEFrame.py:1745
-#: ../IDEFrame.py:1938
+#: ../dialogs/SearchInProjectDialog.py:37 ../IDEFrame.py:1744
+#: ../IDEFrame.py:1937
 msgid "Function Block"
 msgstr "Функциональный блок"
 
-#: ../controls/VariablePanel.py:825
+#: ../controls/VariablePanel.py:837
 msgid "Function Block Types"
 msgstr "Типы функциональных блоков"
 
@@ -1830,7 +1841,7 @@ msgstr "Функции"
 msgid "Generate Program"
 msgstr "Сгенерировать программу"
 
-#: ../ProjectController.py:612
+#: ../ProjectController.py:662
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr "Генерация МЭК-61131 ST/IL/SFC кода ПЛК...\n"
 
@@ -1900,12 +1911,12 @@ msgstr "Неверный IP-адрес"
 msgid "Import SVG"
 msgstr "Импорт SVG"
 
-#: ../dialogs/FBDVariableDialog.py:38 ../editors/Viewer.py:1580
+#: ../dialogs/FBDVariableDialog.py:38 ../editors/Viewer.py:1591
 #: ../controls/VariablePanel.py:71
 msgid "InOut"
 msgstr "Вход/Выход"
 
-#: ../editors/Viewer.py:1100
+#: ../editors/Viewer.py:1110
 msgid "Inactive"
 msgstr "Неактивный"
 
@@ -1955,7 +1966,7 @@ msgstr "Непосредственно"
 
 #: ../dialogs/SFCStepDialog.py:70 ../dialogs/FBDVariableDialog.py:37
 #: ../dialogs/BrowseLocationsDialog.py:40 ../editors/Viewer.py:289
-#: ../editors/Viewer.py:1578 ../editors/TextViewer.py:307
+#: ../editors/Viewer.py:1589 ../editors/TextViewer.py:307
 #: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Input"
@@ -2043,7 +2054,7 @@ msgstr ""
 "Неверное значение!\n"
 "Необходимо ввести числовое значение."
 
-#: ../editors/Viewer.py:557 ../editors/Viewer.py:2343
+#: ../editors/Viewer.py:557 ../editors/Viewer.py:2354
 msgid "Jump"
 msgstr "Безусловный переход"
 
@@ -2074,7 +2085,7 @@ msgstr "Язык (опционально):"
 msgid "Language:"
 msgstr "Язык:"
 
-#: ../ProjectController.py:1735
+#: ../ProjectController.py:1756
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr "Загружаемая программа совпадает с текущий программой в целевом ПЛК. Загрузка продолжена...\n"
 
@@ -2113,7 +2124,7 @@ msgstr "Библиотеки"
 msgid "Library"
 msgstr "Библиотеки"
 
-#: ../dialogs/AboutDialog.py:143
+#: ../dialogs/AboutDialog.py:151
 msgid "License"
 msgstr "Лицензия"
 
@@ -2139,7 +2150,7 @@ msgstr "Локальный"
 msgid "Local entries"
 msgstr "Локальные записи"
 
-#: ../ProjectController.py:1641
+#: ../ProjectController.py:1662
 msgid "Local service discovery failed!\n"
 msgstr "Локальный сервис не найден!\n"
 
@@ -2350,7 +2361,7 @@ msgstr "Новый элемент"
 msgid "No Modifier"
 msgstr "Нет модификатора"
 
-#: ../ProjectController.py:1763
+#: ../ProjectController.py:1784
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr "Нет ПЛК для передачи (была сборка успешна?)\n"
 
@@ -2460,7 +2471,7 @@ msgstr "Открыть Inkscape"
 msgid "Open Source framework for automation, implemented IEC 61131 IDE with constantly growing set of extensions and flexible PLC runtime."
 msgstr "Свободное программное обеспечение для промышленной автоматизации, состоящие из среды разработки программ по стандарту МЭК 61131 с постоянно расширяющимся набором плагинов и гибкой системой исполнения для ПЛК."
 
-#: ../ProjectController.py:1815
+#: ../ProjectController.py:1836
 msgid "Open a file explorer to manage project files"
 msgstr "Открыть файловый менеджер для просмотра файлов проекта"
 
@@ -2486,7 +2497,7 @@ msgstr "Другой профиль"
 
 #: ../dialogs/SFCStepDialog.py:71 ../dialogs/FBDVariableDialog.py:39
 #: ../dialogs/BrowseLocationsDialog.py:41 ../editors/Viewer.py:289
-#: ../editors/Viewer.py:1579 ../editors/TextViewer.py:307
+#: ../editors/Viewer.py:1590 ../editors/TextViewer.py:307
 #: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Output"
@@ -2514,7 +2525,7 @@ msgstr "ПЛК:\n"
 msgid "PLC Log"
 msgstr "Лог ПЛК"
 
-#: ../ProjectController.py:992
+#: ../ProjectController.py:1013
 msgid "PLC code generation failed !\n"
 msgstr "Неудачная генерация кода!\n"
 
@@ -2594,7 +2605,7 @@ msgstr "Настройки страницы"
 msgid "Page Size (optional):"
 msgstr "Размер страницы (опционально):"
 
-#: ../IDEFrame.py:2599
+#: ../IDEFrame.py:2598
 #, python-format
 msgid "Page: %d"
 msgstr "Страница: %d"
@@ -2607,7 +2618,7 @@ msgstr "Родительский экземпляр"
 msgid "Paste"
 msgstr "Вставить"
 
-#: ../IDEFrame.py:1865
+#: ../IDEFrame.py:1864
 msgid "Paste POU"
 msgstr "Вставить POU"
 
@@ -2619,7 +2630,7 @@ msgstr "Шаблон поиска:"
 msgid "Pin number:"
 msgstr "Номер пина:"
 
-#: ../editors/Viewer.py:2706 ../editors/Viewer.py:2963
+#: ../editors/Viewer.py:2717 ../editors/Viewer.py:2974
 #: ../editors/SFCViewer.py:770
 msgid "Please choose a target"
 msgstr "Выберите цель перехода"
@@ -2628,7 +2639,7 @@ msgstr "Выберите цель перехода"
 msgid "Please enter a block name"
 msgstr "Введите имя блока"
 
-#: ../editors/Viewer.py:2576 ../editors/Viewer.py:3005
+#: ../editors/Viewer.py:2587 ../editors/Viewer.py:3016
 msgid "Please enter comment text"
 msgstr "Введите текст комментария"
 
@@ -2654,7 +2665,7 @@ msgstr "Номер порта должен быть в диапазоне от 0
 msgid "Port number must be an integer!"
 msgstr "Номер порта должен быть целым числом!"
 
-#: ../editors/Viewer.py:536 ../editors/Viewer.py:2367
+#: ../editors/Viewer.py:536 ../editors/Viewer.py:2378
 msgid "Power Rail"
 msgstr "Шина питания"
 
@@ -2718,8 +2729,8 @@ msgstr "Версия продукта"
 msgid "Product Version (required):"
 msgstr "Версия продукта (обязательно):"
 
-#: ../dialogs/SearchInProjectDialog.py:38 ../IDEFrame.py:1744
-#: ../IDEFrame.py:1941
+#: ../dialogs/SearchInProjectDialog.py:38 ../IDEFrame.py:1743
+#: ../IDEFrame.py:1940
 msgid "Program"
 msgstr "Программа"
 
@@ -2744,7 +2755,7 @@ msgstr "Проект"
 msgid "Project '%s':"
 msgstr "Проект '%s':"
 
-#: ../ProjectController.py:1814
+#: ../ProjectController.py:1835
 msgid "Project Files"
 msgstr "Файлы проекта"
 
@@ -2828,7 +2839,7 @@ msgstr "Длительность нарастания"
 msgid "Range:"
 msgstr "Диапазон:"
 
-#: ../ProjectController.py:1810
+#: ../ProjectController.py:1831
 msgid "Raw IEC code"
 msgstr "МЭК-код"
 
@@ -2857,7 +2868,7 @@ msgstr "Регулярное выражение"
 msgid "Regular expressions"
 msgstr "Регулярные выражения"
 
-#: ../editors/Viewer.py:1556
+#: ../editors/Viewer.py:1567
 msgid "Release value"
 msgstr "Освободить значение"
 
@@ -2870,11 +2881,11 @@ msgstr "Остаток от деления (modulo)"
 msgid "Remove %s node"
 msgstr "Удалить %s элемент"
 
-#: ../IDEFrame.py:2405
+#: ../IDEFrame.py:2404
 msgid "Remove Datatype"
 msgstr "Удалить тип данных"
 
-#: ../IDEFrame.py:2410
+#: ../IDEFrame.py:2409
 msgid "Remove Pou"
 msgstr "Удалить POU"
 
@@ -2906,7 +2917,7 @@ msgstr "Удалить задачу"
 msgid "Remove variable"
 msgstr "Удалить переменную"
 
-#: ../IDEFrame.py:1945
+#: ../IDEFrame.py:1944
 msgid "Rename"
 msgstr "Переименовать"
 
@@ -2977,15 +2988,15 @@ msgstr "Циклический сдвиг вправо"
 msgid "Rounding up/down"
 msgstr "Округление вверх/вниз"
 
-#: ../ProjectController.py:1778
+#: ../ProjectController.py:1799
 msgid "Run"
 msgstr "Старт"
 
-#: ../ProjectController.py:1037
+#: ../ProjectController.py:1058
 msgid "Runtime IO extensions C code generation failed !\n"
 msgstr "Ошибка генерации C-кода для расширений ввода-вывода!\n"
 
-#: ../ProjectController.py:1046
+#: ../ProjectController.py:1067
 msgid "Runtime library extensions C code generation failed !\n"
 msgstr "Ошибка генерации C-кода для библиотеки расширений системы исполнения!\n"
 
@@ -3044,7 +3055,7 @@ msgstr "Сохранить как..."
 msgid "Save as"
 msgstr "Сохранить как"
 
-#: ../ProjectController.py:420
+#: ../ProjectController.py:470
 msgid "Save path is the same as path of a project! \n"
 msgstr "Выбранный путь совпадает с путём проекта!\n"
 
@@ -3074,7 +3085,7 @@ msgstr "Выделить все"
 msgid "Select a variable class:"
 msgstr "Выберите класс переменной:"
 
-#: ../ProjectController.py:1195
+#: ../ProjectController.py:1216
 msgid "Select an editor:"
 msgstr "Выберите редактор:"
 
@@ -3086,7 +3097,7 @@ msgstr "Выберите экземпляр"
 msgid "Select an object"
 msgstr "Выберите объект"
 
-#: ../ProjectController.py:427
+#: ../ProjectController.py:477
 msgid "Selected directory already contains another project. Overwrite? \n"
 msgstr "Выбранная директория уже содержит другой проект. Перезаписать?\n"
 
@@ -3125,7 +3136,7 @@ msgstr "Сдвиг влево"
 msgid "Shift right"
 msgstr "Сдвиг вправо"
 
-#: ../ProjectController.py:1804
+#: ../ProjectController.py:1825
 msgid "Show IEC code generated by PLCGenerator"
 msgstr "Показать код, сгенерированный PLCGenerator"
 
@@ -3137,7 +3148,7 @@ msgstr "Показать ведущего"
 msgid "Show Master generated by config_utils"
 msgstr "Показать ведущий узел сгенерированный config_utils"
 
-#: ../ProjectController.py:1802
+#: ../ProjectController.py:1823
 msgid "Show code"
 msgstr "Показать код"
 
@@ -3174,20 +3185,20 @@ msgstr "Квадратный корень"
 msgid "Standard function blocks"
 msgstr "Стандартные функциональные блоки"
 
-#: ../ProjectController.py:1780 ../Beremiz_service.py:261
+#: ../ProjectController.py:1801 ../Beremiz_service.py:261
 msgid "Start PLC"
 msgstr "Запустить ПЛК"
 
-#: ../ProjectController.py:984
+#: ../ProjectController.py:1005
 #, python-format
 msgid "Start build in %s\n"
 msgstr "Сборка запущена в %s\n"
 
-#: ../ProjectController.py:1298
+#: ../ProjectController.py:1319
 msgid "Started"
 msgstr "Работа"
 
-#: ../ProjectController.py:1586
+#: ../ProjectController.py:1607
 msgid "Starting PLC\n"
 msgstr "ПЛК запускается\n"
 
@@ -3195,11 +3206,11 @@ msgstr "ПЛК запускается\n"
 msgid "Status ToolBar"
 msgstr "Панель статуса"
 
-#: ../editors/Viewer.py:553 ../editors/Viewer.py:2342
+#: ../editors/Viewer.py:553 ../editors/Viewer.py:2353
 msgid "Step"
 msgstr "Шаг"
 
-#: ../ProjectController.py:1783
+#: ../ProjectController.py:1804
 msgid "Stop"
 msgstr "Стоп"
 
@@ -3207,15 +3218,15 @@ msgstr "Стоп"
 msgid "Stop PLC"
 msgstr "Остановить ПЛК"
 
-#: ../ProjectController.py:1785
+#: ../ProjectController.py:1806
 msgid "Stop Running PLC"
 msgstr "Остановить запущенный ПЛК"
 
-#: ../ProjectController.py:1299
+#: ../ProjectController.py:1320
 msgid "Stopped"
 msgstr "Стоп"
 
-#: ../ProjectController.py:1558
+#: ../ProjectController.py:1579
 msgid "Stopping debugger...\n"
 msgstr "Остановка отладчика...\n"
 
@@ -3231,7 +3242,7 @@ msgstr "Поддиапазон"
 msgid "Subtraction"
 msgstr "Вычитание"
 
-#: ../ProjectController.py:1023
+#: ../ProjectController.py:1044
 msgid "Successfully built.\n"
 msgstr "Сборка прошла успешно.\n"
 
@@ -3343,7 +3354,7 @@ msgstr "Инкрементный/декрементный счетчик име�
 msgid "There are changes, do you want to save?"
 msgstr "Хотите сохранить изменения?"
 
-#: ../IDEFrame.py:1655 ../IDEFrame.py:1674
+#: ../IDEFrame.py:1654 ../IDEFrame.py:1673
 #, python-format
 msgid "There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?"
 msgstr "Существует POU с именем \"%s\". Это может вызвать конфликт. Хотите продолжить?"
@@ -3402,23 +3413,23 @@ msgstr "Вычитание времени суток"
 msgid "Top"
 msgstr "Верх"
 
-#: ../ProjectController.py:1792
+#: ../ProjectController.py:1813
 msgid "Transfer"
 msgstr "Передать"
 
-#: ../ProjectController.py:1794
+#: ../ProjectController.py:1815
 msgid "Transfer PLC"
 msgstr "Передать ПЛК"
 
-#: ../ProjectController.py:1758
+#: ../ProjectController.py:1779
 msgid "Transfer completed successfully.\n"
 msgstr "Передача успешно завершена.\n"
 
-#: ../ProjectController.py:1760
+#: ../ProjectController.py:1781
 msgid "Transfer failed\n"
 msgstr "Ошибка передачи\n"
 
-#: ../editors/Viewer.py:554 ../editors/Viewer.py:2344 ../editors/Viewer.py:2371
+#: ../editors/Viewer.py:554 ../editors/Viewer.py:2355 ../editors/Viewer.py:2382
 msgid "Transition"
 msgstr "Переход"
 
@@ -3454,7 +3465,7 @@ msgstr "Переход с именем %s отсутствует!"
 msgid "Transitions"
 msgstr "Переходы"
 
-#: ../dialogs/AboutDialog.py:123
+#: ../dialogs/AboutDialog.py:131
 msgid "Translated by"
 msgstr "Перевод"
 
@@ -3526,7 +3537,7 @@ msgstr "Неопределенный тип POU \"%s\""
 msgid "Undo"
 msgstr "Отмена"
 
-#: ../ProjectController.py:332
+#: ../ProjectController.py:382
 msgid "Unknown"
 msgstr "Неизвестно"
 
@@ -3535,7 +3546,7 @@ msgstr "Неизвестно"
 msgid "Unknown variable \"%s\" for this POU!"
 msgstr "Неизвестная переменная \"%s\" для этого POU!"
 
-#: ../ProjectController.py:329 ../ProjectController.py:330
+#: ../ProjectController.py:379 ../ProjectController.py:380
 msgid "Unnamed"
 msgstr "Unnamed"
 
@@ -3549,7 +3560,7 @@ msgstr "Unnamed%d"
 msgid "Unrecognized data size \"%s\""
 msgstr "Неопределенный размер данных \"%s\""
 
-#: ../editors/DataTypeEditor.py:632 ../controls/VariablePanel.py:798
+#: ../editors/DataTypeEditor.py:632 ../controls/VariablePanel.py:810
 msgid "User Data Types"
 msgstr "Пользовательские типы данных"
 
@@ -3570,7 +3581,7 @@ msgid "Values:"
 msgstr "Значения:"
 
 #: ../dialogs/ActionBlockDialog.py:42 ../editors/Viewer.py:526
-#: ../editors/Viewer.py:2374
+#: ../editors/Viewer.py:2385
 msgid "Variable"
 msgstr "Переменная"
 
@@ -3636,7 +3647,7 @@ msgstr "WXGLADE GUI"
 msgid "Warning"
 msgstr "Предупреждение"
 
-#: ../ProjectController.py:616
+#: ../ProjectController.py:666
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr "Предупреждения в ST/IL/SFC коде генераторе:\n"
 
@@ -3655,7 +3666,7 @@ msgstr "Win32"
 msgid "Wrap search"
 msgstr "Продолжить поиск сначала"
 
-#: ../dialogs/AboutDialog.py:122
+#: ../dialogs/AboutDialog.py:130
 msgid "Written by"
 msgstr "Авторы"
 
@@ -3685,7 +3696,7 @@ msgstr ""
 "У вас недостаточно прав для записи.\n"
 "Открыть wxGlade все равно?"
 
-#: ../ProjectController.py:292
+#: ../ProjectController.py:342
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
