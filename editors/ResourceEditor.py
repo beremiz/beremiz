@@ -31,7 +31,7 @@ from controls import CustomGrid, CustomTable, DurationCellEditor
 from dialogs.DurationEditorDialog import IEC_TIME_MODEL
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
-
+from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 #-------------------------------------------------------------------------------
 #                          Configuration Editor class
 #-------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ class ResourceTable(CustomTable):
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             colname = self.GetColLabelValue(col, False)
-            value = str(self.data[row].get(colname, ""))
+            value = self.data[row].get(colname, "")
             if colname == "Triggering":
                 return _(value)
             return value
@@ -432,9 +432,28 @@ class ResourceEditor(EditorPanel):
         self.TasksGrid.RefreshButtons()
         self.InstancesGrid.RefreshButtons()
 
+    def ShowErrorMessage(self, message):
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog.ShowModal()
+        dialog.Destroy()
+
     def OnTasksGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         if self.TasksTable.GetColLabelValue(col, False) == "Name":
+            value = self.TasksTable.GetValue(row, col)
+            message = None
+
+            if not TestIdentifier(value):
+                message = _("\"%s\" is not a valid identifier!") % value
+            elif value.upper() in IEC_KEYWORDS:
+                message = _("\"%s\" is a keyword. It can't be used!") % value
+            elif value.upper() in [var["Name"].upper() for i, var in enumerate(self.TasksTable.data) if i!=row]:
+                message = _("A task with the same name already exists!")
+            if message is not None:
+                event.Veto()
+                wx.CallAfter(self.ShowErrorMessage, message)
+                return
+
             tasklist = [name for name in self.TaskList.split(",") if name != ""]
             for i in xrange(self.TasksTable.GetNumberRows()):
                 task = self.TasksTable.GetValueByName(i, "Name")
@@ -454,6 +473,22 @@ class ResourceEditor(EditorPanel):
         event.Skip()
 
     def OnInstancesGridCellChange(self, event):
+        row, col = event.GetRow(), event.GetCol()
+        if self.InstancesTable.GetColLabelValue(col, False) == "Name":
+            value = self.InstancesTable.GetValue(row, col)
+            message = None
+
+            if not TestIdentifier(value):
+                message = _("\"%s\" is not a valid identifier!") % value
+            elif value.upper() in IEC_KEYWORDS:
+                message = _("\"%s\" is a keyword. It can't be used!") % value
+            elif value.upper() in [var["Name"].upper() for i ,var in enumerate(self.InstancesTable.data) if i!=row]:
+                message = _("An instance with the same name already exists!")
+            if message is not None:
+                event.Veto()
+                wx.CallAfter(self.ShowErrorMessage, message)
+                return
+
         self.RefreshModel()
         self.ParentWindow.RefreshPouInstanceVariablesPanel()
         self.InstancesGrid.RefreshButtons()
