@@ -750,6 +750,11 @@ class VariablePanel(wx.Panel):
         else:
             self.ClassList = [self.Filter]
 
+    def ShowErrorMessage(self, message):
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog.ShowModal()
+        dialog.Destroy()
+            
     def OnVariablesGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.Table.GetColLabelValue(col, False)
@@ -781,10 +786,8 @@ class VariablePanel(wx.Panel):
                 wx.CallAfter(self.ParentWindow.RefreshView)
 
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
-            event.Veto()
+            wx.CallAfter(self.ShowErrorMessage, message)
+            event.Veto()            
         else:
             event.Skip()
 

@@ -570,31 +570,25 @@ class DataTypeEditor(EditorPanel):
         wx.CallAfter(self.RefreshTypeInfos)
         event.Skip()
 
+    def ShowErrorMessage(self, message):
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog.ShowModal()
+        dialog.Destroy()
+        
     def OnStructureElementsGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.StructureElementsTable.GetColLabelValue(col, False)
         value = self.StructureElementsTable.GetValue(row, col)
         if colname == "Name":
+            message = None
             if not TestIdentifier(value):
-                message = wx.MessageDialog(self, _("\"%s\" is not a valid identifier!")%value, _("Error"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-                event.Veto()
+                message = _("\"%s\" is not a valid identifier!")%value
             elif value.upper() in IEC_KEYWORDS:
-                message = wx.MessageDialog(self, _("\"%s\" is a keyword. It can't be used!")%value, _("Error"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-                event.Veto()
+                message = _("\"%s\" is a keyword. It can't be used!")%value
 ##            elif value.upper() in self.PouNames:
-##                message = wx.MessageDialog(self, "A pou with \"%s\" as name exists!"%value, "Error", wx.OK|wx.ICON_ERROR)
-##                message.ShowModal()
-##                message.Destroy()
-##                event.Veto()
+##                message = _("A pou with \"%s\" as name exists!")%value
             elif value.upper() in [var["Name"].upper() for idx, var in enumerate(self.StructureElementsTable.GetData()) if idx != row]:
-                message = wx.MessageDialog(self, _("An element named \"%s\" already exists in this structure!")%value, _("Error"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-                event.Veto()
+                message = _("An element named \"%s\" already exists in this structure!")%value
             else:
                 self.RefreshTypeInfos()
                 wx.CallAfter(self.StructureElementsTable.ResetView, self.StructureElementsGrid)
@@ -603,6 +597,10 @@ class DataTypeEditor(EditorPanel):
 ##                    self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_value, value)
 ##                self.Controler.BufferProject()
                 event.Skip()
+
+            if message is not None:
+                event.Veto()
+                wx.CallAfter(self.ShowErrorMessage, message)
         else:
             self.RefreshTypeInfos()
             wx.CallAfter(self.StructureElementsTable.ResetView, self.StructureElementsGrid)

@@ -757,6 +757,11 @@ class VariablesEditor(wx.Panel):
     def DoGetBestSize(self):
         return self.ParentWindow.GetPanelBestSize()
 
+    def ShowErrorMessage(self, message):
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog.ShowModal()
+        dialog.Destroy()
+
     def OnVariablesGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.Table.GetColLabelValue(col, False)
@@ -780,10 +785,8 @@ class VariablesEditor(wx.Panel):
             wx.CallAfter(self.RefreshView)
 
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
             event.Veto()
+            wx.CallAfter(self.ShowErrorMessage, message)
         else:
             event.Skip()
 
