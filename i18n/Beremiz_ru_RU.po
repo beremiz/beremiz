@@ -3316,7 +3316,7 @@ msgid "The off-delay timer can be used to delay setting an output false, for fix
 msgstr "Таймер выключения может быть использован, чтобы внести задержку установки выхода в FALSE на фиксированный период времени после того, как вход стал FALSE."
 
 msgid "The on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."
-msgstr "Таймер выключения может быть использован, чтобы внести задержку установки выхода в TRUE на фиксированный период времени после того, как вход стал TRUE."
+msgstr "Таймер включения может быть использован, чтобы внести задержку установки выхода в TRUE на фиксированный период времени после того, как вход стал TRUE."
 
 msgid "The output produces a single pulse when a falling edge is detected."
 msgstr "Детектор падающего фронта.  На выходе формируется одиночный импульс, если обнаружен падающий фронт."
