@@ -163,17 +163,17 @@ class BeremizIDELauncher:
             self.splash.SetText(text=updateinfo)
 
     def ImportModules(self):
-        global Beremiz
-        import Beremiz
+        global BeremizIDE
+        import BeremizIDE
 
     def InstallExceptionHandler(self):
         import version
         import tempfile
         logpath = tempfile.gettempdir()+os.sep+'Beremiz'
-        Beremiz.AddExceptHook(logpath,version.app_version)
+        BeremizIDE.AddExceptHook(logpath,version.app_version)
 
     def ShowUI(self):
-        self.frame = Beremiz.Beremiz(None, self.projectOpen, self.buildpath)
+        self.frame = BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
         if self.splash:
             self.splash.Close()
         self.frame.Show()
