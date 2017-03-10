@@ -3016,7 +3016,9 @@ class Viewer(EditorPanel, DebugViewer):
                                     _("Please enter comment text"),
                                     comment.GetContent(),
                                     wx.OK|wx.CANCEL|wx.TE_MULTILINE)
-        dialog.SetClientSize(wx.Size(400, 200))
+        width, height = comment.GetSize()
+        dialogSize = wx.Size(max(width + 30, 400), max(height + 60, 200))
+        dialog.SetClientSize(dialogSize)
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
             rect = comment.GetRedrawRect(1, 1)
