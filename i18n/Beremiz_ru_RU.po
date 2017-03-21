@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-03-09 15:28+0300\n"
-"PO-Revision-Date: 2017-03-09 15:30+0300\n"
+"PO-Revision-Date: 2017-03-21 17:59+0300\n"
 "Last-Translator: Andrey Skvortsov <andrej.skvortzov@gmail.com>\n"
 "Language-Team: Andrey Skvortsov <andrej.skvortzov@gmail.com>\n"
 "Language: ru_RU\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.11\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: ../PLCOpenEditor.py:408 ../Beremiz.py:1191
 #, python-format
@@ -654,7 +655,7 @@ msgid "Author Name (optional):"
 msgstr "Имя автора (опционально):"
 
 msgid "BUSY = 1 during ramping period"
-msgstr "BOSY = 1 во время "
+msgstr "BUSY = 1 во время "
 
 #: ../dialogs/FindInPouDialog.py:79
 msgid "Backward"
@@ -743,7 +744,7 @@ msgstr "Ошибка"
 #: ../dialogs/BrowseValuesLibraryDialog.py:37
 #, python-format
 msgid "Browse %s values library"
-msgstr "Browse %s values library"
+msgstr "Просмотр %s значений библиотеки"
 
 #: ../dialogs/BrowseLocationsDialog.py:65
 msgid "Browse Locations"
@@ -863,7 +864,7 @@ msgstr "Нельзя создать дочерний элемент {a1} тип�
 #: ../ConfigTreeNode.py:454
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
-msgstr "Не удалось найти свободный МЭК-канал с номером меньше чем %d\n"
+msgstr "Не удалось найти свободный МЭК-канал с номером меньше, чем %d\n"
 
 #: ../connectors/PYRO/__init__.py:131
 msgid "Cannot get PLC status - connection failed.\n"
@@ -876,7 +877,7 @@ msgstr "Не удалось открыть/прочитать VARIABLES.csv\n"
 #: ../canfestival/config_utils.py:374
 #, python-brace-format
 msgid "Cannot set bit offset for non bool '{a1}' variable (ID:{a2},Idx:{a3},sIdx:{a4}))"
-msgstr "Невозможно установить битовое смещение для небулевой переменной '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
+msgstr "Невозможно установить битовое смещение для не булевой переменной '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
 
 #: ../dialogs/SearchInProjectDialog.py:59 ../dialogs/FindInPouDialog.py:88
 msgid "Case sensitive"
@@ -1002,7 +1003,7 @@ msgid "Coil"
 msgstr "Катушка"
 
 msgid "Command"
-msgstr "Комманда"
+msgstr "Команда"
 
 #: ../editors/Viewer.py:561 ../editors/LDViewer.py:506
 msgid "Comment"
@@ -1077,7 +1078,7 @@ msgstr "Подключение"
 
 #: ../dialogs/ConnectionDialog.py:52
 msgid "Connection Properties"
-msgstr "Свойства подключение"
+msgstr "Свойства подключения"
 
 #: ../ProjectController.py:1668
 msgid "Connection canceled!\n"
@@ -1777,7 +1778,7 @@ msgstr "Принудительный перезапуск системы исп�
 
 #: ../editors/Viewer.py:1564
 msgid "Force value"
-msgstr "Фиксировать значение"
+msgstr "Форсировать значение"
 
 #: ../dialogs/ForceVariableDialog.py:162
 msgid "Forcing Variable Value"
@@ -2719,7 +2720,7 @@ msgstr "Имя продукта (обязательно):"
 
 #: ../controls/ProjectPropertiesPanel.py:82
 msgid "Product Release (optional):"
-msgstr "Релиз продукта (опцинально):"
+msgstr "Релиз продукта (опционально):"
 
 #: ../dialogs/ProjectDialog.py:56
 msgid "Product Version"
@@ -3119,7 +3120,7 @@ msgstr "Поиск сервиса"
 
 #: ../dialogs/DiscoveryDialog.py:85
 msgid "Services available:"
-msgstr "Сервисы доступны:"
+msgstr "Доступные сервисы:"
 
 #: ../dialogs/LDElementDialog.py:76
 msgid "Set"
@@ -3175,7 +3176,7 @@ msgstr "Исходные файлы не изменились, сборка не
 #: ../PLCGenerator.py:397
 #, python-brace-format
 msgid "Source signal has to be defined for single task '{a1}' in resource '{a2}.{a3}'."
-msgstr "Для задачи '{a1}' в ресурсе '{a2}.{a3}' отсутсвует задание источника."
+msgstr "Для задачи '{a1}' в ресурсе '{a2}.{a3}' отсутствует задание источника."
 
 #: ../plcopen/iec_std.csv:23
 msgid "Square root (base 2)"
@@ -3653,7 +3654,7 @@ msgstr "Предупреждения в ST/IL/SFC коде генераторе:
 
 #: ../dialogs/SearchInProjectDialog.py:78
 msgid "Whole Project"
-msgstr "Целый проект"
+msgstr "Весь проект"
 
 #: ../controls/ProjectPropertiesPanel.py:119
 msgid "Width:"
