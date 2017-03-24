@@ -95,7 +95,12 @@ __version__= "$Revision: 1.5 $"
 
 def getlanguageDict():
     languageDict = {}
-    
+
+    if wx.VERSION >= (3, 0, 0):
+        app = wx.App()
+    else:
+        app = wx.PySimpleApp()
+
     for lang in [x for x in dir(wx) if x.startswith("LANGUAGE")]:
         i = wx.Locale(wx.LANGUAGE_DEFAULT).GetLanguageInfo(getattr(wx, lang))
         if i:
@@ -103,7 +108,33 @@ def getlanguageDict():
 
     return languageDict
 
-XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
+
+
+def processCustomFiles(filein, fileout, regexp, prefix = ''):
+    appfil_file = open(filein, 'r')
+    messages_file = open(fileout, 'r')
+    messages = messages_file.read()
+    messages_file.close()
+    messages_file = open(fileout, 'a')
+    messages_file.write('\n')
+    messages_file.write('#: %s\n' % prefix)
+    messages_file.write('\n')
+
+    words_found = {}
+    for filepath in appfil_file.xreadlines():
+        code_file = open(filepath.strip(), 'r')
+        for match in regexp.finditer(code_file.read()):
+            word = match.group(1)
+            if not words_found.get(word, False) and messages.find("msgid \"%s\"\nmsgstr \"\"" % word) == -1:
+                words_found[word] = True
+                messages_file.write('\n')
+                messages_file.write("msgid \"%s\"\n"%word)
+                messages_file.write("msgstr \"\"\n")
+        code_file.close()
+
+    messages_file.close()
+    appfil_file.close()
+
 
 # -----------------------------------------------------------------------------
 # m a k e P O ( )         -- Build the Portable Object file for the application --
@@ -138,10 +169,12 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     else:
         applicationName = applicationDomain
     currentDir = os.getcwd()
-    os.chdir(applicationDirectoryPath)                    
-    if not os.path.exists('app.fil'):
-        raise IOError(2,'No module file: app.fil')
+    os.chdir(applicationDirectoryPath)
+    filelist = 'app.fil'
+    if not os.path.exists(filelist):
+        raise IOError(2,'No module file: ' % filelist)
 
+    fileout = 'messages.pot'
     # Steps:                                  
     #  Use xgettext to parse all application modules
     #  The following switches are used:
@@ -149,33 +182,16 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     #   -s                          : sort output by string content (easier to use when we need to merge several .po files)
     #   --files-from=app.fil        : The list of files is taken from the file: app.fil
     #   --output=                   : specifies the name of the output file (using a .pot extension)
-    cmd = 'xgettext -s --no-wrap --language=Python --files-from=app.fil --output=messages.pot'
+    cmd = 'xgettext -s --no-wrap --language=Python --files-from=' + filelist + ' --output=' + fileout
     if verbose: print cmd
     os.system(cmd)                                                
 
-    appfil_file = open("app.fil", 'r')
-    messages_file = open("messages.pot", 'r')
-    messages = messages_file.read()
-    messages_file.close()
-    messages_file = open("messages.pot", 'a')
-    messages_file.write("""
-#: Extra XSD strings
-""")
-    words_found = {}
-    for filepath in appfil_file.xreadlines():
-        code_file = open(filepath.strip(), 'r')
-        for match in XSD_STRING_MODEL.finditer(code_file.read()):
-            word = match.group(1)
-            if not words_found.get(word, False) and messages.find("msgid \"%s\"\nmsgstr \"\"" % word) == -1:
-                words_found[word] = True
-                messages_file.write("""
-msgid "%s"
-msgstr ""
-"""%word)
-        code_file.close()
-    messages_file.close()
-    appfil_file.close()
-    
+    XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
+    processCustomFiles(filelist, fileout, XSD_STRING_MODEL, 'Extra XSD strings')
+
+    XML_TC6_STRING_MODEL = re.compile("<documentation>\s*<xhtml\:p><!\[CDATA\[([^\]]*)\]\]></xhtml\:p>\s*</documentation>", re.MULTILINE | re.DOTALL)
+    processCustomFiles(filelist, fileout, XML_TC6_STRING_MODEL, 'Extra TC6 documentation strings')    
+
     languageDict = getlanguageDict()
 
     for langCode in languageDict.keys():
@@ -184,7 +200,7 @@ msgstr ""
         else:
             langPOfileName = "%s_%s.po" % (applicationName , langCode)
             if os.path.exists(langPOfileName):
-                cmd = 'msgmerge -s --no-wrap "%s" messages.pot > "%s.new"' % (langPOfileName, langPOfileName)
+                cmd = 'msgmerge -s --no-wrap "%s" %s > "%s.new"' % (langPOfileName, fileout, langPOfileName)
                 if verbose: print cmd
                 os.system(cmd)
     os.chdir(currentDir)

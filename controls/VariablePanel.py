@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
 import re
@@ -144,6 +144,14 @@ class VariableTable(CustomTable):
     def GetOldValue(self):
         return self.old_value
 
+    def _GetRowEdit(self, row):
+        row_edit = self.GetValueByName(row, "Edit")
+        var_type = self.Parent.GetTagName()
+        bodytype = self.Parent.Controler.GetEditedElementBodyType(var_type)
+        if bodytype in ["ST", "IL"]:
+            row_edit = True;
+        return row_edit
+
     def _updateColAttrs(self, grid):
         """
         wx.grid.Grid -> update the column attributes to add the
@@ -171,7 +179,7 @@ class VariableTable(CustomTable):
                             editor.SetParameters(",".join(map(_, options)))
                         else:
                             grid.SetReadOnly(row, col, True)
-                    elif col != 0 and self.GetValueByName(row, "Edit"):
+                    elif col != 0 and self._GetRowEdit(row):
                         grid.SetReadOnly(row, col, False)
                         if colname == "Name":
                             editor = wx.grid.GridCellTextEditor()
@@ -238,7 +246,7 @@ class VariableDropTarget(wx.TextDropTarget):
         self.ParentWindow.ParentWindow.Select()
         x, y = self.ParentWindow.VariablesGrid.CalcUnscrolledPosition(x, y)
         col = self.ParentWindow.VariablesGrid.XToCol(x)
-        row = self.ParentWindow.VariablesGrid.YToRow(y - self.ParentWindow.VariablesGrid.GetColLabelSize())
+        row = self.ParentWindow.VariablesGrid.YToRow(y)
         message = None
         element_type = self.ParentWindow.ElementType
         try:
@@ -265,7 +273,8 @@ class VariableDropTarget(wx.TextDropTarget):
                         if values[2] is not None:
                             base_location_type = self.ParentWindow.Controler.GetBaseType(values[2])
                             if values[2] != variable_type and base_type != base_location_type:
-                                message = _("Incompatible data types between \"%s\" and \"%s\"")%(values[2], variable_type)
+                                message = _("Incompatible data types between \"{a1}\" and \"{a2}\"").\
+                                          format(a1 = values[2], a2 = variable_type)
 
                         if message is None:
                             if not location.startswith("%"):
@@ -274,11 +283,12 @@ class VariableDropTarget(wx.TextDropTarget):
                                 elif location[0] not in LOCATIONDATATYPES:
                                     message = _("Unrecognized data size \"%s\"")%location[0]
                                 elif base_type not in LOCATIONDATATYPES[location[0]]:
-                                    message = _("Incompatible size of data between \"%s\" and \"%s\"")%(location, variable_type)
+                                    message = _("Incompatible size of data between \"{a1}\" and \"{a2}\"").\
+                                              format(a1 = location, a2 = variable_type)
                                 else:
                                     dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                           _("Select a variable class:"), _("Variable class"),
-                                          ["Input", "Output", "Memory"],
+                                          [_("Input"), _("Output"), _("Memory")],
                                           wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                                     if dialog.ShowModal() == wx.ID_OK:
                                         selected = dialog.GetSelection()
@@ -316,7 +326,7 @@ class VariableDropTarget(wx.TextDropTarget):
                 dlg = wx.TextEntryDialog(
                     self.ParentWindow.ParentWindow.ParentWindow,
                     _("Confirm or change variable name"),
-                    'Variable Drop', var_name)
+                    _('Variable Drop'), var_name)
                 dlg.SetValue(var_name)
                 var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                 dlg.Destroy()
@@ -338,7 +348,7 @@ class VariableDropTarget(wx.TextDropTarget):
                         if not location.startswith("%"):
                             dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                   _("Select a variable class:"), _("Variable class"),
-                                  ["Input", "Output", "Memory"],
+                                  [_("Input"), _("Output"), _("Memory")],
                                   wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
@@ -584,7 +594,7 @@ class VariablePanel(wx.Panel):
         setattr(self.VariablesGrid, "_AddRow", _AddVariable)
 
         def _DeleteVariable(row):
-            if self.Table.GetValueByName(row, "Edit"):
+            if _GetRowEdit(row):
                 self.Values.remove(self.Table.GetRow(row))
                 self.SaveValues()
                 if self.ElementType == "resource":
@@ -603,6 +613,14 @@ class VariablePanel(wx.Panel):
             return row
         setattr(self.VariablesGrid, "_MoveRow", _MoveVariable)
 
+        def _GetRowEdit(row):
+            row_edit = False
+            if self:
+                row_edit = self.Table.GetValueByName(row, "Edit")
+                bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
+                row_edit = row_edit or (bodytype in ["ST", "IL"])
+            return row_edit
+
         def _RefreshButtons():
             if self:
                 table_length = len(self.Table.data)
@@ -611,7 +629,7 @@ class VariablePanel(wx.Panel):
                 row = 0
                 if table_length > 0:
                     row = self.VariablesGrid.GetGridCursorRow()
-                    row_edit = self.Table.GetValueByName(row, "Edit")
+                    row_edit = _GetRowEdit(row)
                 self.AddButton.Enable(not self.Debug)
                 self.DeleteButton.Enable(not self.Debug and (table_length > 0 and row_edit))
                 self.UpButton.Enable(not self.Debug and (table_length > 0 and row > 0 and self.Filter == "All"))

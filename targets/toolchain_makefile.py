@@ -1,3 +1,27 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import os, re, operator
 from util.ProcessLogger import ProcessLogger
 import hashlib
@@ -5,15 +29,6 @@ import hashlib
 import time
 
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
-
-
-if os.name == 'nt':
-    # on windows, desktop shortcut launches Beremiz.py
-    # with working dir set to mingw/bin.
-    # then we prefix CWD to PATH in order to ensure that
-    # commands invoked from Makefiles will first resolve
-    # to here.
-    os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
 
 class toolchain_makefile():
     def __init__(self, CTRInstance):
@@ -80,11 +95,7 @@ class toolchain_makefile():
                         
         oldmd5 = self.md5key
         self.md5key = hashlib.md5(wholesrcdata).hexdigest()
-        props = self.CTRInstance.GetProjectProperties()
-        self.md5key += '#'.join([props[key] for key in ['companyName',
-                                                        'projectName',
-                                                        'productName']])
-        self.md5key += '#' #+','.join(map(str,time.localtime()))
+
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")
         f.write(self.md5key)
@@ -98,7 +109,10 @@ class toolchain_makefile():
                               "buildpath": self.buildpath
                              }
             
-            command = [ token % beremizcommand for token in target.getCommand().split(' ')]
+            # clean sequence of multiple whitespaces 
+            cmd = re.sub(r"[ ]+", " ", target.getCommand())
+
+            command = [ token % beremizcommand for token in cmd.split(' ')]
 
             # Call Makefile to build PLC code and link it with target specific code
             status, result, err_result = ProcessLogger(self.CTRInstance.logger,

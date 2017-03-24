@@ -1,3 +1,27 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import re
 
 import wx
@@ -482,17 +506,11 @@ class CodeEditor(CustomStyledTextCtrl):
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
 
             self.SearchParams = search_params
-            criteria = {
-                "raw_pattern": search_params["find_pattern"],
-                "pattern": re.compile(search_params["find_pattern"]),
-                "case_sensitive": search_params["case_sensitive"],
-                "regular_expression": search_params["regular_expression"],
-                "filter": "all"}
 
             self.SearchResults = [
                 (start, end, SEARCH_RESULT_HIGHLIGHT)
                 for start, end, text in
-                TestTextElement(self.GetText(), criteria)]
+                TestTextElement(self.GetText(), search_params)]
             self.CurrentFindHighlight = None
 
         if len(self.SearchResults) > 0:
@@ -660,11 +678,13 @@ class VariablesEditor(wx.Panel):
 
         self.VariablesDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial": "",
                                       "Description":"", "OnChange":"", "Options":""}
-        self.Table = VariablesTable(self, [], ["#", "Name", "Type", "Initial",
-                                    "Description", "OnChange", "Options"])
+        self.Table = VariablesTable(self, [], ["#", "Name","Type", "Initial",
+                                               "Description", "OnChange", "Options"])        
+        # self.Table = VariablesTable(self, [], [_("#"), _("Name"), _("Type"), _("Initial"),
+        #                                        _("Description"), _("OnChange"), _("Options")])
         self.ColAlignements = [wx.ALIGN_RIGHT] +  \
                               [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
-        self.ColSizes = [20, 150] + [100]*(len(self.VariablesDefaultValue)-1)
+        self.ColSizes = [20, 150] + [130]*(len(self.VariablesDefaultValue)-1)
         self.VariablesGrid.SetTable(self.Table)
         self.VariablesGrid.SetButtons({"Add": self.AddVariableButton,
                                        "Delete": self.DeleteVariableButton,

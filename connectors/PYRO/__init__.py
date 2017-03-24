@@ -1,23 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
 # See COPYING file for copyrights details.
 #
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-# This library is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import Pyro
 import Pyro.core
 import Pyro.util
@@ -83,7 +87,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             ip = str(socket.inet_ntoa(i.getAddress()))
             port = str(i.getPort())
             newlocation = ip + ':' + port
-            confnodesroot.logger.write(_("'%s' is located at %s\n") % (location, newlocation))
+            confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1 = location, a2 = newlocation))
             location = newlocation
             r.close()
         except Exception, msg:
@@ -108,10 +112,10 @@ def PYRO_connector_factory(uri, confnodesroot):
             try:
                 return func(*args, **kwargs)
             except Pyro.errors.ConnectionClosedError, e:
-                confnodesroot.logger.write_error("Connection lost!\n")
+                confnodesroot.logger.write_error(_("Connection lost!\n"))
                 confnodesroot._SetConnector(None)
             except Pyro.errors.ProtocolError, e:
-                confnodesroot.logger.write_error("Pyro exception: " + str(e) + "\n")
+                confnodesroot.logger.write_error(_("Pyro exception: %s\n") % e)
             except Exception, e:
                 # confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))

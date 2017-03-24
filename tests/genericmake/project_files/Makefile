@@ -9,5 +9,5 @@ warn:
 some_binary: $(BEREMIZ_OBJS)
 	@echo "* Would link $^ -> $@"
 
-%o : %c
+%.o: %.c
 	@echo "* Would compile $< -> $@"

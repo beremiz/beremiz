@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
@@ -967,7 +967,8 @@ class PLCControler:
             # programs cannot be pasted as functions or function blocks
             if orig_type == 'functionBlock' and pou_type == 'function' or \
                orig_type == 'program' and pou_type in ['function', 'functionBlock']:
-                return _('''%s "%s" can't be pasted as a %s.''') % (orig_type, name, pou_type)
+                msg = _('''{a1} "{a2}" can't be pasted as a {a3}.''').format(a1 = orig_type, a2 = name, a3 = pou_type)
+                return msg
 
             new_pou.setpouType(pou_type)
 
@@ -1962,7 +1963,7 @@ class PLCControler:
                             for dimension in element_type.getdimension():
                                 dimensions.append((dimension.getlower(), dimension.getupper()))
                             base_type = element_type.baseType.getcontent()
-                            base_type_type = element_type.getLocalTag()
+                            base_type_type = base_type.getLocalTag()
                             element_infos["Type"] = ("array",
                                 base_type.getname()
                                 if base_type_type == "derived"
@@ -1972,7 +1973,7 @@ class PLCControler:
                         else:
                             element_infos["Type"] = element_type_type.upper()
                         if element.initialValue is not None:
-                            element_infos["Initial Value"] = str(element.initialValue.getvalue())
+                            element_infos["Initial Value"] = element.initialValue.getvalue()
                         else:
                             element_infos["Initial Value"] = ""
                         infos["elements"].append(element_infos)
@@ -1983,7 +1984,7 @@ class PLCControler:
                         else basetype_content_type.upper())
 
                 if datatype.initialValue is not None:
-                    infos["initial"] = str(datatype.initialValue.getvalue())
+                    infos["initial"] = datatype.initialValue.getvalue()
                 else:
                     infos["initial"] = ""
                 return infos
@@ -2062,6 +2063,8 @@ class PLCControler:
                         if element_infos["Type"][0] == "array":
                             array_type, base_type_name, dimensions = element_infos["Type"]
                             array = PLCOpenParser.CreateElement("array", "dataType")
+                            baseType = PLCOpenParser.CreateElement("baseType", "array")
+                            array.setbaseType(baseType)
                             element_type.setcontent(array)
                             for j, dimension in enumerate(dimensions):
                                 dimension_range = PLCOpenParser.CreateElement("dimension", "array")
@@ -2072,7 +2075,7 @@ class PLCControler:
                                 else:
                                     array.appenddimension(dimension_range)
                             if base_type_name in self.GetBaseTypes():
-                                array.baseType.setcontent(PLCOpenParser.CreateElement(
+                                baseType.setcontent(PLCOpenParser.CreateElement(
                                     base_type_name.lower()
                                     if base_type_name in ["STRING", "WSTRING"]
                                     else base_type_name, "dataType"))
@@ -2181,7 +2184,7 @@ class PLCControler:
                 if pou is not None:
                     return self.GetPouInterfaceReturnType(pou, tree, debug)
         elif words[0] == 'T':
-            return "BOOL"
+            return ["BOOL", ([], [])]
         return None
 
     # Change the edited element text
@@ -2315,7 +2318,7 @@ class PLCControler:
             new_id = {}
 
             try:
-                instances, error = LoadPouInstances(text.encode("utf-8"), bodytype)
+                instances, error = LoadPouInstances(text, bodytype)
             except:
                 instances, error = [], ""
             if error is not None or len(instances) == 0:
@@ -3190,7 +3193,14 @@ class PLCControler:
     def SearchInPou(self, tagname, criteria, debug=False):
         pou = self.GetEditedElement(tagname, debug)
         if pou is not None:
-            return pou.Search(criteria)
+            search_results = pou.Search(criteria, [tagname])
+            if tagname.split("::")[0] in ['A', 'T']:
+                parent_pou_tagname = "P::%s" % (tagname.split("::")[-2])
+                parent_pou = self.GetEditedElement(parent_pou_tagname, debug)
+                for infos, start, end, text in parent_pou.Search(criteria):
+                    if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
+                        search_results.append((infos, start, end, text))
+            return search_results
         return []
 
 #-------------------------------------------------------------------------------

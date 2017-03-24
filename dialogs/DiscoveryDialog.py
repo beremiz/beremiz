@@ -1,25 +1,26 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import socket
 import wx
@@ -61,7 +62,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableCol(1)
-        parent.AddGrowableRow(1)
+        parent.AddGrowableRow(0)
     
     def _init_sizers(self):
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
@@ -78,7 +79,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         wx.Dialog.__init__(self, id=ID_DISCOVERYDIALOG, 
               name='DiscoveryDialog', parent=prnt,  
               size=wx.Size(600, 600), style=wx.DEFAULT_DIALOG_STYLE,
-              title='Service Discovery')
+              title=_('Service Discovery'))
         
         self.staticText1 = wx.StaticText(id=ID_DISCOVERYDIALOGSTATICTEXT1,
               label=_('Services available:'), name='staticText1', parent=self,
@@ -88,10 +89,10 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.ServicesList = AutoWidthListCtrl(id=ID_DISCOVERYDIALOGSERVICESLIST,
               name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0), 
               style=wx.LC_REPORT|wx.LC_EDIT_LABELS|wx.LC_SORT_ASCENDING|wx.LC_SINGLE_SEL)
-        self.ServicesList.InsertColumn(0, 'NAME')
-        self.ServicesList.InsertColumn(1, 'TYPE')
-        self.ServicesList.InsertColumn(2, 'IP')
-        self.ServicesList.InsertColumn(3, 'PORT')
+        self.ServicesList.InsertColumn(0, _('NAME'))
+        self.ServicesList.InsertColumn(1, _('TYPE'))
+        self.ServicesList.InsertColumn(2, _('IP'))
+        self.ServicesList.InsertColumn(3, _('PORT'))
         self.ServicesList.SetColumnWidth(0, 150)
         self.ServicesList.SetColumnWidth(1, 150)
         self.ServicesList.SetColumnWidth(2, 150)

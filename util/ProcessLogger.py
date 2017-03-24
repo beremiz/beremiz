@@ -1,27 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of Beremiz, a Integrated Development Environment for
-#programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import time
 import wx
@@ -49,11 +48,12 @@ class outputThread(Thread):
     def run(self):
         outchunk = None
         self.retval = None
-        while outchunk != '' and not self.killed :
-            outchunk = self.fd.readline()
-            if self.callback : self.callback(outchunk)
         while self.retval is None and not self.killed :
-            self.retval = self.Proc.poll()
+            if self.endcallback:
+                self.retval = self.Proc.poll()
+            else:
+                self.retval = self.Proc.returncode
+                
             outchunk = self.fd.readline()
             if self.callback : self.callback(outchunk)
         while outchunk != '' and not self.killed :
@@ -108,6 +108,7 @@ class ProcessLogger:
         self.errdata = []
         self.keyword = keyword
         self.kill_it = kill_it
+        self.startsem = Semaphore(0)        
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
 
@@ -124,6 +125,12 @@ class ProcessLogger:
         elif wx.Platform == '__WXGTK__':
             popenargs["shell"] = False
 
+        if timeout:
+            self.timeout = Timer(timeout,self.endlog)
+            self.timeout.start()
+        else:
+            self.timeout = None
+            
         self.Proc = subprocess.Popen( self.Command, **popenargs )
 
         self.outt = outputThread(
@@ -138,12 +145,8 @@ class ProcessLogger:
                       self.Proc.stderr,
                       self.errors)
         self.errt.start()
+        self.startsem.release()
 
-        if timeout:
-            self.timeout = Timer(timeout,self.endlog)
-            self.timeout.start()
-        else:
-            self.timeout = None
 
     def output(self,v):
         self.outdata.append(v)
@@ -163,18 +166,26 @@ class ProcessLogger:
 
     def log_the_end(self,ecode,pid):
         self.logger.write(self.Command_str + "\n")
-        self.logger.write_warning(_("exited with status %s (pid %s)\n")%(str(ecode),str(pid)))
+        self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1 = str(ecode), a2 = str(pid)))
 
     def finish(self, pid,ecode):
-        if self.timeout: self.timeout.cancel()
+        # avoid running function before start is finished        
+        self.startsem.acquire()
+        if self.timeout:
+            self.timeout.cancel()
         self.exitcode = ecode
         if self.exitcode != 0:
             self.log_the_end(ecode,pid)
         if self.finish_callback is not None:
             self.finish_callback(self,ecode,pid)
+        self.errt.join()
         self.finishsem.release()
 
     def kill(self,gently=True):
+        # avoid running kill before start is finished
+        self.startsem.acquire()
+        self.startsem.release()
+        
         self.outt.killed = True
         self.errt.killed = True
         if wx.Platform == '__WXMSW__':
@@ -196,9 +207,9 @@ class ProcessLogger:
 
     def endlog(self):
         if self.endlock.acquire(False):
-            self.finishsem.release()
             if not self.outt.finished and self.kill_it:
                self.kill()
+            self.finishsem.release()
 
 
     def spin(self):

@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
 from types import *
@@ -47,7 +47,8 @@ for i in xrange(26):
 
 [STC_PLC_WORD, STC_PLC_COMMENT, STC_PLC_NUMBER, STC_PLC_STRING,
  STC_PLC_VARIABLE, STC_PLC_PARAMETER, STC_PLC_FUNCTION, STC_PLC_JUMP,
- STC_PLC_ERROR, STC_PLC_SEARCH_RESULT] = range(10)
+ STC_PLC_ERROR, STC_PLC_SEARCH_RESULT,
+ STC_PLC_EMPTY] = range(11)
 [SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
 
 [ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
@@ -258,10 +259,11 @@ class TextViewer(EditorPanel):
                     blockinputs = None
                 if values[1] != "function":
                     if blockname == "":
-                        dialog = wx.TextEntryDialog(self.ParentWindow, "Block name", "Please enter a block name", "", wx.OK|wx.CANCEL|wx.CENTRE)
+                        dialog = wx.TextEntryDialog(self.ParentWindow, _("Block name"), _("Please enter a block name"), "", wx.OK|wx.CANCEL|wx.CENTRE)
                         if dialog.ShowModal() == wx.ID_OK:
                             blockname = dialog.GetValue()
                         else:
+                            event.SetDragText("")                            
                             return
                         dialog.Destroy()
                     if blockname.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
@@ -287,7 +289,7 @@ class TextViewer(EditorPanel):
                     dlg = wx.TextEntryDialog(
                         self.ParentWindow,
                         _("Confirm or change variable name"),
-                        'Variable Drop', var_name)
+                        _('Variable Drop'), var_name)
                     dlg.SetValue(var_name)
                     var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                     dlg.Destroy()
@@ -302,7 +304,7 @@ class TextViewer(EditorPanel):
                         if not location.startswith("%"):
                             dialog = wx.SingleChoiceDialog(self.ParentWindow,
                                   _("Select a variable class:"), _("Variable class"),
-                                  ["Input", "Output", "Memory"],
+                                  [_("Input"), _("Output"), _("Memory")],
                                   wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
@@ -338,7 +340,7 @@ class TextViewer(EditorPanel):
                     dlg = wx.TextEntryDialog(
                         self.ParentWindow,
                         _("Confirm or change variable name"),
-                        'Variable Drop', var_name)
+                        _('Variable Drop'), var_name)
                     dlg.SetValue(var_name)
                     var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                     dlg.Destroy()
@@ -361,7 +363,7 @@ class TextViewer(EditorPanel):
                 dlg = wx.TextEntryDialog(
                     self.ParentWindow,
                     _("Confirm or change variable name"),
-                    'Variable Drop', var_name)
+                    _('Variable Drop'), var_name)
                 dlg.SetValue(var_name)
                 var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                 dlg.Destroy()
@@ -412,7 +414,7 @@ class TextViewer(EditorPanel):
         self.Colourise(0, -1)
 
     def RefreshJumpList(self):
-        if self.TextSyntax != "IL":
+        if self.TextSyntax == "IL":
             self.Jumps = [jump.upper() for jump in LABEL_MODEL.findall(self.GetText())]
             self.Colourise(0, -1)
 
@@ -576,7 +578,7 @@ class TextViewer(EditorPanel):
                 self.ContextStack = []
                 current_context = self.Variables
                 if state == COMMENT:
-                    self.SetStyling(current_pos - last_styled_pos + 1, STC_PLC_COMMENT)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_COMMENT)
                 elif state == NUMBER:
                     self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
                 elif state == WORD:
@@ -593,33 +595,33 @@ class TextViewer(EditorPanel):
                     elif word in self.EnumeratedValues:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
                     else:
-                        self.SetStyling(current_pos - last_styled_pos, 31)
+                        self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                         if word not in ["]", ")"] and (self.GetCurrentPos() < last_styled_pos or self.GetCurrentPos() > current_pos):
                             self.StartStyling(last_styled_pos, wx.stc.STC_INDICS_MASK)
                             self.SetStyling(current_pos - last_styled_pos, wx.stc.STC_INDIC0_MASK)
                             self.StartStyling(current_pos, 0xff)
                 else:
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
-                if state != DPRAGMA:
+                if (state != DPRAGMA) and (state != COMMENT):
                     state = SPACE
                 line = ""
                 line_number += 1
                 self.RefreshLineFolding(line_number)
             elif line.endswith("(*") and state != COMMENT:
-                self.SetStyling(current_pos - last_styled_pos - 1, 31)
+                self.SetStyling(current_pos - last_styled_pos - 1, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
                 state = COMMENT
             elif line.endswith("{") and state not in [PRAGMA, DPRAGMA]:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
                 state = PRAGMA
             elif line.endswith("{{") and state == PRAGMA:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 state = DPRAGMA
             elif state == COMMENT:
@@ -627,18 +629,22 @@ class TextViewer(EditorPanel):
                     self.SetStyling(current_pos - last_styled_pos + 2, STC_PLC_COMMENT)
                     last_styled_pos = current_pos + 1
                     state = SPACE
+                    if len(self.CallStack) > 0:
+                        current_call = self.CallStack.pop()
+                    else:
+                        current_call = None                    
             elif state == PRAGMA:
                 if line.endswith("}"):
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                     last_styled_pos = current_pos
                     state = SPACE
             elif state == DPRAGMA:
                 if line.endswith("}}"):
-                    self.SetStyling(current_pos - last_styled_pos + 1, 31)
+                    self.SetStyling(current_pos - last_styled_pos + 1, STC_PLC_EMPTY)
                     last_styled_pos = current_pos + 1
                     state = SPACE
             elif (line.endswith("'") or line.endswith('"')) and state not in [STRING, WSTRING]:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
                 if state == WORD:
                     current_context = self.Variables
@@ -661,7 +667,7 @@ class TextViewer(EditorPanel):
                     word = "#"
                     state = WORD
                 elif state == SPACE:
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                     word = char
                     last_styled_pos = current_pos
                     state = WORD
@@ -669,7 +675,7 @@ class TextViewer(EditorPanel):
                     word += char
             elif char in NUMBERS or char == '.' and state != WORD:
                 if state == SPACE:
-                    self.SetStyling(current_pos - last_styled_pos, 31)
+                    self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                     last_styled_pos = current_pos
                     state = NUMBER
                 elif state == WORD and char != '.':
@@ -692,7 +698,7 @@ class TextViewer(EditorPanel):
                     elif word in self.EnumeratedValues:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
                     else:
-                        self.SetStyling(current_pos - last_styled_pos, 31)
+                        self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                         if word not in ["]", ")"] and (self.GetCurrentPos() < last_styled_pos or self.GetCurrentPos() > current_pos):
                             self.StartStyling(last_styled_pos, wx.stc.STC_INDICS_MASK)
                             self.SetStyling(current_pos - last_styled_pos, wx.stc.STC_INDIC0_MASK)
@@ -756,9 +762,9 @@ class TextViewer(EditorPanel):
             elif word in self.EnumeratedValues:
                 self.SetStyling(current_pos - last_styled_pos, STC_PLC_NUMBER)
             else:
-                self.SetStyling(current_pos - last_styled_pos, 31)
+                self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
         else:
-            self.SetStyling(current_pos - start_pos, 31)
+            self.SetStyling(current_pos - start_pos, STC_PLC_EMPTY)
         self.ShowHighlights(start_pos, end_pos)
         event.Skip()
 
@@ -804,17 +810,10 @@ class TextViewer(EditorPanel):
             self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
 
             self.SearchParams = search_params
-            criteria = {
-                "raw_pattern": search_params["find_pattern"],
-                "pattern": re.compile(search_params["find_pattern"]),
-                "case_sensitive": search_params["case_sensitive"],
-                "regular_expression": search_params["regular_expression"],
-                "filter": "all"}
-
             self.SearchResults = [
                 (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)
                 for infos, start, end, text in
-                self.Search(criteria)]
+                self.Search(search_params)]
             self.CurrentFindHighlight = None
 
         if len(self.SearchResults) > 0:
@@ -895,14 +894,15 @@ class TextViewer(EditorPanel):
                     key_handled = True
             elif key == wx.WXK_BACK:
                 if self.TextSyntax in ["ST", "ALL"]:
-                    indent = self.Editor.GetLineIndentation(line)
-                    if lineText.strip() == "" and indent > 0:
-                        self.Editor.DelLineLeft()
-                        self.Editor.AddText(" " * ((max(0, indent - 1) / 2) * 2))
-                        key_handled = True
+                    if not self.Editor.GetSelectedText():
+                        indent = self.Editor.GetColumn(self.Editor.GetCurrentPos())
+                        if lineText.strip() == "" and len(lineText) > 0 and indent > 0:
+                            self.Editor.DelLineLeft()
+                            self.Editor.AddText(" " * ((max(0, indent - 1) / 2) * 2))
+                            key_handled = True
             if not key_handled:
                 event.Skip()
-        elif key in NAVIGATION_KEYS:
+        else:
             event.Skip()
 
     def OnKillFocus(self, event):

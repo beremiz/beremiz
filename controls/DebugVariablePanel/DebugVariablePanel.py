@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from types import TupleType
 import math
@@ -50,10 +50,10 @@ DAY = 24 * HOUR             # Number of nanosecond in a day
 # List of values possible for graph range
 # Format is [(time_in_plain_text, value_in_nanosecond),...]
 RANGE_VALUES = \
-    [("%dms" % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
-    [("%ds" % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
-    [("%dm" % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
-    [("%dh" % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
+    [(_("%dms") % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
+    [(_("%ds") % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
+    [(_("%dm") % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
+    [(_("%dh") % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
 
 # Scrollbar increment in pixel
 SCROLLBAR_UNIT = 10
@@ -291,6 +291,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         DebugViewer.__init__(self, producer, True)
         
         self.SetSizer(main_sizer)
+        self.SetTickTime()
     
     def SetTickTime(self, ticktime=0):
         """
@@ -561,20 +562,20 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         else:
             tick = None
         if tick is not None:
-            self.TickLabel.SetLabel("Tick: %d" % tick)
+            self.TickLabel.SetLabel(label=_("Tick: %d") % tick)
             tick_duration = int(tick * self.Ticktime)
             not_null = False
             duration = ""
-            for value, format in [(tick_duration / DAY, "%dd"),
-                                  ((tick_duration % DAY) / HOUR, "%dh"),
-                                  ((tick_duration % HOUR) / MINUTE, "%dm"),
-                                  ((tick_duration % MINUTE) / SECOND, "%ds")]:
+            for value, format in [(tick_duration / DAY, _("%dd")),
+                                  ((tick_duration % DAY) / HOUR, _("%dh")),
+                                  ((tick_duration % HOUR) / MINUTE, _("%dm")),
+                                  ((tick_duration % MINUTE) / SECOND, _("%ds"))]:
                 
                 if value > 0 or not_null:
                     duration += format % value
                     not_null = True
             
-            duration += "%gms" % (float(tick_duration % SECOND) / MILLISECOND) 
+            duration += _("%03gms") % (float(tick_duration % SECOND) / MILLISECOND) 
             self.TickTimeLabel.SetLabel("t: %s" % duration)
         else:
             self.TickLabel.SetLabel("")
