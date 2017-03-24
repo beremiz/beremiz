@@ -16,7 +16,7 @@
 #define LOG_BUFFER_MASK (LOG_BUFFER_SIZE-1)
 
 static char LogBuff[LOG_LEVELS][LOG_BUFFER_SIZE] LOG_BUFFER_ATTRS;
-void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
+static void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(&LogBuff[level][buffpos], buf, size);
     }else{
@@ -25,7 +25,7 @@ void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t siz
         memcpy(LogBuff[level], (char*)buf + remaining, size - remaining);
     }
 }
-void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
+static void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(buf, &LogBuff[level][buffpos], size);
     }else{

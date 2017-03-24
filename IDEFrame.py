@@ -1,3 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os, sys
 import cPickle
@@ -41,7 +64,8 @@ from util.BitmapLibrary import GetBitmap
 
 # Define PLCOpenEditor DisplayMenu extra items id
 [ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
-] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(1)]
+ ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
+] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(2)]
 
 #-------------------------------------------------------------------------------
 #                            EditorToolBar definitions
@@ -419,6 +443,10 @@ class IDEFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, self.GenerateZoomFunction(idx), id=new_id)
 
         parent.AppendSeparator()
+        AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
+                   kind=wx.ITEM_NORMAL, text=_(u'Switch perspective') + '\tF12')
+        self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
+
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
               kind=wx.ITEM_NORMAL, text=_(u'Reset Perspective'))
         self.Bind(wx.EVT_MENU, self.OnResetPerspective, id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE)
@@ -444,10 +472,17 @@ class IDEFrame(wx.Frame):
         self._init_coll_DisplayMenu_Items(self.DisplayMenu)
         self._init_coll_HelpMenu_Items(self.HelpMenu)
 
+    def _init_icon(self, parent):
+        if self.icon:
+            self.SetIcon(self.icon)                            
+        elif parent and parent.icon:
+            self.SetIcon(parent.icon)                
+        
     def _init_ctrls(self, prnt):
         wx.Frame.__init__(self, id=ID_PLCOPENEDITOR, name='IDEFrame',
               parent=prnt, pos=wx.DefaultPosition, size=wx.Size(1000, 600),
               style=wx.DEFAULT_FRAME_STYLE)
+        self._init_icon(prnt)
         self.SetClientSize(wx.Size(1000, 600))
         self.Bind(wx.EVT_ACTIVATE, self.OnActivated)
 
@@ -1225,6 +1260,7 @@ class IDEFrame(wx.Frame):
     def OnFindMenu(self, event):
         if not self.FindDialog.IsShown():
             self.FindDialog.Show()
+            self.FindDialog.FindPattern.SetFocus()
 
     def CloseFindInPouDialog(self):
         selected = self.TabsOpened.GetSelection()
@@ -1249,10 +1285,11 @@ class IDEFrame(wx.Frame):
         dialog = SearchInProjectDialog(self)
         if dialog.ShowModal() == wx.ID_OK:
             criteria = dialog.GetCriteria()
-            result = self.Controler.SearchInProject(criteria)
-            self.ClearSearchResults()
-            self.SearchResultPanel.SetSearchResults(criteria, result)
-            self.SelectTab(self.SearchResultPanel)
+            if len(criteria) > 0:
+                result = self.Controler.SearchInProject(criteria)
+                self.ClearSearchResults()
+                self.SearchResultPanel.SetSearchResults(criteria, result)
+                self.SelectTab(self.SearchResultPanel)
 
 #-------------------------------------------------------------------------------
 #                             Display Menu Functions
@@ -1408,14 +1445,17 @@ class IDEFrame(wx.Frame):
         def OnTabsOpenedDClick(event):
             pos = event.GetPosition()
             if tabctrl.TabHitTest(pos.x, pos.y, None):
-                pane = self.AUIManager.GetPane(self.TabsOpened)
-                if pane.IsMaximized():
-                    self.AUIManager.RestorePane(pane)
-                else:
-                    self.AUIManager.MaximizePane(pane)
-                self.AUIManager.Update()
+                self.SwitchFullScrMode(event)
             event.Skip()
         return OnTabsOpenedDClick
+
+    def SwitchFullScrMode(self,evt):
+        pane = self.AUIManager.GetPane(self.TabsOpened)
+        if pane.IsMaximized():
+            self.AUIManager.RestorePane(pane)
+        else:
+            self.AUIManager.MaximizePane(pane)
+        self.AUIManager.Update()
 
 #-------------------------------------------------------------------------------
 #                         Types Tree Management Functions
@@ -1451,8 +1491,7 @@ class IDEFrame(wx.Frame):
             item_name = _(item_name)
         self.ProjectTree.SetItemText(root, item_name)
         self.ProjectTree.SetPyData(root, infos)
-        highlight_colours = self.Highlights.get(infos.get("tagname", None), (wx.WHITE, wx.BLACK))
-        self.ProjectTree.SetItemBackgroundColour(root, highlight_colours[0])
+        highlight_colours = self.Highlights.get(infos.get("tagname", None), (wx.Colour(255, 255, 255, 0), wx.BLACK))
         self.ProjectTree.SetItemTextColour(root, highlight_colours[1])
         self.ProjectTree.SetItemExtraImage(root, None)
         if infos["type"] == ITEM_POU:
@@ -1582,6 +1621,8 @@ class IDEFrame(wx.Frame):
                         self.RefreshLibraryPanel()
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_TRANSITION:
+                    pou_item = self.ProjectTree.GetItemParent(event.GetItem())
+                    pou_name = self.ProjectTree.GetItemText(pou_item)                    
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
@@ -1593,6 +1634,8 @@ class IDEFrame(wx.Frame):
                                                 self.Controler.ComputePouTransitionName(words[1], new_name))
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_ACTION:
+                    pou_item = self.ProjectTree.GetItemParent(event.GetItem())
+                    pou_name = self.ProjectTree.GetItemText(pou_item)
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
@@ -1645,8 +1688,6 @@ class IDEFrame(wx.Frame):
             if message or abort:
                 if message:
                     self.ShowErrorMessage(message)
-                item = event.GetItem()
-                wx.CallAfter(self.ProjectTree.EditLabel, item)
                 event.Veto()
             else:
                 wx.CallAfter(self.RefreshProjectTree)
@@ -1918,7 +1959,7 @@ class IDEFrame(wx.Frame):
                 self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=new_id)
 
         if menu is not None:
-            self.PopupMenu(menu)
+            self.FindFocus().PopupMenu(menu)
             menu.Destroy()
 
         self.ResetSelectedItem()

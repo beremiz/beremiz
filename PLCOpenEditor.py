@@ -1,29 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import wx
 import os, sys, platform, time, traceback, getopt
+import version
 
 beremiz_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -60,7 +61,11 @@ if __name__ == '__main__':
 
     # Create wxApp (Need to create App before internationalization because of
     # Windows)
-    app = wx.PySimpleApp()
+    if wx.VERSION >= (3, 0, 0):
+        app = wx.App()
+    else:
+        app = wx.PySimpleApp()
+
 
     from util.misc import InstallLocalRessources
     InstallLocalRessources(beremiz_dir)
@@ -72,6 +77,7 @@ from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 from editors.Viewer import Viewer
 from PLCControler import PLCControler
 from dialogs import ProjectDialog
+from dialogs.AboutDialog import ShowAboutDialog
 
 #-------------------------------------------------------------------------------
 #                            PLCOpenEditor Main Class
@@ -160,6 +166,7 @@ class PLCOpenEditor(IDEFrame):
     #  @param fileOpen The filepath to open if no controler defined (default: None).
     #  @param debug The filepath to open if no controler defined (default: False).
     def __init__(self, parent, fileOpen = None):
+        self.icon = wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"), wx.BITMAP_TYPE_ICO)
         IDEFrame.__init__(self, parent)
 
         result = None
@@ -178,15 +185,15 @@ class PLCOpenEditor(IDEFrame):
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
 
         # Define PLCOpenEditor icon
-        self.SetIcon(wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"),wx.BITMAP_TYPE_ICO))
+        self.SetIcon(self.icon)
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
 
         if result is not None:
-            self.ShowErrorMessage(
-                _("PLC syntax error at line %d:\n%s") % result)
+            (num, line) = result
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
 
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
@@ -298,8 +305,8 @@ class PLCOpenEditor(IDEFrame):
         dialog.Destroy()
 
         if result is not None:
-            self.ShowErrorMessage(
-                _("PLC syntax error at line %d:\n%s") % result)
+            (num, line) = result
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
 
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():
@@ -343,7 +350,12 @@ class PLCOpenEditor(IDEFrame):
         open_pdf(os.path.join(beremiz_dir, "plcopen", "TC6_XML_V101.pdf"))
 
     def OnAboutMenu(self, event):
-        OpenHtmlFrame(self,_("About PLCOpenEditor"), os.path.join(beremiz_dir, "doc", "plcopen_about.html"), wx.Size(350, 350))
+        info = version.GetAboutDialogInfo()
+        info.Name = "PLCOpenEditor"
+        info.Description = _("PLCOpenEditor is part of Beremiz project.\n\n"
+                             "Beremiz is an ") + info.Description
+        info.Icon = wx.Icon(os.path.join(beremiz_dir, "images", "aboutlogo.png"), wx.BITMAP_TYPE_PNG)
+        ShowAboutDialog(self, info)
 
     def SaveProject(self):
         result = self.Controler.SaveXMLFile()
@@ -394,16 +406,17 @@ def Display_Exception_Dialog(e_type,e_value,e_tb):
 
     dlg = wx.SingleChoiceDialog(None,
         _("""
-An error has occurred.
-
-Click OK to save an error report.
+An unhandled exception (bug) occured. Bug report saved at :
+(%s)
 
 Please be kind enough to send this file to:
-edouard.tisserant@gmail.com
+beremiz-devel@lists.sourceforge.net
 
-Error:
-""") +
-        str(e_type) + _(" : ") + str(e_value),
+You should now restart program.
+
+Traceback:
+""") % bug_report_path +
+        repr(e_type) + " : " + repr(e_value),
         _("Error"),
         trcbck_lst)
     try:
@@ -472,10 +485,11 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
     sys.excepthook = handle_exception
 
 if __name__ == '__main__':
-    wx.InitAllImageHandlers()
+    if wx.VERSION < (3, 0, 0):
+        wx.InitAllImageHandlers()
 
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(),__version__)
+    AddExceptHook(os.getcwd(), version.app_version)
 
     frame = PLCOpenEditor(None, fileOpen=fileOpen)
 

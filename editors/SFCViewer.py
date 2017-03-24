@@ -1,35 +1,87 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard.
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from types import *
 
 import wx
 
 from Viewer import *
+from graphics.SFC_Objects import *
+from graphics.GraphicCommons import SELECTION_DIVERGENCE, \
+    SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE, EAST, NORTH, WEST, SOUTH
+
+SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Jump)
+
 
 class SFC_Viewer(Viewer):
     
+    SFC_StandardRules = {
+        # The key of this dict is a block that user try to connect,
+        # and the value is a list of blocks, that can be connected with the current block
+        # and with directions of connection
+        "SFC_Step": [("SFC_ActionBlock", EAST),
+                     ("SFC_Transition", SOUTH),
+                     (SELECTION_DIVERGENCE, SOUTH),
+                     (SIMULTANEOUS_CONVERGENCE, SOUTH)],
+
+        "SFC_ActionBlock": [("SFC_Step", EAST)],
+
+        "SFC_Transition": [("SFC_Step", SOUTH),
+                           (SELECTION_CONVERGENCE, SOUTH),
+                           (SIMULTANEOUS_DIVERGENCE, SOUTH),
+                           ("SFC_Jump", SOUTH),
+                           ("FBD_Block", EAST),
+                           ("FBD_Variable", EAST),
+                           ("FBD_Connector", EAST),
+                           ("LD_Contact", EAST),
+                           ("LD_PowerRail", EAST),
+                           ("LD_Coil", EAST)],
+
+        SELECTION_DIVERGENCE: [("SFC_Transition", SOUTH)],
+
+        SELECTION_CONVERGENCE: [("SFC_Step", SOUTH),
+                                  ("SFC_Jump", SOUTH)],
+
+        SIMULTANEOUS_DIVERGENCE: [("SFC_Step", SOUTH)],
+
+        SIMULTANEOUS_CONVERGENCE: [("SFC_Transition", SOUTH)],
+
+        "SFC_Jump": [],
+
+        "FBD_Block": [("SFC_Transition", WEST)],
+
+        "FBD_Variable": [("SFC_Transition", WEST)],
+
+        "FBD_Connector": [("SFC_Transition", WEST)],
+
+        "LD_Contact": [("SFC_Transition", WEST)],
+
+        "LD_PowerRail": [("SFC_Transition", WEST)],
+
+        "LD_Coil": [("SFC_Transition", WEST)]
+    }
+
     def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
         Viewer.__init__(self, parent, tagname, window, controler, debug, instancepath)
         self.CurrentLanguage = "SFC"
@@ -281,6 +333,28 @@ class SFC_Viewer(Viewer):
                 self.SelectedElement.Refresh()
             self.UpdateScrollPos(event)
         event.Skip()
+
+    def GetBlockName(self, block):
+        blockName = block.__class__.__name__
+        if blockName == "SFC_Divergence":
+            blockName = block.Type
+        return blockName
+
+    # This method check the IEC 61131-3 compatibility between two SFC blocks
+    def BlockCompatibility(self,startblock = None, endblock = None, direction = None):
+        if startblock!= None and endblock != None and (isinstance(startblock,SFC_Objects)\
+                                                               or isinstance(endblock,SFC_Objects)):
+            # Full "SFC_StandardRules" table would be symmetrical and
+            # to avoid duplicate records and minimize the table only upper part is defined.
+            if (direction == SOUTH or direction == EAST):
+                startblock, endblock = endblock, startblock
+            start = self.GetBlockName(startblock)
+            end = self.GetBlockName(endblock)
+            for val in self.SFC_StandardRules[start]:
+                if end in val:
+                    return True
+            return False
+        return True
 
 #-------------------------------------------------------------------------------
 #                          Keyboard event functions

@@ -1,3 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
 import types
@@ -319,25 +342,20 @@ class ConfTreeNodeEditor(EditorPanel):
                 staticbox = wx.StaticBox(self.ParamsEditor,
                       label=_(label), size=wx.Size(10, 0))
                 staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                flags = (wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                 if first:
-                    sizer.AddSizer(staticboxsizer, border=5,
-                          flag=wx.GROW|wx.TOP|wx.BOTTOM)
-                else:
-                    sizer.AddSizer(staticboxsizer, border=5,
-                          flag=wx.GROW|wx.BOTTOM)
+                    flags |= wx.TOP
+                sizer.AddSizer(staticboxsizer, border=5, flag=flags)
                 self.GenerateSizerElements(staticboxsizer,
                                            element_infos["children"],
                                            element_path)
             else:
                 boxsizer = wx.FlexGridSizer(cols=3, rows=1)
                 boxsizer.AddGrowableCol(1)
+                flags = (wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                 if first:
-                    sizer.AddSizer(boxsizer, border=5,
-                          flag=wx.GROW|wx.ALL)
-                else:
-                    sizer.AddSizer(boxsizer, border=5,
-                          flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
-
+                    flags |= wx.TOP
+                sizer.AddSizer(boxsizer, border=5, flag=flags)
                 staticbitmap = GenStaticBitmap(ID=-1, bitmapname=element_infos["name"],
                     name="%s_bitmap"%element_infos["name"], parent=self.ParamsEditor,
                     pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
@@ -385,7 +403,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             staticbox = wx.StaticBox(self.ParamsEditor,
                                   label="%s - %s"%(_(name), _(value)), size=wx.Size(10, 0))
                             staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                            sizer.AddSizer(staticboxsizer, border=5, flag=wx.GROW|wx.BOTTOM)
+                            sizer.AddSizer(staticboxsizer, border=5, flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                             self.GenerateSizerElements(staticboxsizer, element_infos["children"], element_path)
                             callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, element_path)
                         else:
@@ -456,6 +474,8 @@ class ConfTreeNodeEditor(EditorPanel):
                         textctrl.Bind(wx.EVT_TEXT_ENTER, callback)
                         textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
             first = False
+        sizer.Layout()
+        self.RefreshScrollbars()
 
 
     def GetItemChannelChangedFunction(self, dir):

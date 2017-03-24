@@ -1,3 +1,28 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
 from os.path import join, split, realpath
 sd = split(realpath(__file__))[0]
 
@@ -23,35 +48,8 @@ StdTC6Libs = [(_("Standard function blocks"),  join(sd, "Standard_Function_Block
 
 StdFuncsCSV = join(sd,"iec_std.csv")
 
-# FIXME : since std fb now loaded from TC6 file, is that still necessary ?
-StdBlockComments = {
-    "SR": _("SR bistable\nThe SR bistable is a latch where the Set dominates."),
-    "RS": _("RS bistable\nThe RS bistable is a latch where the Reset dominates."),
-    "SEMA": _("Semaphore\nThe semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."),
-    "R_TRIG": _("Rising edge detector\nThe output produces a single pulse when a rising edge is detected."),
-    "F_TRIG": _("Falling edge detector\nThe output produces a single pulse when a falling edge is detected."),
-    "CTU": _("Up-counter\nThe up-counter can be used to signal when a count has reached a maximum value."),
-    "CTD": _("Down-counter\nThe down-counter can be used to signal when a count has reached zero, on counting down from a preset value."),
-    "CTUD": _("Up-down counter\nThe up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."),
-    "TP": _("Pulse timer\nThe pulse timer can be used to generate output pulses of a given time duration."),
-    "TON": _("On-delay timer\nThe on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."),
-    "TOF": _("Off-delay timer\nThe off-delay timer can be used to delay setting an output false, for fixed period after input goes false."),
-    "RTC": _("Real time clock\nThe real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."),
-    "INTEGRAL": _("Integral\nThe integral function block integrates the value of input XIN over time."),
-    "DERIVATIVE": _("Derivative\nThe derivative function block produces an output XOUT proportional to the rate of change of the input XIN."),
-    "PID": _("PID\nThe PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."),
-    "RAMP": _("Ramp\nThe RAMP function block is modelled on example given in the standard."),
-    "HYSTERESIS": _("Hysteresis\nThe hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."),
-}
-
-for block_type in ["CTU", "CTD", "CTUD"]:
-    for return_type in ["DINT", "LINT", "UDINT", "ULINT"]:
-        StdBlockComments["%s_%s" % (block_type, return_type)] = StdBlockComments[block_type]
-
 def GetBlockInfos(pou):
     infos = pou.getblockInfos()
-    # FIXME : as well
-    infos["comment"] = StdBlockComments[infos["name"]]
     infos["inputs"] = [
         (var_name, var_type, "rising")
         if var_name in ["CU", "CD"]

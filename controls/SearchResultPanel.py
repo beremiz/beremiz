@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from types import TupleType
 
@@ -232,28 +232,15 @@ class SearchResultPanel(wx.Panel):
                             break
                     if element_type == ITEM_RESOURCE:
                         search_results_tree_children.append(element_infos)
-                    else:
-                        _tagname = self.ParentWindow.Controler.ComputePouName(words[1])
-                        _element_type = self.ParentWindow.Controler.GetPouType(words[1])
-                    
-                        _element_infos = {"name": words[1],
-                                          "type": _element_type,
-                                          "data": _tagname,
-                                          "text": None,
-                                          "matches": 1,
-                                          "children": [element_infos]}
-                    
-                        search_results_tree_children.append(_element_infos)
-                
                 else:
                     search_results_tree_children.append(element_infos)
             
             if matches_number < 2:
-                header_format = _("'%s' - %d match in project")
+                header_format = _("'{a1}' - {a2} match in project")
             else:
-                header_format = _("'%s' - %d matches in project")
+                header_format = _("'{a1}' - {a2} matches in project")
             
-            self.HeaderLabel.SetLabel(header_format % (self.Criteria["raw_pattern"], matches_number))
+            self.HeaderLabel.SetLabel(header_format.format(a1 = self.Criteria["find_pattern"], a2 = matches_number))
             self.ResetButton.Enable(True)
             
             if matches_number > 0:
@@ -337,6 +324,7 @@ class SearchResultPanel(wx.Panel):
             search_results = [data]
         else:
             search_results = self.SearchResults.get(data, [])
+        self.ParentWindow.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
         for infos, start, end, text in search_results:
             self.ParentWindow.ShowSearchResult(infos, start, end)
     

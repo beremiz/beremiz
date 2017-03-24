@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#This file is part of PLCOpenEditor, a library implementing an IEC 61131-3 editor
-#based on the plcopen standard. 
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-#Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
 #
-#See COPYING file for copyrights details.
+# See COPYING file for copyrights details.
 #
-#This library is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public
-#License as published by the Free Software Foundation; either
-#version 2.1 of the License, or (at your option) any later version.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-#This library is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public
-#License along with this library; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 from types import TupleType
 from time import time as gettime
@@ -40,6 +40,12 @@ from editors.DebugViewer import REFRESH_PERIOD
 from DebugVariableItem import DebugVariableItem
 from DebugVariableViewer import *
 from GraphButton import GraphButton
+
+
+from distutils.version import LooseVersion
+if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
+    from cycler import cycler
+
 
 # Graph variable display type
 GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
@@ -975,7 +981,13 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             kwargs["transform"] = self.Axes.transAxes
             return text_func(*args, **kwargs)
         return AddText
-    
+
+    def SetAxesColor(self, color):
+        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
+            self.Axes.set_prop_cycle(cycler('color',color))
+        else:
+            self.Axes.set_color_cycle(color)
+        
     def ResetGraphics(self):
         """
         Reset figure and graphical elements displayed in it
@@ -987,7 +999,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Add 3D projection if graph is in 3D
         if self.Is3DCanvas():
             self.Axes = self.Figure.gca(projection='3d')
-            self.Axes.set_color_cycle(['b'])
+            self.SetAxesColor(['b'])
             
             # Override function to prevent too much refresh when graph is 
             # rotated
@@ -1002,7 +1014,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         
         else:
             self.Axes = self.Figure.gca()
-            self.Axes.set_color_cycle(COLOR_CYCLE)
+            self.SetAxesColor(COLOR_CYCLE)
         
         # Set size of X and Y axis labels
         self.Axes.tick_params(axis='x', labelsize='small')
@@ -1363,7 +1375,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         
         # Get bitmap of figure rendered
         self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
-        self.bitmap.UseAlpha()
+        if wx.VERSION < (3, 0, 0):        
+            self.bitmap.UseAlpha()
         
         # Create DC for rendering graphics in bitmap
         destDC = wx.MemoryDC()

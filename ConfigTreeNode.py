@@ -1,3 +1,27 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 """
 Config Tree Node base class.
 
@@ -29,7 +53,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
         </xsd:schema>""")
 
 NameTypeSeparator = '@'
-XSDSchemaErrorMessage = _("%s XML file doesn't follow XSD schema at line %d:\n%s")
+XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line %{a2}:\n{a3}")
 
 class ConfigTreeNode:
     """
@@ -397,7 +421,8 @@ class ConfigTreeNode:
             shutil.move(oldname, self.CTNPath())
         # warn user he has two left hands
         if DesiredName != res:
-            self.GetCTRoot().logger.write_warning(_("A child named \"%s\" already exist -> \"%s\"\n")%(DesiredName,res))
+            msg = _("A child named \"{a1}\" already exists -> \"{a2}\"\n").format(a1 = DesiredName, a2 = res)
+            self.GetCTRoot().logger.write_warning(msg)
         return res
 
     def GetAllChannels(self):
@@ -501,7 +526,7 @@ class ConfigTreeNode:
         try:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
         except KeyError:
-            raise Exception, _("Cannot create child %s of type %s ")%(CTNName, CTNType)
+            raise Exception, _("Cannot create child {a1} of type {a2} ").format(a1 = CTNName, a2 = CTNType)
         
         # if CTNClass is a class factory, call it. (prevent unneeded imports)
         if type(CTNClass) == types.FunctionType:
@@ -511,7 +536,8 @@ class ConfigTreeNode:
         ChildrenWithSameClass = self.Children.setdefault(CTNType, list())
         # Check count
         if getattr(CTNClass, "CTNMaxCount", None) and len(ChildrenWithSameClass) >= CTNClass.CTNMaxCount:
-            raise Exception, _("Max count (%d) reached for this confnode of type %s ")%(CTNClass.CTNMaxCount, CTNType)
+            msg = _("Max count ({a1}) reached for this confnode of type {a2} ").format(a1 = CTNClass.CTNMaxCount, a2 = CTNType)
+            raise Exception, msg
         
         # create the final class, derived of provided confnode and template
         class FinalCTNClass(CTNClass, ConfigTreeNode):
@@ -537,7 +563,9 @@ class ConfigTreeNode:
                     _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewCTNName):
-                        raise Exception, _("Project tree layout do not match confnode.xml %s!=%s ")%(NewCTNName, _self.BaseParams.getName())
+                        msg = _("Project tree layout do not match confnode.xml {a1}!={a2} ").\
+                              format(a1 = NewCTNName, a2 = _self.BaseParams.getName())
+                        raise Exception, msg
 
                     # Now, self.CTNPath() should be OK
                     
@@ -590,12 +618,13 @@ class ConfigTreeNode:
                 basexmlfile = open(self.ConfNodeBaseXmlFilePath(CTNName), 'r')
                 self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
                 if error is not None:
-                    self.GetCTRoot().logger.write_warning(
-                        XSDSchemaErrorMessage % ((ConfNodeName + " BaseParams",) + error))
+                    (fname, lnum, src) = ((ConfNodeName + " BaseParams",) + error)
+                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname, a2 = lnum, a3 = src))
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode base parameters %s :\n %s") % (ConfNodeName, unicode(exc)))
+                msg = _("Couldn't load confnode base parameters {a1} :\n {a2}").format(a1 =  ConfNodeName, a2 = unicode(exc))
+                self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
         # Get the xml tree
@@ -604,14 +633,15 @@ class ConfigTreeNode:
                 xmlfile = open(self.ConfNodeXmlFilePath(CTNName), 'r')
                 obj, error = self.Parser.LoadXMLString(xmlfile.read())
                 if error is not None:
-                    self.GetCTRoot().logger.write_warning(
-                        XSDSchemaErrorMessage % ((ConfNodeName,) + error))
+                    (fname, lnum, src) = ((ConfNodeName,) + error)
+                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname, a2 = lnum, a3 = src))
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception, exc:
-                self.GetCTRoot().logger.write_error(_("Couldn't load confnode parameters %s :\n %s") % (ConfNodeName, unicode(exc)))
+                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1 = ConfNodeName, a2 = unicode(exc))
+                self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
         
     def LoadChildren(self):
@@ -623,6 +653,7 @@ class ConfigTreeNode:
                 try:
                     self.CTNAddChild(pname, ptype)
                 except Exception, exc:
-                    self.GetCTRoot().logger.write_error(_("Could not add child \"%s\", type %s :\n%s\n")%(pname, ptype, unicode(exc)))
+                    msg = _("Could not add child \"{a1}\", type {a2} :\n{a3}\n").format(a1 = pname, a2 = ptype, a3 = unicode(exc))
+                    self.GetCTRoot().logger.write_error(msg)
                     self.GetCTRoot().logger.write_error(traceback.format_exc())
 
