@@ -781,7 +781,8 @@ class VariablePanel(wx.Panel):
         else:
             self.SaveValues()
             if colname == "Class":
-                wx.CallAfter(self.ParentWindow.RefreshView, False)
+                self.ClearLocation(row, col, value)
+                wx.CallAfter(self.ParentWindow.RefreshView)
             elif colname == "Location":
                 wx.CallAfter(self.ParentWindow.RefreshView)
 
@@ -790,6 +791,13 @@ class VariablePanel(wx.Panel):
             event.Veto()            
         else:
             event.Skip()
+
+    def ClearLocation(self, row, col, value):
+        if self.Values[row].Location != '':
+            if self.Table.GetColLabelValue(col, False) == 'Class' and value not in ["Local", "Global"] or \
+               self.Table.GetColLabelValue(col, False) == 'Type' and not self.Parent.Controler.IsLocatableType(value):
+                self.Values[row].Location = ''
+            self.RefreshValues()
 
     def BuildStdIECTypesMenu(self,type_menu):
             # build a submenu containing standard IEC types
@@ -849,6 +857,7 @@ class VariablePanel(wx.Panel):
 
         label_value = self.Table.GetColLabelValue(col, False)
         if label_value == "Type":
+            old_value = self.Values[row].Type
             classtype = self.Table.GetValueByName(row, "Class")
             type_menu = wx.Menu(title='')   # the root menu
 
@@ -870,6 +879,9 @@ class VariablePanel(wx.Panel):
             self.VariablesGrid.PopupMenuXY(type_menu, corner_x, corner_y)
             type_menu.Destroy()
             event.Veto()
+            value = self.Values[row].Type
+            if old_value != value:
+                self.ClearLocation(row, col, value)
         else:
             event.Skip()
 
