@@ -229,11 +229,16 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.VariablesList.DeleteAllItems()
         
         if self.Controller is not None and self.PouTagName is not None:
-            self.PouInfos = self.Controller.GetPouVariables(self.PouTagName, self.Debug)
+            if self.PouTagName.split('::')[0] in ['A', 'T']:
+                self.PouInfos = self.Controller.GetPouVariables('P::%s' % self.PouTagName.split('::')[1], self.Debug)
+            else:
+                self.PouInfos = self.Controller.GetPouVariables(self.PouTagName, self.Debug)
+            if None in self.Controller.GetEditedElementType(self.PouTagName, self.Debug) and self.PouInfos is not None:
+                self.PouInfos.debug = False
         else:
             self.PouInfos = None
         if self.PouInfos is not None:
-            root = self.VariablesList.AddRoot("")
+            root = self.VariablesList.AddRoot("", data=self.PouInfos)
             for var_infos in self.PouInfos.variables:
                 if var_infos.type is not None:
                     text = "%s (%s)" % (var_infos.name, var_infos.type)
@@ -313,8 +318,11 @@ class PouInstanceVariablesPanel(wx.Panel):
     def DebugButtonCallback(self, infos):
         if self.InstanceChoice.GetSelection() != -1:
             var_class = infos.var_class
-            var_path = "%s.%s" % (self.InstanceChoice.GetStringSelection(), 
-                                  infos.name)
+            instance_path = self.InstanceChoice.GetStringSelection()
+            if self.PouTagName.split("::")[0] in ["A", "T"]:
+                pos = instance_path.rfind('.')
+                instance_path = instance_path[0:pos]
+            var_path = "%s.%s" % (instance_path, infos.name)
             if var_class in ITEMS_VARIABLE:
                 self.ParentWindow.AddDebugVariable(var_path, force=True)
             elif var_class == ITEM_TRANSITION:
@@ -401,7 +409,13 @@ class PouInstanceVariablesPanel(wx.Panel):
                         else:
                             tagname = None
                     else:
-                        tagname = self.Controller.ComputePouName(item_infos.type)
+                        parent_infos = self.VariablesList.GetPyData(selected_item.GetParent())
+                        if item_infos.var_class == ITEM_ACTION:
+                            tagname = self.Controller.ComputePouActionName(parent_infos.type, item_infos.name)
+                        elif item_infos.var_class == ITEM_TRANSITION:
+                            tagname = self.Controller.ComputePouTransitionName(parent_infos.type, item_infos.name)
+                        else:
+                            tagname = self.Controller.ComputePouName(item_infos.type)
                     if tagname is not None:
                         if instance_path != "":
                             item_path = "%s.%s" % (instance_path, item_infos.name)
