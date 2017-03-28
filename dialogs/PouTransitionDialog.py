@@ -32,12 +32,7 @@ from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 
 def GetTransitionLanguages():
     _ = lambda x : x
-    #
-    # IL language is temporary disabled because
-    # matiec freezes if transition is written in IL
-    #
-    # return [_("IL"), _("ST"), _("LD"), _("FBD")]
-    return [ _("ST"), _("LD"), _("FBD")]
+    return [_("IL"), _("ST"), _("LD"), _("FBD")]
 TRANSITION_LANGUAGES_DICT = dict([(_(language), language) for language in GetTransitionLanguages()])
 
 class PouTransitionDialog(wx.Dialog):
