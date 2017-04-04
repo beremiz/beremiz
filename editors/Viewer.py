@@ -2546,6 +2546,8 @@ class Viewer(EditorPanel, DebugViewer):
                         connector = input_connector
                         break
             self.AddNewElement(block, bbox, wire, connector)
+            self.RefreshVariablePanel()
+            self.ParentWindow.RefreshPouInstanceVariablesPanel()                    
         dialog.Destroy()
 
     def AddNewVariable(self, bbox, exclude_input=False, wire=None):
