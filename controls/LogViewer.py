@@ -379,7 +379,7 @@ class LogViewer(DebugViewer, wx.Panel):
         self.ScrollTimer.Stop()
 
     def ResetLogMessages(self):
-        self.previous_log_count = [None]*LogLevelsCount
+        self.ResetLogCounters()
         self.OldestMessages = []
         self.LogMessages = []
         self.LogMessagesTimestamp = numpy.array([])
@@ -401,6 +401,9 @@ class LogViewer(DebugViewer, wx.Panel):
                 return LogMessage(tv_sec, tv_nsec, level, self.LevelIcons[level], msg)
         return None
 
+    def ResetLogCounters(self):
+        self.previous_log_count = [None]*LogLevelsCount
+    
     def SetLogCounters(self, log_count):
         new_messages = []
         for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
