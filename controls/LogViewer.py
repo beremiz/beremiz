@@ -552,6 +552,14 @@ class LogViewer(DebugViewer, wx.Panel):
 
         self.MessageScrollBar.RefreshThumbPosition()
 
+    def IsPLCLogEmpty(self):
+        empty=True
+        for level, prev in zip(xrange(LogLevelsCount), self.previous_log_count):
+            if prev is not None:
+                empty=False
+                break
+        return empty
+        
     def IsMessagePanelTop(self, message_idx=None):
         if message_idx is None:
             message_idx = self.CurrentMessage
@@ -639,7 +647,7 @@ class LogViewer(DebugViewer, wx.Panel):
         event.Skip()
 
     def OnCleanButton(self, event):
-        if self.LogSource is not None:
+        if self.LogSource is not None and not self.IsPLCLogEmpty():
             self.LogSource.ResetLogCount()
         self.ResetLogMessages()
         self.RefreshView()
