@@ -32,6 +32,7 @@ import wx
 
 from plcopen.structures import *
 from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
+from graphics.DebugDataConsumer import DebugDataConsumer
 
 from dialogs import *
 from graphics import *
@@ -424,6 +425,64 @@ class ViewerDropTarget(wx.TextDropTarget):
         message.ShowModal()
         message.Destroy()
 
+
+
+class DebugInstanceName(DebugDataConsumer):
+    VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
+    
+    def __init__(self, parent):
+        DebugDataConsumer.__init__(self)
+        self.Parent = parent
+        self.ActionLastState = None
+        self.ActionState = None
+        self.x_offset = 2
+        self.y_offset = 2
+        
+    def SetValue(self, value):
+        self.ActionState = value
+        if self.ActionState != self.ActionLastState:
+            self.ActionLastState = self.ActionState
+            wx.CallAfter(self.Parent.ElementNeedRefresh, self)
+
+    def GetInstanceName(self):
+        return _("Debug: %s") % self.Parent.InstancePath
+
+    def GetRedrawRect(self):
+        x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)        
+        dc = self.Parent.GetLogicalDC()
+        ipw, iph = dc.GetTextExtent(self.GetInstanceName())
+        vw, vh = 0, 0
+        for value in self.VALUE_TRANSLATION.itervalues():
+            w, h = dc.GetTextExtent(" (%s)" % value)
+            vw = max(vw, w)
+            vh = max(vh, h)
+        return wx.Rect(ipw + x, y, vw, vh)
+
+    def Draw(self, dc):
+        scalex, scaley = dc.GetUserScale()
+        dc.SetUserScale(1, 1)
+        x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)
+        
+        text = self.GetInstanceName()
+        if self.ActionState is not None:
+            text += " ("
+
+        dc.DrawText(text, x, y)
+        tw, th = dc.GetTextExtent(text)                    
+        if self.ActionState is not None:
+
+            text = self.VALUE_TRANSLATION[self.ActionState]
+            if self.ActionState:
+                dc.SetTextForeground(wx.GREEN)
+            dc.DrawText(text, x + tw, y)
+            if self.ActionState:
+                dc.SetTextForeground(wx.BLACK)
+            tw = tw + dc.GetTextExtent(text)[0]
+            
+            text = ")"                    
+            dc.DrawText(text, x + tw, y)
+        dc.SetUserScale(scalex, scaley)
+
 """
 Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
 manipulating graphic elements
@@ -635,6 +694,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.InstancePath = instancepath
         self.StartMousePos = None
         self.StartScreenPos = None
+        self.InstanceName = DebugInstanceName(self)
 
         # Prevent search for highlighted element to be called too often
         self.LastHighlightCheckTime = gettime()
@@ -1107,30 +1167,6 @@ class Viewer(EditorPanel, DebugViewer):
 #                          Refresh functions
 #-------------------------------------------------------------------------------
 
-    VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
-
-    def SetValue(self, value):
-        if self.Value != value:
-            self.Value = value
-
-            xstart, ystart = self.GetViewStart()
-            window_size = self.Editor.GetClientSize()
-            refresh_rect = self.GetRedrawRect()
-            if (xstart * SCROLLBAR_UNIT <= refresh_rect.x + refresh_rect.width and
-                xstart * SCROLLBAR_UNIT + window_size[0] >= refresh_rect.x and
-                ystart * SCROLLBAR_UNIT <= refresh_rect.y + refresh_rect.height and
-                ystart * SCROLLBAR_UNIT + window_size[1] >= refresh_rect.y):
-                self.ElementNeedRefresh(self)
-
-    def GetRedrawRect(self):
-        dc = self.GetLogicalDC()
-        ipw, iph = dc.GetTextExtent(_("Debug: %s") % self.InstancePath)
-        vw, vh = 0, 0
-        for value in self.VALUE_TRANSLATION.itervalues():
-            w, h = dc.GetTextExtent("(%s)" % value)
-            vw = max(vw, w)
-            vh = max(vh, h)
-        return wx.Rect(ipw + 4, 2, vw, vh)
 
     def ElementNeedRefresh(self, element):
         self.ElementRefreshList_lock.acquire()
@@ -1160,9 +1196,6 @@ class Viewer(EditorPanel, DebugViewer):
     def RefreshView(self, variablepanel=True, selection=None):
         EditorPanel.RefreshView(self, variablepanel)
 
-        if self.TagName.split("::")[0] == "A" and self.Debug:
-            self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self)
-
         if self.ToolTipElement is not None:
             self.ToolTipElement.DestroyToolTip()
             self.ToolTipElement = None
@@ -1187,6 +1220,9 @@ class Viewer(EditorPanel, DebugViewer):
 
         self.RefreshScrollBars()
 
+        if self.TagName.split("::")[0] == "A" and self.Debug:
+            self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self.InstanceName)
+        
         for wire in self.Wires:
             if not wire.IsConnectedCompatible():
                 wire.SetValid(False)
@@ -3661,31 +3697,7 @@ class Viewer(EditorPanel, DebugViewer):
 
         if not printing:
             if self.Debug:
-                scalex, scaley = dc.GetUserScale()
-                dc.SetUserScale(1, 1)
-
-                # is_action = self.TagName.split("::")[0] == "A"
-                text = _("Debug: %s") % self.InstancePath
-                '''if is_action and self.Value is not None:
-                    text += " ("'''
-                text_offset_x, text_offset_y = self.CalcUnscrolledPosition(2, 2)
-                dc.DrawText(text, text_offset_x, text_offset_y)
-                # TODO  Fix self.Value in LD_Viewer instance.
-                # This code used to highlight with green color text in upper-left corner
-                # (path to current instance) in debug mode, if current instance active. Only SFC actions are affected.
-                '''if is_action and self.Value is not None:
-                    value_text = self.VALUE_TRANSLATION[self.Value]
-                    tw, th = dc.GetTextExtent(text)
-                    if self.Value:
-                        dc.SetTextForeground(wx.GREEN)
-                    dc.DrawText(value_text, text_offset_x + tw, text_offset_y)
-                    if self.Value:
-                        dc.SetTextForeground(wx.BLACK)
-                    vw, vh = dc.GetTextExtent(value_text)
-                    dc.DrawText(")", text_offset_x + tw + vw + 2, text_offset_y)'''
-
-                dc.SetUserScale(scalex, scaley)
-
+                self.InstanceName.Draw(dc)
             if self.rubberBand.IsShown():
                 self.rubberBand.Draw(dc)
             dc.EndDrawing()
