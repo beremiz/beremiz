@@ -165,7 +165,9 @@ static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
                 /* compute next cursor positon.
                    No need to check overflow, as BUFFER_SIZE
                    is computed large enough */
-                if(dsc->type == STRING_ENUM){
+		if((dsc->type == STRING_ENUM)   ||
+		   (dsc->type == STRING_P_ENUM) ||
+		   (dsc->type == STRING_O_ENUM)){
                     /* optimization for strings */
                     size = ((STRING*)visible_value_p)->len + 1;
                 }
