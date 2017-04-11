@@ -800,9 +800,10 @@ class VariablePanel(wx.Panel):
     def ClearLocation(self, row, col, value):
         if self.Values[row].Location != '':
             if self.Table.GetColLabelValue(col, False) == 'Class' and value not in ["Local", "Global"] or \
-               self.Table.GetColLabelValue(col, False) == 'Type' and not self.Parent.Controler.IsLocatableType(value):
+               self.Table.GetColLabelValue(col, False) == 'Type' and not self.Controler.IsLocatableType(value):
                 self.Values[row].Location = ''
-            self.RefreshValues()
+                self.RefreshValues()
+                self.SaveValues()
 
     def BuildStdIECTypesMenu(self,type_menu):
             # build a submenu containing standard IEC types
