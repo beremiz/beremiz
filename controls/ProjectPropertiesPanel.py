@@ -272,11 +272,8 @@ class ProjectPropertiesPanel(wx.Notebook):
     
     def GetTextCtrlChangedFunction(self, textctrl, name):
         def TextCtrlChangedFunction(event):
-            if self.Controller is not None:
-                if self.Values is not None:
-                    old_value = self.Values.get(name)
-                else:
-                    old_value = None
+            if self.Controller is not None and self.Values is not None:
+                old_value = self.Values.get(name)
                 new_value = textctrl.GetValue()
                 if name not in REQUIRED_PARAMS and new_value == "":
                     new_value = None
