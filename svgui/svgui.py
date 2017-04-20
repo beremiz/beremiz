@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -27,13 +28,14 @@ import os, sys, shutil
 
 from pyjs import translate
 
+import util.paths as paths
 from POULibrary import POULibrary
 from docutil import open_svg
 from py_ext import PythonFileCTNMixin
 
 class SVGUILibrary(POULibrary):
     def GetLibraryPath(self):
-        return os.path.join(os.path.split(__file__)[0], "pous.xml") 
+        return paths.AbsNeighbourFile(__file__, "pous.xml") 
 
 class SVGUI(PythonFileCTNMixin):
 
@@ -49,7 +51,7 @@ class SVGUI(PythonFileCTNMixin):
     ]
 
     def ConfNodePath(self):
-        return os.path.join(os.path.dirname(__file__))
+        return paths.AbsDir(__file__)
 
     def _getSVGpath(self, project_path=None):
         if project_path is None:
@@ -58,7 +60,7 @@ class SVGUI(PythonFileCTNMixin):
         return os.path.join(project_path, "gui.svg")
 
     def _getSVGUIserverpath(self):
-        return os.path.join(os.path.dirname(__file__), "svgui_server.py")
+        return paths.AbsNeighbourFile(__file__, "svgui_server.py")
 
     def OnCTNSave(self, from_project_path=None):
         if from_project_path is not None:
@@ -90,13 +92,14 @@ class SVGUI(PythonFileCTNMixin):
 
         svguilibpath = os.path.join(self._getBuildPath(), "svguilib.js")
         svguilibfile = open(svguilibpath, 'w')
-        svguilibfile.write(translate(os.path.join(os.path.dirname(__file__), "pyjs", "lib", "sys.py"), "sys"))
-        svguilibfile.write(open(os.path.join(os.path.dirname(__file__), "pyjs", "lib", "_pyjs.js"), 'r').read())
-        svguilibfile.write(translate(os.path.join(os.path.dirname(__file__), "pyjs", "lib", "pyjslib.py"), "pyjslib"))
-        svguilibfile.write(translate(os.path.join(os.path.dirname(__file__), "svguilib.py"), "svguilib"))
+        fpath=paths.AbsDir(__file__)
+        svguilibfile.write(translate(os.path.join(fpath, "pyjs", "lib", "sys.py"), "sys"))
+        svguilibfile.write(open(os.path.join(fpath, "pyjs", "lib", "_pyjs.js"), 'r').read())
+        svguilibfile.write(translate(os.path.join(fpath, "pyjs", "lib", "pyjslib.py"), "pyjslib"))
+        svguilibfile.write(translate(os.path.join(fpath, "svguilib.py"), "svguilib"))
         svguilibfile.write("pyjslib();\nsvguilib();\n")
-        svguilibfile.write(open(os.path.join(os.path.dirname(__file__), "pyjs", "lib", "json.js"), 'r').read())
-        svguilibfile.write(open(os.path.join(os.path.dirname(__file__), "livesvg.js"), 'r').read())
+        svguilibfile.write(open(os.path.join(fpath, "pyjs", "lib", "json.js"), 'r').read())
+        svguilibfile.write(open(os.path.join(fpath, "livesvg.js"), 'r').read())
         svguilibfile.close()
         jsmodules = {"LiveSVGPage": "svguilib.js"}
         res += (("svguilib.js", file(svguilibpath,"rb")),)

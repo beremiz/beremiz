@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -25,9 +26,9 @@
 # Package initialisation
 
 from os import listdir, path
+import util.paths as paths
 
-
-_base_path = path.split(__file__)[0]
+_base_path = paths.AbsDir(__file__)
 
 
 def _GetLocalConnectorClassFactory(name):

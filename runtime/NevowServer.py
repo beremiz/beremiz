@@ -4,6 +4,7 @@
 # This file is part of Beremiz runtime.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING.Runtime file for copyrights details.
 #
@@ -22,6 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 import os
+import util.paths as paths
 from nevow import rend, appserver, inevow, tags, loaders, athena
 from nevow.page import renderer
 from twisted.python import util
@@ -122,7 +124,7 @@ class WebInterface(athena.LivePage):
 
     def __init__(self, plcState=False, *a, **kw):
         super(WebInterface, self).__init__(*a, **kw)
-        self.jsModules.mapping[u'WebInterface'] = util.sibpath(__file__, 'webinterface.js')
+        self.jsModules.mapping[u'WebInterface'] = paths.AbsNeighbourFile(__file__), 'webinterface.js')
         self.plcState = plcState
         self.MainPage.setPLCState(plcState)
 

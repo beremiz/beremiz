@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -28,6 +29,7 @@ from lxml import etree
 from copy import deepcopy
 import os,sys,re
 import datetime
+import util.paths as paths
 from time import localtime
 from collections import OrderedDict, namedtuple
 
@@ -88,7 +90,7 @@ LOCATIONS_ITEMS = [LOCATION_CONFNODE,
                    LOCATION_VAR_OUTPUT,
                    LOCATION_VAR_MEMORY] = range(6)
 
-ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
+ScriptDirectory = paths.AbsDir(__file__)
 
 def GetUneditableNames():
     _ = lambda x:x

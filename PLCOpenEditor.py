@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -25,8 +26,9 @@
 import wx
 import os, sys, platform, time, traceback, getopt
 import version
+import util.paths as paths
 
-beremiz_dir = os.path.dirname(os.path.realpath(__file__))
+beremiz_dir = paths.AbsDir(__file__)
 
 __version__ = "$Revision: 1.130 $"
 

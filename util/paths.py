@@ -4,7 +4,6 @@
 # This file is part of Beremiz, a Integrated Development Environment for
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
-# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
 # Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
@@ -21,13 +20,25 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-import os
-import util.paths as paths
-from POULibrary import POULibrary
+import os, sys
 
-class NativeLibrary(POULibrary):
-    def GetLibraryPath(self):
-        return paths.AbsNeighbourFile(__file__, "NativeLib.xml") 
+def AbsFile(file):
+    if isinstance(file, str):
+        file = unicode(file,sys.getfilesystemencoding())
+    return file
 
+def AbsDir(file):
+    file = AbsFile(file)
+    return os.path.dirname(os.path.realpath(file))
+
+def AbsNeighbourFile(file, *args):
+    return os.path.join(AbsDir(file), *args)
+
+
+def AbsParentDir(file, level = 1):
+    path = AbsDir(file)
+    for i in range(0, level):
+        path = os.path.dirname(path)
+    return path

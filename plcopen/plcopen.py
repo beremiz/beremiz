@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -27,6 +28,7 @@ from types import *
 import os, re
 from lxml import etree
 from collections import OrderedDict
+import util.paths as paths
 
 """
 Dictionary that makes the relation between var names in plcopen and displayed values
@@ -132,7 +134,7 @@ def TestTextElement(text, criteria):
 def TextMatched(str1, str2):
     return str1 and str2 and (str1.upper() == str2.upper())
 
-PLCOpenParser = GenerateParserFromXSD(os.path.join(os.path.split(__file__)[0], "tc6_xml_v201.xsd"))
+PLCOpenParser = GenerateParserFromXSD(paths.AbsNeighbourFile(__file__, "tc6_xml_v201.xsd"))
 PLCOpen_XPath = lambda xpath: etree.XPath(xpath, namespaces=PLCOpenParser.NSMAP)
 
 LOAD_POU_PROJECT_TEMPLATE = """
@@ -167,7 +169,7 @@ def LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type):
   </body>
 </pou>""" % locals()
 
-PLCOpen_v1_file = open(os.path.join(os.path.split(__file__)[0], "TC6_XML_V10_B.xsd"))
+PLCOpen_v1_file = open(paths.AbsNeighbourFile(__file__, "TC6_XML_V10_B.xsd"))
 PLCOpen_v1_xml = PLCOpen_v1_file.read()
 PLCOpen_v1_file.close()
 PLCOpen_v1_xml = PLCOpen_v1_xml.replace(

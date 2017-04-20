@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -25,15 +26,15 @@
 import os
 from POULibrary import POULibrary
 from PythonFileCTNMixin import PythonFileCTNMixin
+import util.paths as paths
 
 class PythonLibrary(POULibrary):
     def GetLibraryPath(self):
-        return os.path.join(os.path.split(__file__)[0], "pous.xml") 
+        return paths.AbsNeighbourFile(__file__, "pous.xml") 
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
         
-        plc_python_filepath = os.path.join(
-            os.path.split(__file__)[0], "plc_python.c")
+        plc_python_filepath = paths.AbsNeighbourFile(__file__, "plc_python.c")
         plc_python_file = open(plc_python_filepath, 'r')
         plc_python_code = plc_python_file.read()
         plc_python_file.close()

@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -23,8 +24,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os, sys, shutil
+import util.paths as paths
 
-base_folder = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+base_folder = paths.AbsParentDir(__file__, 2)
 CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 
@@ -579,7 +581,7 @@ class RootClass:
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
             format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)
         
-        filename = os.path.join(os.path.split(__file__)[0],"cf_runtime.c")
+        filename = paths.AbsNeighbourFile(__file__,"cf_runtime.c")
         cf_main = open(filename).read() % format_dict
         cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c"%format_dict)
         f = open(cf_main_path,'w')

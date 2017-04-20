@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -24,7 +25,8 @@
 
 
 from os.path import join, split, realpath
-sd = split(realpath(__file__))[0]
+import util.paths as paths
+sd = paths.AbsDir(__file__)
 
 # Override gettext _ in this module
 # since we just want string to be added to dictionnary
