@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -26,6 +27,7 @@ import wx
 import os, sys, shutil
 from xml.dom import minidom
 
+import util.paths as paths
 from py_ext import PythonFileCTNMixin
 
 class WxGladeHMI(PythonFileCTNMixin):
@@ -41,7 +43,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         return "wxGlade"
 
     def ConfNodePath(self):
-        return os.path.join(os.path.dirname(__file__))
+        return paths.AbsDir(__file__)
 
     def _getWXGLADEpath(self, project_path=None):
         if project_path is None:

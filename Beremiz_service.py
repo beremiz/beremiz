@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -96,7 +97,8 @@ for o, a in opts:
         usage()
         sys.exit()
 
-beremiz_dir = os.path.dirname(os.path.realpath(__file__))
+import util.paths as paths
+beremiz_dir = paths.AbsDir(__file__)
 
 if len(argv) > 1:
     usage()

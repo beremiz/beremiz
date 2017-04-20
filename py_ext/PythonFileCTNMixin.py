@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -24,6 +25,7 @@
 
 import os, re
 from lxml import etree
+import util.paths as paths
 
 from xmlclass import GenerateParserFromXSD
 
@@ -47,8 +49,7 @@ class PythonFileCTNMixin(CodeFile):
         filepath = self.PythonFileName()
 
         if os.path.isfile(filepath):
-            PythonParser = GenerateParserFromXSD(
-                os.path.join(os.path.dirname(__file__), "py_ext_xsd.xsd"))
+            PythonParser = GenerateParserFromXSD(paths.AbsNeighbourFile(__file__, "py_ext_xsd.xsd"))
 
             xmlfile = open(filepath, 'r')
             pythonfile_xml = xmlfile.read()

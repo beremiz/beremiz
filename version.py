@@ -24,10 +24,11 @@
 
 
 import subprocess, os
+import util.paths as paths
 
 def GetAppRevision():
     rev = None
-    app_dir=os.path.dirname(os.path.realpath(__file__))    
+    app_dir=paths.AbsDir(__file__)
     try:
         pipe = subprocess.Popen(
             ["hg", "id", "-i"],
@@ -88,8 +89,8 @@ def GetAboutDialogInfo():
     '')
 
     # read license file
-    path=os.path.join(os.path.dirname(os.path.abspath(__file__)))
-    license_path = os.path.join(path, u"COPYING")
+    path=paths.AbsDir(__file__)
+    license_path = os.path.join(path, "COPYING")
     license=''
     if os.path.exists(license_path):
         with open(license_path) as f:

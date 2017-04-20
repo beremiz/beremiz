@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -41,6 +42,7 @@ from itertools import izip
 
 import targets
 import connectors
+import util.paths as paths
 from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
@@ -56,7 +58,7 @@ from targets.typemapping import DebugTypesSize, LogLevelsCount, LogLevels
 from targets.typemapping import UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
-base_folder = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
+base_folder = paths.AbsParentDir(__file__)
 
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
@@ -567,7 +569,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return children
 
     def ConfNodePath(self):
-        return os.path.split(__file__)[0]
+        return paths.AbsDir(__file__)
 
     def CTNPath(self, CTNName=None):
         return self.ProjectPath

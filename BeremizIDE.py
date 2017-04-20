@@ -30,9 +30,10 @@ import shutil
 import random
 import time
 import version
+import util.paths as paths
 from types import ListType
 
-beremiz_dir = os.path.dirname(os.path.realpath(__file__))
+beremiz_dir = paths.AbsDir(__file__)
 
 def Bpath(*args):
     return os.path.join(beremiz_dir,*args)

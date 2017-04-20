@@ -27,12 +27,13 @@
 import os, sys, getopt
 import time
 import __builtin__
+import util.paths as paths
 
 class BeremizIDELauncher:
     def __init__(self):
         self.updateinfo_url = None
         self.extensions = []
-        self.app_dir = os.path.dirname(os.path.realpath(__file__))
+        self.app_dir = paths.AbsDir(__file__)
         self.projectOpen = None
         self.buildpath = None
         self.splash = None

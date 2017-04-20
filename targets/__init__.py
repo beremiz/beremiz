@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -34,8 +35,9 @@ Beremiz Targets
 """
 
 from os import listdir, path
+import util.paths as paths
 
-_base_path = path.split(__file__)[0]
+_base_path = paths.AbsDir(__file__)
 def _GetLocalTargetClassFactory(name):
     return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
@@ -78,10 +80,10 @@ def GetTargetCode(targetname):
     return code
 
 def GetHeader():
-    filename = path.join(path.split(__file__)[0],"beremiz.h")
+    filename = paths.AbsNeighbourFile(__file__,"beremiz.h")
     return open(filename).read()
 
 def GetCode(name):
-    filename = path.join(path.split(__file__)[0],name)
+    filename = paths.AbsNeighbourFile(__file__,name)
     return open(filename).read()
 
