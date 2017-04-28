@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Paul Beltyukov
 #
 # See COPYING file for copyrights details.
 #
@@ -52,6 +53,18 @@ class toolchain_gcc():
         return self.CTRInstance.LDFLAGS + \
                [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
 
+    def getCompiler(self):
+        """
+        Returns compiler
+        """
+        return self.CTRInstance.GetTarget().getcontent().getCompiler()
+      
+    def getLinker(self):
+        """
+        Returns linker
+        """
+        return self.CTRInstance.GetTarget().getcontent().getLinker()
+               
     def GetBinaryCode(self):
         try:
             return open(self.exe_path, "rb").read()
@@ -84,7 +97,25 @@ class toolchain_gcc():
             self.exe_path = os.path.join(self.buildpath, self.exe)
             self.md5key = None
             self.srcmd5 = {}
-    
+            
+    def append_cfile_deps(self, src, deps):
+        for l in src.splitlines():
+            res = includes_re.match(l)
+            if res is not None:
+                depfn = res.groups()[0]
+                if os.path.exists(os.path.join(self.buildpath, depfn)):
+                    deps.append(depfn)
+                    
+    def concat_deps(self, bn):
+        # read source
+        src = open(os.path.join(self.buildpath, bn),"r").read()
+        # update direct dependencies
+        deps = []
+        self.append_cfile_deps(src, deps)
+        # recurse through deps
+        # TODO detect cicular deps.
+        return reduce(operator.concat, map(self.concat_deps, deps), src)
+        
     def check_and_update_hash_and_deps(self, bn):
         # Get latest computed hash and deps
         oldhash, deps = self.srcmd5.get(bn,(None,[]))
@@ -98,24 +129,29 @@ class toolchain_gcc():
             # file have changed
             # update direct dependencies
             deps = []
-            for l in src.splitlines():
-                res = includes_re.match(l)
-                if res is not None:
-                    depfn = res.groups()[0]
-                    if os.path.exists(os.path.join(self.buildpath, depfn)):
-                        #print bn + " depends on "+depfn
-                        deps.append(depfn)
+            self.append_cfile_deps(src, deps)
             # store that hashand deps
             self.srcmd5[bn] = (newhash, deps)
         # recurse through deps
         # TODO detect cicular deps.
         return reduce(operator.and_, map(self.check_and_update_hash_and_deps, deps), match)
-                
+        
+    def calc_source_md5(self):
+        wholesrcdata = ""
+        for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+            # Get CFiles list to give it to makefile
+            for CFile, CFLAGS in CFilesAndCFLAGS:
+                CFileName = os.path.basename(CFile)
+                wholesrcdata += self.concat_deps(CFileName)
+        return hashlib.md5(wholesrcdata).hexdigest()
+    
+    def calc_md5(self):
+        return hashlib.md5(self.GetBinaryCode()).hexdigest()
+    
     def build(self):
-        # Retrieve toolchain user parameters
-        toolchain_params = self.CTRInstance.GetTarget().getcontent()
-        self.compiler = toolchain_params.getCompiler()
-        self.linker = toolchain_params.getLinker()
+        # Retrieve compiler and linker
+        self.compiler = self.getCompiler()
+        self.linker = self.getLinker()
 
         Builder_CFLAGS = ' '.join(self.getBuilderCFLAGS())
 
@@ -161,7 +197,7 @@ class toolchain_gcc():
                     obns.append(os.path.basename(CFile))
                     objs.append(CFile)
 
-        ######### GENERATE library FILE ########################################
+        ######### GENERATE OUTPUT FILE ########################################
         # Link all the object files into one binary file
         self.CTRInstance.logger.write(_("Linking :\n"))
         if relink:
@@ -190,8 +226,7 @@ class toolchain_gcc():
             self.CTRInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.exe + "\n")
         
         # Calculate md5 key and get data for the new created PLC
-        data=self.GetBinaryCode()
-        self.md5key = hashlib.md5(data).hexdigest()
+        self.md5key = self.calc_md5()
 
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")
