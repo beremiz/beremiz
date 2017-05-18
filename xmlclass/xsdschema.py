@@ -860,7 +860,7 @@ def ReduceGroup(factory, attributes, elements):
         if element["type"] == CHOICE:
             group["choices"] = element["choices"]
         else:
-            group.update({"elements": element["elements"], "order": group["order"]})
+            group.update({"elements": element["elements"], "order": element["order"]})
         group.update(attributes)
         return group
 
