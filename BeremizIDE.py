@@ -951,10 +951,11 @@ class Beremiz(IDEFrame):
                         self.Bind(wx.EVT_MENU, callback, id=new_id)
                 else:
                     for name, XSDClass, help in confnode.CTNChildrenTypes:
-                        new_id = wx.NewId()
-                        confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Add") + " " + name)
-                        self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
-
+                        if not hasattr(XSDClass, 'CTNMaxCount') or not confnode.Children.get(name) \
+                                or len(confnode.Children[name]) < XSDClass.CTNMaxCount:
+                            new_id = wx.NewId()
+                            confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Add") + " " + name)
+                            self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
             new_id = wx.NewId()
             AppendMenu(confnode_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Delete"))
             self.Bind(wx.EVT_MENU, self.GetDeleteMenuFunction(confnode), id=new_id)
