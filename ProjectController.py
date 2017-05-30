@@ -88,25 +88,50 @@ def GetAddMenuItems():
 
 class Iec2CSettings():
     def __init__(self):
-        self.iec2c = os.path.join(base_folder, "matiec", "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else ""))
+        self.iec2c = None
         self.iec2c_buildopts = None
-        self.ieclib_path   = os.path.join(base_folder, "matiec", "lib")
-        self.ieclib_c_path = None
+        self.ieclib_path   = self.findLibPath()
+        self.ieclib_c_path = self.findLibCPath()
 
-    def findLibCPath(self):
-        path=""
-        paths=[
-            os.path.join(base_folder, "matiec", "lib", "C"),
-            os.path.join(base_folder, "matiec", "lib") ]
+    def findObject(self, paths, test):
+        path=None
         for p in paths:
-            filename=os.path.join(p, "iec_types.h")
-            if (os.path.isfile(filename)):
+            if test(p):
                 path = p
-                break
+                break           
+        return path
+        
+    def findCmd(self):
+        cmd="iec2c"+(".exe" if wx.Platform == '__WXMSW__' else "")
+        paths=[
+            os.path.join(base_folder, "matiec")
+        ]
+        path = self.findObject(paths, lambda p:os.path.isfile(os.path.join(p, cmd)))
+
+        # otherwise use iec2c from PATH
+        if path is not None:
+            cmd=os.path.join(path, cmd)
+
+        return cmd
+    
+    def findLibPath(self):
+        paths=[
+            os.path.join(base_folder, "matiec", "lib"),
+            "/usr/lib/matiec"
+        ]
+        path = self.findObject(paths, lambda p:os.path.isfile(os.path.join(p, "ieclib.txt")))
+        return path
+        
+    def findLibCPath(self):
+        path=None
+        paths=[
+            os.path.join(self.ieclib_path, "C"),
+            self.ieclib_path]
+        path = self.findObject(paths, lambda p:os.path.isfile(os.path.join(p, "iec_types.h")))
         return path
 
     def findSupportedOptions(self):
-        buildcmd = "\"%s\" -h"%(self.iec2c)
+        buildcmd = "\"%s\" -h"%(self.getCmd())
         options =["-f", "-l", "-p"]
 
         buildopt = ""
@@ -123,6 +148,8 @@ class Iec2CSettings():
         return buildopt
 
     def getCmd(self):
+        if self.iec2c is None:
+            self.iec2c = self.findCmd()
         return self.iec2c
 
     def getOptions(self):
