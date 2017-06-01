@@ -1789,6 +1789,10 @@ class PLCControler:
         if isinstance(typename, TupleType) or self.GetBlockType(typename) is not None:
             return False
 
+        # the size of these types is implementation dependend
+        if typename in ["TIME", "DATE", "DT", "TOD"]:
+            return False
+        
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
             return self.IsLocatableDataType(datatype)
