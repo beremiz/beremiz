@@ -1,14 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
-         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <fileHeader companyName="Unknown"
-              productName="Unnamed"
-              productVersion="1"
-              creationDateTime="2012-09-12T23:30:19"/>
-  <contentHeader name="Unnamed"
-                 modificationDateTime="2013-05-28T18:28:14">
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="1" creationDateTime="2012-09-12T23:30:19"/>
+  <contentHeader name="Wiimote example" modificationDateTime="2017-06-06T13:10:31">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -229,10 +222,18 @@
               </connectionPointIn>
               <expression>c</expression>
             </outVariable>
+            <comment localId="17" height="125" width="500">
+              <position x="450" y="30"/>
+              <content>
+                <xhtml:p><![CDATA[This example shows interaction of PLC program with Nintendo Wii Remote controller.
+
+To work this example requires python-cwiid library to be installed.]]></xhtml:p>
+              </content>
+            </comment>
           </FBD>
         </body>
         <documentation>
-<![CDATA[]]>
+          <xhtml:p><![CDATA[]]></xhtml:p>
         </documentation>
       </pou>
     </pous>
