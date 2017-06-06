@@ -19,6 +19,8 @@
     <variable name="YaxisPlus" type="BOOL"/>
     <variable name="ZaxisPlus" type="BOOL"/>
     <variable name="TaxisPlus" type="BOOL"/>
+    <variable name="DrawTestBtn" type="BOOL"/>
+    <variable name="DrawTestBtn2" type="BOOL"/>
   </variables>
   <globals>
     <xhtml:p><![CDATA[
@@ -102,6 +104,8 @@ def Init(self,*args,**kargs):
         lambda axis:( MakeButtonFunc(self, sizer, axis+"axisMinus"), 
                         MakeButtonFunc(self, sizer, axis+"axisPlus")),
         AxisList)
+
+    
     # self.timer = wx.Timer(self, -1)
     # self.Bind(wx.EVT_TIMER, self.UpdatePositions, self.timer)
     # self.ShowFullScreen(True,wx.FULLSCREEN_ALL)
@@ -109,9 +113,11 @@ def Init(self,*args,**kargs):
     
 Class_wxglade_hmi.__init__ = Init
 
-def SetPLCGlobalVar(self, evt):
-    tglbtname = evt.GetEventObject().GetName()
-    setattr(PLCGlobals, tglbtname, evt.GetEventObject().GetValue())
+def SetPLCTestBtnGlobalVar(self, evt):
+    setattr(PLCGlobals, "DrawTestBtn", evt.GetEventObject().GetValue())
+
+def SetPLCTestBtn2GlobalVar(self, evt):
+    setattr(PLCGlobals, "DrawTestBtn2", evt.GetEventObject().GetValue())
 
 ]]></xhtml:p>
   </globals>
