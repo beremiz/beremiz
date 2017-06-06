@@ -51,9 +51,24 @@ class WxGladeHMI(PythonFileCTNMixin):
         # define name for wxGlade gui file
         return os.path.join(project_path, "hmi.wxg")
 
+
+    def GetWxGladePath(self):
+        path = None
+        try:
+            from wxglade import __file__ as fileName
+            path = os.path.dirname(fileName)         
+            return path
+        except ImportError:
+            pass
+
+        defLibDir="/usr/share/wxglade"
+        if os.path.isdir(defLibDir):
+            path = defLibDir
+
+        return path
+    
     def launch_wxglade(self, options, wait=False):
-        from wxglade import __file__ as fileName
-        path = os.path.dirname(fileName)
+        path = self.GetWxGladePath()
         glade = os.path.join(path, 'wxglade.py')
         if wx.Platform == '__WXMSW__':
             glade = "\"%s\""%glade
