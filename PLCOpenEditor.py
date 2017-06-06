@@ -156,6 +156,14 @@ class PLCOpenEditor(IDEFrame):
         #      kind=wx.ITEM_NORMAL, text=u'PLCOpen\tF2')
         #AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
         #      kind=wx.ITEM_NORMAL, text=u'IEC 61131-3\tF3')
+        
+        handler=lambda event: {
+            wx.MessageBox(version.GetCommunityHelpMsg(), _(u'Community support'), wx.OK | wx.ICON_INFORMATION)
+        }
+        id = wx.NewId()
+        parent.Append(help='', id=id, kind=wx.ITEM_NORMAL, text=_(u'Community support'))        
+        self.Bind(wx.EVT_MENU, handler, id=id)
+        
         AppendMenu(parent, help='', id=wx.ID_ABOUT,
             kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnPLCOpenEditorMenu, id=wx.ID_HELP)
