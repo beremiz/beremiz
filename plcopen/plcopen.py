@@ -2416,7 +2416,7 @@ def extractValues(values):
 
 cls = PLCOpenParser.GetElementClass("arrayValue", "value")
 if cls:
-    arrayValue_model = re.compile("([0-9]*)\((.*)\)$")
+    arrayValue_model = re.compile("([0-9]+)\((.*)\)$")
     
     def setvalue(self, value):
         elements = []
