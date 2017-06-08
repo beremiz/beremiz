@@ -41,8 +41,7 @@ DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
 class ArrayTypeDialog(wx.Dialog):
     
     def __init__(self, parent, datatypes, infos):
-        wx.Dialog.__init__(self, parent,
-              size=wx.Size(500, 350), title=_('Edit array type properties'))
+        wx.Dialog.__init__(self, parent, title=_('Edit array type properties'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -88,6 +87,7 @@ class ArrayTypeDialog(wx.Dialog):
             self.BaseType.SetStringSelection(infos)
         
         self.BaseType.SetFocus()
+        self.Fit()
         
     def GetDimensions(self):
         dimensions_list = []
