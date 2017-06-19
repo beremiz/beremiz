@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -60,7 +61,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         @param exclude_input: Exclude input from variable class selection
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              size=wx.Size(400, 380), title=_('Variable Properties'))
+              title=_('Variable Properties'))
         
         # Init common sizers
         self._init_sizers(4, 2, 4, None, 3, 2)
@@ -97,10 +98,10 @@ class FBDVariableDialog(BlockPreviewDialog):
         
         # Create a list box to selected variable expression in the list of
         # variables defined in POU
-        self.VariableName = wx.ListBox(self, size=wx.Size(0, 120), 
+        self.VariableName = wx.ListBox(self, size=wx.Size(-1,120),
               style=wx.LB_SINGLE|wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
-        self.RightGridSizer.AddWindow(self.VariableName, flag=wx.GROW)
+        self.RightGridSizer.AddWindow(self.VariableName, border=4, flag=wx.GROW|wx.TOP)
         
         # Add preview panel and associated label to sizers
         self.MainSizer.AddWindow(self.PreviewLabel, border=20,
@@ -124,6 +125,9 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Refresh values in name list box
         self.RefreshNameList()
         
+        self.Preview.SetInitialSize(wx.Size(-1, 60))
+        self.Fit()
+
         # Class combo box is default control having keyboard focus
         self.Class.SetFocus()
 
@@ -187,6 +191,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         
         # Refresh preview panel
         self.RefreshPreview()
+        self.Fit()
         
     def GetValues(self):
         """

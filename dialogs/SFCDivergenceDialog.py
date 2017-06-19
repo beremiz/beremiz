@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -48,8 +49,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         @param poss_div_types: Types of divergence that will be available in the dialog window
         """
-        BlockPreviewDialog.__init__(self, parent, controller, tagname, 
-              size=wx.Size(500, 300), 
+        BlockPreviewDialog.__init__(self, parent, controller, tagname,
               title=_('Create a new divergence or convergence'))
         
         # Init common sizers
@@ -102,6 +102,8 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
+        self.Fit()
+
         # Selection divergence radio button is default control having keyboard
         # focus
         self.TypeRadioButtons[focusbtn].SetFocus()

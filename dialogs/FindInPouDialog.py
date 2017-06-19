@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -34,10 +35,7 @@ class FindInPouDialog(wx.Dialog):
     
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_("Find"),         
-              size=wx.Size(500, 280), style=wx.CAPTION|
-                                            wx.CLOSE_BOX|
-                                            wx.CLIP_CHILDREN|
-                                            wx.RESIZE_BORDER)
+              style=wx.CAPTION|wx.CLOSE_BOX|wx.CLIP_CHILDREN|wx.RESIZE_BORDER)
         
         self._init_icon(parent)
         panel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
@@ -112,11 +110,18 @@ class FindInPouDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.CloseButton)
         buttons_sizer.AddWindow(self.CloseButton)
 
-        self.StatusLabel = wx.StaticText(panel, label= "")
+        # set the longest message here, to use it length to calculate
+        # optimal size of dialog window
+        self.RegExpSyntaxErrMsg = _("Syntax error in regular expression of pattern to search!")
+        self.StatusLabel = wx.StaticText(panel, label= self.RegExpSyntaxErrMsg)
         controls_sizer.AddWindow(self.StatusLabel, flag=wx.ALIGN_CENTER_VERTICAL)
         
         panel.SetSizer(main_sizer)
         main_sizer.Fit(self)
+
+        # clear message after dialog size calculation
+        self.SetStatusText("")
+
         
         self.ParentWindow = parent
         
@@ -169,7 +174,7 @@ class FindInPouDialog(wx.Dialog):
                 CompilePattern(self.criteria)
             except:
                 self.criteria.clear()
-                message = _("Syntax error in regular expression of pattern to search!")
+                message = self.RegExpSyntaxErrMsg
             self.SetStatusText(message)
         if len(self.criteria) > 0:
             wx.CallAfter(self.ParentWindow.FindInPou,

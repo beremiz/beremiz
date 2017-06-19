@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -48,7 +49,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         connection (default: True)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              size=wx.Size(350, 350), title=_('Edit transition'))
+              title=_('Edit transition'))
         
         # Init common sizers
         self._init_sizers(2, 0, 8, None, 2, 1)
@@ -101,6 +102,8 @@ class SFCTransitionDialog(BlockPreviewDialog):
         # Add buttons sizer to sizers
         self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+
+        self.Fit()
         
         # Reference radio button is default control having keyboard focus
         self.TypeRadioButtons["reference"][0].SetFocus()

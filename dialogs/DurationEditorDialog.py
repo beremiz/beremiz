@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -55,8 +56,7 @@ CONTROLS = [
 class DurationEditorDialog(wx.Dialog):
 
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, 
-              size=wx.Size(700, 200), title=_('Edit Duration'))
+        wx.Dialog.__init__(self, parent, title=_('Edit Duration'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -91,7 +91,7 @@ class DurationEditorDialog(wx.Dialog):
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
         self.SetSizer(main_sizer)
-        
+        self.Fit()
         self.Days.SetFocus()
         
     def SetDuration(self, value):

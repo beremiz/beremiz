@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -77,8 +78,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     
     def _init_ctrls(self, prnt):
         wx.Dialog.__init__(self, id=ID_DISCOVERYDIALOG, 
-              name='DiscoveryDialog', parent=prnt,  
-              size=wx.Size(600, 600), style=wx.DEFAULT_DIALOG_STYLE,
+              name='DiscoveryDialog', parent=prnt, style=wx.DEFAULT_DIALOG_STYLE,
               title=_('Service Discovery'))
         
         self.staticText1 = wx.StaticText(id=ID_DISCOVERYDIALOGSTATICTEXT1,
@@ -97,6 +97,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.ServicesList.SetColumnWidth(1, 150)
         self.ServicesList.SetColumnWidth(2, 150)
         self.ServicesList.SetColumnWidth(3, 150)
+        self.ServicesList.SetInitialSize(wx.Size(-1, 300))
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, id=ID_DISCOVERYDIALOGSERVICESLIST)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, id=ID_DISCOVERYDIALOGSERVICESLIST)
         
@@ -120,6 +121,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTER)
         
         self._init_sizers()
+        self.Fit()
         
     def __init__(self, parent):
         self._init_ctrls(parent)

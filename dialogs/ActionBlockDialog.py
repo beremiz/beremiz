@@ -4,6 +4,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -117,8 +118,7 @@ class ActionTable(CustomTable):
 class ActionBlockDialog(wx.Dialog):
     
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent,
-              size=wx.Size(500, 300), title=_('Edit action block properties'))
+        wx.Dialog.__init__(self, parent, title=_('Edit action block properties'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -144,7 +144,7 @@ class ActionBlockDialog(wx.Dialog):
             setattr(self, name, button)
             top_sizer.AddWindow(button)
         
-        self.ActionsGrid = CustomGrid(self, size=wx.Size(0, 0), style=wx.VSCROLL)
+        self.ActionsGrid = CustomGrid(self, size=wx.Size(-1, 250), style=wx.VSCROLL)
         self.ActionsGrid.DisableDragGridSize()
         self.ActionsGrid.EnableScrolling(False, True)
         self.ActionsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, 
@@ -163,7 +163,7 @@ class ActionBlockDialog(wx.Dialog):
         typelist = GetTypeList()       
         self.TypeList = ",".join(map(_,typelist))
         self.TranslateType = dict([(_(value), value) for value in typelist])
-        self.ColSizes = [60, 90, 80, 110, 80]
+        self.ColSizes = [60, 90, 130, 200, 50]
         self.ColAlignements = [wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
         
         self.ActionsGrid.SetTable(self.Table)
@@ -184,6 +184,7 @@ class ActionBlockDialog(wx.Dialog):
         self.Table.ResetView(self.ActionsGrid)
         self.ActionsGrid.SetFocus()
         self.ActionsGrid.RefreshButtons()
+        self.Fit()
     
     def OnOK(self, event):
         self.ActionsGrid.CloseEditControl()

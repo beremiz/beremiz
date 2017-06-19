@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -380,8 +381,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             value_infos = None
                         browse_boxsizer.AddWindow(textctrl)
 
-                        button = wx.Button(self.ParamsEditor,
-                              label="...", size=wx.Size(25, 25))
+                        button = wx.Button(self.ParamsEditor, label="...")
                         browse_boxsizer.AddWindow(button)
                         button.Bind(wx.EVT_BUTTON,
                                     self.GetBrowseCallBackFunction(element_infos["name"], textctrl, element_infos["type"],

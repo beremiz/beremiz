@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -47,7 +48,7 @@ class SFCStepDialog(BlockPreviewDialog):
         @param initial: True if step is initial (default: False)
         """
         BlockPreviewDialog.__init__(self,parent, controller, tagname,  
-              size=wx.Size(400, 280), title=_('Edit Step'))
+              title=_('Edit Step'))
         
         # Init common sizers
         self._init_sizers(2, 0, 6, None, 2, 1)
@@ -91,6 +92,8 @@ class SFCStepDialog(BlockPreviewDialog):
         # Set default name for step
         self.StepName.ChangeValue(controller.GenerateNewName(
                tagname, None, "Step%d", 0))
+
+        self.Fit()
         
         # Step name text control is default control having keyboard focus
         self.StepName.SetFocus()

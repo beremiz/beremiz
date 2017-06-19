@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -61,7 +62,7 @@ class ProjectPropertiesPanel(wx.Notebook):
                   flag=wx.GROW|border|wx.RIGHT)
 
     def __init__(self, parent, controller=None, window=None, enable_required=True):
-        wx.Notebook.__init__(self, parent, size=wx.Size(500, 300))
+        wx.Notebook.__init__(self, parent)
 
         self.Controller = controller
         self.ParentWindow = window
@@ -199,7 +200,7 @@ class ProjectPropertiesPanel(wx.Notebook):
               flag=wx.BOTTOM|wx.LEFT)
         
         self.ContentDescription = wx.TextCtrl(self.MiscellaneousPanel, 
-              style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
+              size=wx.Size(240,150), style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnContentDescriptionChanged, 
               self.ContentDescription)
         self.ContentDescription.Bind(wx.EVT_KILL_FOCUS, 

@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -38,14 +39,13 @@ TRANSITION_LANGUAGES_DICT = dict([(_(language), language) for language in GetTra
 class PouTransitionDialog(wx.Dialog):
     
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, size=wx.Size(350, 200),
-              title=_('Create a new transition'))
+        wx.Dialog.__init__(self, parent, title=_('Create a new transition'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
         
-        infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=15)
+        infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=10)
         infos_sizer.AddGrowableCol(1)
         main_sizer.AddSizer(infos_sizer, border=20, 
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
@@ -54,7 +54,7 @@ class PouTransitionDialog(wx.Dialog):
         infos_sizer.AddWindow(transitionname_label, border=4, 
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
 
-        self.TransitionName = wx.TextCtrl(self)
+        self.TransitionName = wx.TextCtrl(self, size=wx.Size(180,-1))
         infos_sizer.AddWindow(self.TransitionName, flag=wx.GROW)
 
         language_label = wx.StaticText(self, label=_('Language:'))
@@ -63,17 +63,17 @@ class PouTransitionDialog(wx.Dialog):
         
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
         infos_sizer.AddWindow(self.Language, flag=wx.GROW)
-        
+
         button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        main_sizer.AddSizer(button_sizer, border=20, flag=wx.ALIGN_RIGHT|wx.BOTTOM)
         
         self.SetSizer(main_sizer)
         
         for language in GetTransitionLanguages():
             self.Language.Append(_(language))
             
+        self.Fit()
         self.PouNames = []
         self.PouElementNames = []
         

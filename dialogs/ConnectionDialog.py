@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -49,10 +50,10 @@ class ConnectionDialog(BlockPreviewDialog):
         to all connector having the same name in POU (default: False)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname, 
-              size=wx.Size(350, 250), title=_('Connection Properties'))
+              title=_('Connection Properties'))
         
         # Init common sizers
-        self._init_sizers(2, 0, 5, None, 2, 1)
+        self._init_sizers(2, 0, 7, 1, 0, None)
         
         # Create label for connection type
         type_label = wx.StaticText(self, label=_('Type:'))
@@ -77,16 +78,19 @@ class ConnectionDialog(BlockPreviewDialog):
         
         # Create text control for defining connection name
         self.ConnectionName = wx.TextCtrl(self)
+        self.ConnectionName.SetMinSize(wx.Size(200,-1))
         self.Bind(wx.EVT_TEXT, self.OnNameChanged, self.ConnectionName)
         self.LeftGridSizer.AddWindow(self.ConnectionName, flag=wx.GROW)
         
         # Add preview panel and associated label to sizers
-        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.Preview.SetMinSize(wx.Size(-1,100))
+        self.LeftGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
+        self.LeftGridSizer.AddWindow(self.Preview, flag=wx.GROW)
         
         # Add buttons sizer to sizers
         self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        self.ColumnSizer.RemoveSizer(self.RightGridSizer)
         
         # Add button for applying connection name modification to all connection
         # of POU
@@ -95,13 +99,12 @@ class ConnectionDialog(BlockPreviewDialog):
             self.ApplyToAllButton.SetToolTipString(
                 _("Apply name modification to all continuations with the same name"))
             self.Bind(wx.EVT_BUTTON, self.OnApplyToAll, self.ApplyToAllButton)
-            self.ButtonSizer.AddWindow(self.ApplyToAllButton, 
-                    border=(3 if wx.Platform == '__WXMSW__' else 10),
-                    flag=wx.LEFT)
+            self.ButtonSizer.AddWindow(self.ApplyToAllButton, flag=wx.LEFT)
         else:
             self.ConnectionName.ChangeValue(
                 controller.GenerateNewName(
                         tagname, None, "Connection%d", 0))
+        self.Fit()
         
         # Connector radio button is default control having keyboard focus
         self.TypeRadioButtons[CONNECTOR].SetFocus()

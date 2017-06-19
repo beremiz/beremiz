@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -47,7 +48,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              size=wx.Size(350, 260), title=_('Power Rail Properties'))
+              title=_('Power Rail Properties'))
         
         # Init common sizers
         self._init_sizers(2, 0, 5, None, 2, 1)
@@ -87,6 +88,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         # Add buttons sizer to sizers
         self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        self.Fit()
         
         # Left Power Rail radio button is default control having keyboard focus
         self.TypeRadioButtons[LEFTRAIL].SetFocus()

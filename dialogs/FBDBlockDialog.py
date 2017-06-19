@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -56,7 +57,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              size=wx.Size(600, 450), title=_('Block Properties'))
+              title=_('Block Properties'))
         
         # Init common sizers
         self._init_sizers(2, 0, 1, 0, 3, 2)
@@ -68,6 +69,8 @@ class FBDBlockDialog(BlockPreviewDialog):
         
         # Create Library panel and add it to static box
         self.LibraryPanel = LibraryPanel(self)
+        self.LibraryPanel.SetInitialSize(wx.Size(-1, 400))
+        
         # Set function to call when selection in Library panel changed
         setattr(self.LibraryPanel, "_OnTreeItemSelected", 
               self.OnLibraryTreeItemSelected)
@@ -150,6 +153,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         
         # Refresh Library panel values
         self.LibraryPanel.SetBlockList(controller.GetBlockTypes(tagname))
+        self.Fit()
         self.LibraryPanel.SetFocus()
     
     def SetValues(self, values):

@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -61,8 +62,7 @@ for size, types in LOCATIONDATATYPES.iteritems():
 class BrowseLocationsDialog(wx.Dialog):
     
     def __init__(self, parent, var_type, controller):
-        wx.Dialog.__init__(self, parent,  
-              size=wx.Size(600, 400), title=_('Browse Locations'),
+        wx.Dialog.__init__(self, parent, title=_('Browse Locations'),
               style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
@@ -75,6 +75,7 @@ class BrowseLocationsDialog(wx.Dialog):
         
         self.LocationsTree = wx.TreeCtrl(self, 
               style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER|wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT)
+        self.LocationsTree.SetInitialSize(wx.Size(-1, 300))
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnLocationsTreeItemActivated, 
                   self.LocationsTree)
         main_sizer.AddWindow(self.LocationsTree, border=20, 
@@ -91,7 +92,7 @@ class BrowseLocationsDialog(wx.Dialog):
         button_gridsizer.AddWindow(direction_label,
               flag=wx.ALIGN_CENTER_VERTICAL)
         
-        self.DirFilterChoice = wx.ComboBox(self, size=wx.Size(0, -1), style=wx.CB_READONLY)
+        self.DirFilterChoice = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnFilterChoice, self.DirFilterChoice)
         button_gridsizer.AddWindow(self.DirFilterChoice,
               flag=wx.GROW|wx.ALIGN_CENTER_VERTICAL)
@@ -100,7 +101,7 @@ class BrowseLocationsDialog(wx.Dialog):
         button_gridsizer.AddWindow(filter_label,
               flag=wx.ALIGN_CENTER_VERTICAL)
         
-        self.TypeFilterChoice = wx.ComboBox(self, size=wx.Size(0, -1), style=wx.CB_READONLY)
+        self.TypeFilterChoice = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnFilterChoice, self.TypeFilterChoice)
         button_gridsizer.AddWindow(self.TypeFilterChoice,
               flag=wx.GROW|wx.ALIGN_CENTER_VERTICAL)
@@ -144,6 +145,7 @@ class BrowseLocationsDialog(wx.Dialog):
         self.RefreshFilters()
         
         self.RefreshLocationsTree()
+        self.Fit()
     
     def RefreshFilters(self):
         self.DirFilter = DIRFILTERCHOICE_OPTIONS[self.DirFilterChoice.GetStringSelection()]
