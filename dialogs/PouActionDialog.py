@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -34,8 +35,7 @@ ACTION_LANGUAGES_DICT = dict([(_(language), language) for language in GetActionL
 class PouActionDialog(wx.Dialog):
     
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, size=wx.Size(320, 200), 
-              title=_('Create a new action'))
+        wx.Dialog.__init__(self, parent, title=_('Create a new action'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -50,7 +50,7 @@ class PouActionDialog(wx.Dialog):
         infos_sizer.AddWindow(actionname_label, border=4, 
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
         
-        self.ActionName = wx.TextCtrl(self)
+        self.ActionName = wx.TextCtrl(self, size=wx.Size(180,-1))
         infos_sizer.AddWindow(self.ActionName, flag=wx.GROW)
         
         language_label = wx.StaticText(self, label=_('Language:'))
@@ -71,6 +71,7 @@ class PouActionDialog(wx.Dialog):
         for option in GetActionLanguages():
             self.Language.Append(_(option))
         
+        self.Fit()
         self.PouNames = []
         self.PouElementNames = []
     

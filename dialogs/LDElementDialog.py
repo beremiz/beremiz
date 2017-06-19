@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -50,7 +51,6 @@ class LDElementDialog(BlockPreviewDialog):
         @param type: Type of LD element ('contact or 'coil')
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname, 
-              size=wx.Size(350, 320 if type == "contact" else 380),
               title=(_("Edit Contact Values")
                      if type == "contact"
                      else _("Edit Coil Values")))
@@ -118,6 +118,7 @@ class LDElementDialog(BlockPreviewDialog):
                value_type == "BOOL":
                 self.ElementVariable.Append(name)
         
+        self.Fit()
         # Normal radio button is default control having keyboard focus
         self.ModifierRadioButtons[element_modifiers[0]].SetFocus()
     

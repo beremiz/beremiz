@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -43,8 +44,7 @@ class PouDialog(wx.Dialog):
     def __init__(self, parent, pou_type = None):
         wx.Dialog.__init__(self, id=-1, parent=parent,
               name='PouDialog', title=_('Create a new POU'),
-              size=wx.Size(300, 200), style=wx.DEFAULT_DIALOG_STYLE)
-        self.SetClientSize(wx.Size(300, 200))
+              style=wx.DEFAULT_DIALOG_STYLE)
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -89,7 +89,7 @@ class PouDialog(wx.Dialog):
         if pou_type is not None:
             self.PouType.SetStringSelection(_(pou_type))
         self.RefreshLanguage()
-
+        self.Fit()
         self.PouNames = []
         self.PouElementNames = []
 

@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2012: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -30,7 +31,7 @@ class ProjectDialog(wx.Dialog):
     
     def __init__(self, parent, enable_required=True):
         wx.Dialog.__init__(self, parent, title=_('Project properties'), 
-              size=wx.Size(500, 350), style=wx.DEFAULT_DIALOG_STYLE)
+              style=wx.DEFAULT_DIALOG_STYLE)
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -47,6 +48,8 @@ class ProjectDialog(wx.Dialog):
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
         
         self.SetSizer(main_sizer)
+        self.ProjectProperties.Fit()
+        self.Fit()
         
     def OnOK(self, event):
         values = self.ProjectProperties.GetValues()

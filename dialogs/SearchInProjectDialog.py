@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -41,8 +42,7 @@ def GetElementsChoices():
 class SearchInProjectDialog(wx.Dialog):
     
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, title=_('Search in Project'), 
-              size=wx.Size(600, 350))
+        wx.Dialog.__init__(self, parent, title=_('Search in Project'))
         
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -59,7 +59,7 @@ class SearchInProjectDialog(wx.Dialog):
         self.CaseSensitive = wx.CheckBox(self, label=_('Case sensitive'))
         pattern_sizer.AddWindow(self.CaseSensitive, flag=wx.GROW)
         
-        self.Pattern = wx.TextCtrl(self)
+        self.Pattern = wx.TextCtrl(self, size=wx.Size(250,-1))
         self.Bind(wx.EVT_TEXT, self.FindPatternChanged, self.Pattern)
         pattern_sizer.AddWindow(self.Pattern, flag=wx.GROW)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)
@@ -75,15 +75,13 @@ class SearchInProjectDialog(wx.Dialog):
         scope_sizer.AddSizer(scope_selection_sizer, 1, border=5, 
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.BOTTOM)
         
-        self.WholeProject = wx.RadioButton(self, label=_('Whole Project'), 
-              size=wx.Size(0, 24), style=wx.RB_GROUP)
+        self.WholeProject = wx.RadioButton(self, label=_('Whole Project'), style=wx.RB_GROUP)
         self.WholeProject.SetValue(True)
         self.Bind(wx.EVT_RADIOBUTTON, self.OnScopeChanged, self.WholeProject)
         scope_selection_sizer.AddWindow(self.WholeProject, border=5, 
               flag=wx.GROW|wx.BOTTOM)
         
-        self.OnlyElements = wx.RadioButton(self, 
-              label=_('Only Elements'), size=wx.Size(0, 24))
+        self.OnlyElements = wx.RadioButton(self, label=_('Only Elements'))
         self.Bind(wx.EVT_RADIOBUTTON, self.OnScopeChanged, self.OnlyElements)
         self.OnlyElements.SetValue(False)
         scope_selection_sizer.AddWindow(self.OnlyElements, flag=wx.GROW)
@@ -110,6 +108,8 @@ class SearchInProjectDialog(wx.Dialog):
         
         for name, label in GetElementsChoices():
             self.ElementsList.Append(_(label))
+
+        self.Fit()
         self.infosPrev = {}
         self.criteria = {}
         self.Pattern.SetFocus()

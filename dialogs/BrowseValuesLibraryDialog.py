@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov <andrej.skvortzov@gmail.com>
 #
 # See COPYING file for copyrights details.
 #
@@ -33,10 +34,8 @@ class BrowseValuesLibraryDialog(wx.Dialog):
     def __init__(self, parent, name, library, default=None):
         wx.Dialog.__init__(self,
               name='BrowseValueDialog', parent=parent,
-              size=wx.Size(600, 400), style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
+              style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
               title=_('Browse %s values library') % name)
-
-        self.SetClientSize(wx.Size(600, 400))
 
         self.staticText1 = wx.StaticText(
               label=_('Choose a value for %s:') % name, name='staticText1', parent=self,
@@ -44,7 +43,7 @@ class BrowseValuesLibraryDialog(wx.Dialog):
         
         self.ValuesLibrary = wx.TreeCtrl(
               name='ValuesLibrary', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER|wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT)
+              size=wx.Size(400, 200), style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER|wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT)
         
         self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
 
@@ -60,6 +59,7 @@ class BrowseValuesLibraryDialog(wx.Dialog):
         self.flexGridSizer1.AddGrowableRow(1)
         
         self.SetSizer(self.flexGridSizer1)
+        self.Fit()
         
         root = self.ValuesLibrary.AddRoot("")
         self.GenerateValuesLibraryBranch(root, library, default)
