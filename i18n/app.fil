@@ -42,7 +42,6 @@
 ../targets/Xenomai/__init__.py
 ../targets/Xenomai/XSD
 ../targets/XSD_toolchain_gcc
-../targets/PLC/XSD
 ../targets/__init__.py
 ../targets/toolchain_gcc.py
 ../targets/toolchain_makefile.py
