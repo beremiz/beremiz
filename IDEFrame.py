@@ -641,8 +641,6 @@ class IDEFrame(wx.Frame):
 
         self.AUIManager.Update()
 
-        self.FindDialog = FindInPouDialog(self)
-        self.FindDialog.Hide()
 
     ## Constructor of the PLCOpenEditor class.
     #  @param parent The parent window.
@@ -731,8 +729,14 @@ class IDEFrame(wx.Frame):
         self.SetRefreshFunctions()
         self.SetDeleteFunctions()
 
+        wx.CallAfter(self.InitFindDialog)
+
     def __del__(self):
         self.FindDialog.Destroy()
+
+    def InitFindDialog(self):
+        self.FindDialog = FindInPouDialog(self)
+        self.FindDialog.Hide()
 
     def Show(self):
         wx.Frame.Show(self)
