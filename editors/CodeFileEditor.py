@@ -607,7 +607,7 @@ class VariablesTable(CustomTable):
             if col == 0:
                 return row + 1
             else:
-                return str(self.data[row].get(self.GetColLabelValue(col, False), ""))
+                return unicode(self.data[row].get(self.GetColLabelValue(col, False), ""))
 
     def _updateColAttrs(self, grid):
         """
