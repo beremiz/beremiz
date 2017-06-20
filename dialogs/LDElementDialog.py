@@ -94,6 +94,8 @@ class LDElementDialog(BlockPreviewDialog):
         self.ElementVariable = wx.ComboBox(self, style=wx.CB_SORT)
         self.Bind(wx.EVT_COMBOBOX, self.OnVariableChanged, 
                   self.ElementVariable)
+        self.Bind(wx.EVT_TEXT, self.OnVariableChanged, 
+                  self.ElementVariable)        
         self.LeftGridSizer.AddWindow(self.ElementVariable, border=5,
              flag=wx.GROW|wx.TOP)
         
@@ -185,11 +187,21 @@ class LDElementDialog(BlockPreviewDialog):
         Refresh preview panel of graphic element
         Override BlockPreviewDialog function
         """
+        value = self.ElementVariable.GetValue()
+        
         # Set graphic element displayed, creating a LD element
         self.Element = self.ElementClass(
                 self.Preview, 
                 self.GetElementModifier(),
-                self.ElementVariable.GetValue())
+                value)
+
+        button = self.ButtonSizer.GetAffirmativeButton()
+        button.Enable(value != "")
         
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)
+        
+    def OnOK(self, event):
+        if self.ElementVariable.GetValue() != "":
+            self.EndModal(wx.ID_OK)
+
