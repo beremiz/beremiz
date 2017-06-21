@@ -167,10 +167,28 @@ class ForceVariableDialog(wx.TextEntryDialog):
         
         self.Bind(wx.EVT_BUTTON, self.OnOK, 
               self.GetSizer().GetItem(2).GetSizer().GetItem(1).GetSizer().GetAffirmativeButton())
-        
+        self.ValueTextCtrl=self.GetSizer().GetItem(1).GetWindow()
+        if self.IEC_Type == "BOOL":
+            self.ToggleButton = wx.ToggleButton(self, label=_("Toggle value"))
+            value=GetTypeValue[self.IEC_Type](defaultValue)
+            if value is not None:
+                self.ToggleButton.SetValue(value)
+
+            border=self.GetSizer().GetItem(1).GetBorder()
+            self.GetSizer().Insert(before=2, item=self.ToggleButton,
+                                   border=border,
+                                   flag=wx.LEFT|wx.RIGHT|wx.EXPAND)
+            self.Bind(wx.EVT_TOGGLEBUTTON, self.ToggleBoolValue, self.ToggleButton)
+
+        self.Fit()
+
+    def ToggleBoolValue(self, event):
+        value=self.ToggleButton.GetValue()
+        self.ValueTextCtrl.SetValue(unicode(value))
+
     def OnOK(self, event):
         message = None
-        value = self.GetSizer().GetItem(1).GetWindow().GetValue()
+        value = self.ValueTextCtrl.GetValue()
         if value == "":
             message = _("You must type a value!")
         elif GetTypeValue[self.IEC_Type](value) is None:
