@@ -122,6 +122,7 @@ class DurationEditorDialog(wx.Dialog):
                 message.ShowModal()
                 message.Destroy()
             event.Skip()
+            self.OnCloseDialog()
         return OnValueChanged
 
     def GetDuration(self):
@@ -147,6 +148,9 @@ class DurationEditorDialog(wx.Dialog):
         return duration
     
     def OnOK(self, event):
+        self.OnCloseDialog()
+
+    def OnCloseDialog(self):
         errors = []
         for control, name in [(self.Days, _("days")), (self.Hours, _("hours")), 
                               (self.Minutes, _("minutes")), (self.Seconds, _("seconds")),
