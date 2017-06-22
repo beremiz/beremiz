@@ -111,7 +111,11 @@ def GetAboutDialogInfo():
     info.Translators = ("Russian\t- Andrey Skvortsov <andrej.skvortzov@gmail.com>",
 	                "Korean\t- Reinhard Lee <lij3105@gmail.com>",
 	                "German\t- Mark Muzenhardt <mark.muzenhardt@gmail.com>",
-	                "French\t- Laurent Bessard <laurent.bessard@gmail.com>")
+	                "French\t- Laurent Bessard <laurent.bessard@gmail.com>",
+	                "      \t  Fabien M <mail@fabienm.eu>",
+	                "Slovenian\t- Janez Pregelj",
+	                "Portuguese\t- Thiago Alves <thiagoralves@gmail.com>"
+    )
     return info
 
 app_version =  "1.2"
