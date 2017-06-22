@@ -182,9 +182,13 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     #   -s                          : sort output by string content (easier to use when we need to merge several .po files)
     #   --files-from=app.fil        : The list of files is taken from the file: app.fil
     #   --output=                   : specifies the name of the output file (using a .pot extension)
-    cmd = 'xgettext -s --no-wrap --language=Python --files-from=' + filelist + ' --output=' + fileout
+    cmd = 'xgettext -s --no-wrap --language=Python --files-from=' + filelist + ' --output=' + fileout + ' --package-name ' + applicationName
     if verbose: print cmd
-    os.system(cmd)                                                
+    os.system(cmd)
+
+    cmd = 'sed --in-place ' + fileout + ' --expression=s/CHARSET/UTF-8/'
+    if verbose: print cmd
+    os.system(cmd)
 
     XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
     processCustomFiles(filelist, fileout, XSD_STRING_MODEL, 'Extra XSD strings')
