@@ -2,6 +2,7 @@
 ../canfestival/SlaveEditor.py
 ../canfestival/config_utils.py
 ../canfestival/NetworkEditor.py
+../BeremizIDE.py
 ../dialogs/LDElementDialog.py
 ../dialogs/ForceVariableDialog.py
 ../dialogs/SearchInProjectDialog.py
@@ -74,6 +75,7 @@
 ../controls/SearchResultPanel.py
 ../controls/PouInstanceVariablesPanel.py
 ../controls/CustomTable.py
+../controls/EnhancedStatusBar.py
 ../controls/LibraryPanel.py
 ../controls/CustomToolTip.py
 ../controls/LogViewer.py
@@ -115,5 +117,3 @@
 ../IDEFrame.py
 ../PLCGenerator.py
 ../Beremiz_service.py
-../plcopen/Additional_Function_Blocks.xml
-../plcopen/Standard_Function_Blocks.xml
