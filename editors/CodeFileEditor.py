@@ -678,10 +678,7 @@ class VariablesEditor(wx.Panel):
 
         self.VariablesDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial": "",
                                       "Description":"", "OnChange":"", "Options":""}
-        self.Table = VariablesTable(self, [], ["#", "Name","Type", "Initial",
-                                               "Description", "OnChange", "Options"])        
-        # self.Table = VariablesTable(self, [], [_("#"), _("Name"), _("Type"), _("Initial"),
-        #                                        _("Description"), _("OnChange"), _("Options")])
+        self.Table = VariablesTable(self, [], self.GetVariableTableColnames())
         self.ColAlignements = [wx.ALIGN_RIGHT] +  \
                               [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
         self.ColSizes = [20, 150] + [130]*(len(self.VariablesDefaultValue)-1)
@@ -736,6 +733,10 @@ class VariablesEditor(wx.Panel):
             self.VariablesGrid.SetColAttr(col, attr)
             self.VariablesGrid.SetColSize(col, self.ColSizes[col])
         self.Table.ResetView(self.VariablesGrid)
+
+    def GetVariableTableColnames(self):
+        _ = lambda x : x
+    	return ["#", _("Name"),_("Type"), _("Initial"), _("Description"), _("OnChange"), _("Options")]
 
     def RefreshModel(self):
         self.Controler.SetVariables(self.Table.GetData())
