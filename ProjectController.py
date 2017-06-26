@@ -393,6 +393,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ProjectAddConfiguration(config_name)
         self.ProjectAddConfigurationResource(config_name, res_name)
 
+    def SetProjectDefaultConfiguration(self):
+        # Sets default task and instance for new project
+        config = self.Project.getconfiguration(self.GetProjectMainConfigurationName())
+        resource = config.getresource()[0].getname()
+        config = config.getname()
+        resource_tagname = self.ComputeConfigurationResourceName(config, resource)
+        def_task = [
+            {'Priority': '0', 'Single': '', 'Interval': 'T#20ms', 'Name': 'task0', 'Triggering': 'Cyclic'}]
+        def_instance = [
+            {'Task': def_task[0].get('Name'), 'Type': self.GetProjectPouNames()[0], 'Name': 'instance0'}]
+        self.SetEditedResourceInfos(resource_tagname, def_task, def_instance)
+
     def NewProject(self, ProjectPath, BuildPath=None):
         """
         Create a new project in an empty folder

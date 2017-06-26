@@ -41,7 +41,7 @@ class PouDialog(wx.Dialog):
     POU_LANGUAGES = GetPouLanguages()
     POU_LANGUAGES_DICT = dict([(_(language), language) for language in POU_LANGUAGES])
 
-    def __init__(self, parent, pou_type = None):
+    def __init__(self, parent, pou_type=None, type_readonly=False):
         wx.Dialog.__init__(self, id=-1, parent=parent,
               name='PouDialog', title=_('Create a new POU'),
               style=wx.DEFAULT_DIALOG_STYLE)
@@ -85,7 +85,8 @@ class PouDialog(wx.Dialog):
         self.SetSizer(main_sizer)
 
         for option in GetPouTypes():
-            self.PouType.Append(_(option))
+            if not type_readonly or _(option) == _(pou_type):
+                self.PouType.Append(_(option))
         if pou_type is not None:
             self.PouType.SetStringSelection(_(pou_type))
         self.RefreshLanguage()

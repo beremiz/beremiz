@@ -2277,25 +2277,36 @@ class IDEFrame(wx.Frame):
 #                         Add Project Elements Functions
 #-------------------------------------------------------------------------------
 
+    def OnAddNewProject(self, event):
+        # Asks user to create main program after creating new project
+        AddProgramDialog = self.GenerateAddPouFunction('program', True)
+        # Checks that user created main program
+        if AddProgramDialog(event):
+            self.Controler.SetProjectDefaultConfiguration()
+
     def OnAddDataTypeMenu(self, event):
         tagname = self.Controler.ProjectAddDataType()
         if tagname is not None:
             self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE)
             self.EditProjectElement(ITEM_DATATYPE, tagname)
 
-    def GenerateAddPouFunction(self, pou_type):
+    def GenerateAddPouFunction(self, pou_type, type_readonly = False):
         def OnAddPouMenu(event):
-            dialog = PouDialog(self, pou_type)
+            dialog = PouDialog(self, pou_type, type_readonly)
             dialog.SetPouNames(self.Controler.GetProjectPouNames())
             dialog.SetPouElementNames(self.Controler.GetProjectPouVariableNames())
             dialog.SetValues({"pouName": self.Controler.GenerateNewName(None, None, "%s%%d" % pou_type)})
+            pou_created = False
             if dialog.ShowModal() == wx.ID_OK:
                 values = dialog.GetValues()
                 tagname = self.Controler.ProjectAddPou(values["pouName"], values["pouType"], values["language"])
                 if tagname is not None:
                     self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, LIBRARYTREE)
                     self.EditProjectElement(ITEM_POU, tagname)
+                    dialog.Destroy()
+                    pou_created = True
             dialog.Destroy()
+            return pou_created
         return OnAddPouMenu
 
     def GenerateAddTransitionFunction(self, pou_name):
