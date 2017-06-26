@@ -849,6 +849,7 @@ class Beremiz(IDEFrame):
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                IDEFrame.OnAddNewProject(self, event)
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
