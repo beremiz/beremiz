@@ -2047,7 +2047,7 @@ class IDEFrame(wx.Frame):
                         self.TabsOpened.DeletePage(idx)
                     else:
                         editor.SubscribeAllDataConsumers()
-                elif editor.IsDebugging():
+                elif editor.IsDebugging() and hasattr(editor, 'SubscribeAllDataConsumers'):
                     editor.SubscribeAllDataConsumers()
             self.DebugVariablePanel.SubscribeAllDataConsumers()
 
