@@ -110,7 +110,7 @@ class toolchain_makefile():
                              }
             
             # clean sequence of multiple whitespaces 
-            cmd = re.sub(r"[ ]+", " ", target.getCommand())
+            cmd = re.sub(r"[ ]+", " ", target.getCommand().strip())
 
             command = [ token % beremizcommand for token in cmd.split(' ')]
 
