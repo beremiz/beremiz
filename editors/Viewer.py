@@ -1606,6 +1606,8 @@ class Viewer(EditorPanel, DebugViewer):
                 menu.Enable(new_id, True)
             else:
                 menu.Enable(new_id, False)
+            if self.Editor.HasCapture():
+                self.Editor.ReleaseMouse()
             self.Editor.PopupMenu(menu)
             menu.Destroy()
 
