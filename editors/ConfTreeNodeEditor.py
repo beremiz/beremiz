@@ -413,7 +413,7 @@ class ConfTreeNodeEditor(EditorPanel):
                         if element_infos["value"] is None:
                             combobox.SetStringSelection("")
                         else:
-                            combobox.SetStringSelection(_(element_infos["value"]))
+                            combobox.SetStringSelection(element_infos["value"])
                         combobox.Bind(wx.EVT_COMBOBOX, callback, combobox)
 
                 elif isinstance(element_infos["type"], types.DictType):
