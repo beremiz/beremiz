@@ -117,3 +117,5 @@
 ../IDEFrame.py
 ../PLCGenerator.py
 ../Beremiz_service.py
+../plcopen/Additional_Function_Blocks.xml
+../plcopen/Standard_Function_Blocks.xml
