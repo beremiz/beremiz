@@ -186,15 +186,16 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     if verbose: print cmd
     os.system(cmd)
 
-    cmd = 'sed --in-place ' + fileout + ' --expression=s/CHARSET/UTF-8/'
-    if verbose: print cmd
-    os.system(cmd)
-
     XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
     processCustomFiles(filelist, fileout, XSD_STRING_MODEL, 'Extra XSD strings')
 
     XML_TC6_STRING_MODEL = re.compile("<documentation>\s*<xhtml\:p><!\[CDATA\[([^\]]*)\]\]></xhtml\:p>\s*</documentation>", re.MULTILINE | re.DOTALL)
     processCustomFiles(filelist, fileout, XML_TC6_STRING_MODEL, 'Extra TC6 documentation strings')    
+
+    # generate messages.po
+    cmd = 'msginit --no-wrap --no-translator -i %s -l en_US.UTF-8 -o messages.po' % (fileout)
+    if verbose: print cmd
+    os.system(cmd)    
 
     languageDict = getlanguageDict()
 
