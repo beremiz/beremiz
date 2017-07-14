@@ -485,7 +485,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
                     if 'self' in exception_locals:
                         info['self'] = format_namespace(exception_locals['self'].__dict__)
 
-                output = open(path+os.sep+"bug_report_"+info['date'].replace(':','-').replace(' ','_')+".txt",'w')
+                output = open(path+os.sep+"bug_report_"+time.strftime("%Y_%m_%d__%H-%M-%S")+".txt",'w')
                 lst = info.keys()
                 lst.sort()
                 for a in lst:

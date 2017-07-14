@@ -1166,7 +1166,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
         if ex not in ignored_exceptions:
             ignored_exceptions.append(ex)
             date = time.ctime()
-            bug_report_path = path + os.sep + "bug_report_" + date.replace(':', '-').replace(' ', '_') + ".txt"
+            bug_report_path = path + os.sep + "bug_report_" + time.strftime("%Y_%m_%d__%H-%M-%S") + ".txt"
             save_bug_report(e_type, e_value, e_traceback, bug_report_path, date)
             Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
     #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
