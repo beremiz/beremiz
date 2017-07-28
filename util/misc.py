@@ -33,9 +33,11 @@ def CheckPathPerm(path):
     if path is None or not os.path.isdir(path):
         return False
     for root, dirs, files in os.walk(path):
-         for name in files:
-             if os.access(root, os.W_OK) is not True or os.access(os.path.join(root, name), os.W_OK) is not True:
-                 return False
+        files = [f for f in files if not f[0] == '.']
+        dirs[:] = [d for d in dirs if not d[0] == '.']
+        for name in files:
+            if os.access(root, os.W_OK) is not True or os.access(os.path.join(root, name), os.W_OK) is not True:
+                return False
     return True
 
 def GetClassImporter(classpath):
