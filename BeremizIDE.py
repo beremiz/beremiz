@@ -830,7 +830,7 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
 
-        dialog = wx.DirDialog(self , _("Choose a empty folder for new project"), defaultpath)
+        dialog = wx.DirDialog(self , _("Choose an empty directory for new project"), defaultpath)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             self.Config.Write("lastopenedfolder",
