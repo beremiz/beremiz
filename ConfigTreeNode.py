@@ -53,7 +53,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
         </xsd:schema>""")
 
 NameTypeSeparator = '@'
-XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line %{a2}:\n{a3}")
+XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}")
 
 class ConfigTreeNode:
     """

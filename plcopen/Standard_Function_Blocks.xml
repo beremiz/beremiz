@@ -115,7 +115,7 @@ BUSY := Q_INTERNAL;]]></xhtml:p>
           </ST>
         </body>
         <documentation>
-          <xhtml:p><![CDATA[The semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources.]]></xhtml:p>
+          <xhtml:p><![CDATA[The semaphore provides a mechanism to allow software elements mutually exclusive access to certain resources.]]></xhtml:p>
         </documentation>
       </pou>
       <pou name="R_TRIG" pouType="functionBlock">
