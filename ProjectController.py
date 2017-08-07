@@ -899,7 +899,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 for line in ListGroup[0]:
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(zip(ProgramsListAttributeName,line.strip().split(';')))
-                    # Truncate "C_path" to remove conf an ressources names
+                    # Truncate "C_path" to remove conf an resources names
                     attrs["C_path"] = '__'.join(attrs["C_path"].split(".",2)[1:])
                     # Push this dictionnary into result.
                     self._ProgramList.append(attrs)
@@ -910,7 +910,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 for line in ListGroup[1]:
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(zip(VariablesListAttributeName,line.strip().split(';')))
-                    # Truncate "C_path" to remove conf an ressources names
+                    # Truncate "C_path" to remove conf an resources names
                     parts = attrs["C_path"].split(".",2)
                     if len(parts) > 2:
                         config_FB = config_FBs.get(tuple(parts[:2]))

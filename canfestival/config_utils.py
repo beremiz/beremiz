@@ -378,7 +378,7 @@ class ConciseDCFGenerator:
                         numbit = None
                     
                     if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
-                        raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3}  for location\"{a4}\"").\
+                        raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3}  for location \"{a4}\"").\
                             format(a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"] , a4 = name)
                     
                     typeinfos = node.GetEntryInfos(COlocationtype)
