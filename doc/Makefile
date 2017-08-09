@@ -38,6 +38,8 @@ sitelist += site_$(1)
 endef
 $(foreach lang, $(langs), $(eval $(call by_lang,$(lang))))
 
+%.pot : gettext
+	echo "Build missing pot files"
 
 all: $(sitelist)
 	mkdir -p $(BUILDDIR)/final
