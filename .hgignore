@@ -15,3 +15,6 @@ syntax: regexp
 bug_report.*\.txt
 i18n/.*.new$
 revision
+
+doc/_build
+doc/locale
