@@ -90,21 +90,28 @@ class ArrayTypeDialog(wx.Dialog):
         self.Fit()
         
     def GetDimensions(self):
+        message = None
         dimensions_list = []
-        for dimensions in self.Dimensions.GetStrings():
+        dimension_strings = self.Dimensions.GetStrings()
+        if len(dimension_strings) == 0:
+            message = _("Empty dimension isn't allowed.")
+
+        for dimensions in dimension_strings:
             result = DIMENSION_MODEL.match(dimensions)
             if result is None:
-                message = wx.MessageDialog(self, _("\"%s\" value isn't a valid array dimension!")%dimensions, _("Error"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-                return None
+                message = _("\"%s\" value isn't a valid array dimension!")%dimensions
+                break
             bounds = result.groups()
             if int(bounds[0]) >= int(bounds[1]):
-                message = wx.MessageDialog(self, _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.")%dimensions, _("Error"), wx.OK|wx.ICON_ERROR)
-                message.ShowModal()
-                message.Destroy()
-                return None
+                message = _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.")%dimensions
+                break
             dimensions_list.append(bounds)
+
+        if message is not None:
+            dlg = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return None
         return dimensions_list
     
     def OnDimensionsChanged(self, event):
