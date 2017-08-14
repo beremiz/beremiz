@@ -403,7 +403,7 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def ResetLogCounters(self):
         self.previous_log_count = [None]*LogLevelsCount
-    
+
     def SetLogCounters(self, log_count):
         new_messages = []
         for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
@@ -559,7 +559,7 @@ class LogViewer(DebugViewer, wx.Panel):
                 empty=False
                 break
         return empty
-        
+
     def IsMessagePanelTop(self, message_idx=None):
         if message_idx is None:
             message_idx = self.CurrentMessage

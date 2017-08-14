@@ -31,7 +31,7 @@ else:
     ROW_HEIGHT = 28
 
 class CustomTable(wx.grid.PyGridTableBase):
-    
+
     """
     A custom wx.grid.Grid Table using user supplied data
     """
@@ -47,10 +47,10 @@ class CustomTable(wx.grid.PyGridTableBase):
         # see if the table has changed size
         self._rows = self.GetNumberRows()
         self._cols = self.GetNumberCols()
-    
+
     def GetNumberCols(self):
         return len(self.colnames)
-        
+
     def GetNumberRows(self):
         return len(self.data)
 
@@ -66,11 +66,11 @@ class CustomTable(wx.grid.PyGridTableBase):
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             return self.data[row].get(self.GetColLabelValue(col, False), "")
-    
+
     def SetValue(self, row, col, value):
         if col < len(self.colnames):
             self.data[row][self.GetColLabelValue(col, False)] = value
-    
+
     def GetValueByName(self, row, colname):
         if row < self.GetNumberRows():
             return self.data[row].get(colname)
@@ -125,33 +125,33 @@ class CustomTable(wx.grid.PyGridTableBase):
             row_highlights = self.Highlights.get(row, {})
             for col in range(self.GetNumberCols()):
                 colname = self.GetColLabelValue(col, False)
-                
+
                 grid.SetReadOnly(row, col, True)
                 grid.SetCellEditor(row, col, None)
                 grid.SetCellRenderer(row, col, None)
-                
+
                 highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
                 grid.SetCellBackgroundColour(row, col, highlight_colours[0])
                 grid.SetCellTextColour(row, col, highlight_colours[1])
             self.ResizeRow(grid, row)
-    
+
     def ResizeRow(self, grid, row):
         if grid.GetRowSize(row) < ROW_HEIGHT:
             grid.SetRowMinimalHeight(row, ROW_HEIGHT)
             grid.AutoSizeRow(row, False)
-    
+
     def SetData(self, data):
         self.data = data
-    
+
     def GetData(self):
         return self.data
-    
+
     def GetCurrentIndex(self):
         return self.CurrentIndex
-    
+
     def SetCurrentIndex(self, index):
         self.CurrentIndex = index
-    
+
     def AppendRow(self, row_content):
         self.data.append(row_content)
 

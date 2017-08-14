@@ -39,7 +39,7 @@ class Xenomai_target(toolchain_gcc):
                 self.CTRInstance.logger.write_error(_("Unable to get Xenomai's %s \n") % flagsname)
             return [result.strip()]
         return []
-    
+
     def getBuilderLDFLAGS(self):
         xeno_ldflags = self.getXenoConfig("ldflags")
         return toolchain_gcc.getBuilderLDFLAGS(self) + xeno_ldflags + ["-shared"]
@@ -47,4 +47,3 @@ class Xenomai_target(toolchain_gcc):
     def getBuilderCFLAGS(self):
         xeno_cflags = self.getXenoConfig("cflags")
         return toolchain_gcc.getBuilderCFLAGS(self) + xeno_cflags + ["-fPIC"]
-        

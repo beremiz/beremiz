@@ -62,6 +62,5 @@ def InstallLocalRessources(CWD):
     AddCatalog(os.path.join(CWD, "locale"))
     import gettext
     import __builtin__
-    
-    __builtin__.__dict__['_'] = wx.GetTranslation
 
+    __builtin__.__dict__['_'] = wx.GetTranslation

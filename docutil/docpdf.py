@@ -27,7 +27,7 @@ import wx
 
 
 readerexepath = None
-    
+
 def get_acroversion():
     " Return version of Adobe Acrobat executable or None"
     import _winreg
@@ -65,7 +65,7 @@ def open_pdf(pdffile, pagenum = None):
         except:
             wx.MessageBox("Acrobat Reader is not found or installed !")
             return None
-        
+
         readerexepath = os.path.join(readerpath, "AcroRd32.exe")
         if(os.path.isfile(readerexepath)):
             open_win_pdf(readerexepath, pdffile, pagenum)

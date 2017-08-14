@@ -52,7 +52,7 @@ def GetAppRevision():
             rev = None
     except:
         pass
-    
+
     # if this is not mercurial repository
     # try to read revision from file
     if rev is None:
@@ -69,17 +69,17 @@ def GetAboutDialogInfo():
 
     info.Name = "Beremiz"
     info.Version = app_version
-    
+
     info.Copyright  = "(C) 2016 Andrey Skvortsov\n"
     info.Copyright += "(C) 2008-2015 Eduard Tisserant\n"
     info.Copyright += "(C) 2008-2015 Laurent Bessard"
 
     info.WebSite = ("http://beremiz.org", "beremiz.org")
-    
+
     info.Description = _("Open Source framework for automation, "
                              "implemented IEC 61131 IDE with constantly growing set of extensions "
                              "and flexible PLC runtime.")
-    
+
     info.Developers = ("Andrey Skvortsov <andrej.skvortzov@gmail.com>",
 		       "Sergey Surkov <surkov.sv@summatechnology.ru>",
 		       "Edouard Tisserant <edouard.tisserant@gmail.com>",
@@ -124,6 +124,3 @@ app_version =  "1.2"
 rev = GetAppRevision()
 if rev is not None:
     app_version = app_version + "-" + rev.rstrip()
-    
-        
-

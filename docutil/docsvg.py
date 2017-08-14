@@ -45,7 +45,7 @@ def open_lin_svg(svgexepath, svgfile):
     """ Open Inkscape on Linux platform """
     if os.path.isfile("/usr/bin/inkscape"):
         os.system("%s %s &" % (svgexepath , svgfile))
-    
+
 def open_svg(svgfile):
     """ Generic function to open SVG file """
     if wx.Platform == '__WXMSW__' :
@@ -61,4 +61,3 @@ def open_svg(svgfile):
         else:
             wx.MessageBox("Inkscape is not found or installed !")
             return None
-
