@@ -118,7 +118,7 @@ class SearchResultPanel(wx.Panel):
 
         # Icons for other items
         for imgname, itemtype in [
-            #editables
+            # editables
             ("PROJECT",        ITEM_PROJECT),
             ("TRANSITION",     ITEM_TRANSITION),
             ("ACTION",         ITEM_ACTION),

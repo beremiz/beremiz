@@ -89,7 +89,6 @@ def CalcBranchSize(elements, stops):
                 branch_size += values["weight"]
             else:
                 return 1
-    #print branch_size
     return branch_size
 
 def RemoveElement(remove, element_tree):

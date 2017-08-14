@@ -666,7 +666,7 @@ class IDEFrame(wx.Frame):
 
         # Icons for other items
         for imgname, itemtype in [
-            #editables
+            # editables
             ("PROJECT",        ITEM_PROJECT),
             #("POU",            ITEM_POU),
             #("VARIABLE",       ITEM_VARIABLE),

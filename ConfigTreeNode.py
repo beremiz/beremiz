@@ -277,7 +277,7 @@ class ConfigTreeNode:
             # LDFLAGS can be either string
             if type(CTNLDFLAGS)==type(str()):
                 LDFLAGS=[CTNLDFLAGS]
-            #or list of strings
+            # or list of strings
             elif type(CTNLDFLAGS)==type(list()):
                 LDFLAGS=CTNLDFLAGS[:]
         else:
@@ -290,7 +290,7 @@ class ConfigTreeNode:
             depth=len(new_location)
             _LocationCFilesAndCFLAGS, _LDFLAGS, _extra_files = \
                 CTNChild._Generate_C(
-                    #keep the same path
+                    # keep the same path
                     buildpath,
                     # filter locations that start with current IEC location
                     [loc for loc in locations if loc["LOC"][0:depth] == new_location ])
@@ -561,7 +561,7 @@ class ConfigTreeNode:
                 NewCTNName = _self.FindNewName(CTNName)
                 # If dir have already be made, and file exist
                 if os.path.isdir(_self.CTNPath(NewCTNName)): #and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
-                    #Load the confnode.xml file into parameters members
+                    # Load the confnode.xml file into parameters members
                     _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewCTNName):
@@ -576,9 +576,9 @@ class ConfigTreeNode:
                     # Call the confnode real __init__
                     if getattr(CTNClass, "__init__", None):
                         CTNClass.__init__(_self)
-                    #Load and init all the children
+                    # Load and init all the children
                     _self.LoadChildren()
-                    #just loaded, nothing to saved
+                    # just loaded, nothing to saved
                     _self.ChangesToSave = False
                 else:
                     # If confnode do not have corresponding file/dirs - they will be created on Save
@@ -589,7 +589,7 @@ class ConfigTreeNode:
                     if getattr(CTNClass, "__init__", None):
                         CTNClass.__init__(_self)
                     _self.CTNRequestSave()
-                    #just created, must be saved
+                    # just created, must be saved
                     _self.ChangesToSave = True
 
             def _getBuildPath(_self):
