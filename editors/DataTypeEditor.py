@@ -547,12 +547,12 @@ class DataTypeEditor(EditorPanel):
         index = event.GetIndex()
         if index >= len(values) or values[index].upper() != text.upper():
             if text.upper() in [value.upper() for value in values]:
-                message = wx.MessageDialog(self, _("\"%s\" value already defined!")%text, _("Error"), wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, _("\"%s\" value already defined!") % text, _("Error"), wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
                 event.Veto()
             elif text.upper() in IEC_KEYWORDS:
-                message = wx.MessageDialog(self, _("\"%s\" is a keyword. It can't be used!")%text, _("Error"), wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, _("\"%s\" is a keyword. It can't be used!") % text, _("Error"), wx.OK|wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
             else:
@@ -582,13 +582,13 @@ class DataTypeEditor(EditorPanel):
         if colname == "Name":
             message = None
             if not TestIdentifier(value):
-                message = _("\"%s\" is not a valid identifier!")%value
+                message = _("\"%s\" is not a valid identifier!") % value
             elif value.upper() in IEC_KEYWORDS:
-                message = _("\"%s\" is a keyword. It can't be used!")%value
+                message = _("\"%s\" is a keyword. It can't be used!") % value
 ##            elif value.upper() in self.PouNames:
 ##                message = _("A pou with \"%s\" as name exists!")%value
             elif value.upper() in [var["Name"].upper() for idx, var in enumerate(self.StructureElementsTable.GetData()) if idx != row]:
-                message = _("An element named \"%s\" already exists in this structure!")%value
+                message = _("An element named \"%s\" already exists in this structure!") % value
             else:
                 self.RefreshTypeInfos()
                 wx.CallAfter(self.StructureElementsTable.ResetView, self.StructureElementsGrid)
@@ -740,14 +740,14 @@ class DataTypeEditor(EditorPanel):
             for dimensions in self.ArrayDimensions.GetStrings():
                 result = DIMENSION_MODEL.match(dimensions)
                 if result is None:
-                    message = wx.MessageDialog(self, _("\"%s\" value isn't a valid array dimension!")%dimensions, _("Error"), wx.OK|wx.ICON_ERROR)
+                    message = wx.MessageDialog(self, _("\"%s\" value isn't a valid array dimension!") % dimensions, _("Error"), wx.OK|wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
                     self.RefreshView()
                     return
                 bounds = result.groups()
                 if int(bounds[0]) >= int(bounds[1]):
-                    message = wx.MessageDialog(self, _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.")%dimensions, _("Error"), wx.OK|wx.ICON_ERROR)
+                    message = wx.MessageDialog(self, _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.") % dimensions, _("Error"), wx.OK|wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
                     self.RefreshView()

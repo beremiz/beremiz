@@ -211,7 +211,7 @@ class LD_Viewer(Viewer):
                         if rung not in rungs:
                             rungs.append(rung)
                 if len(rungs) > 1:
-                    raise ValueError, _("Ladder element with id %d is on more than one rung.")%instance["id"]
+                    raise ValueError, _("Ladder element with id %d is on more than one rung.") % instance["id"]
                 element = self.FindElementById(instance["id"])
                 element_connectors = element.GetConnectors()
                 self.Rungs[rungs[0]].SelectElement(element)
@@ -227,7 +227,7 @@ class LD_Viewer(Viewer):
                     if rung not in rungs:
                         rungs.append(rung)
                 if len(rungs) > 1:
-                    raise ValueError, _("Ladder element with id %d is on more than one rung.")%instance["id"]
+                    raise ValueError, _("Ladder element with id %d is on more than one rung.") % instance["id"]
                 element = self.FindElementById(instance["id"])
                 element_connectors = element.GetConnectors()
                 self.Rungs[rungs[0]].SelectElement(element)

@@ -48,7 +48,7 @@ class ServicePublisher():
 
     def _RegisterService(self, name, ip, port):
         # name: fully qualified service name
-        self.service_name = 'Beremiz_%s.%s'%(name,service_type)
+        self.service_name = 'Beremiz_%s.%s' % (name,service_type)
         self.name = name
         self.port = port
 

@@ -710,7 +710,7 @@ def GenerateElement(element_name, attributes, elements_model,
         for child in node.childNodes:
             if child.nodeName not in ["#comment", "#text"]:
                 namespace, childname = DecomposeQualifiedName(child.nodeName)
-                children_structure += "%s "%childname
+                children_structure += "%s " % childname
         result = elements_model.match(children_structure)
         if not result:
             raise ValueError("Invalid structure for \"%s\" children!. First element invalid." % node.nodeName)
@@ -1099,10 +1099,10 @@ class ClassFactory:
                     raise ValueError("\"%s\" type is not a simple type!" % attribute["attr_type"])
                 attrname = attribute["name"]
                 if attribute["use"] == "optional":
-                    classmembers["add%s"%attrname] = generateAddMethod(attrname, self, attribute)
-                    classmembers["delete%s"%attrname] = generateDeleteMethod(attrname)
-                classmembers["set%s"%attrname] = generateSetMethod(attrname)
-                classmembers["get%s"%attrname] = generateGetMethod(attrname)
+                    classmembers["add%s" % attrname] = generateAddMethod(attrname, self, attribute)
+                    classmembers["delete%s" % attrname] = generateDeleteMethod(attrname)
+                classmembers["set%s" % attrname] = generateSetMethod(attrname)
+                classmembers["get%s" % attrname] = generateGetMethod(attrname)
             else:
                 raise ValueError("\"%s\" type unrecognized!" % attribute["attr_type"])
             attribute["attr_type"] = infos
@@ -1111,7 +1111,7 @@ class ClassFactory:
             if element["type"] == CHOICE:
                 elmtname = element["name"]
                 choices = ComputeContentChoices(self, name, element)
-                classmembers["get%schoices"%elmtname] = generateGetChoicesMethod(element["choices"])
+                classmembers["get%schoices" % elmtname] = generateGetChoicesMethod(element["choices"])
                 if element["maxOccurs"] == "unbounded" or element["maxOccurs"] > 1:
                     classmembers["append%sbytype" % elmtname] = generateAppendChoiceByTypeMethod(element["maxOccurs"], self, element["choices"])
                     classmembers["insert%sbytype" % elmtname] = generateInsertChoiceByTypeMethod(element["maxOccurs"], self, element["choices"])

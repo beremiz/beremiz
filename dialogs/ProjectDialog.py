@@ -66,9 +66,9 @@ class ProjectDialog(wx.Dialog):
                 if i == 0:
                     text += item
                 elif i == len(error) - 1:
-                    text += _(" and %s")%item
+                    text += _(" and %s") % item
                 else:
-                    text += ", %s"%item
+                    text += ", %s" % item
             dialog = wx.MessageDialog(self,
                 _("Form isn't complete. %s must be filled!") % text,
                 _("Error"), wx.OK|wx.ICON_ERROR)

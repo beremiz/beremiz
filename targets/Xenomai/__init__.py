@@ -36,7 +36,7 @@ class Xenomai_target(toolchain_gcc):
                                                        xeno_config + " --skin=native --"+flagsname,
                                                        no_stdout=True).spin()
             if status:
-                self.CTRInstance.logger.write_error(_("Unable to get Xenomai's %s \n")%flagsname)
+                self.CTRInstance.logger.write_error(_("Unable to get Xenomai's %s \n") % flagsname)
             return [result.strip()]
         return []
     

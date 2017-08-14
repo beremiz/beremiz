@@ -91,9 +91,9 @@ class PouTransitionDialog(wx.Dialog):
                 if i == 0:
                     text += item
                 elif i == len(error) - 1:
-                    text += _(" and %s")%item
+                    text += _(" and %s") % item
                 else:
-                    text += _(", %s")%item
+                    text += _(", %s") % item
             message = _("Form isn't complete. %s must be filled!") % text
         elif not TestIdentifier(transition_name):
             message = _("\"%s\" is not a valid identifier!") % transition_name

@@ -62,7 +62,7 @@ class BeremizIDELauncher:
 
     def Usage(self):
         print "Usage:"
-        print "%s [Options] [Projectpath] [Buildpath]"%sys.argv[0]
+        print "%s [Options] [Projectpath] [Buildpath]" % sys.argv[0]
         print ""
         print "Supported options:"
         print "-h --help                    Print this help"

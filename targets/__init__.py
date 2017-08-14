@@ -45,7 +45,7 @@ targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"),
                         "class":_GetLocalTargetClassFactory(name),
                         "code": { fname: path.join(_base_path, name, fname)
                            for fname in listdir(path.join(_base_path, name))
-                             if fname.startswith("plc_%s_main"%name) and
+                             if fname.startswith("plc_%s_main" % name) and
                                fname.endswith(".c")}})
                 for name in listdir(_base_path)
                     if path.isdir(path.join(_base_path, name))
@@ -70,7 +70,7 @@ def GetTargetChoices():
     # Get all xsd targets
     for targetname,nfo in targets.iteritems():
         xsd_string = open(nfo["xsd"]).read()
-        targetchoices +=  xsd_string%DictXSD_toolchain
+        targetchoices +=  xsd_string % DictXSD_toolchain
 
     return targetchoices
 

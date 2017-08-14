@@ -396,7 +396,7 @@ class Translator:
 #                    raise TranslationError("unsupported type (in _method)", default_node)
 
                 default_name = arg_names[default_pos]
-                print >>self.output, "    if (typeof %s == 'undefined')"%(default_name)
+                print >>self.output, "    if (typeof %s == 'undefined')" % (default_name)
                 print >>self.output, "        %s=__kwargs.%s;"% (default_name, default_name)
                 default_pos += 1
 

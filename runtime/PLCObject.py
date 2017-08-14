@@ -264,7 +264,7 @@ class PLCObject(pyro.ObjBase):
         Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
         """
-        for method in self.python_runtime_vars.get("_runtime_%s"%methodname, []):
+        for method in self.python_runtime_vars.get("_runtime_%s" % methodname, []):
             res,exp = self.evaluator(method)
             if exp is not None:
                 self.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
@@ -279,7 +279,7 @@ class PLCObject(pyro.ObjBase):
                 try :
                     t = self.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
-                    raise KeyError("Try to get unknown shared global variable : %s"%name)
+                    raise KeyError("Try to get unknown shared global variable : %s" % name)
                 v = t()
                 r = self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
                 return self.python_runtime_vars["_"+name+"_unpack"](v)
@@ -287,7 +287,7 @@ class PLCObject(pyro.ObjBase):
                 try :
                     t = self.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
-                    raise KeyError("Try to set unknown shared global variable : %s"%name)
+                    raise KeyError("Try to set unknown shared global variable : %s" % name)
                 v = self.python_runtime_vars["_"+name+"_pack"](t,value)
                 self.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
 
@@ -299,7 +299,7 @@ class PLCObject(pyro.ObjBase):
             "PLCGlobalsDesc" : []})
 
         for methodname in MethodNames :
-            self.python_runtime_vars["_runtime_%s"%methodname] = []
+            self.python_runtime_vars["_runtime_%s" % methodname] = []
 
         try:
             filenames = os.listdir(self.workingdir)
@@ -311,7 +311,7 @@ class PLCObject(pyro.ObjBase):
                     for methodname in MethodNames:
                         method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
                         if method is not None:
-                            self.python_runtime_vars["_runtime_%s"%methodname].append(method)
+                            self.python_runtime_vars["_runtime_%s" % methodname].append(method)
         except:
             self.LogMessage(0,traceback.format_exc())
             raise
@@ -346,14 +346,14 @@ class PLCObject(pyro.ObjBase):
                 result,exp = self.evaluator(eval,AST,self.python_runtime_vars)
                 if exp is not None:
                     res = "#EXCEPTION : "+str(exp[1])
-                    self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,
+                    self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID,cmd,
                         '\n'.join(traceback.format_exception(*exp))))
                 else:
                     res=str(result)
                 self.python_runtime_vars["FBID"]=None
             except Exception,e:
                 res = "#EXCEPTION : "+str(e)
-                self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"')%(FBID,cmd,str(e)))
+                self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID,cmd,str(e)))
 
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
@@ -411,7 +411,7 @@ class PLCObject(pyro.ObjBase):
 
             self.UnLoadPLC()
 
-            self.LogMessage("NewPLC (%s)"%md5sum)
+            self.LogMessage("NewPLC (%s)" % md5sum)
             self.PLCStatus = "Empty"
 
             try:

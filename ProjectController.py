@@ -134,7 +134,7 @@ class Iec2CSettings():
         return path
 
     def findSupportedOptions(self):
-        buildcmd = "\"%s\" -h"%(self.getCmd())
+        buildcmd = "\"%s\" -h" % (self.getCmd())
         options =["-f", "-l", "-p"]
 
         buildopt = ""
@@ -566,7 +566,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if len(self.Libraries)==0:
             return [],[],()
         self.GetIECProgramsAndVariables()
-        LibIECCflags = '"-I%s" -Wno-unused-function'%os.path.abspath(self.GetIECLibPath())
+        LibIECCflags = '"-I%s" -Wno-unused-function' % os.path.abspath(self.GetIECLibPath())
         LocatedCCodeAndFlags=[]
         Extras=[]
         for lib in self.Libraries:
@@ -709,10 +709,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if len(warnings) > 0:
             self.logger.write_warning(_("Warnings in ST/IL/SFC code generator :\n"))
             for warning in warnings:
-                self.logger.write_warning("%s\n"%warning)
+                self.logger.write_warning("%s\n" % warning)
         if len(errors) > 0:
             # Failed !
-            self.logger.write_error(_("Error in ST/IL/SFC code generator :\n%s\n")%errors[0])
+            self.logger.write_error(_("Error in ST/IL/SFC code generator :\n%s\n") % errors[0])
             return False
         plc_file = open(self._getIECcodepath(), "w")
         # Add ST Library from confnodes
@@ -736,7 +736,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
-        buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\""%(
+        buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\"" % (
                          iec2c_cfg.getCmd(),
                          iec2c_cfg.getOptions(),
                          iec2c_cfg.getLibPath(),
@@ -781,7 +781,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                     f.close()
 
-            self.logger.write_error(_("Error : IEC to C compiler returned %d\n")%status)
+            self.logger.write_error(_("Error : IEC to C compiler returned %d\n") % status)
             return False
 
         # Now extract C files of stdout
@@ -808,7 +808,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function'%iec2c_cfg.getLibCPath()
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % iec2c_cfg.getLibCPath()
         return True
 
     def GetBuilder(self):
@@ -962,25 +962,25 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for v in self._DbgVariablesList :
             sz = DebugTypesSize.get(v["type"], 0)
             variable_decl_array += [
-                "{&(%(C_path)s), "%v+
+                "{&(%(C_path)s), " % v+
                 {"EXT":"%(type)s_P_ENUM",
                  "IN":"%(type)s_P_ENUM",
                  "MEM":"%(type)s_O_ENUM",
                  "OUT":"%(type)s_O_ENUM",
-                 "VAR":"%(type)s_ENUM"}[v["vartype"]]%v +
+                 "VAR":"%(type)s_ENUM"}[v["vartype"]] % v +
                  "}"]
             bofs += sz
         debug_code = targets.GetCode("plc_debug.c") % {
            "buffer_size":bofs,
            "programs_declarations":
-               "\n".join(["extern %(type)s %(C_path)s;"%p for p in self._ProgramList]),
+               "\n".join(["extern %(type)s %(C_path)s;" % p for p in self._ProgramList]),
            "extern_variables_declarations":"\n".join([
               {"EXT":"extern __IEC_%(type)s_p %(C_path)s;",
                "IN":"extern __IEC_%(type)s_p %(C_path)s;",
                "MEM":"extern __IEC_%(type)s_p %(C_path)s;",
                "OUT":"extern __IEC_%(type)s_p %(C_path)s;",
                "VAR":"extern __IEC_%(type)s_t %(C_path)s;",
-               "FB":"extern %(type)s %(C_path)s;"}[v["vartype"]]%v
+               "FB":"extern %(type)s %(C_path)s;"}[v["vartype"]] % v
                for v in self._VariablesList if v["C_path"].find('.')<0]),
            "variable_decl_array": ",\n".join(variable_decl_array)
            }
@@ -1004,19 +1004,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "int __init_%(s)s(int argc,char **argv);\n"+
                       "void __cleanup_%(s)s(void);\n"+
                       "void __retrieve_%(s)s(void);\n"+
-                      "void __publish_%(s)s(void);")%{'s':locstr} for locstr in locstrs]),
+                      "void __publish_%(s)s(void);") % {'s':locstr} for locstr in locstrs]),
                 "retrieve_calls":"\n    ".join([
-                      "__retrieve_%s();"%locstr for locstr in locstrs]),
+                      "__retrieve_%s();" % locstr for locstr in locstrs]),
                 "publish_calls":"\n    ".join([ #Call publish in reverse order
-                      "__publish_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
+                      "__publish_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls":"\n    ".join([
-                      "init_level=%d; "%(i+1)+
-                      "if((res = __init_%s(argc,argv))){"%locstr +
+                      "init_level=%d; " % (i+1)+
+                      "if((res = __init_%s(argc,argv))){" % locstr +
                       #"printf(\"%s\"); "%locstr + #for debug
                       "return res;}" for i,locstr in enumerate(locstrs)]),
                 "cleanup_calls":"\n    ".join([
-                      "if(init_level >= %d) "%i+
-                      "__cleanup_%s();"%locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
+                      "if(init_level >= %d) " % i+
+                      "__cleanup_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
             plc_main_code = targets.GetCode("plc_main_head.c") % {
@@ -1410,9 +1410,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         if IEC_Type in DebugTypesSize:
                             Idxs.append((Idx, IEC_Type, fvalue, IECPath))
                         else:
-                            self.logger.write_warning(_("Debug: Unsupported type to debug '%s'\n")%IEC_Type)
+                            self.logger.write_warning(_("Debug: Unsupported type to debug '%s'\n") % IEC_Type)
                     else:
-                        self.logger.write_warning(_("Debug: Unknown variable '%s'\n")%IECPath)
+                        self.logger.write_warning(_("Debug: Unknown variable '%s'\n") % IECPath)
             for IECPathToPop in IECPathsToPop:
                 self.IECdebug_datas.pop(IECPathToPop)
 
@@ -1728,13 +1728,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         try:
             self._SetConnector(connectors.ConnectorFactory(uri, self))
         except Exception, msg:
-            self.logger.write_error(_("Exception while connecting %s!\n")%uri)
+            self.logger.write_error(_("Exception while connecting %s!\n") % uri)
             self.logger.write_error(traceback.format_exc())
 
         # Did connection success ?
         if self._connector is None:
             # Oups.
-            self.logger.write_error(_("Connection failed to %s!\n")%uri)
+            self.logger.write_error(_("Connection failed to %s!\n") % uri)
         else:
             self.ShowMethod("_Connect", False)
             self.ShowMethod("_Disconnect", True)

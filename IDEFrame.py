@@ -1593,9 +1593,9 @@ class IDEFrame(wx.Frame):
         new_name = event.GetLabel()
         if new_name != "":
             if not TestIdentifier(new_name):
-                message = _("\"%s\" is not a valid identifier!")%new_name
+                message = _("\"%s\" is not a valid identifier!") % new_name
             elif new_name.upper() in IEC_KEYWORDS:
-                message = _("\"%s\" is a keyword. It can't be used!")%new_name
+                message = _("\"%s\" is a keyword. It can't be used!") % new_name
             else:
                 item = event.GetItem()
                 old_name = self.ProjectTree.GetItemText(item)
@@ -1604,7 +1604,7 @@ class IDEFrame(wx.Frame):
                     self.Controler.SetProjectProperties(name = new_name)
                 elif item_infos["type"] == ITEM_DATATYPE:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectDataTypeNames() if name != old_name]:
-                        message = _("\"%s\" data type already exists!")%new_name
+                        message = _("\"%s\" data type already exists!") % new_name
                         abort = True
                     if not abort:
                         self.Controler.ChangeDataTypeName(old_name, new_name)
@@ -1613,10 +1613,10 @@ class IDEFrame(wx.Frame):
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_POU:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames() if name != old_name]:
-                        message = _("\"%s\" pou already exists!")%new_name
+                        message = _("\"%s\" pou already exists!") % new_name
                         abort = True
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
-                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
@@ -1630,9 +1630,9 @@ class IDEFrame(wx.Frame):
                     pou_item = self.ProjectTree.GetItemParent(event.GetItem())
                     pou_name = self.ProjectTree.GetItemText(pou_item)
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
-                        message = _("A POU named \"%s\" already exists!")%new_name
+                        message = _("A POU named \"%s\" already exists!") % new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
-                        message = _("A variable with \"%s\" as name already exists in this pou!")%new_name
+                        message = _("A variable with \"%s\" as name already exists in this pou!") % new_name
                     else:
                         words = item_infos["tagname"].split("::")
                         self.Controler.ChangePouTransitionName(words[1], old_name, new_name)
@@ -1643,9 +1643,9 @@ class IDEFrame(wx.Frame):
                     pou_item = self.ProjectTree.GetItemParent(event.GetItem())
                     pou_name = self.ProjectTree.GetItemText(pou_item)
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
-                        message = _("A POU named \"%s\" already exists!")%new_name
+                        message = _("A POU named \"%s\" already exists!") % new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
-                        message = _("A variable with \"%s\" as name already exists in this pou!")%new_name
+                        message = _("A variable with \"%s\" as name already exists in this pou!") % new_name
                     else:
                         words = item_infos["tagname"].split("::")
                         self.Controler.ChangePouActionName(words[1], old_name, new_name)
@@ -1654,15 +1654,15 @@ class IDEFrame(wx.Frame):
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_CONFIGURATION:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectConfigNames() if name != old_name]:
-                        message = _("\"%s\" config already exists!")%new_name
+                        message = _("\"%s\" config already exists!") % new_name
                         abort = True
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
-                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
-                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
@@ -1673,15 +1673,15 @@ class IDEFrame(wx.Frame):
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_RESOURCE:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectConfigNames()]:
-                        message = _("\"%s\" config already exists!")%new_name
+                        message = _("\"%s\" config already exists!") % new_name
                         abort = True
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
-                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
-                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?")%new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()

@@ -62,7 +62,7 @@ def ReIndentText(text, nb_spaces):
                 indent += " "
             for line in lines:
                 if line != "":
-                    compute += "%s%s\n"%(indent, line)
+                    compute += "%s%s\n" % (indent, line)
                 else:
                     compute += "\n"
     return compute
@@ -114,9 +114,9 @@ class ProgramGenerator:
     def ComputeValue(self, value, var_type):
         base_type = self.Controler.GetBaseType(var_type)
         if base_type == "STRING" and not value.startswith("'") and not value.endswith("'"):
-            return "'%s'"%value
+            return "'%s'" % value
         elif base_type == "WSTRING" and not value.startswith('"') and not value.endswith('"'):
-            return "\"%s\""%value
+            return "\"%s\"" % value
         return value
 
     # Generate a data type from its name
@@ -154,9 +154,9 @@ class ProgramGenerator:
                 max_value = basetype_content.range.getupper()
                 datatype_def += [(basetype_name, (tagname, "base")),
                                  (" (", ()),
-                                 ("%s"%min_value, (tagname, "lower")),
+                                 ("%s" % min_value, (tagname, "lower")),
                                  ("..", ()),
-                                 ("%s"%max_value, (tagname, "upper")),
+                                 ("%s" % max_value, (tagname, "upper")),
                                  (")",())]
             # Data type is an enumerated type
             elif basetype_content_type == "enum":
@@ -178,9 +178,9 @@ class ProgramGenerator:
                 # Array derived directly from an elementary type
                 else:
                     basetype_name = base_type_type.upper()
-                dimensions = [[("%s"%dimension.getlower(), (tagname, "range", i, "lower")),
+                dimensions = [[("%s" % dimension.getlower(), (tagname, "range", i, "lower")),
                                ("..", ()),
-                               ("%s"%dimension.getupper(), (tagname, "range", i, "upper"))]
+                               ("%s" % dimension.getupper(), (tagname, "range", i, "upper"))]
                               for i, dimension in enumerate(basetype_content.getdimension())]
                 datatype_def += [("ARRAY [", ())]
                 datatype_def += JoinList([(",", ())], dimensions)
@@ -251,12 +251,12 @@ class ProgramGenerator:
                 program = pou_program.GenerateProgram(pou)
                 self.Program += program
             else:
-                raise PLCGenException, _("Undefined pou type \"%s\"")%pou_type
+                raise PLCGenException, _("Undefined pou type \"%s\"") % pou_type
 
     # Generate a POU defined and used in text
     def GeneratePouProgramInText(self, text):
         for pou_name in self.PouComputed.keys():
-            model = re.compile("(?:^|[^0-9^A-Z])%s(?:$|[^0-9^A-Z])"%pou_name.upper())
+            model = re.compile("(?:^|[^0-9^A-Z])%s(?:$|[^0-9^A-Z])" % pou_name.upper())
             if model.search(text) is not None:
                 self.GeneratePouProgram(pou_name)
 
@@ -423,7 +423,7 @@ class ProgramGenerator:
 ##                resrce += [(",", ())]
             # Priority argument
             resrce += [("PRIORITY := ", ()),
-                       ("%d"%task.getpriority(), (tagname, "task", task_number, "priority")),
+                       ("%d" % task.getpriority(), (tagname, "task", task_number, "priority")),
                        (");\n", ())]
             task_number += 1
         instance_number = 0
@@ -826,7 +826,7 @@ class PouProgramGenerator:
                 if block_infos is not None:
                     self.ComputeBlockInputTypes(instance, block_infos, body)
                 else:
-                    raise PLCGenException, _("No informations found for \"%s\" block")%(instance.gettypeName())
+                    raise PLCGenException, _("No informations found for \"%s\" block") % (instance.gettypeName())
             if body_type == "SFC":
                 previous_tagname = self.TagName
                 for action in pou.getactionList():
@@ -1075,9 +1075,9 @@ class PouProgramGenerator:
                         parameter = variable.getformalParameter()
                         if not inout_variables.has_key(parameter) and parameter in output_names + ["", "ENO"]:
                             if variable.getformalParameter() == "":
-                                variable_name = "%s%d"%(type, block.getlocalId())
+                                variable_name = "%s%d" % (type, block.getlocalId())
                             else:
-                                variable_name = "%s%d_%s"%(type, block.getlocalId(), parameter)
+                                variable_name = "%s%d_%s" % (type, block.getlocalId(), parameter)
                             if self.Interface[-1][0] != "VAR" or self.Interface[-1][1] is not None or self.Interface[-1][2]:
                                 self.Interface.append(("VAR", None, False, []))
                             if variable.connectionPointOut in self.ConnectionTypes:
@@ -1086,7 +1086,7 @@ class PouProgramGenerator:
                                 self.Interface[-1][3].append(("ANY", variable_name, None, None))
                             if len(output_variables) > 1 and parameter not in ["", "OUT"]:
                                 vars.append([(parameter, (self.TagName, "block", block.getlocalId(), "output", i)),
-                                             (" => %s"%variable_name, ())])
+                                             (" => %s" % variable_name, ())])
                             else:
                                 output_info = (self.TagName, "block", block.getlocalId(), "output", i)
                                 output_name = variable_name
@@ -1159,17 +1159,17 @@ class PouProgramGenerator:
                     output_value = inout_variables[output_parameter]
                 else:
                     if output_parameter == "":
-                        output_name = "%s%d"%(type, block.getlocalId())
+                        output_name = "%s%d" % (type, block.getlocalId())
                     else:
-                        output_name = "%s%d_%s"%(type, block.getlocalId(), output_parameter)
+                        output_name = "%s%d_%s" % (type, block.getlocalId(), output_parameter)
                     output_value = [(output_name, output_info)]
                 return self.ExtractModifier(output_variable, output_value, output_info)
 
             if block_infos["type"] == "functionBlock":
                 output_info = (self.TagName, "block", block.getlocalId(), "output", output_idx)
-                output_name = self.ExtractModifier(output_variable, [("%s.%s"%(name, output_parameter), output_info)], output_info)
+                output_name = self.ExtractModifier(output_variable, [("%s.%s" % (name, output_parameter), output_info)], output_info)
                 if to_inout:
-                    variable_name = "%s_%s"%(name, output_parameter)
+                    variable_name = "%s_%s" % (name, output_parameter)
                     if not self.IsAlreadyDefined(variable_name):
                         if self.Interface[-1][0] != "VAR" or self.Interface[-1][1] is not None or self.Interface[-1][2]:
                             self.Interface.append(("VAR", None, False, []))
@@ -1179,7 +1179,7 @@ class PouProgramGenerator:
                         else:
                             self.Interface[-1][3].append(("ANY", variable_name, None, None))
                         self.Program += [(self.CurrentIndent, ()),
-                                         ("%s := "%variable_name, ())]
+                                         ("%s := " % variable_name, ())]
                         self.Program += output_name
                         self.Program += [(";\n", ())]
                     return [(variable_name, ())]
@@ -1315,15 +1315,15 @@ class PouProgramGenerator:
         if self.Interface[-1][0] != "VAR" or self.Interface[-1][1] is not None or self.Interface[-1][2]:
             self.Interface.append(("VAR", None, False, []))
         i = 1
-        name = "%s%d"%(edge, i)
+        name = "%s%d" % (edge, i)
         while self.IsAlreadyDefined(name):
             i += 1
-            name = "%s%d"%(edge, i)
+            name = "%s%d" % (edge, i)
         self.Interface[-1][3].append((edge, name, None, None))
         self.Program += [(self.CurrentIndent, ()), (name, var_info), ("(CLK := ", ())]
         self.Program += expression
         self.Program += [(");\n", ())]
-        return [("%s.Q"%name, var_info)]
+        return [("%s.Q" % name, var_info)]
 
     def ExtractDivergenceInput(self, divergence, pou):
         connectionPointIn = divergence.getconnectionPointIn()
@@ -1441,7 +1441,7 @@ class PouProgramGenerator:
                     if action["type"] == "reference":
                         self.GenerateSFCAction(action["value"], pou)
                     else:
-                        action_name = "%s_INLINE%d"%(step_name.upper(), self.GetActionNumber())
+                        action_name = "%s_INLINE%d" % (step_name.upper(), self.GetActionNumber())
                         self.SFCNetworks["Actions"][action_name] = ([(self.CurrentIndent, ()),
                             (action["value"], (self.TagName, "action_block", action_infos["id"], "action", i, "inline")),
                             ("\n", ())], ())
@@ -1488,7 +1488,7 @@ class PouProgramGenerator:
             self.SFCNetworks["Transitions"][transition] = transition_infos
             transitionValues = transition.getconditionContent()
             if transitionValues["type"] == "inline":
-                transition_infos["content"] = [("\n%s:= "%self.CurrentIndent, ()),
+                transition_infos["content"] = [("\n%s:= " % self.CurrentIndent, ()),
                                                (transitionValues["value"], (self.TagName, "transition", transition.getlocalId(), "inline")),
                                                (";\n", ())]
             elif transitionValues["type"] == "reference":
@@ -1511,7 +1511,7 @@ class PouProgramGenerator:
                             if connections is not None:
                                 expression = self.ComputeExpression(transitionBody, connections)
                                 if expression is not None:
-                                    transition_infos["content"] = [("\n%s:= "%self.CurrentIndent, ())] + expression + [(";\n", ())]
+                                    transition_infos["content"] = [("\n%s:= " % self.CurrentIndent, ())] + expression + [(";\n", ())]
                                     self.SFCComputedBlocks += self.Program
                                     self.Program = []
                     if not transition_infos.has_key("content"):
@@ -1525,7 +1525,7 @@ class PouProgramGenerator:
                 if connections is not None:
                     expression = self.ComputeExpression(body, connections)
                     if expression is not None:
-                        transition_infos["content"] = [("\n%s:= "%self.CurrentIndent, ())] + expression + [(";\n", ())]
+                        transition_infos["content"] = [("\n%s:= " % self.CurrentIndent, ())] + expression + [(";\n", ())]
                         self.SFCComputedBlocks += self.Program
                         self.Program = []
             for step in steps:
@@ -1564,7 +1564,7 @@ class PouProgramGenerator:
                                      (action_infos["indicator"], action_info + ("indicator",))]
                 self.Program += [(");\n", ())]
             self.IndentLeft()
-            self.Program += [("%sEND_STEP\n\n"%self.CurrentIndent, ())]
+            self.Program += [("%sEND_STEP\n\n" % self.CurrentIndent, ())]
             for action in actions:
                 self.ComputeSFCAction(action)
             for transition in step_infos["transitions"]:
@@ -1573,19 +1573,19 @@ class PouProgramGenerator:
     def ComputeSFCAction(self, action_name):
         if action_name in self.SFCNetworks["Actions"].keys():
             action_content, action_info = self.SFCNetworks["Actions"].pop(action_name)
-            self.Program += [("%sACTION "%self.CurrentIndent, ()),
+            self.Program += [("%sACTION " % self.CurrentIndent, ()),
                              (action_name, action_info),
                              (":\n", ())]
             self.Program += action_content
-            self.Program += [("%sEND_ACTION\n\n"%self.CurrentIndent, ())]
+            self.Program += [("%sEND_ACTION\n\n" % self.CurrentIndent, ())]
 
     def ComputeSFCTransition(self, transition):
         if transition in self.SFCNetworks["Transitions"].keys():
             transition_infos = self.SFCNetworks["Transitions"].pop(transition)
-            self.Program += [("%sTRANSITION"%self.CurrentIndent, ())]
+            self.Program += [("%sTRANSITION" % self.CurrentIndent, ())]
             if transition_infos["priority"] != None:
                 self.Program += [(" (PRIORITY := ", ()),
-                                 ("%d"%transition_infos["priority"], (self.TagName, "transition", transition_infos["id"], "priority")),
+                                 ("%d" % transition_infos["priority"], (self.TagName, "transition", transition_infos["id"], "priority")),
                                  (")", ())]
             self.Program += [(" FROM ", ())]
             if len(transition_infos["from"]) > 1:
@@ -1610,7 +1610,7 @@ class PouProgramGenerator:
                       format(a1 = transition_infos["content"], a2 = self.Name)
                 raise PLCGenException, msg
             self.Program += transition_infos["content"]
-            self.Program += [("%sEND_TRANSITION\n\n"%self.CurrentIndent, ())]
+            self.Program += [("%sEND_TRANSITION\n\n" % self.CurrentIndent, ())]
             for [(step_name, step_infos)] in transition_infos["to"]:
                 self.ComputeSFCStep(step_name)
 
@@ -1619,22 +1619,22 @@ class PouProgramGenerator:
         self.ComputeConnectionTypes(pou)
         self.ComputeProgram(pou)
 
-        program = [("%s "%self.Type, ()),
+        program = [("%s " % self.Type, ()),
                    (self.Name, (self.TagName, "name"))]
         if self.ReturnType is not None:
             program += [(" : ", ()),
                         (self.ReturnType, (self.TagName, "return"))]
         program += [("\n", ())]
         if len(self.Interface) == 0:
-            raise PLCGenException, _("No variable defined in \"%s\" POU")%self.Name
+            raise PLCGenException, _("No variable defined in \"%s\" POU") % self.Name
         if len(self.Program) == 0 :
-            raise PLCGenException, _("No body defined in \"%s\" POU")%self.Name
+            raise PLCGenException, _("No body defined in \"%s\" POU") % self.Name
         var_number = 0
         for list_type, option, located, variables in self.Interface:
             variable_type = errorVarTypes.get(list_type, "var_local")
-            program += [("  %s"%list_type, ())]
+            program += [("  %s" % list_type, ())]
             if option is not None:
-                program += [(" %s"%option, (self.TagName, variable_type, (var_number, var_number + len(variables)), option.lower()))]
+                program += [(" %s" % option, (self.TagName, variable_type, (var_number, var_number + len(variables)), option.lower()))]
             program += [("\n", ())]
             for var_type, var_name, var_address, var_initial in variables:
                 program += [("    ", ())]
@@ -1655,7 +1655,7 @@ class PouProgramGenerator:
             program += [("  END_VAR\n", ())]
         program += [("\n", ())]
         program += self.Program
-        program += [("END_%s\n\n"%self.Type, ())]
+        program += [("END_%s\n\n" % self.Type, ())]
         return program
 
 def GenerateCurrentProgram(controler, project, errors, warnings):

@@ -381,17 +381,17 @@ class ResourceEditor(EditorPanel):
         self.TypeList = ""
         blocktypes = self.Controler.GetBlockResource()
         for blocktype in blocktypes:
-            self.TypeList += ",%s"%blocktype
+            self.TypeList += ",%s" % blocktype
 
     def RefreshTaskList(self):
         self.TaskList = ""
         for row in xrange(self.TasksTable.GetNumberRows()):
-            self.TaskList += ",%s"%self.TasksTable.GetValueByName(row, "Name")
+            self.TaskList += ",%s" % self.TasksTable.GetValueByName(row, "Name")
 
     def RefreshVariableList(self):
         self.VariableList = ""
         for variable in self.Controler.GetEditedResourceVariables(self.TagName):
-            self.VariableList += ",%s"%variable
+            self.VariableList += ",%s" % variable
 
     def RefreshModel(self):
         self.Controler.SetEditedResourceInfos(self.TagName, self.TasksTable.GetData(), self.InstancesTable.GetData())

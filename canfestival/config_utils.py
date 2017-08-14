@@ -254,7 +254,7 @@ class ConciseDCFGenerator:
         if nodeDCF != None and nodeDCF != '':
             tmpnbparams = [i for i in nodeDCF[:4]]
             tmpnbparams.reverse()
-            nbparams += int(''.join(["%2.2x"%ord(i) for i in tmpnbparams]), 16)
+            nbparams += int(''.join(["%2.2x" % ord(i) for i in tmpnbparams]), 16)
             data = nodeDCF[4:] + data
 
         # Build new DCF
@@ -546,7 +546,7 @@ class ConciseDCFGenerator:
                                      variable_infos["nodeid"]
 
                     # Generate entry name
-                    indexname = "%s%s%s_%d"%(VariableDirText[variable_infos["pdotype"]],
+                    indexname = "%s%s%s_%d" % (VariableDirText[variable_infos["pdotype"]],
                                                  variable_infos["sizelocation"],
                                                  '_'.join(map(str,current_location)),
                                                  variable_infos["nodeid"])
@@ -572,9 +572,9 @@ class ConciseDCFGenerator:
                     if mapvariableidx < VariableStartIndex[variable_infos["pdotype"]] + 0x2000:
                         # Generate subentry name
                         if variable_infos["bit"] != None:
-                            subindexname = "%(index)d_%(subindex)d_%(bit)d"%variable_infos
+                            subindexname = "%(index)d_%(subindex)d_%(bit)d" % variable_infos
                         else:
-                            subindexname = "%(index)d_%(subindex)d"%variable_infos
+                            subindexname = "%(index)d_%(subindex)d" % variable_infos
                         # If entry have just been created, no subentry have to be added
                         if not new_index:
                             self.Manager.AddSubentriesToCurrent(mapvariableidx, 1, self.MasterNode)
@@ -590,7 +590,7 @@ class ConciseDCFGenerator:
                             self.MasterNode.SetEntry(current_idx + 0x200, subindex, value)
 
                         # Add variable to pointed variables
-                        self.PointedVariables[(mapvariableidx, nbsubentries)] = "%s_%s"%(indexname, subindexname)
+                        self.PointedVariables[(mapvariableidx, nbsubentries)] = "%s_%s" % (indexname, subindexname)
 
 def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodename):
     """
@@ -668,7 +668,7 @@ Options:
             Reset the reference result of config_utils test.
             Use with caution. Be sure that config_utils
             is currently working properly.
-"""%sys.argv[0]
+""" % sys.argv[0]
 
     # Boolean that indicate if reference result must be redefined
     reset = False
@@ -720,7 +720,7 @@ Options:
     try:
         masternode, pointedvariables = GenerateConciseDCF(locations, (0, 1), nodelist, True, "TestNode")
     except ValueError, message:
-        print "%s\nTest Failed!"%message
+        print "%s\nTest Failed!" % message
         sys.exit()
 
     import pprint

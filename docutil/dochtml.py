@@ -94,7 +94,7 @@ class HtmlFrame(wx.Frame):
                 if wx.Platform == '__WXMSW__':
                     import webbrowser
                     webbrowser.open(url)
-                elif subprocess.call("firefox %s"%url, shell=True) != 0:
+                elif subprocess.call("firefox %s" % url, shell=True) != 0:
                     wx.MessageBox("""Firefox browser not found.\nPlease point your browser at :\n%s""" % url)
             except ImportError:
                 wx.MessageBox('Please point your browser at: %s' % url)

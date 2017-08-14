@@ -106,7 +106,7 @@ class SVGUI(PythonFileCTNMixin):
         jsmodules = {"LiveSVGPage": "svguilib.js"}
         res += (("svguilib.js", file(svguilibpath,"rb")),)
 
-        runtimefile_path = os.path.join(buildpath, "runtime_%s.py"%location_str)
+        runtimefile_path = os.path.join(buildpath, "runtime_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write(svguiservercode % {"svgfile" : "gui.svg"})
         runtimefile.write("""
@@ -122,7 +122,7 @@ def _runtime_%(location)s_stop():
       })
         runtimefile.close()
 
-        res += (("runtime_%s.py"%location_str, file(runtimefile_path,"rb")),)
+        res += (("runtime_%s.py" % location_str, file(runtimefile_path,"rb")),)
 
         return res
 
@@ -133,7 +133,7 @@ def _runtime_%(location)s_stop():
             if os.path.isfile(svgpath):
                 shutil.copy(svgpath, self._getSVGpath())
             else:
-                self.GetCTRoot().logger.write_error(_("No such SVG file: %s\n")%svgpath)
+                self.GetCTRoot().logger.write_error(_("No such SVG file: %s\n") % svgpath)
         dialog.Destroy()
 
     def _StartInkscape(self):

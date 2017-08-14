@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # command line
     def usage():
         print "\nUsage of PLCOpenEditor.py :"
-        print "\n   %s [Filepath]\n"%sys.argv[0]
+        print "\n   %s [Filepath]\n" % sys.argv[0]
 
     # Parse options given to PLCOpenEditor in command line
     try:
@@ -223,7 +223,7 @@ class PLCOpenEditor(IDEFrame):
     def RefreshTitle(self):
         name = _("PLCOpenEditor")
         if self.Controler is not None:
-            self.SetTitle("%s - %s"%(name, self.Controler.GetFilename()))
+            self.SetTitle("%s - %s" % (name, self.Controler.GetFilename()))
         else:
             self.SetTitle(name)
 
@@ -346,12 +346,12 @@ class PLCOpenEditor(IDEFrame):
                 message_text += "".join([_("warning: %s\n") % warning for warning in warnings])
                 if len(errors) > 0:
                     message_text += "".join([_("error: %s\n") % error for error in errors])
-                    message_text += _("Can't generate program to file %s!")%filepath
+                    message_text += _("Can't generate program to file %s!") % filepath
                     header, icon = _("Error"), wx.ICON_ERROR
                 else:
                     message_text += _("Program was successfully generated!")
             else:
-                message_text += _("\"%s\" is not a valid folder!")%os.path.dirname(filepath)
+                message_text += _("\"%s\" is not a valid folder!") % os.path.dirname(filepath)
                 header, icon = _("Error"), wx.ICON_ERROR
             message = wx.MessageDialog(self, message_text, header, wx.OK|icon)
             message.ShowModal()
@@ -384,16 +384,16 @@ class PLCOpenEditor(IDEFrame):
         if filepath != "":
             directory, filename = os.path.split(filepath)
         else:
-            directory, filename = os.getcwd(), "%(projectName)s.xml"%self.Controler.GetProjectProperties()
+            directory, filename = os.getcwd(), "%(projectName)s.xml" % self.Controler.GetProjectProperties()
         dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.SAVE|wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             if os.path.isdir(os.path.dirname(filepath)):
                 result = self.Controler.SaveXMLFile(filepath)
                 if not result:
-                    self.ShowErrorMessage(_("Can't save project to file %s!")%filepath)
+                    self.ShowErrorMessage(_("Can't save project to file %s!") % filepath)
             else:
-                self.ShowErrorMessage(_("\"%s\" is not a valid folder!")%os.path.dirname(filepath))
+                self.ShowErrorMessage(_("\"%s\" is not a valid folder!") % os.path.dirname(filepath))
             self._Refresh(TITLE, FILEMENU, PAGETITLES)
         dialog.Destroy()
 

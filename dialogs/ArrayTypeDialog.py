@@ -99,11 +99,11 @@ class ArrayTypeDialog(wx.Dialog):
         for dimensions in dimension_strings:
             result = DIMENSION_MODEL.match(dimensions)
             if result is None:
-                message = _("\"%s\" value isn't a valid array dimension!")%dimensions
+                message = _("\"%s\" value isn't a valid array dimension!") % dimensions
                 break
             bounds = result.groups()
             if int(bounds[0]) >= int(bounds[1]):
-                message = _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.")%dimensions
+                message = _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.") % dimensions
                 break
             dimensions_list.append(bounds)
 
