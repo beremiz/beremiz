@@ -26,6 +26,7 @@ import wx
 import os
 import subprocess
 
+
 def get_inkscape_path():
     """ Return the Inkscape path """
     import _winreg
@@ -34,6 +35,7 @@ def get_inkscape_path():
     svgexepath = svgexepath.replace('"%1"', '')
     return svgexepath.replace('"', '')
 
+
 def open_win_svg(svgexepath, svgfile):
     """ Open Inkscape on Windows platform """
     popenargs = [svgexepath]
@@ -41,10 +43,12 @@ def open_win_svg(svgexepath, svgfile):
         popenargs.append(svgfile)
     subprocess.Popen(popenargs).pid
 
+
 def open_lin_svg(svgexepath, svgfile):
     """ Open Inkscape on Linux platform """
     if os.path.isfile("/usr/bin/inkscape"):
         os.system("%s %s &" % (svgexepath , svgfile))
+
 
 def open_svg(svgfile):
     """ Generic function to open SVG file """

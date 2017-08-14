@@ -34,6 +34,7 @@ from controls import FolderTree
 
 FILTER = _("All files (*.*)|*.*|CSV files (*.csv)|*.csv")
 
+
 class FileManagementPanel(EditorPanel):
 
     def _init_Editor(self, parent):

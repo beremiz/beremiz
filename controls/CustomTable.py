@@ -30,6 +30,7 @@ if wx.Platform == '__WXMSW__':
 else:
     ROW_HEIGHT = 28
 
+
 class CustomTable(wx.grid.PyGridTableBase):
 
     """

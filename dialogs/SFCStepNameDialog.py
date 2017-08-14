@@ -28,6 +28,7 @@ import wx
 #                          Edit Step Name Dialog
 #-------------------------------------------------------------------------------
 
+
 class SFCStepNameDialog(wx.TextEntryDialog):
 
     def __init__(self, parent, message, caption = "Please enter text", defaultValue = "",

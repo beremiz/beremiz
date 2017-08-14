@@ -31,6 +31,7 @@ import wx.lib.agw.customtreectrl as CT
 from PLCControler import *
 from util.BitmapLibrary import GetBitmap
 
+
 def GenerateName(infos):
     if infos[0] in ["input", "output", "value"]:
         return "%s %d:" % (infos[0], infos[1])
@@ -47,6 +48,7 @@ def GenerateName(infos):
 [ID_SEARCHRESULTPANEL, ID_SEARCHRESULTPANELHEADERLABEL,
  ID_SEARCHRESULTPANELSEARCHRESULTSTREE, ID_SEARCHRESULTPANELRESETBUTTON,
 ] = [wx.NewId() for _init_ctrls in range(4)]
+
 
 class SearchResultPanel(wx.Panel):
 

@@ -51,6 +51,7 @@ SubscribedEvents = []
 
 DoOnJoin = []
 
+
 def GetCallee(name):
     """ Get Callee or Subscriber corresponding to '.' spearated object path """
     global _PySrv
@@ -58,6 +59,7 @@ def GetCallee(name):
     obj = _PySrv.plcobj
     while names: obj = getattr(obj, names.pop(0))
     return obj
+
 
 class WampSession(wamp.ApplicationSession):
 
@@ -81,6 +83,7 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print 'WAMP session left'
 
+
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
         print("WAMP Client connection failed .. retrying ..")
@@ -89,10 +92,12 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         print("WAMP Client connection lost .. retrying ..")
         self.retry(connector)
 
+
 def LoadWampClientConf(wampconf):
 
     WSClientConf = json.load(open(wampconf))
     return WSClientConf
+
 
 def RegisterWampClient(wampconf):
 
@@ -122,9 +127,11 @@ def RegisterWampClient(wampconf):
     print "WAMP client connecting to :",WSClientConf["url"]
     return conn
 
+
 def GetSession():
     global _WampSession
     return _WampSession
+
 
 def SetServer(pysrv):
     global _PySrv

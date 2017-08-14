@@ -32,6 +32,7 @@ import connectors
 
 service_type = '_PYRO._tcp.local.'
 
+
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, id, name, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0):
@@ -42,6 +43,7 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
  ID_DISCOVERYDIALOGSERVICESLIST, ID_DISCOVERYDIALOGREFRESHBUTTON,
  ID_DISCOVERYDIALOGLOCALBUTTON, ID_DISCOVERYDIALOGIPBUTTON,
 ] = [wx.NewId() for _init_ctrls in range(6)]
+
 
 class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 

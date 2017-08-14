@@ -38,6 +38,7 @@ DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
 #                             Array Type Dialog
 #-------------------------------------------------------------------------------
 
+
 class ArrayTypeDialog(wx.Dialog):
 
     def __init__(self, parent, datatypes, infos):

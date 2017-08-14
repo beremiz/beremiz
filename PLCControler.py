@@ -94,6 +94,7 @@ LOCATIONS_ITEMS = [LOCATION_CONFNODE,
 
 ScriptDirectory = paths.AbsDir(__file__)
 
+
 def GetUneditableNames():
     _ = lambda x:x
     return [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
@@ -107,6 +108,7 @@ UNEDITABLE_NAMES = GetUneditableNames()
 #-------------------------------------------------------------------------------
 #                 Helper object for loading library in xslt stylesheets
 #-------------------------------------------------------------------------------
+
 
 class LibraryResolver(etree.Resolver):
 
@@ -136,6 +138,7 @@ class LibraryResolver(etree.Resolver):
 _StringValue = lambda x: x
 _BoolValue = lambda x: x in ["true", "0"]
 
+
 def _translate_args(translations, args):
     return [translate(arg[0]) if len(arg) > 0 else None
             for translate, arg in
@@ -145,6 +148,7 @@ def _translate_args(translations, args):
 #                 Helpers object for generating pou var list
 #-------------------------------------------------------------------------------
 
+
 class _VariableInfos(object):
     __slots__ = ["Name", "Class", "Option", "Location", "InitialValue",
                  "Edit", "Documentation", "Type", "Tree", "Number"]
@@ -153,6 +157,7 @@ class _VariableInfos(object):
             setattr(self, attr, value if value is not None else "")
     def copy(self):
         return _VariableInfos(*[getattr(self, attr) for attr in self.__slots__])
+
 
 class VariablesInfosFactory:
 
@@ -194,6 +199,7 @@ class VariablesInfosFactory:
 #            Helpers object for generating pou variable instance list
 #-------------------------------------------------------------------------------
 
+
 def class_extraction(value):
     class_type = {
         "configuration": ITEM_CONFIGURATION,
@@ -214,6 +220,7 @@ def class_extraction(value):
 
     return None
 
+
 class _VariablesTreeItemInfos(object):
     __slots__ = ["name", "var_class", "type", "edit", "debug", "variables"]
     def __init__(self, *args):
@@ -221,6 +228,7 @@ class _VariablesTreeItemInfos(object):
             setattr(self, attr, value if value is not None else "")
     def copy(self):
         return _VariableTreeItem(*[getattr(self, attr) for attr in self.__slots__])
+
 
 class VariablesTreeInfosFactory:
 
@@ -247,6 +255,7 @@ class VariablesTreeInfosFactory:
 #            Helpers object for generating instances path list
 #-------------------------------------------------------------------------------
 
+
 class InstancesPathFactory:
 
     def __init__(self, instances):
@@ -258,6 +267,7 @@ class InstancesPathFactory:
 #-------------------------------------------------------------------------------
 #            Helpers object for generating instance tagname
 #-------------------------------------------------------------------------------
+
 
 class InstanceTagName:
 
@@ -355,6 +365,7 @@ _InstanceConnectionInfos = namedtuple("InstanceConnectionInfos",
 _ConnectionLinkInfos = namedtuple("ConnectionLinkInfos",
     ["refLocalId", "formalParameter", "points"])
 
+
 class _ActionInfos(object):
     __slots__ = ["qualifier", "type", "value", "duration", "indicator"]
     def __init__(self, *args):
@@ -362,6 +373,7 @@ class _ActionInfos(object):
             setattr(self, attr, value if value is not None else "")
     def copy(self):
         return _ActionInfos(*[getattr(self, attr) for attr in self.__slots__])
+
 
 class BlockInstanceFactory:
 
@@ -438,13 +450,16 @@ pou_block_instances_xslt = etree.parse(
 # Length of the buffer
 UNDO_BUFFER_LENGTH = 20
 
-"""
-Class implementing a buffer of changes made on the current editing model
-"""
-class UndoBuffer:
 
-    # Constructor initialising buffer
+class UndoBuffer:
+    """
+    Class implementing a buffer of changes made on the current editing model
+    """
+
     def __init__(self, currentstate, issaved = False):
+        """
+        Constructor initialising buffer
+        """
         self.Buffer = []
         self.CurrentIndex = -1
         self.MinIndex = -1
@@ -466,8 +481,11 @@ class UndoBuffer:
         else:
             self.LastSave = -1
 
-    # Add a new state in buffer
+
     def Buffering(self, currentstate):
+        """
+        Add a new state in buffer
+        """
         self.CurrentIndex = (self.CurrentIndex + 1) % UNDO_BUFFER_LENGTH
         self.Buffer[self.CurrentIndex] = currentstate
         # Actualising buffer limits
@@ -479,8 +497,11 @@ class UndoBuffer:
             self.MinIndex = (self.MinIndex + 1) % UNDO_BUFFER_LENGTH
         self.MinIndex = max(self.MinIndex, 0)
 
-    # Return current state of buffer
+
     def Current(self):
+        """
+        Return current state of buffer
+        """
         return self.Buffer[self.CurrentIndex]
 
     # Change current state to previous in buffer and return new current state
@@ -518,10 +539,11 @@ class UndoBuffer:
 #                           Controler for PLCOpenEditor
 #-------------------------------------------------------------------------------
 
-"""
-Class which controls the operations made on the plcopen model and answers to view requests
-"""
+
 class PLCControler:
+    """
+    Class which controls the operations made on the plcopen model and answers to view requests
+    """
 
     # Create a new PLCControler
     def __init__(self):

@@ -193,19 +193,24 @@ EditorToolBarItems = {
 
 import base64
 
+
 def EncodeFileSystemPath(path, use_base64=True):
     path = path.encode(sys.getfilesystemencoding())
     if use_base64:
         return base64.encodestring(path)
     return path
 
+
 def DecodeFileSystemPath(path, is_base64=True):
     if is_base64:
         path = base64.decodestring(path)
     return unicode(path, sys.getfilesystemencoding())
 
-# Compatibility function for wx versions < 2.6
+
 def AppendMenu(parent, help, id, kind, text):
+    """
+    Compatibility function for wx versions < 2.6
+    """
     if wx.VERSION >= (2, 6, 0):
         parent.Append(help=help, id=id, kind=kind, text=text)
     else:
@@ -214,6 +219,7 @@ def AppendMenu(parent, help, id, kind, text):
 [TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
  POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
 ] = range(10)
+
 
 def GetShortcutKeyCallbackFunction(viewer_function):
     def ShortcutKeyFunction(self, event):
@@ -225,6 +231,7 @@ def GetShortcutKeyCallbackFunction(viewer_function):
         elif isinstance(control, wx.TextCtrl):
             control.ProcessEvent(event)
     return ShortcutKeyFunction
+
 
 def GetDeleteElementFunction(remove_function, parent_type=None, check_function=None):
     def DeleteElementFunction(self, selected):
@@ -244,6 +251,7 @@ if wx.Platform == '__WXMSW__':
 else:
     TAB_BORDER = 7
     NOTEBOOK_BORDER = 2
+
 
 def SimplifyTabLayout(tabs, rect):
     for tab in tabs:
@@ -277,6 +285,7 @@ def SimplifyTabLayout(tabs, rect):
                     if tab["size"][1] == rect.height:
                         return True
     return False
+
 
 def ComputeTabsLayout(tabs, rect):
     if len(tabs) == 0:
@@ -322,6 +331,7 @@ def ComputeTabsLayout(tabs, rect):
 #-------------------------------------------------------------------------------
 
 UNEDITABLE_NAMES_DICT = dict([(_(name), name) for name in UNEDITABLE_NAMES])
+
 
 class IDEFrame(wx.Frame):
 
@@ -2548,6 +2558,7 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
 UPPER_DIV = lambda x, y: (x / y) + {True : 0, False : 1}[(x % y) == 0]
+
 
 class GraphicPrintout(wx.Printout):
     def __init__(self, viewer, page_size, margins, preview = False):

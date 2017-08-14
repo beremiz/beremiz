@@ -28,6 +28,7 @@ import sys
 import getopt
 from threading import Thread
 
+
 def usage():
     print """
 Usage of Beremiz PLC execution service :\n
@@ -116,8 +117,10 @@ import __builtin__
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
 
+
 def Bpath(*args):
     return os.path.join(beremiz_dir,*args)
+
 
 def SetupI18n():
     # Import module for internationalization
@@ -379,12 +382,14 @@ import Pyro.core as pyro
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
 
+
 def default_evaluator(tocall, *args, **kwargs):
     try:
         res=(tocall(*args,**kwargs), None)
     except Exception:
         res=(None, sys.exc_info())
     return res
+
 
 class Server():
     def __init__(self, servicename, ip_addr, port,
@@ -528,6 +533,8 @@ else:
 # Exception hooks s
 import threading
 import traceback
+
+
 def LogException(*exp):
     if pyroserver.plcobj is not None:
         pyroserver.plcobj.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
@@ -535,6 +542,8 @@ def LogException(*exp):
         traceback.print_exception(*exp)
 
 sys.excepthook = LogException
+
+
 def installThreadExcepthook():
     init_old = threading.Thread.__init__
     def init(self, *args, **kwargs):

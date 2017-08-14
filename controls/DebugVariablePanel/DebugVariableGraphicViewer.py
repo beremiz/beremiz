@@ -67,6 +67,7 @@ CURSOR_COLOR = '#800080'
 #                      Debug Variable Graphic Viewer Helpers
 #-------------------------------------------------------------------------------
 
+
 def merge_ranges(ranges):
     """
     Merge variables data range in a list to return a range of minimal min range
@@ -107,12 +108,12 @@ def merge_ranges(ranges):
 #                   Debug Variable Graphic Viewer Drop Target
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a custom drop target class for Debug Variable Graphic
-Viewer
-"""
 
 class DebugVariableGraphicDropTarget(wx.TextDropTarget):
+    """
+    Class that implements a custom drop target class for Debug Variable Graphic
+    Viewer
+    """
 
     def __init__(self, parent, window):
         """
@@ -238,11 +239,11 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
 #                      Debug Variable Graphic Viewer Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a Viewer that display variable values as a graphs
-"""
 
 class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
+    """
+    Class that implements a Viewer that display variable values as a graphs
+    """
 
     def __init__(self, parent, window, items, graph_type):
         """

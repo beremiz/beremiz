@@ -36,6 +36,7 @@ DAY = 24 * HOUR       # Number of microseconds in one day
 # Date corresponding to Epoch (1970 January the first)
 DATE_ORIGIN = datetime.datetime(1970, 1, 1)
 
+
 def get_microseconds(value):
     """
     Function converting time duration expressed in day, second and microseconds
@@ -47,6 +48,7 @@ def get_microseconds(value):
                  value.seconds * SECOND + \
                  value.microseconds)
     return
+
 
 def generate_time(value):
     """
@@ -90,6 +92,7 @@ def generate_time(value):
 
     return data
 
+
 def generate_date(value):
     """
     Function converting time duration expressed in day, second and microseconds
@@ -99,6 +102,7 @@ def generate_date(value):
     """
     return (DATE_ORIGIN + value).strftime("DATE#%Y-%m-%d")
 
+
 def generate_datetime(value):
     """
     Function converting time duration expressed in day, second and microseconds
@@ -107,6 +111,7 @@ def generate_datetime(value):
     @return: IEC 61131 DATE_AND_TIME literal
     """
     return (DATE_ORIGIN + value).strftime("DT#%Y-%m-%d-%H:%M:%S.%f")
+
 
 def generate_timeofday(value):
     """
@@ -147,13 +152,13 @@ TYPE_TRANSLATOR = {
 #                            Debug Data Consumer Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements an element that consumes debug values
-Value update can be inhibited during the time the associated Debug Viewer is
-refreshing
-"""
 
 class DebugDataConsumer:
+    """
+    Class that implements an element that consumes debug values
+    Value update can be inhibited during the time the associated Debug Viewer is
+    refreshing
+    """
 
     def __init__(self):
         """

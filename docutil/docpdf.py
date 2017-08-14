@@ -28,6 +28,7 @@ import wx
 
 readerexepath = None
 
+
 def get_acroversion():
     " Return version of Adobe Acrobat executable or None"
     import _winreg
@@ -45,11 +46,13 @@ def get_acroversion():
                     pass
     return None
 
+
 def open_win_pdf(readerexepath, pdffile, pagenum = None):
     if pagenum != None :
         os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", "/A", "page=%d=OpenActions" % pagenum, '"%s"' % pdffile)
     else:
         os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", '"%s"' % pdffile)
+
 
 def open_lin_pdf(readerexepath, pdffile, pagenum = None):
     if pagenum == None :
@@ -57,6 +60,7 @@ def open_lin_pdf(readerexepath, pdffile, pagenum = None):
     else:
         print "Open pdf %s at page %d" % (pdffile, pagenum)
         os.system("%s -remote DS301 %s %d &" % (readerexepath, pdffile, pagenum))
+
 
 def open_pdf(pdffile, pagenum = None):
     if wx.Platform == '__WXMSW__' :

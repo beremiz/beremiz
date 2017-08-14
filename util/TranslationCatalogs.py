@@ -32,6 +32,7 @@ langid = wx.LANGUAGE_DEFAULT
 # Define locale for wx
 locale = wx.Locale(langid)
 
+
 def GetDomain(path):
     for name in os.listdir(path):
         filepath = os.path.join(path, name)
@@ -43,6 +44,7 @@ def GetDomain(path):
         elif fileext == ".mo":
             return basename
     return None
+
 
 def AddCatalog(locale_dir):
     if os.path.exists(locale_dir) and os.path.isdir(locale_dir):

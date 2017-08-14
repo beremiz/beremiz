@@ -34,11 +34,11 @@ from GraphButton import GraphButton
 #                     Debug Variable Text Viewer Drop Target
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a custom drop target class for Debug Variable Text Viewer
-"""
 
 class DebugVariableTextDropTarget(wx.TextDropTarget):
+    """
+    Class that implements a custom drop target class for Debug Variable Text Viewer
+    """
 
     def __init__(self, parent, window):
         """
@@ -144,11 +144,10 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
 #                      Debug Variable Text Viewer Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a Viewer that display variable values as a text
-"""
-
 class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
+    """
+    Class that implements a Viewer that display variable values as a text
+    """
 
     def __init__(self, parent, window, items=[]):
         """

@@ -35,12 +35,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                       Set Ladder Element Parmeters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a LD contact or coil
-graphic element
-"""
 
 class LDElementDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters of a LD contact or coil
+    graphic element
+    """
 
     def __init__(self, parent, controller, tagname, type):
         """

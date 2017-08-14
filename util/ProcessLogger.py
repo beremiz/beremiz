@@ -69,6 +69,7 @@ class outputThread(Thread):
             self.finished = True
             self.endcallback(self.Proc.pid, err)
 
+
 class ProcessLogger:
     def __init__(self, logger, Command, finish_callback = None,
                  no_stdout = False, no_stderr = False, no_gui = True,

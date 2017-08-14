@@ -115,6 +115,7 @@ HANDLE_CURSORS = {
     (2, 3) : 5
 }
 
+
 def round_scaling(x, n, constraint=0):
     fraction = float(x) / float(n)
     if constraint == -1:
@@ -129,19 +130,28 @@ def round_scaling(x, n, constraint=0):
 Basic vector operations for calculate wire points
 """
 
-# Create a vector from two points and define if vector must be normal
+
 def vector(p1, p2, normal = True):
+    """
+    Create a vector from two points and define if vector must be normal
+    """
     vector = (p2.x - p1.x, p2.y - p1.y)
     if normal:
         return normalize(vector)
     return vector
 
-# Calculate the norm of a given vector
+
 def norm(v):
+    """
+    Calculate the norm of a given vector
+    """
     return sqrt(v[0] * v[0] + v[1] * v[1])
 
-# Normalize a given vector
+
 def normalize(v):
+    """
+    Normalize a given vector
+    """
     v_norm = norm(v)
     # Verifie if it is not a null vector
     if v_norm > 0:
@@ -149,24 +159,32 @@ def normalize(v):
     else:
         return v
 
-# Calculate the scalar product of two vectors
+
 def is_null_vector(v):
+    """
+    Calculate the scalar product of two vectors
+    """
     return v == (0, 0)
 
-# Calculate the scalar product of two vectors
+
 def add_vectors(v1, v2):
+    """
+    Calculate the scalar product of two vectors
+    """
     return (v1[0] + v2[0], v1[1] + v2[1])
 
-# Calculate the scalar product of two vectors
+
 def product(v1, v2):
+    """
+    Calculate the scalar product of two vectors
+    """
     return v1[0] * v2[0] + v1[1] * v2[1]
 
 
-"""
-Function that calculates the nearest point of the grid defined by scaling for the given point
-"""
-
 def GetScaledEventPosition(event, dc, scaling):
+    """
+    Function that calculates the nearest point of the grid defined by scaling for the given point
+    """
     pos = event.GetLogicalPosition(dc)
     if scaling:
         pos.x = round(float(pos.x) / float(scaling[0])) * scaling[0]
@@ -174,17 +192,18 @@ def GetScaledEventPosition(event, dc, scaling):
     return pos
 
 
-"""
-Function that choose a direction during the wire points generation
-"""
 
 def DirectionChoice(v_base, v_target, dir_target):
+    """
+    Function that choose a direction during the wire points generation
+    """
     dir_product = product(v_base, v_target)
     if dir_product < 0:
         return (-v_base[0], -v_base[1])
     elif dir_product == 0 and product(v_base, dir_target) != 0:
         return dir_target
     return v_base
+
 
 def MiterPen(colour, width=1, style=wx.SOLID):
     pen = wx.Pen(colour, width, style)
@@ -196,9 +215,11 @@ def MiterPen(colour, width=1, style=wx.SOLID):
 #                    Helpers for highlighting text
 #-------------------------------------------------------------------------------
 
+
 def AddHighlight(highlights, infos):
     RemoveHighlight(highlights, infos)
     highlights.append(infos)
+
 
 def RemoveHighlight(highlights, infos):
     if infos in highlights:
@@ -206,10 +227,12 @@ def RemoveHighlight(highlights, infos):
         return True
     return False
 
+
 def ClearHighlight(highlights, highlight_type=None):
     if highlight_type is not None:
         return [highlight for highlight in highlights if highlight[2] != highlight_type]
     return []
+
 
 def DrawHighlightedText(dc, text, highlights, x, y):
     current_pen = dc.GetPen()
@@ -229,11 +252,11 @@ def DrawHighlightedText(dc, text, highlights, x, y):
 #                           Graphic element base class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a generic graphic element
-"""
 
 class Graphic_Element(ToolTipProducer):
+    """
+    Class that implements a generic graphic element
+    """
 
     # Create a new graphic element
     def __init__(self, parent, id = None):
@@ -684,11 +707,11 @@ class Graphic_Element(ToolTipProducer):
 #                           Group of graphic elements
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a group of graphic elements
-"""
 
 class Graphic_Group(Graphic_Element):
+    """
+    Class that implements a group of graphic elements
+    """
 
     # Create a new group of graphic elements
     def __init__(self, parent):
@@ -1002,11 +1025,11 @@ class Graphic_Group(Graphic_Element):
 #                         Connector for all types of blocks
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a connector for any type of block
-"""
 
 class Connector(DebugDataConsumer, ToolTipProducer):
+    """
+    Class that implements a connector for any type of block
+    """
 
     # Create a new connector
     def __init__(self, parent, name, type, position, direction, negated = False, edge = "none", onlyone = False):
@@ -1536,11 +1559,11 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 #                           Common Wire Element
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a wire for connecting two blocks
-"""
 
 class Wire(Graphic_Element, DebugDataConsumer):
+    """
+    Class that implements a wire for connecting two blocks
+    """
 
     # Create a new wire
     def __init__(self, parent, start = None, end = None):
@@ -2716,6 +2739,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
 #                           Graphic comment element
 #-------------------------------------------------------------------------------
 
+
 def FilterHighlightsByRow(highlights, row, length):
     _highlights = []
     for start, end, highlight_type in highlights:
@@ -2727,6 +2751,7 @@ def FilterHighlightsByRow(highlights, row, length):
             _highlights.append((start, end, highlight_type))
     return _highlights
 
+
 def FilterHighlightsByColumn(highlights, start_col, end_col):
     _highlights = []
     for start, end, highlight_type in highlights:
@@ -2736,11 +2761,11 @@ def FilterHighlightsByColumn(highlights, start_col, end_col):
             _highlights.append((start, end, highlight_type))
     return _highlights
 
-"""
-Class that implements a comment
-"""
 
 class Comment(Graphic_Element):
+    """
+    Class that implements a comment
+    """
 
     # Create a new comment
     def __init__(self, parent, content, id = None):

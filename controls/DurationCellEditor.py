@@ -26,6 +26,7 @@ import wx
 
 from dialogs.DurationEditorDialog import DurationEditorDialog
 
+
 class DurationCellControl(wx.PyControl):
 
     '''
@@ -93,6 +94,7 @@ class DurationCellControl(wx.PyControl):
 
     def SetFocus(self):
         self.Duration.SetFocus()
+
 
 class DurationCellEditor(wx.grid.PyGridCellEditor):
     '''

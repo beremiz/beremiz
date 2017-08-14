@@ -38,12 +38,12 @@ STRING_CRC_MASK = 2 ** STRING_CRC_SIZE - 1
 #                          Debug Variable Item Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements an element that consumes debug values for PLC variable and
-stores received values for displaying them in graphic panel or table
-"""
 
 class DebugVariableItem(DebugDataConsumer):
+    """
+    Class that implements an element that consumes debug values for PLC variable and
+    stores received values for displaying them in graphic panel or table
+    """
 
     def __init__(self, parent, variable, store_data=False):
         """

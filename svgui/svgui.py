@@ -35,9 +35,11 @@ from POULibrary import POULibrary
 from docutil import open_svg
 from py_ext import PythonFileCTNMixin
 
+
 class SVGUILibrary(POULibrary):
     def GetLibraryPath(self):
         return paths.AbsNeighbourFile(__file__, "pous.xml")
+
 
 class SVGUI(PythonFileCTNMixin):
 

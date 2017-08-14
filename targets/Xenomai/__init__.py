@@ -24,6 +24,7 @@
 
 from ..toolchain_gcc import toolchain_gcc
 
+
 class Xenomai_target(toolchain_gcc):
     dlopen_prefix = "./"
     extension = ".so"

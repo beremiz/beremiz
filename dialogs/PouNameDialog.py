@@ -28,6 +28,7 @@ import wx
 #                                POU Name Dialog
 #-------------------------------------------------------------------------------
 
+
 class PouNameDialog(wx.TextEntryDialog):
 
     def __init__(self, parent, message, caption = "Please enter text", defaultValue = "",

@@ -32,12 +32,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                        Set Transition Parameters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a transition graphic
-element
-"""
 
 class SFCTransitionDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters of a transition graphic
+    element
+    """
 
     def __init__(self, parent, controller, tagname, connection=True):
         """

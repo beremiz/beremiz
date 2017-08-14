@@ -58,6 +58,7 @@ NAVIGATION_KEYS = [
     wx.WXK_NUMPAD_PAGEDOWN,
     wx.WXK_NUMPAD_END]
 
+
 def GetCursorPos(old, new):
     if old == "":
         return 0
@@ -80,6 +81,7 @@ def GetCursorPos(old, new):
             return i + 1
     else:
         return None
+
 
 class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
 

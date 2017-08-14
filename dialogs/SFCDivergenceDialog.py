@@ -34,12 +34,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                         Create New Divergence Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters for creating a new
-divergence graphic element
-"""
 
 class SFCDivergenceDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters for creating a new
+    divergence graphic element
+    """
 
     def __init__(self, parent, controller, tagname, poss_div_types = None):
         """

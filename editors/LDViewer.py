@@ -28,6 +28,7 @@ from types import *
 
 from Viewer import *
 
+
 def ExtractNextBlocks(block, block_list):
     current_list = [block]
     while len(current_list) > 0:
@@ -49,6 +50,7 @@ def ExtractNextBlocks(block, block_list):
                         block_list.append(next)
                         next_list.append(next)
         current_list = next_list
+
 
 def CalcBranchSize(elements, stops):
     branch_size = 0
@@ -91,6 +93,7 @@ def CalcBranchSize(elements, stops):
                 return 1
     return branch_size
 
+
 def RemoveElement(remove, element_tree):
     if remove in element_tree and element_tree[remove]:
         for child in element_tree[remove]["children"]:
@@ -98,6 +101,7 @@ def RemoveElement(remove, element_tree):
                 RemoveElement(child, element_tree)
         element_tree.pop(remove)
 ##        element_tree[remove] = None
+
 
 def GenerateTree(element, element_tree, stop_list):
     if element in element_tree:
@@ -127,6 +131,7 @@ def GenerateTree(element, element_tree, stop_list):
                     else:
                         element_tree[next] = {"parents":[element], "children":[], "weight":None}
                         GenerateTree(next, element_tree, stop_list)
+
 
 def CalcWeight(element, element_tree):
     weight = 0
@@ -160,11 +165,10 @@ def CalcWeight(element, element_tree):
 #-------------------------------------------------------------------------------
 
 
-"""
-Class derived from Viewer class that implements a Viewer of Ladder Diagram
-"""
-
 class LD_Viewer(Viewer):
+    """
+    Class derived from Viewer class that implements a Viewer of Ladder Diagram
+    """
 
     def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
         Viewer.__init__(self, parent, tagname, window, controler, debug, instancepath)

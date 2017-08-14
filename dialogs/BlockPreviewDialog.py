@@ -32,12 +32,12 @@ from graphics.GraphicCommons import FREEDRAWING_MODE
 #                    Dialog with preview for graphic block
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a generic dialog containing a preview panel for displaying
-graphic created by dialog
-"""
 
 class BlockPreviewDialog(wx.Dialog):
+    """
+    Class that implements a generic dialog containing a preview panel for displaying
+    graphic created by dialog
+    """
 
     def __init__(self, parent, controller, tagname, title):
         """

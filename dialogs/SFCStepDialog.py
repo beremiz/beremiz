@@ -32,12 +32,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                         Set SFC Step Parameters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a SFC step graphic
-element
-"""
 
 class SFCStepDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters of a SFC step graphic
+    element
+    """
 
     def __init__(self, parent, controller, tagname, initial=False):
         """

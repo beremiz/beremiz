@@ -53,6 +53,7 @@ else:
 
 SCROLLBAR_UNIT = 10
 
+
 class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
     def _GetLabelSize(self):
         """ used internally """
@@ -123,6 +124,7 @@ class GenStaticBitmap(wx.StaticBitmap):
                  pos, size,
                  style,
                  name)
+
 
 class ConfTreeNodeEditor(EditorPanel):
 

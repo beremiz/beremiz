@@ -30,11 +30,11 @@ from graphics.GraphicCommons import GetScaledEventPosition
 #                               Viewer RubberBand
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a rubberband for graphic Viewers
-"""
 
 class RubberBand:
+    """
+    Class that implements a rubberband for graphic Viewers
+    """
 
     def __init__(self, viewer):
         """

@@ -33,13 +33,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                    Set Ladder Power Rail Parameters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a power rail graphic
-element
-"""
 
 class LDPowerRailDialog(BlockPreviewDialog):
-
+    """
+    Class that implements a dialog for defining parameters of a power rail graphic
+    element
+    """
     def __init__(self, parent, controller, tagname):
         """
         Constructor

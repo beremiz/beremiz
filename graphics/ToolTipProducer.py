@@ -30,11 +30,11 @@ from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
 #                           Tool Tip Producer class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements an element that generate Tool Tip
-"""
 
 class ToolTipProducer:
+    """
+    Class that implements an element that generate Tool Tip
+    """
 
     def __init__(self, parent):
         """

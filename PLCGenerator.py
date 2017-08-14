@@ -45,8 +45,9 @@ errorVarTypes = {
     "VAR_INOUT": "var_inout",
 }
 
-# Helper function for reindenting text
+
 def ReIndentText(text, nb_spaces):
+    """ Helper function for reindenting text """
     compute = ""
     lines = text.splitlines()
     if len(lines) > 0:
@@ -67,6 +68,7 @@ def ReIndentText(text, nb_spaces):
                     compute += "\n"
     return compute
 
+
 def SortInstances(a, b):
     ax, ay = int(a.getx()), int(a.gety())
     bx, by = int(b.getx()), int(b.gety())
@@ -75,8 +77,9 @@ def SortInstances(a, b):
     else:
         return cmp(ay, by)
 
-# Helper for emulate join on element list
+
 def JoinList(separator, mylist):
+    """ Helper for emulate join on element list """
     if len(mylist) > 0 :
         return reduce(lambda x, y: x + separator + y, mylist)
     else :
@@ -499,6 +502,7 @@ class ProgramGenerator:
         "simultaneousConvergence", "simultaneousDivergence"]]
 TransitionObjClass = PLCOpenParser.GetElementClass("transition", "transitions")
 ActionObjClass = PLCOpenParser.GetElementClass("action", "actions")
+
 
 class PouProgramGenerator:
 
@@ -1657,6 +1661,7 @@ class PouProgramGenerator:
         program += self.Program
         program += [("END_%s\n\n" % self.Type, ())]
         return program
+
 
 def GenerateCurrentProgram(controler, project, errors, warnings):
     generator = ProgramGenerator(controler, project, errors, warnings)

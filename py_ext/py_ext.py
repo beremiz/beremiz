@@ -28,6 +28,7 @@ from POULibrary import POULibrary
 from PythonFileCTNMixin import PythonFileCTNMixin
 import util.paths as paths
 
+
 class PythonLibrary(POULibrary):
     def GetLibraryPath(self):
         return paths.AbsNeighbourFile(__file__, "pous.xml")
@@ -55,6 +56,7 @@ class PythonLibrary(POULibrary):
         pythonfile.close()
 
         return (["py_ext"], [(Gen_Pythonfile_path, IECCFLAGS)], True), ""
+
 
 class PythonFile(PythonFileCTNMixin):
 

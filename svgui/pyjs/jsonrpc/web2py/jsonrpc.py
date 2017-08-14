@@ -1,5 +1,6 @@
 from pyjs.jsonrpc import JSONRPCServiceBase
 
+
 class JSONRPCService(JSONRPCServiceBase):
 
     def serve(self):

@@ -32,6 +32,7 @@ from xml.dom import minidom
 import util.paths as paths
 from py_ext import PythonFileCTNMixin
 
+
 class WxGladeHMI(PythonFileCTNMixin):
 
     ConfNodeMethods = [

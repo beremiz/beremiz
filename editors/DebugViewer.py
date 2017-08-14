@@ -34,12 +34,12 @@ DEBUG_REFRESH_LOCK = Lock() # Common refresh lock for all debug viewers
 #                               Debug Viewer Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements common behavior of every viewers able to display debug
-values
-"""
 
 class DebugViewer:
+    """
+    Class that implements common behavior of every viewers able to display debug
+    values
+    """
 
     def __init__(self, producer, debug, subscribe_tick=True):
         """

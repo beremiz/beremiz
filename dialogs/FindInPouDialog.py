@@ -26,6 +26,7 @@
 import wx
 from plcopen.plcopen import *
 
+
 class FindInPouDialog(wx.Dialog):
 
     def _init_icon(self, parent):

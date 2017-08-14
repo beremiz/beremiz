@@ -2,6 +2,7 @@ import gluon.contrib.simplejson as simplejson
 import types
 import sys
 
+
 class JSONRPCServiceBase:
 
     def __init__(self):

@@ -27,6 +27,7 @@ import wx.stc as stc
 from controls.CustomStyledTextCtrl import faces
 from editors.CodeFileEditor import CodeFileEditor, CodeEditor
 
+
 class CppEditor(CodeEditor):
 
     KEYWORDS = ["asm", "auto", "bool", "break", "case", "catch", "char", "class",
@@ -56,6 +57,7 @@ class CppEditor(CodeEditor):
 #-------------------------------------------------------------------------------
 #                          CFileEditor Main Frame Class
 #-------------------------------------------------------------------------------
+
 
 class CFileEditor(CodeFileEditor):
 

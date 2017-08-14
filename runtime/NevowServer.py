@@ -36,6 +36,7 @@ xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 
 WorkingDir = None
 
+
 class PLCHMI(athena.LiveElement):
 
     initialised = False
@@ -46,15 +47,18 @@ class PLCHMI(athena.LiveElement):
     def HMIinitialisation(self):
         self.HMIinitialised(None)
 
+
 class DefaultPLCStartedHMI(PLCHMI):
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                             tags.h1["PLC IS NOW STARTED"],
                                             ])
 
+
 class PLCStoppedHMI(PLCHMI):
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                             tags.h1["PLC IS STOPPED"],
                                             ])
+
 
 class MainPage(athena.LiveElement):
     jsClass = u"WebInterface.PLC"
@@ -109,6 +113,7 @@ class MainPage(athena.LiveElement):
     def detachFragmentChildren(self):
         for child in self.liveFragmentChildren[:]:
             child.detach()
+
 
 class WebInterface(athena.LivePage):
 
@@ -173,6 +178,7 @@ class WebInterface(athena.LivePage):
         #print reason
         #print "We will be called back when the client disconnects"
 
+
 def RegisterWebsite(port):
     website = WebInterface()
     site = appserver.NevowSite(website)
@@ -181,6 +187,7 @@ def RegisterWebsite(port):
     reactor.listenTCP(port, site)
     print _("HTTP interface port :"), port
     return website
+
 
 class statuslistener:
     def __init__(self, site):
@@ -193,6 +200,7 @@ class statuslistener:
                       'Stopped': self.site.PLCStopped}.get(state, None)
             if action is not None: action ()
             self.oldstate = state
+
 
 def website_statuslistener_factory(site):
     return statuslistener(site).listen

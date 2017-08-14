@@ -45,12 +45,12 @@ VARIABLE_CLASSES_DICT_REVERSE = dict(
 #                        Set Variable Parameters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a FBD variable graphic
-element
-"""
 
 class FBDVariableDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters of a FBD variable graphic
+    element
+    """
 
     def __init__(self, parent, controller, tagname, exclude_input=False):
         """

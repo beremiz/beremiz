@@ -36,6 +36,7 @@ LOCATIONDATATYPES = {"X" : ["BOOL"],
                      "D" : ["DINT", "UDINT", "REAL", "DWORD"],
                      "L" : ["LINT", "ULINT", "LREAL", "LWORD"]}
 
+
 def gen_get_function(f):
     def get_function(v):
         try:
@@ -43,6 +44,7 @@ def gen_get_function(f):
         except:
             return None
     return get_function
+
 
 def gen_get_string(delimiter):
     STRING_MODEL = re.compile("%(delimiter)s([^%(delimiter)s]*)%(delimiter)s$" % {"delimiter": delimiter})
@@ -68,6 +70,7 @@ IEC_DATE_MODEL = re.compile("(?:(?:D|DATE)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})$")
 IEC_DATETIME_MODEL = re.compile("(?:(?:DT|DATE_AND_TIME)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})-([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
 IEC_TIMEOFDAY_MODEL = re.compile("(?:(?:TOD|TIME_OF_DAY)#)?([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
 
+
 def gettime(v):
     result = IEC_TIME_MODEL.match(v.upper())
     if result is not None:
@@ -91,6 +94,7 @@ def gettime(v):
     else:
         return None
 
+
 def getdate(v):
     result = IEC_DATE_MODEL.match(v.upper())
     if result is not None:
@@ -104,6 +108,7 @@ def getdate(v):
     else:
         return None
 
+
 def getdatetime(v):
     result = IEC_DATETIME_MODEL.match(v.upper())
     if result is not None:
@@ -116,6 +121,7 @@ def getdatetime(v):
         return date - base_date
     else:
         return None
+
 
 def gettimeofday(v):
     result = IEC_TIMEOFDAY_MODEL.match(v.upper())
@@ -155,6 +161,7 @@ GetTypeValue = {"BOOL": lambda x: {"TRUE": True, "FALSE": False, "0": False, "1"
 #-------------------------------------------------------------------------------
 #                            Force Variable Dialog
 #-------------------------------------------------------------------------------
+
 
 class ForceVariableDialog(wx.TextEntryDialog):
 

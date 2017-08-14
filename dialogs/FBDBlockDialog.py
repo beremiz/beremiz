@@ -35,6 +35,7 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                                    Helpers
 #-------------------------------------------------------------------------------
 
+
 def GetBlockTypeDefaultNameModel(blocktype):
     return re.compile("%s[0-9]+" % blocktype if blocktype is not None else ".*")
 
@@ -42,12 +43,12 @@ def GetBlockTypeDefaultNameModel(blocktype):
 #                         Set Block Parameters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a FBD block graphic
-element
-"""
 
 class FBDBlockDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters of a FBD block graphic
+    element
+    """
 
     def __init__(self, parent, controller, tagname):
         """

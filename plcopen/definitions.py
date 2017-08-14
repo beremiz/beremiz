@@ -50,6 +50,7 @@ StdTC6Libs = [(_("Standard function blocks"),  join(sd, "Standard_Function_Block
 
 StdFuncsCSV = join(sd,"iec_std.csv")
 
+
 def GetBlockInfos(pou):
     infos = pou.getblockInfos()
     infos["inputs"] = [

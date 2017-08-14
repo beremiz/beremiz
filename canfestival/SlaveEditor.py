@@ -38,6 +38,7 @@ from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
  ID_SLAVEEDITORADDMENUMAPVARIABLE, ID_SLAVEEDITORADDMENUUSERTYPE,
 ] = [wx.NewId() for _init_coll_AddMenu_Items in range(6)]
 
+
 class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
 
     CONFNODEEDITOR_TABS = [
@@ -96,6 +97,7 @@ class SlaveEditor(ConfTreeNodeEditor, NodeEditorTemplate):
         self.ParentWindow.RefreshFileMenu()
         self.ParentWindow.RefreshEditMenu()
         self.ParentWindow.RefreshPageTitles()
+
 
 class MasterViewer(SlaveEditor):
     SHOW_BASE_PARAMS = False

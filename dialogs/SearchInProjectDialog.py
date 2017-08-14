@@ -31,6 +31,7 @@ import wx
 #                          Search In Project Dialog
 #-------------------------------------------------------------------------------
 
+
 def GetElementsChoices():
     _ = lambda x: x
     return [("datatype", _("Data Type")),
@@ -38,6 +39,7 @@ def GetElementsChoices():
             ("functionBlock", _("Function Block")),
             ("program", _("Program")),
             ("configuration", _("Configuration"))]
+
 
 class SearchInProjectDialog(wx.Dialog):
 

@@ -50,6 +50,7 @@ TrashVariables = [(1, 0x01), (8, 0x05), (16, 0x06), (32, 0x07), (64, 0x1B)]
 #                  Specific exception for PDO mapping errors
 #-------------------------------------------------------------------------------
 
+
 class PDOmappingException(Exception):
     pass
 
@@ -136,6 +137,7 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     # Re-Enable PDO
     dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(cobid, 4)]
     return "".join(dcfdata), len(dcfdata)
+
 
 class ConciseDCFGenerator:
 
@@ -592,6 +594,7 @@ class ConciseDCFGenerator:
                         # Add variable to pointed variables
                         self.PointedVariables[(mapvariableidx, nbsubentries)] = "%s_%s" % (indexname, subindexname)
 
+
 def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodename):
     """
     Fills a CanFestival network editor model, with DCF with requested PDO mappings.
@@ -612,6 +615,7 @@ def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodena
     # allow access to local OD from Master PLC
     pointers.update(LocalODPointers(locations, current_location, masternode))
     return masternode,pointers
+
 
 def LocalODPointers(locations, current_location, slave):
     IECLocations = {}

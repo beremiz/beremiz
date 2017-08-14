@@ -38,6 +38,7 @@ import os.path
 # for connectors that do not support DNS-SD, this attribute can be omitted
 # or set to an empty list.
 
+
 def PYRO_connector_factory(uri, confnodesroot):
     """
     This returns the connector to Pyro style PLCobject

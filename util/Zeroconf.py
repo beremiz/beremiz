@@ -183,28 +183,35 @@ _TYPES = { _TYPE_A : "a",
 
 # utility functions
 
+
 def currentTimeMillis():
     """Current system time in milliseconds"""
     return time.time() * 1000
 
 # Exceptions
 
+
 class NonLocalNameException(Exception):
     pass
+
 
 class NonUniqueNameException(Exception):
     pass
 
+
 class NamePartTooLongException(Exception):
     pass
 
+
 class AbstractMethodException(Exception):
     pass
+
 
 class BadTypeInNameException(Exception):
     pass
 
 # implementation classes
+
 
 class DNSEntry(object):
     """A DNS entry"""
@@ -253,6 +260,7 @@ class DNSEntry(object):
         else:
             result += "]"
         return result
+
 
 class DNSQuestion(DNSEntry):
     """A DNS question entry"""
@@ -332,6 +340,7 @@ class DNSRecord(DNSEntry):
         arg = "%s/%s,%s" % (self.ttl, self.getRemainingTTL(currentTimeMillis()), other)
         return DNSEntry.toString(self, "record", arg)
 
+
 class DNSAddress(DNSRecord):
     """A DNS address record"""
 
@@ -356,6 +365,7 @@ class DNSAddress(DNSRecord):
         except:
             return self.address
 
+
 class DNSHinfo(DNSRecord):
     """A DNS host information record"""
 
@@ -379,6 +389,7 @@ class DNSHinfo(DNSRecord):
         """String representation"""
         return self.cpu + " " + self.os
 
+
 class DNSPointer(DNSRecord):
     """A DNS pointer record"""
 
@@ -399,6 +410,7 @@ class DNSPointer(DNSRecord):
     def __repr__(self):
         """String representation"""
         return self.toString(self.alias)
+
 
 class DNSText(DNSRecord):
     """A DNS text record"""
@@ -423,6 +435,7 @@ class DNSText(DNSRecord):
             return self.toString(self.text[:7] + "...")
         else:
             return self.toString(self.text)
+
 
 class DNSService(DNSRecord):
     """A DNS service record"""
@@ -450,6 +463,7 @@ class DNSService(DNSRecord):
     def __repr__(self):
         """String representation"""
         return self.toString("%s:%s" % (self.server, self.port))
+
 
 class DNSIncoming(object):
     """Object representation of an incoming DNS packet"""
@@ -889,6 +903,7 @@ class Engine(threading.Thread):
         self.condition.acquire()
         self.condition.notify()
         self.condition.release()
+
 
 class Listener(object):
     """A Listener is used by this module to listen on the multicast

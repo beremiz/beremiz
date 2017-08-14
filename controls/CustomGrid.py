@@ -25,6 +25,7 @@
 import wx
 import wx.grid
 
+
 class CustomGrid(wx.grid.Grid):
 
     def __init__(self, *args, **kwargs):

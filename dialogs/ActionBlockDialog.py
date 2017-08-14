@@ -34,9 +34,11 @@ from PLCControler import _ActionInfos
 #                                  Helpers
 #-------------------------------------------------------------------------------
 
+
 def GetActionTableColnames():
     _ = lambda x: x
     return [_("Qualifier"), _("Duration"), _("Type"), _("Value"), _("Indicator")]
+
 
 def GetTypeList():
     _ = lambda x: x
@@ -45,6 +47,7 @@ def GetTypeList():
 #-------------------------------------------------------------------------------
 #                               Action Table
 #-------------------------------------------------------------------------------
+
 
 class ActionTable(CustomTable):
 
@@ -114,6 +117,7 @@ class ActionTable(CustomTable):
 #-------------------------------------------------------------------------------
 #                            Action Block Dialog
 #-------------------------------------------------------------------------------
+
 
 class ActionBlockDialog(wx.Dialog):
 
