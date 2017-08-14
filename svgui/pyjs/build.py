@@ -63,6 +63,7 @@ for p in ["library/builtins",
 def read_boilerplate(data_dir, filename):
     return open(join(data_dir, "builder/boilerplate", filename)).read()
 
+
 def copy_boilerplate(data_dir, filename, output_dir):
     filename = join(data_dir, "builder/boilerplate", filename)
     shutil.copy(filename, output_dir)
@@ -102,6 +103,7 @@ def copytree_exists(src, dst, symlinks=False):
             errors.append((srcname, dstname, why))
     if errors:
         print errors
+
 
 def check_html_file(source_file, dest_path):
     """ Checks if a base HTML-file is available in the PyJamas
@@ -523,15 +525,19 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
 
     return app_files
 
+
 def flattenlist(ll):
     res = []
     for l in ll:
         res += l
     return res
 
-# creates sub-dependencies e.g. pyjamas.ui.Widget
-# creates pyjamas.ui.Widget, pyjamas.ui and pyjamas.
+
 def subdeps(m):
+    """
+    creates sub-dependencies e.g. pyjamas.ui.Widget
+    creates pyjamas.ui.Widget, pyjamas.ui and pyjamas.
+    """
     d = []
     m = m.split(".")
     for i in range(0, len(m)):
@@ -539,6 +545,7 @@ def subdeps(m):
     return d
 
 import time
+
 
 def add_subdeps(deps, mod_name):
     sd = subdeps(mod_name)
@@ -558,13 +565,17 @@ def add_subdeps(deps, mod_name):
     #print deps
     return res
 
-# makes unique and preserves list order
+
 def uniquify(md):
+    """
+    makes unique and preserves list order
+    """
     res = []
     for m in md:
         if m not in res:
             res.append(m)
     return res
+
 
 def filter_mods(app_name, md):
     while 'sys' in md:
@@ -578,6 +589,7 @@ def filter_mods(app_name, md):
 
     return uniquify(md)
 
+
 def filter_deps(app_name, deps):
 
     res = {}
@@ -588,10 +600,12 @@ def filter_deps(app_name, deps):
         res[k] = mods
     return res
 
+
 def has_nodeps(mod, deps):
     if not deps.has_key(mod) or not deps[mod]:
         return True
     return False
+
 
 def nodeps_list(mod_list, deps):
     res = []
@@ -654,6 +668,7 @@ def make_deps(app_name, deps, mod_list):
     ordered_deps.reverse()
 
     return ordered_deps
+
 
 def main():
     global app_platforms

@@ -25,6 +25,7 @@
 import wx
 import wx.gizmos
 
+
 class CustomEditableListBox(wx.gizmos.EditableListBox):
 
     def __init__(self, *args, **kwargs):

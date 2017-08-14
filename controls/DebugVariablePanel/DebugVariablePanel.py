@@ -58,9 +58,11 @@ RANGE_VALUES = \
 # Scrollbar increment in pixel
 SCROLLBAR_UNIT = 10
 
+
 def compute_mask(x, y):
     return [(xp if xp == yp else "*")
             for xp, yp in zip(x, y)]
+
 
 def NextTick(variables):
     next_tick = None
@@ -78,12 +80,12 @@ def NextTick(variables):
 #                    Debug Variable Graphic Panel Drop Target
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a custom drop target class for Debug Variable Graphic
-Panel
-"""
 
 class DebugVariableDropTarget(wx.TextDropTarget):
+    """
+    Class that implements a custom drop target class for Debug Variable Graphic
+    Panel
+    """
 
     def __init__(self, window):
         """
@@ -173,11 +175,11 @@ class DebugVariableDropTarget(wx.TextDropTarget):
 #                      Debug Variable Graphic Panel Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a Viewer that display variable values as a graphs
-"""
 
 class DebugVariablePanel(wx.Panel, DebugViewer):
+    """
+    Class that implements a Viewer that display variable values as a graphs
+    """
 
     def __init__(self, parent, producer, window):
         """

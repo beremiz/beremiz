@@ -175,6 +175,7 @@ class LicenseDialog(wx.Dialog):
 
 #----------------------------------------------------------------------
 
+
 def ShowAboutDialog(parent, info):
     if os.name == "nt":
         AboutDialog(parent, info)

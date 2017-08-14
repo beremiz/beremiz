@@ -34,14 +34,14 @@ import wx
 #                              Library Panel
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a panel displaying a tree containing an hierarchical list
-of functions and function blocks available in project an a search control for
-quickly find one functions or function blocks in this list and a text control
-displaying informations about selected functions or function blocks
-"""
 
 class LibraryPanel(wx.Panel):
+    """
+    Class that implements a panel displaying a tree containing an hierarchical list
+    of functions and function blocks available in project an a search control for
+    quickly find one functions or function blocks in this list and a text control
+    displaying informations about selected functions or function blocks
+    """
 
     def __init__(self, parent, enable_drag=False):
         """

@@ -34,6 +34,7 @@ else:
     LISTBOX_BORDER_HEIGHT = 4
     LISTBOX_INTERVAL_HEIGHT = 6
 
+
 class PopupWithListbox(wx.PopupWindow):
 
     def __init__(self, parent, choices=[]):
@@ -104,6 +105,7 @@ class PopupWithListbox(wx.PopupWindow):
         self.ListBox.SetSelection(
             self.ListBox.HitTest(wx.Point(event.GetX(), event.GetY())))
         event.Skip()
+
 
 class TextCtrlAutoComplete(wx.TextCtrl):
 

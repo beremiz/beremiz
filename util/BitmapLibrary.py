@@ -37,9 +37,11 @@ BitmapFolders = []
 #                             Library Helpers
 #-------------------------------------------------------------------------------
 
+
 def AddBitmapFolder(path):
     if os.path.exists(path) and os.path.isdir(path) and path not in BitmapFolders:
         BitmapFolders.append(path)
+
 
 def SearchBitmap(bmp_name):
     for folder in BitmapFolders:
@@ -47,6 +49,7 @@ def SearchBitmap(bmp_name):
         if os.path.isfile(bmp_path):
             return wx.Bitmap(bmp_path)
     return None
+
 
 def GetBitmap(bmp_name1, bmp_name2=None, size=None):
     bmp = BitmapLibrary.get((bmp_name1, bmp_name2, size))

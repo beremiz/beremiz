@@ -32,10 +32,13 @@ svgfile = '%(svgfile)s'
 svguiWidgets = {}
 
 currentId = 0
+
+
 def getNewId():
     global currentId
     currentId += 1
     return currentId
+
 
 class SvguiWidget:
 
@@ -83,6 +86,7 @@ class SvguiWidget:
         if self.changed:
             self.RefreshInterface()
 
+
 def get_object_init_state(obj):
     # Convert objects to a dictionary of their representation
     attrs = obj.attrs.copy()
@@ -93,6 +97,7 @@ def get_object_init_state(obj):
           }
     return d
 
+
 def get_object_current_state(obj):
     # Convert objects to a dictionary of their representation
     d = { '__class__': obj.classname,
@@ -100,6 +105,7 @@ def get_object_current_state(obj):
           'kwargs': json.dumps(obj.outputs),
           }
     return d
+
 
 class SVGUI_HMI(website.PLCHMI):
     jsClass = u"LiveSVGPage.LiveSVGWidget"
@@ -123,6 +129,7 @@ class SVGUI_HMI(website.PLCHMI):
     def setattr(self, id, attrname, value):
         svguiWidgets[id].setinput(attrname, value)
 
+
 def createSVGUIControl(*args, **kwargs):
     id = getNewId()
     gad = SvguiWidget(args[0], id, **kwargs)
@@ -133,15 +140,18 @@ def createSVGUIControl(*args, **kwargs):
         interface.callRemote('init', gadget)
     return id
 
+
 def setAttr(id, attrname, value):
     gad = svguiWidgets.get(id, None)
     if gad is not None:
         gad.setoutput(attrname, value)
 
+
 def updateAttr(id, **kwargs):
     gad = svguiWidgets.get(id, None)
     if gad is not None:
         gad.updateoutput(**kwargs)
+
 
 def getAttr(id, attrname, default=None):
     gad = svguiWidgets.get(id, None)

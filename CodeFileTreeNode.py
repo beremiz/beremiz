@@ -82,6 +82,7 @@ CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 
 SECTION_TAG_ELEMENT = "<xsd:element name=\"%s\" type=\"CodeText\"/>"
 
+
 class CodeFile:
 
     CODEFILE_NAME = "CodeFile"

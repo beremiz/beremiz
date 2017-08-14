@@ -32,11 +32,11 @@ from plcopen.structures import *
 #                         Ladder Diagram PowerRail
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a power rail
-"""
 
 class LD_PowerRail(Graphic_Element):
+    """
+    Class that implements the graphic representation of a power rail
+    """
 
     # Create a new power rail
     def __init__(self, parent, type, id=None, connectors=1):
@@ -343,11 +343,11 @@ class LD_PowerRail(Graphic_Element):
 #                         Ladder Diagram Contact
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a contact
-"""
 
 class LD_Contact(Graphic_Element, DebugDataConsumer):
+    """
+    Class that implements the graphic representation of a contact
+    """
 
     # Create a new contact
     def __init__(self, parent, type, name, id = None):
@@ -689,11 +689,11 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
 #                         Ladder Diagram Coil
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a coil
-"""
 
 class LD_Coil(Graphic_Element):
+    """
+    Class that implements the graphic representation of a coil
+    """
 
     # Create a new coil
     def __init__(self, parent, type, name, id = None):

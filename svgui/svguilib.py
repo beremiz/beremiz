@@ -22,6 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
 class button:
 
     def __init__(self, parent, id, args):
@@ -114,6 +115,7 @@ class button:
                     updateAttr(self.id, 'state', self.state)
                     self.updateElements()
                 self.dragging = False
+
 
 class textControl:
 

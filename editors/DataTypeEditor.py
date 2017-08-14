@@ -42,12 +42,15 @@ from util.BitmapLibrary import GetBitmap
 
 DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
 
+
 def AppendMenu(parent, help, id, kind, text):
     parent.Append(help=help, id=id, kind=kind, text=text)
+
 
 def GetElementsTableColnames():
     _ = lambda x : x
     return ["#", _("Name"), _("Type"), _("Initial Value")]
+
 
 def GetDatatypeTypes():
     _ = lambda x : x
@@ -57,6 +60,7 @@ DATATYPE_TYPES_DICT = dict([(_(datatype), datatype) for datatype in GetDatatypeT
 #-------------------------------------------------------------------------------
 #                            Structure Elements Table
 #-------------------------------------------------------------------------------
+
 
 class ElementsTable(CustomTable):
 
@@ -136,6 +140,7 @@ class ElementsTable(CustomTable):
 #-------------------------------------------------------------------------------
 #                          Datatype Editor class
 #-------------------------------------------------------------------------------
+
 
 class DataTypeEditor(EditorPanel):
 

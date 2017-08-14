@@ -34,11 +34,11 @@ TOOLTIP_WAIT_PERIOD = 0.5   # Wait period before displaying tooltip in second
 #                               Custom ToolTip
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a custom tool tip
-"""
 
 class CustomToolTip(wx.PopupWindow):
+    """
+    Class that implements a custom tool tip
+    """
 
     def __init__(self, parent, tip, restricted=True):
         """

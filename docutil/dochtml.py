@@ -29,6 +29,7 @@ import wx.html
 
 HtmlFrameOpened = []
 
+
 def OpenHtmlFrame(self, title, file, size):
         if title not in HtmlFrameOpened:
             HtmlFrameOpened.append(title)
@@ -41,11 +42,13 @@ def OpenHtmlFrame(self, title, file, size):
 [ID_HTMLFRAME, ID_HTMLFRAMEHTMLCONTENT] = [wx.NewId() for _init_ctrls in range(2)]
 EVT_HTML_URL_CLICK = wx.NewId()
 
+
 class HtmlWindowUrlClick(wx.PyEvent):
     def __init__(self, linkinfo):
         wx.PyEvent.__init__(self)
         self.SetEventType(EVT_HTML_URL_CLICK)
         self.linkinfo = (linkinfo.GetHref(), linkinfo.GetTarget())
+
 
 class UrlClickHtmlWindow(wx.html.HtmlWindow):
     """ HTML window that generates and OnLinkClicked event.
@@ -60,6 +63,7 @@ class UrlClickHtmlWindow(wx.html.HtmlWindow):
             self.Connect(-1, -1, EVT_HTML_URL_CLICK, handler)
         else:
             wx.html.HtmlWindow.Bind(event, handler, source=source, id=id, id2=id2)
+
 
 class HtmlFrame(wx.Frame):
         def _init_ctrls(self, prnt):

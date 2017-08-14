@@ -48,6 +48,7 @@ HIGHLIGHT_TYPES = {
 
 EDGE_COLUMN = 80
 
+
 class CodeEditor(CustomStyledTextCtrl):
 
     KEYWORDS = []

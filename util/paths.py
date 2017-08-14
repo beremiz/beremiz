@@ -25,14 +25,17 @@
 import os
 import sys
 
+
 def AbsFile(file):
     if isinstance(file, str):
         file = unicode(file,sys.getfilesystemencoding())
     return file
 
+
 def AbsDir(file):
     file = AbsFile(file)
     return os.path.dirname(os.path.realpath(file))
+
 
 def AbsNeighbourFile(file, *args):
     return os.path.join(AbsDir(file), *args)

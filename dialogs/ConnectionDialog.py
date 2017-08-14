@@ -33,12 +33,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 #                       Set Connection Parameters Dialog
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a connection graphic
-element
-"""
 
 class ConnectionDialog(BlockPreviewDialog):
+    """
+    Class that implements a dialog for defining parameters of a connection graphic
+    element
+    """
 
     def __init__(self, parent, controller, tagname, apply_button=False):
         """

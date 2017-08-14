@@ -67,6 +67,7 @@ MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?
 
 ITEM_CONFNODE = 25
 
+
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
     for n,d,h,c in catalog:
@@ -75,6 +76,7 @@ def ExtractChildrenTypesFromCatalog(catalog):
         else:
             children_types.append((n, GetClassImporter(c), d))
     return children_types
+
 
 def ExtractMenuItemsFromCatalog(catalog):
     menu_items = []
@@ -86,8 +88,10 @@ def ExtractMenuItemsFromCatalog(catalog):
         menu_items.append((n, d, h, children))
     return menu_items
 
+
 def GetAddMenuItems():
     return ExtractMenuItemsFromCatalog(features.catalog)
+
 
 class Iec2CSettings():
     def __init__(self):
@@ -169,6 +173,7 @@ class Iec2CSettings():
         return self.ieclib_c_path
 
 iec2c_cfg = Iec2CSettings()
+
 
 class ProjectController(ConfigTreeNode, PLCControler):
     """

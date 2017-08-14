@@ -33,6 +33,7 @@ from xmlclass import GenerateParserFromXSD
 from CodeFileTreeNode import CodeFile
 from PythonEditor import PythonEditor
 
+
 class PythonFileCTNMixin(CodeFile):
 
     CODEFILE_NAME = "PyFile"

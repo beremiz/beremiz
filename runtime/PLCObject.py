@@ -39,6 +39,8 @@ elif os.name == "posix":
     from _ctypes import dlopen, dlclose
 
 import traceback
+
+
 def get_last_traceback(tb):
     while tb.tb_next:
         tb = tb.tb_next
@@ -49,9 +51,11 @@ lib_ext ={
      "win32":".dll",
      }.get(sys.platform, "")
 
+
 def PLCprint(message):
     sys.stdout.write("PLCobject : "+message+"\n")
     sys.stdout.flush()
+
 
 class PLCObject(pyro.ObjBase):
     def __init__(self, workingdir, daemon, argv, statuschange, evaluator, pyruntimevars):

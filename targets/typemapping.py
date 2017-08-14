@@ -30,12 +30,14 @@ ctypes.pythonapi.PyString_AsString.restype = ctypes.POINTER(ctypes.c_char)
 from ctypes import *
 from datetime import timedelta as td
 
+
 class IEC_STRING(Structure):
     """
     Must be changed according to changes in iec_types.h
     """
     _fields_ = [("len", c_uint8),
                 ("body", c_char * 126)]
+
 
 class IEC_TIME(Structure):
     """
@@ -44,7 +46,10 @@ class IEC_TIME(Structure):
     _fields_ = [("s", c_long), #tv_sec
                 ("ns", c_long)] #tv_nsec
 
+
 def _t(t, u=lambda x:x.value, p=lambda t,x:t(x)): return  (t, u, p)
+
+
 def _ttime(): return (IEC_TIME,
                       lambda x:td(0, x.s, x.ns/1000),
                       lambda t,x:t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000))
@@ -85,6 +90,7 @@ TypeTranslator=SameEndianessTypeTranslator
 
 # Construct debugger natively supported types
 DebugTypesSize =  dict([(key,sizeof(t)) for key,(t,p,u) in SameEndianessTypeTranslator.iteritems() if t is not None])
+
 
 def UnpackDebugBuffer(buff, indexes):
     res =  []

@@ -30,11 +30,11 @@ from util.BitmapLibrary import GetBitmap
 #                        Custom button for Graphic Viewer Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a custom button for graphic Viewer
-"""
 
 class GraphButton():
+    """
+    Class that implements a custom button for graphic Viewer
+    """
 
     def __init__(self, x, y, bitmap, callback):
         """

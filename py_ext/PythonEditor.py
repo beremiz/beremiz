@@ -28,6 +28,7 @@ import wx.stc as stc
 from controls.CustomStyledTextCtrl import faces
 from editors.CodeFileEditor import CodeFileEditor, CodeEditor
 
+
 class PythonCodeEditor(CodeEditor):
 
     KEYWORDS = keyword.kwlist

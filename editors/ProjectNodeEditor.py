@@ -28,6 +28,7 @@ from controls import ProjectPropertiesPanel, VariablePanel
 from EditorPanel import EditorPanel
 from ConfTreeNodeEditor import ConfTreeNodeEditor
 
+
 class ProjectNodeEditor(ConfTreeNodeEditor):
 
     SHOW_BASE_PARAMS = False

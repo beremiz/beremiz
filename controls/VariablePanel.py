@@ -47,11 +47,13 @@ from PLCControler import _VariableInfos
  POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
 ] = range(10)
 
+
 def GetVariableTableColnames(location):
     _ = lambda x : x
     if location:
     	return ["#", _("Name"), _("Class"), _("Type"), _("Location"), _("Initial Value"), _("Option"), _("Documentation")]
     return ["#", _("Name"), _("Class"), _("Type"), _("Initial Value"), _("Option"), _("Documentation")]
+
 
 def GetOptions(constant=True, retain=True, non_retain=True):
     _ = lambda x : x
@@ -64,6 +66,7 @@ def GetOptions(constant=True, retain=True, non_retain=True):
         options.append(_("Non-Retain"))
     return options
 OPTIONS_DICT = dict([(_(option), option) for option in GetOptions()])
+
 
 def GetFilterChoiceTransfer():
     _ = lambda x : x
@@ -89,6 +92,7 @@ VARIABLE_NAME_SUFFIX_MODEL = re.compile("([0-9]*)$")
 #-------------------------------------------------------------------------------
 #                            Variables Panel Table
 #-------------------------------------------------------------------------------
+
 
 class VariableTable(CustomTable):
 
@@ -226,6 +230,7 @@ class VariableTable(CustomTable):
 #-------------------------------------------------------------------------------
 #                         Variable Panel Drop Target
 #-------------------------------------------------------------------------------
+
 
 class VariableDropTarget(wx.TextDropTarget):
     '''
@@ -406,6 +411,7 @@ class VariableDropTarget(wx.TextDropTarget):
 #-------------------------------------------------------------------------------
 #                               Variable Panel
 #-------------------------------------------------------------------------------
+
 
 class VariablePanel(wx.Panel):
 

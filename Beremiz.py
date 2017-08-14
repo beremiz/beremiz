@@ -31,6 +31,7 @@ import time
 import __builtin__
 import util.paths as paths
 
+
 class BeremizIDELauncher:
     def __init__(self):
         self.updateinfo_url = None

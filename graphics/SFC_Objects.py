@@ -28,6 +28,7 @@ from graphics.GraphicCommons import *
 from graphics.DebugDataConsumer import DebugDataConsumer
 from plcopen.structures import *
 
+
 def GetWireSize(block):
     if isinstance(block, SFC_Step):
         return SFC_WIRE_MIN_SIZE + block.GetActionExtraLineNumber() * SFC_ACTION_MIN_SIZE[1]
@@ -38,11 +39,11 @@ def GetWireSize(block):
 #                         Sequencial Function Chart Step
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a step
-"""
 
 class SFC_Step(Graphic_Element, DebugDataConsumer):
+    """
+    Class that implements the graphic representation of a step
+    """
 
     # Create a new step
     def __init__(self, parent, name, initial = False, id = None):
@@ -571,11 +572,11 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
 #                       Sequencial Function Chart Transition
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a transition
-"""
 
 class SFC_Transition(Graphic_Element, DebugDataConsumer):
+    """
+    Class that implements the graphic representation of a transition
+    """
 
     # Create a new transition
     def __init__(self, parent, type = "reference", condition = None, priority = 0, id = None):
@@ -1040,12 +1041,12 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
 #                Sequencial Function Chart Divergence and Convergence
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a divergence or convergence,
-selection or simultaneous
-"""
 
 class SFC_Divergence(Graphic_Element):
+    """
+    Class that implements the graphic representation of a divergence or convergence,
+    selection or simultaneous
+    """
 
     # Create a new divergence
     def __init__(self, parent, type, number = 2, id = None):
@@ -1502,11 +1503,10 @@ class SFC_Divergence(Graphic_Element):
 #                   Sequencial Function Chart Jump to Step
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a jump to step
-"""
-
 class SFC_Jump(Graphic_Element):
+    """
+    Class that implements the graphic representation of a jump to step
+    """
 
     # Create a new jump
     def __init__(self, parent, target, id = None):
@@ -1778,11 +1778,11 @@ class SFC_Jump(Graphic_Element):
 #                   Sequencial Function Chart Action Block
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of an action block
-"""
 
 class SFC_ActionBlock(Graphic_Element):
+    """
+    Class that implements the graphic representation of an action block
+    """
 
     # Create a new action block
     def __init__(self, parent, actions = [], id = None):

@@ -60,6 +60,7 @@ AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))
 #              Location Tree Helper
 #--------------------------------------------------
 
+
 def GetSlaveLocationTree(slave_node, current_location, name):
     entries = []
     for index, subindex, size, entry_name in slave_node.GetMapVariableList():
@@ -85,6 +86,7 @@ def GetSlaveLocationTree(slave_node, current_location, name):
 #--------------------------------------------------
 #                    SLAVE
 #--------------------------------------------------
+
 
 class _SlaveCTN(NodeManager):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -246,6 +248,7 @@ class _SlaveCTN(NodeManager):
 #                    MASTER
 #--------------------------------------------------
 
+
 class MiniNodeManager(NodeManager):
 
     def __init__(self, parent, filepath, fullname):
@@ -273,6 +276,7 @@ class MiniNodeManager(NodeManager):
 
     ConfNodeMethods = []
 
+
 class _NodeManager(NodeManager):
 
     def __init__(self, parent, *args, **kwargs):
@@ -287,6 +291,7 @@ class _NodeManager(NodeManager):
 
     def GetCurrentNodeID(self):
         return self.Parent.CanFestivalNode.getNodeId()
+
 
 class _NodeListCTN(NodeList):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -458,6 +463,7 @@ class _NodeListCTN(NodeList):
 
     def GetBufferState(self):
         return self.Manager.GetCurrentBufferState()
+
 
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>

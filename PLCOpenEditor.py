@@ -94,6 +94,7 @@ from dialogs.AboutDialog import ShowAboutDialog
 [ID_PLCOPENEDITORFILEMENUGENERATE,
 ] = [wx.NewId() for _init_coll_FileMenu_Items in range(1)]
 
+
 class PLCOpenEditor(IDEFrame):
 
     # Compatibility function for wx versions < 2.6
@@ -403,6 +404,7 @@ class PLCOpenEditor(IDEFrame):
 
 Max_Traceback_List_Size = 20
 
+
 def Display_Exception_Dialog(e_type,e_value,e_tb):
     trcbck_lst = []
     for i,line in enumerate(traceback.extract_tb(e_tb)):
@@ -441,10 +443,12 @@ Traceback:
 
     return res
 
+
 def Display_Error_Dialog(e_value):
     message = wx.MessageDialog(None, str(e_value), _("Error"), wx.OK|wx.ICON_ERROR)
     message.ShowModal()
     message.Destroy()
+
 
 def get_last_traceback(tb):
     while tb.tb_next:
@@ -457,6 +461,7 @@ def format_namespace(d, indent='    '):
 
 
 ignored_exceptions = [] # a problem with a line in a module is only reported once per session
+
 
 def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 

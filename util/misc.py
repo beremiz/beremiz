@@ -29,8 +29,9 @@ Misc definitions
 import os
 import sys
 
-# helper func to check path write permission
+
 def CheckPathPerm(path):
+    """ Helper func to check path write permission """
     if path is None or not os.path.isdir(path):
         return False
     for root, dirs, files in os.walk(path):
@@ -41,6 +42,7 @@ def CheckPathPerm(path):
                 return False
     return True
 
+
 def GetClassImporter(classpath):
     if type(classpath)==str:
         def fac():
@@ -49,6 +51,7 @@ def GetClassImporter(classpath):
         return fac
     else:
         return classpath
+
 
 def InstallLocalRessources(CWD):
     from BitmapLibrary import AddBitmapFolder

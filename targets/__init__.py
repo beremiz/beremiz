@@ -38,6 +38,8 @@ from os import listdir, path
 import util.paths as paths
 
 _base_path = paths.AbsDir(__file__)
+
+
 def _GetLocalTargetClassFactory(name):
     return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
@@ -54,8 +56,10 @@ targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"),
 toolchains = {"gcc":  path.join(_base_path, "XSD_toolchain_gcc"),
               "makefile":  path.join(_base_path, "XSD_toolchain_makefile")}
 
+
 def GetBuilder(targetname):
     return targets[targetname]["class"]()
+
 
 def GetTargetChoices():
     DictXSD_toolchain = {}
@@ -74,14 +78,17 @@ def GetTargetChoices():
 
     return targetchoices
 
+
 def GetTargetCode(targetname):
     codedesc = targets[targetname]["code"]
     code = "\n".join([open(fpath).read() for fname, fpath in sorted(codedesc.items())])
     return code
 
+
 def GetHeader():
     filename = paths.AbsNeighbourFile(__file__,"beremiz.h")
     return open(filename).read()
+
 
 def GetCode(name):
     filename = paths.AbsNeighbourFile(__file__,name)

@@ -24,6 +24,7 @@
 
 from ..toolchain_gcc import toolchain_gcc
 
+
 class Win32_target(toolchain_gcc):
     dlopen_prefix = ""
     extension = ".dll"

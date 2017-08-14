@@ -30,8 +30,10 @@ from types import *
 
 from xmlclass import *
 
+
 def GenerateDictFacets(facets):
     return dict([(name, (None, False)) for name in facets])
+
 
 def GenerateSimpleTypeXMLText(function):
     def generateXMLTextMethod(value, name=None, indent=0):
@@ -44,6 +46,7 @@ def GenerateSimpleTypeXMLText(function):
             text += "</%s>\n" % name
         return text
     return generateXMLTextMethod
+
 
 def GenerateFloatXMLText(extra_values=[], decimal=None):
     float_format = (lambda x: "{:.{width}f}".format(x, width=decimal).rstrip('0')
@@ -109,6 +112,7 @@ def ReduceAnnotation(factory, attributes, elements):
     return annotation
 
 # Simple type elements
+
 
 def GenerateFacetReducing(facetname, canbefixed):
     def ReduceFacet(factory, attributes, elements):
@@ -486,6 +490,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
     simpleType["generate"] = GenerateSimpleType
     return simpleType
 
+
 def ReduceSimpleType(factory, attributes, elements):
     # Reduce all the simple type children
     annotations, children = factory.ReduceElements(elements)
@@ -496,6 +501,7 @@ def ReduceSimpleType(factory, attributes, elements):
     return simpleType
 
 # Complex type
+
 
 def ExtractAttributes(factory, elements, base=None):
     attrs = []
@@ -717,6 +723,7 @@ def ReduceAny(factory, attributes, elements):
     any.update(attributes)
     return any
 
+
 def ReduceElement(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
@@ -770,6 +777,7 @@ def ReduceElement(factory, attributes, elements):
         return element
     else:
         raise ValueError("\"Element\" must have at least a \"ref\" or a \"name\" defined!")
+
 
 def ReduceAll(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
@@ -867,12 +875,14 @@ def ReduceGroup(factory, attributes, elements):
 
 # Constraint elements
 
+
 def ReduceUnique(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
     unique = {"type": CONSTRAINT, "const_type": "unique", "selector": children[0], "fields": children[1:]}
     unique.update(attributes)
     return unique
+
 
 def ReduceKey(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
@@ -881,6 +891,7 @@ def ReduceKey(factory, attributes, elements):
     key.update(attributes)
     return key
 
+
 def ReduceKeyRef(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
@@ -888,12 +899,14 @@ def ReduceKeyRef(factory, attributes, elements):
     keyref.update(attributes)
     return keyref
 
+
 def ReduceSelector(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
     selector = {"type": CONSTRAINT, "const_type": "selector"}
     selector.update(attributes)
     return selector
+
 
 def ReduceField(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
@@ -908,6 +921,7 @@ def ReduceField(factory, attributes, elements):
 def ReduceImport(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
     raise ValueError("\"import\" element isn't supported yet!")
+
 
 def ReduceInclude(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
@@ -932,6 +946,7 @@ def ReduceInclude(factory, attributes, elements):
     factory.ComputedClassesLookUp.update(include_factory.ComputedClassesLookUp)
     factory.EquivalentClassesParent.update(include_factory.EquivalentClassesParent)
     return None
+
 
 def ReduceRedefine(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
@@ -961,6 +976,7 @@ def ReduceSchema(factory, attributes, elements):
                 factory.Namespaces[factory.TargetNamespace][child["name"]] = child
             elif not CompareSchema(infos, child):
                 raise ValueError("\"%s\" is defined twice in targetNamespace!" % child["name"])
+
 
 def CompareSchema(schema, reference):
     if isinstance(schema, ListType):
@@ -1091,11 +1107,12 @@ class XSDClassFactory(ClassFactory):
                     return element_infos
         return None
 
-"""
-This function opens the xsd file and generate a xml parser with class lookup from
-the xml tree
-"""
+
 def GenerateParserFromXSD(filepath):
+    """
+    This function opens the xsd file and generate a xml parser with class lookup from
+    the xml tree
+    """
     xsdfile = open(filepath, 'r')
     xsdstring = xsdfile.read()
     xsdfile.close()
@@ -1105,10 +1122,11 @@ def GenerateParserFromXSD(filepath):
     os.chdir(cwd)
     return parser
 
-"""
-This function generate a xml from the xsd given as a string
-"""
+
 def GenerateParserFromXSDstring(xsdstring):
+    """
+    This function generate a xml from the xsd given as a string
+    """
     return GenerateParser(XSDClassFactory(minidom.parseString(xsdstring)), xsdstring)
 
 

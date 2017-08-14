@@ -11,21 +11,26 @@ stacktrace = None
 
 appname = None
 
+
 def setloadpath(lp):
     global loadpath
     loadpath = lp
+
 
 def setappname(an):
     global appname
     appname = an
 
+
 def getloadpath():
     global loadpath
     return loadpath
 
+
 def addoverride(module_name, path):
     global overrides
     overrides[module_name] = path
+
 
 def addstack(linedebug):
     JS("""
@@ -34,10 +39,13 @@ def addstack(linedebug):
         }
         sys.stacktrace.append(linedebug);
     """)
+
+
 def popstack():
     JS("""
         sys.stacktrace.pop()
     """)
+
 
 def printstack():
     JS("""

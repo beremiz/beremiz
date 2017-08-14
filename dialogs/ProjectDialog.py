@@ -27,6 +27,7 @@ import wx
 
 from controls.ProjectPropertiesPanel import ProjectPropertiesPanel
 
+
 class ProjectDialog(wx.Dialog):
 
     def __init__(self, parent, enable_required=True):

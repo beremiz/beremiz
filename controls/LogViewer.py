@@ -37,6 +37,7 @@ from weakref import proxy
 
 THUMB_SIZE_RATIO = 1. / 8.
 
+
 def ArrowPoints(direction, width, height, xoffset, yoffset):
     if direction == wx.TOP:
         return [wx.Point(xoffset + 1, yoffset + height - 2),
@@ -46,6 +47,7 @@ def ArrowPoints(direction, width, height, xoffset, yoffset):
         return [wx.Point(xoffset + 1, yoffset - height + 1),
                 wx.Point(xoffset + width / 2, yoffset - 2),
                 wx.Point(xoffset + width - 1, yoffset - height + 1)]
+
 
 class LogScrollBar(wx.Panel):
 
@@ -179,6 +181,7 @@ class LogScrollBar(wx.Panel):
 
 BUTTON_SIZE = (70, 15)
 
+
 class LogButton():
 
     def __init__(self, label, callback):
@@ -222,6 +225,7 @@ class LogButton():
 
 DATE_INFO_SIZE = 10
 MESSAGE_INFO_SIZE = 18
+
 
 class LogMessage:
 
@@ -280,6 +284,7 @@ CHANGE_TIMESTAMP_BUTTONS = [(_("1d"), DAY),
                             (_("1h"), HOUR),
                             (_("1m"), MINUTE),
                             (_("1s"), SECOND)]
+
 
 class LogViewer(DebugViewer, wx.Panel):
 

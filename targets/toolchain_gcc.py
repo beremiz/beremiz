@@ -31,6 +31,7 @@ import hashlib
 
 includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
+
 class toolchain_gcc():
     """
     This abstract class contains GCC specific code.

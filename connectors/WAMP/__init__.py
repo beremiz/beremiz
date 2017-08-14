@@ -38,6 +38,7 @@ _WampSession = None
 _WampConnection = None
 _WampSessionEvent = Event()
 
+
 class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
         global _WampSession, _WampSessionEvent
@@ -55,6 +56,7 @@ PLCObjDefaults = { "StartPLC": False,
                    "GetTraceVariables" : ("Broken",None),
                    "GetPLCstatus" : ("Broken",None),
                    "RemoteExec" : (-1, "RemoteExec script failed!")}
+
 
 def WAMP_connector_factory(uri, confnodesroot):
     """

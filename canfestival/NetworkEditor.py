@@ -45,6 +45,7 @@ from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
  ID_NETWORKEDITORADDMENUMAPVARIABLE, ID_NETWORKEDITORADDMENUUSERTYPE,
 ] = [wx.NewId() for _init_coll_AddMenu_Items in range(6)]
 
+
 class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
 
     ID = ID_NETWORKEDITOR

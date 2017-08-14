@@ -19,6 +19,7 @@ from __pyjamas__ import JS
 
 # must declare import _before_ importing sys
 
+
 def import_module(path, parent_module, module_name, dynamic=1, async=False):
     """
     """
@@ -184,10 +185,12 @@ function import_wait(proceed_fn, parent_mod, dynamic) {
 }
 """)
 
+
 class Object:
     pass
 
 object = Object
+
 
 class Modload:
 
@@ -212,10 +215,12 @@ class Modload:
         else:
             import_wait(getattr(self, "next"), self.parent_mod, self.dynamic)
 
+
 def get_module(module_name):
     ev = "__mod = %s;" % module_name
     JS("pyjs_eval(ev);")
     return __mod
+
 
 def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
                         parent_mod=None):
@@ -224,6 +229,7 @@ def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
     loader.next()
 
 import sys
+
 
 class BaseException:
 
@@ -242,15 +248,18 @@ class BaseException:
     def toString(self):
         return str(self)
 
-class Exception(BaseException):
 
+class Exception(BaseException):
     name = "Exception"
+
 
 class TypeError(BaseException):
     name = "TypeError"
 
+
 class StandardError(Exception):
     name = "StandardError"
+
 
 class LookupError(StandardError):
     name = "LookupError"
@@ -258,11 +267,12 @@ class LookupError(StandardError):
     def toString(self):
         return self.name + ": " + self.args[0]
 
+
 class KeyError(LookupError):
     name = "KeyError"
 
-class AttributeError(StandardError):
 
+class AttributeError(StandardError):
     name = "AttributeError"
 
     def toString(self):
@@ -407,12 +417,14 @@ pyjslib.abs = Math.abs;
 
 """)
 
+
 class Class:
     def __init__(self, name):
         self.name = name
 
     def __str___(self):
         return self.name
+
 
 def eq(a,b):
     JS("""
@@ -423,6 +435,7 @@ def eq(a,b):
     }
     return a == b;
     """)
+
 
 def cmp(a,b):
     if hasattr(a, "__cmp__"):
@@ -435,6 +448,7 @@ def cmp(a,b):
         return -1
     else:
         return 0
+
 
 def bool(v):
     # this needs to stay in native code without any dependencies here,
@@ -455,6 +469,7 @@ def bool(v):
     }
     return Boolean(v);
     """)
+
 
 class List:
     def __init__(self, data=None):
@@ -604,6 +619,7 @@ class List:
         return repr(self)
 
 list = List
+
 
 class Tuple:
     def __init__(self, data=None):
@@ -900,6 +916,8 @@ class Dict:
 dict = Dict
 
 # taken from mochikit: range( [start,] stop[, step] )
+
+
 def range():
     JS("""
     var start = 0;
@@ -930,6 +948,7 @@ def range():
         }
     """)
 
+
 def slice(object, lower, upper):
     JS("""
     if (pyjslib.isString(object)) {
@@ -948,6 +967,7 @@ def slice(object, lower, upper):
     return null;
     """)
 
+
 def str(text):
     JS("""
     if (pyjslib.hasattr(text,"__str__")) {
@@ -955,6 +975,7 @@ def str(text):
     }
     return String(text);
     """)
+
 
 def ord(x):
     if(isString(x) and len(x) is 1):
@@ -967,10 +988,12 @@ def ord(x):
         """)
     return None
 
+
 def chr(x):
     JS("""
         return String.fromCharCode(x)
     """)
+
 
 def is_basetype(x):
     JS("""
@@ -983,6 +1006,7 @@ def is_basetype(x):
        ;
     """)
 
+
 def get_pyjs_classtype(x):
     JS("""
        if (pyjslib.hasattr(x, "__class__"))
@@ -991,6 +1015,7 @@ def get_pyjs_classtype(x):
                return src;
        return null;
     """)
+
 
 def repr(x):
     """ Return the string representation of 'x'.
@@ -1088,15 +1113,18 @@ def repr(x):
        return "<" + constructor + " object>";
     """)
 
+
 def float(text):
     JS("""
     return parseFloat(text);
     """)
 
+
 def int(text, radix=0):
     JS("""
     return parseInt(text, radix);
     """)
+
 
 def len(object):
     JS("""
@@ -1104,6 +1132,7 @@ def len(object):
     if (pyjslib.isObject(object) && object.__len__) return object.__len__();
     return object.length;
     """)
+
 
 def isinstance(object_, classinfo):
     if pyjslib.isUndefined(object_):
@@ -1119,6 +1148,7 @@ def isinstance(object_, classinfo):
     else:
         return _isinstance(object_, classinfo)
 
+
 def _isinstance(object_, classinfo):
     if not pyjslib.isObject(object_):
         return False
@@ -1129,6 +1159,7 @@ def _isinstance(object_, classinfo):
     }
     return false;
     """)
+
 
 def getattr(obj, name, default_):
     JS("""
@@ -1151,6 +1182,7 @@ def getattr(obj, name, default_):
     return fnwrap;
     """)
 
+
 def setattr(obj, name, value):
     JS("""
     if (!pyjslib.isObject(obj)) return null;
@@ -1158,6 +1190,7 @@ def setattr(obj, name, value):
     obj[name] = value;
 
     """)
+
 
 def hasattr(obj, name):
     JS("""
@@ -1167,12 +1200,14 @@ def hasattr(obj, name):
     return true;
     """)
 
+
 def dir(obj):
     JS("""
     var properties=new pyjslib.List();
     for (property in obj) properties.append(property);
     return properties;
     """)
+
 
 def filter(obj, method, sequence=None):
     # object context is LOST when a method is passed, hence object must be passed separately
@@ -1240,6 +1275,7 @@ def max(*sequence):
 
 next_hash_id = 0
 
+
 def hash(obj):
     JS("""
     if (obj == null) return null;
@@ -1259,40 +1295,48 @@ def isObject(a):
     return (a != null && (typeof a == 'object')) || pyjslib.isFunction(a);
     """)
 
+
 def isFunction(a):
     JS("""
     return typeof a == 'function';
     """)
+
 
 def isString(a):
     JS("""
     return typeof a == 'string';
     """)
 
+
 def isNull(a):
     JS("""
     return typeof a == 'object' && !a;
     """)
+
 
 def isArray(a):
     JS("""
     return pyjslib.isObject(a) && a.constructor == Array;
     """)
 
+
 def isUndefined(a):
     JS("""
     return typeof a == 'undefined';
     """)
+
 
 def isIteratable(a):
     JS("""
     return pyjslib.isString(a) || (pyjslib.isObject(a) && a.__iter__);
     """)
 
+
 def isNumber(a):
     JS("""
     return typeof a == 'number' && isFinite(a);
     """)
+
 
 def toJSObjects(x):
     """
@@ -1337,6 +1381,7 @@ def toJSObjects(x):
          """)
     return x
 
+
 def printFunc(objs):
     JS("""
     if ($wnd.console==undefined)  return;
@@ -1347,6 +1392,7 @@ def printFunc(objs):
     }
     console.debug(s)
     """)
+
 
 def type(clsname, bases=None, methods=None):
     """ creates a class, derived from bases, with methods and variables

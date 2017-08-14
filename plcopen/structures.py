@@ -30,10 +30,11 @@ from definitions import *
 
 TypeHierarchy = dict(TypeHierarchy_list)
 
-"""
-returns true if the given data type is the same that "reference" meta-type or one of its types.
-"""
+
 def IsOfType(type, reference):
+    """
+    Returns true if the given data type is the same that "reference" meta-type or one of its types.
+    """
     if reference is None:
         return True
     elif type == reference:
@@ -44,10 +45,11 @@ def IsOfType(type, reference):
             return IsOfType(parent_type, reference)
     return False
 
-"""
-returns list of all types that correspont to the ANY* meta type
-"""
+
 def GetSubTypes(type):
+    """
+    Returns list of all types that correspont to the ANY* meta type
+    """
     return [typename for typename, parenttype in TypeHierarchy.items() if not typename.startswith("ANY") and IsOfType(typename, type)]
 
 DataTypeRange = dict(DataTypeRange_list)
@@ -82,36 +84,41 @@ IDENTIFIER_MODEL = re.compile(
     "(?:%(letter)s|_(?:%(letter)s|%(digit)s))(?:_?(?:%(letter)s|%(digit)s))*$" %
     {"letter": "[a-zA-Z]", "digit": "[0-9]"})
 
-# Test if identifier is valid
+
 def TestIdentifier(identifier):
-     return IDENTIFIER_MODEL.match(identifier) is not None
+    """
+    Test if identifier is valid
+    """
+    return IDENTIFIER_MODEL.match(identifier) is not None
 
 #-------------------------------------------------------------------------------
 #                        Standard functions list generation
 #-------------------------------------------------------------------------------
 
 
-"""
-take a .csv file and translate it it a "csv_table"
-"""
 def csv_file_to_table(file):
+    """
+    take a .csv file and translate it it a "csv_table"
+    """
     return [ map(string.strip,line.split(';')) for line in file.xreadlines()]
 
-"""
-seek into the csv table to a section ( section_name match 1st field )
-return the matching row without first field
-"""
+
 def find_section(section_name, table):
+    """
+    seek into the csv table to a section ( section_name match 1st field )
+    return the matching row without first field
+    """
     fields = [None]
     while(fields[0] != section_name):
         fields = table.pop(0)
     return fields[1:]
 
-"""
-extract the standard functions standard parameter names and types...
-return a { ParameterName: Type, ...}
-"""
+
 def get_standard_funtions_input_variables(table):
+    """
+    extract the standard functions standard parameter names and types...
+    return a { ParameterName: Type, ...}
+    """
     variables = find_section("Standard_functions_variables_types", table)
     standard_funtions_input_variables = {}
     fields = [True,True]
@@ -121,12 +128,13 @@ def get_standard_funtions_input_variables(table):
         standard_funtions_input_variables[variable_from_csv['name']] = variable_from_csv['type']
     return standard_funtions_input_variables
 
-"""
-translate .csv file input declaration into PLCOpenEditor interessting values
-in : "(ANY_NUM, ANY_NUM)" and { ParameterName: Type, ...}
-return [("IN1","ANY_NUM","none"),("IN2","ANY_NUM","none")]
-"""
+
 def csv_input_translate(str_decl, variables, base):
+    """
+    translate .csv file input declaration into PLCOpenEditor interessting values
+    in : "(ANY_NUM, ANY_NUM)" and { ParameterName: Type, ...}
+    return [("IN1","ANY_NUM","none"),("IN2","ANY_NUM","none")]
+    """
     decl = str_decl.replace('(','').replace(')','').replace(' ','').split(',')
     params = []
 
@@ -145,8 +153,9 @@ def csv_input_translate(str_decl, variables, base):
     return params
 
 
-"""
-Returns this kind of declaration for all standard functions
+def get_standard_funtions(table):
+    """
+    Returns this kind of declaration for all standard functions
 
             [{"name" : "Numerical", 'list': [   {
                 'baseinputnumber': 1,
@@ -157,8 +166,7 @@ Returns this kind of declaration for all standard functions
                 'name': 'ADD',
                 'outputs': [('OUT', 'ANY_NUM', 'none')],
                 'type': 'function'}, ...... ] },.....]
-"""
-def get_standard_funtions(table):
+    """
 
     variables = get_standard_funtions_input_variables(table)
 

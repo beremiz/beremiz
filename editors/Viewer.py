@@ -46,6 +46,7 @@ SCROLL_ZONE = 10
 CURSORS = None
 SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Jump)
 
+
 def ResetCursors():
     global CURSORS
     if CURSORS == None:
@@ -55,6 +56,7 @@ def ResetCursors():
                    wx.StockCursor(wx.CURSOR_SIZENESW),
                    wx.StockCursor(wx.CURSOR_SIZEWE),
                    wx.StockCursor(wx.CURSOR_SIZENS)]
+
 
 def AppendMenu(parent, help, id, kind, text):
     if wx.VERSION >= (2, 6, 0):
@@ -83,6 +85,7 @@ else:
     MAX_ZOOMIN = 7
 ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, MAX_ZOOMIN)]
 
+
 def GetVariableCreationFunction(variable_type):
     def variableCreationFunction(viewer, id, specific_values):
         return FBD_Variable(viewer, variable_type,
@@ -92,14 +95,17 @@ def GetVariableCreationFunction(variable_type):
                                     specific_values.execution_order)
     return variableCreationFunction
 
+
 def GetConnectorCreationFunction(connector_type):
     def connectorCreationFunction(viewer, id, specific_values):
         return FBD_Connector(viewer, connector_type,
                                      specific_values.name, id)
     return connectorCreationFunction
 
+
 def commentCreationFunction(viewer, id, specific_values):
     return Comment(viewer, specific_values.content, id)
+
 
 def GetPowerRailCreationFunction(powerrail_type):
     def powerRailCreationFunction(viewer, id, specific_values):
@@ -114,6 +120,7 @@ CONTACT_TYPES = {(True, "none"): CONTACT_REVERSE,
                  (False, "rising"): CONTACT_RISING,
                  (False, "falling"): CONTACT_FALLING}
 
+
 def contactCreationFunction(viewer, id, specific_values):
     contact_type = CONTACT_TYPES.get((NEGATED_VALUE(specific_values.negated),
                                       MODIFIER_VALUE(specific_values.edge)),
@@ -126,12 +133,14 @@ COIL_TYPES = {(True, "none", "none"): COIL_REVERSE,
               (False, "rising", "none"): COIL_RISING,
               (False, "falling", "none"): COIL_FALLING}
 
+
 def coilCreationFunction(viewer, id, specific_values):
     coil_type = COIL_TYPES.get((NEGATED_VALUE(specific_values.negated),
                                 MODIFIER_VALUE(specific_values.edge),
                                 MODIFIER_VALUE(specific_values.storage)),
                                COIL_NORMAL)
     return LD_Coil(viewer, coil_type, specific_values.name, id)
+
 
 def stepCreationFunction(viewer, id, specific_values):
     step = SFC_Step(viewer, specific_values.name,
@@ -142,6 +151,7 @@ def stepCreationFunction(viewer, id, specific_values):
         connector.SetPosition(wx.Point(*specific_values.action.position))
     return step
 
+
 def transitionCreationFunction(viewer, id, specific_values):
     transition = SFC_Transition(viewer, specific_values.condition_type,
                                         specific_values.condition,
@@ -151,14 +161,17 @@ def transitionCreationFunction(viewer, id, specific_values):
 divergence_types = [SELECTION_DIVERGENCE,
                     SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE]
 
+
 def GetDivergenceCreationFunction(divergence_type):
     def divergenceCreationFunction(viewer, id, specific_values):
         return SFC_Divergence(viewer, divergence_type,
                                       specific_values.connectors, id)
     return divergenceCreationFunction
 
+
 def jumpCreationFunction(viewer, id, specific_values):
     return SFC_Jump(viewer, specific_values.target, id)
+
 
 def actionBlockCreationFunction(viewer, id, specific_values):
     return SFC_ActionBlock(viewer, specific_values.actions, id)
@@ -183,6 +196,7 @@ ElementCreationFunctions = {
     "jump": jumpCreationFunction,
     "actionBlock": actionBlockCreationFunction,
 }
+
 
 def sort_blocks(block_infos1, block_infos2):
     x1, y1 = block_infos1[0].GetPosition()
@@ -483,12 +497,12 @@ class DebugInstanceName(DebugDataConsumer):
             dc.DrawText(text, x + tw, y)
         dc.SetUserScale(scalex, scaley)
 
-"""
-Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
-manipulating graphic elements
-"""
 
 class Viewer(EditorPanel, DebugViewer):
+    """
+    Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
+    manipulating graphic elements
+    """
 
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id = None):

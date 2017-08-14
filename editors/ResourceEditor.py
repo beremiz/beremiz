@@ -39,6 +39,7 @@ from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, 
 [ID_CONFIGURATIONEDITOR,
 ] = [wx.NewId() for _init_ctrls in range(1)]
 
+
 class ConfigurationEditor(EditorPanel):
 
     ID = ID_CONFIGURATIONEDITOR
@@ -67,12 +68,14 @@ def GetTasksTableColnames():
     _ = lambda x : x
     return [_("Name"), _("Triggering"), _("Single"), _("Interval"), _("Priority")]
 
+
 def GetTaskTriggeringOptions():
     _ = lambda x : x
     return [_("Interrupt"), _("Cyclic")]
 TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option) for option in GetTaskTriggeringOptions()])
 
 SingleCellEditor = lambda *x : wx.grid.GridCellChoiceEditor()
+
 
 def CheckSingle(single, varlist):
     return single in varlist
@@ -81,6 +84,7 @@ def CheckSingle(single, varlist):
 def GetInstancesTableColnames():
     _ = lambda x : x
     return [_("Name"), _("Type"), _("Task")]
+
 
 class ResourceTable(CustomTable):
 

@@ -50,12 +50,12 @@ HIGHLIGHT_RESIZE_BRUSH = wx.Brush(wx.Colour(200, 200, 200))
 #                        Base Debug Variable Viewer Class
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements a generic viewer that display a list of variable values
-This class has to be inherited to effectively display variable values
-"""
 
 class DebugVariableViewer:
+    """
+    Class that implements a generic viewer that display a list of variable values
+    This class has to be inherited to effectively display variable values
+    """
 
     def __init__(self, window, items=[]):
         """

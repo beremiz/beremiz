@@ -26,6 +26,7 @@ import wx
 
 from dialogs.BrowseLocationsDialog import BrowseLocationsDialog
 
+
 class LocationCellControl(wx.PyControl):
 
     '''
@@ -132,6 +133,7 @@ class LocationCellControl(wx.PyControl):
 
     def SetFocus(self):
         self.Location.SetFocus()
+
 
 class LocationCellEditor(wx.grid.PyGridCellEditor):
     '''

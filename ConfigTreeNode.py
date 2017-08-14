@@ -57,6 +57,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
 NameTypeSeparator = '@'
 XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}")
 
+
 class ConfigTreeNode:
     """
     This class is the one that define confnodes.

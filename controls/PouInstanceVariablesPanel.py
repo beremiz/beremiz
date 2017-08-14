@@ -31,9 +31,11 @@ import wx.lib.buttons
 # Customize CustomTreeItem for adding icon on item right
 CT.GenericTreeItem._rightimages = []
 
+
 def SetRightImages(self, images):
     self._rightimages = images
 CT.GenericTreeItem.SetRightImages = SetRightImages
+
 
 def GetRightImages(self):
     return self._rightimages
@@ -111,6 +113,7 @@ _ButtonCallbacks = namedtuple("ButtonCallbacks", ["leftdown", "dclick"])
 
 from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM_POU, ITEM_TRANSITION, ITEM_ACTION
 from util.BitmapLibrary import GetBitmap
+
 
 class PouInstanceVariablesPanel(wx.Panel):
 

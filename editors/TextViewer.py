@@ -67,8 +67,10 @@ HIGHLIGHT_TYPES = {
     SEARCH_RESULT_HIGHLIGHT: STC_PLC_SEARCH_RESULT,
 }
 
+
 def LineStartswith(line, symbols):
     return reduce(lambda x, y: x or y, map(lambda x: line.startswith(x), symbols), False)
+
 
 class TextViewer(EditorPanel):
 

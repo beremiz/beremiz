@@ -37,6 +37,7 @@ from types import ListType
 
 beremiz_dir = paths.AbsDir(__file__)
 
+
 def Bpath(*args):
     return os.path.join(beremiz_dir,*args)
 
@@ -88,6 +89,8 @@ from threading import Lock,Timer,currentThread
 MainThread = currentThread().ident
 REFRESH_PERIOD = 0.1
 from time import time as gettime
+
+
 class LogPseudoFile:
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output, risecall):
@@ -212,6 +215,7 @@ from IDEFrame import TITLE,\
                      IDEFrame, AppendMenu,\
                      EncodeFileSystemPath, DecodeFileSystemPath
 from util.BitmapLibrary import GetBitmap
+
 
 class Beremiz(IDEFrame):
 
@@ -1086,6 +1090,7 @@ import traceback
 
 Max_Traceback_List_Size = 20
 
+
 def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     trcbck_lst = []
     for i,line in enumerate(traceback.extract_tb(e_tb)):
@@ -1124,6 +1129,7 @@ Traceback:
 
     return res
 
+
 def get_last_traceback(tb):
     while tb.tb_next:
         tb = tb.tb_next
@@ -1135,6 +1141,7 @@ def format_namespace(d, indent='    '):
 
 
 ignored_exceptions = [] # a problem with a line in a module is only reported once per session
+
 
 def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
 

@@ -35,6 +35,7 @@ from util.BitmapLibrary import GetBitmap
 #                                   Helpers
 #-------------------------------------------------------------------------------
 
+
 def GetDirFilterChoiceOptions():
     _ = lambda x : x
     return [(_("All"), [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]),
@@ -42,6 +43,7 @@ def GetDirFilterChoiceOptions():
             (_("Output"), [LOCATION_VAR_OUTPUT]),
             (_("Memory"), [LOCATION_VAR_MEMORY])]
 DIRFILTERCHOICE_OPTIONS = dict([(_(option), filter) for option, filter in GetDirFilterChoiceOptions()])
+
 
 def GetTypeFilterChoiceOptions():
     _ = lambda x : x
@@ -58,6 +60,7 @@ for size, types in LOCATIONDATATYPES.iteritems():
 #-------------------------------------------------------------------------------
 #                            Browse Locations Dialog
 #-------------------------------------------------------------------------------
+
 
 class BrowseLocationsDialog(wx.Dialog):
 

@@ -53,6 +53,7 @@ CONTROLS = [
 #                         Edit Duration Value Dialog
 #-------------------------------------------------------------------------------
 
+
 class DurationEditorDialog(wx.Dialog):
 
     def __init__(self, parent):

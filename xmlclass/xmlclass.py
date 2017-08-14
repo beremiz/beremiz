@@ -33,6 +33,7 @@ from lxml import etree
 from new import classobj
 from collections import OrderedDict
 
+
 def CreateNode(name):
     node = minidom.Node()
     node.nodeName = name
@@ -40,8 +41,10 @@ def CreateNode(name):
     node.childNodes = []
     return node
 
+
 def NodeRenameAttr(node, old_name, new_name):
     node._attrs[new_name] = node._attrs.pop(old_name)
+
 
 def NodeSetAttr(node, name, value):
     attr = minidom.Attr(name)
@@ -73,6 +76,7 @@ time_model = re.compile('([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]*)?)(?:Z)?$')
 date_model = re.compile('([0-9]{4})-([0-9]{2})-([0-9]{2})((?:[\-\+][0-9]{2}:[0-9]{2})|Z)?$')
 datetime_model = re.compile('([0-9]{4})-([0-9]{2})-([0-9]{2})[ T]([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]*)?)((?:[\-\+][0-9]{2}:[0-9]{2})|Z)?$')
 
+
 class xml_timezone(datetime.tzinfo):
 
     def SetOffset(self, offset):
@@ -98,6 +102,7 @@ class xml_timezone(datetime.tzinfo):
  ATTRIBUTESGROUP, ELEMENTSGROUP, ATTRIBUTE, ELEMENT, CHOICE, ANY, TAG, CONSTRAINT,
 ] = range(13)
 
+
 def NotSupportedYet(type):
     """
     Function that generates a function that point out to user that datatype
@@ -110,10 +115,11 @@ def NotSupportedYet(type):
                          type)
     return GetUnknownValue
 
-"""
-This function calculates the number of whitespace for indentation
-"""
+
 def getIndent(indent, balise):
+    """
+    This function calculates the number of whitespace for indentation
+    """
     first = indent * 2
     second = first + len(balise) + 1
     return u'\t'.expandtabs(first), u'\t'.expandtabs(second)
@@ -535,6 +541,7 @@ def GenerateModelNameListExtraction(type, model):
         return values
     return GetModelNameList
 
+
 def GenerateAnyInfos(infos):
 
     def GetTextElement(tree):
@@ -565,6 +572,7 @@ def GenerateAnyInfos(infos):
         "check": lambda x: isinstance(x, (StringType, UnicodeType, etree.ElementBase))
     }
 
+
 def GenerateTagInfos(infos):
     def ExtractTag(tree):
         if len(tree._attrs) > 0:
@@ -591,11 +599,13 @@ def GenerateTagInfos(infos):
         "check": lambda x: x == None or infos["minOccurs"] == 0 and value == True
     }
 
+
 def FindTypeInfos(factory, infos):
     if isinstance(infos, (UnicodeType, StringType)):
         namespace, name = DecomposeQualifiedName(infos)
         return factory.GetQualifiedNameInfos(name, namespace)
     return infos
+
 
 def GetElementInitialValue(factory, infos):
     infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
@@ -617,6 +627,7 @@ def GetElementInitialValue(factory, infos):
     else:
         return []
 
+
 def GetContentInfos(name, choices):
     for choice_infos in choices:
         if choices_infos["type"] == "sequence":
@@ -629,6 +640,7 @@ def GetContentInfos(name, choices):
         elif choice_infos["name"] == name:
             return choices_infos
     return None
+
 
 def ComputeContentChoices(factory, name, infos):
     choices = []
@@ -649,6 +661,7 @@ def ComputeContentChoices(factory, name, infos):
                 choice["elmt_type"] = choice_infos
         choices.append((choice["name"], choice))
     return choices
+
 
 def GenerateContentInfos(factory, name, choices):
     choices_dict = {}
@@ -700,6 +713,7 @@ def DecomposeQualifiedName(name):
         return None, parts[0]
     return parts
 
+
 def GenerateElement(element_name, attributes, elements_model,
                     accept_text=False):
     def ExtractElement(factory, node):
@@ -735,10 +749,10 @@ def GenerateElement(element_name, attributes, elements_model,
     return ExtractElement
 
 
-"""
-Class that generate class from an XML Tree
-"""
 class ClassFactory:
+    """
+    Class that generate class from an XML Tree
+    """
 
     def __init__(self, document, filepath=None, debug=False):
         self.Document = document
@@ -1191,11 +1205,12 @@ class ClassFactory:
         for classname in classnames:
             print classname
 
-"""
-Method that generate the method for generating the xml tree structure model by
-following the attributes list defined
-"""
+
 def ComputeMultiplicity(name, infos):
+    """
+    Method that generate the method for generating the xml tree structure model by
+    following the attributes list defined
+    """
     if infos["minOccurs"] == 0:
         if infos["maxOccurs"] == "unbounded":
             return "(?:%s)*" % name
@@ -1216,6 +1231,7 @@ def ComputeMultiplicity(name, infos):
         else:
             return "(?:%s){%d,%d}" % (name, infos["minOccurs"],
                                        infos["maxOccurs"])
+
 
 def GetStructurePattern(classinfos):
     base_structure_pattern = (
@@ -1245,13 +1261,15 @@ def GetStructurePattern(classinfos):
     else:
         raise ValueError("XSD structure not yet supported!")
 
-"""
-Method that generate the method for creating a class instance
-"""
+
 def generateClassCreateFunction(class_definition):
+    """
+    Method that generate the method for creating a class instance
+    """
     def classCreatefunction():
         return class_definition()
     return classCreatefunction
+
 
 def generateGetattrMethod(factory, class_definition, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
@@ -1306,6 +1324,7 @@ def generateGetattrMethod(factory, class_definition, classinfos):
         return DefaultElementClass.__getattribute__(self, name)
 
     return getattrMethod
+
 
 def generateSetattrMethod(factory, class_definition, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
@@ -1375,6 +1394,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
 
     return setattrMethod
 
+
 def gettypeinfos(name, facets):
     if facets.has_key("enumeration") and facets["enumeration"][0] is not None:
         return facets["enumeration"][0]
@@ -1392,6 +1412,7 @@ def gettypeinfos(name, facets):
             return limits
     return name
 
+
 def generateGetElementAttributes(factory, classinfos):
     def getElementAttributes(self):
         attr_list = []
@@ -1405,6 +1426,7 @@ def generateGetElementAttributes(factory, classinfos):
                 attr_list.append(attr_params)
         return attr_list
     return getElementAttributes
+
 
 def generateGetElementInfos(factory, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
@@ -1476,6 +1498,7 @@ def generateGetElementInfos(factory, classinfos):
         return {"name": name, "type": attr_type, "value": value, "use": use, "children": children}
     return getElementInfos
 
+
 def generateSetElementValue(factory, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
     elements = dict([(element["name"], element) for element in classinfos["elements"]])
@@ -1532,10 +1555,12 @@ def generateSetElementValue(factory, classinfos):
                 self.setcontentbytype(value)
     return setElementValue
 
-"""
-Methods that generates the different methods for setting and getting the attributes
-"""
+
 def generateInitMethod(factory, classinfos):
+    """
+    Methods that generates the different methods for setting and getting the attributes
+    """
+
     def initMethod(self):
         if classinfos.has_key("base"):
             classinfos["base"]._init_(self)
@@ -1554,15 +1579,18 @@ def generateInitMethod(factory, classinfos):
                     map(self.append, initial)
     return initMethod
 
+
 def generateSetMethod(attr):
     def setMethod(self, value):
         setattr(self, attr, value)
     return setMethod
 
+
 def generateGetMethod(attr):
     def getMethod(self):
         return getattr(self, attr, None)
     return getMethod
+
 
 def generateAddMethod(attr, factory, infos):
     def addMethod(self):
@@ -1580,10 +1608,12 @@ def generateAddMethod(attr, factory, infos):
             raise ValueError("Invalid class attribute!")
     return addMethod
 
+
 def generateDeleteMethod(attr):
     def deleteMethod(self):
         setattr(self, attr, None)
     return deleteMethod
+
 
 def generateAppendMethod(attr, maxOccurs, factory, infos):
     def appendMethod(self, value):
@@ -1597,6 +1627,7 @@ def generateAppendMethod(attr, maxOccurs, factory, infos):
         else:
             raise ValueError("There can't be more than %d values in \"%s\"!" % (maxOccurs, attr))
     return appendMethod
+
 
 def generateInsertMethod(attr, maxOccurs, factory, infos):
     def insertMethod(self, index, value):
@@ -1613,10 +1644,12 @@ def generateInsertMethod(attr, maxOccurs, factory, infos):
             raise ValueError("There can't be more than %d values in \"%s\"!" % (maxOccurs, attr))
     return insertMethod
 
+
 def generateGetChoicesMethod(choice_types):
     def getChoicesMethod(self):
         return [choice["name"] for choice in choice_types]
     return getChoicesMethod
+
 
 def generateSetChoiceByTypeMethod(factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
@@ -1629,6 +1662,7 @@ def generateSetChoiceByTypeMethod(factory, choice_types):
         self.content = new_content
         return new_content
     return setChoiceMethod
+
 
 def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
@@ -1645,6 +1679,7 @@ def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
             raise ValueError("There can't be more than %d values in \"content\"!" % maxOccurs)
     return appendChoiceMethod
 
+
 def generateInsertChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
     def insertChoiceMethod(self, index, content_type):
@@ -1660,6 +1695,7 @@ def generateInsertChoiceByTypeMethod(maxOccurs, factory, choice_types):
             raise ValueError("There can't be more than %d values in \"content\"!" % maxOccurs)
     return insertChoiceMethod
 
+
 def generateRemoveMethod(attr, minOccurs):
     def removeMethod(self, index):
         attr_list = getattr(self, attr)
@@ -1668,6 +1704,7 @@ def generateRemoveMethod(attr, minOccurs):
         else:
             raise ValueError("There can't be less than %d values in \"%s\"!" % (minOccurs, attr))
     return removeMethod
+
 
 def generateCountMethod(attr):
     def countMethod(self):
@@ -1679,6 +1716,7 @@ This function generate a xml parser from a class factory
 """
 
 NAMESPACE_PATTERN = re.compile("xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
+
 
 class DefaultElementClass(etree.ElementBase):
 
@@ -1692,6 +1730,7 @@ class DefaultElementClass(etree.ElementBase):
 
     def tostring(self):
         return NAMESPACE_PATTERN.sub("", etree.tostring(self, pretty_print=True, encoding='utf-8')).decode('utf-8')
+
 
 class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
@@ -1726,6 +1765,7 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
                     return possible_class
             return element_class[0]
         return element_class
+
 
 class XMLClassParser(etree.XMLParser):
 
@@ -1788,6 +1828,7 @@ class XMLClassParser(etree.XMLParser):
         DefaultElementClass.__setattr__(new_element, "tag", self.DefaultNamespaceFormat % element_tag)
         new_element._init_()
         return new_element
+
 
 def GenerateParser(factory, xsdstring):
     ComputedClasses = factory.CreateClasses()

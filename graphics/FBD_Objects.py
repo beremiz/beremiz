@@ -31,14 +31,15 @@ from plcopen.structures import *
 #                         Function Block Diagram Block
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a function block
-"""
 
 def TestConnectorName(name, block_type):
     return name in ["OUT", "MN", "MX"] or name.startswith("IN") and (block_type, name) != ("EXPT", "IN2")
 
+
 class FBD_Block(Graphic_Element):
+    """
+    Class that implements the graphic representation of a function block
+    """
 
     # Create a new block
     def __init__(self, parent, type, name, id = None, extension = 0, inputs = None, connectors = {}, executionControl = False, executionOrder = 0):
@@ -498,11 +499,11 @@ class FBD_Block(Graphic_Element):
 #                        Function Block Diagram Variable
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a variable
-"""
 
 class FBD_Variable(Graphic_Element):
+    """
+    Class that implements the graphic representation of a variable
+    """
 
     # Create a new variable
     def __init__(self, parent, type, name, value_type, id = None, executionOrder = 0):
@@ -794,11 +795,11 @@ class FBD_Variable(Graphic_Element):
 #                        Function Block Diagram Connector
 #-------------------------------------------------------------------------------
 
-"""
-Class that implements the graphic representation of a connection
-"""
 
 class FBD_Connector(Graphic_Element):
+    """
+    Class that implements the graphic representation of a connection
+    """
 
     # Create a new connection
     def __init__(self, parent, type, name, id = None):

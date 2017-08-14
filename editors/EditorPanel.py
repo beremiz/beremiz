@@ -26,6 +26,7 @@ import wx
 
 from controls import VariablePanel
 
+
 class EditorPanel(wx.SplitterWindow):
 
     VARIABLE_PANEL_TYPE = None

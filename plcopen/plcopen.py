@@ -59,12 +59,14 @@ QualifierList = OrderedDict([("N", False), ("R", False), ("S", False),
 
 FILTER_ADDRESS_MODEL = "(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)"
 
+
 def update_address(address, address_model, new_leading):
     result = address_model.match(address)
     if result is None:
         return address
     groups = result.groups()
     return groups[0] + new_leading + groups[2]
+
 
 def _init_and_compare(function, v1, v2):
     if v1 is None:
@@ -73,10 +75,11 @@ def _init_and_compare(function, v1, v2):
         return function(v1, v2)
     return v1
 
-"""
-Helper class for bounding_box calculation
-"""
+
 class rect:
+    """
+    Helper class for bounding_box calculation
+    """
 
     def __init__(self, x=None, y=None, width=None, height=None):
         self.x_min = x
@@ -108,11 +111,13 @@ class rect:
             height = self.y_max - self.y_min
         return self.x_min, self.y_min, width, height
 
+
 def TextLenInRowColumn(text):
     if text == "":
         return (0, 0)
     lines = text.split("\n")
     return len(lines) - 1, len(lines[-1])
+
 
 def CompilePattern(criteria):
     flag = 0 if criteria["case_sensitive"] else re.IGNORECASE
@@ -120,6 +125,7 @@ def CompilePattern(criteria):
     if not criteria["regular_expression"]:
         find_pattern = re.escape(find_pattern)
     criteria["pattern"] = re.compile(find_pattern, flag)
+
 
 def TestTextElement(text, criteria):
     lines = text.splitlines()
@@ -134,6 +140,7 @@ def TestTextElement(text, criteria):
         if result is not None and prev_pos==result.endpos:
             break
     return test_result
+
 
 def TextMatched(str1, str2):
     return str1 and str2 and (str1.upper() == str2.upper())
@@ -165,6 +172,7 @@ LOAD_POU_PROJECT_TEMPLATE = """
 </project>
 """
 
+
 def LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type):
     return LOAD_POU_PROJECT_TEMPLATE % """
 <pou name="paste_pou" pouType="program">
@@ -188,6 +196,7 @@ TransitionsConditionXPath = PLCOpen_XPath("ppx:types/ppx:pous/ppx:pou/ppx:body/*
 ConditionConnectionsXPath = PLCOpen_XPath("ppx:connection")
 ActionBlocksXPath = PLCOpen_XPath("ppx:types/ppx:pous/ppx:pou/ppx:body/*/ppx:actionBlock")
 ActionBlocksConnectionPointOutXPath = PLCOpen_XPath("ppx:connectionPointOut")
+
 
 def LoadProjectXML(project_xml):
     project_xml = project_xml.replace(
@@ -266,6 +275,7 @@ def LoadProjectXML(project_xml):
     except Exception, e:
         return None, e.message
 
+
 def LoadProject(filepath):
     project_file = open(filepath)
     project_xml = project_file.read()
@@ -273,6 +283,8 @@ def LoadProject(filepath):
     return LoadProjectXML(project_xml)
 
 project_pou_xpath = PLCOpen_XPath("/ppx:project/ppx:types/ppx:pous/ppx:pou")
+
+
 def LoadPou(xml_string):
     root, error = LoadProjectXML(LOAD_POU_PROJECT_TEMPLATE % xml_string)
     return project_pou_xpath(root)[0], error
@@ -281,10 +293,13 @@ project_pou_instances_xpath = {
     body_type: PLCOpen_XPath(
         "/ppx:project/ppx:types/ppx:pous/ppx:pou[@name='paste_pou']/ppx:body/ppx:%s/*" % body_type)
     for body_type in ["FBD", "LD", "SFC"]}
+
+
 def LoadPouInstances(xml_string, body_type):
     root, error = LoadProjectXML(
         LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type) % xml_string)
     return project_pou_instances_xpath[body_type](root), error
+
 
 def SaveProject(project, filepath):
     project_file = open(filepath, 'w')
@@ -625,12 +640,14 @@ if cls:
         return 0, 0
     setattr(cls, "getscaling", getscaling)
 
+
 def _Search(attributes, criteria, parent_infos):
     search_result = []
     for attr, value in attributes:
         if value is not None:
             search_result.extend([(tuple(parent_infos + [attr]),) + result for result in TestTextElement(value, criteria)])
     return search_result
+
 
 def _updateConfigurationResourceElementName(self, old_name, new_name):
     for varlist in self.getglobalVars():
@@ -642,6 +659,7 @@ def _updateConfigurationResourceElementName(self, old_name, new_name):
                 if TextMatched(var.getname(), old_name):
                     var.setname(new_name)
 
+
 def _updateConfigurationResourceElementAddress(self, address_model, new_leading):
     for varlist in self.getglobalVars():
         for var in varlist.getvariable():
@@ -649,12 +667,14 @@ def _updateConfigurationResourceElementAddress(self, address_model, new_leading)
             if var_address is not None:
                 var.setaddress(update_address(var_address, address_model, new_leading))
 
+
 def _removeConfigurationResourceVariableByAddress(self, address):
     for varlist in self.getglobalVars():
         variables = varlist.getvariable()
         for i in xrange(len(variables)-1, -1, -1):
             if variables[i].getaddress() == address:
                 variables.remove(variables[i])
+
 
 def _removeConfigurationResourceVariableByFilter(self, address_model):
     for varlist in self.getglobalVars():
@@ -665,6 +685,7 @@ def _removeConfigurationResourceVariableByFilter(self, address_model):
                 result = address_model.match(var_address)
                 if result is not None:
                     variables.remove(variables[i])
+
 
 def _SearchInConfigurationResource(self, criteria, parent_infos=[]):
     search_result = _Search([("name", self.getname())], criteria, parent_infos)
@@ -936,6 +957,7 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
 def _updateBaseTypeElementName(self, old_name, new_name):
     self.baseType.updateElementName(old_name, new_name)
 
@@ -1006,6 +1028,7 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
 def _SearchInSubrange(self, criteria, parent_infos=[]):
     search_result = self.baseType.Search(criteria, parent_infos)
     search_result.extend(_Search([("lower", self.range.getlower()),
@@ -1038,6 +1061,7 @@ if cls:
                 search_result.append((tuple(parent_infos + ["value", i]),) + result)
         return search_result
     setattr(cls, "Search", Search)
+
 
 def _getvariableTypeinfos(variable_type):
     type_content = variable_type.getcontent()
@@ -1450,47 +1474,61 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
 def setbodyType(self, body_type):
     if body_type in ["IL", "ST", "LD", "FBD", "SFC"]:
         self.body.setcontent(PLCOpenParser.CreateElement(body_type, "body"))
     else:
         raise ValueError, "%s isn't a valid body type!" % type
 
+
 def getbodyType(self):
     return self.body.getcontent().getLocalTag()
+
 
 def resetexecutionOrder(self):
     self.body.resetexecutionOrder()
 
+
 def compileexecutionOrder(self):
     self.body.compileexecutionOrder()
+
 
 def setelementExecutionOrder(self, instance, new_executionOrder):
     self.body.setelementExecutionOrder(instance, new_executionOrder)
 
+
 def addinstance(self, instance):
     self.body.appendcontentInstance(instance)
+
 
 def getinstances(self):
     return self.body.getcontentInstances()
 
+
 def getinstance(self, id):
     return self.body.getcontentInstance(id)
+
 
 def getrandomInstance(self, exclude):
     return self.body.getcontentRandomInstance(exclude)
 
+
 def getinstanceByName(self, name):
     return self.body.getcontentInstanceByName(name)
+
 
 def removeinstance(self, id):
     self.body.removecontentInstance(id)
 
+
 def settext(self, text):
     self.body.settext(text)
 
+
 def gettext(self):
     return self.body.gettext()
+
 
 def hasblock(self, name=None, block_type=None):
     if self.getbodyType() in ["FBD", "LD", "SFC"]:
@@ -1502,8 +1540,10 @@ def hasblock(self, name=None, block_type=None):
         return self.body.hasblock(block_type)
     return False
 
+
 def updateElementName(self, old_name, new_name):
     self.body.updateElementName(old_name, new_name)
+
 
 def updateElementAddress(self, address_model, new_leading):
     self.body.updateElementAddress(address_model, new_leading)
@@ -1746,20 +1786,26 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
 def getx(self):
     return self.position.getx()
+
 
 def gety(self):
     return self.position.gety()
 
+
 def setx(self, x):
     self.position.setx(x)
+
 
 def sety(self, y):
     self.position.sety(y)
 
+
 def _getBoundingBox(self):
     return rect(self.getx(), self.gety(), self.getwidth(), self.getheight())
+
 
 def _getConnectionsBoundingBox(connectionPointIn):
     bbox = rect()
@@ -1770,17 +1816,20 @@ def _getConnectionsBoundingBox(connectionPointIn):
                 bbox.update(x, y)
     return bbox
 
+
 def _getBoundingBoxSingle(self):
     bbox = _getBoundingBox(self)
     if self.connectionPointIn is not None:
         bbox.union(_getConnectionsBoundingBox(self.connectionPointIn))
     return bbox
 
+
 def _getBoundingBoxMultiple(self):
     bbox = _getBoundingBox(self)
     for connectionPointIn in self.getconnectionPointIn():
         bbox.union(_getConnectionsBoundingBox(connectionPointIn))
     return bbox
+
 
 def _filterConnections(connectionPointIn, localId, connections):
     in_connections = connectionPointIn.getconnections()
@@ -1791,17 +1840,21 @@ def _filterConnections(connectionPointIn, localId, connections):
                not connections.has_key((connected, localId)):
                 connectionPointIn.remove(connection)
 
+
 def _filterConnectionsSingle(self, connections):
     if self.connectionPointIn is not None:
         _filterConnections(self.connectionPointIn, self.localId, connections)
+
 
 def _filterConnectionsMultiple(self, connections):
     for connectionPointIn in self.getconnectionPointIn():
         _filterConnections(connectionPointIn, self.localId, connections)
 
+
 def _getconnectionsdefinition(instance, connections_end):
     local_id = instance.getlocalId()
     return dict([((local_id, end), True) for end in connections_end])
+
 
 def _updateConnectionsId(connectionPointIn, translation):
     connections_end = []
@@ -1814,11 +1867,13 @@ def _updateConnectionsId(connectionPointIn, translation):
             connections_end.append(new_reflocalId)
     return connections_end
 
+
 def _updateConnectionsIdSingle(self, translation):
     connections_end = []
     if self.connectionPointIn is not None:
         connections_end = _updateConnectionsId(self.connectionPointIn, translation)
     return _getconnectionsdefinition(self, connections_end)
+
 
 def _updateConnectionsIdMultiple(self, translation):
     connections_end = []
@@ -1826,9 +1881,11 @@ def _updateConnectionsIdMultiple(self, translation):
         connections_end.extend(_updateConnectionsId(connectionPointIn, translation))
     return _getconnectionsdefinition(self, connections_end)
 
+
 def _translate(self, dx, dy):
     self.setx(self.getx() + dx)
     self.sety(self.gety() + dy)
+
 
 def _translateConnections(connectionPointIn, dx, dy):
     connections = connectionPointIn.getconnections()
@@ -1838,21 +1895,26 @@ def _translateConnections(connectionPointIn, dx, dy):
                 position.setx(position.getx() + dx)
                 position.sety(position.gety() + dy)
 
+
 def _translateSingle(self, dx, dy):
     _translate(self, dx, dy)
     if self.connectionPointIn is not None:
         _translateConnections(self.connectionPointIn, dx, dy)
+
 
 def _translateMultiple(self, dx, dy):
     _translate(self, dx, dy)
     for connectionPointIn in self.getconnectionPointIn():
         _translateConnections(connectionPointIn, dx, dy)
 
+
 def _updateElementName(self, old_name, new_name):
     pass
 
+
 def _updateElementAddress(self, address_model, new_leading):
     pass
+
 
 def _SearchInElement(self, criteria, parent_infos=[]):
     return []
@@ -1871,6 +1933,7 @@ _connectionsFunctions = {
                "single": _updateConnectionsIdSingle,
                "multiple": _updateConnectionsIdMultiple},
 }
+
 
 def _initElementClass(name, parent, connectionPointInType="none"):
     cls = PLCOpenParser.GetElementClass(name, parent)
@@ -1959,12 +2022,15 @@ if cls:
 _initElementClass("leftPowerRail", "ldObjects")
 _initElementClass("rightPowerRail", "ldObjects", "multiple")
 
+
 def _UpdateLDElementName(self, old_name, new_name):
     if TextMatched(self.variable, old_name):
         self.variable = new_name
 
+
 def _UpdateLDElementAddress(self, address_model, new_leading):
     self.variable = update_address(self.variable, address_model, new_leading)
+
 
 def _getSearchInLDElement(ld_element_type):
     def SearchInLDElement(self, criteria, parent_infos=[]):
@@ -2224,12 +2290,15 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
 def _SearchInIOVariable(self, criteria, parent_infos=[]):
     return _Search([("expression", self.expression)], criteria, parent_infos + ["io_variable", self.getlocalId()])
+
 
 def _UpdateIOElementName(self, old_name, new_name):
     if TextMatched(self.expression, old_name):
         self.expression = new_name
+
 
 def _UpdateIOElementAddress(self, address_model, new_leading):
     self.expression = update_address(self.expression, address_model, new_leading)
@@ -2403,6 +2472,7 @@ if cls:
     def getvalue(self):
         return self.content.getvalue()
     setattr(cls, "getvalue", getvalue)
+
 
 def extractValues(values):
     items = values.split(",")

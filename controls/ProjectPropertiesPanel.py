@@ -39,6 +39,7 @@ REQUIRED_PARAMS = ["projectName", "productName", "productVersion", "companyName"
 #                       Project Properties Panel
 #-------------------------------------------------------------------------------
 
+
 class ProjectPropertiesPanel(wx.Notebook):
 
     def AddSizerParams(self, parent, sizer, params):

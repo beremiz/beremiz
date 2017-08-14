@@ -30,6 +30,7 @@ from util.BitmapLibrary import GetBitmap
 
 DRIVE, FOLDER, FILE = range(3)
 
+
 def sort_folder(x, y):
     if x[1] == y[1]:
         return cmp(x[0], y[0])
@@ -38,6 +39,7 @@ def sort_folder(x, y):
     else:
         return 1
 
+
 def splitpath(path):
     head, tail = os.path.split(path)
     if head == "":
@@ -45,6 +47,7 @@ def splitpath(path):
     elif tail == "":
         return splitpath(head)
     return splitpath(head) + [tail]
+
 
 class FolderTree(wx.Panel):
 

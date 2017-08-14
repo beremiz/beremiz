@@ -28,6 +28,7 @@ Minimal tab controller for a simple text editor
 
 import os
 
+
 class MiniTextControler:
 
     def __init__(self, filepath, controller):

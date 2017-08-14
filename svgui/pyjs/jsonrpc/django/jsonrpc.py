@@ -18,10 +18,12 @@ from pyjs.jsonrpc import JSONRPCServiceBase
 # dump jsonservice into urlpatterns:
 #  (r'^service1/$', 'djangoapp.views.jsonservice'),
 
+
 class JSONRPCService(JSONRPCServiceBase):
 
     def __call__(self, request, extra=None):
         return self.process(request.raw_post_data)
+
 
 def jsonremote(service):
     """Make JSONRPCService a decorator so that you can write :
@@ -64,6 +66,7 @@ def jsonremote(service):
 
 from django import forms
 
+
 def builderrors(form):
     d = {}
     for error in form.errors.keys():
@@ -91,6 +94,7 @@ field_names = {
  'IPAddressField': ['max_length', 'min_length'],
  }
 
+
 def describe_field_errors(field):
     res = {}
     field_type = field.__class__.__name__
@@ -102,6 +106,7 @@ def describe_field_errors(field):
         res['fields'] = map(describe_field, field.fields)
     return res
 
+
 def describe_fields_errors(fields, field_names):
     res = {}
     if not field_names:
@@ -110,6 +115,7 @@ def describe_fields_errors(fields, field_names):
         field = fields[name]
         res[name] = describe_field_errors(field)
     return res
+
 
 def describe_field(field):
     res = {}
@@ -121,6 +127,7 @@ def describe_field(field):
         res['fields'] = map(describe_field, field.fields)
     return res
 
+
 def describe_fields(fields, field_names):
     res = {}
     if not field_names:
@@ -129,6 +136,7 @@ def describe_fields(fields, field_names):
         field = fields[name]
         res[name] = describe_field(field)
     return res
+
 
 class FormProcessor(JSONRPCService):
     def __init__(self, forms, _formcls=None):
@@ -206,6 +214,7 @@ from django.core.serializers import serialize
 import datetime
 from datetime import date
 
+
 def dict_datetimeflatten(item):
     d = {}
     for k, v in item.items():
@@ -217,6 +226,7 @@ def dict_datetimeflatten(item):
         else:
             d[k] = v
     return d
+
 
 def json_convert(l, fields=None):
     res = []

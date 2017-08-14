@@ -90,6 +90,7 @@ PYJSLIB_BUILTIN_CLASSES=("BaseException",
                          "tuple",
                         )
 
+
 def pyjs_builtin_remap(name):
     # XXX HACK!
     if name == 'list':
@@ -119,16 +120,19 @@ JS_ESCAPES = (
     (';', r'\x3B')
     ) + tuple([('%c' % z, '\\x%02X' % z) for z in range(32)])
 
+
 def escapejs(value):
     """Hex encodes characters for use in JavaScript strings."""
     for bad, good in JS_ESCAPES:
         value = value.replace(bad, good)
     return value
 
+
 def uuprefix(name, leave_alone=0):
     name = name.split(".")
     name = name[:leave_alone] + map(lambda x: "__%s" % x, name[leave_alone:])
     return '.'.join(name)
+
 
 class Klass:
 
@@ -154,8 +158,10 @@ class TranslationError(Exception):
     def __str__(self):
         return self.message
 
+
 def strip_py(name):
     return name
+
 
 def mod_var_name_decl(raw_module_name):
     """ function to get the last component of the module e.g.
@@ -174,12 +180,14 @@ def mod_var_name_decl(raw_module_name):
     child_name = name[-1]
     return "var %s = %s;\n" % (child_name, raw_module_name)
 
+
 def gen_mod_import(parentName, importName, dynamic=1):
     #pyjs_ajax_eval("%(n)s.cache.js", null, true);
     return """
     pyjslib.import_module(sys.loadpath, '%(p)s', '%(n)s', %(d)d, false);
     """ % ({'p': parentName, 'd': dynamic, 'n': importName}) + \
     mod_var_name_decl(importName)
+
 
 class Translator:
 
@@ -1534,6 +1542,7 @@ class Translator:
 
 import cStringIO
 
+
 def translate(file_name, module_name, debug=False):
     f = file(file_name, "r")
     src = f.read()
@@ -1633,9 +1642,11 @@ class PlatformParser:
         target.defaults = source.defaults
         target.doc = source.doc # @@@ not sure we need to do this any more
 
+
 def dotreplace(fname):
     path, ext = os.path.splitext(fname)
     return path.replace(".", "/") + ext
+
 
 class AppTranslator:
 
@@ -1756,6 +1767,7 @@ class AppTranslator:
 usage = """
   usage: %s file_name [module_name]
 """
+
 
 def main():
     import sys

@@ -25,6 +25,7 @@
 from editors.TextViewer import TextViewer
 from plcopen.plcopen import TestTextElement
 
+
 class IECCodeViewer(TextViewer):
 
     def __del__(self):

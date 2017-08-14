@@ -28,6 +28,7 @@ import os
 
 import util.paths as paths
 
+
 def GetCommunityHelpMsg():
     return  _("The best place to ask questions about Beremiz/PLCOpenEditor\n"
 		     "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
@@ -37,6 +38,7 @@ def GetCommunityHelpMsg():
                      "\n"
                      "You can subscribe to the list here:\n"
                      "https://lists.sourceforge.net/lists/listinfo/beremiz-devel")
+
 
 def GetAppRevision():
     rev = None
@@ -62,6 +64,7 @@ def GetAppRevision():
         except:
             pass
     return rev
+
 
 def GetAboutDialogInfo():
     import wx
