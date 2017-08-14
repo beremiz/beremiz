@@ -41,14 +41,14 @@ _base_path = paths.AbsDir(__file__)
 def _GetLocalTargetClassFactory(name):
     return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
-targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"), 
+targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"),
                         "class":_GetLocalTargetClassFactory(name),
-                        "code": { fname: path.join(_base_path, name, fname) 
+                        "code": { fname: path.join(_base_path, name, fname)
                            for fname in listdir(path.join(_base_path, name))
                              if fname.startswith("plc_%s_main"%name) and
                                fname.endswith(".c")}})
-                for name in listdir(_base_path) 
-                    if path.isdir(path.join(_base_path, name)) 
+                for name in listdir(_base_path)
+                    if path.isdir(path.join(_base_path, name))
                        and not name.startswith("__")])
 
 toolchains = {"gcc":  path.join(_base_path, "XSD_toolchain_gcc"),
@@ -67,7 +67,7 @@ def GetTargetChoices():
              DictXSD_toolchain["toolchain_"+toolchainname] = \
                 open(xsdfilename).read()
 
-    # Get all xsd targets 
+    # Get all xsd targets
     for targetname,nfo in targets.iteritems():
         xsd_string = open(nfo["xsd"]).read()
         targetchoices +=  xsd_string%DictXSD_toolchain
@@ -86,4 +86,3 @@ def GetHeader():
 def GetCode(name):
     filename = paths.AbsNeighbourFile(__file__,name)
     return open(filename).read()
-

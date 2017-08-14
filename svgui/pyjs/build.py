@@ -306,7 +306,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
     # Second, (dynamic only), post-analyse the places where modules
     # haven't changed
     # Third, write everything out.
-    
+
     for platform in app_platforms:
 
         mod_code[platform] = {}
@@ -337,11 +337,11 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
         print appcode
         #mod_code[platform][app_name] = appcode
 
-        # platform.Module.cache.js 
+        # platform.Module.cache.js
 
         modules_done = ['pyjslib', 'sys', '_pyjs.js']
         #modules_to_do = [app_name] + app_translator.library_modules
-        modules_to_do = [app_name] + app_translator.library_modules 
+        modules_to_do = [app_name] + app_translator.library_modules
 
         dependencies = {}
 
@@ -403,9 +403,9 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             deps = uniquify(deps)
             #print "modname:", mod_name, deps
             dependencies[mod_name] = deps
-            
+
         # work out the dependency ordering of the modules
-    
+
         mod_levels[platform] = make_deps(None, dependencies, modules_done)
 
     # now write everything out
@@ -473,7 +473,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
                 app_libs_ += mod_cache_html_output.read()
 
         # write out the dependency ordering of the modules
-    
+
         app_modnames = []
 
         for md in mod_levels[platform]:
@@ -512,7 +512,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             file_name = "%s.%s.%s" % (platform.lower(), app_name, digest)
         else:
             file_name = "%s.%s" % (platform.lower(), app_name)
-        file_name += ".cache.html" 
+        file_name += ".cache.html"
         out_path = join(output, file_name)
         out_file = open(out_path, 'w')
         out_file.write(file_contents)
@@ -599,7 +599,7 @@ def nodeps_list(mod_list, deps):
         if has_nodeps(mod, deps):
             res.append(mod)
     return res
-        
+
 # this function takes a dictionary of dependent modules and
 # creates a list of lists.  the first list will be modules
 # that have no dependencies; the second list will be those
@@ -721,4 +721,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

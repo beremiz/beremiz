@@ -67,7 +67,7 @@ def GetSlaveLocationTree(slave_node, current_location, name):
                 "size": size,
                 "IEC_type": IECTypeConversion.get(typeinfos["name"]),
                 "var_name": "%s_%4.4x_%2.2x" % ("_".join(name.split()), index, subindex),
-                "location": "%s%s"%(SizeConversion[size], ".".join(map(str, current_location + 
+                "location": "%s%s"%(SizeConversion[size], ".".join(map(str, current_location +
                                                                                 (index, subindex)))),
                 "description": "",
                 "children": []})
@@ -102,7 +102,7 @@ class _SlaveCTN(NodeManager):
       </xsd:element>
     </xsd:schema>
     """
-    
+
     EditorType = SlaveEditor
     IconPath = os.path.join(CanFestivalPath, "objdictgen", "networkedit.png")
 
@@ -125,7 +125,7 @@ class _SlaveCTN(NodeManager):
                 self.CreateNewNode(name,       # Name - will be changed at build time
                                    id,         # NodeID - will be changed at build time
                                    "slave",    # Type
-                                   description,# description 
+                                   description,# description
                                    profile,    # profile
                                    filepath,   # prfile filepath
                                    NMT,        # NMT
@@ -134,7 +134,7 @@ class _SlaveCTN(NodeManager):
                 self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
                                    0x00,         # NodeID - will be changed at build time
                                    "slave",      # Type
-                                   "",           # description 
+                                   "",           # description
                                    "None",       # profile
                                    "", # prfile filepath
                                    "heartbeat",  # NMT
@@ -156,48 +156,48 @@ class _SlaveCTN(NodeManager):
         if self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
         return self._View
-    
+
     def _ExportSlave(self):
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, 
-                               _("Choose a file"), 
-                               os.path.expanduser("~"), 
-                               "%s.eds" % self.CTNName(),  
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame,
+                               _("Choose a file"),
+                               os.path.expanduser("~"),
+                               "%s.eds" % self.CTNName(),
                                _("EDS files (*.eds)|*.eds|All files|*.*"),
                                wx.SAVE|wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             result = eds_utils.GenerateEDSFile(dialog.GetPath(), self.GetCurrentNodeCopy())
             if result:
                 self.GetCTRoot().logger.write_error(_("Error: Export slave failed\n"))
-        dialog.Destroy()  
-        
+        dialog.Destroy()
+
     ConfNodeMethods = [
         {"bitmap" : "ExportSlave",
-         "name" : _("Export slave"), 
+         "name" : _("Export slave"),
          "tooltip" : _("Export CanOpen slave to EDS file"),
          "method" : "_ExportSlave"},
     ]
-    
+
     def CTNTestModified(self):
         return self.ChangesToSave or self.OneFileHasChanged()
-        
+
     def OnCTNSave(self, from_project_path=None):
         return self.SaveCurrentInFile(self.GetSlaveODPath())
 
     def SetParamsAttribute(self, path, value):
         result = ConfigTreeNode.SetParamsAttribute(self, path, value)
-        
+
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel" and self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
-        
+
         return result
-    
+
     def GetVariableLocationTree(self):
         current_location = self.GetCurrentLocation()
-        return GetSlaveLocationTree(self.CurrentNode, 
-                                    self.GetCurrentLocation(), 
+        return GetSlaveLocationTree(self.CurrentNode,
+                                    self.GetCurrentLocation(),
                                     self.BaseParams.getName())
-    
+
     def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
@@ -230,10 +230,10 @@ class _SlaveCTN(NodeManager):
 
     def LoadPrevious(self):
         self.LoadCurrentPrevious()
-    
+
     def LoadNext(self):
         self.LoadCurrentNext()
-    
+
     def GetBufferState(self):
         return self.GetCurrentBufferState()
 
@@ -242,30 +242,30 @@ class _SlaveCTN(NodeManager):
 #--------------------------------------------------
 
 class MiniNodeManager(NodeManager):
-    
+
     def __init__(self, parent, filepath, fullname):
         NodeManager.__init__(self)
-        
+
         self.OpenFileInCurrent(filepath)
-            
+
         self.Parent = parent
         self.Fullname = fullname
-    
+
     def GetIconName(self):
         return None
-    
+
     def OnCloseEditor(self, view):
         self.Parent.OnCloseEditor(view)
-    
+
     def CTNFullName(self):
         return self.Fullname
-    
+
     def CTNTestModified(self):
         return False
-    
+
     def GetBufferState(self):
         return self.GetCurrentBufferState()
-    
+
     ConfNodeMethods = []
 
 class _NodeManager(NodeManager):
@@ -273,16 +273,16 @@ class _NodeManager(NodeManager):
     def __init__(self, parent, *args, **kwargs):
         NodeManager.__init__(self, *args, **kwargs)
         self.Parent = parent
-        
+
     def __del__(self):
         self.Parent = None
-        
+
     def GetCurrentNodeName(self):
         return self.Parent.CTNName()
-    
+
     def GetCurrentNodeID(self):
         return self.Parent.CanFestivalNode.getNodeId()
-    
+
 class _NodeListCTN(NodeList):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -295,20 +295,20 @@ class _NodeListCTN(NodeList):
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """ 
-    
+    """
+
     EditorType = NetworkEditor
     IconPath = os.path.join(CanFestivalPath, "objdictgen", "networkedit.png")
-    
+
     def __init__(self):
         manager = _NodeManager(self)
         NodeList.__init__(self, manager)
         self.LoadProject(self.CTNPath())
         self.SetNetworkName(self.BaseParams.getName())
-    
+
     def GetCanDevice(self):
         return self.CanFestivalNode.getCAN_Device()
-    
+
     def SetParamsAttribute(self, path, value):
         if path == "CanFestivalNode.NodeId":
             nodeid = self.CanFestivalNode.getNodeId()
@@ -319,10 +319,10 @@ class _NodeListCTN(NodeList):
                     value += dir
                 if value < 0:
                     value = nodeid
-        
+
         value, refresh = ConfigTreeNode.SetParamsAttribute(self, path, value)
         refresh_network = False
-        
+
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel" and self._View is not None:
             self._View.SetBusId(self.GetCurrentLocation())
@@ -331,11 +331,11 @@ class _NodeListCTN(NodeList):
             refresh_network = True
         elif path == "CanFestivalNode.NodeId":
             refresh_network = True
-            
+
         if refresh_network and self._View is not None:
             wx.CallAfter(self._View.RefreshBufferState)
         return value, refresh
-    
+
     def GetVariableLocationTree(self):
         current_location = self.GetCurrentLocation()
         nodeindexes = self.SlaveNodes.keys()
@@ -345,17 +345,17 @@ class _NodeListCTN(NodeList):
                  "location": self.GetFullIEC_Channel(),
                  "children": [GetSlaveLocationTree(self.Manager.GetCurrentNodeCopy(),
                                                    current_location,
-                                                   _("Local entries"))] + 
-                             [GetSlaveLocationTree(self.SlaveNodes[nodeid]["Node"], 
-                                                   current_location + (nodeid,), 
+                                                   _("Local entries"))] +
+                             [GetSlaveLocationTree(self.SlaveNodes[nodeid]["Node"],
+                                                   current_location + (nodeid,),
                                                    self.SlaveNodes[nodeid]["Name"])
                               for nodeid in nodeindexes]
         }
-    
+
     _GeneratedMasterView = None
     def _ShowGeneratedMaster(self):
         self._OpenView("Generated master")
-        
+
     def _OpenView(self, name=None, onlyopened=False):
         if name == "Generated master":
             app_frame = self.GetCTRoot().AppFrame
@@ -365,37 +365,37 @@ class _NodeListCTN(NodeList):
                 if not os.path.exists(buildpath):
                     self.GetCTRoot().logger.write_error(_("Error: No PLC built\n"))
                     return
-                
+
                 masterpath = os.path.join(buildpath, "MasterGenerated.od")
                 if not os.path.exists(masterpath):
                     self.GetCTRoot().logger.write_error(_("Error: No Master generated\n"))
                     return
-                
+
                 manager = MiniNodeManager(self, masterpath, self.CTNFullName())
                 self._GeneratedMasterView = MasterViewer(app_frame.TabsOpened, manager, app_frame, name)
-                
+
             if self._GeneratedMasterView is not None:
                 app_frame.EditProjectElement(self._GeneratedMasterView, self._GeneratedMasterView.GetInstancePath())
-            
+
             return self._GeneratedMasterView
         else:
             ConfigTreeNode._OpenView(self, name, onlyopened)
             if self._View is not None:
                 self._View.SetBusId(self.GetCurrentLocation())
             return self._View
-    
+
     ConfNodeMethods = [
         {"bitmap" : "ShowMaster",
-         "name" : _("Show Master"), 
+         "name" : _("Show Master"),
          "tooltip" : _("Show Master generated by config_utils"),
          "method" : "_ShowGeneratedMaster"}
     ]
-    
+
     def OnCloseEditor(self, view):
         ConfigTreeNode.OnCloseEditor(self, view)
         if self._GeneratedMasterView == view:
             self._GeneratedMasterView = None
-    
+
     def OnCTNClose(self):
         ConfigTreeNode.OnCTNClose(self)
         self._CloseView(self._GeneratedMasterView)
@@ -403,11 +403,11 @@ class _NodeListCTN(NodeList):
 
     def CTNTestModified(self):
         return self.ChangesToSave or self.HasChanged()
-        
+
     def OnCTNSave(self, from_project_path=None):
         self.SetRoot(self.CTNPath())
         if from_project_path is not None:
-            shutil.copytree(self.GetEDSFolder(from_project_path), 
+            shutil.copytree(self.GetEDSFolder(from_project_path),
                             self.GetEDSFolder())
         return self.SaveProject() is None
 
@@ -438,22 +438,22 @@ class _NodeListCTN(NodeList):
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)
         if res :
             raise Exception, res
-        
+
         file = open(os.path.join(buildpath, "MasterGenerated.od"), "w")
         dump(master, file)
         file.close()
-        
+
         return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
-    
+
     def LoadPrevious(self):
         self.Manager.LoadCurrentPrevious()
-    
+
     def LoadNext(self):
         self.Manager.LoadCurrentNext()
-    
+
     def GetBufferState(self):
         return self.Manager.GetCurrentBufferState()
-    
+
 class RootClass:
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -464,7 +464,7 @@ class RootClass:
       </xsd:element>
     </xsd:schema>
     """
-    
+
     CTNChildrenTypes = [("CanOpenNode",_NodeListCTN, "CanOpen Master"),
                        ("CanOpenSlave",_SlaveCTN, "CanOpen Slave")]
     def GetParamsAttributes(self, path = None):
@@ -475,13 +475,13 @@ class RootClass:
                     if child["name"] == "CAN_Driver":
                         child["type"] = local_canfestival_config.DLL_LIST
         return infos
-    
+
     def GetCanDriver(self):
         res = self.CanFestivalInstance.getCAN_Driver()
         if not res :
             return ""
         return res
-        
+
     def CTNGenerate_C(self, buildpath, locations):
         can_driver = self.GetCanDriver()
         if can_driver is not None:
@@ -494,7 +494,7 @@ class RootClass:
         else:
             can_driver_name = ""
 
-        
+
         format_dict = {"locstr" : "_".join(map(str,self.GetCurrentLocation())),
                        "candriver" : can_driver_name,
                        "nodes_includes" : "",
@@ -515,7 +515,7 @@ class RootClass:
         for child in self.IECSortedChildren():
             childlocstr = "_".join(map(str,child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
-            
+
             # Try to get Slave Node
             child_data = getattr(child, "CanFestivalSlaveNode", None)
             if child_data is None:
@@ -569,7 +569,7 @@ class RootClass:
                 format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    '%(
                        nodename,
                        child_data.getNodeId())
-    
+
             # Include generated OD headers
             format_dict["nodes_includes"] += '#include "%s.h"\n'%(nodename)
             # Declare CAN channels according user filled config
@@ -580,7 +580,7 @@ class RootClass:
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
             format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)
-        
+
         filename = paths.AbsNeighbourFile(__file__,"cf_runtime.c")
         cf_main = open(filename).read() % format_dict
         cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c"%format_dict)
@@ -589,11 +589,10 @@ class RootClass:
         f.close()
 
         res = [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))],local_canfestival_config.getLDFLAGS(CanFestivalPath), True
-        
+
         if can_driver is not None:
             can_driver_path = os.path.join(CanFestivalPath,"drivers",can_driver,can_driver_name)
             if os.path.exists(can_driver_path):
                 res += ((can_driver_name, file(can_driver_path,"rb")),)
 
         return res
-

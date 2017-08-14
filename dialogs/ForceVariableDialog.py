@@ -34,7 +34,7 @@ LOCATIONDATATYPES = {"X" : ["BOOL"],
                      "B" : ["SINT", "USINT", "BYTE", "STRING"],
                      "W" : ["INT", "UINT", "WORD", "WSTRING"],
                      "D" : ["DINT", "UDINT", "REAL", "DWORD"],
-                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]} 
+                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]}
 
 def gen_get_function(f):
     def get_function(v):
@@ -68,7 +68,7 @@ IEC_DATE_MODEL = re.compile("(?:(?:D|DATE)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})$")
 IEC_DATETIME_MODEL = re.compile("(?:(?:DT|DATE_AND_TIME)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})-([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
 IEC_TIMEOFDAY_MODEL = re.compile("(?:(?:TOD|TIME_OF_DAY)#)?([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
 
-def gettime(v):    
+def gettime(v):
     result = IEC_TIME_MODEL.match(v.upper())
     if result is not None:
         negative, days, hours, minutes, seconds, milliseconds = result.groups()
@@ -87,8 +87,8 @@ def gettime(v):
         if negative is not None:
             microseconds = -microseconds
         return datetime.timedelta(microseconds=microseconds)
-    
-    else: 
+
+    else:
         return None
 
 def getdate(v):
@@ -101,7 +101,7 @@ def getdate(v):
             return None
         base_date = datetime.datetime(1970, 1, 1)
         return date - base_date
-    else: 
+    else:
         return None
 
 def getdatetime(v):
@@ -114,7 +114,7 @@ def getdatetime(v):
             return None
         base_date = datetime.datetime(1970, 1, 1)
         return date - base_date
-    else: 
+    else:
         return None
 
 def gettimeofday(v):
@@ -159,13 +159,13 @@ GetTypeValue = {"BOOL": lambda x: {"TRUE": True, "FALSE": False, "0": False, "1"
 class ForceVariableDialog(wx.TextEntryDialog):
 
     def __init__(self, parent, iec_type, defaultValue=""):
-        wx.TextEntryDialog.__init__(self, parent, message = _("Forcing Variable Value"), 
-                caption = _("Please enter value for a \"%s\" variable:") % iec_type, defaultValue = defaultValue, 
+        wx.TextEntryDialog.__init__(self, parent, message = _("Forcing Variable Value"),
+                caption = _("Please enter value for a \"%s\" variable:") % iec_type, defaultValue = defaultValue,
                 style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition)
-        
-        self.IEC_Type = iec_type 
-        
-        self.Bind(wx.EVT_BUTTON, self.OnOK, 
+
+        self.IEC_Type = iec_type
+
+        self.Bind(wx.EVT_BUTTON, self.OnOK,
               self.GetSizer().GetItem(2).GetSizer().GetItem(1).GetSizer().GetAffirmativeButton())
         self.ValueTextCtrl=self.GetSizer().GetItem(1).GetWindow()
         if self.IEC_Type == "BOOL":

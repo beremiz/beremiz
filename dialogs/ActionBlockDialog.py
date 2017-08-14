@@ -47,7 +47,7 @@ def GetTypeList():
 #-------------------------------------------------------------------------------
 
 class ActionTable(CustomTable):
-    
+
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
             colname = self.GetColLabelValue(col, False)
@@ -55,7 +55,7 @@ class ActionTable(CustomTable):
             if colname == "Type":
                 return _(value)
             return value
-    
+
     def SetValue(self, row, col, value):
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
@@ -64,7 +64,7 @@ class ActionTable(CustomTable):
             elif colname == "Qualifier" and not self.Parent.DurationList[value]:
                 self.data[row].duration = ""
             setattr(self.data[row], colname.lower(), value)
-        
+
     def _updateColAttrs(self, grid):
         """
         wx.Grid -> update the column attributes to add the
@@ -72,7 +72,7 @@ class ActionTable(CustomTable):
 
         Otherwise default to the default renderer.
         """
-        
+
         for row in range(self.GetNumberRows()):
             for col in range(self.GetNumberCols()):
                 editor = None
@@ -103,11 +103,11 @@ class ActionTable(CustomTable):
                 elif colname == "Indicator":
                     editor = wx.grid.GridCellChoiceEditor()
                     editor.SetParameters(self.Parent.VariableList)
-                    
+
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
                 grid.SetReadOnly(row, col, readonly)
-                
+
                 grid.SetCellBackgroundColour(row, col, wx.WHITE)
             self.ResizeRow(grid, row)
 
@@ -116,56 +116,56 @@ class ActionTable(CustomTable):
 #-------------------------------------------------------------------------------
 
 class ActionBlockDialog(wx.Dialog):
-    
+
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Edit action block properties'))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(1)
-        
+
         top_sizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         top_sizer.AddGrowableCol(0)
         top_sizer.AddGrowableRow(0)
         main_sizer.AddSizer(top_sizer, border=20,
               flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
+
         actions_label = wx.StaticText(self, label=_('Actions:'))
         top_sizer.AddWindow(actions_label, flag=wx.ALIGN_BOTTOM)
-        
+
         for name, bitmap, help in [
                 ("AddButton", "add_element", _("Add action")),
                 ("DeleteButton", "remove_element", _("Remove action")),
                 ("UpButton", "up", _("Move action up")),
                 ("DownButton", "down", _("Move action down"))]:
-            button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap), 
+            button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
                   size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             top_sizer.AddWindow(button)
-        
+
         self.ActionsGrid = CustomGrid(self, size=wx.Size(-1, 250), style=wx.VSCROLL)
         self.ActionsGrid.DisableDragGridSize()
         self.ActionsGrid.EnableScrolling(False, True)
-        self.ActionsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, 
+        self.ActionsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
                               self.OnActionsGridCellChange)
         main_sizer.AddSizer(self.ActionsGrid, border=20,
               flag=wx.GROW|wx.LEFT|wx.RIGHT)
-        
+
         button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        main_sizer.AddSizer(button_sizer, border=20,
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
+
         self.SetSizer(main_sizer)
-        
+
         self.Table = ActionTable(self, [], GetActionTableColnames())
-        typelist = GetTypeList()       
+        typelist = GetTypeList()
         self.TypeList = ",".join(map(_,typelist))
         self.TranslateType = dict([(_(value), value) for value in typelist])
         self.ColSizes = [60, 90, 130, 200, 50]
         self.ColAlignements = [wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
-        
+
         self.ActionsGrid.SetTable(self.Table)
         self.ActionsGrid.SetDefaultValue(_ActionInfos("N", "Action", "", "", ""))
         self.ActionsGrid.SetButtons({"Add": self.AddButton,
@@ -173,19 +173,19 @@ class ActionBlockDialog(wx.Dialog):
                                      "Up": self.UpButton,
                                      "Down": self.DownButton})
         self.ActionsGrid.SetRowLabelSize(0)
-        
+
         for col in range(self.Table.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
             attr.SetAlignment(self.ColAlignements[col], wx.ALIGN_CENTRE)
             self.ActionsGrid.SetColAttr(col, attr)
             self.ActionsGrid.SetColMinimalWidth(col, self.ColSizes[col])
             self.ActionsGrid.AutoSizeColumn(col, False)
-        
+
         self.Table.ResetView(self.ActionsGrid)
         self.ActionsGrid.SetFocus()
         self.ActionsGrid.RefreshButtons()
         self.Fit()
-    
+
     def OnOK(self, event):
         self.ActionsGrid.CloseEditControl()
         self.EndModal(wx.ID_OK)
@@ -193,14 +193,14 @@ class ActionBlockDialog(wx.Dialog):
     def OnActionsGridCellChange(self, event):
         wx.CallAfter(self.Table.ResetView, self.ActionsGrid)
         event.Skip()
-    
+
     def SetQualifierList(self, list):
         self.QualifierList = ",".join(list)
         self.DurationList = list
 
     def SetVariableList(self, list):
         self.VariableList = "," + ",".join([variable.Name for variable in list])
-        
+
     def SetActionList(self, list):
         self.ActionList = "," + ",".join(list)
 
@@ -218,7 +218,7 @@ class ActionBlockDialog(wx.Dialog):
         if len(actions) > 0:
             self.ActionsGrid.SetGridCursor(0, 0)
         self.ActionsGrid.RefreshButtons()
-    
+
     def GetValues(self):
         actions = self.Table.GetData()
         for action in actions:

@@ -39,7 +39,7 @@ def TestConnectorName(name, block_type):
     return name in ["OUT", "MN", "MX"] or name.startswith("IN") and (block_type, name) != ("EXPT", "IN2")
 
 class FBD_Block(Graphic_Element):
-    
+
     # Create a new block
     def __init__(self, parent, type, name, id = None, extension = 0, inputs = None, connectors = {}, executionControl = False, executionOrder = 0):
         Graphic_Element.__init__(self, parent)
@@ -56,7 +56,7 @@ class FBD_Block(Graphic_Element):
         self.Pen = MiterPen(wx.BLACK)
         self.SetType(type, extension, inputs, connectors, executionControl)
         self.Highlights = {}
-    
+
     # Make a clone of this FBD_Block
     def Clone(self, parent, id = None, name = "", pos = None):
         if self.Name != "" and name == "":
@@ -70,10 +70,10 @@ class FBD_Block(Graphic_Element):
         block.Inputs = [input.Clone(block) for input in self.Inputs]
         block.Outputs = [output.Clone(block) for output in self.Outputs]
         return block
-    
+
     def GetConnectorTranslation(self, element):
         return dict(zip(self.Inputs + self.Outputs, element.Inputs + element.Outputs))
-    
+
     def Flush(self):
         for input in self.Inputs:
             input.Flush()
@@ -81,7 +81,7 @@ class FBD_Block(Graphic_Element):
         for output in self.Outputs:
             output.Flush()
         self.Outputs = []
-    
+
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
@@ -93,26 +93,26 @@ class FBD_Block(Graphic_Element):
                 if output.IsConnected():
                     rect = rect.Union(output.GetConnectedRedrawRect(movex, movey))
         return rect
-    
+
     # Delete this block by calling the appropriate method
     def Delete(self):
         self.Parent.DeleteBlock(self)
-    
+
     # Unconnect all inputs and outputs
     def Clean(self):
         for input in self.Inputs:
             input.UnConnect(delete = True)
         for output in self.Outputs:
             output.UnConnect(delete = True)
-    
+
     # Refresh the size of text for name
     def RefreshNameSize(self):
         self.NameSize = self.Parent.GetTextExtent(self.Name)
-    
+
     # Refresh the size of text for execution order
     def RefreshExecutionOrderSize(self):
         self.ExecutionOrderSize = self.Parent.GetTextExtent(str(self.ExecutionOrder))
-    
+
     # Returns if the point given is in the bounding box
     def HitTest(self, pt, connectors=True):
         if self.Name != "":
@@ -121,7 +121,7 @@ class FBD_Block(Graphic_Element):
             test_text = False
         test_block = self.GetBlockBoundingBox(connectors).InsideXY(pt.x, pt.y)
         return test_text or test_block
-    
+
     # Returns the bounding box of the name outside the block
     def GetTextBoundingBox(self):
         # Calculate the size of the name outside the block
@@ -130,7 +130,7 @@ class FBD_Block(Graphic_Element):
                        self.Pos.y - (text_height + 2),
                        text_width,
                        text_height)
-    
+
     # Returns the bounding box of function block without name outside
     def GetBlockBoundingBox(self, connectors=True):
         bbx_x, bbx_y = self.Pos.x, self.Pos.y
@@ -143,13 +143,13 @@ class FBD_Block(Graphic_Element):
             bbx_width = max(bbx_width, bbx_width + self.Pos.x + self.ExecutionOrderSize[0] - bbx_x - self.Size[0])
             bbx_height = bbx_height + (self.ExecutionOrderSize[1] + 2)
         return wx.Rect(bbx_x, bbx_y, bbx_width + 1, bbx_height + 1)
-    
+
     # Refresh the block bounding box
     def RefreshBoundingBox(self):
         self.BoundingBox = self.GetBlockBoundingBox()
         if self.Name != "":
             self.BoundingBox.Union(self.GetTextBoundingBox())
-    
+
     # Refresh the positions of the block connectors
     def RefreshConnectors(self):
         scaling = self.Parent.GetScaling()
@@ -170,15 +170,15 @@ class FBD_Block(Graphic_Element):
                     self.Outputs[i].SetPosition(wx.Point(self.Size[0], ypos))
                 position += linesize
         self.RefreshConnected()
-    
+
     # Refresh the positions of wires connected to inputs and outputs
     def RefreshConnected(self, exclude = []):
         for input in self.Inputs:
             input.MoveConnected(exclude)
         for output in self.Outputs:
             output.MoveConnected(exclude)
-    
-    # Returns the block connector that starts with the point given if it exists 
+
+    # Returns the block connector that starts with the point given if it exists
     def GetConnector(self, position, output_name = None, input_name = None):
         if input_name is not None:
             # Test each input connector
@@ -193,14 +193,14 @@ class FBD_Block(Graphic_Element):
         if input_name is None and output_name is None:
             return self.FindNearestConnector(position, self.Inputs + self.Outputs)
         return None
-        
+
     def GetInputTypes(self):
         return tuple([input.GetType(True) for input in self.Inputs if input.GetName() != "EN"])
-    
+
     def SetOutputValues(self, values):
         for output in self.Outputs:
             output.SetValue(values.get(ouput.getName(), None))
-    
+
     def GetConnectionResultType(self, connector, connectortype):
         if not TestConnectorName(connector.GetName(), self.Type):
             return connectortype
@@ -216,11 +216,11 @@ class FBD_Block(Graphic_Element):
                 if resulttype is None or outputtype is not None and self.IsOfType(outputtype, resulttype):
                     resulttype = outputtype
         return resulttype
-        
+
     # Returns all the block connectors
     def GetConnectors(self):
         return {"inputs" : self.Inputs, "outputs" : self.Outputs}
-    
+
     # Test if point given is on one of the block connectors
     def TestConnector(self, pt, direction = None, exclude = True):
         # Test each input connector
@@ -232,10 +232,10 @@ class FBD_Block(Graphic_Element):
             if output.TestPoint(pt, direction, exclude):
                 return output
         return None
-    
+
     # Changes the block type
     def SetType(self, type, extension, inputs = None, connectors = {}, executionControl = False):
-        if type != self.Type or self.Extension != extension or executionControl != self.ExecutionControl: 
+        if type != self.Type or self.Extension != extension or executionControl != self.ExecutionControl:
             if type != self.Type:
                 self.Type = type
                 self.TypeSize = self.Parent.GetTextExtent(self.Type)
@@ -264,7 +264,7 @@ class FBD_Block(Graphic_Element):
                 inputs.insert(0, ("EN","BOOL","none"))
                 outputs.insert(0, ("ENO","BOOL","none"))
             self.Pen = MiterPen(self.Colour)
-            
+
             # Extract the inputs properties and create or modify the corresponding connector
             input_connectors = []
             for input_name, input_type, input_modifier in inputs:
@@ -284,7 +284,7 @@ class FBD_Block(Graphic_Element):
             for input in self.Inputs:
                 input.UnConnect(delete = True)
             self.Inputs = input_connectors
-            
+
             # Extract the outputs properties and create or modify the corresponding connector
             output_connectors = []
             for output_name, output_type, output_modifier in outputs:
@@ -304,47 +304,47 @@ class FBD_Block(Graphic_Element):
             for output in self.Outputs:
                 output.UnConnect(delete = True)
             self.Outputs = output_connectors
-                
+
             self.RefreshMinSize()
             self.RefreshConnectors()
             for output in self.Outputs:
                 output.RefreshWires()
             self.RefreshBoundingBox()
-    
+
     # Returns the block type
     def GetType(self):
         return self.Type
-    
+
     # Changes the block name
     def SetName(self, name):
         self.Name = name
         self.RefreshNameSize()
-    
+
     # Returs the block name
     def GetName(self):
         return self.Name
-    
+
     # Changes the extension name
     def SetExtension(self, extension):
         self.Extension = extension
-    
+
     # Returs the extension name
     def GetExtension(self):
         return self.Extension
-    
+
     # Changes the execution order
     def SetExecutionOrder(self, executionOrder):
         self.ExecutionOrder = executionOrder
         self.RefreshExecutionOrderSize()
-    
+
     # Returs the execution order
     def GetExecutionOrder(self):
         return self.ExecutionOrder
-    
+
     # Returs the execution order
     def GetExecutionControl(self):
         return self.ExecutionControl
-    
+
     # Refresh the block minimum size
     def RefreshMinSize(self):
         # Calculate the inputs maximum width
@@ -360,25 +360,25 @@ class FBD_Block(Graphic_Element):
         width = max(self.TypeSize[0] + 10, max_input + max_output + 15)
         height = (max(len(self.Inputs), len(self.Outputs)) + 1) * BLOCK_LINE_SIZE
         self.MinSize = width, height
-    
+
     # Returns the block minimum size
     def GetMinSize(self):
         return self.MinSize
-    
+
     # Changes the negated property of the connector handled
     def SetConnectorNegated(self, negated):
         handle_type, handle = self.Handle
         if handle_type == HANDLE_CONNECTOR:
             handle.SetNegated(negated)
             self.RefreshModel(False)
-    
+
     # Changes the edge property of the connector handled
     def SetConnectorEdge(self, edge):
         handle_type, handle = self.Handle
         if handle_type == HANDLE_CONNECTOR:
             handle.SetEdge(edge)
             self.RefreshModel(False)
-    
+
 ##    # Method called when a Motion event have been generated
 ##    def OnMotion(self, event, dc, scaling):
 ##        if not event.Dragging():
@@ -390,12 +390,12 @@ class FBD_Block(Graphic_Element):
 ##                    tip = wx.TipWindow(self.Parent, "Test")
 ##                    tip.SetBoundingRect(rect)
 ##        return Graphic_Element.OnMotion(self, event, dc, scaling)
-    
+
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
         # Edit the block properties
         self.Parent.EditBlockContent(self)
-    
+
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
         pos = GetScaledEventPosition(event, dc, scaling)
@@ -406,7 +406,7 @@ class FBD_Block(Graphic_Element):
             self.Parent.PopupBlockMenu(connector)
         else:
             self.Parent.PopupBlockMenu()
-    
+
     # Refreshes the block model
     def RefreshModel(self, move=True):
         self.Parent.RefreshBlockModel(self)
@@ -414,10 +414,10 @@ class FBD_Block(Graphic_Element):
         if move:
             for output in self.Outputs:
                 output.RefreshWires()
-    
+
     def GetToolTipValue(self):
         return self.Description
-    
+
     # Adds an highlight to the block
     def AddHighlight(self, infos, start, end ,highlight_type):
         if infos[0] in ["type", "name"] and start[0] == 0 and end[0] == 0:
@@ -427,7 +427,7 @@ class FBD_Block(Graphic_Element):
             self.Inputs[infos[1]].AddHighlight(infos[2:], start, end, highlight_type)
         elif infos[0] == "output" and infos[1] < len(self.Outputs):
             self.Outputs[infos[1]].AddHighlight(infos[2:], start, end, highlight_type)
-    
+
     # Removes an highlight from the block
     def RemoveHighlight(self, infos, start, end, highlight_type):
         if infos[0] in ["type", "name"]:
@@ -438,7 +438,7 @@ class FBD_Block(Graphic_Element):
             self.Inputs[infos[1]].RemoveHighlight(infos[2:], start, end, highlight_type)
         elif infos[0] == "output" and infos[1] < len(self.Outputs):
             self.Outputs[infos[1]].RemoveHighlight(infos[2:], start, end, highlight_type)
-            
+
     # Removes all the highlights of one particular type from the block
     def ClearHighlight(self, highlight_type=None):
         if highlight_type is None:
@@ -453,14 +453,14 @@ class FBD_Block(Graphic_Element):
             input.ClearHighlights(highlight_type)
         for output in self.Outputs:
             output.ClearHighlights(highlight_type)
-    
+
     # Draws block
     def Draw(self, dc):
         Graphic_Element.Draw(self, dc)
         dc.SetPen(self.Pen)
         dc.SetBrush(wx.WHITE_BRUSH)
         dc.SetTextForeground(self.Colour)
-        
+
         if getattr(dc, "printing", False):
             name_size = dc.GetTextExtent(self.Name)
             type_size = dc.GetTextExtent(self.Type)
@@ -469,7 +469,7 @@ class FBD_Block(Graphic_Element):
             name_size = self.NameSize
             type_size = self.TypeSize
             executionorder_size = self.ExecutionOrderSize
-            
+
         # Draw a rectangle with the block size
         dc.DrawRectangle(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
         # Draw block name and block type
@@ -488,11 +488,11 @@ class FBD_Block(Graphic_Element):
             # Draw block execution order
             dc.DrawText(str(self.ExecutionOrder), self.Pos.x + self.Size[0] - executionorder_size[0],
                     self.Pos.y + self.Size[1] + 2)
-        
+
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights.get("name", []), name_pos[0], name_pos[1])
             DrawHighlightedText(dc, self.Type, self.Highlights.get("type", []), type_pos[0], type_pos[1])
-        
+
 
 #-------------------------------------------------------------------------------
 #                        Function Block Diagram Variable
@@ -516,7 +516,7 @@ class FBD_Variable(Graphic_Element):
         self.Output = None
         self.SetType(type, value_type)
         self.Highlights = []
-    
+
     # Make a clone of this FBD_Variable
     def Clone(self, parent, id = None, pos = None):
         variable = FBD_Variable(parent, self.Type, self.Name, self.ValueType, id)
@@ -530,7 +530,7 @@ class FBD_Variable(Graphic_Element):
         if self.Output:
             variable.Output = self.Output.Clone(variable)
         return variable
-    
+
     def GetConnectorTranslation(self, element):
         connectors = {}
         if self.Input is not None:
@@ -538,7 +538,7 @@ class FBD_Variable(Graphic_Element):
         if self.Output is not None:
             connectors[self.Output] = element.Output
         return connectors
-    
+
     def Flush(self):
         if self.Input is not None:
             self.Input.Flush()
@@ -546,7 +546,7 @@ class FBD_Variable(Graphic_Element):
         if self.Output is not None:
             self.Output.Flush()
             self.Output = None
-    
+
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
@@ -556,26 +556,26 @@ class FBD_Variable(Graphic_Element):
             if self.Output and self.Output.IsConnected():
                 rect = rect.Union(self.Output.GetConnectedRedrawRect(movex, movey))
         return rect
-    
+
     # Unconnect connector
     def Clean(self):
         if self.Input:
             self.Input.UnConnect(delete = True)
         if self.Output:
             self.Output.UnConnect(delete = True)
-    
+
     # Delete this variable by calling the appropriate method
     def Delete(self):
         self.Parent.DeleteVariable(self)
-    
+
     # Refresh the size of text for name
     def RefreshNameSize(self):
         self.NameSize = self.Parent.GetTextExtent(self.Name)
-    
+
     # Refresh the size of text for execution order
     def RefreshExecutionOrderSize(self):
         self.ExecutionOrderSize = self.Parent.GetTextExtent(str(self.ExecutionOrder))
-    
+
     # Refresh the variable bounding box
     def RefreshBoundingBox(self):
         if self.Type in (OUTPUT, INOUT):
@@ -594,7 +594,7 @@ class FBD_Variable(Graphic_Element):
             bbx_width = max(bbx_width, bbx_width + self.Pos.x + self.ExecutionOrderSize[0] - bbx_x - self.Size[0])
             bbx_height = bbx_height + (self.ExecutionOrderSize[1] + 2)
         self.BoundingBox = wx.Rect(bbx_x, self.Pos.y, bbx_width + 1, bbx_height + 1)
-    
+
     # Refresh the position of the variable connector
     def RefreshConnectors(self):
         scaling = self.Parent.GetScaling()
@@ -607,14 +607,14 @@ class FBD_Variable(Graphic_Element):
         if self.Output:
             self.Output.SetPosition(wx.Point(self.Size[0], position))
         self.RefreshConnected()
-    
+
     # Refresh the position of wires connected to connector
     def RefreshConnected(self, exclude = []):
         if self.Input:
             self.Input.MoveConnected(exclude)
         if self.Output:
             self.Output.MoveConnected(exclude)
-        
+
     # Test if point given is on the variable connector
     def TestConnector(self, pt, direction = None, exclude=True):
         if self.Input and self.Input.TestPoint(pt, direction, exclude):
@@ -622,8 +622,8 @@ class FBD_Variable(Graphic_Element):
         if self.Output and self.Output.TestPoint(pt, direction, exclude):
             return self.Output
         return None
-    
-    # Returns the block connector that starts with the point given if it exists 
+
+    # Returns the block connector that starts with the point given if it exists
     def GetConnector(self, position, name = None):
         # if a name is given
         if name is not None:
@@ -640,8 +640,8 @@ class FBD_Variable(Graphic_Element):
         if self.Output:
             connectors.append(self.Output)
         return self.FindNearestConnector(position, connectors)
-    
-    # Returns all the block connectors 
+
+    # Returns all the block connectors
     def GetConnectors(self):
         connectors = {"inputs": [], "outputs": []}
         if self.Input:
@@ -649,14 +649,14 @@ class FBD_Variable(Graphic_Element):
         if self.Output:
             connectors["outputs"].append(self.Output)
         return connectors
-    
+
     # Changes the negated property of the variable connector if handled
     def SetConnectorNegated(self, negated):
         handle_type, handle = self.Handle
         if handle_type == HANDLE_CONNECTOR:
             handle.SetNegated(negated)
             self.RefreshModel(False)
-    
+
     # Changes the variable type
     def SetType(self, type, value_type):
         if type != self.Type:
@@ -680,38 +680,38 @@ class FBD_Variable(Graphic_Element):
             if self.Input:
                 self.Input.SetType(value_type)
             if self.Output:
-                self.Output.SetType(value_type)            
-        
+                self.Output.SetType(value_type)
+
     # Returns the variable type
     def GetType(self):
         return self.Type
-    
+
     # Returns the variable value type
     def GetValueType(self):
         return self.ValueType
-    
+
     # Changes the variable name
     def SetName(self, name):
         self.Name = name
         self.RefreshNameSize()
-    
+
     # Returns the variable name
     def GetName(self):
         return self.Name
-    
+
     # Changes the execution order
     def SetExecutionOrder(self, executionOrder):
         self.ExecutionOrder = executionOrder
         self.RefreshExecutionOrderSize()
-    
+
     # Returs the execution order
     def GetExecutionOrder(self):
         return self.ExecutionOrder
-    
+
     # Returns the variable minimum size
     def GetMinSize(self):
         return self.NameSize[0] + 10, self.NameSize[1] + 10
-    
+
     # Set size of the variable to the minimum size
     def SetBestSize(self, scaling):
         if self.Type == INPUT:
@@ -720,22 +720,22 @@ class FBD_Variable(Graphic_Element):
             return Graphic_Element.SetBestSize(self, scaling, x_factor=0.)
         else:
             return Graphic_Element.SetBestSize(self, scaling)
-    
+
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
         if event.ControlDown():
-            # Change variable type 
+            # Change variable type
             types = [INPUT, OUTPUT, INOUT]
             self.Parent.ChangeVariableType(self,
                 types[(types.index(self.Type) + 1) % len(types)])
         else:
             # Edit the variable properties
             self.Parent.EditVariableContent(self)
-    
+
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
         self.Parent.PopupVariableMenu()
-    
+
     # Refreshes the variable model
     def RefreshModel(self, move=True):
         self.Parent.RefreshVariableModel(self)
@@ -744,35 +744,35 @@ class FBD_Variable(Graphic_Element):
         if move and self.Type != OUTPUT:
             if self.Output:
                 self.Output.RefreshWires()
-    
+
     # Adds an highlight to the variable
     def AddHighlight(self, infos, start, end, highlight_type):
         if infos[0] == "expression" and start[0] == 0 and end[0] == 0:
             AddHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes an highlight from the variable
     def RemoveHighlight(self, infos, start, end, highlight_type):
         if infos[0] == "expression":
             RemoveHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes all the highlights of one particular type from the variable
     def ClearHighlight(self, highlight_type=None):
         ClearHighlights(self.Highlights, highlight_type)
-    
+
     # Draws variable
     def Draw(self, dc):
         Graphic_Element.Draw(self, dc)
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.WHITE_BRUSH)
-        
+
         if getattr(dc, "printing", False):
             name_size = dc.GetTextExtent(self.Name)
             executionorder_size = dc.GetTextExtent(str(self.ExecutionOrder))
         else:
             name_size = self.NameSize
             executionorder_size = self.ExecutionOrderSize
-        
-        text_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2, 
+
+        text_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2,
                     self.Pos.y + (self.Size[1] - name_size[1]) / 2)
         # Draw a rectangle with the variable size
         dc.DrawRectangle(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
@@ -781,7 +781,7 @@ class FBD_Variable(Graphic_Element):
         # Draw connectors
         if self.Input:
             self.Input.Draw(dc)
-        if self.Output:    
+        if self.Output:
             self.Output.Draw(dc)
         if self.ExecutionOrder != 0:
             # Draw variable execution order
@@ -789,7 +789,7 @@ class FBD_Variable(Graphic_Element):
                     self.Pos.y + self.Size[1] + 2)
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, text_pos[0], text_pos[1])
-            
+
 #-------------------------------------------------------------------------------
 #                        Function Block Diagram Connector
 #-------------------------------------------------------------------------------
@@ -816,12 +816,12 @@ class FBD_Connector(Graphic_Element):
             self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), EAST)
         self.RefreshConnectors()
         self.RefreshNameSize()
-    
+
     def Flush(self):
         if self.Connector:
             self.Connector.Flush()
             self.Connector = None
-    
+
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
@@ -829,7 +829,7 @@ class FBD_Connector(Graphic_Element):
             if self.Connector and self.Connector.IsConnected():
                 rect = rect.Union(self.Connector.GetConnectedRedrawRect(movex, movey))
         return rect
-    
+
     # Make a clone of this FBD_Connector
     def Clone(self, parent, id = None, pos = None):
         connection = FBD_Connector(parent, self.Type, self.Name, id)
@@ -840,7 +840,7 @@ class FBD_Connector(Graphic_Element):
             connection.SetPosition(self.Pos.x, self.Pos.y)
         connection.Connector = self.Connector.Clone(connection)
         return connection
-    
+
     def GetConnectorTranslation(self, element):
         return {self.Connector : element.Connector}
 
@@ -848,15 +848,15 @@ class FBD_Connector(Graphic_Element):
     def Clean(self):
         if self.Connector:
             self.Connector.UnConnect(delete = True)
-    
+
     # Delete this connection by calling the appropriate method
     def Delete(self):
         self.Parent.DeleteConnection(self)
-    
+
     # Refresh the size of text for name
     def RefreshNameSize(self):
         self.NameSize = self.Parent.GetTextExtent(self.Name)
-    
+
     # Refresh the connection bounding box
     def RefreshBoundingBox(self):
         if self.Type == CONNECTOR:
@@ -865,7 +865,7 @@ class FBD_Connector(Graphic_Element):
             bbx_x = self.Pos.x
         bbx_width = self.Size[0] + CONNECTOR_SIZE
         self.BoundingBox = wx.Rect(bbx_x, self.Pos.y, bbx_width, self.Size[1])
-    
+
     # Refresh the position of the connection connector
     def RefreshConnectors(self):
         scaling = self.Parent.GetScaling()
@@ -878,23 +878,23 @@ class FBD_Connector(Graphic_Element):
         else:
             self.Connector.SetPosition(wx.Point(self.Size[0], position))
         self.RefreshConnected()
-    
+
     # Refresh the position of wires connected to connector
     def RefreshConnected(self, exclude = []):
         if self.Connector:
             self.Connector.MoveConnected(exclude)
-    
+
     # Test if point given is on the connection connector
     def TestConnector(self, pt, direction = None, exclude=True):
         if self.Connector and self.Connector.TestPoint(pt, direction, exclude):
             return self.Connector
         return None
-    
+
     # Returns the connection connector
     def GetConnector(self, position = None, name = None):
         return self.Connector
-    
-        # Returns all the block connectors 
+
+        # Returns all the block connectors
     def GetConnectors(self):
         connectors = {"inputs": [], "outputs": []}
         if self.Type == CONNECTOR:
@@ -923,45 +923,45 @@ class FBD_Connector(Graphic_Element):
                 self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), EAST)
             self.RefreshConnectors()
             self.RefreshBoundingBox()
-    
+
     # Returns the connection type
     def GetType(self):
         return self.Type
-    
+
     def GetConnectionResultType(self, connector, connectortype):
         if self.Type == CONTINUATION:
             connector = self.Parent.GetConnectorByName(self.Name)
             if connector is not None:
                 return connector.Connector.GetConnectedType()
         return connectortype
-    
+
     # Changes the connection name
     def SetName(self, name):
         self.Name = name
         self.RefreshNameSize()
-        
+
     # Returns the connection name
     def GetName(self):
         return self.Name
-    
+
     # Set size of the variable to the minimum size
     def SetBestSize(self, scaling):
         if self.Type == CONTINUATION:
             return Graphic_Element.SetBestSize(self, scaling, x_factor=1.)
         else:
             return Graphic_Element.SetBestSize(self, scaling, x_factor=0.)
-    
+
     # Returns the connection minimum size
     def GetMinSize(self):
         text_width, text_height = self.NameSize
         if text_height % 2 == 1:
             text_height += 1
         return text_width + text_height + 20, text_height + 10
-    
+
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
         if event.ControlDown():
-            # Change connection type 
+            # Change connection type
             if self.Type == CONNECTOR:
                 self.Parent.ChangeConnectionType(self, CONTINUATION)
             else:
@@ -969,12 +969,12 @@ class FBD_Connector(Graphic_Element):
         else:
             # Edit the connection properties
             self.Parent.EditConnectionContent(self)
-    
+
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
         # Popup the default menu
         self.Parent.PopupConnectionMenu()
-    
+
     # Refreshes the connection model
     def RefreshModel(self, move=True):
         self.Parent.RefreshConnectionModel(self)
@@ -983,51 +983,50 @@ class FBD_Connector(Graphic_Element):
         if move and self.Type == CONTINUATION:
             if self.Connector:
                 self.Connector.RefreshWires()
-    
+
     # Adds an highlight to the connection
     def AddHighlight(self, infos, start, end, highlight_type):
         if infos[0] == "name" and start[0] == 0 and end[0] == 0:
             AddHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes an highlight from the connection
     def RemoveHighlight(self, infos, start, end, highlight_type):
         if infos[0] == "name":
             RemoveHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes all the highlights of one particular type from the connection
     def ClearHighlight(self, highlight_type=None):
         ClearHighlights(self.Highlights, highlight_type)
-    
+
     # Draws connection
     def Draw(self, dc):
         Graphic_Element.Draw(self, dc)
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.WHITE_BRUSH)
-        
+
         if getattr(dc, "printing", False):
             name_size = dc.GetTextExtent(self.Name)
         else:
             name_size = self.NameSize
-        
+
         # Draw a rectangle with the connection size with arrows inside
         dc.DrawRectangle(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
         arrowsize = min(self.Size[1] / 2, (self.Size[0] - name_size[0] - 10) / 2)
-        dc.DrawLine(self.Pos.x, self.Pos.y, self.Pos.x + arrowsize, 
+        dc.DrawLine(self.Pos.x, self.Pos.y, self.Pos.x + arrowsize,
                 self.Pos.y + self.Size[1] / 2)
-        dc.DrawLine(self.Pos.x + arrowsize, self.Pos.y + self.Size[1] / 2, 
+        dc.DrawLine(self.Pos.x + arrowsize, self.Pos.y + self.Size[1] / 2,
                 self.Pos.x, self.Pos.y + self.Size[1])
-        dc.DrawLine(self.Pos.x + self.Size[0] - arrowsize, self.Pos.y, 
+        dc.DrawLine(self.Pos.x + self.Size[0] - arrowsize, self.Pos.y,
                 self.Pos.x + self.Size[0], self.Pos.y + self.Size[1] / 2)
-        dc.DrawLine(self.Pos.x + self.Size[0], self.Pos.y + self.Size[1] / 2, 
+        dc.DrawLine(self.Pos.x + self.Size[0], self.Pos.y + self.Size[1] / 2,
                 self.Pos.x + self.Size[0] - arrowsize, self.Pos.y + self.Size[1])
         # Draw connection name
-        text_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2, 
+        text_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2,
                     self.Pos.y + (self.Size[1] - name_size[1]) / 2)
         dc.DrawText(self.Name, text_pos[0], text_pos[1])
         # Draw connector
         if self.Connector:
             self.Connector.Draw(dc)
-        
+
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, text_pos[0], text_pos[1])
-        

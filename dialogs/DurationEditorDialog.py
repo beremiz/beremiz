@@ -57,43 +57,43 @@ class DurationEditorDialog(wx.Dialog):
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Edit Duration'))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
-        
+
         controls_sizer = wx.FlexGridSizer(cols=len(CONTROLS), hgap=10, rows=2, vgap=10)
-        main_sizer.AddSizer(controls_sizer, border=20, 
+        main_sizer.AddSizer(controls_sizer, border=20,
               flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
-        
+
         controls = []
         for i, (name, label) in enumerate(CONTROLS):
             controls_sizer.AddGrowableCol(i)
-            
+
             st = wx.StaticText(self, label=label)
             txtctrl = wx.TextCtrl(self, value='0', style=wx.TE_PROCESS_ENTER)
-            self.Bind(wx.EVT_TEXT_ENTER, 
-                      self.GetControlValueTestFunction(txtctrl), 
+            self.Bind(wx.EVT_TEXT_ENTER,
+                      self.GetControlValueTestFunction(txtctrl),
                       txtctrl)
             setattr(self, name, txtctrl)
-        
+
             controls.append((st, txtctrl))
-            
+
         for st, txtctrl in controls:
             controls_sizer.AddWindow(st, flag=wx.GROW)
-            
+
         for st, txtctrl in controls:
             controls_sizer.AddWindow(txtctrl, flag=wx.GROW)
-        
+
         button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
+        main_sizer.AddSizer(button_sizer, border=20,
               flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
+
         self.SetSizer(main_sizer)
         self.Fit()
         self.Days.SetFocus()
-        
+
     def SetDuration(self, value):
         result = IEC_TIME_MODEL.match(value.upper())
         if result is not None:
@@ -112,7 +112,7 @@ class DurationEditorDialog(wx.Dialog):
             else:
                 self.Milliseconds.SetValue("0")
                 self.Microseconds.SetValue("0")
-        
+
     def GetControlValueTestFunction(self, control):
         def OnValueChanged(event):
             try:
@@ -130,29 +130,29 @@ class DurationEditorDialog(wx.Dialog):
         for control, factor in [(self.Days, DAY), (self.Hours, HOUR),
                                 (self.Minutes, MINUTE), (self.Seconds, SECOND),
                                 (self.Milliseconds, MILLISECONDS), (self.Microseconds, MICROSECONDS)]:
-            
+
             milliseconds += float(control.GetValue()) * factor
-        
+
         not_null = False
         duration = "T#"
         for value, format in [(int(milliseconds) / DAY, "%dd"),
                             ((int(milliseconds) % DAY) / HOUR, "%dh"),
                             ((int(milliseconds) % HOUR) / MINUTE, "%dm"),
                             ((int(milliseconds) % MINUTE) / SECOND, "%ds")]:
-            
+
             if value > 0 or not_null:
                 duration += format % value
                 not_null = True
-        
+
         duration += "%gms" % (milliseconds % SECOND)
         return duration
-    
+
     def OnOK(self, event):
         self.OnCloseDialog()
 
     def OnCloseDialog(self):
         errors = []
-        for control, name in [(self.Days, _("days")), (self.Hours, _("hours")), 
+        for control, name in [(self.Days, _("days")), (self.Hours, _("hours")),
                               (self.Minutes, _("minutes")), (self.Seconds, _("seconds")),
                               (self.Milliseconds, _("milliseconds"))]:
             try:

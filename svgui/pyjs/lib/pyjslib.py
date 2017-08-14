@@ -20,7 +20,7 @@ from __pyjamas__ import JS
 # must declare import _before_ importing sys
 
 def import_module(path, parent_module, module_name, dynamic=1, async=False):
-    """ 
+    """
     """
 
     JS("""
@@ -38,7 +38,7 @@ def import_module(path, parent_module, module_name, dynamic=1, async=False):
         }
 
         var override_name = sys.platform + "." + module_name;
-        if (((sys.overrides != null) && 
+        if (((sys.overrides != null) &&
              (sys.overrides.has_key(override_name))))
         {
             cache_file =  sys.overrides.__getitem__(override_name) ;
@@ -67,7 +67,7 @@ def import_module(path, parent_module, module_name, dynamic=1, async=False):
             module_load_request[module_name] = 1;
         }
 
-        /* following a load, this first executes the script 
+        /* following a load, this first executes the script
          * "preparation" function MODULENAME_loaded_fn()
          * and then sets up the loaded module in the namespace
          * of the parent.
@@ -201,7 +201,7 @@ class Modload:
         self.parent_mod = parent_mod
 
     def next(self):
-        
+
         for i in range(len(self.app_modlist[self.idx])):
             app = self.app_modlist[self.idx][i]
             import_module(self.path, self.parent_mod, app, self.dynamic, True);
@@ -1109,7 +1109,7 @@ def isinstance(object_, classinfo):
     if pyjslib.isUndefined(object_):
         return False
     if not pyjslib.isObject(object_):
-        
+
         return False
     if _isinstance(classinfo, Tuple):
         for ci in classinfo:
@@ -1362,4 +1362,3 @@ def type(clsname, bases=None, methods=None):
     if bases:
         JS("bss = bases.l;")
     JS(" return pyjs_type(clsname, bss, mths); ")
-

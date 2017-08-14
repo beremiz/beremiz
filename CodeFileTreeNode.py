@@ -81,10 +81,10 @@ CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 SECTION_TAG_ELEMENT = "<xsd:element name=\"%s\" type=\"CodeText\"/>"
 
 class CodeFile:
-    
+
     CODEFILE_NAME = "CodeFile"
     SECTIONS_NAMES = []
-    
+
     def __init__(self):
         sections_str = {"codefile_name": self.CODEFILE_NAME}
         if "includes" in self.SECTIONS_NAMES:
@@ -94,26 +94,26 @@ class CodeFile:
         sections_str["sections"] = "\n".join(
             [SECTION_TAG_ELEMENT % name
              for name in self.SECTIONS_NAMES if name != "includes"])
-        
+
         self.CodeFileParser = GenerateParserFromXSDstring(
             CODEFILE_XSD % sections_str)
         self.CodeFileVariables = etree.XPath("variables/variable")
-        
+
         filepath = self.CodeFileName()
-        
+
         if os.path.isfile(filepath):
             xmlfile = open(filepath, 'r')
             codefile_xml = xmlfile.read()
             xmlfile.close()
-            
+
             codefile_xml = codefile_xml.replace(
-                '<%s>' % self.CODEFILE_NAME, 
+                '<%s>' % self.CODEFILE_NAME,
                 '<%s xmlns:xhtml="http://www.w3.org/1999/xhtml">' % self.CODEFILE_NAME)
             for cre, repl in [
                 (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
                 (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 codefile_xml = cre.sub(repl, codefile_xml)
-            
+
             try:
                 self.CodeFile, error = self.CodeFileParser.LoadXMLString(codefile_xml)
                 if error is not None:
@@ -138,7 +138,7 @@ class CodeFile:
     def GenerateNewName(self, format, start_idx):
         return self.GetCTRoot().GenerateNewName(
             None, None, format, start_idx,
-            dict([(var.getname().upper(), True) 
+            dict([(var.getname().upper(), True)
                   for var in self.CodeFile.variables.getvariable()]))
 
     def SetVariables(self, variables):
@@ -152,12 +152,12 @@ class CodeFile:
             variable.setonchange(var["OnChange"])
             variable.setopts(var["Options"])
             self.CodeFile.variables.appendvariable(variable)
-    
+
     def GetVariables(self):
         datas = []
         for var in self.CodeFileVariables(self.CodeFile):
-            datas.append({"Name" : var.getname(), 
-                          "Type" : var.gettype(), 
+            datas.append({"Name" : var.getname(),
+                          "Type" : var.gettype(),
                           "Initial" : var.getinitial(),
                           "Description" : var.getdesc(),
                           "OnChange"    : var.getonchange(),
@@ -170,25 +170,25 @@ class CodeFile:
             section_code = parts.get(section)
             if section_code is not None:
                 getattr(self.CodeFile, section).setanyText(section_code)
-    
+
     def GetTextParts(self):
         return dict([(section, getattr(self.CodeFile, section).getanyText())
                      for section in self.SECTIONS_NAMES])
-            
+
     def CTNTestModified(self):
-        return self.ChangesToSave or not self.CodeFileIsSaved()    
+        return self.ChangesToSave or not self.CodeFileIsSaved()
 
     def OnCTNSave(self, from_project_path=None):
         filepath = self.CodeFileName()
-        
+
         xmlfile = open(filepath,"w")
         xmlfile.write(etree.tostring(
-            self.CodeFile, 
-            pretty_print=True, 
-            xml_declaration=True, 
+            self.CodeFile,
+            pretty_print=True,
+            xml_declaration=True,
             encoding='utf-8'))
         xmlfile.close()
-        
+
         self.MarkCodeFileAsSaved()
         return True
 
@@ -196,7 +196,7 @@ class CodeFile:
         variables = self.CodeFileVariables(self.CodeFile)
         ret =  [(variable.getname(),
                  variable.gettype(),
-                 variable.getinitial()) 
+                 variable.getinitial())
                 for variable in variables]
         ret.extend([("On"+variable.getname()+"Change", "python_poll", "")
                 for variable in variables
@@ -219,31 +219,30 @@ class CodeFile:
 
     def BufferCodeFile(self):
         self.CodeFileBuffer.Buffering(self.CodeFileParser.Dumps(self.CodeFile))
-    
+
     def StartBuffering(self):
         self.Buffering = True
-        
+
     def EndBuffering(self):
         if self.Buffering:
             self.CodeFileBuffer.Buffering(self.CodeFileParser.Dumps(self.CodeFile))
             self.Buffering = False
-    
+
     def MarkCodeFileAsSaved(self):
         self.EndBuffering()
         self.CodeFileBuffer.CurrentSaved()
-    
+
     def CodeFileIsSaved(self):
         return self.CodeFileBuffer.IsCurrentSaved() and not self.Buffering
-        
+
     def LoadPrevious(self):
         self.EndBuffering()
         self.CodeFile = self.CodeFileParser.Loads(self.CodeFileBuffer.Previous())
-    
+
     def LoadNext(self):
         self.CodeFile = self.CodeFileParser.Loads(self.CodeFileBuffer.Next())
-    
+
     def GetBufferState(self):
         first = self.CodeFileBuffer.IsFirst() and not self.Buffering
         last = self.CodeFileBuffer.IsLast()
         return not first, not last
-

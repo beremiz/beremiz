@@ -345,7 +345,7 @@ class Translator:
             # added to the dependencies, and it's half way up the
             # module import directory structure!
             child_name = name[-1]
-            self.imported_modules_as.append(child_name) 
+            self.imported_modules_as.append(child_name)
         print >> self.output, gen_mod_import(self.raw_module_name,
                                              strip_py(importName),
                                              self.dynamic)
@@ -427,7 +427,7 @@ class Translator:
         print >>self.output, "%s = function%s {" % (function_name, function_args)
         self._default_args_handler(node, normal_arg_names, None)
 
-        local_arg_names = normal_arg_names + declared_arg_names 
+        local_arg_names = normal_arg_names + declared_arg_names
 
         if node.varargs:
             self._varargs_handler(node, varargname, declared_arg_names, None)
@@ -539,12 +539,12 @@ class Translator:
             except ValueError:
                 # Must be a function call ...
                 return ("pyjs_kwargs_function_call("+call_name+", "
-                                  + star_arg_name 
+                                  + star_arg_name
                                   + ", ["+fn_args+"]"
                                   + ")" )
             else:
                 return ("pyjs_kwargs_method_call("+call_this+", '"+method_name+"', "
-                                  + star_arg_name 
+                                  + star_arg_name
                                   + ", ["+fn_args+"]"
                                   + ")")
         else:
@@ -628,7 +628,7 @@ class Translator:
 
     def modpfx(self):
         return strip_py(self.module_prefix)
-        
+
     def _name(self, v, current_klass, top_level=False,
                                       return_none_for_module=False):
 
@@ -904,7 +904,7 @@ class Translator:
         # default arguments
         self._default_args_handler(node, normal_arg_names, current_klass)
 
-        local_arg_names = normal_arg_names + declared_arg_names 
+        local_arg_names = normal_arg_names + declared_arg_names
 
         if node.varargs:
             self._varargs_handler(node, varargname, declared_arg_names, current_klass)
@@ -1170,7 +1170,7 @@ class Translator:
 
 
     def _discard(self, node, current_klass):
-        
+
         if isinstance(node.expr, ast.CallFunc):
             debugStmt = self.debug and not self._isNativeFunc(node)
             if debugStmt and isinstance(node.expr.node, ast.Name) and \
@@ -1774,4 +1774,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

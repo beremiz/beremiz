@@ -474,10 +474,10 @@ class IDEFrame(wx.Frame):
 
     def _init_icon(self, parent):
         if self.icon:
-            self.SetIcon(self.icon)                            
+            self.SetIcon(self.icon)
         elif parent and parent.icon:
-            self.SetIcon(parent.icon)                
-        
+            self.SetIcon(parent.icon)
+
     def _init_ctrls(self, prnt):
         wx.Frame.__init__(self, id=ID_PLCOPENEDITOR, name='IDEFrame',
               parent=prnt, pos=wx.DefaultPosition, size=wx.Size(1000, 600),
@@ -1626,7 +1626,7 @@ class IDEFrame(wx.Frame):
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_TRANSITION:
                     pou_item = self.ProjectTree.GetItemParent(event.GetItem())
-                    pou_name = self.ProjectTree.GetItemText(pou_item)                    
+                    pou_name = self.ProjectTree.GetItemText(pou_item)
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
                         message = _("A POU named \"%s\" already exists!")%new_name
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames(pou_name) if name != old_name]:
@@ -2630,4 +2630,3 @@ class GraphicPrintout(wx.Printout):
         self.Viewer.DoDrawing(dc, True)
 
         return True
-

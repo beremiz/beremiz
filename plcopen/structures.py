@@ -92,7 +92,7 @@ def TestIdentifier(identifier):
 
 """
 take a .csv file and translate it it a "csv_table"
-"""            
+"""
 def csv_file_to_table(file):
     return [ map(string.strip,line.split(';')) for line in file.xreadlines()]
 
@@ -119,18 +119,18 @@ def get_standard_funtions_input_variables(table):
         variable_from_csv = dict([(champ, val) for champ, val in zip(variables, fields[1:]) if champ!=''])
         standard_funtions_input_variables[variable_from_csv['name']] = variable_from_csv['type']
     return standard_funtions_input_variables
-    
+
 """
 translate .csv file input declaration into PLCOpenEditor interessting values
 in : "(ANY_NUM, ANY_NUM)" and { ParameterName: Type, ...}
-return [("IN1","ANY_NUM","none"),("IN2","ANY_NUM","none")] 
+return [("IN1","ANY_NUM","none"),("IN2","ANY_NUM","none")]
 """
 def csv_input_translate(str_decl, variables, base):
     decl = str_decl.replace('(','').replace(')','').replace(' ','').split(',')
     params = []
-    
+
     len_of_not_predifined_variable = len([True for param_type in decl if param_type not in variables])
-    
+
     for param_type in decl:
         if param_type in variables.keys():
             param_name = param_type
@@ -147,7 +147,7 @@ def csv_input_translate(str_decl, variables, base):
 """
 Returns this kind of declaration for all standard functions
 
-            [{"name" : "Numerical", 'list': [   {   
+            [{"name" : "Numerical", 'list': [   {
                 'baseinputnumber': 1,
                 'comment': 'Addition',
                 'extensible': True,
@@ -158,19 +158,19 @@ Returns this kind of declaration for all standard functions
                 'type': 'function'}, ...... ] },.....]
 """
 def get_standard_funtions(table):
-    
+
     variables = get_standard_funtions_input_variables(table)
-    
+
     fonctions = find_section("Standard_functions_type",table)
 
     Standard_Functions_Decl = []
     Current_section = None
-    
+
     translate = {
             "extensible" : lambda x: {"yes":True, "no":False}[x],
             "inputs" : lambda x:csv_input_translate(x,variables,baseinputnumber),
             "outputs":lambda x:[("OUT",x,"none")]}
-    
+
     for fields in table:
         if fields[1]:
             # If function section name given
@@ -191,14 +191,14 @@ def get_standard_funtions(table):
                     if param in translate:
                         Function_decl[param] = translate[param](value)
                 Function_decl["type"] = "function"
-                
+
                 if Function_decl["name"].startswith('*') or Function_decl["name"].endswith('*') :
                     input_ovrloading_types = GetSubTypes(Function_decl["inputs"][0][1])
                     output_types = GetSubTypes(Function_decl["outputs"][0][1])
                 else:
                     input_ovrloading_types = [None]
                     output_types = [None]
-                
+
                 funcdeclname_orig = Function_decl["name"]
                 funcdeclname = Function_decl["name"].strip('*_')
                 fdc = Function_decl["inputs"][:]
@@ -210,14 +210,14 @@ def get_standard_funtions(table):
                                 Function_decl["inputs"] += [(decl_tpl[0], intype, decl_tpl[2])]
                             else:
                                 Function_decl["inputs"] += [(decl_tpl)]
-                            
+
                             if funcdeclname_orig.startswith('*'):
-                                funcdeclin = intype + '_' + funcdeclname 
+                                funcdeclin = intype + '_' + funcdeclname
                             else:
                                 funcdeclin = funcdeclname
                     else:
                         funcdeclin = funcdeclname
-                        
+
                     for outype in output_types:
                         if outype != None:
                             decl_tpl = Function_decl["outputs"][0]
@@ -234,7 +234,7 @@ def get_standard_funtions(table):
                         filter_name = Function_decl["filter"]
                         store = True
                         for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name,[]):
-                            outs = reduce(lambda a,b: a or b, 
+                            outs = reduce(lambda a,b: a or b,
                                        map(lambda testtype : IsOfType(
                                            Function_decl["outputs"][0][1],
                                            testtype), OutTypes))
@@ -253,7 +253,7 @@ def get_standard_funtions(table):
                             Current_section["list"].append(Function_decl_copy)
             else:
                 raise "First function must be in a category"
-    
+
     return Standard_Functions_Decl
 
 StdBlckLst.extend(get_standard_funtions(csv_file_to_table(open(StdFuncsCSV))))
@@ -266,10 +266,10 @@ for section in StdBlckLst:
         words = desc["comment"].split('"')
         if len(words) > 1:
             desc["comment"] = words[1]
-        desc["usage"] = ("\n (%s) => (%s)" % 
-            (", ".join(["%s:%s" % (input[1], input[0]) 
+        desc["usage"] = ("\n (%s) => (%s)" %
+            (", ".join(["%s:%s" % (input[1], input[0])
                         for input in desc["inputs"]]),
-             ", ".join(["%s:%s" % (output[1], output[0]) 
+             ", ".join(["%s:%s" % (output[1], output[0])
                         for output in desc["outputs"]])))
         BlkLst = StdBlckDct.setdefault(desc["name"],[])
         BlkLst.append((section["name"], desc))
@@ -321,7 +321,7 @@ IL_KEYWORDS = ["TRUE", "FALSE", "LD", "LDN", "ST", "STN", "S", "R", "AND", "ANDN
 # Keywords for Structured Text
 ST_BLOCK_START_KEYWORDS = ["IF", "ELSIF", "ELSE", "CASE", "FOR", "WHILE", "REPEAT"]
 ST_BLOCK_END_KEYWORDS = ["END_IF", "END_CASE", "END_FOR", "END_WHILE", "END_REPEAT"]
-ST_KEYWORDS = ["TRUE", "FALSE", "THEN", "OF", "TO", "BY", "DO", "DO", "UNTIL", "EXIT", 
+ST_KEYWORDS = ["TRUE", "FALSE", "THEN", "OF", "TO", "BY", "DO", "DO", "UNTIL", "EXIT",
  "RETURN", "NOT", "MOD", "AND", "XOR", "OR"] + ST_BLOCK_START_KEYWORDS + ST_BLOCK_END_KEYWORDS
 
 # All the keywords of IEC
@@ -338,5 +338,3 @@ for all_keywords, keywords_list in [(IEC_BLOCK_START_KEYWORDS, [POU_BLOCK_START_
                                                     SFC_KEYWORDS, IL_KEYWORDS, ST_KEYWORDS])]:
     for keywords in keywords_list:
         all_keywords.extend([keyword for keyword in keywords if keyword not in all_keywords])
-
-

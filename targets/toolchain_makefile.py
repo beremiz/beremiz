@@ -33,7 +33,7 @@ includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
 class toolchain_makefile():
     def __init__(self, CTRInstance):
         self.CTRInstance = CTRInstance
-        self.md5key = None 
+        self.md5key = None
         self.buildpath = None
         self.SetBuildPath(self.CTRInstance._getBuildPath())
 
@@ -83,7 +83,7 @@ class toolchain_makefile():
     def build(self):
         srcfiles= []
         cflags = []
-        wholesrcdata = "" 
+        wholesrcdata = ""
         for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
             for CFile, CFLAGS in CFilesAndCFLAGS:
@@ -92,7 +92,7 @@ class toolchain_makefile():
                 srcfiles.append(CFileName)
                 if CFLAGS not in cflags:
                     cflags.append(CFLAGS)
-                        
+
         oldmd5 = self.md5key
         self.md5key = hashlib.md5(wholesrcdata).hexdigest()
 
@@ -108,8 +108,8 @@ class toolchain_makefile():
                               "md5": self.md5key,
                               "buildpath": self.buildpath
                              }
-            
-            # clean sequence of multiple whitespaces 
+
+            # clean sequence of multiple whitespaces
             cmd = re.sub(r"[ ]+", " ", target.getCommand().strip())
 
             command = [ token % beremizcommand for token in cmd.split(' ')]
@@ -125,4 +125,3 @@ class toolchain_makefile():
         else :
             self.CTRInstance.logger.write(_("Source didn't change, no build.\n"))
             return True
-

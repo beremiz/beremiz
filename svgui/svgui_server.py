@@ -38,7 +38,7 @@ def getNewId():
     return currentId
 
 class SvguiWidget:
-    
+
     def __init__(self, classname, id, **kwargs):
         self.classname = classname
         self.id = id
@@ -50,7 +50,7 @@ class SvguiWidget:
 
     def setinput(self, attrname, value):
         self.inputs[attrname] = value
-        
+
     def getinput(self, attrname, default=None):
         if not self.inputs.has_key(attrname):
             self.inputs[attrname] = default
@@ -61,14 +61,14 @@ class SvguiWidget:
             self.outputs[attrname] = value
             self.changed = True
             self.RefreshInterface()
-        
+
     def updateoutputs(self, **kwargs):
         for attrname, value in kwargs.iteritems():
             if self.outputs.get(attrname) != value:
                 self.outputs[attrname] = value
                 self.changed = True
         self.RefreshInterface()
-        
+
     def RefreshInterface(self):
         interface = website.getHMI()
         if isinstance(interface, SVGUI_HMI) and self.changed and not self.inhibit:
@@ -77,7 +77,7 @@ class SvguiWidget:
             if d is not None:
                 self.inhibit = True
                 d.addCallback(self.InterfaceRefreshed)
-    
+
     def InterfaceRefreshed(self, result):
         self.inhibit = False
         if self.changed:
@@ -103,23 +103,23 @@ def get_object_current_state(obj):
 
 class SVGUI_HMI(website.PLCHMI):
     jsClass = u"LiveSVGPage.LiveSVGWidget"
-    
-    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[                                    
+
+    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                          tags.xml(loaders.xmlfile(os.path.join(WorkingDir, svgfile))),
                                          ])
-    
+
     def HMIinitialisation(self):
         gadgets = []
         for gadget in svguiWidgets.values():
             gadgets.append(unicode(json.dumps(gadget, default=get_object_init_state, indent=2), 'ascii'))
         d = self.callRemote('init', gadgets)
         d.addCallback(self.HMIinitialised)
-    
+
     def sendData(self,data):
         if self.initialised:
             return self.callRemote('receiveData',unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
         return None
-        
+
     def setattr(self, id, attrname, value):
         svguiWidgets[id].setinput(attrname, value)
 
@@ -148,4 +148,3 @@ def getAttr(id, attrname, default=None):
     if gad is not None:
         return gad.getinput(attrname, default)
     return default
-

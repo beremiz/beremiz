@@ -39,5 +39,4 @@ class JSONRPCServiceBase:
             return self.error(id, 100, 'method "%s" does not exist' % method)
 
     def listmethods(self):
-        return self.methods.keys() 
-
+        return self.methods.keys()

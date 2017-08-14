@@ -29,5 +29,4 @@ from POULibrary import POULibrary
 
 class NativeLibrary(POULibrary):
     def GetLibraryPath(self):
-        return paths.AbsNeighbourFile(__file__, "NativeLib.xml") 
-
+        return paths.AbsNeighbourFile(__file__, "NativeLib.xml")

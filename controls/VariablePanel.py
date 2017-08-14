@@ -533,7 +533,7 @@ class VariablePanel(wx.Panel):
             self.ColFixedSizeFlag=[True,False,  True,   False,  True,   True,    False]
 
         self.PanelWidthMin = sum(self.ColSizes)
-        
+
         self.ElementType = element_type
         self.BodyType = None
 
@@ -643,7 +643,7 @@ class VariablePanel(wx.Panel):
         panel_width = window.Parent.ScreenRect.Width - 35
         if panel_width > self.PanelWidthMin:
             stretch_cols_width = panel_width
-            stretch_cols_sum = 0            
+            stretch_cols_sum = 0
             for col in range(len(self.ColFixedSizeFlag)):
                 if self.ColFixedSizeFlag[col]:
                     stretch_cols_width -= self.ColSizes[col]
@@ -759,7 +759,7 @@ class VariablePanel(wx.Panel):
         dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
-            
+
     def OnVariablesGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.Table.GetColLabelValue(col, False)
@@ -793,7 +793,7 @@ class VariablePanel(wx.Panel):
 
         if message is not None:
             wx.CallAfter(self.ShowErrorMessage, message)
-            event.Veto()            
+            event.Veto()
         else:
             event.Skip()
 
