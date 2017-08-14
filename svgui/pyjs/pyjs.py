@@ -281,14 +281,14 @@ class Translator:
                 self._class(child)
             elif isinstance(child, ast.Import):
                 importName = child.names[0][0]
-                if importName == '__pyjamas__': # special module to help make pyjamas modules loadable in the python interpreter
+                if importName == '__pyjamas__':  # special module to help make pyjamas modules loadable in the python interpreter
                     pass
                 elif importName.endswith('.js'):
                    self.imported_js.add(importName)
                 else:
                    self.add_imported_module(strip_py(importName))
             elif isinstance(child, ast.From):
-                if child.modname == '__pyjamas__': # special module to help make pyjamas modules loadable in the python interpreter
+                if child.modname == '__pyjamas__':  # special module to help make pyjamas modules loadable in the python interpreter
                     pass
                 else:
                     self.add_imported_module(child.modname)
@@ -689,7 +689,7 @@ class Translator:
                     cls_name_ = cls_name.name_
                     cls_name = cls_name.name
                 else:
-                    cls_name_ = current_klass + "_" # XXX ???
+                    cls_name_ = current_klass + "_"  # XXX ???
                 name = UU+cls_name_ + ".prototype.__class__." \
                                    + v.name
                 if v.name == 'listener':
@@ -710,7 +710,7 @@ class Translator:
             call_name = UU+self.imported_classes[obj] + '.__' + obj + attr_str
         elif obj in self.module_imports():
             call_name = obj + "." + attr_name
-        elif obj[0] == obj[0].upper(): # XXX HACK ALERT
+        elif obj[0] == obj[0].upper():  # XXX HACK ALERT
             call_name = UU + self.modpfx() + "__" + obj + ".prototype.__class__." + attr_name
         else:
             call_name = UU+self._name(v, current_klass) + "." + attr_name
@@ -1202,7 +1202,7 @@ class Translator:
                 print >>self.output, "sys.popstack();\n"
 
         elif isinstance(node.expr, ast.Const):
-            if node.expr.value is not None: # Empty statements generate ignore None
+            if node.expr.value is not None:  # Empty statements generate ignore None
                 print >>self.output, self._const(node.expr)
         else:
             raise TranslationError("unsupported type (in _discard)", node.expr)
@@ -1396,7 +1396,7 @@ class Translator:
 
     def _mod(self, node, current_klass):
         if isinstance(node.left, ast.Const) and isinstance(node.left.value, StringType):
-           self.imported_js.add("sprintf.js") # Include the sprintf functionality if it is used
+           self.imported_js.add("sprintf.js")  # Include the sprintf functionality if it is used
            return "sprintf("+self.expr(node.left, current_klass) + ", " + self.expr(node.right, current_klass)+")"
         return self.expr(node.left, current_klass) + " % " + self.expr(node.right, current_klass)
 
@@ -1640,7 +1640,7 @@ class PlatformParser:
         target.code = source.code
         target.argnames = source.argnames
         target.defaults = source.defaults
-        target.doc = source.doc # @@@ not sure we need to do this any more
+        target.doc = source.doc  # @@@ not sure we need to do this any more
 
 
 def dotreplace(fname):

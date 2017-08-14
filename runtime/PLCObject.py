@@ -61,7 +61,7 @@ class PLCObject(pyro.ObjBase):
     def __init__(self, workingdir, daemon, argv, statuschange, evaluator, pyruntimevars):
         pyro.ObjBase.__init__(self)
         self.evaluator = evaluator
-        self.argv = [workingdir] + argv # force argv[0] to be "path" to exec...
+        self.argv = [workingdir] + argv  # force argv[0] to be "path" to exec...
         self.workingdir = workingdir
         self.PLCStatus = "Empty"
         self.PLClibraryHandle = None
@@ -215,7 +215,7 @@ class PLCObject(pyro.ObjBase):
             self._LogMessage.restype = ctypes.c_int
             self._LogMessage.argtypes = [ctypes.c_uint8, ctypes.c_char_p, ctypes.c_uint32]
 
-            self._log_read_buffer = ctypes.create_string_buffer(1<<14) #16K
+            self._log_read_buffer = ctypes.create_string_buffer(1<<14)  #16K
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
             self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
@@ -519,10 +519,10 @@ class PLCObject(pyro.ObjBase):
             self.TraceLock.acquire()
             self.Traces = []
             self.TraceLock.release()
-            self._suspendDebug(True) # Disable debugger
+            self._suspendDebug(True)  # Disable debugger
             self.TraceWakeup.clear()
             self.TraceWakeup.wait()
-            self._resumeDebug() # Re-enable debugger
+            self._resumeDebug()  # Re-enable debugger
 
     def _TracesFlush(self):
         self.TraceLock.acquire()

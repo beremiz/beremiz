@@ -100,7 +100,7 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
         pos_x = (width-bw)/2+dw      # adjust for bitmap and text to centre
         pos_y = (height-bh-th)/2+dy
         if bmp !=None:
-            dc.DrawBitmap(bmp, pos_x, pos_y, hasMask) # draw bitmap if available
+            dc.DrawBitmap(bmp, pos_x, pos_y, hasMask)  # draw bitmap if available
             pos_x = (width-tw)/2+dw      # adjust for bitmap and text to centre
             pos_y += bh + 2
 

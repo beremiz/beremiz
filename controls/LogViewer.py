@@ -60,7 +60,7 @@ class LogScrollBar(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnResize)
 
-        self.ThumbPosition = 0. # -1 <= ThumbPosition <= 1
+        self.ThumbPosition = 0.  # -1 <= ThumbPosition <= 1
         self.ThumbScrollingStartPos = None
 
     def GetRangeRect(self):

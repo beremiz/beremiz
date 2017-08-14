@@ -43,8 +43,8 @@ class IEC_TIME(Structure):
     """
     Must be changed according to changes in iec_types.h
     """
-    _fields_ = [("s", c_long), #tv_sec
-                ("ns", c_long)] #tv_nsec
+    _fields_ = [("s", c_long),   # tv_sec
+                ("ns", c_long)]  # tv_nsec
 
 
 def _t(t, u=lambda x:x.value, p=lambda t,x:t(x)): return  (t, u, p)

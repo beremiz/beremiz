@@ -73,7 +73,7 @@ def GetFilterChoiceTransfer():
     return {_("All"): _("All"), _("Interface"): _("Interface"),
             _("   Input"): _("Input"), _("   Output"): _("Output"), _("   InOut"): _("InOut"),
             _("   External"): _("External"), _("Variables"): _("Variables"), _("   Local"): _("Local"),
-            _("   Temp"): _("Temp"), _("Global"): _("Global")}#, _("Access") : _("Access")}
+            _("   Temp"): _("Temp"), _("Global"): _("Global")}  #, _("Access") : _("Access")}
 VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().iterkeys()])
 VARIABLE_CLASSES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().itervalues()])
 
@@ -501,11 +501,11 @@ class VariablePanel(wx.Panel):
             self.Table = VariableTable(self, [], GetVariableTableColnames(True))
 
             if element_type in ["config", "resource"]:
-                self.FilterChoices = ["All", "Global"]#,"Access"]
+                self.FilterChoices = ["All", "Global"]  #,"Access"]
             else:
                 self.FilterChoices = ["All",
                                         "Interface", "   Input", "   Output", "   InOut", "   External",
-                                        "Variables", "   Local", "   Temp"]#,"Access"]
+                                        "Variables", "   Local", "   Temp"]  #,"Access"]
 
             # these condense the ColAlignements list
             l = wx.ALIGN_LEFT

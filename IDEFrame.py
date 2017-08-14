@@ -374,7 +374,7 @@ class IDEFrame(wx.Frame):
               kind=wx.ITEM_NORMAL, text=_(u'Redo') + '\tCTRL+Y')
         #AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO,
         #      kind=wx.ITEM_CHECK, text=_(u'Enable Undo/Redo'))
-        enable_undo_redo = _(u'Enable Undo/Redo') # Keeping text in translations for possible menu reactivation
+        enable_undo_redo = _(u'Enable Undo/Redo')  # Keeping text in translations for possible menu reactivation
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_CUT,
               kind=wx.ITEM_NORMAL, text=_(u'Cut') + '\tCTRL+X')
@@ -2395,7 +2395,7 @@ class IDEFrame(wx.Frame):
 
         if self.ProjectTree.GetPyData(selected)["type"] != ITEM_PROJECT:
             pou_type = self.ProjectTree.GetItemText(selected)
-            pou_type = UNEDITABLE_NAMES_DICT[pou_type] # one of 'Functions', 'Function Blocks' or 'Programs'
+            pou_type = UNEDITABLE_NAMES_DICT[pou_type]  # one of 'Functions', 'Function Blocks' or 'Programs'
             pou_type = {'Functions': 'function', 'Function Blocks': 'functionBlock', 'Programs': 'program'}[pou_type]
         else:
             pou_type = None

@@ -74,10 +74,10 @@ def generate_time(value):
     not_null = False
 
     for val, format in [
-            (int(microseconds) / DAY, "%dd"),                # Days
-            ((int(microseconds) % DAY) / HOUR, "%dh"),       # Hours
-            ((int(microseconds) % HOUR) / MINUTE, "%dm"),    # Minutes
-            ((int(microseconds) % MINUTE) / SECOND, "%ds")]: # Seconds
+            (int(microseconds) / DAY, "%dd"),                 # Days
+            ((int(microseconds) % DAY) / HOUR, "%dh"),        # Hours
+            ((int(microseconds) % HOUR) / MINUTE, "%dm"),     # Minutes
+            ((int(microseconds) % MINUTE) / SECOND, "%ds")]:  # Seconds
 
         # Add value to TIME literal if value is non-null or another non-null
         # value have already be found

@@ -129,21 +129,21 @@ class _SlaveCTN(NodeManager):
                 profile, filepath = dialog.GetProfile()
                 NMT = dialog.GetNMTManagement()
                 options = dialog.GetOptions()
-                self.CreateNewNode(name,       # Name - will be changed at build time
-                                   id,         # NodeID - will be changed at build time
-                                   "slave",    # Type
-                                   description,# description
-                                   profile,    # profile
-                                   filepath,   # prfile filepath
-                                   NMT,        # NMT
-                                   options)     # options
+                self.CreateNewNode(name,         # Name - will be changed at build time
+                                   id,           # NodeID - will be changed at build time
+                                   "slave",      # Type
+                                   description,  # description
+                                   profile,      # profile
+                                   filepath,     # prfile filepath
+                                   NMT,          # NMT
+                                   options)      # options
             else:
                 self.CreateNewNode("SlaveNode",  # Name - will be changed at build time
                                    0x00,         # NodeID - will be changed at build time
                                    "slave",      # Type
                                    "",           # description
                                    "None",       # profile
-                                   "", # prfile filepath
+                                   "",           # prfile filepath
                                    "heartbeat",  # NMT
                                    [])           # options
             dialog.Destroy()

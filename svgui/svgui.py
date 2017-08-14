@@ -48,7 +48,7 @@ class SVGUI(PythonFileCTNMixin):
          "name" : _("Import SVG"),
          "tooltip" : _("Import SVG"),
          "method" : "_ImportSVG"},
-        {"bitmap" : "ImportSVG", # should be something different
+        {"bitmap" : "ImportSVG",  # should be something different
          "name" : _("Inkscape"),
          "tooltip" : _("Create HMI"),
          "method" : "_StartInkscape"},

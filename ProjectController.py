@@ -781,7 +781,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         if first_line <= i <= last_line:
                             if last_section is not None:
                                 self.logger.write_warning("In section: " + last_section)
-                                last_section = None # only write section once
+                                last_section = None  # only write section once
                             self.logger.write_warning("%04d: %s" % (i, line))
 
                     f.close()
@@ -859,8 +859,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         return ([(C_file_name, self.plcCFLAGS)
                 for C_file_name in self.PLCGeneratedCFiles ],
-               "", # no ldflags
-               False) # do not expose retreive/publish calls
+               "",  # no ldflags
+               False)  # do not expose retreive/publish calls
 
     def ResetIECProgramsAndVariables(self):
         """
@@ -1012,7 +1012,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                       "void __publish_%(s)s(void);") % {'s':locstr} for locstr in locstrs]),
                 "retrieve_calls":"\n    ".join([
                       "__retrieve_%s();" % locstr for locstr in locstrs]),
-                "publish_calls":"\n    ".join([ #Call publish in reverse order
+                "publish_calls":"\n    ".join([  #Call publish in reverse order
                       "__publish_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls":"\n    ".join([
                       "init_level=%d; " % (i+1)+
@@ -1468,9 +1468,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is None:
             IECdebug_data  = [
-                    WeakKeyDictionary(), # Callables
-                    [],                  # Data storage [(tick, data),...]
-                    "Registered",        # Variable status
+                    WeakKeyDictionary(),  # Callables
+                    [],                   # Data storage [(tick, data),...]
+                    "Registered",         # Variable status
                     None,
                     buffer_list]                # Forced value
             self.IECdebug_datas[IECPath] = IECdebug_data
@@ -1581,7 +1581,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,
                                     debug_vars):
-                                IECdebug_data = self.IECdebug_datas.get(IECPath, None) #FIXME get
+                                IECdebug_data = self.IECdebug_datas.get(IECPath, None)  #FIXME get
                                 if IECdebug_data is not None and value is not None:
                                     forced = IECdebug_data[2:4] == ["Forced", value]
                                     if not IECdebug_data[4] and len(values_buffer) > 0:
