@@ -296,7 +296,7 @@ if enablewx:
             def OnTaskBarStartPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
                     plcstatus = self.pyroserver.plcobj.GetPLCstatus()[0]
-                    if  plcstatus is "Stopped":
+                    if plcstatus is "Stopped":
                         self.pyroserver.plcobj.StartPLC()
                     else:
                         print _("PLC is empty or already started.")

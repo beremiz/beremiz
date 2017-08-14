@@ -323,7 +323,7 @@ class VariableDropTarget(wx.TextDropTarget):
             elif (element_type not in ["config", "resource", "function"] and values[1] == "Global" and
                   self.ParentWindow.Filter in ["All", "Interface", "External"] or
                   element_type != "function" and values[1] in ["location", "NamedConstant"]):
-                if values[1] in  ["location","NamedConstant"]:
+                if values[1] in ["location","NamedConstant"]:
                     var_name = values[3]
                 else:
                     var_name = values[0]

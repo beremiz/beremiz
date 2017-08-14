@@ -1370,7 +1370,7 @@ class Translator:
             v = node.value
             if isinstance(node.value, unicode):
                 v = v.encode('utf-8')
-            return  "String('%s')" % escapejs(v)
+            return "String('%s')" % escapejs(v)
         elif node.value is None:
             return "null"
         else:
@@ -1471,7 +1471,7 @@ class Translator:
                 lower = self.expr(node.lower, current_klass)
             if node.upper != None:
                 upper = self.expr(node.upper, current_klass)
-            return  "pyjslib.slice(" + self.expr(node.expr, current_klass) + ", " + lower + ", " + upper + ")"
+            return "pyjslib.slice(" + self.expr(node.expr, current_klass) + ", " + lower + ", " + upper + ")"
         else:
             raise TranslationError("unsupported flag (in _slice)", node)
 

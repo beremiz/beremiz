@@ -30,7 +30,7 @@ import util.paths as paths
 
 
 def GetCommunityHelpMsg():
-    return  _("The best place to ask questions about Beremiz/PLCOpenEditor\n"
+    return _("The best place to ask questions about Beremiz/PLCOpenEditor\n"
 		     "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
                      "\n"
                      "This is the main community support channel.\n"
