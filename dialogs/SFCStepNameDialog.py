@@ -30,17 +30,17 @@ import wx
 
 class SFCStepNameDialog(wx.TextEntryDialog):
 
-    def __init__(self, parent, message, caption = "Please enter text", defaultValue = "", 
+    def __init__(self, parent, message, caption = "Please enter text", defaultValue = "",
                        style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
         wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
-        
+
         self.PouNames = []
         self.Variables = []
         self.StepNames = []
-        
-        self.Bind(wx.EVT_BUTTON, self.OnOK, 
+
+        self.Bind(wx.EVT_BUTTON, self.OnOK,
               self.GetSizer().GetItem(2).GetSizer().GetItem(1).GetSizer().GetAffirmativeButton())
-        
+
     def OnOK(self, event):
         message = None
         step_name = self.GetSizer().GetItem(1).GetWindow().GetValue()

@@ -53,7 +53,7 @@ class outputThread(Thread):
                 self.retval = self.Proc.poll()
             else:
                 self.retval = self.Proc.returncode
-                
+
             outchunk = self.fd.readline()
             if self.callback : self.callback(outchunk)
         while outchunk != '' and not self.killed :
@@ -108,7 +108,7 @@ class ProcessLogger:
         self.errdata = []
         self.keyword = keyword
         self.kill_it = kill_it
-        self.startsem = Semaphore(0)        
+        self.startsem = Semaphore(0)
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
 
@@ -130,7 +130,7 @@ class ProcessLogger:
             self.timeout.start()
         else:
             self.timeout = None
-            
+
         self.Proc = subprocess.Popen( self.Command, **popenargs )
 
         self.outt = outputThread(
@@ -169,7 +169,7 @@ class ProcessLogger:
         self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1 = str(ecode), a2 = str(pid)))
 
     def finish(self, pid,ecode):
-        # avoid running function before start is finished        
+        # avoid running function before start is finished
         self.startsem.acquire()
         if self.timeout:
             self.timeout.cancel()
@@ -185,7 +185,7 @@ class ProcessLogger:
         # avoid running kill before start is finished
         self.startsem.acquire()
         self.startsem.release()
-        
+
         self.outt.killed = True
         self.errt.killed = True
         if wx.Platform == '__WXMSW__':
@@ -215,4 +215,3 @@ class ProcessLogger:
     def spin(self):
         self.finishsem.acquire()
         return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]
-

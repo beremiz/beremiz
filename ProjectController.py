@@ -98,9 +98,9 @@ class Iec2CSettings():
         for p in paths:
             if test(p):
                 path = p
-                break           
+                break
         return path
-        
+
     def findCmd(self):
         cmd="iec2c"+(".exe" if wx.Platform == '__WXMSW__' else "")
         paths=[
@@ -113,7 +113,7 @@ class Iec2CSettings():
             cmd=os.path.join(path, cmd)
 
         return cmd
-    
+
     def findLibPath(self):
         paths=[
             os.path.join(base_folder, "matiec", "lib"),
@@ -121,7 +121,7 @@ class Iec2CSettings():
         ]
         path = self.findObject(paths, lambda p:os.path.isfile(os.path.join(p, "ieclib.txt")))
         return path
-        
+
     def findLibCPath(self):
         path=None
         paths=[
@@ -1158,14 +1158,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def ShowError(self, logger, from_location, to_location):
         chunk_infos = self.GetChunkInfos(from_location, to_location)
         for infos, (start_row, start_col) in chunk_infos:
-            row = 1 if from_location[0] < start_row else (from_location[0] - start_row)            
+            row = 1 if from_location[0] < start_row else (from_location[0] - start_row)
             col = 1 if (start_row != from_location[0]) else (from_location[1] - start_col)
             start = (row, col)
 
-            row = 1 if to_location[0] < start_row else (to_location[0] - start_row)            
+            row = 1 if to_location[0] < start_row else (to_location[0] - start_row)
             col = 1 if (start_row != to_location[0]) else (to_location[1] - start_col)
             end = (row, col)
-            
+
             if self.AppFrame is not None:
                 self.AppFrame.ShowError(infos, start, end)
 
@@ -1198,7 +1198,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 except:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text = text)
-                self._IECCodeView.Editor.SetReadOnly(True)                                
+                self._IECCodeView.Editor.SetReadOnly(True)
                 self._IECCodeView.SetIcon(GetBitmap("ST"))
                 setattr(self._IECCodeView, "_OnClose", self.OnCloseEditor)
 
@@ -1305,11 +1305,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
         if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
             self.AppFrame.RefreshStatusToolBar()
-        
+
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
 
-        
+
     def UpdatePLCLog(self, log_count):
         if log_count:
             if self.AppFrame is not None:
@@ -1364,7 +1364,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             "Disconnected": _("Disconnected")
             }
         return msgs.get(status, status)
-    
+
     def ShowPLCProgress(self, status = "", progress = 0):
         self.AppFrame.ProgressStatusBar.Show()
         self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 1)
@@ -1376,7 +1376,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.previous_plcstate = ""
         self.AppFrame.ProgressStatusBar.Hide()
         self.UpdateMethodsFromPLCStatus()
-            
+
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
 
@@ -1821,7 +1821,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.AppFrame.LogViewer.ResetLogCounters();
                 else:
                     self.logger.write_error(_("Transfer failed\n"))
-                self.HidePLCProgress()                    
+                self.HidePLCProgress()
             else:
                 self.logger.write_error(_("No PLC to transfer (did build succeed ?)\n"))
 

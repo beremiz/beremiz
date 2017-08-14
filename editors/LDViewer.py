@@ -49,7 +49,7 @@ def ExtractNextBlocks(block, block_list):
                         block_list.append(next)
                         next_list.append(next)
         current_list = next_list
-    
+
 def CalcBranchSize(elements, stops):
     branch_size = 0
     stop_list = stops
@@ -194,7 +194,7 @@ class LD_Viewer(Viewer):
                             self.RungComments.insert(i, None)
                 else:
                     self.RungComments.insert(i, None)
-        
+
     def loadInstance(self, instance, ids, selection):
         Viewer.loadInstance(self, instance, ids, selection)
         if self.GetDrawingMode() != FREEDRAWING_MODE:
@@ -230,7 +230,7 @@ class LD_Viewer(Viewer):
                 if len(rungs) > 1:
                     raise ValueError, _("Ladder element with id %d is on more than one rung.")%instance["id"]
                 element = self.FindElementById(instance["id"])
-                element_connectors = element.GetConnectors() 
+                element_connectors = element.GetConnectors()
                 self.Rungs[rungs[0]].SelectElement(element)
                 for wire, num in element_connectors["inputs"][0].GetWires():
                     self.Rungs[rungs[0]].SelectElement(wire)
@@ -240,7 +240,7 @@ class LD_Viewer(Viewer):
                 pos = element.GetPosition()
                 i = 0
                 inserted = False
-                while i < len(self.RungComments) and not inserted: 
+                while i < len(self.RungComments) and not inserted:
                     ipos = self.RungComments[i].GetPosition()
                     if pos[1] < ipos[1]:
                         self.RungComments.insert(i, element)
@@ -248,7 +248,7 @@ class LD_Viewer(Viewer):
                     i += 1
                 if not inserted:
                     self.RungComments.append(element)
-            
+
 #-------------------------------------------------------------------------------
 #                          Search Element functions
 #-------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class LD_Viewer(Viewer):
     def FindElement(self, event, exclude_group = False, connectors = True):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             return Viewer.FindElement(self, event, exclude_group, connectors)
-        
+
         dc = self.GetLogicalDC()
         pos = event.GetLogicalPosition(dc)
         if self.SelectedElement and not isinstance(self.SelectedElement, (Graphic_Group, Wire)):
@@ -286,7 +286,7 @@ class LD_Viewer(Viewer):
     def SearchElements(self, bbox):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             return Viewer.SearchElements(self, bbox)
-        
+
         elements = []
         for element in self.Blocks.values() + self.Comments.values():
             if element.IsInSelection(bbox):
@@ -345,7 +345,7 @@ class LD_Viewer(Viewer):
                     self.SelectedElement.SetElements(elements)
                     self.SelectedElement.SetSelected(True)
         elif self.Mode == MODE_SELECTION and self.SelectedElement:
-            dc = self.GetLogicalDC() 
+            dc = self.GetLogicalDC()
             if not isinstance(self.SelectedElement, Graphic_Group):
                 if self.IsWire(self.SelectedElement):
                     result = self.SelectedElement.TestSegment(event.GetLogicalPosition(dc), True)
@@ -500,7 +500,7 @@ class LD_Viewer(Viewer):
                 starty = bbox.y + bbox.height
             starty += LD_OFFSET[1]
             rung = Graphic_Group(self)
-            
+
             # Create comment
             id = self.GetNewId()
             comment = Comment(self, _("Comment"), id)
@@ -511,7 +511,7 @@ class LD_Viewer(Viewer):
             self.Controler.AddEditedElementComment(self.TagName, id)
             self.RefreshCommentModel(comment)
             starty += LD_COMMENT_DEFAULTSIZE[1] + LD_OFFSET[1]
-            
+
             # Create LeftPowerRail
             id = self.GetNewId()
             leftpowerrail = LD_PowerRail(self, LEFTRAIL, id)
@@ -521,7 +521,7 @@ class LD_Viewer(Viewer):
             rung.SelectElement(leftpowerrail)
             self.Controler.AddEditedElementPowerRail(self.TagName, id, LEFTRAIL)
             self.RefreshPowerRailModel(leftpowerrail)
-            
+
             # Create Coil
             id = self.GetNewId()
             coil = LD_Coil(self, values["type"], values["name"], id)
@@ -530,7 +530,7 @@ class LD_Viewer(Viewer):
             self.AddBlock(coil)
             rung.SelectElement(coil)
             self.Controler.AddEditedElementCoil(self.TagName, id)
-            
+
             # Create Wire between LeftPowerRail and Coil
             wire = Wire(self)
             start_connector = coil_connectors["inputs"][0]
@@ -541,7 +541,7 @@ class LD_Viewer(Viewer):
             wire.ConnectEndPoint(None, end_connector)
             self.AddWire(wire)
             rung.SelectElement(wire)
-            
+
             # Create RightPowerRail
             id = self.GetNewId()
             rightpowerrail = LD_PowerRail(self, RIGHTRAIL, id)
@@ -550,7 +550,7 @@ class LD_Viewer(Viewer):
             self.AddBlock(rightpowerrail)
             rung.SelectElement(rightpowerrail)
             self.Controler.AddEditedElementPowerRail(self.TagName, id, RIGHTRAIL)
-            
+
             # Create Wire between LeftPowerRail and Coil
             wire = Wire(self)
             start_connector = rightpowerrail_connectors["inputs"][0]
@@ -778,7 +778,7 @@ class LD_Viewer(Viewer):
                     if left_powerrail:
                         powerrail = left_elements[0].GetParentBlock()
                         index = 0
-                        for left_element in left_elements: 
+                        for left_element in left_elements:
                             index = max(index, powerrail.GetConnectorIndex(left_element))
                         powerrail.InsertConnector(index + 1)
                         powerrail.RefreshModel()
@@ -810,12 +810,12 @@ class LD_Viewer(Viewer):
                             values = dialog.GetValues()
                             powerrail = right_elements[0].GetParentBlock()
                             index = 0
-                            for right_element in right_elements: 
+                            for right_element in right_elements:
                                 index = max(index, powerrail.GetConnectorIndex(right_element))
                             powerrail.InsertConnector(index + 1)
                             powerrail.RefreshModel()
                             connectors = powerrail.GetConnectors()
-                            
+
                             # Create Coil
                             id = self.GetNewId()
                             coil = LD_Coil(self, values["type"], values["name"], id)
@@ -825,7 +825,7 @@ class LD_Viewer(Viewer):
                             rung.SelectElement(coil)
                             self.Controler.AddEditedElementCoil(self.TagName, id)
                             coil_connectors = coil.GetConnectors()
-                            
+
                             # Create Wire between LeftPowerRail and Coil
                             wire = Wire(self)
                             connectors["inputs"][index + 1].Connect((wire, 0), False)
@@ -835,7 +835,7 @@ class LD_Viewer(Viewer):
                             self.AddWire(wire)
                             rung.SelectElement(wire)
                             left_elements.reverse()
-                            
+
                             for i, left_element in enumerate(left_elements):
                                 # Create Wire between LeftPowerRail and Coil
                                 new_wire = Wire(self)
@@ -844,7 +844,7 @@ class LD_Viewer(Viewer):
                                 left_element.InsertConnect(left_index[i] + 1, (new_wire, -1), False)
                                 new_wire.ConnectStartPoint(None, coil_connectors["inputs"][0])
                                 new_wire.ConnectEndPoint(None, left_element)
-                            
+
                             self.RefreshPosition(coil)
                     else:
                         left_elements.reverse()
@@ -1089,7 +1089,7 @@ class LD_Viewer(Viewer):
         if isinstance(element, LD_PowerRail) and element.GetType() == LEFTRAIL:
             element.RefreshModel()
             return
-        
+
         # Extract max position of the elements connected to input
         connectors = element.GetConnectors()
         position = element.GetPosition()
@@ -1103,7 +1103,7 @@ class LD_Viewer(Viewer):
                 pos = leftblock.GetPosition()
                 size = leftblock.GetSize()
                 maxx = max(maxx, pos[0] + size[0])
-        
+
         # Refresh position of element
         if isinstance(element, LD_Coil):
             interval = LD_WIRECOIL_SIZE
@@ -1114,13 +1114,13 @@ class LD_Viewer(Viewer):
         movex = maxx + interval - position[0]
         element.Move(movex, 0)
         position = element.GetPosition()
-        
+
         # Extract blocks connected to inputs
         blocks = []
         for i, connector in enumerate(connectors["inputs"]):
             for j, (wire, handle) in enumerate(connector.GetWires()):
                 blocks.append(wire.EndConnected.GetParentBlock())
-        
+
         for i, connector in enumerate(connectors["inputs"]):
             startpoint = connector.GetPosition(False)
             previous_blocks = []
@@ -1168,13 +1168,13 @@ class LD_Viewer(Viewer):
                 previous_blocks.append(block)
                 blocks.remove(block)
                 ExtractNextBlocks(block, block_list)
-        
+
         element.RefreshModel(False)
         if recursive:
             for connector in connectors["outputs"]:
                 for wire, handle in connector.GetWires():
                     self.RefreshPosition(wire.StartConnected.GetParentBlock())
-    
+
     def RefreshRungs(self, movey, fromidx):
         if movey != 0:
             for i in xrange(fromidx, len(self.Rungs)):
@@ -1192,4 +1192,3 @@ class LD_Viewer(Viewer):
     def EditPowerRailContent(self, powerrail):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.EditPowerRailContent(self, powerrail)
-

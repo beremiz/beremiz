@@ -19,13 +19,13 @@ from pyjs.jsonrpc import JSONRPCServiceBase
 #  (r'^service1/$', 'djangoapp.views.jsonservice'),
 
 class JSONRPCService(JSONRPCServiceBase):
-    
+
     def __call__(self, request, extra=None):
         return self.process(request.raw_post_data)
 
 def jsonremote(service):
     """Make JSONRPCService a decorator so that you can write :
-    
+
     from jsonrpc import JSONRPCService
     chatservice = JSONRPCService()
 
@@ -62,7 +62,7 @@ def jsonremote(service):
 # part of the app:
 #  (r'^formsservice/$', 'djangoapp.views.processor'),
 
-from django import forms 
+from django import forms
 
 def builderrors(form):
     d = {}
@@ -223,4 +223,3 @@ def json_convert(l, fields=None):
     for item in serialize('python', l, fields=fields):
         res.append(dict_datetimeflatten(item))
     return res
-

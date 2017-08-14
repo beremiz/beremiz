@@ -429,7 +429,7 @@ class ViewerDropTarget(wx.TextDropTarget):
 
 class DebugInstanceName(DebugDataConsumer):
     VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
-    
+
     def __init__(self, parent):
         DebugDataConsumer.__init__(self)
         self.Parent = parent
@@ -437,7 +437,7 @@ class DebugInstanceName(DebugDataConsumer):
         self.ActionState = None
         self.x_offset = 2
         self.y_offset = 2
-        
+
     def SetValue(self, value):
         self.ActionState = value
         if self.ActionState != self.ActionLastState:
@@ -448,7 +448,7 @@ class DebugInstanceName(DebugDataConsumer):
         return _("Debug: %s") % self.Parent.InstancePath
 
     def GetRedrawRect(self):
-        x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)        
+        x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)
         dc = self.Parent.GetLogicalDC()
         ipw, iph = dc.GetTextExtent(self.GetInstanceName())
         vw, vh = 0, 0
@@ -462,13 +462,13 @@ class DebugInstanceName(DebugDataConsumer):
         scalex, scaley = dc.GetUserScale()
         dc.SetUserScale(1, 1)
         x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)
-        
+
         text = self.GetInstanceName()
         if self.ActionState is not None:
             text += " ("
 
         dc.DrawText(text, x, y)
-        tw, th = dc.GetTextExtent(text)                    
+        tw, th = dc.GetTextExtent(text)
         if self.ActionState is not None:
 
             text = self.VALUE_TRANSLATION[self.ActionState]
@@ -478,8 +478,8 @@ class DebugInstanceName(DebugDataConsumer):
             if self.ActionState:
                 dc.SetTextForeground(wx.BLACK)
             tw = tw + dc.GetTextExtent(text)[0]
-            
-            text = ")"                    
+
+            text = ")"
             dc.DrawText(text, x + tw, y)
         dc.SetUserScale(scalex, scaley)
 
@@ -955,7 +955,7 @@ class Viewer(EditorPanel, DebugViewer):
                block.GetName() == name:
                 blocks.append(block)
         return blocks
-    
+
     def GetConnectorByName(self, name):
         for block in self.Blocks.itervalues():
             if isinstance(block, FBD_Connector) and\
@@ -1222,7 +1222,7 @@ class Viewer(EditorPanel, DebugViewer):
 
         if self.TagName.split("::")[0] == "A" and self.Debug:
             self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self.InstanceName)
-        
+
         for wire in self.Wires:
             if not wire.IsConnectedCompatible():
                 wire.SetValid(False)
@@ -1526,7 +1526,7 @@ class Viewer(EditorPanel, DebugViewer):
         return result
 
     def FindBlockConnectorWithError(self, pos, direction = None, exclude = None):
-        error = False        
+        error = False
         startblock = None
         for block in self.Blocks.itervalues():
             connector = block.TestConnector(pos, direction, exclude)
@@ -1539,7 +1539,7 @@ class Viewer(EditorPanel, DebugViewer):
                     error = True
                 return connector, error
         return None, error
-    
+
     def FindElementById(self, id):
         block = self.Blocks.get(id, None)
         if block is not None:
@@ -2585,7 +2585,7 @@ class Viewer(EditorPanel, DebugViewer):
                         break
             self.AddNewElement(block, bbox, wire, connector)
             self.RefreshVariablePanel()
-            self.ParentWindow.RefreshPouInstanceVariablesPanel()                    
+            self.ParentWindow.RefreshPouInstanceVariablesPanel()
         dialog.Destroy()
 
     def AddNewVariable(self, bbox, exclude_input=False, wire=None):
@@ -2966,7 +2966,7 @@ class Viewer(EditorPanel, DebugViewer):
                                 rect = rect.Union(block.GetRedrawRect())
                                 block.Refresh(rect)
             step.SetName(new_name)
-            
+
             if values["input"]:
                 step.AddInput()
             else:
@@ -3711,5 +3711,3 @@ class Viewer(EditorPanel, DebugViewer):
         if self.Debug:
             DebugViewer.RefreshNewData(self)
         event.Skip()
-
-

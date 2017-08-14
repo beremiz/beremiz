@@ -143,8 +143,8 @@ class PLCObject(pyro.ObjBase):
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
 
             self.PLC_ID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLC_ID")
-            if len(md5) == 32 : 
-                self.PLC_ID.value = md5 
+            if len(md5) == 32 :
+                self.PLC_ID.value = md5
 
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int
@@ -556,5 +556,3 @@ class PLCObject(pyro.ObjBase):
             return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
                         (line_no, e_value, script.splitlines()[line_no - 1]))
         return (0, kwargs.get("returnVal", None))
-
-

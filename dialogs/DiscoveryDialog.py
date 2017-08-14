@@ -38,56 +38,56 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, id, pos, size, style, name=name)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
-[ID_DISCOVERYDIALOG, ID_DISCOVERYDIALOGSTATICTEXT1, 
- ID_DISCOVERYDIALOGSERVICESLIST, ID_DISCOVERYDIALOGREFRESHBUTTON, 
- ID_DISCOVERYDIALOGLOCALBUTTON, ID_DISCOVERYDIALOGIPBUTTON, 
+[ID_DISCOVERYDIALOG, ID_DISCOVERYDIALOGSTATICTEXT1,
+ ID_DISCOVERYDIALOGSERVICESLIST, ID_DISCOVERYDIALOGREFRESHBUTTON,
+ ID_DISCOVERYDIALOGLOCALBUTTON, ID_DISCOVERYDIALOGIPBUTTON,
 ] = [wx.NewId() for _init_ctrls in range(6)]
 
 class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
-    
+
     def _init_coll_MainSizer_Items(self, parent):
         parent.AddWindow(self.staticText1, 0, border=20, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
         parent.AddWindow(self.ServicesList, 0, border=20, flag=wx.LEFT|wx.RIGHT|wx.GROW)
         parent.AddSizer(self.ButtonGridSizer, 0, border=20, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.GROW)
-        
+
     def _init_coll_MainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(1)
-    
+
     def _init_coll_ButtonGridSizer_Items(self, parent):
         parent.AddWindow(self.RefreshButton, 0, border=0, flag=0)
         parent.AddWindow(self.LocalButton, 0, border=0, flag=0)
         parent.AddWindow(self.IpButton, 0, border=0, flag=0)
         parent.AddSizer(self.ButtonSizer, 0, border=0, flag=0)
-        
+
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableCol(1)
         parent.AddGrowableRow(0)
-    
+
     def _init_sizers(self):
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         self.ButtonGridSizer = wx.FlexGridSizer(cols=4, hgap=5, rows=1, vgap=0)
-        
+
         self._init_coll_MainSizer_Items(self.MainSizer)
         self._init_coll_MainSizer_Growables(self.MainSizer)
         self._init_coll_ButtonGridSizer_Items(self.ButtonGridSizer)
         self._init_coll_ButtonGridSizer_Growables(self.ButtonGridSizer)
-        
+
         self.SetSizer(self.MainSizer)
-    
+
     def _init_ctrls(self, prnt):
-        wx.Dialog.__init__(self, id=ID_DISCOVERYDIALOG, 
+        wx.Dialog.__init__(self, id=ID_DISCOVERYDIALOG,
               name='DiscoveryDialog', parent=prnt, style=wx.DEFAULT_DIALOG_STYLE,
               title=_('Service Discovery'))
-        
+
         self.staticText1 = wx.StaticText(id=ID_DISCOVERYDIALOGSTATICTEXT1,
               label=_('Services available:'), name='staticText1', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
+
         # Set up list control
         self.ServicesList = AutoWidthListCtrl(id=ID_DISCOVERYDIALOGSERVICESLIST,
-              name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0), 
+              name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0),
               style=wx.LC_REPORT|wx.LC_EDIT_LABELS|wx.LC_SORT_ASCENDING|wx.LC_SINGLE_SEL)
         self.ServicesList.InsertColumn(0, _('NAME'))
         self.ServicesList.InsertColumn(1, _('TYPE'))
@@ -100,14 +100,14 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.ServicesList.SetInitialSize(wx.Size(-1, 300))
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, id=ID_DISCOVERYDIALOGSERVICESLIST)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, id=ID_DISCOVERYDIALOGSERVICESLIST)
-        
+
         listmix.ColumnSorterMixin.__init__(self, 4)
-        
+
         self.RefreshButton = wx.Button(id=ID_DISCOVERYDIALOGREFRESHBUTTON,
               label=_('Refresh'), name='RefreshButton', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, id=ID_DISCOVERYDIALOGREFRESHBUTTON)
-        
+
         self.LocalButton = wx.Button(id=ID_DISCOVERYDIALOGLOCALBUTTON,
               label=_('Local'), name='LocalButton', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
@@ -117,29 +117,29 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
               label=_('Add IP'), name='IpButton', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.Bind(wx.EVT_BUTTON, self.OnIpButton, id=ID_DISCOVERYDIALOGIPBUTTON)
-        
+
         self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTER)
-        
+
         self._init_sizers()
         self.Fit()
-        
+
     def __init__(self, parent):
         self._init_ctrls(parent)
-        
+
         self.itemDataMap = {}
         self.nextItemId = 0
-        
+
         self.URI = None
         self.Browser = None
-        
+
         self.ZeroConfInstance = Zeroconf()
         self.RefreshList()
         self.LatestSelection=None
-        
+
     def __del__(self):
         if self.Browser is not None : self.Browser.cancel()
         self.ZeroConfInstance.close()
-        
+
     def RefreshList(self):
         if self.Browser is not None : self.Browser.cancel()
         self.Browser = ServiceBrowser(self.ZeroConfInstance, service_type, self)
@@ -181,18 +181,18 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 #        connect_type = self.getColumnText(idx, 1)
 #        connect_address = self.getColumnText(idx, 2)
 #        connect_port = self.getColumnText(idx, 3)
-#        
+#
 #        self.URI = "%s://%s:%s"%(connect_type, connect_address, connect_port)
 
     def SetURI(self, idx):
         self.LatestSelection = idx
-        svcname = self.getColumnText(idx, 0) 
+        svcname = self.getColumnText(idx, 0)
         connect_type = self.getColumnText(idx, 1)
         self.URI = "%s://%s"%(connect_type, svcname + '.' + service_type)
-        
+
     def GetURI(self):
         return self.URI
-        
+
     def removeService(self, zeroconf, _type, name):
         wx.CallAfter(self._removeService, name)
 
@@ -201,7 +201,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         '''
         called when a service with the desired type goes offline.
         '''
-        
+
         # loop through the list items looking for the service that went offline
         for idx in xrange(self.ServicesList.GetItemCount()):
             # this is the unique identifier assigned to the item
@@ -213,7 +213,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
             if item_name == name:
                 self.ServicesList.DeleteItem(idx)
                 break
-        
+
     def addService(self, zeroconf, _type, name):
         wx.CallAfter(self._addService, _type, name)
 
@@ -240,7 +240,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         # we assign every list item a unique id (that won't change when items
         # are added or removed)
         self.ServicesList.SetItemData(new_item, self.nextItemId)
- 
+
         # the value of each column has to be stored in the itemDataMap
         # so that ColumnSorterMixin knows how to sort the column.
 
@@ -249,4 +249,3 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.itemDataMap[self.nextItemId] = [ svcname, typename, ip, port, name ]
 
         self.nextItemId += 1
-        

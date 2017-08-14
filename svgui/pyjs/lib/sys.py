@@ -5,11 +5,11 @@ platform = '' # to be updated by app, on compile
 overrides = None # to be updated by app, on compile
 
 # the remote path for loading modules
-loadpath = None 
+loadpath = None
 
-stacktrace = None 
+stacktrace = None
 
-appname = None 
+appname = None
 
 def setloadpath(lp):
     global loadpath

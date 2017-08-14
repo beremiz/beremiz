@@ -38,14 +38,14 @@ class POULibrary:
     def GetSTCode(self):
         if not self.program:
             self.program = self.LibraryControler.GenerateProgram()[0]+"\n"
-        return self.program 
+        return self.program
 
     def GetName(self):
         return self.LibName
 
     def GetCTR(self):
         return self.CTR()
-        
+
     def GetTypes(self):
         return {"name" : self.GetName(), "types": self.LibraryControler.Project}
 

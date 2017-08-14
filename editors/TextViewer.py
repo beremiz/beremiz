@@ -263,7 +263,7 @@ class TextViewer(EditorPanel):
                         if dialog.ShowModal() == wx.ID_OK:
                             blockname = dialog.GetValue()
                         else:
-                            event.SetDragText("")                            
+                            event.SetDragText("")
                             return
                         dialog.Destroy()
                     if blockname.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
@@ -632,7 +632,7 @@ class TextViewer(EditorPanel):
                     if len(self.CallStack) > 0:
                         current_call = self.CallStack.pop()
                     else:
-                        current_call = None                    
+                        current_call = None
             elif state == PRAGMA:
                 if line.endswith("}"):
                     self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
@@ -961,4 +961,3 @@ class TextViewer(EditorPanel):
                 self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
                 self.StartStyling(highlight_start_pos, 0x00)
                 self.SetStyling(len(self.Editor.GetText()) - highlight_end_pos, wx.stc.STC_STYLE_DEFAULT)
-

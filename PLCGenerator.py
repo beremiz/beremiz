@@ -771,7 +771,7 @@ class PouProgramGenerator:
                         connections = content["value"].getconnections()
                         if not connections:
                             raise PLCGenException, _("SFC transition in POU \"%s\" must be connected.") % self.Name
-                        for link in connections:                        
+                        for link in connections:
                             connected = self.GetLinkedConnector(link, body)
                             if connected is not None and not self.ConnectionTypes.has_key(connected):
                                 for related in self.ExtractRelatedConnections(connected):
@@ -1662,4 +1662,3 @@ def GenerateCurrentProgram(controler, project, errors, warnings):
     generator = ProgramGenerator(controler, project, errors, warnings)
     generator.GenerateProgram()
     return generator.GetGeneratedProgram()
-

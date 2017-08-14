@@ -56,7 +56,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         path = None
         try:
             from wxglade import __file__ as fileName
-            path = os.path.dirname(fileName)         
+            path = os.path.dirname(fileName)
             return path
         except ImportError:
             pass
@@ -66,7 +66,7 @@ class WxGladeHMI(PythonFileCTNMixin):
             path = defLibDir
 
         return path
-    
+
     def launch_wxglade(self, options, wait=False):
         path = self.GetWxGladePath()
         glade = os.path.join(path, 'wxglade.py')
@@ -82,24 +82,24 @@ class WxGladeHMI(PythonFileCTNMixin):
         return PythonFileCTNMixin.OnCTNSave(self, from_project_path)
 
     def CTNGenerate_C(self, buildpath, locations):
-        
+
         hmi_frames = []
-        
+
         wxgfile_path=self._getWXGLADEpath()
         if os.path.exists(wxgfile_path):
             wxgfile = open(wxgfile_path, 'r')
             wxgtree = minidom.parse(wxgfile)
             wxgfile.close()
-            
+
             for node in wxgtree.childNodes[1].childNodes:
                 if node.nodeType == wxgtree.ELEMENT_NODE:
                     hmi_frames.append({
                         "name" : node.getAttribute("name"),
                         "class" : node.getAttribute("class"),
                         "handlers" : [
-                            hnode.firstChild.data for hnode in 
+                            hnode.firstChild.data for hnode in
                             node.getElementsByTagName("handler")]})
-                    
+
             hmipyfile_path=os.path.join(self._getBuildPath(), "hmi.py")
             if wx.Platform == '__WXMSW__':
                 wxgfile_path = "\"%s\""%wxgfile_path
@@ -107,20 +107,20 @@ class WxGladeHMI(PythonFileCTNMixin):
             else:
                 wxghmipyfile_path = hmipyfile_path
             self.launch_wxglade(['-o', wxghmipyfile_path, '-g', 'python', wxgfile_path], wait=True)
-            
+
             hmipyfile = open(hmipyfile_path, 'r')
             define_hmi = hmipyfile.read().decode('utf-8')
             hmipyfile.close()
-        
+
         else:
             define_hmi = ""
-        
-        declare_hmi = "\n".join(["%(name)s = None\n" % x + 
+
+        declare_hmi = "\n".join(["%(name)s = None\n" % x +
                           "\n".join(["%(class)s.%(h)s = %(h)s"%
                             dict(x,h=h) for h in x['handlers']])
                                 for x in hmi_frames])
         global_hmi = ("global %s\n"%",".join(
-                         [x["name"] for x in hmi_frames]) 
+                         [x["name"] for x in hmi_frames])
                       if len(hmi_frames) > 0 else "")
         init_hmi = "\n".join(["""\
 def OnCloseFrame(evt):
@@ -131,9 +131,9 @@ def OnCloseFrame(evt):
 %(name)s.Show()
 """ % x for x in hmi_frames])
         cleanup_hmi = "\n".join(
-            ["if %(name)s is not None: %(name)s.Destroy()" % x 
+            ["if %(name)s is not None: %(name)s.Destroy()" % x
                 for x in hmi_frames])
-        
+
         self.PreSectionsTexts = {
             "globals":define_hmi,
             "start":global_hmi,
@@ -174,4 +174,3 @@ def OnCloseFrame(evt):
             if wx.Platform == '__WXMSW__':
                 wxg_filename = "\"%s\""%wxg_filename
             self.launch_wxglade([wxg_filename])
-

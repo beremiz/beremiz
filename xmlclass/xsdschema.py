@@ -62,14 +62,14 @@ def GenerateFloatXMLText(extra_values=[], decimal=None):
             text += "</%s>\n" % name
         return text
     return generateXMLTextMethod
-        
+
 DEFAULT_FACETS = GenerateDictFacets(["pattern", "whiteSpace", "enumeration"])
 NUMBER_FACETS = GenerateDictFacets(DEFAULT_FACETS.keys() + ["maxInclusive", "maxExclusive", "minInclusive", "minExclusive"])
 DECIMAL_FACETS = GenerateDictFacets(NUMBER_FACETS.keys() + ["totalDigits", "fractionDigits"])
 STRING_FACETS = GenerateDictFacets(DEFAULT_FACETS.keys() + ["length", "minLength", "maxLength"])
 
-ALL_FACETS = ["pattern", "whiteSpace", "enumeration", "maxInclusive", 
-    "maxExclusive", "minInclusive", "minExclusive", "totalDigits", 
+ALL_FACETS = ["pattern", "whiteSpace", "enumeration", "maxInclusive",
+    "maxExclusive", "minInclusive", "minExclusive", "totalDigits",
     "fractionDigits", "length", "minLength", "maxLength"]
 
 
@@ -81,12 +81,12 @@ ALL_FACETS = ["pattern", "whiteSpace", "enumeration", "maxInclusive",
 # Documentation elements
 
 def ReduceAppInfo(factory, attributes, elements):
-    return {"type": "appinfo", "source": attributes.get("source", None), 
+    return {"type": "appinfo", "source": attributes.get("source", None),
             "content": "\n".join(elements)}
 
 
 def ReduceDocumentation(factory, attributes, elements):
-    return {"type": "documentation", "source": attributes.get("source", None), 
+    return {"type": "documentation", "source": attributes.get("source", None),
             "language": attributes.get("lang", "any"), "content": "\n".join(elements)}
 
 
@@ -124,7 +124,7 @@ def GenerateFacetReducing(facetname, canbefixed):
 def ReduceList(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
     list = {"type": "list", "itemType": attributes.get("itemType", None), "doc": annotations}
-    
+
     if len(children) > 0 and children[0]["type"] == SIMPLETYPE:
         if list["itemType"] is None:
             list["itemType"] = children[0]
@@ -138,7 +138,7 @@ def ReduceList(factory, attributes, elements):
 def ReduceUnion(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
     union = {"type": "union", "memberTypes": attributes.get("memberTypes", []), "doc": annotations}
-    
+
     for child in children:
         if child["type"] == SIMPLETYPE:
             union["memberTypes"].appendchild
@@ -153,29 +153,29 @@ def CreateSimpleType(factory, attributes, typeinfos):
     simpleType = {"type": SIMPLETYPE, "final": attributes.get("final", [])}
     if attributes.has_key("name"):
         simpleType["name"] = attributes["name"]
-    
+
     if typeinfos["type"] in ["restriction", "extension"]:
         # Search for base type definition
         if isinstance(typeinfos["base"], (StringType, UnicodeType)):
             basetypeinfos = factory.FindSchemaElement(typeinfos["base"], SIMPLETYPE)
             if basetypeinfos is None:
-                raise "\"%s\" isn't defined!" % typeinfos["base"] 
+                raise "\"%s\" isn't defined!" % typeinfos["base"]
         else:
             basetypeinfos = typeinfos["base"]
-        
+
         # Check that base type is a simple type
         if basetypeinfos["type"] != SIMPLETYPE:
             raise ValueError("Base type given isn't a simpleType!")
-        
+
         simpleType["basename"] = basetypeinfos["basename"]
-        
+
         # Check that derivation is allowed
         if basetypeinfos.has_key("final"):
             if "#all" in basetypeinfos["final"]:
                 raise ValueError("Base type can't be derivated!")
             if "restriction" in basetypeinfos["final"] and typeinfos["type"] == "restriction":
                 raise ValueError("Base type can't be derivated by restriction!")
-        
+
         # Extract simple type facets
         for facet in typeinfos.get("facets", []):
             facettype = facet["type"]
@@ -286,12 +286,12 @@ def CreateSimpleType(factory, attributes, typeinfos):
                 elif basevalue is not None and value > basevalue:
                     raise ValueError("\"totalDigits\" can't be greater than \"totalDigits\" defined in base type!")
             facets[facettype] = (value, facet.get("fixed", False))
-        
-        # Report not redefined facet from base type to new created type 
+
+        # Report not redefined facet from base type to new created type
         for facettype, facetvalue in basetypeinfos["facets"].items():
             if not facets.has_key(facettype):
                 facets[facettype] = facetvalue
-        
+
         # Generate extract value for new created type
         def ExtractSimpleTypeValue(attr, extract=True):
             value = basetypeinfos["extract"](attr, extract)
@@ -317,7 +317,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                         model = re.compile("(?:%s)?$" % "|".join(map(lambda x: "(?:%s)" % x, facetvalue)))
                         result = model.match(value)
                         if result is None:
-                            if len(facetvalue) > 1:   
+                            if len(facetvalue) > 1:
                                 raise ValueError("value doesn't follow any of the patterns %s" % ",".join(facetvalue))
                             else:
                                 raise ValueError("value doesn't follow the pattern %s" % facetvalue[0])
@@ -327,7 +327,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                         elif facetvalue == "collapse":
                             value = GetToken(value, False)
             return value
-        
+
         def CheckSimpleTypeValue(value):
             for facetname, (facetvalue, facetfixed) in facets.items():
                 if facetvalue is not None:
@@ -351,12 +351,12 @@ def CreateSimpleType(factory, attributes, typeinfos):
                         model = re.compile("(?:%s)?$" % "|".join(map(lambda x: "(?:%s)" % x, facetvalue)))
                         result = model.match(value)
                         if result is None:
-                            if len(facetvalue) > 1:   
+                            if len(facetvalue) > 1:
                                 raise ValueError("value doesn't follow any of the patterns %s" % ",".join(facetvalue))
                             else:
                                 raise ValueError("value doesn't follow the pattern %s" % facetvalue[0])
             return True
-        
+
         def SimpleTypeInitialValue():
             for facetname, (facetvalue, facetfixed) in facets.items():
                 if facetvalue is not None:
@@ -375,9 +375,9 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     elif facetname == "maxExclusive"  and facetvalue <= 0:
                         return facetvalue - 1
             return basetypeinfos["initial"]()
-        
+
         GenerateSimpleType = basetypeinfos["generate"]
-        
+
     elif typeinfos["type"] == "list":
         # Search for item type definition
         if isinstance(typeinfos["itemType"], (StringType, UnicodeType)):
@@ -386,41 +386,41 @@ def CreateSimpleType(factory, attributes, typeinfos):
                 raise "\"%s\" isn't defined!" % typeinfos["itemType"]
         else:
             itemtypeinfos = typeinfos["itemType"]
-        
+
         # Check that item type is a simple type
         if itemtypeinfos["type"] != SIMPLETYPE:
             raise ValueError, "Item type given isn't a simpleType!"
-        
+
         simpleType["basename"] = "list"
-        
+
         # Check that derivation is allowed
         if itemtypeinfos.has_key("final"):
             if itemtypeinfos["final"].has_key("#all"):
                 raise ValueError("Item type can't be derivated!")
             if itemtypeinfos["final"].has_key("list"):
                 raise ValueError("Item type can't be derivated by list!")
-        
+
         # Generate extract value for new created type
         def ExtractSimpleTypeValue(attr, extract = True):
             values = []
             for value in GetToken(attr, extract).split(" "):
                 values.append(itemtypeinfos["extract"](value, False))
             return values
-        
+
         def CheckSimpleTypeValue(value):
             for item in value:
                 result = itemtypeinfos["check"](item)
                 if not result:
                     return result
             return True
-        
+
         SimpleTypeInitialValue = lambda: []
-        
+
         GenerateSimpleType = GenerateSimpleTypeXMLText(lambda x: " ".join(map(itemtypeinfos["generate"], x)))
-        
+
         facets = GenerateDictFacets(["length", "maxLength", "minLength", "enumeration", "pattern"])
         facets["whiteSpace"] = ("collapse", False)
-    
+
     elif typeinfos["type"] == "union":
         # Search for member types definition
         membertypesinfos = []
@@ -431,22 +431,22 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"%s\" isn't defined!" % membertype)
             else:
                 infos = membertype
-            
+
             # Check that member type is a simple type
             if infos["type"] != SIMPLETYPE:
                 raise ValueError("Member type given isn't a simpleType!")
-            
+
             # Check that derivation is allowed
             if infos.has_key("final"):
                 if infos["final"].has_key("#all"):
                     raise ValueError("Item type can't be derivated!")
                 if infos["final"].has_key("union"):
                     raise ValueError("Member type can't be derivated by union!")
-            
+
             membertypesinfos.append(infos)
-        
+
         simpleType["basename"] = "union"
-        
+
         # Generate extract value for new created type
         def ExtractSimpleTypeValue(attr, extract = True):
             if extract:
@@ -459,25 +459,25 @@ def CreateSimpleType(factory, attributes, typeinfos):
                 except:
                     pass
             raise ValueError("\"%s\" isn't valid for type defined for union!")
-        
+
         def CheckSimpleTypeValue(value):
             for infos in membertypesinfos:
                 result = infos["check"](value)
                 if result:
                     return result
             return False
-        
+
         SimpleTypeInitialValue = membertypesinfos[0]["initial"]
-        
+
         def GenerateSimpleTypeFunction(value):
             if isinstance(value, BooleanType):
                 return {True: "true", False: "false"}[value]
             else:
                 return str(value)
         GenerateSimpleType = GenerateSimpleTypeXMLText(GenerateSimpleTypeFunction)
-        
+
         facets = GenerateDictFacets(["pattern", "enumeration"])
-    
+
     simpleType["facets"] = facets
     simpleType["extract"] = ExtractSimpleTypeValue
     simpleType["initial"] = SimpleTypeInitialValue
@@ -488,10 +488,10 @@ def CreateSimpleType(factory, attributes, typeinfos):
 def ReduceSimpleType(factory, attributes, elements):
     # Reduce all the simple type children
     annotations, children = factory.ReduceElements(elements)
-    
+
     simpleType = CreateSimpleType(factory, attributes, children[0])
     simpleType["doc"] = annotations
-    
+
     return simpleType
 
 # Complex type
@@ -503,7 +503,7 @@ def ExtractAttributes(factory, elements, base=None):
         basetypeinfos = factory.FindSchemaElement(base)
         if not isinstance(basetypeinfos, (UnicodeType, StringType)) and basetypeinfos["type"] == COMPLEXTYPE:
             attrnames = dict(map(lambda x:(x["name"], True), basetypeinfos["attributes"]))
-        
+
     for element in elements:
         if element["type"] == ATTRIBUTE:
             if attrnames.get(element["name"], False):
@@ -534,7 +534,7 @@ def ReduceRestriction(factory, attributes, elements):
             raise ValueError("Only one base type can be defined for restriction!")
     if restriction["base"] is None:
         raise ValueError("No base type has been defined for restriction!")
-    
+
     while len(children) > 0 and children[0]["type"] in ALL_FACETS:
         restriction["facets"].append(children.pop(0))
     restriction["attributes"] = ExtractAttributes(factory, children, restriction["base"])
@@ -571,9 +571,9 @@ def ReduceExtension(factory, attributes, elements):
 
 def ReduceSimpleContent(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     simpleContent = children[0].copy()
-    
+
     basetypeinfos = factory.FindSchemaElement(simpleContent["base"])
     if basetypeinfos["type"] == SIMPLETYPE:
         contenttypeinfos = simpleContent.copy()
@@ -588,7 +588,7 @@ def ReduceSimpleContent(factory, attributes, elements):
     else:
         raise ValueError("No compatible base type defined for simpleContent!")
     contenttypeinfos = CreateSimpleType(factory, attributes, contenttypeinfos)
-    
+
     simpleContent["elements"] = [{"name": "content", "type": ELEMENT,
                                   "elmt_type": contenttypeinfos, "doc": annotations,
                                   "minOccurs": 1, "maxOccurs": 1}]
@@ -605,7 +605,7 @@ def ReduceComplexContent(factory, attributes, elements):
 
 def ReduceComplexType(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     if len(children) > 0:
         if children[0]["type"] in ["simpleContent", "complexContent"]:
             complexType = children[0].copy()
@@ -666,20 +666,20 @@ def ReduceAnyAttribute(factory, attributes, elements):
 
 def ReduceAttribute(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     if attributes.has_key("default"):
         if attributes.has_key("fixed"):
             raise ValueError("\"default\" and \"fixed\" can't be defined at the same time!")
         elif attributes.get("use", "optional") != "optional":
             raise ValueError("if \"default\" present, \"use\" can only have the value \"optional\"!")
-    
+
     attribute = {"type": ATTRIBUTE, "attr_type": attributes.get("type", None), "doc": annotations}
     if len(children) > 0:
         if attribute["attr_type"] is None:
             attribute["attr_type"] = children[0]
         else:
             raise ValueError("Only one type can be defined for attribute!")
-    
+
     if attributes.has_key("ref"):
         if attributes.has_key("name"):
             raise ValueError("\"ref\" and \"name\" can't be defined at the same time!")
@@ -689,7 +689,7 @@ def ReduceAttribute(factory, attributes, elements):
             raise ValueError("if \"ref\" is present, no type can be defined!")
     elif attribute["attr_type"] is None:
         raise ValueError("No type has been defined for attribute \"%s\"!" % attributes["name"])
-    
+
     if attributes.has_key("type"):
         tmp_attrs = attributes.copy()
         tmp_attrs.pop("type")
@@ -711,14 +711,14 @@ def ReduceAttributeGroup(factory, attributes, elements):
 
 def ReduceAny(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     any = {"type": ANY, "doc": annotations}
     any.update(attributes)
     return any
 
 def ReduceElement(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     types = []
     constraints = []
     for child in children:
@@ -726,10 +726,10 @@ def ReduceElement(factory, attributes, elements):
             constraints.append(child)
         else:
             types.append(child)
-    
+
     if attributes.has_key("default") and attributes.has_key("fixed"):
         raise ValueError("\"default\" and \"fixed\" can't be defined at the same time!")
-    
+
     if attributes.has_key("ref"):
         for attr in ["name", "default", "fixed", "form", "block", "type"]:
             if attributes.has_key(attr):
@@ -738,7 +738,7 @@ def ReduceElement(factory, attributes, elements):
             raise ValueError("\"ref\" and \"nillable\" can't be defined at the same time!")
         if len(types) > 0:
             raise ValueError("No type and no constraints can be defined where \"ref\" is defined!")
-    
+
         infos = factory.FindSchemaElement(attributes["ref"], ELEMENT)
         if infos is not None:
             element = infos.copy()
@@ -748,7 +748,7 @@ def ReduceElement(factory, attributes, elements):
             return element
         else:
             raise ValueError("\"%s\" base type isn't defined or circular referenced!" % name)
-    
+
     elif attributes.has_key("name"):
         element = {"type": ELEMENT, "elmt_type": attributes.get("type", None), "constraints": constraints, "doc": annotations}
         if len(types) > 0:
@@ -759,7 +759,7 @@ def ReduceElement(factory, attributes, elements):
         elif element["elmt_type"] is None:
             element["elmt_type"] = "tag"
             element["type"] = TAG
-        
+
         if attributes.has_key("type"):
             tmp_attrs = attributes.copy()
             tmp_attrs.pop("type")
@@ -772,18 +772,18 @@ def ReduceElement(factory, attributes, elements):
 
 def ReduceAll(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     for child in children:
         if children["maxOccurs"] == "unbounded" or children["maxOccurs"] > 1:
             raise ValueError("\"all\" item can't have \"maxOccurs\" attribute greater than 1!")
-    
+
     return {"type": "all", "elements": children, "minOccurs": attributes["minOccurs"],
             "maxOccurs": attributes["maxOccurs"], "order": False, "doc": annotations}
 
 
 def ReduceChoice(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     choices = []
     for child in children:
         if child["type"] in [ELEMENT, ANY, TAG]:
@@ -795,7 +795,7 @@ def ReduceChoice(factory, attributes, elements):
         elif child["type"] == CHOICE:
             choices.extend(child["choices"])
         elif child["type"] == "group":
-            elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP) 
+            elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
             if not elmtgroup.has_key("choices"):
                 raise ValueError("Only group composed of \"choice\" can be referenced in \"choice\" element!")
             choices_tmp = []
@@ -810,18 +810,18 @@ def ReduceChoice(factory, attributes, elements):
                 else:
                     choices_tmp.append(choice)
             choices.extend(choices_tmp)
-    
+
     for choice in choices:
         attributes["minOccurs"] = min(attributes["minOccurs"], choice["minOccurs"])
         choice["minOccurs"] = 1
-    
+
     return {"type": CHOICE, "choices": choices, "minOccurs": attributes["minOccurs"],
             "maxOccurs": attributes["maxOccurs"], "doc": annotations}
 
 
 def ReduceSequence(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     sequence = []
     for child in children:
         if child["type"] in [ELEMENT, ANY, TAG, CHOICE]:
@@ -844,14 +844,14 @@ def ReduceSequence(factory, attributes, elements):
                 else:
                     elements_tmp.append(element)
             sequence.extend(elements_tmp)
-            
+
     return {"type": "sequence", "elements": sequence, "minOccurs": attributes["minOccurs"],
             "maxOccurs": attributes["maxOccurs"], "order": True, "doc": annotations}
-    
-    
+
+
 def ReduceGroup(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     if attributes.has_key("ref"):
         return {"type": "group", "ref": attributes["ref"], "doc": annotations}
     else:
@@ -868,39 +868,39 @@ def ReduceGroup(factory, attributes, elements):
 
 def ReduceUnique(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     unique = {"type": CONSTRAINT, "const_type": "unique", "selector": children[0], "fields": children[1:]}
     unique.update(attributes)
     return unique
-    
+
 def ReduceKey(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     key = {"type": CONSTRAINT, "const_type": "key", "selector": children[0], "fields": children[1:]}
     key.update(attributes)
     return key
 
 def ReduceKeyRef(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     keyref = {"type": CONSTRAINT, "const_type": "keyref", "selector": children[0], "fields": children[1:]}
     keyref.update(attributes)
     return keyref
-    
+
 def ReduceSelector(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     selector = {"type": CONSTRAINT, "const_type": "selector"}
     selector.update(attributes)
     return selector
 
 def ReduceField(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     field = {"type": CONSTRAINT, "const_type": "field"}
     field.update(attributes)
     return field
-    
+
 
 # Inclusion elements
 
@@ -910,7 +910,7 @@ def ReduceImport(factory, attributes, elements):
 
 def ReduceInclude(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    
+
     if factory.FileName is None:
         raise ValueError("Include in XSD string not yet supported")
     filepath = attributes["schemaLocation"]
@@ -922,7 +922,7 @@ def ReduceInclude(factory, attributes, elements):
     include_factory = XSDClassFactory(minidom.parse(xsdfile), filepath)
     xsdfile.close()
     include_factory.CreateClasses()
-    
+
     if factory.TargetNamespace == include_factory.TargetNamespace:
         factory.Namespaces[factory.TargetNamespace].update(include_factory.Namespaces[include_factory.TargetNamespace])
     else:
@@ -931,7 +931,7 @@ def ReduceInclude(factory, attributes, elements):
     factory.ComputedClassesLookUp.update(include_factory.ComputedClassesLookUp)
     factory.EquivalentClassesParent.update(include_factory.EquivalentClassesParent)
     return None
-    
+
 def ReduceRedefine(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
     raise ValueError("\"redefine\" element isn't supported yet!")
@@ -944,15 +944,15 @@ def ReduceSchema(factory, attributes, elements):
     factory.ElementFormDefault = attributes["elementFormDefault"]
     factory.BlockDefault = attributes["blockDefault"]
     factory.FinalDefault = attributes["finalDefault"]
-    
+
     targetNamespace = attributes.get("targetNamespace", None)
     factory.TargetNamespace = factory.DefinedNamespaces.get(targetNamespace, None)
     if factory.TargetNamespace is not None:
         factory.etreeNamespaceFormat = "{%s}%%s" % targetNamespace
     factory.Namespaces[factory.TargetNamespace] = {}
-    
+
     annotations, children = factory.ReduceElements(elements, True)
-    
+
     for child in children:
         if child.has_key("name"):
             infos = factory.GetQualifiedNameInfos(child["name"], factory.TargetNamespace, True)
@@ -987,7 +987,7 @@ def CompareSchema(schema, reference):
         else:
             return True
     return schema == reference
-    
+
 #-------------------------------------------------------------------------------
 #                       Base class for XSD schema extraction
 #-------------------------------------------------------------------------------
@@ -999,7 +999,7 @@ class XSDClassFactory(ClassFactory):
         ClassFactory.__init__(self, document, filepath, debug)
         self.Namespaces["xml"] = {
             "lang": {
-                "type": SYNTAXATTRIBUTE, 
+                "type": SYNTAXATTRIBUTE,
                 "extract": {
                     "default": GenerateModelNameExtraction("lang", LANGUAGE_model)
                 }
@@ -1007,31 +1007,31 @@ class XSDClassFactory(ClassFactory):
         }
         self.Namespaces["xsi"] = {
             "noNamespaceSchemaLocation": {
-                "type": SYNTAXATTRIBUTE, 
+                "type": SYNTAXATTRIBUTE,
                 "extract": {
                     "default": NotSupportedYet("noNamespaceSchemaLocation")
                 }
             },
             "nil": {
-                "type": SYNTAXATTRIBUTE, 
+                "type": SYNTAXATTRIBUTE,
                 "extract": {
                     "default": NotSupportedYet("nil")
                 }
             },
             "schemaLocation": {
-                "type": SYNTAXATTRIBUTE, 
+                "type": SYNTAXATTRIBUTE,
                 "extract": {
                     "default": NotSupportedYet("schemaLocation")
                 }
             },
             "type": {
-                "type": SYNTAXATTRIBUTE, 
+                "type": SYNTAXATTRIBUTE,
                 "extract": {
                     "default": NotSupportedYet("type")
                 }
             }
         }
-        
+
     def ParseSchema(self):
         for child in self.Document.childNodes:
             if child.nodeType == self.Document.ELEMENT_NODE:
@@ -1067,7 +1067,7 @@ class XSDClassFactory(ClassFactory):
         if element_type is not None and element["type"] != element_type:
             raise ValueError("\"%s\" isn't of the expected type!" % element_name)
         return element
-    
+
     def CreateSchemaElement(self, element_name, element_type):
         for type, attributes, elements in self.Schema[2]:
             namespace, name = DecomposeQualifiedName(type)
@@ -1091,7 +1091,7 @@ class XSDClassFactory(ClassFactory):
         return None
 
 """
-This function opens the xsd file and generate a xml parser with class lookup from 
+This function opens the xsd file and generate a xml parser with class lookup from
 the xml tree
 """
 def GenerateParserFromXSD(filepath):
@@ -1129,9 +1129,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, element*)
         </all>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("all", ["id", "maxOccurs", "minOccurs"], 
+            "default": GenerateElement("all", ["id", "maxOccurs", "minOccurs"],
                 re.compile("((?:annotation )?(?:element )*)"))
         },
         "reduce": ReduceAll
@@ -1143,9 +1143,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (appinfo | documentation)*
         </annotation>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("annotation", ["id"], 
+            "default": GenerateElement("annotation", ["id"],
                 re.compile("((?:app_info |documentation )*)"))
         },
         "reduce": ReduceAnnotation
@@ -1161,10 +1161,10 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </any>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("any", 
-                ["id", "maxOccurs", "minOccurs", "namespace", "processContents"], 
+            "default": GenerateElement("any",
+                ["id", "maxOccurs", "minOccurs", "namespace", "processContents"],
                 re.compile("((?:annotation )?(?:simpleType )*)"))
         },
         "reduce": ReduceAny
@@ -1178,7 +1178,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </anyAttribute>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("anyAttribute",
                 ["id", "namespace", "processContents"], ONLY_ANNOTATION)
@@ -1192,7 +1192,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: ({any})*
         </appinfo>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("appinfo", ["source"], re.compile("(.*)"), True)
         },
@@ -1212,13 +1212,13 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, simpleType?)
         </attribute>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("attribute", 
-                ["default", "fixed", "form", "id", "name", "ref", "type", "use"], 
+            "default": GenerateElement("attribute",
+                ["default", "fixed", "form", "id", "name", "ref", "type", "use"],
                 re.compile("((?:annotation )?(?:simpleType )?)")),
-            "schema": GenerateElement("attribute", 
-                ["default", "fixed", "form", "id", "name", "type"], 
+            "schema": GenerateElement("attribute",
+                ["default", "fixed", "form", "id", "name", "type"],
                 re.compile("((?:annotation )?(?:simpleType )?)"))
         },
         "reduce": ReduceAttribute
@@ -1232,12 +1232,12 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, ((attribute | attributeGroup)*, anyAttribute?))
         </attributeGroup>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("attributeGroup", 
+            "default": GenerateElement("attributeGroup",
                 ["id", "ref"], ONLY_ANNOTATION),
             "schema": GenerateElement("attributeGroup",
-                ["id", "name"], 
+                ["id", "name"],
                 re.compile("((?:annotation )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))"))
         },
         "reduce": ReduceAttributeGroup
@@ -1251,9 +1251,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (element | group | choice | sequence | any)*)
         </choice>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("choice", ["id", "maxOccurs", "minOccurs"], 
+            "default": GenerateElement("choice", ["id", "maxOccurs", "minOccurs"],
                 re.compile("((?:annotation )?(?:element |group |choice |sequence |any )*)"))
         },
         "reduce": ReduceChoice
@@ -1266,9 +1266,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (restriction | extension))
         </complexContent>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("complexContent", ["id", "mixed"], 
+            "default": GenerateElement("complexContent", ["id", "mixed"],
                 re.compile("((?:annotation )?(?:restriction |extension ))"))
         },
         "reduce": ReduceComplexContent
@@ -1285,10 +1285,10 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?))))
         </complexType>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("complexType", 
-                ["abstract", "block", "final", "id", "mixed", "name"], 
+            "default": GenerateElement("complexType",
+                ["abstract", "block", "final", "id", "mixed", "name"],
                 re.compile("((?:annotation )?(?:simpleContent |complexContent |(?:(?:group |all |choice |sequence )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))))"))
         },
         "reduce": ReduceComplexType
@@ -1301,9 +1301,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: ({any})*
         </documentation>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("documentation", 
+            "default": GenerateElement("documentation",
                 ["source", "lang"], re.compile("(.*)"), True)
         },
         "reduce": ReduceDocumentation
@@ -1328,13 +1328,13 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, ((simpleType | complexType)?, (unique | key | keyref)*))
         </element>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("element", 
-                ["abstract", "block", "default", "final", "fixed", "form", "id", "maxOccurs", "minOccurs", "name", "nillable", "ref", "substitutionGroup", "type"], 
+            "default": GenerateElement("element",
+                ["abstract", "block", "default", "final", "fixed", "form", "id", "maxOccurs", "minOccurs", "name", "nillable", "ref", "substitutionGroup", "type"],
                 re.compile("((?:annotation )?(?:simpleType |complexType )?(?:unique |key |keyref )*)")),
-            "schema": GenerateElement("element", 
-                ["abstract", "block", "default", "final", "fixed", "form", "id", "name", "nillable", "substitutionGroup", "type"], 
+            "schema": GenerateElement("element",
+                ["abstract", "block", "default", "final", "fixed", "form", "id", "name", "nillable", "substitutionGroup", "type"],
                 re.compile("((?:annotation )?(?:simpleType |complexType )?(?:unique |key |keyref )*)"))
         },
         "reduce": ReduceElement
@@ -1347,7 +1347,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </enumeration>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("enumeration", ["id", "value"], ONLY_ANNOTATION)
         },
@@ -1361,11 +1361,11 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))
         </extension>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("extension", ["base", "id"], 
+            "default": GenerateElement("extension", ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))")),
-            "complexContent": GenerateElement("extension", ["base", "id"], 
+            "complexContent": GenerateElement("extension", ["base", "id"],
                 re.compile("((?:annotation )?(?:group |all |choice |sequence )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))"))
         },
         "reduce": ReduceExtension
@@ -1378,7 +1378,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </field>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("field", ["id", "xpath"], ONLY_ANNOTATION)
         },
@@ -1393,9 +1393,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </fractionDigits>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("fractionDigits", 
+            "default": GenerateElement("fractionDigits",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("fractionDigits", True)
@@ -1411,13 +1411,13 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (all | choice | sequence)?)
         </group>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("group",
-                ["id", "maxOccurs", "minOccurs", "ref"], 
+                ["id", "maxOccurs", "minOccurs", "ref"],
                 re.compile("((?:annotation )?(?:all |choice |sequence )?)")),
             "schema": GenerateElement("group",
-                ["id", "name"], 
+                ["id", "name"],
                 re.compile("((?:annotation )?(?:all |choice |sequence )?)"))
         },
         "reduce": ReduceGroup
@@ -1431,7 +1431,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </import>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("import",
                 ["id", "namespace", "schemaLocation"], ONLY_ANNOTATION)
@@ -1446,7 +1446,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </include>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("include",
                 ["id", "schemaLocation"], ONLY_ANNOTATION)
@@ -1461,9 +1461,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (selector, field+))
         </key>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("key", ["id", "name"], 
+            "default": GenerateElement("key", ["id", "name"],
                 re.compile("((?:annotation )?(?:selector (?:field )+))"))
         },
         "reduce": ReduceKey
@@ -1477,9 +1477,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (selector, field+))
         </keyref>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("keyref", ["id", "name", "refer"], 
+            "default": GenerateElement("keyref", ["id", "name", "refer"],
                 re.compile("((?:annotation )?(?:selector (?:field )+))"))
         },
         "reduce": ReduceKeyRef
@@ -1493,9 +1493,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </length>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("length", 
+            "default": GenerateElement("length",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("length", True)
@@ -1508,9 +1508,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, simpleType?)
         </list>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("list", ["id", "itemType"], 
+            "default": GenerateElement("list", ["id", "itemType"],
                 re.compile("((?:annotation )?(?:simpleType )?)$"))
         },
         "reduce": ReduceList
@@ -1524,7 +1524,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </maxInclusive>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("maxExclusive",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
@@ -1540,9 +1540,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </maxExclusive>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("maxInclusive", 
+            "default": GenerateElement("maxInclusive",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("maxInclusive", True)
@@ -1556,9 +1556,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </maxLength>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("maxLength", 
+            "default": GenerateElement("maxLength",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("maxLength", True)
@@ -1572,9 +1572,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </minExclusive>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("minExclusive", 
+            "default": GenerateElement("minExclusive",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("minExclusive", True)
@@ -1588,9 +1588,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </minInclusive>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("minInclusive", 
+            "default": GenerateElement("minInclusive",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("minInclusive", True)
@@ -1604,7 +1604,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </minLength>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("minLength",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
@@ -1619,7 +1619,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </pattern>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("pattern", ["id", "value"], ONLY_ANNOTATION)
         },
@@ -1633,9 +1633,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation | (simpleType | complexType | group | attributeGroup))*
         </redefine>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("refine", ["id", "schemaLocation"], 
+            "default": GenerateElement("refine", ["id", "schemaLocation"],
                 re.compile("((?:annotation |(?:simpleType |complexType |group |attributeGroup ))*)"))
         },
         "reduce": ReduceRedefine
@@ -1648,13 +1648,13 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?))
         </restriction>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("restriction", ["base", "id"], 
+            "default": GenerateElement("restriction", ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:simpleType )?(?:(?:minExclusive |minInclusive |maxExclusive |maxInclusive |totalDigits |fractionDigits |length |minLength |maxLength |enumeration |whiteSpace |pattern )*)))")),
-            "simpleContent": GenerateElement("restriction", ["base", "id"], 
+            "simpleContent": GenerateElement("restriction", ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:simpleType )?(?:(?:minExclusive |minInclusive |maxExclusive |maxInclusive |totalDigits |fractionDigits |length |minLength |maxLength |enumeration |whiteSpace |pattern )*)?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?)))")),
-            "complexContent": GenerateElement("restriction", ["base", "id"], 
+            "complexContent": GenerateElement("restriction", ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:simpleType )?(?:group |all |choice |sequence )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?)))")),
         },
         "reduce": ReduceRestriction
@@ -1673,10 +1673,10 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: ((include | import | redefine | annotation)*, (((simpleType | complexType | group | attributeGroup) | element | attribute | notation), annotation*)*)
         </schema>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("schema",
-                ["attributeFormDefault", "blockDefault", "elementFormDefault", "finalDefault", "id", "targetNamespace", "version", "lang"], 
+                ["attributeFormDefault", "blockDefault", "elementFormDefault", "finalDefault", "id", "targetNamespace", "version", "lang"],
                 re.compile("((?:include |import |redefine |annotation )*(?:(?:(?:simpleType |complexType |group |attributeGroup )|element |attribute |annotation )(?:annotation )*)*)"))
         }
     },
@@ -1688,7 +1688,7 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </selector>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
             "default": GenerateElement("selector", ["id", "xpath"], ONLY_ANNOTATION)
         },
@@ -1703,9 +1703,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (element | group | choice | sequence | any)*)
         </sequence>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("sequence", ["id", "maxOccurs", "minOccurs"], 
+            "default": GenerateElement("sequence", ["id", "maxOccurs", "minOccurs"],
                 re.compile("((?:annotation )?(?:element |group |choice |sequence |any )*)"))
         },
         "reduce": ReduceSequence
@@ -1717,9 +1717,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (restriction | extension))
         </simpleContent>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("simpleContent", ["id"], 
+            "default": GenerateElement("simpleContent", ["id"],
                 re.compile("((?:annotation )?(?:restriction |extension ))"))
         },
         "reduce": ReduceSimpleContent
@@ -1733,9 +1733,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (restriction | list | union))
         </simpleType>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("simpleType", ["final", "id", "name"], 
+            "default": GenerateElement("simpleType", ["final", "id", "name"],
                 re.compile("((?:annotation )?(?:restriction |list |union ))"))
         },
         "reduce": ReduceSimpleType
@@ -1749,9 +1749,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </totalDigits>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("totalDigits", 
+            "default": GenerateElement("totalDigits",
                 ["fixed", "id", "value"], ONLY_ANNOTATION),
         },
         "reduce": GenerateFacetReducing("totalDigits", True)
@@ -1764,9 +1764,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, simpleType*)
         </union>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("union", ["id", "memberTypes"], 
+            "default": GenerateElement("union", ["id", "memberTypes"],
                 re.compile("((?:annotation )?(?:simpleType )*)"))
         },
         "reduce": ReduceUnion
@@ -1779,14 +1779,14 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?, (selector, field+))
         </unique>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("unique", ["id", "name"], 
+            "default": GenerateElement("unique", ["id", "name"],
                 re.compile("((?:annotation )?(?:selector |(?:field )+))"))
         },
         "reduce": ReduceUnique
     },
-    
+
     "whiteSpace": {"struct" : """
         <whiteSpace
           fixed = boolean : false
@@ -1795,9 +1795,9 @@ XSD_NAMESPACE = {
           {any attributes with non-schema namespace . . .}>
           Content: (annotation?)
         </whiteSpace>""",
-        "type": SYNTAXELEMENT, 
+        "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("whiteSpace", 
+            "default": GenerateElement("whiteSpace",
                 ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("whiteSpace", True)
@@ -1808,7 +1808,7 @@ XSD_NAMESPACE = {
 #-------------------------------------------------------------------------------
 
     "abstract": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GetBoolean
         },
@@ -1818,7 +1818,7 @@ XSD_NAMESPACE = {
     },
 
     "attributeFormDefault": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateEnumeratedExtraction("member attributeFormDefault", ["qualified", "unqualified"])
         },
@@ -1826,23 +1826,23 @@ XSD_NAMESPACE = {
             "default": "unqualified"
         }
     },
-    
+
     "base": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member base", QName_model)
         }
     },
-    
+
     "block": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateGetList("block", ["restriction", "extension", "substitution"])
         }
     },
-    
+
     "blockDefault": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateGetList("block", ["restriction", "extension", "substitution"])
         },
@@ -1850,16 +1850,16 @@ XSD_NAMESPACE = {
             "default": ""
         }
     },
-    
+
     "default": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GetAttributeValue
         }
     },
 
     "elementFormDefault": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateEnumeratedExtraction("member elementFormDefault", ["qualified", "unqualified"])
         },
@@ -1867,9 +1867,9 @@ XSD_NAMESPACE = {
             "default": "unqualified"
         }
     },
-    
+
     "final": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateGetList("final", ["restriction", "extension", "substitution"]),
             "simpleType": GenerateGetList("final", ["list", "union", "restriction"])
@@ -1877,7 +1877,7 @@ XSD_NAMESPACE = {
     },
 
     "finalDefault": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateGetList("finalDefault", ["restriction", "extension", "list", "union"])
         },
@@ -1885,9 +1885,9 @@ XSD_NAMESPACE = {
             "default": ""
         }
     },
-    
+
     "fixed": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GetBoolean,
             "attribute": GetAttributeValue,
@@ -1901,35 +1901,35 @@ XSD_NAMESPACE = {
     },
 
     "form": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateEnumeratedExtraction("member form", ["qualified", "unqualified"])
         }
     },
 
     "id": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member id", NCName_model)
         }
     },
-    
+
     "itemType": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member itemType", QName_model)
         }
     },
 
     "memberTypes": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameListExtraction("member memberTypes", QNames_model)
         },
     },
-    
+
     "maxOccurs": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateLimitExtraction(),
             "all": GenerateLimitExtraction(1, 1, False)
@@ -1940,7 +1940,7 @@ XSD_NAMESPACE = {
     },
 
     "minOccurs": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateLimitExtraction(unbounded = False),
             "all": GenerateLimitExtraction(0, 1, False)
@@ -1951,7 +1951,7 @@ XSD_NAMESPACE = {
     },
 
     "mixed": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GetBoolean
         },
@@ -1960,16 +1960,16 @@ XSD_NAMESPACE = {
             "complexType": False
         }
     },
-    
+
     "name": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member name", NCName_model)
         }
     },
-    
+
     "namespace": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member namespace", URI_model),
             "any": GetNamespaces
@@ -1981,14 +1981,14 @@ XSD_NAMESPACE = {
     },
 
     "nillable": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GetBoolean
         },
     },
-    
+
     "processContents": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateEnumeratedExtraction("member processContents", ["lax", "skip", "strict"])
         },
@@ -1996,9 +1996,9 @@ XSD_NAMESPACE = {
             "default": "strict"
         }
     },
-    
+
     "ref": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member ref", QName_model)
         }
@@ -2010,44 +2010,44 @@ XSD_NAMESPACE = {
             "default": GenerateModelNameExtraction("member refer", QName_model)
         }
     },
-    
+
     "schemaLocation": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member schemaLocation", URI_model)
         }
     },
-    
+
     "source": {
         "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member source", URI_model)
         }
     },
-    
+
     "substitutionGroup": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member substitutionGroup", QName_model)
         }
     },
 
     "targetNamespace": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member targetNamespace", URI_model)
         }
     },
-    
+
     "type": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateModelNameExtraction("member type", QName_model)
         }
     },
 
     "use": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GenerateEnumeratedExtraction("member usage", ["required", "optional", "prohibited"])
         },
@@ -2057,7 +2057,7 @@ XSD_NAMESPACE = {
     },
 
     "value": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
             "default": GetAttributeValue,
             "fractionDigits": GenerateIntegerExtraction(minInclusive=0),
@@ -2077,13 +2077,13 @@ XSD_NAMESPACE = {
     },
 
     "xpath": {
-        "type": SYNTAXATTRIBUTE, 
+        "type": SYNTAXATTRIBUTE,
         "extract": {
 #            "default": NotSupportedYet("xpath")
             "default": GetAttributeValue
         }
     },
-    
+
 #-------------------------------------------------------------------------------
 #                           Simple types definition
 #-------------------------------------------------------------------------------
@@ -2110,27 +2110,27 @@ XSD_NAMESPACE = {
 
     "token": {
         "type": SIMPLETYPE,
-        "basename": "token",  
+        "basename": "token",
         "extract": GetToken,
         "facets": STRING_FACETS,
         "generate": GenerateSimpleTypeXMLText(lambda x : x),
         "initial": lambda: "",
         "check": lambda x: isinstance(x, (StringType, UnicodeType))
     },
-    
+
     "base64Binary": {
-        "type": SIMPLETYPE, 
-        "basename": "base64Binary", 
+        "type": SIMPLETYPE,
+        "basename": "base64Binary",
         "extract": NotSupportedYet("base64Binary"),
         "facets": STRING_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
         "check": lambda x: isinstance(x, (IntType, LongType))
     },
-    
+
     "hexBinary": {
         "type": SIMPLETYPE,
-        "basename": "hexBinary", 
+        "basename": "hexBinary",
         "extract": GetHexInteger,
         "facets": STRING_FACETS,
         "generate": GenerateSimpleTypeXMLText(lambda x: ("%."+str(int(round(len("%X"%x)/2.)*2))+"X")%x),
@@ -2140,24 +2140,24 @@ XSD_NAMESPACE = {
 
     "integer": {
         "type": SIMPLETYPE,
-        "basename": "integer", 
+        "basename": "integer",
         "extract": GenerateIntegerExtraction(),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
         "check": lambda x: isinstance(x, IntType)
     },
-    
+
     "positiveInteger": {
         "type": SIMPLETYPE,
-        "basename": "positiveInteger", 
+        "basename": "positiveInteger",
         "extract": GenerateIntegerExtraction(minExclusive=0),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 1,
         "check": lambda x: isinstance(x, IntType)
     },
-    
+
     "negativeInteger": {
         "type": SIMPLETYPE,
         "basename": "negativeInteger",
@@ -2167,27 +2167,27 @@ XSD_NAMESPACE = {
         "initial": lambda: -1,
         "check": lambda x: isinstance(x, IntType)
     },
-    
+
     "nonNegativeInteger": {
-        "type": SIMPLETYPE, 
-        "basename": "nonNegativeInteger", 
+        "type": SIMPLETYPE,
+        "basename": "nonNegativeInteger",
         "extract": GenerateIntegerExtraction(minInclusive=0),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
         "check": lambda x: isinstance(x, IntType)
     },
-    
+
     "nonPositiveInteger": {
         "type": SIMPLETYPE,
-        "basename": "nonPositiveInteger", 
+        "basename": "nonPositiveInteger",
         "extract": GenerateIntegerExtraction(maxInclusive=0),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
         "check": lambda x: isinstance(x, IntType)
     },
-    
+
     "long": {
         "type": SIMPLETYPE,
         "basename": "long",
@@ -2197,7 +2197,7 @@ XSD_NAMESPACE = {
         "initial": lambda: 0,
         "check": lambda x: isinstance(x, IntType)
     },
-    
+
     "unsignedLong": {
         "type": SIMPLETYPE,
         "basename": "unsignedLong",
@@ -2240,7 +2240,7 @@ XSD_NAMESPACE = {
 
     "unsignedShort": {
         "type": SIMPLETYPE,
-        "basename": "unsignedShort", 
+        "basename": "unsignedShort",
         "extract": GenerateIntegerExtraction(minInclusive=0,maxExclusive=2**16),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
@@ -2306,7 +2306,7 @@ XSD_NAMESPACE = {
         "generate": GenerateSimpleTypeXMLText(lambda x:{True : "true", False : "false"}[x]),
         "initial": lambda: False,
         "check": lambda x: isinstance(x, BooleanType)
-    },	
+    },
 
     "duration": {
         "type": SIMPLETYPE,
@@ -2337,7 +2337,7 @@ XSD_NAMESPACE = {
         "initial": lambda: datetime.date(1,1,1),
         "check": lambda x: isinstance(x, datetime.date)
     },
-    
+
     "time": {
         "type": SIMPLETYPE,
         "basename": "time",
@@ -2407,7 +2407,7 @@ XSD_NAMESPACE = {
         "initial": lambda: "",
         "check": lambda x: isinstance(x, (StringType, UnicodeType))
     },
-    
+
     "QName": {
         "type": SIMPLETYPE,
         "basename": "QName",
@@ -2531,4 +2531,3 @@ XSD_NAMESPACE = {
     # Complex Types
     "anyType": {"type": COMPLEXTYPE, "extract": lambda x:None},
 }
-
