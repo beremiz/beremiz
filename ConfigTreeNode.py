@@ -215,7 +215,7 @@ class ConfigTreeNode:
             # Call the confnode specific OnCTNSave method
             result = self.OnCTNSave(from_project_path)
             if not result:
-                return _("Error while saving \"%s\"\n")%self.CTNPath()
+                return _("Error while saving \"%s\"\n") % self.CTNPath()
 
             # mark confnode as saved
             self.ChangesToSave = False
@@ -409,7 +409,7 @@ class ConfigTreeNode:
             BaseDesiredName = DesiredName
         suffix = 1
         while res in AllNames:
-            res = "%s_%d"%(BaseDesiredName, suffix)
+            res = "%s_%d" % (BaseDesiredName, suffix)
             suffix += 1
 
         # Get old path
@@ -453,7 +453,7 @@ class ConfigTreeNode:
             if res < CurrentChannel: # Want to go down ?
                 res -=  1 # Test for n-1
                 if res < 0 :
-                    self.GetCTRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n")%CurrentChannel)
+                    self.GetCTRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n") % CurrentChannel)
                     return CurrentChannel # Can't go bellow 0, do nothing
             else : # Want to go up ?
                 res +=  1 # Test for n-1

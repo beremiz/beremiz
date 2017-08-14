@@ -252,10 +252,10 @@ class VariableDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
         except:
-            message = _("Invalid value \"%s\" for variable grid element")%data
+            message = _("Invalid value \"%s\" for variable grid element") % data
             values = None
         if not isinstance(values, TupleType):
-            message = _("Invalid value \"%s\" for variable grid element")%data
+            message = _("Invalid value \"%s\" for variable grid element") % data
             values = None
         if values is not None:
             if col != wx.NOT_FOUND and row != wx.NOT_FOUND:
@@ -279,9 +279,9 @@ class VariableDropTarget(wx.TextDropTarget):
                         if message is None:
                             if not location.startswith("%"):
                                 if location[0].isdigit() and base_type != "BOOL":
-                                    message = _("Incompatible size of data between \"%s\" and \"BOOL\"")%location
+                                    message = _("Incompatible size of data between \"%s\" and \"BOOL\"") % location
                                 elif location[0] not in LOCATIONDATATYPES:
-                                    message = _("Unrecognized data size \"%s\"")%location[0]
+                                    message = _("Unrecognized data size \"%s\"") % location[0]
                                 elif base_type not in LOCATIONDATATYPES[location[0]]:
                                     message = _("Incompatible size of data between \"{a1}\" and \"{a2}\"").\
                                               format(a1 = location, a2 = variable_type)
@@ -335,7 +335,7 @@ class VariableDropTarget(wx.TextDropTarget):
                 elif var_name.upper() in [name.upper()
                         for name in self.ParentWindow.Controler.\
                             GetProjectPouNames(self.ParentWindow.Debug)]:
-                    message = _("\"%s\" pou already exists!")%var_name
+                    message = _("\"%s\" pou already exists!") % var_name
                 elif not var_name.upper() in [name.upper()
                         for name in self.ParentWindow.Controler.\
                             GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
@@ -393,7 +393,7 @@ class VariableDropTarget(wx.TextDropTarget):
                     self.ParentWindow.SaveValues()
                     self.ParentWindow.RefreshValues()
                 else:
-                    message = _("\"%s\" element for this pou already exists!")%var_name
+                    message = _("\"%s\" element for this pou already exists!") % var_name
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)

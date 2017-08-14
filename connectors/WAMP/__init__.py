@@ -90,7 +90,7 @@ def WAMP_connector_factory(uri, confnodesroot):
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory)
-        confnodesroot.logger.write(_("WAMP connecting to URL : %s\n")%url)
+        confnodesroot.logger.write(_("WAMP connecting to URL : %s\n") % url)
         return conn
 
     AddToDoBeforeQuit = confnodesroot.AppFrame.AddToDoBeforeQuit
@@ -149,7 +149,7 @@ def WAMP_connector_factory(uri, confnodesroot):
     try :
         return WampPLCObjectProxy()
     except Exception, msg:
-        confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n")%location)
+        confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n") % location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None
 

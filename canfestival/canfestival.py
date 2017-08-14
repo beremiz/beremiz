@@ -72,7 +72,7 @@ def GetSlaveLocationTree(slave_node, current_location, name):
                 "size": size,
                 "IEC_type": IECTypeConversion.get(typeinfos["name"]),
                 "var_name": "%s_%4.4x_%2.2x" % ("_".join(name.split()), index, subindex),
-                "location": "%s%s"%(SizeConversion[size], ".".join(map(str, current_location +
+                "location": "%s%s" % (SizeConversion[size], ".".join(map(str, current_location +
                                                                                 (index, subindex)))),
                 "description": "",
                 "children": []})
@@ -219,16 +219,16 @@ class _SlaveCTN(NodeManager):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(str, current_location))
-        Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
+        Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix )
         # Create a new copy of the model
         slave = self.GetCurrentNodeCopy()
-        slave.SetNodeName("OD_%s"%prefix)
+        slave.SetNodeName("OD_%s" % prefix)
         # allow access to local OD from Slave PLC
         pointers = config_utils.LocalODPointers(locations, current_location, slave)
         res = gen_cfile.GenerateFile(Gen_OD_path, slave, pointers)
         if res :
             raise Exception, res
-        res = eds_utils.GenerateEDSFile(os.path.join(buildpath, "Slave_%s.eds"%prefix), slave)
+        res = eds_utils.GenerateEDSFile(os.path.join(buildpath, "Slave_%s.eds" % prefix), slave)
         if res :
             raise Exception, res
         return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
@@ -433,10 +433,10 @@ class _NodeListCTN(NodeList):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(str, current_location))
-        Gen_OD_path = os.path.join(buildpath, "OD_%s.c"%prefix )
+        Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         try:
-            master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s"%prefix)
+            master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s" % prefix)
         except config_utils.PDOmappingException, e:
             raise Exception, e.message
         # Do generate C file.
@@ -527,68 +527,68 @@ class RootClass:
                 # Not a slave -> master
                 child_data = getattr(child, "CanFestivalNode")
                 # Apply sync setting
-                format_dict["nodes_init"] += 'NODE_MASTER_INIT(%s, %s)\n    '%(
+                format_dict["nodes_init"] += 'NODE_MASTER_INIT(%s, %s)\n    ' % (
                        nodename,
                        child_data.getNodeId())
                 if child_data.getSync_TPDOs():
-                    format_dict["nodes_send_sync"] += 'NODE_SEND_SYNC(%s)\n    '%(nodename)
-                    format_dict["nodes_proceed_sync"] += 'NODE_PROCEED_SYNC(%s)\n    '%(nodename)
+                    format_dict["nodes_send_sync"] += 'NODE_SEND_SYNC(%s)\n    ' % (nodename)
+                    format_dict["nodes_proceed_sync"] += 'NODE_PROCEED_SYNC(%s)\n    ' % (nodename)
 
                 # initialize and declare node boot status variables for post_SlaveBootup lookup
                 SlaveIDs = child.GetSlaveIDs()
                 if len(SlaveIDs) == 0:
                     # define post_SlaveBootup lookup functions
                     format_dict["slavebootups"] += (
-                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n"%(nodename))
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n" % (nodename))
                 else:
                     format_dict["slavebootups"] += (
-                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n"%(nodename)+
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n" % (nodename)+
                         "    check_and_start_node(d, nodeId);\n"+
                         "}\n")
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
-                    "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n"%(nodename,nodename))
+                    "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n" % (nodename,nodename))
                 format_dict["pre_op"] += (
-                    "static void %s_preOperational(CO_Data* d){\n    "%(nodename)+
-                    "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n"%NdId for NdId in SlaveIDs])+
+                    "static void %s_preOperational(CO_Data* d){\n    " % (nodename)+
+                    "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n" % NdId for NdId in SlaveIDs])+
                     "}\n")
                 format_dict["pre_op_register"] += (
-                    "%s_Data.preOperational = %s_preOperational;\n"%(nodename,nodename))
+                    "%s_Data.preOperational = %s_preOperational;\n" % (nodename,nodename))
             else:
                 # Slave node
                 align = child_data.getSync_Align()
                 align_ratio=child_data.getSync_Align_Ratio()
                 if align > 0:
                     format_dict["post_sync"] += (
-                        "static int %s_CalCount = 0;\n"%(nodename)+
-                        "static void %s_post_sync(CO_Data* d){\n"%(nodename)+
-                        "    if(%s_CalCount < %d){\n"%(nodename, align)+
-                        "        %s_CalCount++;\n"%(nodename)+
+                        "static int %s_CalCount = 0;\n" % (nodename)+
+                        "static void %s_post_sync(CO_Data* d){\n" % (nodename)+
+                        "    if(%s_CalCount < %d){\n" % (nodename, align)+
+                        "        %s_CalCount++;\n" % (nodename)+
                         "        align_tick(-1);\n"+
                         "    }else{\n"+
-                        "        align_tick(%d);\n"%(align_ratio)+
+                        "        align_tick(%d);\n" % (align_ratio)+
                         "    }\n"+
                         "}\n")
                     format_dict["post_sync_register"] += (
-                        "%s_Data.post_sync = %s_post_sync;\n"%(nodename,nodename))
-                format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    '%(
+                        "%s_Data.post_sync = %s_post_sync;\n" % (nodename,nodename))
+                format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    ' % (
                        nodename,
                        child_data.getNodeId())
 
             # Include generated OD headers
-            format_dict["nodes_includes"] += '#include "%s.h"\n'%(nodename)
+            format_dict["nodes_includes"] += '#include "%s.h"\n' % (nodename)
             # Declare CAN channels according user filled config
-            format_dict["board_decls"] += 'BOARD_DECL(%s, "%s", "%s")\n'%(
+            format_dict["board_decls"] += 'BOARD_DECL(%s, "%s", "%s")\n' % (
                    nodename,
                    child.GetCanDevice(),
                    child_data.getCAN_Baudrate())
-            format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    '%(nodename)
-            format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    '%(nodename)
-            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    '%(nodename)
+            format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    ' % (nodename)
+            format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    ' % (nodename)
+            format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    ' % (nodename)
 
         filename = paths.AbsNeighbourFile(__file__,"cf_runtime.c")
         cf_main = open(filename).read() % format_dict
-        cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c"%format_dict)
+        cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c" % format_dict)
         f = open(cf_main_path,'w')
         f.write(cf_main)
         f.close()

@@ -57,9 +57,9 @@ for i in xrange(26):
 re_texts = {}
 re_texts["letter"] = "[A-Za-z]"
 re_texts["digit"] = "[0-9]"
-re_texts["identifier"] = "((?:%(letter)s|(?:_(?:%(letter)s|%(digit)s)))(?:_?(?:%(letter)s|%(digit)s))*)"%re_texts
+re_texts["identifier"] = "((?:%(letter)s|(?:_(?:%(letter)s|%(digit)s)))(?:_?(?:%(letter)s|%(digit)s))*)" % re_texts
 IDENTIFIER_MODEL = re.compile(re_texts["identifier"])
-LABEL_MODEL = re.compile("[ \t\n]%(identifier)s:[ \t\n]"%re_texts)
+LABEL_MODEL = re.compile("[ \t\n]%(identifier)s:[ \t\n]" % re_texts)
 EXTENSIBLE_PARAMETER = re.compile("IN[1-9][0-9]*$")
 
 HIGHLIGHT_TYPES = {
@@ -267,9 +267,9 @@ class TextViewer(EditorPanel):
                             return
                         dialog.Destroy()
                     if blockname.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
-                        message = _("\"%s\" pou already exists!")%blockname
+                        message = _("\"%s\" pou already exists!") % blockname
                     elif blockname.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
-                        message = _("\"%s\" element for this pou already exists!")%blockname
+                        message = _("\"%s\" element for this pou already exists!") % blockname
                     else:
                         self.Controler.AddEditedElementPouVar(self.TagName, values[0], blockname)
                         self.RefreshVariablePanel()
@@ -296,9 +296,9 @@ class TextViewer(EditorPanel):
                     if var_name is None:
                         return
                     elif var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
-                        message = _("\"%s\" pou already exists!")%var_name
+                        message = _("\"%s\" pou already exists!") % var_name
                     elif var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
-                        message = _("\"%s\" element for this pou already exists!")%var_name
+                        message = _("\"%s\" element for this pou already exists!") % var_name
                     else:
                         location = values[0]
                         if not location.startswith("%"):
@@ -347,7 +347,7 @@ class TextViewer(EditorPanel):
                     if var_name is None:
                         return
                     elif var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
-                        message = _("\"%s\" pou already exists!")%var_name
+                        message = _("\"%s\" pou already exists!") % var_name
                     else:
                         var_type = values[2]
                         if not var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
@@ -370,7 +370,7 @@ class TextViewer(EditorPanel):
                 if var_name is None:
                     return
                 elif var_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames(self.Debug)]:
-                    message = _("\"%s\" pou already exists!")%var_name
+                    message = _("\"%s\" pou already exists!") % var_name
                 else:
                     if not var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
                         self.Controler.AddEditedElementPouExternalVar(self.TagName, values[2], var_name)

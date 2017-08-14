@@ -629,7 +629,7 @@ class PLCControler:
             if self.ProjectIsSaved():
                 return self.FileName
             else:
-                return "~%s~"%self.FileName
+                return "~%s~" % self.FileName
         return ""
 
     # Change file path and save file name or create a default one if file path not defined
@@ -637,7 +637,7 @@ class PLCControler:
         self.FilePath = filepath
         if filepath == "":
             self.LastNewIndex += 1
-            self.FileName = _("Unnamed%d")%self.LastNewIndex
+            self.FileName = _("Unnamed%d") % self.LastNewIndex
         else:
             self.FileName = os.path.splitext(os.path.basename(filepath))[0]
 
@@ -2304,7 +2304,7 @@ class PLCControler:
 
         i = start_idx
         while name is None or names.get(name.upper(), False):
-            name = (format%i)
+            name = (format % i)
             i += 1
         return name
 
@@ -2342,10 +2342,10 @@ class PLCControler:
                     blockname = instance.getinstanceName()
                     if blocktype_infos["type"] != "function" and blockname is not None:
                         if element_type == "function":
-                            return _("FunctionBlock \"%s\" can't be pasted in a Function!!!")%blocktype
+                            return _("FunctionBlock \"%s\" can't be pasted in a Function!!!") % blocktype
                         blockname = self.GenerateNewName(tagname,
                                                          blockname,
-                                                         "%s%%d"%blocktype,
+                                                         "%s%%d" % blocktype,
                                                          debug=debug)
                         exclude[blockname] = True
                         instance.setinstanceName(blockname)

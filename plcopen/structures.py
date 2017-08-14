@@ -137,7 +137,7 @@ def csv_input_translate(str_decl, variables, base):
             param_name = param_type
             param_type = variables[param_type]
         elif len_of_not_predifined_variable > 1:
-            param_name = "IN%d"%base
+            param_name = "IN%d" % base
             base += 1
         else:
             param_name = "IN"

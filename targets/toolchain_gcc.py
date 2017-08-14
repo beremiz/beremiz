@@ -191,7 +191,7 @@ class toolchain_gcc():
 
                         if status :
                             self.srcmd5.pop(bn)
-                            self.CTRInstance.logger.write_error(_("C compilation of %s failed.\n")%bn)
+                            self.CTRInstance.logger.write_error(_("C compilation of %s failed.\n") % bn)
                             return False
                     obns.append(obn)
                     objs.append(objectfilename)

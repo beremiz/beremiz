@@ -128,7 +128,7 @@ def processCustomFiles(filein, fileout, regexp, prefix = ''):
             if not words_found.get(word, False) and messages.find("msgid \"%s\"\nmsgstr \"\"" % word) == -1:
                 words_found[word] = True
                 messages_file.write('\n')
-                messages_file.write("msgid \"%s\"\n"%word)
+                messages_file.write("msgid \"%s\"\n" % word)
                 messages_file.write("msgstr \"\"\n")
         code_file.close()
 

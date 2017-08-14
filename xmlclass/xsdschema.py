@@ -99,7 +99,7 @@ def ReduceAnnotation(factory, attributes, elements):
             annotation["appinfo"].append((child["source"], child["content"]))
         elif child["type"] == "documentation":
             if child["source"] is not None:
-                text = "(source: %(source)s):\n%(content)s\n\n"%child
+                text = "(source: %(source)s):\n%(content)s\n\n" % child
             else:
                 text = child["content"] + "\n\n"
             if not annotation["documentation"].has_key(child["language"]):
@@ -836,7 +836,7 @@ def ReduceSequence(factory, attributes, elements):
             elements_tmp = []
             for element in elmtgroup["elements"]:
                 if not isinstance(element["elmt_type"], (UnicodeType, StringType)) and element["elmt_type"]["type"] == COMPLEXTYPE:
-                    elmt_type = "%s_%s"%(elmtgroup["name"], element["name"])
+                    elmt_type = "%s_%s" % (elmtgroup["name"], element["name"])
                     if factory.TargetNamespace is not None:
                         elmt_type = "%s:%s" % (factory.TargetNamespace, elmt_type)
                     new_element = element.copy()
@@ -2134,7 +2134,7 @@ XSD_NAMESPACE = {
         "basename": "hexBinary",
         "extract": GetHexInteger,
         "facets": STRING_FACETS,
-        "generate": GenerateSimpleTypeXMLText(lambda x: ("%."+str(int(round(len("%X"%x)/2.)*2))+"X")%x),
+        "generate": GenerateSimpleTypeXMLText(lambda x: ("%."+str(int(round(len("%X" % x)/2.)*2))+"X") % x),
         "initial": lambda: 0,
         "check": lambda x: isinstance(x, (IntType, LongType))
     },

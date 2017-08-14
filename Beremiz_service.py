@@ -44,7 +44,7 @@ Usage of Beremiz PLC execution service :\n
            -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
-"""%sys.argv[0]
+""" % sys.argv[0]
 
 try:
     opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
@@ -212,7 +212,7 @@ if enablewx:
                 texts = {"value" : value}
                 for function, message in self.Tests:
                     if not function(value):
-                        message = wx.MessageDialog(self, message%texts, _("Error"), wx.OK|wx.ICON_ERROR)
+                        message = wx.MessageDialog(self, message % texts, _("Error"), wx.OK|wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                         return

@@ -44,7 +44,7 @@ def open_win_svg(svgexepath, svgfile):
 def open_lin_svg(svgexepath, svgfile):
     """ Open Inkscape on Linux platform """
     if os.path.isfile("/usr/bin/inkscape"):
-        os.system("%s %s &"%(svgexepath , svgfile))
+        os.system("%s %s &" % (svgexepath , svgfile))
     
 def open_svg(svgfile):
     """ Generic function to open SVG file """

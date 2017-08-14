@@ -101,28 +101,28 @@ class CFile(CodeFile):
         
         # Adding Beremiz confnode functions
         text += "/* Beremiz confnode functions */\n"
-        text += "int __init_%s(int argc,char **argv)\n{\n"%location_str
+        text += "int __init_%s(int argc,char **argv)\n{\n" % location_str
         text += self.CodeFile.initFunction.getanyText().strip()
         text += "  return 0;\n}\n\n"
         
-        text += "void __cleanup_%s(void)\n{\n"%location_str
+        text += "void __cleanup_%s(void)\n{\n" % location_str
         text += self.CodeFile.cleanUpFunction.getanyText().strip()
         text += "\n}\n\n"
         
-        text += "void __retrieve_%s(void)\n{\n"%location_str
+        text += "void __retrieve_%s(void)\n{\n" % location_str
         text += self.CodeFile.retrieveFunction.getanyText().strip()
         text += "\n}\n\n"
         
-        text += "void __publish_%s(void)\n{\n"%location_str
+        text += "void __publish_%s(void)\n{\n" % location_str
         text += self.CodeFile.publishFunction.getanyText().strip()
         text += "\n}\n\n"
         
-        Gen_Cfile_path = os.path.join(buildpath, "CFile_%s.c"%location_str)
+        Gen_Cfile_path = os.path.join(buildpath, "CFile_%s.c" % location_str)
         cfile = open(Gen_Cfile_path,'w')
         cfile.write(text)
         cfile.close()
         
-        matiec_CFLAGS = '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath())
+        matiec_CFLAGS = '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath())
         
         return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_CFLAGS))],str(self.CExtension.getLDFLAGS()),True
 

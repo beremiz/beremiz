@@ -479,7 +479,7 @@ class Beremiz(IDEFrame):
             self.runtime_port = int(random.random() * 1000) + 61131
             # launch local runtime
             self.local_runtime = ProcessLogger(self.Log,
-                "\"%s\" \"%s\" -p %s -i localhost %s %s"%(
+                "\"%s\" \"%s\" -p %s -i localhost %s %s" % (
                     sys.executable,
                     Bpath("Beremiz_service.py"),
                     self.runtime_port,

@@ -252,7 +252,7 @@ class FBD_Block(Graphic_Element):
                     start = int(inputs[-1][0].replace("IN", ""))
                     for i in xrange(self.Extension - len(blocktype["inputs"])):
                         start += 1
-                        inputs.append(("IN%d"%start, inputs[-1][1], inputs[-1][2]))
+                        inputs.append(("IN%d" % start, inputs[-1][1], inputs[-1][2]))
                 comment = blocktype["comment"]
                 self.Description = _(comment) + blocktype.get("usage", "")
             else:

@@ -171,7 +171,7 @@ del __ext_name__
 
         # write generated content to python file
         runtimefile_path = os.path.join(buildpath,
-            "runtime_%s.py"%location_str)
+            "runtime_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write(PyFileContent.encode('utf-8'))
         runtimefile.close()
@@ -279,16 +279,16 @@ void __publish_%(location_str)s(void){
 }
 """ % locals()
 
-        Gen_PyCfile_path = os.path.join(buildpath, "PyCFile_%s.c"%location_str)
+        Gen_PyCfile_path = os.path.join(buildpath, "PyCFile_%s.c" % location_str)
         pycfile = open(Gen_PyCfile_path,'w')
         pycfile.write(PyCFileContent)
         pycfile.close()
 
-        matiec_CFLAGS = '"-I%s"'%os.path.abspath(
+        matiec_CFLAGS = '"-I%s"' % os.path.abspath(
             self.GetCTRoot().GetIECLibPath())
 
         return ([(Gen_PyCfile_path, matiec_CFLAGS)],
                 "",
                 True,
-                ("runtime_%s.py"%location_str, file(runtimefile_path,"rb")))
+                ("runtime_%s.py" % location_str, file(runtimefile_path,"rb")))
 

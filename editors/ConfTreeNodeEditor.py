@@ -331,7 +331,7 @@ class ConfTreeNodeEditor(EditorPanel):
         first = True
         for element_infos in elements:
             if path:
-                element_path = "%s.%s"%(path, element_infos["name"])
+                element_path = "%s.%s" % (path, element_infos["name"])
             else:
                 element_path = element_infos["name"]
             if element_infos["type"] == "element":
@@ -358,12 +358,12 @@ class ConfTreeNodeEditor(EditorPanel):
                     flags |= wx.TOP
                 sizer.AddSizer(boxsizer, border=5, flag=flags)
                 staticbitmap = GenStaticBitmap(ID=-1, bitmapname=element_infos["name"],
-                    name="%s_bitmap"%element_infos["name"], parent=self.ParamsEditor,
+                    name="%s_bitmap" % element_infos["name"], parent=self.ParamsEditor,
                     pos=wx.Point(0, 0), size=wx.Size(24, 24), style=0)
                 boxsizer.AddWindow(staticbitmap, border=5, flag=wx.RIGHT)
 
                 statictext = wx.StaticText(self.ParamsEditor,
-                      label="%s:"%_(element_infos["name"]))
+                      label="%s:" % _(element_infos["name"]))
                 boxsizer.AddWindow(statictext, border=5,
                       flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT)
 
@@ -401,7 +401,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             value = element_infos["value"]
 
                             staticbox = wx.StaticBox(self.ParamsEditor,
-                                  label="%s - %s"%(_(name), _(value)), size=wx.Size(10, 0))
+                                  label="%s - %s" % (_(name), _(value)), size=wx.Size(10, 0))
                             staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
                             sizer.AddSizer(staticboxsizer, border=5, flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
                             self.GenerateSizerElements(staticboxsizer, element_infos["children"], element_path)

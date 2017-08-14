@@ -73,9 +73,9 @@ class WxGladeHMI(PythonFileCTNMixin):
         path = self.GetWxGladePath()
         glade = os.path.join(path, 'wxglade.py')
         if wx.Platform == '__WXMSW__':
-            glade = "\"%s\""%glade
+            glade = "\"%s\"" % glade
         mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
-        os.spawnv(mode, sys.executable, ["\"%s\""%sys.executable] + [glade] + options)
+        os.spawnv(mode, sys.executable, ["\"%s\"" % sys.executable] + [glade] + options)
 
     def OnCTNSave(self, from_project_path=None):
         if from_project_path is not None:
@@ -104,8 +104,8 @@ class WxGladeHMI(PythonFileCTNMixin):
 
             hmipyfile_path=os.path.join(self._getBuildPath(), "hmi.py")
             if wx.Platform == '__WXMSW__':
-                wxgfile_path = "\"%s\""%wxgfile_path
-                wxghmipyfile_path = "\"%s\""%hmipyfile_path
+                wxgfile_path = "\"%s\"" % wxgfile_path
+                wxghmipyfile_path = "\"%s\"" % hmipyfile_path
             else:
                 wxghmipyfile_path = hmipyfile_path
             self.launch_wxglade(['-o', wxghmipyfile_path, '-g', 'python', wxgfile_path], wait=True)
@@ -121,7 +121,7 @@ class WxGladeHMI(PythonFileCTNMixin):
                           "\n".join(["%(class)s.%(h)s = %(h)s"%
                             dict(x,h=h) for h in x['handlers']])
                                 for x in hmi_frames])
-        global_hmi = ("global %s\n"%",".join(
+        global_hmi = ("global %s\n" % ",".join(
                          [x["name"] for x in hmi_frames])
                       if len(hmi_frames) > 0 else "")
         init_hmi = "\n".join(["""\
@@ -174,5 +174,5 @@ def OnCloseFrame(evt):
     </application>
     """ % {"name": hmi_name, "class": "Class_%s" % hmi_name})
             if wx.Platform == '__WXMSW__':
-                wxg_filename = "\"%s\""%wxg_filename
+                wxg_filename = "\"%s\"" % wxg_filename
             self.launch_wxglade([wxg_filename])

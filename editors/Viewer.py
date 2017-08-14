@@ -231,10 +231,10 @@ class ViewerDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
         except:
-            message = _("Invalid value \"%s\" for viewer block")%data
+            message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if not isinstance(values, TupleType):
-            message = _("Invalid value \"%s\" for viewer block")%data
+            message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if values is not None:
             if values[1] == "debug":
@@ -244,7 +244,7 @@ class ViewerDropTarget(wx.TextDropTarget):
             elif values[1] in ["function", "functionBlock"]:
                 words = tagname.split("::")
                 if pou_name == values[0]:
-                    message = _("\"%s\" can't use itself!")%pou_name
+                    message = _("\"%s\" can't use itself!") % pou_name
                 elif pou_type == "function" and values[1] != "function":
                     message = _("Function Blocks can't be used in Functions!")
                 elif self.ParentWindow.Controler.PouIsUsedBy(pou_name, values[0], self.ParentWindow.Debug):
@@ -258,9 +258,9 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if values[1] != "function" and blockname == "":
                         blockname = self.ParentWindow.GenerateNewName(blocktype=values[0])
                     if blockname.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                        message = _("\"%s\" pou already exists!")%blockname
+                        message = _("\"%s\" pou already exists!") % blockname
                     elif blockname.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
-                        message = _("\"%s\" element for this pou already exists!")%blockname
+                        message = _("\"%s\" element for this pou already exists!") % blockname
                     else:
                         id = self.ParentWindow.GetNewId()
                         block = FBD_Block(self.ParentWindow, values[0], blockname, id, inputs = blockinputs)
@@ -313,7 +313,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if var_name is None:
                         return
                     elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                        message = _("\"%s\" pou already exists!")%var_name
+                        message = _("\"%s\" pou already exists!") % var_name
                     elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                         if location[1] == "Q":
                             var_class = OUTPUT
@@ -328,7 +328,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)
                     else:
-                        message = _("\"%s\" element for this pou already exists!")%var_name
+                        message = _("\"%s\" element for this pou already exists!") % var_name
             elif values[1] == "NamedConstant":
                 if pou_type == "program":
                     initval = values[0]
@@ -343,7 +343,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if var_name is None:
                         return
                     elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                        message = _("\"%s\" pou already exists!")%var_name
+                        message = _("\"%s\" pou already exists!") % var_name
                     elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                         var_class = INPUT
                         var_type = values[2]
@@ -352,7 +352,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)
                     else:
-                        message = _("\"%s\" element for this pou already exists!")%var_name
+                        message = _("\"%s\" element for this pou already exists!") % var_name
             elif values[1] == "Global":
                 var_name = values[0]
                 dlg = wx.TextEntryDialog(
@@ -365,14 +365,14 @@ class ViewerDropTarget(wx.TextDropTarget):
                 if var_name is None:
                     return
                 elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                    message = _("\"%s\" pou already exists!")%var_name
+                    message = _("\"%s\" pou already exists!") % var_name
                 elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     self.ParentWindow.Controler.AddEditedElementPouExternalVar(tagname, values[2], var_name)
                     self.ParentWindow.RefreshVariablePanel()
                     self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                     self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, var_name, values[2])
                 else:
-                    message = _("\"%s\" element for this pou already exists!")%var_name
+                    message = _("\"%s\" element for this pou already exists!") % var_name
             elif values[1] == "Constant":
                 self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, values[0], None)
             elif values[3] == tagname:
@@ -991,14 +991,14 @@ class Viewer(EditorPanel, DebugViewer):
                 blockname = block.GetName()
                 connectorname = element.GetName()
                 if blockname != "":
-                    iec_path = "%s.%s.%s"%(instance_path, blockname, connectorname)
+                    iec_path = "%s.%s.%s" % (instance_path, blockname, connectorname)
                 else:
                     if connectorname == "":
-                        iec_path = "%s.%s%d"%(instance_path, block.GetType(), block.GetId())
+                        iec_path = "%s.%s%d" % (instance_path, block.GetType(), block.GetId())
                     else:
-                        iec_path = "%s.%s%d_%s"%(instance_path, block.GetType(), block.GetId(), connectorname)
+                        iec_path = "%s.%s%d_%s" % (instance_path, block.GetType(), block.GetId(), connectorname)
             elif isinstance(block, FBD_Variable):
-                iec_path = "%s.%s"%(instance_path, block.GetName())
+                iec_path = "%s.%s" % (instance_path, block.GetName())
             elif isinstance(block, FBD_Connector):
                 connection = self.GetConnectorByName(block.GetName())
                 if connection is not None:
@@ -1006,14 +1006,14 @@ class Viewer(EditorPanel, DebugViewer):
                     if len(connector.Wires) == 1:
                         iec_path = self.GetElementIECPath(connector.Wires[0][0])
         elif isinstance(element, LD_Contact):
-            iec_path = "%s.%s"%(instance_path, element.GetName())
+            iec_path = "%s.%s" % (instance_path, element.GetName())
         elif isinstance(element, SFC_Step):
-            iec_path = "%s.%s.X"%(instance_path, element.GetName())
+            iec_path = "%s.%s.X" % (instance_path, element.GetName())
         elif isinstance(element, SFC_Transition):
             connectors = element.GetConnectors()
             previous_steps = self.GetPreviousSteps(connectors["inputs"])
             next_steps = self.GetNextSteps(connectors["outputs"])
-            iec_path = "%s.%s->%s"%(instance_path, ",".join(previous_steps), ",".join(next_steps))
+            iec_path = "%s.%s->%s" % (instance_path, ",".join(previous_steps), ",".join(next_steps))
         return iec_path
 
     def GetWireModifier(self, wire):
@@ -1883,7 +1883,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnEditBlockMenu(self, event):
         if self.SelectedElement is not None:
-            self.ParentWindow.EditProjectElement(ITEM_POU, "P::%s"%self.SelectedElement.GetType())
+            self.ParentWindow.EditProjectElement(ITEM_POU, "P::%s" % self.SelectedElement.GetType())
 
     def OnAdjustBlockSizeMenu(self, event):
         if self.SelectedElement is not None:
@@ -2238,7 +2238,7 @@ class Viewer(EditorPanel, DebugViewer):
                         }.get(self.Controler.GetPouType(instance_type))
                         if pou_type is not None and instance_type in self.Controler.GetProjectPouNames(self.Debug):
                             self.ParentWindow.OpenDebugViewer(pou_type,
-                                "%s.%s"%(self.GetInstancePath(True), self.SelectedElement.GetName()),
+                                "%s.%s" % (self.GetInstancePath(True), self.SelectedElement.GetName()),
                                 self.Controler.ComputePouName(instance_type))
                 else:
                     iec_path = self.GetElementIECPath(self.SelectedElement)
