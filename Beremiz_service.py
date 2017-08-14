@@ -51,7 +51,7 @@ try:
     opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
 except getopt.GetoptError, err:
     # print help information and exit:
-    print str(err) # will print something like "option -a not recognized"
+    print str(err)  # will print something like "option -a not recognized"
     usage()
     sys.exit(2)
 

@@ -41,11 +41,11 @@ from DebugVariableItem import DebugVariableItem
 from DebugVariableTextViewer import DebugVariableTextViewer
 from DebugVariableGraphicViewer import *
 
-MILLISECOND = 1000000       # Number of nanosecond in a millisecond
-SECOND = 1000 * MILLISECOND # Number of nanosecond in a second
-MINUTE = 60 * SECOND        # Number of nanosecond in a minute
-HOUR = 60 * MINUTE          # Number of nanosecond in a hour
-DAY = 24 * HOUR             # Number of nanosecond in a day
+MILLISECOND = 1000000        # Number of nanosecond in a millisecond
+SECOND = 1000 * MILLISECOND  # Number of nanosecond in a second
+MINUTE = 60 * SECOND         # Number of nanosecond in a minute
+HOUR = 60 * MINUTE           # Number of nanosecond in a hour
+DAY = 24 * HOUR              # Number of nanosecond in a day
 
 # List of values possible for graph range
 # Format is [(time_in_plain_text, value_in_nanosecond),...]
@@ -207,10 +207,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.Ticks = numpy.array([]) # List of tick received
-        self.StartTick = 0           # Tick starting range of data displayed
-        self.Fixed = False           # Flag that range of data is fixed
-        self.CursorTick = None       # Tick of cursor for displaying values
+        self.Ticks = numpy.array([])  # List of tick received
+        self.StartTick = 0            # Tick starting range of data displayed
+        self.Fixed = False            # Flag that range of data is fixed
+        self.CursorTick = None        # Tick of cursor for displaying values
 
         self.DraggingAxesPanel = None
         self.DraggingAxesBoundingBox = None

@@ -53,10 +53,10 @@ GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
 # Canvas height
 [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI] = [0, 100, 200]
 
-CANVAS_BORDER = (20., 10.) # Border height on at bottom and top of graph
-CANVAS_PADDING = 8.5       # Border inside graph where no label is drawn
-VALUE_LABEL_HEIGHT = 17.   # Height of variable label in graph
-AXES_LABEL_HEIGHT = 12.75  # Height of variable value in graph
+CANVAS_BORDER = (20., 10.)  # Border height on at bottom and top of graph
+CANVAS_PADDING = 8.5        # Border inside graph where no label is drawn
+VALUE_LABEL_HEIGHT = 17.    # Height of variable label in graph
+AXES_LABEL_HEIGHT = 12.75   # Height of variable value in graph
 
 # Colors used cyclically for graph curves
 COLOR_CYCLE = ['r', 'b', 'g', 'm', 'y', 'k']
@@ -646,8 +646,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 xw, yw = self.GetPosition()
                 self.ParentWindow.StartDragNDrop(self,
                     self.ItemsDict.values()[item_idx],
-                    x + xw, y + yw, # Current mouse position
-                    x + xw, y + yw) # Mouse position when button was clicked
+                    x + xw, y + yw,  # Current mouse position
+                    x + xw, y + yw)  # Mouse position when button was clicked
 
             # Don't handle mouse button if canvas is 3D and let matplotlib do
             # the default behavior (rotate 3D axes)
@@ -722,13 +722,13 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # highlight
         elif event.button is None:
             # Compute direction for items label according graph type
-            if self.GraphType == GRAPH_PARALLEL: # Graph is parallel
+            if self.GraphType == GRAPH_PARALLEL:  # Graph is parallel
                 directions = [wx.RIGHT] * len(self.AxesLabels) + \
                              [wx.LEFT] * len(self.Labels)
-            elif len(self.AxesLabels) > 0: # Graph is orthogonal in 2D
-                directions = [wx.RIGHT, wx.TOP,  # Directions for AxesLabels
-                             wx.LEFT, wx.BOTTOM] # Directions for Labels
-            else: # Graph is orthogonal in 3D
+            elif len(self.AxesLabels) > 0:        # Graph is orthogonal in 2D
+                directions = [wx.RIGHT, wx.TOP,   # Directions for AxesLabels
+                             wx.LEFT, wx.BOTTOM]  # Directions for Labels
+            else:  # Graph is orthogonal in 3D
                 directions = [wx.LEFT] * len(self.Labels)
 
             # Find if mouse is over an item label
@@ -1022,11 +1022,11 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         self.Axes.tick_params(axis='y', labelsize='small')
 
         # Init variables storing graphical elements added to figure
-        self.Plots = []      # List of curves
-        self.VLine = None    # Vertical line for cursor
-        self.HLine = None    # Horizontal line for cursor (only orthogonal 2D)
-        self.AxesLabels = [] # List of items variable path text label
-        self.Labels = []     # List of items text label
+        self.Plots = []       # List of curves
+        self.VLine = None     # Vertical line for cursor
+        self.HLine = None     # Horizontal line for cursor (only orthogonal 2D)
+        self.AxesLabels = []  # List of items variable path text label
+        self.Labels = []      # List of items text label
 
         # Get function to add a text in figure according to graph type
         add_text_func = self.GetAddTextFunction()
@@ -1084,7 +1084,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # expressed border and text position in pixel on screen and apply the
         # ratio calculated hereafter to get border and text position in
         # matplotlib coordinate
-        canvas_ratio = 1. / height # Divide by canvas height in pixel
+        canvas_ratio = 1. / height  # Divide by canvas height in pixel
         graph_ratio = 1. / (
             (1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio)
              * height)             # Divide by figure height in pixel

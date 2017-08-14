@@ -1140,10 +1140,10 @@ def format_namespace(d, indent='    '):
     return '\n'.join(['%s%s: %s' % (indent, k, repr(v)[:10000]) for k, v in d.iteritems()])
 
 
-ignored_exceptions = [] # a problem with a line in a module is only reported once per session
+ignored_exceptions = []  # a problem with a line in a module is only reported once per session
 
 
-def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
+def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
 
     def save_bug_report(e_type, e_value, e_traceback, bug_report_path,date):
         info = {
@@ -1178,7 +1178,7 @@ def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
         output.close()
 
     def handle_exception(e_type, e_value, e_traceback):
-        traceback.print_exception(e_type, e_value, e_traceback) # this is very helpful when there's an exception in the rest of this func
+        traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
         if ex not in ignored_exceptions:

@@ -27,8 +27,8 @@ from time import time as gettime
 
 import wx
 
-REFRESH_PERIOD = 0.1        # Minimum time between 2 refresh
-DEBUG_REFRESH_LOCK = Lock() # Common refresh lock for all debug viewers
+REFRESH_PERIOD = 0.1         # Minimum time between 2 refresh
+DEBUG_REFRESH_LOCK = Lock()  # Common refresh lock for all debug viewers
 
 #-------------------------------------------------------------------------------
 #                               Debug Viewer Class

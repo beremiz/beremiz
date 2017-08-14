@@ -105,23 +105,23 @@ _BROWSER_TIME = 500
 _MDNS_ADDR = '224.0.0.251'
 _MDNS_PORT = 5353;
 _DNS_PORT = 53;
-_DNS_TTL = 60 * 60; # one hour default TTL
+_DNS_TTL = 60 * 60;  # one hour default TTL
 
-_MAX_MSG_TYPICAL = 1460 # unused
+_MAX_MSG_TYPICAL = 1460  # unused
 _MAX_MSG_ABSOLUTE = 8972
 
-_FLAGS_QR_MASK = 0x8000 # query response mask
-_FLAGS_QR_QUERY = 0x0000 # query
-_FLAGS_QR_RESPONSE = 0x8000 # response
+_FLAGS_QR_MASK = 0x8000  # query response mask
+_FLAGS_QR_QUERY = 0x0000  # query
+_FLAGS_QR_RESPONSE = 0x8000  # response
 
-_FLAGS_AA = 0x0400 # Authorative answer
-_FLAGS_TC = 0x0200 # Truncated
-_FLAGS_RD = 0x0100 # Recursion desired
-_FLAGS_RA = 0x8000 # Recursion available
+_FLAGS_AA = 0x0400  # Authorative answer
+_FLAGS_TC = 0x0200  # Truncated
+_FLAGS_RD = 0x0100  # Recursion desired
+_FLAGS_RA = 0x8000  # Recursion available
 
-_FLAGS_Z = 0x0040 # Zero
-_FLAGS_AD = 0x0020 # Authentic data
-_FLAGS_CD = 0x0010 # Checking disabled
+_FLAGS_Z = 0x0040   # Zero
+_FLAGS_AD = 0x0020  # Authentic data
+_FLAGS_CD = 0x0010  # Checking disabled
 
 _CLASS_IN = 1
 _CLASS_CS = 2
@@ -755,7 +755,7 @@ class DNSOutgoing(object):
         self.size -= 2
 
         length = len(''.join(self.data[index:]))
-        self.insertShort(index, length) # Here is the short we adjusted for
+        self.insertShort(index, length)  # Here is the short we adjusted for
 
     def packet(self):
         """Returns a string containing the packet's bytes
@@ -853,7 +853,7 @@ class Engine(threading.Thread):
     def __init__(self, zeroconf):
         threading.Thread.__init__(self)
         self.zeroconf = zeroconf
-        self.readers = {} # maps socket to reader
+        self.readers = {}  # maps socket to reader
         self.timeout = 5
         self.condition = threading.Condition()
         self.start()

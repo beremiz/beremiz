@@ -86,7 +86,7 @@ field_names = {
  'DateField': ['input_formats'],
  'DateTimeField': ['input_formats'],
  'TimeField': ['input_formats'],
- 'RegexField': ['max_length', 'min_length'], # sadly we can't get the expr
+ 'RegexField': ['max_length', 'min_length'],  # sadly we can't get the expr
  'EmailField': ['max_length', 'min_length'],
  'URLField': ['max_length', 'min_length', 'verify_exists', 'user_agent'],
  'ChoiceField': ['choices'],
@@ -154,7 +154,7 @@ class FormProcessor(JSONRPCService):
 
         f = self.formcls(params)
 
-        if command is None: # just validate
+        if command is None:  # just validate
             if not f.is_valid():
                 return {'success':False, 'errors': builderrors(f)}
             return {'success':True}
@@ -170,7 +170,7 @@ class FormProcessor(JSONRPCService):
         elif command.has_key('save'):
             if not f.is_valid():
                 return {'success':False, 'errors': builderrors(f)}
-            instance = f.save() # XXX: if you want more, over-ride save.
+            instance = f.save()  # XXX: if you want more, over-ride save.
             return {'success': True, 'instance': json_convert(instance) }
 
         elif command.has_key('html'):

@@ -663,7 +663,7 @@ def make_deps(app_name, deps, mod_list):
         #time.sleep(0)
 
     if mod_list:
-        ordered_deps.append(mod_list) # last dependencies - usually the app(s)
+        ordered_deps.append(mod_list)  # last dependencies - usually the app(s)
 
     ordered_deps.reverse()
 

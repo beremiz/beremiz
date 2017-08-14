@@ -26,9 +26,9 @@ import wx
 
 from controls.CustomStyledTextCtrl import faces
 
-TOOLTIP_MAX_CHARACTERS = 30 # Maximum number of characters by line in ToolTip
-TOOLTIP_MAX_LINE = 5        # Maximum number of line in ToolTip
-TOOLTIP_WAIT_PERIOD = 0.5   # Wait period before displaying tooltip in second
+TOOLTIP_MAX_CHARACTERS = 30  # Maximum number of characters by line in ToolTip
+TOOLTIP_MAX_LINE = 5         # Maximum number of line in ToolTip
+TOOLTIP_WAIT_PERIOD = 0.5    # Wait period before displaying tooltip in second
 
 #-------------------------------------------------------------------------------
 #                               Custom ToolTip

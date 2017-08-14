@@ -450,14 +450,14 @@ class ConfigTreeNode:
 
         # Now, try to guess the nearest available channel
         res = DesiredChannel
-        while res in AllChannels: # While channel not free
-            if res < CurrentChannel: # Want to go down ?
-                res -=  1 # Test for n-1
+        while res in AllChannels:  # While channel not free
+            if res < CurrentChannel:  # Want to go down ?
+                res -=  1  # Test for n-1
                 if res < 0 :
                     self.GetCTRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n") % CurrentChannel)
-                    return CurrentChannel # Can't go bellow 0, do nothing
-            else : # Want to go up ?
-                res +=  1 # Test for n-1
+                    return CurrentChannel  # Can't go bellow 0, do nothing
+            else :  # Want to go up ?
+                res +=  1  # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)
         return res
@@ -561,7 +561,7 @@ class ConfigTreeNode:
                 # check name is unique
                 NewCTNName = _self.FindNewName(CTNName)
                 # If dir have already be made, and file exist
-                if os.path.isdir(_self.CTNPath(NewCTNName)): #and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
+                if os.path.isdir(_self.CTNPath(NewCTNName)):  #and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
                     # Load the confnode.xml file into parameters members
                     _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.

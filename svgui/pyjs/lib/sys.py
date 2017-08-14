@@ -1,8 +1,8 @@
 # the platform name (PyV8, smjs, Mozilla, IE6, Opera, Safari etc.)
-platform = '' # to be updated by app, on compile
+platform = ''  # to be updated by app, on compile
 
 # a dictionary of module override names (platform-specific)
-overrides = None # to be updated by app, on compile
+overrides = None  # to be updated by app, on compile
 
 # the remote path for loading modules
 loadpath = None
