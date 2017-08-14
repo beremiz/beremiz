@@ -74,7 +74,7 @@ class ElementsTable(CustomTable):
                 return row + 1
             colname = self.GetColLabelValue(col, False)
             value = self.data[row].get(colname, "")
-               
+
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
                     return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "..".join(x), value[2])), value[1])
@@ -574,7 +574,7 @@ class DataTypeEditor(EditorPanel):
         dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
-        
+
     def OnStructureElementsGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.StructureElementsTable.GetColLabelValue(col, False)
@@ -812,4 +812,3 @@ class DataTypeEditor(EditorPanel):
                         listctrl.SetItemBackgroundColour(infos[1], highlight_type[0])
                         listctrl.SetItemTextColour(infos[1], highlight_type[1])
                         listctrl.Select(listctrl.FocusedItem, False)
-

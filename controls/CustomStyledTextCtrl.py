@@ -82,12 +82,12 @@ def GetCursorPos(old, new):
         return None
 
 class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
-    
+
     def __init__(self, *args, **kwargs):
         wx.stc.StyledTextCtrl.__init__(self, *args, **kwargs)
-        
+
         self.Bind(wx.EVT_MOTION, self.OnMotion)
-        
+
     def OnMotion(self, event):
         if wx.Platform == '__WXMSW__':
             if not event.Dragging():

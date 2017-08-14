@@ -46,7 +46,7 @@ class HtmlWindowUrlClick(wx.PyEvent):
         wx.PyEvent.__init__(self)
         self.SetEventType(EVT_HTML_URL_CLICK)
         self.linkinfo = (linkinfo.GetHref(), linkinfo.GetTarget())
-        
+
 class UrlClickHtmlWindow(wx.html.HtmlWindow):
     """ HTML window that generates and OnLinkClicked event.
 
@@ -54,7 +54,7 @@ class UrlClickHtmlWindow(wx.html.HtmlWindow):
     """
     def OnLinkClicked(self, linkinfo):
         wx.PostEvent(self, HtmlWindowUrlClick(linkinfo))
-    
+
     def Bind(self, event, handler, source=None, id=wx.ID_ANY, id2=wx.ID_ANY):
         if event == HtmlWindowUrlClick:
             self.Connect(-1, -1, EVT_HTML_URL_CLICK, handler)
@@ -68,7 +68,7 @@ class HtmlFrame(wx.Frame):
                   style=wx.DEFAULT_FRAME_STYLE, title='')
             self.SetIcon(prnt.icon)
             self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-            
+
             self.HtmlContent = UrlClickHtmlWindow(id=ID_HTMLFRAMEHTMLCONTENT,
                   name='HtmlContent', parent=self, pos=wx.Point(0, 0),
                   size=wx.Size(-1, -1), style=wx.html.HW_SCROLLBAR_AUTO|wx.html.HW_NO_SELECTION)
@@ -77,17 +77,17 @@ class HtmlFrame(wx.Frame):
         def __init__(self, parent, opened):
             self._init_ctrls(parent)
             self.HtmlFrameOpened = opened
-            
+
         def SetHtmlCode(self, htmlcode):
             self.HtmlContent.SetPage(htmlcode)
-            
+
         def SetHtmlPage(self, htmlpage):
             self.HtmlContent.LoadPage(htmlpage)
-            
+
         def OnCloseFrame(self, event):
             self.HtmlFrameOpened.remove(self.GetTitle())
             event.Skip()
-        
+
         def OnLinkClick(self, event):
             url = event.linkinfo[0]
             try:
