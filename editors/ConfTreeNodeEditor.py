@@ -319,7 +319,7 @@ class ConfTreeNodeEditor(EditorPanel):
                     return fn
                 button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, mouseover_bt_font))
                 button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, normal_bt_font))
-                #hack to force size to mini
+                # hack to force size to mini
                 if not confnode_method.get("enabled",True):
                     button.Disable()
                 msizer.AddWindow(button, flag=wx.ALIGN_CENTER)

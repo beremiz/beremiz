@@ -119,7 +119,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
 
         wx.TextCtrl.__init__(self, parent, **therest)
         
-        #Some variables
+        # Some variables
         self._dropDownClick = dropDownClick
         self._lastinsertionpoint = None
         self._hasfocus = False
@@ -142,7 +142,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
         self.Bind(wx.EVT_TEXT, self.OnEnteredText)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
-        #If need drop down on left click
+        # If need drop down on left click
         if dropDownClick:
             self.Bind(wx.EVT_LEFT_DOWN, self.OnClickToggleDown)
             self.Bind(wx.EVT_LEFT_UP, self.OnClickToggleUp)

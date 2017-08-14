@@ -468,11 +468,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._setBuildPath(BuildPath)
         # If dir have already be made, and file exist
         if os.path.isdir(self.CTNPath()) and os.path.isfile(self.ConfNodeXmlFilePath()):
-            #Load the confnode.xml file into parameters members
+            # Load the confnode.xml file into parameters members
             result = self.LoadXMLParams()
             if result:
                 return result, False
-            #Load and init all the children
+            # Load and init all the children
             self.LoadChildren()
         self.RefreshConfNodesBlockLists()
         self.UpdateButtons()

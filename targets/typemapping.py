@@ -78,7 +78,7 @@ SameEndianessTypeTranslator = {
     }
 
 SwapedEndianessTypeTranslator = {
-    #TODO
+    # TODO
     }
 
 TypeTranslator=SameEndianessTypeTranslator
