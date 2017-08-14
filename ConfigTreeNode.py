@@ -352,13 +352,13 @@ class ConfigTreeNode:
         """
         @return:  String "ParentParentName.ParentName.Name"
         """
-        return  self.CTNParent._GetCurrentName() + self.BaseParams.getName()
+        return self.CTNParent._GetCurrentName() + self.BaseParams.getName()
 
     def _GetCurrentName(self):
         """
         @return:  String "ParentParentName.ParentName.Name."
         """
-        return  self.CTNParent._GetCurrentName() + self.BaseParams.getName() + "."
+        return self.CTNParent._GetCurrentName() + self.BaseParams.getName() + "."
 
     def GetCTRoot(self):
         return self.CTNParent.GetCTRoot()

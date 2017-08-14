@@ -25,7 +25,7 @@
 
 import socket
 import wx
-import  wx.lib.mixins.listctrl  as  listmix
+import wx.lib.mixins.listctrl as listmix
 from util.Zeroconf import *
 
 import connectors

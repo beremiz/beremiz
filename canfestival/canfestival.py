@@ -77,10 +77,10 @@ def GetSlaveLocationTree(slave_node, current_location, name):
                                                                                 (index, subindex)))),
                 "description": "",
                 "children": []})
-    return  {"name": name,
-             "type": LOCATION_CONFNODE,
-             "location": ".".join([str(i) for i in current_location]) + ".x",
-             "children": entries
+    return {"name": name,
+            "type": LOCATION_CONFNODE,
+            "location": ".".join([str(i) for i in current_location]) + ".x",
+            "children": entries
     }
 
 #--------------------------------------------------

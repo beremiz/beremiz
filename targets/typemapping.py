@@ -47,7 +47,7 @@ class IEC_TIME(Structure):
                 ("ns", c_long)]  # tv_nsec
 
 
-def _t(t, u=lambda x:x.value, p=lambda t,x:t(x)): return  (t, u, p)
+def _t(t, u=lambda x:x.value, p=lambda t,x:t(x)): return (t, u, p)
 
 
 def _ttime(): return (IEC_TIME,
