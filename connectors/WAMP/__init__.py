@@ -22,7 +22,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import sys, traceback, atexit
+import sys
+import traceback
+import atexit
 #from twisted.python import log
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp

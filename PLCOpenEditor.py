@@ -24,7 +24,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import wx
-import os, sys, platform, time, traceback, getopt
+import os
+import sys
+import platform
+import time
+import traceback
+import getopt
 import version
 import util.paths as paths
 

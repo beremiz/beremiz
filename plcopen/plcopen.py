@@ -25,7 +25,8 @@
 
 from xmlclass import *
 from types import *
-import os, re
+import os
+import re
 from lxml import etree
 from collections import OrderedDict
 import util.paths as paths

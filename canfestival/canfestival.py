@@ -23,7 +23,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os, sys, shutil
+import os
+import sys
+import shutil
+
 import util.paths as paths
 
 base_folder = paths.AbsParentDir(__file__, 2)
@@ -34,7 +37,9 @@ import wx
 
 from nodelist import NodeList
 from nodemanager import NodeManager
-import config_utils, gen_cfile, eds_utils
+import config_utils
+import gen_cfile
+import eds_utils
 import canfestival_config as local_canfestival_config
 from ConfigTreeNode import ConfigTreeNode
 from commondialogs import CreateNodeDialog

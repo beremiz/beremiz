@@ -27,7 +27,9 @@ from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
 from lxml import etree
 from copy import deepcopy
-import os,sys,re
+import os
+import sys
+import re
 import datetime
 import util.paths as paths
 from time import localtime

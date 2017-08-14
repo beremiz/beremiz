@@ -23,7 +23,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import os, re, traceback
+import os
+import re
+import traceback
 
 from copy import deepcopy
 from lxml import etree
