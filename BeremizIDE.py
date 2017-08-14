@@ -24,12 +24,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import os, sys
+import os
+import sys
 import tempfile
 import shutil
 import random
 import time
 import version
+
 import util.paths as paths
 from types import ListType
 
@@ -40,9 +42,17 @@ def Bpath(*args):
 
 
 
-import wx.lib.buttons, wx.lib.statbmp, wx.stc
+import wx.lib.buttons
+import wx.lib.statbmp
+import wx.stc
 import cPickle
-import types, time, re, platform, time, traceback, commands
+import types
+import time
+import re
+import platform
+import time
+import traceback
+import commands
 
 from docutil import OpenHtmlFrame
 from editors.EditorPanel import EditorPanel
@@ -1071,7 +1081,8 @@ class Beremiz(IDEFrame):
 #-------------------------------------------------------------------------------
 #                               Exception Handler
 #-------------------------------------------------------------------------------
-import threading, traceback
+import threading
+import traceback
 
 Max_Traceback_List_Size = 20
 

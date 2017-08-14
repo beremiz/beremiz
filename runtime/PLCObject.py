@@ -23,7 +23,11 @@
 
 import Pyro.core as pyro
 from threading import Timer, Thread, Lock, Semaphore, Event
-import ctypes, os, commands, types, sys
+import ctypes
+import os
+import commands
+import types
+import sys
 from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator, UnpackDebugBuffer
 from time import time
 

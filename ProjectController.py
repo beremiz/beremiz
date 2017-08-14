@@ -26,12 +26,15 @@
 """
 Beremiz Project Controller
 """
-import os,sys,traceback
+import os
+import sys
+import traceback
 import time
 import features
 import shutil
 import wx
-import re, tempfile
+import re
+import tempfile
 from math import ceil
 from types import ListType
 from threading import Timer, Lock, Thread

@@ -23,7 +23,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os, sys, getopt
+import os
+import sys
+import getopt
 from threading import Thread
 
 def usage():
@@ -524,7 +526,8 @@ else:
 
 
 # Exception hooks s
-import threading, traceback
+import threading
+import traceback
 def LogException(*exp):
     if pyroserver.plcobj is not None:
         pyroserver.plcobj.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))

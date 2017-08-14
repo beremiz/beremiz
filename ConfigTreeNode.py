@@ -31,7 +31,9 @@ Config Tree Node base class.
 - ... TODO : document
 """
 
-import os,traceback,types
+import os
+import traceback
+import types
 import shutil
 from lxml import etree
 

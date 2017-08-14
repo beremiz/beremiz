@@ -24,7 +24,9 @@
 
 
 
-import os, sys, getopt
+import os
+import sys
+import getopt
 import time
 import __builtin__
 import util.paths as paths

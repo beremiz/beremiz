@@ -650,7 +650,9 @@ def LocalODPointers(locations, current_location, slave):
     return pointers
 
 if __name__ == "__main__":
-    import os, sys, getopt
+    import os
+    import sys
+    import getopt
 
     def usage():
         print """

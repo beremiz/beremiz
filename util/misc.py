@@ -26,7 +26,8 @@
 Misc definitions
 """
 
-import os,sys
+import os
+import sys
 
 # helper func to check path write permission
 def CheckPathPerm(path):
