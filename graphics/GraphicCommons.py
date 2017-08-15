@@ -1813,7 +1813,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if segment == -1:
             segment = len(self.Segments) - 1
         # The selected segment is reinitialised
-        if segment == None:
+        if segment is None:
             if self.StartConnected:
                 self.StartConnected.SetSelected(False)
             if self.EndConnected:
@@ -2022,13 +2022,13 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
     # Returns the position of the two selected segment points
     def GetSelectedSegmentPoints(self):
-        if self.SelectedSegment != None and len(self.Points) > 1:
+        if self.SelectedSegment is not None and len(self.Points) > 1:
             return self.Points[self.SelectedSegment:self.SelectedSegment + 2]
         return []
 
     # Returns if the selected segment is the first and/or the last of the wire
     def GetSelectedSegmentConnections(self):
-        if self.SelectedSegment != None and len(self.Points) > 1:
+        if self.SelectedSegment is not None and len(self.Points) > 1:
             return self.SelectedSegment == 0, self.SelectedSegment == len(self.Segments) - 1
         return (True, True)
 
@@ -2436,7 +2436,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         #else:
         # Test if a segment have been handled
         result = self.TestSegment(pos)
-        if result != None:
+        if result is not None:
             if result[1] in (NORTH, SOUTH):
                 wx.CallAfter(self.Parent.SetCurrentCursor, 4)
             elif result[1] in (EAST, WEST):
@@ -2452,7 +2452,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         pos = GetScaledEventPosition(event, dc, scaling)
         # Test if a segment has been handled
         result = self.TestSegment(pos, True)
-        if result != None:
+        if result is not None:
             self.Handle = (HANDLE_SEGMENT, result)
             # Popup the menu with special items for a wire
             self.Parent.PopupWireMenu(0 < result[0] < len(self.Segments) - 1)
@@ -2617,7 +2617,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.OverEnd = False
         # Test if a point has been handled
         result = self.TestPoint(pos)
-        if result != None:
+        if result is not None:
             if result == 0 and self.StartConnected is not None:
                 self.OverStart = True
             elif result != 0 and self.EndConnected is not None:

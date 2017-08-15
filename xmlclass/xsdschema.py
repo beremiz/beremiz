@@ -992,7 +992,7 @@ def CompareSchema(schema, reference):
             return False
         for name, value in schema.items():
             ref_value = reference.get(name, None)
-            if ref_value is None and value != None:
+            if ref_value is None and value is not None:
                 return False
             result = CompareSchema(value, ref_value)
             if not result:

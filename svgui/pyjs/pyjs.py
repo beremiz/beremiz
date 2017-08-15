@@ -595,7 +595,7 @@ class Translator:
         if expr:
             #print >> self.output, "} else { throw(%s); } " % errName
             print >> self.output, "}"
-        if node.else_ != None:
+        if node.else_ is not None:
             print >>self.output, "    } finally {"
             for stmt in node.else_:
                 self._stmt(stmt, current_klass)
@@ -607,7 +607,7 @@ class Translator:
         attr_name = v.attrname
         if isinstance(v.expr, ast.Name):
             obj = self._name(v.expr, current_klass, return_none_for_module=True)
-            if obj == None and v.expr.name in self.module_imports():
+            if obj is None and v.expr.name in self.module_imports():
                 # XXX TODO: distinguish between module import classes
                 # and variables.  right now, this is a hack to get
                 # the sys module working.
@@ -1027,7 +1027,7 @@ class Translator:
         lineNum = "Unknown"
         srcLine = ""
         if hasattr(node, "lineno"):
-            if node.lineno != None:
+            if node.lineno is not None:
                 lineNum = node.lineno
                 srcLine = self.src[min(lineNum, len(self.src))-1]
                 srcLine = srcLine.replace('\\', '\\\\')
@@ -1445,9 +1445,9 @@ class Translator:
         if node.flags == "OP_APPLY":
             lower = "null"
             upper = "null"
-            if node.lower != None:
+            if node.lower is not None:
                 lower = self.expr(node.lower, current_klass)
-            if node.upper != None:
+            if node.upper is not None:
                 upper = self.expr(node.upper, current_klass)
             return "pyjslib.slice(" + self.expr(node.expr, current_klass) + ", " + lower + ", " + upper + ")"
         else:

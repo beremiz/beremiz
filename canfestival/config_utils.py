@@ -117,7 +117,7 @@ def SearchNodePDOMapping(loc_infos, node):
 
     for PDOidx in GetNodePDOIndexes(node, loc_infos["pdotype"]):
         values = node.GetEntry(PDOidx)
-        if values != None:
+        if values is not None:
             for subindex, mapping in enumerate(values):
                 if subindex != 0 and mapping & 0xFFFFFF00 == model:
                     return PDOidx, subindex
@@ -266,7 +266,7 @@ class ConciseDCFGenerator:
         nodeDCF = self.MasterNode.GetEntry(0x1F22, nodeid)
 
         # Extract data and number of params in current DCF
-        if nodeDCF != None and nodeDCF != '':
+        if nodeDCF is not None and nodeDCF != '':
             tmpnbparams = [i for i in nodeDCF[:4]]
             tmpnbparams.reverse()
             nbparams += int(''.join(["%2.2x" % ord(i) for i in tmpnbparams]), 16)
@@ -295,7 +295,7 @@ class ConciseDCFGenerator:
         # starting from start_index
         while index < PDOTypeBaseIndex[pdotype] + 0x200:
             values = self.NodeList.GetSlaveNodeEntry(nodeid, index + 0x200)
-            if values != None and values[0] > 0:
+            if values is not None and values[0] > 0:
                 # Check that all subindex upper than 0 equal 0 => configurable PDO
                 if reduce(lambda x, y: x and y, map(lambda x: x == 0, values[1:]), True):
                     cobid = self.NodeList.GetSlaveNodeEntry(nodeid, index, 1)
@@ -420,7 +420,7 @@ class ConciseDCFGenerator:
 
             # Search if slave has a PDO mapping this locations
             result = SearchNodePDOMapping(locationinfos, node)
-            if result != None:
+            if result is not None:
                 index, subindex = result
                 # Get COB ID of the PDO
                 cobid = self.NodeList.GetSlaveNodeEntry(locationinfos["nodeid"], index - 0x200, 1)
@@ -593,7 +593,7 @@ class ConciseDCFGenerator:
                     # Verify that a not full entry has been found
                     if mapvariableidx < VariableStartIndex[variable_infos["pdotype"]] + 0x2000:
                         # Generate subentry name
-                        if variable_infos["bit"] != None:
+                        if variable_infos["bit"] is not None:
                             subindexname = "%(index)d_%(subindex)d_%(bit)d" % variable_infos
                         else:
                             subindexname = "%(index)d_%(subindex)d" % variable_infos
@@ -607,7 +607,7 @@ class ConciseDCFGenerator:
 
                         # Set value of the PDO mapping
                         typeinfos = self.Manager.GetEntryInfos(typeidx)
-                        if typeinfos != None:
+                        if typeinfos is not None:
                             value = (mapvariableidx << 16) + ((nbsubentries) << 8) + typeinfos["size"]
                             self.MasterNode.SetEntry(current_idx + 0x200, subindex, value)
 

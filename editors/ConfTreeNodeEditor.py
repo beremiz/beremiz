@@ -72,7 +72,7 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
 
     def DrawLabel(self, dc, width, height, dw=0, dy=0):
         bmp = self.bmpLabel
-        if bmp != None:     # if the bitmap is used
+        if bmp is not None:     # if the bitmap is used
             if self.bmpDisabled and not self.IsEnabled():
                 bmp = self.bmpDisabled
             if self.bmpFocus and self.hasFocus:
@@ -82,7 +82,7 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
             bw, bh = bmp.GetWidth(), bmp.GetHeight()
             if not self.up:
                 dw = dy = self.labelDelta
-            hasMask = bmp.GetMask() != None
+            hasMask = bmp.GetMask() is not None
         else:
             bw = bh = 0     # no bitmap -> size is zero
 
@@ -99,7 +99,7 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
 
         pos_x = (width-bw)/2+dw      # adjust for bitmap and text to centre
         pos_y = (height-bh-th)/2+dy
-        if bmp != None:
+        if bmp is not None:
             dc.DrawBitmap(bmp, pos_x, pos_y, hasMask)  # draw bitmap if available
             pos_x = (width-tw)/2+dw      # adjust for bitmap and text to centre
             pos_y += bh + 2

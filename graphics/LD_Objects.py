@@ -92,7 +92,7 @@ class LD_PowerRail(Graphic_Element):
     # Forbids to select a power rail
     def HitTest(self, pt, connectors=True):
         if self.Parent.GetDrawingMode() == FREEDRAWING_MODE:
-            return Graphic_Element.HitTest(self, pt, connectors) or self.TestConnector(pt, exclude=False) != None
+            return Graphic_Element.HitTest(self, pt, connectors) or self.TestConnector(pt, exclude=False) is not None
         return False
 
     # Forbids to select a power rail

@@ -49,7 +49,7 @@ SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Ju
 
 def ResetCursors():
     global CURSORS
-    if CURSORS == None:
+    if CURSORS is None:
         CURSORS = [wx.NullCursor,
                    wx.StockCursor(wx.CURSOR_HAND),
                    wx.StockCursor(wx.CURSOR_SIZENWSE),
@@ -2321,7 +2321,7 @@ class Viewer(EditorPanel, DebugViewer):
                 if self.DrawingWire:
                     connector, errorHighlight = self.FindBlockConnectorWithError(pos, self.SelectedElement.GetConnectionDirection(), self.SelectedElement.EndConnected)
                     self.SelectedElement.ErrHighlight = errorHighlight;
-                    if not connector or self.SelectedElement.EndConnected == None:
+                    if not connector or self.SelectedElement.EndConnected is None:
                         self.SelectedElement.ResetPoints()
                         movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)
                         self.SelectedElement.GeneratePoints()
@@ -2966,7 +2966,7 @@ class Viewer(EditorPanel, DebugViewer):
             "name": step.GetName(),
             "input": len(connectors["inputs"]) > 0,
             "output": len(connectors["outputs"]) > 0,
-            "action": step.GetActionConnector() != None})
+            "action": step.GetActionConnector() is not None})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = step.GetRedrawRect(1, 1)

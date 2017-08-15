@@ -173,7 +173,7 @@ class CodeEditor(CustomStyledTextCtrl):
             mod_type = event.GetModificationType()
             if not (mod_type&wx.stc.STC_PERFORMED_UNDO or mod_type&wx.stc.STC_PERFORMED_REDO):
                 if mod_type&wx.stc.STC_MOD_BEFOREINSERT:
-                    if self.CurrentAction == None:
+                    if self.CurrentAction is None:
                         self.StartBuffering()
                     elif self.CurrentAction[0] != "Add" or self.CurrentAction[1] != event.GetPosition() - 1:
                         self.Controler.EndBuffering()
@@ -181,7 +181,7 @@ class CodeEditor(CustomStyledTextCtrl):
                     self.CurrentAction = ("Add", event.GetPosition())
                     wx.CallAfter(self.RefreshModel)
                 elif mod_type&wx.stc.STC_MOD_BEFOREDELETE:
-                    if self.CurrentAction == None:
+                    if self.CurrentAction is None:
                         self.StartBuffering()
                     elif self.CurrentAction[0] != "Delete" or self.CurrentAction[1] != event.GetPosition() + 1:
                         self.Controler.EndBuffering()
@@ -227,7 +227,7 @@ class CodeEditor(CustomStyledTextCtrl):
             self.ParentWindow.RefreshPageTitles()
 
     def ResetBuffer(self):
-        if self.CurrentAction != None:
+        if self.CurrentAction is not None:
             self.Controler.EndBuffering()
             self.CurrentAction = None
 
@@ -259,7 +259,7 @@ class CodeEditor(CustomStyledTextCtrl):
             self.SetText(new_text)
             new_cursor_pos = GetCursorPos(old_text, new_text)
             self.LineScroll(column, line)
-            if new_cursor_pos != None:
+            if new_cursor_pos is not None:
                 self.GotoPos(new_cursor_pos)
             else:
                 self.GotoPos(old_cursor_pos)

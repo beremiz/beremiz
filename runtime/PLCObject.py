@@ -477,7 +477,7 @@ class PLCObject(pyro.ObjBase):
                 # keep a copy of requested idx
                 self._ResetDebugVariables()
                 for idx, iectype, force in idxs:
-                    if force != None:
+                    if force is not None:
                         c_type, unpack_func, pack_func = \
                             TypeTranslator.get(iectype,
                                                     (None, None, None))
