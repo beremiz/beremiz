@@ -84,10 +84,10 @@ class LibraryPanel(wx.Panel):
         # window
         self.Tree = wx.TreeCtrl(splitter_window,
               size=wx.Size(0, 0),
-              style=wx.TR_HAS_BUTTONS|
-                    wx.TR_SINGLE|
-                    wx.SUNKEN_BORDER|
-                    wx.TR_HIDE_ROOT|
+              style=wx.TR_HAS_BUTTONS |
+                    wx.TR_SINGLE      |
+                    wx.SUNKEN_BORDER  |
+                    wx.TR_HIDE_ROOT   |
                     wx.TR_LINES_AT_ROOT)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemSelected, self.Tree)
         self.Tree.Bind(wx.EVT_CHAR, self.OnKeyDown)
@@ -343,7 +343,7 @@ class LibraryPanel(wx.Panel):
                 same_inputs = reduce(
                     lambda x, y: x and y,
                     map(
-                        lambda x: x[0]==x[1] or x[0]=='ANY' or x[1]=='ANY',
+                        lambda x: x[0] == x[1] or x[0] == 'ANY' or x[1] == 'ANY',
                         zip(type_inputs,
                             (inputs[:type_extension]
                              if type_extension is not None

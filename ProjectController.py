@@ -101,7 +101,7 @@ class Iec2CSettings():
         self.ieclib_c_path = self.findLibCPath()
 
     def findObject(self, paths, test):
-        path=None
+        path = None
         for p in paths:
             if test(p):
                 path = p
@@ -109,20 +109,20 @@ class Iec2CSettings():
         return path
 
     def findCmd(self):
-        cmd="iec2c"+(".exe" if wx.Platform == '__WXMSW__' else "")
-        paths=[
+        cmd = "iec2c"+(".exe" if wx.Platform == '__WXMSW__' else "")
+        paths = [
             os.path.join(base_folder, "matiec")
         ]
         path = self.findObject(paths, lambda p: os.path.isfile(os.path.join(p, cmd)))
 
         # otherwise use iec2c from PATH
         if path is not None:
-            cmd=os.path.join(path, cmd)
+            cmd = os.path.join(path, cmd)
 
         return cmd
 
     def findLibPath(self):
-        paths=[
+        paths = [
             os.path.join(base_folder, "matiec", "lib"),
             "/usr/lib/matiec"
         ]
@@ -130,8 +130,8 @@ class Iec2CSettings():
         return path
 
     def findLibCPath(self):
-        path=None
-        paths=[
+        path = None
+        paths = [
             os.path.join(self.ieclib_path, "C"),
             self.ieclib_path]
         path = self.findObject(paths, lambda p: os.path.isfile(os.path.join(p, "iec_types.h")))
@@ -139,7 +139,7 @@ class Iec2CSettings():
 
     def findSupportedOptions(self):
         buildcmd = "\"%s\" -h" % (self.getCmd())
-        options =["-f", "-l", "-p"]
+        options = ["-f", "-l", "-p"]
 
         buildopt = ""
         try:
@@ -204,12 +204,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             </xsd:element>"""+(("""
             <xsd:element name="Libraries" minOccurs="0">
               <xsd:complexType>
-              """+"\n".join(['<xsd:attribute name='+
-                             '"Enable_'+ libname + '_Library" '+
+              """+"\n".join(['<xsd:attribute name=' +
+                             '"Enable_' + libname + '_Library" ' +
                              'type="xsd:boolean" use="optional" default="true"/>'
                              for libname, lib in features.libraries])+"""
               </xsd:complexType>
-            </xsd:element>""") if len(features.libraries)>0 else '') + """
+            </xsd:element>""") if len(features.libraries) > 0 else '') + """
           </xsd:sequence>
           <xsd:attribute name="URI_location" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Disable_Extensions" type="xsd:boolean" use="optional" default="false"/>
@@ -234,7 +234,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECdebug_datas = {}
         self.IECdebug_lock = Lock()
 
-        self.DebugTimer=None
+        self.DebugTimer = None
         self.ResetIECProgramsAndVariables()
 
         # In both new or load scenario, no need to save
@@ -261,7 +261,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def LoadLibraries(self):
         self.Libraries = []
-        TypeStack=[]
+        TypeStack = []
         for libname, clsname in features.libraries:
             if self.BeremizRoot.Libraries is None or getattr(self.BeremizRoot.Libraries, "Enable_"+libname+"_Library"):
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
@@ -568,16 +568,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "\n".join([ lib.GetSTCode() for lib in self.Libraries ])
 
     def GetLibrariesCCode(self, buildpath):
-        if len(self.Libraries)==0:
+        if len(self.Libraries) == 0:
             return [], [], ()
         self.GetIECProgramsAndVariables()
         LibIECCflags = '"-I%s" -Wno-unused-function' % os.path.abspath(self.GetIECLibPath())
-        LocatedCCodeAndFlags=[]
-        Extras=[]
+        LocatedCCodeAndFlags = []
+        Extras = []
         for lib in self.Libraries:
-            res=lib.Generate_C(buildpath, self._VariablesList, LibIECCflags)
+            res = lib.Generate_C(buildpath, self._VariablesList, LibIECCflags)
             LocatedCCodeAndFlags.append(res[:2])
-            if len(res)>2:
+            if len(res) > 2:
                 Extras.extend(res[2:])
         return map(list, zip(*LocatedCCodeAndFlags))+[tuple(Extras)]
 
@@ -788,7 +788,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return False
 
         # Now extract C files of stdout
-        C_files = [ fname for fname in result.splitlines() if fname[-2:]==".c" or fname[-2:]==".C" ]
+        C_files = [ fname for fname in result.splitlines() if fname[-2:] == ".c" or fname[-2:] == ".C" ]
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
         if not C_files:
@@ -798,7 +798,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         C_files = map(lambda filename: os.path.join(buildpath, filename), C_files)
 
         # prepend beremiz include to configuration header
-        H_files = [ fname for fname in result.splitlines() if fname[-2:]==".h" or fname[-2:]==".H" ]
+        H_files = [ fname for fname in result.splitlines() if fname[-2:] == ".h" or fname[-2:] == ".H" ]
         H_files.remove("LOCATED_VARIABLES.h")
         H_files = map(lambda filename: os.path.join(buildpath, filename), H_files)
         for H_file in H_files:
@@ -829,13 +829,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self._builder
 
     def ResetBuildMD5(self):
-        builder=self.GetBuilder()
+        builder = self.GetBuilder()
         if builder is not None:
             builder.ResetBinaryCodeMD5()
         self.EnableMethod("_Transfer", False)
 
     def GetLastBuildMD5(self):
-        builder=self.GetBuilder()
+        builder = self.GetBuilder()
         if builder is not None:
             return builder.GetBinaryCodeMD5()
         else:
@@ -933,12 +933,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         # Push this dictionnary into result.
                         self._DbgVariablesList.append(attrs)
                         # Fill in IEC<->C translation dicts
-                        IEC_path=attrs["IEC_path"]
-                        self._IECPathToIdx[IEC_path]=(Idx, attrs["type"])
+                        IEC_path = attrs["IEC_path"]
+                        self._IECPathToIdx[IEC_path] = (Idx, attrs["type"])
                         # Ignores numbers given in CSV file
                         # Idx=int(attrs["num"])
                         # Count variables only, ignore FBs
-                        Idx+=1
+                        Idx += 1
                     self._VariablesList.append(attrs)
 
                 # third section contains ticktime
@@ -965,7 +965,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for v in self._DbgVariablesList:
             sz = DebugTypesSize.get(v["type"], 0)
             variable_decl_array += [
-                "{&(%(C_path)s), " % v+
+                "{&(%(C_path)s), " % v +
                 {
                     "EXT": "%(type)s_P_ENUM",
                     "IN":  "%(type)s_P_ENUM",
@@ -988,7 +988,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                   "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
                   "FB":  "extern       %(type)s   %(C_path)s;"
               }[v["vartype"]] % v
-               for v in self._VariablesList if v["C_path"].find('.')<0]),
+               for v in self._VariablesList if v["C_path"].find('.') < 0]),
            "variable_decl_array": ",\n".join(variable_decl_array)
            }
 
@@ -1008,21 +1008,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if not self.BeremizRoot.getDisable_Extensions():
             plc_main_code = targets.GetCode("plc_main_head.c") % {
                 "calls_prototypes": "\n".join([(
-                      "int __init_%(s)s(int argc,char **argv);\n"+
-                      "void __cleanup_%(s)s(void);\n"+
-                      "void __retrieve_%(s)s(void);\n"+
+                      "int __init_%(s)s(int argc,char **argv);\n" +
+                      "void __cleanup_%(s)s(void);\n" +
+                      "void __retrieve_%(s)s(void);\n" +
                       "void __publish_%(s)s(void);") % {'s': locstr} for locstr in locstrs]),
                 "retrieve_calls": "\n    ".join([
                       "__retrieve_%s();" % locstr for locstr in locstrs]),
                 "publish_calls": "\n    ".join([  # Call publish in reverse order
                       "__publish_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls": "\n    ".join([
-                      "init_level=%d; " % (i+1)+
+                      "init_level=%d; " % (i+1) +
                       "if((res = __init_%s(argc,argv))){" % locstr +
                       #"printf(\"%s\"); "%locstr + #for debug
                       "return res;}" for i, locstr in enumerate(locstrs)]),
                 "cleanup_calls": "\n    ".join([
-                      "if(init_level >= %d) " % i+
+                      "if(init_level >= %d) " % i +
                       "__cleanup_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
@@ -1395,7 +1395,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return ticks, buffers
 
     def RegisterDebugVarToConnector(self):
-        self.DebugTimer=None
+        self.DebugTimer = None
         Idxs = []
         self.TracedIECPath = []
         self.TracedIECTypes = []
@@ -1446,7 +1446,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self.IsPLCStarted():
             # Timer to prevent rapid-fire when registering many variables
             # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
-            self.DebugTimer=Timer(0.5, wx.CallAfter, args = [self.RegisterDebugVarToConnector])
+            self.DebugTimer = Timer(0.5, wx.CallAfter, args = [self.RegisterDebugVarToConnector])
             # Rearm anti-rapid-fire timer
             self.DebugTimer.start()
 
@@ -1477,7 +1477,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             IECdebug_data[4] |= buffer_list
 
-        IECdebug_data[0][callableobj]=buffer_list
+        IECdebug_data[0][callableobj] = buffer_list
 
         self.IECdebug_lock.release()
 
@@ -1908,19 +1908,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def EnableMethod(self, method, value):
         for d in self.StatusMethods:
-            if d["method"]==method:
-                d["enabled"]=value
+            if d["method"] == method:
+                d["enabled"] = value
                 return True
         return False
 
     def ShowMethod(self, method, value):
         for d in self.StatusMethods:
-            if d["method"]==method:
-                d["shown"]=value
+            if d["method"] == method:
+                d["shown"] = value
                 return True
         return False
 
     def CallMethod(self, method):
         for d in self.StatusMethods:
-            if d["method"]==method and d.get("enabled", True) and d.get("shown", True):
+            if d["method"] == method and d.get("enabled", True) and d.get("shown", True):
                 getattr(self, method)()

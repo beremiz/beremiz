@@ -276,19 +276,19 @@ class ConfigTreeNode:
         # confnode asks for some LDFLAGS
         if CTNLDFLAGS:
             # LDFLAGS can be either string
-            if type(CTNLDFLAGS)==type(str()):
-                LDFLAGS=[CTNLDFLAGS]
+            if type(CTNLDFLAGS) == type(str()):
+                LDFLAGS = [CTNLDFLAGS]
             # or list of strings
-            elif type(CTNLDFLAGS)==type(list()):
-                LDFLAGS=CTNLDFLAGS[:]
+            elif type(CTNLDFLAGS) == type(list()):
+                LDFLAGS = CTNLDFLAGS[:]
         else:
-            LDFLAGS=[]
+            LDFLAGS = []
 
         # recurse through all children, and stack their results
         for CTNChild in self.IECSortedChildren():
             new_location = CTNChild.GetCurrentLocation()
             # How deep are we in the tree ?
-            depth=len(new_location)
+            depth = len(new_location)
             _LocationCFilesAndCFLAGS, _LDFLAGS, _extra_files = \
                 CTNChild._Generate_C(
                     # keep the same path
@@ -397,7 +397,7 @@ class ConfigTreeNode:
         # Do nothing if no change
         #if CurrentName == DesiredName: return CurrentName
         # Build a list of used Name out of parent's Children
-        AllNames=[]
+        AllNames = []
         for CTNInstance in self.CTNParent.IterChildren():
             if CTNInstance != self:
                 AllNames.append(CTNInstance.BaseParams.getName())
@@ -429,7 +429,7 @@ class ConfigTreeNode:
         return res
 
     def GetAllChannels(self):
-        AllChannels=[]
+        AllChannels = []
         for CTNInstance in self.CTNParent.IterChildren():
             if CTNInstance != self:
                 AllChannels.append(CTNInstance.BaseParams.getIEC_Channel())

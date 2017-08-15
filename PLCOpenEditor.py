@@ -106,7 +106,7 @@ class PLCOpenEditor(IDEFrame):
 
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
-              kind=wx.ITEM_NORMAL, text=_(u'New') +'\tCTRL+N')
+              kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
               kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
@@ -162,7 +162,7 @@ class PLCOpenEditor(IDEFrame):
         #AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
         #      kind=wx.ITEM_NORMAL, text=u'IEC 61131-3\tF3')
 
-        handler=lambda event: {
+        handler = lambda event: {
             wx.MessageBox(version.GetCommunityHelpMsg(), _(u'Community support'), wx.OK | wx.ICON_INFORMATION)
         }
         id = wx.NewId()

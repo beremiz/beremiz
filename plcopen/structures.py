@@ -124,7 +124,7 @@ def get_standard_funtions_input_variables(table):
     fields = [True, True]
     while(fields[1]):
         fields = table.pop(0)
-        variable_from_csv = dict([(champ, val) for champ, val in zip(variables, fields[1:]) if champ!=''])
+        variable_from_csv = dict([(champ, val) for champ, val in zip(variables, fields[1:]) if champ != ''])
         standard_funtions_input_variables[variable_from_csv['name']] = variable_from_csv['type']
     return standard_funtions_input_variables
 

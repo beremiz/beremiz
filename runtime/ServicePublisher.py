@@ -67,7 +67,7 @@ class ServicePublisher():
                                   self.ip_32b,
                                   self.port,
                                   properties = self.serviceproperties))
-        self.retrytimer=None
+        self.retrytimer = None
 
     def UnRegisterService(self):
         if self.retrytimer is not None:

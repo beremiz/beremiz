@@ -256,7 +256,7 @@ class DebugViewer:
         self.TimerAccessLock.acquire()
         if self.LastRefreshTimer is not None:
             self.LastRefreshTimer.cancel()
-            self.LastRefreshTimer=None
+            self.LastRefreshTimer = None
         self.TimerAccessLock.release()
 
         # Only try to refresh DebugViewer if it is visible on screen and not

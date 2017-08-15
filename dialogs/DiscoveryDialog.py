@@ -136,7 +136,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
         self.ZeroConfInstance = Zeroconf()
         self.RefreshList()
-        self.LatestSelection=None
+        self.LatestSelection = None
 
     def __del__(self):
         if self.Browser is not None: self.Browser.cancel()

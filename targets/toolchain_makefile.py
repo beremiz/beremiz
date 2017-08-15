@@ -84,7 +84,7 @@ class toolchain_makefile():
         return reduce(operator.concat, map(self.concat_deps, deps), src)
 
     def build(self):
-        srcfiles= []
+        srcfiles = []
         cflags = []
         wholesrcdata = ""
         for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:

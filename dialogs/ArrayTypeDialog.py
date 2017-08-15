@@ -59,8 +59,8 @@ class ArrayTypeDialog(wx.Dialog):
         top_sizer.AddWindow(self.BaseType, 1, flag=wx.GROW)
 
         self.Dimensions = CustomEditableListBox(self, label=_("Dimensions:"),
-              style=wx.gizmos.EL_ALLOW_NEW|
-                    wx.gizmos.EL_ALLOW_EDIT|
+              style=wx.gizmos.EL_ALLOW_NEW  |
+                    wx.gizmos.EL_ALLOW_EDIT |
                     wx.gizmos.EL_ALLOW_DELETE)
         for func in ["_OnLabelEndEdit",
                      "_OnAddButton",

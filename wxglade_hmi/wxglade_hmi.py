@@ -65,7 +65,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         except ImportError:
             pass
 
-        defLibDir="/usr/share/wxglade"
+        defLibDir = "/usr/share/wxglade"
         if os.path.isdir(defLibDir):
             path = defLibDir
 
@@ -89,7 +89,7 @@ class WxGladeHMI(PythonFileCTNMixin):
 
         hmi_frames = []
 
-        wxgfile_path=self._getWXGLADEpath()
+        wxgfile_path = self._getWXGLADEpath()
         if os.path.exists(wxgfile_path):
             wxgfile = open(wxgfile_path, 'r')
             wxgtree = minidom.parse(wxgfile)
@@ -104,7 +104,7 @@ class WxGladeHMI(PythonFileCTNMixin):
                             hnode.firstChild.data for hnode in
                             node.getElementsByTagName("handler")]})
 
-            hmipyfile_path=os.path.join(self._getBuildPath(), "hmi.py")
+            hmipyfile_path = os.path.join(self._getBuildPath(), "hmi.py")
             if wx.Platform == '__WXMSW__':
                 wxgfile_path = "\"%s\"" % wxgfile_path
                 wxghmipyfile_path = "\"%s\"" % hmipyfile_path
@@ -120,7 +120,7 @@ class WxGladeHMI(PythonFileCTNMixin):
             define_hmi = ""
 
         declare_hmi = "\n".join(["%(name)s = None\n" % x +
-                          "\n".join(["%(class)s.%(h)s = %(h)s"%
+                          "\n".join(["%(class)s.%(h)s = %(h)s" %
                             dict(x, h=h) for h in x['handlers']])
                                 for x in hmi_frames])
         global_hmi = ("global %s\n" % ",".join(

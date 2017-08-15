@@ -134,7 +134,7 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     @return: a tuple of value and number of parameters to add to DCF
     """
 
-    dcfdata=[]
+    dcfdata = []
     # Create entry for RPDO or TPDO parameters and Disable PDO
     #           ---- INDEX -----   --- SUBINDEX ----   ----- SIZE ------   ------ DATA ------
     dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(0x80000000 + cobid, 4)]

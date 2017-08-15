@@ -401,7 +401,7 @@ class ProgramGenerator:
                           format(a1 = task.getname(), a2 = config_name, a3 = resource.getname())
                     raise PLCGenException, msg
 
-                if single[0]=='[' and single[-1]==']':
+                if single[0] == '[' and single[-1] == ']':
                     SNGLKW = "MULTI"
                 else:
                     SNGLKW = "SINGLE"

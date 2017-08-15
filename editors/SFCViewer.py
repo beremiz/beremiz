@@ -342,7 +342,7 @@ class SFC_Viewer(Viewer):
 
     # This method check the IEC 61131-3 compatibility between two SFC blocks
     def BlockCompatibility(self, startblock = None, endblock = None, direction = None):
-        if startblock!= None and endblock != None and (isinstance(startblock, SFC_Objects)\
+        if startblock != None and endblock != None and (isinstance(startblock, SFC_Objects)\
                                                                or isinstance(endblock, SFC_Objects)):
             # Full "SFC_StandardRules" table would be symmetrical and
             # to avoid duplicate records and minimize the table only upper part is defined.

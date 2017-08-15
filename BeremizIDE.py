@@ -115,7 +115,7 @@ class LogPseudoFile:
             self.TimerAccessLock.acquire()
             if self.LastRefreshTimer:
                 self.LastRefreshTimer.cancel()
-                self.LastRefreshTimer=None
+                self.LastRefreshTimer = None
             self.TimerAccessLock.release()
             if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
                 self._should_write()
@@ -148,7 +148,7 @@ class LogPseudoFile:
             self.output.Freeze()
             self.lock.acquire()
             for s, style in self.stack:
-                if style is None: style=self.black_white
+                if style is None: style = self.black_white
                 if style != self.black_white:
                     self.output.StartStyling(self.output.GetLength(), 0xff)
 
@@ -284,7 +284,7 @@ class Beremiz(IDEFrame):
         self._RecursiveAddMenuItems(parent, GetAddMenuItems())
 
     def _init_coll_HelpMenu_Items(self, parent):
-        handler=lambda event: {
+        handler = lambda event: {
             wx.MessageBox(version.GetCommunityHelpMsg(), _(u'Community support'), wx.OK | wx.ICON_INFORMATION)
         }
         id = wx.NewId()
@@ -877,7 +877,7 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
 
-        dialog = wx.DirDialog(self, _("Choose a project"), defaultpath, style=wx.DEFAULT_DIALOG_STYLE|
+        dialog = wx.DirDialog(self, _("Choose a project"), defaultpath, style=wx.DEFAULT_DIALOG_STYLE |
                                                                                wx.RESIZE_BORDER)
         if dialog.ShowModal() == wx.ID_OK:
             self.OpenProject(dialog.GetPath())

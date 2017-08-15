@@ -30,7 +30,7 @@ class Xenomai_target(toolchain_gcc):
     extension = ".so"
     def getXenoConfig(self, flagsname):
         """ Get xeno-config from target parameters """
-        xeno_config=self.CTRInstance.GetTarget().getcontent().getXenoConfig()
+        xeno_config = self.CTRInstance.GetTarget().getcontent().getXenoConfig()
         if xeno_config:
             from util.ProcessLogger import ProcessLogger
             status, result, err_result = ProcessLogger(self.CTRInstance.logger,
