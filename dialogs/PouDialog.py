@@ -29,13 +29,13 @@ from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 
 
 def GetPouTypes():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("function"), _("functionBlock"), _("program")]
 POU_TYPES_DICT = dict([(_(pou_type), pou_type) for pou_type in GetPouTypes()])
 
 
 def GetPouLanguages():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("IL"), _("ST"), _("LD"), _("FBD"), _("SFC")]
 
 

@@ -34,14 +34,14 @@ IECToCOType = {"BOOL":0x01, "SINT":0x02, "INT":0x03,"DINT":0x04,"LINT":0x10,
 RPDO = 1
 TPDO = 2
 
-SlavePDOType = {"I" : TPDO, "Q" : RPDO}
-InvertPDOType = {RPDO : TPDO, TPDO : RPDO}
-PDOTypeBaseIndex = {RPDO : 0x1400, TPDO : 0x1800}
-PDOTypeBaseCobId = {RPDO : 0x200, TPDO : 0x180}
+SlavePDOType = {"I": TPDO, "Q": RPDO}
+InvertPDOType = {RPDO: TPDO, TPDO: RPDO}
+PDOTypeBaseIndex = {RPDO: 0x1400, TPDO: 0x1800}
+PDOTypeBaseCobId = {RPDO: 0x200, TPDO: 0x180}
 
 VariableIncrement = 0x100
-VariableStartIndex = {TPDO : 0x2000, RPDO : 0x4000}
-VariableDirText = {TPDO : "__I", RPDO : "__Q"}
+VariableStartIndex = {TPDO: 0x2000, RPDO: 0x4000}
+VariableDirText = {TPDO: "__I", RPDO: "__Q"}
 VariableTypeOffset = dict(zip(["","X","B","W","D","L"], range(6)))
 
 TrashVariables = [(1, 0x01), (8, 0x05), (16, 0x06), (32, 0x07), (64, 0x1B)]
@@ -179,7 +179,7 @@ class ConciseDCFGenerator:
         for PdoIdx in nodeRpdoIndexes + nodeTpdoIndexes:
             pdo_cobid = node.GetEntry(PdoIdx, 0x01)
             # Extract COB ID, if PDO isn't active
-            if pdo_cobid > 0x600 :
+            if pdo_cobid > 0x600:
                 pdo_cobid -= 0x80000000
             # Remove COB ID from the list of available COB ID
             if pdo_cobid in self.ListCobIDAvailable:
@@ -212,7 +212,7 @@ class ConciseDCFGenerator:
         RPDOnumber, TPDOnumber = self.RemoveUsedNodeCobId(self.MasterNode)
 
         # Store the indexes of the first RPDO and TPDO available for MasterNode
-        self.CurrentPDOParamsIdx = {RPDO : 0x1400 + RPDOnumber, TPDO : 0x1800 + TPDOnumber}
+        self.CurrentPDOParamsIdx = {RPDO: 0x1400 + RPDOnumber, TPDO: 0x1800 + TPDOnumber}
 
         # Prepare MasterNode with all nodelist slaves
         for idx, (nodeid, nodeinfos) in enumerate(self.NodeList.SlaveNodes.items()):
@@ -307,8 +307,8 @@ class ConciseDCFGenerator:
         @param pdomapping: list od variables to map with PDO
         """
         # Add an entry to MasterMapping
-        self.MasterMapping[pdocobid] = {"type" : InvertPDOType[pdotype],
-            "mapping" : [None] + [(loc_infos["type"], name) for name, loc_infos in pdomapping]}
+        self.MasterMapping[pdocobid] = {"type": InvertPDOType[pdotype],
+            "mapping": [None] + [(loc_infos["type"], name) for name, loc_infos in pdomapping]}
 
         # Return the data to add to DCF
         if sync_TPDOs:
@@ -381,7 +381,7 @@ class ConciseDCFGenerator:
 
                     if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
                         raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3}  for location \"{a4}\"").\
-                            format(a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"] , a4 = name)
+                            format(a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"], a4 = name)
 
                     typeinfos = node.GetEntryInfos(COlocationtype)
                     self.IECLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
@@ -426,7 +426,7 @@ class ConciseDCFGenerator:
                     for value in values[1:]:
                         if value != 0:
                             mapping.append(value % 0x100)
-                    self.MasterMapping[cobid] = {"type" : InvertPDOType[locationinfos["pdotype"]], "mapping" : mapping}
+                    self.MasterMapping[cobid] = {"type": InvertPDOType[locationinfos["pdotype"]], "mapping": mapping}
 
                 # Indicate that this PDO entry must be saved
                 if locationinfos["bit"] is not None:
@@ -440,7 +440,7 @@ class ConciseDCFGenerator:
             else:
                 # Add location to those that haven't been mapped yet
                 if locationinfos["nodeid"] not in self.LocationsNotMapped.keys():
-                    self.LocationsNotMapped[locationinfos["nodeid"]] = {TPDO : [], RPDO : []}
+                    self.LocationsNotMapped[locationinfos["nodeid"]] = {TPDO: [], RPDO: []}
                 self.LocationsNotMapped[locationinfos["nodeid"]][locationinfos["pdotype"]].append((name, locationinfos))
 
         #-------------------------------------------------------------------------------
@@ -582,8 +582,8 @@ class ConciseDCFGenerator:
                             self.Manager.AddSubentriesToCurrent(mapvariableidx, 1, self.MasterNode)
                             nbsubentries += 1
                         # Add informations to the new subentry created
-                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values = {"name" : subindexname})
-                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values = {"type" : typeidx})
+                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values = {"name": subindexname})
+                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values = {"type": typeidx})
 
                         # Set value of the PDO mapping
                         typeinfos = self.Manager.GetEntryInfos(typeidx)
@@ -647,7 +647,7 @@ def LocalODPointers(locations, current_location, slave):
             subentry_infos = slave.GetSubentryInfos(index, subindex)
             if subentry_infos["type"] != COlocationtype:
                 raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\"").\
-                    format( a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"] , a4 = name)
+                    format( a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"], a4 = name)
 
             IECLocations[name] = COlocationtype
             pointers[(index, subindex)] = name

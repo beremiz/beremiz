@@ -34,14 +34,21 @@ import util.paths as paths
 """
 Dictionary that makes the relation between var names in plcopen and displayed values
 """
-VarTypes = {"Local" : "localVars", "Temp" : "tempVars", "Input" : "inputVars",
-            "Output" : "outputVars", "InOut" : "inOutVars", "External" : "externalVars",
-            "Global" : "globalVars", "Access" : "accessVars"}
+VarTypes = {
+    "Local":    "localVars",
+    "Temp":     "tempVars",
+    "Input":    "inputVars",
+    "Output":   "outputVars",
+    "InOut":    "inOutVars",
+    "External": "externalVars",
+    "Global":   "globalVars",
+    "Access":   "accessVars"
+}
 
 searchResultVarTypes = {
-    "inputVars": "var_input",
+    "inputVars":  "var_input",
     "outputVars": "var_output",
-    "inOutVars": "var_inout"
+    "inOutVars":  "var_inout"
 }
 
 """
@@ -853,7 +860,7 @@ if cls:
             # Array derived directly from an elementary type
             else:
                 basetype_name = base_type_name
-            return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "%s..%s" % (x.getlower(), x.getupper()), vartype_content.getdimension())), basetype_name)
+            return "ARRAY [%s] OF %s" % (",".join(map(lambda x: "%s..%s" % (x.getlower(), x.getupper()), vartype_content.getdimension())), basetype_name)
         # Variable type is an elementary type
         return vartype_content_name
     setattr(cls, "gettypeAsText", gettypeAsText)
@@ -1079,12 +1086,12 @@ if cls:
         "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable")
     def getblockInfos(self):
         block_infos = {
-            "name" : self.getname(),
-            "type" : self.getpouType(),
-            "extensible" : False,
-            "inputs" : [],
-            "outputs" : [],
-            "comment" : self.getdescription()}
+            "name": self.getname(),
+            "type": self.getpouType(),
+            "extensible": False,
+            "inputs": [],
+            "outputs": [],
+            "comment": self.getdescription()}
         if self.interface is not None:
             return_type = self.interface.getreturnType()
             if return_type is not None:
@@ -2075,7 +2082,7 @@ if cls:
     def getconditionContent(self):
         if self.condition is not None:
             content = self.condition.getcontent()
-            values = {"type" : content.getLocalTag()}
+            values = {"type": content.getLocalTag()}
             if values["type"] == "reference":
                 values["value"] = content.getname()
             elif values["type"] == "inline":

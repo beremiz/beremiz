@@ -147,10 +147,10 @@ def check_html_file(source_file, dest_path):
         return 0
 
     if os.path.exists (
-        os.path.join ( dest_path, mod_name + '.css' ) ) :
+        os.path.join ( dest_path, mod_name + '.css' ) ):
         css = "<link rel='stylesheet' href='" + mod_name + ".css'>"
     elif os.path.exists (
-        os.path.join ( dest_path, 'pyjamas_default.css' ) ) :
+        os.path.join ( dest_path, 'pyjamas_default.css' ) ):
         css = "<link rel='stylesheet' href='pyjamas_default.css'>"
 
     else:

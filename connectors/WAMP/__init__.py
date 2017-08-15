@@ -52,10 +52,10 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print 'WAMP session left'
 
-PLCObjDefaults = { "StartPLC": False,
-                   "GetTraceVariables" : ("Broken",None),
-                   "GetPLCstatus" : ("Broken",None),
-                   "RemoteExec" : (-1, "RemoteExec script failed!")}
+PLCObjDefaults = { "StartPLC":          False,
+                   "GetTraceVariables": ("Broken", None),
+                   "GetPLCstatus":      ("Broken", None),
+                   "RemoteExec":        (-1, "RemoteExec script failed!")}
 
 
 def WAMP_connector_factory(uri, confnodesroot):
@@ -106,7 +106,7 @@ def WAMP_connector_factory(uri, confnodesroot):
         wampfuncname = '.'.join((ID,funcname))
         def catcher_func(*args,**kwargs):
             global _WampSession
-            if _WampSession is not None :
+            if _WampSession is not None:
                 try:
                     return threads.blockingCallFromThread(
                         reactor, _WampSession.call, wampfuncname,
@@ -148,7 +148,7 @@ def WAMP_connector_factory(uri, confnodesroot):
             return member
 
     # Try to get the proxy object
-    try :
+    try:
         return WampPLCObjectProxy()
     except Exception, msg:
         confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n") % location)

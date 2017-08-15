@@ -83,7 +83,7 @@ class ArrayTypeDialog(wx.Dialog):
 
         if isinstance(infos, TupleType) and infos[0] == "array":
             self.BaseType.SetStringSelection(infos[1])
-            self.Dimensions.SetStrings(map(lambda x : "..".join(x), infos[2]))
+            self.Dimensions.SetStrings(map(lambda x: "..".join(x), infos[2]))
         elif infos in datatypes:
             self.BaseType.SetStringSelection(infos)
 

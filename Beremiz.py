@@ -111,7 +111,7 @@ class BeremizIDELauncher:
     def CreateApplication(self):
         if os.path.exists("BEREMIZ_DEBUG"):
             __builtin__.__dict__["BMZ_DBG"] = True
-        else :
+        else:
             __builtin__.__dict__["BMZ_DBG"] = False
 
         global wxversion, wx
@@ -160,10 +160,10 @@ class BeremizIDELauncher:
 
             def updateinfoproc():
                 global updateinfo
-                try :
+                try:
                     import urllib2
                     updateinfo = urllib2.urlopen(self.updateinfo_url,None).read()
-                except :
+                except:
                     updateinfo = _("update info unavailable.")
 
             from threading import Thread

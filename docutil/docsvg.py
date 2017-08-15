@@ -39,7 +39,7 @@ def get_inkscape_path():
 def open_win_svg(svgexepath, svgfile):
     """ Open Inkscape on Windows platform """
     popenargs = [svgexepath]
-    if svgfile is not None :
+    if svgfile is not None:
         popenargs.append(svgfile)
     subprocess.Popen(popenargs).pid
 
@@ -47,12 +47,12 @@ def open_win_svg(svgexepath, svgfile):
 def open_lin_svg(svgexepath, svgfile):
     """ Open Inkscape on Linux platform """
     if os.path.isfile("/usr/bin/inkscape"):
-        os.system("%s %s &" % (svgexepath , svgfile))
+        os.system("%s %s &" % (svgexepath, svgfile))
 
 
 def open_svg(svgfile):
     """ Generic function to open SVG file """
-    if wx.Platform == '__WXMSW__' :
+    if wx.Platform == '__WXMSW__':
         try:
             open_win_svg(get_inkscape_path(), svgfile)
         except:

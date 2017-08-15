@@ -76,13 +76,13 @@ MAX_RECENT_PROJECTS = 9
 
 if wx.Platform == '__WXMSW__':
     faces = {
-        'mono' : 'Courier New',
-        'size' : 8,
+        'mono': 'Courier New',
+        'size': 8,
     }
 else:
     faces = {
-        'mono' : 'Courier',
-        'size' : 10,
+        'mono': 'Courier',
+        'size': 10,
     }
 
 from threading import Lock,Timer,currentThread
@@ -146,11 +146,11 @@ class LogPseudoFile:
                     self.YieldLock.release()
 
     def _write(self):
-        if self.output :
+        if self.output:
             self.output.Freeze()
             self.lock.acquire()
             for s, style in self.stack:
-                if style is None : style=self.black_white
+                if style is None: style=self.black_white
                 if style != self.black_white:
                     self.output.StartStyling(self.output.GetLength(), 0xff)
 
@@ -487,7 +487,7 @@ class Beremiz(IDEFrame):
                     sys.executable,
                     Bpath("Beremiz_service.py"),
                     self.runtime_port,
-                    {False : "-x 0", True :"-x 1"}[taskbaricon],
+                    {False: "-x 0", True:"-x 1"}[taskbaricon],
                     self.local_runtime_tmpdir),
                 no_gui=False,
                 timeout=500, keyword = self.local_runtime_tmpdir,
@@ -613,7 +613,7 @@ class Beremiz(IDEFrame):
 
             self.SaveLastState()
 
-            for Thing in self.ToDoBeforeQuit :
+            for Thing in self.ToDoBeforeQuit:
                 Thing()
             self.ToDoBeforeQuit = []
 
@@ -844,7 +844,7 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
 
-        dialog = wx.DirDialog(self , _("Choose an empty directory for new project"), defaultpath)
+        dialog = wx.DirDialog(self, _("Choose an empty directory for new project"), defaultpath)
         if dialog.ShowModal() == wx.ID_OK:
             projectpath = dialog.GetPath()
             self.Config.Write("lastopenedfolder",
@@ -880,7 +880,7 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
 
-        dialog = wx.DirDialog(self , _("Choose a project"), defaultpath, style=wx.DEFAULT_DIALOG_STYLE|
+        dialog = wx.DirDialog(self, _("Choose a project"), defaultpath, style=wx.DEFAULT_DIALOG_STYLE|
                                                                                wx.RESIZE_BORDER)
         if dialog.ShowModal() == wx.ID_OK:
             self.OpenProject(dialog.GetPath())

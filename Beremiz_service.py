@@ -212,7 +212,7 @@ if enablewx:
 
             def OnOK(self, event):
                 value = self.GetValue()
-                texts = {"value" : value}
+                texts = {"value": value}
                 for function, message in self.Tests:
                     if not function(value):
                         message = wx.MessageDialog(self, message % texts, _("Error"), wx.OK|wx.ICON_ERROR)
@@ -313,7 +313,7 @@ if enablewx:
                 ip_addr = '' if ip_addr is None else ip_addr
                 dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)
                 dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
-                               ( lambda x :len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
+                               ( lambda x:len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
                                ])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip_addr = dlg.GetValue()
@@ -321,7 +321,7 @@ if enablewx:
 
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
-                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port : 0 <= int(port) <= 65535 , _("Port number must be 0 <= port <= 65535!"))])
+                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Stop()
@@ -336,7 +336,7 @@ if enablewx:
                 servicename = self.pyroserver.servicename
                 servicename = '' if servicename is None else servicename
                 dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=servicename)
-                dlg.SetTests([(lambda name : len(name) is not 0 , _("Name must not be null!"))])
+                dlg.SetTests([(lambda name: len(name) is not 0, _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.servicename = dlg.GetValue()
                     self.pyroserver.Restart()
@@ -368,7 +368,7 @@ if enablewx:
                 wx.CallAfter(wx.GetApp().ExitMainLoop)
 
             def UpdateIcon(self, plcstatus):
-                if plcstatus is "Started" :
+                if plcstatus is "Started":
                     currenticon = self.MakeIcon(starticon)
                 elif plcstatus is "Stopped":
                     currenticon = self.MakeIcon(stopicon)
@@ -452,7 +452,7 @@ class Server():
 
         self.plcobj.AutoLoad()
         if self.plcobj.GetPLCstatus()[0] != "Empty":
-            if self.autostart :
+            if self.autostart:
                 self.plcobj.StartPLC()
         self.plcobj.StatusChange()
 
@@ -561,7 +561,7 @@ def installThreadExcepthook():
 installThreadExcepthook()
 
 if havetwisted:
-    if webport is not None :
+    if webport is not None:
         try:
             import runtime.NevowServer as NS
         except Exception, e:
@@ -569,7 +569,7 @@ if havetwisted:
             webport = None
         NS.WorkingDir = WorkingDir
 
-    if wampconf is not None :
+    if wampconf is not None:
         try:
             import runtime.WampClient as WC
         except Exception, e:
@@ -583,7 +583,7 @@ for extfilename in extensions:
     execfile(extfilename, locals())
 
 if havetwisted:
-    if webport is not None :
+    if webport is not None:
         try:
             website = NS.RegisterWebsite(webport)
             pyruntimevars["website"] = website
@@ -591,7 +591,7 @@ if havetwisted:
         except Exception, e:
             print _("Nevow Web service failed. "), e
 
-    if wampconf is not None :
+    if wampconf is not None:
         try:
             WC.RegisterWampClient(wampconf)
             pyruntimevars["wampsession"] = WC.GetSession
@@ -609,7 +609,7 @@ if havetwisted or havewx:
     elif havewx:
         app.MainLoop()
 else:
-    try :
+    try:
         pyroserver.Loop()
     except KeyboardInterrupt,e:
         pass

@@ -476,16 +476,16 @@ def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
             if result:
                 ignored_exceptions.append(ex)
                 info = {
-                    'app-title' : wx.GetApp().GetAppName(),  # app_title
-                    'app-version' : app_version,
-                    'wx-version' : wx.VERSION_STRING,
-                    'wx-platform' : wx.Platform,
-                    'python-version' : platform.python_version(),  #sys.version.split()[0],
-                    'platform' : platform.platform(),
-                    'e-type' : e_type,
-                    'e-value' : e_value,
-                    'date' : time.ctime(),
-                    'cwd' : os.getcwd(),
+                    'app-title': wx.GetApp().GetAppName(),  # app_title
+                    'app-version': app_version,
+                    'wx-version': wx.VERSION_STRING,
+                    'wx-platform': wx.Platform,
+                    'python-version': platform.python_version(),  #sys.version.split()[0],
+                    'platform': platform.platform(),
+                    'e-type': e_type,
+                    'e-value': e_value,
+                    'date': time.ctime(),
+                    'cwd': os.getcwd(),
                     }
                 if e_traceback:
                     info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)

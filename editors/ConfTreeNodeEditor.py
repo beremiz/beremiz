@@ -38,17 +38,17 @@ from util.BitmapLibrary import GetBitmap
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
+              'mono':  'Courier New',
+              'helv':  'Arial',
               'other': 'Comic Sans MS',
-              'size' : 16,
+              'size':  16,
              }
 else:
     faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
+              'mono':  'Courier',
+              'helv':  'Helvetica',
               'other': 'new century schoolbook',
-              'size' : 18,
+              'size':  18,
              }
 
 SCROLLBAR_UNIT = 10

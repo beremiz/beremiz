@@ -84,7 +84,7 @@ class xml_timezone(datetime.tzinfo):
             self.__offset = timedelta(minutes = 0)
             self.__name = "UTC"
         else:
-            sign = {"-" : -1, "+" : 1}[offset[0]]
+            sign = {"-": -1, "+": 1}[offset[0]]
             hours, minutes = [int(val) for val in offset[1:].split(":")]
             self.__offset = timedelta(minutes=sign * (hours * 60 + minutes))
             self.__name = ""
@@ -1399,7 +1399,7 @@ def gettypeinfos(name, facets):
     if facets.has_key("enumeration") and facets["enumeration"][0] is not None:
         return facets["enumeration"][0]
     elif facets.has_key("maxInclusive"):
-        limits = {"max" : None, "min" : None}
+        limits = {"max": None, "min": None}
         if facets["maxInclusive"][0] is not None:
             limits["max"] = facets["maxInclusive"][0]
         elif facets["maxExclusive"][0] is not None:
@@ -1420,9 +1420,9 @@ def generateGetElementAttributes(factory, classinfos):
             attr_list.extend(classinfos["base"].getElementAttributes(self))
         for attr in classinfos["attributes"]:
             if attr["use"] != "prohibited":
-                attr_params = {"name" : attr["name"], "use" : attr["use"],
-                    "type" : gettypeinfos(attr["attr_type"]["basename"], attr["attr_type"]["facets"]),
-                    "value" : getattr(self, attr["name"], "")}
+                attr_params = {"name": attr["name"], "use": attr["use"],
+                    "type": gettypeinfos(attr["attr_type"]["basename"], attr["attr_type"]["facets"]),
+                    "value": getattr(self, attr["name"], "")}
                 attr_list.append(attr_params)
         return attr_list
     return getElementAttributes

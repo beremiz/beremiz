@@ -48,14 +48,14 @@ def get_acroversion():
 
 
 def open_win_pdf(readerexepath, pdffile, pagenum = None):
-    if pagenum != None :
+    if pagenum != None:
         os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", "/A", "page=%d=OpenActions" % pagenum, '"%s"' % pdffile)
     else:
         os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", '"%s"' % pdffile)
 
 
 def open_lin_pdf(readerexepath, pdffile, pagenum = None):
-    if pagenum == None :
+    if pagenum == None:
         os.system("%s -remote DS301 %s &" % (readerexepath, pdffile))
     else:
         print "Open pdf %s at page %d" % (pdffile, pagenum)
@@ -63,7 +63,7 @@ def open_lin_pdf(readerexepath, pdffile, pagenum = None):
 
 
 def open_pdf(pdffile, pagenum = None):
-    if wx.Platform == '__WXMSW__' :
+    if wx.Platform == '__WXMSW__':
         try:
             readerpath = get_acroversion()
         except:

@@ -36,10 +36,12 @@ from py_ext import PythonFileCTNMixin
 class WxGladeHMI(PythonFileCTNMixin):
 
     ConfNodeMethods = [
-        {"bitmap" : "editWXGLADE",
-         "name" : _("WXGLADE GUI"),
-         "tooltip" : _("Edit a WxWidgets GUI with WXGlade"),
-         "method" : "_editWXGLADE"},
+        {
+            "bitmap":    "editWXGLADE",
+            "name":    _("WXGLADE GUI"),
+            "tooltip": _("Edit a WxWidgets GUI with WXGlade"),
+            "method":   "_editWXGLADE"
+        },
     ]
 
     def GetIconName(self):
@@ -97,9 +99,9 @@ class WxGladeHMI(PythonFileCTNMixin):
             for node in wxgtree.childNodes[1].childNodes:
                 if node.nodeType == wxgtree.ELEMENT_NODE:
                     hmi_frames.append({
-                        "name" : node.getAttribute("name"),
-                        "class" : node.getAttribute("class"),
-                        "handlers" : [
+                        "name": node.getAttribute("name"),
+                        "class": node.getAttribute("class"),
+                        "handlers": [
                             hnode.firstChild.data for hnode in
                             node.getElementsByTagName("handler")]})
 

@@ -547,7 +547,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             path = os.getenv("USERPROFILE")
         else:
             path = os.getenv("HOME")
-        dirdialog = wx.DirDialog(self.AppFrame , _("Choose a directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
+        dirdialog = wx.DirDialog(self.AppFrame, _("Choose a directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
         answer = dirdialog.ShowModal()
         dirdialog.Destroy()
         if answer == wx.ID_OK:
@@ -964,7 +964,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # prepare debug code
         variable_decl_array = []
         bofs = 0
-        for v in self._DbgVariablesList :
+        for v in self._DbgVariablesList:
             sz = DebugTypesSize.get(v["type"], 0)
             variable_decl_array += [
                 "{&(%(C_path)s), " % v+
@@ -1081,7 +1081,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Build
         try:
-            if not builder.build() :
+            if not builder.build():
                 self.logger.write_error(_("C Build failed.\n"))
                 return False
         except Exception, exc:
@@ -1336,18 +1336,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
             status = "Disconnected"
         if(self.previous_plcstate != status):
             for args in {
-                     "Started" :     [("_Run", False),
-                                      ("_Stop", True)],
-                     "Stopped" :     [("_Run", True),
-                                      ("_Stop", False)],
-                     "Empty" :       [("_Run", False),
-                                      ("_Stop", False)],
-                     "Broken" :      [],
-                     "Disconnected" :[("_Run", False),
-                                      ("_Stop", False),
-                                      ("_Transfer", False),
-                                      ("_Connect", True),
-                                      ("_Disconnect", False)],
+                     "Started":     [("_Run", False),
+                                     ("_Stop", True)],
+                     "Stopped":     [("_Run", True),
+                                     ("_Stop", False)],
+                     "Empty":       [("_Run", False),
+                                     ("_Stop", False)],
+                     "Broken":      [],
+                     "Disconnected":[("_Run", False),
+                                     ("_Stop", False),
+                                     ("_Transfer", False),
+                                     ("_Connect", True),
+                                     ("_Disconnect", False)],
                    }.get(status,[]):
                 self.ShowMethod(*args)
             self.previous_plcstate = status
@@ -1569,11 +1569,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
             plc_status, Traces = self._connector.GetTraceVariables()
             debug_getvar_retry += 1
             #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
-            if plc_status == "Started" :
+            if plc_status == "Started":
                 if len(Traces) > 0:
                     Failed = False
                     self.IECdebug_lock.acquire()
-                    for debug_tick, debug_buff in Traces :
+                    for debug_tick, debug_buff in Traces:
                         debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
                         if (debug_vars is not None and
                             len(debug_vars) == len(self.TracedIECPath)):
@@ -1795,7 +1795,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         MD5 = self.GetLastBuildMD5()
 
         # Check if md5 file is empty : ask user to build PLC
-        if MD5 is None :
+        if MD5 is None:
             self.logger.write_error(_("Failed : Must build before transfer.\n"))
             return False
 
@@ -1818,7 +1818,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         builder = self.GetBuilder()
         if builder is not None:
             data = builder.GetBinaryCode()
-            if data is not None :
+            if data is not None:
                 if self._connector.NewPLC(MD5, data, extrafiles) and self.GetIECProgramsAndVariables():
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
@@ -1836,55 +1836,75 @@ class ProjectController(ConfigTreeNode, PLCControler):
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     StatusMethods = [
-        {"bitmap" : "Build",
-         "name" : _("Build"),
-         "tooltip" : _("Build project into build folder"),
-         "method" : "_Build"},
-        {"bitmap" : "Clean",
-         "name" : _("Clean"),
-         "enabled" : False,
-         "tooltip" : _("Clean project build folder"),
-         "method" : "_Clean"},
-        {"bitmap" : "Run",
-         "name" : _("Run"),
-         "shown" : False,
-         "tooltip" : _("Start PLC"),
-         "method" : "_Run"},
-        {"bitmap" : "Stop",
-         "name" : _("Stop"),
-         "shown" : False,
-         "tooltip" : _("Stop Running PLC"),
-         "method" : "_Stop"},
-        {"bitmap" : "Connect",
-         "name" : _("Connect"),
-         "tooltip" : _("Connect to the target PLC"),
-         "method" : "_Connect"},
-        {"bitmap" : "Transfer",
-         "name" : _("Transfer"),
-         "shown" : False,
-         "tooltip" : _("Transfer PLC"),
-         "method" : "_Transfer"},
-        {"bitmap" : "Disconnect",
-         "name" : _("Disconnect"),
-         "shown" : False,
-         "tooltip" : _("Disconnect from PLC"),
-         "method" : "_Disconnect"},
-        {"bitmap" : "ShowIECcode",
-         "name" : _("Show code"),
-         "shown" : False,
-         "tooltip" : _("Show IEC code generated by PLCGenerator"),
-         "method" : "_showIECcode"},
+        {
+            "bitmap":    "Build",
+            "name":    _("Build"),
+            "tooltip": _("Build project into build folder"),
+            "method":   "_Build"
+        },
+        {
+            "bitmap":    "Clean",
+            "name":    _("Clean"),
+            "tooltip": _("Clean project build folder"),
+            "method":   "_Clean",
+            "enabled":    False,
+        },
+        {
+            "bitmap":    "Run",
+            "name":    _("Run"),
+            "tooltip": _("Start PLC"),
+            "method":   "_Run",
+            "shown":      False,
+        },
+        {
+            "bitmap":    "Stop",
+            "name":    _("Stop"),
+            "tooltip": _("Stop Running PLC"),
+            "method":   "_Stop",
+            "shown":      False,
+        },
+        {
+            "bitmap":    "Connect",
+            "name":    _("Connect"),
+            "tooltip": _("Connect to the target PLC"),
+            "method":   "_Connect"
+        },
+        {
+            "bitmap":    "Transfer",
+            "name":    _("Transfer"),
+            "tooltip": _("Transfer PLC"),
+            "method":   "_Transfer",
+            "shown":      False,
+        },
+        {
+            "bitmap":    "Disconnect",
+            "name":    _("Disconnect"),
+            "tooltip": _("Disconnect from PLC"),
+            "method":   "_Disconnect",
+            "shown":      False,
+        },
+        {
+            "bitmap":    "ShowIECcode",
+            "name":    _("Show code"),
+            "tooltip": _("Show IEC code generated by PLCGenerator"),
+            "method":   "_showIECcode",
+            "shown":      False,
+        },
     ]
 
     ConfNodeMethods = [
-        {"bitmap" : "editIECrawcode",
-         "name" : _("Raw IEC code"),
-         "tooltip" : _("Edit raw IEC code added to code generated by PLCGenerator"),
-         "method" : "_editIECrawcode"},
-        {"bitmap" : "ManageFolder",
-         "name" : _("Project Files"),
-         "tooltip" : _("Open a file explorer to manage project files"),
-         "method" : "_OpenProjectFiles"},
+        {
+            "bitmap":    "editIECrawcode",
+            "name":    _("Raw IEC code"),
+            "tooltip": _("Edit raw IEC code added to code generated by PLCGenerator"),
+            "method":   "_editIECrawcode"
+        },
+        {
+            "bitmap":    "ManageFolder",
+            "name":    _("Project Files"),
+            "tooltip": _("Open a file explorer to manage project files"),
+            "method":   "_OpenProjectFiles"
+        },
     ]
 
 

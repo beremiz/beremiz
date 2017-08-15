@@ -70,9 +70,9 @@ Inputs and outputs are a tuple of characteristics that are in order:
     - The default modifier which can be "none", "negated", "rising" or "falling"
 """
 
-StdBlckLibs = {libname : LoadProject(tc6fname)[0]
+StdBlckLibs = {libname: LoadProject(tc6fname)[0]
              for libname, tc6fname in StdTC6Libs}
-StdBlckLst = [{"name" : libname, "list":
+StdBlckLst = [{"name": libname, "list":
                [GetBlockInfos(pous) for pous in lib.getpous()]}
              for libname, lib in StdBlckLibs.iteritems()]
 
@@ -176,8 +176,8 @@ def get_standard_funtions(table):
     Current_section = None
 
     translate = {
-            "extensible" : lambda x: {"yes":True, "no":False}[x],
-            "inputs" : lambda x:csv_input_translate(x,variables,baseinputnumber),
+            "extensible": lambda x: {"yes":True, "no":False}[x],
+            "inputs": lambda x:csv_input_translate(x,variables,baseinputnumber),
             "outputs":lambda x:[("OUT",x,"none")]}
 
     for fields in table:
@@ -189,7 +189,7 @@ def get_standard_funtions(table):
                     section_name = words[1]
                 else:
                     section_name = fields[0]
-                Current_section = {"name" : section_name, "list" : []}
+                Current_section = {"name": section_name, "list": []}
                 Standard_Functions_Decl.append(Current_section)
                 Function_decl_list = []
             if Current_section:
@@ -201,7 +201,7 @@ def get_standard_funtions(table):
                         Function_decl[param] = translate[param](value)
                 Function_decl["type"] = "function"
 
-                if Function_decl["name"].startswith('*') or Function_decl["name"].endswith('*') :
+                if Function_decl["name"].startswith('*') or Function_decl["name"].endswith('*'):
                     input_ovrloading_types = GetSubTypes(Function_decl["inputs"][0][1])
                     output_types = GetSubTypes(Function_decl["outputs"][0][1])
                 else:
@@ -230,7 +230,7 @@ def get_standard_funtions(table):
                     for outype in output_types:
                         if outype != None:
                             decl_tpl = Function_decl["outputs"][0]
-                            Function_decl["outputs"] = [ (decl_tpl[0] , outype,  decl_tpl[2])]
+                            Function_decl["outputs"] = [ (decl_tpl[0], outype,  decl_tpl[2])]
                             if funcdeclname_orig.endswith('*'):
                                 funcdeclout =  funcdeclin + '_' + outype
                             else:
@@ -244,11 +244,11 @@ def get_standard_funtions(table):
                         store = True
                         for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name,[]):
                             outs = reduce(lambda a,b: a or b,
-                                       map(lambda testtype : IsOfType(
+                                       map(lambda testtype: IsOfType(
                                            Function_decl["outputs"][0][1],
                                            testtype), OutTypes))
                             inps = reduce(lambda a,b: a or b,
-                                       map(lambda testtype : IsOfType(
+                                       map(lambda testtype: IsOfType(
                                            Function_decl["inputs"][0][1],
                                            testtype), InTypes))
                             if inps and outs and Function_decl["outputs"][0][1] != Function_decl["inputs"][0][1]:
@@ -256,7 +256,7 @@ def get_standard_funtions(table):
                                 break
                             else:
                                 store = False
-                        if store :
+                        if store:
                             # create the copy of decl dict to be appended to section
                             Function_decl_copy = Function_decl.copy()
                             Current_section["list"].append(Function_decl_copy)

@@ -66,7 +66,7 @@ def GetTargetChoices():
     targetchoices = ""
 
     # Get all xsd toolchains
-    for toolchainname,xsdfilename in toolchains.iteritems() :
+    for toolchainname,xsdfilename in toolchains.iteritems():
          if path.isfile(xsdfilename):
              DictXSD_toolchain["toolchain_"+toolchainname] = \
                 open(xsdfilename).read()

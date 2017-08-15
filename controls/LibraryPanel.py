@@ -212,7 +212,7 @@ class LibraryPanel(wx.Panel):
 
                 # Set data associated to tree item (only save that item is a
                 # category)
-                self.Tree.SetPyData(category_item, {"type" : CATEGORY})
+                self.Tree.SetPyData(category_item, {"type": CATEGORY})
 
                 # Iterate over functions and function blocks defined in library
                 # category add a tree item to category tree item for each of
@@ -239,16 +239,16 @@ class LibraryPanel(wx.Panel):
 
                     # Define data to associate to block tree item
                     comment = blocktype["comment"]
-                    block_data = {"type" : BLOCK,
-                                  "block_type" : blocktype["type"],
-                                  "inputs" : tuple([type
-                                                    for name, type, modifier
-                                                    in blocktype["inputs"]]),
-                                  "extension" : (len(blocktype["inputs"])
-                                                 if blocktype["extensible"]
-                                                 else None),
-                                  "comment": _(comment) +
-                                             blocktype.get("usage", "")}
+                    block_data = {
+                        "type":       BLOCK,
+                        "block_type": blocktype["type"],
+                        "inputs":     tuple([type
+                                             for name, type, modifier
+                                             in blocktype["inputs"]]),
+                        "extension":  (len(blocktype["inputs"])
+                                      if blocktype["extensible"] else None),
+                        "comment":    _(comment) + blocktype.get("usage", "")
+                    }
                     self.Tree.SetPyData(blocktype_item, block_data)
 
                     # Select block tree item in tree if it corresponds to

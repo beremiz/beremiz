@@ -164,7 +164,7 @@ class toolchain_gcc():
         relink = self.GetBinaryCode() is None
         for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             if CFilesAndCFLAGS:
-                if Location :
+                if Location:
                     self.CTRInstance.logger.write(".".join(map(str,Location))+" :\n")
                 else:
                     self.CTRInstance.logger.write(_("PLC :\n"))
@@ -190,7 +190,7 @@ class toolchain_gcc():
                                    (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
                                ).spin()
 
-                        if status :
+                        if status:
                             self.srcmd5.pop(bn)
                             self.CTRInstance.logger.write_error(_("C compilation of %s failed.\n") % bn)
                             return False
@@ -222,7 +222,7 @@ class toolchain_gcc():
                         ALLldflags)
                    ).spin()
 
-            if status :
+            if status:
                 return False
 
         else:
