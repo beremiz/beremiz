@@ -88,7 +88,6 @@ def GetAboutDialogInfo():
 		       "Edouard Tisserant <edouard.tisserant@gmail.com>",
 		       "Laurent Bessard <laurent.bessard@gmail.com>")
 
-
     info.License = ('\n This program is free software; you can redistribute it and/or\n'
     ' modify it under the terms of the GNU General Public License\n'
     ' as published by the Free Software Foundation; either version 2\n'

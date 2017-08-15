@@ -481,7 +481,6 @@ class UndoBuffer:
         else:
             self.LastSave = -1
 
-
     def Buffering(self, currentstate):
         """
         Add a new state in buffer
@@ -496,7 +495,6 @@ class UndoBuffer:
                 self.LastSave = -1
             self.MinIndex = (self.MinIndex + 1) % UNDO_BUFFER_LENGTH
         self.MinIndex = max(self.MinIndex, 0)
-
 
     def Current(self):
         """
@@ -1739,7 +1737,6 @@ class PLCControler:
             if result is not None:
                 return result
         return None
-
 
     # Return Data Type Object
     def GetDataType(self, typename, debug = False):

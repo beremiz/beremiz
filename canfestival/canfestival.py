@@ -509,7 +509,6 @@ class RootClass:
         else:
             can_driver_name = ""
 
-
         format_dict = {"locstr": "_".join(map(str, self.GetCurrentLocation())),
                        "candriver": can_driver_name,
                        "nodes_includes": "",

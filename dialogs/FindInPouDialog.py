@@ -33,7 +33,6 @@ class FindInPouDialog(wx.Dialog):
         if parent and parent.icon:
                 self.SetIcon(parent.icon)
 
-
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_("Find"),
               style=wx.CAPTION|wx.CLOSE_BOX|wx.CLIP_CHILDREN|wx.RESIZE_BORDER)
@@ -122,7 +121,6 @@ class FindInPouDialog(wx.Dialog):
 
         # clear message after dialog size calculation
         self.SetStatusText("")
-
 
         self.ParentWindow = parent
 

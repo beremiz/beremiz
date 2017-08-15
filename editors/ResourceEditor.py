@@ -212,7 +212,6 @@ class ResourceTable(CustomTable):
                         row_highlights.pop(col)
 
 
-
 class ResourceEditor(EditorPanel):
 
     VARIABLE_PANEL_TYPE = "resource"

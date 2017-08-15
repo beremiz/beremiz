@@ -1252,7 +1252,6 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                         else:
                             self.VLine.set_xdata((x_cursor, x_cursor))
 
-
                         # Define a horizontal line to display cursor y
                         # coordinate if no line is already defined
                         if self.HLine is None:

@@ -198,7 +198,6 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def removeService(self, zeroconf, _type, name):
         wx.CallAfter(self._removeService, name)
 
-
     def _removeService(self, name):
         '''
         called when a service with the desired type goes offline.

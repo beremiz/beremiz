@@ -151,7 +151,6 @@ class ProcessLogger:
         self.errt.start()
         self.startsem.release()
 
-
     def output(self, v):
         self.outdata.append(v)
         self.outlen += 1
@@ -214,7 +213,6 @@ class ProcessLogger:
             if not self.outt.finished and self.kill_it:
                self.kill()
             self.finishsem.release()
-
 
     def spin(self):
         self.finishsem.acquire()

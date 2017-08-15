@@ -101,7 +101,6 @@ class EnhancedStatusBar(wx.StatusBar):
         wx.EVT_SIZE(self, self.OnSize)
         wx.CallAfter(self.OnSize, None)
 
-
     def OnSize(self, event):
         """Handles The wx.EVT_SIZE Events For The StatusBar.
 
@@ -192,10 +191,8 @@ class EnhancedStatusBar(wx.StatusBar):
                 elif verticalalignment == ESB_ALIGN_BOTTOM:
                     widget.SetPosition((xpos, rect.height-widgetsize[1]))
 
-
         if event is not None:
             event.Skip()
-
 
     def AddWidget(self, widget, horizontalalignment=ESB_ALIGN_CENTER_HORIZONTAL,
                   verticalalignment=ESB_ALIGN_CENTER_VERTICAL, pos = -1):
@@ -237,7 +234,6 @@ class EnhancedStatusBar(wx.StatusBar):
             raise '\nERROR: Parameter "verticalalignment" Should Be One Of '\
                   '"ESB_ALIGN_CENTER_VERTICAL", "ESB_ALIGN_TOP", "ESB_ALIGN_BOTTOM"' \
                   '"ESB_EXACT_FIT"'
-
 
         try:
             self.RemoveChild(self._items[pos].widget)

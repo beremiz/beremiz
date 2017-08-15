@@ -178,9 +178,6 @@ class FormProcessor(JSONRPCService):
 
         return "unrecognised command"
 
-
-
-
 # The following is incredibly convenient for saving vast amounts of
 # coding, avoiding doing silly things like this:
 #     jsonresult = {'field1': djangoobject.field1,

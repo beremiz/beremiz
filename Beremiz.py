@@ -23,7 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 import os
 import sys
 import getopt
@@ -59,7 +58,6 @@ class BeremizIDELauncher:
             for i in range(0, 30):
                 wx.Yield()
                 time.sleep(0.01);
-
 
     def Usage(self):
         print "Usage:"

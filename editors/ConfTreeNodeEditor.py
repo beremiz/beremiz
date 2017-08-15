@@ -479,7 +479,6 @@ class ConfTreeNodeEditor(EditorPanel):
         sizer.Layout()
         self.RefreshScrollbars()
 
-
     def GetItemChannelChangedFunction(self, dir):
         def OnConfNodeTreeItemChannelChanged(event):
             confnode_IECChannel = self.Controler.BaseParams.getIEC_Channel()

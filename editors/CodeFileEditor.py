@@ -444,8 +444,6 @@ class CodeEditor(CustomStyledTextCtrl):
 
             lineNum = lineNum + 1
 
-
-
     def Expand(self, line, doExpand, force=False, visLevels=0, level=-1):
         lastChild = self.GetLastChild(line, level)
         line = line + 1
