@@ -55,7 +55,7 @@ def _ttime(): return (IEC_TIME,
                       lambda t, x: t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000))
 
 SameEndianessTypeTranslator = {
-    "BOOL":       _t(c_uint8,  lambda x: x.value!=0),
+    "BOOL":       _t(c_uint8,  lambda x: x.value != 0),
     "STEP":       _t(c_uint8),
     "TRANSITION": _t(c_uint8),
     "ACTION":     _t(c_uint8),
@@ -86,7 +86,7 @@ SwapedEndianessTypeTranslator = {
     # TODO
     }
 
-TypeTranslator=SameEndianessTypeTranslator
+TypeTranslator = SameEndianessTypeTranslator
 
 # Construct debugger natively supported types
 DebugTypesSize =  dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.iteritems() if t is not None])

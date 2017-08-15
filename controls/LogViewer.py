@@ -558,10 +558,10 @@ class LogViewer(DebugViewer, wx.Panel):
         self.MessageScrollBar.RefreshThumbPosition()
 
     def IsPLCLogEmpty(self):
-        empty=True
+        empty = True
         for level, prev in zip(xrange(LogLevelsCount), self.previous_log_count):
             if prev is not None:
-                empty=False
+                empty = False
                 break
         return empty
 

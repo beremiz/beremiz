@@ -133,7 +133,7 @@ class BrowseLocationsDialog(wx.Dialog):
             ("VAR_INPUT",     LOCATION_VAR_INPUT),
             ("VAR_OUTPUT",    LOCATION_VAR_OUTPUT),
             ("VAR_LOCAL",     LOCATION_VAR_MEMORY)]:
-            self.TreeImageDict[itemtype]=self.TreeImageList.Add(GetBitmap(imgname))
+            self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
 
         # Assign icon list to TreeCtrls
         self.LocationsTree.SetImageList(self.TreeImageList)

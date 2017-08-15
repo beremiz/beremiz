@@ -42,7 +42,7 @@ def GetCommunityHelpMsg():
 
 def GetAppRevision():
     rev = None
-    app_dir=paths.AbsDir(__file__)
+    app_dir = paths.AbsDir(__file__)
     try:
         pipe = subprocess.Popen(
             ["hg", "id", "-i"],
@@ -103,9 +103,9 @@ def GetAboutDialogInfo():
     '')
 
     # read license file
-    path=paths.AbsDir(__file__)
+    path = paths.AbsDir(__file__)
     license_path = os.path.join(path, "COPYING")
-    license=''
+    license = ''
     if os.path.exists(license_path):
         with open(license_path) as f:
             info.License += f.read()

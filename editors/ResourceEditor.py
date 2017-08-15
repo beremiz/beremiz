@@ -450,7 +450,7 @@ class ResourceEditor(EditorPanel):
                 message = _("\"%s\" is not a valid identifier!") % value
             elif value.upper() in IEC_KEYWORDS:
                 message = _("\"%s\" is a keyword. It can't be used!") % value
-            elif value.upper() in [var["Name"].upper() for i, var in enumerate(self.TasksTable.data) if i!=row]:
+            elif value.upper() in [var["Name"].upper() for i, var in enumerate(self.TasksTable.data) if i != row]:
                 message = _("A task with the same name already exists!")
             if message is not None:
                 event.Veto()
@@ -485,7 +485,7 @@ class ResourceEditor(EditorPanel):
                 message = _("\"%s\" is not a valid identifier!") % value
             elif value.upper() in IEC_KEYWORDS:
                 message = _("\"%s\" is a keyword. It can't be used!") % value
-            elif value.upper() in [var["Name"].upper() for i, var in enumerate(self.InstancesTable.data) if i!=row]:
+            elif value.upper() in [var["Name"].upper() for i, var in enumerate(self.InstancesTable.data) if i != row]:
                 message = _("An instance with the same name already exists!")
             if message is not None:
                 event.Veto()

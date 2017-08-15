@@ -102,7 +102,7 @@ class PythonFileCTNMixin(CodeFile):
         varinfos = map(lambda variable: {
                     "name": variable.getname(),
                     "desc": repr(variable.getdesc()),
-                    "onchangecode": '"'+variable.getonchange()+\
+                    "onchangecode": '"'+variable.getonchange() + \
                                          "('"+variable.getname()+"')\"" \
                                      if variable.getonchange() else '""',
                     "onchange": repr(variable.getonchange()) \
@@ -236,7 +236,7 @@ PYTHON_POLL* __%(name)s_notifier;
     __SET_VAR(__%(name)s_notifier->,CODE,,__STRING_LITERAL(%(onchangelen)d,%(onchangecode)s));
 """
         vardec = "\n".join([(vardecfmt + vardeconchangefmt
-                             if varinfo["onchange"] else vardecfmt)% varinfo
+                             if varinfo["onchange"] else vardecfmt) % varinfo
                             for varinfo in varinfos])
         varret = "\n".join([varretfmt % varinfo for varinfo in varinfos])
         varpub = "\n".join([(varpubonchangefmt if varinfo["onchange"] else

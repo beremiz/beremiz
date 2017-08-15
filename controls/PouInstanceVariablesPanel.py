@@ -140,11 +140,11 @@ class PouInstanceVariablesPanel(wx.Panel):
 
         self.VariablesList = CustomTreeCtrlWithRightImage(self,
               style=wx.SUNKEN_BORDER,
-              agwStyle=CT.TR_NO_BUTTONS|
-                       CT.TR_SINGLE|
-                       CT.TR_HAS_VARIABLE_ROW_HEIGHT|
-                       CT.TR_HIDE_ROOT|
-                       CT.TR_NO_LINES|
+              agwStyle=CT.TR_NO_BUTTONS              |
+                       CT.TR_SINGLE                  |
+                       CT.TR_HAS_VARIABLE_ROW_HEIGHT |
+                       CT.TR_HIDE_ROOT               |
+                       CT.TR_NO_LINES                |
                        getattr(CT, "TR_ALIGN_WINDOWS_RIGHT", CT.TR_ALIGN_WINDOWS))
         self.VariablesList.SetIndent(0)
         self.VariablesList.SetSpacing(5)

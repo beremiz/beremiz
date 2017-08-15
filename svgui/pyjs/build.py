@@ -45,7 +45,7 @@ _data_dir = os.path.join(pyjs.prefix, "share/pyjamas")
 
 
 # .cache.html files produces look like this
-CACHE_HTML_PAT=re.compile('^[a-z]*.[0-9a-f]{32}\.cache\.html$')
+CACHE_HTML_PAT = re.compile('^[a-z]*.[0-9a-f]{32}\.cache\.html$')
 
 # ok these are the three "default" library directories, containing
 # the builtins (str, List, Dict, ord, round, len, range etc.)
@@ -637,7 +637,7 @@ def make_deps(app_name, deps, mod_list):
     while deps:
         l_deps = len(deps)
         #print l_deps
-        if l_deps==last_len:
+        if l_deps == last_len:
             for m, dl in deps.items():
                 for d in dl:
                     if m in deps.get(d, []):

@@ -6,7 +6,7 @@ import sys
 class JSONRPCServiceBase:
 
     def __init__(self):
-        self.methods={}
+        self.methods = {}
 
     def response(self, id, result):
         return simplejson.dumps({'version': '1.1', 'id': id,
@@ -28,14 +28,14 @@ class JSONRPCServiceBase:
         id, method, params = data["id"], data["method"], data["params"]
         if method in self.methods:
             try:
-                result =self.methods[method](*params)
+                result = self.methods[method](*params)
                 return self.response(id, result)
             except BaseException:
                 etype, eval, etb = sys.exc_info()
-                return self.error(id, 100, '%s: %s' %(etype.__name__, eval))
+                return self.error(id, 100, '%s: %s' % (etype.__name__, eval))
             except:
                 etype, eval, etb = sys.exc_info()
-                return self.error(id, 100, 'Exception %s: %s' %(etype, eval))
+                return self.error(id, 100, 'Exception %s: %s' % (etype, eval))
         else:
             return self.error(id, 100, 'method "%s" does not exist' % method)
 

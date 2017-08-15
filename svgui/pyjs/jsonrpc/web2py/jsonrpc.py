@@ -7,6 +7,6 @@ class JSONRPCService(JSONRPCServiceBase):
         return self.process(request.body.read())
 
     def __call__(self, func):
-        self.methods[func.__name__]=func
+        self.methods[func.__name__] = func
         return func
 

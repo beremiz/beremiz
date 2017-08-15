@@ -67,7 +67,7 @@ havewx = False
 enabletwisted = True
 havetwisted = False
 
-extensions=[]
+extensions = []
 
 for o, a in opts:
     if o == "-h":
@@ -111,7 +111,7 @@ elif len(argv) == 1:
     os.chdir(WorkingDir)
 elif len(argv) == 0:
     WorkingDir = os.getcwd()
-    argv=[WorkingDir]
+    argv = [WorkingDir]
 
 import __builtin__
 if __name__ == '__main__':
@@ -264,7 +264,7 @@ if enablewx:
                 menu = wx.Menu()
                 menu.Append(self.TBMENU_START, _("Start PLC"))
                 menu.Append(self.TBMENU_STOP, _("Stop PLC"))
-                if self.level==1:
+                if self.level == 1:
                     menu.AppendSeparator()
                     menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
                     menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
@@ -382,9 +382,9 @@ if not os.path.isdir(WorkingDir):
 
 def default_evaluator(tocall, *args, **kwargs):
     try:
-        res=(tocall(*args, **kwargs), None)
+        res = (tocall(*args, **kwargs), None)
     except Exception:
-        res=(None, sys.exc_info())
+        res = (None, sys.exc_info())
     return res
 
 
@@ -423,7 +423,7 @@ class Server():
 
     def Start(self):
         pyro.initServer()
-        self.daemon=pyro.Daemon(host=self.ip_addr, port=self.port)
+        self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
                                 self.statuschange, self.evaluator,
                                 self.pyruntimevars)
@@ -511,7 +511,7 @@ if havewx:
             # avoid dead lock if called from the wx mainloop
             return default_evaluator(tocall, *args, **kwargs)
         else:
-            o=type('', (object,), dict(call=(tocall, args, kwargs), res=None))
+            o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
             wx.CallAfter(wx_evaluator, o)
             wx_eval_lock.acquire()
             return o.res
@@ -598,7 +598,7 @@ if havetwisted:
 
 
 if havetwisted or havewx:
-    pyro_thread=Thread(target=pyroserver.Loop)
+    pyro_thread = Thread(target=pyroserver.Loop)
     pyro_thread.start()
 
     if havetwisted:

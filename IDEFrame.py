@@ -509,8 +509,8 @@ class IDEFrame(wx.Frame):
         self.Panes = {}
 
         self.LeftNoteBook = wx.aui.AuiNotebook(self, ID_PLCOPENEDITORLEFTNOTEBOOK,
-              style=wx.aui.AUI_NB_TOP|wx.aui.AUI_NB_TAB_SPLIT|wx.aui.AUI_NB_TAB_MOVE|
-                    wx.aui.AUI_NB_SCROLL_BUTTONS|wx.aui.AUI_NB_TAB_EXTERNAL_MOVE)
+              style=wx.aui.AUI_NB_TOP | wx.aui.AUI_NB_TAB_SPLIT | wx.aui.AUI_NB_TAB_MOVE |
+                    wx.aui.AUI_NB_SCROLL_BUTTONS | wx.aui.AUI_NB_TAB_EXTERNAL_MOVE)
         self.LeftNoteBook.Bind(wx.aui.EVT_AUINOTEBOOK_ALLOW_DND,
                 self.OnAllowNotebookDnD)
         self.AUIManager.AddPane(self.LeftNoteBook,
@@ -519,8 +519,8 @@ class IDEFrame(wx.Frame):
               BestSize(wx.Size(300, 500)).CloseButton(False))
 
         self.BottomNoteBook = wx.aui.AuiNotebook(self, ID_PLCOPENEDITORBOTTOMNOTEBOOK,
-              style=wx.aui.AUI_NB_TOP|wx.aui.AUI_NB_TAB_SPLIT|wx.aui.AUI_NB_TAB_MOVE|
-                    wx.aui.AUI_NB_SCROLL_BUTTONS|wx.aui.AUI_NB_TAB_EXTERNAL_MOVE)
+              style=wx.aui.AUI_NB_TOP | wx.aui.AUI_NB_TAB_SPLIT | wx.aui.AUI_NB_TAB_MOVE |
+                    wx.aui.AUI_NB_SCROLL_BUTTONS | wx.aui.AUI_NB_TAB_EXTERNAL_MOVE)
         self.BottomNoteBook.Bind(wx.aui.EVT_AUINOTEBOOK_ALLOW_DND,
                 self.OnAllowNotebookDnD)
         self.AUIManager.AddPane(self.BottomNoteBook,
@@ -529,8 +529,8 @@ class IDEFrame(wx.Frame):
               BestSize(wx.Size(800, 300)).CloseButton(False))
 
         self.RightNoteBook = wx.aui.AuiNotebook(self, ID_PLCOPENEDITORRIGHTNOTEBOOK,
-              style=wx.aui.AUI_NB_TOP|wx.aui.AUI_NB_TAB_SPLIT|wx.aui.AUI_NB_TAB_MOVE|
-                    wx.aui.AUI_NB_SCROLL_BUTTONS|wx.aui.AUI_NB_TAB_EXTERNAL_MOVE)
+              style=wx.aui.AUI_NB_TOP | wx.aui.AUI_NB_TAB_SPLIT | wx.aui.AUI_NB_TAB_MOVE |
+                    wx.aui.AUI_NB_SCROLL_BUTTONS | wx.aui.AUI_NB_TAB_EXTERNAL_MOVE)
         self.RightNoteBook.Bind(wx.aui.EVT_AUINOTEBOOK_ALLOW_DND,
                 self.OnAllowNotebookDnD)
         self.AUIManager.AddPane(self.RightNoteBook,
@@ -539,7 +539,7 @@ class IDEFrame(wx.Frame):
               BestSize(wx.Size(250, 400)).CloseButton(False))
 
         self.TabsOpened = wx.aui.AuiNotebook(self, ID_PLCOPENEDITORTABSOPENED,
-              style=wx.aui.AUI_NB_DEFAULT_STYLE|wx.aui.AUI_NB_WINDOWLIST_BUTTON)
+              style=wx.aui.AUI_NB_DEFAULT_STYLE | wx.aui.AUI_NB_WINDOWLIST_BUTTON)
         self.TabsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGING,
               self.OnPouSelectedChanging)
         self.TabsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED,

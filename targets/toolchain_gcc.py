@@ -186,7 +186,7 @@ class toolchain_gcc():
 
                         status, result, err_result = ProcessLogger(
                                self.CTRInstance.logger,
-                               "\"%s\" -c \"%s\" -o \"%s\" %s %s"%
+                               "\"%s\" -c \"%s\" -o \"%s\" %s %s" %
                                    (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
                                ).spin()
 
@@ -215,7 +215,7 @@ class toolchain_gcc():
 
             status, result, err_result = ProcessLogger(
                    self.CTRInstance.logger,
-                   "\"%s\" %s -o \"%s\" %s"%
+                   "\"%s\" %s -o \"%s\" %s" %
                        (self.linker,
                         listobjstring,
                         self.exe_path,

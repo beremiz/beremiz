@@ -138,8 +138,8 @@ class TextViewer(EditorPanel):
         self.Editor.SetTabWidth(2)
         self.Editor.SetUseTabs(0)
 
-        self.Editor.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|
-                                    wx.stc.STC_MOD_BEFOREDELETE|
+        self.Editor.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT |
+                                    wx.stc.STC_MOD_BEFOREDELETE |
                                     wx.stc.STC_PERFORMED_USER)
 
         self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.OnStyleNeeded, id=ID_TEXTVIEWERTEXTCTRL)

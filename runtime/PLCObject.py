@@ -46,7 +46,7 @@ def get_last_traceback(tb):
         tb = tb.tb_next
     return tb
 
-lib_ext ={
+lib_ext = {
      "linux2": ".so",
      "win32":  ".dll",
      }.get(sys.platform, "")
@@ -83,14 +83,14 @@ class PLCObject(pyro.ObjBase):
     def AutoLoad(self):
         # Get the last transfered PLC if connector must be restart
         try:
-            self.CurrentPLCFilename=open(
+            self.CurrentPLCFilename = open(
                              self._GetMD5FileName(),
                              "r").read().strip() + lib_ext
             if self.LoadPLC():
                 self.PLCStatus = "Stopped"
         except Exception, e:
             self.PLCStatus = "Empty"
-            self.CurrentPLCFilename=None
+            self.CurrentPLCFilename = None
 
     def StatusChange(self):
         if self.statuschange is not None:
@@ -112,7 +112,7 @@ class PLCObject(pyro.ObjBase):
     def GetLogCount(self, level):
         if self._GetLogCount is not None:
             return int(self._GetLogCount(level))
-        elif self._loading_error is not None and level==0:
+        elif self._loading_error is not None and level == 0:
             return 1
 
     def GetLogMessage(self, level, msgid):
@@ -129,7 +129,7 @@ class PLCObject(pyro.ObjBase):
             if sz and sz <= maxsz:
                 self._log_read_buffer[sz] = '\x00'
                 return self._log_read_buffer.value, tick.value, tv_sec.value, tv_nsec.value
-        elif self._loading_error is not None and level==0:
+        elif self._loading_error is not None and level == 0:
             return self._loading_error, 0, 0, 0
         return None
 
@@ -329,7 +329,7 @@ class PLCObject(pyro.ObjBase):
     def PythonThreadProc(self):
         self.StartSem.release()
         res, cmd, blkid = "None", "None", ctypes.c_void_p()
-        compile_cache={}
+        compile_cache = {}
         while True:
             # print "_PythonIterator(", res, ")",
             cmd = self._PythonIterator(res, blkid)
@@ -338,19 +338,19 @@ class PLCObject(pyro.ObjBase):
             if cmd is None:
                 break
             try:
-                self.python_runtime_vars["FBID"]=FBID
-                ccmd, AST =compile_cache.get(FBID, (None, None))
-                if ccmd is None or ccmd!=cmd:
+                self.python_runtime_vars["FBID"] = FBID
+                ccmd, AST = compile_cache.get(FBID, (None, None))
+                if ccmd is None or ccmd != cmd:
                     AST = compile(cmd, '<plc>', 'eval')
-                    compile_cache[FBID]=(cmd, AST)
+                    compile_cache[FBID] = (cmd, AST)
                 result, exp = self.evaluator(eval, AST, self.python_runtime_vars)
                 if exp is not None:
                     res = "#EXCEPTION : "+str(exp[1])
                     self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd,
                         '\n'.join(traceback.format_exception(*exp))))
                 else:
-                    res=str(result)
-                self.python_runtime_vars["FBID"]=None
+                    res = str(result)
+                self.python_runtime_vars["FBID"] = None
             except Exception, e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
@@ -364,7 +364,7 @@ class PLCObject(pyro.ObjBase):
                 self.PLCStatus = "Started"
                 self.StatusChange()
                 self.PythonRuntimeCall("start")
-                self.StartSem=Semaphore(0)
+                self.StartSem = Semaphore(0)
                 self.PythonThread = Thread(target=self.PythonThreadProc)
                 self.PythonThread.start()
                 self.StartSem.acquire()
@@ -477,7 +477,7 @@ class PLCObject(pyro.ObjBase):
                 # keep a copy of requested idx
                 self._ResetDebugVariables()
                 for idx, iectype, force in idxs:
-                    if force !=None:
+                    if force != None:
                         c_type, unpack_func, pack_func = \
                             TypeTranslator.get(iectype,
                                                     (None, None, None))

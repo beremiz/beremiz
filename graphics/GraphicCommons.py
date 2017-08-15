@@ -1377,7 +1377,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     def ConnectionAvailable(self, direction=None, exclude=True):
         wire_nums = len(self.Wires)
 
-        connector_free = (wire_nums<= 0)
+        connector_free = (wire_nums <= 0)
         connector_max_used = ((wire_nums > 0) and self.OneConnected)
         if (self.Parent.CurrentLanguage in ["SFC", "LD"]) and (self.Type == "BOOL"):
             connector_max_used = False;

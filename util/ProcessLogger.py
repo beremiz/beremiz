@@ -115,7 +115,7 @@ class ProcessLogger:
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
 
-        popenargs= {
+        popenargs = {
                "cwd":    os.getcwd() if cwd is None else cwd,
                "stdin":  subprocess.PIPE,
                "stdout": subprocess.PIPE,
@@ -156,7 +156,7 @@ class ProcessLogger:
         self.outlen += 1
         if not self.no_stdout:
             self.logger.write(v)
-        if (self.keyword and v.find(self.keyword)!=-1) or (self.outlimit and self.outlen > self.outlimit):
+        if (self.keyword and v.find(self.keyword) != -1) or (self.outlimit and self.outlen > self.outlimit):
             self.endlog()
 
     def errors(self, v):
@@ -198,9 +198,9 @@ class ProcessLogger:
             ctypes.windll.kernel32.CloseHandle(handle)
         else:
             if gently:
-                sig=SIGTERM
+                sig = SIGTERM
             else:
-                sig=SIGKILL
+                sig = SIGKILL
             try:
                 os.kill(self.Proc.pid, sig)
             except:

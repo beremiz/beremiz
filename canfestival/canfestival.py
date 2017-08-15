@@ -551,32 +551,32 @@ class RootClass:
                         "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){}\n" % (nodename))
                 else:
                     format_dict["slavebootups"] += (
-                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n" % (nodename)+
-                        "    check_and_start_node(d, nodeId);\n"+
+                        "static void %s_post_SlaveBootup(CO_Data* d, UNS8 nodeId){\n" % (nodename) +
+                        "    check_and_start_node(d, nodeId);\n" +
                         "}\n")
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
                     "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n" % (nodename, nodename))
                 format_dict["pre_op"] += (
-                    "static void %s_preOperational(CO_Data* d){\n    " % (nodename)+
-                    "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n" % NdId for NdId in SlaveIDs])+
+                    "static void %s_preOperational(CO_Data* d){\n    " % (nodename) +
+                    "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n" % NdId for NdId in SlaveIDs]) +
                     "}\n")
                 format_dict["pre_op_register"] += (
                     "%s_Data.preOperational = %s_preOperational;\n" % (nodename, nodename))
             else:
                 # Slave node
                 align = child_data.getSync_Align()
-                align_ratio=child_data.getSync_Align_Ratio()
+                align_ratio = child_data.getSync_Align_Ratio()
                 if align > 0:
                     format_dict["post_sync"] += (
-                        "static int %s_CalCount = 0;\n" % (nodename)+
-                        "static void %s_post_sync(CO_Data* d){\n" % (nodename)+
-                        "    if(%s_CalCount < %d){\n" % (nodename, align)+
-                        "        %s_CalCount++;\n" % (nodename)+
-                        "        align_tick(-1);\n"+
-                        "    }else{\n"+
-                        "        align_tick(%d);\n" % (align_ratio)+
-                        "    }\n"+
+                        "static int %s_CalCount = 0;\n" % (nodename) +
+                        "static void %s_post_sync(CO_Data* d){\n" % (nodename) +
+                        "    if(%s_CalCount < %d){\n" % (nodename, align) +
+                        "        %s_CalCount++;\n" % (nodename) +
+                        "        align_tick(-1);\n" +
+                        "    }else{\n" +
+                        "        align_tick(%d);\n" % (align_ratio) +
+                        "    }\n" +
                         "}\n")
                     format_dict["post_sync_register"] += (
                         "%s_Data.post_sync = %s_post_sync;\n" % (nodename, nodename))

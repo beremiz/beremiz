@@ -88,8 +88,8 @@ import re
 # ----------------
 #
 
-__author__ = "Pierre Rouleau"
-__version__= "$Revision: 1.5 $"
+__author__  = "Pierre Rouleau"
+__version__ = "$Revision: 1.5 $"
 
 # -----------------------------------------------------------------------------
 
@@ -278,7 +278,7 @@ def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=Non
     languageDict = getlanguageDict()
 
     for langCode in languageDict.keys():
-        if (langCode == 'en') and (forceEnglish==0):
+        if (langCode == 'en') and (forceEnglish == 0):
             pass
         else:
             langPOfileName = "%s_%s.po" % (applicationName, langCode)
@@ -383,7 +383,7 @@ def mkdir(directory):
    # translate the path separators
    directory = unixpath(directory)
    # build a list of all directory elements
-   aList = filter(lambda x: len(x)>0, directory.split('/'))
+   aList = filter(lambda x: len(x) > 0, directory.split('/'))
    theLen = len(aList)
    # if the first element is a Windows-style disk drive
    # concatenate it with the first directory

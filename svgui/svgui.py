@@ -90,7 +90,7 @@ class SVGUI(PythonFileCTNMixin):
 
         res = ([], "", False)
 
-        svgfile=self._getSVGpath()
+        svgfile = self._getSVGpath()
         if os.path.exists(svgfile):
             res += (("gui.svg", file(svgfile, "rb")),)
 
@@ -100,7 +100,7 @@ class SVGUI(PythonFileCTNMixin):
 
         svguilibpath = os.path.join(self._getBuildPath(), "svguilib.js")
         svguilibfile = open(svguilibpath, 'w')
-        fpath=paths.AbsDir(__file__)
+        fpath = paths.AbsDir(__file__)
         svguilibfile.write(translate(os.path.join(fpath, "pyjs", "lib", "sys.py"), "sys"))
         svguilibfile.write(open(os.path.join(fpath, "pyjs", "lib", "_pyjs.js"), 'r').read())
         svguilibfile.write(translate(os.path.join(fpath, "pyjs", "lib", "pyjslib.py"), "pyjslib"))

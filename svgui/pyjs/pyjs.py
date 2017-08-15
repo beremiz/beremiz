@@ -52,43 +52,43 @@ NATIVE_JS_FUNC_NAME = "JS"
 
 UU = ""
 
-PYJSLIB_BUILTIN_FUNCTIONS=("cmp",
-                           "map",
-                           "filter",
-                           "dir",
-                           "getattr",
-                           "setattr",
-                           "hasattr",
-                           "int",
-                           "float",
-                           "str",
-                           "repr",
-                           "range",
-                           "len",
-                           "hash",
-                           "abs",
-                           "ord",
-                           "chr",
-                           "enumerate",
-                           "min",
-                           "max",
-                           "bool",
-                           "type",
-                           "isinstance")
+PYJSLIB_BUILTIN_FUNCTIONS = ("cmp",
+                             "map",
+                             "filter",
+                             "dir",
+                             "getattr",
+                             "setattr",
+                             "hasattr",
+                             "int",
+                             "float",
+                             "str",
+                             "repr",
+                             "range",
+                             "len",
+                             "hash",
+                             "abs",
+                             "ord",
+                             "chr",
+                             "enumerate",
+                             "min",
+                             "max",
+                             "bool",
+                             "type",
+                             "isinstance")
 
-PYJSLIB_BUILTIN_CLASSES=("BaseException",
-                         "Exception",
-                         "StandardError",
-                         "StopIteration",
-                         "AttributeError",
-                         "TypeError",
-                         "KeyError",
-                         "LookupError",
-                         "list",
-                         "dict",
-                         "object",
-                         "tuple",
-                        )
+PYJSLIB_BUILTIN_CLASSES = ("BaseException",
+                           "Exception",
+                           "StandardError",
+                           "StopIteration",
+                           "AttributeError",
+                           "TypeError",
+                           "KeyError",
+                           "LookupError",
+                           "list",
+                           "dict",
+                           "object",
+                           "tuple",
+)
 
 
 def pyjs_builtin_remap(name):
@@ -106,7 +106,7 @@ def pyjs_builtin_remap(name):
 # XXX: this is a hack: these should be dealt with another way
 # however, console is currently the only global name which is causing
 # problems.
-PYJS_GLOBAL_VARS=("console")
+PYJS_GLOBAL_VARS = ("console")
 
 # This is taken from the django project.
 # Escape every ASCII character with a value less than 32.
@@ -404,7 +404,7 @@ class Translator:
 
                 default_name = arg_names[default_pos]
                 print >>self.output, "    if (typeof %s == 'undefined')" % (default_name)
-                print >>self.output, "        %s=__kwargs.%s;"% (default_name, default_name)
+                print >>self.output, "        %s=__kwargs.%s;" % (default_name, default_name)
                 default_pos += 1
 
             #self._default_args_handler(node, arg_names, current_klass)
@@ -714,7 +714,7 @@ class Translator:
         if isinstance(v.expr, ast.Getattr):
             call_name = self._getattr2(v.expr, current_klass, v.attrname + "." + attr_name)
         elif isinstance(v.expr, ast.Name) and v.expr.name in self.module_imports():
-            call_name = UU+v.expr.name + '.__' +v.attrname+".prototype.__class__."+attr_name
+            call_name = UU+v.expr.name + '.__' + v.attrname+".prototype.__class__."+attr_name
         else:
             obj = self.expr(v.expr, current_klass)
             call_name = obj + "." + v.attrname + "." + attr_name
@@ -1747,7 +1747,7 @@ usage = """
 
 def main():
     import sys
-    if len(sys.argv)<2:
+    if len(sys.argv) < 2:
         print >> sys.stderr, usage % sys.argv[0]
         sys.exit(1)
     file_name = os.path.abspath(sys.argv[1])
