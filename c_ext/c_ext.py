@@ -119,10 +119,10 @@ class CFile(CodeFile):
         text += "\n}\n\n"
 
         Gen_Cfile_path = os.path.join(buildpath, "CFile_%s.c" % location_str)
-        cfile = open(Gen_Cfile_path,'w')
+        cfile = open(Gen_Cfile_path, 'w')
         cfile.write(text)
         cfile.close()
 
         matiec_CFLAGS = '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath())
 
-        return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_CFLAGS))],str(self.CExtension.getLDFLAGS()),True
+        return [(Gen_Cfile_path, str(self.CExtension.getCFLAGS() + matiec_CFLAGS))], str(self.CExtension.getLDFLAGS()), True

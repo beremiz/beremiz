@@ -142,7 +142,7 @@ class ProjectPropertiesPanel(wx.Notebook):
               flag=wx.GROW|wx.BOTTOM|wx.LEFT|wx.RIGHT)
 
         self.Scalings = {}
-        for language, translation in [("FBD",_("FBD")), ("LD",_("LD")), ("SFC",_("SFC"))]:
+        for language, translation in [("FBD", _("FBD")), ("LD", _("LD")), ("SFC", _("SFC"))]:
             scaling_panel = wx.Panel(scaling_nb, style=wx.TAB_TRAVERSAL)
             scalingpanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=2, vgap=5)
             scalingpanel_sizer.AddGrowableCol(1)
@@ -201,7 +201,7 @@ class ProjectPropertiesPanel(wx.Notebook):
               flag=wx.BOTTOM|wx.LEFT)
 
         self.ContentDescription = wx.TextCtrl(self.MiscellaneousPanel,
-              size=wx.Size(240,150), style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
+              size=wx.Size(240, 150), style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnContentDescriptionChanged,
               self.ContentDescription)
         self.ContentDescription.Bind(wx.EVT_KILL_FOCUS,

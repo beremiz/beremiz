@@ -34,7 +34,7 @@ _base_path = paths.AbsDir(__file__)
 def _GetLocalConnectorClassFactory(name):
     return lambda: getattr(__import__(name, globals(), locals()), name + "_connector_factory")
 
-connectors = {name:_GetLocalConnectorClassFactory(name)
+connectors = {name: _GetLocalConnectorClassFactory(name)
                   for name in listdir(_base_path)
                       if path.isdir(path.join(_base_path, name))
                           and not name.startswith("__")}

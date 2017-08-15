@@ -43,7 +43,7 @@ class BeremizIDELauncher:
         self.splashPath = self.Bpath("images", "splash.png")
 
     def Bpath(self, *args):
-        return os.path.join(self.app_dir,*args)
+        return os.path.join(self.app_dir, *args)
 
     def ShowSplashScreen(self):
         from wx.lib.agw.advancedsplash import AdvancedSplash
@@ -56,7 +56,7 @@ class BeremizIDELauncher:
             self.splash.Show()
             self.splash.ProcessEvent(wx.PaintEvent())
         else:
-            for i in range(0,30):
+            for i in range(0, 30):
                 wx.Yield()
                 time.sleep(0.01);
 
@@ -162,7 +162,7 @@ class BeremizIDELauncher:
                 global updateinfo
                 try:
                     import urllib2
-                    updateinfo = urllib2.urlopen(self.updateinfo_url,None).read()
+                    updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
                 except:
                     updateinfo = _("update info unavailable.")
 
@@ -181,7 +181,7 @@ class BeremizIDELauncher:
         import version
         import tempfile
         logpath = tempfile.gettempdir()+os.sep+'Beremiz'
-        BeremizIDE.AddExceptHook(logpath,version.app_version)
+        BeremizIDE.AddExceptHook(logpath, version.app_version)
 
     def ShowUI(self):
         self.frame = BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)

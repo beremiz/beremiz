@@ -99,7 +99,7 @@ class ConfigTreeNode:
     def ConfNodePath(self):
         return os.path.join(self.CTNParent.ConfNodePath(), self.CTNType)
 
-    def CTNPath(self,CTNName=None,project_path=None):
+    def CTNPath(self, CTNName=None, project_path=None):
         if not CTNName:
             CTNName = self.CTNName()
         if not project_path:
@@ -195,7 +195,7 @@ class ConfigTreeNode:
 
             # generate XML for base XML parameters controller of the confnode
             if self.MandatoryParams:
-                BaseXMLFile = open(self.ConfNodeBaseXmlFilePath(),'w')
+                BaseXMLFile = open(self.ConfNodeBaseXmlFilePath(), 'w')
                 BaseXMLFile.write(etree.tostring(
                     self.MandatoryParams[1],
                     pretty_print=True,
@@ -205,7 +205,7 @@ class ConfigTreeNode:
 
             # generate XML for XML parameters controller of the confnode
             if self.CTNParams:
-                XMLFile = open(self.ConfNodeXmlFilePath(),'w')
+                XMLFile = open(self.ConfNodeXmlFilePath(), 'w')
                 XMLFile.write(etree.tostring(
                     self.CTNParams[1],
                     pretty_print=True,
@@ -258,8 +258,8 @@ class ConfigTreeNode:
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        self.GetCTRoot().logger.write_warning(".".join(map(lambda x:str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
-        return [],"",False
+        self.GetCTRoot().logger.write_warning(".".join(map(lambda x: str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
+        return [], "", False
 
     def _Generate_C(self, buildpath, locations):
         # Generate confnodes [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
@@ -309,7 +309,7 @@ class ConfigTreeNode:
 
     def IECSortedChildren(self):
         # reorder children by IEC_channels
-        ordered = [(chld.BaseParams.getIEC_Channel(),chld) for chld in self.IterChildren()]
+        ordered = [(chld.BaseParams.getIEC_Channel(), chld) for chld in self.IterChildren()]
         if ordered:
             ordered.sort()
             return zip(*ordered)[1]
@@ -524,7 +524,7 @@ class ConfigTreeNode:
         # reorganize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
         # to ( name, (CTNClass, Help)), an make a dict
         transpose = zip(*self.CTNChildrenTypes)
-        CTNChildrenTypes = dict(zip(transpose[0],zip(transpose[1],transpose[2])))
+        CTNChildrenTypes = dict(zip(transpose[0], zip(transpose[1], transpose[2])))
         # Check that adding this confnode is allowed
         try:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]

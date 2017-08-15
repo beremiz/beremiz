@@ -39,7 +39,7 @@ beremiz_dir = paths.AbsDir(__file__)
 
 
 def Bpath(*args):
-    return os.path.join(beremiz_dir,*args)
+    return os.path.join(beremiz_dir, *args)
 
 
 
@@ -85,7 +85,7 @@ else:
         'size': 10,
     }
 
-from threading import Lock,Timer,currentThread
+from threading import Lock, Timer, currentThread
 MainThread = currentThread().ident
 REFRESH_PERIOD = 0.1
 from time import time as gettime
@@ -111,7 +111,7 @@ class LogPseudoFile:
 
     def write(self, s, style = None):
         if self.lock.acquire():
-            self.stack.append((s,style))
+            self.stack.append((s, style))
             self.lock.release()
             current_time = gettime()
             self.TimerAccessLock.acquire()
@@ -180,10 +180,10 @@ class LogPseudoFile:
             self.rising_timer = newtime
 
     def write_warning(self, s):
-        self.write(s,self.red_white)
+        self.write(s, self.red_white)
 
     def write_error(self, s):
-        self.write(s,self.red_yellow)
+        self.write(s, self.red_yellow)
 
     def writeyield(self, s):
         self.write(s)
@@ -319,20 +319,20 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=keyID)
         accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F12, keyID)]
 
-        for method,shortcut in [("Stop",     wx.WXK_F4),
-                                ("Run",      wx.WXK_F5),
-                                ("Transfer", wx.WXK_F6),
-                                ("Connect",  wx.WXK_F7),
-                                ("Build",    wx.WXK_F11)]:
-            def OnMethodGen(obj,meth):
+        for method, shortcut in [("Stop",     wx.WXK_F4),
+                                 ("Run",      wx.WXK_F5),
+                                 ("Transfer", wx.WXK_F6),
+                                 ("Connect",  wx.WXK_F7),
+                                 ("Build",    wx.WXK_F11)]:
+            def OnMethodGen(obj, meth):
                 def OnMethod(evt):
                     if obj.CTR is not None:
                        obj.CTR.CallMethod('_'+meth)
                     wx.CallAfter(self.RefreshStatusToolBar)
                 return OnMethod
             newid = wx.NewId()
-            self.Bind(wx.EVT_MENU, OnMethodGen(self,method), id=newid)
-            accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, shortcut,newid)]
+            self.Bind(wx.EVT_MENU, OnMethodGen(self, method), id=newid)
+            accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, shortcut, newid)]
 
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
@@ -405,7 +405,7 @@ class Beremiz(IDEFrame):
         self.__init_execute_path()
 
         IDEFrame.__init__(self, parent, debug)
-        self.Log = LogPseudoFile(self.LogConsole,self.SelectTab)
+        self.Log = LogPseudoFile(self.LogConsole, self.SelectTab)
 
         self.local_runtime = None
         self.runtime_port = None
@@ -487,7 +487,7 @@ class Beremiz(IDEFrame):
                     sys.executable,
                     Bpath("Beremiz_service.py"),
                     self.runtime_port,
-                    {False: "-x 0", True:"-x 1"}[taskbaricon],
+                    {False: "-x 0", True: "-x 1"}[taskbaricon],
                     self.local_runtime_tmpdir),
                 no_gui=False,
                 timeout=500, keyword = self.local_runtime_tmpdir,
@@ -729,7 +729,7 @@ class Beremiz(IDEFrame):
         if self.CTR is not None:
 
             for confnode_method in self.CTR.StatusMethods:
-                if "method" in confnode_method and confnode_method.get("shown",True):
+                if "method" in confnode_method and confnode_method.get("shown", True):
                     id = wx.NewId()
                     StatusToolBar.AddSimpleTool(id,
                         GetBitmap(confnode_method.get("bitmap", "Unknown")),
@@ -1093,7 +1093,7 @@ Max_Traceback_List_Size = 20
 
 def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     trcbck_lst = []
-    for i,line in enumerate(traceback.extract_tb(e_tb)):
+    for i, line in enumerate(traceback.extract_tb(e_tb)):
         trcbck = " " + str(i+1) + ". "
         if line[0].find(os.getcwd()) == -1:
             trcbck += "file : " + str(line[0]) + ",   "
@@ -1145,7 +1145,7 @@ ignored_exceptions = []  # a problem with a line in a module is only reported on
 
 def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
 
-    def save_bug_report(e_type, e_value, e_traceback, bug_report_path,date):
+    def save_bug_report(e_type, e_value, e_traceback, bug_report_path, date):
         info = {
             'app-title': wx.GetApp().GetAppName(),  # app_title
             'app-version': app_version,

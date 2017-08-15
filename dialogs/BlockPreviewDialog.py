@@ -62,8 +62,8 @@ class BlockPreviewDialog(wx.Dialog):
 
         # Add function to preview panel so that it answers to graphic elements
         # like Viewer
-        setattr(self.Preview, "GetDrawingMode", lambda:FREEDRAWING_MODE)
-        setattr(self.Preview, "GetScaling", lambda:None)
+        setattr(self.Preview, "GetDrawingMode", lambda: FREEDRAWING_MODE)
+        setattr(self.Preview, "GetScaling", lambda: None)
         setattr(self.Preview, "GetBlockType", controller.GetBlockType)
         setattr(self.Preview, "IsOfType", controller.IsOfType)
 

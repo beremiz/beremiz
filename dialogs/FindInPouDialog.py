@@ -179,6 +179,6 @@ class FindInPouDialog(wx.Dialog):
             self.SetStatusText(message)
         if len(self.criteria) > 0:
             wx.CallAfter(self.ParentWindow.FindInPou,
-                {True: 1, False:-1}[self.Forward.GetValue()],
+                {True: 1, False: -1}[self.Forward.GetValue()],
                 self.criteria)
         event.Skip()

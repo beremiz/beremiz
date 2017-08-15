@@ -56,7 +56,7 @@ class PouTransitionDialog(wx.Dialog):
         infos_sizer.AddWindow(transitionname_label, border=4,
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
 
-        self.TransitionName = wx.TextCtrl(self, size=wx.Size(180,-1))
+        self.TransitionName = wx.TextCtrl(self, size=wx.Size(180, -1))
         infos_sizer.AddWindow(self.TransitionName, flag=wx.GROW)
 
         language_label = wx.StaticText(self, label=_('Language:'))

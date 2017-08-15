@@ -689,7 +689,7 @@ class Viewer(EditorPanel, DebugViewer):
 
         # Adding a rubberband to Viewer
         self.rubberBand = RubberBand(viewer=self)
-        self.Editor.SetBackgroundColour(wx.Colour(255,255,255))
+        self.Editor.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.Editor.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.ResetView()
         self.LastClientSize = None
@@ -2647,7 +2647,7 @@ class Viewer(EditorPanel, DebugViewer):
             comment = Comment(self, value, id)
             comment.SetPosition(bbox.x, bbox.y)
             min_width, min_height = comment.GetMinSize()
-            comment.SetSize(*self.GetScaledSize(max(min_width,bbox.width),max(min_height,bbox.height)))
+            comment.SetSize(*self.GetScaledSize(max(min_width, bbox.width), max(min_height, bbox.height)))
             self.AddComment(comment)
             self.Controler.AddEditedElementComment(self.TagName, id)
             self.RefreshCommentModel(comment)
@@ -2703,11 +2703,11 @@ class Viewer(EditorPanel, DebugViewer):
     def AddNewStep(self, bbox, initial=False, wire=None):
         if wire is not None:
             values = {
-                "name": self.Controler.GenerateNewName(
-                    self.TagName, None, "Step%d", 0),
-                "input": True,
+                "name":   self.Controler.GenerateNewName(self.TagName, None, "Step%d", 0),
+                "input":  True,
                 "output": True,
-                "action":False}
+                "action": False
+            }
         else:
             dialog = SFCStepDialog(self.ParentWindow, self.Controler, self.TagName, initial)
             dialog.SetPreviewFont(self.GetFont())
@@ -3010,11 +3010,15 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = SFCTransitionDialog(self.ParentWindow, self.Controler, self.TagName, self.GetDrawingMode() == FREEDRAWING_MODE)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(transition.GetSize())
-        dialog.SetValues({"type":transition.GetType(),"value":transition.GetCondition(), "priority":transition.GetPriority()})
+        dialog.SetValues({
+            "type":     transition.GetType(),
+            "value":    transition.GetCondition(),
+            "priority": transition.GetPriority()
+        })
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = transition.GetRedrawRect(1, 1)
-            transition.SetType(values["type"],values["value"])
+            transition.SetType(values["type"], values["value"])
             transition.SetPriority(values["priority"])
             rect = rect.Union(transition.GetRedrawRect())
             self.RefreshTransitionModel(transition)

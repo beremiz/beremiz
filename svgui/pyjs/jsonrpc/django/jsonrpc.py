@@ -156,8 +156,8 @@ class FormProcessor(JSONRPCService):
 
         if command is None:  # just validate
             if not f.is_valid():
-                return {'success':False, 'errors': builderrors(f)}
-            return {'success':True}
+                return {'success': False, 'errors': builderrors(f)}
+            return {'success': True}
 
         elif command.has_key('describe_errors'):
             field_names = command['describe_errors']
@@ -169,7 +169,7 @@ class FormProcessor(JSONRPCService):
 
         elif command.has_key('save'):
             if not f.is_valid():
-                return {'success':False, 'errors': builderrors(f)}
+                return {'success': False, 'errors': builderrors(f)}
             instance = f.save()  # XXX: if you want more, over-ride save.
             return {'success': True, 'instance': json_convert(instance) }
 

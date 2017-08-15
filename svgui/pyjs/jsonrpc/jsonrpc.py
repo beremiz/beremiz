@@ -9,8 +9,8 @@ class JSONRPCServiceBase:
         self.methods={}
 
     def response(self, id, result):
-        return simplejson.dumps({'version': '1.1', 'id':id,
-                                 'result':result, 'error':None})
+        return simplejson.dumps({'version': '1.1', 'id': id,
+                                 'result': result, 'error': None})
     def error(self, id, code, message):
         return simplejson.dumps({'id': id,
                                  'version': '1.1',

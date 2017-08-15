@@ -86,13 +86,13 @@ class SVGUI(PythonFileCTNMixin):
 
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x:str(x), current_location))
+        location_str = "_".join(map(lambda x: str(x), current_location))
 
         res = ([], "", False)
 
         svgfile=self._getSVGpath()
         if os.path.exists(svgfile):
-            res += (("gui.svg", file(svgfile,"rb")),)
+            res += (("gui.svg", file(svgfile, "rb")),)
 
         svguiserverfile = open(self._getSVGUIserverpath(), 'r')
         svguiservercode = svguiserverfile.read()
@@ -110,7 +110,7 @@ class SVGUI(PythonFileCTNMixin):
         svguilibfile.write(open(os.path.join(fpath, "livesvg.js"), 'r').read())
         svguilibfile.close()
         jsmodules = {"LiveSVGPage": "svguilib.js"}
-        res += (("svguilib.js", file(svguilibpath,"rb")),)
+        res += (("svguilib.js", file(svguilibpath, "rb")),)
 
         runtimefile_path = os.path.join(buildpath, "runtime_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
@@ -128,7 +128,7 @@ def _runtime_%(location)s_stop():
       })
         runtimefile.close()
 
-        res += (("runtime_%s.py" % location_str, file(runtimefile_path,"rb")),)
+        res += (("runtime_%s.py" % location_str, file(runtimefile_path, "rb")),)
 
         return res
 

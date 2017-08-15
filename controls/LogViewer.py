@@ -418,7 +418,7 @@ class LogViewer(DebugViewer, wx.Panel):
                     oldest_message = (-1, None)
                 else:
                     dump_end = prev - 1
-                for msgidx in xrange(count-1, dump_end,-1):
+                for msgidx in xrange(count-1, dump_end, -1):
                     new_message = self.GetLogMessageFromSource(msgidx, level)
                     if new_message is None:
                         if prev is None:

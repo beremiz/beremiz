@@ -69,7 +69,7 @@ class toolchain_makefile():
 
     def concat_deps(self, bn):
         # read source
-        src = open(os.path.join(self.buildpath, bn),"r").read()
+        src = open(os.path.join(self.buildpath, bn), "r").read()
         # update direct dependencies
         deps = []
         for l in src.splitlines():

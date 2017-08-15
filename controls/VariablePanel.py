@@ -211,7 +211,7 @@ class VariableTable(CustomTable):
                                 editor = wx.grid.GridCellChoiceEditor()
                                 excluded = []
                                 if self.Parent.IsFunctionBlockType(var_type):
-                                    excluded.extend(["Local","Temp"])
+                                    excluded.extend(["Local", "Temp"])
                                 editor.SetParameters(",".join([_(choice) for choice in self.Parent.ClassList if choice not in excluded]))
                     elif colname != "Documentation":
                         grid.SetReadOnly(row, col, True)
@@ -323,7 +323,7 @@ class VariableDropTarget(wx.TextDropTarget):
             elif (element_type not in ["config", "resource", "function"] and values[1] == "Global" and
                   self.ParentWindow.Filter in ["All", "Interface", "External"] or
                   element_type != "function" and values[1] in ["location", "NamedConstant"]):
-                if values[1] in ["location","NamedConstant"]:
+                if values[1] in ["location", "NamedConstant"]:
                     var_name = values[3]
                 else:
                     var_name = values[0]
@@ -386,7 +386,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                 var_infos.Class = "Global"
                             var_infos.Location = location
                     elif values[1] == "NamedConstant":
-                        if element_type in ["functionBlock","program"]:
+                        if element_type in ["functionBlock", "program"]:
                             var_infos.Class = "Local"
                             var_infos.InitialValue = values[0]
                         else:
@@ -511,10 +511,10 @@ class VariablePanel(wx.Panel):
             l = wx.ALIGN_LEFT
             c = wx.ALIGN_CENTER
 
-            #                      Num  Name    Class   Type    Loc     Init    Option   Doc
-            self.ColSizes       = [40,  80,     100,    80,     110,     120,    100,     160]
-            self.ColAlignements = [c,   l,      l,      l,      l,      l,      l,       l]
-            self.ColFixedSizeFlag=[True,False,  True,   False,  True,   True,   True,    False]
+            #                      Num   Name    Class   Type    Loc     Init    Option   Doc
+            self.ColSizes       = [40,   80,     100,    80,     110,    120,    100,     160]
+            self.ColAlignements = [c,    l,      l,      l,      l,      l,      l,       l]
+            self.ColFixedSizeFlag=[True, False,  True,   False,  True,   True,   True,    False]
 
         else:
             # this is an element that cannot have located variables
@@ -533,10 +533,10 @@ class VariablePanel(wx.Panel):
             l = wx.ALIGN_LEFT
             c = wx.ALIGN_CENTER
 
-            #                      Num  Name    Class   Type    Init    Option   Doc
-            self.ColSizes       = [40,  80,     100,    80,     120,    100,     160]
-            self.ColAlignements = [c,   l,      l,      l,      l,      l,       l]
-            self.ColFixedSizeFlag=[True,False,  True,   False,  True,   True,    False]
+            #                      Num   Name    Class   Type    Init    Option   Doc
+            self.ColSizes       = [40,   80,     100,    80,     120,    100,     160]
+            self.ColAlignements = [c,    l,      l,      l,      l,      l,       l]
+            self.ColFixedSizeFlag=[True, False,  True,   False,  True,   True,    False]
 
         self.PanelWidthMin = sum(self.ColSizes)
 
@@ -753,11 +753,11 @@ class VariablePanel(wx.Panel):
 
     def RefreshTypeList(self):
         if self.Filter == "All":
-            self.ClassList = [self.FilterChoiceTransfer[choice] for choice in self.FilterChoices if self.FilterChoiceTransfer[choice] not in ["All","Interface","Variables"]]
+            self.ClassList = [self.FilterChoiceTransfer[choice] for choice in self.FilterChoices if self.FilterChoiceTransfer[choice] not in ["All", "Interface", "Variables"]]
         elif self.Filter == "Interface":
-            self.ClassList = ["Input","Output","InOut","External"]
+            self.ClassList = ["Input", "Output", "InOut", "External"]
         elif self.Filter == "Variables":
-            self.ClassList = ["Local","Temp"]
+            self.ClassList = ["Local", "Temp"]
         else:
             self.ClassList = [self.Filter]
 
@@ -811,7 +811,7 @@ class VariablePanel(wx.Panel):
                 self.RefreshValues()
                 self.SaveValues()
 
-    def BuildStdIECTypesMenu(self,type_menu):
+    def BuildStdIECTypesMenu(self, type_menu):
             # build a submenu containing standard IEC types
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():
@@ -821,7 +821,7 @@ class VariablePanel(wx.Panel):
 
             type_menu.AppendMenu(wx.NewId(), _("Base Types"), base_menu)
 
-    def BuildUserTypesMenu(self,type_menu):
+    def BuildUserTypesMenu(self, type_menu):
             # build a submenu containing user-defined types
             datatype_menu = wx.Menu(title='')
             datatypes = self.Controler.GetDataTypes(basetypes = False, confnodetypes = False)
@@ -879,7 +879,7 @@ class VariablePanel(wx.Panel):
 
             self.BuildLibsTypesMenu(type_menu)
 
-            self.BuildProjectTypesMenu(type_menu,classtype)
+            self.BuildProjectTypesMenu(type_menu, classtype)
 
             self.BuildArrayTypesMenu(type_menu)
 

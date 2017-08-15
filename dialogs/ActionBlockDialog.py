@@ -165,7 +165,7 @@ class ActionBlockDialog(wx.Dialog):
 
         self.Table = ActionTable(self, [], GetActionTableColnames())
         typelist = GetTypeList()
-        self.TypeList = ",".join(map(_,typelist))
+        self.TypeList = ",".join(map(_, typelist))
         self.TranslateType = dict([(_(value), value) for value in typelist])
         self.ColSizes = [60, 90, 130, 200, 50]
         self.ColAlignements = [wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]

@@ -76,7 +76,7 @@ def open_pdf(pdffile, pagenum = None):
         else:
             return None
     else:
-        readerexepath = os.path.join("/usr/bin","xpdf")
+        readerexepath = os.path.join("/usr/bin", "xpdf")
         if(os.path.isfile(readerexepath)):
             open_lin_pdf(readerexepath, pdffile, pagenum)
         else:

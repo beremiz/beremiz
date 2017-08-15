@@ -63,7 +63,7 @@ class CodeEditor(CustomStyledTextCtrl):
 
         self.SetProperty("fold", "1")
         self.SetProperty("tab.timmy.whinge.level", "1")
-        self.SetMargins(0,0)
+        self.SetMargins(0, 0)
 
         self.SetViewWhiteSpace(False)
 
@@ -677,8 +677,14 @@ class VariablesEditor(wx.Panel):
         self.ParentWindow = window
         self.Controler = controler
 
-        self.VariablesDefaultValue = {"Name": "", "Type": DefaultType, "Initial": "",
-                                      "Description":"", "OnChange":"", "Options":""}
+        self.VariablesDefaultValue = {
+            "Name":        "",
+            "Type":        DefaultType,
+            "Initial":     "",
+            "Description": "",
+            "OnChange":    "",
+            "Options":     ""
+        }
         self.Table = VariablesTable(self, [], self.GetVariableTableColnames())
         self.ColAlignements = [wx.ALIGN_RIGHT] +  \
                               [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
@@ -737,7 +743,7 @@ class VariablesEditor(wx.Panel):
 
     def GetVariableTableColnames(self):
         _ = lambda x: x
-    	return ["#", _("Name"),_("Type"), _("Initial"), _("Description"), _("OnChange"), _("Options")]
+    	return ["#", _("Name"), _("Type"), _("Initial"), _("Description"), _("OnChange"), _("Options")]
 
     def RefreshModel(self):
         self.Controler.SetVariables(self.Table.GetData())

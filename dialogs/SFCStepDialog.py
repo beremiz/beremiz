@@ -47,7 +47,7 @@ class SFCStepDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         @param initial: True if step is initial (default: False)
         """
-        BlockPreviewDialog.__init__(self,parent, controller, tagname,
+        BlockPreviewDialog.__init__(self, parent, controller, tagname,
               title=_('Edit Step'))
 
         # Init common sizers

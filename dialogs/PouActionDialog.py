@@ -52,7 +52,7 @@ class PouActionDialog(wx.Dialog):
         infos_sizer.AddWindow(actionname_label, border=4,
               flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
 
-        self.ActionName = wx.TextCtrl(self, size=wx.Size(180,-1))
+        self.ActionName = wx.TextCtrl(self, size=wx.Size(180, -1))
         infos_sizer.AddWindow(self.ActionName, flag=wx.GROW)
 
         language_label = wx.StaticText(self, label=_('Language:'))

@@ -426,7 +426,7 @@ class Class:
         return self.name
 
 
-def eq(a,b):
+def eq(a, b):
     JS("""
     if (pyjslib.hasattr(a, "__cmp__")) {
         return a.__cmp__(b) == 0;
@@ -437,7 +437,7 @@ def eq(a,b):
     """)
 
 
-def cmp(a,b):
+def cmp(a, b):
     if hasattr(a, "__cmp__"):
         return a.__cmp__(b)
     elif hasattr(b, "__cmp__"):
@@ -595,15 +595,15 @@ class List:
             global cmp
             compareFunc = cmp
         if keyFunc and reverse:
-            def thisSort1(a,b):
+            def thisSort1(a, b):
                 return -compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort1)
         elif keyFunc:
-            def thisSort2(a,b):
+            def thisSort2(a, b):
                 return compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort2)
         elif reverse:
-            def thisSort3(a,b):
+            def thisSort3(a, b):
                 return -compareFunc(a, b)
             self.l.sort(thisSort3)
         else:
@@ -745,15 +745,15 @@ class Tuple:
             global cmp
             compareFunc = cmp
         if keyFunc and reverse:
-            def thisSort1(a,b):
+            def thisSort1(a, b):
                 return -compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort1)
         elif keyFunc:
-            def thisSort2(a,b):
+            def thisSort2(a, b):
                 return compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort2)
         elif reverse:
-            def thisSort3(a,b):
+            def thisSort3(a, b):
                 return -compareFunc(a, b)
             self.l.sort(thisSort3)
         else:
@@ -897,7 +897,7 @@ class Dict:
         return self[key]
 
     def update(self, d):
-        for k,v in d.iteritems():
+        for k, v in d.iteritems():
             self[k] = v
 
     def getObject(self):

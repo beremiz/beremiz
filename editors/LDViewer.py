@@ -60,11 +60,11 @@ def CalcBranchSize(elements, stops):
     element_tree = {}
     for element in elements:
         if element not in element_tree:
-            element_tree[element] = {"parents":["start"], "children":[], "weight":None}
+            element_tree[element] = {"parents": ["start"], "children": [], "weight": None}
             GenerateTree(element, element_tree, stop_list)
         elif element_tree[element]:
             element_tree[element]["parents"].append("start")
-    remove_stops = {"start":[], "stop":[]}
+    remove_stops = {"start": [], "stop": []}
     for element, values in element_tree.items():
         if "stop" in values["children"]:
             removed = []
@@ -129,7 +129,7 @@ def GenerateTree(element, element_tree, stop_list):
                     if next in element_tree:
                         element_tree[next]["parents"].append(element)
                     else:
-                        element_tree[next] = {"parents":[element], "children":[], "weight":None}
+                        element_tree[next] = {"parents": [element], "children": [], "weight": None}
                         GenerateTree(next, element_tree, stop_list)
 
 
@@ -494,7 +494,7 @@ class LD_Viewer(Viewer):
         if returntype == "BOOL":
             varlist.append(self.Controler.GetEditedElementName(self.TagName))
         dialog.SetVariables(varlist)
-        dialog.SetValues({"name":"","type":COIL_NORMAL})
+        dialog.SetValues({"name": "", "type": COIL_NORMAL})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             startx, starty = LD_OFFSET[0], 0
@@ -577,7 +577,7 @@ class LD_Viewer(Viewer):
             left_element = self.SelectedElement.EndConnected
             if not isinstance(left_element.GetParentBlock(), LD_Coil):
                 wires.append(self.SelectedElement)
-        elif self.SelectedElement and isinstance(self.SelectedElement,Graphic_Group):
+        elif self.SelectedElement and isinstance(self.SelectedElement, Graphic_Group):
             if False not in [self.IsWire(element) for element in self.SelectedElement.GetElements()]:
                 for element in self.SelectedElement.GetElements():
                     wires.append(element)
@@ -591,7 +591,7 @@ class LD_Viewer(Viewer):
                     if var.Class != "Output" and var.Type == "BOOL":
                         varlist.append(var.Name)
             dialog.SetVariables(varlist)
-            dialog.SetValues({"name":"","type":CONTACT_NORMAL})
+            dialog.SetValues({"name": "", "type": CONTACT_NORMAL})
             if dialog.ShowModal() == wx.ID_OK:
                 values = dialog.GetValues()
                 points = wires[0].GetSelectedSegmentPoints()
@@ -686,7 +686,7 @@ class LD_Viewer(Viewer):
             right_index = []
             for block in blocks:
                 connectors = block.GetConnectors()
-                block_infos = {"lefts":[],"rights":[]}
+                block_infos = {"lefts": [], "rights": []}
                 block_infos.update(connectors)
                 for connector in block_infos["inputs"]:
                     for wire, handle in connector.GetWires():
@@ -808,7 +808,7 @@ class LD_Viewer(Viewer):
                         if returntype == "BOOL":
                             varlist.append(self.Controler.GetEditedElementName(self.TagName))
                         dialog.SetVariables(varlist)
-                        dialog.SetValues({"name":"","type":COIL_NORMAL})
+                        dialog.SetValues({"name": "", "type": COIL_NORMAL})
                         if dialog.ShowModal() == wx.ID_OK:
                             values = dialog.GetValues()
                             powerrail = right_elements[0].GetParentBlock()

@@ -25,10 +25,25 @@
 from types import *
 
 # Translation between IEC types and Can Open types
-IECToCOType = {"BOOL":0x01, "SINT":0x02, "INT":0x03,"DINT":0x04,"LINT":0x10,
-               "USINT":0x05,"UINT":0x06,"UDINT":0x07,"ULINT":0x1B,"REAL":0x08,
-               "LREAL":0x11,"STRING":0x09,"BYTE":0x05,"WORD":0x06,"DWORD":0x07,
-               "LWORD":0x1B,"WSTRING":0x0B}
+IECToCOType = {
+    "BOOL":    0x01,
+    "SINT":    0x02,
+    "INT":     0x03,
+    "DINT":    0x04,
+    "LINT":    0x10,
+    "USINT":   0x05,
+    "UINT":    0x06,
+    "UDINT":   0x07,
+    "ULINT":   0x1B,
+    "REAL":    0x08,
+    "LREAL":   0x11,
+    "STRING":  0x09,
+    "BYTE":    0x05,
+    "WORD":    0x06,
+    "DWORD":   0x07,
+    "LWORD":   0x1B,
+    "WSTRING": 0x0B
+}
 
 # Constants for PDO types
 RPDO = 1
@@ -42,7 +57,7 @@ PDOTypeBaseCobId = {RPDO: 0x200, TPDO: 0x180}
 VariableIncrement = 0x100
 VariableStartIndex = {TPDO: 0x2000, RPDO: 0x4000}
 VariableDirText = {TPDO: "__I", RPDO: "__Q"}
-VariableTypeOffset = dict(zip(["","X","B","W","D","L"], range(6)))
+VariableTypeOffset = dict(zip(["", "X", "B", "W", "D", "L"], range(6)))
 
 TrashVariables = [(1, 0x01), (8, 0x05), (16, 0x06), (32, 0x07), (64, 0x1B)]
 
@@ -222,10 +237,10 @@ class ConciseDCFGenerator:
             RPDOnumber, TPDOnumber = self.RemoveUsedNodeCobId(node)
 
             # Get Slave's default SDO server parameters
-            RSDO_cobid = node.GetEntry(0x1200,0x01)
+            RSDO_cobid = node.GetEntry(0x1200, 0x01)
             if not RSDO_cobid:
                 RSDO_cobid = 0x600 + nodeid
-            TSDO_cobid = node.GetEntry(0x1200,0x02)
+            TSDO_cobid = node.GetEntry(0x1200, 0x02)
             if not TSDO_cobid:
                 TSDO_cobid = 0x580 + nodeid
 
@@ -384,9 +399,16 @@ class ConciseDCFGenerator:
                             format(a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"], a4 = name)
 
                     typeinfos = node.GetEntryInfos(COlocationtype)
-                    self.IECLocations[name] = {"type":COlocationtype, "pdotype":SlavePDOType[direction],
-                                                "nodeid": nodeid, "index": index,"subindex": subindex,
-                                                "bit": numbit, "size": typeinfos["size"], "sizelocation": sizelocation}
+                    self.IECLocations[name] = {
+                        "type":         COlocationtype,
+                        "pdotype":      SlavePDOType[direction],
+                        "nodeid":       nodeid,
+                        "index":        index,
+                        "subindex":     subindex,
+                        "bit":          numbit,
+                        "size":         typeinfos["size"],
+                        "sizelocation": sizelocation
+                    }
                 else:
                     raise PDOmappingException, _("Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))").\
                         format(a1 = name, a2 = nodeid, a3 = "%x" % index, a4 = "%x" % subindex)
@@ -550,7 +572,7 @@ class ConciseDCFGenerator:
                     # Generate entry name
                     indexname = "%s%s%s_%d" % (VariableDirText[variable_infos["pdotype"]],
                                                  variable_infos["sizelocation"],
-                                                 '_'.join(map(str,current_location)),
+                                                 '_'.join(map(str, current_location)),
                                                  variable_infos["nodeid"])
 
                     # Search for an entry that has an empty subindex
@@ -611,10 +633,10 @@ def GenerateConciseDCF(locations, current_location, nodelist, sync_TPDOs, nodena
 
     dcfgenerator = ConciseDCFGenerator(nodelist, nodename)
     dcfgenerator.GenerateDCF(locations, current_location, sync_TPDOs)
-    masternode,pointers = dcfgenerator.GetMasterNode(), dcfgenerator.GetPointedVariables()
+    masternode, pointers = dcfgenerator.GetMasterNode(), dcfgenerator.GetPointedVariables()
     # allow access to local OD from Master PLC
     pointers.update(LocalODPointers(locations, current_location, masternode))
-    return masternode,pointers
+    return masternode, pointers
 
 
 def LocalODPointers(locations, current_location, slave):
@@ -679,7 +701,7 @@ Options:
 
     # Extract command options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hr", ["help","reset"])
+        opts, args = getopt.getopt(sys.argv[1:], "hr", ["help", "reset"])
     except getopt.GetoptError:
         # print help information and exit:
         usage()
@@ -709,16 +731,18 @@ Options:
     result = nodelist.LoadProject("test_config")
 
     # List of locations, we try to map for test
-    locations = [{"IEC_TYPE":"BYTE","NAME":"__IB0_1_64_24576_1","DIR":"I","SIZE":"B","LOC":(0,1,64,24576,1)},
-                 {"IEC_TYPE":"INT","NAME":"__IW0_1_64_25601_2","DIR":"I","SIZE":"W","LOC":(0,1,64,25601,2)},
-                 {"IEC_TYPE":"INT","NAME":"__IW0_1_64_25601_3","DIR":"I","SIZE":"W","LOC":(0,1,64,25601,3)},
-                 {"IEC_TYPE":"INT","NAME":"__QW0_1_64_25617_2","DIR":"Q","SIZE":"W","LOC":(0,1,64,25617,1)},
-                 {"IEC_TYPE":"BYTE","NAME":"__IB0_1_64_24578_1","DIR":"I","SIZE":"B","LOC":(0,1,64,24578,1)},
-                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_1","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,1)},
-                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_2","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,2)},
-                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_3","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,3)},
-                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_64_25638_4","DIR":"I","SIZE":"D","LOC":(0,1,64,25638,4)},
-                 {"IEC_TYPE":"UDINT","NAME":"__ID0_1_4096_0","DIR":"I","SIZE":"D","LOC":(0,1,4096,0)}]
+    locations = [
+        {"IEC_TYPE": "BYTE",  "NAME": "__IB0_1_64_24576_1", "DIR": "I", "SIZE": "B", "LOC": (0, 1, 64, 24576, 1)},
+        {"IEC_TYPE": "INT",   "NAME": "__IW0_1_64_25601_2", "DIR": "I", "SIZE": "W", "LOC": (0, 1, 64, 25601, 2)},
+        {"IEC_TYPE": "INT",   "NAME": "__IW0_1_64_25601_3", "DIR": "I", "SIZE": "W", "LOC": (0, 1, 64, 25601, 3)},
+        {"IEC_TYPE": "INT",   "NAME": "__QW0_1_64_25617_2", "DIR": "Q", "SIZE": "W", "LOC": (0, 1, 64, 25617, 1)},
+        {"IEC_TYPE": "BYTE",  "NAME": "__IB0_1_64_24578_1", "DIR": "I", "SIZE": "B", "LOC": (0, 1, 64, 24578, 1)},
+        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_1", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 1)},
+        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_2", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 2)},
+        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_3", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 3)},
+        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_4", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 4)},
+        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_4096_0",     "DIR": "I", "SIZE": "D", "LOC": (0, 1, 4096, 0)}
+    ]
 
     # Generate MasterNode configuration
     try:

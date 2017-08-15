@@ -54,7 +54,7 @@ searchResultVarTypes = {
 """
 Define in which order var types must be displayed
 """
-VarOrder = ["Local","Temp","Input","Output","InOut","External","Global","Access"]
+VarOrder = ["Local", "Temp", "Input", "Output", "InOut", "External", "Global", "Access"]
 
 """
 Define which action qualifier must be associated with a duration
@@ -1692,14 +1692,14 @@ if cls:
     setattr(cls, "setelementExecutionOrder", setelementExecutionOrder)
 
     def appendcontentInstance(self, instance):
-        if self.content.getLocalTag() in ["LD","FBD","SFC"]:
+        if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             self.content.appendcontent(instance)
         else:
             raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
     setattr(cls, "appendcontentInstance", appendcontentInstance)
 
     def getcontentInstances(self):
-        if self.content.getLocalTag() in ["LD","FBD","SFC"]:
+        if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             return self.content.getcontent()
         else:
             raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
@@ -1708,7 +1708,7 @@ if cls:
     instance_by_id_xpath = PLCOpen_XPath("*[@localId=$localId]")
     instance_by_name_xpath = PLCOpen_XPath("ppx:block[@instanceName=$name]")
     def getcontentInstance(self, local_id):
-        if self.content.getLocalTag() in ["LD","FBD","SFC"]:
+        if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             instance = instance_by_id_xpath(self.content, localId=local_id)
             if len(instance) > 0:
                 return instance[0]
@@ -1718,7 +1718,7 @@ if cls:
     setattr(cls, "getcontentInstance", getcontentInstance)
 
     def getcontentInstancesIds(self):
-        if self.content.getLocalTag() in ["LD","FBD","SFC"]:
+        if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             return OrderedDict([(instance.getlocalId(), True)
                                 for instance in self.content])
         else:
@@ -1726,7 +1726,7 @@ if cls:
     setattr(cls, "getcontentInstancesIds", getcontentInstancesIds)
 
     def getcontentInstanceByName(self, name):
-        if self.content.getLocalTag() in ["LD","FBD","SFC"]:
+        if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             instance = instance_by_name_xpath(self.content)
             if len(instance) > 0:
                 return instance[0]
@@ -1736,7 +1736,7 @@ if cls:
     setattr(cls, "getcontentInstanceByName", getcontentInstanceByName)
 
     def removecontentInstance(self, local_id):
-        if self.content.getLocalTag() in ["LD","FBD","SFC"]:
+        if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             instance = instance_by_id_xpath(self.content, localId=local_id)
             if len(instance) > 0:
                 self.content.remove(instance[0])
@@ -1747,21 +1747,21 @@ if cls:
     setattr(cls, "removecontentInstance", removecontentInstance)
 
     def settext(self, text):
-        if self.content.getLocalTag() in ["IL","ST"]:
+        if self.content.getLocalTag() in ["IL", "ST"]:
             self.content.setanyText(text)
         else:
             raise TypeError, _("%s body don't have text!") % self.content.getLocalTag()
     setattr(cls, "settext", settext)
 
     def gettext(self):
-        if self.content.getLocalTag() in ["IL","ST"]:
+        if self.content.getLocalTag() in ["IL", "ST"]:
             return self.content.getanyText()
         else:
             raise TypeError, _("%s body don't have text!") % self.content.getLocalTag()
     setattr(cls, "gettext", gettext)
 
     def hasblock(self, block_type):
-        if self.content.getLocalTag() in ["IL","ST"]:
+        if self.content.getLocalTag() in ["IL", "ST"]:
             return self.content.hasblock(block_type)
         else:
             raise TypeError, _("%s body don't have text!") % self.content.getLocalTag()
@@ -2365,7 +2365,7 @@ if cls:
     def getpoints(self):
         points = []
         for position in self.position:
-            points.append((position.getx(),position.gety()))
+            points.append((position.getx(), position.gety()))
         return points
     setattr(cls, "getpoints", getpoints)
 

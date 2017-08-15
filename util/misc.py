@@ -46,7 +46,7 @@ def CheckPathPerm(path):
 def GetClassImporter(classpath):
     if type(classpath)==str:
         def fac():
-            mod=__import__(classpath.rsplit('.',1)[0])
+            mod=__import__(classpath.rsplit('.', 1)[0])
             return reduce(getattr, classpath.split('.')[1:], mod)
         return fac
     else:

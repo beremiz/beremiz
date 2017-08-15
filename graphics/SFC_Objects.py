@@ -1363,7 +1363,7 @@ class SFC_Divergence(Graphic_Element):
 
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
-        self.RealConnectors = {"Inputs":[],"Outputs":[]}
+        self.RealConnectors = {"Inputs": [], "Outputs": []}
         for input in self.Inputs:
             position = input.GetRelPosition()
             self.RealConnectors["Inputs"].append(float(position.x)/float(self.Size[0]))

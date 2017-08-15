@@ -78,12 +78,12 @@ class ConnectionDialog(BlockPreviewDialog):
 
         # Create text control for defining connection name
         self.ConnectionName = wx.TextCtrl(self)
-        self.ConnectionName.SetMinSize(wx.Size(200,-1))
+        self.ConnectionName.SetMinSize(wx.Size(200, -1))
         self.Bind(wx.EVT_TEXT, self.OnNameChanged, self.ConnectionName)
         self.LeftGridSizer.AddWindow(self.ConnectionName, flag=wx.GROW)
 
         # Add preview panel and associated label to sizers
-        self.Preview.SetMinSize(wx.Size(-1,100))
+        self.Preview.SetMinSize(wx.Size(-1, 100))
         self.LeftGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
         self.LeftGridSizer.AddWindow(self.Preview, flag=wx.GROW)
 

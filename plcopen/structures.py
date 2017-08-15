@@ -100,7 +100,7 @@ def csv_file_to_table(file):
     """
     take a .csv file and translate it it a "csv_table"
     """
-    return [ map(string.strip,line.split(';')) for line in file.xreadlines()]
+    return [ map(string.strip, line.split(';')) for line in file.xreadlines()]
 
 
 def find_section(section_name, table):
@@ -121,7 +121,7 @@ def get_standard_funtions_input_variables(table):
     """
     variables = find_section("Standard_functions_variables_types", table)
     standard_funtions_input_variables = {}
-    fields = [True,True]
+    fields = [True, True]
     while(fields[1]):
         fields = table.pop(0)
         variable_from_csv = dict([(champ, val) for champ, val in zip(variables, fields[1:]) if champ!=''])
@@ -135,7 +135,7 @@ def csv_input_translate(str_decl, variables, base):
     in : "(ANY_NUM, ANY_NUM)" and { ParameterName: Type, ...}
     return [("IN1","ANY_NUM","none"),("IN2","ANY_NUM","none")]
     """
-    decl = str_decl.replace('(','').replace(')','').replace(' ','').split(',')
+    decl = str_decl.replace('(', '').replace(')', '').replace(' ', '').split(',')
     params = []
 
     len_of_not_predifined_variable = len([True for param_type in decl if param_type not in variables])
@@ -170,15 +170,15 @@ def get_standard_funtions(table):
 
     variables = get_standard_funtions_input_variables(table)
 
-    fonctions = find_section("Standard_functions_type",table)
+    fonctions = find_section("Standard_functions_type", table)
 
     Standard_Functions_Decl = []
     Current_section = None
 
     translate = {
-            "extensible": lambda x: {"yes":True, "no":False}[x],
-            "inputs": lambda x:csv_input_translate(x,variables,baseinputnumber),
-            "outputs":lambda x:[("OUT",x,"none")]}
+            "extensible": lambda x: {"yes": True, "no": False}[x],
+            "inputs":     lambda x: csv_input_translate(x, variables, baseinputnumber),
+            "outputs":    lambda x: [("OUT", x, "none")]}
 
     for fields in table:
         if fields[1]:
@@ -194,7 +194,7 @@ def get_standard_funtions(table):
                 Function_decl_list = []
             if Current_section:
                 Function_decl = dict([(champ, val) for champ, val in zip(fonctions, fields[1:]) if champ])
-                baseinputnumber = int(Function_decl.get("baseinputnumber",1))
+                baseinputnumber = int(Function_decl.get("baseinputnumber", 1))
                 Function_decl["baseinputnumber"] = baseinputnumber
                 for param, value in Function_decl.iteritems():
                     if param in translate:
@@ -242,12 +242,12 @@ def get_standard_funtions(table):
                         # apply filter given in "filter" column
                         filter_name = Function_decl["filter"]
                         store = True
-                        for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name,[]):
-                            outs = reduce(lambda a,b: a or b,
+                        for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name, []):
+                            outs = reduce(lambda a, b: a or b,
                                        map(lambda testtype: IsOfType(
                                            Function_decl["outputs"][0][1],
                                            testtype), OutTypes))
-                            inps = reduce(lambda a,b: a or b,
+                            inps = reduce(lambda a, b: a or b,
                                        map(lambda testtype: IsOfType(
                                            Function_decl["inputs"][0][1],
                                            testtype), InTypes))
@@ -280,7 +280,7 @@ for section in StdBlckLst:
                         for input in desc["inputs"]]),
              ", ".join(["%s:%s" % (output[1], output[0])
                         for output in desc["outputs"]])))
-        BlkLst = StdBlckDct.setdefault(desc["name"],[])
+        BlkLst = StdBlckDct.setdefault(desc["name"], [])
         BlkLst.append((section["name"], desc))
 
 #-------------------------------------------------------------------------------

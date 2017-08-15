@@ -121,9 +121,9 @@ class SVGUI_HMI(website.PLCHMI):
         d = self.callRemote('init', gadgets)
         d.addCallback(self.HMIinitialised)
 
-    def sendData(self,data):
+    def sendData(self, data):
         if self.initialised:
-            return self.callRemote('receiveData',unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
+            return self.callRemote('receiveData', unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
         return None
 
     def setattr(self, id, attrname, value):
