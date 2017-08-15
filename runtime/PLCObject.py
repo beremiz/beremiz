@@ -139,7 +139,6 @@ class PLCObject(pyro.ObjBase):
     def _GetLibFileName(self):
         return os.path.join(self.workingdir, self.CurrentPLCFilename)
 
-
     def LoadPLC(self):
         """
         Load PLC library
@@ -181,7 +180,6 @@ class PLCObject(pyro.ObjBase):
                     self._stopPLC_real()
                     self.PlcStopping.set()
                 self._stopPLC = __StopPLC
-
 
             self._ResetDebugVariables = self.PLClibraryHandle.ResetDebugVariables
             self._ResetDebugVariables.restype = None
@@ -321,8 +319,6 @@ class PLCObject(pyro.ObjBase):
             raise
 
         self.PythonRuntimeCall("init")
-
-
 
     def PythonRuntimeCleanup(self):
         if self.python_runtime_vars is not None:
@@ -553,7 +549,6 @@ class PLCObject(pyro.ObjBase):
                 self._TracesPush((tick.value, TraceBuffer))
             self._TracesAutoSuspend()
         self._TracesFlush()
-
 
     def RemoteExec(self, script, *kwargs):
         try:

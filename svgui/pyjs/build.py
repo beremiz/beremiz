@@ -242,7 +242,6 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
     copy_boilerplate(data_dir, "tree_white.gif", output)
     copy_boilerplate(data_dir, "history.html", output)
 
-
     ## all.cache.html
     app_files = generateAppFiles(data_dir, js_includes, app_name, debug,
                                  output, dynamic, cache_buster, optimize)

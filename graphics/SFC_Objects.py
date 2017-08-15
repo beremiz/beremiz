@@ -1970,7 +1970,6 @@ class SFC_ActionBlock(Graphic_Element):
         else:
             return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling)
 
-
     # Refreshes the action block model
     def RefreshModel(self, move=True):
         self.Parent.RefreshActionBlockModel(self)

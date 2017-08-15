@@ -86,7 +86,6 @@ from util.BitmapLibrary import GetBitmap
 ] = [wx.NewId() for _init_coll_DefaultEditorToolBar_Items in range(18)]
 
 
-
 # Define behaviour of each Toolbar item according to current POU body type
 # Informations meaning are in this order:
 #  - Item is toggled
@@ -653,7 +652,6 @@ class IDEFrame(wx.Frame):
 
         self.AUIManager.Update()
 
-
     ## Constructor of the PLCOpenEditor class.
     #  @param parent The parent window.
     #  @param controler The controler been used by PLCOpenEditor (default: None).
@@ -728,7 +726,6 @@ class IDEFrame(wx.Frame):
             "perspective": self.AUIManager.SavePerspective(),
             "notebooks": notebooks,
         }
-
 
         # Initialize Printing configuring elements
         self.PrintData = wx.PrintData()
@@ -922,7 +919,6 @@ class IDEFrame(wx.Frame):
                 event.Skip()
             else:
                 event.Veto()
-
 
     def GetCopyBuffer(self, primary_selection=False):
         data = None

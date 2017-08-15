@@ -236,7 +236,6 @@ class Translator:
         if decl:
             print >>self.output, decl
 
-
         if self.debug:
             haltException = self.module_prefix + "HaltException"
             print >>self.output, haltException + ' = function () {'
@@ -459,9 +458,7 @@ class Translator:
         print >>self.output, "};"
         print >>self.output, "%s.__name__ = '%s';\n" % (function_name, node.name)
 
-
         self._kwargs_parser(node, function_name, normal_arg_names, None)
-
 
     def _return(self, node, current_klass):
         expr = self.expr(node.value, current_klass)
@@ -469,14 +466,11 @@ class Translator:
         # here too
         print >>self.output, "    return " + expr + ";"
 
-
     def _break(self, node, current_klass):
         print >>self.output, "    break;"
 
-
     def _continue(self, node, current_klass):
         print >>self.output, "    continue;"
-
 
     def _callfunc(self, v, current_klass):
 
@@ -633,7 +627,6 @@ class Translator:
         else:
             raise TranslationError("unsupported type (in _getattr)", v.expr)
 
-
     def modpfx(self):
         return strip_py(self.module_prefix)
 
@@ -717,7 +710,6 @@ class Translator:
 
         return call_name
 
-
     def _getattr2(self, v, current_klass, attr_name):
         if isinstance(v.expr, ast.Getattr):
             call_name = self._getattr2(v.expr, current_klass, v.attrname + "." + attr_name)
@@ -728,7 +720,6 @@ class Translator:
             call_name = obj + "." + v.attrname + "." + attr_name
 
         return call_name
-
 
     def _class(self, node):
         """
@@ -768,7 +759,6 @@ class Translator:
                 current_klass.add_function(child.name)
                 if child.name == "__init__":
                     init_method = child
-
 
         if len(node.bases) == 0:
             base_class = "pyjslib.__Object"
@@ -855,7 +845,6 @@ class Translator:
 
         print >> self.output, class_name_+".__initialize__();"
 
-
     def classattr(self, node, current_klass):
         self._assign(node, current_klass, True)
 
@@ -917,7 +906,6 @@ class Translator:
         if node.varargs:
             self._varargs_handler(node, varargname, declared_arg_names, current_klass)
             local_arg_names.append(varargname)
-
 
         # stack of local variable names for this function call
         self.local_arg_stack.append(local_arg_names)
@@ -1035,7 +1023,6 @@ class Translator:
             print >>self.output, '      }'
             print >>self.output, '  }'
 
-
     def get_line_trace(self, node):
         lineNum = "Unknown"
         srcLine = ""
@@ -1063,7 +1050,6 @@ class Translator:
         op = node.op
         rhs = self.expr(node.expr, current_klass)
         print >>self.output, "    " + lhs + " " + op + " " + rhs + ";"
-
 
     def _assign(self, node, current_klass, top_level = False):
         if len(node.nodes) != 1:
@@ -1176,7 +1162,6 @@ class Translator:
             print "b", repr(node.expr), rhs
         print >>self.output, "    " + lhs + " " + op + " " + rhs + ";"
 
-
     def _discard(self, node, current_klass):
 
         if isinstance(node.expr, ast.CallFunc):
@@ -1207,7 +1192,6 @@ class Translator:
         else:
             raise TranslationError("unsupported type (in _discard)", node.expr)
 
-
     def _if(self, node, current_klass):
         for i in range(len(node.tests)):
             test, consequence = node.tests[i]
@@ -1225,7 +1209,6 @@ class Translator:
 
             self._if_test(keyword, test, consequence, current_klass)
 
-
     def _if_test(self, keyword, test, consequence, current_klass):
         if test:
             expr = self.expr(test, current_klass)
@@ -1242,7 +1225,6 @@ class Translator:
 
         print >>self.output, "    }"
 
-
     def _from(self, node):
         for name in node.names:
             # look up "hack" in AppTranslator as to how findFile gets here
@@ -1255,7 +1237,6 @@ class Translator:
                 self.add_imported_module(module_name)
             else:
                 self.imported_classes[name[0]] = node.modname
-
 
     def _compare(self, node, current_klass):
         lhs = self.expr(node.expr, current_klass)
@@ -1279,7 +1260,6 @@ class Translator:
             op = "!=="
 
         return "(" + lhs + " " + op + " " + rhs + ")"
-
 
     def _not(self, node, current_klass):
         expr = self.expr(node.expr, current_klass)
@@ -1349,7 +1329,6 @@ class Translator:
         }
         """ % locals()
 
-
     def _while(self, node, current_klass):
         test = self.expr(node.test, current_klass)
         print >>self.output, "    while (pyjslib.bool(" + test + ")) {"
@@ -1359,7 +1338,6 @@ class Translator:
         else:
             raise TranslationError("unsupported type (in _while)", node.body)
         print >>self.output, "    }"
-
 
     def _const(self, node):
         if isinstance(node.value, int):
@@ -1537,7 +1515,6 @@ class Translator:
             return self._lambda(node, current_klass)
         else:
             raise TranslationError("unsupported type (in expr)", node)
-
 
 
 import cStringIO
@@ -1725,7 +1702,6 @@ class AppTranslator:
                 #    module, False, debug=debug, imported_js=imported_js)
 
         return imported_modules_str + module_str
-
 
     def translate(self, module_name, is_app=True, debug=False,
                   library_modules=[]):

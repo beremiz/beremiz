@@ -192,7 +192,6 @@ def GetScaledEventPosition(event, dc, scaling):
     return pos
 
 
-
 def DirectionChoice(v_base, v_target, dir_target):
     """
     Function that choose a direction during the wire points generation

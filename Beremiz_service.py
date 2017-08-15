@@ -143,11 +143,9 @@ def SetupI18n():
     # Define locale domain
     loc.AddCatalog(domain)
 
-
     import locale
     global default_locale
     default_locale = locale.getdefaultlocale()[1]
-
 
     # sys.stdout.encoding = default_locale
     # if Beremiz_service is started from Beremiz IDE
@@ -196,7 +194,6 @@ if enablewx:
                         event(self, id, function)
                     else:
                         event(self, function)
-
 
             def __init__(self, parent, message, caption = _("Please enter text"), defaultValue = "",
                                style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):

@@ -736,8 +736,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         plc_file.close()
         return True
 
-
-
     def _Compile_ST_to_SoftPLC(self):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
@@ -1039,7 +1037,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         plc_main_code += targets.GetCode("plc_main_tail.c")
         return plc_main_code
 
-
     def _Build(self):
         """
         Method called by user to (re)build SoftPLC and confnode tree
@@ -1320,7 +1317,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
-
 
     def UpdatePLCLog(self, log_count):
         if log_count:
@@ -1790,7 +1786,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 #                _("Cannot compare latest build to target. Please build.\n"))
             self.EnableMethod("_Transfer", False)
 
-
     def _Disconnect(self):
         self._SetConnector(None)
 
@@ -1910,7 +1905,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             "method":   "_OpenProjectFiles"
         },
     ]
-
 
     def EnableMethod(self, method, value):
         for d in self.StatusMethods:

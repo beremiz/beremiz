@@ -56,7 +56,6 @@ class WxGladeHMI(PythonFileCTNMixin):
         # define name for wxGlade gui file
         return os.path.join(project_path, "hmi.wxg")
 
-
     def GetWxGladePath(self):
         path = None
         try:

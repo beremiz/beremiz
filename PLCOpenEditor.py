@@ -73,7 +73,6 @@ if __name__ == '__main__':
     else:
         app = wx.PySimpleApp()
 
-
     from util.misc import InstallLocalRessources
     InstallLocalRessources(beremiz_dir)
 

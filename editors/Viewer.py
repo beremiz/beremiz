@@ -440,7 +440,6 @@ class ViewerDropTarget(wx.TextDropTarget):
         message.Destroy()
 
 
-
 class DebugInstanceName(DebugDataConsumer):
     VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
 
@@ -1180,7 +1179,6 @@ class Viewer(EditorPanel, DebugViewer):
 #-------------------------------------------------------------------------------
 #                          Refresh functions
 #-------------------------------------------------------------------------------
-
 
     def ElementNeedRefresh(self, element):
         self.ElementRefreshList_lock.acquire()
@@ -3248,7 +3246,6 @@ class Viewer(EditorPanel, DebugViewer):
 #-------------------------------------------------------------------------------
 #                          Model delete functions
 #-------------------------------------------------------------------------------
-
 
     def DeleteBlock(self, block):
         elements = []

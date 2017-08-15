@@ -202,7 +202,6 @@ class ConciseDCFGenerator:
 
         return len(nodeRpdoIndexes), len(nodeTpdoIndexes)
 
-
     def PrepareMasterNode(self):
         """
         Add mandatory entries for DCF generation into MasterNode.
@@ -249,7 +248,6 @@ class ConciseDCFGenerator:
             self.MasterNode.SetEntry(0x1280 + idx, 0x01, RSDO_cobid)
             self.MasterNode.SetEntry(0x1280 + idx, 0x02, TSDO_cobid)
             self.MasterNode.SetEntry(0x1280 + idx, 0x03, nodeid)
-
 
     def GetMasterNode(self):
         """

@@ -41,8 +41,6 @@ beremiz_dir = paths.AbsDir(__file__)
 def Bpath(*args):
     return os.path.join(beremiz_dir, *args)
 
-
-
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
@@ -397,7 +395,6 @@ class Beremiz(IDEFrame):
             # commands invoked by build process by default are
             # found here.
             os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
-
 
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
         # Add beremiz's icon in top left corner of the frame
