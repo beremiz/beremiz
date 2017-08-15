@@ -319,7 +319,7 @@ class LibraryPanel(wx.Panel):
             self.Tree.SelectItem(item)
             self.Tree.EnsureVisible(item)
 
-    def FindTreeItem(self, item, name, inputs = None):
+    def FindTreeItem(self, item, name, inputs=None):
         """
         Find Tree item corresponding to block informations given
         Function is recursive

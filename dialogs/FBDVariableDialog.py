@@ -290,7 +290,7 @@ class FBDVariableDialog(BlockPreviewDialog):
                         self.Class.GetStringSelection()],
                     name,
                     self.VariableList.get(name, ("", ""))[1],
-                    executionOrder = self.ExecutionOrder.GetValue())
+                    executionOrder=self.ExecutionOrder.GetValue())
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

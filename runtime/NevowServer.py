@@ -64,7 +64,7 @@ class MainPage(athena.LiveElement):
     jsClass = u"WebInterface.PLC"
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                                     tags.div(id='content')[
-                                                    tags.div(render = tags.directive('PLCElement')),
+                                                    tags.div(render=tags.directive('PLCElement')),
                                                     ]])
 
     def __init__(self, *a, **kw):
@@ -122,7 +122,7 @@ class WebInterface(athena.LivePage):
                                     tags.head(render=tags.directive('liveglue')),
                                     tags.body[
                                         tags.div[
-                                                tags.div( render = tags.directive( "MainPage" ))
+                                                tags.div( render=tags.directive( "MainPage" ))
                                                 ]]]])
     MainPage = MainPage()
     PLCHMI = PLCHMI

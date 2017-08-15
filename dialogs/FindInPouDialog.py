@@ -113,7 +113,7 @@ class FindInPouDialog(wx.Dialog):
         # set the longest message here, to use it length to calculate
         # optimal size of dialog window
         self.RegExpSyntaxErrMsg = _("Syntax error in regular expression of pattern to search!")
-        self.StatusLabel = wx.StaticText(panel, label= self.RegExpSyntaxErrMsg)
+        self.StatusLabel = wx.StaticText(panel, label=self.RegExpSyntaxErrMsg)
         controls_sizer.AddWindow(self.StatusLabel, flag=wx.ALIGN_CENTER_VERTICAL)
 
         panel.SetSizer(main_sizer)

@@ -66,7 +66,7 @@ class ServicePublisher():
                                   self.service_name,
                                   self.ip_32b,
                                   self.port,
-                                  properties = self.serviceproperties))
+                                  properties=self.serviceproperties))
         self.retrytimer = None
 
     def UnRegisterService(self):
@@ -78,11 +78,11 @@ class ServicePublisher():
                                                            self.service_name,
                                                            self.ip_32b,
                                                            self.port,
-                                                           properties = self.serviceproperties))
+                                                           properties=self.serviceproperties))
         self.server.close()
         self.server = None
 
-    def gethostaddr(self, dst = '224.0.1.41'):
+    def gethostaddr(self, dst='224.0.1.41'):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect((dst, 7))

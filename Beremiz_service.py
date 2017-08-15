@@ -189,14 +189,14 @@ if enablewx:
 
         class ParamsEntryDialog(wx.TextEntryDialog):
             if wx.VERSION < (2, 6, 0):
-                def Bind(self, event, function, id = None):
+                def Bind(self, event, function, id=None):
                     if id is not None:
                         event(self, id, function)
                     else:
                         event(self, function)
 
-            def __init__(self, parent, message, caption = _("Please enter text"), defaultValue = "",
-                               style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
+            def __init__(self, parent, message, caption=_("Please enter text"), defaultValue="",
+                               style=wx.OK|wx.CANCEL|wx.CENTRE, pos=wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
                 self.Tests = []

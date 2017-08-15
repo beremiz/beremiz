@@ -1092,8 +1092,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Update position of figure (keeping up and bottom border the same
         # size)
         self.Figure.subplotpars.update(
-            top= 1.0 - CANVAS_BORDER[1] * canvas_ratio,
-            bottom= CANVAS_BORDER[0] * canvas_ratio)
+            top=1.0 - CANVAS_BORDER[1] * canvas_ratio,
+            bottom=CANVAS_BORDER[0] * canvas_ratio)
 
         # Update position of items labels
         if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
@@ -1296,7 +1296,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                         # Add plot to canvas
                         self.Axes.plot(x_data[:, 1][:length],
                                        y_data[:, 1][:length],
-                                       zs = z_data[:, 1][:length])
+                                       zs=z_data[:, 1][:length])
 
                     # Display cursor in canvas if a cursor tick is defined and
                     # it is include in values tick range

@@ -46,7 +46,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
     """
 
     # Create a new step
-    def __init__(self, parent, name, initial = False, id = None):
+    def __init__(self, parent, name, initial=False, id=None):
         Graphic_Element.__init__(self, parent)
         DebugDataConsumer.__init__(self)
         self.SetName(name)
@@ -105,7 +105,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
             self.PreviousSpreading = spreading
 
     # Make a clone of this SFC_Step
-    def Clone(self, parent, id = None, name = "Step", pos = None):
+    def Clone(self, parent, id=None, name="Step", pos=None):
         step = SFC_Step(parent, name, self.Initial, id)
         step.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -131,7 +131,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         return connectors
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if self.Input:
             rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
@@ -155,11 +155,11 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
     # Unconnect input and output
     def Clean(self):
         if self.Input:
-            self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
         if self.Output:
-            self.Output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Output.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
         if self.Action:
-            self.Action.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Action.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Refresh the size of text for name
     def RefreshNameSize(self):
@@ -174,33 +174,33 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
     # Remove output connector from step
     def RemoveInput(self):
         if self.Input:
-            self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
             self.Input = None
             self.RefreshBoundingBox()
 
     # Add output connector to step
     def AddOutput(self):
         if not self.Output:
-            self.Output = Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone = True)
+            self.Output = Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone=True)
             self.RefreshBoundingBox()
 
     # Remove output connector from step
     def RemoveOutput(self):
         if self.Output:
-            self.Output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Output.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
             self.Output = None
             self.RefreshBoundingBox()
 
     # Add action connector to step
     def AddAction(self):
         if not self.Action:
-            self.Action = Connector(self, "", None, wx.Point(self.Size[0], self.Size[1] / 2), EAST, onlyone = True)
+            self.Action = Connector(self, "", None, wx.Point(self.Size[0], self.Size[1] / 2), EAST, onlyone=True)
             self.RefreshBoundingBox()
 
     # Remove action connector from step
     def RemoveAction(self):
         if self.Action:
-            self.Action.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Action.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
             self.Action = None
             self.RefreshBoundingBox()
 
@@ -244,7 +244,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to step
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         if self.Input:
             self.Input.MoveConnected(exclude)
         if self.Output:
@@ -253,7 +253,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
             self.Action.MoveConnected(exclude)
 
     # Returns the step connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test input, output and action connector if they exists
@@ -289,7 +289,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         return connectors
 
     # Test if point given is on step input or output connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector if it exists
         if self.Input and self.Input.TestPoint(pt, direction, exclude):
             return self.Input
@@ -385,7 +385,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
                     input_block.RefreshInputPosition()
 
     # Align output element with this step
-    def RefreshOutputPosition(self, move = None):
+    def RefreshOutputPosition(self, move=None):
         if self.Output:
             wires = self.Output.GetWires()
             if len(wires) != 1:
@@ -579,7 +579,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
     """
 
     # Create a new transition
-    def __init__(self, parent, type = "reference", condition = None, priority = 0, id = None):
+    def __init__(self, parent, type="reference", condition=None, priority=0, id=None):
         Graphic_Element.__init__(self, parent)
         DebugDataConsumer.__init__(self)
         self.Type = None
@@ -587,8 +587,8 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         self.Priority = 0
         self.Size = wx.Size(SFC_TRANSITION_SIZE[0], SFC_TRANSITION_SIZE[1])
         # Create an input and output connector
-        self.Input = Connector(self, "", None, wx.Point(self.Size[0] / 2, 0), NORTH, onlyone = True)
-        self.Output = Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone = True)
+        self.Input  = Connector(self, "", None, wx.Point(self.Size[0] / 2, 0),            NORTH, onlyone=True)
+        self.Output = Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone=True)
         self.SetType(type, condition)
         self.SetPriority(priority)
         self.Highlights = {}
@@ -632,7 +632,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
             self.PreviousSpreading = spreading
 
     # Make a clone of this SFC_Transition
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         transition = SFC_Transition(parent, self.Type, self.Condition, self.Priority, id)
         transition.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -652,7 +652,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         return connectors
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if self.Input:
             rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
@@ -698,10 +698,10 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
 
     # Unconnect input and output
     def Clean(self):
-        self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
-        self.Output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Output.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
         if self.Type == "connection":
-            self.Condition.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            self.Condition.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Returns if the point given is in the bounding box
     def HitTest(self, pt, connectors=True):
@@ -766,14 +766,14 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         self.RefreshConnected()
 
     # Refresh the position of the wires connected to transition
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         self.Input.MoveConnected(exclude)
         self.Output.MoveConnected(exclude)
         if self.Type == "connection":
             self.Condition.MoveConnected(exclude)
 
     # Returns the transition connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test input and output connector
@@ -799,7 +799,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         return {"inputs": [self.Input], "outputs": [self.Output]}
 
     # Test if point given is on transition input or output connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector
         if self.Input.TestPoint(pt, direction, exclude):
             return self.Input
@@ -812,10 +812,10 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         return None
 
     # Changes the transition type
-    def SetType(self, type, condition = None):
+    def SetType(self, type, condition=None):
         if self.Type != type:
             if self.Type == "connection":
-               self.Condition.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+               self.Condition.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
             self.Type = type
             if type == "connection":
                 self.Condition = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] / 2), WEST)
@@ -873,7 +873,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
                 input_block.RefreshInputPosition()
 
     # Align output element with this step
-    def RefreshOutputPosition(self, move = None):
+    def RefreshOutputPosition(self, move=None):
         wires = self.Output.GetWires()
         if len(wires) != 1:
             return
@@ -920,7 +920,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
             self.RefreshOutputPosition()
             return movex, 0
         else:
-            return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, width_fac = 2, height_fac = 2)
+            return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, width_fac=2, height_fac=2)
 
     # Refresh input element model
     def RefreshInputModel(self):
@@ -1049,7 +1049,7 @@ class SFC_Divergence(Graphic_Element):
     """
 
     # Create a new divergence
-    def __init__(self, parent, type, number = 2, id = None):
+    def __init__(self, parent, type, number=2, id=None):
         Graphic_Element.__init__(self, parent)
         self.Type = type
         self.Id = id
@@ -1058,15 +1058,15 @@ class SFC_Divergence(Graphic_Element):
         self.Size = wx.Size((number - 1) * SFC_DEFAULT_SEQUENCE_INTERVAL, self.GetMinSize()[1])
         # Create an input and output connector
         if self.Type in [SELECTION_DIVERGENCE, SIMULTANEOUS_DIVERGENCE]:
-            self.Inputs = [Connector(self, "", None, wx.Point(self.Size[0] / 2, 0), NORTH, onlyone = True)]
+            self.Inputs = [Connector(self, "", None, wx.Point(self.Size[0] / 2, 0), NORTH, onlyone=True)]
             self.Outputs = []
             for i in xrange(number):
-                self.Outputs.append(Connector(self, "", None, wx.Point(i * SFC_DEFAULT_SEQUENCE_INTERVAL, self.Size[1]), SOUTH, onlyone = True))
+                self.Outputs.append(Connector(self, "", None, wx.Point(i * SFC_DEFAULT_SEQUENCE_INTERVAL, self.Size[1]), SOUTH, onlyone=True))
         elif self.Type in [SELECTION_CONVERGENCE, SIMULTANEOUS_CONVERGENCE]:
             self.Inputs = []
             for i in xrange(number):
-                self.Inputs.append(Connector(self, "", None, wx.Point(i * SFC_DEFAULT_SEQUENCE_INTERVAL, 0), NORTH, onlyone = True))
-            self.Outputs = [Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone = True)]
+                self.Inputs.append(Connector(self, "", None, wx.Point(i * SFC_DEFAULT_SEQUENCE_INTERVAL, 0), NORTH, onlyone=True))
+            self.Outputs = [Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone=True)]
         self.Value = None
         self.PreviousValue = None
 
@@ -1105,7 +1105,7 @@ class SFC_Divergence(Graphic_Element):
                     output.SpreadCurrent(False)
 
     # Make a clone of this SFC_Divergence
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         divergence = SFC_Divergence(parent, self.Type, max(len(self.Inputs), len(self.Outputs)), id)
         divergence.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -1120,7 +1120,7 @@ class SFC_Divergence(Graphic_Element):
         return dict(zip(self.Inputs + self.Outputs, element.Inputs + element.Outputs))
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if movex != 0 or movey != 0:
             for input in self.Inputs:
@@ -1147,9 +1147,9 @@ class SFC_Divergence(Graphic_Element):
     # Unconnect input and output
     def Clean(self):
         for input in self.Inputs:
-            input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
         for output in self.Outputs:
-            output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            output.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Add a branch to the divergence
     def AddBranch(self):
@@ -1158,7 +1158,7 @@ class SFC_Divergence(Graphic_Element):
             for output in self.Outputs:
                 pos = output.GetRelPosition()
                 maxx = max(maxx, pos.x)
-            connector = Connector(self, "", None, wx.Point(maxx + SFC_DEFAULT_SEQUENCE_INTERVAL, self.Size[1]), SOUTH, onlyone = True)
+            connector = Connector(self, "", None, wx.Point(maxx + SFC_DEFAULT_SEQUENCE_INTERVAL, self.Size[1]), SOUTH, onlyone=True)
             self.Outputs.append(connector)
             self.MoveConnector(connector, 0)
         elif self.Type in [SELECTION_CONVERGENCE, SIMULTANEOUS_CONVERGENCE]:
@@ -1166,7 +1166,7 @@ class SFC_Divergence(Graphic_Element):
             for input in self.Inputs:
                 pos = input.GetRelPosition()
                 maxx = max(maxx, pos.x)
-            connector = Connector(self, "", None, wx.Point(maxx + SFC_DEFAULT_SEQUENCE_INTERVAL, 0), NORTH, onlyone = True)
+            connector = Connector(self, "", None, wx.Point(maxx + SFC_DEFAULT_SEQUENCE_INTERVAL, 0), NORTH, onlyone=True)
             self.Inputs.append(connector)
             self.MoveConnector(connector, SFC_DEFAULT_SEQUENCE_INTERVAL)
 
@@ -1209,7 +1209,7 @@ class SFC_Divergence(Graphic_Element):
                 self.Size[0] + 2 * SFC_SIMULTANEOUS_SEQUENCE_EXTRA + 1, self.Size[1] + 1)
 
     # Refresh the position of wires connected to divergence
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         for input in self.Inputs:
             input.MoveConnected(exclude)
         for output in self.Outputs:
@@ -1244,7 +1244,7 @@ class SFC_Divergence(Graphic_Element):
         self.RefreshBoundingBox()
 
     # Returns the divergence connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test each input and output connector
@@ -1261,7 +1261,7 @@ class SFC_Divergence(Graphic_Element):
         return {"inputs": self.Inputs, "outputs": self.Outputs}
 
     # Test if point given is on divergence input or output connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector
         for input in self.Inputs:
             if input.TestPoint(pt, direction, exclude):
@@ -1343,7 +1343,7 @@ class SFC_Divergence(Graphic_Element):
             input.MoveConnected()
 
     # Align output element with this divergence
-    def RefreshOutputPosition(self, move = None):
+    def RefreshOutputPosition(self, move=None):
         if move:
             for output_connector in self.Outputs:
                 wires = output_connector.GetWires()
@@ -1509,14 +1509,14 @@ class SFC_Jump(Graphic_Element):
     """
 
     # Create a new jump
-    def __init__(self, parent, target, id = None):
+    def __init__(self, parent, target, id=None):
         Graphic_Element.__init__(self, parent)
         self.SetTarget(target)
         self.Id = id
         self.Size = wx.Size(SFC_JUMP_SIZE[0], SFC_JUMP_SIZE[1])
         self.Highlights = []
         # Create an input and output connector
-        self.Input = Connector(self, "", None, wx.Point(self.Size[0] / 2, 0), NORTH, onlyone = True)
+        self.Input = Connector(self, "", None, wx.Point(self.Size[0] / 2, 0), NORTH, onlyone=True)
         self.Value = None
         self.PreviousValue = None
 
@@ -1533,7 +1533,7 @@ class SFC_Jump(Graphic_Element):
                 self.Parent.ElementNeedRefresh(self)
 
     # Make a clone of this SFC_Jump
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         jump = SFC_Jump(parent, self.Target, id)
         jump.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -1547,7 +1547,7 @@ class SFC_Jump(Graphic_Element):
         return {self.Input: element.Input}
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if self.Input:
             rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
@@ -1572,7 +1572,7 @@ class SFC_Jump(Graphic_Element):
 
     # Unconnect input
     def Clean(self):
-        self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Refresh the size of text for target
     def RefreshTargetSize(self):
@@ -1613,12 +1613,12 @@ class SFC_Jump(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to jump
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         if self.Input:
             self.Input.MoveConnected(exclude)
 
     # Returns input jump connector
-    def GetConnector(self, position = None, name = None):
+    def GetConnector(self, position=None, name=None):
         return self.Input
 
     # Returns all the jump connectors
@@ -1626,7 +1626,7 @@ class SFC_Jump(Graphic_Element):
         return {"inputs": [self.Input], "outputs": []}
 
     # Test if point given is on jump input connector
-    def TestConnector(self, pt, direction = None, exclude = True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector
         if self.Input and self.Input.TestPoint(pt, direction, exclude):
             return self.Input
@@ -1664,7 +1664,7 @@ class SFC_Jump(Graphic_Element):
                     input_block.RefreshInputPosition()
 
     # Can't align output element, because there is no output
-    def RefreshOutputPosition(self, move = None):
+    def RefreshOutputPosition(self, move=None):
         pass
 
     # Method called when a LeftDClick event have been generated
@@ -1687,7 +1687,7 @@ class SFC_Jump(Graphic_Element):
             self.RefreshInputPosition()
             return movex, 0
         else:
-            return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, width_fac = 2)
+            return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, width_fac=2)
 
     # Refresh input element model
     def RefreshInputModel(self):
@@ -1785,14 +1785,14 @@ class SFC_ActionBlock(Graphic_Element):
     """
 
     # Create a new action block
-    def __init__(self, parent, actions = [], id = None):
+    def __init__(self, parent, actions=[], id=None):
         Graphic_Element.__init__(self, parent)
         self.Id = id
         self.Size = wx.Size(SFC_ACTION_MIN_SIZE[0], SFC_ACTION_MIN_SIZE[1])
         self.MinSize = wx.Size(SFC_ACTION_MIN_SIZE[0], SFC_ACTION_MIN_SIZE[1])
         self.Highlights = {}
         # Create an input and output connector
-        self.Input = Connector(self, "", None, wx.Point(0, SFC_ACTION_MIN_SIZE[1] / 2), WEST, onlyone = True)
+        self.Input = Connector(self, "", None, wx.Point(0, SFC_ACTION_MIN_SIZE[1] / 2), WEST, onlyone=True)
         self.SetActions(actions)
         self.Value = None
         self.PreviousValue = None
@@ -1810,7 +1810,7 @@ class SFC_ActionBlock(Graphic_Element):
                 self.Parent.ElementNeedRefresh(self)
 
     # Make a clone of this SFC_ActionBlock
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         actions = [action.copy() for action in self.Actions]
         action_block = SFC_ActionBlock(parent, actions, id)
         action_block.SetSize(self.Size[0], self.Size[1])
@@ -1825,7 +1825,7 @@ class SFC_ActionBlock(Graphic_Element):
         return {self.Input: element.Input}
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if self.Input:
             rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
@@ -1858,18 +1858,18 @@ class SFC_ActionBlock(Graphic_Element):
 
     # Unconnect input and output
     def Clean(self):
-        self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Refresh the action block bounding box
     def RefreshBoundingBox(self):
         self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
 
     # Refresh the position of wires connected to action block
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         self.Input.MoveConnected(exclude)
 
     # Returns input action block connector
-    def GetConnector(self, position = None, name = None):
+    def GetConnector(self, position=None, name=None):
         return self.Input
 
     # Returns all the action block connectors
@@ -1877,7 +1877,7 @@ class SFC_ActionBlock(Graphic_Element):
         return {"inputs": [self.Input], "outputs": []}
 
     # Test if point given is on action block input connector
-    def TestConnector(self, pt, direction = None, exclude = True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector
         if self.Input.TestPoint(pt, direction, exclude):
             return self.Input

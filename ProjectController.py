@@ -354,7 +354,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             target.setcontent(self.Parser.CreateElement(target_name, "TargetType"))
         return target
 
-    def GetParamsAttributes(self, path = None):
+    def GetParamsAttributes(self, path=None):
         params = ConfigTreeNode.GetParamsAttributes(self, path)
         if params[0]["name"] == "BeremizRoot":
             for child in params[0]["children"]:
@@ -460,7 +460,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if error is not None:
             if self.Project is not None:
                 (fname_err, lnum, src) = (("PLC",) + error)
-                self.logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname_err, a2 = lnum, a3 = src))
+                self.logger.write_warning(XSDSchemaErrorMessage.format(a1=fname_err, a2=lnum, a3=src))
             else:
                 return error, False
         if len(self.GetProjectConfigNames()) == 0:
@@ -1206,7 +1206,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     text = file(plc_file).read()
                 except:
                     text = '(* No IEC code have been generated at that time ! *)'
-                self._IECCodeView.SetText(text = text)
+                self._IECCodeView.SetText(text=text)
                 self._IECCodeView.Editor.SetReadOnly(True)
                 self._IECCodeView.SetIcon(GetBitmap("ST"))
                 setattr(self._IECCodeView, "_OnClose", self.OnCloseEditor)
@@ -1373,7 +1373,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             }
         return msgs.get(status, status)
 
-    def ShowPLCProgress(self, status = "", progress = 0):
+    def ShowPLCProgress(self, status="", progress=0):
         self.AppFrame.ProgressStatusBar.Show()
         self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetTextStatus(status), 1)
         self.AppFrame.ProgressStatusBar.SetValue(progress)
@@ -1446,7 +1446,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self.IsPLCStarted():
             # Timer to prevent rapid-fire when registering many variables
             # use wx.CallAfter use keep using same thread. TODO : use wx.Timer instead
-            self.DebugTimer = Timer(0.5, wx.CallAfter, args = [self.RegisterDebugVarToConnector])
+            self.DebugTimer = Timer(0.5, wx.CallAfter, args=[self.RegisterDebugVarToConnector])
             # Rearm anti-rapid-fire timer
             self.DebugTimer.start()
 

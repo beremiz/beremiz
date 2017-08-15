@@ -344,10 +344,10 @@ class FBDBlockDialog(BlockPreviewDialog):
                     (self.BlockName.GetValue()
                      if self.BlockName.IsEnabled()
                      else ""),
-                    extension = self.Inputs.GetValue(),
-                    inputs = values["inputs"],
-                    executionControl = self.ExecutionControl.GetValue(),
-                    executionOrder = self.ExecutionOrder.GetValue())
+                    extension=self.Inputs.GetValue(),
+                    inputs=values["inputs"],
+                    executionControl=self.ExecutionControl.GetValue(),
+                    executionOrder=self.ExecutionOrder.GetValue())
 
         # Reset graphic element displayed
         else:

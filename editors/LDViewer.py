@@ -170,7 +170,7 @@ class LD_Viewer(Viewer):
     Class derived from Viewer class that implements a Viewer of Ladder Diagram
     """
 
-    def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
+    def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         Viewer.__init__(self, parent, tagname, window, controler, debug, instancepath)
         self.Rungs = []
         self.RungComments = []
@@ -262,7 +262,7 @@ class LD_Viewer(Viewer):
                 return i
         return None
 
-    def FindElement(self, event, exclude_group = False, connectors = True):
+    def FindElement(self, event, exclude_group=False, connectors=True):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             return Viewer.FindElement(self, event, exclude_group, connectors)
 

@@ -46,8 +46,8 @@ def GetAppRevision():
     try:
         pipe = subprocess.Popen(
             ["hg", "id", "-i"],
-            stdout = subprocess.PIPE,
-            cwd = app_dir
+            stdout=subprocess.PIPE,
+            cwd=app_dir
         )
         rev = pipe.communicate()[0]
         if pipe.returncode != 0:

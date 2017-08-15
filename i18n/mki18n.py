@@ -110,7 +110,7 @@ def getlanguageDict():
     return languageDict
 
 
-def processCustomFiles(filein, fileout, regexp, prefix = ''):
+def processCustomFiles(filein, fileout, regexp, prefix=''):
     appfil_file = open(filein, 'r')
     messages_file = open(fileout, 'r')
     messages = messages_file.read()

@@ -175,9 +175,9 @@ class VariableTable(CustomTable):
                     grid.SetReadOnly(row, col, True)
                 else:
                     if colname == "Option":
-                        options = GetOptions(constant = var_class in ["Local", "External", "Global"],
-                                             retain = self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output", "Global"],
-                                             non_retain = self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output"])
+                        options = GetOptions(constant=var_class in ["Local", "External", "Global"],
+                                             retain=self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output", "Global"],
+                                             non_retain=self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output"])
                         if len(options) > 1:
                             editor = wx.grid.GridCellChoiceEditor()
                             editor.SetParameters(",".join(map(_, options)))
@@ -279,7 +279,7 @@ class VariableDropTarget(wx.TextDropTarget):
                             base_location_type = self.ParentWindow.Controler.GetBaseType(values[2])
                             if values[2] != variable_type and base_type != base_location_type:
                                 message = _("Incompatible data types between \"{a1}\" and \"{a2}\"").\
-                                          format(a1 = values[2], a2 = variable_type)
+                                          format(a1=values[2], a2=variable_type)
 
                         if message is None:
                             if not location.startswith("%"):
@@ -289,7 +289,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                     message = _("Unrecognized data size \"%s\"") % location[0]
                                 elif base_type not in LOCATIONDATATYPES[location[0]]:
                                     message = _("Incompatible size of data between \"{a1}\" and \"{a2}\"").\
-                                              format(a1 = location, a2 = variable_type)
+                                              format(a1=location, a2=variable_type)
                                 else:
                                     dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                           _("Select a variable class:"), _("Variable class"),
@@ -598,7 +598,7 @@ class VariablePanel(wx.Panel):
                 new_row = self.Table.GetNumberRows()
             self.SaveValues()
             if self.ElementType == "resource":
-                self.ParentWindow.RefreshView(variablepanel = False)
+                self.ParentWindow.RefreshView(variablepanel=False)
             self.RefreshValues()
             return new_row
         setattr(self.VariablesGrid, "_AddRow", _AddVariable)
@@ -608,7 +608,7 @@ class VariablePanel(wx.Panel):
                 self.Values.remove(self.Table.GetRow(row))
                 self.SaveValues()
                 if self.ElementType == "resource":
-                    self.ParentWindow.RefreshView(variablepanel = False)
+                    self.ParentWindow.RefreshView(variablepanel=False)
                 self.RefreshValues()
         setattr(self.VariablesGrid, "_DeleteRow", _DeleteVariable)
 
@@ -731,7 +731,7 @@ class VariablePanel(wx.Panel):
         words = self.TagName.split("::")
         self.Controler.SetPouInterfaceReturnType(words[1], self.ReturnType.GetStringSelection())
         self.Controler.BufferProject()
-        self.ParentWindow.RefreshView(variablepanel = False)
+        self.ParentWindow.RefreshView(variablepanel=False)
         self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         event.Skip()
 
@@ -824,7 +824,7 @@ class VariablePanel(wx.Panel):
     def BuildUserTypesMenu(self, type_menu):
             # build a submenu containing user-defined types
             datatype_menu = wx.Menu(title='')
-            datatypes = self.Controler.GetDataTypes(basetypes = False, confnodetypes = False)
+            datatypes = self.Controler.GetDataTypes(basetypes=False, confnodetypes=False)
             for datatype in datatypes:
                 new_id = wx.NewId()
                 datatype_menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=datatype)
@@ -903,7 +903,7 @@ class VariablePanel(wx.Panel):
             self.Table.SetValueByName(row, "Type", base_type)
             self.Table.ResetView(self.VariablesGrid)
             self.SaveValues(False)
-            self.ParentWindow.RefreshView(variablepanel = False)
+            self.ParentWindow.RefreshView(variablepanel=False)
             self.Controler.BufferProject()
             self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         return VariableTypeFunction
@@ -917,7 +917,7 @@ class VariablePanel(wx.Panel):
             self.Table.SetValueByName(row, "Type", dialog.GetValue())
             self.Table.ResetView(self.VariablesGrid)
             self.SaveValues(False)
-            self.ParentWindow.RefreshView(variablepanel = False)
+            self.ParentWindow.RefreshView(variablepanel=False)
             self.Controler.BufferProject()
             self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
         dialog.Destroy()
@@ -943,7 +943,7 @@ class VariablePanel(wx.Panel):
         self.Table.SetData(data)
         self.Table.ResetView(self.VariablesGrid)
 
-    def SaveValues(self, buffer = True):
+    def SaveValues(self, buffer=True):
         words = self.TagName.split("::")
         if self.ElementType == "config":
             self.Controler.SetConfigurationGlobalVars(words[1], self.Values)

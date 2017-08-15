@@ -107,7 +107,7 @@ class LogPseudoFile:
         self.LastRefreshTime = gettime()
         self.LastRefreshTimer = None
 
-    def write(self, s, style = None):
+    def write(self, s, style=None):
         if self.lock.acquire():
             self.stack.append((s, style))
             self.lock.release()
@@ -382,7 +382,7 @@ class Beremiz(IDEFrame):
 
         self.ConnectionStatusBar = esb.EnhancedStatusBar(self, style=wx.ST_SIZEGRIP)
         self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
-        self.ProgressStatusBar = wx.Gauge(self.ConnectionStatusBar, -1, range = 100)
+        self.ProgressStatusBar = wx.Gauge(self.ConnectionStatusBar, -1, range=100)
         self.ConnectionStatusBar.AddWidget(self.ProgressStatusBar, esb.ESB_EXACT_FIT, esb.ESB_EXACT_FIT, 2)
         self.ProgressStatusBar.Hide()
         self.SetStatusBar(self.ConnectionStatusBar)
@@ -472,7 +472,7 @@ class Beremiz(IDEFrame):
         else:
             self.SetTitle(name)
 
-    def StartLocalRuntime(self, taskbaricon = True):
+    def StartLocalRuntime(self, taskbaricon=True):
         if (self.local_runtime is None) or (self.local_runtime.exitcode is not None):
             # create temporary directory for runtime working directory
             self.local_runtime_tmpdir = tempfile.mkdtemp()
@@ -487,8 +487,8 @@ class Beremiz(IDEFrame):
                     {False: "-x 0", True: "-x 1"}[taskbaricon],
                     self.local_runtime_tmpdir),
                 no_gui=False,
-                timeout=500, keyword = self.local_runtime_tmpdir,
-                cwd = self.local_runtime_tmpdir)
+                timeout=500, keyword=self.local_runtime_tmpdir,
+                cwd=self.local_runtime_tmpdir)
             self.local_runtime.spin()
         return self.runtime_port
 

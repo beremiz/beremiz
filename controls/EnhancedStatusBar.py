@@ -195,7 +195,7 @@ class EnhancedStatusBar(wx.StatusBar):
             event.Skip()
 
     def AddWidget(self, widget, horizontalalignment=ESB_ALIGN_CENTER_HORIZONTAL,
-                  verticalalignment=ESB_ALIGN_CENTER_VERTICAL, pos = -1):
+                  verticalalignment=ESB_ALIGN_CENTER_VERTICAL, pos=-1):
         """Add A Widget To The EnhancedStatusBar.
 
         Parameters:

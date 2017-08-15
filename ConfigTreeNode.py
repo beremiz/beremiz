@@ -145,7 +145,7 @@ class ConfigTreeNode:
         #Default, do nothing and return success
         return True
 
-    def GetParamsAttributes(self, path = None):
+    def GetParamsAttributes(self, path=None):
         if path:
             parts = path.split(".", 1)
             if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
@@ -424,7 +424,7 @@ class ConfigTreeNode:
             shutil.move(oldname, self.CTNPath())
         # warn user he has two left hands
         if DesiredName != res:
-            msg = _("A child named \"{a1}\" already exists -> \"{a2}\"\n").format(a1 = DesiredName, a2 = res)
+            msg = _("A child named \"{a1}\" already exists -> \"{a2}\"\n").format(a1=DesiredName, a2=res)
             self.GetCTRoot().logger.write_warning(msg)
         return res
 
@@ -529,7 +529,7 @@ class ConfigTreeNode:
         try:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
         except KeyError:
-            raise Exception, _("Cannot create child {a1} of type {a2} ").format(a1 = CTNName, a2 = CTNType)
+            raise Exception, _("Cannot create child {a1} of type {a2} ").format(a1=CTNName, a2=CTNType)
 
         # if CTNClass is a class factory, call it. (prevent unneeded imports)
         if type(CTNClass) == types.FunctionType:
@@ -539,7 +539,7 @@ class ConfigTreeNode:
         ChildrenWithSameClass = self.Children.setdefault(CTNType, list())
         # Check count
         if getattr(CTNClass, "CTNMaxCount", None) and len(ChildrenWithSameClass) >= CTNClass.CTNMaxCount:
-            msg = _("Max count ({a1}) reached for this confnode of type {a2} ").format(a1 = CTNClass.CTNMaxCount, a2 = CTNType)
+            msg = _("Max count ({a1}) reached for this confnode of type {a2} ").format(a1=CTNClass.CTNMaxCount, a2=CTNType)
             raise Exception, msg
 
         # create the final class, derived of provided confnode and template
@@ -567,7 +567,7 @@ class ConfigTreeNode:
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewCTNName):
                         msg = _("Project tree layout do not match confnode.xml {a1}!={a2} ").\
-                              format(a1 = NewCTNName, a2 = _self.BaseParams.getName())
+                              format(a1=NewCTNName, a2=_self.BaseParams.getName())
                         raise Exception, msg
 
                     # Now, self.CTNPath() should be OK
@@ -608,7 +608,7 @@ class ConfigTreeNode:
             child.ClearChildren()
         self.Children = {}
 
-    def LoadXMLParams(self, CTNName = None):
+    def LoadXMLParams(self, CTNName=None):
         methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):
             execfile(methode_name)
@@ -622,11 +622,11 @@ class ConfigTreeNode:
                 self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
                 if error is not None:
                     (fname, lnum, src) = ((ConfNodeName + " BaseParams",) + error)
-                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname, a2 = lnum, a3 = src))
+                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception, exc:
-                msg = _("Couldn't load confnode base parameters {a1} :\n {a2}").format(a1 =  ConfNodeName, a2 = unicode(exc))
+                msg = _("Couldn't load confnode base parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=unicode(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
 
@@ -637,13 +637,13 @@ class ConfigTreeNode:
                 obj, error = self.Parser.LoadXMLString(xmlfile.read())
                 if error is not None:
                     (fname, lnum, src) = ((ConfNodeName,) + error)
-                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1 = fname, a2 = lnum, a3 = src))
+                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception, exc:
-                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1 = ConfNodeName, a2 = unicode(exc))
+                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=unicode(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
 
@@ -656,6 +656,6 @@ class ConfigTreeNode:
                 try:
                     self.CTNAddChild(pname, ptype)
                 except Exception, exc:
-                    msg = _("Could not add child \"{a1}\", type {a2} :\n{a3}\n").format(a1 = pname, a2 = ptype, a3 = unicode(exc))
+                    msg = _("Could not add child \"{a1}\", type {a2} :\n{a3}\n").format(a1=pname, a2=ptype, a3=unicode(exc))
                     self.GetCTRoot().logger.write_error(msg)
                     self.GetCTRoot().logger.write_error(traceback.format_exc())

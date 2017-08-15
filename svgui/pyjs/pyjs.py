@@ -1051,7 +1051,7 @@ class Translator:
         rhs = self.expr(node.expr, current_klass)
         print >>self.output, "    " + lhs + " " + op + " " + rhs + ";"
 
-    def _assign(self, node, current_klass, top_level = False):
+    def _assign(self, node, current_klass, top_level=False):
         if len(node.nodes) != 1:
             tempvar = '__temp'+str(node.lineno)
             tnode = ast.Assign([ast.AssName(tempvar, "OP_ASSIGN", node.lineno)], node.expr, node.lineno)
@@ -1531,7 +1531,7 @@ def translate(file_name, module_name, debug=False):
 
 
 class PlatformParser:
-    def __init__(self, platform_dir = "", verbose=True):
+    def __init__(self, platform_dir="", verbose=True):
         self.platform_dir = platform_dir
         self.parse_cache = {}
         self.platform = ""

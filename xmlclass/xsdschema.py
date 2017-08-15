@@ -406,7 +406,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                 raise ValueError("Item type can't be derivated by list!")
 
         # Generate extract value for new created type
-        def ExtractSimpleTypeValue(attr, extract = True):
+        def ExtractSimpleTypeValue(attr, extract=True):
             values = []
             for value in GetToken(attr, extract).split(" "):
                 values.append(itemtypeinfos["extract"](value, False))
@@ -453,7 +453,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
         simpleType["basename"] = "union"
 
         # Generate extract value for new created type
-        def ExtractSimpleTypeValue(attr, extract = True):
+        def ExtractSimpleTypeValue(attr, extract=True):
             if extract:
                 value = GetAttributeValue(attr)
             else:
@@ -1961,7 +1961,7 @@ XSD_NAMESPACE = {
     "minOccurs": {
         "type": SYNTAXATTRIBUTE,
         "extract": {
-            "default": GenerateLimitExtraction(unbounded = False),
+            "default": GenerateLimitExtraction(unbounded=False),
             "all": GenerateLimitExtraction(0, 1, False)
         },
         "default": {

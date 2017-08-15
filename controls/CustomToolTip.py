@@ -61,7 +61,7 @@ class CustomToolTip(wx.PopupWindow):
             wx.SWISS,
             wx.NORMAL,
             wx.NORMAL,
-            faceName = faces["mono"])
+            faceName=faces["mono"])
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 

@@ -336,7 +336,7 @@ class IDEFrame(wx.Frame):
 
     # Compatibility function for wx versions < 2.6
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -657,7 +657,7 @@ class IDEFrame(wx.Frame):
     #  @param controler The controler been used by PLCOpenEditor (default: None).
     #  @param fileOpen The filepath to open if no controler defined (default: None).
     #  @param debug The filepath to open if no controler defined (default: False).
-    def __init__(self, parent, enable_debug = False):
+    def __init__(self, parent, enable_debug=False):
         self.Controler = None
         self.Config = wx.ConfigBase.Get()
         self.EnableDebug = enable_debug
@@ -1607,7 +1607,7 @@ class IDEFrame(wx.Frame):
                 old_name = self.ProjectTree.GetItemText(item)
                 item_infos = self.ProjectTree.GetPyData(item)
                 if item_infos["type"] == ITEM_PROJECT:
-                    self.Controler.SetProjectProperties(name = new_name)
+                    self.Controler.SetProjectProperties(name=new_name)
                 elif item_infos["type"] == ITEM_DATATYPE:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectDataTypeNames() if name != old_name]:
                         message = _("\"%s\" data type already exists!") % new_name
@@ -1776,7 +1776,7 @@ class IDEFrame(wx.Frame):
         else:
             event.Skip()
 
-    def EditProjectElement(self, element, tagname, onlyopened = False):
+    def EditProjectElement(self, element, tagname, onlyopened=False):
         openedidx = self.IsOpened(tagname)
         if openedidx is not None:
             old_selected = self.TabsOpened.GetSelection()
@@ -2298,7 +2298,7 @@ class IDEFrame(wx.Frame):
             self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE)
             self.EditProjectElement(ITEM_DATATYPE, tagname)
 
-    def GenerateAddPouFunction(self, pou_type, type_readonly = False):
+    def GenerateAddPouFunction(self, pou_type, type_readonly=False):
         def OnAddPouMenu(event):
             dialog = PouDialog(self, pou_type, type_readonly)
             dialog.SetPouNames(self.Controler.GetProjectPouNames())
@@ -2557,7 +2557,7 @@ UPPER_DIV = lambda x, y: (x / y) + {True: 0, False: 1}[(x % y) == 0]
 
 
 class GraphicPrintout(wx.Printout):
-    def __init__(self, viewer, page_size, margins, preview = False):
+    def __init__(self, viewer, page_size, margins, preview=False):
         wx.Printout.__init__(self)
         self.Viewer = viewer
         self.PageSize = page_size

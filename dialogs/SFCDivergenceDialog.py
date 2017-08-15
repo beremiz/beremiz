@@ -41,7 +41,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
     divergence graphic element
     """
 
-    def __init__(self, parent, controller, tagname, poss_div_types = None):
+    def __init__(self, parent, controller, tagname, poss_div_types=None):
         """
         Constructor
         @param parent: Parent wx.Window of dialog for modal

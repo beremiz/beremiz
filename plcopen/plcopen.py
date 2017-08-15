@@ -516,7 +516,7 @@ if cls:
 
     def addconfigurationResource(self, config_name, name):
         if self.getconfigurationResource(config_name, name) is not None:
-            msg = _("\"{a1}\" resource already exists in \"{a2}\" configuration !!!").format(a1 = name, a2 = config_name)
+            msg = _("\"{a1}\" resource already exists in \"{a2}\" configuration !!!").format(a1=name, a2=config_name)
             raise ValueError, msg
         configuration = self.getconfiguration(config_name)
         if configuration is not None:
@@ -534,7 +534,7 @@ if cls:
                 configuration.remove(resource)
                 found = True
         if not found:
-            msg = _("\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!").format(a1 = name, a2 = config_name)
+            msg = _("\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!").format(a1=name, a2=config_name)
             raise ValueError, msg
     setattr(cls, "removeconfigurationResource", removeconfigurationResource)
 
