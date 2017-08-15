@@ -111,9 +111,9 @@ class GenStaticBitmap(wx.StaticBitmap):
     """ Customized GenStaticBitmap, fix transparency redraw bug on wx2.8/win32,
     and accept image name as __init__ parameter, fail silently if file do not exist"""
     def __init__(self, parent, ID, bitmapname,
-                 pos = wx.DefaultPosition, size = wx.DefaultSize,
-                 style = 0,
-                 name = "genstatbmp"):
+                 pos=wx.DefaultPosition, size=wx.DefaultSize,
+                 style=0,
+                 name="genstatbmp"):
 
         bitmap = GetBitmap(bitmapname)
         if bitmap is None:
@@ -151,7 +151,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 self.FullIECChannel = wx.StaticText(self.Editor, -1)
                 self.FullIECChannel.SetFont(
                     wx.Font(faces["size"], wx.DEFAULT, wx.NORMAL,
-                            wx.BOLD, faceName = faces["helv"]))
+                            wx.BOLD, faceName=faces["helv"]))
                 baseparamseditor_sizer.AddWindow(self.FullIECChannel,
                       flag=wx.ALIGN_CENTER_VERTICAL)
 
@@ -175,7 +175,7 @@ class ConfTreeNodeEditor(EditorPanel):
                       size=wx.Size(150, 25))
                 self.ConfNodeName.SetFont(
                     wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL,
-                            wx.BOLD, faceName = faces["helv"]))
+                            wx.BOLD, faceName=faces["helv"]))
                 self.ConfNodeName.Bind(wx.EVT_TEXT,
                       self.GetTextCtrlCallBackFunction(self.ConfNodeName, "BaseParams.Name", True),
                       self.ConfNodeName)
@@ -296,8 +296,8 @@ class ConfTreeNodeEditor(EditorPanel):
         self.Thaw()
 
     def GenerateMethodButtonSizer(self):
-        normal_bt_font    = wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"])
-        mouseover_bt_font = wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = faces["helv"], underline=True)
+        normal_bt_font    = wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"])
+        mouseover_bt_font = wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"], underline=True)
 
         msizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -327,7 +327,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 msizer.AddWindow(button, flag=wx.ALIGN_CENTER)
         return msizer
 
-    def GenerateSizerElements(self, sizer, elements, path, clean = True):
+    def GenerateSizerElements(self, sizer, elements, path, clean=True):
         if clean:
             sizer.Clear(True)
         first = True

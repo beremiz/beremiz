@@ -81,7 +81,7 @@ class xml_timezone(datetime.tzinfo):
 
     def SetOffset(self, offset):
         if offset == "Z":
-            self.__offset = timedelta(minutes = 0)
+            self.__offset = timedelta(minutes=0)
             self.__name = "UTC"
         else:
             sign = {"-": -1, "+": 1}[offset[0]]
@@ -243,7 +243,7 @@ def GenerateFloatExtraction(type, extra_values=[]):
     @param type: name of the type of float
     @return: function generated
     """
-    def GetFloat(attr, extract = True):
+    def GetFloat(attr, extract=True):
         """
         Function that extracts a float from a tree node or a string
         @param attr: tree node containing data to extract or data as a string
@@ -1060,7 +1060,7 @@ class ClassFactory:
 
         return self.ComputedClasses
 
-    def CreateClass(self, name, parent, classinfos, baseclass = False):
+    def CreateClass(self, name, parent, classinfos, baseclass=False):
         if parent is not None:
             classname = "%s_%s" % (parent, name)
         else:
@@ -1842,7 +1842,7 @@ def GenerateParser(factory, xsdstring):
         factory.etreeNamespaceFormat,
         BaseClass[0] if len(BaseClass) == 1 else None,
         etree.XMLSchema(etree.fromstring(xsdstring)),
-        strip_cdata = False, remove_blank_text=True)
+        strip_cdata=False, remove_blank_text=True)
     class_lookup = XMLElementClassLookUp(factory.ComputedClassesLookUp)
     parser.set_element_class_lookup(class_lookup)
 

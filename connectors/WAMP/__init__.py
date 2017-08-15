@@ -76,19 +76,19 @@ def WAMP_connector_factory(uri, confnodesroot):
 
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
-            realm = realm,
-            extra = {"ID": ID})
+            realm=realm,
+            extra={"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
-            config = component_config)
+            config=component_config)
         session_factory.session = WampSession
 
         # create a WAMP-over-WebSocket transport client factory
         transport_factory = WampWebSocketClientFactory(
             session_factory,
-            url = url,
-            serializers = [MsgPackSerializer()],
-            debug = False,
-            debug_wamp = False)
+            url=url,
+            serializers=[MsgPackSerializer()],
+            debug=False,
+            debug_wamp=False)
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory)

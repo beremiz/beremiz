@@ -262,8 +262,8 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
         print >> script_selectors, select_tmpl % (platform, file_prefix)
 
     print >>home_nocache_html_output, home_nocache_html_template % dict(
-        app_name = app_name,
-        script_selectors = script_selectors.getvalue(),
+        app_name=app_name,
+        script_selectors=script_selectors.getvalue(),
     )
 
     home_nocache_html_output.close()
@@ -458,13 +458,13 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
                 mod_cache_html_output = StringIO()
 
             print >>mod_cache_html_output, mod_cache_html_template % dict(
-                mod_name = mod_name,
-                app_name = app_name,
-                modnames = modnames,
-                overrides = overnames,
-                mod_libs = mod_libs[platform][mod_name],
-                dynamic = dynamic,
-                mod_code = mod_code_,
+                mod_name=mod_name,
+                app_name=app_name,
+                modnames=modnames,
+                overrides=overnames,
+                mod_libs=mod_libs[platform][mod_name],
+                dynamic=dynamic,
+                mod_code=mod_code_,
             )
 
             if dynamic:
@@ -497,16 +497,16 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
         # library modules
 
         file_contents = all_cache_html_template % dict(
-            app_name = app_name,
-            early_app_libs = early_app_libs_,
-            app_libs = app_libs_,
-            app_code = app_code_,
-            app_body = app_body,
-            overrides = overnames,
-            platform = platform.lower(),
-            dynamic = dynamic,
-            app_modnames = app_modnames,
-            app_headers = app_headers
+            app_name=app_name,
+            early_app_libs=early_app_libs_,
+            app_libs=app_libs_,
+            app_code=app_code_,
+            app_body=app_body,
+            overrides=overnames,
+            platform=platform.lower(),
+            dynamic=dynamic,
+            app_modnames=app_modnames,
+            app_headers=app_headers
         )
         if cache_buster:
             digest = md5.new(file_contents).hexdigest()
@@ -672,7 +672,7 @@ def make_deps(app_name, deps, mod_list):
 def main():
     global app_platforms
 
-    parser = OptionParser(usage = usage, version = version)
+    parser = OptionParser(usage=usage, version=version)
     parser.add_option("-o", "--output", dest="output",
         help="directory to which the webapp should be written")
     parser.add_option("-j", "--include-js", dest="js_includes", action="append",
@@ -695,7 +695,7 @@ def main():
                   dest="cache_buster",
         help="Enable browser cache-busting (MD5 hash added to output filenames)")
 
-    parser.set_defaults(output = "output", js_includes=[], library_dirs=[],
+    parser.set_defaults(output="output", js_includes=[], library_dirs=[],
                         platforms=(','.join(app_platforms)),
                         data_dir=os.path.join(sys.prefix, "share/pyjamas"),
                         dynamic=False,

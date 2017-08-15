@@ -82,7 +82,7 @@ class SFC_Viewer(Viewer):
         "LD_Coil": [("SFC_Transition", WEST)]
     }
 
-    def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
+    def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         Viewer.__init__(self, parent, tagname, window, controler, debug, instancepath)
         self.CurrentLanguage = "SFC"
 
@@ -97,7 +97,7 @@ class SFC_Viewer(Viewer):
         wire.ConnectEndPoint(None, end)
         return wire
 
-    def CreateTransition(self, connector, next = None):
+    def CreateTransition(self, connector, next=None):
         previous = connector.GetParentBlock()
         id = self.GetNewId()
         transition = SFC_Transition(self, "reference", "", 0, id)
@@ -147,7 +147,7 @@ class SFC_Viewer(Viewer):
         wire = self.ConnectConnectors(next, previous)
         return wire
 
-    def CreateStep(self, name, connector, next = None):
+    def CreateStep(self, name, connector, next=None):
         previous = connector.GetParentBlock()
         id = self.GetNewId()
         step = SFC_Step(self, name, False, id)
@@ -341,7 +341,7 @@ class SFC_Viewer(Viewer):
         return blockName
 
     # This method check the IEC 61131-3 compatibility between two SFC blocks
-    def BlockCompatibility(self, startblock = None, endblock = None, direction = None):
+    def BlockCompatibility(self, startblock=None, endblock=None, direction=None):
         if startblock is not None and endblock is not None and (isinstance(startblock, SFC_Objects)\
                                                                or isinstance(endblock, SFC_Objects)):
             # Full "SFC_StandardRules" table would be symmetrical and

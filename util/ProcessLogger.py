@@ -71,11 +71,11 @@ class outputThread(Thread):
 
 
 class ProcessLogger:
-    def __init__(self, logger, Command, finish_callback = None,
-                 no_stdout = False, no_stderr = False, no_gui = True,
-                 timeout = None, outlimit = None, errlimit = None,
-                 endlog = None, keyword = None, kill_it = False, cwd = None,
-                 encoding = None):
+    def __init__(self, logger, Command, finish_callback=None,
+                 no_stdout=False, no_stderr=False, no_gui=True,
+                 timeout=None, outlimit=None, errlimit=None,
+                 endlog=None, keyword=None, kill_it=False, cwd=None,
+                 encoding=None):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -169,7 +169,7 @@ class ProcessLogger:
 
     def log_the_end(self, ecode, pid):
         self.logger.write(self.Command_str + "\n")
-        self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1 = str(ecode), a2 = str(pid)))
+        self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1=str(ecode), a2=str(pid)))
 
     def finish(self, pid, ecode):
         # avoid running function before start is finished

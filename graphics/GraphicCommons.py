@@ -131,7 +131,7 @@ Basic vector operations for calculate wire points
 """
 
 
-def vector(p1, p2, normal = True):
+def vector(p1, p2, normal=True):
     """
     Create a vector from two points and define if vector must be normal
     """
@@ -258,7 +258,7 @@ class Graphic_Element(ToolTipProducer):
     """
 
     # Create a new graphic element
-    def __init__(self, parent, id = None):
+    def __init__(self, parent, id=None):
         ToolTipProducer.__init__(self, parent)
         self.Parent = parent
         self.Id = id
@@ -404,7 +404,7 @@ class Graphic_Element(ToolTipProducer):
         return self.BoundingBox
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         scalex, scaley = self.Parent.GetViewScale()
         rect = wx.Rect()
         rect.x = self.BoundingBox.x - int(HANDLE_SIZE / scalex) - 3 - abs(movex)
@@ -413,7 +413,7 @@ class Graphic_Element(ToolTipProducer):
         rect.height = self.BoundingBox.height + 2 * (int(HANDLE_SIZE / scaley) + abs(movey) + 1) + 4
         return rect
 
-    def Refresh(self, rect = None):
+    def Refresh(self, rect=None):
         if self.Visible:
             if rect is not None:
                 self.Parent.RefreshRect(self.Parent.GetScrolledRect(rect), False)
@@ -554,7 +554,7 @@ class Graphic_Element(ToolTipProducer):
             return 0, 0
 
     # Moves the element
-    def Move(self, dx, dy, exclude = []):
+    def Move(self, dx, dy, exclude=[]):
         self.Pos.x += max(-self.BoundingBox.x, dx)
         self.Pos.y += max(-self.BoundingBox.y, dy)
         self.RefreshConnected(exclude)
@@ -566,7 +566,7 @@ class Graphic_Element(ToolTipProducer):
         self.SetSize(width, height)
 
     # Refreshes the element state according to move defined and handle selected
-    def ProcessDragging(self, movex, movey, event, scaling, width_fac = 1, height_fac = 1):
+    def ProcessDragging(self, movex, movey, event, scaling, width_fac=1, height_fac=1):
         handle_type, handle = self.Handle
         # If it is a resize handle, calculate the values from resizing
         if handle_type == HANDLE_RESIZE:
@@ -733,7 +733,7 @@ class Graphic_Group(Graphic_Element):
         return blocks, wires
 
     # Make a clone of this element
-    def Clone(self, parent, pos = None):
+    def Clone(self, parent, pos=None):
         group = Graphic_Group(parent)
         connectors = {}
         exclude_names = {}
@@ -751,9 +751,9 @@ class Graphic_Group(Graphic_Element):
                     if parent.IsNamedElement(element):
                         name = parent.GenerateNewName(element, exclude_names)
                         exclude_names[name.upper()] = True
-                        new_element = element.Clone(parent, newid, name, pos = new_pos)
+                        new_element = element.Clone(parent, newid, name, pos=new_pos)
                     else:
-                        new_element = element.Clone(parent, newid, pos = new_pos)
+                        new_element = element.Clone(parent, newid, pos=new_pos)
                     new_element.SetBestSize(parent.Scaling)
                 else:
                     new_element = element.Clone(parent)
@@ -798,7 +798,7 @@ class Graphic_Group(Graphic_Element):
                     self.WireExcluded.append(element)
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = None
         for element in self.Elements:
             if rect is None:
@@ -1031,7 +1031,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     """
 
     # Create a new connector
-    def __init__(self, parent, name, type, position, direction, negated = False, edge = "none", onlyone = False):
+    def __init__(self, parent, name, type, position, direction, negated=False, edge="none", onlyone=False):
         DebugDataConsumer.__init__(self)
         ToolTipProducer.__init__(self, parent.Parent)
         self.ParentBlock = parent
@@ -1063,7 +1063,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         self.Wires = []
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         parent_pos = self.ParentBlock.GetPosition()
         x = min(parent_pos[0] + self.Pos.x, parent_pos[0] + self.Pos.x + self.Direction[0] * CONNECTOR_SIZE)
         y = min(parent_pos[1] + self.Pos.y, parent_pos[1] + self.Pos.y + self.Direction[1] * CONNECTOR_SIZE)
@@ -1100,7 +1100,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         self.Selected = selected
 
     # Make a clone of the connector
-    def Clone(self, parent = None):
+    def Clone(self, parent=None):
         if parent is None:
             parent = self.ParentBlock
         return Connector(parent, self.Name, self.Type, wx.Point(self.Pos[0], self.Pos[1]),
@@ -1111,7 +1111,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return self.ParentBlock
 
     # Returns the connector type
-    def GetType(self, raw = False):
+    def GetType(self, raw=False):
         if self.ParentBlock.IsEndType(self.Type) or raw:
             return self.Type
         elif (self.Negated or self.Edge != "none") and self.ParentBlock.IsOfType("BOOL", self.Type):
@@ -1235,7 +1235,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return self.Pos
 
     # Returns the connector absolute position
-    def GetPosition(self, size = True):
+    def GetPosition(self, size=True):
         parent_pos = self.ParentBlock.GetPosition()
         # If the position of the end of the connector is asked
         if size:
@@ -1259,11 +1259,11 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         self.Direction = direction
 
     # Connect a wire to this connector at the last place
-    def Connect(self, wire, refresh = True):
+    def Connect(self, wire, refresh=True):
         self.InsertConnect(len(self.Wires), wire, refresh)
 
     # Connect a wire to this connector at the place given
-    def InsertConnect(self, idx, wire, refresh = True):
+    def InsertConnect(self, idx, wire, refresh=True):
         if wire not in self.Wires:
             self.Wires.insert(idx, wire)
             if wire[1] == 0:
@@ -1281,7 +1281,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return None
 
     # Unconnect a wire or all wires connected to the connector
-    def UnConnect(self, wire = None, unconnect = True, delete = False):
+    def UnConnect(self, wire=None, unconnect=True, delete=False):
         i = 0
         found = False
         while i < len(self.Wires) and not found:
@@ -1309,7 +1309,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return len(self.Wires) > 0
 
     # Move the wires connected
-    def MoveConnected(self, exclude = []):
+    def MoveConnected(self, exclude=[]):
         if len(self.Wires) > 0:
             # Calculate the new position of the end point
             parent_pos = self.ParentBlock.GetPosition()
@@ -1565,7 +1565,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
     """
 
     # Create a new wire
-    def __init__(self, parent, start = None, end = None):
+    def __init__(self, parent, start=None, end=None):
         Graphic_Element.__init__(self, parent)
         DebugDataConsumer.__init__(self)
         self.StartPoint = start
@@ -1603,7 +1603,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.EndConnected = None
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if self.StartConnected:
             rect = rect.Union(self.StartConnected.GetRedrawRect(movex, movey))
@@ -1630,7 +1630,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 rect = rect.Union(wx.Rect(x, y, width, height))
         return rect
 
-    def Clone(self, parent, connectors = {}, dx = 0, dy = 0):
+    def Clone(self, parent, connectors={}, dx=0, dy=0):
         start_connector = connectors.get(self.StartConnected, None)
         end_connector = connectors.get(self.EndConnected, None)
         if start_connector is not None and end_connector is not None:
@@ -2009,7 +2009,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         return None
 
     # Returns a list of the position of all wire points
-    def GetPoints(self, invert = False):
+    def GetPoints(self, invert=False):
         points = self.VerifyPoints()
         points[0] = wx.Point(points[0].x - CONNECTOR_SIZE * self.StartPoint[1][0],
                 points[0].y - CONNECTOR_SIZE * self.StartPoint[1][1])
@@ -2050,7 +2050,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         return None
 
     # Update the wire points position by keeping at most possible the current positions
-    def GeneratePoints(self, realpoints = True):
+    def GeneratePoints(self, realpoints=True):
         i = 0
         # Calculate the start enad end points with the minimum segment size in the right direction
         end = wx.Point(self.EndPoint[0].x + self.EndPoint[1][0] * MIN_SEGMENT_SIZE,
@@ -2209,7 +2209,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         return points
 
     # Moves all the wire points except the first and the last if they are connected
-    def Move(self, dx, dy, endpoints = False):
+    def Move(self, dx, dy, endpoints=False):
         for i, point in enumerate(self.Points):
             if endpoints or not (i == 0 and self.StartConnected) and not (i == len(self.Points) - 1 and self.EndConnected):
                 point.x += dx
@@ -2304,12 +2304,12 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.RefreshBoundingBox()
 
     # Unconnects wire start point
-    def UnConnectStartPoint(self, delete = False):
+    def UnConnectStartPoint(self, delete=False):
         if delete:
             self.StartConnected = None
             self.Delete()
         elif self.StartConnected:
-            self.StartConnected.UnConnect(self, unconnect = False)
+            self.StartConnected.UnConnect(self, unconnect=False)
             self.StartConnected = None
             self.RefreshBoundingBox()
 
@@ -2339,12 +2339,12 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.RefreshBoundingBox()
 
     # Unconnects wire end point
-    def UnConnectEndPoint(self, delete = False):
+    def UnConnectEndPoint(self, delete=False):
         if delete:
             self.EndConnected = None
             self.Delete()
         elif self.EndConnected:
-            self.EndConnected.UnConnect(self, unconnect = False)
+            self.EndConnected.UnConnect(self, unconnect=False)
             self.EndConnected = None
             self.RefreshBoundingBox()
 
@@ -2767,7 +2767,7 @@ class Comment(Graphic_Element):
     """
 
     # Create a new comment
-    def __init__(self, parent, content, id = None):
+    def __init__(self, parent, content, id=None):
         Graphic_Element.__init__(self, parent)
         self.Id = id
         self.Content = content
@@ -2776,7 +2776,7 @@ class Comment(Graphic_Element):
         self.Highlights = []
 
     # Make a clone of this comment
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         comment = Comment(parent, self.Content, id)
         if pos is not None:
             comment.SetPosition(pos.x, pos.y)
@@ -2841,7 +2841,7 @@ class Comment(Graphic_Element):
         return self.Pos.x, self.Pos.y
 
     # Moves the comment
-    def Move(self, dx, dy, connected = True):
+    def Move(self, dx, dy, connected=True):
         self.Pos.x += dx
         self.Pos.y += dy
         self.RefreshBoundingBox()

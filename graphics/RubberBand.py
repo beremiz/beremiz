@@ -169,7 +169,7 @@ class RubberBand:
         # Restore Viewer scale factor
         dc.SetUserScale(scalex, scaley)
 
-    def Redraw(self, dc = None):
+    def Redraw(self, dc=None):
         """
         Redraw rubberband on Viewer
         @param dc: Device Context of Viewer (default None)
@@ -177,7 +177,7 @@ class RubberBand:
         # Erase last bbox and draw current bbox
         self.DrawBoundingBoxes([self.LastBBox, self.CurrentBBox], dc)
 
-    def Erase(self, dc = None):
+    def Erase(self, dc=None):
         """
         Erase rubberband from Viewer
         @param dc: Device Context of Viewer (default None)
@@ -185,7 +185,7 @@ class RubberBand:
         # Erase last bbox
         self.DrawBoundingBoxes([self.LastBBox], dc)
 
-    def Draw(self, dc = None):
+    def Draw(self, dc=None):
         """
         Draw rubberband on Viewer
         @param dc: Device Context of Viewer (default None)

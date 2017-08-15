@@ -262,7 +262,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                 elif pou_type == "function" and values[1] != "function":
                     message = _("Function Blocks can't be used in Functions!")
                 elif self.ParentWindow.Controler.PouIsUsedBy(pou_name, values[0], self.ParentWindow.Debug):
-                    message = _("\"{a1}\" is already used by \"{a2}\"!").format(a1 = pou_name, a2 = values[0])
+                    message = _("\"{a1}\" is already used by \"{a2}\"!").format(a1=pou_name, a2=values[0])
                 else:
                     blockname = values[2]
                     if len(values) > 3:
@@ -277,7 +277,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         message = _("\"%s\" element for this pou already exists!") % blockname
                     else:
                         id = self.ParentWindow.GetNewId()
-                        block = FBD_Block(self.ParentWindow, values[0], blockname, id, inputs = blockinputs)
+                        block = FBD_Block(self.ParentWindow, values[0], blockname, id, inputs=blockinputs)
                         width, height = block.GetMinSize()
                         if scaling is not None:
                             x = round(float(x) / float(scaling[0])) * scaling[0]
@@ -504,7 +504,7 @@ class Viewer(EditorPanel, DebugViewer):
     """
 
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -680,7 +680,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.Editor.ParentWindow = self
 
     # Create a new Viewer
-    def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
+    def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         self.VARIABLE_PANEL_TYPE = controler.GetPouType(tagname.split("::")[1])
 
         EditorPanel.__init__(self, parent, tagname, window, controler, debug)
@@ -735,17 +735,17 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList_lock = Lock()
 
         dc = wx.ClientDC(self.Editor)
-        font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["mono"])
+        font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
         dc.SetFont(font)
         width, height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         while width > 260:
             faces["size"] -= 1
-            font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["mono"])
+            font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
             dc.SetFont(font)
             width, height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         self.SetFont(font)
         self.MiniTextDC = wx.MemoryDC()
-        self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
+        self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
         self.CurrentScale = None
         self.SetScale(ZOOM_FACTORS.index(1.0), False)
@@ -977,7 +977,7 @@ class Viewer(EditorPanel, DebugViewer):
                 return block
         return None
 
-    def RefreshVisibleElements(self, xp = None, yp = None):
+    def RefreshVisibleElements(self, xp=None, yp=None):
         x, y = self.Editor.CalcUnscrolledPosition(0, 0)
         if xp is not None:
             x = xp * self.Editor.GetScrollPixelsPerUnit()[0]
@@ -1220,7 +1220,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.ResetBuffer()
         instance = {}
         # List of ids of already loaded blocks
-        instances = self.Controler.GetEditedElementInstancesInfos(self.TagName, debug = self.Debug)
+        instances = self.Controler.GetEditedElementInstancesInfos(self.TagName, debug=self.Debug)
         # Load Blocks until they are all loaded
         while len(instances) > 0:
             self.loadInstance(instances.popitem(0)[1], instances, selection)
@@ -1411,7 +1411,7 @@ class Viewer(EditorPanel, DebugViewer):
             connector_pos = wx.Point(*output_connector.position)
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
-                    output_name = output_connector.name)
+                    output_name=output_connector.name)
             elif i < len(connectors["outputs"]):
                 connector = connectors["outputs"][i]
             else:
@@ -1427,7 +1427,7 @@ class Viewer(EditorPanel, DebugViewer):
             connector_pos = wx.Point(*input_connector.position)
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
-                    input_name = input_connector.name)
+                    input_name=input_connector.name)
             elif i < len(connectors["inputs"]):
                 connector = connectors["inputs"][i]
             else:
@@ -1499,7 +1499,7 @@ class Viewer(EditorPanel, DebugViewer):
     def IsEndType(self, type):
         return self.Controler.IsEndType(type)
 
-    def GetBlockType(self, type, inputs = None):
+    def GetBlockType(self, type, inputs=None):
         return self.Controler.GetBlockType(type, inputs, self.Debug)
 
 #-------------------------------------------------------------------------------
@@ -1522,7 +1522,7 @@ class Viewer(EditorPanel, DebugViewer):
                 return wire
         return None
 
-    def FindElement(self, event, exclude_group = False, connectors = True):
+    def FindElement(self, event, exclude_group=False, connectors=True):
         dc = self.GetLogicalDC()
         pos = event.GetLogicalPosition(dc)
         if self.SelectedElement and not (exclude_group and isinstance(self.SelectedElement, Graphic_Group)):
@@ -1533,11 +1533,11 @@ class Viewer(EditorPanel, DebugViewer):
                 return element
         return None
 
-    def FindBlockConnector(self, pos, direction = None, exclude = None):
+    def FindBlockConnector(self, pos, direction=None, exclude=None):
         result, error = self.FindBlockConnectorWithError(pos, direction, exclude)
         return result
 
-    def FindBlockConnectorWithError(self, pos, direction = None, exclude = None):
+    def FindBlockConnectorWithError(self, pos, direction=None, exclude=None):
         error = False
         startblock = None
         for block in self.Blocks.itervalues():
@@ -1623,7 +1623,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.Editor.PopupMenu(menu)
             menu.Destroy()
 
-    def PopupBlockMenu(self, connector = None):
+    def PopupBlockMenu(self, connector=None):
         menu = wx.Menu(title='')
         if connector is not None and connector.IsCompatible("BOOL"):
             self.AddBlockPinMenuItems(menu, connector)
@@ -2383,11 +2383,11 @@ class Viewer(EditorPanel, DebugViewer):
             elif position.y > window_size[1] - SCROLL_ZONE:
                 move_window.y = 1
             if move_window.x != 0 or move_window.y != 0:
-                self.RefreshVisibleElements(xp = xstart + move_window.x, yp = ystart + move_window.y)
+                self.RefreshVisibleElements(xp=xstart + move_window.x, yp=ystart + move_window.y)
                 self.Scroll(xstart + move_window.x, ystart + move_window.y)
                 self.RefreshScrollBars(move_window.x, move_window.y)
 
-    def BlockCompatibility(self, startblock=None, endblock=None, direction = None):
+    def BlockCompatibility(self, startblock=None, endblock=None, direction=None):
         return True
 
     def GetPopupMenuItems(self):
@@ -2585,8 +2585,8 @@ class Viewer(EditorPanel, DebugViewer):
             values.setdefault("name", "")
             block = FBD_Block(self, values["type"], values["name"], id,
                     values["extension"], values["inputs"],
-                    executionControl = values["executionControl"],
-                    executionOrder = values["executionOrder"])
+                    executionControl=values["executionControl"],
+                    executionOrder=values["executionOrder"])
             self.Controler.AddEditedElementBlock(self.TagName, id, values["type"], values.get("name", None))
             connector = None
             if wire is not None:
@@ -2748,7 +2748,7 @@ class Viewer(EditorPanel, DebugViewer):
                 connector = transition.GetConnectors()["inputs"][0]
             self.AddNewElement(transition, bbox, wire, connector)
 
-    def AddNewDivergence(self, bbox, poss_div_types = None, wire=None):
+    def AddNewDivergence(self, bbox, poss_div_types=None, wire=None):
         dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler, self.TagName, poss_div_types)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize((bbox.width, bbox.height))
@@ -2812,7 +2812,7 @@ class Viewer(EditorPanel, DebugViewer):
             else:
                 block.SetName("")
             block.SetSize(*self.GetScaledSize(new_values["width"], new_values["height"]))
-            block.SetType(new_values["type"], new_values["extension"], executionControl = new_values["executionControl"])
+            block.SetType(new_values["type"], new_values["extension"], executionControl=new_values["executionControl"])
             block.SetExecutionOrder(new_values["executionOrder"])
             rect = rect.Union(block.GetRedrawRect())
             self.RefreshBlockModel(block)
@@ -3622,9 +3622,9 @@ class Viewer(EditorPanel, DebugViewer):
             self.Editor.Freeze()
             wx.CallAfter(self.Editor.Thaw)
         elif event.GetOrientation() == wx.HORIZONTAL:
-            self.RefreshVisibleElements(xp = event.GetPosition())
+            self.RefreshVisibleElements(xp=event.GetPosition())
         else:
-            self.RefreshVisibleElements(yp = event.GetPosition())
+            self.RefreshVisibleElements(yp=event.GetPosition())
 
         # Handle scroll in debug to fully redraw area and ensuring
         # instance path is fully draw without flickering
@@ -3647,16 +3647,16 @@ class Viewer(EditorPanel, DebugViewer):
             if event.ShiftDown():
                 x, y = self.GetViewStart()
                 xp = max(0, min(x - rotation * 3, self.Editor.GetVirtualSize()[0] / self.Editor.GetScrollPixelsPerUnit()[0]))
-                self.RefreshVisibleElements(xp = xp)
+                self.RefreshVisibleElements(xp=xp)
                 self.Scroll(xp, y)
             elif event.ControlDown():
                 dc = self.GetLogicalDC()
-                self.SetScale(self.CurrentScale + rotation, mouse_event = event)
+                self.SetScale(self.CurrentScale + rotation, mouse_event=event)
                 self.ParentWindow.RefreshDisplayMenu()
             else:
                 x, y = self.GetViewStart()
                 yp = max(0, min(y - rotation * 3, self.Editor.GetVirtualSize()[1] / self.Editor.GetScrollPixelsPerUnit()[1]))
-                self.RefreshVisibleElements(yp = yp)
+                self.RefreshVisibleElements(yp=yp)
                 self.Scroll(x, yp)
 
     def OnMoveWindow(self, event):
@@ -3667,7 +3667,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshVisibleElements()
         event.Skip()
 
-    def DoDrawing(self, dc, printing = False):
+    def DoDrawing(self, dc, printing=False):
         if printing:
             if getattr(dc, "printing", False):
                 font = wx.Font(self.GetFont().GetPointSize(), wx.MODERN, wx.NORMAL, wx.NORMAL)

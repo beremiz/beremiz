@@ -53,7 +53,7 @@ def GenerateName(infos):
 class SearchResultPanel(wx.Panel):
 
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -242,7 +242,7 @@ class SearchResultPanel(wx.Panel):
             else:
                 header_format = _("'{a1}' - {a2} matches in project")
 
-            self.HeaderLabel.SetLabel(header_format.format(a1 = self.Criteria["find_pattern"], a2 = matches_number))
+            self.HeaderLabel.SetLabel(header_format.format(a1=self.Criteria["find_pattern"], a2=matches_number))
             self.ResetButton.Enable(True)
 
             if matches_number > 0:

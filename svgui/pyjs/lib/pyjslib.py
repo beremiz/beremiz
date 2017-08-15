@@ -526,7 +526,7 @@ class List:
     def insert(self, index, value):
         JS("""    var a = this.l; this.l=a.slice(0, index).concat(value, a.slice(index));""")
 
-    def pop(self, index = -1):
+    def pop(self, index=-1):
         JS("""
         if (index<0) index = this.l.length + index;
         var a = this.l[index];
@@ -676,7 +676,7 @@ class Tuple:
     def insert(self, index, value):
         JS("""    var a = this.l; this.l=a.slice(0, index).concat(value, a.slice(index));""")
 
-    def pop(self, index = -1):
+    def pop(self, index=-1):
         JS("""
         if (index<0) index = this.l.length + index;
         var a = this.l[index];

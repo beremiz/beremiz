@@ -46,7 +46,7 @@ class MiniTextControler:
         file.write(text)
         file.close()
 
-    def GetEditedElementText(self, tagname, debug = False):
+    def GetEditedElementText(self, tagname, debug=False):
         if os.path.isfile(self.FilePath):
             file = open(self.FilePath, "r")
             text = file.read()
@@ -54,22 +54,22 @@ class MiniTextControler:
             return text
         return ""
 
-    def GetEditedElementInterfaceVars(self, tagname, tree=False, debug = False):
+    def GetEditedElementInterfaceVars(self, tagname, tree=False, debug=False):
         return []
 
-    def GetEditedElementType(self, tagname, debug = False):
+    def GetEditedElementType(self, tagname, debug=False):
         return "program"
 
-    def GetBlockType(self, type, inputs = None, debug = False):
+    def GetBlockType(self, type, inputs=None, debug=False):
         return self.BaseController.GetBlockType(type, inputs, debug)
 
-    def GetBlockTypes(self, tagname = "", debug = False):
+    def GetBlockTypes(self, tagname="", debug=False):
         return self.BaseController.GetBlockTypes(tagname, debug)
 
-    def GetDataTypes(self, tagname = "", basetypes = True, only_locatables = False, debug = False):
+    def GetDataTypes(self, tagname="", basetypes=True, only_locatables=False, debug=False):
         return self.BaseController.GetDataTypes(tagname, basetypes, only_locatables, debug)
 
-    def GetEnumeratedDataValues(self, debug = False):
+    def GetEnumeratedDataValues(self, debug=False):
         return self.BaseController.GetEnumeratedDataValues(debug)
 
     def StartBuffering(self):

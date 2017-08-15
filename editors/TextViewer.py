@@ -77,7 +77,7 @@ class TextViewer(EditorPanel):
     ID = ID_TEXTVIEWER
 
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -151,7 +151,7 @@ class TextViewer(EditorPanel):
             self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_TEXTVIEWERTEXTCTRL)
             self.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, id=ID_TEXTVIEWERTEXTCTRL)
 
-    def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
+    def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         if tagname != "" and controler is not None:
             self.VARIABLE_PANEL_TYPE = controler.GetPouType(tagname.split("::")[1])
 

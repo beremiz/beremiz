@@ -42,7 +42,7 @@ class FBD_Block(Graphic_Element):
     """
 
     # Create a new block
-    def __init__(self, parent, type, name, id = None, extension = 0, inputs = None, connectors = {}, executionControl = False, executionOrder = 0):
+    def __init__(self, parent, type, name, id=None, extension=0, inputs=None, connectors={}, executionControl=False, executionOrder=0):
         Graphic_Element.__init__(self, parent)
         self.Type = None
         self.Description = None
@@ -59,7 +59,7 @@ class FBD_Block(Graphic_Element):
         self.Highlights = {}
 
     # Make a clone of this FBD_Block
-    def Clone(self, parent, id = None, name = "", pos = None):
+    def Clone(self, parent, id=None, name="", pos=None):
         if self.Name != "" and name == "":
             name = self.Name
         block = FBD_Block(parent, self.Type, name, id, self.Extension)
@@ -84,7 +84,7 @@ class FBD_Block(Graphic_Element):
         self.Outputs = []
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if movex != 0 or movey != 0:
             for input in self.Inputs:
@@ -102,9 +102,9 @@ class FBD_Block(Graphic_Element):
     # Unconnect all inputs and outputs
     def Clean(self):
         for input in self.Inputs:
-            input.UnConnect(delete = True)
+            input.UnConnect(delete=True)
         for output in self.Outputs:
-            output.UnConnect(delete = True)
+            output.UnConnect(delete=True)
 
     # Refresh the size of text for name
     def RefreshNameSize(self):
@@ -173,14 +173,14 @@ class FBD_Block(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the positions of wires connected to inputs and outputs
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         for input in self.Inputs:
             input.MoveConnected(exclude)
         for output in self.Outputs:
             output.MoveConnected(exclude)
 
     # Returns the block connector that starts with the point given if it exists
-    def GetConnector(self, position, output_name = None, input_name = None):
+    def GetConnector(self, position, output_name=None, input_name=None):
         if input_name is not None:
             # Test each input connector
             for input in self.Inputs:
@@ -223,7 +223,7 @@ class FBD_Block(Graphic_Element):
         return {"inputs": self.Inputs, "outputs": self.Outputs}
 
     # Test if point given is on one of the block connectors
-    def TestConnector(self, pt, direction = None, exclude = True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test each input connector
         for input in self.Inputs:
             if input.TestPoint(pt, direction, exclude):
@@ -235,7 +235,7 @@ class FBD_Block(Graphic_Element):
         return None
 
     # Changes the block type
-    def SetType(self, type, extension, inputs = None, connectors = {}, executionControl = False):
+    def SetType(self, type, extension, inputs=None, connectors={}, executionControl=False):
         if type != self.Type or self.Extension != extension or executionControl != self.ExecutionControl:
             if type != self.Type:
                 self.Type = type
@@ -269,7 +269,7 @@ class FBD_Block(Graphic_Element):
             # Extract the inputs properties and create or modify the corresponding connector
             input_connectors = []
             for input_name, input_type, input_modifier in inputs:
-                connector = Connector(self, input_name, input_type, wx.Point(0, 0), WEST, onlyone = True)
+                connector = Connector(self, input_name, input_type, wx.Point(0, 0), WEST, onlyone=True)
                 if input_modifier == "negated":
                     connector.SetNegated(True)
                 elif input_modifier != "none":
@@ -283,7 +283,7 @@ class FBD_Block(Graphic_Element):
                         break
                 input_connectors.append(connector)
             for input in self.Inputs:
-                input.UnConnect(delete = True)
+                input.UnConnect(delete=True)
             self.Inputs = input_connectors
 
             # Extract the outputs properties and create or modify the corresponding connector
@@ -303,7 +303,7 @@ class FBD_Block(Graphic_Element):
                         break
                 output_connectors.append(connector)
             for output in self.Outputs:
-                output.UnConnect(delete = True)
+                output.UnConnect(delete=True)
             self.Outputs = output_connectors
 
             self.RefreshMinSize()
@@ -506,7 +506,7 @@ class FBD_Variable(Graphic_Element):
     """
 
     # Create a new variable
-    def __init__(self, parent, type, name, value_type, id = None, executionOrder = 0):
+    def __init__(self, parent, type, name, value_type, id=None, executionOrder=0):
         Graphic_Element.__init__(self, parent)
         self.Type = None
         self.ValueType = None
@@ -519,7 +519,7 @@ class FBD_Variable(Graphic_Element):
         self.Highlights = []
 
     # Make a clone of this FBD_Variable
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         variable = FBD_Variable(parent, self.Type, self.Name, self.ValueType, id)
         variable.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -549,7 +549,7 @@ class FBD_Variable(Graphic_Element):
             self.Output = None
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if movex != 0 or movey != 0:
             if self.Input and self.Input.IsConnected():
@@ -561,9 +561,9 @@ class FBD_Variable(Graphic_Element):
     # Unconnect connector
     def Clean(self):
         if self.Input:
-            self.Input.UnConnect(delete = True)
+            self.Input.UnConnect(delete=True)
         if self.Output:
-            self.Output.UnConnect(delete = True)
+            self.Output.UnConnect(delete=True)
 
     # Delete this variable by calling the appropriate method
     def Delete(self):
@@ -610,14 +610,14 @@ class FBD_Variable(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to connector
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         if self.Input:
             self.Input.MoveConnected(exclude)
         if self.Output:
             self.Output.MoveConnected(exclude)
 
     # Test if point given is on the variable connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         if self.Input and self.Input.TestPoint(pt, direction, exclude):
             return self.Input
         if self.Output and self.Output.TestPoint(pt, direction, exclude):
@@ -625,7 +625,7 @@ class FBD_Variable(Graphic_Element):
         return None
 
     # Returns the block connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test input and output connector if they exists
@@ -665,15 +665,15 @@ class FBD_Variable(Graphic_Element):
             # Create an input or output connector according to variable type
             if self.Type != INPUT:
                 if self.Input is None:
-                    self.Input = Connector(self, "", value_type, wx.Point(0, 0), WEST, onlyone = True)
+                    self.Input = Connector(self, "", value_type, wx.Point(0, 0), WEST, onlyone=True)
             elif self.Input:
-                self.Input.UnConnect(delete = True)
+                self.Input.UnConnect(delete=True)
                 self.Input = None
             if self.Type != OUTPUT:
                 if self.Output is None:
                     self.Output = Connector(self, "", value_type, wx.Point(0, 0), EAST)
             elif self.Output:
-                self.Output.UnConnect(delete = True)
+                self.Output.UnConnect(delete=True)
                 self.Output = None
             self.RefreshConnectors()
             self.RefreshBoundingBox()
@@ -802,7 +802,7 @@ class FBD_Connector(Graphic_Element):
     """
 
     # Create a new connection
-    def __init__(self, parent, type, name, id = None):
+    def __init__(self, parent, type, name, id=None):
         Graphic_Element.__init__(self, parent)
         self.Type = type
         self.Id = id
@@ -812,7 +812,7 @@ class FBD_Connector(Graphic_Element):
         self.Highlights = []
         # Create an input or output connector according to connection type
         if self.Type == CONNECTOR:
-            self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), WEST, onlyone = True)
+            self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), WEST, onlyone=True)
         else:
             self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), EAST)
         self.RefreshConnectors()
@@ -824,7 +824,7 @@ class FBD_Connector(Graphic_Element):
             self.Connector = None
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if movex != 0 or movey != 0:
             if self.Connector and self.Connector.IsConnected():
@@ -832,7 +832,7 @@ class FBD_Connector(Graphic_Element):
         return rect
 
     # Make a clone of this FBD_Connector
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         connection = FBD_Connector(parent, self.Type, self.Name, id)
         connection.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -848,7 +848,7 @@ class FBD_Connector(Graphic_Element):
     # Unconnect connector
     def Clean(self):
         if self.Connector:
-            self.Connector.UnConnect(delete = True)
+            self.Connector.UnConnect(delete=True)
 
     # Delete this connection by calling the appropriate method
     def Delete(self):
@@ -881,18 +881,18 @@ class FBD_Connector(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to connector
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         if self.Connector:
             self.Connector.MoveConnected(exclude)
 
     # Test if point given is on the connection connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         if self.Connector and self.Connector.TestPoint(pt, direction, exclude):
             return self.Connector
         return None
 
     # Returns the connection connector
-    def GetConnector(self, position = None, name = None):
+    def GetConnector(self, position=None, name=None):
         return self.Connector
 
         # Returns all the block connectors
@@ -919,7 +919,7 @@ class FBD_Connector(Graphic_Element):
             self.Clean()
             # Create an input or output connector according to connection type
             if self.Type == CONNECTOR:
-                self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), WEST, onlyone = True)
+                self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), WEST, onlyone=True)
             else:
                 self.Connector = Connector(self, "", "ANY", wx.Point(0, 0), EAST)
             self.RefreshConnectors()

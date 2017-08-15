@@ -161,7 +161,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         # Set graphic element displayed, creating a power rail element
         self.Element = LD_PowerRail(self.Preview,
                 self.GetPowerRailType(),
-                connectors = self.PinNumber.GetValue())
+                connectors=self.PinNumber.GetValue())
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

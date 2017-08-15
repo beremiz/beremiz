@@ -54,7 +54,7 @@ class LD_PowerRail(Graphic_Element):
         self.Connectors = []
 
     # Make a clone of this LD_PowerRail
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         powerrail = LD_PowerRail(parent, self.Type, id)
         powerrail.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -71,7 +71,7 @@ class LD_PowerRail(Graphic_Element):
                         [connector for connector in element.Connectors]))
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         for connector in self.Connectors:
             rect = rect.Union(connector.GetRedrawRect(movex, movey))
@@ -108,7 +108,7 @@ class LD_PowerRail(Graphic_Element):
     # Unconnect all connectors
     def Clean(self):
         for connector in self.Connectors:
-            connector.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+            connector.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Refresh the power rail bounding box
     def RefreshBoundingBox(self):
@@ -195,12 +195,12 @@ class LD_PowerRail(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to power rail
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         for connector in self.Connectors:
             connector.MoveConnected(exclude)
 
     # Returns the power rail connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test each connector if it exists
@@ -218,7 +218,7 @@ class LD_PowerRail(Graphic_Element):
             return {"inputs": connectors, "outputs": []}
 
     # Test if point given is on one of the power rail connectors
-    def TestConnector(self, pt, direction = None, exclude = True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         for connector in self.Connectors:
             if connector.TestPoint(pt, direction, exclude):
                 return connector
@@ -350,7 +350,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
     """
 
     # Create a new contact
-    def __init__(self, parent, type, name, id = None):
+    def __init__(self, parent, type, name, id=None):
         Graphic_Element.__init__(self, parent)
         DebugDataConsumer.__init__(self)
         self.Type = type
@@ -416,7 +416,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
             self.PreviousSpreading = spreading
 
     # Make a clone of this LD_Contact
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         contact = LD_Contact(parent, self.Type, self.Name, id)
         contact.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -431,7 +431,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         return {self.Input: element.Input, self.Output: element.Output}
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
         rect = rect.Union(self.Output.GetRedrawRect(movex, movey))
@@ -445,7 +445,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
     def ProcessDragging(self, movex, movey, event, scaling):
         if self.Parent.GetDrawingMode() != FREEDRAWING_MODE:
             movex = movey = 0
-        return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, height_fac = 2)
+        return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, height_fac=2)
 
     # Forbids to change the contact size
     def SetSize(self, width, height):
@@ -459,8 +459,8 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
 
     # Unconnect input and output
     def Clean(self):
-        self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
-        self.Output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Output.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Refresh the size of text for name
     def RefreshNameSize(self):
@@ -505,12 +505,12 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         return LD_ELEMENT_SIZE
 
     # Refresh the position of wire connected to contact
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         self.Input.MoveConnected(exclude)
         self.Output.MoveConnected(exclude)
 
     # Returns the contact connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test input and output connector
@@ -525,7 +525,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         return {"inputs": [self.Input], "outputs": [self.Output]}
 
     # Test if point given is on contact input or output connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector
         if self.Input.TestPoint(pt, direction, exclude):
             return self.Input
@@ -696,7 +696,7 @@ class LD_Coil(Graphic_Element):
     """
 
     # Create a new coil
-    def __init__(self, parent, type, name, id = None):
+    def __init__(self, parent, type, name, id=None):
         Graphic_Element.__init__(self, parent)
         self.Type = type
         self.Name = name
@@ -731,7 +731,7 @@ class LD_Coil(Graphic_Element):
                 self.Parent.ElementNeedRefresh(self)
 
     # Make a clone of this LD_Coil
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         coil = LD_Coil(parent, self.Type, self.Name, id)
         coil.SetSize(self.Size[0], self.Size[1])
         if pos is not None:
@@ -746,7 +746,7 @@ class LD_Coil(Graphic_Element):
         return {self.Input: element.Input, self.Output: element.Output}
 
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         rect = rect.Union(self.Input.GetRedrawRect(movex, movey))
         rect = rect.Union(self.Output.GetRedrawRect(movex, movey))
@@ -760,7 +760,7 @@ class LD_Coil(Graphic_Element):
     def ProcessDragging(self, movex, movey, event, scaling):
         if self.Parent.GetDrawingMode() != FREEDRAWING_MODE:
             movex = movey = 0
-        return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, height_fac = 2)
+        return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling, height_fac=2)
 
     # Forbids to change the Coil size
     def SetSize(self, width, height):
@@ -774,8 +774,8 @@ class LD_Coil(Graphic_Element):
 
     # Unconnect input and output
     def Clean(self):
-        self.Input.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
-        self.Output.UnConnect(delete = self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Input.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+        self.Output.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
 
     # Refresh the size of text for name
     def RefreshNameSize(self):
@@ -824,12 +824,12 @@ class LD_Coil(Graphic_Element):
         return LD_ELEMENT_SIZE
 
     # Refresh the position of wire connected to coil
-    def RefreshConnected(self, exclude = []):
+    def RefreshConnected(self, exclude=[]):
         self.Input.MoveConnected(exclude)
         self.Output.MoveConnected(exclude)
 
     # Returns the coil connector that starts with the point given if it exists
-    def GetConnector(self, position, name = None):
+    def GetConnector(self, position, name=None):
         # if a name is given
         if name is not None:
             # Test input and output connector
@@ -844,7 +844,7 @@ class LD_Coil(Graphic_Element):
         return {"inputs": [self.Input], "outputs": [self.Output]}
 
     # Test if point given is on coil input or output connector
-    def TestConnector(self, pt, direction = None, exclude=True):
+    def TestConnector(self, pt, direction=None, exclude=True):
         # Test input connector
         if self.Input.TestPoint(pt, direction, exclude):
             return self.Input

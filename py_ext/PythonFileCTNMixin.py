@@ -243,7 +243,7 @@ PYTHON_POLL* __%(name)s_notifier;
                              varpubfmt) % varinfo
                             for varinfo in varinfos])
         varinit = "\n".join([varinitonchangefmt % dict(
-                                onchangelen = len(varinfo["onchangecode"]), **varinfo)
+                                onchangelen=len(varinfo["onchangecode"]), **varinfo)
                             for varinfo in varinfos if varinfo["onchange"]])
 
         # TODO : use config name obtained from model instead of default

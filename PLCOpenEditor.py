@@ -98,7 +98,7 @@ class PLCOpenEditor(IDEFrame):
 
     # Compatibility function for wx versions < 2.6
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -180,7 +180,7 @@ class PLCOpenEditor(IDEFrame):
     #  @param controler The controler been used by PLCOpenEditor (default: None).
     #  @param fileOpen The filepath to open if no controler defined (default: None).
     #  @param debug The filepath to open if no controler defined (default: False).
-    def __init__(self, parent, fileOpen = None):
+    def __init__(self, parent, fileOpen=None):
         self.icon = wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"), wx.BITMAP_TYPE_ICO)
         IDEFrame.__init__(self, parent)
 
@@ -208,7 +208,7 @@ class PLCOpenEditor(IDEFrame):
 
         if result is not None:
             (num, line) = result
-            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1=num, a2=line))
 
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
@@ -321,7 +321,7 @@ class PLCOpenEditor(IDEFrame):
 
         if result is not None:
             (num, line) = result
-            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1=num, a2=line))
 
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():

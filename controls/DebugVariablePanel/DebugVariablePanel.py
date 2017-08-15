@@ -749,7 +749,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def GetVariableNameMask(self):
         return self.VariableNameMask
 
-    def InsertValue(self, iec_path, idx = None, force=False, graph=False):
+    def InsertValue(self, iec_path, idx=None, force=False, graph=False):
         for panel in self.GraphicPanels:
             if panel.GetItem(iec_path) is not None:
                 if graph and isinstance(panel, DebugVariableTextViewer):
@@ -777,7 +777,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Thaw()
             self.ForceRefresh()
 
-    def MoveValue(self, iec_path, idx = None, graph=False):
+    def MoveValue(self, iec_path, idx=None, graph=False):
         if idx is None:
             idx = len(self.GraphicPanels)
         source_panel = None

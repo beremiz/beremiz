@@ -84,7 +84,7 @@ def LE_to_BE(value, size):
     return "".join([chr(int(car, 16)) for car in list_car])
 
 
-def GetNodePDOIndexes(node, type, parameters = False):
+def GetNodePDOIndexes(node, type, parameters=False):
     """
     Find the PDO indexes of a node
     @param node: node
@@ -367,7 +367,7 @@ class ConciseDCFGenerator:
 
                 # Check Id is in slave node list
                 if nodeid not in self.NodeList.SlaveNodes.keys():
-                    raise PDOmappingException, _("Non existing node ID : {a1} (variable {a2})").format(a1 = nodeid, a2 = name)
+                    raise PDOmappingException, _("Non existing node ID : {a1} (variable {a2})").format(a1=nodeid, a2=name)
 
                 # Get the model for this node (made from EDS)
                 node = self.NodeList.SlaveNodes[nodeid]["Node"]
@@ -375,7 +375,7 @@ class ConciseDCFGenerator:
                 # Extract and check index and subindex
                 if not node.IsEntry(index, subindex):
                     msg = _("No such index/subindex ({a1},{a2}) in ID : {a3} (variable {a4})").\
-                          format(a1 = "%x" % index, a2 ="%x" % subindex, a3 = nodeid, a4 = name)
+                          format(a1="%x" % index, a2="%x" % subindex, a3=nodeid, a4=name)
                     raise PDOmappingException, msg
 
                 # Get the entry info
@@ -387,14 +387,14 @@ class ConciseDCFGenerator:
                         numbit = loc[3]
                     elif sizelocation != "X" and len(loc) > 3:
                         msg = _("Cannot set bit offset for non bool '{a1}' variable (ID:{a2},Idx:{a3},sIdx:{a4}))").\
-                              format(a1 = name, a2 = nodeid, a3 = "%x" % index, a4 = "%x" % subindex)
+                              format(a1=name, a2=nodeid, a3="%x" % index, a4="%x" % subindex)
                         raise PDOmappingException, msg
                     else:
                         numbit = None
 
                     if location["IEC_TYPE"] != "BOOL" and subentry_infos["type"] != COlocationtype:
                         raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3}  for location \"{a4}\"").\
-                            format(a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"], a4 = name)
+                            format(a1=location["IEC_TYPE"], a2=COlocationtype, a3=subentry_infos["type"], a4=name)
 
                     typeinfos = node.GetEntryInfos(COlocationtype)
                     self.IECLocations[name] = {
@@ -409,7 +409,7 @@ class ConciseDCFGenerator:
                     }
                 else:
                     raise PDOmappingException, _("Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))").\
-                        format(a1 = name, a2 = nodeid, a3 = "%x" % index, a4 = "%x" % subindex)
+                        format(a1=name, a2=nodeid, a3="%x" % index, a4="%x" % subindex)
 
         #-------------------------------------------------------------------------------
         #                         Search for locations already mapped
@@ -602,8 +602,8 @@ class ConciseDCFGenerator:
                             self.Manager.AddSubentriesToCurrent(mapvariableidx, 1, self.MasterNode)
                             nbsubentries += 1
                         # Add informations to the new subentry created
-                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values = {"name": subindexname})
-                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values = {"type": typeidx})
+                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values={"name": subindexname})
+                        self.MasterNode.SetMappingEntry(mapvariableidx, nbsubentries, values={"type": typeidx})
 
                         # Set value of the PDO mapping
                         typeinfos = self.Manager.GetEntryInfos(typeidx)
@@ -661,13 +661,13 @@ def LocalODPointers(locations, current_location, slave):
             # Extract and check index and subindex
             if not slave.IsEntry(index, subindex):
                 raise PDOmappingException, _("No such index/subindex ({a1},{a2}) (variable {a3})").\
-                    format(a1 = "%x" % index, a2 = "%x" % subindex, a3 = name)
+                    format(a1="%x" % index, a2="%x" % subindex, a3=name)
 
             # Get the entry info
             subentry_infos = slave.GetSubentryInfos(index, subindex)
             if subentry_infos["type"] != COlocationtype:
                 raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\"").\
-                    format( a1 = location["IEC_TYPE"], a2 = COlocationtype, a3 = subentry_infos["type"], a4 = name)
+                    format( a1=location["IEC_TYPE"], a2=COlocationtype, a3=subentry_infos["type"], a4=name)
 
             IECLocations[name] = COlocationtype
             pointers[(index, subindex)] = name

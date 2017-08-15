@@ -108,19 +108,19 @@ def RegisterWampClient(wampconf):
 
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
-        realm = WSClientConf["realm"],
-        extra = {"ID": WSClientConf["ID"]})
+        realm=WSClientConf["realm"],
+        extra={"ID": WSClientConf["ID"]})
     session_factory = wamp.ApplicationSessionFactory(
-        config = component_config)
+        config=component_config)
     session_factory.session = WampSession
 
     # create a WAMP-over-WebSocket transport client factory
     transport_factory = ReconnectingWampWebSocketClientFactory(
         session_factory,
-        url = WSClientConf["url"],
-        serializers = [MsgPackSerializer()],
-        debug = False,
-        debug_wamp = False)
+        url=WSClientConf["url"],
+        serializers=[MsgPackSerializer()],
+        debug=False,
+        debug_wamp=False)
 
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)

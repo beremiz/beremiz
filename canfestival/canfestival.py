@@ -482,8 +482,8 @@ class RootClass:
 
     CTNChildrenTypes = [("CanOpenNode",  _NodeListCTN, "CanOpen Master"),
                         ("CanOpenSlave", _SlaveCTN,    "CanOpen Slave" )]
-    def GetParamsAttributes(self, path = None):
-        infos = ConfigTreeNode.GetParamsAttributes(self, path = path)
+    def GetParamsAttributes(self, path=None):
+        infos = ConfigTreeNode.GetParamsAttributes(self, path=path)
         for element in infos:
             if element["name"] == "CanFestivalInstance":
                 for child in element["children"]:
