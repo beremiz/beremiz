@@ -35,9 +35,12 @@ from BlockPreviewDialog import BlockPreviewDialog
 
 # Dictionaries containing correspondence between variable block class and string
 # to be shown in Class combo box in both sense
-VARIABLE_CLASSES_DICT = {INPUT : _("Input"),
-                         INOUT : _("InOut"),
-                         OUTPUT : _("Output")}
+VARIABLE_CLASSES_DICT = {
+    INPUT:  _("Input"),
+    INOUT:  _("InOut"),
+    OUTPUT: _("Output")
+}
+
 VARIABLE_CLASSES_DICT_REVERSE = dict(
     [(value, key) for key, value in VARIABLE_CLASSES_DICT.iteritems()])
 

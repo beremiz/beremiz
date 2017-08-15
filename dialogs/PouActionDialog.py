@@ -29,7 +29,7 @@ from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 
 
 def GetActionLanguages():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("IL"), _("ST"), _("LD"), _("FBD")]
 ACTION_LANGUAGES_DICT = dict([(_(language), language) for language in GetActionLanguages()])
 

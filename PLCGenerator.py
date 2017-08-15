@@ -29,14 +29,14 @@ import re
 
 # Dictionary associating PLCOpen variable categories to the corresponding
 # IEC 61131-3 variable categories
-varTypeNames = {"localVars" : "VAR", "tempVars" : "VAR_TEMP", "inputVars" : "VAR_INPUT",
-                "outputVars" : "VAR_OUTPUT", "inOutVars" : "VAR_IN_OUT", "externalVars" : "VAR_EXTERNAL",
-                "globalVars" : "VAR_GLOBAL", "accessVars" : "VAR_ACCESS"}
+varTypeNames = {"localVars": "VAR", "tempVars": "VAR_TEMP", "inputVars": "VAR_INPUT",
+                "outputVars": "VAR_OUTPUT", "inOutVars": "VAR_IN_OUT", "externalVars": "VAR_EXTERNAL",
+                "globalVars": "VAR_GLOBAL", "accessVars": "VAR_ACCESS"}
 
 
 # Dictionary associating PLCOpen POU categories to the corresponding
 # IEC 61131-3 POU categories
-pouTypeNames = {"function" : "FUNCTION", "functionBlock" : "FUNCTION_BLOCK", "program" : "PROGRAM"}
+pouTypeNames = {"function": "FUNCTION", "functionBlock": "FUNCTION_BLOCK", "program": "PROGRAM"}
 
 
 errorVarTypes = {
@@ -80,9 +80,9 @@ def SortInstances(a, b):
 
 def JoinList(separator, mylist):
     """ Helper for emulate join on element list """
-    if len(mylist) > 0 :
+    if len(mylist) > 0:
         return reduce(lambda x, y: x + separator + y, mylist)
-    else :
+    else:
         return mylist
 
 #-------------------------------------------------------------------------------
@@ -187,7 +187,7 @@ class ProgramGenerator:
                               for i, dimension in enumerate(basetype_content.getdimension())]
                 datatype_def += [("ARRAY [", ())]
                 datatype_def += JoinList([(",", ())], dimensions)
-                datatype_def += [("] OF " , ()),
+                datatype_def += [("] OF ", ()),
                                  (basetype_name, (tagname, "base"))]
             # Data type is a structure
             elif basetype_content_type == "struct":
@@ -401,7 +401,7 @@ class ProgramGenerator:
                           format(a1 = task.getname(), a2 = config_name, a3 = resource.getname())
                     raise PLCGenException, msg
 
-                if single[0]=='[' and single[-1]==']' :
+                if single[0]=='[' and single[-1]==']':
                     SNGLKW = "MULTI"
                 else:
                     SNGLKW = "SINGLE"
@@ -916,7 +916,7 @@ class PouProgramGenerator:
                     self.GenerateSFCJump(instance, pou)
             if len(self.InitialSteps) > 0 and len(self.SFCComputedBlocks) > 0:
                 action_name = "COMPUTE_FUNCTION_BLOCKS"
-                action_infos = {"qualifier" : "S", "content" : action_name}
+                action_infos = {"qualifier": "S", "content": action_name}
                 self.SFCNetworks["Steps"][self.InitialSteps[0]]["actions"].append(action_infos)
                 self.SFCNetworks["Actions"][action_name] = (self.SFCComputedBlocks, ())
                 self.Program = []
@@ -924,7 +924,7 @@ class PouProgramGenerator:
             for initialstep in self.InitialSteps:
                 self.ComputeSFCStep(initialstep)
         else:
-            otherInstances = {"outVariables&coils" : [], "blocks" : [], "connectors" : []}
+            otherInstances = {"outVariables&coils": [], "blocks": [], "connectors": []}
             orderedInstances = []
             for instance in body.getcontentInstances():
                 if isinstance(instance, (OutVariableClass, InOutVariableClass, BlockClass)):
@@ -1358,10 +1358,10 @@ class PouProgramGenerator:
         if step_name not in self.SFCNetworks["Steps"].keys():
             if step.getinitialStep():
                 self.InitialSteps.append(step_name)
-            step_infos = {"id" : step.getlocalId(),
-                          "initial" : step.getinitialStep(),
-                          "transitions" : [],
-                          "actions" : []}
+            step_infos = {"id":          step.getlocalId(),
+                          "initial":     step.getinitialStep(),
+                          "transitions": [],
+                          "actions":     []}
             self.SFCNetworks["Steps"][step_name] = step_infos
             if step.connectionPointIn is not None:
                 instances = []
@@ -1434,10 +1434,10 @@ class PouProgramGenerator:
             if step_name in self.SFCNetworks["Steps"].keys():
                 actions = actionBlock.getactions()
                 for i, action in enumerate(actions):
-                    action_infos = {"id" : actionBlock.getlocalId(),
-                                    "qualifier" : action["qualifier"],
-                                    "content" : action["value"],
-                                    "num" : i}
+                    action_infos = {"id":        actionBlock.getlocalId(),
+                                    "qualifier": action["qualifier"],
+                                    "content":   action["value"],
+                                    "num":       i}
                     if "duration" in action:
                         action_infos["duration"] = action["duration"]
                     if "indicator" in action:
@@ -1484,11 +1484,11 @@ class PouProgramGenerator:
                             steps.extend(self.ExtractConvergenceInputs(step, pou))
                 elif isinstance(instance, SimultaneousConvergenceClass):
                     steps.extend(self.ExtractConvergenceInputs(instance, pou))
-            transition_infos = {"id" : transition.getlocalId(),
+            transition_infos = {"id":       transition.getlocalId(),
                                 "priority": transition.getpriority(),
-                                "from": [],
-                                "to" : [],
-                                "content": []}
+                                "from":     [],
+                                "to":       [],
+                                "content":  []}
             self.SFCNetworks["Transitions"][transition] = transition_infos
             transitionValues = transition.getconditionContent()
             if transitionValues["type"] == "inline":
@@ -1631,7 +1631,7 @@ class PouProgramGenerator:
         program += [("\n", ())]
         if len(self.Interface) == 0:
             raise PLCGenException, _("No variable defined in \"%s\" POU") % self.Name
-        if len(self.Program) == 0 :
+        if len(self.Program) == 0:
             raise PLCGenException, _("No body defined in \"%s\" POU") % self.Name
         var_number = 0
         for list_type, option, located, variables in self.Interface:

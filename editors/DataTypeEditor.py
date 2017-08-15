@@ -48,12 +48,12 @@ def AppendMenu(parent, help, id, kind, text):
 
 
 def GetElementsTableColnames():
-    _ = lambda x : x
+    _ = lambda x: x
     return ["#", _("Name"), _("Type"), _("Initial Value")]
 
 
 def GetDatatypeTypes():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("Directly"), _("Subrange"), _("Enumerated"), _("Array"), _("Structure")]
 DATATYPE_TYPES_DICT = dict([(_(datatype), datatype) for datatype in GetDatatypeTypes()])
 
@@ -81,7 +81,7 @@ class ElementsTable(CustomTable):
 
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
-                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "..".join(x), value[2])), value[1])
+                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x: "..".join(x), value[2])), value[1])
             return value
 
     def SetValue(self, row, col, value):
@@ -379,7 +379,7 @@ class DataTypeEditor(EditorPanel):
     def __init__(self, parent, tagname, window, controler):
         EditorPanel.__init__(self, parent, tagname, window, controler)
 
-        self.StructureElementDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial Value" : ""}
+        self.StructureElementDefaultValue = {"Name": "", "Type": DefaultType, "Initial Value": ""}
         self.StructureElementsTable = ElementsTable(self, [], GetElementsTableColnames())
         self.StructureColSizes = [40, 150, 100, 250]
         self.StructureColAlignements = [wx.ALIGN_CENTER, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
@@ -501,7 +501,7 @@ class DataTypeEditor(EditorPanel):
                 self.EnumeratedInitialValue.SetStringSelection(type_infos["initial"])
             elif type_infos["type"] == "Array":
                 self.ArrayBaseType.SetStringSelection(type_infos["base_type"])
-                self.ArrayDimensions.SetStrings(map(lambda x : "..".join(x), type_infos["dimensions"]))
+                self.ArrayDimensions.SetStrings(map(lambda x: "..".join(x), type_infos["dimensions"]))
                 self.ArrayInitialValue.SetValue(type_infos["initial"])
             elif type_infos["type"] == "Structure":
                 self.StructureElementsTable.SetData(type_infos["elements"])
@@ -723,7 +723,7 @@ class DataTypeEditor(EditorPanel):
 
     def RefreshTypeInfos(self):
         selected = DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]
-        infos = {"type" : selected}
+        infos = {"type": selected}
         if selected == "Directly":
             infos["base_type"] = self.DirectlyBaseType.GetStringSelection()
             infos["initial"] = self.DirectlyInitialValue.GetValue()
@@ -795,7 +795,7 @@ class DataTypeEditor(EditorPanel):
         self.StructureElementsTable.ClearHighlights(highlight_type)
         self.RefreshView()
 
-    def AddHighlight(self, infos, start, end ,highlight_type):
+    def AddHighlight(self, infos, start, end, highlight_type):
         self.Highlights.append((infos, start, end, highlight_type))
         self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
 

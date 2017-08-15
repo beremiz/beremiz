@@ -219,7 +219,7 @@ class SearchResultPanel(wx.Panel):
                             child_name = GenerateName(infos[3:])
                     child_infos = {"name": child_name,
                                    "type": child_type,
-                                   "data": (infos, start, end ,None),
+                                   "data": (infos, start, end, None),
                                    "text": text,
                                    "matches": 1,
                                    "children": [],

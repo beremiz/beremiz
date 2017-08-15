@@ -141,7 +141,7 @@ def processCustomFiles(filein, fileout, regexp, prefix = ''):
 # m a k e P O ( )         -- Build the Portable Object file for the application --
 # ^^^^^^^^^^^^^^^
 #
-def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
+def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     """Build the Portable Object Template file for the application.
 
     makePO builds the .pot file for the application stored inside
@@ -204,7 +204,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
         if langCode == 'en':
             pass
         else:
-            langPOfileName = "%s_%s.po" % (applicationName , langCode)
+            langPOfileName = "%s_%s.po" % (applicationName, langCode)
             if os.path.exists(langPOfileName):
                 cmd = 'msgmerge -s --no-wrap "%s" %s > "%s.new"' % (langPOfileName, fileout, langPOfileName)
                 if verbose: print cmd
@@ -212,7 +212,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0) :
     os.chdir(currentDir)
 
 
-def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targetDir=None, verbose=0) :
+def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targetDir=None, verbose=0):
     """Concatenate one or several PO files with the application domain files.
     """
 
@@ -229,7 +229,7 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
         if langCode == 'en':
             pass
         else:
-            langPOfileName = "%s_%s.po" % (applicationName , langCode)
+            langPOfileName = "%s_%s.po" % (applicationName, langCode)
             if os.path.exists(langPOfileName):
                 fileList = ''
                 for fileName in listOf_extraPo:
@@ -247,7 +247,7 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
     os.chdir(currentDir)
 
 
-def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None, verbose=0, forceEnglish=0) :
+def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None, verbose=0, forceEnglish=0):
     """Compile the Portable Object files into the Machine Object stored in the right location.
 
     makeMO converts all translated language-specific PO files located inside
@@ -282,7 +282,7 @@ def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None,
         if (langCode == 'en') and (forceEnglish==0):
             pass
         else:
-            langPOfileName = "%s_%s.po" % (applicationName , langCode)
+            langPOfileName = "%s_%s.po" % (applicationName, langCode)
             if os.path.exists(langPOfileName):
                 mo_targetDir = "%s/%s/LC_MESSAGES" % (targetDir,langCode)
                 if not os.path.exists(mo_targetDir):
@@ -293,7 +293,7 @@ def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None,
     os.chdir(currentDir)
 
 
-def printUsage(errorMsg=None) :
+def printUsage(errorMsg=None):
     """Displays how to use this script from the command line."""
     print """
     ##################################################################################
@@ -330,7 +330,7 @@ def printUsage(errorMsg=None) :
         print "\n   ERROR: %s" % errorMsg
 
 
-def fileBaseOf(filename,withPath=0) :
+def fileBaseOf(filename,withPath=0):
    """fileBaseOf(filename,withPath) ---> string
 
    Return base name of filename.  The returned string never includes the extension.
@@ -369,7 +369,7 @@ def fileBaseOf(filename,withPath=0) :
       return os.path.basename(filename)
 
 
-def mkdir(directory) :
+def mkdir(directory):
    """Create a directory (and possibly the entire tree).
 
    The os.mkdir() will fail to create a directory if one of the
@@ -408,7 +408,7 @@ def mkdir(directory) :
       theDir += '/'
 
 
-def unixpath(thePath) :
+def unixpath(thePath):
    r"""Return a path name that contains Unix separator.
 
    [Example]

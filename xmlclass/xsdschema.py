@@ -668,7 +668,7 @@ def ReduceComplexType(factory, attributes, elements):
 # Attribute elements
 
 def ReduceAnyAttribute(factory, attributes, elements):
-    return {"type" : "anyAttribute"}
+    return {"type": "anyAttribute"}
 
 
 def ReduceAttribute(factory, attributes, elements):
@@ -1313,7 +1313,7 @@ XSD_NAMESPACE = {
         "reduce": ReduceComplexType
     },
 
-    "documentation": {"struct" : """
+    "documentation": {"struct": """
         <documentation
           source = anyURI
           xml:lang = language
@@ -1504,7 +1504,7 @@ XSD_NAMESPACE = {
         "reduce": ReduceKeyRef
     },
 
-    "length": {"struct" : """
+    "length": {"struct": """
         <length
           fixed = boolean : false
           id = ID
@@ -1730,7 +1730,7 @@ XSD_NAMESPACE = {
         "reduce": ReduceSequence
     },
 
-    "simpleContent": {"struct" : """
+    "simpleContent": {"struct": """
         <simpleContent
           id = ID
           {any attributes with non-schema namespace . . .}>
@@ -1744,7 +1744,7 @@ XSD_NAMESPACE = {
         "reduce": ReduceSimpleContent
     },
 
-    "simpleType": {"struct" : """
+    "simpleType": {"struct": """
         <simpleType
           final = (#all | List of (list | union | restriction))
           id = ID
@@ -1760,7 +1760,7 @@ XSD_NAMESPACE = {
         "reduce": ReduceSimpleType
     },
 
-    "totalDigits": {"struct" : """
+    "totalDigits": {"struct": """
         <totalDigits
           fixed = boolean : false
           id = ID
@@ -1806,7 +1806,7 @@ XSD_NAMESPACE = {
         "reduce": ReduceUnique
     },
 
-    "whiteSpace": {"struct" : """
+    "whiteSpace": {"struct": """
         <whiteSpace
           fixed = boolean : false
           id = ID
@@ -2112,7 +2112,7 @@ XSD_NAMESPACE = {
         "basename": "string",
         "extract": GetAttributeValue,
         "facets": STRING_FACETS,
-        "generate": GenerateSimpleTypeXMLText(lambda x : x),
+        "generate": GenerateSimpleTypeXMLText(lambda x: x),
         "initial": lambda: "",
         "check": lambda x: isinstance(x, (StringType, UnicodeType))
     },
@@ -2122,7 +2122,7 @@ XSD_NAMESPACE = {
         "basename": "normalizedString",
         "extract": GetNormalizedString,
         "facets": STRING_FACETS,
-        "generate": GenerateSimpleTypeXMLText(lambda x : x),
+        "generate": GenerateSimpleTypeXMLText(lambda x: x),
         "initial": lambda: "",
         "check": lambda x: isinstance(x, (StringType, UnicodeType))
     },
@@ -2132,7 +2132,7 @@ XSD_NAMESPACE = {
         "basename": "token",
         "extract": GetToken,
         "facets": STRING_FACETS,
-        "generate": GenerateSimpleTypeXMLText(lambda x : x),
+        "generate": GenerateSimpleTypeXMLText(lambda x: x),
         "initial": lambda: "",
         "check": lambda x: isinstance(x, (StringType, UnicodeType))
     },
@@ -2304,7 +2304,7 @@ XSD_NAMESPACE = {
         "facets": NUMBER_FACETS,
         "generate": GenerateFloatXMLText(["INF", "-INF", "NaN"]),
         "initial": lambda: 0.,
-        "check": lambda x: {"INF" : True, "-INF" : True, "NaN" : True}.get(x, isinstance(x, (IntType, FloatType)))
+        "check": lambda x: {"INF": True, "-INF": True, "NaN": True}.get(x, isinstance(x, (IntType, FloatType)))
     },
 
     "double": {
@@ -2314,7 +2314,7 @@ XSD_NAMESPACE = {
         "facets": NUMBER_FACETS,
         "generate": GenerateFloatXMLText(["INF", "-INF", "NaN"]),
         "initial": lambda: 0.,
-        "check": lambda x: {"INF" : True, "-INF" : True, "NaN" : True}.get(x, isinstance(x, (IntType, FloatType)))
+        "check": lambda x: {"INF": True, "-INF": True, "NaN": True}.get(x, isinstance(x, (IntType, FloatType)))
     },
 
     "boolean": {
@@ -2322,7 +2322,7 @@ XSD_NAMESPACE = {
         "basename": "boolean",
         "extract": GetBoolean,
         "facets": GenerateDictFacets(["pattern", "whiteSpace"]),
-        "generate": GenerateSimpleTypeXMLText(lambda x:{True : "true", False : "false"}[x]),
+        "generate": GenerateSimpleTypeXMLText(lambda x:{True: "true", False: "false"}[x]),
         "initial": lambda: False,
         "check": lambda x: isinstance(x, BooleanType)
     },

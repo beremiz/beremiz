@@ -49,14 +49,14 @@ from PLCControler import _VariableInfos
 
 
 def GetVariableTableColnames(location):
-    _ = lambda x : x
+    _ = lambda x: x
     if location:
     	return ["#", _("Name"), _("Class"), _("Type"), _("Location"), _("Initial Value"), _("Option"), _("Documentation")]
     return ["#", _("Name"), _("Class"), _("Type"), _("Initial Value"), _("Option"), _("Documentation")]
 
 
 def GetOptions(constant=True, retain=True, non_retain=True):
-    _ = lambda x : x
+    _ = lambda x: x
     options = [""]
     if constant:
         options.append(_("Constant"))
@@ -69,7 +69,7 @@ OPTIONS_DICT = dict([(_(option), option) for option in GetOptions()])
 
 
 def GetFilterChoiceTransfer():
-    _ = lambda x : x
+    _ = lambda x: x
     return {_("All"): _("All"), _("Interface"): _("Interface"),
             _("   Input"): _("Input"), _("   Output"): _("Output"), _("   InOut"): _("InOut"),
             _("   External"): _("External"), _("Variables"): _("Variables"), _("   Local"): _("Local"),
@@ -122,7 +122,7 @@ class VariableTable(CustomTable):
             value = getattr(self.data[row], colname, "")
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
-                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x : "..".join(x), value[2])), value[1])
+                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x: "..".join(x), value[2])), value[1])
             if not isinstance(value, (StringType, UnicodeType)):
                 value = str(value)
             if colname in ["Class", "Option"]:
@@ -389,7 +389,7 @@ class VariableDropTarget(wx.TextDropTarget):
                         if element_type in ["functionBlock","program"]:
                             var_infos.Class = "Local"
                             var_infos.InitialValue = values[0]
-                        else :
+                        else:
                             return
                     else:
                         var_infos.Class = "External"
@@ -491,9 +491,9 @@ class VariablePanel(wx.Panel):
         self.DefaultValue = _VariableInfos("", "", "", "", "", True, "", DefaultType, ([], []), 0)
 
         if element_type in ["config", "resource"]:
-            self.DefaultTypes = {"All" : "Global"}
+            self.DefaultTypes = {"All": "Global"}
         else:
-            self.DefaultTypes = {"All" : "Local", "Interface" : "Input", "Variables" : "Local"}
+            self.DefaultTypes = {"All": "Local", "Interface": "Input", "Variables": "Local"}
 
         if element_type in ["config", "resource"] \
         or element_type in ["program", "transition", "action"]:

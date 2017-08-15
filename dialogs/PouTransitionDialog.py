@@ -33,7 +33,7 @@ from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 
 
 def GetTransitionLanguages():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("IL"), _("ST"), _("LD"), _("FBD")]
 TRANSITION_LANGUAGES_DICT = dict([(_(language), language) for language in GetTransitionLanguages()])
 

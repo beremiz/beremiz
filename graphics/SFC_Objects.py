@@ -646,7 +646,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         return transition
 
     def GetConnectorTranslation(self, element):
-        connectors = {self.Input : element.Input, self.Output : element.Output}
+        connectors = {self.Input: element.Input, self.Output: element.Output}
         if self.Type == "connection" and self.Condition is not None:
             connectors[self.Condition] = element.Condition
         return connectors
@@ -953,7 +953,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
                 self.Output.RefreshWires()
 
     # Adds an highlight to the block
-    def AddHighlight(self, infos, start, end ,highlight_type):
+    def AddHighlight(self, infos, start, end, highlight_type):
         if infos[0] in ["reference", "inline", "priority"] and start[0] == 0 and end[0] == 0:
             highlights = self.Highlights.setdefault(infos[0], [])
             AddHighlight(highlights, (start, end, highlight_type))
@@ -1544,7 +1544,7 @@ class SFC_Jump(Graphic_Element):
         return jump
 
     def GetConnectorTranslation(self, element):
-        return {self.Input : element.Input}
+        return {self.Input: element.Input}
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
@@ -1822,7 +1822,7 @@ class SFC_ActionBlock(Graphic_Element):
         return action_block
 
     def GetConnectorTranslation(self, element):
-        return {self.Input : element.Input}
+        return {self.Input: element.Input}
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):

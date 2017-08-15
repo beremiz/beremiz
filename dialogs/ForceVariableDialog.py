@@ -30,11 +30,11 @@ import wx
 #                                Helpers
 #-------------------------------------------------------------------------------
 
-LOCATIONDATATYPES = {"X" : ["BOOL"],
-                     "B" : ["SINT", "USINT", "BYTE", "STRING"],
-                     "W" : ["INT", "UINT", "WORD", "WSTRING"],
-                     "D" : ["DINT", "UDINT", "REAL", "DWORD"],
-                     "L" : ["LINT", "ULINT", "LREAL", "LWORD"]}
+LOCATIONDATATYPES = {"X": ["BOOL"],
+                     "B": ["SINT", "USINT", "BYTE", "STRING"],
+                     "W": ["INT", "UINT", "WORD", "WSTRING"],
+                     "D": ["DINT", "UDINT", "REAL", "DWORD"],
+                     "L": ["LINT", "ULINT", "LREAL", "LWORD"]}
 
 
 def gen_get_function(f):

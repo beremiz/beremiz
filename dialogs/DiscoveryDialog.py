@@ -139,11 +139,11 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.LatestSelection=None
 
     def __del__(self):
-        if self.Browser is not None : self.Browser.cancel()
+        if self.Browser is not None: self.Browser.cancel()
         self.ZeroConfInstance.close()
 
     def RefreshList(self):
-        if self.Browser is not None : self.Browser.cancel()
+        if self.Browser is not None: self.Browser.cancel()
         self.Browser = ServiceBrowser(self.ZeroConfInstance, service_type, self)
 
     def OnRefreshButton(self, event):
@@ -157,7 +157,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def OnIpButton(self, event):
         if self.LatestSelection is not None:
-            l = lambda col : self.getColumnText(self.LatestSelection,col)
+            l = lambda col: self.getColumnText(self.LatestSelection,col)
             self.URI = "%s://%s:%s" % tuple(map(l,(1,2,3)))
             self.EndModal(wx.ID_OK)
         event.Skip()

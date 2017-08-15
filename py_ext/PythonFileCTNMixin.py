@@ -99,19 +99,19 @@ class PythonFileCTNMixin(CodeFile):
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
         pyextname = self.CTNName()
-        varinfos = map(lambda variable : {
+        varinfos = map(lambda variable: {
                     "name": variable.getname(),
-                    "desc" : repr(variable.getdesc()),
-                    "onchangecode" : '"'+variable.getonchange()+\
+                    "desc": repr(variable.getdesc()),
+                    "onchangecode": '"'+variable.getonchange()+\
                                          "('"+variable.getname()+"')\"" \
                                      if variable.getonchange() else '""',
-                    "onchange" : repr(variable.getonchange()) \
+                    "onchange": repr(variable.getonchange()) \
                                  if variable.getonchange() else None,
-                    "opts" : repr(variable.getopts()),
-                    "configname" : configname.upper(),
-                    "uppername" : variable.getname().upper(),
-                    "IECtype" : variable.gettype(),
-                    "pyextname" :pyextname},
+                    "opts": repr(variable.getopts()),
+                    "configname": configname.upper(),
+                    "uppername": variable.getname().upper(),
+                    "IECtype": variable.gettype(),
+                    "pyextname": pyextname},
                     self.CodeFile.variables.variable)
         # python side PLC global variables access stub
         globalstubs = "\n".join(["""\

@@ -161,7 +161,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         Return SFC transition parameters defined in dialog
         @return: {parameter_name: parameter_value,...}
         """
-        values = {"priority" : self.Priority.GetValue()}
+        values = {"priority": self.Priority.GetValue()}
         values["type"], values["value"] = self.GetTransitionType()
         values["width"], values["height"] = self.Element.GetSize()
         return values

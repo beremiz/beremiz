@@ -220,7 +220,7 @@ class FBD_Block(Graphic_Element):
 
     # Returns all the block connectors
     def GetConnectors(self):
-        return {"inputs" : self.Inputs, "outputs" : self.Outputs}
+        return {"inputs": self.Inputs, "outputs": self.Outputs}
 
     # Test if point given is on one of the block connectors
     def TestConnector(self, pt, direction = None, exclude = True):
@@ -420,7 +420,7 @@ class FBD_Block(Graphic_Element):
         return self.Description
 
     # Adds an highlight to the block
-    def AddHighlight(self, infos, start, end ,highlight_type):
+    def AddHighlight(self, infos, start, end, highlight_type):
         if infos[0] in ["type", "name"] and start[0] == 0 and end[0] == 0:
             highlights = self.Highlights.setdefault(infos[0], [])
             AddHighlight(highlights, (start, end, highlight_type))
@@ -843,7 +843,7 @@ class FBD_Connector(Graphic_Element):
         return connection
 
     def GetConnectorTranslation(self, element):
-        return {self.Connector : element.Connector}
+        return {self.Connector: element.Connector}
 
     # Unconnect connector
     def Clean(self):

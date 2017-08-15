@@ -154,32 +154,32 @@ _TYPE_ANY =  255
 
 # Mapping constants to names
 
-_CLASSES = { _CLASS_IN : "in",
-             _CLASS_CS : "cs",
-             _CLASS_CH : "ch",
-             _CLASS_HS : "hs",
-             _CLASS_NONE : "none",
-             _CLASS_ANY : "any" }
+_CLASSES = { _CLASS_IN:   "in",
+             _CLASS_CS:   "cs",
+             _CLASS_CH:   "ch",
+             _CLASS_HS:   "hs",
+             _CLASS_NONE: "none",
+             _CLASS_ANY:  "any" }
 
-_TYPES = { _TYPE_A : "a",
-           _TYPE_NS : "ns",
-           _TYPE_MD : "md",
-           _TYPE_MF : "mf",
-           _TYPE_CNAME : "cname",
-           _TYPE_SOA : "soa",
-           _TYPE_MB : "mb",
-           _TYPE_MG : "mg",
-           _TYPE_MR : "mr",
-           _TYPE_NULL : "null",
-           _TYPE_WKS : "wks",
-           _TYPE_PTR : "ptr",
-           _TYPE_HINFO : "hinfo",
-           _TYPE_MINFO : "minfo",
-           _TYPE_MX : "mx",
-           _TYPE_TXT : "txt",
-           _TYPE_AAAA : "quada",
-           _TYPE_SRV : "srv",
-           _TYPE_ANY : "any" }
+_TYPES = { _TYPE_A:     "a",
+           _TYPE_NS:    "ns",
+           _TYPE_MD:    "md",
+           _TYPE_MF:    "mf",
+           _TYPE_CNAME: "cname",
+           _TYPE_SOA:   "soa",
+           _TYPE_MB:    "mb",
+           _TYPE_MG:    "mg",
+           _TYPE_MR:    "mr",
+           _TYPE_NULL:  "null",
+           _TYPE_WKS:   "wks",
+           _TYPE_PTR:   "ptr",
+           _TYPE_HINFO: "hinfo",
+           _TYPE_MINFO: "minfo",
+           _TYPE_MX:    "mx",
+           _TYPE_TXT:   "txt",
+           _TYPE_AAAA:  "quada",
+           _TYPE_SRV:   "srv",
+           _TYPE_ANY:   "any" }
 
 # utility functions
 

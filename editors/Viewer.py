@@ -66,17 +66,17 @@ def AppendMenu(parent, help, id, kind, text):
 
 if wx.Platform == '__WXMSW__':
     faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
+              'mono':  'Courier New',
+              'helv':  'Arial',
               'other': 'Comic Sans MS',
-              'size' : 10,
+              'size':  10,
              }
 else:
     faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
+              'mono':  'Courier',
+              'helv':  'Helvetica',
               'other': 'new century schoolbook',
-              'size' : 12,
+              'size':  12,
              }
 
 if wx.Platform == '__WXMSW__':
@@ -1359,7 +1359,7 @@ class Viewer(EditorPanel, DebugViewer):
     def loadInstance(self, instance, remaining_instances, selection):
         self.current_id = max(self.current_id, instance.id)
         creation_function = ElementCreationFunctions.get(instance.type, None)
-        connectors = {"inputs" : [], "outputs" : []}
+        connectors = {"inputs": [], "outputs": []}
         specific_values = instance.specific_values
         if creation_function is not None:
             element = creation_function(self, instance.id, specific_values)
@@ -2005,7 +2005,7 @@ class Viewer(EditorPanel, DebugViewer):
                         if element is None or element.TestHandle(event) == (0, 0):
                             connector = self.FindBlockConnector(pos, self.SelectedElement.GetConnectionDirection())
                         if connector is not None:
-                            event.Dragging = lambda : True
+                            event.Dragging = lambda: True
                             self.SelectedElement.OnMotion(event, dc, self.Scaling)
                         if self.SelectedElement.EndConnected is not None:
                             self.SelectedElement.ResetPoints()
@@ -2797,12 +2797,14 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(block.GetSize())
-        old_values = {"name" : block.GetName(),
-                      "type" : block.GetType(),
-                      "extension" : block.GetExtension(),
-                      "inputs" : block.GetInputTypes(),
-                      "executionControl" : block.GetExecutionControl(),
-                      "executionOrder" : block.GetExecutionOrder()}
+        old_values = {
+            "name":             block.GetName(),
+            "type":             block.GetType(),
+            "extension":        block.GetExtension(),
+            "inputs":           block.GetInputTypes(),
+            "executionControl": block.GetExecutionControl(),
+            "executionOrder":   block.GetExecutionOrder()
+        }
         dialog.SetValues(old_values)
         if dialog.ShowModal() == wx.ID_OK:
             new_values = dialog.GetValues()
@@ -2831,8 +2833,11 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = FBDVariableDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(variable.GetSize())
-        old_values = {"expression" : variable.GetName(), "class" : variable.GetType(),
-                      "executionOrder" : variable.GetExecutionOrder()}
+        old_values = {
+            "expression":     variable.GetName(),
+            "class":          variable.GetType(),
+            "executionOrder": variable.GetExecutionOrder()
+        }
         dialog.SetValues(old_values)
         if dialog.ShowModal() == wx.ID_OK:
             new_values = dialog.GetValues()
@@ -2860,7 +2865,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = ConnectionDialog(self.ParentWindow, self.Controler, self.TagName, True)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(connection.GetSize())
-        values = {"name" : connection.GetName(), "type" : connection.GetType()}
+        values = {"name": connection.GetName(), "type": connection.GetType()}
         dialog.SetValues(values)
         result = dialog.ShowModal()
         dialog.Destroy()
@@ -2892,8 +2897,8 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "contact")
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(contact.GetSize())
-        dialog.SetValues({"variable" : contact.GetName(),
-                          "modifier" : contact.GetType()})
+        dialog.SetValues({"variable": contact.GetName(),
+                          "modifier": contact.GetType()})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = contact.GetRedrawRect(1, 1)
@@ -2912,8 +2917,8 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "coil")
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(coil.GetSize())
-        dialog.SetValues({"variable" : coil.GetName(),
-                          "modifier" : coil.GetType()})
+        dialog.SetValues({"variable": coil.GetName(),
+                          "modifier": coil.GetType()})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = coil.GetRedrawRect(1, 1)
@@ -2960,7 +2965,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.SetMinElementSize(step.GetSize())
         connectors = step.GetConnectors()
         dialog.SetValues({
-            "name" : step.GetName(),
+            "name": step.GetName(),
             "input": len(connectors["inputs"]) > 0,
             "output": len(connectors["outputs"]) > 0,
             "action": step.GetActionConnector() != None})

@@ -65,16 +65,16 @@ class ConfigurationEditor(EditorPanel):
 #-------------------------------------------------------------------------------
 
 def GetTasksTableColnames():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("Name"), _("Triggering"), _("Single"), _("Interval"), _("Priority")]
 
 
 def GetTaskTriggeringOptions():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("Interrupt"), _("Cyclic")]
 TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option) for option in GetTaskTriggeringOptions()])
 
-SingleCellEditor = lambda *x : wx.grid.GridCellChoiceEditor()
+SingleCellEditor = lambda *x: wx.grid.GridCellChoiceEditor()
 
 
 def CheckSingle(single, varlist):
@@ -82,7 +82,7 @@ def CheckSingle(single, varlist):
 
 
 def GetInstancesTableColnames():
-    _ = lambda x : x
+    _ = lambda x: x
     return [_("Name"), _("Type"), _("Task")]
 
 
@@ -292,7 +292,7 @@ class ResourceEditor(EditorPanel):
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
 
-        self.TasksDefaultValue = {"Name" : "", "Triggering" : "", "Single" : "", "Interval" : "", "Priority" : 0}
+        self.TasksDefaultValue = {"Name": "", "Triggering": "", "Single": "", "Interval": "", "Priority": 0}
         self.TasksTable = ResourceTable(self, [], GetTasksTableColnames())
         self.TasksTable.SetColAlignements([wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT])
         self.TasksTable.SetColSizes([200, 100, 100, 150, 100])
@@ -327,7 +327,7 @@ class ResourceEditor(EditorPanel):
         self.TasksTable.ResetView(self.TasksGrid)
         self.TasksGrid.RefreshButtons()
 
-        self.InstancesDefaultValue = {"Name" : "", "Type" : "", "Task" : ""}
+        self.InstancesDefaultValue = {"Name": "", "Type": "", "Task": ""}
         self.InstancesTable = ResourceTable(self, [], GetInstancesTableColnames())
         self.InstancesTable.SetColAlignements([wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT])
         self.InstancesTable.SetColSizes([200, 150, 150])
@@ -486,7 +486,7 @@ class ResourceEditor(EditorPanel):
                 message = _("\"%s\" is not a valid identifier!") % value
             elif value.upper() in IEC_KEYWORDS:
                 message = _("\"%s\" is a keyword. It can't be used!") % value
-            elif value.upper() in [var["Name"].upper() for i ,var in enumerate(self.InstancesTable.data) if i!=row]:
+            elif value.upper() in [var["Name"].upper() for i, var in enumerate(self.InstancesTable.data) if i!=row]:
                 message = _("An instance with the same name already exists!")
             if message is not None:
                 event.Veto()

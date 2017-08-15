@@ -110,7 +110,7 @@ class PLCObject(pyro.ObjBase):
             self._ResetLogCount()
 
     def GetLogCount(self, level):
-        if self._GetLogCount is not None :
+        if self._GetLogCount is not None:
             return int(self._GetLogCount(level))
         elif self._loading_error is not None and level==0:
             return 1
@@ -151,7 +151,7 @@ class PLCObject(pyro.ObjBase):
             self.PLClibraryHandle = ctypes.CDLL(self.CurrentPLCFilename, handle=self._PLClibraryHandle)
 
             self.PLC_ID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLC_ID")
-            if len(md5) == 32 :
+            if len(md5) == 32:
                 self.PLC_ID.value = md5
 
             self._startPLC = self.PLClibraryHandle.startPLC
@@ -280,7 +280,7 @@ class PLCObject(pyro.ObjBase):
 
         class PLCSafeGlobals:
             def __getattr__(_self, name):
-                try :
+                try:
                     t = self.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
                     raise KeyError("Try to get unknown shared global variable : %s" % name)
@@ -288,7 +288,7 @@ class PLCObject(pyro.ObjBase):
                 r = self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
                 return self.python_runtime_vars["_"+name+"_unpack"](v)
             def __setattr__(_self, name, value):
-                try :
+                try:
                     t = self.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
                     raise KeyError("Try to set unknown shared global variable : %s" % name)
@@ -296,13 +296,13 @@ class PLCObject(pyro.ObjBase):
                 self.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
 
         self.python_runtime_vars.update({
-            "PLCGlobals" : PLCSafeGlobals(),
-            "WorkingDir" : self.workingdir,
-            "PLCObject"  : self,
-            "PLCBinary"  : self.PLClibraryHandle,
-            "PLCGlobalsDesc" : []})
+            "PLCGlobals":     PLCSafeGlobals(),
+            "WorkingDir":     self.workingdir,
+            "PLCObject":      self,
+            "PLCBinary":      self.PLClibraryHandle,
+            "PLCGlobalsDesc": []})
 
-        for methodname in MethodNames :
+        for methodname in MethodNames:
             self.python_runtime_vars["_runtime_%s" % methodname] = []
 
         try:
@@ -341,7 +341,7 @@ class PLCObject(pyro.ObjBase):
             # print " -> ", cmd, blkid
             if cmd is None:
                 break
-            try :
+            try:
                 self.python_runtime_vars["FBID"]=FBID
                 ccmd,AST =compile_cache.get(FBID, (None,None))
                 if ccmd is None or ccmd!=cmd:
@@ -386,7 +386,7 @@ class PLCObject(pyro.ObjBase):
             self.PLCStatus = "Stopped"
             self.StatusChange()
             self.PythonRuntimeCall("stop")
-            if self.TraceThread is not None :
+            if self.TraceThread is not None:
                 self.TraceWakeup.set()
                 self.TraceThread.join()
                 self.TraceThread = None
@@ -495,7 +495,7 @@ class PLCObject(pyro.ObjBase):
     def _TracesPush(self, trace):
         self.TraceLock.acquire()
         lT = len(self.Traces)
-        if lT != 0 and lT * len(self.Traces[0]) > 1024 * 1024 :
+        if lT != 0 and lT * len(self.Traces[0]) > 1024 * 1024:
             self.Traces.pop(0)
         self.Traces.append(trace)
         self.TraceLock.release()
@@ -536,7 +536,7 @@ class PLCObject(pyro.ObjBase):
         """
         Return a list of traces, corresponding to the list of required idx
         """
-        while self.PLCStatus == "Started" :
+        while self.PLCStatus == "Started":
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buff = ctypes.c_void_p()

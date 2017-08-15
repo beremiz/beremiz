@@ -249,7 +249,7 @@ class LD_PowerRail(Graphic_Element):
                 position = connector.GetRelPosition()
                 self.RealConnectors.append(max(0., min(float(position.y - self.Extensions[0]) / float(height), 1.)))
         elif len(self.Connectors) > 1:
-            self.RealConnectors = map(lambda x : x * 1 / (len(self.Connectors) - 1), xrange(len(self.Connectors)))
+            self.RealConnectors = map(lambda x: x * 1 / (len(self.Connectors) - 1), xrange(len(self.Connectors)))
         else:
             self.RealConnectors = [0.5]
         Graphic_Element.OnLeftDown(self, event, dc, scaling)
@@ -428,7 +428,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         return contact
 
     def GetConnectorTranslation(self, element):
-        return {self.Input : element.Input, self.Output : element.Output}
+        return {self.Input: element.Input, self.Output: element.Output}
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):
@@ -743,7 +743,7 @@ class LD_Coil(Graphic_Element):
         return coil
 
     def GetConnectorTranslation(self, element):
-        return {self.Input : element.Input, self.Output : element.Output}
+        return {self.Input: element.Input, self.Output: element.Output}
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex = 0, movey = 0):

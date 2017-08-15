@@ -453,10 +453,10 @@ class ConfigTreeNode:
         while res in AllChannels:  # While channel not free
             if res < CurrentChannel:  # Want to go down ?
                 res -=  1  # Test for n-1
-                if res < 0 :
+                if res < 0:
                     self.GetCTRoot().logger.write_warning(_("Cannot find lower free IEC channel than %d\n") % CurrentChannel)
                     return CurrentChannel  # Can't go bellow 0, do nothing
-            else :  # Want to go up ?
+            else:  # Want to go up ?
                 res +=  1  # Test for n-1
         # Finally set IEC Channel
         self.BaseParams.setIEC_Channel(res)

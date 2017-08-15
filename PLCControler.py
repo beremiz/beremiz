@@ -1645,7 +1645,7 @@ class PLCControler:
                  "list": [block for block in category["list"]
                           if block["type"] in filter]}
                 for category in self.TotalTypes]
-            blocktypes.append({"name" : USER_DEFINED_POUS,
+            blocktypes.append({"name": USER_DEFINED_POUS,
                 "list": [pou.getblockInfos()
                          for pou in project.getpous(name, filter)
                          if (name is None or
@@ -1936,9 +1936,14 @@ class PLCControler:
 
     def GetElementType(self, tagname):
         words = tagname.split("::")
-        return {"D" : ITEM_DATATYPE, "P" : ITEM_POU,
-                "T" : ITEM_TRANSITION, "A" : ITEM_ACTION,
-                "C" : ITEM_CONFIGURATION, "R" : ITEM_RESOURCE}[words[0]]
+        return {
+            "D": ITEM_DATATYPE,
+            "P": ITEM_POU,
+            "T": ITEM_TRANSITION,
+            "A": ITEM_ACTION,
+            "C": ITEM_CONFIGURATION,
+            "R": ITEM_RESOURCE
+        }[words[0]]
 
 #-------------------------------------------------------------------------------
 #                    Project opened Data types management functions

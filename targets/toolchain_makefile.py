@@ -104,7 +104,7 @@ class toolchain_makefile():
         f.write(self.md5key)
         f.close()
 
-        if oldmd5 != self.md5key :
+        if oldmd5 != self.md5key:
             target = self.CTRInstance.GetTarget().getcontent()
             beremizcommand = {"src": ' '.join(srcfiles),
                               "cflags": ' '.join(cflags),
@@ -120,11 +120,11 @@ class toolchain_makefile():
             # Call Makefile to build PLC code and link it with target specific code
             status, result, err_result = ProcessLogger(self.CTRInstance.logger,
                                                        command).spin()
-            if status :
+            if status:
                 self.md5key = None
                 self.CTRInstance.logger.write_error(_("C compilation failed.\n"))
                 return False
             return True
-        else :
+        else:
             self.CTRInstance.logger.write(_("Source didn't change, no build.\n"))
             return True

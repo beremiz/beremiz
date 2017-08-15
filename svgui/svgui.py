@@ -44,14 +44,18 @@ class SVGUILibrary(POULibrary):
 class SVGUI(PythonFileCTNMixin):
 
     ConfNodeMethods = [
-        {"bitmap" : "ImportSVG",
-         "name" : _("Import SVG"),
-         "tooltip" : _("Import SVG"),
-         "method" : "_ImportSVG"},
-        {"bitmap" : "ImportSVG",  # should be something different
-         "name" : _("Inkscape"),
-         "tooltip" : _("Create HMI"),
-         "method" : "_StartInkscape"},
+        {
+            "bitmap":    "ImportSVG",
+            "name":    _("Import SVG"),
+            "tooltip": _("Import SVG"),
+            "method":   "_ImportSVG"
+        },
+        {
+            "bitmap":    "ImportSVG",  # should be something different
+            "name":    _("Inkscape"),
+            "tooltip": _("Create HMI"),
+            "method":   "_StartInkscape"
+        },
     ]
 
     def ConfNodePath(self):
@@ -110,7 +114,7 @@ class SVGUI(PythonFileCTNMixin):
 
         runtimefile_path = os.path.join(buildpath, "runtime_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
-        runtimefile.write(svguiservercode % {"svgfile" : "gui.svg"})
+        runtimefile.write(svguiservercode % {"svgfile": "gui.svg"})
         runtimefile.write("""
 def _runtime_%(location)s_start():
     website.LoadHMI(%(svgui_class)s, %(jsmodules)s)
@@ -120,7 +124,7 @@ def _runtime_%(location)s_stop():
 
 """ % {"location": location_str,
        "svgui_class": "SVGUI_HMI",
-       "jsmodules" : str(jsmodules),
+       "jsmodules": str(jsmodules),
       })
         runtimefile.close()
 

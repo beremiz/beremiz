@@ -48,7 +48,7 @@ class POULibrary:
         return self.CTR()
 
     def GetTypes(self):
-        return {"name" : self.GetName(), "types": self.LibraryControler.Project}
+        return {"name": self.GetName(), "types": self.LibraryControler.Project}
 
     def GetLibraryPath(self):
         raise Exception("Not implemented")
