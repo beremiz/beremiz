@@ -61,7 +61,7 @@ class RubberBand:
         Indicate if rubberband is drawn on viewer
         @return: True if rubberband is drawn
         """
-        return self.CurrentBBox != None
+        return self.CurrentBBox is not None
 
     def GetCurrentExtent(self):
         """

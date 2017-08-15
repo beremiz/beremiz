@@ -596,7 +596,7 @@ def GenerateTagInfos(infos):
         "extract": ExtractTag,
         "generate": GenerateTag,
         "initial": lambda: None,
-        "check": lambda x: x == None or infos["minOccurs"] == 0 and value == True
+        "check": lambda x: x is None or infos["minOccurs"] == 0 and value == True
     }
 
 
@@ -1535,7 +1535,7 @@ def generateSetElementValue(factory, classinfos):
                     if instance is None and elements[parts[0]]["minOccurs"] == 0:
                         instance = elements[parts[0]]["elmt_type"]["initial"]()
                         setattr(self, parts[0], instance)
-                    if instance != None:
+                    if instance is not None:
                         if len(parts) > 1:
                             instance.setElementValue(parts[1], value)
                         else:

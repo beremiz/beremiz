@@ -820,12 +820,12 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
             if type == "connection":
                 self.Condition = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] / 2), WEST)
             else:
-                if condition == None:
+                if condition is None:
                     condition = ""
                 self.Condition = condition
                 self.RefreshConditionSize()
         elif self.Type != "connection":
-            if condition == None:
+            if condition is None:
                 condition = ""
             self.Condition = condition
             self.RefreshConditionSize()
@@ -1197,7 +1197,7 @@ class SFC_Divergence(Graphic_Element):
 
     # Returns if the point given is in the bounding box
     def HitTest(self, pt, connectors=True):
-        return self.BoundingBox.InsideXY(pt.x, pt.y) or self.TestConnector(pt, exclude=False) != None
+        return self.BoundingBox.InsideXY(pt.x, pt.y) or self.TestConnector(pt, exclude=False) is not None
 
     # Refresh the divergence bounding box
     def RefreshBoundingBox(self):

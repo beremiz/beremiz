@@ -2480,7 +2480,7 @@ class PLCControler:
                 result = wire.GetConnectedInfos(-1)
             else:
                 result = wire.GetConnectedInfos(0)
-            if result != None:
+            if result is not None:
                 refLocalId, formalParameter = result
                 connections = connection.getconnections()
                 if connections is None or len(connection.getconnections()) <= idx:

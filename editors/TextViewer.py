@@ -226,7 +226,7 @@ class TextViewer(EditorPanel):
         if not self.DisableEvents:
             mod_type = event.GetModificationType()
             if mod_type&wx.stc.STC_MOD_BEFOREINSERT:
-                if self.CurrentAction == None:
+                if self.CurrentAction is None:
                     self.StartBuffering()
                 elif self.CurrentAction[0] != "Add" or self.CurrentAction[1] != event.GetPosition() - 1:
                     self.Controler.EndBuffering()
@@ -234,7 +234,7 @@ class TextViewer(EditorPanel):
                 self.CurrentAction = ("Add", event.GetPosition())
                 wx.CallAfter(self.RefreshModel)
             elif mod_type&wx.stc.STC_MOD_BEFOREDELETE:
-                if self.CurrentAction == None:
+                if self.CurrentAction is None:
                     self.StartBuffering()
                 elif self.CurrentAction[0] != "Delete" or self.CurrentAction[1] != event.GetPosition() + 1:
                     self.Controler.EndBuffering()
@@ -436,7 +436,7 @@ class TextViewer(EditorPanel):
             self.ParentWindow.RefreshEditMenu()
 
     def ResetBuffer(self):
-        if self.CurrentAction != None:
+        if self.CurrentAction is not None:
             self.Controler.EndBuffering()
             self.CurrentAction = None
 
@@ -475,7 +475,7 @@ class TextViewer(EditorPanel):
                 self.SetText(new_text)
                 new_cursor_pos = GetCursorPos(old_text, new_text)
                 self.Editor.LineScroll(column, line)
-                if new_cursor_pos != None:
+                if new_cursor_pos is not None:
                     self.Editor.GotoPos(new_cursor_pos)
                 else:
                     self.Editor.GotoPos(old_cursor_pos)

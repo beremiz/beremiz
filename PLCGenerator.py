@@ -1224,7 +1224,7 @@ class PouProgramGenerator:
             elif isinstance(next, ContinuationClass):
                 name = next.getname()
                 computed_value = self.ComputedConnectors.get(name, None)
-                if computed_value != None:
+                if computed_value is not None:
                     paths.append(str(computed_value))
                 else:
                     connector = None
@@ -1587,7 +1587,7 @@ class PouProgramGenerator:
         if transition in self.SFCNetworks["Transitions"].keys():
             transition_infos = self.SFCNetworks["Transitions"].pop(transition)
             self.Program += [("%sTRANSITION" % self.CurrentIndent, ())]
-            if transition_infos["priority"] != None:
+            if transition_infos["priority"] is not None:
                 self.Program += [(" (PRIORITY := ", ()),
                                  ("%d" % transition_infos["priority"], (self.TagName, "transition", transition_infos["id"], "priority")),
                                  (")", ())]
@@ -1645,13 +1645,13 @@ class PouProgramGenerator:
                 if var_name:
                     program += [(var_name, (self.TagName, variable_type, var_number, "name")),
                                 (" ", ())]
-                if var_address != None:
+                if var_address is not None:
                     program += [("AT ", ()),
                                 (var_address, (self.TagName, variable_type, var_number, "location")),
                                 (" ", ())]
                 program += [(": ", ()),
                             (var_type, (self.TagName, variable_type, var_number, "type"))]
-                if var_initial != None:
+                if var_initial is not None:
                     program += [(" := ", ()),
                                 (self.ParentGenerator.ComputeValue(var_initial, var_type), (self.TagName, variable_type, var_number, "initial value"))]
                 program += [(";\n", ())]

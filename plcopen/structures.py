@@ -212,7 +212,7 @@ def get_standard_funtions(table):
                 funcdeclname = Function_decl["name"].strip('*_')
                 fdc = Function_decl["inputs"][:]
                 for intype in input_ovrloading_types:
-                    if intype != None:
+                    if intype is not None:
                         Function_decl["inputs"] = []
                         for decl_tpl in fdc:
                             if IsOfType(intype, decl_tpl[1]):
@@ -228,7 +228,7 @@ def get_standard_funtions(table):
                         funcdeclin = funcdeclname
 
                     for outype in output_types:
-                        if outype != None:
+                        if outype is not None:
                             decl_tpl = Function_decl["outputs"][0]
                             Function_decl["outputs"] = [ (decl_tpl[0], outype,  decl_tpl[2])]
                             if funcdeclname_orig.endswith('*'):
