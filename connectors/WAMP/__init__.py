@@ -65,8 +65,8 @@ def WAMP_connector_factory(uri, confnodesroot):
     """
     servicetype, location = uri.split("://")
     urlpath, realm, ID = location.split('#')
-    urlprefix = {"WAMP":"ws",
-                 "WAMPS":"wss"}[servicetype]
+    urlprefix = {"WAMP":  "ws",
+                 "WAMPS": "wss"}[servicetype]
     url = urlprefix+"://"+urlpath
 
     def RegisterWampClient():
@@ -77,7 +77,7 @@ def WAMP_connector_factory(uri, confnodesroot):
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
             realm = realm,
-            extra = {"ID":ID})
+            extra = {"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
             config = component_config)
         session_factory.session = WampSession
@@ -103,18 +103,18 @@ def WAMP_connector_factory(uri, confnodesroot):
         reactor.run(installSignalHandlers=False)
 
     def WampSessionProcMapper(funcname):
-        wampfuncname = '.'.join((ID,funcname))
-        def catcher_func(*args,**kwargs):
+        wampfuncname = '.'.join((ID, funcname))
+        def catcher_func(*args, **kwargs):
             global _WampSession
             if _WampSession is not None:
                 try:
                     return threads.blockingCallFromThread(
                         reactor, _WampSession.call, wampfuncname,
-                        *args,**kwargs)
+                        *args, **kwargs)
                 except TransportLost, e:
                     confnodesroot.logger.write_error(_("Connection lost!\n"))
                     confnodesroot._SetConnector(None)
-                except Exception,e:
+                except Exception, e:
                     errmess = traceback.format_exc()
                     confnodesroot.logger.write_error(errmess+"\n")
                     print errmess

@@ -257,7 +257,7 @@ def SimplifyTabLayout(tabs, rect):
     for tab in tabs:
         if tab["pos"][0] == rect.x:
             others = [t for t in tabs if t != tab]
-            others.sort(lambda x,y: cmp(x["pos"][0], y["pos"][0]))
+            others.sort(lambda x, y: cmp(x["pos"][0], y["pos"][0]))
             for other in others:
                 if (other["pos"][1] == tab["pos"][1] and
                     other["size"][1] == tab["size"][1] and
@@ -272,7 +272,7 @@ def SimplifyTabLayout(tabs, rect):
 
         elif tab["pos"][1] == rect.y:
             others = [t for t in tabs if t != tab]
-            others.sort(lambda x,y: cmp(x["pos"][1], y["pos"][1]))
+            others.sort(lambda x, y: cmp(x["pos"][1], y["pos"][1]))
             for other in others:
                 if (other["pos"][0] == tab["pos"][0] and
                     other["size"][0] == tab["size"][0] and
@@ -1465,7 +1465,7 @@ class IDEFrame(wx.Frame):
             event.Skip()
         return OnTabsOpenedDClick
 
-    def SwitchFullScrMode(self,evt):
+    def SwitchFullScrMode(self, evt):
         pane = self.AUIManager.GetPane(self.TabsOpened)
         if pane.IsMaximized():
             self.AUIManager.RestorePane(pane)

@@ -26,7 +26,7 @@ import wx
 from math import *
 from types import *
 import datetime
-from threading import Lock,Timer
+from threading import Lock, Timer
 
 from graphics.ToolTipProducer import ToolTipProducer
 from graphics.DebugDataConsumer import DebugDataConsumer
@@ -78,10 +78,10 @@ SFC_ACTION_MIN_SIZE = (100, 30)         # Minimum size of an action block line
 [HANDLE_MOVE, HANDLE_RESIZE, HANDLE_POINT, HANDLE_SEGMENT, HANDLE_CONNECTOR] = range(5)
 
 # List of value for resize handle that are valid
-VALID_HANDLES = [(1,1), (1,2), (1,3), (2,3), (3,3), (3,2), (3,1), (2,1)]
+VALID_HANDLES = [(1, 1), (1, 2), (1, 3), (2, 3), (3, 3), (3, 2), (3, 1), (2, 1)]
 
 # Contants for defining the direction of a connector
-[EAST, NORTH, WEST, SOUTH] = [(1,0), (0,-1), (-1,0), (0,1)]
+[EAST, NORTH, WEST, SOUTH] = [(1, 0), (0, -1), (-1, 0), (0, 1)]
 
 # Contants for defining which mode is selected for each view
 [MODE_SELECTION, MODE_BLOCK, MODE_VARIABLE, MODE_CONNECTION, MODE_COMMENT,
@@ -266,7 +266,7 @@ class Graphic_Element(ToolTipProducer):
         self.oldPos = None
         self.StartPos = None
         self.CurrentDrag = None
-        self.Handle = (None,None)
+        self.Handle = (None, None)
         self.Dragging = False
         self.Selected = False
         self.Highlighted = False

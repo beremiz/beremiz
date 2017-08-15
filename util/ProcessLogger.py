@@ -80,7 +80,7 @@ class ProcessLogger:
         if not isinstance(Command, list):
             self.Command_str = Command
             self.Command = []
-            for i,word in enumerate(Command.replace("'",'"').split('"')):
+            for i, word in enumerate(Command.replace("'", '"').split('"')):
                 if i % 2 == 0:
                     word = word.strip()
                     if len(word) > 0:
@@ -116,10 +116,11 @@ class ProcessLogger:
         self.endlock = Lock()
 
         popenargs= {
-               "cwd":os.getcwd() if cwd is None else cwd,
-               "stdin":subprocess.PIPE,
-               "stdout":subprocess.PIPE,
-               "stderr":subprocess.PIPE}
+               "cwd":    os.getcwd() if cwd is None else cwd,
+               "stdin":  subprocess.PIPE,
+               "stdout": subprocess.PIPE,
+               "stderr": subprocess.PIPE
+        }
 
         if no_gui == True and wx.Platform == '__WXMSW__':
             self.startupinfo = subprocess.STARTUPINFO()
@@ -129,7 +130,7 @@ class ProcessLogger:
             popenargs["shell"] = False
 
         if timeout:
-            self.timeout = Timer(timeout,self.endlog)
+            self.timeout = Timer(timeout, self.endlog)
             self.timeout.start()
         else:
             self.timeout = None
@@ -151,7 +152,7 @@ class ProcessLogger:
         self.startsem.release()
 
 
-    def output(self,v):
+    def output(self, v):
         self.outdata.append(v)
         self.outlen += 1
         if not self.no_stdout:
@@ -159,7 +160,7 @@ class ProcessLogger:
         if (self.keyword and v.find(self.keyword)!=-1) or (self.outlimit and self.outlen > self.outlimit):
             self.endlog()
 
-    def errors(self,v):
+    def errors(self, v):
         self.errdata.append(v)
         self.errlen += 1
         if not self.no_stderr:
@@ -167,24 +168,24 @@ class ProcessLogger:
         if self.errlimit and self.errlen > self.errlimit:
             self.endlog()
 
-    def log_the_end(self,ecode,pid):
+    def log_the_end(self, ecode, pid):
         self.logger.write(self.Command_str + "\n")
         self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1 = str(ecode), a2 = str(pid)))
 
-    def finish(self, pid,ecode):
+    def finish(self, pid, ecode):
         # avoid running function before start is finished
         self.startsem.acquire()
         if self.timeout:
             self.timeout.cancel()
         self.exitcode = ecode
         if self.exitcode != 0:
-            self.log_the_end(ecode,pid)
+            self.log_the_end(ecode, pid)
         if self.finish_callback is not None:
-            self.finish_callback(self,ecode,pid)
+            self.finish_callback(self, ecode, pid)
         self.errt.join()
         self.finishsem.release()
 
-    def kill(self,gently=True):
+    def kill(self, gently=True):
         # avoid running kill before start is finished
         self.startsem.acquire()
         self.startsem.release()

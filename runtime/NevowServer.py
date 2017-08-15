@@ -89,7 +89,7 @@ class MainPage(athena.LiveElement):
 
     def HMIexec(self, function, *args, **kwargs):
         if self.HMI is not None:
-            getattr(self.HMI, function, lambda:None)(*args, **kwargs)
+            getattr(self.HMI, function, lambda: None)(*args, **kwargs)
     athena.expose(HMIexec)
 
     def resetHMI(self):

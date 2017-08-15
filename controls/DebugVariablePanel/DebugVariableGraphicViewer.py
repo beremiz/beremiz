@@ -584,8 +584,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # Search for the nearest point from mouse position
             if len(x_data) > 0 and len(y_data) > 0:
                 length = min(len(x_data), len(y_data))
-                d = numpy.sqrt((x_data[:length,1]-event.xdata) ** 2 + \
-                               (y_data[:length,1]-event.ydata) ** 2)
+                d = numpy.sqrt((x_data[:length, 1]-event.xdata) ** 2 + \
+                               (y_data[:length, 1]-event.ydata) ** 2)
 
                 # Set cursor tick to the tick of this point
                 cursor_tick = x_data[numpy.argmin(d), 0]
@@ -599,7 +599,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # and set cursor tick to the tick of this point
             if len(data) > 0:
                 cursor_tick = data[numpy.argmin(
-                        numpy.abs(data[:,0] - event.xdata)), 0]
+                        numpy.abs(data[:, 0] - event.xdata)), 0]
 
         # Update cursor tick
         if cursor_tick is not None:
@@ -985,7 +985,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
     def SetAxesColor(self, color):
         if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
-            self.Axes.set_prop_cycle(cycler('color',color))
+            self.Axes.set_prop_cycle(cycler('color', color))
         else:
             self.Axes.set_color_cycle(color)
 

@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
 
 def Bpath(*args):
-    return os.path.join(beremiz_dir,*args)
+    return os.path.join(beremiz_dir, *args)
 
 
 def SetupI18n():
@@ -127,7 +127,7 @@ def SetupI18n():
     import gettext
 
     # Get folder containing translation files
-    localedir = os.path.join(beremiz_dir,"locale")
+    localedir = os.path.join(beremiz_dir, "locale")
     # Get the default language
     langid = wx.LANGUAGE_DEFAULT
     # Define translation domain (name of translation files)
@@ -343,7 +343,7 @@ if enablewx:
 
             def _LiveShellLocals(self):
                 if self.pyroserver.plcobj is not None:
-                    return {"locals":self.pyroserver.plcobj.python_runtime_vars}
+                    return {"locals": self.pyroserver.plcobj.python_runtime_vars}
                 else:
                     return {}
 
@@ -385,7 +385,7 @@ if not os.path.isdir(WorkingDir):
 
 def default_evaluator(tocall, *args, **kwargs):
     try:
-        res=(tocall(*args,**kwargs), None)
+        res=(tocall(*args, **kwargs), None)
     except Exception:
         res=(None, sys.exc_info())
     return res
@@ -430,7 +430,7 @@ class Server():
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
                                 self.statuschange, self.evaluator,
                                 self.pyruntimevars)
-        uri = self.daemon.connect(self.plcobj,"PLCObject")
+        uri = self.daemon.connect(self.plcobj, "PLCObject")
 
         print _("Pyro port :"), self.port
         print _("Pyro object's uri :"), uri
@@ -499,12 +499,12 @@ if havewx:
     main_thread = currentThread()
 
     def statuschangeTskBar(status):
-        wx.CallAfter(taskbar_instance.UpdateIcon,status)
+        wx.CallAfter(taskbar_instance.UpdateIcon, status)
 
     statuschange.append(statuschangeTskBar)
 
     def wx_evaluator(obj, *args, **kwargs):
-        tocall,args,kwargs = obj.call
+        tocall, args, kwargs = obj.call
         obj.res = default_evaluator(tocall, *args, **kwargs)
         wx_eval_lock.release()
 
@@ -514,8 +514,8 @@ if havewx:
             # avoid dead lock if called from the wx mainloop
             return default_evaluator(tocall, *args, **kwargs)
         else:
-            o=type('',(object,),dict(call=(tocall, args, kwargs), res=None))
-            wx.CallAfter(wx_evaluator,o)
+            o=type('', (object,), dict(call=(tocall, args, kwargs), res=None))
+            wx.CallAfter(wx_evaluator, o)
             wx_eval_lock.acquire()
             return o.res
 
@@ -537,7 +537,7 @@ import traceback
 
 def LogException(*exp):
     if pyroserver.plcobj is not None:
-        pyroserver.plcobj.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
+        pyroserver.plcobj.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
     else:
         traceback.print_exception(*exp)
 
@@ -611,7 +611,7 @@ if havetwisted or havewx:
 else:
     try:
         pyroserver.Loop()
-    except KeyboardInterrupt,e:
+    except KeyboardInterrupt, e:
         pass
 pyroserver.Quit()
 sys.exit(0)

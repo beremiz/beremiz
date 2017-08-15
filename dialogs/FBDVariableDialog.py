@@ -101,7 +101,7 @@ class FBDVariableDialog(BlockPreviewDialog):
 
         # Create a list box to selected variable expression in the list of
         # variables defined in POU
-        self.VariableName = wx.ListBox(self, size=wx.Size(-1,120),
+        self.VariableName = wx.ListBox(self, size=wx.Size(-1, 120),
               style=wx.LB_SINGLE|wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
         self.RightGridSizer.AddWindow(self.VariableName, border=4, flag=wx.GROW|wx.TOP)

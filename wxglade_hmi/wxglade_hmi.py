@@ -77,7 +77,7 @@ class WxGladeHMI(PythonFileCTNMixin):
         glade = os.path.join(path, 'wxglade.py')
         if wx.Platform == '__WXMSW__':
             glade = "\"%s\"" % glade
-        mode = {False:os.P_NOWAIT, True:os.P_WAIT}[wait]
+        mode = {False: os.P_NOWAIT, True: os.P_WAIT}[wait]
         os.spawnv(mode, sys.executable, ["\"%s\"" % sys.executable] + [glade] + options)
 
     def OnCTNSave(self, from_project_path=None):
@@ -122,7 +122,7 @@ class WxGladeHMI(PythonFileCTNMixin):
 
         declare_hmi = "\n".join(["%(name)s = None\n" % x +
                           "\n".join(["%(class)s.%(h)s = %(h)s"%
-                            dict(x,h=h) for h in x['handlers']])
+                            dict(x, h=h) for h in x['handlers']])
                                 for x in hmi_frames])
         global_hmi = ("global %s\n" % ",".join(
                          [x["name"] for x in hmi_frames])
@@ -140,13 +140,13 @@ def OnCloseFrame(evt):
                 for x in hmi_frames])
 
         self.PreSectionsTexts = {
-            "globals":define_hmi,
-            "start":global_hmi,
-            "stop":global_hmi + cleanup_hmi
+            "globals": define_hmi,
+            "start":   global_hmi,
+            "stop":    global_hmi + cleanup_hmi
         }
         self.PostSectionsTexts = {
-            "globals":declare_hmi,
-            "start":init_hmi,
+            "globals": declare_hmi,
+            "start":   init_hmi,
         }
 
         return PythonFileCTNMixin.CTNGenerate_C(self, buildpath, locations)
@@ -164,7 +164,7 @@ def OnCloseFrame(evt):
         if open_wxglade:
             if not os.path.exists(wxg_filename):
                 hmi_name = self.BaseParams.getName()
-                open(wxg_filename,"w").write("""<?xml version="1.0"?>
+                open(wxg_filename, "w").write("""<?xml version="1.0"?>
     <application path="" name="" class="" option="0" language="python" top_window="%(name)s" encoding="UTF-8" use_gettext="0" overwrite="0" use_new_namespace="1" for_version="2.8" is_template="0">
         <object class="%(class)s" name="%(name)s" base="EditFrame">
             <style>wxDEFAULT_FRAME_STYLE</style>

@@ -61,7 +61,7 @@ class SearchInProjectDialog(wx.Dialog):
         self.CaseSensitive = wx.CheckBox(self, label=_('Case sensitive'))
         pattern_sizer.AddWindow(self.CaseSensitive, flag=wx.GROW)
 
-        self.Pattern = wx.TextCtrl(self, size=wx.Size(250,-1))
+        self.Pattern = wx.TextCtrl(self, size=wx.Size(250, -1))
         self.Bind(wx.EVT_TEXT, self.FindPatternChanged, self.Pattern)
         pattern_sizer.AddWindow(self.Pattern, flag=wx.GROW)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)

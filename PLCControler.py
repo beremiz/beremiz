@@ -96,7 +96,7 @@ ScriptDirectory = paths.AbsDir(__file__)
 
 
 def GetUneditableNames():
-    _ = lambda x:x
+    _ = lambda x: x
     return [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
             _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
             _("Configurations"), _("Resources"), _("Properties")]
@@ -695,13 +695,27 @@ class PLCControler:
         project = self.GetProject(debug)
         if project is not None:
             infos = {"name": project.getname(), "type": ITEM_PROJECT}
-            datatypes = {"name": DATA_TYPES, "type": ITEM_DATATYPES, "values":[]}
+            datatypes = {"name": DATA_TYPES, "type": ITEM_DATATYPES, "values": []}
             for datatype in project.getdataTypes():
                 datatypes["values"].append({"name": datatype.getname(), "type": ITEM_DATATYPE,
                     "tagname": self.ComputeDataTypeName(datatype.getname()), "values": []})
-            pou_types = {"function": {"name": FUNCTIONS, "type": ITEM_FUNCTION, "values":[]},
-                         "functionBlock": {"name": FUNCTION_BLOCKS, "type": ITEM_FUNCTIONBLOCK, "values":[]},
-                         "program": {"name": PROGRAMS, "type": ITEM_PROGRAM, "values":[]}}
+            pou_types = {
+                "function": {
+                    "name":   FUNCTIONS,
+                    "type":   ITEM_FUNCTION,
+                    "values": []
+                },
+                "functionBlock": {
+                    "name":   FUNCTION_BLOCKS,
+                    "type":   ITEM_FUNCTIONBLOCK,
+                    "values": []
+                },
+                "program": {
+                    "name":   PROGRAMS,
+                    "type":   ITEM_PROGRAM,
+                    "values": []
+                }
+            }
             for pou in project.getpous():
                 pou_type = pou.getpouType()
                 pou_infos = {"name": pou.getname(), "type": ITEM_POU,
@@ -1544,7 +1558,7 @@ class PLCControler:
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
             for desc in cat["list"]:
-                BlkLst = self.TotalTypesDict.setdefault(desc["name"],[])
+                BlkLst = self.TotalTypesDict.setdefault(desc["name"], [])
                 BlkLst.append((section["name"], desc))
 
     # Function that clear the confnode list
@@ -1596,7 +1610,7 @@ class PLCControler:
     # Function that returns the block definition associated to the block type given
     def GetBlockType(self, typename, inputs = None, debug = False):
         result_blocktype = None
-        for sectioname, blocktype in self.TotalTypesDict.get(typename,[]):
+        for sectioname, blocktype in self.TotalTypesDict.get(typename, []):
             if inputs is not None and inputs != "undefined":
                 block_inputs = tuple([var_type for name, var_type, modifier in blocktype["inputs"]])
                 if reduce(lambda x, y: x and y, map(lambda x: x[0] == "ANY" or self.IsOfType(*x), zip(inputs, block_inputs)), True):
@@ -1634,7 +1648,7 @@ class PLCControler:
         project = self.GetProject(debug)
         if project is not None:
             pou_type = None
-            if words[0] in ["P","T","A"]:
+            if words[0] in ["P", "T", "A"]:
                 name = words[1]
                 pou_type = self.GetPouType(name, debug)
             filter = (["function"]
@@ -1658,11 +1672,11 @@ class PLCControler:
         project = self.GetProject(debug)
         words = tagname.split("::")
         name = None
-        if project is not None and words[0] in ["P","T","A"]:
+        if project is not None and words[0] in ["P", "T", "A"]:
             name = words[1]
         blocktypes = []
         for blocks in self.TotalTypesDict.itervalues():
-            for sectioname,block in blocks:
+            for sectioname, block in blocks:
                 if block["type"] == "functionBlock":
                     blocktypes.append(block["name"])
         if project is not None:
@@ -1773,7 +1787,7 @@ class PLCControler:
         TypeHierarchy_list has a rough order to it (e.g. SINT, INT, DINT, ...),
         which makes it easy for a user to find a type in a menu.
         '''
-        return [x for x,y in TypeHierarchy_list if not x.startswith("ANY")]
+        return [x for x, y in TypeHierarchy_list if not x.startswith("ANY")]
 
     def IsOfType(self, typename, reference, debug = False):
         if reference is None or typename == reference:
@@ -2174,7 +2188,7 @@ class PLCControler:
     # Return edited element name
     def GetEditedElementName(self, tagname):
         words = tagname.split("::")
-        if words[0] in ["P","C","D"]:
+        if words[0] in ["P", "C", "D"]:
             return words[1]
         else:
             return words[2]
@@ -2183,7 +2197,7 @@ class PLCControler:
     # Return edited element name and type
     def GetEditedElementType(self, tagname, debug = False):
         words = tagname.split("::")
-        if words[0] in ["P","T","A"]:
+        if words[0] in ["P", "T", "A"]:
             return words[1], self.GetPouType(words[1], debug)
         return None, None
 
@@ -2201,7 +2215,7 @@ class PLCControler:
     # Return the edited element variables
     def GetEditedElementInterfaceVars(self, tagname, tree=False, debug = False):
         words = tagname.split("::")
-        if words[0] in ["P","T","A"]:
+        if words[0] in ["P", "T", "A"]:
             project = self.GetProject(debug)
             if project is not None:
                 pou = project.getpou(words[1])
@@ -2259,7 +2273,7 @@ class PLCControler:
     # Return the names of the pou elements
     def GetEditedElementVariables(self, tagname, debug = False):
         words = tagname.split("::")
-        if words[0] in ["P","T","A"]:
+        if words[0] in ["P", "T", "A"]:
             return self.GetProjectPouVariableNames(words[1], debug)
         elif words[0] in ["C", "R"]:
             names = self.GetConfigurationVariableNames(words[1], debug)
@@ -2302,7 +2316,7 @@ class PLCControler:
             names.update(dict([(varname.upper(), True)
                                for varname in self.GetEditedElementVariables(tagname, debug)]))
             words = tagname.split("::")
-            if words[0] in ["P","T","A"]:
+            if words[0] in ["P", "T", "A"]:
                 element = self.GetEditedElement(tagname, debug)
                 if element is not None and element.getbodyType() not in ["ST", "IL"]:
                     for instance in element.getinstances():
@@ -2494,7 +2508,7 @@ class PLCControler:
             var_type_obj.setcontent(derived_type)
         return var_type_obj
 
-    def AddEditedElementPouVar(self, tagname, var_type, name,**args):
+    def AddEditedElementPouVar(self, tagname, var_type, name, **args):
         if self.Project is not None:
             words = tagname.split("::")
             if words[0] in ['P', 'T', 'A']:

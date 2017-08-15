@@ -158,12 +158,12 @@ class ResourceTable(CustomTable):
                     if interval != "" and IEC_TIME_MODEL.match(interval.upper()) is None:
                         error = True
                 elif colname == "Single":
-                    editor = SingleCellEditor(self,colname)
+                    editor = SingleCellEditor(self, colname)
                     editor.SetParameters(self.Parent.VariableList)
                     if self.GetValueByName(row, "Triggering") != "Interrupt":
                         grid.SetReadOnly(row, col, True)
                     single = self.GetValueByName(row, colname)
-                    if single != "" and not CheckSingle(single,self.Parent.VariableList):
+                    if single != "" and not CheckSingle(single, self.Parent.VariableList):
                         error = True
                 elif colname == "Triggering":
                     editor = wx.grid.GridCellChoiceEditor()

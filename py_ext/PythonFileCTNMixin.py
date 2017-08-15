@@ -87,14 +87,14 @@ class PythonFileCTNMixin(CodeFile):
 
     PreSectionsTexts = {}
     PostSectionsTexts = {}
-    def GetSection(self,section):
-        return self.PreSectionsTexts.get(section,"") + "\n" + \
+    def GetSection(self, section):
+        return self.PreSectionsTexts.get(section, "") + "\n" + \
                getattr(self.CodeFile, section).getanyText() + "\n" + \
-               self.PostSectionsTexts.get(section,"")
+               self.PostSectionsTexts.get(section, "")
 
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
-        location_str = "_".join(map(lambda x:str(x),
+        location_str = "_".join(map(lambda x: str(x),
                                 self.GetCurrentLocation()))
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
@@ -243,7 +243,7 @@ PYTHON_POLL* __%(name)s_notifier;
                              varpubfmt) % varinfo
                             for varinfo in varinfos])
         varinit = "\n".join([varinitonchangefmt % dict(
-                                onchangelen = len(varinfo["onchangecode"]),**varinfo)
+                                onchangelen = len(varinfo["onchangecode"]), **varinfo)
                             for varinfo in varinfos if varinfo["onchange"]])
 
         # TODO : use config name obtained from model instead of default
@@ -281,7 +281,7 @@ void __publish_%(location_str)s(void){
 """ % locals()
 
         Gen_PyCfile_path = os.path.join(buildpath, "PyCFile_%s.c" % location_str)
-        pycfile = open(Gen_PyCfile_path,'w')
+        pycfile = open(Gen_PyCfile_path, 'w')
         pycfile.write(PyCFileContent)
         pycfile.close()
 
@@ -291,5 +291,5 @@ void __publish_%(location_str)s(void){
         return ([(Gen_PyCfile_path, matiec_CFLAGS)],
                 "",
                 True,
-                ("runtime_%s.py" % location_str, file(runtimefile_path,"rb")))
+                ("runtime_%s.py" % location_str, file(runtimefile_path, "rb")))
 

@@ -59,7 +59,7 @@ def GetAppRevision():
     # try to read revision from file
     if rev is None:
         try:
-            f = open(os.path.join(app_dir,"revision"))
+            f = open(os.path.join(app_dir, "revision"))
             rev = f.readline()
         except:
             pass

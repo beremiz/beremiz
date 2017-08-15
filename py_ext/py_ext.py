@@ -51,7 +51,7 @@ class PythonLibrary(POULibrary):
             "python_eval_fb_count": python_eval_fb_count }
 
         Gen_Pythonfile_path = os.path.join(buildpath, "py_ext.c")
-        pythonfile = open(Gen_Pythonfile_path,'w')
+        pythonfile = open(Gen_Pythonfile_path, 'w')
         pythonfile.write(plc_python_code)
         pythonfile.close()
 

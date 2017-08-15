@@ -31,7 +31,7 @@ service_type = '_PYRO._tcp.local.'
 class ServicePublisher():
     def __init__(self):
         # type: fully qualified service type name
-        self.serviceproperties = {'description':'Beremiz remote PLC'}
+        self.serviceproperties = {'description': 'Beremiz remote PLC'}
 
         self.name = None
         self.ip_32b = None
@@ -43,13 +43,13 @@ class ServicePublisher():
     def RegisterService(self, name, ip, port):
         try:
             self._RegisterService(name, ip, port)
-        except Exception,e:
-            self.retrytimer = threading.Timer(2,self.RegisterService,[name, ip, port])
+        except Exception, e:
+            self.retrytimer = threading.Timer(2, self.RegisterService, [name, ip, port])
             self.retrytimer.start()
 
     def _RegisterService(self, name, ip, port):
         # name: fully qualified service name
-        self.service_name = 'Beremiz_%s.%s' % (name,service_type)
+        self.service_name = 'Beremiz_%s.%s' % (name, service_type)
         self.name = name
         self.port = port
 
@@ -90,6 +90,6 @@ class ServicePublisher():
             s.close()
             if host != '0.0.0.0':
                 return host
-        except Exception,e:
+        except Exception, e:
             pass
         return socket.gethostbyname(socket.gethostname())

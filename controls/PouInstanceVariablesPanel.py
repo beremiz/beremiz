@@ -148,7 +148,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                        getattr(CT, "TR_ALIGN_WINDOWS_RIGHT", CT.TR_ALIGN_WINDOWS))
         self.VariablesList.SetIndent(0)
         self.VariablesList.SetSpacing(5)
-        self.VariablesList.DoSelectItem = lambda *x,**y:True
+        self.VariablesList.DoSelectItem = lambda *x, **y: True
         self.VariablesList.Bind(CT.EVT_TREE_ITEM_ACTIVATED,
                 self.OnVariablesListItemActivated)
         self.VariablesList.Bind(wx.EVT_LEFT_DOWN, self.OnVariablesListLeftDown)

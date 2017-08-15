@@ -1557,7 +1557,7 @@ if __name__ == '__main__':
     print "Multicast DNS Service Discovery for Python, version", __version__
     r = Zeroconf()
     print "1. Testing registration of a service..."
-    desc = {'version':'0.10','a':'test value', 'b':'another value'}
+    desc = {'version': '0.10', 'a': 'test value', 'b': 'another value'}
     info = ServiceInfo("_http._tcp.local.", "My Service Name._http._tcp.local.", socket.inet_aton("127.0.0.1"), 1234, 0, 0, desc)
     print "   Registering service..."
     r.registerService(info)

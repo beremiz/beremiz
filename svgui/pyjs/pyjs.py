@@ -1148,7 +1148,7 @@ class Translator:
             tempName = "__tupleassign" + str(uniqueID) + "__"
             print >>self.output, "    var " + tempName + " = " + \
                                  self.expr(node.expr, current_klass) + ";"
-            for index,child in enumerate(v.getChildNodes()):
+            for index, child in enumerate(v.getChildNodes()):
                 rhs = tempName + ".__getitem__(" + str(index) + ")"
 
                 if isinstance(child, ast.AssAttr):
@@ -1412,7 +1412,7 @@ class Translator:
     def _bitshiftright(self, node, current_klass):
         return self.expr(node.left, current_klass) + " >>> " + self.expr(node.right, current_klass)
 
-    def _bitxor(self,node, current_klass):
+    def _bitxor(self, node, current_klass):
         return " ^ ".join([self.expr(child, current_klass) for child in node.nodes])
 
     def _bitor(self, node, current_klass):
@@ -1507,7 +1507,7 @@ class Translator:
             return self._invert(node, current_klass)
         elif isinstance(node, ast.Bitand):
             return "("+self._bitand(node, current_klass)+")"
-        elif isinstance(node,ast.LeftShift):
+        elif isinstance(node, ast.LeftShift):
             return self._bitshiftleft(node, current_klass)
         elif isinstance(node, ast.RightShift):
             return self._bitshiftright(node, current_klass)

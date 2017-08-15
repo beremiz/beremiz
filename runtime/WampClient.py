@@ -70,7 +70,7 @@ class WampSession(wamp.ApplicationSession):
         ID = self.config.extra["ID"]
         print 'WAMP session joined by :', ID
         for name in ExposedCalls:
-            reg = yield self.register(GetCallee(name), '.'.join((ID,name)))
+            reg = yield self.register(GetCallee(name), '.'.join((ID, name)))
 
         for name in SubscribedEvents:
             reg = yield self.subscribe(GetCallee(name), name)
@@ -109,7 +109,7 @@ def RegisterWampClient(wampconf):
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
         realm = WSClientConf["realm"],
-        extra = {"ID":WSClientConf["ID"]})
+        extra = {"ID": WSClientConf["ID"]})
     session_factory = wamp.ApplicationSessionFactory(
         config = component_config)
     session_factory.session = WampSession
@@ -124,7 +124,7 @@ def RegisterWampClient(wampconf):
 
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
-    print "WAMP client connecting to :",WSClientConf["url"]
+    print "WAMP client connecting to :", WSClientConf["url"]
     return conn
 
 

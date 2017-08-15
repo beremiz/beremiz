@@ -38,11 +38,11 @@ class PythonCodeEditor(CodeEditor):
         self.SetLexer(stc.STC_LEX_PYTHON)
 
         # Line numbers in margin
-        self.StyleSetSpec(stc.STC_STYLE_LINENUMBER,'fore:#000000,back:#99A9C2,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_STYLE_LINENUMBER, 'fore:#000000,back:#99A9C2,size:%(size)d' % faces)
         # Highlighted brace
-        self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT,'fore:#00009D,back:#FFFF00,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT, 'fore:#00009D,back:#FFFF00,size:%(size)d' % faces)
         # Unmatched brace
-        self.StyleSetSpec(stc.STC_STYLE_BRACEBAD,'fore:#00009D,back:#FF0000,size:%(size)d' % faces)
+        self.StyleSetSpec(stc.STC_STYLE_BRACEBAD, 'fore:#00009D,back:#FF0000,size:%(size)d' % faces)
         # Indentation guide
         self.StyleSetSpec(stc.STC_STYLE_INDENTGUIDE, 'fore:#CDCDCD,size:%(size)d' % faces)
 

@@ -31,9 +31,9 @@ sd = paths.AbsDir(__file__)
 # Override gettext _ in this module
 # since we just want string to be added to dictionnary
 # but translation should happen here
-_ = lambda x:x
+_ = lambda x: x
 
-LANGUAGES = ["IL","ST","FBD","LD","SFC"]
+LANGUAGES = ["IL", "ST", "FBD", "LD", "SFC"]
 
 LOCATIONDATATYPES = {"X": ["BOOL"],
                      "B": ["SINT", "USINT", "BYTE", "STRING"],
@@ -45,10 +45,10 @@ LOCATIONDATATYPES = {"X": ["BOOL"],
 #                        Function Block Types definitions
 #-------------------------------------------------------------------------------
 
-StdTC6Libs = [(_("Standard function blocks"),  join(sd, "Standard_Function_Blocks.xml")),
-              (_("Additional function blocks"),join(sd, "Additional_Function_Blocks.xml"))]
+StdTC6Libs = [(_("Standard function blocks"),   join(sd, "Standard_Function_Blocks.xml")),
+              (_("Additional function blocks"), join(sd, "Additional_Function_Blocks.xml"))]
 
-StdFuncsCSV = join(sd,"iec_std.csv")
+StdFuncsCSV = join(sd, "iec_std.csv")
 
 
 def GetBlockInfos(pou):
@@ -109,39 +109,39 @@ TypeHierarchy_list = [
 DefaultType = "DINT"
 
 DataTypeRange_list = [
-    ("SINT", (-2**7, 2**7 - 1)),
-    ("INT", (-2**15, 2**15 - 1)),
-    ("DINT", (-2**31, 2**31 - 1)),
-    ("LINT", (-2**31, 2**31 - 1)),
-    ("USINT", (0, 2**8 - 1)),
-    ("UINT", (0, 2**16 - 1)),
-    ("UDINT", (0, 2**31 - 1)),
-    ("ULINT", (0, 2**31 - 1))
+    ("SINT",  (-2**7,  2**7 - 1)),
+    ("INT",   (-2**15, 2**15 - 1)),
+    ("DINT",  (-2**31, 2**31 - 1)),
+    ("LINT",  (-2**31, 2**31 - 1)),
+    ("USINT", (0,      2**8 - 1)),
+    ("UINT",  (0,      2**16 - 1)),
+    ("UDINT", (0,      2**31 - 1)),
+    ("ULINT", (0,      2**31 - 1))
 ]
 
 ANY_TO_ANY_FILTERS = {
-    "ANY_TO_ANY":[
+    "ANY_TO_ANY": [
         # simple type conv are let as C cast
-        (("ANY_INT","ANY_BIT"),("ANY_NUM","ANY_BIT")),
-        (("ANY_REAL",),("ANY_REAL",)),
+        (("ANY_INT", "ANY_BIT"), ("ANY_NUM", "ANY_BIT")),
+        (("ANY_REAL",), ("ANY_REAL",)),
         # REAL_TO_INT
-        (("ANY_REAL",),("ANY_SINT",)),
-        (("ANY_REAL",),("ANY_UINT",)),
-        (("ANY_REAL",),("ANY_BIT",)),
+        (("ANY_REAL",), ("ANY_SINT",)),
+        (("ANY_REAL",), ("ANY_UINT",)),
+        (("ANY_REAL",), ("ANY_BIT",)),
         # TO_TIME
-        (("ANY_INT","ANY_BIT"),("ANY_DATE","TIME")),
-        (("ANY_REAL",),("ANY_DATE","TIME")),
-        (("ANY_STRING",), ("ANY_DATE","TIME")),
+        (("ANY_INT", "ANY_BIT"), ("ANY_DATE", "TIME")),
+        (("ANY_REAL",),          ("ANY_DATE", "TIME")),
+        (("ANY_STRING",),        ("ANY_DATE", "TIME")),
         # FROM_TIME
-        (("ANY_DATE","TIME"), ("ANY_REAL",)),
-        (("ANY_DATE","TIME"), ("ANY_INT","ANY_NBIT")),
+        (("ANY_DATE", "TIME"), ("ANY_REAL",)),
+        (("ANY_DATE", "TIME"), ("ANY_INT", "ANY_NBIT")),
         (("TIME",), ("ANY_STRING",)),
         (("DATE",), ("ANY_STRING",)),
-        (("TOD",), ("ANY_STRING",)),
-        (("DT",), ("ANY_STRING",)),
+        (("TOD",),  ("ANY_STRING",)),
+        (("DT",),   ("ANY_STRING",)),
         # TO_STRING
-        (("BOOL",), ("ANY_STRING",)),
-        (("ANY_BIT",), ("ANY_STRING",)),
+        (("BOOL",),     ("ANY_STRING",)),
+        (("ANY_BIT",),  ("ANY_STRING",)),
         (("ANY_REAL",), ("ANY_STRING",)),
         (("ANY_SINT",), ("ANY_STRING",)),
         (("ANY_UINT",), ("ANY_STRING",)),
@@ -150,17 +150,20 @@ ANY_TO_ANY_FILTERS = {
         (("ANY_STRING",), ("ANY_BIT",)),
         (("ANY_STRING",), ("ANY_SINT",)),
         (("ANY_STRING",), ("ANY_UINT",)),
-        (("ANY_STRING",), ("ANY_REAL",))],
-    "BCD_TO_ANY":[
-        (("BYTE",),("USINT",)),
-        (("WORD",),("UINT",)),
-        (("DWORD",),("UDINT",)),
-        (("LWORD",),("ULINT",))],
-    "ANY_TO_BCD":[
-        (("USINT",),("BYTE",)),
-        (("UINT",),("WORD",)),
-        (("UDINT",),("DWORD",)),
-        (("ULINT",),("LWORD",))]
+        (("ANY_STRING",), ("ANY_REAL",))
+    ],
+    "BCD_TO_ANY": [
+        (("BYTE",),  ("USINT",)),
+        (("WORD",),  ("UINT",)),
+        (("DWORD",), ("UDINT",)),
+        (("LWORD",), ("ULINT",))
+    ],
+    "ANY_TO_BCD": [
+        (("USINT",), ("BYTE",)),
+        (("UINT",),  ("WORD",)),
+        (("UDINT",), ("DWORD",)),
+        (("ULINT",), ("LWORD",))
+    ]
 }
 
 # remove gettext override

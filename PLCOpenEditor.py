@@ -405,9 +405,9 @@ class PLCOpenEditor(IDEFrame):
 Max_Traceback_List_Size = 20
 
 
-def Display_Exception_Dialog(e_type,e_value,e_tb):
+def Display_Exception_Dialog(e_type, e_value, e_tb):
     trcbck_lst = []
-    for i,line in enumerate(traceback.extract_tb(e_tb)):
+    for i, line in enumerate(traceback.extract_tb(e_tb)):
         trcbck = " " + str(i+1) + _(". ")
         if line[0].find(os.getcwd()) == -1:
             trcbck += _("file : ") + str(line[0]) + _(",   ")
@@ -472,7 +472,7 @@ def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
         if str(e_value).startswith("!!!"):
             Display_Error_Dialog(e_value)
         elif ex not in ignored_exceptions:
-            result = Display_Exception_Dialog(e_type,e_value,e_traceback)
+            result = Display_Exception_Dialog(e_type, e_value, e_traceback)
             if result:
                 ignored_exceptions.append(ex)
                 info = {
@@ -495,7 +495,7 @@ def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
                     if 'self' in exception_locals:
                         info['self'] = format_namespace(exception_locals['self'].__dict__)
 
-                output = open(path+os.sep+"bug_report_"+time.strftime("%Y_%m_%d__%H-%M-%S")+".txt",'w')
+                output = open(path+os.sep+"bug_report_"+time.strftime("%Y_%m_%d__%H-%M-%S")+".txt", 'w')
                 lst = info.keys()
                 lst.sort()
                 for a in lst:

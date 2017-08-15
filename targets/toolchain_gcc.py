@@ -111,7 +111,7 @@ class toolchain_gcc():
 
     def concat_deps(self, bn):
         # read source
-        src = open(os.path.join(self.buildpath, bn),"r").read()
+        src = open(os.path.join(self.buildpath, bn), "r").read()
         # update direct dependencies
         deps = []
         self.append_cfile_deps(src, deps)
@@ -121,7 +121,7 @@ class toolchain_gcc():
 
     def check_and_update_hash_and_deps(self, bn):
         # Get latest computed hash and deps
-        oldhash, deps = self.srcmd5.get(bn,(None,[]))
+        oldhash, deps = self.srcmd5.get(bn, (None, []))
         # read source
         src = open(os.path.join(self.buildpath, bn)).read()
         # compute new hash
@@ -165,7 +165,7 @@ class toolchain_gcc():
         for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             if CFilesAndCFLAGS:
                 if Location:
-                    self.CTRInstance.logger.write(".".join(map(str,Location))+" :\n")
+                    self.CTRInstance.logger.write(".".join(map(str, Location))+" :\n")
                 else:
                     self.CTRInstance.logger.write(_("PLC :\n"))
 

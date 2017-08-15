@@ -160,7 +160,7 @@ class ProgramGenerator:
                                  ("%s" % min_value, (tagname, "lower")),
                                  ("..", ()),
                                  ("%s" % max_value, (tagname, "upper")),
-                                 (")",())]
+                                 (")", ())]
             # Data type is an enumerated type
             elif basetype_content_type == "enum":
                 values = [[(value.getname(), (tagname, "value", i))]
@@ -521,7 +521,7 @@ class PouProgramGenerator:
         self.ComputedConnectors = {}
         self.ConnectionTypes = {}
         self.RelatedConnections = []
-        self.SFCNetworks = {"Steps":{}, "Transitions":{}, "Actions":{}}
+        self.SFCNetworks = {"Steps": {}, "Transitions": {}, "Actions": {}}
         self.SFCComputedBlocks = []
         self.ActionNumber = 0
         self.Program = []
@@ -898,7 +898,7 @@ class PouProgramGenerator:
             body = body[0]
         body_content = body.getcontent()
         body_type = body_content.getLocalTag()
-        if body_type in ["IL","ST"]:
+        if body_type in ["IL", "ST"]:
             text = body_content.getanyText()
             self.ParentGenerator.GeneratePouProgramInText(text.upper())
             self.Program = [(ReIndentText(text, len(self.CurrentIndent)),

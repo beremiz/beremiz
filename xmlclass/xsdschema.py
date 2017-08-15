@@ -509,7 +509,7 @@ def ExtractAttributes(factory, elements, base=None):
     if base is not None:
         basetypeinfos = factory.FindSchemaElement(base)
         if not isinstance(basetypeinfos, (UnicodeType, StringType)) and basetypeinfos["type"] == COMPLEXTYPE:
-            attrnames = dict(map(lambda x:(x["name"], True), basetypeinfos["attributes"]))
+            attrnames = dict(map(lambda x: (x["name"], True), basetypeinfos["attributes"]))
 
     for element in elements:
         if element["type"] == ATTRIBUTE:
@@ -2210,7 +2210,7 @@ XSD_NAMESPACE = {
     "long": {
         "type": SIMPLETYPE,
         "basename": "long",
-        "extract": GenerateIntegerExtraction(minInclusive=-2**63,maxExclusive=2**63),
+        "extract": GenerateIntegerExtraction(minInclusive=-2**63, maxExclusive=2**63),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2220,7 +2220,7 @@ XSD_NAMESPACE = {
     "unsignedLong": {
         "type": SIMPLETYPE,
         "basename": "unsignedLong",
-        "extract": GenerateIntegerExtraction(minInclusive=0,maxExclusive=2**64),
+        "extract": GenerateIntegerExtraction(minInclusive=0, maxExclusive=2**64),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2230,7 +2230,7 @@ XSD_NAMESPACE = {
     "int": {
         "type": SIMPLETYPE,
         "basename": "int",
-        "extract": GenerateIntegerExtraction(minInclusive=-2**31,maxExclusive=2**31),
+        "extract": GenerateIntegerExtraction(minInclusive=-2**31, maxExclusive=2**31),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2240,7 +2240,7 @@ XSD_NAMESPACE = {
     "unsignedInt": {
         "type": SIMPLETYPE,
         "basename": "unsignedInt",
-        "extract": GenerateIntegerExtraction(minInclusive=0,maxExclusive=2**32),
+        "extract": GenerateIntegerExtraction(minInclusive=0, maxExclusive=2**32),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2250,7 +2250,7 @@ XSD_NAMESPACE = {
     "short": {
         "type": SIMPLETYPE,
         "basename": "short",
-        "extract": GenerateIntegerExtraction(minInclusive=-2**15,maxExclusive=2**15),
+        "extract": GenerateIntegerExtraction(minInclusive=-2**15, maxExclusive=2**15),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2260,7 +2260,7 @@ XSD_NAMESPACE = {
     "unsignedShort": {
         "type": SIMPLETYPE,
         "basename": "unsignedShort",
-        "extract": GenerateIntegerExtraction(minInclusive=0,maxExclusive=2**16),
+        "extract": GenerateIntegerExtraction(minInclusive=0, maxExclusive=2**16),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2270,7 +2270,7 @@ XSD_NAMESPACE = {
     "byte": {
         "type": SIMPLETYPE,
         "basename": "byte",
-        "extract": GenerateIntegerExtraction(minInclusive=-2**7,maxExclusive=2**7),
+        "extract": GenerateIntegerExtraction(minInclusive=-2**7, maxExclusive=2**7),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2280,7 +2280,7 @@ XSD_NAMESPACE = {
     "unsignedByte": {
         "type": SIMPLETYPE,
         "basename": "unsignedByte",
-        "extract": GenerateIntegerExtraction(minInclusive=0,maxExclusive=2**8),
+        "extract": GenerateIntegerExtraction(minInclusive=0, maxExclusive=2**8),
         "facets": DECIMAL_FACETS,
         "generate": GenerateSimpleTypeXMLText(str),
         "initial": lambda: 0,
@@ -2322,7 +2322,7 @@ XSD_NAMESPACE = {
         "basename": "boolean",
         "extract": GetBoolean,
         "facets": GenerateDictFacets(["pattern", "whiteSpace"]),
-        "generate": GenerateSimpleTypeXMLText(lambda x:{True: "true", False: "false"}[x]),
+        "generate": GenerateSimpleTypeXMLText(lambda x: {True: "true", False: "false"}[x]),
         "initial": lambda: False,
         "check": lambda x: isinstance(x, BooleanType)
     },
@@ -2343,7 +2343,7 @@ XSD_NAMESPACE = {
         "extract": GetDateTime,
         "facets": NUMBER_FACETS,
         "generate": GenerateSimpleTypeXMLText(datetime.datetime.isoformat),
-        "initial": lambda: datetime.datetime(1,1,1,0,0,0,0),
+        "initial": lambda: datetime.datetime(1, 1, 1, 0, 0, 0, 0),
         "check": lambda x: isinstance(x, datetime.datetime)
     },
 
@@ -2353,7 +2353,7 @@ XSD_NAMESPACE = {
         "extract": GetDate,
         "facets": NUMBER_FACETS,
         "generate": GenerateSimpleTypeXMLText(datetime.date.isoformat),
-        "initial": lambda: datetime.date(1,1,1),
+        "initial": lambda: datetime.date(1, 1, 1),
         "check": lambda x: isinstance(x, datetime.date)
     },
 
@@ -2363,7 +2363,7 @@ XSD_NAMESPACE = {
         "extract": GetTime,
         "facets": NUMBER_FACETS,
         "generate": GenerateSimpleTypeXMLText(datetime.time.isoformat),
-        "initial": lambda: datetime.time(0,0,0,0),
+        "initial": lambda: datetime.time(0, 0, 0, 0),
         "check": lambda x: isinstance(x, datetime.time)
     },
 
@@ -2548,5 +2548,5 @@ XSD_NAMESPACE = {
     },
 
     # Complex Types
-    "anyType": {"type": COMPLEXTYPE, "extract": lambda x:None},
+    "anyType": {"type": COMPLEXTYPE, "extract": lambda x: None},
 }

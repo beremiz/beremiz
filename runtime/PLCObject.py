@@ -47,8 +47,8 @@ def get_last_traceback(tb):
     return tb
 
 lib_ext ={
-     "linux2":".so",
-     "win32":".dll",
+     "linux2": ".so",
+     "win32":  ".dll",
      }.get(sys.platform, "")
 
 
@@ -128,16 +128,16 @@ class PLCObject(pyro.ObjBase):
                 ctypes.byref(tv_nsec))
             if sz and sz <= maxsz:
                 self._log_read_buffer[sz] = '\x00'
-                return self._log_read_buffer.value,tick.value,tv_sec.value,tv_nsec.value
+                return self._log_read_buffer.value, tick.value, tv_sec.value, tv_nsec.value
         elif self._loading_error is not None and level==0:
-            return self._loading_error,0,0,0
+            return self._loading_error, 0, 0, 0
         return None
 
     def _GetMD5FileName(self):
         return os.path.join(self.workingdir, "lasttransferedPLC.md5")
 
     def _GetLibFileName(self):
-        return os.path.join(self.workingdir,self.CurrentPLCFilename)
+        return os.path.join(self.workingdir, self.CurrentPLCFilename)
 
 
     def LoadPLC(self):
@@ -241,22 +241,22 @@ class PLCObject(pyro.ObjBase):
         """
         self.PLClibraryLock.acquire()
         # Forget all refs to library
-        self._startPLC = lambda x,y:None
-        self._stopPLC = lambda:None
-        self._ResetDebugVariables = lambda:None
-        self._RegisterDebugVariable = lambda x, y:None
-        self._IterDebugData = lambda x,y:None
-        self._FreeDebugData = lambda:None
-        self._GetDebugData = lambda:-1
-        self._suspendDebug = lambda x:-1
-        self._resumeDebug = lambda:None
-        self._PythonIterator = lambda:""
+        self._startPLC = lambda x, y: None
+        self._stopPLC = lambda: None
+        self._ResetDebugVariables = lambda: None
+        self._RegisterDebugVariable = lambda x, y: None
+        self._IterDebugData = lambda x, y: None
+        self._FreeDebugData = lambda: None
+        self._GetDebugData = lambda: -1
+        self._suspendDebug = lambda x: -1
+        self._resumeDebug = lambda: None
+        self._PythonIterator = lambda: ""
         self._GetLogCount = None
-        self._LogMessage = lambda l,m,s:PLCprint("OFF LOG :"+m)
+        self._LogMessage = lambda l, m, s: PLCprint("OFF LOG :"+m)
         self._GetLogMessage = None
         self.PLClibraryHandle = None
         # Unload library explicitely
-        if getattr(self,"_PLClibraryHandle",None) is not None:
+        if getattr(self, "_PLClibraryHandle", None) is not None:
             dlclose(self._PLClibraryHandle)
             self._PLClibraryHandle = None
 
@@ -269,9 +269,9 @@ class PLCObject(pyro.ObjBase):
         runtime python files, loaded when new PLC uploaded
         """
         for method in self.python_runtime_vars.get("_runtime_%s" % methodname, []):
-            res,exp = self.evaluator(method)
+            res, exp = self.evaluator(method)
             if exp is not None:
-                self.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
+                self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
     def PythonRuntimeInit(self):
         MethodNames = ["init", "start", "stop", "cleanup"]
@@ -292,7 +292,7 @@ class PLCObject(pyro.ObjBase):
                     t = self.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
                     raise KeyError("Try to set unknown shared global variable : %s" % name)
-                v = self.python_runtime_vars["_"+name+"_pack"](t,value)
+                v = self.python_runtime_vars["_"+name+"_pack"](t, value)
                 self.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
 
         self.python_runtime_vars.update({
@@ -317,7 +317,7 @@ class PLCObject(pyro.ObjBase):
                         if method is not None:
                             self.python_runtime_vars["_runtime_%s" % methodname].append(method)
         except:
-            self.LogMessage(0,traceback.format_exc())
+            self.LogMessage(0, traceback.format_exc())
             raise
 
         self.PythonRuntimeCall("init")
@@ -332,38 +332,38 @@ class PLCObject(pyro.ObjBase):
 
     def PythonThreadProc(self):
         self.StartSem.release()
-        res,cmd,blkid = "None","None",ctypes.c_void_p()
+        res, cmd, blkid = "None", "None", ctypes.c_void_p()
         compile_cache={}
         while True:
             # print "_PythonIterator(", res, ")",
-            cmd = self._PythonIterator(res,blkid)
+            cmd = self._PythonIterator(res, blkid)
             FBID = blkid.value
             # print " -> ", cmd, blkid
             if cmd is None:
                 break
             try:
                 self.python_runtime_vars["FBID"]=FBID
-                ccmd,AST =compile_cache.get(FBID, (None,None))
+                ccmd, AST =compile_cache.get(FBID, (None, None))
                 if ccmd is None or ccmd!=cmd:
                     AST = compile(cmd, '<plc>', 'eval')
-                    compile_cache[FBID]=(cmd,AST)
-                result,exp = self.evaluator(eval,AST,self.python_runtime_vars)
+                    compile_cache[FBID]=(cmd, AST)
+                result, exp = self.evaluator(eval, AST, self.python_runtime_vars)
                 if exp is not None:
                     res = "#EXCEPTION : "+str(exp[1])
-                    self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID,cmd,
+                    self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd,
                         '\n'.join(traceback.format_exception(*exp))))
                 else:
                     res=str(result)
                 self.python_runtime_vars["FBID"]=None
-            except Exception,e:
+            except Exception, e:
                 res = "#EXCEPTION : "+str(e)
-                self.LogMessage(1,('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID,cmd,str(e)))
+                self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
 
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
             error = None
-            res = self._startPLC(len(self.argv),c_argv(*self.argv))
+            res = self._startPLC(len(self.argv), c_argv(*self.argv))
             if res == 0:
                 self.PLCStatus = "Started"
                 self.StatusChange()
@@ -374,7 +374,7 @@ class PLCObject(pyro.ObjBase):
                 self.StartSem.acquire()
                 self.LogMessage("PLC started")
             else:
-                self.LogMessage(0,_("Problem starting PLC : error %d" % res))
+                self.LogMessage(0, _("Problem starting PLC : error %d" % res))
                 self.PLCStatus = "Broken"
                 self.StatusChange()
 
@@ -396,22 +396,22 @@ class PLCObject(pyro.ObjBase):
     def _Reload(self):
         self.daemon.shutdown(True)
         self.daemon.sock.close()
-        os.execv(sys.executable,[sys.executable]+sys.argv[:])
+        os.execv(sys.executable, [sys.executable]+sys.argv[:])
         # never reached
         return 0
 
     def ForceReload(self):
         # respawn python interpreter
-        Timer(0.1,self._Reload).start()
+        Timer(0.1, self._Reload).start()
         return True
 
     def GetPLCstatus(self):
-        return self.PLCStatus, map(self.GetLogCount,xrange(LogLevelsCount))
+        return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
 
     def NewPLC(self, md5sum, data, extrafiles):
         if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext
-            extra_files_log = os.path.join(self.workingdir,"extra_files.txt")
+            extra_files_log = os.path.join(self.workingdir, "extra_files.txt")
 
             self.UnLoadPLC()
 
@@ -431,7 +431,7 @@ class PLCObject(pyro.ObjBase):
 
             try:
                 # Create new PLC file
-                open(os.path.join(self.workingdir,NewFileName),
+                open(os.path.join(self.workingdir, NewFileName),
                      'wb').write(data)
 
                 # Store new PLC filename based on md5 key
@@ -439,8 +439,8 @@ class PLCObject(pyro.ObjBase):
 
                 # Then write the files
                 log = file(extra_files_log, "w")
-                for fname,fdata in extrafiles:
-                    fpath = os.path.join(self.workingdir,fname)
+                for fname, fdata in extrafiles:
+                    fpath = os.path.join(self.workingdir, fname)
                     open(fpath, "wb").write(fdata)
                     log.write(fname+'\n')
 
@@ -480,12 +480,12 @@ class PLCObject(pyro.ObjBase):
             if self._suspendDebug(False) == 0:
                 # keep a copy of requested idx
                 self._ResetDebugVariables()
-                for idx,iectype,force in idxs:
+                for idx, iectype, force in idxs:
                     if force !=None:
-                        c_type,unpack_func, pack_func = \
+                        c_type, unpack_func, pack_func = \
                             TypeTranslator.get(iectype,
-                                                    (None,None,None))
-                        force = ctypes.byref(pack_func(c_type,force))
+                                                    (None, None, None))
+                        force = ctypes.byref(pack_func(c_type, force))
                     self._RegisterDebugVariable(idx, force)
                 self._TracesSwap()
                 self._resumeDebug()

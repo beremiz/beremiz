@@ -79,7 +79,7 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
                 bmp = self.bmpFocus
             if self.bmpSelected and not self.up:
                 bmp = self.bmpSelected
-            bw,bh = bmp.GetWidth(), bmp.GetHeight()
+            bw, bh = bmp.GetWidth(), bmp.GetHeight()
             if not self.up:
                 dw = dy = self.labelDelta
             hasMask = bmp.GetMask() != None
@@ -302,7 +302,7 @@ class ConfTreeNodeEditor(EditorPanel):
         msizer = wx.BoxSizer(wx.HORIZONTAL)
 
         for confnode_method in self.Controler.ConfNodeMethods:
-            if "method" in confnode_method and confnode_method.get("shown",True):
+            if "method" in confnode_method and confnode_method.get("shown", True):
                 button = GenBitmapTextButton(self.Editor,
                     bitmap=GetBitmap(confnode_method.get("bitmap", "Unknown")),
                     label=confnode_method["name"], style=wx.NO_BORDER)
@@ -322,7 +322,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 button.Bind(wx.EVT_ENTER_WINDOW, setFontStyle(button, mouseover_bt_font))
                 button.Bind(wx.EVT_LEAVE_WINDOW, setFontStyle(button, normal_bt_font))
                 # hack to force size to mini
-                if not confnode_method.get("enabled",True):
+                if not confnode_method.get("enabled", True):
                     button.Disable()
                 msizer.AddWindow(button, flag=wx.ALIGN_CENTER)
         return msizer
@@ -445,7 +445,7 @@ class ConfTreeNodeEditor(EditorPanel):
                                       self.GetCheckBoxCallBackFunction(checkbox, element_path),
                                       checkbox)
 
-                    elif element_infos["type"] in ["unsignedLong", "long","integer"]:
+                    elif element_infos["type"] in ["unsignedLong", "long", "integer"]:
                         if element_infos["type"].startswith("unsigned"):
                             scmin = 0
                         else:
@@ -502,7 +502,7 @@ class ConfTreeNodeEditor(EditorPanel):
             # Disable button to prevent re-entrant call
             event.GetEventObject().Disable()
             # Call
-            getattr(self.Controler,method)()
+            getattr(self.Controler, method)()
             # Re-enable button
             event.GetEventObject().Enable()
 

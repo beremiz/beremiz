@@ -235,7 +235,7 @@ class _SlaveCTN(NodeManager):
         res = eds_utils.GenerateEDSFile(os.path.join(buildpath, "Slave_%s.eds" % prefix), slave)
         if res:
             raise Exception, res
-        return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
+        return [(Gen_OD_path, local_canfestival_config.getCFLAGS(CanFestivalPath))], "", False
 
     def LoadPrevious(self):
         self.LoadCurrentPrevious()
@@ -445,7 +445,7 @@ class _NodeListCTN(NodeList):
         Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix )
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         try:
-            master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(),"OD_%s" % prefix)
+            master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(), "OD_%s" % prefix)
         except config_utils.PDOmappingException, e:
             raise Exception, e.message
         # Do generate C file.
@@ -457,7 +457,7 @@ class _NodeListCTN(NodeList):
         dump(master, file)
         file.close()
 
-        return [(Gen_OD_path,local_canfestival_config.getCFLAGS(CanFestivalPath))],"",False
+        return [(Gen_OD_path, local_canfestival_config.getCFLAGS(CanFestivalPath))], "", False
 
     def LoadPrevious(self):
         self.Manager.LoadCurrentPrevious()
@@ -480,8 +480,8 @@ class RootClass:
     </xsd:schema>
     """
 
-    CTNChildrenTypes = [("CanOpenNode",_NodeListCTN, "CanOpen Master"),
-                       ("CanOpenSlave",_SlaveCTN, "CanOpen Slave")]
+    CTNChildrenTypes = [("CanOpenNode",  _NodeListCTN, "CanOpen Master"),
+                        ("CanOpenSlave", _SlaveCTN,    "CanOpen Slave" )]
     def GetParamsAttributes(self, path = None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path = path)
         for element in infos:
@@ -510,7 +510,7 @@ class RootClass:
             can_driver_name = ""
 
 
-        format_dict = {"locstr": "_".join(map(str,self.GetCurrentLocation())),
+        format_dict = {"locstr": "_".join(map(str, self.GetCurrentLocation())),
                        "candriver": can_driver_name,
                        "nodes_includes": "",
                        "board_decls": "",
@@ -528,7 +528,7 @@ class RootClass:
                        "pre_op_register": "",
                        }
         for child in self.IECSortedChildren():
-            childlocstr = "_".join(map(str,child.GetCurrentLocation()))
+            childlocstr = "_".join(map(str, child.GetCurrentLocation()))
             nodename = "OD_%s" % childlocstr
 
             # Try to get Slave Node
@@ -557,13 +557,13 @@ class RootClass:
                         "}\n")
                 # register previously declared func as post_SlaveBootup callback for that node
                 format_dict["slavebootup_register"] += (
-                    "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n" % (nodename,nodename))
+                    "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n" % (nodename, nodename))
                 format_dict["pre_op"] += (
                     "static void %s_preOperational(CO_Data* d){\n    " % (nodename)+
                     "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n" % NdId for NdId in SlaveIDs])+
                     "}\n")
                 format_dict["pre_op_register"] += (
-                    "%s_Data.preOperational = %s_preOperational;\n" % (nodename,nodename))
+                    "%s_Data.preOperational = %s_preOperational;\n" % (nodename, nodename))
             else:
                 # Slave node
                 align = child_data.getSync_Align()
@@ -580,7 +580,7 @@ class RootClass:
                         "    }\n"+
                         "}\n")
                     format_dict["post_sync_register"] += (
-                        "%s_Data.post_sync = %s_post_sync;\n" % (nodename,nodename))
+                        "%s_Data.post_sync = %s_post_sync;\n" % (nodename, nodename))
                 format_dict["nodes_init"] += 'NODE_SLAVE_INIT(%s, %s)\n    ' % (
                        nodename,
                        child_data.getNodeId())
@@ -596,18 +596,18 @@ class RootClass:
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    ' % (nodename)
             format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    ' % (nodename)
 
-        filename = paths.AbsNeighbourFile(__file__,"cf_runtime.c")
+        filename = paths.AbsNeighbourFile(__file__, "cf_runtime.c")
         cf_main = open(filename).read() % format_dict
         cf_main_path = os.path.join(buildpath, "CF_%(locstr)s.c" % format_dict)
-        f = open(cf_main_path,'w')
+        f = open(cf_main_path, 'w')
         f.write(cf_main)
         f.close()
 
-        res = [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))],local_canfestival_config.getLDFLAGS(CanFestivalPath), True
+        res = [(cf_main_path, local_canfestival_config.getCFLAGS(CanFestivalPath))], local_canfestival_config.getLDFLAGS(CanFestivalPath), True
 
         if can_driver is not None:
-            can_driver_path = os.path.join(CanFestivalPath,"drivers",can_driver,can_driver_name)
+            can_driver_path = os.path.join(CanFestivalPath, "drivers", can_driver, can_driver_name)
             if os.path.exists(can_driver_path):
-                res += ((can_driver_name, file(can_driver_path,"rb")),)
+                res += ((can_driver_name, file(can_driver_path, "rb")),)
 
         return res

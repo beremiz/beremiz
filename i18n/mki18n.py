@@ -166,14 +166,14 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     """
 
     if applicationDomain is None:
-        applicationName = fileBaseOf(applicationDirectoryPath,withPath=0)
+        applicationName = fileBaseOf(applicationDirectoryPath, withPath=0)
     else:
         applicationName = applicationDomain
     currentDir = os.getcwd()
     os.chdir(applicationDirectoryPath)
     filelist = 'app.fil'
     if not os.path.exists(filelist):
-        raise IOError(2,'No module file: ' % filelist)
+        raise IOError(2, 'No module file: ' % filelist)
 
     fileout = 'messages.pot'
     # Steps:
@@ -217,7 +217,7 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
     """
 
     if applicationDomain is None:
-        applicationName = fileBaseOf(applicationDirectoryPath,withPath=0)
+        applicationName = fileBaseOf(applicationDirectoryPath, withPath=0)
     else:
         applicationName = applicationDomain
     currentDir = os.getcwd()
@@ -233,21 +233,21 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
             if os.path.exists(langPOfileName):
                 fileList = ''
                 for fileName in listOf_extraPo:
-                    fileList += ("%s_%s.po " % (fileName,langCode))
+                    fileList += ("%s_%s.po " % (fileName, langCode))
                 cmd = "msgcat -s --no-wrap %s %s > %s.cat" % (langPOfileName, fileList, langPOfileName)
                 if verbose: print cmd
                 os.system(cmd)
                 if targetDir is None:
                     pass
                 else:
-                    mo_targetDir = "%s/%s/LC_MESSAGES" % (targetDir,langCode)
-                    cmd = "msgfmt --output-file=%s/%s.mo %s_%s.po.cat" % (mo_targetDir,applicationName,applicationName,langCode)
+                    mo_targetDir = "%s/%s/LC_MESSAGES" % (targetDir, langCode)
+                    cmd = "msgfmt --output-file=%s/%s.mo %s_%s.po.cat" % (mo_targetDir, applicationName, applicationName, langCode)
                     if verbose: print cmd
                     os.system(cmd)
     os.chdir(currentDir)
 
 
-def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None, verbose=0, forceEnglish=0):
+def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=None, verbose=0, forceEnglish=0):
     """Compile the Portable Object files into the Machine Object stored in the right location.
 
     makeMO converts all translated language-specific PO files located inside
@@ -270,7 +270,7 @@ def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None,
         print "Target directory for .mo files is: %s" % targetDir
 
     if applicationDomain is None:
-        applicationName = fileBaseOf(applicationDirectoryPath,withPath=0)
+        applicationName = fileBaseOf(applicationDirectoryPath, withPath=0)
     else:
         applicationName = applicationDomain
     currentDir = os.getcwd()
@@ -284,10 +284,10 @@ def makeMO(applicationDirectoryPath,targetDir='./locale',applicationDomain=None,
         else:
             langPOfileName = "%s_%s.po" % (applicationName, langCode)
             if os.path.exists(langPOfileName):
-                mo_targetDir = "%s/%s/LC_MESSAGES" % (targetDir,langCode)
+                mo_targetDir = "%s/%s/LC_MESSAGES" % (targetDir, langCode)
                 if not os.path.exists(mo_targetDir):
                     mkdir(mo_targetDir)
-                cmd = 'msgfmt --output-file="%s/%s.mo" "%s_%s.po"' % (mo_targetDir,applicationName,applicationName,langCode)
+                cmd = 'msgfmt --output-file="%s/%s.mo" "%s_%s.po"' % (mo_targetDir, applicationName, applicationName, langCode)
                 if verbose: print cmd
                 os.system(cmd)
     os.chdir(currentDir)
@@ -330,7 +330,7 @@ def printUsage(errorMsg=None):
         print "\n   ERROR: %s" % errorMsg
 
 
-def fileBaseOf(filename,withPath=0):
+def fileBaseOf(filename, withPath=0):
    """fileBaseOf(filename,withPath) ---> string
 
    Return base name of filename.  The returned string never includes the extension.
@@ -422,7 +422,7 @@ def unixpath(thePath):
    if os.sep == '/':
       return thePath
    else:
-      return thePath.replace(os.sep,'/')
+      return thePath.replace(os.sep, '/')
 
 # -----------------------------------------------------------------------------
 
@@ -446,11 +446,11 @@ if __name__ == "__main__":
     option['domain'] = None
     option['moTarget'] = None
     try:
-        optionList,pargs = getopt.getopt(sys.argv[1:],validOptions,validLongOptions)
+        optionList, pargs = getopt.getopt(sys.argv[1:], validOptions, validLongOptions)
     except getopt.GetoptError, e:
         printUsage(e[0])
         sys.exit(1)
-    for (opt,val) in optionList:
+    for (opt, val) in optionList:
         if (opt == '-h'):
             printUsage()
             sys.exit(0)
@@ -476,11 +476,11 @@ if __name__ == "__main__":
         print "Application domain used is: '%s'" % option['domain']
     if option['po']:
         try:
-            makePO(appDirPath,option['domain'],option['verbose'])
+            makePO(appDirPath, option['domain'], option['verbose'])
         except IOError, e:
             printUsage(e[1] + '\n   You must write a file app.fil that contains the list of all files to parse.')
     if option['mo']:
-        makeMO(appDirPath,option['moTarget'],option['domain'],option['verbose'],option['forceEnglish'])
+        makeMO(appDirPath, option['moTarget'], option['domain'], option['verbose'], option['forceEnglish'])
     sys.exit(1)
 
 

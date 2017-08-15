@@ -92,10 +92,10 @@ class CustomTable(wx.grid.PyGridTableBase):
             (self._cols, self.GetNumberCols(), wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED),
         ]:
             if new < current:
-                msg = wx.grid.GridTableMessage(self,delmsg,new,current-new)
+                msg = wx.grid.GridTableMessage(self, delmsg, new, current-new)
                 grid.ProcessTableMessage(msg)
             elif new > current:
-                msg = wx.grid.GridTableMessage(self,addmsg,new-current)
+                msg = wx.grid.GridTableMessage(self, addmsg, new-current)
                 grid.ProcessTableMessage(msg)
                 self.UpdateValues(grid)
         grid.EndBatch()
