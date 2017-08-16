@@ -667,7 +667,7 @@ def LocalODPointers(locations, current_location, slave):
             subentry_infos = slave.GetSubentryInfos(index, subindex)
             if subentry_infos["type"] != COlocationtype:
                 raise PDOmappingException, _("Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\"").\
-                    format( a1=location["IEC_TYPE"], a2=COlocationtype, a3=subentry_infos["type"], a4=name)
+                    format(a1=location["IEC_TYPE"], a2=COlocationtype, a3=subentry_infos["type"], a4=name)
 
             IECLocations[name] = COlocationtype
             pointers[(index, subindex)] = name

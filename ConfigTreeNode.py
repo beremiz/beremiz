@@ -323,7 +323,7 @@ class ConfigTreeNode:
                 # if Name have other components
                 if len(toks) >= 2:
                     # Recurse in order to find the latest object
-                    return CTNInstance._GetChildBySomething( something, toks[1:])
+                    return CTNInstance._GetChildBySomething(something, toks[1:])
                 # No sub name -> found
                 return CTNInstance
         # Not found

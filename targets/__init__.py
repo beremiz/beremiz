@@ -45,7 +45,7 @@ def _GetLocalTargetClassFactory(name):
 
 targets = dict([(name, {"xsd": path.join(_base_path, name, "XSD"),
                         "class": _GetLocalTargetClassFactory(name),
-                        "code": { fname: path.join(_base_path, name, fname)
+                        "code": {fname: path.join(_base_path, name, fname)
                            for fname in listdir(path.join(_base_path, name))
                              if fname.startswith("plc_%s_main" % name) and
                                fname.endswith(".c")}})

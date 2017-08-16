@@ -100,7 +100,7 @@ def csv_file_to_table(file):
     """
     take a .csv file and translate it it a "csv_table"
     """
-    return [ map(string.strip, line.split(';')) for line in file.xreadlines()]
+    return [map(string.strip, line.split(';')) for line in file.xreadlines()]
 
 
 def find_section(section_name, table):
@@ -230,7 +230,7 @@ def get_standard_funtions(table):
                     for outype in output_types:
                         if outype is not None:
                             decl_tpl = Function_decl["outputs"][0]
-                            Function_decl["outputs"] = [ (decl_tpl[0], outype,  decl_tpl[2])]
+                            Function_decl["outputs"] = [(decl_tpl[0], outype,  decl_tpl[2])]
                             if funcdeclname_orig.endswith('*'):
                                 funcdeclout =  funcdeclin + '_' + outype
                             else:

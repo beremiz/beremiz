@@ -52,10 +52,12 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print 'WAMP session left'
 
-PLCObjDefaults = { "StartPLC":          False,
-                   "GetTraceVariables": ("Broken", None),
-                   "GetPLCstatus":      ("Broken", None),
-                   "RemoteExec":        (-1, "RemoteExec script failed!")}
+PLCObjDefaults = {
+    "StartPLC":          False,
+    "GetTraceVariables": ("Broken", None),
+    "GetPLCstatus":      ("Broken", None),
+    "RemoteExec":        (-1, "RemoteExec script failed!")
+}
 
 
 def WAMP_connector_factory(uri, confnodesroot):
