@@ -158,7 +158,7 @@ class toolchain_gcc():
 
         Builder_CFLAGS = ' '.join(self.getBuilderCFLAGS())
 
-        ######### GENERATE OBJECT FILES ########################################
+        # ----------------- GENERATE OBJECT FILES ------------------------
         obns = []
         objs = []
         relink = self.GetBinaryCode() is None
@@ -200,7 +200,7 @@ class toolchain_gcc():
                     obns.append(os.path.basename(CFile))
                     objs.append(CFile)
 
-        ######### GENERATE OUTPUT FILE ########################################
+        # ---------------- GENERATE OUTPUT FILE --------------------------
         # Link all the object files into one binary file
         self.CTRInstance.logger.write(_("Linking :\n"))
         if relink:

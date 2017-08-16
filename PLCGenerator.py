@@ -414,16 +414,16 @@ class ProgramGenerator:
                 resrce += [("INTERVAL := ", ()),
                            (interval, (tagname, "task", task_number, "interval")),
                            (",", ())]
-##                resrce += [("INTERVAL := t#", ())]
-##                if interval.hour != 0:
-##                    resrce += [("%dh"%interval.hour, (tagname, "task", task_number, "interval", "hour"))]
-##                if interval.minute != 0:
-##                    resrce += [("%dm"%interval.minute, (tagname, "task", task_number, "interval", "minute"))]
-##                if interval.second != 0:
-##                    resrce += [("%ds"%interval.second, (tagname, "task", task_number, "interval", "second"))]
-##                if interval.microsecond != 0:
-##                    resrce += [("%dms"%(interval.microsecond / 1000), (tagname, "task", task_number, "interval", "millisecond"))]
-##                resrce += [(",", ())]
+#                resrce += [("INTERVAL := t#", ())]
+#                if interval.hour != 0:
+#                    resrce += [("%dh"%interval.hour, (tagname, "task", task_number, "interval", "hour"))]
+#                if interval.minute != 0:
+#                    resrce += [("%dm"%interval.minute, (tagname, "task", task_number, "interval", "minute"))]
+#                if interval.second != 0:
+#                    resrce += [("%ds"%interval.second, (tagname, "task", task_number, "interval", "second"))]
+#                if interval.microsecond != 0:
+#                    resrce += [("%dms"%(interval.microsecond / 1000), (tagname, "task", task_number, "interval", "millisecond"))]
+#                resrce += [(",", ())]
             # Priority argument
             resrce += [("PRIORITY := ", ()),
                        ("%d" % task.getpriority(), (tagname, "task", task_number, "priority")),

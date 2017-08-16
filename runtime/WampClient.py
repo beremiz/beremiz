@@ -104,7 +104,7 @@ def RegisterWampClient(wampconf):
 
     WSClientConf = LoadWampClientConf(wampconf)
 
-    ## start logging to console
+    # start logging to console
     # log.startLogging(sys.stdout)
 
     # create a WAMP application session factory

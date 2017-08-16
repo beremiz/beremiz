@@ -380,17 +380,17 @@ class FBD_Block(Graphic_Element):
             handle.SetEdge(edge)
             self.RefreshModel(False)
 
-##    # Method called when a Motion event have been generated
-##    def OnMotion(self, event, dc, scaling):
-##        if not event.Dragging():
-##            pos = event.GetLogicalPosition(dc)
-##            for input in self.Inputs:
-##                rect = input.GetRedrawRect()
-##                if rect.InsideXY(pos.x, pos.y):
-##                    print "Find input"
-##                    tip = wx.TipWindow(self.Parent, "Test")
-##                    tip.SetBoundingRect(rect)
-##        return Graphic_Element.OnMotion(self, event, dc, scaling)
+#    # Method called when a Motion event have been generated
+#    def OnMotion(self, event, dc, scaling):
+#        if not event.Dragging():
+#            pos = event.GetLogicalPosition(dc)
+#            for input in self.Inputs:
+#                rect = input.GetRedrawRect()
+#                if rect.InsideXY(pos.x, pos.y):
+#                    print "Find input"
+#                    tip = wx.TipWindow(self.Parent, "Test")
+#                    tip.SetBoundingRect(rect)
+#        return Graphic_Element.OnMotion(self, event, dc, scaling)
 
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):

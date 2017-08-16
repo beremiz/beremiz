@@ -3127,17 +3127,17 @@ class PLCControler:
                 new_task.setname(task["Name"])
                 if task["Triggering"] == "Interrupt":
                     new_task.setsingle(task["Single"])
-##                result = duration_model.match(task["Interval"]).groups()
-##                if reduce(lambda x, y: x or y != None, result):
-##                    values = []
-##                    for value in result[:-1]:
-##                        if value != None:
-##                            values.append(int(value))
-##                        else:
-##                            values.append(0)
-##                    if result[-1] is not None:
-##                        values.append(int(float(result[-1]) * 1000))
-##                    new_task.setinterval(datetime.time(*values))
+#                result = duration_model.match(task["Interval"]).groups()
+#                if reduce(lambda x, y: x or y != None, result):
+#                    values = []
+#                    for value in result[:-1]:
+#                        if value != None:
+#                            values.append(int(value))
+#                        else:
+#                            values.append(0)
+#                    if result[-1] is not None:
+#                        values.append(int(float(result[-1]) * 1000))
+#                    new_task.setinterval(datetime.time(*values))
                 if task["Triggering"] == "Cyclic":
                     new_task.setinterval(task["Interval"])
                 new_task.setpriority(int(task["Priority"]))
@@ -3171,19 +3171,19 @@ class PLCControler:
                     new_task["Single"] = ""
                 interval = task.getinterval()
                 if interval is not None:
-##                    text = ""
-##                    if interval.hour != 0:
-##                        text += "%dh"%interval.hour
-##                    if interval.minute != 0:
-##                        text += "%dm"%interval.minute
-##                    if interval.second != 0:
-##                        text += "%ds"%interval.second
-##                    if interval.microsecond != 0:
-##                        if interval.microsecond % 1000 != 0:
-##                            text += "%.3fms"%(float(interval.microsecond) / 1000)
-##                        else:
-##                            text += "%dms"%(interval.microsecond / 1000)
-##                    new_task["Interval"] = text
+#                    text = ""
+#                    if interval.hour != 0:
+#                        text += "%dh"%interval.hour
+#                    if interval.minute != 0:
+#                        text += "%dm"%interval.minute
+#                    if interval.second != 0:
+#                        text += "%ds"%interval.second
+#                    if interval.microsecond != 0:
+#                        if interval.microsecond % 1000 != 0:
+#                            text += "%.3fms"%(float(interval.microsecond) / 1000)
+#                        else:
+#                            text += "%dms"%(interval.microsecond / 1000)
+#                    new_task["Interval"] = text
                     new_task["Interval"] = interval
                 else:
                     new_task["Interval"] = ""

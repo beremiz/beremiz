@@ -74,7 +74,7 @@ def WAMP_connector_factory(uri, confnodesroot):
 
     def RegisterWampClient():
 
-        ## start logging to console
+        # start logging to console
         # log.startLogging(sys.stdout)
 
         # create a WAMP application session factory
