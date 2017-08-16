@@ -97,7 +97,7 @@ class Iec2CSettings():
     def __init__(self):
         self.iec2c = None
         self.iec2c_buildopts = None
-        self.ieclib_path   = self.findLibPath()
+        self.ieclib_path = self.findLibPath()
         self.ieclib_c_path = self.findLibCPath()
 
     def findObject(self, paths, test):
@@ -1472,7 +1472,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is None:
-            IECdebug_data  = [
+            IECdebug_data = [
                     WeakKeyDictionary(),  # Callables
                     [],                   # Data storage [(tick, data),...]
                     "Registered",         # Variable status

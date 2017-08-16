@@ -1384,7 +1384,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             connector_max_used = False
 
         # connector is available for new connection
-        connect  = connector_free or not connector_max_used
+        connect = connector_free or not connector_max_used
         return connect, connector_max_used
 
     # Tests if the point given is near from the end point of this connector
