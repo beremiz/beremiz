@@ -62,7 +62,7 @@ class LDElementDialog(BlockPreviewDialog):
         # Create label for LD element modifier
         modifier_label = wx.StaticText(self, label=_('Modifier:'))
         self.LeftGridSizer.AddWindow(modifier_label, border=5,
-              flag=wx.GROW|wx.BOTTOM)
+              flag=wx.GROW | wx.BOTTOM)
 
         # Create radio buttons for selecting LD element modifier
         self.ModifierRadioButtons = {}
@@ -88,7 +88,7 @@ class LDElementDialog(BlockPreviewDialog):
         # Create label for LD element variable
         element_variable_label = wx.StaticText(self, label=_('Variable:'))
         self.LeftGridSizer.AddWindow(element_variable_label, border=5,
-              flag=wx.GROW|wx.TOP)
+              flag=wx.GROW | wx.TOP)
 
         # Create a combo box for defining LD element variable
         self.ElementVariable = wx.ComboBox(self, style=wx.CB_SORT)
@@ -97,7 +97,7 @@ class LDElementDialog(BlockPreviewDialog):
         self.Bind(wx.EVT_TEXT, self.OnVariableChanged,
                   self.ElementVariable)
         self.LeftGridSizer.AddWindow(self.ElementVariable, border=5,
-             flag=wx.GROW|wx.TOP)
+             flag=wx.GROW | wx.TOP)
 
         # Add preview panel and associated label to sizers
         self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
@@ -105,7 +105,7 @@ class LDElementDialog(BlockPreviewDialog):
 
         # Add buttons sizer to sizers
         self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Save LD element class
         self.ElementClass = (LD_Contact if type == "contact" else LD_Coil)

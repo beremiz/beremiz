@@ -430,7 +430,7 @@ class SFC_Viewer(Viewer):
 #-------------------------------------------------------------------------------
 
     def AddInitialStep(self, pos):
-        dialog = SFCStepNameDialog(self.ParentWindow, _("Please enter step name"), _("Add a new initial step"), "", wx.OK|wx.CANCEL)
+        dialog = SFCStepNameDialog(self.ParentWindow, _("Please enter step name"), _("Add a new initial step"), "", wx.OK | wx.CANCEL)
         dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
         dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
         dialog.SetStepNames([block.GetName() for block in self.Blocks if isinstance(block, SFC_Step)])
@@ -452,7 +452,7 @@ class SFC_Viewer(Viewer):
 
     def AddStep(self):
         if self.SelectedElement in self.Wires or isinstance(self.SelectedElement, SFC_Step):
-            dialog = SFCStepNameDialog(self.ParentWindow, _("Add a new step"), _("Please enter step name"), "", wx.OK|wx.CANCEL)
+            dialog = SFCStepNameDialog(self.ParentWindow, _("Add a new step"), _("Please enter step name"), "", wx.OK | wx.CANCEL)
             dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
             dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
             dialog.SetStepNames([block.GetName() for block in self.Blocks if isinstance(block, SFC_Step)])
@@ -768,7 +768,7 @@ class SFC_Viewer(Viewer):
                     choices.append(block.GetName())
             dialog = wx.SingleChoiceDialog(self.ParentWindow,
                   _("Add a new jump"), _("Please choose a target"),
-                  choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                  choices, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
             if dialog.ShowModal() == wx.ID_OK:
                 value = dialog.GetStringSelection()
                 self.SelectedElement.AddOutput()
@@ -796,7 +796,7 @@ class SFC_Viewer(Viewer):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.EditStepContent(self, step)
         else:
-            dialog = SFCStepNameDialog(self.ParentWindow, _("Edit step name"), _("Please enter step name"), step.GetName(), wx.OK|wx.CANCEL)
+            dialog = SFCStepNameDialog(self.ParentWindow, _("Edit step name"), _("Please enter step name"), step.GetName(), wx.OK | wx.CANCEL)
             dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
             dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
             dialog.SetStepNames([block.GetName() for block in self.Blocks if isinstance(block, SFC_Step) and block.GetName() != step.GetName()])

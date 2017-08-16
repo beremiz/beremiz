@@ -32,7 +32,7 @@ import wx
 class SFCStepNameDialog(wx.TextEntryDialog):
 
     def __init__(self, parent, message, caption="Please enter text", defaultValue="",
-                       style=wx.OK|wx.CANCEL|wx.CENTRE, pos=wx.DefaultPosition):
+                       style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition):
         wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
         self.PouNames = []
@@ -58,7 +58,7 @@ class SFCStepNameDialog(wx.TextEntryDialog):
         elif step_name.upper() in self.StepNames:
             message = _("\"%s\" step already exists!") % step_name
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

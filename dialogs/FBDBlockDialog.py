@@ -76,7 +76,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         setattr(self.LibraryPanel, "_OnTreeItemSelected",
               self.OnLibraryTreeItemSelected)
         left_staticboxsizer.AddWindow(self.LibraryPanel, 1, border=5,
-              flag=wx.GROW|wx.TOP)
+              flag=wx.GROW | wx.TOP)
 
         # Create sizer for other block parameters
         top_right_gridsizer = wx.FlexGridSizer(cols=2, hgap=0, rows=4, vgap=5)
@@ -134,7 +134,7 @@ class FBDBlockDialog(BlockPreviewDialog):
 
         # Add buttons sizer to sizers
         self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Dictionary containing correspondence between parameter exchanged and
         # control to fill with parameter value

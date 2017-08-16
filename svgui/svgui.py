@@ -149,7 +149,7 @@ def _runtime_%(location)s_stop():
             dialog = wx.MessageDialog(self.GetCTRoot().AppFrame,
                                       _("You don't have write permissions.\nOpen Inkscape anyway ?"),
                                       _("Open Inkscape"),
-                                      wx.YES_NO|wx.ICON_QUESTION)
+                                      wx.YES_NO | wx.ICON_QUESTION)
             open_inkscape = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
         if open_inkscape:

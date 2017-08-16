@@ -139,14 +139,14 @@ class ConfTreeNodeEditor(EditorPanel):
 
         if tabs_num > 1 or self.SHOW_BASE_PARAMS:
             self.Editor = wx.Panel(parent,
-                style=wx.SUNKEN_BORDER|wx.SP_3D)
+                style=wx.SUNKEN_BORDER | wx.SP_3D)
 
             self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
             if self.SHOW_BASE_PARAMS:
                 baseparamseditor_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.MainSizer.AddSizer(baseparamseditor_sizer, border=5,
-                      flag=wx.GROW|wx.ALL)
+                      flag=wx.GROW | wx.ALL)
 
                 self.FullIECChannel = wx.StaticText(self.Editor, -1)
                 self.FullIECChannel.SetFont(
@@ -157,7 +157,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
                 updownsizer = wx.BoxSizer(wx.VERTICAL)
                 baseparamseditor_sizer.AddSizer(updownsizer, border=5,
-                      flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
+                      flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL)
 
                 self.IECCUpButton = wx.lib.buttons.GenBitmapTextButton(self.Editor,
                       bitmap=GetBitmap('IECCDown'), size=wx.Size(16, 16), style=wx.NO_BORDER)
@@ -180,7 +180,7 @@ class ConfTreeNodeEditor(EditorPanel):
                       self.GetTextCtrlCallBackFunction(self.ConfNodeName, "BaseParams.Name", True),
                       self.ConfNodeName)
                 baseparamseditor_sizer.AddWindow(self.ConfNodeName, border=5,
-                      flag=wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+                      flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
 
                 buttons_sizer = self.GenerateMethodButtonSizer()
                 baseparamseditor_sizer.AddSizer(buttons_sizer, flag=wx.ALIGN_CENTER)
@@ -209,7 +209,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
         if self.SHOW_PARAMS and len(self.Controler.GetParamsAttributes()) > 0:
 
-            panel_style = wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL
+            panel_style = wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL
             if self.ConfNodeNoteBook is None and parent != self.Editor:
                 panel_style |= wx.SUNKEN_BORDER
             self.ParamsEditor = wx.ScrolledWindow(parent,
@@ -224,7 +224,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
             self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
             self.ParamsEditorSizer.AddSizer(self.ConfNodeParamsSizer, border=5,
-                  flag=wx.LEFT|wx.RIGHT|wx.BOTTOM)
+                  flag=wx.LEFT | wx.RIGHT | wx.BOTTOM)
 
             self.RefreshConfNodeParamsSizer()
 
@@ -367,7 +367,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 statictext = wx.StaticText(self.ParamsEditor,
                       label="%s:" % _(element_infos["name"]))
                 boxsizer.AddWindow(statictext, border=5,
-                      flag=wx.ALIGN_CENTER_VERTICAL|wx.RIGHT)
+                      flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT)
 
                 if isinstance(element_infos["type"], types.ListType):
                     if isinstance(element_infos["value"], types.TupleType):
@@ -426,7 +426,7 @@ class ConfTreeNodeEditor(EditorPanel):
                     if "max" in element_infos["type"]:
                         scmax = element_infos["type"]["max"]
                     spinctrl = wx.SpinCtrl(self.ParamsEditor,
-                          size=wx.Size(300, -1), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                          size=wx.Size(300, -1), style=wx.SP_ARROW_KEYS | wx.ALIGN_RIGHT)
                     spinctrl.SetRange(scmin, scmax)
                     boxsizer.AddWindow(spinctrl)
                     if element_infos["value"] is not None:
@@ -452,7 +452,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             scmin = -(2**31)
                         scmax = 2**31-1
                         spinctrl = wx.SpinCtrl(self.ParamsEditor,
-                              size=wx.Size(300, -1), style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT)
+                              size=wx.Size(300, -1), style=wx.SP_ARROW_KEYS | wx.ALIGN_RIGHT)
                         spinctrl.SetRange(scmin, scmax)
                         boxsizer.AddWindow(spinctrl)
                         if element_infos["value"] is not None:

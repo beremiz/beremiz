@@ -53,7 +53,7 @@ class CustomTree(CT.CustomTreeCtrl):
         CT.CustomTreeCtrl.__init__(self, *args, **kwargs)
 
         self.BackgroundBitmap = None
-        self.BackgroundAlign = wx.ALIGN_LEFT|wx.ALIGN_TOP
+        self.BackgroundAlign = wx.ALIGN_LEFT | wx.ALIGN_TOP
 
         self.AddMenu = None
         self.Enabled = False

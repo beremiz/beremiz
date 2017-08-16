@@ -32,7 +32,7 @@ import wx
 class PouNameDialog(wx.TextEntryDialog):
 
     def __init__(self, parent, message, caption="Please enter text", defaultValue="",
-                       style=wx.OK|wx.CANCEL|wx.CENTRE, pos=wx.DefaultPosition):
+                       style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition):
         wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
         self.PouNames = []
@@ -52,7 +52,7 @@ class PouNameDialog(wx.TextEntryDialog):
         elif step_name.upper() in self.PouNames:
             message = _("A POU named \"%s\" already exists!") % step_name
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

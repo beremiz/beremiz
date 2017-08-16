@@ -46,27 +46,27 @@ class PouActionDialog(wx.Dialog):
         infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=15)
         infos_sizer.AddGrowableCol(1)
         main_sizer.AddSizer(infos_sizer, border=20,
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         actionname_label = wx.StaticText(self, label=_('Action Name:'))
         infos_sizer.AddWindow(actionname_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
+              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.ActionName = wx.TextCtrl(self, size=wx.Size(180, -1))
         infos_sizer.AddWindow(self.ActionName, flag=wx.GROW)
 
         language_label = wx.StaticText(self, label=_('Language:'))
         infos_sizer.AddWindow(language_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
+              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
         infos_sizer.AddWindow(self.Language, flag=wx.GROW)
 
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK,
               button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 
@@ -104,7 +104,7 @@ class PouActionDialog(wx.Dialog):
         elif action_name.upper() in self.PouElementNames:
             message = _("\"%s\" element for this pou already exists!") % action_name
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

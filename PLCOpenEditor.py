@@ -336,7 +336,7 @@ class PLCOpenEditor(IDEFrame):
         self.SaveProjectAs()
 
     def OnGenerateProgramMenu(self, event):
-        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), self.Controler.GetProgramFilePath(),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE|wx.CHANGE_DIR)
+        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), self.Controler.GetProgramFilePath(),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE | wx.CHANGE_DIR)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             message_text = ""
@@ -353,7 +353,7 @@ class PLCOpenEditor(IDEFrame):
             else:
                 message_text += _("\"%s\" is not a valid folder!") % os.path.dirname(filepath)
                 header, icon = _("Error"), wx.ICON_ERROR
-            message = wx.MessageDialog(self, message_text, header, wx.OK|icon)
+            message = wx.MessageDialog(self, message_text, header, wx.OK | icon)
             message.ShowModal()
             message.Destroy()
         dialog.Destroy()
@@ -385,7 +385,7 @@ class PLCOpenEditor(IDEFrame):
             directory, filename = os.path.split(filepath)
         else:
             directory, filename = os.getcwd(), "%(projectName)s.xml" % self.Controler.GetProjectProperties()
-        dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.SAVE|wx.OVERWRITE_PROMPT)
+        dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.SAVE | wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             if os.path.isdir(os.path.dirname(filepath)):
@@ -444,7 +444,7 @@ Traceback:
 
 
 def Display_Error_Dialog(e_value):
-    message = wx.MessageDialog(None, str(e_value), _("Error"), wx.OK|wx.ICON_ERROR)
+    message = wx.MessageDialog(None, str(e_value), _("Error"), wx.OK | wx.ICON_ERROR)
     message.ShowModal()
     message.Destroy()
 

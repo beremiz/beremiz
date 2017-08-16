@@ -48,9 +48,9 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def _init_coll_MainSizer_Items(self, parent):
-        parent.AddWindow(self.staticText1, 0, border=20, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
-        parent.AddWindow(self.ServicesList, 0, border=20, flag=wx.LEFT|wx.RIGHT|wx.GROW)
-        parent.AddSizer(self.ButtonGridSizer, 0, border=20, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.GROW)
+        parent.AddWindow(self.staticText1,    0, border=20, flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
+        parent.AddWindow(self.ServicesList,   0, border=20, flag=wx.LEFT | wx.RIGHT | wx.GROW)
+        parent.AddSizer(self.ButtonGridSizer, 0, border=20, flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
 
     def _init_coll_MainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
@@ -90,7 +90,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         # Set up list control
         self.ServicesList = AutoWidthListCtrl(id=ID_DISCOVERYDIALOGSERVICESLIST,
               name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0),
-              style=wx.LC_REPORT|wx.LC_EDIT_LABELS|wx.LC_SORT_ASCENDING|wx.LC_SINGLE_SEL)
+              style=wx.LC_REPORT | wx.LC_EDIT_LABELS | wx.LC_SORT_ASCENDING | wx.LC_SINGLE_SEL)
         self.ServicesList.InsertColumn(0, _('NAME'))
         self.ServicesList.InsertColumn(1, _('TYPE'))
         self.ServicesList.InsertColumn(2, _('IP'))
@@ -120,7 +120,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.Bind(wx.EVT_BUTTON, self.OnIpButton, id=ID_DISCOVERYDIALOGIPBUTTON)
 
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTER)
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTER)
 
         self._init_sizers()
         self.Fit()

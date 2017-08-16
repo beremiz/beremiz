@@ -1264,7 +1264,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                             names = editors.keys()
                             dialog = wx.SingleChoiceDialog(self.AppFrame,
                                   _("Select an editor:"), _("Editor selection"),
-                                  names, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                  names, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 editor_name = names[dialog.GetSelection()]
                             dialog.Destroy()
@@ -1494,7 +1494,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.IECdebug_datas.pop(IECPath)
             else:
                 IECdebug_data[4] = reduce(
-                    lambda x, y: x|y,
+                    lambda x, y: x | y,
                     IECdebug_data[0].itervalues(),
                     False)
         self.IECdebug_lock.release()

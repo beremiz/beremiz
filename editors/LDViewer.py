@@ -666,7 +666,7 @@ class LD_Viewer(Viewer):
                 self.RefreshVisibleElements()
                 self.Refresh(False)
         else:
-            message = wx.MessageDialog(self, _("You must select the wire where a contact should be added!"), _("Error"), wx.OK|wx.ICON_ERROR)
+            message = wx.MessageDialog(self, _("You must select the wire where a contact should be added!"), _("Error"), wx.OK | wx.ICON_ERROR)
             message.ShowModal()
             message.Destroy()
 
@@ -882,16 +882,16 @@ class LD_Viewer(Viewer):
                 self.RefreshVisibleElements()
                 self.Refresh(False)
             else:
-                message = wx.MessageDialog(self, _("The group of block must be coherent!"), _("Error"), wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, _("The group of block must be coherent!"), _("Error"), wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         else:
-            message = wx.MessageDialog(self, _("You must select the block or group of blocks around which a branch should be added!"), _("Error"), wx.OK|wx.ICON_ERROR)
+            message = wx.MessageDialog(self, _("You must select the block or group of blocks around which a branch should be added!"), _("Error"), wx.OK | wx.ICON_ERROR)
             message.ShowModal()
             message.Destroy()
 
     def AddLadderBlock(self):
-        message = wx.MessageDialog(self, _("This option isn't available yet!"), _("Warning"), wx.OK|wx.ICON_EXCLAMATION)
+        message = wx.MessageDialog(self, _("This option isn't available yet!"), _("Warning"), wx.OK | wx.ICON_EXCLAMATION)
         message.ShowModal()
         message.Destroy()
 

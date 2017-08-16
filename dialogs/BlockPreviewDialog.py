@@ -71,7 +71,7 @@ class BlockPreviewDialog(wx.Dialog):
         self.Preview.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Add default dialog buttons sizer
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK,
                   self.ButtonSizer.GetAffirmativeButton())
 
@@ -117,7 +117,7 @@ class BlockPreviewDialog(wx.Dialog):
         # Create a sizer for dividing parameters in two columns
         self.ColumnSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.MainSizer.AddSizer(self.ColumnSizer, border=20,
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         # Create a sizer for left column
         self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=0,
@@ -126,7 +126,7 @@ class BlockPreviewDialog(wx.Dialog):
         if left_growable_row is not None:
             self.LeftGridSizer.AddGrowableRow(left_growable_row)
         self.ColumnSizer.AddSizer(self.LeftGridSizer, 1, border=5,
-              flag=wx.GROW|wx.RIGHT|wx.EXPAND)
+              flag=wx.GROW | wx.RIGHT | wx.EXPAND)
 
         # Create a sizer for right column
         self.RightGridSizer = wx.FlexGridSizer(cols=1, hgap=0,
@@ -135,7 +135,7 @@ class BlockPreviewDialog(wx.Dialog):
         if right_growable_row is not None:
             self.RightGridSizer.AddGrowableRow(right_growable_row)
         self.ColumnSizer.AddSizer(self.RightGridSizer, 1, border=5,
-              flag=wx.GROW|wx.LEFT)
+              flag=wx.GROW | wx.LEFT)
 
         self.SetSizer(self.MainSizer)
 
@@ -235,7 +235,7 @@ class BlockPreviewDialog(wx.Dialog):
         """
         dialog = wx.MessageDialog(self, message,
                                   _("Error"),
-                                  wx.OK|wx.ICON_ERROR)
+                                  wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 

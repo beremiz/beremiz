@@ -75,7 +75,7 @@ class HtmlFrame(wx.Frame):
 
             self.HtmlContent = UrlClickHtmlWindow(id=ID_HTMLFRAMEHTMLCONTENT,
                   name='HtmlContent', parent=self, pos=wx.Point(0, 0),
-                  size=wx.Size(-1, -1), style=wx.html.HW_SCROLLBAR_AUTO|wx.html.HW_NO_SELECTION)
+                  size=wx.Size(-1, -1), style=wx.html.HW_SCROLLBAR_AUTO | wx.html.HW_NO_SELECTION)
             self.HtmlContent.Bind(HtmlWindowUrlClick, self.OnLinkClick)
 
         def __init__(self, parent, opened):

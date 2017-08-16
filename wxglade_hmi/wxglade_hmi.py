@@ -157,7 +157,7 @@ def OnCloseFrame(evt):
             dialog = wx.MessageDialog(self.GetCTRoot().AppFrame,
                                       _("You don't have write permissions.\nOpen wxGlade anyway ?"),
                                       _("Open wxGlade"),
-                                      wx.YES_NO|wx.ICON_QUESTION)
+                                      wx.YES_NO | wx.ICON_QUESTION)
             open_wxglade = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
         if open_wxglade:

@@ -217,7 +217,7 @@ class FolderTree(wx.Panel):
                 else:
                     message =  wx.MessageDialog(self,
                         _("File '%s' already exists!") % new_name,
-                        _("Error"), wx.OK|wx.ICON_ERROR)
+                        _("Error"), wx.OK | wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
                     event.Veto()

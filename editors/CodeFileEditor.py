@@ -153,7 +153,7 @@ class CodeEditor(CustomStyledTextCtrl):
                 section_infos["comment"] + "(.*)" +
                 section_end, re.DOTALL)
 
-        self.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
+        self.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT | wx.stc.STC_MOD_BEFOREDELETE)
 
         self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
@@ -171,8 +171,8 @@ class CodeEditor(CustomStyledTextCtrl):
     def OnModification(self, event):
         if not self.DisableEvents:
             mod_type = event.GetModificationType()
-            if not (mod_type&wx.stc.STC_PERFORMED_UNDO or mod_type&wx.stc.STC_PERFORMED_REDO):
-                if mod_type&wx.stc.STC_MOD_BEFOREINSERT:
+            if not (mod_type & wx.stc.STC_PERFORMED_UNDO or mod_type & wx.stc.STC_PERFORMED_REDO):
+                if mod_type & wx.stc.STC_MOD_BEFOREINSERT:
                     if self.CurrentAction is None:
                         self.StartBuffering()
                     elif self.CurrentAction[0] != "Add" or self.CurrentAction[1] != event.GetPosition() - 1:
@@ -180,7 +180,7 @@ class CodeEditor(CustomStyledTextCtrl):
                         self.StartBuffering()
                     self.CurrentAction = ("Add", event.GetPosition())
                     wx.CallAfter(self.RefreshModel)
-                elif mod_type&wx.stc.STC_MOD_BEFOREDELETE:
+                elif mod_type & wx.stc.STC_MOD_BEFOREDELETE:
                     if self.CurrentAction is None:
                         self.StartBuffering()
                     elif self.CurrentAction[0] != "Delete" or self.CurrentAction[1] != event.GetPosition() + 1:
@@ -764,7 +764,7 @@ class VariablesEditor(wx.Panel):
         return self.ParentWindow.GetPanelBestSize()
 
     def ShowErrorMessage(self, message):
-        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 

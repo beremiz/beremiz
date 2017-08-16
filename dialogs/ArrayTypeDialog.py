@@ -50,7 +50,7 @@ class ArrayTypeDialog(wx.Dialog):
 
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(top_sizer, border=20,
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         basetype_label = wx.StaticText(self, label=_('Base Type:'))
         top_sizer.AddWindow(basetype_label, 1, flag=wx.ALIGN_BOTTOM)
@@ -69,12 +69,12 @@ class ArrayTypeDialog(wx.Dialog):
                      "_OnDownButton"]:
             setattr(self.Dimensions, func, self.OnDimensionsChanged)
         main_sizer.AddSizer(self.Dimensions, border=20,
-              flag=wx.GROW|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.LEFT | wx.RIGHT)
 
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 
@@ -109,7 +109,7 @@ class ArrayTypeDialog(wx.Dialog):
             dimensions_list.append(bounds)
 
         if message is not None:
-            dlg = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return None

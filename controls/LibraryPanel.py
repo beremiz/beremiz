@@ -98,7 +98,7 @@ class LibraryPanel(wx.Panel):
 
         # Add TextCtrl for function and function block informations
         self.Comment = wx.TextCtrl(splitter_window, size=wx.Size(0, 80),
-              style=wx.TE_READONLY|wx.TE_MULTILINE)
+              style=wx.TE_READONLY | wx.TE_MULTILINE)
 
         splitter_window.SplitHorizontally(self.Tree, self.Comment, -80)
 

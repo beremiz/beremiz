@@ -311,7 +311,7 @@ class Beremiz(IDEFrame):
 
         inspectorID = wx.NewId()
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=inspectorID)
-        accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL|wx.ACCEL_ALT, ord('I'), inspectorID)]
+        accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL | wx.ACCEL_ALT, ord('I'), inspectorID)]
 
         keyID = wx.NewId()
         self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=keyID)
@@ -552,7 +552,7 @@ class Beremiz(IDEFrame):
             dialog = wx.MessageDialog(self,
                                       _("There are changes, do you want to save?"),
                                       title,
-                                      wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+                                      wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION)
             answer = dialog.ShowModal()
             dialog.Destroy()
             if answer == wx.ID_YES:
@@ -1057,7 +1057,7 @@ class Beremiz(IDEFrame):
             dialog = wx.MessageDialog(self,
                 _("Really delete node '%s'?") % confnode.CTNName(),
                 _("Remove %s node") % confnode.CTNType,
-                wx.YES_NO|wx.NO_DEFAULT)
+                wx.YES_NO | wx.NO_DEFAULT)
             if dialog.ShowModal() == wx.ID_YES:
                 confnode.CTNRemove()
                 del confnode

@@ -40,7 +40,7 @@ class PopupWithListbox(wx.PopupWindow):
     def __init__(self, parent, choices=[]):
         wx.PopupWindow.__init__(self, parent, wx.BORDER_SIMPLE)
 
-        self.ListBox = wx.ListBox(self, -1, style=wx.LB_HSCROLL|wx.LB_SINGLE|wx.LB_SORT)
+        self.ListBox = wx.ListBox(self, -1, style=wx.LB_HSCROLL | wx.LB_SINGLE | wx.LB_SORT)
 
         self.SetChoices(choices)
 

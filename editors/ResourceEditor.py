@@ -217,7 +217,7 @@ class ResourceEditor(EditorPanel):
     VARIABLE_PANEL_TYPE = "resource"
 
     def _init_Editor(self, parent):
-        self.Editor = wx.Panel(parent, style=wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL)
+        self.Editor = wx.Panel(parent, style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
         main_sizer.AddGrowableCol(0)
@@ -228,7 +228,7 @@ class ResourceEditor(EditorPanel):
         tasks_sizer.AddGrowableCol(0)
         tasks_sizer.AddGrowableRow(1)
         main_sizer.AddSizer(tasks_sizer, border=5,
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         tasks_buttons_sizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         tasks_buttons_sizer.AddGrowableCol(0)
@@ -257,7 +257,7 @@ class ResourceEditor(EditorPanel):
         instances_sizer.AddGrowableCol(0)
         instances_sizer.AddGrowableRow(1)
         main_sizer.AddSizer(instances_sizer, border=5,
-              flag=wx.GROW|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         instances_buttons_sizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         instances_buttons_sizer.AddGrowableCol(0)
@@ -436,7 +436,7 @@ class ResourceEditor(EditorPanel):
         self.InstancesGrid.RefreshButtons()
 
     def ShowErrorMessage(self, message):
-        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 

@@ -170,7 +170,7 @@ class _SlaveCTN(NodeManager):
                                os.path.expanduser("~"),
                                "%s.eds" % self.CTNName(),
                                _("EDS files (*.eds)|*.eds|All files|*.*"),
-                               wx.SAVE|wx.OVERWRITE_PROMPT)
+                               wx.SAVE | wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             result = eds_utils.GenerateEDSFile(dialog.GetPath(), self.GetCurrentNodeCopy())
             if result:
