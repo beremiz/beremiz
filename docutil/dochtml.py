@@ -39,6 +39,7 @@ def OpenHtmlFrame(self, title, file, size):
             window.SetClientSize(size)
             window.Show()
 
+
 [ID_HTMLFRAME, ID_HTMLFRAMEHTMLCONTENT] = [wx.NewId() for _init_ctrls in range(2)]
 EVT_HTML_URL_CLICK = wx.NewId()
 

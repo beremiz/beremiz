@@ -106,6 +106,7 @@ def import_module(path, parent_module, module_name, dynamic=1, async=False):
 
     """)
 
+
 JS("""
 function import_wait(proceed_fn, parent_mod, dynamic) {
 
@@ -189,6 +190,7 @@ function import_wait(proceed_fn, parent_mod, dynamic) {
 class Object:
     pass
 
+
 object = Object
 
 
@@ -227,6 +229,7 @@ def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
 
     loader = Modload(path, app_modnames, app_imported_fn, dynamic, parent_mod)
     loader.next()
+
 
 import sys
 
@@ -277,6 +280,7 @@ class AttributeError(StandardError):
 
     def toString(self):
         return "AttributeError: %s of %s" % (self.args[1], self.args[0])
+
 
 JS("""
 pyjslib.StopIteration = function () { };
@@ -618,6 +622,7 @@ class List:
     def __str__(self):
         return repr(self)
 
+
 list = List
 
 
@@ -768,6 +773,7 @@ class Tuple:
     def __str__(self):
         return repr(self)
 
+
 tuple = Tuple
 
 
@@ -912,6 +918,7 @@ class Dict:
 
     def __str__(self):
         return repr(self)
+
 
 dict = Dict
 

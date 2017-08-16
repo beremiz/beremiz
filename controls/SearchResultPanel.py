@@ -45,6 +45,7 @@ def GenerateName(infos):
 #                            Search Result Panel
 #-------------------------------------------------------------------------------
 
+
 [ID_SEARCHRESULTPANEL, ID_SEARCHRESULTPANELHEADERLABEL,
  ID_SEARCHRESULTPANELSEARCHRESULTSTREE, ID_SEARCHRESULTPANELRESETBUTTON,
 ] = [wx.NewId() for _init_ctrls in range(4)]

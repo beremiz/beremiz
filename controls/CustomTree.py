@@ -35,6 +35,7 @@ def SetExtraImage(self, image):
     self._type = (1 if image is not None else 0)
     self._ExtraImage = image
 
+
 CT.GenericTreeItem.SetExtraImage = SetExtraImage
 
 _DefaultGetCurrentCheckedImage = CT.GenericTreeItem.GetCurrentCheckedImage
@@ -44,6 +45,8 @@ def GetCurrentCheckedImage(self):
     if self._ExtraImage is not None:
         return self._ExtraImage
     return _DefaultGetCurrentCheckedImage(self)
+
+
 CT.GenericTreeItem.GetCurrentCheckedImage = GetCurrentCheckedImage
 
 

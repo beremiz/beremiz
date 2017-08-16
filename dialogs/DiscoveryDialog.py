@@ -39,6 +39,7 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, id, pos, size, style, name=name)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
+
 [ID_DISCOVERYDIALOG, ID_DISCOVERYDIALOGSTATICTEXT1,
  ID_DISCOVERYDIALOGSERVICESLIST, ID_DISCOVERYDIALOGREFRESHBUTTON,
  ID_DISCOVERYDIALOGLOCALBUTTON, ID_DISCOVERYDIALOGIPBUTTON,

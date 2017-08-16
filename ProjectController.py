@@ -172,6 +172,7 @@ class Iec2CSettings():
             self.ieclib_c_path = self.findLibCPath()
         return self.ieclib_c_path
 
+
 iec2c_cfg = Iec2CSettings()
 
 

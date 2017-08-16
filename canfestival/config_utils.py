@@ -673,6 +673,7 @@ def LocalODPointers(locations, current_location, slave):
             pointers[(index, subindex)] = name
     return pointers
 
+
 if __name__ == "__main__":
     import os
     import sys

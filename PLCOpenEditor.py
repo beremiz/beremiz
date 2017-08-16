@@ -401,6 +401,7 @@ class PLCOpenEditor(IDEFrame):
 #                               Exception Handler
 #-------------------------------------------------------------------------------
 
+
 Max_Traceback_List_Size = 20
 
 
@@ -502,6 +503,7 @@ def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
 
     #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
+
 
 if __name__ == '__main__':
     if wx.VERSION < (3, 0, 0):

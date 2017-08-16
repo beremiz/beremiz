@@ -207,6 +207,7 @@ class FormProcessor(JSONRPCService):
 # list_some_model and list_another_model part of the django app:
 #  (r'^service1/$', 'djangoapp.views.jsonservice'),
 
+
 from django.core.serializers import serialize
 import datetime
 from datetime import date

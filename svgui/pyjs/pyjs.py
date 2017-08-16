@@ -103,6 +103,7 @@ def pyjs_builtin_remap(name):
         name = 'Tuple'
     return name
 
+
 # XXX: this is a hack: these should be dealt with another way
 # however, console is currently the only global name which is causing
 # problems.
@@ -1740,6 +1741,7 @@ class AppTranslator:
               print >>sys.stderr, 'Warning: Unable to find imported javascript:', js
         return lib_code.getvalue(), app_code.getvalue()
 
+
 usage = """
   usage: %s file_name [module_name]
 """
@@ -1759,6 +1761,7 @@ def main():
     else:
         module_name = None
     print translate(file_name, module_name),
+
 
 if __name__ == "__main__":
     main()

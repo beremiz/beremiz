@@ -52,6 +52,7 @@ def GetSubTypes(type):
     """
     return [typename for typename, parenttype in TypeHierarchy.items() if not typename.startswith("ANY") and IsOfType(typename, type)]
 
+
 DataTypeRange = dict(DataTypeRange_list)
 
 """
@@ -264,6 +265,7 @@ def get_standard_funtions(table):
                 raise "First function must be in a category"
 
     return Standard_Functions_Decl
+
 
 StdBlckLst.extend(get_standard_funtions(csv_file_to_table(open(StdFuncsCSV))))
 

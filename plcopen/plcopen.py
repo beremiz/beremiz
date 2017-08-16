@@ -152,6 +152,7 @@ def TestTextElement(text, criteria):
 def TextMatched(str1, str2):
     return str1 and str2 and (str1.upper() == str2.upper())
 
+
 PLCOpenParser = GenerateParserFromXSD(paths.AbsNeighbourFile(__file__, "tc6_xml_v201.xsd"))
 PLCOpen_XPath = lambda xpath: etree.XPath(xpath, namespaces=PLCOpenParser.NSMAP)
 
@@ -187,6 +188,7 @@ def LOAD_POU_INSTANCES_PROJECT_TEMPLATE(body_type):
     <%(body_type)s>%%s</%(body_type)s>
   </body>
 </pou>""" % locals()
+
 
 PLCOpen_v1_file = open(paths.AbsNeighbourFile(__file__, "TC6_XML_V10_B.xsd"))
 PLCOpen_v1_xml = PLCOpen_v1_file.read()
@@ -289,12 +291,14 @@ def LoadProject(filepath):
     project_file.close()
     return LoadProjectXML(project_xml)
 
+
 project_pou_xpath = PLCOpen_XPath("/ppx:project/ppx:types/ppx:pous/ppx:pou")
 
 
 def LoadPou(xml_string):
     root, error = LoadProjectXML(LOAD_POU_PROJECT_TEMPLATE % xml_string)
     return project_pou_xpath(root)[0], error
+
 
 project_pou_instances_xpath = {
     body_type: PLCOpen_XPath(
@@ -316,6 +320,7 @@ def SaveProject(project, filepath):
         xml_declaration=True,
         encoding='utf-8'))
     project_file.close()
+
 
 cls = PLCOpenParser.GetElementClass("formattedText")
 if cls:
@@ -712,6 +717,7 @@ def _SearchInConfigurationResource(self, criteria, parent_infos=[]):
             var_number += 1
     return search_result
 
+
 cls = PLCOpenParser.GetElementClass("configuration", "configurations")
 if cls:
 
@@ -968,6 +974,7 @@ if cls:
 def _updateBaseTypeElementName(self, old_name, new_name):
     self.baseType.updateElementName(old_name, new_name)
 
+
 cls = PLCOpenParser.GetElementClass("dataType", "dataTypes")
 if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
@@ -1043,6 +1050,7 @@ def _SearchInSubrange(self, criteria, parent_infos=[]):
                                  criteria, parent_infos))
     return search_result
 
+
 cls = PLCOpenParser.GetElementClass("subrangeSigned", "dataType")
 if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
@@ -1076,6 +1084,7 @@ def _getvariableTypeinfos(variable_type):
     if type_content_type == "derived":
         return type_content.getname()
     return type_content_type.upper()
+
 
 cls = PLCOpenParser.GetElementClass("pou", "pous")
 if cls:
@@ -1926,6 +1935,7 @@ def _updateElementAddress(self, address_model, new_leading):
 def _SearchInElement(self, criteria, parent_infos=[]):
     return []
 
+
 _connectionsFunctions = {
     "bbox": {"none": _getBoundingBox,
              "single": _getBoundingBoxSingle,
@@ -1957,6 +1967,7 @@ def _initElementClass(name, parent, connectionPointInType="none"):
         setattr(cls, "updateConnectionsId", _connectionsFunctions["update"][connectionPointInType])
         setattr(cls, "Search", _SearchInElement)
     return cls
+
 
 cls = _initElementClass("comment", "commonObjects")
 if cls:
@@ -2043,6 +2054,7 @@ def _getSearchInLDElement(ld_element_type):
     def SearchInLDElement(self, criteria, parent_infos=[]):
         return _Search([("reference", self.variable)], criteria, parent_infos + [ld_element_type, self.getlocalId()])
     return SearchInLDElement
+
 
 cls = _initElementClass("contact", "ldObjects", "single")
 if cls:
@@ -2310,6 +2322,7 @@ def _UpdateIOElementName(self, old_name, new_name):
 def _UpdateIOElementAddress(self, address_model, new_leading):
     self.expression = update_address(self.expression, address_model, new_leading)
 
+
 cls = _initElementClass("inVariable", "fbdObjects")
 if cls:
     setattr(cls, "updateElementName", _UpdateIOElementName)
@@ -2331,6 +2344,7 @@ if cls:
 
 def _SearchInConnector(self, criteria, parent_infos=[]):
     return _Search([("name", self.getname())], criteria, parent_infos + ["connector", self.getlocalId()])
+
 
 cls = _initElementClass("continuation", "commonObjects")
 if cls:
@@ -2494,6 +2508,7 @@ def extractValues(values):
         else:
             raise ValueError, _("\"%s\" is an invalid value!") % value
     return items
+
 
 cls = PLCOpenParser.GetElementClass("arrayValue", "value")
 if cls:

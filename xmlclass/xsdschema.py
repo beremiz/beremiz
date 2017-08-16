@@ -67,6 +67,7 @@ def GenerateFloatXMLText(extra_values=[], decimal=None):
         return text
     return generateXMLTextMethod
 
+
 DEFAULT_FACETS = GenerateDictFacets(["pattern", "whiteSpace", "enumeration"])
 NUMBER_FACETS = GenerateDictFacets(DEFAULT_FACETS.keys() + ["maxInclusive", "maxExclusive", "minInclusive", "minExclusive"])
 DECIMAL_FACETS = GenerateDictFacets(NUMBER_FACETS.keys() + ["totalDigits", "fractionDigits"])

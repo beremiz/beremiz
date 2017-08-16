@@ -42,6 +42,8 @@ def GetDirFilterChoiceOptions():
             (_("Input"), [LOCATION_VAR_INPUT]),
             (_("Output"), [LOCATION_VAR_OUTPUT]),
             (_("Memory"), [LOCATION_VAR_MEMORY])]
+
+
 DIRFILTERCHOICE_OPTIONS = dict([(_(option), filter) for option, filter in GetDirFilterChoiceOptions()])
 
 
@@ -50,6 +52,7 @@ def GetTypeFilterChoiceOptions():
     return [_("All"),
             _("Type and derivated"),
             _("Type strict")]
+
 
 # turn LOCATIONDATATYPES inside-out
 LOCATION_SIZES = {}

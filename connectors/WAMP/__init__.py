@@ -52,6 +52,7 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print 'WAMP session left'
 
+
 PLCObjDefaults = {
     "StartPLC":          False,
     "GetTraceVariables": ("Broken", None),

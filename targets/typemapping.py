@@ -54,6 +54,7 @@ def _ttime(): return (IEC_TIME,
                       lambda x: td(0, x.s, x.ns/1000),
                       lambda t, x: t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000))
 
+
 SameEndianessTypeTranslator = {
     "BOOL":       _t(c_uint8,  lambda x: x.value != 0),
     "STEP":       _t(c_uint8),

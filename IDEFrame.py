@@ -215,6 +215,7 @@ def AppendMenu(parent, help, id, kind, text):
     else:
         parent.Append(helpString=help, id=id, kind=kind, item=text)
 
+
 [TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
  POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
 ] = range(10)
@@ -243,6 +244,7 @@ def GetDeleteElementFunction(remove_function, parent_type=None, check_function=N
             else:
                 remove_function(self.Controler, name)
     return DeleteElementFunction
+
 
 if wx.Platform == '__WXMSW__':
     TAB_BORDER = 6
@@ -328,6 +330,7 @@ def ComputeTabsLayout(tabs, rect):
 #-------------------------------------------------------------------------------
 #                              IDEFrame Base Class
 #-------------------------------------------------------------------------------
+
 
 UNEDITABLE_NAMES_DICT = dict([(_(name), name) for name in UNEDITABLE_NAMES])
 
@@ -2552,6 +2555,7 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 #                               Viewer Printout
 #-------------------------------------------------------------------------------
+
 
 UPPER_DIV = lambda x, y: (x / y) + {True: 0, False: 1}[(x % y) == 0]
 
