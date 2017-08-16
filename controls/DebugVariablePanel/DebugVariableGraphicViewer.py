@@ -438,7 +438,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # will be set in reverse order
         buttons = self.ContextualButtons[:]
         if direction in [wx.TOP, wx.LEFT]:
-             buttons.reverse()
+            buttons.reverse()
 
         # Set contextual menu buttons position aside rect depending on
         # direction given

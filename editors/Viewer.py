@@ -3714,7 +3714,7 @@ class Viewer(EditorPanel, DebugViewer):
                 comment.Draw(dc)
         for wire in self.Wires.iterkeys():
             if wire != self.SelectedElement and (wire.IsVisible() or printing):
-                 if not self.Debug or wire.GetValue() != True:
+                if not self.Debug or wire.GetValue() != True:
                     wire.Draw(dc)
         if self.Debug:
             for wire in self.Wires.iterkeys():

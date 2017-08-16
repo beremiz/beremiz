@@ -815,7 +815,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
     def SetType(self, type, condition=None):
         if self.Type != type:
             if self.Type == "connection":
-               self.Condition.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
+                self.Condition.UnConnect(delete=self.Parent.GetDrawingMode() == FREEDRAWING_MODE)
             self.Type = type
             if type == "connection":
                 self.Condition = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] / 2), WEST)
