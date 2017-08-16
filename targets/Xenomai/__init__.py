@@ -28,6 +28,7 @@ from ..toolchain_gcc import toolchain_gcc
 class Xenomai_target(toolchain_gcc):
     dlopen_prefix = "./"
     extension = ".so"
+
     def getXenoConfig(self, flagsname):
         """ Get xeno-config from target parameters """
         xeno_config = self.CTRInstance.GetTarget().getcontent().getXenoConfig()

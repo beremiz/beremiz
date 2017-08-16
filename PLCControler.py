@@ -155,9 +155,11 @@ def _translate_args(translations, args):
 class _VariableInfos(object):
     __slots__ = ["Name", "Class", "Option", "Location", "InitialValue",
                  "Edit", "Documentation", "Type", "Tree", "Number"]
+
     def __init__(self, *args):
         for attr, value in zip(self.__slots__, args):
             setattr(self, attr, value if value is not None else "")
+
     def copy(self):
         return _VariableInfos(*[getattr(self, attr) for attr in self.__slots__])
 
@@ -226,9 +228,11 @@ def class_extraction(value):
 
 class _VariablesTreeItemInfos(object):
     __slots__ = ["name", "var_class", "type", "edit", "debug", "variables"]
+
     def __init__(self, *args):
         for attr, value in zip(self.__slots__, args):
             setattr(self, attr, value if value is not None else "")
+
     def copy(self):
         return _VariableTreeItem(*[getattr(self, attr) for attr in self.__slots__])
 
@@ -372,9 +376,11 @@ _ConnectionLinkInfos = namedtuple("ConnectionLinkInfos",
 
 class _ActionInfos(object):
     __slots__ = ["qualifier", "type", "value", "duration", "indicator"]
+
     def __init__(self, *args):
         for attr, value in zip(self.__slots__, args):
             setattr(self, attr, value if value is not None else "")
+
     def copy(self):
         return _ActionInfos(*[getattr(self, attr) for attr in self.__slots__])
 

@@ -435,6 +435,7 @@ if cls:
     datatypes_xpath = PLCOpen_XPath("ppx:types/ppx:dataTypes/ppx:dataType")
     filtered_datatypes_xpath = PLCOpen_XPath(
         "ppx:types/ppx:dataTypes/ppx:dataType[@name!=$exclude]")
+
     def getdataTypes(self, exclude=None):
         if exclude is not None:
             return filtered_datatypes_xpath(self, exclude=exclude)
@@ -483,12 +484,14 @@ if cls:
 
     configurations_xpath = PLCOpen_XPath(
         "ppx:instances/ppx:configurations/ppx:configuration")
+
     def getconfigurations(self):
         return configurations_xpath(self)
     setattr(cls, "getconfigurations", getconfigurations)
 
     configuration_xpath = PLCOpen_XPath(
         "ppx:instances/ppx:configurations/ppx:configuration[@name=$name]")
+
     def getconfiguration(self, name):
         configurations = configuration_xpath(self, name=name)
         if len(configurations) == 1:
@@ -513,6 +516,7 @@ if cls:
 
     resources_xpath = PLCOpen_XPath(
         "ppx:instances/ppx:configurations/ppx:configuration[@name=$configname]/ppx:resource[@name=$name]")
+
     def getconfigurationResource(self, config_name, name):
         resources = resources_xpath(self, configname=config_name, name=name)
         if len(resources) == 1:
@@ -578,6 +582,7 @@ if cls:
 
     enumerated_values_xpath = PLCOpen_XPath(
         "ppx:types/ppx:dataTypes/ppx:dataType/ppx:baseType/ppx:enum/ppx:values/ppx:value")
+
     def GetEnumeratedDataTypeValues(self):
         return [value.getname() for value in enumerated_values_xpath(self)]
     setattr(cls, "GetEnumeratedDataTypeValues", GetEnumeratedDataTypeValues)
@@ -1070,6 +1075,7 @@ if cls:
     setattr(cls, "updateElementName", updateElementName)
 
     enumerated_datatype_values_xpath = PLCOpen_XPath("ppx:values/ppx:value")
+
     def Search(self, criteria, parent_infos=[]):
         search_result = []
         for i, value in enumerate(enumerated_datatype_values_xpath(self)):
@@ -1094,6 +1100,7 @@ if cls:
         "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars]/ppx:variable")
     block_outputs_xpath = PLCOpen_XPath(
         "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable")
+
     def getblockInfos(self):
         block_infos = {
             "name": self.getname(),
@@ -1626,6 +1633,7 @@ cls = PLCOpenParser.GetElementClass("body")
 if cls:
     cls.currentExecutionOrderId = 0
     cls.checkedBlocksDict = {}
+
     def resetcurrentExecutionOrderId(self):
         object.__setattr__(self, "currentExecutionOrderId", 0)
     setattr(cls, "resetcurrentExecutionOrderId", resetcurrentExecutionOrderId)
@@ -1717,6 +1725,7 @@ if cls:
 
     instance_by_id_xpath = PLCOpen_XPath("*[@localId=$localId]")
     instance_by_name_xpath = PLCOpen_XPath("ppx:block[@instanceName=$name]")
+
     def getcontentInstance(self, local_id):
         if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             instance = instance_by_id_xpath(self.content, localId=local_id)
@@ -2413,6 +2422,7 @@ if cls:
 
     connection_xpath = PLCOpen_XPath("ppx:connection")
     connection_by_position_xpath = PLCOpen_XPath("ppx:connection[position()=$pos]")
+
     def getconnections(self):
         return connection_xpath(self)
     setattr(cls, "getconnections", getconnections)

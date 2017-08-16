@@ -1180,18 +1180,22 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.AppFrame.ShowError(infos, start, end)
 
     _IECCodeView = None
+
     def _showIECcode(self):
         self._OpenView("IEC code")
 
     _IECRawCodeView = None
+
     def _editIECrawcode(self):
         self._OpenView("IEC raw code")
 
     _ProjectFilesView = None
+
     def _OpenProjectFiles(self):
         self._OpenView("Project Files")
 
     _FileEditors = {}
+
     def _OpenFileEditor(self, filepath):
         self._OpenView(filepath)
 
