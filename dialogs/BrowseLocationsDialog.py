@@ -66,7 +66,7 @@ class BrowseLocationsDialog(wx.Dialog):
 
     def __init__(self, parent, var_type, controller):
         wx.Dialog.__init__(self, parent, title=_('Browse Locations'),
-              style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
+              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -74,22 +74,22 @@ class BrowseLocationsDialog(wx.Dialog):
 
         locations_label = wx.StaticText(self, label=_('Locations available:'))
         main_sizer.AddWindow(locations_label, border=20,
-              flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
+              flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
         self.LocationsTree = wx.TreeCtrl(self,
-              style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER|wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT)
+              style=wx.TR_HAS_BUTTONS | wx.TR_SINGLE | wx.SUNKEN_BORDER | wx.TR_HIDE_ROOT | wx.TR_LINES_AT_ROOT)
         self.LocationsTree.SetInitialSize(wx.Size(-1, 300))
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnLocationsTreeItemActivated,
                   self.LocationsTree)
         main_sizer.AddWindow(self.LocationsTree, border=20,
-              flag=wx.LEFT|wx.RIGHT|wx.GROW)
+              flag=wx.LEFT | wx.RIGHT | wx.GROW)
 
         button_gridsizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         button_gridsizer.AddGrowableCol(1)
         button_gridsizer.AddGrowableCol(3)
         button_gridsizer.AddGrowableRow(0)
         main_sizer.AddSizer(button_gridsizer, border=20,
-              flag=wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.GROW)
+              flag=wx.BOTTOM | wx.LEFT | wx.RIGHT | wx.GROW)
 
         direction_label = wx.StaticText(self, label=_('Direction:'))
         button_gridsizer.AddWindow(direction_label,
@@ -98,7 +98,7 @@ class BrowseLocationsDialog(wx.Dialog):
         self.DirFilterChoice = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnFilterChoice, self.DirFilterChoice)
         button_gridsizer.AddWindow(self.DirFilterChoice,
-              flag=wx.GROW|wx.ALIGN_CENTER_VERTICAL)
+              flag=wx.GROW | wx.ALIGN_CENTER_VERTICAL)
 
         filter_label = wx.StaticText(self, label=_('Type:'))
         button_gridsizer.AddWindow(filter_label,
@@ -107,9 +107,9 @@ class BrowseLocationsDialog(wx.Dialog):
         self.TypeFilterChoice = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnFilterChoice, self.TypeFilterChoice)
         button_gridsizer.AddWindow(self.TypeFilterChoice,
-              flag=wx.GROW|wx.ALIGN_CENTER_VERTICAL)
+              flag=wx.GROW | wx.ALIGN_CENTER_VERTICAL)
 
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         button_gridsizer.AddSizer(button_sizer, flag=wx.ALIGN_RIGHT)
 
@@ -218,7 +218,7 @@ class BrowseLocationsDialog(wx.Dialog):
         if selected.IsOk():
             var_infos = self.LocationsTree.GetPyData(selected)
         if var_infos is None or var_infos["type"] in [LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP]:
-            dialog = wx.MessageDialog(self, _("A location must be selected!"), _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, _("A location must be selected!"), _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

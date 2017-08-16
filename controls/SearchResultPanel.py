@@ -68,7 +68,7 @@ class SearchResultPanel(wx.Panel):
         parent.AddGrowableRow(1)
 
     def _init_coll_HeaderSizer_Items(self, parent):
-        parent.AddWindow(self.HeaderLabel, 1, border=5, flag=wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        parent.AddWindow(self.HeaderLabel, 1, border=5, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
         parent.AddWindow(self.ResetButton, 0, border=0, flag=0)
 
     def _init_coll_HeaderSizer_Growables(self, parent):
@@ -93,7 +93,7 @@ class SearchResultPanel(wx.Panel):
               name='HeaderLabel', parent=self,
               pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
 
-        search_results_tree_style = CT.TR_HAS_BUTTONS|CT.TR_NO_LINES|CT.TR_HAS_VARIABLE_ROW_HEIGHT
+        search_results_tree_style = CT.TR_HAS_BUTTONS | CT.TR_NO_LINES | CT.TR_HAS_VARIABLE_ROW_HEIGHT
         self.SearchResultsTree = CT.CustomTreeCtrl(id=ID_SEARCHRESULTPANELSEARCHRESULTSTREE,
               name="SearchResultsTree", parent=self,
               pos=wx.Point(0, 0), style=search_results_tree_style)
@@ -295,7 +295,7 @@ class SearchResultPanel(wx.Panel):
             style = wx.TextAttr(wx.Colour(0, 127, 174))
 
         if text is not None:
-            text_ctrl_style = wx.BORDER_NONE|wx.TE_READONLY|wx.TE_RICH2
+            text_ctrl_style = wx.BORDER_NONE | wx.TE_READONLY | wx.TE_RICH2
             if wx.Platform != '__WXMSW__' or len(text.splitlines()) > 1:
                 text_ctrl_style |= wx.TE_MULTILINE
             text_ctrl = wx.TextCtrl(id=-1, parent=self.SearchResultsTree, pos=wx.Point(0, 0),

@@ -294,7 +294,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                     dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                           _("Select a variable class:"), _("Variable class"),
                                           [_("Input"), _("Output"), _("Memory")],
-                                          wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                          wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                                     if dialog.ShowModal() == wx.ID_OK:
                                         selected = dialog.GetSelection()
                                     else:
@@ -354,7 +354,7 @@ class VariableDropTarget(wx.TextDropTarget):
                             dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
                                   _("Select a variable class:"), _("Variable class"),
                                   [_("Input"), _("Output"), _("Memory")],
-                                  wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                  wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
                             else:
@@ -404,7 +404,7 @@ class VariableDropTarget(wx.TextDropTarget):
             wx.CallAfter(self.ShowMessage, message)
 
     def ShowMessage(self, message):
-        message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)
         message.ShowModal()
         message.Destroy()
 
@@ -425,7 +425,7 @@ class VariablePanel(wx.Panel):
         controls_sizer = wx.FlexGridSizer(cols=10, hgap=5, rows=1, vgap=5)
         controls_sizer.AddGrowableCol(5)
         controls_sizer.AddGrowableRow(0)
-        self.MainSizer.AddSizer(controls_sizer, border=5, flag=wx.GROW|wx.ALL)
+        self.MainSizer.AddSizer(controls_sizer, border=5, flag=wx.GROW | wx.ALL)
 
         self.ReturnTypeLabel = wx.StaticText(self, label=_('Return Type:'))
         controls_sizer.AddWindow(self.ReturnTypeLabel, flag=wx.ALIGN_CENTER_VERTICAL)
@@ -762,7 +762,7 @@ class VariablePanel(wx.Panel):
             self.ClassList = [self.Filter]
 
     def ShowErrorMessage(self, message):
-        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 

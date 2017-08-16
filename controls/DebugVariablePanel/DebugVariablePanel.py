@@ -166,7 +166,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         dialog = wx.MessageDialog(self.ParentWindow,
                                   message,
                                   _("Error"),
-                                  wx.OK|wx.ICON_ERROR)
+                                  wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -189,7 +189,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         consumers
         @param window: Reference to Beremiz frame
         """
-        wx.Panel.__init__(self, parent, style=wx.SP_3D|wx.TAB_TRAVERSAL)
+        wx.Panel.__init__(self, parent, style=wx.SP_3D | wx.TAB_TRAVERSAL)
 
         # Save Reference to Beremiz frame
         self.ParentWindow = window
@@ -222,7 +222,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.GraphicPanels = []
 
         graphics_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(graphics_button_sizer, border=5, flag=wx.GROW|wx.ALL)
+        main_sizer.AddSizer(graphics_button_sizer, border=5, flag=wx.GROW | wx.ALL)
 
         range_label = wx.StaticText(self, label=_('Range:'))
         graphics_button_sizer.AddWindow(range_label, flag=wx.ALIGN_CENTER_VERTICAL)
@@ -230,7 +230,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.CanvasRange = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnRangeChanged, self.CanvasRange)
         graphics_button_sizer.AddWindow(self.CanvasRange, 1,
-              border=5, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
+              border=5, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL)
 
         self.CanvasRange.Clear()
         default_range_idx = 0
@@ -263,21 +263,21 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
               self.OnPositionChanging, self.CanvasPosition)
         self.CanvasPosition.Bind(wx.EVT_SCROLL_PAGEDOWN,
               self.OnPositionChanging, self.CanvasPosition)
-        main_sizer.AddWindow(self.CanvasPosition, border=5, flag=wx.GROW|wx.LEFT|wx.RIGHT|wx.BOTTOM)
+        main_sizer.AddWindow(self.CanvasPosition, border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
 
         self.TickSizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(self.TickSizer, border=5, flag=wx.ALL|wx.GROW)
+        main_sizer.AddSizer(self.TickSizer, border=5, flag=wx.ALL | wx.GROW)
 
         self.TickLabel = wx.StaticText(self)
         self.TickSizer.AddWindow(self.TickLabel, border=5, flag=wx.RIGHT)
 
-        self.MaskLabel = wx.TextCtrl(self, style=wx.TE_READONLY|wx.TE_CENTER|wx.NO_BORDER)
-        self.TickSizer.AddWindow(self.MaskLabel, 1, border=5, flag=wx.RIGHT|wx.GROW)
+        self.MaskLabel = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_CENTER | wx.NO_BORDER)
+        self.TickSizer.AddWindow(self.MaskLabel, 1, border=5, flag=wx.RIGHT | wx.GROW)
 
         self.TickTimeLabel = wx.StaticText(self)
         self.TickSizer.AddWindow(self.TickTimeLabel)
 
-        self.GraphicsWindow = wx.ScrolledWindow(self, style=wx.HSCROLL|wx.VSCROLL)
+        self.GraphicsWindow = wx.ScrolledWindow(self, style=wx.HSCROLL | wx.VSCROLL)
         self.GraphicsWindow.SetBackgroundColour(wx.WHITE)
         self.GraphicsWindow.SetDropTarget(DebugVariableDropTarget(self))
         self.GraphicsWindow.Bind(wx.EVT_ERASE_BACKGROUND, self.OnGraphicsWindowEraseBackground)

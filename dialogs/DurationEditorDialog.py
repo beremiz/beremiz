@@ -65,7 +65,7 @@ class DurationEditorDialog(wx.Dialog):
 
         controls_sizer = wx.FlexGridSizer(cols=len(CONTROLS), hgap=10, rows=2, vgap=10)
         main_sizer.AddSizer(controls_sizer, border=20,
-              flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
+              flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
         controls = []
         for i, (name, label) in enumerate(CONTROLS):
@@ -86,10 +86,10 @@ class DurationEditorDialog(wx.Dialog):
         for st, txtctrl in controls:
             controls_sizer.AddWindow(txtctrl, flag=wx.GROW)
 
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
         self.Fit()
@@ -119,7 +119,7 @@ class DurationEditorDialog(wx.Dialog):
             try:
                 value = float(control.GetValue())
             except ValueError, e:
-                message = wx.MessageDialog(self, _("Invalid value!\nYou must fill a numeric value."), _("Error"), wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, _("Invalid value!\nYou must fill a numeric value."), _("Error"), wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
             event.Skip()
@@ -165,7 +165,7 @@ class DurationEditorDialog(wx.Dialog):
                 message = _("Field %s hasn't a valid value!") % errors[0]
             else:
                 message = _("Fields %s haven't a valid value!") % ",".join(errors)
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

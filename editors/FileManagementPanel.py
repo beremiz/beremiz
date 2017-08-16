@@ -43,10 +43,10 @@ class FileManagementPanel(EditorPanel):
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         left_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(left_sizer, 1, border=5, flag=wx.GROW|wx.ALL)
+        main_sizer.AddSizer(left_sizer, 1, border=5, flag=wx.GROW | wx.ALL)
 
         managed_dir_label = wx.StaticText(self.Editor, label=_(self.TagName) + ":")
-        left_sizer.AddWindow(managed_dir_label, border=5, flag=wx.GROW|wx.BOTTOM)
+        left_sizer.AddWindow(managed_dir_label, border=5, flag=wx.GROW | wx.BOTTOM)
 
         self.ManagedDir = FolderTree(self.Editor, self.Folder, FILTER)
         left_sizer.AddWindow(self.ManagedDir, 1, flag=wx.GROW)
@@ -58,7 +58,7 @@ class FileManagementPanel(EditorPanel):
 
         button_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.AddSizer(button_sizer, border=5,
-              flag=wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+              flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
 
         for idx, (name, bitmap, help) in enumerate([
                 ("DeleteButton", "remove_element", _("Remove file from left folder")),
@@ -78,13 +78,13 @@ class FileManagementPanel(EditorPanel):
             button_sizer.AddWindow(button, border=20, flag=flag)
 
         right_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(right_sizer, 1, border=5, flag=wx.GROW|wx.ALL)
+        main_sizer.AddSizer(right_sizer, 1, border=5, flag=wx.GROW | wx.ALL)
 
         if wx.Platform == '__WXMSW__':
             system_dir_label = wx.StaticText(self.Editor, label=_("My Computer:"))
         else:
             system_dir_label = wx.StaticText(self.Editor, label=_("Home Directory:"))
-        right_sizer.AddWindow(system_dir_label, border=5, flag=wx.GROW|wx.BOTTOM)
+        right_sizer.AddWindow(system_dir_label, border=5, flag=wx.GROW | wx.BOTTOM)
 
         self.SystemDir = FolderTree(self.Editor, self.HomeDirectory, FILTER, False)
         right_sizer.AddWindow(self.SystemDir, 1, flag=wx.GROW)
@@ -151,7 +151,7 @@ class FileManagementPanel(EditorPanel):
 
             dialog = wx.MessageDialog(self,
                   _("Do you really want to delete the file '%s'?") % filename,
-                  _("Delete File"), wx.YES_NO|wx.ICON_QUESTION)
+                  _("Delete File"), wx.YES_NO | wx.ICON_QUESTION)
             remove = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
 
@@ -179,7 +179,7 @@ class FileManagementPanel(EditorPanel):
             if os.path.isfile(dst_filepath):
                 dialog = wx.MessageDialog(self,
                       _("The file '%s' already exist.\nDo you want to replace it?") % src_filename,
-                      _("Replace File"), wx.YES_NO|wx.ICON_QUESTION)
+                      _("Replace File"), wx.YES_NO | wx.ICON_QUESTION)
                 copy = dialog.ShowModal() == wx.ID_YES
                 dialog.Destroy()
             else:

@@ -56,18 +56,18 @@ class PouDialog(wx.Dialog):
         infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=15)
         infos_sizer.AddGrowableCol(1)
         main_sizer.AddSizer(infos_sizer, border=20,
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
+              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         pouname_label = wx.StaticText(self, label=_('POU Name:'))
         infos_sizer.AddWindow(pouname_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
+              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.PouName = wx.TextCtrl(self)
         infos_sizer.AddWindow(self.PouName, flag=wx.GROW)
 
         poutype_label = wx.StaticText(self, label=_('POU Type:'))
         infos_sizer.AddWindow(poutype_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
+              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.PouType = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnTypeChanged, self.PouType)
@@ -75,15 +75,15 @@ class PouDialog(wx.Dialog):
 
         language_label = wx.StaticText(self, label=_('Language:'))
         infos_sizer.AddWindow(language_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
+              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
         infos_sizer.AddWindow(self.Language, flag=wx.GROW)
 
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 
@@ -129,13 +129,13 @@ class PouDialog(wx.Dialog):
             question = True
         if message is not None:
             if question:
-                dialog = wx.MessageDialog(self, message, _("Warning"), wx.YES_NO|wx.ICON_EXCLAMATION)
+                dialog = wx.MessageDialog(self, message, _("Warning"), wx.YES_NO | wx.ICON_EXCLAMATION)
                 result = dialog.ShowModal()
                 dialog.Destroy()
                 if result == wx.ID_YES:
                     self.EndModal(wx.ID_OK)
             else:
-                dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+                dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
                 dialog.ShowModal()
                 dialog.Destroy()
         else:

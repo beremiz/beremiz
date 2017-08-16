@@ -168,7 +168,7 @@ class ForceVariableDialog(wx.TextEntryDialog):
     def __init__(self, parent, iec_type, defaultValue=""):
         wx.TextEntryDialog.__init__(self, parent, message=_("Forcing Variable Value"),
                 caption=_("Please enter value for a \"%s\" variable:") % iec_type, defaultValue=defaultValue,
-                style=wx.OK|wx.CANCEL|wx.CENTRE, pos=wx.DefaultPosition)
+                style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition)
 
         self.IEC_Type = iec_type
 
@@ -184,7 +184,7 @@ class ForceVariableDialog(wx.TextEntryDialog):
             border = self.GetSizer().GetItem(1).GetBorder()
             self.GetSizer().Insert(before=2, item=self.ToggleButton,
                                    border=border,
-                                   flag=wx.LEFT|wx.RIGHT|wx.EXPAND)
+                                   flag=wx.LEFT | wx.RIGHT | wx.EXPAND)
             self.Bind(wx.EVT_TOGGLEBUTTON, self.ToggleBoolValue, self.ToggleButton)
 
         self.Fit()
@@ -201,7 +201,7 @@ class ForceVariableDialog(wx.TextEntryDialog):
         elif GetTypeValue[self.IEC_Type](value) is None:
             message = _("Invalid value \"{a1}\" for \"{a2}\" variable!").format(a1=value, a2=self.IEC_Type)
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

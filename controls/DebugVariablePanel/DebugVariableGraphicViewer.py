@@ -230,7 +230,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
         dialog = wx.MessageDialog(self.ParentWindow,
                                   message,
                                   _("Error"),
-                                  wx.OK|wx.ICON_ERROR)
+                                  wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 

@@ -213,7 +213,7 @@ class PLCObject(pyro.ObjBase):
             self._LogMessage.restype = ctypes.c_int
             self._LogMessage.argtypes = [ctypes.c_uint8, ctypes.c_char_p, ctypes.c_uint32]
 
-            self._log_read_buffer = ctypes.create_string_buffer(1<<14)  #16K
+            self._log_read_buffer = ctypes.create_string_buffer(1 << 14)  #16K
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
             self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]

@@ -95,22 +95,22 @@ from util.BitmapLibrary import GetBitmap
 #  - Item icon filename
 #  - Item tooltip text
 EditorToolBarItems = {
-    "FBD":   [(True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+    "FBD":   [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
                "move", _("Move the view")),
-              (True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
                "add_comment", _("Create a new comment")),
-              (True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
                "add_variable", _("Create a new variable")),
-              (True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
                "add_block", _("Create a new block")),
-              (True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
                "add_connection", _("Create a new connection"))],
-    "LD":    [(True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+    "LD":    [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
                "move", _("Move the view")),
               (True, FREEDRAWING_MODE,
@@ -125,7 +125,7 @@ EditorToolBarItems = {
               (True, FREEDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARCOIL, "OnCoilTool",
                "add_coil", _("Create a new coil")),
-              (False, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARCONTACT, "OnContactTool",
                "add_contact", _("Create a new contact")),
               (False, DRIVENDRAWING_MODE,
@@ -134,34 +134,34 @@ EditorToolBarItems = {
               (True, FREEDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
                "add_variable", _("Create a new variable")),
-              (False, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
                "add_block", _("Create a new block")),
               (True, FREEDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
                "add_connection", _("Create a new connection"))],
-    "SFC":   [(True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+    "SFC":   [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
                "move", _("Move the view")),
-              (True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
                "add_comment", _("Create a new comment")),
-              (True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARINITIALSTEP, "OnInitialStepTool",
                "add_initial_step", _("Create a new initial step")),
-              (False, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARSTEP, "OnStepTool",
                "add_step", _("Create a new step")),
               (True, FREEDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARTRANSITION, "OnTransitionTool",
                "add_transition", _("Create a new transition")),
-              (False, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARACTIONBLOCK, "OnActionBlockTool",
                "add_action", _("Create a new action block")),
-              (False, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARDIVERGENCE, "OnDivergenceTool",
                "add_divergence", _("Create a new divergence")),
-              (False, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARJUMP, "OnJumpTool",
                "add_jump", _("Create a new jump")),
               (True, FREEDRAWING_MODE,
@@ -181,7 +181,7 @@ EditorToolBarItems = {
                "add_contact", _("Create a new contact"))],
     "ST":    [],
     "IL":    [],
-    "debug": [(True, FREEDRAWING_MODE|DRIVENDRAWING_MODE,
+    "debug": [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
                ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
                "move", _("Move the view"))],
 }
@@ -565,9 +565,9 @@ class IDEFrame(wx.Frame):
                   name='ProjectTree', parent=self.ProjectPanel,
                   pos=wx.Point(0, 0), size=wx.Size(0, 0),
                   style=wx.SUNKEN_BORDER,
-                  agwStyle=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.TR_EDIT_LABELS)
+                  agwStyle=wx.TR_HAS_BUTTONS | wx.TR_SINGLE | wx.TR_EDIT_LABELS)
         self.ProjectTree.SetBackgroundBitmap(GetBitmap("custom_tree_background"),
-                                             wx.ALIGN_RIGHT|wx.ALIGN_BOTTOM)
+                                             wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
         add_menu = wx.Menu()
         self._init_coll_AddMenu_Items(add_menu)
         self.ProjectTree.SetAddMenu(add_menu)
@@ -1012,7 +1012,7 @@ class IDEFrame(wx.Frame):
     ## Function displaying an Error dialog in PLCOpenEditor.
     #  @param message The message to display.
     def ShowErrorMessage(self, message):
-        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -1020,7 +1020,7 @@ class IDEFrame(wx.Frame):
     #  @return False if closing cancelled.
     def CheckSaveBeforeClosing(self, title=_("Close Project")):
         if not self.Controler.ProjectIsSaved():
-            dialog = wx.MessageDialog(self, _("There are changes, do you want to save?"), title, wx.YES_NO|wx.CANCEL|wx.ICON_QUESTION)
+            dialog = wx.MessageDialog(self, _("There are changes, do you want to save?"), title, wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION)
             answer = dialog.ShowModal()
             dialog.Destroy()
             if answer == wx.ID_YES:
@@ -1084,7 +1084,7 @@ class IDEFrame(wx.Frame):
             preview = wx.PrintPreview(printout, printout2, data)
 
             if preview.Ok():
-                preview_frame = wx.PreviewFrame(preview, self, _("Print preview"), style=wx.DEFAULT_FRAME_STYLE|wx.FRAME_FLOAT_ON_PARENT)
+                preview_frame = wx.PreviewFrame(preview, self, _("Print preview"), style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
                 preview_frame.Initialize()
 
@@ -1622,7 +1622,7 @@ class IDEFrame(wx.Frame):
                         message = _("\"%s\" pou already exists!") % new_name
                         abort = True
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
-                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO | wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
@@ -1663,12 +1663,12 @@ class IDEFrame(wx.Frame):
                         message = _("\"%s\" config already exists!") % new_name
                         abort = True
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
-                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO | wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
-                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO | wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
@@ -1682,12 +1682,12 @@ class IDEFrame(wx.Frame):
                         message = _("\"%s\" config already exists!") % new_name
                         abort = True
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames()]:
-                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO | wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
                     elif new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouVariableNames()]:
-                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO|wx.ICON_QUESTION)
+                        messageDialog = wx.MessageDialog(self, _("A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?") % new_name, _("Error"), wx.YES_NO | wx.ICON_QUESTION)
                         if messageDialog.ShowModal() == wx.ID_NO:
                             abort = True
                         messageDialog.Destroy()
@@ -2416,7 +2416,7 @@ class IDEFrame(wx.Frame):
 
         dialog = wx.MessageDialog(self,
             _("\"%s\" is used by one or more POUs. Do you wish to continue?") % name,
-            title, wx.YES_NO|wx.ICON_QUESTION)
+            title, wx.YES_NO | wx.ICON_QUESTION)
         answer = dialog.ShowModal()
         dialog.Destroy()
         return answer == wx.ID_YES

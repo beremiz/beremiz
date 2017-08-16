@@ -42,11 +42,11 @@ class ProjectDialog(wx.Dialog):
               enable_required=enable_required)
         main_sizer.AddWindow(self.ProjectProperties, flag=wx.GROW)
 
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK,
                   self.ButtonSizer.GetAffirmativeButton())
         main_sizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
         self.ProjectProperties.Fit()
@@ -72,7 +72,7 @@ class ProjectDialog(wx.Dialog):
                     text += ", %s" % item
             dialog = wx.MessageDialog(self,
                 _("Form isn't complete. %s must be filled!") % text,
-                _("Error"), wx.OK|wx.ICON_ERROR)
+                _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

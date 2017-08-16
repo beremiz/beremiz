@@ -302,7 +302,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow,
                               _("Select a variable class:"), _("Variable class"),
                               [_("Input"), _("Output"), _("Memory")],
-                              wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                              wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                         if dialog.ShowModal() == wx.ID_OK:
                             selected = dialog.GetSelection()
                         else:
@@ -435,7 +435,7 @@ class ViewerDropTarget(wx.TextDropTarget):
         return AddVariableFunction
 
     def ShowMessage(self, message):
-        message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)
         message.ShowModal()
         message.Destroy()
 
@@ -2637,7 +2637,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = wx.TextEntryDialog(self.ParentWindow,
                                     _("Edit comment"),
                                     _("Please enter comment text"),
-                                    "", wx.OK|wx.CANCEL|wx.TE_MULTILINE)
+                                    "", wx.OK | wx.CANCEL | wx.TE_MULTILINE)
         dialog.SetClientSize(wx.Size(400, 200))
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
@@ -2767,7 +2767,7 @@ class Viewer(EditorPanel, DebugViewer):
                 choices.append(block.GetName())
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
               _("Add a new jump"), _("Please choose a target"),
-              choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+              choices, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             jump = SFC_Jump(self, dialog.GetStringSelection(), id)
@@ -3033,7 +3033,7 @@ class Viewer(EditorPanel, DebugViewer):
                 choices.append(block.GetName())
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
               _("Edit jump target"), _("Please choose a target"),
-              choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+              choices, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
         try:
             indx = choices.index(jump.GetTarget())
             dialog.SetSelection(indx)
@@ -3076,7 +3076,7 @@ class Viewer(EditorPanel, DebugViewer):
                                     _("Edit comment"),
                                     _("Please enter comment text"),
                                     comment.GetContent(),
-                                    wx.OK|wx.CANCEL|wx.TE_MULTILINE)
+                                    wx.OK | wx.CANCEL | wx.TE_MULTILINE)
         width, height = comment.GetSize()
         dialogSize = wx.Size(max(width + 30, 400), max(height + 60, 200))
         dialog.SetClientSize(dialogSize)
@@ -3438,7 +3438,7 @@ class Viewer(EditorPanel, DebugViewer):
                 self.RefreshVariablePanel()
                 self.ParentWindow.RefreshPouInstanceVariablesPanel()
             else:
-                message = wx.MessageDialog(self.Editor, result, "Error", wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self.Editor, result, "Error", wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
 

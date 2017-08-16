@@ -196,7 +196,7 @@ if enablewx:
                         event(self, function)
 
             def __init__(self, parent, message, caption=_("Please enter text"), defaultValue="",
-                               style=wx.OK|wx.CANCEL|wx.CENTRE, pos=wx.DefaultPosition):
+                               style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
                 self.Tests = []
@@ -212,7 +212,7 @@ if enablewx:
                 texts = {"value": value}
                 for function, message in self.Tests:
                     if not function(value):
-                        message = wx.MessageDialog(self, message % texts, _("Error"), wx.OK|wx.ICON_ERROR)
+                        message = wx.MessageDialog(self, message % texts, _("Error"), wx.OK | wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                         return

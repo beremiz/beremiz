@@ -225,7 +225,7 @@ class TextViewer(EditorPanel):
     def OnModification(self, event):
         if not self.DisableEvents:
             mod_type = event.GetModificationType()
-            if mod_type&wx.stc.STC_MOD_BEFOREINSERT:
+            if mod_type & wx.stc.STC_MOD_BEFOREINSERT:
                 if self.CurrentAction is None:
                     self.StartBuffering()
                 elif self.CurrentAction[0] != "Add" or self.CurrentAction[1] != event.GetPosition() - 1:
@@ -233,7 +233,7 @@ class TextViewer(EditorPanel):
                     self.StartBuffering()
                 self.CurrentAction = ("Add", event.GetPosition())
                 wx.CallAfter(self.RefreshModel)
-            elif mod_type&wx.stc.STC_MOD_BEFOREDELETE:
+            elif mod_type & wx.stc.STC_MOD_BEFOREDELETE:
                 if self.CurrentAction is None:
                     self.StartBuffering()
                 elif self.CurrentAction[0] != "Delete" or self.CurrentAction[1] != event.GetPosition() + 1:
@@ -261,7 +261,7 @@ class TextViewer(EditorPanel):
                     blockinputs = None
                 if values[1] != "function":
                     if blockname == "":
-                        dialog = wx.TextEntryDialog(self.ParentWindow, _("Block name"), _("Please enter a block name"), "", wx.OK|wx.CANCEL|wx.CENTRE)
+                        dialog = wx.TextEntryDialog(self.ParentWindow, _("Block name"), _("Please enter a block name"), "", wx.OK | wx.CANCEL | wx.CENTRE)
                         if dialog.ShowModal() == wx.ID_OK:
                             blockname = dialog.GetValue()
                         else:
@@ -307,7 +307,7 @@ class TextViewer(EditorPanel):
                             dialog = wx.SingleChoiceDialog(self.ParentWindow,
                                   _("Select a variable class:"), _("Variable class"),
                                   [_("Input"), _("Output"), _("Memory")],
-                                  wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                  wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
                             else:
@@ -388,7 +388,7 @@ class TextViewer(EditorPanel):
             else:
                 message = _("Variable don't belong to this POU!")
             if message is not None:
-                dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+                dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
                 dialog.ShowModal()
                 dialog.Destroy()
                 event.SetDragText("")
