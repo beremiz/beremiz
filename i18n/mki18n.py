@@ -110,6 +110,11 @@ def getlanguageDict():
     return languageDict
 
 
+def verbosePrint(verbose, str):
+    if verbose:
+        print str
+
+
 def processCustomFiles(filein, fileout, regexp, prefix=''):
     appfil_file = open(filein, 'r')
     messages_file = open(fileout, 'r')
@@ -183,7 +188,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     #   --files-from=app.fil        : The list of files is taken from the file: app.fil
     #   --output=                   : specifies the name of the output file (using a .pot extension)
     cmd = 'xgettext -s --no-wrap --language=Python --files-from=' + filelist + ' --output=' + fileout + ' --package-name ' + applicationName
-    if verbose: print cmd
+    verbosePrint(verbose, cmd)
     os.system(cmd)
 
     XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
@@ -194,7 +199,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
 
     # generate messages.po
     cmd = 'msginit --no-wrap --no-translator -i %s -l en_US.UTF-8 -o messages.po' % (fileout)
-    if verbose: print cmd
+    verbosePrint(verbose, cmd)
     os.system(cmd)
 
     languageDict = getlanguageDict()
@@ -206,7 +211,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
             langPOfileName = "%s_%s.po" % (applicationName, langCode)
             if os.path.exists(langPOfileName):
                 cmd = 'msgmerge -s --no-wrap "%s" %s > "%s.new"' % (langPOfileName, fileout, langPOfileName)
-                if verbose: print cmd
+                verbosePrint(verbose, cmd)
                 os.system(cmd)
     os.chdir(currentDir)
 
@@ -234,14 +239,14 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
                 for fileName in listOf_extraPo:
                     fileList += ("%s_%s.po " % (fileName, langCode))
                 cmd = "msgcat -s --no-wrap %s %s > %s.cat" % (langPOfileName, fileList, langPOfileName)
-                if verbose: print cmd
+                verbosePrint(verbose, cmd)
                 os.system(cmd)
                 if targetDir is None:
                     pass
                 else:
                     mo_targetDir = "%s/%s/LC_MESSAGES" % (targetDir, langCode)
                     cmd = "msgfmt --output-file=%s/%s.mo %s_%s.po.cat" % (mo_targetDir, applicationName, applicationName, langCode)
-                    if verbose: print cmd
+                    verbosePrint(verbose, cmd)
                     os.system(cmd)
     os.chdir(currentDir)
 
@@ -263,10 +268,11 @@ def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=Non
     called xx/LC_MESSAGES where 'xx' corresponds to the 2-letter language
     code.
     """
+
     if targetDir is None:
         targetDir = './locale'
-    if verbose:
-        print "Target directory for .mo files is: %s" % targetDir
+
+    verbosePrint(verbose, "Target directory for .mo files is: %s" % targetDir)
 
     if applicationDomain is None:
         applicationName = fileBaseOf(applicationDirectoryPath, withPath=0)
@@ -287,7 +293,7 @@ def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=Non
                 if not os.path.exists(mo_targetDir):
                     mkdir(mo_targetDir)
                 cmd = 'msgfmt --output-file="%s/%s.mo" "%s_%s.po"' % (mo_targetDir, applicationName, applicationName, langCode)
-                if verbose: print cmd
+                verbosePrint(verbose, cmd)
                 os.system(cmd)
     os.chdir(currentDir)
 
@@ -445,6 +451,15 @@ if __name__ == "__main__":
     option['verbose'] = 0
     option['domain'] = None
     option['moTarget'] = None
+    optionKey = {
+        '-e':         'forceEnglish',
+        '-m':         'mo',
+        '-p':         'po',
+        '-v':         'verbose',
+        '--domain':   'domain',
+        '--moTarget': 'moTarget',
+    }
+
     try:
         optionList, pargs = getopt.getopt(sys.argv[1:], validOptions, validLongOptions)
     except getopt.GetoptError, e:
@@ -454,12 +469,7 @@ if __name__ == "__main__":
         if (opt == '-h'):
             printUsage()
             sys.exit(0)
-        elif (opt == '-e'):         option['forceEnglish'] = 1
-        elif (opt == '-m'):         option['mo'] = 1
-        elif (opt == '-p'):         option['po'] = 1
-        elif (opt == '-v'):         option['verbose'] = 1
-        elif (opt == '--domain'):   option['domain'] = val
-        elif (opt == '--moTarget'): option['moTarget'] = val
+        option[optionKey[opt]] = 1 if val == '' else val
     if len(pargs) == 0:
         appDirPath = os.getcwd()
         if option['verbose']:

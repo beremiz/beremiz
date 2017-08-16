@@ -803,8 +803,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         H_files.remove("LOCATED_VARIABLES.h")
         H_files = map(lambda filename: os.path.join(buildpath, filename), H_files)
         for H_file in H_files:
-            with file(H_file, 'r') as original: data = original.read()
-            with file(H_file, 'w') as modified: modified.write('#include "beremiz.h"\n' + data)
+            with file(H_file, 'r') as original:
+                data = original.read()
+            with file(H_file, 'w') as modified:
+                modified.write('#include "beremiz.h"\n' + data)
 
         self.logger.write(_("Extracting Located Variables...\n"))
         # Keep track of generated located variables for later use by self._Generate_C

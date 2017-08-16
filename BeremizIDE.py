@@ -149,7 +149,8 @@ class LogPseudoFile:
             self.output.Freeze()
             self.lock.acquire()
             for s, style in self.stack:
-                if style is None: style = self.black_white
+                if style is None:
+                    style = self.black_white
                 if style != self.black_white:
                     self.output.StartStyling(self.output.GetLength(), 0xff)
 

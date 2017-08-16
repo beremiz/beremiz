@@ -409,7 +409,8 @@ class Translator:
                 default_pos += 1
 
             #self._default_args_handler(node, arg_names, current_klass)
-            if node.kwargs: arg_names += ["pyjslib.Dict(__kwargs)"]
+            if node.kwargs:
+                arg_names += ["pyjslib.Dict(__kwargs)"]
             print >>self.output, "    var __r = "+"".join(["[", ", ".join(arg_names), "]"])+";"
             if node.varargs:
                 self._varargs_handler(node, "__args", arg_names, current_klass)
@@ -426,10 +427,13 @@ class Translator:
 
         arg_names = list(node.argnames)
         normal_arg_names = list(arg_names)
-        if node.kwargs: kwargname = normal_arg_names.pop()
-        if node.varargs: varargname = normal_arg_names.pop()
+        if node.kwargs:
+            kwargname = normal_arg_names.pop()
+        if node.varargs:
+            varargname = normal_arg_names.pop()
         declared_arg_names = list(normal_arg_names)
-        if node.kwargs: declared_arg_names.append(kwargname)
+        if node.kwargs:
+            declared_arg_names.append(kwargname)
 
         function_args = "(" + ", ".join(declared_arg_names) + ")"
         print >>self.output, "%s = function%s {" % (function_name, function_args)
@@ -538,7 +542,8 @@ class Translator:
         if kwargs or star_arg_name:
             if not star_arg_name:
                 star_arg_name = 'null'
-            try: call_this, method_name = call_name.rsplit(".", 1)
+            try:
+                call_this, method_name = call_name.rsplit(".", 1)
             except ValueError:
                 # Must be a function call ...
                 return ("pyjs_kwargs_function_call("+call_name+", "
@@ -886,10 +891,13 @@ class Translator:
             #    raise TranslationError("first arg not 'self' (in _method)", node)
 
         normal_arg_names = arg_names[1:]
-        if node.kwargs: kwargname = normal_arg_names.pop()
-        if node.varargs: varargname = normal_arg_names.pop()
+        if node.kwargs:
+            kwargname = normal_arg_names.pop()
+        if node.varargs:
+            varargname = normal_arg_names.pop()
         declared_arg_names = list(normal_arg_names)
-        if node.kwargs: declared_arg_names.append(kwargname)
+        if node.kwargs:
+            declared_arg_names.append(kwargname)
 
         function_args = "(" + ", ".join(declared_arg_names) + ")"
 

@@ -57,7 +57,8 @@ def GetCallee(name):
     global _PySrv
     names = name.split('.')
     obj = _PySrv.plcobj
-    while names: obj = getattr(obj, names.pop(0))
+    while names:
+        obj = getattr(obj, names.pop(0))
     return obj
 
 

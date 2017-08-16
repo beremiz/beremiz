@@ -140,11 +140,13 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.LatestSelection = None
 
     def __del__(self):
-        if self.Browser is not None: self.Browser.cancel()
+        if self.Browser is not None:
+            self.Browser.cancel()
         self.ZeroConfInstance.close()
 
     def RefreshList(self):
-        if self.Browser is not None: self.Browser.cancel()
+        if self.Browser is not None:
+            self.Browser.cancel()
         self.Browser = ServiceBrowser(self.ZeroConfInstance, service_type, self)
 
     def OnRefreshButton(self, event):
