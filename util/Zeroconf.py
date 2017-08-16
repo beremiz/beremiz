@@ -1518,7 +1518,8 @@ class Zeroconf(object):
                                 out.addAnswer(msg, DNSAddress(question.name, _TYPE_A, _CLASS_IN | _CLASS_UNIQUE, _DNS_TTL, service.address))
 
                     service = self.services.get(question.name.lower(), None)
-                    if not service: continue
+                    if not service:
+                        continue
 
                     if question.type == _TYPE_SRV or question.type == _TYPE_ANY:
                         out.addAnswer(msg, DNSService(question.name, _TYPE_SRV, _CLASS_IN | _CLASS_UNIQUE, _DNS_TTL, service.priority, service.weight, service.port, service.server))

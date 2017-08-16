@@ -81,7 +81,8 @@ class SFCDivergenceDialog(BlockPreviewDialog):
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
             self.TypeRadioButtons[type] = radio_button
-            if first: focusbtn = type
+            if first:
+                focusbtn = type
             first = False
 
         # Create label for number of divergence sequences

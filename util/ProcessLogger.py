@@ -57,10 +57,12 @@ class outputThread(Thread):
                 self.retval = self.Proc.returncode
 
             outchunk = self.fd.readline()
-            if self.callback: self.callback(outchunk)
+            if self.callback:
+                self.callback(outchunk)
         while outchunk != '' and not self.killed:
             outchunk = self.fd.readline()
-            if self.callback: self.callback(outchunk)
+            if self.callback:
+                self.callback(outchunk)
         if self.endcallback:
             try:
                 err = self.Proc.wait()

@@ -198,7 +198,8 @@ class statuslistener:
         if state != self.oldstate:
             action = {'Started': self.site.PLCStarted,
                       'Stopped': self.site.PLCStopped}.get(state, None)
-            if action is not None: action ()
+            if action is not None:
+                action()
             self.oldstate = state
 
 
