@@ -1191,9 +1191,11 @@ def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
     sys.excepthook = handle_exception
 
     init_old = threading.Thread.__init__
+
     def init(self, *args, **kwargs):
         init_old(self, *args, **kwargs)
         run_old = self.run
+
         def run_with_except_hook(*args, **kw):
             try:
                 run_old(*args, **kw)

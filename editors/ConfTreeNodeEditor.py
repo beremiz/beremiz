@@ -315,6 +315,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 else:
                     button.Bind(wx.EVT_BUTTON, self.GetButtonCallBackFunction(confnode_method["method"]), button)
                 # a fancy underline on mouseover
+
                 def setFontStyle(b, s):
                     def fn(event):
                         b.SetFont(s)
@@ -550,6 +551,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
     def GetBrowseCallBackFunction(self, name, textctrl, library, value_infos, path):
         infos = [value_infos]
+
         def OnBrowseButton(event):
             dialog = BrowseValuesLibraryDialog(self, name, library, infos[0])
             if dialog.ShowModal() == wx.ID_OK:

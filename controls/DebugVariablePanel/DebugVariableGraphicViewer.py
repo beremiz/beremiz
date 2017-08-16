@@ -977,6 +977,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         @return: Function adding text to figure
         """
         text_func = (self.Axes.text2D if self.Is3DCanvas() else self.Axes.text)
+
         def AddText(*args, **kwargs):
             args = [0, 0, ""]
             kwargs["transform"] = self.Axes.transAxes

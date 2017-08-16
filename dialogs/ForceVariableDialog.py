@@ -48,6 +48,7 @@ def gen_get_function(f):
 
 def gen_get_string(delimiter):
     STRING_MODEL = re.compile("%(delimiter)s([^%(delimiter)s]*)%(delimiter)s$" % {"delimiter": delimiter})
+
     def get_string(v):
         result = STRING_MODEL.match(v)
         if result is not None:

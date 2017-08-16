@@ -99,6 +99,7 @@ def WAMP_connector_factory(uri, confnodesroot):
         return conn
 
     AddToDoBeforeQuit = confnodesroot.AppFrame.AddToDoBeforeQuit
+
     def ThreadProc():
         global _WampConnection
         _WampConnection = RegisterWampClient()
@@ -107,6 +108,7 @@ def WAMP_connector_factory(uri, confnodesroot):
 
     def WampSessionProcMapper(funcname):
         wampfuncname = '.'.join((ID, funcname))
+
         def catcher_func(*args, **kwargs):
             global _WampSession
             if _WampSession is not None:
