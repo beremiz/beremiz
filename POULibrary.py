@@ -34,7 +34,7 @@ class POULibrary:
         self.LibraryControler.OpenXMLFile(self.GetLibraryPath())
         self.LibraryControler.ClearConfNodeTypes()
         self.LibraryControler.AddConfNodeTypesList(TypeStack)
-        self.program = None;
+        self.program = None
 
     def GetSTCode(self):
         if not self.program:

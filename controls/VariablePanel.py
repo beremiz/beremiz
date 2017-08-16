@@ -157,7 +157,7 @@ class VariableTable(CustomTable):
         var_type = self.Parent.GetTagName()
         bodytype = self.Parent.Controler.GetEditedElementBodyType(var_type)
         if bodytype in ["ST", "IL"]:
-            row_edit = True;
+            row_edit = True
         return row_edit
 
     def _updateColAttrs(self, grid):

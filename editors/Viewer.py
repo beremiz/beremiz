@@ -2330,7 +2330,7 @@ class Viewer(EditorPanel, DebugViewer):
             elif not self.Debug and self.Mode == MODE_SELECTION and self.SelectedElement is not None:
                 if self.DrawingWire:
                     connector, errorHighlight = self.FindBlockConnectorWithError(pos, self.SelectedElement.GetConnectionDirection(), self.SelectedElement.EndConnected)
-                    self.SelectedElement.ErrHighlight = errorHighlight;
+                    self.SelectedElement.ErrHighlight = errorHighlight
                     if not connector or self.SelectedElement.EndConnected is None:
                         self.SelectedElement.ResetPoints()
                         movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)

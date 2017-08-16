@@ -201,7 +201,7 @@ class Modload:
         self.app_modlist = app_modlist
         self.app_imported_fn = app_imported_fn
         self.path = path
-        self.idx = 0;
+        self.idx = 0
         self.dynamic = dynamic
         self.parent_mod = parent_mod
 
@@ -209,7 +209,7 @@ class Modload:
 
         for i in range(len(self.app_modlist[self.idx])):
             app = self.app_modlist[self.idx][i]
-            import_module(self.path, self.parent_mod, app, self.dynamic, True);
+            import_module(self.path, self.parent_mod, app, self.dynamic, True)
         self.idx += 1
 
         if self.idx >= len(self.app_modlist):
@@ -888,10 +888,10 @@ class Dict:
         return self.__iter__()
 
     def itervalues(self):
-        return self.values().__iter__();
+        return self.values().__iter__()
 
     def iteritems(self):
-        return self.items().__iter__();
+        return self.items().__iter__()
 
     def setdefault(self, key, default_value):
         if not self.has_key(key):

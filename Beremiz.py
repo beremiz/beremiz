@@ -57,7 +57,7 @@ class BeremizIDELauncher:
         else:
             for i in range(0, 30):
                 wx.Yield()
-                time.sleep(0.01);
+                time.sleep(0.01)
 
     def Usage(self):
         print "Usage:"
