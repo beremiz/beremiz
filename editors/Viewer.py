@@ -65,19 +65,21 @@ def AppendMenu(parent, help, id, kind, text):
         parent.Append(helpString=help, id=id, kind=kind, item=text)
 
 if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono':  'Courier New',
-              'helv':  'Arial',
-              'other': 'Comic Sans MS',
-              'size':  10,
-             }
+    faces = {
+        'times': 'Times New Roman',
+        'mono':  'Courier New',
+        'helv':  'Arial',
+        'other': 'Comic Sans MS',
+        'size':  10,
+    }
 else:
-    faces = { 'times': 'Times',
-              'mono':  'Courier',
-              'helv':  'Helvetica',
-              'other': 'new century schoolbook',
-              'size':  12,
-             }
+    faces = {
+        'times': 'Times',
+        'mono':  'Courier',
+        'helv':  'Helvetica',
+        'other': 'new century schoolbook',
+        'size':  12,
+    }
 
 if wx.Platform == '__WXMSW__':
     MAX_ZOOMIN = 4

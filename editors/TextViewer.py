@@ -278,8 +278,8 @@ class TextViewer(EditorPanel):
                         self.RefreshVariableTree()
                 blockinfo = self.Controler.GetBlockType(blocktype, blockinputs, self.Debug)
                 hint = ',\n    '.join(
-                            [ " " + fctdecl[0]+" := (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["inputs"]] +
-                            [ " " + fctdecl[0]+" => (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["outputs"]])
+                            [" " + fctdecl[0]+" := (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["inputs"]] +
+                            [" " + fctdecl[0]+" => (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["outputs"]])
                 if values[1] == "function":
                     event.SetDragText(blocktype+"(\n    "+hint+")")
                 else:

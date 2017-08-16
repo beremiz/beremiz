@@ -91,19 +91,21 @@ def get_object_init_state(obj):
     # Convert objects to a dictionary of their representation
     attrs = obj.attrs.copy()
     attrs.update(obj.inputs)
-    d = { '__class__': obj.classname,
-          'id': obj.id,
-          'kwargs': json.dumps(attrs),
-          }
+    d = {
+        '__class__': obj.classname,
+        'id': obj.id,
+        'kwargs': json.dumps(attrs),
+    }
     return d
 
 
 def get_object_current_state(obj):
     # Convert objects to a dictionary of their representation
-    d = { '__class__': obj.classname,
-          'id': obj.id,
-          'kwargs': json.dumps(obj.outputs),
-          }
+    d = {
+        '__class__': obj.classname,
+        'id': obj.id,
+        'kwargs': json.dumps(obj.outputs),
+    }
     return d
 
 
