@@ -47,6 +47,7 @@ Usage of Beremiz PLC execution service :\n
            working_dir - directory where are stored PLC files
 """ % sys.argv[0]
 
+
 try:
     opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
 except getopt.GetoptError, err:
@@ -158,6 +159,7 @@ def SetupI18n():
     if __name__ == '__main__':
         __builtin__.__dict__['_'] = unicode_translation
         # __builtin__.__dict__['_'] = wx.GetTranslation
+
 
 if enablewx:
     try:
@@ -466,6 +468,7 @@ class Server():
             self.servicepublisher = None
         self.daemon.shutdown(True)
 
+
 if enabletwisted:
     import warnings
     with warnings.catch_warnings():
@@ -538,6 +541,7 @@ def LogException(*exp):
     else:
         traceback.print_exception(*exp)
 
+
 sys.excepthook = LogException
 
 
@@ -555,6 +559,8 @@ def installThreadExcepthook():
                 sys.excepthook(*sys.exc_info())
         self.run = run_with_except_hook
     threading.Thread.__init__ = init
+
+
 installThreadExcepthook()
 
 if havetwisted:

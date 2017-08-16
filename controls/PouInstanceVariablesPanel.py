@@ -34,11 +34,15 @@ CT.GenericTreeItem._rightimages = []
 
 def SetRightImages(self, images):
     self._rightimages = images
+
+
 CT.GenericTreeItem.SetRightImages = SetRightImages
 
 
 def GetRightImages(self):
     return self._rightimages
+
+
 CT.GenericTreeItem.GetRightImages = GetRightImages
 
 
@@ -108,6 +112,7 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
                     r_image, dc, x_pos, images_bbx.y + 4,
                     wx.IMAGELIST_DRAW_TRANSPARENT)
                 x_pos += r_image_w + 4
+
 
 _ButtonCallbacks = namedtuple("ButtonCallbacks", ["leftdown", "dclick"])
 

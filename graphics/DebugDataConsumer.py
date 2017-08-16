@@ -136,6 +136,7 @@ def generate_timeofday(value):
 
     return data
 
+
 # Dictionary of translation functions from value send by debugger to IEC
 # literal stored by type
 TYPE_TRANSLATOR = {

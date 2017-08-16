@@ -55,6 +55,7 @@ def gen_get_string(delimiter):
         return None
     return get_string
 
+
 getinteger = gen_get_function(int)
 getfloat = gen_get_function(float)
 getstring = gen_get_string("'")
@@ -135,6 +136,7 @@ def gettimeofday(v):
         return datetime.timedelta(microseconds=microseconds)
     else:
         return None
+
 
 GetTypeValue = {"BOOL": lambda x: {"TRUE": True, "FALSE": False, "0": False, "1": True}.get(x.upper(), None),
                 "SINT": getinteger,

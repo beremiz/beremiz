@@ -126,6 +126,7 @@ def round_scaling(x, n, constraint=0):
             xround += 1
     return int(xround * n)
 
+
 """
 Basic vector operations for calculate wire points
 """

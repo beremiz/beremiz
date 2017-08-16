@@ -53,6 +53,7 @@ def NodeSetAttr(node, name, value):
     attr.childNodes[0] = text
     node._attrs[name] = attr
 
+
 """
 Regular expression models for checking all kind of string values defined in XML
 standard
@@ -97,6 +98,7 @@ class xml_timezone(datetime.tzinfo):
 
     def dst(self, dt):
         return ZERO
+
 
 [SYNTAXELEMENT, SYNTAXATTRIBUTE, SIMPLETYPE, COMPLEXTYPE, COMPILEDCOMPLEXTYPE,
  ATTRIBUTESGROUP, ELEMENTSGROUP, ATTRIBUTE, ELEMENT, CHOICE, ANY, TAG, CONSTRAINT,
@@ -1710,6 +1712,7 @@ def generateCountMethod(attr):
     def countMethod(self):
         return len(getattr(self, attr))
     return countMethod
+
 
 """
 This function generate a xml parser from a class factory

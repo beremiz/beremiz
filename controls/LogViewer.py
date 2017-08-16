@@ -179,6 +179,7 @@ class LogScrollBar(wx.Panel):
         dc.EndDrawing()
         event.Skip()
 
+
 BUTTON_SIZE = (70, 15)
 
 
@@ -222,6 +223,7 @@ class LogButton():
         dc.DrawText(self.Label,
             self.Position.x + (self.Size.width - w) / 2,
             self.Position.y + (self.Size.height - h) / 2)
+
 
 DATE_INFO_SIZE = 10
 MESSAGE_INFO_SIZE = 18
@@ -274,6 +276,7 @@ class LogMessage:
         if draw_date:
             return DATE_INFO_SIZE + MESSAGE_INFO_SIZE
         return MESSAGE_INFO_SIZE
+
 
 SECOND = 1
 MINUTE = 60 * SECOND

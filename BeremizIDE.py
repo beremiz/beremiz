@@ -41,6 +41,7 @@ beremiz_dir = paths.AbsDir(__file__)
 def Bpath(*args):
     return os.path.join(beremiz_dir, *args)
 
+
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
@@ -197,6 +198,7 @@ class LogPseudoFile:
 
     def isatty(self):
         return False
+
 
 ID_FILEMENURECENTPROJECTS = wx.NewId()
 
@@ -1078,6 +1080,7 @@ class Beremiz(IDEFrame):
                 viewer.AddHighlight(infos[1:], start, end, highlight_type)
         else:
             IDEFrame.ShowHighlight(self, infos, start, end, highlight_type)
+
 
 #-------------------------------------------------------------------------------
 #                               Exception Handler

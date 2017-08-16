@@ -72,6 +72,8 @@ def GetTasksTableColnames():
 def GetTaskTriggeringOptions():
     _ = lambda x: x
     return [_("Interrupt"), _("Cyclic")]
+
+
 TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option) for option in GetTaskTriggeringOptions()])
 
 SingleCellEditor = lambda *x: wx.grid.GridCellChoiceEditor()

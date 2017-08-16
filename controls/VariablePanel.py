@@ -65,6 +65,8 @@ def GetOptions(constant=True, retain=True, non_retain=True):
     if non_retain:
         options.append(_("Non-Retain"))
     return options
+
+
 OPTIONS_DICT = dict([(_(option), option) for option in GetOptions()])
 
 
@@ -74,6 +76,8 @@ def GetFilterChoiceTransfer():
             _("   Input"): _("Input"), _("   Output"): _("Output"), _("   InOut"): _("InOut"),
             _("   External"): _("External"), _("Variables"): _("Variables"), _("   Local"): _("Local"),
             _("   Temp"): _("Temp"), _("Global"): _("Global")}  #, _("Access") : _("Access")}
+
+
 VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().iterkeys()])
 VARIABLE_CLASSES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().itervalues()])
 

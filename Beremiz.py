@@ -191,6 +191,7 @@ class BeremizIDELauncher:
         self.ProcessCommandLineArgs()
         self.CreateApplication()
 
+
 if __name__ == '__main__':
     beremiz = BeremizIDELauncher()
     beremiz.Start()

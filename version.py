@@ -122,6 +122,7 @@ def GetAboutDialogInfo():
     )
     return info
 
+
 app_version =  "1.2"
 rev = GetAppRevision()
 if rev is not None:

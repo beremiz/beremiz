@@ -541,6 +541,7 @@ def subdeps(m):
         d.append('.'.join(m[:i+1]))
     return d
 
+
 import time
 
 
@@ -730,6 +731,7 @@ def main():
     build(app_name, options.output, options.js_includes,
           options.debug, options.dynamic and 1 or 0, data_dir,
           options.cache_buster, options.optimize)
+
 
 if __name__ == "__main__":
     main()

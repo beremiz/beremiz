@@ -43,6 +43,7 @@ _base_path = paths.AbsDir(__file__)
 def _GetLocalTargetClassFactory(name):
     return lambda: getattr(__import__(name, globals(), locals()), name+"_target")
 
+
 targets = dict([(name, {"xsd": path.join(_base_path, name, "XSD"),
                         "class": _GetLocalTargetClassFactory(name),
                         "code": {fname: path.join(_base_path, name, fname)

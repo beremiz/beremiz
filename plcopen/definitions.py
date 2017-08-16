@@ -64,6 +64,7 @@ def GetBlockInfos(pou):
 #                           Data Types definitions
 #-------------------------------------------------------------------------------
 
+
 """
 Ordored list of common data types defined in the IEC 61131-3
 Each type is associated to his direct parent type. It defines then a hierarchy

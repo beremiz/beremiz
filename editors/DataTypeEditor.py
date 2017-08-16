@@ -55,6 +55,8 @@ def GetElementsTableColnames():
 def GetDatatypeTypes():
     _ = lambda x: x
     return [_("Directly"), _("Subrange"), _("Enumerated"), _("Array"), _("Structure")]
+
+
 DATATYPE_TYPES_DICT = dict([(_(datatype), datatype) for datatype in GetDatatypeTypes()])
 
 #-------------------------------------------------------------------------------

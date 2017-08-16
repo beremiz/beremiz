@@ -100,6 +100,8 @@ def GetUneditableNames():
     return [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
             _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
             _("Configurations"), _("Resources"), _("Properties")]
+
+
 UNEDITABLE_NAMES = GetUneditableNames()
 [USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS,
  DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS,
@@ -134,6 +136,7 @@ class LibraryResolver(etree.Resolver):
 #           Helpers functions for translating list of arguments
 #                       from xslt to valid arguments
 #-------------------------------------------------------------------------------
+
 
 _StringValue = lambda x: x
 _BoolValue = lambda x: x in ["true", "0"]
@@ -297,6 +300,7 @@ class InstanceTagName:
 #           Helpers object for generating pou block instances list
 #-------------------------------------------------------------------------------
 
+
 _Point = namedtuple("Point", ["x", "y"])
 
 _BlockInstanceInfos = namedtuple("BlockInstanceInfos",
@@ -439,6 +443,7 @@ class BlockInstanceFactory:
             self.SpecificValues.append([[]])
         translated_args = _translate_args([_StringValue] * 5, args)
         self.SpecificValues[0][0].append(_ActionInfos(*translated_args))
+
 
 pou_block_instances_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "pou_block_instances.xslt"))

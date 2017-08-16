@@ -64,6 +64,7 @@ def AppendMenu(parent, help, id, kind, text):
     else:
         parent.Append(helpString=help, id=id, kind=kind, item=text)
 
+
 if wx.Platform == '__WXMSW__':
     faces = {
         'times': 'Times New Roman',
@@ -115,6 +116,7 @@ def GetPowerRailCreationFunction(powerrail_type):
                                     specific_values.connectors)
     return powerRailCreationFunction
 
+
 NEGATED_VALUE = lambda x: x if x is not None else False
 MODIFIER_VALUE = lambda x: x if x is not None else 'none'
 
@@ -128,6 +130,7 @@ def contactCreationFunction(viewer, id, specific_values):
                                       MODIFIER_VALUE(specific_values.edge)),
                                      CONTACT_NORMAL)
     return LD_Contact(viewer, contact_type, specific_values.name, id)
+
 
 COIL_TYPES = {(True, "none", "none"): COIL_REVERSE,
               (False, "none", "set"): COIL_SET,
@@ -160,6 +163,7 @@ def transitionCreationFunction(viewer, id, specific_values):
                                         specific_values.priority, id)
     return transition
 
+
 divergence_types = [SELECTION_DIVERGENCE,
                     SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE]
 
@@ -177,6 +181,7 @@ def jumpCreationFunction(viewer, id, specific_values):
 
 def actionBlockCreationFunction(viewer, id, specific_values):
     return SFC_ActionBlock(viewer, specific_values.actions, id)
+
 
 ElementCreationFunctions = {
     "input": GetVariableCreationFunction(INPUT),
@@ -211,6 +216,7 @@ def sort_blocks(block_infos1, block_infos2):
 #-------------------------------------------------------------------------------
 #                       Graphic elements Viewer base class
 #-------------------------------------------------------------------------------
+
 
 # ID Constants for alignment menu items
 [ID_VIEWERALIGNMENTMENUITEMS0, ID_VIEWERALIGNMENTMENUITEMS1,
