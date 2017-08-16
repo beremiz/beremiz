@@ -895,4 +895,3 @@ class CodeFileEditor(ConfTreeNodeEditor):
 
     def Find(self, direction, search_params):
         self.CodeEditor.Find(direction, search_params)
-

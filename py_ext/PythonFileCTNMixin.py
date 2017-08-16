@@ -292,4 +292,3 @@ void __publish_%(location_str)s(void){
                 "",
                 True,
                 ("runtime_%s.py" % location_str, file(runtimefile_path, "rb")))
-

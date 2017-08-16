@@ -28,5 +28,3 @@
 
 from plcopen import PLCOpenParser, LoadProject, SaveProject, LoadPou, \
     LoadPouInstances, VarOrder, QualifierList, rect
-
-
