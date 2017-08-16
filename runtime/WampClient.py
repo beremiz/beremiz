@@ -88,6 +88,7 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
     def clientConnectionFailed(self, connector, reason):
         print("WAMP Client connection failed .. retrying ..")
         self.retry(connector)
+
     def clientConnectionLost(self, connector, reason):
         print("WAMP Client connection lost .. retrying ..")
         self.retry(connector)

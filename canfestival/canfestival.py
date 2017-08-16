@@ -365,6 +365,7 @@ class _NodeListCTN(NodeList):
         }
 
     _GeneratedMasterView = None
+
     def _ShowGeneratedMaster(self):
         self._OpenView("Generated master")
 
@@ -482,6 +483,7 @@ class RootClass:
 
     CTNChildrenTypes = [("CanOpenNode",  _NodeListCTN, "CanOpen Master"),
                         ("CanOpenSlave", _SlaveCTN,    "CanOpen Slave")]
+
     def GetParamsAttributes(self, path=None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path=path)
         for element in infos:

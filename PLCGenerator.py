@@ -695,14 +695,15 @@ class PouProgramGenerator:
                     self.Interface.append((varTypeNames[varlist_type], option, True, located))
 
     LITERAL_TYPES = {
-        "T": "TIME",
-        "D": "DATE",
+        "T":   "TIME",
+        "D":   "DATE",
         "TOD": "TIME_OF_DAY",
-        "DT": "DATE_AND_TIME",
-        "2": None,
-        "8": None,
-        "16": None,
+        "DT":  "DATE_AND_TIME",
+        "2":    None,
+        "8":    None,
+        "16":   None,
     }
+
     def ComputeConnectionTypes(self, pou):
         body = pou.getbody()
         if isinstance(body, ListType):

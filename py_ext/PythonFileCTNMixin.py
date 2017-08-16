@@ -87,6 +87,7 @@ class PythonFileCTNMixin(CodeFile):
 
     PreSectionsTexts = {}
     PostSectionsTexts = {}
+
     def GetSection(self, section):
         return self.PreSectionsTexts.get(section, "") + "\n" + \
                getattr(self.CodeFile, section).getanyText() + "\n" + \

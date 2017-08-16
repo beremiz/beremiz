@@ -597,6 +597,7 @@ class Beremiz(IDEFrame):
     # Twisted reactor needs to be stopped only before quit,
     # since it cannot be restarted
     ToDoBeforeQuit = []
+
     def AddToDoBeforeQuit(self, Thing):
         self.ToDoBeforeQuit.append(Thing)
 
