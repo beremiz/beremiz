@@ -144,7 +144,7 @@ class FormProcessor(JSONRPCService):
         if _formcls is None:
             JSONRPCService.__init__(self)
             for k in forms.keys():
-                s  = FormProcessor({}, forms[k])
+                s = FormProcessor({}, forms[k])
                 self.add_method(k, s.__process)
         else:
             JSONRPCService.__init__(self, forms)

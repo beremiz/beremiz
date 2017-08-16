@@ -330,7 +330,7 @@ class Translator:
         #print >> self.output, "};\n"
 
         print >> self.output, "return this;\n"
-        print >> self.output, "}; /* end %s */ \n"  % module_name
+        print >> self.output, "}; /* end %s */ \n" % module_name
 
     def module_imports(self):
         return self.imported_modules + self.imported_modules_as

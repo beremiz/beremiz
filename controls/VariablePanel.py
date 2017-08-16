@@ -516,8 +516,8 @@ class VariablePanel(wx.Panel):
             c = wx.ALIGN_CENTER
 
             #                        Num   Name    Class   Type    Loc     Init    Option   Doc
-            self.ColSizes         = [40,   80,     100,    80,     110,    120,    100,     160]
-            self.ColAlignements   = [c,    l,      l,      l,      l,      l,      l,       l]
+            self.ColSizes =         [40,   80,     100,    80,     110,    120,    100,     160]
+            self.ColAlignements =   [c,    l,      l,      l,      l,      l,      l,       l]
             self.ColFixedSizeFlag = [True, False,  True,   False,  True,   True,   True,    False]
 
         else:
@@ -538,8 +538,8 @@ class VariablePanel(wx.Panel):
             c = wx.ALIGN_CENTER
 
             #                        Num   Name    Class   Type    Init    Option   Doc
-            self.ColSizes         = [40,   80,     100,    80,     120,    100,     160]
-            self.ColAlignements   = [c,    l,      l,      l,      l,      l,       l]
+            self.ColSizes =         [40,   80,     100,    80,     120,    100,     160]
+            self.ColAlignements =   [c,    l,      l,      l,      l,      l,       l]
             self.ColFixedSizeFlag = [True, False,  True,   False,  True,   True,    False]
 
         self.PanelWidthMin = sum(self.ColSizes)

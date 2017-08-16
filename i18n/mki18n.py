@@ -88,7 +88,7 @@ import re
 # ----------------
 #
 
-__author__  = "Pierre Rouleau"
+__author__ =  "Pierre Rouleau"
 __version__ = "$Revision: 1.5 $"
 
 # -----------------------------------------------------------------------------
@@ -436,7 +436,7 @@ if __name__ == "__main__":
         printUsage('Missing argument: specify at least one of -m or -p (or both).')
         sys.exit(1)
     # If there is some arguments, parse the command line
-    validOptions     = "ehmpv"
+    validOptions = "ehmpv"
     validLongOptions = ['domain=', 'moTarget=']
     option = {}
     option['forceEnglish'] = 0

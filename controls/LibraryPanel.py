@@ -85,9 +85,9 @@ class LibraryPanel(wx.Panel):
         self.Tree = wx.TreeCtrl(splitter_window,
               size=wx.Size(0, 0),
               style=wx.TR_HAS_BUTTONS |
-                    wx.TR_SINGLE      |
-                    wx.SUNKEN_BORDER  |
-                    wx.TR_HIDE_ROOT   |
+                    wx.TR_SINGLE |
+                    wx.SUNKEN_BORDER |
+                    wx.TR_HIDE_ROOT |
                     wx.TR_LINES_AT_ROOT)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemSelected, self.Tree)
         self.Tree.Bind(wx.EVT_CHAR, self.OnKeyDown)
