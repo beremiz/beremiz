@@ -9,4 +9,3 @@ class JSONRPCService(JSONRPCServiceBase):
     def __call__(self, func):
         self.methods[func.__name__] = func
         return func
-

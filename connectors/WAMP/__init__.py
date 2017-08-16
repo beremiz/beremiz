@@ -156,7 +156,3 @@ def WAMP_connector_factory(uri, confnodesroot):
         confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n") % location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None
-
-
-
-

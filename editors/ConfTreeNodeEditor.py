@@ -581,4 +581,3 @@ class ConfTreeNodeEditor(EditorPanel):
             control.DismissListBox()
             self.Refresh()
         event.Skip()
-
