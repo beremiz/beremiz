@@ -592,17 +592,17 @@ class DataTypeEditor(EditorPanel):
                 message = _("\"%s\" is not a valid identifier!") % value
             elif value.upper() in IEC_KEYWORDS:
                 message = _("\"%s\" is a keyword. It can't be used!") % value
-##            elif value.upper() in self.PouNames:
-##                message = _("A pou with \"%s\" as name exists!")%value
+#            elif value.upper() in self.PouNames:
+#                message = _("A pou with \"%s\" as name exists!")%value
             elif value.upper() in [var["Name"].upper() for idx, var in enumerate(self.StructureElementsTable.GetData()) if idx != row]:
                 message = _("An element named \"%s\" already exists in this structure!") % value
             else:
                 self.RefreshTypeInfos()
                 wx.CallAfter(self.StructureElementsTable.ResetView, self.StructureElementsGrid)
-##                old_value = self.Table.GetOldValue()
-##                if old_value != "":
-##                    self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_value, value)
-##                self.Controler.BufferProject()
+#                old_value = self.Table.GetOldValue()
+#                if old_value != "":
+#                    self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_value, value)
+#                self.Controler.BufferProject()
                 event.Skip()
 
             if message is not None:
@@ -640,15 +640,15 @@ class DataTypeEditor(EditorPanel):
             AppendMenu(type_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Array"))
             self.Bind(wx.EVT_MENU, self.ElementArrayTypeFunction, id=new_id)
 
-##            functionblock_menu = wx.Menu(title='')
-##            bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
-##            pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
-##            if classtype in ["Input","Output","InOut","External","Global"] or poutype != "function" and bodytype in ["ST", "IL"]:
-##                for functionblock_type in self.Controler.GetFunctionBlockTypes(self.TagName):
-##                    new_id = wx.NewId()
-##                    AppendMenu(functionblock_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=functionblock_type)
-##                    self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(functionblock_type), id=new_id)
-##                type_menu.AppendMenu(wx.NewId(), _("Function Block Types"), functionblock_menu)
+#            functionblock_menu = wx.Menu(title='')
+#            bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
+#            pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
+#            if classtype in ["Input","Output","InOut","External","Global"] or poutype != "function" and bodytype in ["ST", "IL"]:
+#                for functionblock_type in self.Controler.GetFunctionBlockTypes(self.TagName):
+#                    new_id = wx.NewId()
+#                    AppendMenu(functionblock_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=functionblock_type)
+#                    self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(functionblock_type), id=new_id)
+#                type_menu.AppendMenu(wx.NewId(), _("Function Block Types"), functionblock_menu)
 
             rect = self.StructureElementsGrid.BlockToDeviceRect((row, col), (row, col))
             self.StructureElementsGrid.PopupMenuXY(type_menu, rect.x + rect.width, rect.y + self.StructureElementsGrid.GetColLabelSize())

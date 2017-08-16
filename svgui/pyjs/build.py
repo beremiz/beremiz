@@ -187,14 +187,14 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
         except StandardError, e:
             print >>sys.stderr, "Exception creating output directory %s: %s" % (output, e)
 
-    ## public dir
+    # public dir
     for p in pyjs.path:
         pub_dir = join(p, 'public')
         if isdir(pub_dir):
             print "Copying: public directory of library %r" % p
             copytree_exists(pub_dir, output)
 
-    ## AppName.html - can be in current or public directory
+    # AppName.html - can be in current or public directory
     html_input_filename = app_name + ".html"
     html_output_filename = join(output, basename(html_input_filename))
     if os.path.isfile(html_input_filename):
@@ -211,7 +211,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
     if check_html_file(html_input_filename, output):
         print >>sys.stderr, "Warning: Module HTML file %s has been auto-generated" % html_input_filename
 
-    ## pygwt.js
+    # pygwt.js
 
     print "Copying: pygwt.js"
 
@@ -222,7 +222,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
 
     pygwt_js_output.close()
 
-    ## Images
+    # Images
 
     print "Copying: Images and History"
     copy_boilerplate(data_dir, "corner_dialog_topleft_black.png", output)
@@ -240,11 +240,11 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
     copy_boilerplate(data_dir, "tree_white.gif", output)
     copy_boilerplate(data_dir, "history.html", output)
 
-    ## all.cache.html
+    # all.cache.html
     app_files = generateAppFiles(data_dir, js_includes, app_name, debug,
                                  output, dynamic, cache_buster, optimize)
 
-    ## AppName.nocache.html
+    # AppName.nocache.html
 
     print "Creating: %(app_name)s.nocache.html" % locals()
 
