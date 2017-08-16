@@ -78,7 +78,7 @@ ESB_EXACT_FIT = 20
 # ---------------------------------------------------------------
 class EnhancedStatusBarItem(object):
     def __init__(self, widget, pos, horizontalalignment=ESB_ALIGN_CENTER_HORIZONTAL, verticalalignment=ESB_ALIGN_CENTER_VERTICAL):
-        self.__dict__.update( locals() )
+        self.__dict__.update(locals())
 
 
 class EnhancedStatusBar(wx.StatusBar):

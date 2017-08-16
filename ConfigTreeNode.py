@@ -294,7 +294,7 @@ class ConfigTreeNode:
                     # keep the same path
                     buildpath,
                     # filter locations that start with current IEC location
-                    [loc for loc in locations if loc["LOC"][0:depth] == new_location ])
+                    [loc for loc in locations if loc["LOC"][0:depth] == new_location])
             # stack the result
             LocationCFilesAndCFLAGS += _LocationCFilesAndCFLAGS
             LDFLAGS += _LDFLAGS

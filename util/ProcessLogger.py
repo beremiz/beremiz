@@ -135,7 +135,7 @@ class ProcessLogger:
         else:
             self.timeout = None
 
-        self.Proc = subprocess.Popen( self.Command, **popenargs )
+        self.Proc = subprocess.Popen(self.Command, **popenargs)
 
         self.outt = outputThread(
                       self.Proc,

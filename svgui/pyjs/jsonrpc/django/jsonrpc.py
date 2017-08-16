@@ -171,7 +171,7 @@ class FormProcessor(JSONRPCService):
             if not f.is_valid():
                 return {'success': False, 'errors': builderrors(f)}
             instance = f.save()  # XXX: if you want more, over-ride save.
-            return {'success': True, 'instance': json_convert(instance) }
+            return {'success': True, 'instance': json_convert(instance)}
 
         elif command.has_key('html'):
             return {'success': True, 'html': f.as_table()}

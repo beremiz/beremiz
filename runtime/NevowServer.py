@@ -122,7 +122,7 @@ class WebInterface(athena.LivePage):
                                     tags.head(render=tags.directive('liveglue')),
                                     tags.body[
                                         tags.div[
-                                                tags.div( render=tags.directive( "MainPage" ))
+                                                tags.div(render=tags.directive("MainPage"))
                                                 ]]]])
     MainPage = MainPage()
     PLCHMI = PLCHMI

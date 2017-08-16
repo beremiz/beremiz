@@ -247,6 +247,6 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
         # "name" is included at the end so that self.removeService
         # can access it.
-        self.itemDataMap[self.nextItemId] = [ svcname, typename, ip, port, name ]
+        self.itemDataMap[self.nextItemId] = [svcname, typename, ip, port, name]
 
         self.nextItemId += 1

@@ -562,10 +562,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetLibrariesTypes(self):
         self.LoadLibraries()
-        return [ lib.GetTypes() for lib in self.Libraries ]
+        return [lib.GetTypes() for lib in self.Libraries]
 
     def GetLibrariesSTCode(self):
-        return "\n".join([ lib.GetSTCode() for lib in self.Libraries ])
+        return "\n".join([lib.GetSTCode() for lib in self.Libraries])
 
     def GetLibrariesCCode(self, buildpath):
         if len(self.Libraries) == 0:
@@ -788,7 +788,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return False
 
         # Now extract C files of stdout
-        C_files = [ fname for fname in result.splitlines() if fname[-2:] == ".c" or fname[-2:] == ".C" ]
+        C_files = [fname for fname in result.splitlines() if fname[-2:] == ".c" or fname[-2:] == ".C"]
         # remove those that are not to be compiled because included by others
         C_files.remove("POUS.c")
         if not C_files:
@@ -798,7 +798,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         C_files = map(lambda filename: os.path.join(buildpath, filename), C_files)
 
         # prepend beremiz include to configuration header
-        H_files = [ fname for fname in result.splitlines() if fname[-2:] == ".h" or fname[-2:] == ".H" ]
+        H_files = [fname for fname in result.splitlines() if fname[-2:] == ".h" or fname[-2:] == ".H"]
         H_files.remove("LOCATED_VARIABLES.h")
         H_files = map(lambda filename: os.path.join(buildpath, filename), H_files)
         for H_file in H_files:
@@ -856,7 +856,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
 
         return ([(C_file_name, self.plcCFLAGS)
-                for C_file_name in self.PLCGeneratedCFiles ],
+                for C_file_name in self.PLCGeneratedCFiles],
                "",  # no ldflags
                False)  # do not expose retreive/publish calls
 

@@ -138,19 +138,17 @@ def check_html_file(source_file, dest_path):
 </html>
 """
 
-    filename = os.path.split    ( source_file )[1]
-    mod_name = os.path.splitext ( filename    )[0]
-    file_name = os.path.join     ( dest_path, mod_name + '.html' )
+    filename  = os.path.split   (source_file)[1]
+    mod_name  = os.path.splitext(filename)[0]
+    file_name = os.path.join    (dest_path, mod_name + '.html')
 
     # if html file in output directory exists, leave it alone.
-    if os.path.exists ( file_name ):
+    if os.path.exists (file_name):
         return 0
 
-    if os.path.exists (
-        os.path.join ( dest_path, mod_name + '.css' ) ):
+    if os.path.exists(os.path.join(dest_path, mod_name + '.css')):
         css = "<link rel='stylesheet' href='" + mod_name + ".css'>"
-    elif os.path.exists (
-        os.path.join ( dest_path, 'pyjamas_default.css' ) ):
+    elif os.path.exists(os.path.join(dest_path, 'pyjamas_default.css')):
         css = "<link rel='stylesheet' href='pyjamas_default.css'>"
 
     else:

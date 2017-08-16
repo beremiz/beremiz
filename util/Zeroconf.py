@@ -159,7 +159,7 @@ _CLASSES = { _CLASS_IN:   "in",
              _CLASS_CH:   "ch",
              _CLASS_HS:   "hs",
              _CLASS_NONE: "none",
-             _CLASS_ANY:  "any" }
+             _CLASS_ANY:  "any"}
 
 _TYPES = { _TYPE_A:     "a",
            _TYPE_NS:    "ns",
@@ -179,7 +179,7 @@ _TYPES = { _TYPE_A:     "a",
            _TYPE_TXT:   "txt",
            _TYPE_AAAA:  "quada",
            _TYPE_SRV:   "srv",
-           _TYPE_ANY:   "any" }
+           _TYPE_ANY:   "any"}
 
 # utility functions
 
