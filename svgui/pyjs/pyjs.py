@@ -874,8 +874,8 @@ class Translator:
         if staticmethod:
             staticfunc = ast.Function([], class_name_+"."+node.name, node.argnames, node.defaults, node.flags, node.doc, node.code, node.lineno)
             self._function(staticfunc, True)
-            print >>self.output, "    " + UU+class_name_ + ".prototype.__class__." + node.name + " = " + class_name_+"."+node.name+";";
-            print >>self.output, "    " + UU+class_name_ + ".prototype.__class__." + node.name + ".static_method = true;";
+            print >>self.output, "    " + UU+class_name_ + ".prototype.__class__." + node.name + " = " + class_name_+"."+node.name+";"
+            print >>self.output, "    " + UU+class_name_ + ".prototype.__class__." + node.name + ".static_method = true;"
             return
         else:
             if len(arg_names) == 0:

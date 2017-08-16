@@ -1830,7 +1830,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         self.AppFrame.CloseObsoleteDebugTabs()
                         self.AppFrame.RefreshPouInstanceVariablesPanel()
                     self.logger.write(_("Transfer completed successfully.\n"))
-                    self.AppFrame.LogViewer.ResetLogCounters();
+                    self.AppFrame.LogViewer.ResetLogCounters()
                 else:
                     self.logger.write_error(_("Transfer failed\n"))
                 self.HidePLCProgress()

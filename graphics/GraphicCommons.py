@@ -1381,7 +1381,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         connector_free = (wire_nums <= 0)
         connector_max_used = ((wire_nums > 0) and self.OneConnected)
         if (self.Parent.CurrentLanguage in ["SFC", "LD"]) and (self.Type == "BOOL"):
-            connector_max_used = False;
+            connector_max_used = False
 
         # connector is available for new connection
         connect  = connector_free or not connector_max_used
@@ -1389,8 +1389,8 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     # Tests if the point given is near from the end point of this connector
     def TestPoint(self, pt, direction=None, exclude=True):
-        inside = False;
-        check_point = (not exclude) and (direction is None or self.Direction == direction);
+        inside = False
+        check_point = (not exclude) and (direction is None or self.Direction == direction)
 
         if check_point:
             # Calculate a square around the end point of this connector
@@ -1400,7 +1400,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             width = ANCHOR_DISTANCE * 2 + abs(self.Direction[0]) * CONNECTOR_SIZE
             height = ANCHOR_DISTANCE * 2 + abs(self.Direction[1]) * CONNECTOR_SIZE
             rect = wx.Rect(x, y, width, height)
-            inside = rect.InsideXY(pt.x, pt.y);
+            inside = rect.InsideXY(pt.x, pt.y)
 
         return inside
 
