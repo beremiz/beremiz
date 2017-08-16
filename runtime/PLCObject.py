@@ -171,6 +171,7 @@ class PLCObject(pyro.ObjBase):
                 # If python confnode is not enabled, we reuse _PythonIterator
                 # as a call that block pythonthread until StopPLC
                 self.PlcStopping = Event()
+
                 def PythonIterator(res, blkid):
                     self.PlcStopping.clear()
                     self.PlcStopping.wait()
@@ -286,6 +287,7 @@ class PLCObject(pyro.ObjBase):
                 v = t()
                 r = self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
                 return self.python_runtime_vars["_"+name+"_unpack"](v)
+
             def __setattr__(_self, name, value):
                 try:
                     t = self.python_runtime_vars["_"+name+"_ctype"]

@@ -1589,6 +1589,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetForceVariableMenuFunction(self, iec_path, element):
         iec_type = self.GetDataType(iec_path)
+
         def ForceVariableFunction(event):
             if iec_type is not None:
                 dialog = ForceVariableDialog(self.ParentWindow, iec_type, str(element.GetValue()))
@@ -1936,6 +1937,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetAddToWireMenuCallBack(self, func, *args):
         args += (self.SelectedElement,)
+
         def AddToWireMenuCallBack(event):
             func(wx.Rect(0, 0, 0, 0), *args)
         return AddToWireMenuCallBack

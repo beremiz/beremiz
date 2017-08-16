@@ -1655,6 +1655,7 @@ def generateGetChoicesMethod(choice_types):
 
 def generateSetChoiceByTypeMethod(factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
+
     def setChoiceMethod(self, content_type):
         if not choices.has_key(content_type):
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
@@ -1668,6 +1669,7 @@ def generateSetChoiceByTypeMethod(factory, choice_types):
 
 def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
+
     def appendChoiceMethod(self, content_type):
         if not choices.has_key(content_type):
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
@@ -1684,6 +1686,7 @@ def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
 
 def generateInsertChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
+
     def insertChoiceMethod(self, index, content_type):
         if not choices.has_key(content_type):
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)

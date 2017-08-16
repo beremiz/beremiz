@@ -424,6 +424,7 @@ if cls:
     def gettypeElementFunc(element_type):
         elements_xpath = PLCOpen_XPath(
             "ppx:types/ppx:%(element_type)ss/ppx:%(element_type)s[@name=$name]" % locals())
+
         def gettypeElement(self, name):
             elements = elements_xpath(self, name=name)
             if len(elements) == 1:

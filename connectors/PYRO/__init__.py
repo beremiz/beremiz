@@ -63,6 +63,7 @@ def PYRO_connector_factory(uri, confnodesroot):
                                        % (Pyro.config.PYROSSL_CERTDIR))
         Pyro.config.PYROSSL_CERT = "client.crt"
         Pyro.config.PYROSSL_KEY = "client.key"
+
         # Ugly Monkey Patching
         def _gettimeout(self):
             return self.timeout

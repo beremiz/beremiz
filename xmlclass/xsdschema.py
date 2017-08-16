@@ -51,6 +51,7 @@ def GenerateSimpleTypeXMLText(function):
 def GenerateFloatXMLText(extra_values=[], decimal=None):
     float_format = (lambda x: "{:.{width}f}".format(x, width=decimal).rstrip('0')
                     if decimal is not None else str)
+
     def generateXMLTextMethod(value, name=None, indent=0):
         text = ""
         if name is not None:
