@@ -512,13 +512,13 @@ class VariablePanel(wx.Panel):
                                         "Variables", "   Local", "   Temp"]  #,"Access"]
 
             # these condense the ColAlignements list
-            l = wx.ALIGN_LEFT
-            c = wx.ALIGN_CENTER
+            left =   wx.ALIGN_LEFT
+            center = wx.ALIGN_CENTER
 
-            #                        Num   Name    Class   Type    Loc     Init    Option   Doc
-            self.ColSizes =         [40,   80,     100,    80,     110,    120,    100,     160]
-            self.ColAlignements =   [c,    l,      l,      l,      l,      l,      l,       l]
-            self.ColFixedSizeFlag = [True, False,  True,   False,  True,   True,   True,    False]
+            #                        Num     Name    Class   Type    Loc     Init    Option   Doc
+            self.ColSizes =         [40,     80,     100,    80,     110,    120,    100,     160]
+            self.ColAlignements =   [center, left,   left,   left,   left,   left,   left,    left]
+            self.ColFixedSizeFlag = [True,   False,  True,   False,  True,   True,   True,    False]
 
         else:
             # this is an element that cannot have located variables
@@ -534,13 +534,13 @@ class VariablePanel(wx.Panel):
                                         "Variables", "   Local", "   Temp"]
 
             # these condense the ColAlignements list
-            l = wx.ALIGN_LEFT
-            c = wx.ALIGN_CENTER
+            left =   wx.ALIGN_LEFT
+            center = wx.ALIGN_CENTER
 
-            #                        Num   Name    Class   Type    Init    Option   Doc
-            self.ColSizes =         [40,   80,     100,    80,     120,    100,     160]
-            self.ColAlignements =   [c,    l,      l,      l,      l,      l,       l]
-            self.ColFixedSizeFlag = [True, False,  True,   False,  True,   True,    False]
+            #                        Num     Name    Class   Type    Init    Option   Doc
+            self.ColSizes =         [40,     80,     100,    80,     120,    100,     160]
+            self.ColAlignements =   [center, left,   left,   left,   left,   left,    left]
+            self.ColFixedSizeFlag = [True,   False,  True,   False,  True,   True,    False]
 
         self.PanelWidthMin = sum(self.ColSizes)
 

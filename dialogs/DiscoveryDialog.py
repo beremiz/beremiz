@@ -158,8 +158,8 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def OnIpButton(self, event):
         if self.LatestSelection is not None:
-            l = lambda col: self.getColumnText(self.LatestSelection, col)
-            self.URI = "%s://%s:%s" % tuple(map(l, (1, 2, 3)))
+            addr = lambda col: self.getColumnText(self.LatestSelection, col)
+            self.URI = "%s://%s:%s" % tuple(map(addr, (1, 2, 3)))
             self.EndModal(wx.ID_OK)
         event.Skip()
 

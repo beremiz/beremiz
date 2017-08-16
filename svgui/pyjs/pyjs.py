@@ -584,13 +584,13 @@ class Translator:
             self._stmt(stmt, current_klass)
         print >> self.output, "    } catch(%s) {" % errName
         if expr:
-            l = []
+            k = []
             if isinstance(expr, ast.Tuple):
                 for x in expr.nodes:
-                    l.append("(%(err)s.__name__ == %(expr)s.__name__)" % dict (err=errName, expr=self.expr(x, current_klass)))
+                    k.append("(%(err)s.__name__ == %(expr)s.__name__)" % dict (err=errName, expr=self.expr(x, current_klass)))
             else:
-                l = [" (%(err)s.__name__ == %(expr)s.__name__) " % dict (err=errName, expr=self.expr(expr, current_klass))]
-            print >> self.output, "   if(%s) {" % '||\n\t\t'.join(l)
+                k = [" (%(err)s.__name__ == %(expr)s.__name__) " % dict (err=errName, expr=self.expr(expr, current_klass))]
+            print >> self.output, "   if(%s) {" % '||\n\t\t'.join(k)
         for stmt in node.handlers[0][2]:
             self._stmt(stmt, current_klass)
         if expr:

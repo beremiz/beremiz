@@ -555,9 +555,9 @@ def add_subdeps(deps, mod_name):
     for i in range(0, len(sd)-1):
         parent = sd[i]
         child = sd[i+1]
-        l = deps.get(child, [])
-        l.append(parent)
-        deps[child] = l
+        k = deps.get(child, [])
+        k.append(parent)
+        deps[child] = k
         if parent not in res:
             res.append(parent)
     #print deps
