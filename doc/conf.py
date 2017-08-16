@@ -58,7 +58,7 @@ release = '1.1rc1'
 #language = None
 
 gettext_compact = False
-locale_dirs = [ "locale/" ]
+locale_dirs = ["locale/"]
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

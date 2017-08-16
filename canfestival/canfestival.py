@@ -223,7 +223,7 @@ class _SlaveCTN(NodeManager):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(str, current_location))
-        Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix )
+        Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix)
         # Create a new copy of the model
         slave = self.GetCurrentNodeCopy()
         slave.SetNodeName("OD_%s" % prefix)
@@ -442,7 +442,7 @@ class _NodeListCTN(NodeList):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
         prefix = "_".join(map(str, current_location))
-        Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix )
+        Gen_OD_path = os.path.join(buildpath, "OD_%s.c" % prefix)
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         try:
             master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(), "OD_%s" % prefix)
@@ -481,7 +481,7 @@ class RootClass:
     """
 
     CTNChildrenTypes = [("CanOpenNode",  _NodeListCTN, "CanOpen Master"),
-                        ("CanOpenSlave", _SlaveCTN,    "CanOpen Slave" )]
+                        ("CanOpenSlave", _SlaveCTN,    "CanOpen Slave")]
     def GetParamsAttributes(self, path=None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path=path)
         for element in infos:

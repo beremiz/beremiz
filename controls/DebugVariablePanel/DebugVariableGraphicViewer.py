@@ -452,7 +452,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 y = rect.y + (rect.height - h) / 2
                 offset += w
             else:
-                x = rect.x + (rect.width - w ) / 2
+                x = rect.x + (rect.width - w) / 2
                 y = rect.y + (- h - offset
                               if direction == wx.TOP
                               else rect.height + offset)

@@ -543,7 +543,7 @@ class Translator:
                 return ("pyjs_kwargs_function_call("+call_name+", "
                                   + star_arg_name
                                   + ", ["+fn_args+"]"
-                                  + ")" )
+                                  + ")")
             else:
                 return ("pyjs_kwargs_method_call("+call_this+", '"+method_name+"', "
                                   + star_arg_name
@@ -588,7 +588,7 @@ class Translator:
                 for x in expr.nodes:
                     l.append("(%(err)s.__name__ == %(expr)s.__name__)" % dict (err=errName, expr=self.expr(x, current_klass)))
             else:
-                l = [ " (%(err)s.__name__ == %(expr)s.__name__) " % dict (err=errName, expr=self.expr(expr, current_klass)) ]
+                l = [" (%(err)s.__name__ == %(expr)s.__name__) " % dict (err=errName, expr=self.expr(expr, current_klass))]
             print >> self.output, "   if(%s) {" % '||\n\t\t'.join(l)
         for stmt in node.handlers[0][2]:
             self._stmt(stmt, current_klass)
@@ -670,7 +670,7 @@ class Translator:
         elif v.name in self.module_imports() and return_none_for_module:
             return None
         elif v.name in PYJSLIB_BUILTIN_CLASSES:
-            return "pyjslib." + pyjs_builtin_remap( v.name )
+            return "pyjslib." + pyjs_builtin_remap(v.name)
         elif current_klass:
             if v.name not in local_var_names and \
                v.name not in self.top_level_vars and \
