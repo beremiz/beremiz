@@ -213,7 +213,7 @@ class ProcessLogger:
     def endlog(self):
         if self.endlock.acquire(False):
             if not self.outt.finished and self.kill_it:
-               self.kill()
+                self.kill()
             self.finishsem.release()
 
     def spin(self):

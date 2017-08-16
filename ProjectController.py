@@ -307,7 +307,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "Project"
 
     def CTNTestModified(self):
-         return self.ChangesToSave or not self.ProjectIsSaved()
+        return self.ChangesToSave or not self.ProjectIsSaved()
 
     def CTNFullName(self):
         return ""
@@ -1154,7 +1154,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # Do generate
                 code = generator()
                 if code is None:
-                     raise
+                    raise
                 code_path = os.path.join(buildpath, filename)
                 open(code_path, "w").write(code)
                 # Insert this file as first file to be compiled at root confnode

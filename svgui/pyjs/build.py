@@ -723,7 +723,7 @@ def main():
         pyjs.path.append(abspath(d))
 
     if options.platforms:
-       app_platforms = options.platforms.split(',')
+        app_platforms = options.platforms.split(',')
 
     # this is mostly for getting boilerplate stuff
     data_dir = os.path.abspath(options.data_dir)

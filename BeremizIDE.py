@@ -328,7 +328,7 @@ class Beremiz(IDEFrame):
             def OnMethodGen(obj, meth):
                 def OnMethod(evt):
                     if obj.CTR is not None:
-                       obj.CTR.CallMethod('_'+meth)
+                        obj.CTR.CallMethod('_'+meth)
                     wx.CallAfter(self.RefreshStatusToolBar)
                 return OnMethod
             newid = wx.NewId()

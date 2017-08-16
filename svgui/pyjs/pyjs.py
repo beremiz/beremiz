@@ -284,9 +284,9 @@ class Translator:
                 if importName == '__pyjamas__':  # special module to help make pyjamas modules loadable in the python interpreter
                     pass
                 elif importName.endswith('.js'):
-                   self.imported_js.add(importName)
+                    self.imported_js.add(importName)
                 else:
-                   self.add_imported_module(strip_py(importName))
+                    self.add_imported_module(strip_py(importName))
             elif isinstance(child, ast.From):
                 if child.modname == '__pyjamas__':  # special module to help make pyjamas modules loadable in the python interpreter
                     pass
@@ -310,9 +310,9 @@ class Translator:
             elif isinstance(child, ast.Global):
                 self._global(child, None)
             elif isinstance(child, ast.Printnl):
-               self._print(child, None)
+                self._print(child, None)
             elif isinstance(child, ast.Print):
-               self._print(child, None)
+                self._print(child, None)
             elif isinstance(child, ast.TryExcept):
                 self._tryExcept(child, None)
             elif isinstance(child, ast.Raise):
@@ -997,9 +997,9 @@ class Translator:
         elif isinstance(node, ast.Function):
             self._function(node, True)
         elif isinstance(node, ast.Printnl):
-           self._print(node, current_klass)
+            self._print(node, current_klass)
         elif isinstance(node, ast.Print):
-           self._print(node, current_klass)
+            self._print(node, current_klass)
         elif isinstance(node, ast.TryExcept):
             self._tryExcept(node, current_klass)
         elif isinstance(node, ast.Raise):
@@ -1066,8 +1066,8 @@ class Translator:
             tnode = ast.Assign([ast.AssName(tempvar, "OP_ASSIGN", node.lineno)], node.expr, node.lineno)
             self._assign(tnode, current_klass, top_level)
             for v in node.nodes:
-               tnode2 = ast.Assign([v], ast.Name(tempvar, node.lineno), node.lineno)
-               self._assign(tnode2, current_klass, top_level)
+                tnode2 = ast.Assign([v], ast.Name(tempvar, node.lineno), node.lineno)
+                self._assign(tnode2, current_klass, top_level)
             return
 
         local_var_names = None
@@ -1177,7 +1177,7 @@ class Translator:
             debugStmt = self.debug and not self._isNativeFunc(node)
             if debugStmt and isinstance(node.expr.node, ast.Name) and \
                node.expr.node.name == 'import_wait':
-               debugStmt = False
+                debugStmt = False
             if debugStmt:
                 st = self.get_line_trace(node)
                 print >>self.output, "sys.addstack('%s');\n" % st
@@ -1383,8 +1383,8 @@ class Translator:
 
     def _mod(self, node, current_klass):
         if isinstance(node.left, ast.Const) and isinstance(node.left.value, StringType):
-           self.imported_js.add("sprintf.js")  # Include the sprintf functionality if it is used
-           return "sprintf("+self.expr(node.left, current_klass) + ", " + self.expr(node.right, current_klass)+")"
+            self.imported_js.add("sprintf.js")  # Include the sprintf functionality if it is used
+            return "sprintf("+self.expr(node.left, current_klass) + ", " + self.expr(node.right, current_klass)+")"
         return self.expr(node.left, current_klass) + " % " + self.expr(node.right, current_klass)
 
     def _invert(self, node, current_klass):
@@ -1738,15 +1738,15 @@ class AppTranslator:
             print >> app_code, self._translate(
                 module_name, is_app, debug=debug, imported_js=imported_js)
         for js in imported_js:
-           path = self.findFile(js)
-           if os.path.isfile(path):
-              if self.verbose:
-                  print 'Including JS', js
-              print >> lib_code,  '\n//\n// BEGIN JS '+js+'\n//\n'
-              print >> lib_code, file(path).read()
-              print >> lib_code,  '\n//\n// END JS '+js+'\n//\n'
-           else:
-              print >>sys.stderr, 'Warning: Unable to find imported javascript:', js
+            path = self.findFile(js)
+            if os.path.isfile(path):
+                if self.verbose:
+                    print 'Including JS', js
+                print >> lib_code,  '\n//\n// BEGIN JS '+js+'\n//\n'
+                print >> lib_code, file(path).read()
+                print >> lib_code,  '\n//\n// END JS '+js+'\n//\n'
+            else:
+                print >>sys.stderr, 'Warning: Unable to find imported javascript:', js
         return lib_code.getvalue(), app_code.getvalue()
 
 

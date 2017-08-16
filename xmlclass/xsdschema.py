@@ -281,7 +281,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"minExclusive\" must be lesser than \"maxExclusive\"!")
             elif facettype == "whiteSpace":
                 if basevalue == "collapse" and value in ["preserve", "replace"] or basevalue == "replace" and value == "preserve":
-                   raise ValueError("\"whiteSpace\" is incompatible with \"whiteSpace\" defined in base type!")
+                    raise ValueError("\"whiteSpace\" is incompatible with \"whiteSpace\" defined in base type!")
             elif facettype == "totalDigits":
                 if facets.has_key("fractionDigits") and value <= facets["fractionDigits"][0]:
                     raise ValueError("\"fractionDigits\" must be lesser than or equal to \"totalDigits\"!")

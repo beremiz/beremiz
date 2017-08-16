@@ -67,8 +67,8 @@ class SFCDivergenceDialog(BlockPreviewDialog):
             (SIMULTANEOUS_CONVERGENCE, _('Simultaneous Convergence'))]
         poss_div_btns = []
         if poss_div_types is not None:
-             for val in poss_div_types:
-                 poss_div_btns.append(divergence_buttons[val])
+            for val in poss_div_types:
+                poss_div_btns.append(divergence_buttons[val])
         else:
             poss_div_btns = divergence_buttons
         self.TypeRadioButtons = {}
