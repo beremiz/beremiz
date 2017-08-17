@@ -463,7 +463,7 @@ def format_namespace(d, indent='    '):
 ignored_exceptions = []  # a problem with a line in a module is only reported once per session
 
 
-def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
+def AddExceptHook(path, app_version='[No version]'):
 
     def handle_exception(e_type, e_value, e_traceback):
         traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
@@ -476,11 +476,11 @@ def AddExceptHook(path, app_version='[No version]'):  #, ignored_exceptions=[]):
             if result:
                 ignored_exceptions.append(ex)
                 info = {
-                    'app-title': wx.GetApp().GetAppName(),  # app_title
+                    'app-title': wx.GetApp().GetAppName(),
                     'app-version': app_version,
                     'wx-version': wx.VERSION_STRING,
                     'wx-platform': wx.Platform,
-                    'python-version': platform.python_version(),  #sys.version.split()[0],
+                    'python-version': platform.python_version(),
                     'platform': platform.platform(),
                     'e-type': e_type,
                     'e-value': e_value,

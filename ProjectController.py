@@ -1588,7 +1588,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,
                                     debug_vars):
-                                IECdebug_data = self.IECdebug_datas.get(IECPath, None)  #FIXME get
+                                IECdebug_data = self.IECdebug_datas.get(IECPath, None)  # FIXME get
                                 if IECdebug_data is not None and value is not None:
                                     forced = IECdebug_data[2:4] == ["Forced", value]
                                     if not IECdebug_data[4] and len(values_buffer) > 0:

@@ -561,7 +561,7 @@ class ConfigTreeNode:
                 # check name is unique
                 NewCTNName = _self.FindNewName(CTNName)
                 # If dir have already be made, and file exist
-                if os.path.isdir(_self.CTNPath(NewCTNName)):  #and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
+                if os.path.isdir(_self.CTNPath(NewCTNName)):  # and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
                     # Load the confnode.xml file into parameters members
                     _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
