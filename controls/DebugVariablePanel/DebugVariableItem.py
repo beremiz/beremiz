@@ -160,8 +160,7 @@ class DebugVariableItem(DebugDataConsumer):
         @param index: Variable value index
         @return: Variable data type
         """
-        if (self.VariableType in ["STRING", "WSTRING"] and
-            index < len(self.RawData)):
+        if self.VariableType in ["STRING", "WSTRING"] and index < len(self.RawData):
             return self.RawData[index][0]
         return ""
 
@@ -309,10 +308,8 @@ class DebugVariableItem(DebugDataConsumer):
         @param value: New value
         """
         # Remove quote and double quote surrounding string value to get raw value
-        if (self.VariableType == "STRING" and
-            value.startswith("'") and value.endswith("'") or
-            self.VariableType == "WSTRING" and
-            value.startswith('"') and value.endswith('"')):
+        if self.VariableType == "STRING"  and value.startswith("'") and value.endswith("'") or \
+           self.VariableType == "WSTRING" and value.startswith('"') and value.endswith('"'):
             value = value[1:-1]
 
         # Store variable value
@@ -376,8 +373,8 @@ class DebugVariableItem(DebugDataConsumer):
         idx = numpy.argmin(abs(ticks - tick))
 
         # Adjust data index according to constraint
-        if (adjust < 0 and ticks[idx] > tick and idx > 0 or
-            adjust > 0 and ticks[idx] < tick and idx < len(ticks)):
+        if adjust < 0 and ticks[idx] > tick and idx > 0 or \
+           adjust > 0 and ticks[idx] < tick and idx < len(ticks):
             idx += adjust
 
         return idx

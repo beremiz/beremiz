@@ -113,8 +113,8 @@ class CodeFile:
                 '<%s>' % self.CODEFILE_NAME,
                 '<%s xmlns:xhtml="http://www.w3.org/1999/xhtml">' % self.CODEFILE_NAME)
             for cre, repl in [
-                (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-                (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+                    (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+                    (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 codefile_xml = cre.sub(repl, codefile_xml)
 
             try:

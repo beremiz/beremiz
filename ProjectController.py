@@ -1582,8 +1582,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.IECdebug_lock.acquire()
                     for debug_tick, debug_buff in Traces:
                         debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
-                        if (debug_vars is not None and
-                            len(debug_vars) == len(self.TracedIECPath)):
+                        if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
                             for IECPath, values_buffer, value in izip(
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,

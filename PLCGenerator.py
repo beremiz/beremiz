@@ -717,8 +717,7 @@ class PouProgramGenerator:
                                          InOutVariableClass)):
                     expression = instance.getexpression()
                     var_type = self.GetVariableType(expression)
-                    if (isinstance(pou, TransitionObjClass)
-                        and expression == pou.getname()):
+                    if isinstance(pou, TransitionObjClass) and expression == pou.getname():
                         var_type = "BOOL"
                     elif (not isinstance(pou, (TransitionObjClass, ActionObjClass)) and
                           pou.getpouType() == "function" and expression == pou.getname()):
@@ -1158,9 +1157,9 @@ class PouProgramGenerator:
         else:
             for i, variable in enumerate(output_variables):
                 blockPointx, blockPointy = variable.connectionPointOut.getrelPositionXY()
-                if (connectionPoint is None or
-                    block.getx() + blockPointx == connectionPoint.getx() and
-                    block.gety() + blockPointy == connectionPoint.gety()):
+                if connectionPoint is None or \
+                   block.getx() + blockPointx == connectionPoint.getx() and \
+                   block.gety() + blockPointy == connectionPoint.gety():
                     output_variable = variable
                     output_parameter = variable.getformalParameter()
                     output_idx = i

@@ -260,9 +260,9 @@ def SimplifyTabLayout(tabs, rect):
             others = [t for t in tabs if t != tab]
             others.sort(lambda x, y: cmp(x["pos"][0], y["pos"][0]))
             for other in others:
-                if (other["pos"][1] == tab["pos"][1] and
-                    other["size"][1] == tab["size"][1] and
-                    other["pos"][0] == tab["pos"][0] + tab["size"][0] + TAB_BORDER):
+                if other["pos"][1] == tab["pos"][1] and \
+                   other["size"][1] == tab["size"][1] and \
+                   other["pos"][0] == tab["pos"][0] + tab["size"][0] + TAB_BORDER:
 
                     tab["size"] = (tab["size"][0] + other["size"][0] + TAB_BORDER, tab["size"][1])
                     tab["pages"].extend(other["pages"])
@@ -275,9 +275,9 @@ def SimplifyTabLayout(tabs, rect):
             others = [t for t in tabs if t != tab]
             others.sort(lambda x, y: cmp(x["pos"][1], y["pos"][1]))
             for other in others:
-                if (other["pos"][0] == tab["pos"][0] and
-                    other["size"][0] == tab["size"][0] and
-                    other["pos"][1] == tab["pos"][1] + tab["size"][1] + TAB_BORDER):
+                if other["pos"][0] == tab["pos"][0] and \
+                   other["size"][0] == tab["size"][0] and \
+                   other["pos"][1] == tab["pos"][1] + tab["size"][1] + TAB_BORDER:
 
                     tab["size"] = (tab["size"][0], tab["size"][1] + other["size"][1] + TAB_BORDER)
                     tab["pages"].extend(other["pages"])
@@ -677,32 +677,32 @@ class IDEFrame(wx.Frame):
 
         # Icons for other items
         for imgname, itemtype in [
-            # editables
-            ("PROJECT",        ITEM_PROJECT),
-            #("POU",            ITEM_POU),
-            #("VARIABLE",       ITEM_VARIABLE),
-            ("TRANSITION",     ITEM_TRANSITION),
-            ("ACTION",         ITEM_ACTION),
-            ("CONFIGURATION",  ITEM_CONFIGURATION),
-            ("RESOURCE",       ITEM_RESOURCE),
-            ("DATATYPE",       ITEM_DATATYPE),
-            # uneditables
-            ("DATATYPES",      ITEM_DATATYPES),
-            ("FUNCTION",       ITEM_FUNCTION),
-            ("FUNCTIONBLOCK",  ITEM_FUNCTIONBLOCK),
-            ("PROGRAM",        ITEM_PROGRAM),
-            ("VAR_LOCAL",      ITEM_VAR_LOCAL),
-            ("VAR_LOCAL",      ITEM_VAR_GLOBAL),
-            ("VAR_LOCAL",      ITEM_VAR_EXTERNAL),
-            ("VAR_LOCAL",      ITEM_VAR_TEMP),
-            ("VAR_INPUT",      ITEM_VAR_INPUT),
-            ("VAR_OUTPUT",     ITEM_VAR_OUTPUT),
-            ("VAR_INOUT",      ITEM_VAR_INOUT),
-            ("TRANSITIONS",    ITEM_TRANSITIONS),
-            ("ACTIONS",        ITEM_ACTIONS),
-            ("CONFIGURATIONS", ITEM_CONFIGURATIONS),
-            ("RESOURCES",      ITEM_RESOURCES),
-            ("PROPERTIES",     ITEM_PROPERTIES)]:
+                # editables
+                ("PROJECT",        ITEM_PROJECT),
+                #("POU",            ITEM_POU),
+                #("VARIABLE",       ITEM_VARIABLE),
+                ("TRANSITION",     ITEM_TRANSITION),
+                ("ACTION",         ITEM_ACTION),
+                ("CONFIGURATION",  ITEM_CONFIGURATION),
+                ("RESOURCE",       ITEM_RESOURCE),
+                ("DATATYPE",       ITEM_DATATYPE),
+                # uneditables
+                ("DATATYPES",      ITEM_DATATYPES),
+                ("FUNCTION",       ITEM_FUNCTION),
+                ("FUNCTIONBLOCK",  ITEM_FUNCTIONBLOCK),
+                ("PROGRAM",        ITEM_PROGRAM),
+                ("VAR_LOCAL",      ITEM_VAR_LOCAL),
+                ("VAR_LOCAL",      ITEM_VAR_GLOBAL),
+                ("VAR_LOCAL",      ITEM_VAR_EXTERNAL),
+                ("VAR_LOCAL",      ITEM_VAR_TEMP),
+                ("VAR_INPUT",      ITEM_VAR_INPUT),
+                ("VAR_OUTPUT",     ITEM_VAR_OUTPUT),
+                ("VAR_INOUT",      ITEM_VAR_INOUT),
+                ("TRANSITIONS",    ITEM_TRANSITIONS),
+                ("ACTIONS",        ITEM_ACTIONS),
+                ("CONFIGURATIONS", ITEM_CONFIGURATIONS),
+                ("RESOURCES",      ITEM_RESOURCES),
+                ("PROPERTIES",     ITEM_PROPERTIES)]:
             self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
 
         # Assign icon list to TreeCtrls
@@ -1749,8 +1749,8 @@ class IDEFrame(wx.Frame):
                 if item != self.LastToolTipItem and self.LastToolTipItem is not None:
                     self.ProjectTree.SetToolTip(None)
                     self.LastToolTipItem = None
-                if (self.LastToolTipItem != item and
-                    item_infos["type"] in [ITEM_POU, ITEM_TRANSITION, ITEM_ACTION]):
+                if self.LastToolTipItem != item and \
+                   item_infos["type"] in [ITEM_POU, ITEM_TRANSITION, ITEM_ACTION]:
                     bodytype = self.Controler.GetEditedElementBodyType(
                             item_infos["tagname"])
                     if item_infos["type"] == ITEM_POU:

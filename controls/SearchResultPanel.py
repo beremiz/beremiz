@@ -121,16 +121,16 @@ class SearchResultPanel(wx.Panel):
 
         # Icons for other items
         for imgname, itemtype in [
-            # editables
-            ("PROJECT",        ITEM_PROJECT),
-            ("TRANSITION",     ITEM_TRANSITION),
-            ("ACTION",         ITEM_ACTION),
-            ("CONFIGURATION",  ITEM_CONFIGURATION),
-            ("RESOURCE",       ITEM_RESOURCE),
-            ("DATATYPE",       ITEM_DATATYPE),
-            ("ACTION",         "action_block"),
-            ("IL",             "IL"),
-            ("ST",             "ST")]:
+                # editables
+                ("PROJECT",        ITEM_PROJECT),
+                ("TRANSITION",     ITEM_TRANSITION),
+                ("ACTION",         ITEM_ACTION),
+                ("CONFIGURATION",  ITEM_CONFIGURATION),
+                ("RESOURCE",       ITEM_RESOURCE),
+                ("DATATYPE",       ITEM_DATATYPE),
+                ("ACTION",         "action_block"),
+                ("IL",             "IL"),
+                ("ST",             "ST")]:
             self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
 
         for itemtype in ["function", "functionBlock", "program",

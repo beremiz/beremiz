@@ -61,8 +61,8 @@ class PythonFileCTNMixin(CodeFile):
                 'xmlns="http://www.w3.org/2001/XMLSchema"',
                 'xmlns:xhtml="http://www.w3.org/1999/xhtml"')
             for cre, repl in [
-                (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-                (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+                    (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+                    (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 pythonfile_xml = cre.sub(repl, pythonfile_xml)
 
             try:

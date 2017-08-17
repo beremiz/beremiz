@@ -152,8 +152,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Get variable expression and select corresponding value in name list
         # box if it exists
         selected = self.Expression.GetValue()
-        if (selected != "" and
-            self.VariableName.FindString(selected) != wx.NOT_FOUND):
+        if selected != "" and self.VariableName.FindString(selected) != wx.NOT_FOUND:
             self.VariableName.SetStringSelection(selected)
         else:
             self.VariableName.SetSelection(wx.NOT_FOUND)

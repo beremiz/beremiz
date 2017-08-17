@@ -241,8 +241,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.CanvasRange.SetSelection(default_range_idx)
 
         for name, bitmap, help in [
-            ("CurrentButton", "current", _("Go to current value")),
-            ("ExportGraphButton", "export_graph", _("Export graph values to clipboard"))]:
+                ("CurrentButton",     "current",      _("Go to current value")),
+                ("ExportGraphButton", "export_graph", _("Export graph values to clipboard"))]:
             button = wx.lib.buttons.GenBitmapButton(self,
                   bitmap=GetBitmap(bitmap),
                   size=wx.Size(28, 28), style=wx.NO_BORDER)
@@ -440,9 +440,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             x, y = panel.GetPosition()
             width, height = panel.GetSize()
             rect = wx.Rect(x, y, width, height)
-            if (rect.InsideXY(x_mouse, y_mouse) or
-                idx == 0 and y_mouse < 0 or
-                idx == len(self.GraphicPanels) - 1 and y_mouse > panel.GetPosition()[1]):
+            if rect.InsideXY(x_mouse, y_mouse) or \
+               idx == 0 and y_mouse < 0 or \
+               idx == len(self.GraphicPanels) - 1 and y_mouse > panel.GetPosition()[1]:
                 panel.RefreshHighlight(x_mouse - x, y_mouse - y)
             else:
                 panel.SetHighlight(HIGHLIGHT_NONE)
@@ -947,9 +947,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         size = self.GetSize()
         for panel in self.GraphicPanels:
             panel_size = panel.GetSize()
-            if (isinstance(panel, DebugVariableGraphicViewer) and
-                panel.GraphType == GRAPH_ORTHOGONAL and
-                panel_size.width == panel_size.height):
+            if isinstance(panel, DebugVariableGraphicViewer) and \
+               panel.GraphType == GRAPH_ORTHOGONAL and \
+               panel_size.width == panel_size.height:
                 panel.SetCanvasHeight(size.width)
         self.RefreshGraphicsWindowScrollbars()
         self.GraphicsSizer.Layout()

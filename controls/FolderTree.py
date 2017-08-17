@@ -236,8 +236,8 @@ class FolderTree(wx.Panel):
             item, item_cookie = self.Tree.GetFirstChild(root)
             while item.IsOk():
                 if self.Tree.GetItemText(item) == parts[0]:
-                    if (self.Tree.ItemHasChildren(item) and
-                        not self.Tree.IsExpanded(item)):
+                    if self.Tree.ItemHasChildren(item) and \
+                       not self.Tree.IsExpanded(item):
                         self.Tree.Expand(item)
                         wx.CallAfter(self._SelectItem, item, parts[1:])
                     else:
