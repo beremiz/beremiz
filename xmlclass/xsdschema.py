@@ -396,7 +396,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
 
         # Check that item type is a simple type
         if itemtypeinfos["type"] != SIMPLETYPE:
-            raise ValueError, "Item type given isn't a simpleType!"
+            raise ValueError("Item type given isn't a simpleType!")
 
         simpleType["basename"] = "list"
 

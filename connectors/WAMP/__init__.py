@@ -137,7 +137,7 @@ def WAMP_connector_factory(uri, confnodesroot):
                     reactor, RegisterWampClient)
             if not _WampSessionEvent.wait(5):
                 _WampConnection = stopConnecting()
-                raise Exception, _("WAMP connection timeout")
+                raise Exception(_("WAMP connection timeout"))
 
         def __del__(self):
             global _WampConnection

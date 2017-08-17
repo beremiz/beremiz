@@ -1826,7 +1826,7 @@ class XMLClassParser(etree.XMLParser):
             if class_idx is not None and class_idx < len(element_class):
                 new_element = element_class[class_idx]()
             else:
-                raise ValueError, "No corresponding class found!"
+                raise ValueError("No corresponding class found!")
         else:
             new_element = element_class()
         DefaultElementClass.__setattr__(new_element, "tag", self.DefaultNamespaceFormat % element_tag)
