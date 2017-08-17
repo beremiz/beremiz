@@ -995,14 +995,16 @@ class ServiceBrowser(threading.Thread):
                 if not expired:
                     oldrecord.resetTTL(record)
                 else:
+                    def callback(x):
+                        return self.listener.removeService(x, self.type, record.alias)
                     del(self.services[record.alias.lower()])
-                    callback = lambda x: self.listener.removeService(x, self.type, record.alias)
                     self.list.append(callback)
                     return
             except:
                 if not expired:
+                    def callback(x):
+                        return self.listener.addService(x, self.type, record.alias)
                     self.services[record.alias.lower()] = record
-                    callback = lambda x: self.listener.addService(x, self.type, record.alias)
                     self.list.append(callback)
 
             expires = record.getExpirationTime(75)

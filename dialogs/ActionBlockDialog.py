@@ -29,19 +29,19 @@ import wx.lib.buttons
 from controls import CustomGrid, CustomTable
 from util.BitmapLibrary import GetBitmap
 from PLCControler import _ActionInfos
-
+from util.TranslationCatalogs import NoTranslate
 #-------------------------------------------------------------------------------
 #                                  Helpers
 #-------------------------------------------------------------------------------
 
 
 def GetActionTableColnames():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("Qualifier"), _("Duration"), _("Type"), _("Value"), _("Indicator")]
 
 
 def GetTypeList():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("Action"), _("Variable"), _("Inline")]
 
 #-------------------------------------------------------------------------------

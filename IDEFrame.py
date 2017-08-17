@@ -2557,7 +2557,8 @@ class IDEFrame(wx.Frame):
 #-------------------------------------------------------------------------------
 
 
-UPPER_DIV = lambda x, y: (x / y) + {True: 0, False: 1}[(x % y) == 0]
+def UPPER_DIV(x, y):
+    return (x / y) + {True: 0, False: 1}[(x % y) == 0]
 
 
 class GraphicPrintout(wx.Printout):

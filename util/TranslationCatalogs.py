@@ -52,3 +52,7 @@ def AddCatalog(locale_dir):
         if domain is not None:
             locale.AddCatalogLookupPathPrefix(locale_dir)
             locale.AddCatalog(domain)
+
+
+def NoTranslate(x):
+        return x

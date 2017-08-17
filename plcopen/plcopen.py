@@ -154,7 +154,11 @@ def TextMatched(str1, str2):
 
 
 PLCOpenParser = GenerateParserFromXSD(paths.AbsNeighbourFile(__file__, "tc6_xml_v201.xsd"))
-PLCOpen_XPath = lambda xpath: etree.XPath(xpath, namespaces=PLCOpenParser.NSMAP)
+
+
+def PLCOpen_XPath(xpath):
+    return etree.XPath(xpath, namespaces=PLCOpenParser.NSMAP)
+
 
 LOAD_POU_PROJECT_TEMPLATE = """
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201"

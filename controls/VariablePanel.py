@@ -38,7 +38,7 @@ from CustomTable import CustomTable
 from LocationCellEditor import LocationCellEditor
 from util.BitmapLibrary import GetBitmap
 from PLCControler import _VariableInfos
-
+from util.TranslationCatalogs import NoTranslate
 #-------------------------------------------------------------------------------
 #                                 Helpers
 #-------------------------------------------------------------------------------
@@ -49,14 +49,14 @@ from PLCControler import _VariableInfos
 
 
 def GetVariableTableColnames(location):
-    _ = lambda x: x
+    _ = NoTranslate
     if location:
     	return ["#", _("Name"), _("Class"), _("Type"), _("Location"), _("Initial Value"), _("Option"), _("Documentation")]
     return ["#", _("Name"), _("Class"), _("Type"), _("Initial Value"), _("Option"), _("Documentation")]
 
 
 def GetOptions(constant=True, retain=True, non_retain=True):
-    _ = lambda x: x
+    _ = NoTranslate
     options = [""]
     if constant:
         options.append(_("Constant"))
@@ -71,7 +71,7 @@ OPTIONS_DICT = dict([(_(option), option) for option in GetOptions()])
 
 
 def GetFilterChoiceTransfer():
-    _ = lambda x: x
+    _ = NoTranslate
     return {_("All"): _("All"), _("Interface"): _("Interface"),
             _("   Input"): _("Input"), _("   Output"): _("Output"), _("   InOut"): _("InOut"),
             _("   External"): _("External"), _("Variables"): _("Variables"), _("   Local"): _("Local"),

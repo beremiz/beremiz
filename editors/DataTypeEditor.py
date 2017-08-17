@@ -35,6 +35,7 @@ from controls import CustomEditableListBox, CustomGrid, CustomTable
 from dialogs import ArrayTypeDialog
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
+from util.TranslationCatalogs import NoTranslate
 
 #-------------------------------------------------------------------------------
 #                                    Helpers
@@ -48,12 +49,12 @@ def AppendMenu(parent, help, id, kind, text):
 
 
 def GetElementsTableColnames():
-    _ = lambda x: x
+    _ = NoTranslate
     return ["#", _("Name"), _("Type"), _("Initial Value")]
 
 
 def GetDatatypeTypes():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("Directly"), _("Subrange"), _("Enumerated"), _("Array"), _("Structure")]
 
 
