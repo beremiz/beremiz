@@ -263,7 +263,7 @@ class FBD_Block(Graphic_Element):
                 self.Description = None
             if self.ExecutionControl:
                 inputs.insert(0,  ("EN",   "BOOL", "none"))
-                outputs.insert(0, ("ENO" , "BOOL", "none"))
+                outputs.insert(0, ("ENO",  "BOOL", "none"))
             self.Pen = MiterPen(self.Colour)
 
             # Extract the inputs properties and create or modify the corresponding connector
