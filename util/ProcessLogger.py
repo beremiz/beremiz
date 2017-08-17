@@ -124,7 +124,7 @@ class ProcessLogger:
                "stderr": subprocess.PIPE
         }
 
-        if no_gui == True and wx.Platform == '__WXMSW__':
+        if no_gui and wx.Platform == '__WXMSW__':
             self.startupinfo = subprocess.STARTUPINFO()
             self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             popenargs["startupinfo"] = self.startupinfo

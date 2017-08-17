@@ -1678,7 +1678,7 @@ if cls:
                 for variable in instance.inputVariables.getvariable():
                     connections = variable.connectionPointIn.getconnections()
                     if connections and len(connections) == 1:
-                        if (self.checkedBlocksDict.has_key(connections[0].getrefLocalId()) == False):
+                        if not self.checkedBlocksDict.has_key(connections[0].getrefLocalId()):
                             self.compileelementExecutionOrder(connections[0])
                 if instance.getexecutionOrderId() == 0:
                     instance.setexecutionOrderId(self.getnewExecutionOrderId())
