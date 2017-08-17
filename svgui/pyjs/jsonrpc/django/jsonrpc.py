@@ -159,21 +159,21 @@ class FormProcessor(JSONRPCService):
                 return {'success': False, 'errors': builderrors(f)}
             return {'success': True}
 
-        elif command.has_key('describe_errors'):
+        elif 'describe_errors' in command:
             field_names = command['describe_errors']
             return describe_fields_errors(f.fields, field_names)
 
-        elif command.has_key('describe'):
+        elif 'describe' in command:
             field_names = command['describe']
             return describe_fields(f.fields, field_names)
 
-        elif command.has_key('save'):
+        elif 'save' in command:
             if not f.is_valid():
                 return {'success': False, 'errors': builderrors(f)}
             instance = f.save()  # XXX: if you want more, over-ride save.
             return {'success': True, 'instance': json_convert(instance)}
 
-        elif command.has_key('html'):
+        elif 'html' in command:
             return {'success': True, 'html': f.as_table()}
 
         return "unrecognised command"

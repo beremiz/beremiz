@@ -31,7 +31,7 @@ import copy
 
 prefix = sys.prefix
 
-if os.environ.has_key('PYJSPREFIX'):
+if 'PYJSPREFIX' in os.environ:
     prefix = os.environ['PYJSPREFIX']
 
 # pyjs.path is the list of paths, just like sys.path, from which
@@ -41,7 +41,7 @@ if os.environ.has_key('PYJSPREFIX'):
 
 path = [os.path.abspath('')]
 
-if os.environ.has_key('PYJSPATH'):
+if 'PYJSPATH' in os.environ:
     for p in os.environ['PYJSPATH'].split(os.pathsep):
         p = os.path.abspath(p)
         if os.path.isdir(p):
@@ -484,7 +484,7 @@ class Translator:
                 call_name = self.modpfx() + v.node.name
             elif v.node.name in self.top_level_classes:
                 call_name = self.modpfx() + v.node.name
-            elif self.imported_classes.has_key(v.node.name):
+            elif v.node.name in self.imported_classes:
                 call_name = self.imported_classes[v.node.name] + '.' + v.node.name
             elif v.node.name in PYJSLIB_BUILTIN_FUNCTIONS:
                 call_name = 'pyjslib.' + v.node.name
@@ -669,7 +669,7 @@ class Translator:
             return UU+self.modpfx() + v.name
         elif v.name in local_var_names:
             return v.name
-        elif self.imported_classes.has_key(v.name):
+        elif v.name in self.imported_classes:
             return UU+self.imported_classes[v.name] + '.__' + v.name + ".prototype.__class__"
         elif v.name in self.top_level_classes:
             return UU+self.modpfx() + "__" + v.name + ".prototype.__class__"
@@ -702,7 +702,7 @@ class Translator:
 
         if obj in self.method_imported_globals:
             call_name = UU+self.modpfx() + obj + "." + attr_name
-        elif self.imported_classes.has_key(obj):
+        elif obj in self.imported_classes:
             #attr_str = ""
             #if attr_name != "__init__":
             attr_str = ".prototype.__class__." + attr_name
@@ -770,7 +770,7 @@ class Translator:
             base_class = "pyjslib.__Object"
         elif len(node.bases) == 1:
             if isinstance(node.bases[0], ast.Name):
-                if self.imported_classes.has_key(node.bases[0].name):
+                if node.bases[0].name in self.imported_classes:
                     base_class_ = self.imported_classes[node.bases[0].name] + '.__' + node.bases[0].name
                     base_class = self.imported_classes[node.bases[0].name] + '.' + node.bases[0].name
                 else:
@@ -1552,7 +1552,7 @@ class PlatformParser:
     def parseModule(self, module_name, file_name):
 
         importing = False
-        if not self.parse_cache.has_key(file_name):
+        if not file_name in self.parse_cache:
             importing = True
             mod = compiler.parseFile(file_name)
             self.parse_cache[file_name] = mod

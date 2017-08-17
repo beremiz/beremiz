@@ -1256,7 +1256,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         elif name is not None and name.find("::") != -1:
             filepath, editor_name = name.split("::")
-            if not self._FileEditors.has_key(filepath):
+            if not filepath in self._FileEditors:
                 if os.path.isfile(filepath):
                     file_extension = os.path.splitext(filepath)[1]
 
@@ -1285,7 +1285,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         if isinstance(self._FileEditors[filepath], DebugViewer):
                             self._FileEditors[filepath].SetDataProducer(self)
 
-            if self._FileEditors.has_key(filepath):
+            if filepath in self._FileEditors:
                 editor = self._FileEditors[filepath]
                 self.AppFrame.EditProjectElement(editor, editor.GetTagName())
 
@@ -1467,7 +1467,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         to a WeakKeyDictionary linking
         weakly referenced callables
         """
-        if IECPath != "__tick__" and not self._IECPathToIdx.has_key(IECPath):
+        if IECPath != "__tick__" and not IECPath in self._IECPathToIdx:
             return None
 
         self.IECdebug_lock.acquire()
@@ -1516,7 +1516,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ReArmDebugRegisterTimer()
 
     def ForceDebugIECVariable(self, IECPath, fvalue):
-        if not self.IECdebug_datas.has_key(IECPath):
+        if not IECPath in self.IECdebug_datas:
             return
 
         self.IECdebug_lock.acquire()
@@ -1531,7 +1531,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.ReArmDebugRegisterTimer()
 
     def ReleaseDebugIECVariable(self, IECPath):
-        if not self.IECdebug_datas.has_key(IECPath):
+        if not IECPath in self.IECdebug_datas:
             return
 
         self.IECdebug_lock.acquire()

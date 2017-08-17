@@ -107,7 +107,7 @@ def ReduceAnnotation(factory, attributes, elements):
                 text = "(source: %(source)s):\n%(content)s\n\n" % child
             else:
                 text = child["content"] + "\n\n"
-            if not annotation["documentation"].has_key(child["language"]):
+            if not child["language"] in annotation["documentation"]:
                 annotation["documentation"] = text
             else:
                 annotation["documentation"] += text
@@ -119,7 +119,7 @@ def ReduceAnnotation(factory, attributes, elements):
 def GenerateFacetReducing(facetname, canbefixed):
     def ReduceFacet(factory, attributes, elements):
         annotations, children = factory.ReduceElements(elements)
-        if attributes.has_key("value"):
+        if "value" in attributes:
             facet = {"type": facetname, "value": attributes["value"], "doc": annotations}
             if canbefixed:
                 facet["fixed"] = attributes.get("fixed", False)
@@ -158,7 +158,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
     # Initialize type informations
     facets = {}
     simpleType = {"type": SIMPLETYPE, "final": attributes.get("final", [])}
-    if attributes.has_key("name"):
+    if "name" in attributes:
         simpleType["name"] = attributes["name"]
 
     if typeinfos["type"] in ["restriction", "extension"]:
@@ -177,7 +177,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
         simpleType["basename"] = basetypeinfos["basename"]
 
         # Check that derivation is allowed
-        if basetypeinfos.has_key("final"):
+        if "final" in basetypeinfos:
             if "#all" in basetypeinfos["final"]:
                 raise ValueError("Base type can't be derivated!")
             if "restriction" in basetypeinfos["final"] and typeinfos["type"] == "restriction":
@@ -186,7 +186,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
         # Extract simple type facets
         for facet in typeinfos.get("facets", []):
             facettype = facet["type"]
-            if not basetypeinfos["facets"].has_key(facettype):
+            if not facettype in basetypeinfos["facets"]:
                 raise ValueError("\"%s\" facet can't be defined for \"%s\" type!" % (facettype, type))
             elif basetypeinfos["facets"][facettype][1]:
                 raise ValueError("\"%s\" facet is fixed on base type!" % facettype)
@@ -202,16 +202,16 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     continue
                 else:
                     raise ValueError("\"%s\" facet can't be defined with another facet type!" % facettype)
-            elif facets.has_key("enumeration"):
+            elif "enumeration" in facets:
                 raise ValueError("\"enumeration\" facet can't be defined with another facet type!")
-            elif facets.has_key("pattern"):
+            elif "pattern" in facets:
                 raise ValueError("\"pattern\" facet can't be defined with another facet type!")
-            elif facets.has_key(facettype):
+            elif facettype in facets:
                 raise ValueError("\"%s\" facet can't be defined two times!" % facettype)
             elif facettype == "length":
-                if facets.has_key("minLength"):
+                if "minLength" in facets:
                     raise ValueError("\"length\" and \"minLength\" facets can't be defined at the same time!")
-                if facets.has_key("maxLength"):
+                if "maxLength" in facets:
                     raise ValueError("\"length\" and \"maxLength\" facets can't be defined at the same time!")
                 try:
                     value = int(value)
@@ -222,7 +222,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                 elif basevalue is not None and basevalue != value:
                     raise ValueError("\"length\" can't be different from \"length\" defined in base type!")
             elif facettype == "minLength":
-                if facets.has_key("length"):
+                if "length" in facets:
                     raise ValueError("\"length\" and \"minLength\" facets can't be defined at the same time!")
                 try:
                     value = int(value)
@@ -230,12 +230,12 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"minLength\" must be an integer!")
                 if value < 0:
                     raise ValueError("\"minLength\" can't be negative!")
-                elif facets.has_key("maxLength") and value > facets["maxLength"]:
+                elif "maxLength" in facets and value > facets["maxLength"]:
                     raise ValueError("\"minLength\" must be lesser than or equal to \"maxLength\"!")
                 elif basevalue is not None and basevalue < value:
                     raise ValueError("\"minLength\" can't be lesser than \"minLength\" defined in base type!")
             elif facettype == "maxLength":
-                if facets.has_key("length"):
+                if "length" in facets:
                     raise ValueError("\"length\" and \"maxLength\" facets can't be defined at the same time!")
                 try:
                     value = int(value)
@@ -243,52 +243,52 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"maxLength\" must be an integer!")
                 if value < 0:
                     raise ValueError("\"maxLength\" can't be negative!")
-                elif facets.has_key("minLength") and value < facets["minLength"]:
+                elif "minLength" in facets and value < facets["minLength"]:
                     raise ValueError("\"minLength\" must be lesser than or equal to \"maxLength\"!")
                 elif basevalue is not None and basevalue > value:
                     raise ValueError("\"maxLength\" can't be greater than \"maxLength\" defined in base type!")
             elif facettype == "minInclusive":
-                if facets.has_key("minExclusive"):
+                if "minExclusive" in facets:
                     raise ValueError("\"minExclusive\" and \"minInclusive\" facets can't be defined at the same time!")
                 value = basetypeinfos["extract"](facet["value"], False)
-                if facets.has_key("maxInclusive") and value > facets["maxInclusive"][0]:
+                if "maxInclusive" in facets and value > facets["maxInclusive"][0]:
                     raise ValueError("\"minInclusive\" must be lesser than or equal to \"maxInclusive\"!")
-                elif facets.has_key("maxExclusive") and value >= facets["maxExclusive"][0]:
+                elif "maxExclusive" in facets and value >= facets["maxExclusive"][0]:
                     raise ValueError("\"minInclusive\" must be lesser than \"maxExclusive\"!")
             elif facettype == "minExclusive":
-                if facets.has_key("minInclusive"):
+                if "minInclusive" in facets:
                     raise ValueError("\"minExclusive\" and \"minInclusive\" facets can't be defined at the same time!")
                 value = basetypeinfos["extract"](facet["value"], False)
-                if facets.has_key("maxInclusive") and value >= facets["maxInclusive"][0]:
+                if "maxInclusive" in facets and value >= facets["maxInclusive"][0]:
                     raise ValueError("\"minExclusive\" must be lesser than \"maxInclusive\"!")
-                elif facets.has_key("maxExclusive") and value >= facets["maxExclusive"][0]:
+                elif "maxExclusive" in facets and value >= facets["maxExclusive"][0]:
                     raise ValueError("\"minExclusive\" must be lesser than \"maxExclusive\"!")
             elif facettype == "maxInclusive":
-                if facets.has_key("maxExclusive"):
+                if "maxExclusive" in facets:
                     raise ValueError("\"maxExclusive\" and \"maxInclusive\" facets can't be defined at the same time!")
                 value = basetypeinfos["extract"](facet["value"], False)
-                if facets.has_key("minInclusive") and value < facets["minInclusive"][0]:
+                if "minInclusive" in facets and value < facets["minInclusive"][0]:
                     raise ValueError("\"minInclusive\" must be lesser than or equal to \"maxInclusive\"!")
-                elif facets.has_key("minExclusive") and value <= facets["minExclusive"][0]:
+                elif "minExclusive" in facets and value <= facets["minExclusive"][0]:
                     raise ValueError("\"minExclusive\" must be lesser than \"maxInclusive\"!")
             elif facettype == "maxExclusive":
-                if facets.has_key("maxInclusive"):
+                if "maxInclusive" in facets:
                     raise ValueError("\"maxExclusive\" and \"maxInclusive\" facets can't be defined at the same time!")
                 value = basetypeinfos["extract"](facet["value"], False)
-                if facets.has_key("minInclusive") and value <= facets["minInclusive"][0]:
+                if "minInclusive" in facets and value <= facets["minInclusive"][0]:
                     raise ValueError("\"minInclusive\" must be lesser than \"maxExclusive\"!")
-                elif facets.has_key("minExclusive") and value <= facets["minExclusive"][0]:
+                elif "minExclusive" in facets and value <= facets["minExclusive"][0]:
                     raise ValueError("\"minExclusive\" must be lesser than \"maxExclusive\"!")
             elif facettype == "whiteSpace":
                 if basevalue == "collapse" and value in ["preserve", "replace"] or basevalue == "replace" and value == "preserve":
                     raise ValueError("\"whiteSpace\" is incompatible with \"whiteSpace\" defined in base type!")
             elif facettype == "totalDigits":
-                if facets.has_key("fractionDigits") and value <= facets["fractionDigits"][0]:
+                if "fractionDigits" in facets and value <= facets["fractionDigits"][0]:
                     raise ValueError("\"fractionDigits\" must be lesser than or equal to \"totalDigits\"!")
                 elif basevalue is not None and value > basevalue:
                     raise ValueError("\"totalDigits\" can't be greater than \"totalDigits\" defined in base type!")
             elif facettype == "fractionDigits":
-                if facets.has_key("totalDigits") and value <= facets["totalDigits"][0]:
+                if "totalDigits" in facets and value <= facets["totalDigits"][0]:
                     raise ValueError("\"fractionDigits\" must be lesser than or equal to \"totalDigits\"!")
                 elif basevalue is not None and value > basevalue:
                     raise ValueError("\"totalDigits\" can't be greater than \"totalDigits\" defined in base type!")
@@ -296,7 +296,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
 
         # Report not redefined facet from base type to new created type
         for facettype, facetvalue in basetypeinfos["facets"].items():
-            if not facets.has_key(facettype):
+            if not facettype in facets:
                 facets[facettype] = facetvalue
 
         # Generate extract value for new created type
@@ -401,10 +401,10 @@ def CreateSimpleType(factory, attributes, typeinfos):
         simpleType["basename"] = "list"
 
         # Check that derivation is allowed
-        if itemtypeinfos.has_key("final"):
-            if itemtypeinfos["final"].has_key("#all"):
+        if "final" in itemtypeinfos:
+            if "#all" in itemtypeinfos["final"]:
                 raise ValueError("Item type can't be derivated!")
-            if itemtypeinfos["final"].has_key("list"):
+            if "list" in itemtypeinfos["final"]:
                 raise ValueError("Item type can't be derivated by list!")
 
         # Generate extract value for new created type
@@ -445,10 +445,10 @@ def CreateSimpleType(factory, attributes, typeinfos):
                 raise ValueError("Member type given isn't a simpleType!")
 
             # Check that derivation is allowed
-            if infos.has_key("final"):
-                if infos["final"].has_key("#all"):
+            if "final" in infos:
+                if "#all" in infos["final"]:
                     raise ValueError("Item type can't be derivated!")
-                if infos["final"].has_key("union"):
+                if "union" in infos["final"]:
                     raise ValueError("Member type can't be derivated by union!")
 
             membertypesinfos.append(infos)
@@ -553,7 +553,7 @@ def ReduceRestriction(factory, attributes, elements):
 
 def ReduceExtension(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    if not attributes.has_key("base"):
+    if not "base" in attributes:
         raise ValueError("No base type has been defined for extension!")
     extension = {"type": "extension", "attributes": [], "elements": [], "base": attributes["base"], "doc": annotations}
     if len(children) > 0:
@@ -568,7 +568,7 @@ def ReduceExtension(factory, attributes, elements):
                 extension["elements"].append(content)
             elif group["type"] == "group":
                 elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
-                if elmtgroup.has_key("elements"):
+                if "elements" in elmtgroup:
                     extension["elements"] = elmtgroup["elements"]
                     extension["order"] = elmtgroup["order"]
                 else:
@@ -591,7 +591,7 @@ def ReduceSimpleContent(factory, attributes, elements):
     elif basetypeinfos["type"] == COMPLEXTYPE and \
          len(basetypeinfos["elements"]) == 1 and \
          basetypeinfos["elements"][0]["name"] == "content" and \
-         basetypeinfos["elements"][0].has_key("elmt_type") and \
+         "elmt_type" in basetypeinfos["elements"][0] and \
          basetypeinfos["elements"][0]["elmt_type"]["type"] == SIMPLETYPE:
         contenttypeinfos = simpleContent.copy()
         contenttypeinfos["base"] = basetypeinfos["elements"][0]["elmt_type"]
@@ -651,7 +651,7 @@ def ReduceComplexType(factory, attributes, elements):
                 complexType["elements"].append(content)
             elif group["type"] == "group":
                 elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
-                if elmtgroup.has_key("elements"):
+                if "elements" in elmtgroup:
                     complexType["elements"] = elmtgroup["elements"]
                     complexType["order"] = elmtgroup["order"]
                 else:
@@ -677,8 +677,8 @@ def ReduceAnyAttribute(factory, attributes, elements):
 def ReduceAttribute(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
-    if attributes.has_key("default"):
-        if attributes.has_key("fixed"):
+    if "default" in attributes:
+        if "fixed" in attributes:
             raise ValueError("\"default\" and \"fixed\" can't be defined at the same time!")
         elif attributes.get("use", "optional") != "optional":
             raise ValueError("if \"default\" present, \"use\" can only have the value \"optional\"!")
@@ -690,17 +690,17 @@ def ReduceAttribute(factory, attributes, elements):
         else:
             raise ValueError("Only one type can be defined for attribute!")
 
-    if attributes.has_key("ref"):
-        if attributes.has_key("name"):
+    if "ref" in attributes:
+        if "name" in attributes:
             raise ValueError("\"ref\" and \"name\" can't be defined at the same time!")
-        elif attributes.has_key("form"):
+        elif "form" in attributes:
             raise ValueError("\"ref\" and \"form\" can't be defined at the same time!")
         elif attribute["attr_type"] is not None:
             raise ValueError("if \"ref\" is present, no type can be defined!")
     elif attribute["attr_type"] is None:
         raise ValueError("No type has been defined for attribute \"%s\"!" % attributes["name"])
 
-    if attributes.has_key("type"):
+    if "type" in attributes:
         tmp_attrs = attributes.copy()
         tmp_attrs.pop("type")
         attribute.update(tmp_attrs)
@@ -711,7 +711,7 @@ def ReduceAttribute(factory, attributes, elements):
 
 def ReduceAttributeGroup(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    if attributes.has_key("ref"):
+    if "ref" in attributes:
         return {"type": "attributeGroup", "ref": attributes["ref"], "doc": annotations}
     else:
         return {"type": ATTRIBUTESGROUP, "attributes": ExtractAttributes(factory, children), "doc": annotations}
@@ -738,14 +738,14 @@ def ReduceElement(factory, attributes, elements):
         else:
             types.append(child)
 
-    if attributes.has_key("default") and attributes.has_key("fixed"):
+    if "default" in attributes and "fixed" in attributes:
         raise ValueError("\"default\" and \"fixed\" can't be defined at the same time!")
 
-    if attributes.has_key("ref"):
+    if "ref" in attributes:
         for attr in ["name", "default", "fixed", "form", "block", "type"]:
-            if attributes.has_key(attr):
+            if attr in attributes:
                 raise ValueError("\"ref\" and \"%s\" can't be defined at the same time!" % attr)
-        if attributes.has_key("nillable"):
+        if "nillable" in attributes:
             raise ValueError("\"ref\" and \"nillable\" can't be defined at the same time!")
         if len(types) > 0:
             raise ValueError("No type and no constraints can be defined where \"ref\" is defined!")
@@ -760,7 +760,7 @@ def ReduceElement(factory, attributes, elements):
         else:
             raise ValueError("\"%s\" base type isn't defined or circular referenced!" % name)
 
-    elif attributes.has_key("name"):
+    elif "name" in attributes:
         element = {"type": ELEMENT, "elmt_type": attributes.get("type", None), "constraints": constraints, "doc": annotations}
         if len(types) > 0:
             if element["elmt_type"] is None:
@@ -771,7 +771,7 @@ def ReduceElement(factory, attributes, elements):
             element["elmt_type"] = "tag"
             element["type"] = TAG
 
-        if attributes.has_key("type"):
+        if "type" in attributes:
             tmp_attrs = attributes.copy()
             tmp_attrs.pop("type")
             element.update(tmp_attrs)
@@ -808,7 +808,7 @@ def ReduceChoice(factory, attributes, elements):
             choices.extend(child["choices"])
         elif child["type"] == "group":
             elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
-            if not elmtgroup.has_key("choices"):
+            if not "choices" in elmtgroup:
                 raise ValueError("Only group composed of \"choice\" can be referenced in \"choice\" element!")
             choices_tmp = []
             for choice in elmtgroup["choices"]:
@@ -842,7 +842,7 @@ def ReduceSequence(factory, attributes, elements):
             sequence.extend(child["elements"])
         elif child["type"] == "group":
             elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
-            if not elmtgroup.has_key("elements") or not elmtgroup["order"]:
+            if not "elements" in elmtgroup or not elmtgroup["order"]:
                 raise ValueError("Only group composed of \"sequence\" can be referenced in \"sequence\" element!")
             elements_tmp = []
             for element in elmtgroup["elements"]:
@@ -864,7 +864,7 @@ def ReduceSequence(factory, attributes, elements):
 def ReduceGroup(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
-    if attributes.has_key("ref"):
+    if "ref" in attributes:
         return {"type": "group", "ref": attributes["ref"], "doc": annotations}
     else:
         element = children[0]
@@ -973,7 +973,7 @@ def ReduceSchema(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements, True)
 
     for child in children:
-        if child.has_key("name"):
+        if "name" in child:
             infos = factory.GetQualifiedNameInfos(child["name"], factory.TargetNamespace, True)
             if infos is None:
                 factory.Namespaces[factory.TargetNamespace][child["name"]] = child

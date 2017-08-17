@@ -672,12 +672,12 @@ def GenerateContentInfos(factory, name, choices):
             for element in infos["elements"]:
                 if element["type"] == CHOICE:
                     element["elmt_type"] = GenerateContentInfos(factory, name, ComputeContentChoices(factory, name, element))
-                elif choices_dict.has_key(element["name"]):
+                elif element["name"] in choices_dict:
                     raise ValueError("'%s' element defined two times in choice" % choice_name)
                 else:
                     choices_dict[element["name"]] = infos
         else:
-            if choices_dict.has_key(choice_name):
+            if choice_name in choices_dict:
                 raise ValueError("'%s' element defined two times in choice" % choice_name)
             choices_dict[choice_name] = infos
     prefix = ("%s:" % factory.TargetNamespace
@@ -743,7 +743,7 @@ def GenerateElement(element_name, attributes, elements_model,
                     infos = factory.GetQualifiedNameInfos(childname, namespace)
                     if infos["type"] != SYNTAXELEMENT:
                         raise ValueError("\"%s\" can't be a member child!" % name)
-                    if infos["extract"].has_key(element_name):
+                    if element_name in infos["extract"]:
                         children.append(infos["extract"][element_name](factory, child))
                     else:
                         children.append(infos["extract"]["default"](factory, child))
@@ -790,36 +790,36 @@ class ClassFactory:
 
     def GetQualifiedNameInfos(self, name, namespace=None, canbenone=False):
         if namespace is None:
-            if self.Namespaces[self.SchemaNamespace].has_key(name):
+            if name in self.Namespaces[self.SchemaNamespace]:
                 return self.Namespaces[self.SchemaNamespace][name]
             for space, elements in self.Namespaces.iteritems():
-                if space != self.SchemaNamespace and elements.has_key(name):
+                if space != self.SchemaNamespace and name in elements:
                     return elements[name]
             parts = name.split("_", 1)
             if len(parts) > 1:
                 group = self.GetQualifiedNameInfos(parts[0], namespace)
                 if group is not None and group["type"] == ELEMENTSGROUP:
                     elements = []
-                    if group.has_key("elements"):
+                    if "elements" in group:
                         elements = group["elements"]
-                    elif group.has_key("choices"):
+                    elif "choices" in group:
                         elements = group["choices"]
                     for element in elements:
                         if element["name"] == parts[1]:
                             return element
             if not canbenone:
                 raise ValueError("Unknown element \"%s\" for any defined namespaces!" % name)
-        elif self.Namespaces.has_key(namespace):
-            if self.Namespaces[namespace].has_key(name):
+        elif namespace in self.Namespaces:
+            if name in self.Namespaces[namespace]:
                 return self.Namespaces[namespace][name]
             parts = name.split("_", 1)
             if len(parts) > 1:
                 group = self.GetQualifiedNameInfos(parts[0], namespace)
                 if group is not None and group["type"] == ELEMENTSGROUP:
                     elements = []
-                    if group.has_key("elements"):
+                    if "elements" in group:
                         elements = group["elements"]
-                    elif group.has_key("choices"):
+                    elif "choices" in group:
                         elements = group["choices"]
                     for element in elements:
                         if element["name"] == parts[1]:
@@ -832,36 +832,36 @@ class ClassFactory:
 
     def SplitQualifiedName(self, name, namespace=None, canbenone=False):
         if namespace is None:
-            if self.Namespaces[self.SchemaNamespace].has_key(name):
+            if name in self.Namespaces[self.SchemaNamespace]:
                 return name, None
             for space, elements in self.Namespaces.items():
-                if space != self.SchemaNamespace and elements.has_key(name):
+                if space != self.SchemaNamespace and name in elements:
                     return name, None
             parts = name.split("_", 1)
             if len(parts) > 1:
                 group = self.GetQualifiedNameInfos(parts[0], namespace)
                 if group is not None and group["type"] == ELEMENTSGROUP:
                     elements = []
-                    if group.has_key("elements"):
+                    if "elements" in group:
                         elements = group["elements"]
-                    elif group.has_key("choices"):
+                    elif "choices" in group:
                         elements = group["choices"]
                     for element in elements:
                         if element["name"] == parts[1]:
                             return part[1], part[0]
             if not canbenone:
                 raise ValueError("Unknown element \"%s\" for any defined namespaces!" % name)
-        elif self.Namespaces.has_key(namespace):
-            if self.Namespaces[namespace].has_key(name):
+        elif namespace in self.Namespaces:
+            if name in self.Namespaces[namespace]:
                 return name, None
             parts = name.split("_", 1)
             if len(parts) > 1:
                 group = self.GetQualifiedNameInfos(parts[0], namespace)
                 if group is not None and group["type"] == ELEMENTSGROUP:
                     elements = []
-                    if group.has_key("elements"):
+                    if "elements" in group:
                         elements = group["elements"]
-                    elif group.has_key("choices"):
+                    elif "choices" in group:
                         elements = group["choices"]
                     for element in elements:
                         if element["name"] == parts[1]:
@@ -895,9 +895,9 @@ class ClassFactory:
                 raise ValueError("Invalid attribute \"%s\" for member \"%s\"!" % (qualified_name, node.nodeName))
         for attr in valid_attrs:
             if attr not in attrs and \
-               self.Namespaces[self.SchemaNamespace].has_key(attr) and \
-               self.Namespaces[self.SchemaNamespace][attr].has_key("default"):
-                if self.Namespaces[self.SchemaNamespace][attr]["default"].has_key(element_name):
+               attr      in self.Namespaces[self.SchemaNamespace] and \
+               "default" in self.Namespaces[self.SchemaNamespace][attr]:
+                if element_name in self.Namespaces[self.SchemaNamespace][attr]["default"]:
                     default = self.Namespaces[self.SchemaNamespace][attr]["default"][element_name]
                 else:
                     default = self.Namespaces[self.SchemaNamespace][attr]["default"]["default"]
@@ -909,7 +909,7 @@ class ClassFactory:
         result = []
         for child_infos in elements:
             if child_infos is not None:
-                if child_infos[1].has_key("name") and schema:
+                if "name" in child_infos[1] and schema:
                     self.CurrentCompilations.append(child_infos[1]["name"])
                 namespace, name = DecomposeQualifiedName(child_infos[0])
                 infos = self.GetQualifiedNameInfos(name, namespace)
@@ -918,7 +918,7 @@ class ClassFactory:
                 element = infos["reduce"](self, child_infos[1], child_infos[2])
                 if element is not None:
                     result.append(element)
-                if child_infos[1].has_key("name") and schema:
+                if "name" in child_infos[1] and schema:
                     self.CurrentCompilations.pop(-1)
         annotations = []
         children = []
@@ -930,7 +930,7 @@ class ClassFactory:
         return annotations, children
 
     def AddComplexType(self, typename, infos):
-        if not self.XMLClassDefinitions.has_key(typename):
+        if not typename in self.XMLClassDefinitions:
             self.XMLClassDefinitions[typename] = infos
         else:
             raise ValueError("\"%s\" class already defined. Choose another name!" % typename)
@@ -1032,9 +1032,9 @@ class ClassFactory:
                         self.Namespaces[self.TargetNamespace][result["name"]] = result
             elif infos["type"] == ELEMENTSGROUP:
                 elements = []
-                if infos.has_key("elements"):
+                if "elements" in infos:
                     elements = infos["elements"]
-                elif infos.has_key("choices"):
+                elif "choices" in infos:
                     elements = infos["choices"]
                 for element in elements:
                     if not isinstance(element["elmt_type"], (UnicodeType, StringType)) and \
@@ -1238,7 +1238,7 @@ def ComputeMultiplicity(name, infos):
 def GetStructurePattern(classinfos):
     base_structure_pattern = (
         classinfos["base"].StructurePattern.pattern[:-1]
-        if classinfos.has_key("base") else "")
+        if "base" in classinfos else "")
     elements = []
     for element in classinfos["elements"]:
         if element["type"] == ANY:
@@ -1279,19 +1279,19 @@ def generateGetattrMethod(factory, class_definition, classinfos):
     elements = dict([(element["name"], element) for element in classinfos["elements"]])
 
     def getattrMethod(self, name):
-        if attributes.has_key(name):
+        if name in attributes:
             attribute_infos = attributes[name]
             attribute_infos["attr_type"] = FindTypeInfos(factory, attribute_infos["attr_type"])
             value = self.get(name)
             if value is not None:
                 return attribute_infos["attr_type"]["extract"](value, extract=False)
-            elif attribute_infos.has_key("fixed"):
+            elif "fixed" in attribute_infos:
                 return attribute_infos["attr_type"]["extract"](attribute_infos["fixed"], extract=False)
-            elif attribute_infos.has_key("default"):
+            elif "default" in attribute_infos:
                 return attribute_infos["attr_type"]["extract"](attribute_infos["default"], extract=False)
             return None
 
-        elif elements.has_key(name):
+        elif name in elements:
             element_infos = elements[name]
             element_infos["elmt_type"] = FindTypeInfos(factory, element_infos["elmt_type"])
             if element_infos["type"] == CHOICE:
@@ -1320,7 +1320,7 @@ def generateGetattrMethod(factory, class_definition, classinfos):
                         return element_infos["elmt_type"]["extract"](value.text, extract=False)
                     return value
 
-        elif classinfos.has_key("base"):
+        elif "base" in classinfos:
             return classinfos["base"].__getattr__(self, name)
 
         return DefaultElementClass.__getattribute__(self, name)
@@ -1334,7 +1334,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
     elements = OrderedDict([(element["name"], element) for element in classinfos["elements"]])
 
     def setattrMethod(self, name, value):
-        if attributes.has_key(name):
+        if name in attributes:
             attribute_infos = attributes[name]
             attribute_infos["attr_type"] = FindTypeInfos(factory, attribute_infos["attr_type"])
             if optional_attributes.get(name, False):
@@ -1342,11 +1342,11 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                 if value is None or value == default:
                     self.attrib.pop(name, None)
                     return
-            elif attribute_infos.has_key("fixed"):
+            elif "fixed" in attribute_infos:
                 return
             return self.set(name, attribute_infos["attr_type"]["generate"](value))
 
-        elif elements.has_key(name):
+        elif name in elements:
             element_infos = elements[name]
             element_infos["elmt_type"] = FindTypeInfos(factory, element_infos["elmt_type"])
             if element_infos["type"] == ANY:
@@ -1388,7 +1388,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                             element = tmp_element
                         self.insert(insertion_point, element)
 
-        elif classinfos.has_key("base"):
+        elif "base" in classinfos:
             return classinfos["base"].__setattr__(self, name, value)
 
         else:
@@ -1398,9 +1398,9 @@ def generateSetattrMethod(factory, class_definition, classinfos):
 
 
 def gettypeinfos(name, facets):
-    if facets.has_key("enumeration") and facets["enumeration"][0] is not None:
+    if "enumeration" in facets and facets["enumeration"][0] is not None:
         return facets["enumeration"][0]
-    elif facets.has_key("maxInclusive"):
+    elif "maxInclusive" in facets:
         limits = {"max": None, "min": None}
         if facets["maxInclusive"][0] is not None:
             limits["max"] = facets["maxInclusive"][0]
@@ -1418,7 +1418,7 @@ def gettypeinfos(name, facets):
 def generateGetElementAttributes(factory, classinfos):
     def getElementAttributes(self):
         attr_list = []
-        if classinfos.has_key("base"):
+        if "base" in classinfos:
             attr_list.extend(classinfos["base"].getElementAttributes(self))
         for attr in classinfos["attributes"]:
             if attr["use"] != "prohibited":
@@ -1441,13 +1441,13 @@ def generateGetElementInfos(factory, classinfos):
         children = []
         if path is not None:
             parts = path.split(".", 1)
-            if attributes.has_key(parts[0]):
+            if parts[0] in attributes:
                 if len(parts) != 1:
                     raise ValueError("Wrong path!")
                 attr_type = gettypeinfos(attributes[parts[0]]["attr_type"]["basename"],
                                          attributes[parts[0]]["attr_type"]["facets"])
                 value = getattr(self, parts[0], "")
-            elif elements.has_key(parts[0]):
+            elif parts[0] in elements:
                 if elements[parts[0]]["elmt_type"]["type"] == SIMPLETYPE:
                     if len(parts) != 1:
                         raise ValueError("Wrong path!")
@@ -1464,17 +1464,17 @@ def generateGetElementInfos(factory, classinfos):
                         return attr.getElementInfos(parts[0])
                     else:
                         return attr.getElementInfos(parts[0], parts[1])
-            elif elements.has_key("content"):
+            elif "content" in elements:
                 if len(parts) > 0:
                     return self.content.getElementInfos(name, path)
-            elif classinfos.has_key("base"):
+            elif "base" in classinfos:
                 classinfos["base"].getElementInfos(name, path)
             else:
                 raise ValueError("Wrong path!")
         else:
             if not derived:
                 children.extend(self.getElementAttributes())
-            if classinfos.has_key("base"):
+            if "base" in classinfos:
                 children.extend(classinfos["base"].getElementInfos(self, name, derived=True)["children"])
             for element_name, element in elements.items():
                 if element["minOccurs"] == 0:
@@ -1508,13 +1508,13 @@ def generateSetElementValue(factory, classinfos):
     def setElementValue(self, path, value):
         if path is not None:
             parts = path.split(".", 1)
-            if attributes.has_key(parts[0]):
+            if parts[0] in attributes:
                 if len(parts) != 1:
                     raise ValueError("Wrong path!")
                 if attributes[parts[0]]["attr_type"]["basename"] == "boolean":
                     setattr(self, parts[0], value)
                 elif attributes[parts[0]]["use"] == "optional" and value == "":
-                    if attributes[parts[0]].has_key("default"):
+                    if "default" in attributes[parts[0]]:
                         setattr(self, parts[0],
                             attributes[parts[0]]["attr_type"]["extract"](
                                 attributes[parts[0]]["default"], False))
@@ -1522,7 +1522,7 @@ def generateSetElementValue(factory, classinfos):
                         setattr(self, parts[0], None)
                 else:
                     setattr(self, parts[0], attributes[parts[0]]["attr_type"]["extract"](value, False))
-            elif elements.has_key(parts[0]):
+            elif parts[0] in elements:
                 if elements[parts[0]]["elmt_type"]["type"] == SIMPLETYPE:
                     if len(parts) != 1:
                         raise ValueError("Wrong path!")
@@ -1542,12 +1542,12 @@ def generateSetElementValue(factory, classinfos):
                             instance.setElementValue(parts[1], value)
                         else:
                             instance.setElementValue(None, value)
-            elif elements.has_key("content"):
+            elif "content" in elements:
                 if len(parts) > 0:
                     self.content.setElementValue(path, value)
-            elif classinfos.has_key("base"):
+            elif "base" in classinfos:
                 classinfos["base"].setElementValue(self, path, value)
-        elif elements.has_key("content"):
+        elif "content" in elements:
             if value == "":
                 if elements["content"]["minOccurs"] == 0:
                     self.setcontent([])
@@ -1564,7 +1564,7 @@ def generateInitMethod(factory, classinfos):
     """
 
     def initMethod(self):
-        if classinfos.has_key("base"):
+        if "base" in classinfos:
             classinfos["base"]._init_(self)
         for attribute in classinfos["attributes"]:
             attribute["attr_type"] = FindTypeInfos(factory, attribute["attr_type"])
@@ -1598,7 +1598,7 @@ def generateAddMethod(attr, factory, infos):
     def addMethod(self):
         if infos["type"] == ATTRIBUTE:
             infos["attr_type"] = FindTypeInfos(factory, infos["attr_type"])
-            if not infos.has_key("default"):
+            if not "default" in infos:
                 setattr(self, attr, infos["attr_type"]["initial"]())
         elif infos["type"] == ELEMENT:
             infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
@@ -1657,7 +1657,7 @@ def generateSetChoiceByTypeMethod(factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
 
     def setChoiceMethod(self, content_type):
-        if not choices.has_key(content_type):
+        if not content_type in choices:
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[content_type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         new_content = choices[content_type]["elmt_type"]["initial"]()
@@ -1671,7 +1671,7 @@ def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
 
     def appendChoiceMethod(self, content_type):
-        if not choices.has_key(content_type):
+        if not content_type in choices:
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[content_type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         if maxOccurs == "unbounded" or len(self.content) < maxOccurs:
@@ -1688,7 +1688,7 @@ def generateInsertChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
 
     def insertChoiceMethod(self, index, content_type):
-        if not choices.has_key(content_type):
+        if not content_type in choices:
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         if maxOccurs == "unbounded" or len(self.content) < maxOccurs:
