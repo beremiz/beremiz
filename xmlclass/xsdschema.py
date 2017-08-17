@@ -421,7 +421,8 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     return result
             return True
 
-        SimpleTypeInitialValue = lambda: []
+        def SimpleTypeInitialValue():
+            return []
 
         GenerateSimpleType = GenerateSimpleTypeXMLText(lambda x: " ".join(map(itemtypeinfos["generate"], x)))
 

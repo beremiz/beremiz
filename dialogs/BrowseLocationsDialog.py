@@ -30,6 +30,7 @@ import wx
 from plcopen.structures import LOCATIONDATATYPES
 from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from util.BitmapLibrary import GetBitmap
+from util.TranslationCatalogs import NoTranslate
 
 #-------------------------------------------------------------------------------
 #                                   Helpers
@@ -37,7 +38,7 @@ from util.BitmapLibrary import GetBitmap
 
 
 def GetDirFilterChoiceOptions():
-    _ = lambda x: x
+    _ = NoTranslate
     return [(_("All"), [LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY]),
             (_("Input"), [LOCATION_VAR_INPUT]),
             (_("Output"), [LOCATION_VAR_OUTPUT]),
@@ -48,7 +49,7 @@ DIRFILTERCHOICE_OPTIONS = dict([(_(option), filter) for option, filter in GetDir
 
 
 def GetTypeFilterChoiceOptions():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("All"),
             _("Type and derivated"),
             _("Type strict")]

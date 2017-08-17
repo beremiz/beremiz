@@ -26,10 +26,11 @@
 import wx
 
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS
+from util.TranslationCatalogs import NoTranslate
 
 
 def GetActionLanguages():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("IL"), _("ST"), _("LD"), _("FBD")]
 
 

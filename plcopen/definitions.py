@@ -26,12 +26,13 @@
 
 from os.path import join, split, realpath
 import util.paths as paths
+from util.TranslationCatalogs import NoTranslate
 sd = paths.AbsDir(__file__)
 
 # Override gettext _ in this module
 # since we just want string to be added to dictionnary
 # but translation should happen here
-_ = lambda x: x
+_ = NoTranslate
 
 LANGUAGES = ["IL", "ST", "FBD", "LD", "SFC"]
 

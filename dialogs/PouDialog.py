@@ -26,10 +26,11 @@
 import wx
 
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS
+from util.TranslationCatalogs import NoTranslate
 
 
 def GetPouTypes():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("function"), _("functionBlock"), _("program")]
 
 
@@ -37,7 +38,7 @@ POU_TYPES_DICT = dict([(_(pou_type), pou_type) for pou_type in GetPouTypes()])
 
 
 def GetPouLanguages():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("IL"), _("ST"), _("LD"), _("FBD"), _("SFC")]
 
 

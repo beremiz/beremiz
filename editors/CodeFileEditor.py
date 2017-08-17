@@ -37,6 +37,7 @@ from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from controls.VariablePanel import VARIABLE_NAME_SUFFIX_MODEL
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
+from util.TranslationCatalogs import NoTranslate
 
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT,
  STC_CODE_SECTION] = range(15, 18)
@@ -740,7 +741,7 @@ class VariablesEditor(wx.Panel):
         self.Table.ResetView(self.VariablesGrid)
 
     def GetVariableTableColnames(self):
-        _ = lambda x: x
+        _ = NoTranslate
     	return ["#", _("Name"), _("Type"), _("Initial"), _("Description"), _("OnChange"), _("Options")]
 
     def RefreshModel(self):

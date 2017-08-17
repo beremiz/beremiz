@@ -34,7 +34,7 @@ import datetime
 import util.paths as paths
 from time import localtime
 from collections import OrderedDict, namedtuple
-
+from util.TranslationCatalogs import NoTranslate
 from plcopen import *
 from graphics.GraphicCommons import *
 from PLCGenerator import *
@@ -96,7 +96,7 @@ ScriptDirectory = paths.AbsDir(__file__)
 
 
 def GetUneditableNames():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
             _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
             _("Configurations"), _("Resources"), _("Properties")]
@@ -138,8 +138,12 @@ class LibraryResolver(etree.Resolver):
 #-------------------------------------------------------------------------------
 
 
-_StringValue = lambda x: x
-_BoolValue = lambda x: x in ["true", "0"]
+def _StringValue(x):
+    return x
+
+
+def _BoolValue(x):
+    return x in ["true", "0"]
 
 
 def _translate_args(translations, args):

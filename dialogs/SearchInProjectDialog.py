@@ -24,8 +24,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
-from plcopen.plcopen import *
 import wx
+from plcopen.plcopen import *
+from util.TranslationCatalogs import NoTranslate
 
 #-------------------------------------------------------------------------------
 #                          Search In Project Dialog
@@ -33,7 +34,7 @@ import wx
 
 
 def GetElementsChoices():
-    _ = lambda x: x
+    _ = NoTranslate
     return [("datatype", _("Data Type")),
             ("function", _("Function")),
             ("functionBlock", _("Function Block")),

@@ -117,8 +117,13 @@ def GetPowerRailCreationFunction(powerrail_type):
     return powerRailCreationFunction
 
 
-NEGATED_VALUE = lambda x: x if x is not None else False
-MODIFIER_VALUE = lambda x: x if x is not None else 'none'
+def NEGATED_VALUE(x):
+    return x if x is not None else False
+
+
+def MODIFIER_VALUE(x):
+    return x if x is not None else 'none'
+
 
 CONTACT_TYPES = {(True, "none"): CONTACT_REVERSE,
                  (False, "rising"): CONTACT_RISING,

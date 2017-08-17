@@ -32,6 +32,7 @@ from dialogs.DurationEditorDialog import IEC_TIME_MODEL
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
+from util.TranslationCatalogs import NoTranslate
 #-------------------------------------------------------------------------------
 #                          Configuration Editor class
 #-------------------------------------------------------------------------------
@@ -65,18 +66,20 @@ class ConfigurationEditor(EditorPanel):
 #-------------------------------------------------------------------------------
 
 def GetTasksTableColnames():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("Name"), _("Triggering"), _("Single"), _("Interval"), _("Priority")]
 
 
 def GetTaskTriggeringOptions():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("Interrupt"), _("Cyclic")]
 
 
 TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option) for option in GetTaskTriggeringOptions()])
 
-SingleCellEditor = lambda *x: wx.grid.GridCellChoiceEditor()
+
+def SingleCellEditor(*x):
+    return wx.grid.GridCellChoiceEditor()
 
 
 def CheckSingle(single, varlist):
@@ -84,7 +87,7 @@ def CheckSingle(single, varlist):
 
 
 def GetInstancesTableColnames():
-    _ = lambda x: x
+    _ = NoTranslate
     return [_("Name"), _("Type"), _("Task")]
 
 
