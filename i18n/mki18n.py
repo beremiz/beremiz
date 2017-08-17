@@ -88,7 +88,7 @@ import re
 # ----------------
 #
 
-__author__ =  "Pierre Rouleau"
+__author__ = "Pierre Rouleau"
 __version__ = "$Revision: 1.5 $"
 
 # -----------------------------------------------------------------------------

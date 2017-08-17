@@ -512,13 +512,15 @@ class VariablePanel(wx.Panel):
                                         "Variables", "   Local", "   Temp"]  #,"Access"]
 
             # these condense the ColAlignements list
-            left =   wx.ALIGN_LEFT
+            left = wx.ALIGN_LEFT
             center = wx.ALIGN_CENTER
 
             #                        Num     Name    Class   Type    Loc     Init    Option   Doc
-            self.ColSizes =         [40,     80,     100,    80,     110,    120,    100,     160]
-            self.ColAlignements =   [center, left,   left,   left,   left,   left,   left,    left]
-            self.ColFixedSizeFlag = [True,   False,  True,   False,  True,   True,   True,    False]
+            self.ColSettings = {
+                "size":             [40,     80,     100,    80,     110,    120,    100,     160],
+                "alignement":       [center, left,   left,   left,   left,   left,   left,    left],
+                "fixed_size":       [True,   False,  True,   False,  True,   True,   True,    False],
+            }
 
         else:
             # this is an element that cannot have located variables
@@ -533,16 +535,18 @@ class VariablePanel(wx.Panel):
                                         "Interface", "   Input", "   Output", "   InOut", "   External",
                                         "Variables", "   Local", "   Temp"]
 
-            # these condense the ColAlignements list
-            left =   wx.ALIGN_LEFT
+            # these condense the alignements list
+            left = wx.ALIGN_LEFT
             center = wx.ALIGN_CENTER
 
             #                        Num     Name    Class   Type    Init    Option   Doc
-            self.ColSizes =         [40,     80,     100,    80,     120,    100,     160]
-            self.ColAlignements =   [center, left,   left,   left,   left,   left,    left]
-            self.ColFixedSizeFlag = [True,   False,  True,   False,  True,   True,    False]
+            self.ColSettings = {
+                "size":             [40,     80,     100,    80,     120,    100,     160],
+                "alignement":       [center, left,   left,   left,   left,   left,    left],
+                "fixed_size":       [True,   False,  True,   False,  True,   True,    False],
+            }
 
-        self.PanelWidthMin = sum(self.ColSizes)
+        self.PanelWidthMin = sum(self.ColSettings["size"])
 
         self.ElementType = element_type
         self.BodyType = None
@@ -654,22 +658,22 @@ class VariablePanel(wx.Panel):
         if panel_width > self.PanelWidthMin:
             stretch_cols_width = panel_width
             stretch_cols_sum = 0
-            for col in range(len(self.ColFixedSizeFlag)):
-                if self.ColFixedSizeFlag[col]:
-                    stretch_cols_width -= self.ColSizes[col]
+            for col in range(len(self.ColSettings["fixed_size"])):
+                if self.ColSettings["fixed_size"][col]:
+                    stretch_cols_width -= self.ColSettings["size"][col]
                 else:
-                    stretch_cols_sum += self.ColSizes[col]
+                    stretch_cols_sum += self.ColSettings["size"][col]
 
         self.VariablesGrid.SetRowLabelSize(0)
         for col in range(self.Table.GetNumberCols()):
             attr = wx.grid.GridCellAttr()
-            attr.SetAlignment(self.ColAlignements[col], wx.ALIGN_CENTRE)
+            attr.SetAlignment(self.ColSettings["alignement"][col], wx.ALIGN_CENTRE)
             self.VariablesGrid.SetColAttr(col, attr)
-            self.VariablesGrid.SetColMinimalWidth(col, self.ColSizes[col])
-            if (panel_width > self.PanelWidthMin) and not self.ColFixedSizeFlag[col]:
-                self.VariablesGrid.SetColSize(col, int((float(self.ColSizes[col])/stretch_cols_sum)*stretch_cols_width))
+            self.VariablesGrid.SetColMinimalWidth(col, self.ColSettings["size"][col])
+            if (panel_width > self.PanelWidthMin) and not self.ColSettings["fixed_size"][col]:
+                self.VariablesGrid.SetColSize(col, int((float(self.ColSettings["size"][col])/stretch_cols_sum)*stretch_cols_width))
             else:
-                self.VariablesGrid.SetColSize(col, self.ColSizes[col])
+                self.VariablesGrid.SetColSize(col, self.ColSettings["size"][col])
 
     def __del__(self):
         self.RefreshHighlightsTimer.Stop()

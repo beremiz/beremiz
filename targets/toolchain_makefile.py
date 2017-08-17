@@ -30,7 +30,7 @@ import hashlib
 
 import time
 
-includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
+includes_re = re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
 
 class toolchain_makefile():

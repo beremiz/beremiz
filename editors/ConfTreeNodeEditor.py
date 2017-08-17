@@ -298,7 +298,7 @@ class ConfTreeNodeEditor(EditorPanel):
         self.Thaw()
 
     def GenerateMethodButtonSizer(self):
-        normal_bt_font =    wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"])
+        normal_bt_font = wx.Font(faces["size"] / 3,    wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"])
         mouseover_bt_font = wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"], underline=True)
 
         msizer = wx.BoxSizer(wx.HORIZONTAL)

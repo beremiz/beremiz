@@ -138,9 +138,9 @@ def check_html_file(source_file, dest_path):
 </html>
 """
 
-    filename =  os.path.split   (source_file)[1]
-    mod_name =  os.path.splitext(filename)[0]
-    file_name = os.path.join    (dest_path, mod_name + '.html')
+    filename = os.path.split(source_file)[1]
+    mod_name = os.path.splitext(filename)[0]
+    file_name = os.path.join(dest_path, mod_name + '.html')
 
     # if html file in output directory exists, leave it alone.
     if os.path.exists (file_name):

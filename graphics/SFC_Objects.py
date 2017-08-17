@@ -587,7 +587,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         self.Priority = 0
         self.Size = wx.Size(SFC_TRANSITION_SIZE[0], SFC_TRANSITION_SIZE[1])
         # Create an input and output connector
-        self.Input =  Connector(self, "", None, wx.Point(self.Size[0] / 2, 0),            NORTH, onlyone=True)
+        self.Input = Connector(self,  "", None, wx.Point(self.Size[0] / 2, 0),            NORTH, onlyone=True)
         self.Output = Connector(self, "", None, wx.Point(self.Size[0] / 2, self.Size[1]), SOUTH, onlyone=True)
         self.SetType(type, condition)
         self.SetPriority(priority)

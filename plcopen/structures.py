@@ -233,11 +233,11 @@ def get_standard_funtions(table):
                             decl_tpl = Function_decl["outputs"][0]
                             Function_decl["outputs"] = [(decl_tpl[0], outype,  decl_tpl[2])]
                             if funcdeclname_orig.endswith('*'):
-                                funcdeclout =  funcdeclin + '_' + outype
+                                funcdeclout = funcdeclin + '_' + outype
                             else:
-                                funcdeclout =  funcdeclin
+                                funcdeclout = funcdeclin
                         else:
-                            funcdeclout =  funcdeclin
+                            funcdeclout = funcdeclin
                         Function_decl["name"] = funcdeclout
 
                         # apply filter given in "filter" column
