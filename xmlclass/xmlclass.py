@@ -598,7 +598,7 @@ def GenerateTagInfos(infos):
         "extract": ExtractTag,
         "generate": GenerateTag,
         "initial": lambda: None,
-        "check": lambda x: x is None or infos["minOccurs"] == 0 and value == True
+        "check": lambda x: x is None or infos["minOccurs"] == 0 and value
     }
 
 

@@ -3714,11 +3714,11 @@ class Viewer(EditorPanel, DebugViewer):
                 comment.Draw(dc)
         for wire in self.Wires.iterkeys():
             if wire != self.SelectedElement and (wire.IsVisible() or printing):
-                if not self.Debug or wire.GetValue() != True:
+                if not self.Debug or not wire.GetValue():
                     wire.Draw(dc)
         if self.Debug:
             for wire in self.Wires.iterkeys():
-                if wire != self.SelectedElement and (wire.IsVisible() or printing) and wire.GetValue() == True:
+                if wire != self.SelectedElement and (wire.IsVisible() or printing) and wire.GetValue():
                     wire.Draw(dc)
         for block in self.Blocks.itervalues():
             if block != self.SelectedElement and (block.IsVisible() or printing):
