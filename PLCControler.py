@@ -1781,7 +1781,7 @@ class PLCControler:
 
     # Return Base Type of given possible derived type
     def GetBaseType(self, typename, debug=False):
-        if TypeHierarchy.has_key(typename):
+        if typename in TypeHierarchy:
             return typename
 
         datatype = self.GetDataType(typename, debug)
@@ -2412,7 +2412,7 @@ class PLCControler:
                     exclude[stepname] = True
                     instance.setname(stepname)
                 localid = instance.getlocalId()
-                if not used_id.has_key(localid):
+                if not localid in used_id:
                     new_id[localid] = True
 
             idx = 1
@@ -2421,8 +2421,8 @@ class PLCControler:
             for instance in instances:
                 localId = instance.getlocalId()
                 bbox.union(instance.getBoundingBox())
-                if used_id.has_key(localId):
-                    while used_id.has_key(idx) or new_id.has_key(idx):
+                if localId in used_id:
+                    while (idx in used_id) or (idx in new_id):
                         idx += 1
                     new_id[idx] = True
                     instance.setlocalId(idx)

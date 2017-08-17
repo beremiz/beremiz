@@ -2480,7 +2480,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshRect(self.GetScrolledRect(rect), False)
         elif not self.Debug and keycode == wx.WXK_RETURN and self.SelectedElement is not None:
             self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
-        elif self.ARROW_KEY_MOVE.has_key(keycode):
+        elif keycode in self.ARROW_KEY_MOVE:
             move = self.ARROW_KEY_MOVE[keycode]
             if event.ControlDown() and event.ShiftDown():
                 self.Scroll({-1: 0, 0: xpos, 1: xmax}[move[0]],

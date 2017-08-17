@@ -1682,7 +1682,7 @@ if cls:
                 for variable in instance.inputVariables.getvariable():
                     connections = variable.connectionPointIn.getconnections()
                     if connections and len(connections) == 1:
-                        if not self.checkedBlocksDict.has_key(connections[0].getrefLocalId()):
+                        if not connections[0].getrefLocalId() in self.checkedBlocksDict:
                             self.compileelementExecutionOrder(connections[0])
                 if instance.getexecutionOrderId() == 0:
                     instance.setexecutionOrderId(self.getnewExecutionOrderId())
@@ -1866,8 +1866,8 @@ def _filterConnections(connectionPointIn, localId, connections):
     if in_connections is not None:
         for connection in in_connections:
             connected = connection.getrefLocalId()
-            if not connections.has_key((localId, connected)) and \
-               not connections.has_key((connected, localId)):
+            if not (localId, connected) in connections and \
+               not (connected, localId) in connections:
                 connectionPointIn.remove(connection)
 
 

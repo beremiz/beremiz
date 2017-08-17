@@ -248,7 +248,7 @@ class ProgramGenerator:
             pou = self.Project.getpou(pou_name)
             pou_type = pou.getpouType()
             # Verify that POU type exists
-            if pouTypeNames.has_key(pou_type):
+            if pou_type in pouTypeNames:
                 # Create a POU program generator
                 pou_program = PouProgramGenerator(self, pou.getname(), pouTypeNames[pou_type], self.Errors, self.Warnings)
                 program = pou_program.GenerateProgram(pou)
@@ -745,7 +745,7 @@ class PouProgramGenerator:
                         if isinstance(instance, (OutVariableClass, InOutVariableClass)):
                             self.ConnectionTypes[instance.connectionPointIn] = var_type
                             connected = self.GetConnectedConnector(instance.connectionPointIn, body)
-                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                            if connected is not None and not connected in self.ConnectionTypes:
                                 for related in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[related] = var_type
                 elif isinstance(instance, (ContactClass, CoilClass)):
@@ -754,7 +754,7 @@ class PouProgramGenerator:
                     self.ConnectionTypes[instance.connectionPointIn] = "BOOL"
                     for link in instance.connectionPointIn.getconnections():
                         connected = self.GetLinkedConnector(link, body)
-                        if connected is not None and not self.ConnectionTypes.has_key(connected):
+                        if connected is not None and not connected in self.ConnectionTypes:
                             for related in self.ExtractRelatedConnections(connected):
                                 self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, LeftPowerRailClass):
@@ -766,7 +766,7 @@ class PouProgramGenerator:
                         self.ConnectionTypes[connection] = "BOOL"
                         for link in connection.getconnections():
                             connected = self.GetLinkedConnector(link, body)
-                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                            if connected is not None and not connected in self.ConnectionTypes:
                                 for related in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, TransitionClass):
@@ -778,7 +778,7 @@ class PouProgramGenerator:
                             raise PLCGenException, _("SFC transition in POU \"%s\" must be connected.") % self.Name
                         for link in connections:
                             connected = self.GetLinkedConnector(link, body)
-                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                            if connected is not None and not connected in self.ConnectionTypes:
                                 for related in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, ContinuationClass):
@@ -798,7 +798,7 @@ class PouProgramGenerator:
                             undefined.append(connected)
                         related = []
                         for connection in undefined:
-                            if self.ConnectionTypes.has_key(connection):
+                            if connection in self.ConnectionTypes:
                                 var_type = self.ConnectionTypes[connection]
                             else:
                                 related.extend(self.ExtractRelatedConnections(connection))
@@ -853,10 +853,10 @@ class PouProgramGenerator:
                 for oname, otype, oqualifier in block_infos["outputs"]:
                     if output_name == oname:
                         if otype.startswith("ANY"):
-                            if not undefined.has_key(otype):
+                            if not otype in undefined:
                                 undefined[otype] = []
                             undefined[otype].append(variable.connectionPointOut)
-                        elif not self.ConnectionTypes.has_key(variable.connectionPointOut):
+                        elif not variable.connectionPointOut in self.ConnectionTypes:
                             for connection in self.ExtractRelatedConnections(variable.connectionPointOut):
                                 self.ConnectionTypes[connection] = otype
         for variable in instance.inputVariables.getvariable():
@@ -869,14 +869,14 @@ class PouProgramGenerator:
                     if input_name == iname:
                         connected = self.GetConnectedConnector(variable.connectionPointIn, body)
                         if itype.startswith("ANY"):
-                            if not undefined.has_key(itype):
+                            if not itype in undefined:
                                 undefined[itype] = []
                             undefined[itype].append(variable.connectionPointIn)
                             if connected is not None:
                                 undefined[itype].append(connected)
                         else:
                             self.ConnectionTypes[variable.connectionPointIn] = itype
-                            if connected is not None and not self.ConnectionTypes.has_key(connected):
+                            if connected is not None and not connected in self.ConnectionTypes:
                                 for connection in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[connection] = itype
         for var_type, connections in undefined.items():
@@ -1036,7 +1036,7 @@ class PouProgramGenerator:
                                            [(input_name, None) for input_name in input_names])
                     for variable in input_variables:
                         parameter = variable.getformalParameter()
-                        if input_connected.has_key(parameter):
+                        if parameter in input_connected:
                             input_connected[parameter] = variable
                     if input_connected["EN"] is None:
                         input_connected.pop("EN")
@@ -1058,7 +1058,7 @@ class PouProgramGenerator:
                         if connections is not None:
                             if parameter != "EN":
                                 one_input_connected = True
-                            if inout_variables.has_key(parameter):
+                            if parameter in inout_variables:
                                 expression = self.ComputeExpression(body, connections, executionOrderId > 0, True)
                                 if expression is not None:
                                     inout_variables[parameter] = value
@@ -1078,7 +1078,7 @@ class PouProgramGenerator:
                 if one_input_connected:
                     for i, variable in enumerate(output_variables):
                         parameter = variable.getformalParameter()
-                        if not inout_variables.has_key(parameter) and parameter in output_names + ["", "ENO"]:
+                        if not parameter in inout_variables and parameter in output_names + ["", "ENO"]:
                             if variable.getformalParameter() == "":
                                 variable_name = "%s%d" % (type, block.getlocalId())
                             else:
@@ -1121,7 +1121,7 @@ class PouProgramGenerator:
                         input_info = (self.TagName, "block", block.getlocalId(), "input", input_idx)
                         connections = variable.connectionPointIn.getconnections()
                         if connections is not None:
-                            expression = self.ComputeExpression(body, connections, executionOrderId > 0, inout_variables.has_key(parameter))
+                            expression = self.ComputeExpression(body, connections, executionOrderId > 0, parameter in inout_variables)
                             if expression is not None:
                                 vars.append([(parameter, input_info),
                                              (" := ", ())] + self.ExtractModifier(variable, expression, input_info))
@@ -1160,7 +1160,7 @@ class PouProgramGenerator:
         if output_variable is not None:
             if block_infos["type"] == "function":
                 output_info = (self.TagName, "block", block.getlocalId(), "output", output_idx)
-                if inout_variables.has_key(output_parameter):
+                if output_parameter in inout_variables:
                     output_value = inout_variables[output_parameter]
                 else:
                     if output_parameter == "":
@@ -1519,7 +1519,7 @@ class PouProgramGenerator:
                                     transition_infos["content"] = [("\n%s:= " % self.CurrentIndent, ())] + expression + [(";\n", ())]
                                     self.SFCComputedBlocks += self.Program
                                     self.Program = []
-                    if not transition_infos.has_key("content"):
+                    if not "content" in transition_infos:
                         raise PLCGenException, _("Transition \"%s\" body must contain an output variable or coil referring to its name") % transitionValues["value"]
                 self.TagName = previous_tagname
             elif transitionValues["type"] == "connection":

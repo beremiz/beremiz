@@ -426,7 +426,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             mod_name = pyjs.strip_py(mod_name)
 
             override_name = "%s.%s" % (platform.lower(), mod_name)
-            if pover[platform].has_key(override_name):
+            if override_name in pover[platform]:
                 mod_cache_name = "%s.cache.js" % (override_name)
             else:
                 mod_cache_name = "%s.cache.js" % (mod_name)
@@ -600,7 +600,7 @@ def filter_deps(app_name, deps):
 
 
 def has_nodeps(mod, deps):
-    if not deps.has_key(mod) or not deps[mod]:
+    if not mod in deps or not deps[mod]:
         return True
     return False
 
