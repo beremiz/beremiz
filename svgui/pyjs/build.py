@@ -286,8 +286,8 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
     tmpl = read_boilerplate(data_dir, "all.cache.html")
     parser = pyjs.PlatformParser("platform")
     app_headers = ''
-    scripts = ['<script type="text/javascript" src="%s"></script>' % script \
-                                                  for script in js_includes]
+    scripts = ['<script type="text/javascript" src="%s"></script>' %
+               script for script in js_includes]
     app_body = '\n'.join(scripts)
 
     mod_code = {}

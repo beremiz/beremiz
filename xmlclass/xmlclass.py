@@ -113,8 +113,7 @@ def NotSupportedYet(type):
     @return: function generated
     """
     def GetUnknownValue(attr):
-        raise ValueError("\"%s\" type isn't supported by \"xmlclass\" yet!" % \
-                         type)
+        raise ValueError("\"%s\" type isn't supported by \"xmlclass\" yet!" % type)
     return GetUnknownValue
 
 
@@ -224,16 +223,16 @@ def GenerateIntegerExtraction(minInclusive=None, maxInclusive=None,
         except:
             raise ValueError("\"%s\" isn't a valid integer!" % value)
         if minInclusive is not None and value < minInclusive:
-            raise ValueError("\"%d\" isn't greater or equal to %d!" % \
+            raise ValueError("\"%d\" isn't greater or equal to %d!" %
                              (value, minInclusive))
         if maxInclusive is not None and value > maxInclusive:
-            raise ValueError("\"%d\" isn't lesser or equal to %d!" % \
+            raise ValueError("\"%d\" isn't lesser or equal to %d!" %
                              (value, maxInclusive))
         if minExclusive is not None and value <= minExclusive:
-            raise ValueError("\"%d\" isn't greater than %d!" % \
+            raise ValueError("\"%d\" isn't greater than %d!" %
                              (value, minExclusive))
         if maxExclusive is not None and value >= maxExclusive:
-            raise ValueError("\"%d\" isn't lesser than %d!" % \
+            raise ValueError("\"%d\" isn't lesser than %d!" %
                              (value, maxExclusive))
         return value
     return GetInteger
@@ -444,8 +443,8 @@ def GenerateEnumeratedExtraction(type, list):
         if value in list:
             return value
         else:
-            raise ValueError("\"%s\" isn't a valid value for %s!" % \
-                             (value, type))
+            raise ValueError(
+                "\"%s\" isn't a valid value for %s!" % (value, type))
     return GetEnumerated
 
 
@@ -506,8 +505,8 @@ def GenerateGetList(type, list):
                 if item in list:
                     values.append(item)
                 else:
-                    raise ValueError("\"%s\" isn't a valid value for %s!" % \
-                                     (value, type))
+                    raise ValueError(
+                        "\"%s\" isn't a valid value for %s!" % (value, type))
             return values
     return GetLists
 
@@ -538,8 +537,7 @@ def GenerateModelNameListExtraction(type, model):
             if result is not None:
                 values.append(item)
             else:
-                raise ValueError("\"%s\" isn't a valid value for %s!" % \
-                                 (value, type))
+                raise ValueError("\"%s\" isn't a valid value for %s!" % (value, type))
         return values
     return GetModelNameList
 

@@ -44,8 +44,8 @@ def get_microseconds(value):
     @param value: Time duration to convert
     @return: Time duration expressed in microsecond
     """
-    return float(value.days * DAY + \
-                 value.seconds * SECOND + \
+    return float(value.days * DAY +
+                 value.seconds * SECOND +
                  value.microseconds)
     return
 

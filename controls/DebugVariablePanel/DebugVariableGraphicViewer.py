@@ -584,7 +584,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # Search for the nearest point from mouse position
             if len(x_data) > 0 and len(y_data) > 0:
                 length = min(len(x_data), len(y_data))
-                d = numpy.sqrt((x_data[:length, 1]-event.xdata) ** 2 + \
+                d = numpy.sqrt((x_data[:length, 1]-event.xdata) ** 2 +
                                (y_data[:length, 1]-event.ydata) ** 2)
 
                 # Set cursor tick to the tick of this point

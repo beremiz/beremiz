@@ -103,10 +103,10 @@ class PythonFileCTNMixin(CodeFile):
         varinfos = map(lambda variable: {
                     "name": variable.getname(),
                     "desc": repr(variable.getdesc()),
-                    "onchangecode": '"'+variable.getonchange() + \
-                                         "('"+variable.getname()+"')\"" \
+                    "onchangecode": '"' + variable.getonchange() +
+                                         "('" + variable.getname() + "')\""
                                      if variable.getonchange() else '""',
-                    "onchange": repr(variable.getonchange()) \
+                    "onchange": repr(variable.getonchange())
                                  if variable.getonchange() else None,
                     "opts": repr(variable.getopts()),
                     "configname": configname.upper(),
