@@ -73,7 +73,8 @@ def GetAboutDialogInfo():
     info.Name = "Beremiz"
     info.Version = app_version
 
-    info.Copyright =  "(C) 2016 Andrey Skvortsov\n"
+    info.Copyright = ""
+    info.Copyright += "(C) 2016-2017 Andrey Skvortsov\n"
     info.Copyright += "(C) 2008-2015 Eduard Tisserant\n"
     info.Copyright += "(C) 2008-2015 Laurent Bessard"
 
@@ -123,7 +124,7 @@ def GetAboutDialogInfo():
     return info
 
 
-app_version =  "1.2"
+app_version = "1.2"
 rev = GetAppRevision()
 if rev is not None:
     app_version = app_version + "-" + rev.rstrip()

@@ -197,9 +197,9 @@ class CodeFile:
 
     def CTNGlobalInstances(self):
         variables = self.CodeFileVariables(self.CodeFile)
-        ret =  [(variable.getname(),
-                 variable.gettype(),
-                 variable.getinitial())
+        ret = [(variable.getname(),
+                variable.gettype(),
+                variable.getinitial())
                 for variable in variables]
         ret.extend([("On"+variable.getname()+"Change", "python_poll", "")
                 for variable in variables

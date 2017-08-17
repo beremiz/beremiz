@@ -545,7 +545,7 @@ class TextViewer(EditorPanel):
                     else:
                         level = self.Editor.GetFoldLevel(line_number - 1) & wx.stc.STC_FOLDLEVELNUMBERMASK
                 if level != wx.stc.STC_FOLDLEVELBASE:
-                    level |=  wx.stc.STC_FOLDLEVELWHITEFLAG
+                    level |= wx.stc.STC_FOLDLEVELWHITEFLAG
             elif LineStartswith(line, self.BlockStartKeywords):
                 level |= wx.stc.STC_FOLDLEVELHEADERFLAG
             elif LineStartswith(line, self.BlockEndKeywords):

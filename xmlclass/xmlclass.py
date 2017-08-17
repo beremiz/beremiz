@@ -875,7 +875,7 @@ class ClassFactory:
     def ExtractNodeAttrs(self, element_name, node, valid_attrs):
         attrs = {}
         for qualified_name, attr in node._attrs.items():
-            namespace, name =  DecomposeQualifiedName(qualified_name)
+            namespace, name = DecomposeQualifiedName(qualified_name)
             if name in valid_attrs:
                 infos = self.GetQualifiedNameInfos(name, namespace)
                 if infos["type"] != SYNTAXATTRIBUTE:

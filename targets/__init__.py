@@ -74,7 +74,7 @@ def GetTargetChoices():
     # Get all xsd targets
     for targetname, nfo in targets.iteritems():
         xsd_string = open(nfo["xsd"]).read()
-        targetchoices +=  xsd_string % DictXSD_toolchain
+        targetchoices += xsd_string % DictXSD_toolchain
 
     return targetchoices
 

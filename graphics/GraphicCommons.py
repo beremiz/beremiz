@@ -1083,7 +1083,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             if self.Edge == "rising" and self.Direction[1] == 1:
                 y -= 5
                 height += 5
-        rect =  wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
+        rect = wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
         if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:

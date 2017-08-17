@@ -215,7 +215,7 @@ class FolderTree(wx.Panel):
                     os.rename(old_filepath, new_filepath)
                     event.Skip()
                 else:
-                    message =  wx.MessageDialog(self,
+                    message = wx.MessageDialog(self,
                         _("File '%s' already exists!") % new_name,
                         _("Error"), wx.OK | wx.ICON_ERROR)
                     message.ShowModal()

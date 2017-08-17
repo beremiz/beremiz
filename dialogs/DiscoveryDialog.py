@@ -227,10 +227,10 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         '''
         info = self.ZeroConfInstance.getServiceInfo(_type, name)
 
-        svcname =   name.split(".")[0]
+        svcname = name.split(".")[0]
         typename = _type.split(".")[0][1:]
-        ip =        str(socket.inet_ntoa(info.getAddress()))
-        port =      info.getPort()
+        ip = str(socket.inet_ntoa(info.getAddress()))
+        port = info.getPort()
 
         num_items = self.ServicesList.GetItemCount()
 

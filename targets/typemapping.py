@@ -90,11 +90,11 @@ SwapedEndianessTypeTranslator = {
 TypeTranslator = SameEndianessTypeTranslator
 
 # Construct debugger natively supported types
-DebugTypesSize =  dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.iteritems() if t is not None])
+DebugTypesSize = dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.iteritems() if t is not None])
 
 
 def UnpackDebugBuffer(buff, indexes):
-    res =  []
+    res = []
     buffoffset = 0
     buffsize = len(buff)
     buffptr = cast(ctypes.pythonapi.PyString_AsString(id(buff)), c_void_p).value

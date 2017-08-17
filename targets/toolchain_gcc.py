@@ -29,7 +29,7 @@ import operator
 from util.ProcessLogger import ProcessLogger
 import hashlib
 
-includes_re =  re.compile('\s*#include\s*["<]([^">]*)[">].*')
+includes_re = re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
 
 class toolchain_gcc():
