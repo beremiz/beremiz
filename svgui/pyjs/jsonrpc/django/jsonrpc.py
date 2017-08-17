@@ -40,7 +40,7 @@ def jsonremote(service):
             service.add_method(func.__name__, func)
         else:
             emsg = 'Service "%s" not found' % str(service.__name__)
-            raise NotImplementedError, emsg
+            raise NotImplementedError(emsg)
         return func
     return remotify
 

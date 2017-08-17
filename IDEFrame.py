@@ -296,7 +296,7 @@ def ComputeTabsLayout(tabs, rect):
     split = None
     for idx, tab in enumerate(tabs):
         if len(tab["pages"]) == 0:
-            raise ValueError, "Not possible"
+            raise ValueError("Not possible")
         if tab["size"][0] == rect.width:
             if tab["pos"][1] == rect.y:
                 split = (wx.TOP, float(tab["size"][1]) / float(rect.height))
@@ -820,7 +820,7 @@ class IDEFrame(wx.Frame):
         if isinstance(tabs, ListType):
             if len(tabs) == 0:
                 return
-            raise ValueError, "Not supported"
+            raise ValueError("Not supported")
 
         if "split" in tabs:
             self.LoadTabLayout(notebook, tabs["others"])

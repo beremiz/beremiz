@@ -450,7 +450,7 @@ if cls:
 
     def appenddataType(self, name):
         if self.getdataType(name) is not None:
-            raise ValueError, "\"%s\" Data Type already exists !!!" % name
+            raise ValueError("\"%s\" Data Type already exists !!!" % name)
         self.types.appenddataTypeElement(name)
     setattr(cls, "appenddataType", appenddataType)
 
@@ -505,7 +505,7 @@ if cls:
 
     def addconfiguration(self, name):
         if self.getconfiguration(name) is not None:
-            raise ValueError, _("\"%s\" configuration already exists !!!") % name
+            raise ValueError(_("\"%s\" configuration already exists !!!") % name)
         new_configuration = PLCOpenParser.CreateElement("configuration", "configurations")
         new_configuration.setname(name)
         self.instances.configurations.appendconfiguration(new_configuration)
@@ -514,7 +514,7 @@ if cls:
     def removeconfiguration(self, name):
         configuration = self.getconfiguration(name)
         if configuration is None:
-            raise ValueError, ("\"%s\" configuration doesn't exist !!!") % name
+            raise ValueError(_("\"%s\" configuration doesn't exist !!!") % name)
         self.instances.configurations.remove(configuration)
     setattr(cls, "removeconfiguration", removeconfiguration)
 
@@ -530,8 +530,10 @@ if cls:
 
     def addconfigurationResource(self, config_name, name):
         if self.getconfigurationResource(config_name, name) is not None:
-            msg = _("\"{a1}\" resource already exists in \"{a2}\" configuration !!!").format(a1=name, a2=config_name)
-            raise ValueError, msg
+            raise ValueError(
+                _("\"{a1}\" resource already exists in \"{a2}\" configuration !!!").
+                format(a1=name, a2=config_name))
+
         configuration = self.getconfiguration(config_name)
         if configuration is not None:
             new_resource = PLCOpenParser.CreateElement("resource", "configuration")
@@ -548,8 +550,10 @@ if cls:
                 configuration.remove(resource)
                 found = True
         if not found:
-            msg = _("\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!").format(a1=name, a2=config_name)
-            raise ValueError, msg
+            raise ValueError(
+                _("\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!").
+                format(a1=name, a2=config_name))
+
     setattr(cls, "removeconfigurationResource", removeconfigurationResource)
 
     def updateElementName(self, old_name, new_name):
@@ -928,7 +932,7 @@ if cls:
                 found = True
                 break
         if not found:
-            raise ValueError, _("\"%s\" Data Type doesn't exist !!!") % name
+            raise ValueError(_("\"%s\" Data Type doesn't exist !!!") % name)
     setattr(cls, "removedataTypeElement", removedataTypeElement)
 
     def getpouElements(self):
@@ -946,7 +950,7 @@ if cls:
     def appendpouElement(self, name, pou_type, body_type):
         for element in self.pous.getpou():
             if TextMatched(element.getname(), name):
-                raise ValueError, _("\"%s\" POU already exists !!!") % name
+                raise ValueError(_("\"%s\" POU already exists !!!") % name)
         new_pou = PLCOpenParser.CreateElement("pou", "pous")
         self.pous.appendpou(new_pou)
         new_pou.setname(name)
@@ -967,7 +971,7 @@ if cls:
                 found = True
                 break
         if not found:
-            raise ValueError, _("\"%s\" POU doesn't exist !!!") % name
+            raise ValueError(_("\"%s\" POU doesn't exist !!!") % name)
     setattr(cls, "removepouElement", removepouElement)
 
     def Search(self, criteria, parent_infos=[]):
@@ -1153,7 +1157,7 @@ if cls:
             if body_type in ["IL", "ST", "LD", "FBD", "SFC"]:
                 self.body[0].setcontent(PLCOpenParser.CreateElement(body_type, "body"))
             else:
-                raise ValueError, "%s isn't a valid body type!" % type
+                raise ValueError("%s isn't a valid body type!" % type)
     setattr(cls, "setbodyType", setbodyType)
 
     def getbodyType(self):
@@ -1373,7 +1377,7 @@ if cls:
                     removed = True
                     break
             if not removed:
-                raise ValueError, _("Transition with name %s doesn't exist!") % name
+                raise ValueError(_("Transition with name %s doesn't exist!") % name)
     setattr(cls, "removetransition", removetransition)
 
     def addaction(self, name, body_type):
@@ -1414,7 +1418,7 @@ if cls:
                     removed = True
                     break
             if not removed:
-                raise ValueError, _("Action with name %s doesn't exist!") % name
+                raise ValueError(_("Action with name %s doesn't exist!") % name)
     setattr(cls, "removeaction", removeaction)
 
     def updateElementName(self, old_name, new_name):
@@ -1507,7 +1511,7 @@ def setbodyType(self, body_type):
     if body_type in ["IL", "ST", "LD", "FBD", "SFC"]:
         self.body.setcontent(PLCOpenParser.CreateElement(body_type, "body"))
     else:
-        raise ValueError, "%s isn't a valid body type!" % type
+        raise ValueError("%s isn't a valid body type!" % type)
 
 
 def getbodyType(self):
@@ -1656,7 +1660,7 @@ if cls:
                     element.setexecutionOrderId(0)
             self.checkedBlocksDict.clear()
         else:
-            raise TypeError, _("Can only generate execution order on FBD networks!")
+            raise TypeError(_("Can only generate execution order on FBD networks!"))
     setattr(cls, "resetexecutionOrder", resetexecutionOrder)
 
     def compileexecutionOrder(self):
@@ -1670,7 +1674,7 @@ if cls:
                         self.compileelementExecutionOrder(connections[0])
                     element.setexecutionOrderId(self.getnewExecutionOrderId())
         else:
-            raise TypeError, _("Can only generate execution order on FBD networks!")
+            raise TypeError(_("Can only generate execution order on FBD networks!"))
     setattr(cls, "compileexecutionOrder", compileexecutionOrder)
 
     def compileelementExecutionOrder(self, link):
@@ -1694,7 +1698,7 @@ if cls:
                         if connections and len(connections) == 1:
                             self.compileelementExecutionOrder(connections[0])
         else:
-            raise TypeError, _("Can only generate execution order on FBD networks!")
+            raise TypeError(_("Can only generate execution order on FBD networks!"))
     setattr(cls, "compileelementExecutionOrder", compileelementExecutionOrder)
 
     def setelementExecutionOrder(self, instance, new_executionOrder):
@@ -1710,21 +1714,21 @@ if cls:
                             element.setexecutionOrderId(element_executionOrder + 1)
             instance.setexecutionOrderId(new_executionOrder)
         else:
-            raise TypeError, _("Can only generate execution order on FBD networks!")
+            raise TypeError(_("Can only generate execution order on FBD networks!"))
     setattr(cls, "setelementExecutionOrder", setelementExecutionOrder)
 
     def appendcontentInstance(self, instance):
         if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             self.content.appendcontent(instance)
         else:
-            raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have instances!") % self.content.getLocalTag())
     setattr(cls, "appendcontentInstance", appendcontentInstance)
 
     def getcontentInstances(self):
         if self.content.getLocalTag() in ["LD", "FBD", "SFC"]:
             return self.content.getcontent()
         else:
-            raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have instances!") % self.content.getLocalTag())
     setattr(cls, "getcontentInstances", getcontentInstances)
 
     instance_by_id_xpath = PLCOpen_XPath("*[@localId=$localId]")
@@ -1737,7 +1741,7 @@ if cls:
                 return instance[0]
             return None
         else:
-            raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have instances!") % self.content.getLocalTag())
     setattr(cls, "getcontentInstance", getcontentInstance)
 
     def getcontentInstancesIds(self):
@@ -1745,7 +1749,7 @@ if cls:
             return OrderedDict([(instance.getlocalId(), True)
                                 for instance in self.content])
         else:
-            raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have instances!") % self.content.getLocalTag())
     setattr(cls, "getcontentInstancesIds", getcontentInstancesIds)
 
     def getcontentInstanceByName(self, name):
@@ -1755,7 +1759,7 @@ if cls:
                 return instance[0]
             return None
         else:
-            raise TypeError, _("%s body don't have instances!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have instances!") % self.content.getLocalTag())
     setattr(cls, "getcontentInstanceByName", getcontentInstanceByName)
 
     def removecontentInstance(self, local_id):
@@ -1764,30 +1768,30 @@ if cls:
             if len(instance) > 0:
                 self.content.remove(instance[0])
             else:
-                raise ValueError, _("Instance with id %d doesn't exist!") % id
+                raise ValueError(_("Instance with id %d doesn't exist!") % id)
         else:
-            raise TypeError, "%s body don't have instances!" % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have instances!") % self.content.getLocalTag())
     setattr(cls, "removecontentInstance", removecontentInstance)
 
     def settext(self, text):
         if self.content.getLocalTag() in ["IL", "ST"]:
             self.content.setanyText(text)
         else:
-            raise TypeError, _("%s body don't have text!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have text!") % self.content.getLocalTag())
     setattr(cls, "settext", settext)
 
     def gettext(self):
         if self.content.getLocalTag() in ["IL", "ST"]:
             return self.content.getanyText()
         else:
-            raise TypeError, _("%s body don't have text!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have text!") % self.content.getLocalTag())
     setattr(cls, "gettext", gettext)
 
     def hasblock(self, block_type):
         if self.content.getLocalTag() in ["IL", "ST"]:
             return self.content.hasblock(block_type)
         else:
-            raise TypeError, _("%s body don't have text!") % self.content.getLocalTag()
+            raise TypeError(_("%s body don't have text!") % self.content.getLocalTag())
     setattr(cls, "hasblock", hasblock)
 
     def updateElementName(self, old_name, new_name):
@@ -2521,7 +2525,7 @@ def extractValues(values):
         elif opened == closed:
             i += 1
         else:
-            raise ValueError, _("\"%s\" is an invalid value!") % value
+            raise ValueError(_("\"%s\" is an invalid value!") % value)
     return items
 
 

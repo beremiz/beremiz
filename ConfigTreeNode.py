@@ -529,7 +529,8 @@ class ConfigTreeNode:
         try:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
         except KeyError:
-            raise Exception, _("Cannot create child {a1} of type {a2} ").format(a1=CTNName, a2=CTNType)
+            raise Exception(_("Cannot create child {a1} of type {a2} ").
+                             format(a1=CTNName, a2=CTNType))
 
         # if CTNClass is a class factory, call it. (prevent unneeded imports)
         if type(CTNClass) == types.FunctionType:
@@ -539,8 +540,9 @@ class ConfigTreeNode:
         ChildrenWithSameClass = self.Children.setdefault(CTNType, list())
         # Check count
         if getattr(CTNClass, "CTNMaxCount", None) and len(ChildrenWithSameClass) >= CTNClass.CTNMaxCount:
-            msg = _("Max count ({a1}) reached for this confnode of type {a2} ").format(a1=CTNClass.CTNMaxCount, a2=CTNType)
-            raise Exception, msg
+            raise Exception(
+                _("Max count ({a1}) reached for this confnode of type {a2} ").
+                format(a1=CTNClass.CTNMaxCount, a2=CTNType))
 
         # create the final class, derived of provided confnode and template
         class FinalCTNClass(CTNClass, ConfigTreeNode):
@@ -566,9 +568,9 @@ class ConfigTreeNode:
                     _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
                     if (_self.BaseParams.getName() != NewCTNName):
-                        msg = _("Project tree layout do not match confnode.xml {a1}!={a2} ").\
-                              format(a1=NewCTNName, a2=_self.BaseParams.getName())
-                        raise Exception, msg
+                        raise Exception(
+                            _("Project tree layout do not match confnode.xml {a1}!={a2} ").
+                            format(a1=NewCTNName, a2=_self.BaseParams.getName()))
 
                     # Now, self.CTNPath() should be OK
 

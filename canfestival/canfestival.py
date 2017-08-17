@@ -231,10 +231,10 @@ class _SlaveCTN(NodeManager):
         pointers = config_utils.LocalODPointers(locations, current_location, slave)
         res = gen_cfile.GenerateFile(Gen_OD_path, slave, pointers)
         if res:
-            raise Exception, res
+            raise Exception(res)
         res = eds_utils.GenerateEDSFile(os.path.join(buildpath, "Slave_%s.eds" % prefix), slave)
         if res:
-            raise Exception, res
+            raise Exception(res)
         return [(Gen_OD_path, local_canfestival_config.getCFLAGS(CanFestivalPath))], "", False
 
     def LoadPrevious(self):
@@ -448,11 +448,11 @@ class _NodeListCTN(NodeList):
         try:
             master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(), "OD_%s" % prefix)
         except config_utils.PDOmappingException, e:
-            raise Exception, e.message
+            raise Exception(e.message)
         # Do generate C file.
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)
         if res:
-            raise Exception, res
+            raise Exception(res)
 
         file = open(os.path.join(buildpath, "MasterGenerated.od"), "w")
         dump(master, file)

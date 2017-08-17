@@ -254,7 +254,7 @@ class ProgramGenerator:
                 program = pou_program.GenerateProgram(pou)
                 self.Program += program
             else:
-                raise PLCGenException, _("Undefined pou type \"%s\"") % pou_type
+                raise PLCGenException(_("Undefined pou type \"%s\"") % pou_type)
 
     # Generate a POU defined and used in text
     def GeneratePouProgramInText(self, text):
@@ -397,9 +397,9 @@ class ProgramGenerator:
             # Single argument if exists
             if single is not None:
                 if len(single) == 0:
-                    msg = _("Source signal has to be defined for single task '{a1}' in resource '{a2}.{a3}'.").\
-                          format(a1=task.getname(), a2=config_name, a3=resource.getname())
-                    raise PLCGenException, msg
+                    raise PLCGenException(
+                        _("Source signal has to be defined for single task '{a1}' in resource '{a2}.{a3}'.").
+                        format(a1=task.getname(), a2=config_name, a3=resource.getname()))
 
                 if single[0] == '[' and single[-1] == ']':
                     SNGLKW = "MULTI"
@@ -775,7 +775,9 @@ class PouProgramGenerator:
                         self.ConnectionTypes[content["value"]] = "BOOL"
                         connections = content["value"].getconnections()
                         if not connections:
-                            raise PLCGenException, _("SFC transition in POU \"%s\" must be connected.") % self.Name
+                            raise PLCGenException(
+                                _("SFC transition in POU \"%s\" must be connected.") % self.Name)
+
                         for link in connections:
                             connected = self.GetLinkedConnector(link, body)
                             if connected is not None and not connected in self.ConnectionTypes:
@@ -788,8 +790,9 @@ class PouProgramGenerator:
                     for element in body.getcontentInstances():
                         if isinstance(element, ConnectorClass) and element.getname() == name:
                             if connector is not None:
-                                msg = _("More than one connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").format(a1=name, a2=self.Name)
-                                raise PLCGenException, msg
+                                raise PLCGenException(
+                                    _("More than one connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").
+                                    format(a1=name, a2=self.Name))
                             connector = element
                     if connector is not None:
                         undefined = [instance.connectionPointOut, connector.connectionPointIn]
@@ -808,8 +811,10 @@ class PouProgramGenerator:
                             for connection in related:
                                 self.ConnectionTypes[connection] = var_type
                     else:
-                        msg = _("No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").format(a1=name, a2=self.Name)
-                        raise PLCGenException, msg
+                        raise PLCGenException(
+                            _("No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").
+                            format(a1=name, a2=self.Name))
+
                 elif isinstance(instance, BlockClass):
                     block_infos = self.GetBlockType(instance.gettypeName(), "undefined")
                     if block_infos is not None:
@@ -831,7 +836,8 @@ class PouProgramGenerator:
                 if block_infos is not None:
                     self.ComputeBlockInputTypes(instance, block_infos, body)
                 else:
-                    raise PLCGenException, _("No informations found for \"%s\" block") % (instance.gettypeName())
+                    raise PLCGenException(
+                        _("No informations found for \"%s\" block") % (instance.gettypeName()))
             if body_type == "SFC":
                 previous_tagname = self.TagName
                 for action in pou.getactionList():
@@ -963,11 +969,13 @@ class PouProgramGenerator:
                     if block_infos is None:
                         block_infos = self.GetBlockType(block_type)
                     if block_infos is None:
-                        raise PLCGenException, _("Undefined block type \"{a1}\" in \"{a2}\" POU").format(a1=block_type, a2=self.Name)
+                        raise PLCGenException(
+                            _("Undefined block type \"{a1}\" in \"{a2}\" POU").
+                            format(a1=block_type, a2=self.Name))
                     try:
                         self.GenerateBlock(instance, block_infos, body, None)
                     except ValueError, e:
-                        raise PLCGenException, e.message
+                        raise PLCGenException(e.message)
                 elif isinstance(instance, ConnectorClass):
                     connector = instance.getname()
                     if self.ComputedConnectors.get(connector, None):
@@ -1196,9 +1204,9 @@ class PouProgramGenerator:
                 blockname = "{a1}({a2})".format(a1=name, a2=type)
             else:
                 blockname = type
-            msg = _("No output {a1} variable found in block {a2} in POU {a3}. Connection must be broken").\
-                              format(a1=output_parameter, a2=blockname, a3=self.Name)
-            raise ValueError, msg
+            raise ValueError(
+                _("No output {a1} variable found in block {a2} in POU {a3}. Connection must be broken").
+                format(a1=output_parameter, a2=blockname, a3=self.Name))
 
     def GeneratePaths(self, connections, body, order=False, to_inout=False):
         paths = []
@@ -1216,12 +1224,13 @@ class PouProgramGenerator:
                 if block_infos is None:
                     block_infos = self.GetBlockType(block_type)
                 if block_infos is None:
-                    msg = _("Undefined block type \"{a1}\" in \"{a2}\" POU").format(a1=block_type, a2=self.Name)
-                    raise PLCGenException, msg
+                    raise PLCGenException(
+                        _("Undefined block type \"{a1}\" in \"{a2}\" POU").
+                        format(a1=block_type, a2=self.Name))
                 try:
                     paths.append(str(self.GenerateBlock(next, block_infos, body, connection, order, to_inout)))
                 except ValueError, e:
-                    raise PLCGenException, e.message
+                    raise PLCGenException(e.message)
             elif isinstance(next, ContinuationClass):
                 name = next.getname()
                 computed_value = self.ComputedConnectors.get(name, None)
@@ -1232,8 +1241,9 @@ class PouProgramGenerator:
                     for instance in body.getcontentInstances():
                         if isinstance(instance, ConnectorClass) and instance.getname() == name:
                             if connector is not None:
-                                msg = _("More than one connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").format(a1=name, a2=self.Name)
-                                raise PLCGenException, msg
+                                raise PLCGenException(
+                                    _("More than one connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").
+                                    format(a1=name, a2=self.Name))
                             connector = instance
                     if connector is not None:
                         connections = connector.connectionPointIn.getconnections()
@@ -1243,8 +1253,9 @@ class PouProgramGenerator:
                                 self.ComputedConnectors[name] = expression
                                 paths.append(str(expression))
                     else:
-                        msg = _("No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").format(a1=name, a2=self.Name)
-                        raise PLCGenException, msg
+                        raise PLCGenException(
+                            _("No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU").
+                            format(a1=name, a2=self.Name))
             elif isinstance(next, ContactClass):
                 contact_info = (self.TagName, "contact", next.getlocalId())
                 variable = str(self.ExtractModifier(next, [(next.getvariable(), contact_info + ("reference",))], contact_info))
@@ -1394,8 +1405,10 @@ class PouProgramGenerator:
         jump_target = jump.gettargetName()
         if not pou.hasstep(jump_target):
             pname = pou.getname()
-            msg = _("SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\"").format(a1=pname, a2=jump_target)
-            raise PLCGenException, msg
+            raise PLCGenException(
+                _("SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\"").
+                format(a1=pname, a2=jump_target))
+
         if jump.connectionPointIn is not None:
             instances = []
             connections = jump.connectionPointIn.getconnections()
@@ -1520,7 +1533,9 @@ class PouProgramGenerator:
                                     self.SFCComputedBlocks += self.Program
                                     self.Program = []
                     if not "content" in transition_infos:
-                        raise PLCGenException, _("Transition \"%s\" body must contain an output variable or coil referring to its name") % transitionValues["value"]
+                        raise PLCGenException(
+                            _("Transition \"%s\" body must contain an output variable or coil referring to its name")
+                            % transitionValues["value"])
                 self.TagName = previous_tagname
             elif transitionValues["type"] == "connection":
                 body = pou.getbody()
@@ -1600,9 +1615,9 @@ class PouProgramGenerator:
             elif len(transition_infos["from"]) == 1:
                 self.Program += transition_infos["from"][0]
             else:
-                msg = _("Transition with content \"{a1}\" not connected to a previous step in \"{a2}\" POU").\
-                      format(a1=transition_infos["content"], a2=self.Name)
-                raise PLCGenException, msg
+                raise PLCGenException(
+                    _("Transition with content \"{a1}\" not connected to a previous step in \"{a2}\" POU").
+                    format(a1=transition_infos["content"], a2=self.Name))
             self.Program += [(" TO ", ())]
             if len(transition_infos["to"]) > 1:
                 self.Program += [("(", ())]
@@ -1611,9 +1626,9 @@ class PouProgramGenerator:
             elif len(transition_infos["to"]) == 1:
                 self.Program += transition_infos["to"][0]
             else:
-                msg = _("Transition with content \"{a1}\" not connected to a next step in \"{a2}\" POU").\
-                      format(a1=transition_infos["content"], a2=self.Name)
-                raise PLCGenException, msg
+                raise PLCGenException(
+                    _("Transition with content \"{a1}\" not connected to a next step in \"{a2}\" POU").
+                    format(a1=transition_infos["content"], a2=self.Name))
             self.Program += transition_infos["content"]
             self.Program += [("%sEND_TRANSITION\n\n" % self.CurrentIndent, ())]
             for [(step_name, step_infos)] in transition_infos["to"]:
@@ -1631,9 +1646,9 @@ class PouProgramGenerator:
                         (self.ReturnType, (self.TagName, "return"))]
         program += [("\n", ())]
         if len(self.Interface) == 0:
-            raise PLCGenException, _("No variable defined in \"%s\" POU") % self.Name
+            raise PLCGenException(_("No variable defined in \"%s\" POU") % self.Name)
         if len(self.Program) == 0:
-            raise PLCGenException, _("No body defined in \"%s\" POU") % self.Name
+            raise PLCGenException(_("No body defined in \"%s\" POU") % self.Name)
         var_number = 0
         for list_type, option, located, variables in self.Interface:
             variable_type = errorVarTypes.get(list_type, "var_local")
