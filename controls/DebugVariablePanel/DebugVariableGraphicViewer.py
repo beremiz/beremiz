@@ -1171,8 +1171,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                 # Display cursor in canvas if a cursor tick is defined and it is
                 # include in values tick range
-                if (self.CursorTick is not None and
-                    start_tick <= self.CursorTick <= end_tick):
+                if self.CursorTick is not None and \
+                   start_tick <= self.CursorTick <= end_tick:
 
                     # Define a vertical line to display cursor position if no
                     # line is already defined
@@ -1241,8 +1241,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                     # Display cursor in canvas if a cursor tick is defined and it is
                     # include in values tick range
-                    if (self.CursorTick is not None and
-                        start_tick <= self.CursorTick <= end_tick):
+                    if self.CursorTick is not None and \
+                       start_tick <= self.CursorTick <= end_tick:
 
                         # Define a vertical line to display cursor x coordinate
                         # if no line is already defined
@@ -1287,8 +1287,9 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                     z_min, z_max = merge_ranges([(z_min, z_max)])
 
                     # Check that x, y and z data are not empty
-                    if (x_data is not None and y_data is not None and
-                        z_data is not None):
+                    if x_data is not None and \
+                       y_data is not None and \
+                       z_data is not None:
 
                         # Get common data length so that each value has an x, y
                         # and z coordinate
@@ -1301,8 +1302,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                     # Display cursor in canvas if a cursor tick is defined and
                     # it is include in values tick range
-                    if (self.CursorTick is not None and
-                        start_tick <= self.CursorTick <= end_tick):
+                    if self.CursorTick is not None and \
+                       start_tick <= self.CursorTick <= end_tick:
 
                         # Get Z coordinate for cursor
                         z_cursor, z_forced = items[2].GetValue(

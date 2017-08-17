@@ -943,8 +943,8 @@ class TextViewer(EditorPanel):
         EditorPanel.RemoveHighlight(self, infos, start, end, highlight_type)
 
         highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
-        if (infos[0] == "body" and highlight_type is not None and
-            (infos[1], start, end, highlight_type) in self.Highlights):
+        if infos[0] == "body" and highlight_type is not None and \
+           (infos[1], start, end, highlight_type) in self.Highlights:
             self.Highlights.remove((infos[1], start, end, highlight_type))
             self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
 

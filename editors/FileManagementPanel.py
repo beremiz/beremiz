@@ -162,8 +162,8 @@ class FileManagementPanel(EditorPanel):
 
     def OnEditButton(self, event):
         filepath = self.ManagedDir.GetPath()
-        if (os.path.isfile(filepath) and
-            os.path.splitext(filepath)[1] in self.EditableFileExtensions):
+        if os.path.isfile(filepath) and \
+           os.path.splitext(filepath)[1] in self.EditableFileExtensions:
             self.Controler._OpenView(filepath + "::")
         event.Skip()
 

@@ -575,8 +575,8 @@ class CodeEditor(CustomStyledTextCtrl):
 
     def RemoveHighlight(self, start, end, highlight_type):
         highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
-        if (highlight_type is not None and
-            (start, end, highlight_type) in self.Highlights):
+        if highlight_type is not None and \
+           (start, end, highlight_type) in self.Highlights:
             self.Highlights.remove((start, end, highlight_type))
             self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
 

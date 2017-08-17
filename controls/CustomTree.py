@@ -117,8 +117,8 @@ class CustomTree(CT.CustomTreeCtrl):
             item, flags = self.HitTest(pos)
 
             bitmap_rect = self.GetBitmapRect()
-            if (bitmap_rect.InsideXY(pos.x, pos.y) or
-                flags & wx.TREE_HITTEST_NOWHERE) and self.AddMenu is not None:
+            if ((bitmap_rect.InsideXY(pos.x, pos.y) or
+                 flags & wx.TREE_HITTEST_NOWHERE) and self.AddMenu is not None):
                 wx.CallAfter(self.PopupMenuXY, self.AddMenu, pos.x, pos.y)
         event.Skip()
 

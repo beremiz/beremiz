@@ -216,8 +216,8 @@ def LoadProjectXML(project_xml):
         "http://www.plcopen.org/xml/tc6.xsd",
         "http://www.plcopen.org/xml/tc6_0201")
     for cre, repl in [
-        (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-        (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+            (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+            (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
         project_xml = cre.sub(repl, project_xml)
 
     try:
@@ -1319,8 +1319,9 @@ if cls:
     def hasblock(self, name=None, block_type=None):
         if self.getbodyType() in ["FBD", "LD", "SFC"]:
             for instance in self.getinstances():
-                if (isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) and
-                    (TextMatched(instance.getinstanceName(), name) or TextMatched(instance.gettypeName(), block_type))):
+                if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) \
+                   and (TextMatched(instance.getinstanceName(), name) or
+                        TextMatched(instance.gettypeName(), block_type)):
                     return True
             if self.transitions:
                 for transition in self.transitions.gettransition():
@@ -1565,8 +1566,8 @@ def gettext(self):
 def hasblock(self, name=None, block_type=None):
     if self.getbodyType() in ["FBD", "LD", "SFC"]:
         for instance in self.getinstances():
-            if (isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) and
-                (TextMatched(instance.getinstanceName(), name) or TextMatched(instance.gettypeName(), block_type))):
+            if isinstance(instance, PLCOpenParser.GetElementClass("block", "fbdObjects")) and \
+               (TextMatched(instance.getinstanceName(), name) or TextMatched(instance.gettypeName(), block_type)):
                 return True
     elif block_type is not None:
         return self.body.hasblock(block_type)
@@ -1692,8 +1693,9 @@ if cls:
                     instance.setexecutionOrderId(self.getnewExecutionOrderId())
             elif isinstance(instance, PLCOpenParser.GetElementClass("continuation", "commonObjects")) and instance.getexecutionOrderId() == 0:
                 for tmp_instance in self.getcontentInstances():
-                    if (isinstance(tmp_instance, PLCOpenParser.GetElementClass("connector", "commonObjects")) and
-                        TextMatched(tmp_instance.getname(), instance.getname()) and tmp_instance.getexecutionOrderId() == 0):
+                    if isinstance(tmp_instance, PLCOpenParser.GetElementClass("connector", "commonObjects")) and \
+                       TextMatched(tmp_instance.getname(), instance.getname()) and \
+                       tmp_instance.getexecutionOrderId() == 0:
                         connections = tmp_instance.connectionPointIn.getconnections()
                         if connections and len(connections) == 1:
                             self.compileelementExecutionOrder(connections[0])

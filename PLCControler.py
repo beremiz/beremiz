@@ -408,8 +408,8 @@ class BlockInstanceFactory:
         specific_values_tuple, specific_values_translation = \
             _SpecificValuesTuples.get(args[0][0], _BlockSpecificValues)
 
-        if (args[0][0] == "step" and len(self.SpecificValues) < 3 or
-            args[0][0] == "transition" and len(self.SpecificValues) < 4):
+        if args[0][0] == "step"       and len(self.SpecificValues) < 3 or \
+           args[0][0] == "transition" and len(self.SpecificValues) < 4:
             self.SpecificValues.append([None])
         elif args[0][0] == "actionBlock" and len(self.SpecificValues) < 1:
             self.SpecificValues.append([[]])

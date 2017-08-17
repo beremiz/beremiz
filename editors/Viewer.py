@@ -1238,8 +1238,7 @@ class Viewer(EditorPanel, DebugViewer):
         while len(instances) > 0:
             self.loadInstance(instances.popitem(0)[1], instances, selection)
 
-        if (selection is not None and
-            isinstance(self.SelectedElement, Graphic_Group)):
+        if selection is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.RefreshWireExclusion()
             self.SelectedElement.RefreshBoundingBox()
 
@@ -1797,9 +1796,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnReplaceWireMenu(self, event):
         # Check that selected element is a wire before applying replace
-        if (self.SelectedElement is not None and
-            self.IsWire(self.SelectedElement)):
-
+        if self.SelectedElement is not None and self.IsWire(self.SelectedElement):
             # Get wire redraw bbox to erase it from screen
             wire = self.SelectedElement
             redraw_rect = wire.GetRedrawRect()
@@ -2317,8 +2314,7 @@ class Viewer(EditorPanel, DebugViewer):
                     self.RefreshScrollBars()
                 self.RefreshVisibleElements()
         else:
-            if (not event.Dragging() and
-                gettime() - self.LastHighlightCheckTime > REFRESH_PERIOD):
+            if not event.Dragging() and (gettime() - self.LastHighlightCheckTime) > REFRESH_PERIOD:
                 self.LastHighlightCheckTime = gettime()
                 highlighted = self.FindElement(event, connectors=False)
                 if self.HighlightedElement is not None and self.HighlightedElement != highlighted:
