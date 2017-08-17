@@ -1497,8 +1497,8 @@ class Viewer(EditorPanel, DebugViewer):
                 wire.EndConnected = end_connector
                 connected.RefreshConnectors()
                 self.AddWire(wire)
-                if selection is not None and (\
-                   selection[1].get((id, refLocalId), False) or \
+                if selection is not None and (
+                   selection[1].get((id, refLocalId), False) or
                    selection[1].get((refLocalId, id), False)):
                     self.SelectInGroup(wire)
             else:

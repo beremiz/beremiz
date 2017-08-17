@@ -215,8 +215,7 @@ class BlockPreviewDialog(wx.Dialog):
         # or another graphic element
         elif ((self.DefaultElementName is None or
                self.DefaultElementName.upper() != uppercase_element_name) and
-              uppercase_element_name in self.Controller.\
-                    GetEditedElementVariables(self.TagName)):
+              uppercase_element_name in self.Controller.GetEditedElementVariables(self.TagName)):
             message_format = _("\"%s\" element for this pou already exists!")
 
         # If an error have been identify, show error message dialog

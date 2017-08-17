@@ -1817,7 +1817,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             extrafiles.extend(
                      [(name, open(os.path.join(extrafilespath, name),
-                                  'rb').read()) \
+                                  'rb').read())
                       for name in os.listdir(extrafilespath)])
 
         # Send PLC on target

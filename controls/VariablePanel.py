@@ -342,11 +342,10 @@ class VariableDropTarget(wx.TextDropTarget):
                 if var_name is None:
                     return
                 elif var_name.upper() in [name.upper()
-                        for name in self.ParentWindow.Controler.\
-                            GetProjectPouNames(self.ParentWindow.Debug)]:
+                        for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!") % var_name
                 elif not var_name.upper() in [name.upper()
-                        for name in self.ParentWindow.Controler.\
+                        for name in self.ParentWindow.Controler.
                             GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     var_infos = self.ParentWindow.DefaultValue.copy()
                     var_infos.Name = var_name
@@ -378,8 +377,7 @@ class VariableDropTarget(wx.TextDropTarget):
                             if len(configs) == 0:
                                 return
                             if not var_name.upper() in [name.upper()
-                                for name in self.ParentWindow.Controler.\
-                                    GetConfigurationVariableNames(configs[0])]:
+                                for name in self.ParentWindow.Controler.GetConfigurationVariableNames(configs[0])]:
                                 self.ParentWindow.Controler.AddConfigurationGlobalVar(
                                     configs[0], values[2], var_name, location, "")
                             var_infos.Class = "External"
