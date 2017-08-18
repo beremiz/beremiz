@@ -784,7 +784,7 @@ class PLCControler:
                     os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"),
                     parser),
                 extensions={("pou_vars_ns", name): getattr(factory, name)
-                              for name in ["SetRoot", "AddVariable"]})
+                            for name in ["SetRoot", "AddVariable"]})
 
             obj = None
             words = tagname.split("::")
@@ -847,9 +847,11 @@ class PLCControler:
                 os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"),
                 parser),
             extensions={("instance_tagname_ns", name): getattr(factory, name)
-                          for name in ["ConfigTagName", "ResourceTagName",
-                                       "PouTagName", "ActionTagName",
-                                       "TransitionTagName"]})
+                        for name in ["ConfigTagName",
+                                     "ResourceTagName",
+                                     "PouTagName",
+                                     "ActionTagName",
+                                     "TransitionTagName"]})
 
         instance_tagname_xslt_tree(project,
             instance_path=etree.XSLT.strparam(instance_path))
@@ -1393,7 +1395,7 @@ class PLCControler:
 
     # Add a global var to configuration to configuration
     def AddConfigurationGlobalVar(self, config_name, var_type, var_name,
-                                           location="", description=""):
+                                  location="", description=""):
         if self.Project is not None:
             # Found the configuration corresponding to name
             configuration = self.Project.getconfiguration(config_name)
@@ -1549,8 +1551,8 @@ class PLCControler:
                         os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
                         parser),
                     extensions={("var_infos_ns", name): getattr(factory, name)
-                                  for name in ["SetType", "AddDimension",
-                                               "AddTree", "AddVarToTree"]})
+                                for name in ["SetType", "AddDimension",
+                                             "AddTree", "AddVarToTree"]})
                 return_type_infos_xslt_tree(return_type,
                     tree=etree.XSLT.strparam(str(tree)))
                 if tree:
@@ -1567,7 +1569,7 @@ class PLCControler:
         addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
                      "list": [pou.getblockInfos()
                               for pou in confnodetypes["types"].getpous()]}
-                     for confnodetypes in typeslist]
+                    for confnodetypes in typeslist]
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
             for desc in cat["list"]:

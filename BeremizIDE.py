@@ -548,8 +548,8 @@ class Beremiz(IDEFrame):
             if result is not None:
                 first_line, first_column, last_line, last_column, error = result.groups()
                 infos = self.CTR.ShowError(self.Log,
-                                                  (int(first_line), int(first_column)),
-                                                  (int(last_line), int(last_column)))
+                                           (int(first_line), int(first_column)),
+                                           (int(last_line),  int(last_column)))
 
     ## Function displaying an Error dialog in PLCOpenEditor.
     #  @return False if closing cancelled.
@@ -884,8 +884,8 @@ class Beremiz(IDEFrame):
         except:
             defaultpath = os.path.expanduser("~")
 
-        dialog = wx.DirDialog(self, _("Choose a project"), defaultpath, style=wx.DEFAULT_DIALOG_STYLE |
-                                                                               wx.RESIZE_BORDER)
+        dialog = wx.DirDialog(self, _("Choose a project"), defaultpath,
+                              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         if dialog.ShowModal() == wx.ID_OK:
             self.OpenProject(dialog.GetPath())
         dialog.Destroy()

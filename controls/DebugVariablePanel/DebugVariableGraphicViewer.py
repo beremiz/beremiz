@@ -797,8 +797,9 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
             # If middle button is pressed and moving graph along X coordinate
             # is in progress
-            elif event.button == 2 and self.GraphType == GRAPH_PARALLEL and \
-                 self.MouseStartPos is not None:
+            elif (event.button == 2 and
+                  self.GraphType == GRAPH_PARALLEL and
+                  self.MouseStartPos is not None):
                 start_tick, end_tick = self.ParentWindow.GetRange()
                 rect = self.GetAxesBoundingBox()
 
@@ -1038,8 +1039,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             for idx in xrange(num_item):
 
                 # Get color from color cycle (black if only one item)
-                color = ('k' if num_item == 1
-                             else COLOR_CYCLE[idx % len(COLOR_CYCLE)])
+                color = ('k' if num_item == 1 else
+                         COLOR_CYCLE[idx % len(COLOR_CYCLE)])
 
                 # In 3D graph items variable label are not displayed as text
                 # in figure, but as axis title

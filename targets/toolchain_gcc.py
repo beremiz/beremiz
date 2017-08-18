@@ -54,7 +54,7 @@ class toolchain_gcc():
         Returns list of builder specific LDFLAGS
         """
         return self.CTRInstance.LDFLAGS + \
-               [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
+            [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
 
     def getCompiler(self):
         """

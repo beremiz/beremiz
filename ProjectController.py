@@ -1700,10 +1700,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return
 
         # Get connector uri
-        uri = self.\
-              BeremizRoot.\
-              getURI_location().\
-              strip()
+        uri = self.BeremizRoot.getURI_location().strip()
 
         # if uri is empty launch discovery dialog
         if uri == "":

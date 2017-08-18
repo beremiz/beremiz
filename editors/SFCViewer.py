@@ -61,7 +61,7 @@ class SFC_Viewer(Viewer):
         SELECTION_DIVERGENCE: [("SFC_Transition", SOUTH)],
 
         SELECTION_CONVERGENCE: [("SFC_Step", SOUTH),
-                                  ("SFC_Jump", SOUTH)],
+                                ("SFC_Jump", SOUTH)],
 
         SIMULTANEOUS_DIVERGENCE: [("SFC_Step", SOUTH)],
 

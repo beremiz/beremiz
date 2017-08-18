@@ -1229,8 +1229,9 @@ def ComputeMultiplicity(name, infos):
         if infos["maxOccurs"] == "unbounded":
             return "(?:%s){%d,}" % (name, infos["minOccurs"], name)
         else:
-            return "(?:%s){%d,%d}" % (name, infos["minOccurs"],
-                                       infos["maxOccurs"])
+            return "(?:%s){%d,%d}" % (name,
+                                      infos["minOccurs"],
+                                      infos["maxOccurs"])
 
 
 def GetStructurePattern(classinfos):

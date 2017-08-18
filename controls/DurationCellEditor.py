@@ -138,8 +138,8 @@ class DurationCellEditor(wx.grid.PyGridCellEditor):
 
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,
-                                        rect.width, rect.height,
-                                        wx.SIZE_ALLOW_MINUS_ONE)
+                                       rect.width, rect.height,
+                                       wx.SIZE_ALLOW_MINUS_ONE)
 
     def Clone(self):
         return DurationCellEditor(self.Table)

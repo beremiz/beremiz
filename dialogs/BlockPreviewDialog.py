@@ -92,9 +92,10 @@ class BlockPreviewDialog(wx.Dialog):
         # Remove reference to project controller
         self.Controller = None
 
-    def _init_sizers(self, main_rows, main_growable_row,
-                            left_rows, left_growable_row,
-                            right_rows, right_growable_row):
+    def _init_sizers(self,
+                     main_rows, main_growable_row,
+                     left_rows, left_growable_row,
+                     right_rows, right_growable_row):
         """
         Initialize common sizers
         @param main_rows: Number of rows in main sizer
@@ -278,11 +279,11 @@ class BlockPreviewDialog(wx.Dialog):
 
         # If graphic element is too big to be displayed in preview panel,
         # calculate preview panel scale so that graphic element fit inside
+        k = 1.1 if (bbox.width * 1.1 > client_size.width or
+                    bbox.height * 1.1 > client_size.height) \
+                else 1.0
         scale = (max(float(bbox.width) / client_size.width,
-                     float(bbox.height) / client_size.height) * 1.1
-                 if bbox.width * 1.1 > client_size.width or
-                    bbox.height * 1.1 > client_size.height
-                 else 1.0)
+                     float(bbox.height) / client_size.height) * k)
         dc.SetUserScale(1.0 / scale, 1.0 / scale)
 
         # Center graphic element in preview panel

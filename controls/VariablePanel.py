@@ -506,8 +506,8 @@ class VariablePanel(wx.Panel):
                 self.FilterChoices = ["All", "Global"]  # ,"Access"]
             else:
                 self.FilterChoices = ["All",
-                                        "Interface", "   Input", "   Output", "   InOut", "   External",
-                                        "Variables", "   Local", "   Temp"]  # ,"Access"]
+                                      "Interface", "   Input", "   Output", "   InOut", "   External",
+                                      "Variables", "   Local", "   Temp"]  # ,"Access"]
 
             # these condense the ColAlignements list
             left = wx.ALIGN_LEFT
@@ -526,12 +526,12 @@ class VariablePanel(wx.Panel):
 
             if element_type == "function":
                 self.FilterChoices = ["All",
-                                        "Interface", "   Input", "   Output", "   InOut",
-                                        "Variables", "   Local"]
+                                      "Interface", "   Input", "   Output", "   InOut",
+                                      "Variables", "   Local"]
             else:
                 self.FilterChoices = ["All",
-                                        "Interface", "   Input", "   Output", "   InOut", "   External",
-                                        "Variables", "   Local", "   Temp"]
+                                      "Interface", "   Input", "   Output", "   InOut", "   External",
+                                      "Variables", "   Local", "   Temp"]
 
             # these condense the alignements list
             left = wx.ALIGN_LEFT

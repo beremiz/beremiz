@@ -588,11 +588,11 @@ def ReduceSimpleContent(factory, attributes, elements):
     if basetypeinfos["type"] == SIMPLETYPE:
         contenttypeinfos = simpleContent.copy()
         simpleContent.pop("base")
-    elif basetypeinfos["type"] == COMPLEXTYPE and \
-         len(basetypeinfos["elements"]) == 1 and \
-         basetypeinfos["elements"][0]["name"] == "content" and \
-         "elmt_type" in basetypeinfos["elements"][0] and \
-         basetypeinfos["elements"][0]["elmt_type"]["type"] == SIMPLETYPE:
+    elif (basetypeinfos["type"] == COMPLEXTYPE and
+          len(basetypeinfos["elements"]) == 1 and
+          basetypeinfos["elements"][0]["name"] == "content" and
+          "elmt_type" in basetypeinfos["elements"][0] and
+          basetypeinfos["elements"][0]["elmt_type"]["type"] == SIMPLETYPE):
         contenttypeinfos = simpleContent.copy()
         contenttypeinfos["base"] = basetypeinfos["elements"][0]["elmt_type"]
     else:

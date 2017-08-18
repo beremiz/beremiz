@@ -572,15 +572,16 @@ class ConciseDCFGenerator:
                     variable_infos = self.IECLocations[varname]
 
                     # Calculate base index for storing variable
-                    mapvariableidx = VariableStartIndex[variable_infos["pdotype"]] + \
-                                     VariableTypeOffset[variable_infos["sizelocation"]] * VariableIncrement + \
-                                     variable_infos["nodeid"]
+                    mapvariableidx = \
+                        VariableStartIndex[variable_infos["pdotype"]] + \
+                        VariableTypeOffset[variable_infos["sizelocation"]] * VariableIncrement + \
+                        variable_infos["nodeid"]
 
                     # Generate entry name
                     indexname = "%s%s%s_%d" % (VariableDirText[variable_infos["pdotype"]],
-                                                 variable_infos["sizelocation"],
-                                                 '_'.join(map(str, current_location)),
-                                                 variable_infos["nodeid"])
+                                               variable_infos["sizelocation"],
+                                               '_'.join(map(str, current_location)),
+                                               variable_infos["nodeid"])
 
                     # Search for an entry that has an empty subindex
                     while mapvariableidx < VariableStartIndex[variable_infos["pdotype"]] + 0x2000:

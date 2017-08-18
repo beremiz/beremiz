@@ -547,14 +547,10 @@ class Translator:
             except ValueError:
                 # Must be a function call ...
                 return ("pyjs_kwargs_function_call("+call_name+", "
-                                  + star_arg_name
-                                  + ", ["+fn_args+"]"
-                                  + ")")
+                        + star_arg_name + ", ["+fn_args+"]" + ")")
             else:
                 return ("pyjs_kwargs_method_call("+call_this+", '"+method_name+"', "
-                                  + star_arg_name
-                                  + ", ["+fn_args+"]"
-                                  + ")")
+                        + star_arg_name + ", ["+fn_args+"]" + ")")
         else:
             return call_name + "(" + ", ".join(call_args) + ")"
 
@@ -637,7 +633,7 @@ class Translator:
         return strip_py(self.module_prefix)
 
     def _name(self, v, current_klass, top_level=False,
-                                      return_none_for_module=False):
+              return_none_for_module=False):
 
         if v.name == 'ilikesillynamesfornicedebugcode':
             print top_level, current_klass, repr(v)
@@ -689,8 +685,7 @@ class Translator:
                     cls_name = cls_name.name
                 else:
                     cls_name_ = current_klass + "_"  # XXX ???
-                name = UU+cls_name_ + ".prototype.__class__." \
-                                   + v.name
+                name = UU+cls_name_ + ".prototype.__class__." + v.name
                 if v.name == 'listener':
                     name = 'listener+' + name
                 return name
@@ -781,8 +776,9 @@ class Translator:
                 # pass our class to self._name
                 base_class_ = self._name(node.bases[0].expr, None) + \
                              ".__" + node.bases[0].attrname
-                base_class = self._name(node.bases[0].expr, None) + \
-                             "." + node.bases[0].attrname
+                base_class = \
+                    self._name(node.bases[0].expr, None) + \
+                    "." + node.bases[0].attrname
             else:
                 raise TranslationError("unsupported type (in _class)", node.bases[0])
 
@@ -949,7 +945,7 @@ class Translator:
             print >>self.output, "    "+altexpr+".__name__ = '%s';" % node.name
 
         print >>self.output, UU + class_name_ + ".prototype.%s.__name__ = '%s';" % \
-                (node.name, node.name)
+            (node.name, node.name)
 
         if node.kwargs or len(node.defaults):
             print >>self.output, "    "+altexpr + ".parse_kwargs = " + fexpr + ".parse_kwargs;"
@@ -1014,23 +1010,22 @@ class Translator:
             haltException = self.module_prefix + "HaltException"
             isHaltFunction = self.module_prefix + "IsHaltException"
 
-            print >>self.output, '  } catch (__err) {'
-            print >>self.output, '      if (' + isHaltFunction + '(__err.name)) {'
-            print >>self.output, '          throw __err;'
-            print >>self.output, '      } else {'
-            print >>self.output, "          st = sys.printstack() + "\
-                                                + '"%s"' % lt + "+ '\\n' ;"
-            print >>self.output, '          alert("' + "Error in " \
-                                                + lt + '"' \
-                                                + '+"\\n"+__err.name+": "+__err.message'\
-                                                + '+"\\n\\nStack trace:\\n"' \
-                                                + '+st' \
-                                                + ');'
-            print >>self.output, '          debugger;'
-
-            print >>self.output, '          throw new ' + self.module_prefix + "HaltException();"
-            print >>self.output, '      }'
-            print >>self.output, '  }'
+            out = (
+                '  } catch (__err) {',
+                '      if (' + isHaltFunction + '(__err.name)) {',
+                '          throw __err;',
+                '      } else {',
+                '          st = sys.printstack() + ' + '"%s"' % lt + "+ '\\n' ;"
+                '          alert("' + 'Error in ' + lt + '"'
+                + '+"\\n"+__err.name+": "+__err.message'
+                + '+"\\n\\nStack trace:\\n"' + '+st' + ');',
+                '          debugger;',
+                '          throw new ' + self.module_prefix + 'HaltException();',
+                '      }',
+                '  }'
+            )
+            for s in out:
+                print >>self.output, s
 
     def get_line_trace(self, node):
         lineNum = "Unknown"
@@ -1044,9 +1039,9 @@ class Translator:
                 srcLine = srcLine.replace("'", "\\'")
 
         return self.raw_module_name + ".py, line " \
-               + str(lineNum) + ":"\
-               + "\\n" \
-               + "    " + srcLine
+            + str(lineNum) + ":"\
+            + "\\n" \
+            + "    " + srcLine
 
     def _augassign(self, node, current_klass):
         v = node.node
@@ -1096,7 +1091,7 @@ class Translator:
                     self.top_level_vars.add(v.name)
                     vname = self.modpfx() + v.name
                     if not self.modpfx() and v.name not in\
-                           self.method_imported_globals:
+                       self.method_imported_globals:
                         lhs = "var " + vname
                     else:
                         lhs = UU + vname
@@ -1159,7 +1154,7 @@ class Translator:
                         idx = self.expr(child.subs[0], current_klass)
                         value = self.expr(node.expr, current_klass)
                         print >>self.output, "    " + obj + ".__setitem__(" \
-                                           + idx + ", " + rhs + ");"
+                            + idx + ", " + rhs + ");"
                         continue
                 print >>self.output, "    " + lhs + " = " + rhs + ";"
             return
@@ -1690,7 +1685,7 @@ class AppTranslator:
         mod, override = self.parser.parseModule(module_name, file_name)
         if override:
             override_name = "%s.%s" % (self.parser.platform.lower(),
-                                           module_name)
+                                       module_name)
             self.overrides[override_name] = override_name
         if is_app:
             mn = '__main__'
