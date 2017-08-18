@@ -1526,8 +1526,8 @@ class PouProgramGenerator:
                                                    (ReIndentText(transitionBody.getcontent().getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]
                 else:
                     for instance in transitionBody.getcontentInstances():
-                        if isinstance(instance, OutVariableClass) and instance.getexpression() == transitionValues["value"]\
-                            or isinstance(instance, CoilClass) and instance.getvariable() == transitionValues["value"]:
+                        if isinstance(instance, OutVariableClass) and instance.getexpression() == transitionValues["value"] or \
+                           isinstance(instance, CoilClass) and instance.getvariable() == transitionValues["value"]:
                             connections = instance.connectionPointIn.getconnections()
                             if connections is not None:
                                 expression = self.ComputeExpression(transitionBody, connections)

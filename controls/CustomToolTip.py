@@ -87,8 +87,7 @@ class CustomToolTip(wx.PopupWindow):
                     new_line = words[0]
                     for word in words[1:]:
                         # Add word to line
-                        if len(new_line + " " + word) <= \
-                            TOOLTIP_MAX_CHARACTERS:
+                        if len(new_line + " " + word) <= TOOLTIP_MAX_CHARACTERS:
                             new_line += " " + word
                         # Create new line
                         else:
