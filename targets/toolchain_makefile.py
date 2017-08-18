@@ -109,8 +109,7 @@ class toolchain_makefile():
             beremizcommand = {"src": ' '.join(srcfiles),
                               "cflags": ' '.join(cflags),
                               "md5": self.md5key,
-                              "buildpath": self.buildpath
-                             }
+                              "buildpath": self.buildpath}
 
             # clean sequence of multiple whitespaces
             cmd = re.sub(r"[ ]+", " ", target.getCommand().strip())

@@ -41,35 +41,38 @@ from PLCGenerator import *
 
 duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
 
-ITEMS_EDITABLE = [ITEM_PROJECT,
-                  ITEM_POU,
-                  ITEM_VARIABLE,
-                  ITEM_TRANSITION,
-                  ITEM_ACTION,
-                  ITEM_CONFIGURATION,
-                  ITEM_RESOURCE,
-                  ITEM_DATATYPE
-                 ] = range(8)
+ITEMS_EDITABLE = [
+    ITEM_PROJECT,
+    ITEM_POU,
+    ITEM_VARIABLE,
+    ITEM_TRANSITION,
+    ITEM_ACTION,
+    ITEM_CONFIGURATION,
+    ITEM_RESOURCE,
+    ITEM_DATATYPE
+] = range(8)
 
-ITEMS_UNEDITABLE = [ITEM_DATATYPES,
-                    ITEM_FUNCTION,
-                    ITEM_FUNCTIONBLOCK,
-                    ITEM_PROGRAM,
-                    ITEM_TRANSITIONS,
-                    ITEM_ACTIONS,
-                    ITEM_CONFIGURATIONS,
-                    ITEM_RESOURCES,
-                    ITEM_PROPERTIES
-                   ] = range(8, 17)
+ITEMS_UNEDITABLE = [
+    ITEM_DATATYPES,
+    ITEM_FUNCTION,
+    ITEM_FUNCTIONBLOCK,
+    ITEM_PROGRAM,
+    ITEM_TRANSITIONS,
+    ITEM_ACTIONS,
+    ITEM_CONFIGURATIONS,
+    ITEM_RESOURCES,
+    ITEM_PROPERTIES
+] = range(8, 17)
 
-ITEMS_VARIABLE = [ITEM_VAR_LOCAL,
-                  ITEM_VAR_GLOBAL,
-                  ITEM_VAR_EXTERNAL,
-                  ITEM_VAR_TEMP,
-                  ITEM_VAR_INPUT,
-                  ITEM_VAR_OUTPUT,
-                  ITEM_VAR_INOUT
-                 ] = range(17, 24)
+ITEMS_VARIABLE = [
+    ITEM_VAR_LOCAL,
+    ITEM_VAR_GLOBAL,
+    ITEM_VAR_EXTERNAL,
+    ITEM_VAR_TEMP,
+    ITEM_VAR_INPUT,
+    ITEM_VAR_OUTPUT,
+    ITEM_VAR_INOUT
+] = range(17, 24)
 
 VAR_CLASS_INFOS = {
     "Local":    ("localVars",    ITEM_VAR_LOCAL),
@@ -80,10 +83,11 @@ VAR_CLASS_INFOS = {
     "Output":   ("outputVars",   ITEM_VAR_OUTPUT),
     "InOut":    ("inOutVars",    ITEM_VAR_INOUT)}
 
-POU_TYPES = {"program": ITEM_PROGRAM,
-             "functionBlock": ITEM_FUNCTIONBLOCK,
-             "function": ITEM_FUNCTION,
-            }
+POU_TYPES = {
+    "program": ITEM_PROGRAM,
+    "functionBlock": ITEM_FUNCTIONBLOCK,
+    "function": ITEM_FUNCTION,
+}
 
 LOCATIONS_ITEMS = [LOCATION_CONFNODE,
                    LOCATION_MODULE,

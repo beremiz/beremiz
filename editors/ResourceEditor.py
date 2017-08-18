@@ -37,7 +37,8 @@ from util.TranslationCatalogs import NoTranslate
 #                          Configuration Editor class
 #-------------------------------------------------------------------------------
 
-[ID_CONFIGURATIONEDITOR,
+[
+    ID_CONFIGURATIONEDITOR,
 ] = [wx.NewId() for _init_ctrls in range(1)]
 
 

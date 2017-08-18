@@ -124,8 +124,7 @@ def _runtime_%(location)s_stop():
 
 """ % {"location": location_str,
        "svgui_class": "SVGUI_HMI",
-       "jsmodules": str(jsmodules),
-      })
+       "jsmodules": str(jsmodules)})
         runtimefile.close()
 
         res += (("runtime_%s.py" % location_str, file(runtimefile_path, "rb")),)

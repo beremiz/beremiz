@@ -43,8 +43,9 @@ from util.TranslationCatalogs import NoTranslate
 #                                 Helpers
 #-------------------------------------------------------------------------------
 
-[TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
- POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
+[
+    TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
+    POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
 ] = range(10)
 
 
@@ -89,14 +90,15 @@ def GetFilterChoiceTransfer():
 VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().iterkeys()])
 VARIABLE_CLASSES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().itervalues()])
 
-CheckOptionForClass = {"Local": lambda x: x,
-                       "Temp": lambda x: "",
-                       "Input": lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
-                       "InOut": lambda x: "",
-                       "Output": lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
-                       "Global": lambda x: {"Constant": "Constant", "Retain": "Retain"}.get(x, ""),
-                       "External": lambda x: {"Constant": "Constant"}.get(x, "")
-                      }
+CheckOptionForClass = {
+    "Local":    lambda x: x,
+    "Temp":     lambda x: "",
+    "Input":    lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
+    "InOut":    lambda x: "",
+    "Output":   lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
+    "Global":   lambda x: {"Constant": "Constant", "Retain": "Retain"}.get(x, ""),
+    "External": lambda x: {"Constant": "Constant"}.get(x, "")
+}
 
 LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
 VARIABLE_NAME_SUFFIX_MODEL = re.compile("([0-9]*)$")
