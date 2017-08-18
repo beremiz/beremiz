@@ -109,7 +109,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         @param y: Y coordinate of mouse pointer
         @param d: Suggested default for return value
         """
-       # Signal Debug Variable Panel to refresh highlight giving mouse position
+        # Signal Debug Variable Panel to refresh highlight giving mouse position
         self.ParentWindow.RefreshHighlight(x, y)
         return wx.TextDropTarget.OnDragOver(self, x, y, d)
 
