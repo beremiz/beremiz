@@ -72,9 +72,10 @@ class LDElementDialog(BlockPreviewDialog):
                              if type == "contact"
                              else [COIL_NORMAL, COIL_REVERSE, COIL_SET,
                                    COIL_RESET, COIL_RISING, COIL_FALLING])
-        modifiers_label = [_("Normal"), _("Negated")] + \
-                          ([_("Set"), _("Reset")] if type == "coil" else []) + \
-                          [_("Rising Edge"), _("Falling Edge")]
+        modifiers_label = \
+            [_("Normal"), _("Negated")] + \
+            ([_("Set"), _("Reset")] if type == "coil" else []) + \
+            [_("Rising Edge"), _("Falling Edge")]
 
         for modifier, label in zip(element_modifiers, modifiers_label):
             radio_button = wx.RadioButton(self, label=label,

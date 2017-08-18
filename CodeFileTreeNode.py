@@ -200,7 +200,7 @@ class CodeFile:
         ret = [(variable.getname(),
                 variable.gettype(),
                 variable.getinitial())
-                for variable in variables]
+               for variable in variables]
         ret.extend([("On"+variable.getname()+"Change", "python_poll", "")
                 for variable in variables
                 if variable.getonchange()])

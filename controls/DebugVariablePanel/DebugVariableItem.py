@@ -335,9 +335,10 @@ class DebugVariableItem(DebugDataConsumer):
             idx = self.GetNearestData(tick, 0)
 
             # Get value and forced flag at given index
-            value, forced = self.RawData[int(self.Data[idx, 2])] \
-                            if self.VariableType in ["STRING", "WSTRING"] \
-                            else self.Data[idx, 1:3]
+            value, forced = \
+                self.RawData[int(self.Data[idx, 2])] \
+                if self.VariableType in ["STRING", "WSTRING"] \
+                else self.Data[idx, 1:3]
 
             # Get raw value if asked
             if not raw:

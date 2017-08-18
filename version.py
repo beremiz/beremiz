@@ -31,13 +31,13 @@ import util.paths as paths
 
 def GetCommunityHelpMsg():
     return _("The best place to ask questions about Beremiz/PLCOpenEditor\n"
-		     "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
-                     "\n"
-                     "This is the main community support channel.\n"
-                     "For posting it is required to be subscribed to the mailing list.\n"
-                     "\n"
-                     "You can subscribe to the list here:\n"
-                     "https://lists.sourceforge.net/lists/listinfo/beremiz-devel")
+	     "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
+             "\n"
+             "This is the main community support channel.\n"
+             "For posting it is required to be subscribed to the mailing list.\n"
+             "\n"
+             "You can subscribe to the list here:\n"
+             "https://lists.sourceforge.net/lists/listinfo/beremiz-devel")
 
 
 def GetAppRevision():
@@ -81,8 +81,8 @@ def GetAboutDialogInfo():
     info.WebSite = ("http://beremiz.org", "beremiz.org")
 
     info.Description = _("Open Source framework for automation, "
-                             "implemented IEC 61131 IDE with constantly growing set of extensions "
-                             "and flexible PLC runtime.")
+                         "implemented IEC 61131 IDE with constantly growing set of extensions "
+                         "and flexible PLC runtime.")
 
     info.Developers = ("Andrey Skvortsov <andrej.skvortzov@gmail.com>",
 		       "Sergey Surkov <surkov.sv@summatechnology.ru>",

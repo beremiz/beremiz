@@ -91,18 +91,21 @@ ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, MAX_ZOOMIN)]
 
 def GetVariableCreationFunction(variable_type):
     def variableCreationFunction(viewer, id, specific_values):
-        return FBD_Variable(viewer, variable_type,
-                                    specific_values.name,
-                                    specific_values.value_type,
-                                    id,
-                                    specific_values.execution_order)
+        return FBD_Variable(viewer,
+                            variable_type,
+                            specific_values.name,
+                            specific_values.value_type,
+                            id,
+                            specific_values.execution_order)
     return variableCreationFunction
 
 
 def GetConnectorCreationFunction(connector_type):
     def connectorCreationFunction(viewer, id, specific_values):
-        return FBD_Connector(viewer, connector_type,
-                                     specific_values.name, id)
+        return FBD_Connector(viewer,
+                             connector_type,
+                             specific_values.name,
+                             id)
     return connectorCreationFunction
 
 
@@ -112,8 +115,10 @@ def commentCreationFunction(viewer, id, specific_values):
 
 def GetPowerRailCreationFunction(powerrail_type):
     def powerRailCreationFunction(viewer, id, specific_values):
-        return LD_PowerRail(viewer, powerrail_type, id,
-                                    specific_values.connectors)
+        return LD_PowerRail(viewer,
+                            powerrail_type,
+                            id,
+                            specific_values.connectors)
     return powerRailCreationFunction
 
 
@@ -153,8 +158,10 @@ def coilCreationFunction(viewer, id, specific_values):
 
 
 def stepCreationFunction(viewer, id, specific_values):
-    step = SFC_Step(viewer, specific_values.name,
-                            specific_values.initial, id)
+    step = SFC_Step(viewer,
+                    specific_values.name,
+                    specific_values.initial,
+                    id)
     if specific_values.action is not None:
         step.AddAction()
         connector = step.GetActionConnector()
@@ -163,9 +170,11 @@ def stepCreationFunction(viewer, id, specific_values):
 
 
 def transitionCreationFunction(viewer, id, specific_values):
-    transition = SFC_Transition(viewer, specific_values.condition_type,
-                                        specific_values.condition,
-                                        specific_values.priority, id)
+    transition = SFC_Transition(viewer,
+                                specific_values.condition_type,
+                                specific_values.condition,
+                                specific_values.priority,
+                                id)
     return transition
 
 
@@ -176,7 +185,7 @@ divergence_types = [SELECTION_DIVERGENCE,
 def GetDivergenceCreationFunction(divergence_type):
     def divergenceCreationFunction(viewer, id, specific_values):
         return SFC_Divergence(viewer, divergence_type,
-                                      specific_values.connectors, id)
+                              specific_values.connectors, id)
     return divergenceCreationFunction
 
 

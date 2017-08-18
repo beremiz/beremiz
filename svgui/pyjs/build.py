@@ -323,11 +323,11 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
         app_translator = pyjs.AppTranslator(
             parser=parser, dynamic=dynamic, optimize=optimize)
         early_app_libs[platform], appcode = \
-                     app_translator.translate(None, is_app=False,
-                                              debug=debug,
-                                      library_modules=['dynamicajax.js',
-                                                    '_pyjs.js', 'sys',
-                                                     'pyjslib'])
+            app_translator.translate(None, is_app=False,
+                                     debug=debug,
+                                     library_modules=['dynamicajax.js',
+                                                      '_pyjs.js', 'sys',
+                                                      'pyjslib'])
         pover[platform].update(app_translator.overrides.items())
         for mname, name in app_translator.overrides.items():
             pd = overrides.setdefault(mname, {})
@@ -370,9 +370,9 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             parser.setPlatform(platform)
             mod_translator = pyjs.AppTranslator(parser=parser, optimize=optimize)
             mod_libs[platform][mod_name], mod_code[platform][mod_name] = \
-                              mod_translator.translate(mod_name,
-                                                  is_app=False,
-                                                  debug=debug)
+                mod_translator.translate(mod_name,
+                                         is_app=False,
+                                         debug=debug)
             pover[platform].update(mod_translator.overrides.items())
             for mname, name in mod_translator.overrides.items():
                 pd = overrides.setdefault(mname, {})

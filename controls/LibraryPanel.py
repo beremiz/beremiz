@@ -170,14 +170,14 @@ class LibraryPanel(wx.Panel):
             # Get current selected item for selected it when values refreshed
             selected_item = self.Tree.GetSelection()
             selected_pydata = (self.Tree.GetPyData(selected_item)
-                               if selected_item.IsOk() and
-                                  selected_item != self.Tree.GetRootItem()
+                               if (selected_item.IsOk() and
+                                   selected_item != self.Tree.GetRootItem())
                                else None)
             # Don't save selected item if it is a category
             selected_infos = ((self.Tree.GetItemText(selected_item),
                                selected_pydata["inputs"])
-                             if selected_pydata is not None and
-                                selected_pydata["type"] == BLOCK
+                             if (selected_pydata is not None and
+                                 selected_pydata["type"] == BLOCK)
                              else (None, None))
 
             # Get TreeCtrl root item (hidden)
@@ -295,15 +295,15 @@ class LibraryPanel(wx.Panel):
         # Get selected item associated data in tree
         selected_item = self.Tree.GetSelection()
         selected_pydata = (self.Tree.GetPyData(selected_item)
-                           if selected_item.IsOk() and
-                              selected_item != self.Tree.GetRootItem()
+                           if (selected_item.IsOk() and
+                               selected_item != self.Tree.GetRootItem())
                            else None)
 
         # Return value is None if selected tree item is root or a category
         return ({"type": self.Tree.GetItemText(selected_item),
                  "inputs": selected_pydata["inputs"]}
-                if selected_pydata is not None and
-                   selected_pydata["type"] == BLOCK
+                if (selected_pydata is not None and
+                    selected_pydata["type"] == BLOCK)
                 else None)
 
     def SelectTreeItem(self, name, inputs):

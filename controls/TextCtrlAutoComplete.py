@@ -60,9 +60,10 @@ class PopupWithListbox(wx.PopupWindow):
 
         itemcount = min(len(choices), MAX_ITEM_SHOWN)
         width = self.Parent.GetSize()[0]
-        height = max_text_height * itemcount + \
-                 LISTBOX_INTERVAL_HEIGHT * max(0, itemcount - 1) + \
-                 2 * LISTBOX_BORDER_HEIGHT
+        height = \
+            max_text_height * itemcount + \
+            LISTBOX_INTERVAL_HEIGHT * max(0, itemcount - 1) + \
+            2 * LISTBOX_BORDER_HEIGHT
         if max_text_width + 10 > width:
             height += 15
         size = wx.Size(width, height)

@@ -1548,10 +1548,10 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             if self.ValueSize is not None:
                 width, height = self.ValueSize
                 dc.DrawText(self.ComputedValue,
-                    parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
-                                    width * (self.Direction[0] - 1) / 2,
-                    parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
-                                    height * (self.Direction[1] - 1))
+                            parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
+                            width * (self.Direction[0] - 1) / 2,
+                            parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
+                            height * (self.Direction[1] - 1))
             dc.SetFont(self.ParentBlock.Parent.GetFont())
             dc.SetTextForeground(wx.BLACK)
 

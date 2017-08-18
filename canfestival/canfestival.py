@@ -74,7 +74,7 @@ def GetSlaveLocationTree(slave_node, current_location, name):
                 "IEC_type": IECTypeConversion.get(typeinfos["name"]),
                 "var_name": "%s_%4.4x_%2.2x" % ("_".join(name.split()), index, subindex),
                 "location": "%s%s" % (SizeConversion[size], ".".join(map(str, current_location +
-                                                                                (index, subindex)))),
+                                                                         (index, subindex)))),
                 "description": "",
                 "children": []})
     return {"name": name,
@@ -352,16 +352,19 @@ class _NodeListCTN(NodeList):
         current_location = self.GetCurrentLocation()
         nodeindexes = self.SlaveNodes.keys()
         nodeindexes.sort()
-        return {"name": self.BaseParams.getName(),
-                 "type": LOCATION_CONFNODE,
-                 "location": self.GetFullIEC_Channel(),
-                 "children": [GetSlaveLocationTree(self.Manager.GetCurrentNodeCopy(),
-                                                   current_location,
-                                                   _("Local entries"))] +
-                             [GetSlaveLocationTree(self.SlaveNodes[nodeid]["Node"],
-                                                   current_location + (nodeid,),
-                                                   self.SlaveNodes[nodeid]["Name"])
-                              for nodeid in nodeindexes]
+        children = []
+        children += [GetSlaveLocationTree(self.Manager.GetCurrentNodeCopy(),
+                                          current_location,
+                                          _("Local entries"))]
+        children += [GetSlaveLocationTree(self.SlaveNodes[nodeid]["Node"],
+                                          current_location + (nodeid,),
+                                          self.SlaveNodes[nodeid]["Name"]) for nodeid in nodeindexes]
+
+        return {
+            "name":     self.BaseParams.getName(),
+            "type":     LOCATION_CONFNODE,
+            "location": self.GetFullIEC_Channel(),
+            "children": children
         }
 
     _GeneratedMasterView = None

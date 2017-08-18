@@ -530,7 +530,7 @@ class ConfigTreeNode:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
         except KeyError:
             raise Exception(_("Cannot create child {a1} of type {a2} ").
-                             format(a1=CTNName, a2=CTNType))
+                            format(a1=CTNName, a2=CTNType))
 
         # if CTNClass is a class factory, call it. (prevent unneeded imports)
         if type(CTNClass) == types.FunctionType:

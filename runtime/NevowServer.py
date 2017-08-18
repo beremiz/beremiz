@@ -118,12 +118,12 @@ class MainPage(athena.LiveElement):
 class WebInterface(athena.LivePage):
 
     docFactory = loaders.stan([tags.raw(xhtml_header),
-                                tags.html(xmlns="http://www.w3.org/1999/xhtml")[
-                                    tags.head(render=tags.directive('liveglue')),
-                                    tags.body[
-                                        tags.div[
-                                                tags.div(render=tags.directive("MainPage"))
-                                                ]]]])
+                               tags.html(xmlns="http://www.w3.org/1999/xhtml")[
+                                   tags.head(render=tags.directive('liveglue')),
+                                   tags.body[
+                                       tags.div[
+                                           tags.div(render=tags.directive("MainPage"))
+                                       ]]]])
     MainPage = MainPage()
     PLCHMI = PLCHMI
 

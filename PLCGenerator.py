@@ -444,10 +444,10 @@ class ProgramGenerator:
         # Generate any program assign to no task
         for instance in resource.getpouInstance():
             resrce += [("    PROGRAM ", ()),
-                           (instance.getname(), (tagname, "instance", instance_number, "name")),
-                           (" : ", ()),
-                           (instance.gettypeName(), (tagname, "instance", instance_number, "type")),
-                           (";\n", ())]
+                       (instance.getname(),     (tagname, "instance", instance_number, "name")),
+                       (" : ", ()),
+                       (instance.gettypeName(), (tagname, "instance", instance_number, "type")),
+                       (";\n", ())]
             instance_number += 1
         resrce += [("  END_RESOURCE\n", ())]
         return resrce

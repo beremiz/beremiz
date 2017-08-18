@@ -483,7 +483,7 @@ class PLCObject(pyro.ObjBase):
                     if force is not None:
                         c_type, unpack_func, pack_func = \
                             TypeTranslator.get(iectype,
-                                                    (None, None, None))
+                                               (None, None, None))
                         force = ctypes.byref(pack_func(c_type, force))
                     self._RegisterDebugVariable(idx, force)
                 self._TracesSwap()
