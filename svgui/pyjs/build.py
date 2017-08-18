@@ -143,7 +143,7 @@ def check_html_file(source_file, dest_path):
     file_name = os.path.join(dest_path, mod_name + '.html')
 
     # if html file in output directory exists, leave it alone.
-    if os.path.exists (file_name):
+    if os.path.exists(file_name):
         return 0
 
     if os.path.exists(os.path.join(dest_path, mod_name + '.css')):
@@ -158,9 +158,9 @@ def check_html_file(source_file, dest_path):
 
     base_html = base_html % {'modulename': mod_name, 'title': title, 'css': css}
 
-    fh = open (file_name, 'w')
-    fh.write  (base_html)
-    fh.close  ()
+    fh = open(file_name, 'w')
+    fh.write(base_html)
+    fh.close()
 
     return 1
 

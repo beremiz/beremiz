@@ -110,8 +110,8 @@ class PopupWithListbox(wx.PopupWindow):
 
 class TextCtrlAutoComplete(wx.TextCtrl):
 
-    def __init__ (self, parent, choices=None, dropDownClick=True,
-                  element_path=None, **therest):
+    def __init__(self, parent, choices=None, dropDownClick=True,
+                 element_path=None, **therest):
         """
         Constructor works just like wx.TextCtrl except you can pass in a
         list of choices.  You can also change the choice list at any time

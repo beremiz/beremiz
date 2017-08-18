@@ -588,9 +588,9 @@ class Translator:
             k = []
             if isinstance(expr, ast.Tuple):
                 for x in expr.nodes:
-                    k.append("(%(err)s.__name__ == %(expr)s.__name__)" % dict (err=errName, expr=self.expr(x, current_klass)))
+                    k.append("(%(err)s.__name__ == %(expr)s.__name__)" % dict(err=errName, expr=self.expr(x, current_klass)))
             else:
-                k = [" (%(err)s.__name__ == %(expr)s.__name__) " % dict (err=errName, expr=self.expr(expr, current_klass))]
+                k = [" (%(err)s.__name__ == %(expr)s.__name__) " % dict(err=errName, expr=self.expr(expr, current_klass))]
             print >> self.output, "   if(%s) {" % '||\n\t\t'.join(k)
         for stmt in node.handlers[0][2]:
             self._stmt(stmt, current_klass)

@@ -106,8 +106,8 @@ class CustomToolTip(wx.PopupWindow):
                 if len(self.Tip[-1]) < TOOLTIP_MAX_CHARACTERS - 3:
                     self.Tip[-1] += "..."
                 else:
-                    self.Tip[-1] = self.Tip[-1]\
-                        [:TOOLTIP_MAX_CHARACTERS - 3] + "..."
+                    self.Tip[-1] = self.Tip[-1][:TOOLTIP_MAX_CHARACTERS - 3] + \
+                                   "..."
         else:
             self.Tip = tip.splitlines()
 
