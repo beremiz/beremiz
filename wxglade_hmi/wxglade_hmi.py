@@ -120,8 +120,8 @@ class WxGladeHMI(PythonFileCTNMixin):
             define_hmi = ""
 
         declare_hmi = "\n".join(["%(name)s = None\n" % x +
-                          "\n".join(["%(class)s.%(h)s = %(h)s" %
-                            dict(x, h=h) for h in x['handlers']])
+                                 "\n".join(["%(class)s.%(h)s = %(h)s" %
+                                            dict(x, h=h) for h in x['handlers']])
                                 for x in hmi_frames])
         global_hmi = ("global %s\n" % ",".join(
                          [x["name"] for x in hmi_frames])

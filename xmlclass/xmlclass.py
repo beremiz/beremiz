@@ -1004,8 +1004,8 @@ class ClassFactory:
 
     def GetEquivalentParents(self, parent):
         return reduce(lambda x, y: x + y,
-            [[p] + self.GetEquivalentParents(p)
-             for p in self.EquivalentClassesParent.get(parent, {}).keys()], [])
+                      [[p] + self.GetEquivalentParents(p)
+                       for p in self.EquivalentClassesParent.get(parent, {}).keys()], [])
 
     """
     Methods that generates the classes
@@ -1310,8 +1310,8 @@ def generateGetattrMethod(factory, class_definition, classinfos):
                     values = self.findall(element_name)
                     if element_infos["elmt_type"]["type"] == SIMPLETYPE:
                         return map(lambda value:
-                            element_infos["elmt_type"]["extract"](value.text, extract=False),
-                            values)
+                                   element_infos["elmt_type"]["extract"](value.text, extract=False),
+                                   values)
                     return values
                 else:
                     value = self.find(element_name)
@@ -1421,7 +1421,9 @@ def generateGetElementAttributes(factory, classinfos):
             attr_list.extend(classinfos["base"].getElementAttributes(self))
         for attr in classinfos["attributes"]:
             if attr["use"] != "prohibited":
-                attr_params = {"name": attr["name"], "use": attr["use"],
+                attr_params = {
+                    "name": attr["name"],
+                    "use": attr["use"],
                     "type": gettypeinfos(attr["attr_type"]["basename"], attr["attr_type"]["facets"]),
                     "value": getattr(self, attr["name"], "")}
                 attr_list.append(attr_params)
@@ -1487,7 +1489,9 @@ def generateGetElementInfos(factory, classinfos):
                         if self.content is not None:
                             children.extend(self.content.getElementInfos(value)["children"])
                 elif element["elmt_type"]["type"] == SIMPLETYPE:
-                    children.append({"name": element_name, "require": element["minOccurs"] != 0,
+                    children.append({
+                        "name": element_name,
+                        "require": element["minOccurs"] != 0,
                         "type": gettypeinfos(element["elmt_type"]["basename"],
                                              element["elmt_type"]["facets"]),
                         "value": getattr(self, element_name, None)})
@@ -1515,8 +1519,8 @@ def generateSetElementValue(factory, classinfos):
                 elif attributes[parts[0]]["use"] == "optional" and value == "":
                     if "default" in attributes[parts[0]]:
                         setattr(self, parts[0],
-                            attributes[parts[0]]["attr_type"]["extract"](
-                                attributes[parts[0]]["default"], False))
+                                attributes[parts[0]]["attr_type"]["extract"](
+                                    attributes[parts[0]]["default"], False))
                     else:
                         setattr(self, parts[0], None)
                 else:
@@ -1757,8 +1761,8 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
     def lookup(self, document, element):
         parent = element.getparent()
-        element_class = self.GetElementClass(element.tag,
-            parent.tag if parent is not None else None)
+        element_class = self.GetElementClass(
+            element.tag, parent.tag if parent is not None else None)
         if isinstance(element_class, ListType):
             children = "".join([
                 "%s " % etree.QName(child.tag).localname

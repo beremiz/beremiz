@@ -488,7 +488,7 @@ class FBD_Block(Graphic_Element):
         if self.ExecutionOrder != 0:
             # Draw block execution order
             dc.DrawText(str(self.ExecutionOrder), self.Pos.x + self.Size[0] - executionorder_size[0],
-                    self.Pos.y + self.Size[1] + 2)
+                        self.Pos.y + self.Size[1] + 2)
 
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights.get("name", []), name_pos[0], name_pos[1])
@@ -727,8 +727,8 @@ class FBD_Variable(Graphic_Element):
         if event.ControlDown():
             # Change variable type
             types = [INPUT, OUTPUT, INOUT]
-            self.Parent.ChangeVariableType(self,
-                types[(types.index(self.Type) + 1) % len(types)])
+            self.Parent.ChangeVariableType(
+                self, types[(types.index(self.Type) + 1) % len(types)])
         else:
             # Edit the variable properties
             self.Parent.EditVariableContent(self)
@@ -787,7 +787,7 @@ class FBD_Variable(Graphic_Element):
         if self.ExecutionOrder != 0:
             # Draw variable execution order
             dc.DrawText(str(self.ExecutionOrder), self.Pos.x + self.Size[0] - executionorder_size[0],
-                    self.Pos.y + self.Size[1] + 2)
+                        self.Pos.y + self.Size[1] + 2)
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, text_pos[0], text_pos[1])
 
@@ -1014,13 +1014,13 @@ class FBD_Connector(Graphic_Element):
         dc.DrawRectangle(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
         arrowsize = min(self.Size[1] / 2, (self.Size[0] - name_size[0] - 10) / 2)
         dc.DrawLine(self.Pos.x, self.Pos.y, self.Pos.x + arrowsize,
-                self.Pos.y + self.Size[1] / 2)
+                    self.Pos.y + self.Size[1] / 2)
         dc.DrawLine(self.Pos.x + arrowsize, self.Pos.y + self.Size[1] / 2,
-                self.Pos.x, self.Pos.y + self.Size[1])
+                    self.Pos.x, self.Pos.y + self.Size[1])
         dc.DrawLine(self.Pos.x + self.Size[0] - arrowsize, self.Pos.y,
-                self.Pos.x + self.Size[0], self.Pos.y + self.Size[1] / 2)
+                    self.Pos.x + self.Size[0], self.Pos.y + self.Size[1] / 2)
         dc.DrawLine(self.Pos.x + self.Size[0], self.Pos.y + self.Size[1] / 2,
-                self.Pos.x + self.Size[0] - arrowsize, self.Pos.y + self.Size[1])
+                    self.Pos.x + self.Size[0] - arrowsize, self.Pos.y + self.Size[1])
         # Draw connection name
         text_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2,
                     self.Pos.y + (self.Size[1] - name_size[1]) / 2)

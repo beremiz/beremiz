@@ -33,9 +33,9 @@ class BrowseValuesLibraryDialog(wx.Dialog):
 
     def __init__(self, parent, name, library, default=None):
         wx.Dialog.__init__(self,
-              name='BrowseValueDialog', parent=parent,
-              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
-              title=_('Browse %s values library') % name)
+                           name='BrowseValueDialog', parent=parent,
+                           style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+                           title=_('Browse %s values library') % name)
 
         self.staticText1 = wx.StaticText(
               label=_('Choose a value for %s:') % name, name='staticText1', parent=self,

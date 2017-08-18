@@ -57,7 +57,7 @@ class CodeEditor(CustomStyledTextCtrl):
 
     def __init__(self, parent, window, controler):
         CustomStyledTextCtrl.__init__(self, parent, -1, wx.DefaultPosition,
-                 wx.Size(-1, 300), 0)
+                                      wx.Size(-1, 300), 0)
 
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, 25)
@@ -661,7 +661,7 @@ class VariablesEditor(wx.Panel):
                 ("UpVariableButton", "up", _("Move variable up")),
                 ("DownVariableButton", "down", _("Move variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             controls_sizer.AddWindow(button, border=5, flag=wx.BOTTOM)
@@ -838,7 +838,7 @@ class VariablesEditor(wx.Panel):
             data_type = self.Table.GetValueByName(row, "Type")
             var_name = self.Table.GetValueByName(row, "Name")
             data = wx.TextDataObject(str((var_name, "Global", data_type,
-                    self.Controler.GetCurrentLocation())))
+                                          self.Controler.GetCurrentLocation())))
             dragSource = wx.DropSource(self.VariablesGrid)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
@@ -860,14 +860,15 @@ class CodeFileEditor(ConfTreeNodeEditor):
         self.CodeEditorPanel.SetMinimumPaneSize(1)
 
         self.VariablesPanel = VariablesEditor(self.CodeEditorPanel,
-                self.ParentWindow, self.Controler)
+                                              self.ParentWindow,
+                                              self.Controler)
 
         if self.CODE_EDITOR is not None:
             self.CodeEditor = self.CODE_EDITOR(self.CodeEditorPanel,
-                        self.ParentWindow, self.Controler)
+                                               self.ParentWindow, self.Controler)
 
             self.CodeEditorPanel.SplitHorizontally(self.VariablesPanel,
-                    self.CodeEditor, 150)
+                                                   self.CodeEditor, 150)
         else:
             self.CodeEditorPanel.Initialize(self.VariablesPanel)
 

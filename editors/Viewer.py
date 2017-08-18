@@ -321,10 +321,12 @@ class ViewerDropTarget(wx.TextDropTarget):
                 if pou_type == "program":
                     location = values[0]
                     if not location.startswith("%"):
-                        dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow,
-                              _("Select a variable class:"), _("Variable class"),
-                              [_("Input"), _("Output"), _("Memory")],
-                              wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                        dialog = wx.SingleChoiceDialog(
+                            self.ParentWindow.ParentWindow,
+                            _("Select a variable class:"),
+                            _("Variable class"),
+                            [_("Input"), _("Output"), _("Memory")],
+                            wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                         if dialog.ShowModal() == wx.ID_OK:
                             selected = dialog.GetSelection()
                         else:
@@ -697,8 +699,8 @@ class Viewer(EditorPanel, DebugViewer):
 
     def _init_Editor(self, prnt):
         self.Editor = wx.ScrolledWindow(prnt, name="Viewer",
-            pos=wx.Point(0, 0), size=wx.Size(0, 0),
-            style=wx.HSCROLL | wx.VSCROLL)
+                                        pos=wx.Point(0, 0), size=wx.Size(0, 0),
+                                        style=wx.HSCROLL | wx.VSCROLL)
         self.Editor.ParentWindow = self
 
     # Create a new Viewer
@@ -811,7 +813,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetScrolledRect(self, rect):
         rect.x, rect.y = self.Editor.CalcScrolledPosition(int(rect.x * self.ViewScale[0]),
-                                                   int(rect.y * self.ViewScale[1]))
+                                                          int(rect.y * self.ViewScale[1]))
         rect.width = int(rect.width * self.ViewScale[0]) + 2
         rect.height = int(rect.height * self.ViewScale[1]) + 2
         return rect
@@ -1335,7 +1337,8 @@ class Viewer(EditorPanel, DebugViewer):
             maxy = max(maxy, extent.y + extent.height)
         maxx = int(maxx * self.ViewScale[0])
         maxy = int(maxy * self.ViewScale[1])
-        self.Editor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
+        self.Editor.SetScrollbars(
+            SCROLLBAR_UNIT, SCROLLBAR_UNIT,
             round(maxx / SCROLLBAR_UNIT) + width_incr, round(maxy / SCROLLBAR_UNIT) + height_incr,
             xstart, ystart, True)
 
@@ -1417,10 +1420,11 @@ class Viewer(EditorPanel, DebugViewer):
                 connectors["outputs"].pop(0)
                 executionControl = True
             block_name = specific_values.name if specific_values.name is not None else ""
-            element = FBD_Block(self, instance.type, block_name,
-                      instance.id, len(connectors["inputs"]),
-                      connectors=connectors, executionControl=executionControl,
-                      executionOrder=specific_values.execution_order)
+            element = FBD_Block(
+                self, instance.type, block_name,
+                instance.id, len(connectors["inputs"]),
+                connectors=connectors, executionControl=executionControl,
+                executionOrder=specific_values.execution_order)
         if isinstance(element, Comment):
             self.AddComment(element)
         else:
@@ -1432,7 +1436,7 @@ class Viewer(EditorPanel, DebugViewer):
             connector_pos = wx.Point(*output_connector.position)
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
-                    output_name=output_connector.name)
+                                                 output_name=output_connector.name)
             elif i < len(connectors["outputs"]):
                 connector = connectors["outputs"][i]
             else:
@@ -1448,7 +1452,7 @@ class Viewer(EditorPanel, DebugViewer):
             connector_pos = wx.Point(*input_connector.position)
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
-                    input_name=input_connector.name)
+                                                 input_name=input_connector.name)
             elif i < len(connectors["inputs"]):
                 connector = connectors["inputs"][i]
             else:
@@ -1494,11 +1498,10 @@ class Viewer(EditorPanel, DebugViewer):
                     wire = Wire(self)
                     wire.SetPoints(points)
                 else:
-                    wire = Wire(self,
-                        [wx.Point(*start_connector.GetPosition()),
-                         start_connector.GetDirection()],
-                        [wx.Point(*end_connector.GetPosition()),
-                         end_connector.GetDirection()])
+                    wire = Wire(
+                        self,
+                        [wx.Point(*start_connector.GetPosition()), start_connector.GetDirection()],
+                        [wx.Point(*end_connector.GetPosition()),   end_connector.GetDirection()])
                 start_connector.Wires.append((wire, 0))
                 end_connector.Wires.append((wire, -1))
                 wire.StartConnected = start_connector
@@ -1696,7 +1699,8 @@ class Viewer(EditorPanel, DebugViewer):
             if self.SelectedElement.GetStartConnected() in connected
             else self.SelectedElement.GetStartConnected())
 
-        self.AddWireMenuItems(menu, delete,
+        self.AddWireMenuItems(
+            menu, delete,
             start_connector.GetDirection() == EAST and
             not isinstance(start_connector.GetParentBlock(), SFC_Step))
 
@@ -1876,8 +1880,8 @@ class Viewer(EditorPanel, DebugViewer):
 
             # Add Wire to Viewer and connect it to blocks
             new_wire = Wire(self,
-                [wx.Point(*start_point), connector.GetDirection()],
-                [wx.Point(*end_point), end_connector.GetDirection()])
+                            [wx.Point(*start_point), connector.GetDirection()],
+                            [wx.Point(*end_point), end_connector.GetDirection()])
             self.AddWire(new_wire)
             connector.Connect((new_wire, 0), False)
             end_connector.Connect((new_wire, -1), False)
@@ -1967,7 +1971,7 @@ class Viewer(EditorPanel, DebugViewer):
         if event.Leaving() and self.ToolTipElement is not None:
             self.ToolTipElement.DestroyToolTip()
         elif (not event.Entering() and
-            gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
+              gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
             self.LastToolTipCheckTime = gettime()
             element = None
             if not event.Leaving() and not event.LeftUp() and not event.LeftDClick():
@@ -2163,8 +2167,8 @@ class Viewer(EditorPanel, DebugViewer):
                         # Popup contextual menu
                         menu = wx.Menu()
                         self.AddMenuItems(menu,
-                            [(wx.NewId(), wx.ITEM_NORMAL, text, '', callback)
-                             for text, callback in items])
+                                          [(wx.NewId(), wx.ITEM_NORMAL, text, '', callback)
+                                           for text, callback in items])
                         self.PopupMenu(menu)
 
                     self.SelectedElement.StartConnected.HighlightParentBlock(False)
@@ -2270,7 +2274,8 @@ class Viewer(EditorPanel, DebugViewer):
                             "functionBlock": ITEM_FUNCTIONBLOCK,
                         }.get(self.Controler.GetPouType(instance_type))
                         if pou_type is not None and instance_type in self.Controler.GetProjectPouNames(self.Debug):
-                            self.ParentWindow.OpenDebugViewer(pou_type,
+                            self.ParentWindow.OpenDebugViewer(
+                                pou_type,
                                 "%s.%s" % (self.GetInstancePath(True), self.SelectedElement.GetName()),
                                 self.Controler.ComputePouName(instance_type))
                 else:
@@ -2278,8 +2283,9 @@ class Viewer(EditorPanel, DebugViewer):
                     if iec_path is not None:
                         if isinstance(self.SelectedElement, Wire):
                             if self.SelectedElement.EndConnected is not None:
-                                self.ParentWindow.OpenDebugViewer(ITEM_VAR_LOCAL, iec_path,
-                                        self.SelectedElement.EndConnected.GetType())
+                                self.ParentWindow.OpenDebugViewer(
+                                    ITEM_VAR_LOCAL, iec_path,
+                                    self.SelectedElement.EndConnected.GetType())
                         else:
                             self.ParentWindow.OpenDebugViewer(ITEM_VAR_LOCAL, iec_path, "BOOL")
             elif event.ControlDown() and not event.ShiftDown():
@@ -2289,8 +2295,9 @@ class Viewer(EditorPanel, DebugViewer):
                     else:
                         instance_type = None
                     if instance_type in self.Controler.GetProjectPouNames(self.Debug):
-                        self.ParentWindow.EditProjectElement(ITEM_POU,
-                                self.Controler.ComputePouName(instance_type))
+                        self.ParentWindow.EditProjectElement(
+                            ITEM_POU,
+                            self.Controler.ComputePouName(instance_type))
                     else:
                         self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():
@@ -2603,10 +2610,11 @@ class Viewer(EditorPanel, DebugViewer):
             id = self.GetNewId()
             values = dialog.GetValues()
             values.setdefault("name", "")
-            block = FBD_Block(self, values["type"], values["name"], id,
-                    values["extension"], values["inputs"],
-                    executionControl=values["executionControl"],
-                    executionOrder=values["executionOrder"])
+            block = FBD_Block(
+                self, values["type"], values["name"], id,
+                values["extension"], values["inputs"],
+                executionControl=values["executionControl"],
+                executionOrder=values["executionOrder"])
             self.Controler.AddEditedElementBlock(self.TagName, id, values["type"], values.get("name", None))
             connector = None
             if wire is not None:
@@ -2786,8 +2794,10 @@ class Viewer(EditorPanel, DebugViewer):
             if isinstance(block, SFC_Step):
                 choices.append(block.GetName())
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
-              _("Add a new jump"), _("Please choose a target"),
-              choices, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                                       _("Add a new jump"),
+                                       _("Please choose a target"),
+                                       choices,
+                                       wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             jump = SFC_Jump(self, dialog.GetStringSelection(), id)
@@ -3052,8 +3062,10 @@ class Viewer(EditorPanel, DebugViewer):
             if isinstance(block, SFC_Step):
                 choices.append(block.GetName())
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
-              _("Edit jump target"), _("Please choose a target"),
-              choices, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                                       _("Edit jump target"),
+                                       _("Please choose a target"),
+                                       choices,
+                                       wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
         try:
             indx = choices.index(jump.GetTarget())
             dialog.SetSelection(indx)

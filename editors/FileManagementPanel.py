@@ -58,16 +58,17 @@ class FileManagementPanel(EditorPanel):
 
         button_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.AddSizer(button_sizer, border=5,
-              flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+                            flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
 
         for idx, (name, bitmap, help) in enumerate([
                 ("DeleteButton", "remove_element", _("Remove file from left folder")),
                 ("LeftCopyButton", "LeftCopy", _("Copy file from right folder to left")),
                 ("RightCopyButton", "RightCopy", _("Copy file from left folder to right")),
                 ("EditButton", "edit", _("Edit file"))]):
-            button = wx.lib.buttons.GenBitmapButton(self.Editor,
-                  bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button = wx.lib.buttons.GenBitmapButton(
+                self.Editor,
+                bitmap=GetBitmap(bitmap),
+                size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             if idx > 0:
@@ -150,8 +151,9 @@ class FileManagementPanel(EditorPanel):
             folder, filename = os.path.split(filepath)
 
             dialog = wx.MessageDialog(self,
-                  _("Do you really want to delete the file '%s'?") % filename,
-                  _("Delete File"), wx.YES_NO | wx.ICON_QUESTION)
+                                      _("Do you really want to delete the file '%s'?") % filename,
+                                      _("Delete File"),
+                                      wx.YES_NO | wx.ICON_QUESTION)
             remove = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
 
@@ -177,9 +179,10 @@ class FileManagementPanel(EditorPanel):
 
             dst_filepath = os.path.join(dst_folder, src_filename)
             if os.path.isfile(dst_filepath):
-                dialog = wx.MessageDialog(self,
-                      _("The file '%s' already exist.\nDo you want to replace it?") % src_filename,
-                      _("Replace File"), wx.YES_NO | wx.ICON_QUESTION)
+                dialog = wx.MessageDialog(
+                    self,
+                    _("The file '%s' already exist.\nDo you want to replace it?") % src_filename,
+                    _("Replace File"), wx.YES_NO | wx.ICON_QUESTION)
                 copy = dialog.ShowModal() == wx.ID_YES
                 dialog.Destroy()
             else:

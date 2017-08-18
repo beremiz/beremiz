@@ -42,7 +42,7 @@ class LocationCellControl(wx.PyControl):
 
         # create location text control
         self.Location = wx.TextCtrl(self, size=wx.Size(0, -1),
-              style=wx.TE_PROCESS_ENTER)
+                                    style=wx.TE_PROCESS_ENTER)
         self.Location.Bind(wx.EVT_KEY_DOWN, self.OnLocationChar)
         main_sizer.AddWindow(self.Location, flag=wx.GROW)
 
@@ -94,10 +94,12 @@ class LocationCellControl(wx.PyControl):
             location = infos["location"]
             # set the location
             if not infos["location"].startswith("%"):
-                dialog = wx.SingleChoiceDialog(self,
-                      _("Select a variable class:"), _("Variable class"),
-                      [_("Input"), _("Output"), _("Memory")],
-                      wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                dialog = wx.SingleChoiceDialog(
+                    self,
+                    _("Select a variable class:"),
+                    _("Variable class"),
+                    [_("Input"), _("Output"), _("Memory")],
+                    wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                 if dialog.ShowModal() == wx.ID_OK:
                     selected = dialog.GetSelection()
                 else:

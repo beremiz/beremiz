@@ -65,7 +65,7 @@ class DurationEditorDialog(wx.Dialog):
 
         controls_sizer = wx.FlexGridSizer(cols=len(CONTROLS), hgap=10, rows=2, vgap=10)
         main_sizer.AddSizer(controls_sizer, border=20,
-              flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
+                            flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
         controls = []
         for i, (name, label) in enumerate(CONTROLS):
@@ -89,7 +89,7 @@ class DurationEditorDialog(wx.Dialog):
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
         self.Fit()
@@ -136,10 +136,10 @@ class DurationEditorDialog(wx.Dialog):
 
         not_null = False
         duration = "T#"
-        for value, format in [(int(milliseconds) / DAY, "%dd"),
-                            ((int(milliseconds) % DAY) / HOUR, "%dh"),
-                            ((int(milliseconds) % HOUR) / MINUTE, "%dm"),
-                            ((int(milliseconds) % MINUTE) / SECOND, "%ds")]:
+        for value, format in [((int(milliseconds) / DAY),             "%dd"),
+                              ((int(milliseconds) % DAY) / HOUR,      "%dh"),
+                              ((int(milliseconds) % HOUR) / MINUTE,   "%dm"),
+                              ((int(milliseconds) % MINUTE) / SECOND, "%ds")]:
 
             if value > 0 or not_null:
                 duration += format % value

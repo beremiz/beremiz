@@ -59,7 +59,8 @@ VarOrder = ["Local", "Temp", "Input", "Output", "InOut", "External", "Global", "
 """
 Define which action qualifier must be associated with a duration
 """
-QualifierList = OrderedDict([("N", False), ("R", False), ("S", False),
+QualifierList = OrderedDict([
+    ("N", False), ("R", False), ("S", False),
     ("L", True), ("D", True), ("P", False), ("P0", False),
     ("P1", False), ("SD", True), ("DS", True), ("SL", True)])
 
@@ -1130,10 +1131,10 @@ if cls:
                  for var in block_outputs_xpath(self)])
 
         block_infos["usage"] = ("\n (%s) => (%s)" %
-            (", ".join(["%s:%s" % (input[1], input[0])
-                        for input in block_infos["inputs"]]),
-             ", ".join(["%s:%s" % (output[1], output[0])
-                        for output in block_infos["outputs"]])))
+                                (", ".join(["%s:%s" % (input[1], input[0])
+                                            for input in block_infos["inputs"]]),
+                                 ", ".join(["%s:%s" % (output[1], output[0])
+                                            for output in block_infos["outputs"]])))
         return block_infos
     setattr(cls, "getblockInfos", getblockInfos)
 
@@ -1961,8 +1962,8 @@ _connectionsFunctions = {
              "single": _getBoundingBoxSingle,
              "multiple": _getBoundingBoxMultiple},
     "translate": {"none": _translate,
-               "single": _translateSingle,
-               "multiple": _translateMultiple},
+                  "single": _translateSingle,
+                  "multiple": _translateMultiple},
     "filter": {"none": lambda self, connections: None,
                "single": _filterConnectionsSingle,
                "multiple": _filterConnectionsMultiple},

@@ -85,7 +85,7 @@ class TextViewer(EditorPanel):
 
     def _init_Editor(self, prnt):
         self.Editor = CustomStyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL,
-                parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
+                                           parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
         self.Editor.ParentWindow = self
 
         self.Editor.CmdKeyAssign(ord('+'), wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMIN)
@@ -304,10 +304,12 @@ class TextViewer(EditorPanel):
                     else:
                         location = values[0]
                         if not location.startswith("%"):
-                            dialog = wx.SingleChoiceDialog(self.ParentWindow,
-                                  _("Select a variable class:"), _("Variable class"),
-                                  [_("Input"), _("Output"), _("Memory")],
-                                  wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                            dialog = wx.SingleChoiceDialog(
+                                self.ParentWindow,
+                                _("Select a variable class:"),
+                                _("Variable class"),
+                                [_("Input"), _("Output"), _("Memory")],
+                                wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
                             else:
@@ -326,7 +328,8 @@ class TextViewer(EditorPanel):
                             var_type = values[2]
                         else:
                             var_type = LOCATIONDATATYPES.get(location[2], ["BOOL"])[0]
-                        self.Controler.AddEditedElementPouVar(self.TagName,
+                        self.Controler.AddEditedElementPouVar(
+                            self.TagName,
                             var_type, var_name,
                             location=location, description=values[4])
                         self.RefreshVariablePanel()

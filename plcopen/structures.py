@@ -72,10 +72,10 @@ Inputs and outputs are a tuple of characteristics that are in order:
 """
 
 StdBlckLibs = {libname: LoadProject(tc6fname)[0]
-             for libname, tc6fname in StdTC6Libs}
+               for libname, tc6fname in StdTC6Libs}
 StdBlckLst = [{"name": libname, "list":
                [GetBlockInfos(pous) for pous in lib.getpous()]}
-             for libname, lib in StdBlckLibs.iteritems()]
+              for libname, lib in StdBlckLibs.iteritems()]
 
 #-------------------------------------------------------------------------------
 #                             Test identifier
@@ -245,13 +245,13 @@ def get_standard_funtions(table):
                         store = True
                         for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name, []):
                             outs = reduce(lambda a, b: a or b,
-                                       map(lambda testtype: IsOfType(
-                                           Function_decl["outputs"][0][1],
-                                           testtype), OutTypes))
+                                          map(lambda testtype: IsOfType(
+                                              Function_decl["outputs"][0][1],
+                                              testtype), OutTypes))
                             inps = reduce(lambda a, b: a or b,
-                                       map(lambda testtype: IsOfType(
-                                           Function_decl["inputs"][0][1],
-                                           testtype), InTypes))
+                                          map(lambda testtype: IsOfType(
+                                              Function_decl["inputs"][0][1],
+                                              testtype), InTypes))
                             if inps and outs and Function_decl["outputs"][0][1] != Function_decl["inputs"][0][1]:
                                 store = True
                                 break
@@ -278,10 +278,10 @@ for section in StdBlckLst:
         if len(words) > 1:
             desc["comment"] = words[1]
         desc["usage"] = ("\n (%s) => (%s)" %
-            (", ".join(["%s:%s" % (input[1], input[0])
-                        for input in desc["inputs"]]),
-             ", ".join(["%s:%s" % (output[1], output[0])
-                        for output in desc["outputs"]])))
+                         (", ".join(["%s:%s" % (input[1], input[0])
+                                     for input in desc["inputs"]]),
+                          ", ".join(["%s:%s" % (output[1], output[0])
+                                     for output in desc["outputs"]])))
         BlkLst = StdBlckDct.setdefault(desc["name"], [])
         BlkLst.append((section["name"], desc))
 
@@ -324,16 +324,20 @@ SFC_KEYWORDS = ["FROM", "TO"] + SFC_BLOCK_START_KEYWORDS + SFC_BLOCK_END_KEYWORD
 
 
 # Keywords for Instruction List
-IL_KEYWORDS = ["TRUE", "FALSE", "LD", "LDN", "ST", "STN", "S", "R", "AND", "ANDN", "OR", "ORN",
- "XOR", "XORN", "NOT", "ADD", "SUB", "MUL", "DIV", "MOD", "GT", "GE", "EQ", "NE",
- "LE", "LT", "JMP", "JMPC", "JMPCN", "CAL", "CALC", "CALCN", "RET", "RETC", "RETCN"]
+IL_KEYWORDS = [
+    "TRUE", "FALSE", "LD", "LDN", "ST", "STN", "S", "R", "AND", "ANDN", "OR", "ORN",
+    "XOR", "XORN", "NOT", "ADD", "SUB", "MUL", "DIV", "MOD", "GT", "GE", "EQ", "NE",
+    "LE", "LT", "JMP", "JMPC", "JMPCN", "CAL", "CALC", "CALCN", "RET", "RETC", "RETCN"
+]
 
 
 # Keywords for Structured Text
 ST_BLOCK_START_KEYWORDS = ["IF", "ELSIF", "ELSE", "CASE", "FOR", "WHILE", "REPEAT"]
 ST_BLOCK_END_KEYWORDS = ["END_IF", "END_CASE", "END_FOR", "END_WHILE", "END_REPEAT"]
-ST_KEYWORDS = ["TRUE", "FALSE", "THEN", "OF", "TO", "BY", "DO", "DO", "UNTIL", "EXIT",
- "RETURN", "NOT", "MOD", "AND", "XOR", "OR"] + ST_BLOCK_START_KEYWORDS + ST_BLOCK_END_KEYWORDS
+ST_KEYWORDS = [
+    "TRUE", "FALSE", "THEN", "OF", "TO", "BY", "DO", "DO", "UNTIL", "EXIT",
+    "RETURN", "NOT", "MOD", "AND", "XOR", "OR"
+] + ST_BLOCK_START_KEYWORDS + ST_BLOCK_END_KEYWORDS
 
 # All the keywords of IEC
 IEC_BLOCK_START_KEYWORDS = []

@@ -49,7 +49,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         connection (default: True)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Edit transition'))
+                                    title=_('Edit transition'))
 
         # Init common sizers
         self._init_sizers(2, 0, 8, None, 2, 1)
@@ -76,7 +76,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
                                      ('inline', _('Inline'), inline),
                                      ('connection', _('Connection'), None)]:
             radio_button = wx.RadioButton(self, label=label,
-                  style=(wx.RB_GROUP if first else 0))
+                                          style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
@@ -100,8 +100,9 @@ class SFCTransitionDialog(BlockPreviewDialog):
         self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.Fit()
 

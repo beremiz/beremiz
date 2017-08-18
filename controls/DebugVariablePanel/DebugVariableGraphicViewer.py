@@ -447,8 +447,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             w, h = button.GetSize()
             if direction in [wx.LEFT, wx.RIGHT]:
                 x = rect.x + (- w - offset
-                            if direction == wx.LEFT
-                            else rect.width + offset)
+                              if direction == wx.LEFT
+                              else rect.width + offset)
                 y = rect.y + (rect.height - h) / 2
                 offset += w
             else:
@@ -644,8 +644,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 # Start a drag'n drop from mouse position in wx coordinate of
                 # parent
                 xw, yw = self.GetPosition()
-                self.ParentWindow.StartDragNDrop(self,
-                    self.ItemsDict.values()[item_idx],
+                self.ParentWindow.StartDragNDrop(
+                    self, self.ItemsDict.values()[item_idx],
                     x + xw, y + yw,  # Current mouse position
                     x + xw, y + yw)  # Mouse position when button was clicked
 
@@ -686,7 +686,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             item = self.ParentWindow.DraggingAxesPanel.ItemsDict.values()[0]
             # Give mouse position in wx coordinate of parent
             self.ParentWindow.StopDragNDrop(item.GetVariable(),
-                xw + event.x, yw + height - event.y)
+                                            xw + event.x, yw + height - event.y)
 
         else:
             # Reset any move in progress
@@ -725,9 +725,9 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             if self.GraphType == GRAPH_PARALLEL:  # Graph is parallel
                 directions = [wx.RIGHT] * len(self.AxesLabels) + \
                              [wx.LEFT] * len(self.Labels)
-            elif len(self.AxesLabels) > 0:        # Graph is orthogonal in 2D
-                directions = [wx.RIGHT, wx.TOP,   # Directions for AxesLabels
-                             wx.LEFT, wx.BOTTOM]  # Directions for Labels
+            elif len(self.AxesLabels) > 0:         # Graph is orthogonal in 2D
+                directions = [wx.RIGHT, wx.TOP,    # Directions for AxesLabels
+                              wx.LEFT, wx.BOTTOM]  # Directions for Labels
             else:  # Graph is orthogonal in 3D
                 directions = [wx.LEFT] * len(self.Labels)
 
@@ -787,8 +787,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 elif self.MouseStartPos is not None and len(self.Items) == 1:
                     xw, yw = self.GetPosition()
                     self.ParentWindow.SetCursorTick(self.StartCursorTick)
-                    self.ParentWindow.StartDragNDrop(self,
-                        self.ItemsDict.values()[0],
+                    self.ParentWindow.StartDragNDrop(
+                        self, self.ItemsDict.values()[0],
                         # Current mouse position
                         event.x + xw, height - event.y + yw,
                         # Mouse position when button was clicked
@@ -888,8 +888,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # The minimum height take in account the height of all items, padding
         # inside figure and border around figure
         return wx.Size(200,
-            CANVAS_BORDER[0] + CANVAS_BORDER[1] +
-            2 * CANVAS_PADDING + VALUE_LABEL_HEIGHT * len(self.Items))
+                       CANVAS_BORDER[0] + CANVAS_BORDER[1] +
+                       2 * CANVAS_PADDING + VALUE_LABEL_HEIGHT * len(self.Items))
 
     def SetCanvasHeight(self, height):
         """

@@ -169,14 +169,18 @@ GetTypeValue = {"BOOL": lambda x: {"TRUE": True, "FALSE": False, "0": False, "1"
 class ForceVariableDialog(wx.TextEntryDialog):
 
     def __init__(self, parent, iec_type, defaultValue=""):
-        wx.TextEntryDialog.__init__(self, parent, message=_("Forcing Variable Value"),
-                caption=_("Please enter value for a \"%s\" variable:") % iec_type, defaultValue=defaultValue,
-                style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition)
+        wx.TextEntryDialog.__init__(
+            self, parent,
+            message=_("Forcing Variable Value"),
+            caption=_("Please enter value for a \"%s\" variable:") % iec_type,
+            defaultValue=defaultValue,
+            style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition)
 
         self.IEC_Type = iec_type
 
         self.Bind(wx.EVT_BUTTON, self.OnOK,
-              self.GetSizer().GetItem(2).GetSizer().GetItem(1).GetSizer().GetAffirmativeButton())
+                  self.GetSizer().GetItem(2).GetSizer().GetItem(1).
+                  GetSizer().GetAffirmativeButton())
         self.ValueTextCtrl = self.GetSizer().GetItem(1).GetWindow()
         if self.IEC_Type == "BOOL":
             self.ToggleButton = wx.ToggleButton(self, label=_("Toggle value"))

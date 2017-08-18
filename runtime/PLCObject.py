@@ -123,10 +123,10 @@ class PLCObject(pyro.ObjBase):
         if self._GetLogMessage is not None:
             maxsz = len(self._log_read_buffer)-1
             sz = self._GetLogMessage(level, msgid,
-                self._log_read_buffer, maxsz,
-                ctypes.byref(tick),
-                ctypes.byref(tv_sec),
-                ctypes.byref(tv_nsec))
+                                     self._log_read_buffer, maxsz,
+                                     ctypes.byref(tick),
+                                     ctypes.byref(tv_sec),
+                                     ctypes.byref(tv_nsec))
             if sz and sz <= maxsz:
                 self._log_read_buffer[sz] = '\x00'
                 return self._log_read_buffer.value, tick.value, tv_sec.value, tv_nsec.value
@@ -349,8 +349,8 @@ class PLCObject(pyro.ObjBase):
                 result, exp = self.evaluator(eval, AST, self.python_runtime_vars)
                 if exp is not None:
                     res = "#EXCEPTION : "+str(exp[1])
-                    self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd,
-                        '\n'.join(traceback.format_exception(*exp))))
+                    self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (
+                        FBID, cmd, '\n'.join(traceback.format_exception(*exp))))
                 else:
                     res = str(result)
                 self.python_runtime_vars["FBID"] = None

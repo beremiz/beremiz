@@ -230,7 +230,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.CanvasRange = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnRangeChanged, self.CanvasRange)
         graphics_button_sizer.AddWindow(self.CanvasRange, 1,
-              border=5, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL)
+                                        border=5,
+                                        flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL)
 
         self.CanvasRange.Clear()
         default_range_idx = 0
@@ -243,26 +244,26 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         for name, bitmap, help in [
                 ("CurrentButton",     "current",      _("Go to current value")),
                 ("ExportGraphButton", "export_graph", _("Export graph values to clipboard"))]:
-            button = wx.lib.buttons.GenBitmapButton(self,
-                  bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button = wx.lib.buttons.GenBitmapButton(
+                self, bitmap=GetBitmap(bitmap),
+                size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             self.Bind(wx.EVT_BUTTON, getattr(self, "On" + name), button)
             graphics_button_sizer.AddWindow(button, border=5, flag=wx.LEFT)
 
-        self.CanvasPosition = wx.ScrollBar(self,
-              size=wx.Size(0, 16), style=wx.SB_HORIZONTAL)
+        self.CanvasPosition = wx.ScrollBar(
+            self, size=wx.Size(0, 16), style=wx.SB_HORIZONTAL)
         self.CanvasPosition.Bind(wx.EVT_SCROLL_THUMBTRACK,
-              self.OnPositionChanging, self.CanvasPosition)
+                                 self.OnPositionChanging, self.CanvasPosition)
         self.CanvasPosition.Bind(wx.EVT_SCROLL_LINEUP,
-              self.OnPositionChanging, self.CanvasPosition)
+                                 self.OnPositionChanging, self.CanvasPosition)
         self.CanvasPosition.Bind(wx.EVT_SCROLL_LINEDOWN,
-              self.OnPositionChanging, self.CanvasPosition)
+                                 self.OnPositionChanging, self.CanvasPosition)
         self.CanvasPosition.Bind(wx.EVT_SCROLL_PAGEUP,
-              self.OnPositionChanging, self.CanvasPosition)
+                                 self.OnPositionChanging, self.CanvasPosition)
         self.CanvasPosition.Bind(wx.EVT_SCROLL_PAGEDOWN,
-              self.OnPositionChanging, self.CanvasPosition)
+                                 self.OnPositionChanging, self.CanvasPosition)
         main_sizer.AddWindow(self.CanvasPosition, border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
 
         self.TickSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -388,18 +389,17 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def MoveCursorTick(self, move):
         if self.CursorTick is not None:
             cursor_tick = max(self.Ticks[0],
-                          min(self.CursorTick + move,
-                              self.Ticks[-1]))
+                              min(self.CursorTick + move, self.Ticks[-1]))
             cursor_tick_idx = numpy.argmin(numpy.abs(self.Ticks - cursor_tick))
             if self.Ticks[cursor_tick_idx] == self.CursorTick:
                 cursor_tick_idx = max(0,
-                                  min(cursor_tick_idx + abs(move) / move,
-                                      len(self.Ticks) - 1))
+                                      min(cursor_tick_idx + abs(move) / move,
+                                          len(self.Ticks) - 1))
             self.CursorTick = self.Ticks[cursor_tick_idx]
-            self.StartTick = max(self.Ticks[
-                                numpy.argmin(numpy.abs(self.Ticks -
-                                        self.CursorTick + self.CurrentRange))],
-                             min(self.StartTick, self.CursorTick))
+            self.StartTick = max(
+                self.Ticks[numpy.argmin(
+                    numpy.abs(self.Ticks - self.CursorTick + self.CurrentRange))],
+                min(self.StartTick, self.CursorTick))
             self.RefreshCanvasPosition()
             self.UpdateCursorTick()
 
@@ -737,8 +737,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         for panel in self.GraphicPanels:
             items.extend(panel.GetItems())
         if len(items) > 1:
-            self.VariableNameMask = reduce(compute_mask,
-                [item.GetVariable().split('.') for item in items])
+            self.VariableNameMask = reduce(
+                compute_mask, [item.GetVariable().split('.') for item in items])
         elif len(items) > 0:
             self.VariableNameMask = items[0].GetVariable().split('.')[:-1] + ['*']
         else:
@@ -934,7 +934,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         posy = max(0, min(ystart, (vheight - window_size[1]) / SCROLLBAR_UNIT))
         self.GraphicsWindow.Scroll(posx, posy)
         self.GraphicsWindow.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                vwidth / SCROLLBAR_UNIT, vheight / SCROLLBAR_UNIT, posx, posy)
+                                          vwidth / SCROLLBAR_UNIT, vheight / SCROLLBAR_UNIT,
+                                          posx, posy)
 
     def OnGraphicsWindowEraseBackground(self, event):
         pass

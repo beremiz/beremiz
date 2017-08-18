@@ -320,8 +320,10 @@ class ConciseDCFGenerator:
         @param pdomapping: list od variables to map with PDO
         """
         # Add an entry to MasterMapping
-        self.MasterMapping[pdocobid] = {"type": InvertPDOType[pdotype],
-            "mapping": [None] + [(loc_infos["type"], name) for name, loc_infos in pdomapping]}
+        self.MasterMapping[pdocobid] = {
+            "type":    InvertPDOType[pdotype],
+            "mapping": [None] + [(loc_infos["type"], name) for name, loc_infos in pdomapping]
+        }
 
         # Return the data to add to DCF
         if sync_TPDOs:

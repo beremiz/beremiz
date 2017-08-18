@@ -34,8 +34,9 @@ class FindInPouDialog(wx.Dialog):
                 self.SetIcon(parent.icon)
 
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, title=_("Find"),
-              style=wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN | wx.RESIZE_BORDER)
+        wx.Dialog.__init__(
+            self, parent, title=_("Find"),
+            style=wx.CAPTION | wx.CLOSE_BOX | wx.CLIP_CHILDREN | wx.RESIZE_BORDER)
 
         self._init_icon(parent)
         panel = wx.Panel(self, style=wx.TAB_TRAVERSAL)
@@ -46,7 +47,7 @@ class FindInPouDialog(wx.Dialog):
 
         controls_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.AddSizer(controls_sizer, border=20,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         patterns_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=1, vgap=5)
         patterns_sizer.AddGrowableCol(1)
@@ -67,16 +68,16 @@ class FindInPouDialog(wx.Dialog):
         direction_staticboxsizer = wx.StaticBoxSizer(
               direction_staticbox, wx.VERTICAL)
         params_sizer.AddSizer(direction_staticboxsizer, 1, border=5,
-              flag=wx.GROW | wx.RIGHT)
+                              flag=wx.GROW | wx.RIGHT)
 
         self.Forward = wx.RadioButton(panel, label=_("Forward"),
-              style=wx.RB_GROUP)
+                                      style=wx.RB_GROUP)
         direction_staticboxsizer.AddWindow(self.Forward, border=5,
-              flag=wx.ALL | wx.GROW)
+                                           flag=wx.ALL | wx.GROW)
 
         self.Backward = wx.RadioButton(panel, label=_("Backward"))
         direction_staticboxsizer.AddWindow(self.Backward, border=5,
-              flag=wx.ALL | wx.GROW)
+                                           flag=wx.ALL | wx.GROW)
 
         options_staticbox = wx.StaticBox(panel, label=_("Options"))
         options_staticboxsizer = wx.StaticBoxSizer(
@@ -86,20 +87,20 @@ class FindInPouDialog(wx.Dialog):
         self.CaseSensitive = wx.CheckBox(panel, label=_("Case sensitive"))
         self.CaseSensitive.SetValue(True)
         options_staticboxsizer.AddWindow(self.CaseSensitive, border=5,
-              flag=wx.ALL | wx.GROW)
+                                         flag=wx.ALL | wx.GROW)
 
         self.WrapSearch = wx.CheckBox(panel, label=_("Wrap search"))
         self.WrapSearch.SetValue(True)
         options_staticboxsizer.AddWindow(self.WrapSearch, border=5,
-              flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
+                                         flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
 
         self.RegularExpressions = wx.CheckBox(panel, label=_("Regular expressions"))
         options_staticboxsizer.AddWindow(self.RegularExpressions, border=5,
-              flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
+                                         flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
 
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(buttons_sizer, border=20,
-              flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_RIGHT)
+                            flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_RIGHT)
 
         self.FindButton = wx.Button(panel, label=_("Find"))
         self.FindButton.SetDefault()
@@ -177,6 +178,6 @@ class FindInPouDialog(wx.Dialog):
             self.SetStatusText(message)
         if len(self.criteria) > 0:
             wx.CallAfter(self.ParentWindow.FindInPou,
-                {True: 1, False: -1}[self.Forward.GetValue()],
-                self.criteria)
+                         {True: 1, False: -1}[self.Forward.GetValue()],
+                         self.criteria)
         event.Skip()

@@ -124,38 +124,39 @@ class PouInstanceVariablesPanel(wx.Panel):
 
     def __init__(self, parent, window, controller, debug):
         wx.Panel.__init__(self, name='PouInstanceTreePanel',
-                parent=parent, pos=wx.Point(0, 0),
-                size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+                          parent=parent, pos=wx.Point(0, 0),
+                          size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
 
-        self.ParentButton = wx.lib.buttons.GenBitmapButton(self,
-              bitmap=GetBitmap("top"), size=wx.Size(28, 28), style=wx.NO_BORDER)
+        self.ParentButton = wx.lib.buttons.GenBitmapButton(
+            self, bitmap=GetBitmap("top"), size=wx.Size(28, 28), style=wx.NO_BORDER)
         self.ParentButton.SetToolTipString(_("Parent instance"))
         self.Bind(wx.EVT_BUTTON, self.OnParentButtonClick,
-                self.ParentButton)
+                  self.ParentButton)
 
         self.InstanceChoice = wx.ComboBox(self, size=wx.Size(0, 0), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnInstanceChoiceChanged,
-                self.InstanceChoice)
+                  self.InstanceChoice)
 
-        self.DebugButton = wx.lib.buttons.GenBitmapButton(self,
-              bitmap=GetBitmap("debug_instance"), size=wx.Size(28, 28), style=wx.NO_BORDER)
+        self.DebugButton = wx.lib.buttons.GenBitmapButton(
+            self, bitmap=GetBitmap("debug_instance"), size=wx.Size(28, 28), style=wx.NO_BORDER)
         self.DebugButton.SetToolTipString(_("Debug instance"))
         self.Bind(wx.EVT_BUTTON, self.OnDebugButtonClick,
-                self.DebugButton)
+                  self.DebugButton)
 
-        self.VariablesList = CustomTreeCtrlWithRightImage(self,
-              style=wx.SUNKEN_BORDER,
-              agwStyle=CT.TR_NO_BUTTONS |
-                       CT.TR_SINGLE |
-                       CT.TR_HAS_VARIABLE_ROW_HEIGHT |
-                       CT.TR_HIDE_ROOT |
-                       CT.TR_NO_LINES |
-                       getattr(CT, "TR_ALIGN_WINDOWS_RIGHT", CT.TR_ALIGN_WINDOWS))
+        self.VariablesList = CustomTreeCtrlWithRightImage(
+            self,
+            style=wx.SUNKEN_BORDER,
+            agwStyle=(CT.TR_NO_BUTTONS |
+                      CT.TR_SINGLE |
+                      CT.TR_HAS_VARIABLE_ROW_HEIGHT |
+                      CT.TR_HIDE_ROOT |
+                      CT.TR_NO_LINES |
+                      getattr(CT, "TR_ALIGN_WINDOWS_RIGHT", CT.TR_ALIGN_WINDOWS)))
         self.VariablesList.SetIndent(0)
         self.VariablesList.SetSpacing(5)
         self.VariablesList.DoSelectItem = lambda *x, **y: True
         self.VariablesList.Bind(CT.EVT_TREE_ITEM_ACTIVATED,
-                self.OnVariablesListItemActivated)
+                                self.OnVariablesListItemActivated)
         self.VariablesList.Bind(wx.EVT_LEFT_DOWN, self.OnVariablesListLeftDown)
         self.VariablesList.Bind(wx.EVT_KEY_DOWN, self.OnVariablesListKeyDown)
 

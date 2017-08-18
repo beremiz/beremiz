@@ -295,10 +295,12 @@ class VariableDropTarget(wx.TextDropTarget):
                                     message = _("Incompatible size of data between \"{a1}\" and \"{a2}\"").\
                                               format(a1=location, a2=variable_type)
                                 else:
-                                    dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
-                                          _("Select a variable class:"), _("Variable class"),
-                                          [_("Input"), _("Output"), _("Memory")],
-                                          wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                                    dialog = wx.SingleChoiceDialog(
+                                        self.ParentWindow.ParentWindow.ParentWindow,
+                                        _("Select a variable class:"),
+                                        _("Variable class"),
+                                        [_("Input"), _("Output"), _("Memory")],
+                                        wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                                     if dialog.ShowModal() == wx.ID_OK:
                                         selected = dialog.GetSelection()
                                     else:
@@ -341,12 +343,14 @@ class VariableDropTarget(wx.TextDropTarget):
                 dlg.Destroy()
                 if var_name is None:
                     return
-                elif var_name.upper() in [name.upper()
-                        for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
+                elif var_name.upper() in [
+                        name.upper() for name in
+                        self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!") % var_name
-                elif not var_name.upper() in [name.upper()
+                elif not var_name.upper() in [
+                        name.upper()
                         for name in self.ParentWindow.Controler.
-                            GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
+                        GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     var_infos = self.ParentWindow.DefaultValue.copy()
                     var_infos.Name = var_name
                     var_infos.Type = values[2]
@@ -354,10 +358,12 @@ class VariableDropTarget(wx.TextDropTarget):
                     if values[1] == "location":
                         location = values[0]
                         if not location.startswith("%"):
-                            dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow.ParentWindow,
-                                  _("Select a variable class:"), _("Variable class"),
-                                  [_("Input"), _("Output"), _("Memory")],
-                                  wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                            dialog = wx.SingleChoiceDialog(
+                                self.ParentWindow.ParentWindow.ParentWindow,
+                                _("Select a variable class:"),
+                                _("Variable class"),
+                                [_("Input"), _("Output"), _("Memory")],
+                                wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 selected = dialog.GetSelection()
                             else:
@@ -376,8 +382,9 @@ class VariableDropTarget(wx.TextDropTarget):
                                                                 self.ParentWindow.Debug)
                             if len(configs) == 0:
                                 return
-                            if not var_name.upper() in [name.upper()
-                                for name in self.ParentWindow.Controler.GetConfigurationVariableNames(configs[0])]:
+                            if not var_name.upper() in [
+                                    name.upper() for name in
+                                    self.ParentWindow.Controler.GetConfigurationVariableNames(configs[0])]:
                                 self.ParentWindow.Controler.AddConfigurationGlobalVar(
                                     configs[0], values[2], var_name, location, "")
                             var_infos.Class = "External"
@@ -433,7 +440,7 @@ class VariablePanel(wx.Panel):
         controls_sizer.AddWindow(self.ReturnTypeLabel, flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.ReturnType = wx.ComboBox(self,
-              size=wx.Size(145, -1), style=wx.CB_READONLY)
+                                      size=wx.Size(145, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnReturnTypeChanged, self.ReturnType)
         controls_sizer.AddWindow(self.ReturnType)
 
@@ -441,7 +448,7 @@ class VariablePanel(wx.Panel):
         controls_sizer.AddWindow(self.DescriptionLabel, flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.Description = wx.TextCtrl(self,
-              size=wx.Size(250, -1), style=wx.TE_PROCESS_ENTER)
+                                       size=wx.Size(250, -1), style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnDescriptionChanged, self.Description)
         self.Description.Bind(wx.EVT_KILL_FOCUS, self.OnDescriptionChanged)
         controls_sizer.AddWindow(self.Description)
@@ -450,7 +457,7 @@ class VariablePanel(wx.Panel):
         controls_sizer.AddWindow(class_filter_label, flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.ClassFilter = wx.ComboBox(self,
-              size=wx.Size(145, -1), style=wx.CB_READONLY)
+                                       size=wx.Size(145, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnClassFilter, self.ClassFilter)
         controls_sizer.AddWindow(self.ClassFilter)
 
@@ -460,7 +467,7 @@ class VariablePanel(wx.Panel):
                 ("UpButton", "up", _("Move variable up")),
                 ("DownButton", "down", _("Move variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             controls_sizer.AddWindow(button)
@@ -468,11 +475,11 @@ class VariablePanel(wx.Panel):
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL | wx.HSCROLL)
         self.VariablesGrid.SetDropTarget(VariableDropTarget(self))
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
-              self.OnVariablesGridCellChange)
+                                self.OnVariablesGridCellChange)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,
-              self.OnVariablesGridCellLeftClick)
+                                self.OnVariablesGridCellLeftClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
-              self.OnVariablesGridEditorShown)
+                                self.OnVariablesGridEditorShown)
         self.MainSizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
 
         self.SetSizer(self.MainSizer)
@@ -484,7 +491,7 @@ class VariablePanel(wx.Panel):
 
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer,
-              self.RefreshHighlightsTimer)
+                  self.RefreshHighlightsTimer)
 
         self.Filter = "All"
         self.FilterChoices = []

@@ -48,7 +48,7 @@ class SFCStepDialog(BlockPreviewDialog):
         @param initial: True if step is initial (default: False)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Edit Step'))
+                                    title=_('Edit Step'))
 
         # Init common sizers
         self._init_sizers(2, 0, 6, None, 2, 1)
@@ -83,8 +83,9 @@ class SFCStepDialog(BlockPreviewDialog):
         self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Save flag that indicates that step is initial
         self.Initial = initial

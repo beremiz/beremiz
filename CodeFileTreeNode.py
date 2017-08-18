@@ -202,8 +202,8 @@ class CodeFile:
                 variable.getinitial())
                for variable in variables]
         ret.extend([("On"+variable.getname()+"Change", "python_poll", "")
-                for variable in variables
-                if variable.getonchange()])
+                    for variable in variables
+                    if variable.getonchange()])
         return ret
 
 #-------------------------------------------------------------------------------

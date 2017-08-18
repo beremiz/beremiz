@@ -50,7 +50,7 @@ class ConnectionDialog(BlockPreviewDialog):
         to all connector having the same name in POU (default: False)
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Connection Properties'))
+                                    title=_('Connection Properties'))
 
         # Init common sizers
         self._init_sizers(2, 0, 7, 1, 0, None)
@@ -65,7 +65,7 @@ class ConnectionDialog(BlockPreviewDialog):
         for type, label in [(CONNECTOR, _('Connector')),
                             (CONTINUATION, _('Continuation'))]:
             radio_button = wx.RadioButton(self, label=label,
-                  style=(wx.RB_GROUP if first else 0))
+                                          style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
@@ -88,8 +88,9 @@ class ConnectionDialog(BlockPreviewDialog):
         self.LeftGridSizer.AddWindow(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
         self.ColumnSizer.RemoveSizer(self.RightGridSizer)
 
         # Add button for applying connection name modification to all connection
@@ -214,8 +215,8 @@ class ConnectionDialog(BlockPreviewDialog):
         """
         # Set graphic element displayed, creating a FBD connection element
         self.Element = FBD_Connector(self.Preview,
-                self.GetConnectionType(),
-                self.ConnectionName.GetValue())
+                                     self.GetConnectionType(),
+                                     self.ConnectionName.GetValue())
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

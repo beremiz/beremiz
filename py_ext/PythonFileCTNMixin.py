@@ -115,7 +115,8 @@ class PythonFileCTNMixin(CodeFile):
                     "pyextname": pyextname},
                     self.CodeFile.variables.variable)
         # python side PLC global variables access stub
-        globalstubs = "\n".join(["""\
+        globalstubs = "\n".join([
+            """\
 _%(name)s_ctype, _%(name)s_unpack, _%(name)s_pack = \\
     TypeTranslator["%(IECtype)s"]
 _PySafeGetPLCGlob_%(name)s = PLCBinary.__SafeGetPLCGlob_%(name)s
@@ -130,8 +131,7 @@ _%(pyextname)sGlobalsDesc.append((
     %(desc)s,
     %(onchange)s,
     %(opts)s))
-""" % varinfo
-      for varinfo in varinfos])
+""" % varinfo for varinfo in varinfos])
 
         # Runtime calls (start, stop, init, and cleanup)
         rtcalls = ""
@@ -173,7 +173,7 @@ del __ext_name__
 
         # write generated content to python file
         runtimefile_path = os.path.join(buildpath,
-            "runtime_%s.py" % location_str)
+                                        "runtime_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write(PyFileContent.encode('utf-8'))
         runtimefile.close()

@@ -57,12 +57,12 @@ class FolderTree(wx.Panel):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.Tree = wx.TreeCtrl(self,
-              style=wx.TR_HAS_BUTTONS |
-                    wx.TR_SINGLE |
-                    wx.SUNKEN_BORDER |
-                    wx.TR_HIDE_ROOT |
-                    wx.TR_LINES_AT_ROOT |
-                    wx.TR_EDIT_LABELS)
+                                style=(wx.TR_HAS_BUTTONS |
+                                       wx.TR_SINGLE |
+                                       wx.SUNKEN_BORDER |
+                                       wx.TR_HIDE_ROOT |
+                                       wx.TR_LINES_AT_ROOT |
+                                       wx.TR_EDIT_LABELS))
         if wx.Platform == '__WXMSW__':
             self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemExpanded, self.Tree)
             self.Tree.Bind(wx.EVT_LEFT_DOWN, self.OnTreeLeftDown)
@@ -216,8 +216,8 @@ class FolderTree(wx.Panel):
                     event.Skip()
                 else:
                     message = wx.MessageDialog(self,
-                        _("File '%s' already exists!") % new_name,
-                        _("Error"), wx.OK | wx.ICON_ERROR)
+                                               _("File '%s' already exists!") % new_name,
+                                               _("Error"), wx.OK | wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
                     event.Veto()
