@@ -87,8 +87,7 @@ PYJSLIB_BUILTIN_CLASSES = ("BaseException",
                            "list",
                            "dict",
                            "object",
-                           "tuple",
-)
+                           "tuple")
 
 
 def pyjs_builtin_remap(name):

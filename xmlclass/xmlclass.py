@@ -100,8 +100,9 @@ class xml_timezone(datetime.tzinfo):
         return ZERO
 
 
-[SYNTAXELEMENT, SYNTAXATTRIBUTE, SIMPLETYPE, COMPLEXTYPE, COMPILEDCOMPLEXTYPE,
- ATTRIBUTESGROUP, ELEMENTSGROUP, ATTRIBUTE, ELEMENT, CHOICE, ANY, TAG, CONSTRAINT,
+[
+    SYNTAXELEMENT, SYNTAXATTRIBUTE, SIMPLETYPE, COMPLEXTYPE, COMPILEDCOMPLEXTYPE,
+    ATTRIBUTESGROUP, ELEMENTSGROUP, ATTRIBUTE, ELEMENT, CHOICE, ANY, TAG, CONSTRAINT,
 ] = range(13)
 
 
@@ -1166,9 +1167,10 @@ class ClassFactory:
         class_definition = classobj(str(name), bases, classmembers)
         setattr(class_definition, "__getattr__", generateGetattrMethod(self, class_definition, classinfos))
         setattr(class_definition, "__setattr__", generateSetattrMethod(self, class_definition, classinfos))
-        class_infos = {"type": COMPILEDCOMPLEXTYPE,
-                       "name": classname,
-                       "initial": generateClassCreateFunction(class_definition),
+        class_infos = {
+            "type": COMPILEDCOMPLEXTYPE,
+            "name": classname,
+            "initial": generateClassCreateFunction(class_definition),
         }
 
         if self.FileName is not None:

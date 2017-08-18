@@ -51,7 +51,8 @@ for i in xrange(26):
  STC_PLC_EMPTY] = range(11)
 [SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
 
-[ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
+[
+    ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
 ] = [wx.NewId() for _init_ctrls in range(2)]
 
 re_texts = {}

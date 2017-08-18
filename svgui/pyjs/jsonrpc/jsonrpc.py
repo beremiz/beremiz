@@ -13,13 +13,13 @@ class JSONRPCServiceBase:
                                  'result': result, 'error': None})
 
     def error(self, id, code, message):
-        return simplejson.dumps({'id': id,
-                                 'version': '1.1',
-                                 'error': {'name': 'JSONRPCError',
-                                           'code': code,
-                                           'message': message
-                                           }
-                                     })
+        return simplejson.dumps({
+            'id': id,
+            'version': '1.1',
+            'error': {'name': 'JSONRPCError',
+                      'code': code,
+                      'message': message}
+        })
 
     def add_method(self, name, method):
         self.methods[name] = method

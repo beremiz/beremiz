@@ -159,13 +159,14 @@ class CodeFile:
     def GetVariables(self):
         datas = []
         for var in self.CodeFileVariables(self.CodeFile):
-            datas.append({"Name":        var.getname(),
-                          "Type":        var.gettype(),
-                          "Initial":     var.getinitial(),
-                          "Description": var.getdesc(),
-                          "OnChange":    var.getonchange(),
-                          "Options":     var.getopts(),
-                         })
+            datas.append({
+                "Name":        var.getname(),
+                "Type":        var.gettype(),
+                "Initial":     var.getinitial(),
+                "Description": var.getdesc(),
+                "OnChange":    var.getonchange(),
+                "Options":     var.getopts(),
+            })
         return datas
 
     def SetTextParts(self, parts):

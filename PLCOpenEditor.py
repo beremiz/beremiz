@@ -90,7 +90,8 @@ from dialogs.AboutDialog import ShowAboutDialog
 #-------------------------------------------------------------------------------
 
 # Define PLCOpenEditor FileMenu extra items id
-[ID_PLCOPENEDITORFILEMENUGENERATE,
+[
+    ID_PLCOPENEDITORFILEMENUGENERATE,
 ] = [wx.NewId() for _init_coll_FileMenu_Items in range(1)]
 
 

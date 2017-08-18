@@ -39,8 +39,7 @@ connectors = {name:
               _GetLocalConnectorClassFactory(name)
               for name in listdir(_base_path)
               if (path.isdir(path.join(_base_path, name))
-                  and not name.startswith("__"))
-}
+                  and not name.startswith("__"))}
 
 
 def ConnectorFactory(uri, confnodesroot):

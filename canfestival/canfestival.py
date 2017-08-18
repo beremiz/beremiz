@@ -80,8 +80,7 @@ def GetSlaveLocationTree(slave_node, current_location, name):
     return {"name": name,
             "type": LOCATION_CONFNODE,
             "location": ".".join([str(i) for i in current_location]) + ".x",
-            "children": entries
-    }
+            "children": entries}
 
 #--------------------------------------------------
 #                    SLAVE

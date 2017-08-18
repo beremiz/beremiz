@@ -46,8 +46,9 @@ def GenerateName(infos):
 #-------------------------------------------------------------------------------
 
 
-[ID_SEARCHRESULTPANEL, ID_SEARCHRESULTPANELHEADERLABEL,
- ID_SEARCHRESULTPANELSEARCHRESULTSTREE, ID_SEARCHRESULTPANELRESETBUTTON,
+[
+    ID_SEARCHRESULTPANEL, ID_SEARCHRESULTPANELHEADERLABEL,
+    ID_SEARCHRESULTPANELSEARCHRESULTSTREE, ID_SEARCHRESULTPANELRESETBUTTON,
 ] = [wx.NewId() for _init_ctrls in range(4)]
 
 
@@ -174,12 +175,13 @@ class SearchResultPanel(wx.Panel):
             self.ResetButton.Enable(False)
         else:
             matches_number = 0
-            search_results_tree_infos = {"name": _("Project '%s':") % self.ParentWindow.Controler.GetProjectName(),
-                                         "type": ITEM_PROJECT,
-                                         "data": None,
-                                         "text": None,
-                                         "matches": None,
-                                        }
+            search_results_tree_infos = {
+                "name": _("Project '%s':") % self.ParentWindow.Controler.GetProjectName(),
+                "type": ITEM_PROJECT,
+                "data": None,
+                "text": None,
+                "matches": None,
+            }
             search_results_tree_children = search_results_tree_infos.setdefault("children", [])
             for tagname in self.ElementsOrder:
                 results = self.SearchResults.get(tagname, [])
@@ -219,13 +221,14 @@ class SearchResultPanel(wx.Panel):
                                 child_type = self.ParentWindow.Controler.GetPouBodyType(words[1])
                         else:
                             child_name = GenerateName(infos[3:])
-                    child_infos = {"name": child_name,
-                                   "type": child_type,
-                                   "data": (infos, start, end, None),
-                                   "text": text,
-                                   "matches": 1,
-                                   "children": [],
-                                  }
+                    child_infos = {
+                        "name": child_name,
+                        "type": child_type,
+                        "data": (infos, start, end, None),
+                        "text": text,
+                        "matches": 1,
+                        "children": [],
+                    }
                     children.append(child_infos)
 
                 if len(words) > 2:
