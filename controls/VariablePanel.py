@@ -91,12 +91,12 @@ VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceT
 VARIABLE_CLASSES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().itervalues()])
 
 CheckOptionForClass = {
-    "Local":    lambda x: x,
-    "Temp":     lambda x: "",
-    "Input":    lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
-    "InOut":    lambda x: "",
-    "Output":   lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
-    "Global":   lambda x: {"Constant": "Constant", "Retain": "Retain"}.get(x, ""),
+    "Local": lambda x: x,
+    "Temp": lambda x: "",
+    "Input": lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
+    "InOut": lambda x: "",
+    "Output": lambda x: {"Retain": "Retain", "Non-Retain": "Non-Retain"}.get(x, ""),
+    "Global": lambda x: {"Constant": "Constant", "Retain": "Retain"}.get(x, ""),
     "External": lambda x: {"Constant": "Constant"}.get(x, "")
 }
 

@@ -56,7 +56,7 @@ def _ttime(): return (IEC_TIME,
 
 
 SameEndianessTypeTranslator = {
-    "BOOL":       _t(c_uint8,  lambda x: x.value != 0),
+    "BOOL":       _t(c_uint8, lambda x: x.value != 0),
     "STEP":       _t(c_uint8),
     "TRANSITION": _t(c_uint8),
     "ACTION":     _t(c_uint8),

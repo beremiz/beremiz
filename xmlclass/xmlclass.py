@@ -894,7 +894,7 @@ class ClassFactory:
                 raise ValueError("Invalid attribute \"%s\" for member \"%s\"!" % (qualified_name, node.nodeName))
         for attr in valid_attrs:
             if attr not in attrs and \
-               attr      in self.Namespaces[self.SchemaNamespace] and \
+               attr in self.Namespaces[self.SchemaNamespace] and \
                "default" in self.Namespaces[self.SchemaNamespace][attr]:
                 if element_name in self.Namespaces[self.SchemaNamespace][attr]["default"]:
                     default = self.Namespaces[self.SchemaNamespace][attr]["default"][element_name]
