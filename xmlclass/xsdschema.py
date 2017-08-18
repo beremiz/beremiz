@@ -318,7 +318,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                         raise ValueError("value must be greater than %s" % str(facetvalue))
                     elif facetname == "maxInclusive" and value > facetvalue:
                         raise ValueError("value must be lesser than or equal to %s" % str(facetvalue))
-                    elif facetname == "maxExclusive"  and value >= facetvalue:
+                    elif facetname == "maxExclusive" and value >= facetvalue:
                         raise ValueError("value must be lesser than %s" % str(facetvalue))
                     elif facetname == "pattern":
                         model = re.compile("(?:%s)?$" % "|".join(map(lambda x: "(?:%s)" % x, facetvalue)))
@@ -352,7 +352,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                         return False
                     elif facetname == "maxInclusive" and value > facetvalue:
                         return False
-                    elif facetname == "maxExclusive"  and value >= facetvalue:
+                    elif facetname == "maxExclusive" and value >= facetvalue:
                         return False
                     elif facetname == "pattern":
                         model = re.compile("(?:%s)?$" % "|".join(map(lambda x: "(?:%s)" % x, facetvalue)))
@@ -379,7 +379,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                         return facetvalue + 1
                     elif facetname == "maxInclusive" and facetvalue < 0:
                         return facetvalue
-                    elif facetname == "maxExclusive"  and facetvalue <= 0:
+                    elif facetname == "maxExclusive" and facetvalue <= 0:
                         return facetvalue - 1
             return basetypeinfos["initial"]()
 

@@ -308,7 +308,7 @@ class DebugVariableItem(DebugDataConsumer):
         @param value: New value
         """
         # Remove quote and double quote surrounding string value to get raw value
-        if self.VariableType == "STRING"  and value.startswith("'") and value.endswith("'") or \
+        if self.VariableType == "STRING" and value.startswith("'") and value.endswith("'") or \
            self.VariableType == "WSTRING" and value.startswith('"') and value.endswith('"'):
             value = value[1:-1]
 
