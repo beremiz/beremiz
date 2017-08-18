@@ -50,9 +50,17 @@ from util.TranslationCatalogs import NoTranslate
 
 def GetVariableTableColnames(location):
     _ = NoTranslate
-    if location:
-    	return ["#", _("Name"), _("Class"), _("Type"), _("Location"), _("Initial Value"), _("Option"), _("Documentation")]
-    return ["#", _("Name"), _("Class"), _("Type"), _("Initial Value"), _("Option"), _("Documentation")]
+    cols = ["#",
+            _("Name"),
+            _("Class"),
+            _("Type"),
+            _("Location"),
+            _("Initial Value"),
+            _("Option"),
+            _("Documentation")]
+    if not location:
+        del cols[4]  # remove 'Location' column
+    return cols
 
 
 def GetOptions(constant=True, retain=True, non_retain=True):

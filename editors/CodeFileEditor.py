@@ -743,7 +743,13 @@ class VariablesEditor(wx.Panel):
 
     def GetVariableTableColnames(self):
         _ = NoTranslate
-    	return ["#", _("Name"), _("Type"), _("Initial"), _("Description"), _("OnChange"), _("Options")]
+        return ["#",
+                _("Name"),
+                _("Type"),
+                _("Initial"),
+                _("Description"),
+                _("OnChange"),
+                _("Options")]
 
     def RefreshModel(self):
         self.Controler.SetVariables(self.Table.GetData())
