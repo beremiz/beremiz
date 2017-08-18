@@ -166,7 +166,7 @@ class ProgramGenerator:
                 values = [[(value.getname(), (tagname, "value", i))]
                           for i, value in enumerate(
                               basetype_content.xpath("ppx:values/ppx:value",
-                                  namespaces=PLCOpenParser.NSMAP))]
+                                                     namespaces=PLCOpenParser.NSMAP))]
                 datatype_def += [("(", ())]
                 datatype_def += JoinList([(", ", ())], values)
                 datatype_def += [(")", ())]
@@ -497,9 +497,10 @@ class ProgramGenerator:
  SelectionConvergenceClass, SelectionDivergenceClass,
  SimultaneousConvergenceClass, SimultaneousDivergenceClass] = [
     PLCOpenParser.GetElementClass(instance_name, "sfcObjects")
-    for instance_name in ["step", "transition", "jumpStep",
-        "selectionConvergence", "selectionDivergence",
-        "simultaneousConvergence", "simultaneousDivergence"]]
+    for instance_name in [
+            "step", "transition", "jumpStep",
+            "selectionConvergence", "selectionDivergence",
+            "simultaneousConvergence", "simultaneousDivergence"]]
 TransitionObjClass = PLCOpenParser.GetElementClass("transition", "transitions")
 ActionObjClass = PLCOpenParser.GetElementClass("action", "actions")
 
@@ -594,7 +595,7 @@ class PouProgramGenerator:
         parameter = link.getformalParameter()
         instance = body.getcontentInstance(link.getrefLocalId())
         if isinstance(instance, (InVariableClass, InOutVariableClass,
-             ContinuationClass, ContactClass, CoilClass)):
+                                 ContinuationClass, ContactClass, CoilClass)):
             return instance.connectionPointOut
         elif isinstance(instance, BlockClass):
             outputvariables = instance.outputVariables.getvariable()
@@ -1459,8 +1460,11 @@ class PouProgramGenerator:
                         self.GenerateSFCAction(action["value"], pou)
                     else:
                         action_name = "%s_INLINE%d" % (step_name.upper(), self.GetActionNumber())
-                        self.SFCNetworks["Actions"][action_name] = ([(self.CurrentIndent, ()),
-                            (action["value"], (self.TagName, "action_block", action_infos["id"], "action", i, "inline")),
+                        self.SFCNetworks["Actions"][action_name] = ([
+                            (self.CurrentIndent, ()),
+                            (action["value"], (
+                                self.TagName, "action_block", action_infos["id"],
+                                "action", i, "inline")),
                             ("\n", ())], ())
                         action_infos["content"] = action_name
                     self.SFCNetworks["Steps"][step_name]["actions"].append(action_infos)

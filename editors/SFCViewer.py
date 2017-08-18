@@ -767,8 +767,10 @@ class SFC_Viewer(Viewer):
                 if isinstance(block, SFC_Step):
                     choices.append(block.GetName())
             dialog = wx.SingleChoiceDialog(self.ParentWindow,
-                  _("Add a new jump"), _("Please choose a target"),
-                  choices, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                                           _("Add a new jump"),
+                                           _("Please choose a target"),
+                                           choices,
+                                           wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
             if dialog.ShowModal() == wx.ID_OK:
                 value = dialog.GetStringSelection()
                 self.SelectedElement.AddOutput()
@@ -980,7 +982,7 @@ class SFC_Viewer(Viewer):
                     wire_size = GetWireSize(previous_block)
                     previous_block.RefreshOutputPosition((0, previous_pos.y + wire_size - next_pos.y))
                     wire.SetPoints([wx.Point(previous_pos.x, previous_pos.y + wire_size),
-                        wx.Point(previous_pos.x, previous_pos.y)])
+                                    wx.Point(previous_pos.x, previous_pos.y)])
                     if isinstance(next_block, SFC_Divergence):
                         next_block.RefreshPosition()
                     previous_block.RefreshOutputModel(True)
@@ -1010,7 +1012,7 @@ class SFC_Viewer(Viewer):
                 wire_size = GetWireSize(previous_block)
                 previous_block.RefreshOutputPosition((previous_pos.x - next_pos.x, previous_pos.y + wire_size - next_pos.y))
                 wire.SetPoints([wx.Point(previous_pos.x, previous_pos.y + wire_size),
-                    wx.Point(previous_pos.x, previous_pos.y)])
+                                wx.Point(previous_pos.x, previous_pos.y)])
                 if isinstance(next_block, SFC_Divergence):
                     next_block.RefreshPosition()
                 previous_block.RefreshOutputModel(True)

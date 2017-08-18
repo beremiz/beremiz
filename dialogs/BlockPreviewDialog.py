@@ -118,7 +118,7 @@ class BlockPreviewDialog(wx.Dialog):
         # Create a sizer for dividing parameters in two columns
         self.ColumnSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.MainSizer.AddSizer(self.ColumnSizer, border=20,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                                flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         # Create a sizer for left column
         self.LeftGridSizer = wx.FlexGridSizer(cols=1, hgap=0,
@@ -127,7 +127,7 @@ class BlockPreviewDialog(wx.Dialog):
         if left_growable_row is not None:
             self.LeftGridSizer.AddGrowableRow(left_growable_row)
         self.ColumnSizer.AddSizer(self.LeftGridSizer, 1, border=5,
-              flag=wx.GROW | wx.RIGHT | wx.EXPAND)
+                                  flag=wx.GROW | wx.RIGHT | wx.EXPAND)
 
         # Create a sizer for right column
         self.RightGridSizer = wx.FlexGridSizer(cols=1, hgap=0,
@@ -136,7 +136,7 @@ class BlockPreviewDialog(wx.Dialog):
         if right_growable_row is not None:
             self.RightGridSizer.AddGrowableRow(right_growable_row)
         self.ColumnSizer.AddSizer(self.RightGridSizer, 1, border=5,
-              flag=wx.GROW | wx.LEFT)
+                                  flag=wx.GROW | wx.LEFT)
 
         self.SetSizer(self.MainSizer)
 
@@ -281,7 +281,7 @@ class BlockPreviewDialog(wx.Dialog):
         # calculate preview panel scale so that graphic element fit inside
         k = 1.1 if (bbox.width * 1.1 > client_size.width or
                     bbox.height * 1.1 > client_size.height) \
-                else 1.0
+            else 1.0
         scale = (max(float(bbox.width) / client_size.width,
                      float(bbox.height) / client_size.height) * k)
         dc.SetUserScale(1.0 / scale, 1.0 / scale)

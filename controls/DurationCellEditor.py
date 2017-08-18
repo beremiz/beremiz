@@ -42,7 +42,7 @@ class DurationCellControl(wx.PyControl):
 
         # create location text control
         self.Duration = wx.TextCtrl(self, size=wx.Size(0, -1),
-              style=wx.TE_PROCESS_ENTER)
+                                    style=wx.TE_PROCESS_ENTER)
         self.Duration.Bind(wx.EVT_KEY_DOWN, self.OnDurationChar)
         main_sizer.AddWindow(self.Duration, flag=wx.GROW)
 

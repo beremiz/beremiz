@@ -311,7 +311,8 @@ class InstanceTagName:
 
 _Point = namedtuple("Point", ["x", "y"])
 
-_BlockInstanceInfos = namedtuple("BlockInstanceInfos",
+_BlockInstanceInfos = namedtuple(
+    "BlockInstanceInfos",
     ["type", "id", "x", "y", "width", "height", "specific_values", "inputs", "outputs"])
 
 _BlockSpecificValues = (
@@ -371,10 +372,12 @@ _SpecificValuesTuples = {
         [lambda x: x]),
 }
 
-_InstanceConnectionInfos = namedtuple("InstanceConnectionInfos",
+_InstanceConnectionInfos = namedtuple(
+    "InstanceConnectionInfos",
     ["name", "negated", "edge", "position", "links"])
 
-_ConnectionLinkInfos = namedtuple("ConnectionLinkInfos",
+_ConnectionLinkInfos = namedtuple(
+    "ConnectionLinkInfos",
     ["refLocalId", "formalParameter", "points"])
 
 
@@ -710,8 +713,11 @@ class PLCControler:
             infos = {"name": project.getname(), "type": ITEM_PROJECT}
             datatypes = {"name": DATA_TYPES, "type": ITEM_DATATYPES, "values": []}
             for datatype in project.getdataTypes():
-                datatypes["values"].append({"name": datatype.getname(), "type": ITEM_DATATYPE,
-                    "tagname": self.ComputeDataTypeName(datatype.getname()), "values": []})
+                datatypes["values"].append({
+                    "name": datatype.getname(),
+                    "type": ITEM_DATATYPE,
+                    "tagname": self.ComputeDataTypeName(datatype.getname()),
+                    "values": []})
             pou_types = {
                 "function": {
                     "name":   FUNCTIONS,
@@ -737,13 +743,17 @@ class PLCControler:
                 if pou.getbodyType() == "SFC":
                     transitions = []
                     for transition in pou.gettransitionList():
-                        transitions.append({"name": transition.getname(), "type": ITEM_TRANSITION,
+                        transitions.append({
+                            "name": transition.getname(),
+                            "type": ITEM_TRANSITION,
                             "tagname": self.ComputePouTransitionName(pou.getname(), transition.getname()),
                             "values": []})
                     pou_values.append({"name": TRANSITIONS, "type": ITEM_TRANSITIONS, "values": transitions})
                     actions = []
                     for action in pou.getactionList():
-                        actions.append({"name": action.getname(), "type": ITEM_ACTION,
+                        actions.append({
+                            "name": action.getname(),
+                            "type": ITEM_ACTION,
                             "tagname": self.ComputePouActionName(pou.getname(), action.getname()),
                             "values": []})
                     pou_values.append({"name": ACTIONS, "type": ITEM_ACTIONS, "values": actions})
@@ -753,13 +763,17 @@ class PLCControler:
             configurations = {"name": CONFIGURATIONS, "type": ITEM_CONFIGURATIONS, "values": []}
             for config in project.getconfigurations():
                 config_name = config.getname()
-                config_infos = {"name": config_name, "type": ITEM_CONFIGURATION,
+                config_infos = {
+                    "name": config_name,
+                    "type": ITEM_CONFIGURATION,
                     "tagname": self.ComputeConfigurationName(config.getname()),
                     "values": []}
                 resources = {"name": RESOURCES, "type": ITEM_RESOURCES, "values": []}
                 for resource in config.getresource():
                     resource_name = resource.getname()
-                    resource_infos = {"name": resource_name, "type": ITEM_RESOURCE,
+                    resource_infos = {
+                        "name": resource_name,
+                        "type": ITEM_RESOURCE,
                         "tagname": self.ComputeConfigurationResourceName(config.getname(), resource.getname()),
                         "values": []}
                     resources["values"].append(resource_infos)
@@ -814,8 +828,8 @@ class PLCControler:
                 extensions={
                     ("instances_ns", "AddInstance"): factory.AddInstance})
 
-            instances_path_xslt_tree(root,
-                instance_type=etree.XSLT.strparam(name))
+            instances_path_xslt_tree(
+                root, instance_type=etree.XSLT.strparam(name))
 
         return instances
 
@@ -853,8 +867,8 @@ class PLCControler:
                                      "ActionTagName",
                                      "TransitionTagName"]})
 
-        instance_tagname_xslt_tree(project,
-            instance_path=etree.XSLT.strparam(instance_path))
+        instance_tagname_xslt_tree(
+            project, instance_path=etree.XSLT.strparam(instance_path))
 
         return factory.GetTagName()
 
@@ -1386,10 +1400,10 @@ class PLCControler:
                 os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
                 parser),
             extensions={("var_infos_ns", name): getattr(factory, name)
-                for name in ["SetType", "AddDimension", "AddTree",
-                             "AddVarToTree", "AddVariable"]})
-        variables_infos_xslt_tree(object_with_vars,
-            tree=etree.XSLT.strparam(str(tree)))
+                        for name in ["SetType", "AddDimension", "AddTree",
+                                     "AddVarToTree", "AddVariable"]})
+        variables_infos_xslt_tree(
+            object_with_vars, tree=etree.XSLT.strparam(str(tree)))
 
         return variables
 
@@ -1437,7 +1451,8 @@ class PLCControler:
                 if config_name is None or config_name == configuration.getname():
                     variables.extend(
                         [var.getname() for var in reduce(
-                            lambda x, y: x + y, [varlist.getvariable()
+                            lambda x, y: x + y, [
+                                varlist.getvariable()
                                 for varlist in configuration.globalVars],
                             [])])
         return variables
@@ -1466,8 +1481,8 @@ class PLCControler:
         return []
 
     # Return resource variable names
-    def GetConfigurationResourceVariableNames(self,
-                config_name=None, resource_name=None, debug=False):
+    def GetConfigurationResourceVariableNames(
+            self, config_name=None, resource_name=None, debug=False):
         variables = []
         project = self.GetProject(debug)
         if project is not None:
@@ -1477,7 +1492,8 @@ class PLCControler:
                         if resource_name is None or resource.getname() == resource_name:
                             variables.extend(
                                 [var.getname() for var in reduce(
-                                    lambda x, y: x + y, [varlist.getvariable()
+                                    lambda x, y: x + y, [
+                                        varlist.getvariable()
                                         for varlist in resource.globalVars],
                                     [])])
         return variables
@@ -1553,8 +1569,8 @@ class PLCControler:
                     extensions={("var_infos_ns", name): getattr(factory, name)
                                 for name in ["SetType", "AddDimension",
                                              "AddTree", "AddVarToTree"]})
-                return_type_infos_xslt_tree(return_type,
-                    tree=etree.XSLT.strparam(str(tree)))
+                return_type_infos_xslt_tree(
+                    return_type, tree=etree.XSLT.strparam(str(tree)))
                 if tree:
                     return [factory.GetType(), factory.GetTree()]
                 return factory.GetType()
@@ -1650,7 +1666,7 @@ class PLCControler:
                     return blocktype_infos
 
                 if inputs == tuple([var_type
-                    for name, var_type, modifier in blocktype_infos["inputs"]]):
+                                    for name, var_type, modifier in blocktype_infos["inputs"]]):
                     return blocktype_infos
 
         return None
@@ -1674,11 +1690,13 @@ class PLCControler:
                  "list": [block for block in category["list"]
                           if block["type"] in filter]}
                 for category in self.TotalTypes]
-            blocktypes.append({"name": USER_DEFINED_POUS,
+            blocktypes.append({
+                "name": USER_DEFINED_POUS,
                 "list": [pou.getblockInfos()
                          for pou in project.getpous(name, filter)
                          if (name is None or
-                             len(self.GetInstanceList(pou, name, debug)) == 0)]})
+                             len(self.GetInstanceList(pou, name, debug)) == 0)]
+            })
             return blocktypes
         return self.TotalTypes
 
@@ -1695,7 +1713,8 @@ class PLCControler:
                 if block["type"] == "functionBlock":
                     blocktypes.append(block["name"])
         if project is not None:
-            blocktypes.extend([pou.getname()
+            blocktypes.extend([
+                pou.getname()
                 for pou in project.getpous(name, ["functionBlock"])
                 if (name is None or
                     len(self.GetInstanceList(pou, name, debug)) == 0)])
@@ -1996,8 +2015,8 @@ class PLCControler:
                     base_type = basetype_content.baseType.getcontent()
                     base_type_type = base_type.getLocalTag()
                     infos["base_type"] = (base_type.getname()
-                        if base_type_type == "derived"
-                        else base_type_type)
+                                          if base_type_type == "derived"
+                                          else base_type_type)
                 elif basetype_content_type == "enum":
                     infos["type"] = "Enumerated"
                     infos["values"] = []
@@ -2011,8 +2030,8 @@ class PLCControler:
                     base_type = basetype_content.baseType.getcontent()
                     base_type_type = base_type.getLocalTag()
                     infos["base_type"] = (base_type.getname()
-                        if base_type_type == "derived"
-                        else base_type_type.upper())
+                                          if base_type_type == "derived"
+                                          else base_type_type.upper())
                 elif basetype_content_type == "struct":
                     infos["type"] = "Structure"
                     infos["elements"] = []
@@ -2028,9 +2047,10 @@ class PLCControler:
                             base_type = element_type.baseType.getcontent()
                             base_type_type = base_type.getLocalTag()
                             element_infos["Type"] = ("array",
-                                base_type.getname()
-                                if base_type_type == "derived"
-                                else base_type_type.upper(), dimensions)
+                                                     base_type.getname()
+                                                     if base_type_type == "derived"
+                                                     else base_type_type.upper(),
+                                                     dimensions)
                         elif element_type_type == "derived":
                             element_infos["Type"] = element_type.getname()
                         else:
@@ -2043,8 +2063,8 @@ class PLCControler:
                 else:
                     infos["type"] = "Directly"
                     infos["base_type"] = (basetype_content.getname()
-                        if basetype_content_type == "derived"
-                        else basetype_content_type.upper())
+                                          if basetype_content_type == "derived"
+                                          else basetype_content_type.upper())
 
                 if datatype.initialValue is not None:
                     infos["initial"] = datatype.initialValue.getvalue()
@@ -2334,10 +2354,11 @@ class PLCControler:
                 element = self.GetEditedElement(tagname, debug)
                 if element is not None and element.getbodyType() not in ["ST", "IL"]:
                     for instance in element.getinstances():
-                        if isinstance(instance,
-                            (PLCOpenParser.GetElementClass("step", "sfcObjects"),
-                             PLCOpenParser.GetElementClass("connector", "commonObjects"),
-                             PLCOpenParser.GetElementClass("continuation", "commonObjects"))):
+                        if isinstance(
+                                instance,
+                                (PLCOpenParser.GetElementClass("step",         "sfcObjects"),
+                                 PLCOpenParser.GetElementClass("connector",    "commonObjects"),
+                                 PLCOpenParser.GetElementClass("continuation", "commonObjects"))):
                             names[instance.getname().upper()] = True
         else:
             project = self.GetProject(debug)

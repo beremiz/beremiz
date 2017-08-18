@@ -49,8 +49,8 @@ class ToolTipProducer:
         # Timer for firing Tool tip display
         self.ToolTipTimer = wx.Timer(self.Parent, -1)
         self.Parent.Bind(wx.EVT_TIMER,
-            self.OnToolTipTimer,
-            self.ToolTipTimer)
+                         self.OnToolTipTimer,
+                         self.ToolTipTimer)
 
     def __del__(self):
         """

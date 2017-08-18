@@ -75,8 +75,8 @@ DECIMAL_FACETS = GenerateDictFacets(NUMBER_FACETS.keys() + ["totalDigits", "frac
 STRING_FACETS = GenerateDictFacets(DEFAULT_FACETS.keys() + ["length", "minLength", "maxLength"])
 
 ALL_FACETS = ["pattern", "whiteSpace", "enumeration", "maxInclusive",
-    "maxExclusive", "minInclusive", "minExclusive", "totalDigits",
-    "fractionDigits", "length", "minLength", "maxLength"]
+              "maxExclusive", "minInclusive", "minExclusive", "totalDigits",
+              "fractionDigits", "length", "minLength", "maxLength"]
 
 
 #-------------------------------------------------------------------------------
@@ -1143,7 +1143,8 @@ XSD_NAMESPACE = {
 #                           Syntax elements definition
 #-------------------------------------------------------------------------------
 
-    "all": {"struct": """
+    "all": {
+        "struct": """
         <all
           id = ID
           maxOccurs = 1 : 1
@@ -1153,13 +1154,15 @@ XSD_NAMESPACE = {
         </all>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("all", ["id", "maxOccurs", "minOccurs"],
+            "default": GenerateElement(
+                "all", ["id", "maxOccurs", "minOccurs"],
                 re.compile("((?:annotation )?(?:element )*)"))
         },
         "reduce": ReduceAll
     },
 
-    "annotation": {"struct": """
+    "annotation": {
+        "struct": """
         <annotation
           id = ID
           {any attributes with non-schema namespace . . .}>
@@ -1167,13 +1170,15 @@ XSD_NAMESPACE = {
         </annotation>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("annotation", ["id"],
+            "default": GenerateElement(
+                "annotation", ["id"],
                 re.compile("((?:app_info |documentation )*)"))
         },
         "reduce": ReduceAnnotation
     },
 
-    "any": {"struct": """
+    "any": {
+        "struct": """
         <any
           id = ID
           maxOccurs = (nonNegativeInteger | unbounded)  : 1
@@ -1185,14 +1190,16 @@ XSD_NAMESPACE = {
         </any>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("any",
+            "default": GenerateElement(
+                "any",
                 ["id", "maxOccurs", "minOccurs", "namespace", "processContents"],
                 re.compile("((?:annotation )?(?:simpleType )*)"))
         },
         "reduce": ReduceAny
     },
 
-    "anyAttribute": {"struct": """
+    "anyAttribute": {
+        "struct": """
         <anyAttribute
           id = ID
           namespace = ((##any | ##other) | List of (anyURI | (##targetNamespace | ##local)) )  : ##any
@@ -1202,13 +1209,14 @@ XSD_NAMESPACE = {
         </anyAttribute>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("anyAttribute",
-                ["id", "namespace", "processContents"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "anyAttribute", ["id", "namespace", "processContents"], ONLY_ANNOTATION)
         },
         "reduce": ReduceAnyAttribute
     },
 
-    "appinfo": {"struct": """
+    "appinfo": {
+        "struct": """
         <appinfo
           source = anyURI
           {any attributes with non-schema namespace . . .}>
@@ -1221,7 +1229,8 @@ XSD_NAMESPACE = {
         "reduce": ReduceAppInfo
     },
 
-    "attribute": {"struct": """
+    "attribute": {
+        "struct": """
         <attribute
           default = string
           fixed = string
@@ -1236,17 +1245,20 @@ XSD_NAMESPACE = {
         </attribute>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("attribute",
+            "default": GenerateElement(
+                "attribute",
                 ["default", "fixed", "form", "id", "name", "ref", "type", "use"],
                 re.compile("((?:annotation )?(?:simpleType )?)")),
-            "schema": GenerateElement("attribute",
+            "schema": GenerateElement(
+                "attribute",
                 ["default", "fixed", "form", "id", "name", "type"],
                 re.compile("((?:annotation )?(?:simpleType )?)"))
         },
         "reduce": ReduceAttribute
     },
 
-    "attributeGroup": {"struct": """
+    "attributeGroup": {
+        "struct": """
         <attributeGroup
           id = ID
           name = NCName
@@ -1256,16 +1268,19 @@ XSD_NAMESPACE = {
         </attributeGroup>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("attributeGroup",
+            "default": GenerateElement(
+                "attributeGroup",
                 ["id", "ref"], ONLY_ANNOTATION),
-            "schema": GenerateElement("attributeGroup",
+            "schema": GenerateElement(
+                "attributeGroup",
                 ["id", "name"],
                 re.compile("((?:annotation )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))"))
         },
         "reduce": ReduceAttributeGroup
     },
 
-    "choice": {"struct": """
+    "choice": {
+        "struct": """
         <choice
           id = ID
           maxOccurs = (nonNegativeInteger | unbounded)  : 1
@@ -1275,13 +1290,16 @@ XSD_NAMESPACE = {
         </choice>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("choice", ["id", "maxOccurs", "minOccurs"],
+            "default": GenerateElement(
+                "choice",
+                ["id", "maxOccurs", "minOccurs"],
                 re.compile("((?:annotation )?(?:element |group |choice |sequence |any )*)"))
         },
         "reduce": ReduceChoice
     },
 
-    "complexContent": {"struct": """
+    "complexContent": {
+        "struct": """
         <complexContent
           id = ID
           mixed = boolean
@@ -1290,13 +1308,16 @@ XSD_NAMESPACE = {
         </complexContent>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("complexContent", ["id", "mixed"],
+            "default": GenerateElement(
+                "complexContent",
+                ["id", "mixed"],
                 re.compile("((?:annotation )?(?:restriction |extension ))"))
         },
         "reduce": ReduceComplexContent
     },
 
-    "complexType": {"struct": """
+    "complexType": {
+        "struct": """
         <complexType
           abstract = boolean : false
           block = (#all | List of (extension | restriction))
@@ -1309,14 +1330,16 @@ XSD_NAMESPACE = {
         </complexType>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("complexType",
+            "default": GenerateElement(
+                "complexType",
                 ["abstract", "block", "final", "id", "mixed", "name"],
                 re.compile("((?:annotation )?(?:simpleContent |complexContent |(?:(?:group |all |choice |sequence )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))))"))
         },
         "reduce": ReduceComplexType
     },
 
-    "documentation": {"struct": """
+    "documentation": {
+        "struct": """
         <documentation
           source = anyURI
           xml:lang = language
@@ -1325,13 +1348,16 @@ XSD_NAMESPACE = {
         </documentation>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("documentation",
-                ["source", "lang"], re.compile("(.*)"), True)
+            "default": GenerateElement(
+                "documentation",
+                ["source", "lang"],
+                re.compile("(.*)"), True)
         },
         "reduce": ReduceDocumentation
     },
 
-    "element": {"struct": """
+    "element": {
+        "struct": """
         <element
           abstract = boolean : false
           block = (#all | List of (extension | restriction | substitution))
@@ -1352,17 +1378,20 @@ XSD_NAMESPACE = {
         </element>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("element",
+            "default": GenerateElement(
+                "element",
                 ["abstract", "block", "default", "final", "fixed", "form", "id", "maxOccurs", "minOccurs", "name", "nillable", "ref", "substitutionGroup", "type"],
                 re.compile("((?:annotation )?(?:simpleType |complexType )?(?:unique |key |keyref )*)")),
-            "schema": GenerateElement("element",
+            "schema": GenerateElement(
+                "element",
                 ["abstract", "block", "default", "final", "fixed", "form", "id", "name", "nillable", "substitutionGroup", "type"],
                 re.compile("((?:annotation )?(?:simpleType |complexType )?(?:unique |key |keyref )*)"))
         },
         "reduce": ReduceElement
     },
 
-    "enumeration": {"struct": """
+    "enumeration": {
+        "struct": """
         <enumeration
           id = ID
           value = anySimpleType
@@ -1376,7 +1405,8 @@ XSD_NAMESPACE = {
         "reduce": GenerateFacetReducing("enumeration", False)
     },
 
-    "extension": {"struct": """
+    "extension": {
+        "struct": """
         <extension
           base = QName
           id = ID
@@ -1385,15 +1415,20 @@ XSD_NAMESPACE = {
         </extension>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("extension", ["base", "id"],
+            "default": GenerateElement(
+                "extension",
+                ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))")),
-            "complexContent": GenerateElement("extension", ["base", "id"],
+            "complexContent": GenerateElement(
+                "extension",
+                ["base", "id"],
                 re.compile("((?:annotation )?(?:group |all |choice |sequence )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?))"))
         },
         "reduce": ReduceExtension
     },
 
-    "field": {"struct": """
+    "field": {
+        "struct": """
         <field
           id = ID
           xpath = a subset of XPath expression, see below
@@ -1407,7 +1442,8 @@ XSD_NAMESPACE = {
         "reduce": ReduceField
     },
 
-    "fractionDigits": {"struct": """
+    "fractionDigits": {
+        "struct": """
         <fractionDigits
           fixed = boolean : false
           id = ID
@@ -1417,13 +1453,16 @@ XSD_NAMESPACE = {
         </fractionDigits>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("fractionDigits",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "fractionDigits",
+                ["fixed", "id", "value"],
+                ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("fractionDigits", True)
     },
 
-    "group": {"struct": """
+    "group": {
+        "struct": """
         <group
           id = ID
           maxOccurs = (nonNegativeInteger | unbounded)  : 1
@@ -1435,17 +1474,20 @@ XSD_NAMESPACE = {
         </group>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("group",
+            "default": GenerateElement(
+                "group",
                 ["id", "maxOccurs", "minOccurs", "ref"],
                 re.compile("((?:annotation )?(?:all |choice |sequence )?)")),
-            "schema": GenerateElement("group",
+            "schema": GenerateElement(
+                "group",
                 ["id", "name"],
                 re.compile("((?:annotation )?(?:all |choice |sequence )?)"))
         },
         "reduce": ReduceGroup
     },
 
-    "import": {"struct": """
+    "import": {
+        "struct": """
         <import
           id = ID
           namespace = anyURI
@@ -1455,13 +1497,16 @@ XSD_NAMESPACE = {
         </import>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("import",
-                ["id", "namespace", "schemaLocation"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "import",
+                ["id", "namespace", "schemaLocation"],
+                ONLY_ANNOTATION)
         },
         "reduce": ReduceImport
     },
 
-    "include": {"struct": """
+    "include": {
+        "struct": """
         <include
           id = ID
           schemaLocation = anyURI
@@ -1470,13 +1515,16 @@ XSD_NAMESPACE = {
         </include>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("include",
-                ["id", "schemaLocation"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "include",
+                ["id", "schemaLocation"],
+                ONLY_ANNOTATION)
         },
         "reduce": ReduceInclude
     },
 
-    "key": {"struct": """
+    "key": {
+        "struct": """
         <key
           id = ID
           name = NCName
@@ -1485,13 +1533,15 @@ XSD_NAMESPACE = {
         </key>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("key", ["id", "name"],
+            "default": GenerateElement(
+                "key", ["id", "name"],
                 re.compile("((?:annotation )?(?:selector (?:field )+))"))
         },
         "reduce": ReduceKey
     },
 
-    "keyref": {"struct": """
+    "keyref": {
+        "struct": """
         <keyref
           id = ID
           name = NCName
@@ -1501,13 +1551,15 @@ XSD_NAMESPACE = {
         </keyref>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("keyref", ["id", "name", "refer"],
+            "default": GenerateElement(
+                "keyref", ["id", "name", "refer"],
                 re.compile("((?:annotation )?(?:selector (?:field )+))"))
         },
         "reduce": ReduceKeyRef
     },
 
-    "length": {"struct": """
+    "length": {
+        "struct": """
         <length
           fixed = boolean : false
           id = ID
@@ -1517,13 +1569,14 @@ XSD_NAMESPACE = {
         </length>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("length",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "length", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("length", True)
     },
 
-    "list": {"struct": """
+    "list": {
+        "struct": """
         <list
           id = ID
           itemType = QName
@@ -1532,13 +1585,15 @@ XSD_NAMESPACE = {
         </list>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("list", ["id", "itemType"],
+            "default": GenerateElement(
+                "list", ["id", "itemType"],
                 re.compile("((?:annotation )?(?:simpleType )?)$"))
         },
         "reduce": ReduceList
     },
 
-    "maxExclusive": {"struct": """
+    "maxExclusive": {
+        "struct": """
         <maxInclusive
           fixed = boolean : false
           id = ID
@@ -1548,13 +1603,14 @@ XSD_NAMESPACE = {
         </maxInclusive>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("maxExclusive",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "maxExclusive", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("maxExclusive", True)
     },
 
-    "maxInclusive": {"struct": """
+    "maxInclusive": {
+        "struct": """
         <maxExclusive
           fixed = boolean : false
           id = ID
@@ -1564,13 +1620,14 @@ XSD_NAMESPACE = {
         </maxExclusive>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("maxInclusive",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "maxInclusive", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("maxInclusive", True)
     },
 
-    "maxLength": {"struct": """
+    "maxLength": {
+        "struct": """
         <maxLength
           fixed = boolean : false
           id = ID
@@ -1580,13 +1637,14 @@ XSD_NAMESPACE = {
         </maxLength>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("maxLength",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "maxLength", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("maxLength", True)
     },
 
-    "minExclusive": {"struct": """
+    "minExclusive": {
+        "struct": """
         <minExclusive
           fixed = boolean : false
           id = ID
@@ -1596,13 +1654,14 @@ XSD_NAMESPACE = {
         </minExclusive>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("minExclusive",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "minExclusive", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("minExclusive", True)
     },
 
-    "minInclusive": {"struct": """
+    "minInclusive": {
+        "struct": """
         <minInclusive
           fixed = boolean : false
           id = ID
@@ -1612,13 +1671,14 @@ XSD_NAMESPACE = {
         </minInclusive>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("minInclusive",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "minInclusive", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("minInclusive", True)
     },
 
-    "minLength": {"struct": """
+    "minLength": {
+        "struct": """
         <minLength
           fixed = boolean : false
           id = ID
@@ -1628,13 +1688,14 @@ XSD_NAMESPACE = {
         </minLength>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("minLength",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "minLength", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("minLength", True)
     },
 
-    "pattern": {"struct": """
+    "pattern": {
+        "struct": """
         <pattern
           id = ID
           value = string
@@ -1648,7 +1709,8 @@ XSD_NAMESPACE = {
         "reduce": GenerateFacetReducing("pattern", False)
     },
 
-    "redefine": {"struct": """
+    "redefine": {
+        "struct": """
         <redefine
           id = ID
           schemaLocation = anyURI
@@ -1657,13 +1719,15 @@ XSD_NAMESPACE = {
         </redefine>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("refine", ["id", "schemaLocation"],
+            "default": GenerateElement(
+                "refine", ["id", "schemaLocation"],
                 re.compile("((?:annotation |(?:simpleType |complexType |group |attributeGroup ))*)"))
         },
         "reduce": ReduceRedefine
     },
 
-    "restriction": {"struct": """
+    "restriction": {
+        "struct": """
         <restriction
           base = QName
           id = ID
@@ -1672,17 +1736,24 @@ XSD_NAMESPACE = {
         </restriction>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("restriction", ["base", "id"],
+            "default": GenerateElement(
+                "restriction",
+                ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:simpleType )?(?:(?:minExclusive |minInclusive |maxExclusive |maxInclusive |totalDigits |fractionDigits |length |minLength |maxLength |enumeration |whiteSpace |pattern )*)))")),
-            "simpleContent": GenerateElement("restriction", ["base", "id"],
+            "simpleContent": GenerateElement(
+                "restriction",
+                ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:simpleType )?(?:(?:minExclusive |minInclusive |maxExclusive |maxInclusive |totalDigits |fractionDigits |length |minLength |maxLength |enumeration |whiteSpace |pattern )*)?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?)))")),
-            "complexContent": GenerateElement("restriction", ["base", "id"],
+            "complexContent": GenerateElement(
+                "restriction",
+                ["base", "id"],
                 re.compile("((?:annotation )?(?:(?:simpleType )?(?:group |all |choice |sequence )?(?:(?:attribute |attributeGroup )*(?:anyAttribute )?)))")),
         },
         "reduce": ReduceRestriction
     },
 
-    "schema": {"struct": """
+    "schema": {
+        "struct": """
         <schema
           attributeFormDefault = (qualified | unqualified) : unqualified
           blockDefault = (#all | List of (extension | restriction | substitution))  : ''
@@ -1697,13 +1768,22 @@ XSD_NAMESPACE = {
         </schema>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("schema",
-                ["attributeFormDefault", "blockDefault", "elementFormDefault", "finalDefault", "id", "targetNamespace", "version", "lang"],
+            "default": GenerateElement(
+                "schema",
+                ["attributeFormDefault",
+                 "blockDefault",
+                 "elementFormDefault",
+                 "finalDefault",
+                 "id",
+                 "targetNamespace",
+                 "version",
+                 "lang"],
                 re.compile("((?:include |import |redefine |annotation )*(?:(?:(?:simpleType |complexType |group |attributeGroup )|element |attribute |annotation )(?:annotation )*)*)"))
         }
     },
 
-    "selector": {"struct": """
+    "selector": {
+        "struct": """
         <selector
           id = ID
           xpath = a subset of XPath expression, see below
@@ -1717,7 +1797,8 @@ XSD_NAMESPACE = {
         "reduce": ReduceSelector
     },
 
-    "sequence": {"struct": """
+    "sequence": {
+        "struct": """
         <sequence
           id = ID
           maxOccurs = (nonNegativeInteger | unbounded)  : 1
@@ -1727,13 +1808,15 @@ XSD_NAMESPACE = {
         </sequence>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("sequence", ["id", "maxOccurs", "minOccurs"],
+            "default": GenerateElement(
+                "sequence", ["id", "maxOccurs", "minOccurs"],
                 re.compile("((?:annotation )?(?:element |group |choice |sequence |any )*)"))
         },
         "reduce": ReduceSequence
     },
 
-    "simpleContent": {"struct": """
+    "simpleContent": {
+        "struct": """
         <simpleContent
           id = ID
           {any attributes with non-schema namespace . . .}>
@@ -1741,13 +1824,15 @@ XSD_NAMESPACE = {
         </simpleContent>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("simpleContent", ["id"],
+            "default": GenerateElement(
+                "simpleContent", ["id"],
                 re.compile("((?:annotation )?(?:restriction |extension ))"))
         },
         "reduce": ReduceSimpleContent
     },
 
-    "simpleType": {"struct": """
+    "simpleType": {
+        "struct": """
         <simpleType
           final = (#all | List of (list | union | restriction))
           id = ID
@@ -1757,13 +1842,15 @@ XSD_NAMESPACE = {
         </simpleType>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("simpleType", ["final", "id", "name"],
+            "default": GenerateElement(
+                "simpleType", ["final", "id", "name"],
                 re.compile("((?:annotation )?(?:restriction |list |union ))"))
         },
         "reduce": ReduceSimpleType
     },
 
-    "totalDigits": {"struct": """
+    "totalDigits": {
+        "struct": """
         <totalDigits
           fixed = boolean : false
           id = ID
@@ -1773,13 +1860,14 @@ XSD_NAMESPACE = {
         </totalDigits>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("totalDigits",
-                ["fixed", "id", "value"], ONLY_ANNOTATION),
+            "default": GenerateElement(
+                "totalDigits", ["fixed", "id", "value"], ONLY_ANNOTATION),
         },
         "reduce": GenerateFacetReducing("totalDigits", True)
     },
 
-    "union": {"struct": """
+    "union": {
+        "struct": """
         <union
           id = ID
           memberTypes = List of QName
@@ -1788,13 +1876,15 @@ XSD_NAMESPACE = {
         </union>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("union", ["id", "memberTypes"],
+            "default": GenerateElement(
+                "union", ["id", "memberTypes"],
                 re.compile("((?:annotation )?(?:simpleType )*)"))
         },
         "reduce": ReduceUnion
     },
 
-    "unique": {"struct": """
+    "unique": {
+        "struct": """
         <unique
           id = ID
           name = NCName
@@ -1803,13 +1893,15 @@ XSD_NAMESPACE = {
         </unique>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("unique", ["id", "name"],
+            "default": GenerateElement(
+                "unique", ["id", "name"],
                 re.compile("((?:annotation )?(?:selector |(?:field )+))"))
         },
         "reduce": ReduceUnique
     },
 
-    "whiteSpace": {"struct": """
+    "whiteSpace": {
+        "struct": """
         <whiteSpace
           fixed = boolean : false
           id = ID
@@ -1819,8 +1911,8 @@ XSD_NAMESPACE = {
         </whiteSpace>""",
         "type": SYNTAXELEMENT,
         "extract": {
-            "default": GenerateElement("whiteSpace",
-                ["fixed", "id", "value"], ONLY_ANNOTATION)
+            "default": GenerateElement(
+                "whiteSpace", ["fixed", "id", "value"], ONLY_ANNOTATION)
         },
         "reduce": GenerateFacetReducing("whiteSpace", True)
     },
@@ -1842,7 +1934,8 @@ XSD_NAMESPACE = {
     "attributeFormDefault": {
         "type": SYNTAXATTRIBUTE,
         "extract": {
-            "default": GenerateEnumeratedExtraction("member attributeFormDefault", ["qualified", "unqualified"])
+            "default": GenerateEnumeratedExtraction(
+                "member attributeFormDefault", ["qualified", "unqualified"])
         },
         "default": {
             "default": "unqualified"

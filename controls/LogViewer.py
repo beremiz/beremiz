@@ -221,8 +221,8 @@ class LogButton():
 
         w, h = dc.GetTextExtent(self.Label)
         dc.DrawText(self.Label,
-            self.Position.x + (self.Size.width - w) / 2,
-            self.Position.y + (self.Size.height - h) / 2)
+                    self.Position.x + (self.Size.width - w) / 2,
+                    self.Position.y + (self.Size.height - h) / 2)
 
 
 DATE_INFO_SIZE = 10
@@ -316,13 +316,13 @@ class LogViewer(DebugViewer, wx.Panel):
         self.SearchMessage.ShowCancelButton(True)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnSearchMessageChanged, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN,
-              self.OnSearchMessageSearchButtonClick, self.SearchMessage)
+                  self.OnSearchMessageSearchButtonClick, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN,
-              self.OnSearchMessageCancelButtonClick, self.SearchMessage)
+                  self.OnSearchMessageCancelButtonClick, self.SearchMessage)
         filter_sizer.AddWindow(self.SearchMessage, 3, border=5, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
 
         self.CleanButton = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap("Clean"),
-              size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                          size=wx.Size(28, 28), style=wx.NO_BORDER)
         self.CleanButton.SetToolTipString(_("Clean log messages"))
         self.Bind(wx.EVT_BUTTON, self.OnCleanButton, self.CleanButton)
         filter_sizer.AddWindow(self.CleanButton)

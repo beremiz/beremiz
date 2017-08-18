@@ -30,14 +30,16 @@ import util.paths as paths
 
 
 def GetCommunityHelpMsg():
-    return _("The best place to ask questions about Beremiz/PLCOpenEditor\n"
-	     "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
-             "\n"
-             "This is the main community support channel.\n"
-             "For posting it is required to be subscribed to the mailing list.\n"
-             "\n"
-             "You can subscribe to the list here:\n"
-             "https://lists.sourceforge.net/lists/listinfo/beremiz-devel")
+    return _(
+        "The best place to ask questions about Beremiz/PLCOpenEditor\n"
+        "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
+        "\n"
+        "This is the main community support channel.\n"
+        "For posting it is required to be subscribed to the mailing list.\n"
+        "\n"
+        "You can subscribe to the list here:\n"
+        "https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
+    )
 
 
 def GetAppRevision():
@@ -84,24 +86,27 @@ def GetAboutDialogInfo():
                          "implemented IEC 61131 IDE with constantly growing set of extensions "
                          "and flexible PLC runtime.")
 
-    info.Developers = ("Andrey Skvortsov <andrej.skvortzov@gmail.com>",
-		       "Sergey Surkov <surkov.sv@summatechnology.ru>",
-		       "Edouard Tisserant <edouard.tisserant@gmail.com>",
-		       "Laurent Bessard <laurent.bessard@gmail.com>")
+    info.Developers = (
+        "Andrey Skvortsov <andrej.skvortzov@gmail.com>",
+        "Sergey Surkov <surkov.sv@summatechnology.ru>",
+        "Edouard Tisserant <edouard.tisserant@gmail.com>",
+        "Laurent Bessard <laurent.bessard@gmail.com>")
 
-    info.License = ('\n This program is free software; you can redistribute it and/or\n'
-    ' modify it under the terms of the GNU General Public License\n'
-    ' as published by the Free Software Foundation; either version 2\n'
-    ' of the License, or (at your option) any later version.\n'
-    '\n'
-    ' This program is distributed in the hope that it will be useful,\n'
-    ' but WITHOUT ANY WARRANTY; without even the implied warranty of\n'
-    ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n'
-    ' GNU General Public License below for more details.\n'
-    '\n'
-    '\n'
-    '\n'
-    '')
+    info.License = (
+        '\n This program is free software; you can redistribute it and/or\n'
+        ' modify it under the terms of the GNU General Public License\n'
+        ' as published by the Free Software Foundation; either version 2\n'
+        ' of the License, or (at your option) any later version.\n'
+        '\n'
+        ' This program is distributed in the hope that it will be useful,\n'
+        ' but WITHOUT ANY WARRANTY; without even the implied warranty of\n'
+        ' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n'
+        ' GNU General Public License below for more details.\n'
+        '\n'
+        '\n'
+        '\n'
+        ''
+    )
 
     # read license file
     path = paths.AbsDir(__file__)
@@ -113,13 +118,14 @@ def GetAboutDialogInfo():
 
     info.Icon = wx.Icon(os.path.join(path, "images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
 
-    info.Translators = ("Russian\t- Andrey Skvortsov <andrej.skvortzov@gmail.com>",
-	                "Korean\t- Reinhard Lee <lij3105@gmail.com>",
-	                "German\t- Mark Muzenhardt <mark.muzenhardt@gmail.com>",
-	                "French\t- Laurent Bessard <laurent.bessard@gmail.com>",
-	                "      \t  Fabien M <mail@fabienm.eu>",
-	                "Slovenian\t- Janez Pregelj",
-	                "Portuguese\t- Thiago Alves <thiagoralves@gmail.com>"
+    info.Translators = (
+        "Russian\t- Andrey Skvortsov <andrej.skvortzov@gmail.com>",
+        "Korean\t- Reinhard Lee <lij3105@gmail.com>",
+        "German\t- Mark Muzenhardt <mark.muzenhardt@gmail.com>",
+        "French\t- Laurent Bessard <laurent.bessard@gmail.com>",
+        "      \t  Fabien M <mail@fabienm.eu>",
+        "Slovenian\t- Janez Pregelj",
+        "Portuguese\t- Thiago Alves <thiagoralves@gmail.com>"
     )
     return info
 

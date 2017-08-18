@@ -233,7 +233,7 @@ class ResourceEditor(EditorPanel):
         tasks_sizer.AddGrowableCol(0)
         tasks_sizer.AddGrowableRow(1)
         main_sizer.AddSizer(tasks_sizer, border=5,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         tasks_buttons_sizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         tasks_buttons_sizer.AddGrowableCol(0)
@@ -249,7 +249,9 @@ class ResourceEditor(EditorPanel):
                 ("UpTaskButton", "up", _("Move task up")),
                 ("DownTaskButton", "down", _("Move task down"))]:
             button = wx.lib.buttons.GenBitmapButton(self.Editor,
-                  bitmap=GetBitmap(bitmap), size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    bitmap=GetBitmap(bitmap),
+                                                    size=wx.Size(28, 28),
+                                                    style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             tasks_buttons_sizer.AddWindow(button)
@@ -262,7 +264,7 @@ class ResourceEditor(EditorPanel):
         instances_sizer.AddGrowableCol(0)
         instances_sizer.AddGrowableRow(1)
         main_sizer.AddSizer(instances_sizer, border=5,
-              flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         instances_buttons_sizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         instances_buttons_sizer.AddGrowableCol(0)
@@ -277,15 +279,15 @@ class ResourceEditor(EditorPanel):
                 ("DeleteInstanceButton", "remove_element", _("Remove instance")),
                 ("UpInstanceButton", "up", _("Move instance up")),
                 ("DownInstanceButton", "down", _("Move instance down"))]:
-            button = wx.lib.buttons.GenBitmapButton(self.Editor,
-                  bitmap=GetBitmap(bitmap), size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button = wx.lib.buttons.GenBitmapButton(
+                self.Editor, bitmap=GetBitmap(bitmap),
+                size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             instances_buttons_sizer.AddWindow(button)
 
         self.InstancesGrid = CustomGrid(self.Editor, style=wx.VSCROLL)
-        self.InstancesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
-              self.OnInstancesGridCellChange)
+        self.InstancesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnInstancesGridCellChange)
         instances_sizer.AddWindow(self.InstancesGrid, flag=wx.GROW)
 
         self.Editor.SetSizer(main_sizer)
@@ -370,9 +372,11 @@ class ResourceEditor(EditorPanel):
                 rows = self.InstancesTable.GetNumberRows()
                 row = self.InstancesGrid.GetGridCursorRow()
                 self.DeleteInstanceButton.Enable(rows > 0)
-                self.UpInstanceButton.Enable(row > 0 and
+                self.UpInstanceButton.Enable(
+                    row > 0 and
                     self.InstancesTable.GetValueByName(row, "Task") == self.InstancesTable.GetValueByName(row - 1, "Task"))
-                self.DownInstanceButton.Enable(0 <= row < rows - 1 and
+                self.DownInstanceButton.Enable(
+                    0 <= row < rows - 1 and
                     self.InstancesTable.GetValueByName(row, "Task") == self.InstancesTable.GetValueByName(row + 1, "Task"))
         setattr(self.InstancesGrid, "RefreshButtons", _RefreshInstanceButtons)
 

@@ -401,7 +401,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
                 if isinstance(output_block, SFC_Step):
                     output_block.MoveActionBlock((diffx, diffy))
                 wires[0][0].SetPoints([wx.Point(current_pos.x, current_pos.y + wire_size),
-                    wx.Point(current_pos.x, current_pos.y)])
+                                       wx.Point(current_pos.x, current_pos.y)])
                 if not isinstance(output_block, SFC_Divergence) or output_block.GetConnectors()["inputs"].index(output) == 0:
                     output_block.Move(diffx, diffy, self.Parent.Wires)
                     output_block.RefreshOutputPosition((diffx, diffy))
@@ -1202,10 +1202,11 @@ class SFC_Divergence(Graphic_Element):
     # Refresh the divergence bounding box
     def RefreshBoundingBox(self):
         if self.Type in [SELECTION_DIVERGENCE, SELECTION_CONVERGENCE]:
-            self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y,
-                self.Size[0] + 1, self.Size[1] + 1)
+            self.BoundingBox = wx.Rect(self.Pos.x,       self.Pos.y,
+                                       self.Size[0] + 1, self.Size[1] + 1)
         elif self.Type in [SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE]:
-            self.BoundingBox = wx.Rect(self.Pos.x - SFC_SIMULTANEOUS_SEQUENCE_EXTRA, self.Pos.y,
+            self.BoundingBox = wx.Rect(
+                self.Pos.x - SFC_SIMULTANEOUS_SEQUENCE_EXTRA,           self.Pos.y,
                 self.Size[0] + 2 * SFC_SIMULTANEOUS_SEQUENCE_EXTRA + 1, self.Size[1] + 1)
 
     # Refresh the position of wires connected to divergence
@@ -1593,8 +1594,8 @@ class SFC_Jump(Graphic_Element):
         text_width, text_height = self.Parent.GetTextExtent(self.Target)
         # Calculate the bounding box size
         bbx_width = self.Size[0] + 2 + text_width
-        self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y - CONNECTOR_SIZE,
-                bbx_width + 1, self.Size[1] + CONNECTOR_SIZE + 1)
+        self.BoundingBox = wx.Rect(self.Pos.x,    self.Pos.y - CONNECTOR_SIZE,
+                                   bbx_width + 1, self.Size[1] + CONNECTOR_SIZE + 1)
 
     # Returns the connector connected to input
     def GetPreviousConnector(self):
@@ -1917,13 +1918,14 @@ class SFC_ActionBlock(Graphic_Element):
         if self.Parent.GetDrawingMode() == FREEDRAWING_MODE:
             self.Size = wx.Size(self.ColSize[0] + self.ColSize[1] + self.ColSize[2], max(min_height, SFC_ACTION_MIN_SIZE[1], self.Size[1]))
             self.MinSize = max(self.ColSize[0] + self.ColSize[1] + self.ColSize[2],
-                SFC_ACTION_MIN_SIZE[0]), max(SFC_ACTION_MIN_SIZE[1], min_height)
+                               SFC_ACTION_MIN_SIZE[0]), max(SFC_ACTION_MIN_SIZE[1], min_height)
             self.RefreshBoundingBox()
         else:
             self.Size = wx.Size(max(self.ColSize[0] + self.ColSize[1] + self.ColSize[2],
-                SFC_ACTION_MIN_SIZE[0]), len(self.Actions) * SFC_ACTION_MIN_SIZE[1])
+                                    SFC_ACTION_MIN_SIZE[0]),
+                                len(self.Actions) * SFC_ACTION_MIN_SIZE[1])
             self.MinSize = max(self.ColSize[0] + self.ColSize[1] + self.ColSize[2],
-                SFC_ACTION_MIN_SIZE[0]), len(self.Actions) * SFC_ACTION_MIN_SIZE[1]
+                               SFC_ACTION_MIN_SIZE[0]), len(self.Actions) * SFC_ACTION_MIN_SIZE[1]
             self.RefreshBoundingBox()
             if self.Input is not None:
                 wires = self.Input.GetWires()
@@ -2018,14 +2020,14 @@ class SFC_ActionBlock(Graphic_Element):
         # Draw plain rectangle for representing the action block
         dc.DrawRectangle(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
         dc.DrawLine(self.Pos.x + colsize[0], self.Pos.y,
-                self.Pos.x + colsize[0], self.Pos.y + self.Size[1])
+                    self.Pos.x + colsize[0], self.Pos.y + self.Size[1])
         dc.DrawLine(self.Pos.x + colsize[0] + colsize[1], self.Pos.y,
-                self.Pos.x + colsize[0] + colsize[1], self.Pos.y + self.Size[1])
+                    self.Pos.x + colsize[0] + colsize[1], self.Pos.y + self.Size[1])
         line_size = self.GetLineSize()
         for i, action in enumerate(self.Actions):
             if i != 0:
                 dc.DrawLine(self.Pos.x, self.Pos.y + i * line_size,
-                    self.Pos.x + self.Size[0], self.Pos.y + i * line_size)
+                            self.Pos.x + self.Size[0], self.Pos.y + i * line_size)
             qualifier_size = dc.GetTextExtent(action.qualifier)
             if action.duration != "":
                 qualifier_pos = (self.Pos.x + (colsize[0] - qualifier_size[0]) / 2,

@@ -1105,7 +1105,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if parent is None:
             parent = self.ParentBlock
         return Connector(parent, self.Name, self.Type, wx.Point(self.Pos[0], self.Pos[1]),
-                self.Direction, self.Negated)
+                         self.Direction, self.Negated)
 
     # Returns the connector parent block
     def GetParentBlock(self):
@@ -1934,7 +1934,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 x2, y2 = self.Points[i + 1].x, self.Points[i + 1].y
             # Calculate a rectangle around the segment
             rect = wx.Rect(min(x1, x2) - ANCHOR_DISTANCE, min(y1, y2) - ANCHOR_DISTANCE,
-                abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
+                           abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
             test |= rect.InsideXY(pt.x, pt.y)
         return test
 
@@ -1942,13 +1942,13 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def TestPoint(self, pt):
         # Test the wire start point
         rect = wx.Rect(self.Points[0].x - ANCHOR_DISTANCE, self.Points[0].y - ANCHOR_DISTANCE,
-            2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
+                       2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
         if rect.InsideXY(pt.x, pt.y):
             return 0
         # Test the wire end point
         if len(self.Points) > 1:
             rect = wx.Rect(self.Points[-1].x - ANCHOR_DISTANCE, self.Points[-1].y - ANCHOR_DISTANCE,
-                2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
+                           2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
             if rect.InsideXY(pt.x, pt.y):
                 return -1
         return None
@@ -1962,7 +1962,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 x2, y2 = self.Points[i + 1].x, self.Points[i + 1].y
                 # Calculate a rectangle around the segment
                 rect = wx.Rect(min(x1, x2) - ANCHOR_DISTANCE, min(y1, y2) - ANCHOR_DISTANCE,
-                    abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
+                               abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
                 if rect.InsideXY(pt.x, pt.y):
                     return i, self.Segments[i]
         return None
@@ -1976,9 +1976,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.EndPoint = [None, vector(self.Points[-1], self.Points[-2])]
             # Calculate the start and end points
             self.StartPoint[0] = wx.Point(self.Points[0].x + CONNECTOR_SIZE * self.StartPoint[1][0],
-                self.Points[0].y + CONNECTOR_SIZE * self.StartPoint[1][1])
+                                          self.Points[0].y + CONNECTOR_SIZE * self.StartPoint[1][1])
             self.EndPoint[0] = wx.Point(self.Points[-1].x + CONNECTOR_SIZE * self.EndPoint[1][0],
-                self.Points[-1].y + CONNECTOR_SIZE * self.EndPoint[1][1])
+                                        self.Points[-1].y + CONNECTOR_SIZE * self.EndPoint[1][1])
             self.Points[0] = self.StartPoint[0]
             self.Points[-1] = self.EndPoint[0]
             # Calculate the segments directions
@@ -2013,9 +2013,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def GetPoints(self, invert=False):
         points = self.VerifyPoints()
         points[0] = wx.Point(points[0].x - CONNECTOR_SIZE * self.StartPoint[1][0],
-                points[0].y - CONNECTOR_SIZE * self.StartPoint[1][1])
+                             points[0].y - CONNECTOR_SIZE * self.StartPoint[1][1])
         points[-1] = wx.Point(points[-1].x - CONNECTOR_SIZE * self.EndPoint[1][0],
-                points[-1].y - CONNECTOR_SIZE * self.EndPoint[1][1])
+                              points[-1].y - CONNECTOR_SIZE * self.EndPoint[1][1])
         # An inversion of the list is asked
         if invert:
             points.reverse()
@@ -2055,9 +2055,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
         i = 0
         # Calculate the start enad end points with the minimum segment size in the right direction
         end = wx.Point(self.EndPoint[0].x + self.EndPoint[1][0] * MIN_SEGMENT_SIZE,
-            self.EndPoint[0].y + self.EndPoint[1][1] * MIN_SEGMENT_SIZE)
+                       self.EndPoint[0].y + self.EndPoint[1][1] * MIN_SEGMENT_SIZE)
         start = wx.Point(self.StartPoint[0].x + self.StartPoint[1][0] * MIN_SEGMENT_SIZE,
-            self.StartPoint[0].y + self.StartPoint[1][1] * MIN_SEGMENT_SIZE)
+                         self.StartPoint[0].y + self.StartPoint[1][1] * MIN_SEGMENT_SIZE)
         # Evaluate the point till it's the last
         while i < len(self.Points) - 1:
             # The next point is the last
@@ -2069,15 +2069,17 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     # If the end point is not in the start direction, a point is added
                     if v_end != self.Segments[0] or v_end == self.EndPoint[1]:
                         self.Points.insert(1, wx.Point(start.x, start.y))
-                        self.Segments.insert(1, DirectionChoice((self.Segments[0][1],
-                            self.Segments[0][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(1, DirectionChoice(
+                            (self.Segments[0][1],
+                             self.Segments[0][0]), v_end, self.EndPoint[1]))
                 # The current point is the second
                 elif i == 1:
                     # The previous direction and the target direction are mainly opposed, a point is added
                     if product(v_end, self.Segments[0]) < 0:
                         self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
-                        self.Segments.insert(2, DirectionChoice((self.Segments[1][1],
-                            self.Segments[1][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(2, DirectionChoice(
+                            (self.Segments[1][1],
+                             self.Segments[1][0]), v_end, self.EndPoint[1]))
                     # The previous direction and the end direction are the same or they are
                     # perpendiculars and the end direction points towards current segment
                     elif product(self.Segments[0], self.EndPoint[1]) >= 0 and product(self.Segments[1], self.EndPoint[1]) <= 0:
@@ -2089,8 +2091,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         # If the previous direction and the end direction are the same, a point is added
                         if product(self.Segments[0], self.EndPoint[1]) > 0:
                             self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
-                            self.Segments.insert(2, DirectionChoice((self.Segments[1][1],
-                                self.Segments[1][0]), v_end, self.EndPoint[1]))
+                            self.Segments.insert(2, DirectionChoice(
+                                (self.Segments[1][1],
+                                 self.Segments[1][0]), v_end, self.EndPoint[1]))
                     else:
                         # Current point is positioned in the middle of start point
                         # and end point on the current direction and a point is added
@@ -2099,8 +2102,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         if self.Segments[0][1] != 0:
                             self.Points[1].y = (end.y + start.y) / 2
                         self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
-                        self.Segments.insert(2, DirectionChoice((self.Segments[1][1],
-                            self.Segments[1][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(2, DirectionChoice(
+                            (self.Segments[1][1],
+                             self.Segments[1][0]), v_end, self.EndPoint[1]))
                 else:
                     # The previous direction and the end direction are perpendiculars
                     if product(self.Segments[i - 1], self.EndPoint[1]) == 0:
@@ -2142,8 +2146,12 @@ class Wire(Graphic_Element, DebugDataConsumer):
                                 if self.Segments[1][1] != 0:
                                     self.Points[2].y = (self.Points[1].y + end.y) / 2
                                 self.Points.insert(3, wx.Point(self.Points[2].x, self.Points[2].y))
-                                self.Segments.insert(3, DirectionChoice((self.Segments[2][1],
-                                    self.Segments[2][0]), v_end, self.EndPoint[1]))
+                                self.Segments.insert(
+                                    3,
+                                    DirectionChoice((self.Segments[2][1],
+                                                     self.Segments[2][0]),
+                                                    v_end,
+                                                    self.EndPoint[1]))
                     else:
                         # Current point is aligned with end point
                         if self.Segments[i - 1][0] != 0:
@@ -2163,16 +2171,22 @@ class Wire(Graphic_Element, DebugDataConsumer):
                                 self.Points[i].y = (end.y + self.Points[i - 1].y) / 2
                         # A point is added
                         self.Points.insert(i + 1, wx.Point(self.Points[i].x, self.Points[i].y))
-                        self.Segments.insert(i + 1, DirectionChoice((self.Segments[i][1],
-                                self.Segments[i][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(
+                            i + 1,
+                            DirectionChoice((self.Segments[i][1],
+                                             self.Segments[i][0]), v_end, self.EndPoint[1]))
             else:
                 # Current point is the first, and second is not mainly in the first direction
                 if i == 0 and product(vector(start, self.Points[1]), self.Segments[0]) < 0:
                     # If first and second directions aren't perpendiculars, a point is added
                     if product(self.Segments[0], self.Segments[1]) != 0:
                         self.Points.insert(1, wx.Point(start.x, start.y))
-                        self.Segments.insert(1, DirectionChoice((self.Segments[0][1],
-                            self.Segments[0][0]), vector(start, self.Points[1]), self.Segments[1]))
+                        self.Segments.insert(
+                            1,
+                            DirectionChoice((self.Segments[0][1],
+                                             self.Segments[0][0]),
+                                            vector(start, self.Points[1]),
+                                            self.Segments[1]))
                     else:
                         self.Points[1].x, self.Points[1].y = start.x, start.y
                 else:
@@ -2235,9 +2249,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     else:
                         dir = (0, 0)
                     pointx = max(-dir[0] * MIN_SEGMENT_SIZE, min(int(round(point[0] * width / float(max(lastwidth, 1)))),
-                            width - dir[0] * MIN_SEGMENT_SIZE))
+                                                                 width - dir[0] * MIN_SEGMENT_SIZE))
                     pointy = max(-dir[1] * MIN_SEGMENT_SIZE, min(int(round(point[1] * height / float(max(lastheight, 1)))),
-                            height - dir[1] * MIN_SEGMENT_SIZE))
+                                                                 height - dir[1] * MIN_SEGMENT_SIZE))
                     self.Points[i] = wx.Point(minx + x + pointx, miny + y + pointy)
             self.StartPoint[0] = self.Points[0]
             self.EndPoint[0] = self.Points[-1]
@@ -2269,10 +2283,12 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         dir = self.EndPoint[1]
                     else:
                         dir = (0, 0)
-                    realpointx = max(-dir[0] * MIN_SEGMENT_SIZE, min(int(round(point[0])),
-                            width - dir[0] * MIN_SEGMENT_SIZE))
-                    realpointy = max(-dir[1] * MIN_SEGMENT_SIZE, min(int(round(point[1])),
-                            height - dir[1] * MIN_SEGMENT_SIZE))
+                    realpointx = max(-dir[0] * MIN_SEGMENT_SIZE,
+                                     min(int(round(point[0])),
+                                         width - dir[0] * MIN_SEGMENT_SIZE))
+                    realpointy = max(-dir[1] * MIN_SEGMENT_SIZE,
+                                     min(int(round(point[1])),
+                                         height - dir[1] * MIN_SEGMENT_SIZE))
                     self.Points[i] = wx.Point(minx + x + realpointx, miny + y + realpointy)
             self.StartPoint[0] = self.Points[0]
             self.EndPoint[0] = self.Points[-1]

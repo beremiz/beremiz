@@ -156,21 +156,21 @@ class DataTypeEditor(EditorPanel):
 
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.MainSizer.AddSizer(top_sizer, border=5,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                                flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         derivation_type_label = wx.StaticText(self.Editor, label=_('Derivation Type:'))
         top_sizer.AddWindow(derivation_type_label, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT)
+                            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT)
 
         self.DerivationType = wx.ComboBox(self.Editor,
-              size=wx.Size(200, -1), style=wx.CB_READONLY)
+                                          size=wx.Size(200, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnDerivationTypeChanged, self.DerivationType)
         top_sizer.AddWindow(self.DerivationType, border=5, flag=wx.GROW | wx.RIGHT)
 
         typeinfos_staticbox = wx.StaticBox(self.Editor, label=_('Type infos:'))
         typeinfos_sizer = wx.StaticBoxSizer(typeinfos_staticbox, wx.HORIZONTAL)
         self.MainSizer.AddSizer(typeinfos_sizer, border=5,
-              flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                                flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Panel for Directly derived data types
 
@@ -180,25 +180,25 @@ class DataTypeEditor(EditorPanel):
         directly_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         directly_basetype_label = wx.StaticText(self.DirectlyPanel,
-              label=_('Base Type:'))
+                                                label=_('Base Type:'))
         directly_panel_sizer.AddWindow(directly_basetype_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                       flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.DirectlyBaseType = wx.ComboBox(self.DirectlyPanel, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnInfosChanged, self.DirectlyBaseType)
         directly_panel_sizer.AddWindow(self.DirectlyBaseType, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                       flag=wx.GROW | wx.ALL)
 
         directly_initialvalue_label = wx.StaticText(self.DirectlyPanel,
-              label=_('Initial Value:'))
+                                                    label=_('Initial Value:'))
         directly_panel_sizer.AddWindow(directly_initialvalue_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                       flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.DirectlyInitialValue = wx.TextCtrl(self.DirectlyPanel,
-              style=wx.TE_PROCESS_ENTER | wx.TE_RICH)
+                                                style=wx.TE_PROCESS_ENTER | wx.TE_RICH)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnReturnKeyPressed, self.DirectlyInitialValue)
         directly_panel_sizer.AddWindow(self.DirectlyInitialValue, 1, border=5,
-              flag=wx.ALL)
+                                       flag=wx.ALL)
 
         self.DirectlyPanel.SetSizer(directly_panel_sizer)
 
@@ -210,49 +210,49 @@ class DataTypeEditor(EditorPanel):
         subrange_panel_sizer = wx.GridSizer(cols=4, hgap=5, rows=3, vgap=0)
 
         subrange_basetype_label = wx.StaticText(self.SubrangePanel,
-              label=_('Base Type:'))
+                                                label=_('Base Type:'))
         subrange_panel_sizer.AddWindow(subrange_basetype_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                       flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.SubrangeBaseType = wx.ComboBox(self.SubrangePanel, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnSubrangeBaseTypeChanged,
-              self.SubrangeBaseType)
+                  self.SubrangeBaseType)
         subrange_panel_sizer.AddWindow(self.SubrangeBaseType, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                       flag=wx.GROW | wx.ALL)
 
         subrange_initialvalue_label = wx.StaticText(self.SubrangePanel,
-              label=_('Initial Value:'))
+                                                    label=_('Initial Value:'))
         subrange_panel_sizer.AddWindow(subrange_initialvalue_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                       flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.SubrangeInitialValue = wx.SpinCtrl(self.SubrangePanel,
-              style=wx.TAB_TRAVERSAL)
+                                                style=wx.TAB_TRAVERSAL)
         self.Bind(wx.EVT_SPINCTRL, self.OnInfosChanged, self.SubrangeInitialValue)
         subrange_panel_sizer.AddWindow(self.SubrangeInitialValue, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                       flag=wx.GROW | wx.ALL)
 
         subrange_minimum_label = wx.StaticText(self.SubrangePanel, label=_('Minimum:'))
         subrange_panel_sizer.AddWindow(subrange_minimum_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                       flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.SubrangeMinimum = wx.SpinCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
         self.Bind(wx.EVT_SPINCTRL, self.OnSubrangeMinimumChanged, self.SubrangeMinimum)
         subrange_panel_sizer.AddWindow(self.SubrangeMinimum, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                       flag=wx.GROW | wx.ALL)
 
         for i in xrange(2):
             subrange_panel_sizer.AddWindow(wx.Size(0, 0), 1)
 
         subrange_maximum_label = wx.StaticText(self.SubrangePanel,
-              label=_('Maximum:'))
+                                               label=_('Maximum:'))
         subrange_panel_sizer.AddWindow(subrange_maximum_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                       flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.SubrangeMaximum = wx.SpinCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
         self.Bind(wx.EVT_SPINCTRL, self.OnSubrangeMaximumChanged, self.SubrangeMaximum)
 
         subrange_panel_sizer.AddWindow(self.SubrangeMaximum, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                       flag=wx.GROW | wx.ALL)
 
         self.SubrangePanel.SetSizer(subrange_panel_sizer)
 
@@ -263,29 +263,32 @@ class DataTypeEditor(EditorPanel):
 
         enumerated_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.EnumeratedValues = CustomEditableListBox(self.EnumeratedPanel,
-              label=_("Values:"), style=wx.gizmos.EL_ALLOW_NEW |
-                                        wx.gizmos.EL_ALLOW_EDIT |
-                                        wx.gizmos.EL_ALLOW_DELETE)
+        self.EnumeratedValues = CustomEditableListBox(
+                self.EnumeratedPanel,
+                label=_("Values:"),
+                style=(wx.gizmos.EL_ALLOW_NEW |
+                       wx.gizmos.EL_ALLOW_EDIT |
+                       wx.gizmos.EL_ALLOW_DELETE))
         setattr(self.EnumeratedValues, "_OnLabelEndEdit", self.OnEnumeratedValueEndEdit)
         for func in ["_OnAddButton", "_OnDelButton", "_OnUpButton", "_OnDownButton"]:
             setattr(self.EnumeratedValues, func, self.OnEnumeratedValuesChanged)
         enumerated_panel_sizer.AddWindow(self.EnumeratedValues, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                         flag=wx.GROW | wx.ALL)
 
         enumerated_panel_rightsizer = wx.BoxSizer(wx.HORIZONTAL)
         enumerated_panel_sizer.AddSizer(enumerated_panel_rightsizer, 1)
 
         enumerated_initialvalue_label = wx.StaticText(self.EnumeratedPanel,
-              label=_('Initial Value:'))
+                                                      label=_('Initial Value:'))
         enumerated_panel_rightsizer.AddWindow(enumerated_initialvalue_label, 1,
-              border=5, flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                              border=5,
+                                              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.EnumeratedInitialValue = wx.ComboBox(self.EnumeratedPanel,
-              style=wx.CB_READONLY)
+                                                  style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnInfosChanged, self.EnumeratedInitialValue)
         enumerated_panel_rightsizer.AddWindow(self.EnumeratedInitialValue, 1,
-              border=5, flag=wx.ALL)
+                                              border=5, flag=wx.ALL)
 
         self.EnumeratedPanel.SetSizer(enumerated_panel_sizer)
 
@@ -304,36 +307,38 @@ class DataTypeEditor(EditorPanel):
 
         array_basetype_label = wx.StaticText(self.ArrayPanel, label=_('Base Type:'))
         array_panel_leftSizer.AddWindow(array_basetype_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                        flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.ArrayBaseType = wx.ComboBox(self.ArrayPanel, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnInfosChanged, self.ArrayBaseType)
         array_panel_leftSizer.AddWindow(self.ArrayBaseType, 1, border=5,
-              flag=wx.GROW | wx.ALL)
+                                        flag=wx.GROW | wx.ALL)
 
         array_panel_rightsizer = wx.BoxSizer(wx.HORIZONTAL)
         array_panel_sizer.AddSizer(array_panel_rightsizer, flag=wx.GROW)
 
         array_initialvalue_label = wx.StaticText(self.ArrayPanel,
-              label=_('Initial Value:'))
+                                                 label=_('Initial Value:'))
         array_panel_rightsizer.AddWindow(array_initialvalue_label, 1, border=5,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                                         flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
         self.ArrayInitialValue = wx.TextCtrl(self.ArrayPanel,
-              style=wx.TE_PROCESS_ENTER | wx.TE_RICH)
+                                             style=wx.TE_PROCESS_ENTER | wx.TE_RICH)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnReturnKeyPressed, self.ArrayInitialValue)
         array_panel_rightsizer.AddWindow(self.ArrayInitialValue, 1, border=5,
-              flag=wx.ALL)
+                                         flag=wx.ALL)
 
-        self.ArrayDimensions = CustomEditableListBox(self.ArrayPanel,
-              label=_("Dimensions:"), style=wx.gizmos.EL_ALLOW_NEW |
-                                            wx.gizmos.EL_ALLOW_EDIT |
-                                            wx.gizmos.EL_ALLOW_DELETE)
+        self.ArrayDimensions = CustomEditableListBox(
+                self.ArrayPanel,
+                label=_("Dimensions:"),
+                style=(wx.gizmos.EL_ALLOW_NEW |
+                       wx.gizmos.EL_ALLOW_EDIT |
+                       wx.gizmos.EL_ALLOW_DELETE))
         for func in ["_OnLabelEndEdit", "_OnAddButton", "_OnDelButton",
                      "_OnUpButton", "_OnDownButton"]:
             setattr(self.ArrayDimensions, func, self.OnDimensionsChanged)
         array_panel_sizer.AddWindow(self.ArrayDimensions, 0, border=5,
-              flag=wx.GROW | wx.ALL)
+                                    flag=wx.GROW | wx.ALL)
 
         self.ArrayPanel.SetSizer(array_panel_sizer)
 
@@ -350,10 +355,10 @@ class DataTypeEditor(EditorPanel):
         structure_button_sizer.AddGrowableCol(0)
         structure_button_sizer.AddGrowableRow(0)
         structure_panel_sizer.AddSizer(structure_button_sizer, 0, border=5,
-              flag=wx.ALL | wx.GROW)
+                                       flag=wx.ALL | wx.GROW)
 
         structure_elements_label = wx.StaticText(self.StructurePanel,
-              label=_('Elements :'))
+                                                 label=_('Elements :'))
         structure_button_sizer.AddWindow(structure_elements_label, flag=wx.ALIGN_BOTTOM)
 
         for name, bitmap, help in [
@@ -362,17 +367,19 @@ class DataTypeEditor(EditorPanel):
                 ("StructureUpButton", "up", _("Move element up")),
                 ("StructureDownButton", "down", _("Move element down"))]:
             button = wx.lib.buttons.GenBitmapButton(self.StructurePanel,
-                  bitmap=GetBitmap(bitmap), size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    bitmap=GetBitmap(bitmap),
+                                                    size=wx.Size(28, 28),
+                                                    style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             structure_button_sizer.AddWindow(button)
 
         self.StructureElementsGrid = CustomGrid(self.StructurePanel,
-              size=wx.Size(0, 150), style=wx.VSCROLL)
+                                                size=wx.Size(0, 150), style=wx.VSCROLL)
         self.StructureElementsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
-              self.OnStructureElementsGridCellChange)
+                                        self.OnStructureElementsGridCellChange)
         self.StructureElementsGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
-              self.OnStructureElementsGridEditorShown)
+                                        self.OnStructureElementsGridEditorShown)
         structure_panel_sizer.AddWindow(self.StructureElementsGrid, flag=wx.GROW)
 
         self.StructurePanel.SetSizer(structure_panel_sizer)

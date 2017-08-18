@@ -87,24 +87,25 @@ class SearchResultPanel(wx.Panel):
 
     def _init_ctrls(self, prnt):
         wx.Panel.__init__(self, id=ID_SEARCHRESULTPANEL,
-              name='SearchResultPanel', parent=prnt, pos=wx.Point(0, 0),
-              size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+                          name='SearchResultPanel', parent=prnt, pos=wx.Point(0, 0),
+                          size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
 
         self.HeaderLabel = wx.StaticText(id=ID_SEARCHRESULTPANELHEADERLABEL,
-              name='HeaderLabel', parent=self,
-              pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
+                                         name='HeaderLabel', parent=self,
+                                         pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
 
         search_results_tree_style = CT.TR_HAS_BUTTONS | CT.TR_NO_LINES | CT.TR_HAS_VARIABLE_ROW_HEIGHT
         self.SearchResultsTree = CT.CustomTreeCtrl(id=ID_SEARCHRESULTPANELSEARCHRESULTSTREE,
-              name="SearchResultsTree", parent=self,
-              pos=wx.Point(0, 0), style=search_results_tree_style)
+                                                   name="SearchResultsTree", parent=self,
+                                                   pos=wx.Point(0, 0), style=search_results_tree_style)
         if wx.VERSION >= (2, 8, 11):
             self.SearchResultsTree.SetAGWWindowStyleFlag(search_results_tree_style)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnSearchResultsTreeItemActivated,
-              id=ID_SEARCHRESULTPANELSEARCHRESULTSTREE)
+                  id=ID_SEARCHRESULTPANELSEARCHRESULTSTREE)
 
-        self.ResetButton = wx.lib.buttons.GenBitmapButton(self,
-              bitmap=GetBitmap("reset"), size=wx.Size(28, 28), style=wx.NO_BORDER)
+        self.ResetButton = wx.lib.buttons.GenBitmapButton(
+            self, bitmap=GetBitmap("reset"),
+            size=wx.Size(28, 28), style=wx.NO_BORDER)
         self.ResetButton.SetToolTipString(_("Reset search result"))
         self.Bind(wx.EVT_BUTTON, self.OnResetButton, self.ResetButton)
 
@@ -300,7 +301,7 @@ class SearchResultPanel(wx.Panel):
             if wx.Platform != '__WXMSW__' or len(text.splitlines()) > 1:
                 text_ctrl_style |= wx.TE_MULTILINE
             text_ctrl = wx.TextCtrl(id=-1, parent=self.SearchResultsTree, pos=wx.Point(0, 0),
-                    value=text, style=text_ctrl_style)
+                                    value=text, style=text_ctrl_style)
             width, height = text_ctrl.GetTextExtent(text)
             text_ctrl.SetClientSize(wx.Size(width + 1, height))
             text_ctrl.SetBackgroundColour(self.SearchResultsTree.GetBackgroundColour())

@@ -672,27 +672,58 @@ def main():
     global app_platforms
 
     parser = OptionParser(usage=usage, version=version)
-    parser.add_option("-o", "--output", dest="output",
-        help="directory to which the webapp should be written")
-    parser.add_option("-j", "--include-js", dest="js_includes", action="append",
-        help="javascripts to load into the same frame as the rest of the script")
-    parser.add_option("-I", "--library_dir", dest="library_dirs",
-        action="append", help="additional paths appended to PYJSPATH")
-    parser.add_option("-D", "--data_dir", dest="data_dir",
-        help="path for data directory")
-    parser.add_option("-m", "--dynamic-modules", action="store_true",
-        dest="dynamic", default=False,
-        help="Split output into separate dynamically-loaded modules (experimental)")
-    parser.add_option("-P", "--platforms", dest="platforms",
-        help="platforms to build for, comma-separated")
-    parser.add_option("-d", "--debug", action="store_true", dest="debug")
-    parser.add_option("-O", "--optimize", action="store_true",
-                      dest="optimize", default=False,
+    parser.add_option("-o",
+                      "--output",
+                      dest="output",
+                      help="directory to which the webapp should be written"
+    )
+    parser.add_option("-j",
+                      "--include-js",
+                      dest="js_includes",
+                      action="append",
+                      help="javascripts to load into the same frame as the rest of the script"
+    )
+    parser.add_option("-I",
+                      "--library_dir",
+                      dest="library_dirs",
+                      action="append",
+                      help="additional paths appended to PYJSPATH"
+    )
+    parser.add_option("-D",
+                      "--data_dir",
+                      dest="data_dir",
+                      help="path for data directory"
+    )
+    parser.add_option("-m",
+                      "--dynamic-modules",
+                      action="store_true",
+                      dest="dynamic",
+                      default=False,
+                      help="Split output into separate dynamically-loaded modules (experimental)"
+    )
+    parser.add_option("-P",
+                      "--platforms",
+                      dest="platforms",
+                      help="platforms to build for, comma-separated"
+    )
+    parser.add_option("-d",
+                      "--debug",
+                      action="store_true",
+                      dest="debug"
+    )
+    parser.add_option("-O",
+                      "--optimize",
+                      action="store_true",
+                      dest="optimize",
+                      default=False,
                       help="Optimize generated code (removes all print statements)",
-                      )
-    parser.add_option("-c", "--cache_buster", action="store_true",
-                  dest="cache_buster",
-        help="Enable browser cache-busting (MD5 hash added to output filenames)")
+    )
+    parser.add_option("-c",
+                      "--cache_buster",
+                      action="store_true",
+                      dest="cache_buster",
+                      help="Enable browser cache-busting (MD5 hash added to output filenames)"
+    )
 
     parser.set_defaults(output="output", js_includes=[], library_dirs=[],
                         platforms=(','.join(app_platforms)),

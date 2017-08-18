@@ -49,8 +49,8 @@ class PouDialog(wx.Dialog):
 
     def __init__(self, parent, pou_type=None, type_readonly=False):
         wx.Dialog.__init__(self, id=-1, parent=parent,
-              name='PouDialog', title=_('Create a new POU'),
-              style=wx.DEFAULT_DIALOG_STYLE)
+                           name='PouDialog', title=_('Create a new POU'),
+                           style=wx.DEFAULT_DIALOG_STYLE)
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -59,18 +59,18 @@ class PouDialog(wx.Dialog):
         infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=15)
         infos_sizer.AddGrowableCol(1)
         main_sizer.AddSizer(infos_sizer, border=20,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         pouname_label = wx.StaticText(self, label=_('POU Name:'))
         infos_sizer.AddWindow(pouname_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
+                              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.PouName = wx.TextCtrl(self)
         infos_sizer.AddWindow(self.PouName, flag=wx.GROW)
 
         poutype_label = wx.StaticText(self, label=_('POU Type:'))
         infos_sizer.AddWindow(poutype_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
+                              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.PouType = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnTypeChanged, self.PouType)
@@ -78,7 +78,7 @@ class PouDialog(wx.Dialog):
 
         language_label = wx.StaticText(self, label=_('Language:'))
         infos_sizer.AddWindow(language_label, border=4,
-              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
+                              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
         infos_sizer.AddWindow(self.Language, flag=wx.GROW)
@@ -86,7 +86,7 @@ class PouDialog(wx.Dialog):
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 

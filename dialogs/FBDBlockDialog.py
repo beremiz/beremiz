@@ -58,7 +58,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Block Properties'))
+                                    title=_('Block Properties'))
 
         # Init common sizers
         self._init_sizers(2, 0, 1, 0, 3, 2)
@@ -74,9 +74,9 @@ class FBDBlockDialog(BlockPreviewDialog):
 
         # Set function to call when selection in Library panel changed
         setattr(self.LibraryPanel, "_OnTreeItemSelected",
-              self.OnLibraryTreeItemSelected)
+                self.OnLibraryTreeItemSelected)
         left_staticboxsizer.AddWindow(self.LibraryPanel, 1, border=5,
-              flag=wx.GROW | wx.TOP)
+                                      flag=wx.GROW | wx.TOP)
 
         # Create sizer for other block parameters
         top_right_gridsizer = wx.FlexGridSizer(cols=2, hgap=0, rows=4, vgap=5)
@@ -86,7 +86,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         # Create label for block name
         name_label = wx.StaticText(self, label=_('Name:'))
         top_right_gridsizer.AddWindow(name_label,
-              flag=wx.ALIGN_CENTER_VERTICAL)
+                                      flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create text control for defining block name
         self.BlockName = wx.TextCtrl(self)
@@ -96,19 +96,19 @@ class FBDBlockDialog(BlockPreviewDialog):
         # Create label for extended block input number
         inputs_label = wx.StaticText(self, label=_('Inputs:'))
         top_right_gridsizer.AddWindow(inputs_label,
-              flag=wx.ALIGN_CENTER_VERTICAL)
+                                      flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create spin control for defining extended block input number
         self.Inputs = wx.SpinCtrl(self, min=2, max=20,
-              style=wx.SP_ARROW_KEYS)
+                                  style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_SPINCTRL, self.OnInputsChanged, self.Inputs)
         top_right_gridsizer.AddWindow(self.Inputs, flag=wx.GROW)
 
         # Create label for block execution order
         execution_order_label = wx.StaticText(self,
-              label=_('Execution Order:'))
+                                              label=_('Execution Order:'))
         top_right_gridsizer.AddWindow(execution_order_label,
-              flag=wx.ALIGN_CENTER_VERTICAL)
+                                      flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create spin control for defining block execution order
         self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
@@ -118,9 +118,9 @@ class FBDBlockDialog(BlockPreviewDialog):
 
         # Create label for block execution control
         execution_control_label = wx.StaticText(self,
-              label=_('Execution Control:'))
+                                                label=_('Execution Control:'))
         top_right_gridsizer.AddWindow(execution_control_label,
-              flag=wx.ALIGN_CENTER_VERTICAL)
+                                      flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create check box to enable block execution control
         self.ExecutionControl = wx.CheckBox(self)
@@ -134,7 +134,7 @@ class FBDBlockDialog(BlockPreviewDialog):
 
         # Add buttons sizer to sizers
         self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                                flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Dictionary containing correspondence between parameter exchanged and
         # control to fill with parameter value
@@ -340,14 +340,13 @@ class FBDBlockDialog(BlockPreviewDialog):
         # If a block type is selected in library panel
         if values is not None:
             # Set graphic element displayed, creating a FBD block element
-            self.Element = FBD_Block(self.Preview, values["type"],
-                    (self.BlockName.GetValue()
-                     if self.BlockName.IsEnabled()
-                     else ""),
-                    extension=self.Inputs.GetValue(),
-                    inputs=values["inputs"],
-                    executionControl=self.ExecutionControl.GetValue(),
-                    executionOrder=self.ExecutionOrder.GetValue())
+            self.Element = FBD_Block(
+                self.Preview, values["type"],
+                (self.BlockName.GetValue() if self.BlockName.IsEnabled() else ""),
+                extension=self.Inputs.GetValue(),
+                inputs=values["inputs"],
+                executionControl=self.ExecutionControl.GetValue(),
+                executionOrder=self.ExecutionOrder.GetValue())
 
         # Reset graphic element displayed
         else:

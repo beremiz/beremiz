@@ -50,7 +50,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         @param poss_div_types: Types of divergence that will be available in the dialog window
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Create a new divergence or convergence'))
+                                    title=_('Create a new divergence or convergence'))
 
         # Init common sizers
         self._init_sizers(2, 0, 7, None, 2, 1)
@@ -76,7 +76,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         focusbtn = None
         for type, label in poss_div_btns:
             radio_button = wx.RadioButton(self, label=label,
-                  style=(wx.RB_GROUP if first else 0))
+                                          style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
@@ -87,7 +87,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
 
         # Create label for number of divergence sequences
         sequences_label = wx.StaticText(self,
-              label=_('Number of sequences:'))
+                                        label=_('Number of sequences:'))
         self.LeftGridSizer.AddWindow(sequences_label, flag=wx.GROW)
 
         # Create spin control for defining number of divergence sequences
@@ -100,8 +100,9 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.Fit()
 

@@ -83,12 +83,12 @@ class LibraryPanel(wx.Panel):
         # Add TreeCtrl for functions and function blocks library in splitter
         # window
         self.Tree = wx.TreeCtrl(splitter_window,
-              size=wx.Size(0, 0),
-              style=wx.TR_HAS_BUTTONS |
-                    wx.TR_SINGLE |
-                    wx.SUNKEN_BORDER |
-                    wx.TR_HIDE_ROOT |
-                    wx.TR_LINES_AT_ROOT)
+                                size=wx.Size(0, 0),
+                                style=(wx.TR_HAS_BUTTONS |
+                                       wx.TR_SINGLE |
+                                       wx.SUNKEN_BORDER |
+                                       wx.TR_HIDE_ROOT |
+                                       wx.TR_LINES_AT_ROOT))
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemSelected, self.Tree)
         self.Tree.Bind(wx.EVT_CHAR, self.OnKeyDown)
         # If drag'n drop is enabled, bind event generated when a drag begins on
@@ -98,7 +98,7 @@ class LibraryPanel(wx.Panel):
 
         # Add TextCtrl for function and function block informations
         self.Comment = wx.TextCtrl(splitter_window, size=wx.Size(0, 80),
-              style=wx.TE_READONLY | wx.TE_MULTILINE)
+                                   style=wx.TE_READONLY | wx.TE_MULTILINE)
 
         splitter_window.SplitHorizontally(self.Tree, self.Comment, -80)
 
@@ -176,9 +176,9 @@ class LibraryPanel(wx.Panel):
             # Don't save selected item if it is a category
             selected_infos = ((self.Tree.GetItemText(selected_item),
                                selected_pydata["inputs"])
-                             if (selected_pydata is not None and
-                                 selected_pydata["type"] == BLOCK)
-                             else (None, None))
+                              if (selected_pydata is not None and
+                                  selected_pydata["type"] == BLOCK)
+                              else (None, None))
 
             # Get TreeCtrl root item (hidden)
             root = self.Tree.GetRootItem()
@@ -246,7 +246,7 @@ class LibraryPanel(wx.Panel):
                                              for name, type, modifier
                                              in blocktype["inputs"]]),
                         "extension":  (len(blocktype["inputs"])
-                                      if blocktype["extensible"] else None),
+                                       if blocktype["extensible"] else None),
                         "comment":    _(comment) + blocktype.get("usage", "")
                     }
                     self.Tree.SetPyData(blocktype_item, block_data)

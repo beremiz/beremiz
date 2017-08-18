@@ -80,18 +80,21 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.SetSizer(self.MainSizer)
 
     def _init_ctrls(self, prnt):
-        wx.Dialog.__init__(self, id=ID_DISCOVERYDIALOG,
-              name='DiscoveryDialog', parent=prnt, style=wx.DEFAULT_DIALOG_STYLE,
-              title=_('Service Discovery'))
+        wx.Dialog.__init__(
+            self, id=ID_DISCOVERYDIALOG,
+            name='DiscoveryDialog', parent=prnt, style=wx.DEFAULT_DIALOG_STYLE,
+            title=_('Service Discovery'))
 
-        self.staticText1 = wx.StaticText(id=ID_DISCOVERYDIALOGSTATICTEXT1,
-              label=_('Services available:'), name='staticText1', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        self.staticText1 = wx.StaticText(
+            id=ID_DISCOVERYDIALOGSTATICTEXT1,
+            label=_('Services available:'), name='staticText1', parent=self,
+            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
 
         # Set up list control
-        self.ServicesList = AutoWidthListCtrl(id=ID_DISCOVERYDIALOGSERVICESLIST,
-              name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0),
-              style=wx.LC_REPORT | wx.LC_EDIT_LABELS | wx.LC_SORT_ASCENDING | wx.LC_SINGLE_SEL)
+        self.ServicesList = AutoWidthListCtrl(
+            id=ID_DISCOVERYDIALOGSERVICESLIST,
+            name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0),
+            style=wx.LC_REPORT | wx.LC_EDIT_LABELS | wx.LC_SORT_ASCENDING | wx.LC_SINGLE_SEL)
         self.ServicesList.InsertColumn(0, _('NAME'))
         self.ServicesList.InsertColumn(1, _('TYPE'))
         self.ServicesList.InsertColumn(2, _('IP'))
@@ -106,19 +109,22 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
         listmix.ColumnSorterMixin.__init__(self, 4)
 
-        self.RefreshButton = wx.Button(id=ID_DISCOVERYDIALOGREFRESHBUTTON,
-              label=_('Refresh'), name='RefreshButton', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        self.RefreshButton = wx.Button(
+            id=ID_DISCOVERYDIALOGREFRESHBUTTON,
+            label=_('Refresh'), name='RefreshButton', parent=self,
+            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, id=ID_DISCOVERYDIALOGREFRESHBUTTON)
 
-        self.LocalButton = wx.Button(id=ID_DISCOVERYDIALOGLOCALBUTTON,
-              label=_('Local'), name='LocalButton', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        self.LocalButton = wx.Button(
+            id=ID_DISCOVERYDIALOGLOCALBUTTON,
+            label=_('Local'), name='LocalButton', parent=self,
+            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.Bind(wx.EVT_BUTTON, self.OnLocalButton, id=ID_DISCOVERYDIALOGLOCALBUTTON)
 
-        self.IpButton = wx.Button(id=ID_DISCOVERYDIALOGIPBUTTON,
-              label=_('Add IP'), name='IpButton', parent=self,
-              pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
+        self.IpButton = wx.Button(
+            id=ID_DISCOVERYDIALOGIPBUTTON,
+            label=_('Add IP'), name='IpButton', parent=self,
+            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.Bind(wx.EVT_BUTTON, self.OnIpButton, id=ID_DISCOVERYDIALOGIPBUTTON)
 
         self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTER)

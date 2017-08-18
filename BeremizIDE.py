@@ -228,29 +228,29 @@ class Beremiz(IDEFrame):
 
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
-              kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
+                   kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
-              kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
+                   kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
         parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
-              kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
+                   kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
-              kind=wx.ITEM_NORMAL, text=_(u'Save as') + '\tCTRL+SHIFT+S')
+                   kind=wx.ITEM_NORMAL, text=_(u'Save as') + '\tCTRL+SHIFT+S')
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
+                   kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
+                   kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
-              kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
+                   kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
         AppendMenu(parent, help='', id=wx.ID_PREVIEW,
-              kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
+                   kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
         AppendMenu(parent, help='', id=wx.ID_PRINT,
-              kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
+                   kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
-              kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
+                   kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
 
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
@@ -278,7 +278,7 @@ class Beremiz(IDEFrame):
                 self._RecursiveAddMenuItems(new_menu, children)
             else:
                 AppendMenu(menu, help=help, id=new_id,
-                       kind=wx.ITEM_NORMAL, text=text)
+                           kind=wx.ITEM_NORMAL, text=text)
                 self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name),
                           id=new_id)
 
@@ -298,7 +298,7 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, handler, id=id)
 
         parent.Append(help='', id=wx.ID_ABOUT,
-              kind=wx.ITEM_NORMAL, text=_(u'About'))
+                      kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
     def _init_coll_ConnectionStatusBar_Fields(self, parent):
@@ -375,14 +375,14 @@ class Beremiz(IDEFrame):
         #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
 
         StatusToolBar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
-                wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
+                                   wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
         StatusToolBar.SetToolBitmapSize(wx.Size(25, 25))
         StatusToolBar.Realize()
         self.Panes["StatusToolBar"] = StatusToolBar
         self.AUIManager.AddPane(StatusToolBar, wx.aui.AuiPaneInfo().
-                  Name("StatusToolBar").Caption(_("Status ToolBar")).
-                  ToolbarPane().Top().Position(1).
-                  LeftDockable(False).RightDockable(False))
+                                Name("StatusToolBar").Caption(_("Status ToolBar")).
+                                ToolbarPane().Top().Position(1).
+                                LeftDockable(False).RightDockable(False))
 
         self.AUIManager.Update()
 
@@ -485,7 +485,8 @@ class Beremiz(IDEFrame):
             # choose an arbitrary random port for runtime
             self.runtime_port = int(random.random() * 1000) + 61131
             # launch local runtime
-            self.local_runtime = ProcessLogger(self.Log,
+            self.local_runtime = ProcessLogger(
+                self.Log,
                 "\"%s\" \"%s\" -p %s -i localhost %s %s" % (
                     sys.executable,
                     Bpath("Beremiz_service.py"),
@@ -735,8 +736,8 @@ class Beremiz(IDEFrame):
             for confnode_method in self.CTR.StatusMethods:
                 if "method" in confnode_method and confnode_method.get("shown", True):
                     id = wx.NewId()
-                    StatusToolBar.AddSimpleTool(id,
-                        GetBitmap(confnode_method.get("bitmap", "Unknown")),
+                    StatusToolBar.AddSimpleTool(
+                        id, GetBitmap(confnode_method.get("bitmap", "Unknown")),
                         confnode_method["tooltip"])
                     self.Bind(wx.EVT_MENU, self.GetMenuCallBackFunction(confnode_method["method"]), id=id)
 
@@ -1033,8 +1034,9 @@ class Beremiz(IDEFrame):
                         self.ProjectTree.SelectItem(root)
                         self.ResetSelectedItem()
                     else:
-                        return self.RecursiveProjectTreeItemSelection(root,
-                              [(word, ITEM_CONFNODE) for word in tagname.split(".")])
+                        return self.RecursiveProjectTreeItemSelection(
+                            root,
+                            [(word, ITEM_CONFNODE) for word in tagname.split(".")])
                 elif words[0] == "R":
                     return self.RecursiveProjectTreeItemSelection(root, [(words[2], ITEM_RESOURCE)])
                 elif not os.path.exists(words[0]):
@@ -1061,7 +1063,8 @@ class Beremiz(IDEFrame):
 
     def DeleteConfNode(self, confnode):
         if self.CTR.CheckProjectPathPerm():
-            dialog = wx.MessageDialog(self,
+            dialog = wx.MessageDialog(
+                self,
                 _("Really delete node '%s'?") % confnode.CTNName(),
                 _("Remove %s node") % confnode.CTNType,
                 wx.YES_NO | wx.NO_DEFAULT)
@@ -1112,7 +1115,8 @@ def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     if cap:
         cap.ReleaseMouse()
 
-    dlg = wx.SingleChoiceDialog(None,
+    dlg = wx.SingleChoiceDialog(
+        None,
         _("""
 An unhandled exception (bug) occured. Bug report saved at :
 (%s)

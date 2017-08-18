@@ -64,7 +64,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         @param exclude_input: Exclude input from variable class selection
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Variable Properties'))
+                                    title=_('Variable Properties'))
 
         # Init common sizers
         self._init_sizers(4, 2, 4, None, 3, 2)
@@ -80,7 +80,7 @@ class FBDVariableDialog(BlockPreviewDialog):
 
         # Create label for variable execution order
         execution_order_label = wx.StaticText(self,
-              label=_('Execution Order:'))
+                                              label=_('Execution Order:'))
         self.LeftGridSizer.AddWindow(execution_order_label, flag=wx.GROW)
 
         # Create spin control for defining variable execution order
@@ -92,7 +92,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Create label for variable expression
         name_label = wx.StaticText(self, label=_('Expression:'))
         self.RightGridSizer.AddWindow(name_label, border=5,
-              flag=wx.GROW | wx.BOTTOM)
+                                      flag=wx.GROW | wx.BOTTOM)
 
         # Create text control for defining variable expression
         self.Expression = wx.TextCtrl(self)
@@ -102,19 +102,20 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Create a list box to selected variable expression in the list of
         # variables defined in POU
         self.VariableName = wx.ListBox(self, size=wx.Size(-1, 120),
-              style=wx.LB_SINGLE | wx.LB_SORT)
+                                       style=wx.LB_SINGLE | wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
         self.RightGridSizer.AddWindow(self.VariableName, border=4, flag=wx.GROW | wx.TOP)
 
         # Add preview panel and associated label to sizers
         self.MainSizer.AddWindow(self.PreviewLabel, border=20,
-              flag=wx.GROW | wx.LEFT | wx.RIGHT)
+                                 flag=wx.GROW | wx.LEFT | wx.RIGHT)
         self.MainSizer.AddWindow(self.Preview, border=20,
-              flag=wx.GROW | wx.LEFT | wx.RIGHT)
+                                 flag=wx.GROW | wx.LEFT | wx.RIGHT)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Set options that can be selected in class combo box
         for var_class, choice in VARIABLE_CLASSES_DICT.iteritems():
@@ -284,12 +285,12 @@ class FBDVariableDialog(BlockPreviewDialog):
         name = self.Expression.GetValue()
 
         # Set graphic element displayed, creating a FBD variable element
-        self.Element = FBD_Variable(self.Preview,
-                    VARIABLE_CLASSES_DICT_REVERSE[
-                        self.Class.GetStringSelection()],
-                    name,
-                    self.VariableList.get(name, ("", ""))[1],
-                    executionOrder=self.ExecutionOrder.GetValue())
+        self.Element = FBD_Variable(
+            self.Preview,
+            VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()],
+            name,
+            self.VariableList.get(name, ("", ""))[1],
+            executionOrder=self.ExecutionOrder.GetValue())
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

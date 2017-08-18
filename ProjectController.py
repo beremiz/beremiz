@@ -145,7 +145,8 @@ class Iec2CSettings():
         try:
             # Invoke compiler. Output files are listed to stdout, errors to stderr
             status, result, err_result = ProcessLogger(None, buildcmd,
-                no_stdout=True, no_stderr=True).spin()
+                                                       no_stdout=True,
+                                                       no_stderr=True).spin()
         except Exception, e:
             return buildopt
 
@@ -282,7 +283,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # Timer to pull PLC status
             self.StatusTimer = wx.Timer(self.AppFrame, -1)
             self.AppFrame.Bind(wx.EVT_TIMER,
-                self.PullPLCStatusProc, self.StatusTimer)
+                               self.PullPLCStatusProc,
+                               self.StatusTimer)
 
             if self._connector is not None:
                 frame.LogViewer.SetLogSource(self._connector)
@@ -291,7 +293,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # Timer to dispatch debug values to consumers
             self.DispatchDebugValuesTimer = wx.Timer(self.AppFrame, -1)
             self.AppFrame.Bind(wx.EVT_TIMER,
-                self.DispatchDebugValuesProc, self.DispatchDebugValuesTimer)
+                               self.DispatchDebugValuesProc,
+                               self.DispatchDebugValuesTimer)
 
             self.RefreshConfNodesBlockLists()
 
@@ -376,10 +379,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if CheckPathPerm(self.ProjectPath):
             return True
         if self.AppFrame is not None:
-            dialog = wx.MessageDialog(self.AppFrame,
-                        _('You must have permission to work on the project\nWork on a project copy ?'),
-                        _('Error'),
-                        wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+            dialog = wx.MessageDialog(
+                self.AppFrame,
+                _('You must have permission to work on the project\nWork on a project copy ?'),
+                _('Error'),
+                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
             answer = dialog.ShowModal()
             dialog.Destroy()
             if answer == wx.ID_YES:
@@ -750,7 +754,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         try:
             # Invoke compiler. Output files are listed to stdout, errors to stderr
             status, result, err_result = ProcessLogger(self.logger, buildcmd,
-                no_stdout=True, no_stderr=True).spin()
+                                                       no_stdout=True, no_stderr=True).spin()
         except Exception, e:
             self.logger.write_error(buildcmd + "\n")
             self.logger.write_error(repr(e) + "\n")
@@ -860,8 +864,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         return ([(C_file_name, self.plcCFLAGS)
                 for C_file_name in self.PLCGeneratedCFiles],
-               "",  # no ldflags
-               False)  # do not expose retreive/publish calls
+                "",  # no ldflags
+                False)  # do not expose retreive/publish calls
 
     def ResetIECProgramsAndVariables(self):
         """
@@ -1005,7 +1009,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # filter location that are related to code that will be called
         # in retreive, publish, init, cleanup
         locstrs = map(lambda x: "_".join(map(str, x)),
-           [loc for loc, Cfiles, DoCalls in self.LocationCFilesAndCFLAGS if loc and DoCalls])
+                      [loc for loc, Cfiles, DoCalls in
+                       self.LocationCFilesAndCFLAGS if loc and DoCalls])
 
         # Generate main, based on template
         if not self.BeremizRoot.getDisable_Extensions():
@@ -1269,9 +1274,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
                             editor_name = editors.keys()[0]
                         elif len(editors) > 0:
                             names = editors.keys()
-                            dialog = wx.SingleChoiceDialog(self.AppFrame,
-                                  _("Select an editor:"), _("Editor selection"),
-                                  names, wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
+                            dialog = wx.SingleChoiceDialog(
+                                self.AppFrame,
+                                _("Select an editor:"),
+                                _("Editor selection"),
+                                names,
+                                wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                             if dialog.ShowModal() == wx.ID_OK:
                                 editor_name = names[dialog.GetSelection()]
                             dialog.Destroy()
@@ -1397,7 +1405,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def SnapshotAndResetDebugValuesBuffers(self):
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
-            [list() for n in xrange(len(self.TracedIECPath))])
+                                            [list() for n in xrange(len(self.TracedIECPath))])
         ticks, self.DebugTicks = self.DebugTicks, []
         return ticks, buffers
 

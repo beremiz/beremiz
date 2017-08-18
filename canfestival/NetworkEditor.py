@@ -53,8 +53,9 @@ class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
         (_("CANOpen network"), "_create_NetworkEditor")]
 
     def _create_NetworkEditor(self, prnt):
-        self.NetworkEditor = wx.Panel(id=-1, parent=prnt, pos=wx.Point(0, 0),
-                size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+        self.NetworkEditor = wx.Panel(
+            id=-1, parent=prnt, pos=wx.Point(0, 0),
+            size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
 
         NetworkEditorTemplate._init_ctrls(self, self.NetworkEditor)
 

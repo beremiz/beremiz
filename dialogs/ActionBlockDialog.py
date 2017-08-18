@@ -132,7 +132,7 @@ class ActionBlockDialog(wx.Dialog):
         top_sizer.AddGrowableCol(0)
         top_sizer.AddGrowableRow(0)
         main_sizer.AddSizer(top_sizer, border=20,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         actions_label = wx.StaticText(self, label=_('Actions:'))
         top_sizer.AddWindow(actions_label, flag=wx.ALIGN_BOTTOM)
@@ -142,8 +142,9 @@ class ActionBlockDialog(wx.Dialog):
                 ("DeleteButton", "remove_element", _("Remove action")),
                 ("UpButton", "up", _("Move action up")),
                 ("DownButton", "down", _("Move action down"))]:
-            button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button = wx.lib.buttons.GenBitmapButton(
+                self, bitmap=GetBitmap(bitmap),
+                size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             top_sizer.AddWindow(button)
@@ -154,12 +155,12 @@ class ActionBlockDialog(wx.Dialog):
         self.ActionsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
                               self.OnActionsGridCellChange)
         main_sizer.AddSizer(self.ActionsGrid, border=20,
-              flag=wx.GROW | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.LEFT | wx.RIGHT)
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 

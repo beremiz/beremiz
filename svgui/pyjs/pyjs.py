@@ -797,19 +797,19 @@ class Translator:
             #self._method(init_method, current_klass, class_name)
 
         # Generate a function which constructs the object
-        clsfunc = ast.Function([],
-           node.name,
-           init_method.argnames[1:],
-           init_method.defaults,
-           init_method.flags,
-           None,
-           [ast.Discard(ast.CallFunc(ast.Name("JS"), [ast.Const(
-#            I attempted lazy initialization, but then you can't access static class members
-#            "    if(!__"+base_class+".__was_initialized__)"+
-#            "        __" + class_name + "_initialize();\n" +
+        clsfunc = ast.Function(
+            [], node.name,
+            init_method.argnames[1:],
+            init_method.defaults,
+            init_method.flags,
+            None,
+            [ast.Discard(ast.CallFunc(ast.Name("JS"), [ast.Const(
+                #            I attempted lazy initialization, but then you can't access static class members
+                #            "    if(!__"+base_class+".__was_initialized__)"+
+                #            "        __" + class_name + "_initialize();\n" +
             "    var instance = new " + UU + class_name_ + "();\n" +
-            "    if(instance.__init__) instance.__init__.apply(instance, arguments);\n" +
-            "    return instance;"
+                "    if(instance.__init__) instance.__init__.apply(instance, arguments);\n" +
+                "    return instance;"
             )]))])
 
         self._function(clsfunc, False)

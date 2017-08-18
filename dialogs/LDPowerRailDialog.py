@@ -47,7 +47,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Power Rail Properties'))
+                                    title=_('Power Rail Properties'))
 
         # Init common sizers
         self._init_sizers(2, 0, 5, None, 2, 1)
@@ -62,7 +62,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         for type, label in [(LEFTRAIL, _('Left PowerRail')),
                             (RIGHTRAIL, _('Right PowerRail'))]:
             radio_button = wx.RadioButton(self, label=label,
-                  style=(wx.RB_GROUP if first else 0))
+                                          style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
@@ -75,7 +75,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
 
         # Create spin control for defining power rail pin number
         self.PinNumber = wx.SpinCtrl(self, min=1, max=50,
-              style=wx.SP_ARROW_KEYS)
+                                     style=wx.SP_ARROW_KEYS)
         self.PinNumber.SetValue(1)
         self.Bind(wx.EVT_SPINCTRL, self.OnPinNumberChanged, self.PinNumber)
         self.LeftGridSizer.AddWindow(self.PinNumber, flag=wx.GROW)
@@ -85,8 +85,9 @@ class LDPowerRailDialog(BlockPreviewDialog):
         self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
         self.Fit()
 
         # Left Power Rail radio button is default control having keyboard focus
@@ -160,8 +161,8 @@ class LDPowerRailDialog(BlockPreviewDialog):
 
         # Set graphic element displayed, creating a power rail element
         self.Element = LD_PowerRail(self.Preview,
-                self.GetPowerRailType(),
-                connectors=self.PinNumber.GetValue())
+                                    self.GetPowerRailType(),
+                                    connectors=self.PinNumber.GetValue())
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

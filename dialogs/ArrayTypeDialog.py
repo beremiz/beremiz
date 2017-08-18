@@ -50,7 +50,7 @@ class ArrayTypeDialog(wx.Dialog):
 
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(top_sizer, border=20,
-              flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         basetype_label = wx.StaticText(self, label=_('Base Type:'))
         top_sizer.AddWindow(basetype_label, 1, flag=wx.ALIGN_BOTTOM)
@@ -59,9 +59,9 @@ class ArrayTypeDialog(wx.Dialog):
         top_sizer.AddWindow(self.BaseType, 1, flag=wx.GROW)
 
         self.Dimensions = CustomEditableListBox(self, label=_("Dimensions:"),
-              style=wx.gizmos.EL_ALLOW_NEW |
-                    wx.gizmos.EL_ALLOW_EDIT |
-                    wx.gizmos.EL_ALLOW_DELETE)
+                                                style=(wx.gizmos.EL_ALLOW_NEW |
+                                                       wx.gizmos.EL_ALLOW_EDIT |
+                                                       wx.gizmos.EL_ALLOW_DELETE))
         for func in ["_OnLabelEndEdit",
                      "_OnAddButton",
                      "_OnDelButton",
@@ -69,12 +69,12 @@ class ArrayTypeDialog(wx.Dialog):
                      "_OnDownButton"]:
             setattr(self.Dimensions, func, self.OnDimensionsChanged)
         main_sizer.AddSizer(self.Dimensions, border=20,
-              flag=wx.GROW | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.LEFT | wx.RIGHT)
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
         main_sizer.AddSizer(button_sizer, border=20,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 

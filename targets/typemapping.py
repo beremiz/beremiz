@@ -104,7 +104,7 @@ def UnpackDebugBuffer(buff, indexes):
         if c_type is not None and buffoffset < buffsize:
             cursor = c_void_p(buffptr + buffoffset)
             value = unpack_func(cast(cursor,
-                         POINTER(c_type)).contents)
+                                     POINTER(c_type)).contents)
             buffoffset += sizeof(c_type) if iectype != "STRING" else len(value)+1
             res.append(value)
         else:

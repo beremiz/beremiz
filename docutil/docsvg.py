@@ -31,7 +31,7 @@ def get_inkscape_path():
     """ Return the Inkscape path """
     import _winreg
     svgexepath = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE,
-                 'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
+                                    'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
     svgexepath = svgexepath.replace('"%1"', '')
     return svgexepath.replace('"', '')
 
