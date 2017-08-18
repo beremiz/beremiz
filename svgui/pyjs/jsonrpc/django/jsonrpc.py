@@ -120,8 +120,8 @@ def describe_fields_errors(fields, field_names):
 def describe_field(field):
     res = {}
     field_type = field.__class__.__name__
-    for fname in field_names.get(field_type, []) + \
-        ['help_text', 'label', 'initial', 'required']:
+    for fname in (field_names.get(field_type, []) +
+                  ['help_text', 'label', 'initial', 'required']):
         res[fname] = getattr(field, fname)
     if field_type in ['ComboField', 'MultiValueField', 'SplitDateTimeField']:
         res['fields'] = map(describe_field, field.fields)

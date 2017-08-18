@@ -432,7 +432,7 @@ class Beremiz(IDEFrame):
 
         # Icons for other items
         for imgname, itemtype in [
-            ("Extension", ITEM_CONFNODE)]:
+                ("Extension", ITEM_CONFNODE)]:
             self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
 
         if projectOpen is not None:
