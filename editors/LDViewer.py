@@ -70,9 +70,9 @@ def CalcBranchSize(elements, stops):
             removed = []
             for child in values["children"]:
                 if child != "stop":
-#                    if child in elements:
-#                        RemoveElement(child, element_tree)
-#                        removed.append(child)
+                    # if child in elements:
+                    #     RemoveElement(child, element_tree)
+                    #     removed.append(child)
                     if "start" in element_tree[child]["parents"]:
                         if element not in remove_stops["stop"]:
                             remove_stops["stop"].append(element)
@@ -118,12 +118,12 @@ def GenerateTree(element, element_tree, stop_list):
             for wire, handle in connector.GetWires():
                 next = wire.EndConnected.GetParentBlock()
                 if isinstance(next, LD_PowerRail) and next.GetType() == LEFTRAIL or next in stop_list:
-#                    for remove in element_tree[element]["children"]:
-#                        RemoveElement(remove, element_tree)
-#                    element_tree[element]["children"] = ["stop"]
+                    # for remove in element_tree[element]["children"]:
+                    #     RemoveElement(remove, element_tree)
+                    # element_tree[element]["children"] = ["stop"]
                     element_tree[element]["children"].append("stop")
-#                elif element_tree[element]["children"] == ["stop"]:
-#                    element_tree[next] = None
+                # elif element_tree[element]["children"] == ["stop"]:
+                #     element_tree[next] = None
                 elif next not in element_tree or element_tree[next]:
                     element_tree[element]["children"].append(next)
                     if next in element_tree:
