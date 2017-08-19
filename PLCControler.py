@@ -3202,19 +3202,19 @@ class PLCControler:
                     new_task["Single"] = ""
                 interval = task.getinterval()
                 if interval is not None:
-#                    text = ""
-#                    if interval.hour != 0:
-#                        text += "%dh"%interval.hour
-#                    if interval.minute != 0:
-#                        text += "%dm"%interval.minute
-#                    if interval.second != 0:
-#                        text += "%ds"%interval.second
-#                    if interval.microsecond != 0:
-#                        if interval.microsecond % 1000 != 0:
-#                            text += "%.3fms"%(float(interval.microsecond) / 1000)
-#                        else:
-#                            text += "%dms"%(interval.microsecond / 1000)
-#                    new_task["Interval"] = text
+                    # text = ""
+                    # if interval.hour != 0:
+                    #     text += "%dh"%interval.hour
+                    # if interval.minute != 0:
+                    #     text += "%dm"%interval.minute
+                    # if interval.second != 0:
+                    #     text += "%ds"%interval.second
+                    # if interval.microsecond != 0:
+                    #     if interval.microsecond % 1000 != 0:
+                    #         text += "%.3fms"%(float(interval.microsecond) / 1000)
+                    #     else:
+                    #         text += "%dms"%(interval.microsecond / 1000)
+                    # new_task["Interval"] = text
                     new_task["Interval"] = interval
                 else:
                     new_task["Interval"] = ""
