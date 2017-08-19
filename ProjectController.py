@@ -1728,9 +1728,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.logger.write_error(_("Connection canceled!\n"))
                 return
             else:
-                self.\
-                BeremizRoot.\
-                setURI_location(uri)
+                self.BeremizRoot.setURI_location(uri)
                 self.ChangesToSave = True
                 if self._View is not None:
                     self._View.RefreshView()
