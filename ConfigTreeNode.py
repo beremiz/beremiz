@@ -276,10 +276,10 @@ class ConfigTreeNode:
         # confnode asks for some LDFLAGS
         if CTNLDFLAGS:
             # LDFLAGS can be either string
-            if type(CTNLDFLAGS) == type(str()):
+            if isinstance(CTNLDFLAGS, str):
                 LDFLAGS = [CTNLDFLAGS]
             # or list of strings
-            elif type(CTNLDFLAGS) == type(list()):
+            elif isinstance(CTNLDFLAGS, list):
                 LDFLAGS = CTNLDFLAGS[:]
         else:
             LDFLAGS = []
@@ -533,7 +533,7 @@ class ConfigTreeNode:
                             format(a1=CTNName, a2=CTNType))
 
         # if CTNClass is a class factory, call it. (prevent unneeded imports)
-        if type(CTNClass) == types.FunctionType:
+        if isinstance(CTNClass, types.FunctionType):
             CTNClass = CTNClass()
 
         # Eventualy Initialize child instance list for this class of confnode
