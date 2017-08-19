@@ -1546,7 +1546,7 @@ class PlatformParser:
     def parseModule(self, module_name, file_name):
 
         importing = False
-        if not file_name in self.parse_cache:
+        if file_name not in self.parse_cache:
             importing = True
             mod = compiler.parseFile(file_name)
             self.parse_cache[file_name] = mod

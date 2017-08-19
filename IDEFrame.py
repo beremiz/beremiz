@@ -813,7 +813,7 @@ class IDEFrame(wx.Frame):
                     tab_size = child.GetSize()
                     for page_idx in xrange(child.GetPageCount()):
                         page = child.GetWindowFromIdx(page_idx)
-                        if not "size" in tab:
+                        if "size" not in tab:
                             tab["size"] = (tab_size[0], tab_size[1] + page.GetSize()[1])
                         tab_infos = self.GetTabInfos(page)
                         if tab_infos is not None:
@@ -1543,7 +1543,7 @@ class IDEFrame(wx.Frame):
                 self.ProjectTree.SetItemExtraImage(root, self.Controler.GetPouType(infos["name"]))
         elif "icon" in infos and infos["icon"] is not None:
             icon_name = infos["icon"]
-            if not icon_name in self.TreeImageDict:
+            if icon_name not in self.TreeImageDict:
                 self.TreeImageDict[icon_name] = self.TreeImageList.Add(GetBitmap(icon_name))
             self.ProjectTree.SetItemImage(root, self.TreeImageDict[icon_name])
         elif infos["type"] in self.TreeImageDict:

@@ -600,7 +600,7 @@ def filter_deps(app_name, deps):
 
 
 def has_nodeps(mod, deps):
-    if not mod in deps or not deps[mod]:
+    if mod not in deps or not deps[mod]:
         return True
     return False
 

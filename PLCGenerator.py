@@ -745,7 +745,7 @@ class PouProgramGenerator:
                         if isinstance(instance, (OutVariableClass, InOutVariableClass)):
                             self.ConnectionTypes[instance.connectionPointIn] = var_type
                             connected = self.GetConnectedConnector(instance.connectionPointIn, body)
-                            if connected is not None and not connected in self.ConnectionTypes:
+                            if connected is not None and connected not in self.ConnectionTypes:
                                 for related in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[related] = var_type
                 elif isinstance(instance, (ContactClass, CoilClass)):
@@ -754,7 +754,7 @@ class PouProgramGenerator:
                     self.ConnectionTypes[instance.connectionPointIn] = "BOOL"
                     for link in instance.connectionPointIn.getconnections():
                         connected = self.GetLinkedConnector(link, body)
-                        if connected is not None and not connected in self.ConnectionTypes:
+                        if connected is not None and connected not in self.ConnectionTypes:
                             for related in self.ExtractRelatedConnections(connected):
                                 self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, LeftPowerRailClass):
@@ -766,7 +766,7 @@ class PouProgramGenerator:
                         self.ConnectionTypes[connection] = "BOOL"
                         for link in connection.getconnections():
                             connected = self.GetLinkedConnector(link, body)
-                            if connected is not None and not connected in self.ConnectionTypes:
+                            if connected is not None and connected not in self.ConnectionTypes:
                                 for related in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, TransitionClass):
@@ -780,7 +780,7 @@ class PouProgramGenerator:
 
                         for link in connections:
                             connected = self.GetLinkedConnector(link, body)
-                            if connected is not None and not connected in self.ConnectionTypes:
+                            if connected is not None and connected not in self.ConnectionTypes:
                                 for related in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[related] = "BOOL"
                 elif isinstance(instance, ContinuationClass):
@@ -859,10 +859,10 @@ class PouProgramGenerator:
                 for oname, otype, oqualifier in block_infos["outputs"]:
                     if output_name == oname:
                         if otype.startswith("ANY"):
-                            if not otype in undefined:
+                            if otype not in undefined:
                                 undefined[otype] = []
                             undefined[otype].append(variable.connectionPointOut)
-                        elif not variable.connectionPointOut in self.ConnectionTypes:
+                        elif variable.connectionPointOut not in self.ConnectionTypes:
                             for connection in self.ExtractRelatedConnections(variable.connectionPointOut):
                                 self.ConnectionTypes[connection] = otype
         for variable in instance.inputVariables.getvariable():
@@ -875,14 +875,14 @@ class PouProgramGenerator:
                     if input_name == iname:
                         connected = self.GetConnectedConnector(variable.connectionPointIn, body)
                         if itype.startswith("ANY"):
-                            if not itype in undefined:
+                            if itype not in undefined:
                                 undefined[itype] = []
                             undefined[itype].append(variable.connectionPointIn)
                             if connected is not None:
                                 undefined[itype].append(connected)
                         else:
                             self.ConnectionTypes[variable.connectionPointIn] = itype
-                            if connected is not None and not connected in self.ConnectionTypes:
+                            if connected is not None and connected not in self.ConnectionTypes:
                                 for connection in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[connection] = itype
         for var_type, connections in undefined.items():
@@ -1086,7 +1086,7 @@ class PouProgramGenerator:
                 if one_input_connected:
                     for i, variable in enumerate(output_variables):
                         parameter = variable.getformalParameter()
-                        if not parameter in inout_variables and parameter in output_names + ["", "ENO"]:
+                        if parameter not in inout_variables and parameter in output_names + ["", "ENO"]:
                             if variable.getformalParameter() == "":
                                 variable_name = "%s%d" % (type, block.getlocalId())
                             else:
@@ -1535,7 +1535,7 @@ class PouProgramGenerator:
                                     transition_infos["content"] = [("\n%s:= " % self.CurrentIndent, ())] + expression + [(";\n", ())]
                                     self.SFCComputedBlocks += self.Program
                                     self.Program = []
-                    if not "content" in transition_infos:
+                    if "content" not in transition_infos:
                         raise PLCGenException(
                             _("Transition \"%s\" body must contain an output variable or coil referring to its name")
                             % transitionValues["value"])
