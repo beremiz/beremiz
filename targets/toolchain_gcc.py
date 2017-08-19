@@ -185,10 +185,10 @@ class toolchain_gcc():
                         self.CTRInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
 
                         status, result, err_result = ProcessLogger(
-                               self.CTRInstance.logger,
-                               "\"%s\" -c \"%s\" -o \"%s\" %s %s" %
-                                   (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
-                               ).spin()
+                            self.CTRInstance.logger,
+                            "\"%s\" -c \"%s\" -o \"%s\" %s %s" %
+                            (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
+                        ).spin()
 
                         if status:
                             self.srcmd5.pop(bn)
@@ -214,13 +214,13 @@ class toolchain_gcc():
             self.CTRInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
 
             status, result, err_result = ProcessLogger(
-                   self.CTRInstance.logger,
-                   "\"%s\" %s -o \"%s\" %s" %
-                       (self.linker,
-                        listobjstring,
-                        self.exe_path,
-                        ALLldflags)
-                   ).spin()
+                self.CTRInstance.logger,
+                "\"%s\" %s -o \"%s\" %s" %
+                (self.linker,
+                 listobjstring,
+                 self.exe_path,
+                 ALLldflags)
+            ).spin()
 
             if status:
                 return False

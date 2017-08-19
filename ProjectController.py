@@ -983,21 +983,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 "}"]
             bofs += sz
         debug_code = targets.GetCode("plc_debug.c") % {
-           "buffer_size": bofs,
-           "programs_declarations":
-               "\n".join(["extern %(type)s %(C_path)s;" % p for p in self._ProgramList]),
-           "extern_variables_declarations": "\n".join([
-              {
-                  "EXT": "extern __IEC_%(type)s_p %(C_path)s;",
-                  "IN":  "extern __IEC_%(type)s_p %(C_path)s;",
-                  "MEM": "extern __IEC_%(type)s_p %(C_path)s;",
-                  "OUT": "extern __IEC_%(type)s_p %(C_path)s;",
-                  "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
-                  "FB":  "extern       %(type)s   %(C_path)s;"
-              }[v["vartype"]] % v
-               for v in self._VariablesList if v["C_path"].find('.') < 0]),
-           "variable_decl_array": ",\n".join(variable_decl_array)
-           }
+            "buffer_size": bofs,
+            "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
+                                                p for p in self._ProgramList]),
+            "extern_variables_declarations": "\n".join([
+                {
+                    "EXT": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "IN":  "extern __IEC_%(type)s_p %(C_path)s;",
+                    "MEM": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "OUT": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
+                    "FB":  "extern       %(type)s   %(C_path)s;"
+                }[v["vartype"]] % v
+                for v in self._VariablesList if v["C_path"].find('.') < 0]),
+            "variable_decl_array": ",\n".join(variable_decl_array)
+        }
 
         return debug_code
 

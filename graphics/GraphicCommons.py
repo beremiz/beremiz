@@ -1088,11 +1088,12 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
-            rect = rect.Union(wx.Rect(
+            rect = rect.Union(
+                wx.Rect(
                     parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
-                                    width * (self.Direction[0] - 1) / 2,
+                    width * (self.Direction[0] - 1) / 2,
                     parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
-                                    height * (self.Direction[1] - 1),
+                    height * (self.Direction[1] - 1),
                     width, height))
         return rect
 
