@@ -186,7 +186,7 @@ def gen_mod_import(parentName, importName, dynamic=1):
     return """
     pyjslib.import_module(sys.loadpath, '%(p)s', '%(n)s', %(d)d, false);
     """ % ({'p': parentName, 'd': dynamic, 'n': importName}) + \
-    mod_var_name_decl(importName)
+        mod_var_name_decl(importName)
 
 
 class Translator:
@@ -806,7 +806,7 @@ class Translator:
                 #            I attempted lazy initialization, but then you can't access static class members
                 #            "    if(!__"+base_class+".__was_initialized__)"+
                 #            "        __" + class_name + "_initialize();\n" +
-            "    var instance = new " + UU + class_name_ + "();\n" +
+                "    var instance = new " + UU + class_name_ + "();\n" +
                 "    if(instance.__init__) instance.__init__.apply(instance, arguments);\n" +
                 "    return instance;"
             )]))])

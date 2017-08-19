@@ -122,9 +122,9 @@ def _runtime_%(location)s_start():
 def _runtime_%(location)s_stop():
     website.UnLoadHMI()
 
-""" % {"location": location_str,
-       "svgui_class": "SVGUI_HMI",
-       "jsmodules": str(jsmodules)})
+        """ % {"location": location_str,
+               "svgui_class": "SVGUI_HMI",
+               "jsmodules": str(jsmodules)})
         runtimefile.close()
 
         res += (("runtime_%s.py" % location_str, file(runtimefile_path, "rb")),)

@@ -515,7 +515,7 @@ class VariablePanel(wx.Panel):
             self.DefaultTypes = {"All": "Local", "Interface": "Input", "Variables": "Local"}
 
         if element_type in ["config", "resource"] \
-        or element_type in ["program", "transition", "action"]:
+           or element_type in ["program", "transition", "action"]:
             # this is an element that can have located variables
             self.Table = VariableTable(self, [], GetVariableTableColnames(True))
 
@@ -872,7 +872,7 @@ class VariablePanel(wx.Panel):
         bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
         pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
         if classtype in ["Input", "Output", "InOut", "External", "Global"] or \
-        poutype != "function" and bodytype in ["ST", "IL"]:
+           poutype != "function" and bodytype in ["ST", "IL"]:
             functionblock_menu = wx.Menu(title='')
             fbtypes = self.Controler.GetFunctionBlockTypes(self.TagName)
             for functionblock_type in fbtypes:
