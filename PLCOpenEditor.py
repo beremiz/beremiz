@@ -179,12 +179,12 @@ class PLCOpenEditor(IDEFrame):
         #self.Bind(wx.EVT_MENU, self.OnPLCOpenMenu, id=wx.ID_HELP_CONTENTS)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
-    ## Constructor of the PLCOpenEditor class.
-    #  @param parent The parent window.
-    #  @param controler The controler been used by PLCOpenEditor (default: None).
-    #  @param fileOpen The filepath to open if no controler defined (default: None).
-    #  @param debug The filepath to open if no controler defined (default: False).
     def __init__(self, parent, fileOpen=None):
+        """ Constructor of the PLCOpenEditor class.
+
+        :param parent: The parent window.
+        :param fileOpen: The filepath to open if no controler defined (default: None).
+        """
         self.icon = wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"), wx.BITMAP_TYPE_ICO)
         IDEFrame.__init__(self, parent)
 
