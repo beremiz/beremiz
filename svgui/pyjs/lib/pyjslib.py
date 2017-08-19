@@ -894,11 +894,11 @@ class Dict:
         return self.items().__iter__()
 
     def setdefault(self, key, default_value):
-        if not key in self:
+        if key not in self:
             self[key] = default_value
 
     def get(self, key, default_=None):
-        if not key in self:
+        if key not in self:
             return default_
         return self[key]
 

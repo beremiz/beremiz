@@ -2439,7 +2439,7 @@ class PLCControler:
                     exclude[stepname] = True
                     instance.setname(stepname)
                 localid = instance.getlocalId()
-                if not localid in used_id:
+                if localid not in used_id:
                     new_id[localid] = True
 
             idx = 1

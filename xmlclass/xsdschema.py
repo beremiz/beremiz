@@ -186,7 +186,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
         # Extract simple type facets
         for facet in typeinfos.get("facets", []):
             facettype = facet["type"]
-            if not facettype in basetypeinfos["facets"]:
+            if facettype not in basetypeinfos["facets"]:
                 raise ValueError("\"%s\" facet can't be defined for \"%s\" type!" % (facettype, type))
             elif basetypeinfos["facets"][facettype][1]:
                 raise ValueError("\"%s\" facet is fixed on base type!" % facettype)
@@ -296,7 +296,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
 
         # Report not redefined facet from base type to new created type
         for facettype, facetvalue in basetypeinfos["facets"].items():
-            if not facettype in facets:
+            if facettype not in facets:
                 facets[facettype] = facetvalue
 
         # Generate extract value for new created type
@@ -553,7 +553,7 @@ def ReduceRestriction(factory, attributes, elements):
 
 def ReduceExtension(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
-    if not "base" in attributes:
+    if "base" not in attributes:
         raise ValueError("No base type has been defined for extension!")
     extension = {"type": "extension", "attributes": [], "elements": [], "base": attributes["base"], "doc": annotations}
     if len(children) > 0:
@@ -808,7 +808,7 @@ def ReduceChoice(factory, attributes, elements):
             choices.extend(child["choices"])
         elif child["type"] == "group":
             elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
-            if not "choices" in elmtgroup:
+            if "choices" not in elmtgroup:
                 raise ValueError("Only group composed of \"choice\" can be referenced in \"choice\" element!")
             choices_tmp = []
             for choice in elmtgroup["choices"]:
@@ -842,7 +842,7 @@ def ReduceSequence(factory, attributes, elements):
             sequence.extend(child["elements"])
         elif child["type"] == "group":
             elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
-            if not "elements" in elmtgroup or not elmtgroup["order"]:
+            if "elements" not in elmtgroup or not elmtgroup["order"]:
                 raise ValueError("Only group composed of \"sequence\" can be referenced in \"sequence\" element!")
             elements_tmp = []
             for element in elmtgroup["elements"]:

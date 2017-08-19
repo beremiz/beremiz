@@ -929,7 +929,7 @@ class ClassFactory:
         return annotations, children
 
     def AddComplexType(self, typename, infos):
-        if not typename in self.XMLClassDefinitions:
+        if typename not in self.XMLClassDefinitions:
             self.XMLClassDefinitions[typename] = infos
         else:
             raise ValueError("\"%s\" class already defined. Choose another name!" % typename)
@@ -1603,7 +1603,7 @@ def generateAddMethod(attr, factory, infos):
     def addMethod(self):
         if infos["type"] == ATTRIBUTE:
             infos["attr_type"] = FindTypeInfos(factory, infos["attr_type"])
-            if not "default" in infos:
+            if "default" not in infos:
                 setattr(self, attr, infos["attr_type"]["initial"]())
         elif infos["type"] == ELEMENT:
             infos["elmt_type"] = FindTypeInfos(factory, infos["elmt_type"])
@@ -1662,7 +1662,7 @@ def generateSetChoiceByTypeMethod(factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
 
     def setChoiceMethod(self, content_type):
-        if not content_type in choices:
+        if content_type not in choices:
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[content_type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         new_content = choices[content_type]["elmt_type"]["initial"]()
@@ -1676,7 +1676,7 @@ def generateAppendChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
 
     def appendChoiceMethod(self, content_type):
-        if not content_type in choices:
+        if content_type not in choices:
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[content_type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         if maxOccurs == "unbounded" or len(self.content) < maxOccurs:
@@ -1693,7 +1693,7 @@ def generateInsertChoiceByTypeMethod(maxOccurs, factory, choice_types):
     choices = dict([(choice["name"], choice) for choice in choice_types])
 
     def insertChoiceMethod(self, index, content_type):
-        if not content_type in choices:
+        if content_type not in choices:
             raise ValueError("Unknown \"%s\" choice type for \"content\"!" % content_type)
         choices[type]["elmt_type"] = FindTypeInfos(factory, choices[content_type]["elmt_type"])
         if maxOccurs == "unbounded" or len(self.content) < maxOccurs:

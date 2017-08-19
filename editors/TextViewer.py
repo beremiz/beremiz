@@ -499,7 +499,7 @@ class TextViewer(EditorPanel):
                     if blocktype["type"] == "function" and blockname not in self.Keywords and blockname not in self.Variables.keys():
                         interface = dict([(name, {}) for name, type, modifier in blocktype["inputs"] + blocktype["outputs"] if name != ''])
                         for param in ["EN", "ENO"]:
-                            if not param in interface:
+                            if param not in interface:
                                 interface[param] = {}
                         if blockname in self.Functions:
                             self.Functions[blockname]["interface"].update(interface)

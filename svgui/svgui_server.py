@@ -55,7 +55,7 @@ class SvguiWidget:
         self.inputs[attrname] = value
 
     def getinput(self, attrname, default=None):
-        if not attrname in self.inputs:
+        if attrname not in self.inputs:
             self.inputs[attrname] = default
         return self.inputs[attrname]
 
