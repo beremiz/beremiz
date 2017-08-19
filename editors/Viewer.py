@@ -268,7 +268,7 @@ class ViewerDropTarget(wx.TextDropTarget):
         message = None
         try:
             values = eval(data)
-        except:
+        except Exception:
             message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if not isinstance(values, TupleType):

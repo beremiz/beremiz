@@ -172,7 +172,7 @@ class LogPseudoFile:
             self.LastRefreshTime = gettime()
             try:
                 self.RefreshLock.release()
-            except:
+            except Exception:
                 pass
             newtime = time.time()
             if newtime - self.rising_timer > 1:
@@ -676,7 +676,7 @@ class Beremiz(IDEFrame):
         try:
             recent_projects = map(DecodeFileSystemPath,
                                   self.GetConfigEntry("RecentProjects", []))
-        except:
+        except Exception:
             recent_projects = []
 
         while self.RecentProjectsMenu.GetMenuItemCount() > len(recent_projects):
@@ -826,7 +826,7 @@ class Beremiz(IDEFrame):
         try:
             recent_projects = map(DecodeFileSystemPath,
                                   self.GetConfigEntry("RecentProjects", []))
-        except:
+        except Exception:
             recent_projects = []
         if projectpath in recent_projects:
             recent_projects.remove(projectpath)
@@ -846,7 +846,7 @@ class Beremiz(IDEFrame):
 
         try:
             defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
-        except:
+        except Exception:
             defaultpath = os.path.expanduser("~")
 
         dialog = wx.DirDialog(self, _("Choose an empty directory for new project"), defaultpath)
@@ -882,7 +882,7 @@ class Beremiz(IDEFrame):
 
         try:
             defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
-        except:
+        except Exception:
             defaultpath = os.path.expanduser("~")
 
         dialog = wx.DirDialog(self, _("Choose a project"), defaultpath,
@@ -1175,7 +1175,7 @@ def AddExceptHook(path, app_version='[No version]'):
             if 'self' in exception_locals:
                 try:
                     info['self'] = format_namespace(exception_locals['self'].__dict__)
-                except:
+                except Exception:
                     pass
         if not os.path.exists(path):
             os.mkdir(path)
@@ -1210,7 +1210,7 @@ def AddExceptHook(path, app_version='[No version]'):
                 run_old(*args, **kw)
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except:
+            except Exception:
                 sys.excepthook(*sys.exc_info())
         self.run = run_with_except_hook
     threading.Thread.__init__ = init

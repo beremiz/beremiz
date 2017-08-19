@@ -11,7 +11,7 @@ from cStringIO import StringIO
 try:
     # Python 2.5 and above
     from hashlib import md5
-except:
+except Exception:
     import md5
 import re
 
@@ -77,7 +77,7 @@ def copytree_exists(src, dst, symlinks=False):
     names = os.listdir(src)
     try:
         os.mkdir(dst)
-    except:
+    except Exception:
         pass
 
     errors = []
@@ -203,7 +203,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
                os.path.getmtime(html_output_filename):
             try:
                 shutil.copy(html_input_filename, html_output_filename)
-            except:
+            except Exception:
                 print >>sys.stderr, "Warning: Missing module HTML file %s" % html_input_filename
 
             print "Copying: %(html_input_filename)s" % locals()

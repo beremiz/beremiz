@@ -66,7 +66,7 @@ class outputThread(Thread):
         if self.endcallback:
             try:
                 err = self.Proc.wait()
-            except:
+            except Exception:
                 err = self.retval
             self.finished = True
             self.endcallback(self.Proc.pid, err)
@@ -205,7 +205,7 @@ class ProcessLogger:
                 sig = SIGKILL
             try:
                 os.kill(self.Proc.pid, sig)
-            except:
+            except Exception:
                 pass
         self.outt.join()
         self.errt.join()

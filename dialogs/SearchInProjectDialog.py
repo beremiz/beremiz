@@ -163,7 +163,7 @@ class SearchInProjectDialog(wx.Dialog):
                 self.criteria = infos
                 CompilePattern(self.criteria)
                 self.infosPrev = infos
-            except:
+            except Exception:
                 self.criteria.clear()
                 message = _("Syntax error in regular expression of pattern to search!")
 

@@ -191,7 +191,7 @@ def GetHexInteger(attr, extract=True):
         raise ValueError("\"%s\" isn't a valid hexadecimal integer!" % value)
     try:
         return int(value, 16)
-    except:
+    except Exception:
         raise ValueError("\"%s\" isn't a valid hexadecimal integer!" % value)
 
 
@@ -221,7 +221,7 @@ def GenerateIntegerExtraction(minInclusive=None, maxInclusive=None,
         try:
             # TODO: permit to write value like 1E2
             value = int(value)
-        except:
+        except Exception:
             raise ValueError("\"%s\" isn't a valid integer!" % value)
         if minInclusive is not None and value < minInclusive:
             raise ValueError("\"%d\" isn't greater or equal to %d!" %
@@ -260,7 +260,7 @@ def GenerateFloatExtraction(type, extra_values=[]):
             return value
         try:
             return float(value)
-        except:
+        except Exception:
             raise ValueError("\"%s\" isn't a valid %s!" % (value, type))
     return GetFloat
 
@@ -410,7 +410,7 @@ def GenerateLimitExtraction(min=None, max=None, unbounded=True):
                 raise ValueError("Member limit can't be defined to \"unbounded\"!")
         try:
             limit = int(value)
-        except:
+        except Exception:
             raise ValueError("\"%s\" isn't a valid value for this member limit!" % value)
         if limit < 0:
             raise ValueError("Member limit can't be negative!")

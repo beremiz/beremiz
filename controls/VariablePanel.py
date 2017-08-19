@@ -270,7 +270,7 @@ class VariableDropTarget(wx.TextDropTarget):
         element_type = self.ParentWindow.ElementType
         try:
             values = eval(data)
-        except:
+        except Exception:
             message = _("Invalid value \"%s\" for variable grid element") % data
             values = None
         if not isinstance(values, TupleType):

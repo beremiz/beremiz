@@ -161,7 +161,7 @@ class BeremizIDELauncher:
                 try:
                     import urllib2
                     updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
-                except:
+                except Exception:
                     updateinfo = _("update info unavailable.")
 
             from threading import Thread

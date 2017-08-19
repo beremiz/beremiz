@@ -119,7 +119,7 @@ class FolderTree(wx.Panel):
         else:
             try:
                 files = os.listdir(folderpath)
-            except:
+            except Exception:
                 return []
             for filename in files:
                 if not filename.startswith("."):

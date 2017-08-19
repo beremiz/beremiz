@@ -2557,7 +2557,7 @@ if cls:
         for element in self.value:
             try:
                 repetition = int(element.getrepetitionValue())
-            except:
+            except Exception:
                 repetition = 1
             if repetition > 1:
                 value = element.getvalue()

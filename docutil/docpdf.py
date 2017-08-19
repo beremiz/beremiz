@@ -42,7 +42,7 @@ def get_acroversion():
                 try:
                     res = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, 'Software\\Adobe\\%s\\%s\\InstallPath' % (key, numver))
                     return res
-                except:
+                except Exception:
                     pass
     return None
 
@@ -66,7 +66,7 @@ def open_pdf(pdffile, pagenum=None):
     if wx.Platform == '__WXMSW__':
         try:
             readerpath = get_acroversion()
-        except:
+        except Exception:
             wx.MessageBox("Acrobat Reader is not found or installed !")
             return None
 

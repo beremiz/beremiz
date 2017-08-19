@@ -215,7 +215,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"length\" and \"maxLength\" facets can't be defined at the same time!")
                 try:
                     value = int(value)
-                except:
+                except Exception:
                     raise ValueError("\"length\" must be an integer!")
                 if value < 0:
                     raise ValueError("\"length\" can't be negative!")
@@ -226,7 +226,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"length\" and \"minLength\" facets can't be defined at the same time!")
                 try:
                     value = int(value)
-                except:
+                except Exception:
                     raise ValueError("\"minLength\" must be an integer!")
                 if value < 0:
                     raise ValueError("\"minLength\" can't be negative!")
@@ -239,7 +239,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     raise ValueError("\"length\" and \"maxLength\" facets can't be defined at the same time!")
                 try:
                     value = int(value)
-                except:
+                except Exception:
                     raise ValueError("\"maxLength\" must be an integer!")
                 if value < 0:
                     raise ValueError("\"maxLength\" can't be negative!")
@@ -464,7 +464,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
             for infos in membertypesinfos:
                 try:
                     return infos["extract"](attr, False)
-                except:
+                except Exception:
                     pass
             raise ValueError("\"%s\" isn't valid for type defined for union!")
 

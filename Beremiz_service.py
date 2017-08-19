@@ -167,7 +167,7 @@ if enablewx:
         wxversion.select(['2.8', '3.0'])
         import wx
         havewx = True
-    except:
+    except ImportError:
         print "Wx unavailable !"
         havewx = False
 
@@ -481,7 +481,7 @@ if enabletwisted:
             from twisted.internet import reactor
 
             havetwisted = True
-        except:
+        except ImportError:
             print _("Twisted unavailable.")
             havetwisted = False
 
@@ -557,7 +557,7 @@ def installThreadExcepthook():
                 run_old(*args, **kw)
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except:
+            except Exception:
                 sys.excepthook(*sys.exc_info())
         self.run = run_with_except_hook
     threading.Thread.__init__ = init
