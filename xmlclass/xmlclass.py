@@ -1371,8 +1371,8 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                     if element_idx > 0:
                         previous_elements_xpath = "|".join(map(
                             lambda x: prefix + x
-                                      if x != "content"
-                                      else elements["content"]["elmt_type"]["choices_xpath"].path,
+                            if x != "content"
+                            else elements["content"]["elmt_type"]["choices_xpath"].path,
                             elements.keys()[:element_idx]))
 
                         insertion_point = len(self.xpath(previous_elements_xpath, namespaces=factory.NSMAP))

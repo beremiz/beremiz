@@ -466,10 +466,10 @@ if cls:
     def getpous(self, exclude=None, filter=[]):
         return self.xpath(
             "ppx:types/ppx:pous/ppx:pou%s%s" %
-                (("[@name!='%s']" % exclude) if exclude is not None else '',
-                 ("[%s]" % " or ".join(
-                    map(lambda x: "@pouType='%s'" % x, filter)))
-                 if len(filter) > 0 else ""),
+            (("[@name!='%s']" % exclude) if exclude is not None else '',
+             ("[%s]" % " or ".join(
+                 map(lambda x: "@pouType='%s'" % x, filter)))
+             if len(filter) > 0 else ""),
             namespaces=PLCOpenParser.NSMAP)
     setattr(cls, "getpous", getpous)
 
