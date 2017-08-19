@@ -41,7 +41,7 @@ def gen_get_function(f):
     def get_function(v):
         try:
             return f(v)
-        except:
+        except Exception:
             return None
     return get_function
 

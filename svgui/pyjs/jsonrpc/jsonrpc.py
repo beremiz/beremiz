@@ -34,7 +34,7 @@ class JSONRPCServiceBase:
             except BaseException:
                 etype, eval, etb = sys.exc_info()
                 return self.error(id, 100, '%s: %s' % (etype.__name__, eval))
-            except:
+            except Exception:
                 etype, eval, etb = sys.exc_info()
                 return self.error(id, 100, 'Exception %s: %s' % (etype, eval))
         else:

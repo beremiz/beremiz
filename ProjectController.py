@@ -1216,7 +1216,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
                     text = file(plc_file).read()
-                except:
+                except Exception:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text=text)
                 self._IECCodeView.Editor.SetReadOnly(True)
@@ -1718,7 +1718,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 answer = dialog.ShowModal()
                 uri = dialog.GetURI()
                 dialog.Destroy()
-            except:
+            except Exception:
                 self.logger.write_error(_("Local service discovery failed!\n"))
                 self.logger.write_error(traceback.format_exc())
                 uri = None

@@ -163,7 +163,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
             values = eval(data)
             if not isinstance(values, TupleType):
                 raise ValueError
-        except:
+        except Exception:
             message = _("Invalid value \"%s\" for debug variable") % data
             values = None
 

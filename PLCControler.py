@@ -1013,7 +1013,7 @@ class PLCControler:
         '''
         try:
             new_pou, error = LoadPou(pou_xml)
-        except:
+        except Exception:
             error = ""
         if error is not None:
             return _("Couldn't paste non-POU object.")
@@ -2407,7 +2407,7 @@ class PLCControler:
 
             try:
                 instances, error = LoadPouInstances(text, bodytype)
-            except:
+            except Exception:
                 instances, error = [], ""
             if error is not None or len(instances) == 0:
                 return _("Invalid plcopen element(s)!!!")

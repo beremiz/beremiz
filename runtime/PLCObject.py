@@ -225,7 +225,7 @@ class PLCObject(pyro.ObjBase):
             self.PythonRuntimeInit()
 
             return True
-        except:
+        except Exception:
             self._loading_error = traceback.format_exc()
             PLCprint(self._loading_error)
             return False
@@ -317,7 +317,7 @@ class PLCObject(pyro.ObjBase):
                         method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
                         if method is not None:
                             self.python_runtime_vars["_runtime_%s" % methodname].append(method)
-        except:
+        except Exception:
             self.LogMessage(0, traceback.format_exc())
             raise
 
@@ -423,9 +423,9 @@ class PLCObject(pyro.ObjBase):
                 for filename in file(extra_files_log, "r").readlines() + [extra_files_log]:
                     try:
                         os.remove(os.path.join(self.workingdir, filename.strip()))
-                    except:
+                    except Exception:
                         pass
-            except:
+            except Exception:
                 pass
 
             try:
@@ -445,7 +445,7 @@ class PLCObject(pyro.ObjBase):
 
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName
-            except:
+            except Exception:
                 self.PLCStatus = "Broken"
                 self.StatusChange()
                 PLCprint(traceback.format_exc())
@@ -465,7 +465,7 @@ class PLCObject(pyro.ObjBase):
         try:
             last_md5 = open(self._GetMD5FileName(), "r").read()
             return last_md5 == MD5
-        except:
+        except Exception:
             pass
         return False
 
@@ -556,7 +556,7 @@ class PLCObject(pyro.ObjBase):
     def RemoteExec(self, script, *kwargs):
         try:
             exec script in kwargs
-        except:
+        except Exception:
             e_type, e_value, e_traceback = sys.exc_info()
             line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
             return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %

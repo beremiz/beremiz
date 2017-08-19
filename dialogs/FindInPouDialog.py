@@ -172,7 +172,7 @@ class FindInPouDialog(wx.Dialog):
             try:
                 self.criteria = infos
                 CompilePattern(self.criteria)
-            except:
+            except Exception:
                 self.criteria.clear()
                 message = self.RegExpSyntaxErrMsg
             self.SetStatusText(message)

@@ -55,7 +55,7 @@ def open_svg(svgfile):
     if wx.Platform == '__WXMSW__':
         try:
             open_win_svg(get_inkscape_path(), svgfile)
-        except:
+        except Exception:
             wx.MessageBox("Inkscape is not found or installed !")
             return None
     else:

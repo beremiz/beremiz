@@ -54,7 +54,7 @@ def GetAppRevision():
         rev = pipe.communicate()[0]
         if pipe.returncode != 0:
             rev = None
-    except:
+    except Exception:
         pass
 
     # if this is not mercurial repository
@@ -63,7 +63,7 @@ def GetAppRevision():
         try:
             f = open(os.path.join(app_dir, "revision"))
             rev = f.readline()
-        except:
+        except Exception:
             pass
     return rev
 

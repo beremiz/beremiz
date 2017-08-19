@@ -247,7 +247,7 @@ class TextViewer(EditorPanel):
     def OnDoDrop(self, event):
         try:
             values = eval(event.GetDragText())
-        except:
+        except Exception:
             values = event.GetDragText()
         if isinstance(values, tuple):
             message = None
