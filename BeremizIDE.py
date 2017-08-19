@@ -552,9 +552,11 @@ class Beremiz(IDEFrame):
                                            (int(first_line), int(first_column)),
                                            (int(last_line),  int(last_column)))
 
-    ## Function displaying an Error dialog in PLCOpenEditor.
-    #  @return False if closing cancelled.
     def CheckSaveBeforeClosing(self, title=_("Close Project")):
+        """Function displaying an Error dialog in PLCOpenEditor.
+
+        :returns: False if closing cancelled.
+        """
         if self.CTR.ProjectTestModified():
             dialog = wx.MessageDialog(self,
                                       _("There are changes, do you want to save?"),

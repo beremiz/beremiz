@@ -682,11 +682,6 @@ class IDEFrame(wx.Frame):
 
         self.AUIManager.Update()
 
-    ## Constructor of the PLCOpenEditor class.
-    #  @param parent The parent window.
-    #  @param controler The controler been used by PLCOpenEditor (default: None).
-    #  @param fileOpen The filepath to open if no controler defined (default: None).
-    #  @param debug The filepath to open if no controler defined (default: False).
     def __init__(self, parent, enable_debug=False):
         self.Controler = None
         self.Config = wx.ConfigBase.Get()
@@ -923,9 +918,11 @@ class IDEFrame(wx.Frame):
             SCALING: self.RefreshScaling,
             PAGETITLES: self.RefreshPageTitles}
 
-    ## Call PLCOpenEditor refresh functions.
-    #  @param elements List of elements to refresh.
     def _Refresh(self, *elements):
+        """Call Editor refresh functions.
+
+        :param elements: List of elements to refresh.
+        """
         try:
             for element in elements:
                 self.RefreshFunctions[element]()
@@ -933,9 +930,11 @@ class IDEFrame(wx.Frame):
             # ignore exceptions caused by refresh while quitting
             pass
 
-    ## Callback function when AUINotebook Page closed with CloseButton
-    #  @param event AUINotebook Event.
     def OnPageClose(self, event):
+        """Callback function when AUINotebook Page closed with CloseButton
+
+        :param event: AUINotebook Event.
+        """
         selected = self.TabsOpened.GetSelection()
         if selected > -1:
             window = self.TabsOpened.GetPage(selected)
@@ -1001,18 +1000,16 @@ class IDEFrame(wx.Frame):
 #                            Notebook Unified Functions
 #-------------------------------------------------------------------------------
 
-    ## Function that add a tab in Notebook, calling refresh for tab DClick event
-    # for wx.aui.AUINotebook.
-    #  @param window Panel to display in tab.
-    #  @param text title for the tab ctrl.
     def AddPage(self, window, text):
+        """Function that add a tab in Notebook, calling refresh for tab DClick event
+        for wx.aui.AUINotebook.
+
+        :param window: Panel to display in tab.
+        :param text: title for the tab ctrl.
+        """
         self.TabsOpened.AddPage(window, text)
         self.RefreshTabCtrlEvent()
 
-    ## Function that add a tab in Notebook, calling refresh for tab DClick event
-    # for wx.aui.AUINotebook.
-    #  @param window Panel to display in tab.
-    #  @param text title for the tab ctrl.
     def DeletePage(self, window):
         for idx in xrange(self.TabsOpened.GetPageCount()):
             if self.TabsOpened.GetPage(idx) == window:
@@ -1020,35 +1017,42 @@ class IDEFrame(wx.Frame):
                 self.RefreshTabCtrlEvent()
                 return
 
-    ## Function that fix difference in deleting all tabs between
-    # wx.Notebook and wx.aui.AUINotebook.
     def DeleteAllPages(self):
+        """Function that fix difference in deleting all tabs between
+        wx.Notebook and wx.aui.AUINotebook.
+        """
         for idx in xrange(self.TabsOpened.GetPageCount()):
             self.TabsOpened.DeletePage(0)
         self.RefreshTabCtrlEvent()
 
-    ## Function that fix difference in setting picture on tab between
-    # wx.Notebook and wx.aui.AUINotebook.
-    #  @param idx Tab index.
-    #  @param bitmap wx.Bitmap to define on tab.
-    #  @return True if operation succeeded
     def SetPageBitmap(self, idx, bitmap):
+        """Function that fix difference in setting picture on tab between
+        wx.Notebook and wx.aui.AUINotebook.
+
+        :param idx: Tab index.
+        :param bitmap: wx.Bitmap to define on tab.
+        :returns: True if operation succeeded
+        """
         return self.TabsOpened.SetPageBitmap(idx, bitmap)
 
 #-------------------------------------------------------------------------------
 #                         Dialog Message Functions
 #-------------------------------------------------------------------------------
 
-    ## Function displaying an Error dialog in PLCOpenEditor.
-    #  @param message The message to display.
     def ShowErrorMessage(self, message):
+        """Function displaying an Error dialog in editor.
+
+        :param message: The message to display.
+        """
         dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 
-    ## Function displaying an Error dialog in PLCOpenEditor.
-    #  @return False if closing cancelled.
     def CheckSaveBeforeClosing(self, title=_("Close Project")):
+        """Function displaying an question dialog if project is not saved"
+
+        :returns: False if closing cancelled.
+        """
         if not self.Controler.ProjectIsSaved():
             dialog = wx.MessageDialog(self, _("There are changes, do you want to save?"), title, wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION)
             answer = dialog.ShowModal()
