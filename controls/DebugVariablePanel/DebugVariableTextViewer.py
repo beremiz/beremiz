@@ -30,9 +30,9 @@ from DebugVariableItem import DebugVariableItem
 from DebugVariableViewer import DebugVariableViewer
 from GraphButton import GraphButton
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                     Debug Variable Text Viewer Drop Target
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class DebugVariableTextDropTarget(wx.TextDropTarget):
@@ -140,9 +140,9 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         dialog.Destroy()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                      Debug Variable Text Viewer Class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
     """

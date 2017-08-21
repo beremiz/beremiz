@@ -367,12 +367,12 @@ class Beremiz(IDEFrame):
 
         self.MainTabs["LogConsole"] = (self.LogConsole, _("Console"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogConsole"])
-        #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
+        # self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogConsole), wx.RIGHT)
 
         self.LogViewer = LogViewer(self.BottomNoteBook, self)
         self.MainTabs["LogViewer"] = (self.LogViewer, _("PLC Log"))
         self.BottomNoteBook.AddPage(*self.MainTabs["LogViewer"])
-        #self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
+        # self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
 
         StatusToolBar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
                                    wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
@@ -1076,9 +1076,9 @@ class Beremiz(IDEFrame):
                 self._Refresh(TITLE, FILEMENU, PROJECTTREE)
             dialog.Destroy()
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                        Highlights showing functions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
     def ShowHighlight(self, infos, start, end, highlight_type):
         config_name = self.Controler.GetProjectMainConfigurationName()
@@ -1092,9 +1092,9 @@ class Beremiz(IDEFrame):
             IDEFrame.ShowHighlight(self, infos, start, end, highlight_type)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Exception Handler
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 import threading
 import traceback
 
@@ -1198,7 +1198,7 @@ def AddExceptHook(path, app_version='[No version]'):
             bug_report_path = path + os.sep + "bug_report_" + time.strftime("%Y_%m_%d__%H-%M-%S") + ".txt"
             save_bug_report(e_type, e_value, e_traceback, bug_report_path, date)
             Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
-    #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
+    # sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
 
     init_old = threading.Thread.__init__

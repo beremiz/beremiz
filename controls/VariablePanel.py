@@ -39,9 +39,12 @@ from LocationCellEditor import LocationCellEditor
 from util.BitmapLibrary import GetBitmap
 from PLCControler import _VariableInfos
 from util.TranslationCatalogs import NoTranslate
-#-------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------
 #                                 Helpers
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 [
     TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
@@ -103,9 +106,10 @@ CheckOptionForClass = {
 LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
 VARIABLE_NAME_SUFFIX_MODEL = re.compile("([0-9]*)$")
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                            Variables Panel Table
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class VariableTable(CustomTable):
@@ -241,9 +245,10 @@ class VariableTable(CustomTable):
                 grid.SetCellTextColour(row, col, highlight_colours[1])
             self.ResizeRow(grid, row)
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                         Variable Panel Drop Target
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class VariableDropTarget(wx.TextDropTarget):
@@ -427,9 +432,10 @@ class VariableDropTarget(wx.TextDropTarget):
         message.ShowModal()
         message.Destroy()
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                               Variable Panel
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class VariablePanel(wx.Panel):
@@ -980,9 +986,9 @@ class VariablePanel(wx.Panel):
             self.Controler.BufferProject()
             self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.Table.ResetView(self.VariablesGrid)

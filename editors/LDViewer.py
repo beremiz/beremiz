@@ -160,9 +160,9 @@ def CalcWeight(element, element_tree):
         element_tree[element]["weight"] = max(1, weight / parts)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                     Ladder Diagram Graphic elements Viewer class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class LD_Viewer(Viewer):
@@ -176,9 +176,9 @@ class LD_Viewer(Viewer):
         self.RungComments = []
         self.CurrentLanguage = "LD"
 
-#-------------------------------------------------------------------------------
-#                          Refresh functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Refresh functions
+    # -------------------------------------------------------------------------------
 
     def ResetView(self):
         self.Rungs = []
@@ -258,9 +258,9 @@ class LD_Viewer(Viewer):
                 if not inserted:
                     self.RungComments.append(element)
 
-#-------------------------------------------------------------------------------
-#                          Search Element functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Search Element functions
+    # -------------------------------------------------------------------------------
 
     def FindRung(self, element):
         for i, rung in enumerate(self.Rungs):
@@ -302,9 +302,9 @@ class LD_Viewer(Viewer):
                 elements.append(element)
         return elements
 
-#-------------------------------------------------------------------------------
-#                          Mouse event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Mouse event functions
+    # -------------------------------------------------------------------------------
 
     def OnViewerLeftDown(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -392,9 +392,9 @@ class LD_Viewer(Viewer):
                 wx.CallAfter(self.SetCurrentCursor, 0)
         event.Skip()
 
-#-------------------------------------------------------------------------------
-#                          Keyboard event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Keyboard event functions
+    # -------------------------------------------------------------------------------
 
     def OnChar(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -443,9 +443,9 @@ class LD_Viewer(Viewer):
             else:
                 event.Skip()
 
-#-------------------------------------------------------------------------------
-#                  Model adding functions from Drop Target
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                  Model adding functions from Drop Target
+    # -------------------------------------------------------------------------------
 
     def AddVariableBlock(self, x, y, scaling, var_class, var_name, var_type):
         if var_type == "BOOL":
@@ -483,9 +483,9 @@ class LD_Viewer(Viewer):
         else:
             Viewer.AddVariableBlock(self, x, y, scaling, var_class, var_name, var_type)
 
-#-------------------------------------------------------------------------------
-#                          Adding element functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Adding element functions
+    # -------------------------------------------------------------------------------
 
     def AddLadderRung(self):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, "coil")
@@ -901,9 +901,9 @@ class LD_Viewer(Viewer):
         message.ShowModal()
         message.Destroy()
 
-#-------------------------------------------------------------------------------
-#                          Delete element functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Delete element functions
+    # -------------------------------------------------------------------------------
 
     def DeleteContact(self, contact):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -1089,9 +1089,9 @@ class LD_Viewer(Viewer):
                 self.RefreshRungs(new_bbox.height - old_bbox.height, rungindex + 1)
                 self.SelectedElement = None
 
-#-------------------------------------------------------------------------------
-#                        Refresh element position functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Refresh element position functions
+    # -------------------------------------------------------------------------------
 
     def RefreshPosition(self, element, recursive=True):
         # If element is LeftPowerRail, no need to update position
@@ -1194,9 +1194,9 @@ class LD_Viewer(Viewer):
                     if self.IsBlock(element):
                         self.RefreshPosition(element)
 
-#-------------------------------------------------------------------------------
-#                          Edit element content functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Edit element content functions
+    # -------------------------------------------------------------------------------
 
     def EditPowerRailContent(self, powerrail):
         if self.GetDrawingMode() == FREEDRAWING_MODE:

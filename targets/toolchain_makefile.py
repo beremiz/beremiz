@@ -77,7 +77,7 @@ class toolchain_makefile():
             if res is not None:
                 depfn = res.groups()[0]
                 if os.path.exists(os.path.join(self.buildpath, depfn)):
-                    #print bn + " depends on "+depfn
+                    # print bn + " depends on "+depfn
                     deps.append(depfn)
         # recurse through deps
         # TODO detect cicular deps.

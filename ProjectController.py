@@ -1027,7 +1027,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 "init_calls": "\n    ".join([
                       "init_level=%d; " % (i+1) +
                       "if((res = __init_%s(argc,argv))){" % locstr +
-                      #"printf(\"%s\"); "%locstr + #for debug
+                      # "printf(\"%s\"); "%locstr + #for debug
                       "return res;}" for i, locstr in enumerate(locstrs)]),
                 "cleanup_calls": "\n    ".join([
                       "if(init_level >= %d) " % i +
@@ -1557,7 +1557,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         data_tuple = self.IECdebug_datas.get(IECPath, None)
         if data_tuple is not None:
             WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
-            #data_log.append((debug_tick, value))
+            # data_log.append((debug_tick, value))
             for weakcallable, buffer_list in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
@@ -1583,7 +1583,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         while (not self.debug_break) and (self._connector is not None):
             plc_status, Traces = self._connector.GetTraceVariables()
             debug_getvar_retry += 1
-            #print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
+            # print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
             if plc_status == "Started":
                 if len(Traces) > 0:
                     Failed = False
@@ -1681,7 +1681,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(_("Couldn't stop PLC !\n"))
 
         # debugthread should die on his own
-        #self.KillDebugThread()
+        # self.KillDebugThread()
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
@@ -1763,7 +1763,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 status = ""
 
-            #self.logger.write(_("PLC is %s\n")%status)
+            # self.logger.write(_("PLC is %s\n")%status)
 
             if self.previous_plcstate in ["Started", "Stopped"]:
                 if self.DebugAvailable() and self.GetIECProgramsAndVariables():
@@ -1789,7 +1789,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.EnableMethod("_Transfer", True)
                 # warns controller that program match
                 self.ProgramTransferred()
-                #self.EnableMethod("_Transfer", False)
+                # self.EnableMethod("_Transfer", False)
         else:
             # self.logger.write_warning(
             #     _("Cannot compare latest build to target. Please build.\n"))

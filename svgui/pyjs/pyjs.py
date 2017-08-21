@@ -182,7 +182,7 @@ def mod_var_name_decl(raw_module_name):
 
 
 def gen_mod_import(parentName, importName, dynamic=1):
-    #pyjs_ajax_eval("%(n)s.cache.js", null, true);
+    # pyjs_ajax_eval("%(n)s.cache.js", null, true);
     return """
     pyjslib.import_module(sys.loadpath, '%(p)s', '%(n)s', %(d)d, false);
     """ % ({'p': parentName, 'd': dynamic, 'n': importName}) + \
@@ -322,11 +322,11 @@ class Translator:
                 raise TranslationError("unsupported type (in __init__)", child)
 
         # Initialize all classes for this module
-        #print >> self.output, "__"+self.modpfx()+\
+        # print >> self.output, "__"+self.modpfx()+\
         #          "classes_initialize = function() {\n"
-        #for className in self.top_level_classes:
+        # for className in self.top_level_classes:
         #    print >> self.output, "\t"+UU+self.modpfx()+"__"+className+"_initialize();"
-        #print >> self.output, "};\n"
+        # print >> self.output, "};\n"
 
         print >> self.output, "return this;\n"
         print >> self.output, "}; /* end %s */ \n" % module_name
@@ -407,7 +407,7 @@ class Translator:
                 print >>self.output, "        %s=__kwargs.%s;" % (default_name, default_name)
                 default_pos += 1
 
-            #self._default_args_handler(node, arg_names, current_klass)
+            # self._default_args_handler(node, arg_names, current_klass)
             if node.kwargs:
                 arg_names += ["pyjslib.Dict(__kwargs)"]
             print >>self.output, "    var __r = "+"".join(["[", ", ".join(arg_names), "]"])+";"
@@ -594,7 +594,7 @@ class Translator:
         for stmt in node.handlers[0][2]:
             self._stmt(stmt, current_klass)
         if expr:
-            #print >> self.output, "} else { throw(%s); } " % errName
+            # print >> self.output, "} else { throw(%s); } " % errName
             print >> self.output, "}"
         if node.else_ is not None:
             print >>self.output, "    } finally {"
@@ -612,9 +612,9 @@ class Translator:
                 # XXX TODO: distinguish between module import classes
                 # and variables.  right now, this is a hack to get
                 # the sys module working.
-                #if v.expr.name == 'sys':
+                # if v.expr.name == 'sys':
                 return v.expr.name+'.'+attr_name
-                #return v.expr.name+'.__'+attr_name+'.prototype.__class__'
+                # return v.expr.name+'.__'+attr_name+'.prototype.__class__'
             if not use_getattr or attr_name == '__class__' or \
                     attr_name == '__name__':
                 return obj + "." + attr_name
@@ -697,8 +697,8 @@ class Translator:
         if obj in self.method_imported_globals:
             call_name = UU+self.modpfx() + obj + "." + attr_name
         elif obj in self.imported_classes:
-            #attr_str = ""
-            #if attr_name != "__init__":
+            # attr_str = ""
+            # if attr_name != "__init__":
             attr_str = ".prototype.__class__." + attr_name
             call_name = UU+self.imported_classes[obj] + '.__' + obj + attr_str
         elif obj in self.module_imports():
@@ -787,13 +787,13 @@ class Translator:
 
         print >>self.output, UU+class_name_ + " = function () {"
         # call superconstructor
-        #if base_class:
+        # if base_class:
         #    print >>self.output, "    __" + base_class + ".call(this);"
         print >>self.output, "}"
 
         if not init_method:
             init_method = ast.Function([], "__init__", ["self"], [], 0, None, [])
-            #self._method(init_method, current_klass, class_name)
+            # self._method(init_method, current_klass, class_name)
 
         # Generate a function which constructs the object
         clsfunc = ast.Function(
@@ -882,7 +882,7 @@ class Translator:
                 raise TranslationError("methods must take an argument 'self' (in _method)", node)
             self.method_self = arg_names[0]
 
-            #if not classmethod and arg_names[0] != "self":
+            # if not classmethod and arg_names[0] != "self":
             #    raise TranslationError("first arg not 'self' (in _method)", node)
 
         normal_arg_names = arg_names[1:]
@@ -1700,8 +1700,8 @@ class AppTranslator:
         for module in t.imported_modules:
             if module not in self.library_modules:
                 self.library_modules.append(module)
-                #imported_js.update(set(t.imported_js))
-                #imported_modules_str += self._translate(
+                # imported_js.update(set(t.imported_js))
+                # imported_modules_str += self._translate(
                 #    module, False, debug=debug, imported_js=imported_js)
 
         return imported_modules_str + module_str

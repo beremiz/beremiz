@@ -31,9 +31,9 @@ from graphics.GraphicCommons import CONTACT_NORMAL, CONTACT_REVERSE, \
 from graphics.LD_Objects import LD_Contact, LD_Coil
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                       Set Ladder Element Parmeters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class LDElementDialog(BlockPreviewDialog):

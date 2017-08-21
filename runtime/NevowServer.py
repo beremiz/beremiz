@@ -175,8 +175,8 @@ class WebInterface(athena.LivePage):
 
     def disconnected(self, reason):
         self.MainPage.resetHMI()
-        #print reason
-        #print "We will be called back when the client disconnects"
+        # print reason
+        # print "We will be called back when the client disconnects"
 
 
 def RegisterWebsite(port):

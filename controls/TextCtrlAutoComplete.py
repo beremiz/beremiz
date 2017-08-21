@@ -134,8 +134,8 @@ class TextCtrlAutoComplete(wx.TextCtrl):
 
         self.SetChoices(choices)
 
-        #gp = self
-        #while ( gp != None ) :
+        # gp = self
+        # while ( gp != None ) :
         #    gp.Bind ( wx.EVT_MOVE , self.onControlChanged, gp )
         #    gp.Bind ( wx.EVT_SIZE , self.onControlChanged, gp )
         #    gp = gp.GetParent()

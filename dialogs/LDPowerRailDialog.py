@@ -29,9 +29,9 @@ from graphics.GraphicCommons import LEFTRAIL, RIGHTRAIL, LD_LINE_SIZE
 from graphics.LD_Objects import LD_PowerRail
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    Set Ladder Power Rail Parameters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class LDPowerRailDialog(BlockPreviewDialog):

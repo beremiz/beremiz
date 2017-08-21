@@ -54,12 +54,11 @@ class CppEditor(CodeEditor):
         self.StyleSetSpec(stc.STC_C_OPERATOR, 'bold,size:%(size)d' % faces)
         self.StyleSetSpec(stc.STC_C_STRINGEOL, 'back:#FFD5FF,size:%(size)d' % faces)
 
-#-------------------------------------------------------------------------------
-#                          CFileEditor Main Frame Class
-#-------------------------------------------------------------------------------
-
 
 class CFileEditor(CodeFileEditor):
+    """
+    CFileEditor Main Frame Class
+    """
 
     CONFNODEEDITOR_TABS = [
         (_("C code"), "_create_CodePanel")]

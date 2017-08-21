@@ -28,9 +28,9 @@ import wx
 from graphics.SFC_Objects import SFC_Step
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Set SFC Step Parameters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFCStepDialog(BlockPreviewDialog):

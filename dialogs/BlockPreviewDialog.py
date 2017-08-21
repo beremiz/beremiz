@@ -28,9 +28,9 @@ import wx
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 from graphics.GraphicCommons import FREEDRAWING_MODE
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    Dialog with preview for graphic block
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class BlockPreviewDialog(wx.Dialog):

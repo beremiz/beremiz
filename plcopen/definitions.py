@@ -42,9 +42,9 @@ LOCATIONDATATYPES = {"X": ["BOOL"],
                      "D": ["DINT", "UDINT", "REAL", "DWORD"],
                      "L": ["LINT", "ULINT", "LREAL", "LWORD"]}
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                        Function Block Types definitions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 StdTC6Libs = [(_("Standard function blocks"),   join(sd, "Standard_Function_Blocks.xml")),
               (_("Additional function blocks"), join(sd, "Additional_Function_Blocks.xml"))]
@@ -61,9 +61,9 @@ def GetBlockInfos(pou):
         for var_name, var_type, var_modifier in infos["inputs"]]
     return infos
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                           Data Types definitions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 """
@@ -105,7 +105,7 @@ TypeHierarchy_list = [
     ("WORD", "ANY_NBIT"),
     ("DWORD", "ANY_NBIT"),
     ("LWORD", "ANY_NBIT")
-    #("WSTRING", "ANY_STRING") # TODO
+    # ("WSTRING", "ANY_STRING") # TODO
 ]
 
 DefaultType = "DINT"

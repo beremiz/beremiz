@@ -227,9 +227,9 @@ def sort_blocks(block_infos1, block_infos2):
     else:
         return cmp(y1, y2)
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                       Graphic elements Viewer base class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 # ID Constants for alignment menu items
@@ -941,9 +941,9 @@ class Viewer(EditorPanel, DebugViewer):
     def GetMiniFont(self):
         return self.MiniTextDC.GetFont()
 
-#-------------------------------------------------------------------------------
-#                         Element management functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Element management functions
+    # -------------------------------------------------------------------------------
 
     def AddBlock(self, block):
         self.Blocks[block.GetId()] = block
@@ -1084,9 +1084,9 @@ class Viewer(EditorPanel, DebugViewer):
             element.SetSize(width, height)
             element.RefreshModel()
 
-#-------------------------------------------------------------------------------
-#                              Reset functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                              Reset functions
+    # -------------------------------------------------------------------------------
 
     # Resets Viewer lists
     def ResetView(self):
@@ -1204,10 +1204,9 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshVisibleElements()
             self.Editor.Refresh(False)
 
-
-#-------------------------------------------------------------------------------
-#                          Refresh functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Refresh functions
+    # -------------------------------------------------------------------------------
 
     def ElementNeedRefresh(self, element):
         self.ElementRefreshList_lock.acquire()
@@ -1531,9 +1530,9 @@ class Viewer(EditorPanel, DebugViewer):
     def GetBlockType(self, type, inputs=None):
         return self.Controler.GetBlockType(type, inputs, self.Debug)
 
-#-------------------------------------------------------------------------------
-#                          Search Element functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Search Element functions
+    # -------------------------------------------------------------------------------
 
     def FindBlock(self, event):
         dc = self.GetLogicalDC()
@@ -1604,9 +1603,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.SelectedElement.SetElements(self.GetElements())
         self.SelectedElement.SetSelected(True)
 
-#-------------------------------------------------------------------------------
-#                           Popup menu functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                           Popup menu functions
+    # -------------------------------------------------------------------------------
 
     def GetForceVariableMenuFunction(self, iec_path, element):
         iec_type = self.GetDataType(iec_path)
@@ -1738,9 +1737,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.Editor.PopupMenu(menu)
         menu.Destroy()
 
-#-------------------------------------------------------------------------------
-#                            Menu items functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Menu items functions
+    # -------------------------------------------------------------------------------
 
     def OnAlignLeftMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
@@ -1967,9 +1966,9 @@ class Viewer(EditorPanel, DebugViewer):
             wx.CallAfter(func)
         return ClipboardCallback
 
-#-------------------------------------------------------------------------------
-#                          Mouse event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Mouse event functions
+    # -------------------------------------------------------------------------------
 
     def OnViewerMouseEvent(self, event):
         self.ResetBuffer()
@@ -2467,9 +2466,9 @@ class Viewer(EditorPanel, DebugViewer):
                         (_(u'Variable'), self.GetAddToWireMenuCallBack(self.AddNewVariable, True)))
         return items
 
-#-------------------------------------------------------------------------------
-#                          Keyboard event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Keyboard event functions
+    # -------------------------------------------------------------------------------
 
     ARROW_KEY_MOVE = {
         wx.WXK_LEFT: (-1, 0),
@@ -2545,9 +2544,9 @@ class Viewer(EditorPanel, DebugViewer):
         else:
             event.Skip()
 
-#-------------------------------------------------------------------------------
-#                  Model adding functions from Drop Target
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                  Model adding functions from Drop Target
+    # -------------------------------------------------------------------------------
 
     def AddVariableBlock(self, x, y, scaling, var_class, var_name, var_type):
         id = self.GetNewId()
@@ -2568,9 +2567,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.RefreshVisibleElements()
         self.Editor.Refresh(False)
 
-#-------------------------------------------------------------------------------
-#                          Model adding functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Model adding functions
+    # -------------------------------------------------------------------------------
 
     def GetScaledSize(self, width, height):
         if self.Scaling is not None:
@@ -2822,9 +2821,9 @@ class Viewer(EditorPanel, DebugViewer):
             self.AddNewElement(actionblock, bbox, wire)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
-#                          Edit element content functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Edit element content functions
+    # -------------------------------------------------------------------------------
 
     def EditBlockContent(self, block):
         dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
@@ -3130,9 +3129,9 @@ class Viewer(EditorPanel, DebugViewer):
             comment.Refresh(rect)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
-#                          Model update functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Model update functions
+    # -------------------------------------------------------------------------------
 
     def RefreshBlockModel(self, block):
         blockid = block.GetId()
@@ -3279,10 +3278,9 @@ class Viewer(EditorPanel, DebugViewer):
         infos["connector"] = actionblock.GetConnector()
         self.Controler.SetEditedElementActionBlockInfos(self.TagName, actionblockid, infos)
 
-
-#-------------------------------------------------------------------------------
-#                          Model delete functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Model delete functions
+    # -------------------------------------------------------------------------------
 
     def DeleteBlock(self, block):
         elements = []
@@ -3429,10 +3427,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.RemoveBlock(actionblock)
         self.Controler.RemoveEditedElementInstance(self.TagName, actionblock.GetId())
 
-
-#-------------------------------------------------------------------------------
-#                            Editing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Editing functions
+    # -------------------------------------------------------------------------------
 
     def Cut(self):
         if not self.Debug and (self.IsBlock(self.SelectedElement) or self.IsComment(self.SelectedElement) or isinstance(self.SelectedElement, Graphic_Group)):
@@ -3563,9 +3560,9 @@ class Viewer(EditorPanel, DebugViewer):
                 self.Controler.AddEditedElementActionBlock(self.TagName, block.GetId())
                 self.RefreshActionBlockModel(block)
 
-#-------------------------------------------------------------------------------
-#                         Find and Replace functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Find and Replace functions
+    # -------------------------------------------------------------------------------
 
     def Find(self, direction, search_params):
         if self.SearchParams != search_params:
@@ -3606,9 +3603,9 @@ class Viewer(EditorPanel, DebugViewer):
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.RefreshView()
@@ -3647,9 +3644,9 @@ class Viewer(EditorPanel, DebugViewer):
                 if block is not None:
                     block.AddHighlight(infos[2:], start, end, highlight_type)
 
-#-------------------------------------------------------------------------------
-#                            Drawing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Drawing functions
+    # -------------------------------------------------------------------------------
 
     def OnScrollWindow(self, event):
         if self.Editor.HasCapture() and self.StartMousePos is not None:

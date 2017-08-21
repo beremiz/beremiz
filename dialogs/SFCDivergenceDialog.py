@@ -30,9 +30,9 @@ from graphics.GraphicCommons import SELECTION_DIVERGENCE, \
 from graphics.SFC_Objects import SFC_Divergence
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Create New Divergence Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFCDivergenceDialog(BlockPreviewDialog):

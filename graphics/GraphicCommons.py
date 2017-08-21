@@ -31,9 +31,9 @@ from threading import Lock, Timer
 from graphics.ToolTipProducer import ToolTipProducer
 from graphics.DebugDataConsumer import DebugDataConsumer
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Common constants
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 """
 Definition of constants for dimensions of graphic elements
@@ -211,9 +211,10 @@ def MiterPen(colour, width=1, style=wx.SOLID):
     pen.SetCap(wx.CAP_PROJECTING)
     return pen
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                    Helpers for highlighting text
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def AddHighlight(highlights, infos):
@@ -248,9 +249,10 @@ def DrawHighlightedText(dc, text, highlights, x, y):
     dc.SetPen(current_pen)
     dc.SetTextForeground(wx.BLACK)
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                           Graphic element base class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class Graphic_Element(ToolTipProducer):
@@ -703,9 +705,9 @@ class Graphic_Element(ToolTipProducer):
                 dc.SetUserScale(scalex, scaley)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                           Group of graphic elements
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class Graphic_Group(Graphic_Element):
@@ -1021,9 +1023,10 @@ class Graphic_Group(Graphic_Element):
         for element in self.Elements:
             element.Draw(dc)
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                         Connector for all types of blocks
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class Connector(DebugDataConsumer, ToolTipProducer):
@@ -1471,7 +1474,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if self.Selected:
             dc.SetPen(MiterPen(wx.BLUE, 3))
             dc.SetBrush(wx.WHITE_BRUSH)
-        #elif len(self.Highlights) > 0:
+        # elif len(self.Highlights) > 0:
         #    dc.SetPen(MiterPen(self.Highlights[-1][1]))
         #    dc.SetBrush(wx.Brush(self.Highlights[-1][0]))
         else:
@@ -1556,9 +1559,10 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             dc.SetFont(self.ParentBlock.Parent.GetFont())
             dc.SetTextForeground(wx.BLACK)
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                           Common Wire Element
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class Wire(Graphic_Element, DebugDataConsumer):
@@ -2447,11 +2451,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def OnLeftDown(self, event, dc, scaling):
         pos = GetScaledEventPosition(event, dc, scaling)
         # Test if a point have been handled
-        #result = self.TestPoint(pos)
-        #if result != None:
+        # result = self.TestPoint(pos)
+        # if result != None:
         #    self.Handle = (HANDLE_POINT, result)
         #    wx.CallAfter(self.Parent.SetCurrentCursor, 1)
-        #else:
+        # else:
         # Test if a segment have been handled
         result = self.TestSegment(pos)
         if result is not None:
@@ -2752,9 +2756,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
             dc.SetTextForeground(wx.BLACK)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                           Graphic comment element
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def FilterHighlightsByRow(highlights, row, length):

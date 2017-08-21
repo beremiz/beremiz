@@ -61,9 +61,9 @@ VariableTypeOffset = dict(zip(["", "X", "B", "W", "D", "L"], range(6)))
 
 TrashVariables = [(1, 0x01), (8, 0x05), (16, 0x06), (32, 0x07), (64, 0x1B)]
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                  Specific exception for PDO mapping errors
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class PDOmappingException(Exception):
@@ -340,9 +340,9 @@ class ConciseDCFGenerator:
         @param sync_TPDOs: indicate if TPDO must be synchronous
         """
 
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
         #               Verify that locations correspond to real slave variables
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
 
         # Get list of locations check if exists and mappables -> put them in IECLocations
         for location in locations:
@@ -420,9 +420,9 @@ class ConciseDCFGenerator:
                         _("Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))").
                         format(a1=name, a2=nodeid, a3="%x" % index, a4="%x" % subindex))
 
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
         #                         Search for locations already mapped
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
 
         for name, locationinfos in self.IECLocations.items():
             node = self.NodeList.SlaveNodes[locationinfos["nodeid"]]["Node"]
@@ -472,9 +472,9 @@ class ConciseDCFGenerator:
                     self.LocationsNotMapped[locationinfos["nodeid"]] = {TPDO: [], RPDO: []}
                 self.LocationsNotMapped[locationinfos["nodeid"]][locationinfos["pdotype"]].append((name, locationinfos))
 
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
         #                         Build concise DCF for the others locations
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
 
         for nodeid, locations in self.LocationsNotMapped.items():
             node = self.NodeList.SlaveNodes[nodeid]["Node"]
@@ -520,9 +520,9 @@ class ConciseDCFGenerator:
             # Add number of params and data to node DCF
             self.AddParamsToDCF(nodeid, dataparams, nbparams)
 
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
         #                         Master Node Configuration
-        #-------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
 
         # Generate Master's Configuration from informations stored in MasterMapping
         for cobid, pdo_infos in self.MasterMapping.items():
