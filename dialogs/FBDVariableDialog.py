@@ -29,9 +29,9 @@ from graphics.GraphicCommons import INPUT, INOUT, OUTPUT
 from graphics.FBD_Objects import FBD_Variable
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                                    Helpers
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 # Dictionaries containing correspondence between variable block class and string
 # to be shown in Class combo box in both sense
@@ -44,9 +44,9 @@ VARIABLE_CLASSES_DICT = {
 VARIABLE_CLASSES_DICT_REVERSE = dict(
     [(value, key) for key, value in VARIABLE_CLASSES_DICT.iteritems()])
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                        Set Variable Parameters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class FBDVariableDialog(BlockPreviewDialog):

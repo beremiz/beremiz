@@ -33,9 +33,9 @@ from plcopen.structures import ST_BLOCK_START_KEYWORDS, ST_BLOCK_END_KEYWORDS, I
 from EditorPanel import EditorPanel
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Textual programs Viewer class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 NEWLINE = "\n"
@@ -915,9 +915,9 @@ class TextViewer(EditorPanel):
         self.Editor.AutoCompCancel()
         event.Skip()
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.RefreshView()

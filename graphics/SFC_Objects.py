@@ -35,9 +35,9 @@ def GetWireSize(block):
     else:
         return SFC_WIRE_MIN_SIZE
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Sequencial Function Chart Step
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFC_Step(Graphic_Element, DebugDataConsumer):
@@ -221,7 +221,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
             bbx_height = self.Size[1] + CONNECTOR_SIZE
             if self.Output:
                 bbx_height += CONNECTOR_SIZE
-        #self.BoundingBox = wx.Rect(self.Pos.x, bbx_y, bbx_width + 1, bbx_height + 1)
+        # self.BoundingBox = wx.Rect(self.Pos.x, bbx_y, bbx_width + 1, bbx_height + 1)
         self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
 
     # Refresh the positions of the step connectors
@@ -257,7 +257,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         # if a name is given
         if name is not None:
             # Test input, output and action connector if they exists
-            #if self.Input and name == self.Input.GetName():
+            # if self.Input and name == self.Input.GetName():
             #    return self.Input
             if self.Output and name == self.Output.GetName():
                 return self.Output
@@ -568,9 +568,9 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
             DrawHighlightedText(dc, self.Name, self.Highlights, name_pos[0], name_pos[1])
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                       Sequencial Function Chart Transition
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFC_Transition(Graphic_Element, DebugDataConsumer):
@@ -777,7 +777,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         # if a name is given
         if name is not None:
             # Test input and output connector
-            #if name == self.Input.GetName():
+            # if name == self.Input.GetName():
             #    return self.Input
             if name == self.Output.GetName():
                 return self.Output
@@ -1037,9 +1037,10 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
                 else:
                     DrawHighlightedText(dc, condition, highlights, condition_pos[0], condition_pos[1])
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                Sequencial Function Chart Divergence and Convergence
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFC_Divergence(Graphic_Element):
@@ -1249,7 +1250,7 @@ class SFC_Divergence(Graphic_Element):
         # if a name is given
         if name is not None:
             # Test each input and output connector
-            #for input in self.Inputs:
+            # for input in self.Inputs:
             #    if name == input.GetName():
             #        return input
             for output in self.Outputs:
@@ -1500,9 +1501,10 @@ class SFC_Divergence(Graphic_Element):
             output.Draw(dc)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                   Sequencial Function Chart Jump to Step
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 class SFC_Jump(Graphic_Element):
     """
@@ -1775,9 +1777,9 @@ class SFC_Jump(Graphic_Element):
             DrawHighlightedText(dc, self.Target, self.Highlights, target_pos[0], target_pos[1])
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                   Sequencial Function Chart Action Block
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFC_ActionBlock(Graphic_Element):

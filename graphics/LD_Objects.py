@@ -28,9 +28,10 @@ from graphics.GraphicCommons import *
 from graphics.DebugDataConsumer import DebugDataConsumer
 from plcopen.structures import *
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                         Ladder Diagram PowerRail
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class LD_PowerRail(Graphic_Element):
@@ -339,9 +340,9 @@ class LD_PowerRail(Graphic_Element):
             connector.Draw(dc)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Ladder Diagram Contact
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class LD_Contact(Graphic_Element, DebugDataConsumer):
@@ -514,7 +515,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         # if a name is given
         if name is not None:
             # Test input and output connector
-            #if name == self.Input.GetName():
+            # if name == self.Input.GetName():
             #    return self.Input
             if name == self.Output.GetName():
                 return self.Output
@@ -685,9 +686,10 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
                 elif typetext != "":
                     DrawHighlightedText(dc, typetext, highlights, type_pos[0], type_pos[1])
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                         Ladder Diagram Coil
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class LD_Coil(Graphic_Element):
@@ -833,7 +835,7 @@ class LD_Coil(Graphic_Element):
         # if a name is given
         if name is not None:
             # Test input and output connector
-            #if self.Input and name == self.Input.GetName():
+            # if self.Input and name == self.Input.GetName():
             #    return self.Input
             if self.Output and name == self.Output.GetName():
                 return self.Output

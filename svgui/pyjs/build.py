@@ -334,12 +334,12 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             pd[platform] = name
 
         print appcode
-        #mod_code[platform][app_name] = appcode
+        # mod_code[platform][app_name] = appcode
 
         # platform.Module.cache.js
 
         modules_done = ['pyjslib', 'sys', '_pyjs.js']
-        #modules_to_do = [app_name] + app_translator.library_modules
+        # modules_to_do = [app_name] + app_translator.library_modules
         modules_to_do = [app_name] + app_translator.library_modules
 
         dependencies = {}
@@ -349,13 +349,13 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             sublist = add_subdeps(dependencies, d)
             modules_to_do += sublist
         deps = uniquify(deps)
-        #dependencies[app_name] = deps
+        # dependencies[app_name] = deps
 
         modules[platform] = modules_done + modules_to_do
 
         while modules_to_do:
 
-            #print "modules to do", modules_to_do
+            # print "modules to do", modules_to_do
 
             mn = modules_to_do.pop()
             mod_name = pyjs.strip_py(mn)
@@ -389,18 +389,18 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             while mod_name in deps:
                 deps.remove(mod_name)
 
-            #print
-            #print
-            #print "modname preadd:", mod_name, deps
-            #print
-            #print
+            # print
+            # print
+            # print "modname preadd:", mod_name, deps
+            # print
+            # print
             for d in deps:
                 sublist = add_subdeps(dependencies, d)
                 modules_to_do += sublist
             modules_to_do += add_subdeps(dependencies, mod_name)
-            #print "modname:", mod_name, deps
+            # print "modname:", mod_name, deps
             deps = uniquify(deps)
-            #print "modname:", mod_name, deps
+            # print "modname:", mod_name, deps
             dependencies[mod_name] = deps
 
         # work out the dependency ordering of the modules
@@ -414,7 +414,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
         early_app_libs_ = early_app_libs[platform]
         app_libs_ = app_libs[platform]
         app_code_ = app_code[platform]
-        #modules_ = filter_mods(app_name, modules[platform])
+        # modules_ = filter_mods(app_name, modules[platform])
         mods = flattenlist(mod_levels[platform])
         mods.reverse()
         modules_ = filter_mods(None, mods)
@@ -488,8 +488,8 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
         overnames = map(lambda x: "'%s': '%s'" % x, pover[platform].items())
         overnames = "new pyjslib.Dict({\n\t\t%s\n\t})" % ',\n\t\t'.join(overnames)
 
-        #print "platform names", platform, overnames
-        #print pover
+        # print "platform names", platform, overnames
+        # print pover
 
         # now write app.allcache including dependency-ordered list of
         # library modules
@@ -549,8 +549,8 @@ def add_subdeps(deps, mod_name):
     sd = subdeps(mod_name)
     if len(sd) == 1:
         return []
-    #print "subdeps", mod_name, sd
-    #print "deps", deps
+    # print "subdeps", mod_name, sd
+    # print "deps", deps
     res = []
     for i in range(0, len(sd)-1):
         parent = sd[i]
@@ -560,7 +560,7 @@ def add_subdeps(deps, mod_name):
         deps[child] = k
         if parent not in res:
             res.append(parent)
-    #print deps
+    # print deps
     return res
 
 
@@ -628,26 +628,26 @@ def make_deps(app_name, deps, mod_list):
     if not mod_list:
         return []
 
-    #print mod_list
-    #print deps
+    # print mod_list
+    # print deps
 
     ordered_deps = []
     last_len = -1
     while deps:
         l_deps = len(deps)
-        #print l_deps
+        # print l_deps
         if l_deps == last_len:
             for m, dl in deps.items():
                 for d in dl:
                     if m in deps.get(d, []):
                         raise Exception('Circular Imports found: \n%s %s -> %s %s'
                                         % (m, dl, d, deps[d]))
-            #raise Exception('Could not calculate dependencies: \n%s' % deps)
+            # raise Exception('Could not calculate dependencies: \n%s' % deps)
             break
         last_len = l_deps
-        #print "modlist", mod_list
+        # print "modlist", mod_list
         nodeps = nodeps_list(mod_list, deps)
-        #print "nodeps", nodeps
+        # print "nodeps", nodeps
         mod_list = filter(lambda x: x not in nodeps, mod_list)
         newdeps = {}
         for k in deps.keys():
@@ -655,10 +655,10 @@ def make_deps(app_name, deps, mod_list):
             depslist = filter(lambda x: x not in nodeps, depslist)
             if depslist:
                 newdeps[k] = depslist
-        #print "newdeps", newdeps
+        # print "newdeps", newdeps
         deps = newdeps
         ordered_deps.append(nodeps)
-        #time.sleep(0)
+        # time.sleep(0)
 
     if mod_list:
         ordered_deps.append(mod_list)  # last dependencies - usually the app(s)

@@ -111,12 +111,9 @@ UNEDITABLE_NAMES = GetUneditableNames()
  DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS,
  RESOURCES, PROPERTIES] = UNEDITABLE_NAMES
 
-#-------------------------------------------------------------------------------
-#                 Helper object for loading library in xslt stylesheets
-#-------------------------------------------------------------------------------
-
 
 class LibraryResolver(etree.Resolver):
+    """Helper object for loading library in xslt stylesheets"""
 
     def __init__(self, controller, debug=False):
         self.Controller = controller
@@ -136,10 +133,10 @@ class LibraryResolver(etree.Resolver):
                     lib_el.append(deepcopy(ctn["types"]))
             return self.resolve_string(etree.tostring(lib_el), context)
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #           Helpers functions for translating list of arguments
 #                       from xslt to valid arguments
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def _StringValue(x):
@@ -155,9 +152,9 @@ def _translate_args(translations, args):
             for translate, arg in
             zip(translations, args)]
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                 Helpers object for generating pou var list
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class _VariableInfos(object):
@@ -208,9 +205,9 @@ class VariablesInfosFactory:
             [_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
             [self.GetType(), self.GetTree()])))
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #            Helpers object for generating pou variable instance list
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def class_extraction(value):
@@ -266,25 +263,18 @@ class VariablesTreeInfosFactory:
                     [_StringValue, class_extraction, _StringValue] +
                     [_BoolValue] * 2, args) + [[]])))
 
-#-------------------------------------------------------------------------------
-#            Helpers object for generating instances path list
-#-------------------------------------------------------------------------------
-
 
 class InstancesPathFactory:
-
+    """Helpers object for generating instances path list"""
     def __init__(self, instances):
         self.Instances = instances
 
     def AddInstance(self, context, *args):
         self.Instances.append(args[0][0])
 
-#-------------------------------------------------------------------------------
-#            Helpers object for generating instance tagname
-#-------------------------------------------------------------------------------
-
 
 class InstanceTagName:
+    """Helpers object for generating instance tagname"""
 
     def __init__(self, controller):
         self.Controller = controller
@@ -308,9 +298,10 @@ class InstanceTagName:
     def TransitionTagName(self, context, *args):
         self.TagName = self.Controller.ComputePouTransitionName(args[0][0], args[0][1])
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 _Point = namedtuple("Point", ["x", "y"])
@@ -465,9 +456,6 @@ class BlockInstanceFactory:
 pou_block_instances_xslt = etree.parse(
     os.path.join(ScriptDirectory, "plcopen", "pou_block_instances.xslt"))
 
-#-------------------------------------------------------------------------------
-#                         Undo Buffer for PLCOpenEditor
-#-------------------------------------------------------------------------------
 
 # Length of the buffer
 UNDO_BUFFER_LENGTH = 20
@@ -475,6 +463,7 @@ UNDO_BUFFER_LENGTH = 20
 
 class UndoBuffer:
     """
+    Undo Buffer for PLCOpenEditor
     Class implementing a buffer of changes made on the current editing model
     """
 
@@ -555,13 +544,9 @@ class UndoBuffer:
         return self.LastSave == self.CurrentIndex
 
 
-#-------------------------------------------------------------------------------
-#                           Controler for PLCOpenEditor
-#-------------------------------------------------------------------------------
-
-
 class PLCControler:
     """
+    Controler for PLCOpenEditor
     Class which controls the operations made on the plcopen model and answers to view requests
     """
 
@@ -597,9 +582,9 @@ class PLCControler:
         else:
             return self.Project
 
-#-------------------------------------------------------------------------------
-#                         Project management functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Project management functions
+    # -------------------------------------------------------------------------------
 
     # Return if a project is opened
     def HasOpenedProject(self):
@@ -961,9 +946,9 @@ class PLCControler:
             row, col = next_row, next_col
         return infos
 
-#-------------------------------------------------------------------------------
-#                        Project Pous management functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Project Pous management functions
+    # -------------------------------------------------------------------------------
 
     # Add a Data Type to Project
     def ProjectAddDataType(self, datatype_name=None):
@@ -1957,9 +1942,9 @@ class PLCControler:
                 values.extend(confnodetype["types"].GetEnumeratedDataTypeValues())
         return values
 
-#-------------------------------------------------------------------------------
-#                   Project Element tag name computation functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                   Project Element tag name computation functions
+    # -------------------------------------------------------------------------------
 
     # Compute a data type name
     def ComputeDataTypeName(self, datatype):
@@ -1996,9 +1981,9 @@ class PLCControler:
             "R": ITEM_RESOURCE
         }[words[0]]
 
-#-------------------------------------------------------------------------------
-#                    Project opened Data types management functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                    Project opened Data types management functions
+    # -------------------------------------------------------------------------------
 
     # Return the data type informations
     def GetDataTypeInfos(self, tagname, debug=False):
@@ -2197,9 +2182,9 @@ class PLCControler:
                 datatype.initialValue = None
             self.BufferProject()
 
-#-------------------------------------------------------------------------------
-#                       Project opened Pous management functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                       Project opened Pous management functions
+    # -------------------------------------------------------------------------------
 
     # Return edited element
     def GetEditedElement(self, tagname, debug=False):
@@ -3271,9 +3256,9 @@ class PLCControler:
                 self.SetFilePath(filepath)
             return True
 
-#-------------------------------------------------------------------------------
-#                       Search in Current Project Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                       Search in Current Project Functions
+    # -------------------------------------------------------------------------------
 
     def SearchInProject(self, criteria):
         return self.Project.Search(criteria)
@@ -3291,14 +3276,12 @@ class PLCControler:
             return search_results
         return []
 
-#-------------------------------------------------------------------------------
-#                      Current Buffering Management Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                      Current Buffering Management Functions
+    # -------------------------------------------------------------------------------
 
-    """
-    Return a copy of the project
-    """
     def Copy(self, model):
+        """Return a copy of the project"""
         return deepcopy(model)
 
     def CreateProjectBuffer(self, saved):

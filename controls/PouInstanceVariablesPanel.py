@@ -370,8 +370,8 @@ class PouInstanceVariablesPanel(wx.Panel):
         event.x = size.width / 2
         event.y = size.height / 2
         event.SetEventObject(self.InstanceChoice)
-        #event = wx.KeyEvent(wx.EVT_KEY_DOWN._getEvtType())
-        #event.m_keyCode = wx.WXK_SPACE
+        # event = wx.KeyEvent(wx.EVT_KEY_DOWN._getEvtType())
+        # event.m_keyCode = wx.WXK_SPACE
         self.InstanceChoice.GetEventHandler().ProcessEvent(event)
 
     def OnParentButtonClick(self, event):

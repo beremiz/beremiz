@@ -32,9 +32,9 @@ from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOC
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                                   Helpers
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def GetDirFilterChoiceOptions():
@@ -61,9 +61,9 @@ for size, types in LOCATIONDATATYPES.iteritems():
     for type in types:
         LOCATION_SIZES[type] = size
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                            Browse Locations Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class BrowseLocationsDialog(wx.Dialog):

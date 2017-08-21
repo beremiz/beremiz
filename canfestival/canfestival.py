@@ -56,9 +56,9 @@ setParanoia(0)
 from util.TranslationCatalogs import AddCatalog
 AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))
 
-#--------------------------------------------------
+# --------------------------------------------------
 #              Location Tree Helper
-#--------------------------------------------------
+# --------------------------------------------------
 
 
 def GetSlaveLocationTree(slave_node, current_location, name):
@@ -82,9 +82,9 @@ def GetSlaveLocationTree(slave_node, current_location, name):
             "location": ".".join([str(i) for i in current_location]) + ".x",
             "children": entries}
 
-#--------------------------------------------------
+# --------------------------------------------------
 #                    SLAVE
-#--------------------------------------------------
+# --------------------------------------------------
 
 
 class _SlaveCTN(NodeManager):
@@ -245,9 +245,9 @@ class _SlaveCTN(NodeManager):
     def GetBufferState(self):
         return self.GetCurrentBufferState()
 
-#--------------------------------------------------
+# --------------------------------------------------
 #                    MASTER
-#--------------------------------------------------
+# --------------------------------------------------
 
 
 class MiniNodeManager(NodeManager):

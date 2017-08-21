@@ -33,9 +33,12 @@ from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from util.TranslationCatalogs import NoTranslate
-#-------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------
 #                          Configuration Editor class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 [
     ID_CONFIGURATIONEDITOR,
@@ -62,9 +65,9 @@ class ConfigurationEditor(EditorPanel):
         return self.Controler.GetEditedElement(self.TagName) is None
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                            Resource Editor class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 def GetTasksTableColnames():
     _ = NoTranslate
@@ -195,10 +198,9 @@ class ResourceTable(CustomTable):
                 grid.SetCellTextColour(row, col, highlight_colours[1])
             self.ResizeRow(grid, row)
 
-
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def AddHighlight(self, infos, highlight_type):
         row_highlights = self.Highlights.setdefault(infos[0], {})
@@ -507,9 +509,9 @@ class ResourceEditor(EditorPanel):
         self.InstancesGrid.RefreshButtons()
         event.Skip()
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.RefreshView()

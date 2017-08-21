@@ -25,7 +25,6 @@
 import sys
 import traceback
 import atexit
-#from twisted.python import log
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
@@ -123,7 +122,7 @@ def WAMP_connector_factory(uri, confnodesroot):
                     errmess = traceback.format_exc()
                     confnodesroot.logger.write_error(errmess+"\n")
                     print errmess
-                    #confnodesroot._SetConnector(None)
+                    # confnodesroot._SetConnector(None)
             return PLCObjDefaults.get(funcname)
         return catcher_func
 

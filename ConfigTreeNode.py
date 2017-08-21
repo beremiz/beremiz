@@ -142,7 +142,7 @@ class ConfigTreeNode:
         return self.CTNParent.RemoteExec(script, **kwargs)
 
     def OnCTNSave(self, from_project_path=None):
-        #Default, do nothing and return success
+        """Default, do nothing and return success"""
         return True
 
     def GetParamsAttributes(self, path=None):
@@ -395,7 +395,7 @@ class ConfigTreeNode:
         # Get Current Name
         CurrentName = self.BaseParams.getName()
         # Do nothing if no change
-        #if CurrentName == DesiredName: return CurrentName
+        # if CurrentName == DesiredName: return CurrentName
         # Build a list of used Name out of parent's Children
         AllNames = []
         for CTNInstance in self.CTNParent.IterChildren():
@@ -444,7 +444,7 @@ class ConfigTreeNode:
         # Get Current IEC channel
         CurrentChannel = self.BaseParams.getIEC_Channel()
         # Do nothing if no change
-        #if CurrentChannel == DesiredChannel: return CurrentChannel
+        # if CurrentChannel == DesiredChannel: return CurrentChannel
         # Build a list of used Channels out of parent's Children
         AllChannels = self.GetAllChannels()
 
@@ -511,7 +511,7 @@ class ConfigTreeNode:
 
     def CTNRemove(self):
         # Fetch the confnode
-        #CTNInstance = self.GetChildByName(CTNName)
+        # CTNInstance = self.GetChildByName(CTNName)
         # Ask to his parent to remove it
         self.CTNParent._doRemoveChild(self)
 

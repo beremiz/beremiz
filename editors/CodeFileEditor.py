@@ -549,9 +549,9 @@ class CodeEditor(CustomStyledTextCtrl):
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.RefreshView(True)
@@ -597,9 +597,9 @@ class CodeEditor(CustomStyledTextCtrl):
             self.SetStyling(len(self.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Helper for VariablesGrid values
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class VariablesTable(CustomTable):
 
@@ -852,9 +852,9 @@ class VariablesEditor(wx.Panel):
         event.Skip()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                          CodeFileEditor Main Frame Class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class CodeFileEditor(ConfTreeNodeEditor):
 

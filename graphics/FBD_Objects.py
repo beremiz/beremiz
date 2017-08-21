@@ -27,9 +27,10 @@ import wx
 from graphics.GraphicCommons import *
 from plcopen.structures import *
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                         Function Block Diagram Block
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def TestConnectorName(name, block_type):
@@ -495,9 +496,9 @@ class FBD_Block(Graphic_Element):
             DrawHighlightedText(dc, self.Type, self.Highlights.get("type", []), type_pos[0], type_pos[1])
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                        Function Block Diagram Variable
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class FBD_Variable(Graphic_Element):
@@ -629,7 +630,7 @@ class FBD_Variable(Graphic_Element):
         # if a name is given
         if name is not None:
             # Test input and output connector if they exists
-            #if self.Input and name == self.Input.GetName():
+            # if self.Input and name == self.Input.GetName():
             #    return self.Input
             if self.Output and name == self.Output.GetName():
                 return self.Output
@@ -791,9 +792,10 @@ class FBD_Variable(Graphic_Element):
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, text_pos[0], text_pos[1])
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                        Function Block Diagram Connector
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class FBD_Connector(Graphic_Element):

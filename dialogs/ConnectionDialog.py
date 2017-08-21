@@ -29,9 +29,9 @@ from graphics.GraphicCommons import CONNECTOR, CONTINUATION
 from graphics.FBD_Objects import FBD_Connector
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                       Set Connection Parameters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class ConnectionDialog(BlockPreviewDialog):

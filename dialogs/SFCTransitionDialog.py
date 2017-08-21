@@ -28,9 +28,9 @@ import wx
 from graphics.SFC_Objects import SFC_Transition
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                        Set Transition Parameters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class SFCTransitionDialog(BlockPreviewDialog):

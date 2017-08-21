@@ -85,9 +85,9 @@ from PLCControler import PLCControler
 from dialogs import ProjectDialog
 from dialogs.AboutDialog import ShowAboutDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                            PLCOpenEditor Main Class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 # Define PLCOpenEditor FileMenu extra items id
 [
@@ -158,9 +158,9 @@ class PLCOpenEditor(IDEFrame):
     def _init_coll_HelpMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_HELP,
                    kind=wx.ITEM_NORMAL, text=_(u'PLCOpenEditor') + '\tF1')
-        #AppendMenu(parent, help='', id=wx.ID_HELP_CONTENTS,
+        # AppendMenu(parent, help='', id=wx.ID_HELP_CONTENTS,
         #      kind=wx.ITEM_NORMAL, text=u'PLCOpen\tF2')
-        #AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
+        # AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
         #      kind=wx.ITEM_NORMAL, text=u'IEC 61131-3\tF3')
 
         def handler(event):
@@ -176,7 +176,7 @@ class PLCOpenEditor(IDEFrame):
         AppendMenu(parent, help='', id=wx.ID_ABOUT,
                    kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnPLCOpenEditorMenu, id=wx.ID_HELP)
-        #self.Bind(wx.EVT_MENU, self.OnPLCOpenMenu, id=wx.ID_HELP_CONTENTS)
+        # self.Bind(wx.EVT_MENU, self.OnPLCOpenMenu, id=wx.ID_HELP_CONTENTS)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
     def __init__(self, parent, fileOpen=None):
@@ -231,9 +231,9 @@ class PLCOpenEditor(IDEFrame):
         else:
             self.SetTitle(name)
 
-#-------------------------------------------------------------------------------
-#                            File Menu Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            File Menu Functions
+    # -------------------------------------------------------------------------------
 
     def RefreshFileMenu(self):
         MenuToolBar = self.Panes["MenuToolBar"]
@@ -401,9 +401,9 @@ class PLCOpenEditor(IDEFrame):
             self._Refresh(TITLE, FILEMENU, PAGETITLES)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Exception Handler
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 Max_Traceback_List_Size = 20
@@ -506,7 +506,7 @@ def AddExceptHook(path, app_version='[No version]'):
                 for a in lst:
                     output.write(a+":\n"+str(info[a])+"\n\n")
 
-    #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
+    # sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
 
 

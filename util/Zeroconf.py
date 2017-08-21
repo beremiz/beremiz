@@ -573,8 +573,8 @@ class DNSIncoming(object):
                 # so this is left for debugging.  New types
                 # encountered need to be parsed properly.
                 #
-                #print "UNKNOWN TYPE = " + str(info[0])
-                #raise BadTypeInNameException
+                # print "UNKNOWN TYPE = " + str(info[0])
+                # raise BadTypeInNameException
                 pass
 
             if rec is not None:
@@ -1539,7 +1539,7 @@ class Zeroconf(object):
     def send(self, out, addr=_MDNS_ADDR, port=_MDNS_PORT):
         """Sends an outgoing packet."""
         # This is a quick test to see if we can parse the packets we generate
-        #temp = DNSIncoming(out.packet())
+        # temp = DNSIncoming(out.packet())
         try:
             bytes_sent = self.socket.sendto(out.packet(), 0, (addr, port))
         except Exception:

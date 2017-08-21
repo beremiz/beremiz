@@ -72,9 +72,9 @@ from util.BitmapLibrary import GetBitmap
     ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
 ] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(2)]
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                            EditorToolBar definitions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 # Define PLCOpenEditor Toolbar items id
 [
@@ -190,9 +190,9 @@ EditorToolBarItems = {
                "move", _("Move the view"))],
 }
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Helper Functions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import base64
 
@@ -332,16 +332,12 @@ def ComputeTabsLayout(tabs, rect):
             return ComputeTabsLayout(tabs, rect)
     return tabs
 
-#-------------------------------------------------------------------------------
-#                              IDEFrame Base Class
-#-------------------------------------------------------------------------------
-
 
 UNEDITABLE_NAMES_DICT = dict([(_(name), name) for name in UNEDITABLE_NAMES])
 
 
 class IDEFrame(wx.Frame):
-
+    """IDEFrame Base Class"""
     # Compatibility function for wx versions < 2.6
     if wx.VERSION < (2, 6, 0):
         def Bind(self, event, function, id=None):
@@ -379,7 +375,7 @@ class IDEFrame(wx.Frame):
                    kind=wx.ITEM_NORMAL, text=_(u'Undo') + '\tCTRL+Z')
         AppendMenu(parent, help='', id=wx.ID_REDO,
                    kind=wx.ITEM_NORMAL, text=_(u'Redo') + '\tCTRL+Y')
-        #AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO,
+        # AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO,
         #      kind=wx.ITEM_CHECK, text=_(u'Enable Undo/Redo'))
         enable_undo_redo = _(u'Enable Undo/Redo')  # Keeping text in translations for possible menu reactivation
         parent.AppendSeparator()
@@ -409,7 +405,7 @@ class IDEFrame(wx.Frame):
                    kind=wx.ITEM_NORMAL, text=_(u'&Delete'))
         self.Bind(wx.EVT_MENU, self.OnUndoMenu, id=wx.ID_UNDO)
         self.Bind(wx.EVT_MENU, self.OnRedoMenu, id=wx.ID_REDO)
-        #self.Bind(wx.EVT_MENU, self.OnEnableUndoRedoMenu, id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO)
+        # self.Bind(wx.EVT_MENU, self.OnEnableUndoRedoMenu, id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO)
         self.Bind(wx.EVT_MENU, self.OnCutMenu, id=wx.ID_CUT)
         self.Bind(wx.EVT_MENU, self.OnCopyMenu, id=wx.ID_COPY)
         self.Bind(wx.EVT_MENU, self.OnPasteMenu, id=wx.ID_PASTE)
@@ -508,9 +504,9 @@ class IDEFrame(wx.Frame):
         self.TabsImageList = wx.ImageList(31, 16)
         self.TabsImageListIndexes = {}
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         #                          Creating main structure
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         self.AUIManager = wx.aui.AuiManager(self)
         self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
@@ -573,9 +569,9 @@ class IDEFrame(wx.Frame):
         self.AUIManager.AddPane(self.TabsOpened,
                                 wx.aui.AuiPaneInfo().CentrePane().Name("TabsPane"))
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         #                    Creating PLCopen Project Types Tree
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         self.MainTabs = {}
 
@@ -612,9 +608,9 @@ class IDEFrame(wx.Frame):
                   id=ID_PLCOPENEDITORPROJECTTREE)
         self.ProjectTree.Bind(wx.EVT_MOTION, self.OnProjectTreeMotion)
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         #        Creating PLCopen Project POU Instance Variables Panel
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         self.PouInstanceVariablesPanel = PouInstanceVariablesPanel(self.ProjectPanel, self, self.Controler, self.EnableDebug)
 
@@ -623,9 +619,9 @@ class IDEFrame(wx.Frame):
 
         self.ProjectPanel.SplitHorizontally(self.ProjectTree, self.PouInstanceVariablesPanel, 300)
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         #                            Creating Tool Bar
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         MenuToolBar = wx.ToolBar(self, ID_PLCOPENEDITOREDITORMENUTOOLBAR,
                                  wx.DefaultPosition, wx.DefaultSize,
@@ -656,17 +652,17 @@ class IDEFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSelectionTool,
                   id=ID_PLCOPENEDITOREDITORTOOLBARSELECTION)
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         #                            Creating Search Panel
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         self.SearchResultPanel = SearchResultPanel(self.BottomNoteBook, self)
         self.MainTabs["SearchResultPanel"] = (self.SearchResultPanel, _("Search"))
         self.BottomNoteBook.AddPage(*self.MainTabs["SearchResultPanel"])
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         #                            Creating Library Panel
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         self.LibraryPanel = LibraryPanel(self, True)
         self.MainTabs["LibraryPanel"] = (self.LibraryPanel, _("Library"))
@@ -701,8 +697,8 @@ class IDEFrame(wx.Frame):
         for imgname, itemtype in [
                 # editables
                 ("PROJECT",        ITEM_PROJECT),
-                #("POU",            ITEM_POU),
-                #("VARIABLE",       ITEM_VARIABLE),
+                # ("POU",          ITEM_POU),
+                # ("VARIABLE",     ITEM_VARIABLE),
                 ("TRANSITION",     ITEM_TRANSITION),
                 ("ACTION",         ITEM_ACTION),
                 ("CONFIGURATION",  ITEM_CONFIGURATION),
@@ -738,7 +734,7 @@ class IDEFrame(wx.Frame):
         self.SearchParams = None
         self.Highlights = {}
         self.DrawingMode = FREEDRAWING_MODE
-        #self.DrawingMode = DRIVENDRAWING_MODE
+        # self.DrawingMode = DRIVENDRAWING_MODE
         self.AuiTabCtrl = []
 
         # Save default perspective
@@ -788,9 +784,9 @@ class IDEFrame(wx.Frame):
                 notebook.SetSelection(idx)
                 return
 
-#-------------------------------------------------------------------------------
-#                Saving and restoring frame organization functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                Saving and restoring frame organization functions
+    # -------------------------------------------------------------------------------
 
     def GetTabInfos(self, tab):
         for page_name, (page_ref, page_title) in self.MainTabs.iteritems():
@@ -901,9 +897,9 @@ class IDEFrame(wx.Frame):
 
         self.Config.Flush()
 
-#-------------------------------------------------------------------------------
-#                               General Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                               General Functions
+    # -------------------------------------------------------------------------------
 
     def SetRefreshFunctions(self):
         self.RefreshFunctions = {
@@ -996,9 +992,9 @@ class IDEFrame(wx.Frame):
                               PROJECTTREE, POUINSTANCEVARIABLESPANEL, SCALING)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
-#                            Notebook Unified Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Notebook Unified Functions
+    # -------------------------------------------------------------------------------
 
     def AddPage(self, window, text):
         """Function that add a tab in Notebook, calling refresh for tab DClick event
@@ -1035,9 +1031,9 @@ class IDEFrame(wx.Frame):
         """
         return self.TabsOpened.SetPageBitmap(idx, bitmap)
 
-#-------------------------------------------------------------------------------
-#                         Dialog Message Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Dialog Message Functions
+    # -------------------------------------------------------------------------------
 
     def ShowErrorMessage(self, message):
         """Function displaying an Error dialog in editor.
@@ -1069,9 +1065,9 @@ class IDEFrame(wx.Frame):
 
         return True
 
-#-------------------------------------------------------------------------------
-#                            File Menu Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            File Menu Functions
+    # -------------------------------------------------------------------------------
 
     def RefreshFileMenu(self):
         pass
@@ -1150,9 +1146,9 @@ class IDEFrame(wx.Frame):
     def OnQuitMenu(self, event):
         self.Close()
 
-#-------------------------------------------------------------------------------
-#                            Edit Menu Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Edit Menu Functions
+    # -------------------------------------------------------------------------------
 
     def RefreshEditMenu(self):
         MenuToolBar = self.Panes["MenuToolBar"]
@@ -1167,8 +1163,8 @@ class IDEFrame(wx.Frame):
             MenuToolBar.EnableTool(wx.ID_UNDO, undo)
             self.EditMenu.Enable(wx.ID_REDO, redo)
             MenuToolBar.EnableTool(wx.ID_REDO, redo)
-            #self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO, True)
-            #self.EditMenu.Check(ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO,
+            # self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO, True)
+            # self.EditMenu.Check(ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO,
             #                self.Controler.IsProjectBufferEnabled())
             self.EditMenu.Enable(wx.ID_FIND, selected > -1)
             self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUFINDNEXT,
@@ -1204,7 +1200,7 @@ class IDEFrame(wx.Frame):
             MenuToolBar.EnableTool(wx.ID_UNDO, False)
             self.EditMenu.Enable(wx.ID_REDO, False)
             MenuToolBar.EnableTool(wx.ID_REDO, False)
-            #self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO, False)
+            # self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO, False)
             self.EditMenu.Enable(wx.ID_CUT, False)
             MenuToolBar.EnableTool(wx.ID_CUT, False)
             self.EditMenu.Enable(wx.ID_COPY, False)
@@ -1337,9 +1333,9 @@ class IDEFrame(wx.Frame):
                 self.SearchResultPanel.SetSearchResults(criteria, result)
                 self.SelectTab(self.SearchResultPanel)
 
-#-------------------------------------------------------------------------------
-#                             Display Menu Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                             Display Menu Functions
+    # -------------------------------------------------------------------------------
 
     def RefreshDisplayMenu(self):
         if self.Controler is not None:
@@ -1388,9 +1384,9 @@ class IDEFrame(wx.Frame):
     def OnResetPerspective(self, event):
         self.ResetPerspective()
 
-#-------------------------------------------------------------------------------
-#                      Project Editor Panels Management Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                      Project Editor Panels Management Functions
+    # -------------------------------------------------------------------------------
 
     def OnPageDragged(self, event):
         wx.CallAfter(self.RefreshTabCtrlEvent)
@@ -1503,9 +1499,9 @@ class IDEFrame(wx.Frame):
             self.AUIManager.MaximizePane(pane)
         self.AUIManager.Update()
 
-#-------------------------------------------------------------------------------
-#                         Types Tree Management Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Types Tree Management Functions
+    # -------------------------------------------------------------------------------
 
     def RefreshProjectTree(self):
         # Extract current selected item tagname
@@ -2012,10 +2008,9 @@ class IDEFrame(wx.Frame):
 
         event.Skip()
 
-
-#-------------------------------------------------------------------------------
-#                         Instances Tree Management Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Instances Tree Management Functions
+    # -------------------------------------------------------------------------------
 
     def GetTreeImage(self, var_class):
         return self.TreeImageDict[var_class]
@@ -2098,16 +2093,16 @@ class IDEFrame(wx.Frame):
             self.DebugVariablePanel.InsertValue(iec_path, force=force, graph=graph)
             self.EnsureTabVisible(self.DebugVariablePanel)
 
-#-------------------------------------------------------------------------------
-#                         Library Panel Management Function
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Library Panel Management Function
+    # -------------------------------------------------------------------------------
 
     def RefreshLibraryPanel(self):
         self.LibraryPanel.RefreshTree()
 
-#-------------------------------------------------------------------------------
-#                          ToolBars Management Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          ToolBars Management Functions
+    # -------------------------------------------------------------------------------
 
     def AddToMenuToolBar(self, items):
         MenuToolBar = self.Panes["MenuToolBar"]
@@ -2175,10 +2170,9 @@ class IDEFrame(wx.Frame):
             self.CurrentMenu = menu
         self.ResetCurrentMode()
 
-
-#-------------------------------------------------------------------------------
-#                           EditorToolBar Items Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                           EditorToolBar Items Functions
+    # -------------------------------------------------------------------------------
 
     def ResetCurrentMode(self):
         selected = self.TabsOpened.GetSelection()
@@ -2314,10 +2308,9 @@ class IDEFrame(wx.Frame):
             else:
                 self.TabsOpened.GetPage(selected).AddJump()
 
-
-#-------------------------------------------------------------------------------
-#                         Add Project Elements Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Add Project Elements Functions
+    # -------------------------------------------------------------------------------
 
     def OnAddNewProject(self, event):
         # Asks user to create main program after creating new project
@@ -2440,9 +2433,9 @@ class IDEFrame(wx.Frame):
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, PROJECTTREE, LIBRARYTREE)
             self.EditProjectElement(ITEM_POU, result[0])
 
-#-------------------------------------------------------------------------------
-#                        Remove Project Elements Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Remove Project Elements Functions
+    # -------------------------------------------------------------------------------
 
     def CheckElementIsUsedBeforeDeletion(self, check_function, title, name):
         if not check_function(name):
@@ -2545,9 +2538,9 @@ class IDEFrame(wx.Frame):
                 self.TabsOpened.DeletePage(idx)
             self._Refresh(TITLE, FILEMENU, EDITMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL)
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def ShowHighlight(self, infos, start, end, highlight_type):
         self.SelectProjectTreeItem(infos[0])
@@ -2584,9 +2577,9 @@ class IDEFrame(wx.Frame):
     def ClearSearchResults(self):
         self.ClearHighlights(SEARCH_RESULT_HIGHLIGHT)
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Viewer Printout
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 def UPPER_DIV(x, y):
@@ -2670,8 +2663,6 @@ class GraphicPrintout(wx.Printout):
         dc.SetDeviceOrigin(-posX + margin_left, -posY + margin_top)
         dc.SetClippingRegion(posX, posY, self.PageSize[0] * scale, self.PageSize[1] * scale)
         dc.SetUserScale(scale, scale)
-
-        #-------------------------------------------
 
         self.Viewer.DoDrawing(dc, True)
 

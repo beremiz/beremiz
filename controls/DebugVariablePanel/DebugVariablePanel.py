@@ -76,9 +76,9 @@ def NextTick(variables):
 
     return next_tick
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    Debug Variable Graphic Panel Drop Target
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 class DebugVariableDropTarget(wx.TextDropTarget):
@@ -169,11 +169,6 @@ class DebugVariableDropTarget(wx.TextDropTarget):
                                   wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
-
-
-#-------------------------------------------------------------------------------
-#                      Debug Variable Graphic Panel Class
-#-------------------------------------------------------------------------------
 
 
 class DebugVariablePanel(wx.Panel, DebugViewer):
