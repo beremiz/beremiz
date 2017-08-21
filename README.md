@@ -1,4 +1,4 @@
-[![docs](https://readthedocs.org/projects/beremiz/badge/?version=latest)](beremiz.readthedocs.io)
+[![docs](https://readthedocs.org/projects/beremiz/badge/?version=latest)](https://beremiz.readthedocs.io)
 
 # Beremiz #
 
