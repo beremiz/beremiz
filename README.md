@@ -1,3 +1,5 @@
+[![docs](https://readthedocs.org/projects/beremiz/badge/?version=latest)](beremiz.readthedocs.io)
+
 # Beremiz #
 
 Beremiz is an integrated development environment for machine automation. It is Free Software, conforming to IEC-61131 among other standards.
@@ -92,6 +94,10 @@ Save project and connect to running Beremiz service.
 
  * See [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA) to get quick information how to use Beremiz IDE.
  
+ * [Official user manual]http://beremiz.readthedocs.io/.
+   It's built from sources in doc directory. Documentation does not cover all aspects of Beremiz use yet.
+   Contribution are very welcome.
+   
  * [User manual](http://www.sm1820.ru/files/beremiz/beremiz_manual.pdf) from INEUM (Russian).
    Be aware that it contains some information about functions available only in INEUM's fork of Beremiz.
 
