@@ -30,8 +30,9 @@ import traceback
 from time import sleep
 import copy
 import socket
-service_type = '_PYRO._tcp.local.'
 import os.path
+
+service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
 #

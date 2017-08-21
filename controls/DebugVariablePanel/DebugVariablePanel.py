@@ -30,9 +30,10 @@ import wx
 import wx.lib.buttons
 
 import matplotlib
-matplotlib.use('WX')
+matplotlib.use('WX')   # noqa
 import matplotlib.pyplot
 from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
+
 
 from editors.DebugViewer import DebugViewer
 from util.BitmapLibrary import GetBitmap
@@ -40,6 +41,7 @@ from util.BitmapLibrary import GetBitmap
 from DebugVariableItem import DebugVariableItem
 from DebugVariableTextViewer import DebugVariableTextViewer
 from DebugVariableGraphicViewer import *
+
 
 MILLISECOND = 1000000        # Number of nanosecond in a millisecond
 SECOND = 1000 * MILLISECOND  # Number of nanosecond in a second

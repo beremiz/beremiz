@@ -20,6 +20,7 @@ import compiler
 from compiler import ast
 import os
 import copy
+import cStringIO
 
 # the standard location for builtins (e.g. pyjslib) can be
 # over-ridden by changing this.  it defaults to sys.prefix
@@ -1518,9 +1519,6 @@ class Translator:
             return self._lambda(node, current_klass)
         else:
             raise TranslationError("unsupported type (in expr)", node)
-
-
-import cStringIO
 
 
 def translate(file_name, module_name, debug=False):

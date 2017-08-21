@@ -231,7 +231,9 @@ def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
     loader.next()
 
 
-import sys
+# as comment on line 20 says
+# import sys should be below
+import sys  # noqa
 
 
 class BaseException:

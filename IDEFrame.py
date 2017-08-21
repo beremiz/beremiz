@@ -26,6 +26,7 @@ import os
 import sys
 import cPickle
 from types import TupleType
+import base64
 
 import wx
 import wx.grid
@@ -193,8 +194,6 @@ EditorToolBarItems = {
 # -------------------------------------------------------------------------------
 #                               Helper Functions
 # -------------------------------------------------------------------------------
-
-import base64
 
 
 def EncodeFileSystemPath(path, use_base64=True):

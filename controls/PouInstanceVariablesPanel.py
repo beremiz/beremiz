@@ -28,6 +28,17 @@ import wx
 import wx.lib.agw.customtreectrl as CT
 import wx.lib.buttons
 
+from PLCControler import \
+    ITEMS_VARIABLE, \
+    ITEM_CONFIGURATION, \
+    ITEM_RESOURCE, \
+    ITEM_POU, \
+    ITEM_TRANSITION, \
+    ITEM_ACTION
+
+from util.BitmapLibrary import GetBitmap
+
+
 # Customize CustomTreeItem for adding icon on item right
 CT.GenericTreeItem._rightimages = []
 
@@ -115,9 +126,6 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
 
 
 _ButtonCallbacks = namedtuple("ButtonCallbacks", ["leftdown", "dclick"])
-
-from PLCControler import ITEMS_VARIABLE, ITEM_CONFIGURATION, ITEM_RESOURCE, ITEM_POU, ITEM_TRANSITION, ITEM_ACTION
-from util.BitmapLibrary import GetBitmap
 
 
 class PouInstanceVariablesPanel(wx.Panel):

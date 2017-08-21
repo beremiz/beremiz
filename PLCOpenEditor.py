@@ -33,6 +33,26 @@ import getopt
 import version
 import util.paths as paths
 
+from docutil import *
+from IDEFrame import IDEFrame, AppendMenu
+from IDEFrame import \
+    TITLE, \
+    EDITORTOOLBAR, \
+    FILEMENU, \
+    EDITMENU, \
+    DISPLAYMENU, \
+    PROJECTTREE, \
+    POUINSTANCEVARIABLESPANEL, \
+    LIBRARYTREE, \
+    PAGETITLES
+
+from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
+from editors.Viewer import Viewer
+from PLCControler import PLCControler
+from dialogs import ProjectDialog
+from dialogs.AboutDialog import ShowAboutDialog
+
+
 beremiz_dir = paths.AbsDir(__file__)
 
 __version__ = "$Revision: 1.130 $"
@@ -76,14 +96,6 @@ if __name__ == '__main__':
     from util.misc import InstallLocalRessources
     InstallLocalRessources(beremiz_dir)
 
-from docutil import *
-from IDEFrame import IDEFrame, AppendMenu
-from IDEFrame import TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, PAGETITLES
-from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
-from editors.Viewer import Viewer
-from PLCControler import PLCControler
-from dialogs import ProjectDialog
-from dialogs.AboutDialog import ShowAboutDialog
 
 # -------------------------------------------------------------------------------
 #                            PLCOpenEditor Main Class

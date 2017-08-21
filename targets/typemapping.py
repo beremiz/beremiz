@@ -23,12 +23,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 import ctypes
-ctypes.pythonapi.PyString_AsString.argtypes = (ctypes.c_void_p,)
-ctypes.pythonapi.PyString_AsString.restype = ctypes.POINTER(ctypes.c_char)
-
-
 from ctypes import *
 from datetime import timedelta as td
+
+ctypes.pythonapi.PyString_AsString.argtypes = (ctypes.c_void_p,)
+ctypes.pythonapi.PyString_AsString.restype = ctypes.POINTER(ctypes.c_char)
 
 
 class IEC_STRING(Structure):
