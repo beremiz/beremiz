@@ -23,11 +23,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-import os, sys, getopt
+import os
+import sys
+import getopt
 import time
 import __builtin__
 import util.paths as paths
+
 
 class BeremizIDELauncher:
     def __init__(self):
@@ -40,7 +42,7 @@ class BeremizIDELauncher:
         self.splashPath = self.Bpath("images", "splash.png")
 
     def Bpath(self, *args):
-        return os.path.join(self.app_dir,*args)
+        return os.path.join(self.app_dir, *args)
 
     def ShowSplashScreen(self):
         from wx.lib.agw.advancedsplash import AdvancedSplash
@@ -53,21 +55,20 @@ class BeremizIDELauncher:
             self.splash.Show()
             self.splash.ProcessEvent(wx.PaintEvent())
         else:
-            for i in range(0,30):
+            for i in range(0, 30):
                 wx.Yield()
-                time.sleep(0.01);
-
+                time.sleep(0.01)
 
     def Usage(self):
         print "Usage:"
-        print "%s [Options] [Projectpath] [Buildpath]"%sys.argv[0]        
+        print "%s [Options] [Projectpath] [Buildpath]" % sys.argv[0]
         print ""
         print "Supported options:"
         print "-h --help                    Print this help"
         print "-u --updatecheck URL         Retrieve update information by checking URL"
         print "-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions"
         print ""
-        print ""        
+        print ""
 
     def SetCmdOptions(self):
         self.shortCmdOpts = "hu:e:"
@@ -108,7 +109,7 @@ class BeremizIDELauncher:
     def CreateApplication(self):
         if os.path.exists("BEREMIZ_DEBUG"):
             __builtin__.__dict__["BMZ_DBG"] = True
-        else :
+        else:
             __builtin__.__dict__["BMZ_DBG"] = False
 
         global wxversion, wx
@@ -157,10 +158,10 @@ class BeremizIDELauncher:
 
             def updateinfoproc():
                 global updateinfo
-                try :
+                try:
                     import urllib2
-                    updateinfo = urllib2.urlopen(self.updateinfo_url,None).read()
-                except :
+                    updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
+                except Exception:
                     updateinfo = _("update info unavailable.")
 
             from threading import Thread
@@ -178,7 +179,7 @@ class BeremizIDELauncher:
         import version
         import tempfile
         logpath = tempfile.gettempdir()+os.sep+'Beremiz'
-        BeremizIDE.AddExceptHook(logpath,version.app_version)
+        BeremizIDE.AddExceptHook(logpath, version.app_version)
 
     def ShowUI(self):
         self.frame = BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
@@ -189,6 +190,7 @@ class BeremizIDELauncher:
     def Start(self):
         self.ProcessCommandLineArgs()
         self.CreateApplication()
+
 
 if __name__ == '__main__':
     beremiz = BeremizIDELauncher()

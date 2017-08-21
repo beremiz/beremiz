@@ -30,6 +30,7 @@ from util.BitmapLibrary import GetBitmap
 
 DRIVE, FOLDER, FILE = range(3)
 
+
 def sort_folder(x, y):
     if x[1] == y[1]:
         return cmp(x[0], y[0])
@@ -37,6 +38,7 @@ def sort_folder(x, y):
         return -1
     else:
         return 1
+
 
 def splitpath(path):
     head, tail = os.path.split(path)
@@ -46,20 +48,21 @@ def splitpath(path):
         return splitpath(head)
     return splitpath(head) + [tail]
 
+
 class FolderTree(wx.Panel):
-    
+
     def __init__(self, parent, folder, filter=None, editable=True):
         wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
-        
+
         main_sizer = wx.BoxSizer(wx.VERTICAL)
-        
-        self.Tree = wx.TreeCtrl(self, 
-              style=wx.TR_HAS_BUTTONS|
-                    wx.TR_SINGLE|
-                    wx.SUNKEN_BORDER|
-                    wx.TR_HIDE_ROOT|
-                    wx.TR_LINES_AT_ROOT|
-                    wx.TR_EDIT_LABELS)
+
+        self.Tree = wx.TreeCtrl(self,
+                                style=(wx.TR_HAS_BUTTONS |
+                                       wx.TR_SINGLE |
+                                       wx.SUNKEN_BORDER |
+                                       wx.TR_HIDE_ROOT |
+                                       wx.TR_LINES_AT_ROOT |
+                                       wx.TR_EDIT_LABELS))
         if wx.Platform == '__WXMSW__':
             self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemExpanded, self.Tree)
             self.Tree.Bind(wx.EVT_LEFT_DOWN, self.OnTreeLeftDown)
@@ -69,19 +72,19 @@ class FolderTree(wx.Panel):
         self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnTreeBeginLabelEdit, self.Tree)
         self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnTreeEndLabelEdit, self.Tree)
         main_sizer.AddWindow(self.Tree, 1, flag=wx.GROW)
-        
+
         if filter is not None:
             self.Filter = wx.ComboBox(self, style=wx.CB_READONLY)
             self.Bind(wx.EVT_COMBOBOX, self.OnFilterChanged, self.Filter)
             main_sizer.AddWindow(self.Filter, flag=wx.GROW)
         else:
             self.Filter = None
-        
+
         self.SetSizer(main_sizer)
-        
+
         self.Folder = folder
         self.Editable = editable
-        
+
         self.TreeImageList = wx.ImageList(16, 16)
         self.TreeImageDict = {}
         for item_type, bitmap in [(DRIVE, "tree_drive"),
@@ -89,7 +92,7 @@ class FolderTree(wx.Panel):
                                   (FILE, "tree_file")]:
             self.TreeImageDict[item_type] = self.TreeImageList.Add(GetBitmap(bitmap))
         self.Tree.SetImageList(self.TreeImageList)
-        
+
         self.Filters = {}
         if self.Filter is not None:
             filter_parts = filter.split("|")
@@ -101,11 +104,11 @@ class FolderTree(wx.Panel):
                 self.Filter.Append(filter_parts[idx])
                 if idx == 0:
                     self.Filter.SetStringSelection(filter_parts[idx])
-                
+
             self.CurrentFilter = self.Filters[self.Filter.GetStringSelection()]
         else:
             self.CurrentFilter = ""
-    
+
     def _GetFolderChildren(self, folderpath, recursive=True):
         items = []
         if wx.Platform == '__WXMSW__' and folderpath == "/":
@@ -116,7 +119,7 @@ class FolderTree(wx.Panel):
         else:
             try:
                 files = os.listdir(folderpath)
-            except:
+            except Exception:
                 return []
             for filename in files:
                 if not filename.startswith("."):
@@ -127,25 +130,25 @@ class FolderTree(wx.Panel):
                         else:
                             children = 0
                         items.append((filename, FOLDER, children))
-                    elif (self.CurrentFilter == "" or 
+                    elif (self.CurrentFilter == "" or
                           os.path.splitext(filename)[1] == self.CurrentFilter):
                         items.append((filename, FILE, None))
         if recursive:
             items.sort(sort_folder)
         return items
-    
+
     def SetFilter(self, filter):
         self.CurrentFilter = filter
-    
+
     def GetTreeCtrl(self):
         return self.Tree
-    
+
     def RefreshTree(self):
         root = self.Tree.GetRootItem()
         if not root.IsOk():
             root = self.Tree.AddRoot("")
         self.GenerateTreeBranch(root, self.Folder)
-        
+
     def GenerateTreeBranch(self, root, folderpath):
         item, item_cookie = self.Tree.GetFirstChild(root)
         for idx, (filename, item_type, children) in enumerate(self._GetFolderChildren(folderpath)):
@@ -172,18 +175,18 @@ class FolderTree(wx.Panel):
     def ExpandItem(self, item):
         self.GenerateTreeBranch(item, self.GetPath(item))
         self.Tree.Expand(item)
-    
+
     def OnTreeItemActivated(self, event):
         self.ExpandItem(event.GetItem())
         event.Skip()
-    
+
     def OnTreeLeftDown(self, event):
         item, flags = self.Tree.HitTest(event.GetPosition())
         if flags & wx.TREE_HITTEST_ONITEMBUTTON and not self.Tree.IsExpanded(item):
             self.ExpandItem(item)
         else:
             event.Skip()
-    
+
     def OnTreeItemExpanded(self, event):
         item = event.GetItem()
         self.GenerateTreeBranch(item, self.GetPath(item))
@@ -201,7 +204,7 @@ class FolderTree(wx.Panel):
             event.Skip()
         else:
             event.Veto()
-    
+
     def OnTreeEndLabelEdit(self, event):
         new_name = event.GetLabel()
         if new_name != "":
@@ -212,20 +215,20 @@ class FolderTree(wx.Panel):
                     os.rename(old_filepath, new_filepath)
                     event.Skip()
                 else:
-                    message =  wx.MessageDialog(self, 
-                        _("File '%s' already exists!") % new_name, 
-                        _("Error"), wx.OK|wx.ICON_ERROR)
+                    message = wx.MessageDialog(self,
+                                               _("File '%s' already exists!") % new_name,
+                                               _("Error"), wx.OK | wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
                     event.Veto()
         else:
             event.Skip()
-    
+
     def OnFilterChanged(self, event):
         self.CurrentFilter = self.Filters[self.Filter.GetStringSelection()]
         self.RefreshTree()
         event.Skip()
-    
+
     def _SelectItem(self, root, parts):
         if len(parts) == 0:
             self.Tree.SelectItem(root)
@@ -233,22 +236,22 @@ class FolderTree(wx.Panel):
             item, item_cookie = self.Tree.GetFirstChild(root)
             while item.IsOk():
                 if self.Tree.GetItemText(item) == parts[0]:
-                    if (self.Tree.ItemHasChildren(item) and 
-                        not self.Tree.IsExpanded(item)):
+                    if self.Tree.ItemHasChildren(item) and \
+                       not self.Tree.IsExpanded(item):
                         self.Tree.Expand(item)
                         wx.CallAfter(self._SelectItem, item, parts[1:])
                     else:
                         self._SelectItem(item, parts[1:])
                     return
                 item, item_cookie = self.Tree.GetNextChild(root, item_cookie)
-    
+
     def SetPath(self, path):
         if path.startswith(self.Folder):
             root = self.Tree.GetRootItem()
             if root.IsOk():
                 relative_path = path.replace(os.path.join(self.Folder, ""), "")
                 self._SelectItem(root, splitpath(relative_path))
-    
+
     def GetPath(self, item=None):
         if item is None:
             item = self.Tree.GetSelection()

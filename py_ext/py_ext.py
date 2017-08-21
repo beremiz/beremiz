@@ -28,12 +28,13 @@ from POULibrary import POULibrary
 from PythonFileCTNMixin import PythonFileCTNMixin
 import util.paths as paths
 
+
 class PythonLibrary(POULibrary):
     def GetLibraryPath(self):
-        return paths.AbsNeighbourFile(__file__, "pous.xml") 
+        return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        
+
         plc_python_filepath = paths.AbsNeighbourFile(__file__, "plc_python.c")
         plc_python_file = open(plc_python_filepath, 'r')
         plc_python_code = plc_python_file.read()
@@ -44,21 +45,20 @@ class PythonLibrary(POULibrary):
                                                       "PYTHON_POLL"]:
                 python_eval_fb_list.append(v)
         python_eval_fb_count = max(1, len(python_eval_fb_list))
-        
+
         # prepare python code
         plc_python_code = plc_python_code % {
-            "python_eval_fb_count": python_eval_fb_count }
-        
+            "python_eval_fb_count": python_eval_fb_count}
+
         Gen_Pythonfile_path = os.path.join(buildpath, "py_ext.c")
-        pythonfile = open(Gen_Pythonfile_path,'w')
+        pythonfile = open(Gen_Pythonfile_path, 'w')
         pythonfile.write(plc_python_code)
         pythonfile.close()
-        
+
         return (["py_ext"], [(Gen_Pythonfile_path, IECCFLAGS)], True), ""
 
+
 class PythonFile(PythonFileCTNMixin):
-    
+
     def GetIconName(self):
         return "Pyfile"
-    
-

@@ -22,22 +22,26 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-import os, sys
+import os
+import sys
+
 
 def AbsFile(file):
     if isinstance(file, str):
-        file = unicode(file,sys.getfilesystemencoding())
+        file = unicode(file, sys.getfilesystemencoding())
     return file
+
 
 def AbsDir(file):
     file = AbsFile(file)
     return os.path.dirname(os.path.realpath(file))
 
+
 def AbsNeighbourFile(file, *args):
     return os.path.join(AbsDir(file), *args)
 
 
-def AbsParentDir(file, level = 1):
+def AbsParentDir(file, level=1):
     path = AbsDir(file)
     for i in range(0, level):
         path = os.path.dirname(path)

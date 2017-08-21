@@ -46,9 +46,10 @@ SCROLL_ZONE = 10
 CURSORS = None
 SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Jump)
 
+
 def ResetCursors():
     global CURSORS
-    if CURSORS == None:
+    if CURSORS is None:
         CURSORS = [wx.NullCursor,
                    wx.StockCursor(wx.CURSOR_HAND),
                    wx.StockCursor(wx.CURSOR_SIZENWSE),
@@ -56,26 +57,30 @@ def ResetCursors():
                    wx.StockCursor(wx.CURSOR_SIZEWE),
                    wx.StockCursor(wx.CURSOR_SIZENS)]
 
+
 def AppendMenu(parent, help, id, kind, text):
     if wx.VERSION >= (2, 6, 0):
         parent.Append(help=help, id=id, kind=kind, text=text)
     else:
         parent.Append(helpString=help, id=id, kind=kind, item=text)
 
+
 if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 10,
-             }
+    faces = {
+        'times': 'Times New Roman',
+        'mono':  'Courier New',
+        'helv':  'Arial',
+        'other': 'Comic Sans MS',
+        'size':  10,
+    }
 else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 12,
-             }
+    faces = {
+        'times': 'Times',
+        'mono':  'Courier',
+        'helv':  'Helvetica',
+        'other': 'new century schoolbook',
+        'size':  12,
+    }
 
 if wx.Platform == '__WXMSW__':
     MAX_ZOOMIN = 4
@@ -83,36 +88,52 @@ else:
     MAX_ZOOMIN = 7
 ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, MAX_ZOOMIN)]
 
+
 def GetVariableCreationFunction(variable_type):
     def variableCreationFunction(viewer, id, specific_values):
-        return FBD_Variable(viewer, variable_type,
-                                    specific_values.name,
-                                    specific_values.value_type,
-                                    id,
-                                    specific_values.execution_order)
+        return FBD_Variable(viewer,
+                            variable_type,
+                            specific_values.name,
+                            specific_values.value_type,
+                            id,
+                            specific_values.execution_order)
     return variableCreationFunction
+
 
 def GetConnectorCreationFunction(connector_type):
     def connectorCreationFunction(viewer, id, specific_values):
-        return FBD_Connector(viewer, connector_type,
-                                     specific_values.name, id)
+        return FBD_Connector(viewer,
+                             connector_type,
+                             specific_values.name,
+                             id)
     return connectorCreationFunction
+
 
 def commentCreationFunction(viewer, id, specific_values):
     return Comment(viewer, specific_values.content, id)
 
+
 def GetPowerRailCreationFunction(powerrail_type):
     def powerRailCreationFunction(viewer, id, specific_values):
-        return LD_PowerRail(viewer, powerrail_type, id,
-                                    specific_values.connectors)
+        return LD_PowerRail(viewer,
+                            powerrail_type,
+                            id,
+                            specific_values.connectors)
     return powerRailCreationFunction
 
-NEGATED_VALUE = lambda x: x if x is not None else False
-MODIFIER_VALUE = lambda x: x if x is not None else 'none'
+
+def NEGATED_VALUE(x):
+    return x if x is not None else False
+
+
+def MODIFIER_VALUE(x):
+    return x if x is not None else 'none'
+
 
 CONTACT_TYPES = {(True, "none"): CONTACT_REVERSE,
                  (False, "rising"): CONTACT_RISING,
                  (False, "falling"): CONTACT_FALLING}
+
 
 def contactCreationFunction(viewer, id, specific_values):
     contact_type = CONTACT_TYPES.get((NEGATED_VALUE(specific_values.negated),
@@ -120,11 +141,13 @@ def contactCreationFunction(viewer, id, specific_values):
                                      CONTACT_NORMAL)
     return LD_Contact(viewer, contact_type, specific_values.name, id)
 
+
 COIL_TYPES = {(True, "none", "none"): COIL_REVERSE,
               (False, "none", "set"): COIL_SET,
               (False, "none", "reset"): COIL_RESET,
               (False, "rising", "none"): COIL_RISING,
               (False, "falling", "none"): COIL_FALLING}
+
 
 def coilCreationFunction(viewer, id, specific_values):
     coil_type = COIL_TYPES.get((NEGATED_VALUE(specific_values.negated),
@@ -133,35 +156,46 @@ def coilCreationFunction(viewer, id, specific_values):
                                COIL_NORMAL)
     return LD_Coil(viewer, coil_type, specific_values.name, id)
 
+
 def stepCreationFunction(viewer, id, specific_values):
-    step = SFC_Step(viewer, specific_values.name,
-                            specific_values.initial, id)
+    step = SFC_Step(viewer,
+                    specific_values.name,
+                    specific_values.initial,
+                    id)
     if specific_values.action is not None:
         step.AddAction()
         connector = step.GetActionConnector()
         connector.SetPosition(wx.Point(*specific_values.action.position))
     return step
 
+
 def transitionCreationFunction(viewer, id, specific_values):
-    transition = SFC_Transition(viewer, specific_values.condition_type,
-                                        specific_values.condition,
-                                        specific_values.priority, id)
+    transition = SFC_Transition(viewer,
+                                specific_values.condition_type,
+                                specific_values.condition,
+                                specific_values.priority,
+                                id)
     return transition
+
 
 divergence_types = [SELECTION_DIVERGENCE,
                     SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE]
 
+
 def GetDivergenceCreationFunction(divergence_type):
     def divergenceCreationFunction(viewer, id, specific_values):
         return SFC_Divergence(viewer, divergence_type,
-                                      specific_values.connectors, id)
+                              specific_values.connectors, id)
     return divergenceCreationFunction
+
 
 def jumpCreationFunction(viewer, id, specific_values):
     return SFC_Jump(viewer, specific_values.target, id)
 
+
 def actionBlockCreationFunction(viewer, id, specific_values):
     return SFC_ActionBlock(viewer, specific_values.actions, id)
+
 
 ElementCreationFunctions = {
     "input": GetVariableCreationFunction(INPUT),
@@ -184,6 +218,7 @@ ElementCreationFunctions = {
     "actionBlock": actionBlockCreationFunction,
 }
 
+
 def sort_blocks(block_infos1, block_infos2):
     x1, y1 = block_infos1[0].GetPosition()
     x2, y2 = block_infos2[0].GetPosition()
@@ -192,24 +227,27 @@ def sort_blocks(block_infos1, block_infos2):
     else:
         return cmp(y1, y2)
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                       Graphic elements Viewer base class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 # ID Constants for alignment menu items
-[ID_VIEWERALIGNMENTMENUITEMS0, ID_VIEWERALIGNMENTMENUITEMS1,
- ID_VIEWERALIGNMENTMENUITEMS2, ID_VIEWERALIGNMENTMENUITEMS4,
- ID_VIEWERALIGNMENTMENUITEMS5, ID_VIEWERALIGNMENTMENUITEMS6,
+[
+    ID_VIEWERALIGNMENTMENUITEMS0, ID_VIEWERALIGNMENTMENUITEMS1,
+    ID_VIEWERALIGNMENTMENUITEMS2, ID_VIEWERALIGNMENTMENUITEMS4,
+    ID_VIEWERALIGNMENTMENUITEMS5, ID_VIEWERALIGNMENTMENUITEMS6,
 ] = [wx.NewId() for _init_coll_AlignmentMenu_Items in range(6)]
 
 # ID Constants for contextual menu items
-[ID_VIEWERCONTEXTUALMENUITEMS0, ID_VIEWERCONTEXTUALMENUITEMS1,
- ID_VIEWERCONTEXTUALMENUITEMS2, ID_VIEWERCONTEXTUALMENUITEMS3,
- ID_VIEWERCONTEXTUALMENUITEMS5, ID_VIEWERCONTEXTUALMENUITEMS6,
- ID_VIEWERCONTEXTUALMENUITEMS8, ID_VIEWERCONTEXTUALMENUITEMS9,
- ID_VIEWERCONTEXTUALMENUITEMS11, ID_VIEWERCONTEXTUALMENUITEMS12,
- ID_VIEWERCONTEXTUALMENUITEMS14, ID_VIEWERCONTEXTUALMENUITEMS16,
- ID_VIEWERCONTEXTUALMENUITEMS17,
+[
+    ID_VIEWERCONTEXTUALMENUITEMS0, ID_VIEWERCONTEXTUALMENUITEMS1,
+    ID_VIEWERCONTEXTUALMENUITEMS2, ID_VIEWERCONTEXTUALMENUITEMS3,
+    ID_VIEWERCONTEXTUALMENUITEMS5, ID_VIEWERCONTEXTUALMENUITEMS6,
+    ID_VIEWERCONTEXTUALMENUITEMS8, ID_VIEWERCONTEXTUALMENUITEMS9,
+    ID_VIEWERCONTEXTUALMENUITEMS11, ID_VIEWERCONTEXTUALMENUITEMS12,
+    ID_VIEWERCONTEXTUALMENUITEMS14, ID_VIEWERCONTEXTUALMENUITEMS16,
+    ID_VIEWERCONTEXTUALMENUITEMS17,
 ] = [wx.NewId() for _init_coll_ContextualMenu_Items in range(13)]
 
 
@@ -230,11 +268,11 @@ class ViewerDropTarget(wx.TextDropTarget):
         message = None
         try:
             values = eval(data)
-        except:
-            message = _("Invalid value \"%s\" for viewer block")%data
+        except Exception:
+            message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if not isinstance(values, TupleType):
-            message = _("Invalid value \"%s\" for viewer block")%data
+            message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if values is not None:
             if values[1] == "debug":
@@ -244,11 +282,11 @@ class ViewerDropTarget(wx.TextDropTarget):
             elif values[1] in ["function", "functionBlock"]:
                 words = tagname.split("::")
                 if pou_name == values[0]:
-                    message = _("\"%s\" can't use itself!")%pou_name
+                    message = _("\"%s\" can't use itself!") % pou_name
                 elif pou_type == "function" and values[1] != "function":
                     message = _("Function Blocks can't be used in Functions!")
                 elif self.ParentWindow.Controler.PouIsUsedBy(pou_name, values[0], self.ParentWindow.Debug):
-                    message = _("\"{a1}\" is already used by \"{a2}\"!").format(a1 = pou_name, a2 = values[0])
+                    message = _("\"{a1}\" is already used by \"{a2}\"!").format(a1=pou_name, a2=values[0])
                 else:
                     blockname = values[2]
                     if len(values) > 3:
@@ -258,12 +296,12 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if values[1] != "function" and blockname == "":
                         blockname = self.ParentWindow.GenerateNewName(blocktype=values[0])
                     if blockname.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                        message = _("\"%s\" pou already exists!")%blockname
+                        message = _("\"%s\" pou already exists!") % blockname
                     elif blockname.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
-                        message = _("\"%s\" element for this pou already exists!")%blockname
+                        message = _("\"%s\" element for this pou already exists!") % blockname
                     else:
                         id = self.ParentWindow.GetNewId()
-                        block = FBD_Block(self.ParentWindow, values[0], blockname, id, inputs = blockinputs)
+                        block = FBD_Block(self.ParentWindow, values[0], blockname, id, inputs=blockinputs)
                         width, height = block.GetMinSize()
                         if scaling is not None:
                             x = round(float(x) / float(scaling[0])) * scaling[0]
@@ -285,10 +323,12 @@ class ViewerDropTarget(wx.TextDropTarget):
                 if pou_type == "program":
                     location = values[0]
                     if not location.startswith("%"):
-                        dialog = wx.SingleChoiceDialog(self.ParentWindow.ParentWindow,
-                              _("Select a variable class:"), _("Variable class"),
-                              [_("Input"), _("Output"), _("Memory")],
-                              wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                        dialog = wx.SingleChoiceDialog(
+                            self.ParentWindow.ParentWindow,
+                            _("Select a variable class:"),
+                            _("Variable class"),
+                            [_("Input"), _("Output"), _("Memory")],
+                            wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                         if dialog.ShowModal() == wx.ID_OK:
                             selected = dialog.GetSelection()
                         else:
@@ -313,7 +353,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if var_name is None:
                         return
                     elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                        message = _("\"%s\" pou already exists!")%var_name
+                        message = _("\"%s\" pou already exists!") % var_name
                     elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                         if location[1] == "Q":
                             var_class = OUTPUT
@@ -328,7 +368,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)
                     else:
-                        message = _("\"%s\" element for this pou already exists!")%var_name
+                        message = _("\"%s\" element for this pou already exists!") % var_name
             elif values[1] == "NamedConstant":
                 if pou_type == "program":
                     initval = values[0]
@@ -343,7 +383,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if var_name is None:
                         return
                     elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                        message = _("\"%s\" pou already exists!")%var_name
+                        message = _("\"%s\" pou already exists!") % var_name
                     elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                         var_class = INPUT
                         var_type = values[2]
@@ -352,7 +392,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                         self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, var_name, var_type)
                     else:
-                        message = _("\"%s\" element for this pou already exists!")%var_name
+                        message = _("\"%s\" element for this pou already exists!") % var_name
             elif values[1] == "Global":
                 var_name = values[0]
                 dlg = wx.TextEntryDialog(
@@ -365,14 +405,14 @@ class ViewerDropTarget(wx.TextDropTarget):
                 if var_name is None:
                     return
                 elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
-                    message = _("\"%s\" pou already exists!")%var_name
+                    message = _("\"%s\" pou already exists!") % var_name
                 elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
                     self.ParentWindow.Controler.AddEditedElementPouExternalVar(tagname, values[2], var_name)
                     self.ParentWindow.RefreshVariablePanel()
                     self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                     self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, var_name, values[2])
                 else:
-                    message = _("\"%s\" element for this pou already exists!")%var_name
+                    message = _("\"%s\" element for this pou already exists!") % var_name
             elif values[1] == "Constant":
                 self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, values[0], None)
             elif values[3] == tagname:
@@ -421,15 +461,14 @@ class ViewerDropTarget(wx.TextDropTarget):
         return AddVariableFunction
 
     def ShowMessage(self, message):
-        message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)
         message.ShowModal()
         message.Destroy()
 
 
-
 class DebugInstanceName(DebugDataConsumer):
     VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
-    
+
     def __init__(self, parent):
         DebugDataConsumer.__init__(self)
         self.Parent = parent
@@ -437,7 +476,7 @@ class DebugInstanceName(DebugDataConsumer):
         self.ActionState = None
         self.x_offset = 2
         self.y_offset = 2
-        
+
     def SetValue(self, value):
         self.ActionState = value
         if self.ActionState != self.ActionLastState:
@@ -448,7 +487,7 @@ class DebugInstanceName(DebugDataConsumer):
         return _("Debug: %s") % self.Parent.InstancePath
 
     def GetRedrawRect(self):
-        x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)        
+        x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)
         dc = self.Parent.GetLogicalDC()
         ipw, iph = dc.GetTextExtent(self.GetInstanceName())
         vw, vh = 0, 0
@@ -462,13 +501,13 @@ class DebugInstanceName(DebugDataConsumer):
         scalex, scaley = dc.GetUserScale()
         dc.SetUserScale(1, 1)
         x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)
-        
+
         text = self.GetInstanceName()
         if self.ActionState is not None:
             text += " ("
 
         dc.DrawText(text, x, y)
-        tw, th = dc.GetTextExtent(text)                    
+        tw, th = dc.GetTextExtent(text)
         if self.ActionState is not None:
 
             text = self.VALUE_TRANSLATION[self.ActionState]
@@ -478,20 +517,20 @@ class DebugInstanceName(DebugDataConsumer):
             if self.ActionState:
                 dc.SetTextForeground(wx.BLACK)
             tw = tw + dc.GetTextExtent(text)[0]
-            
-            text = ")"                    
+
+            text = ")"
             dc.DrawText(text, x + tw, y)
         dc.SetUserScale(scalex, scaley)
 
-"""
-Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
-manipulating graphic elements
-"""
 
 class Viewer(EditorPanel, DebugViewer):
+    """
+    Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
+    manipulating graphic elements
+    """
 
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -535,8 +574,9 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Alignment Menu items to the given menu
     def AddAlignmentMenuItems(self, menu):
-        [ID_ALIGN_LEFT, ID_ALIGN_CENTER, ID_ALIGN_RIGHT,
-         ID_ALIGN_TOP, ID_ALIGN_MIDDLE, ID_ALIGN_BOTTOM,
+        [
+            ID_ALIGN_LEFT, ID_ALIGN_CENTER, ID_ALIGN_RIGHT,
+            ID_ALIGN_TOP, ID_ALIGN_MIDDLE, ID_ALIGN_BOTTOM,
         ] = [wx.NewId() for i in xrange(6)]
 
         # Create menu items
@@ -587,7 +627,8 @@ class Viewer(EditorPanel, DebugViewer):
             None])
 
         if self.CurrentLanguage != "FBD":
-            [ID_ADD_POWER_RAIL, ID_ADD_CONTACT, ID_ADD_COIL,
+            [
+                ID_ADD_POWER_RAIL, ID_ADD_CONTACT, ID_ADD_COIL,
             ] = [wx.NewId() for i in xrange(3)]
 
             # Create menu items
@@ -602,8 +643,9 @@ class Viewer(EditorPanel, DebugViewer):
             menu.AppendSeparator()
 
         if self.CurrentLanguage == "SFC":
-            [ID_ADD_INITIAL_STEP, ID_ADD_STEP, ID_ADD_TRANSITION,
-             ID_ADD_ACTION_BLOCK, ID_ADD_DIVERGENCE, ID_ADD_JUMP,
+            [
+                ID_ADD_INITIAL_STEP, ID_ADD_STEP, ID_ADD_TRANSITION,
+                ID_ADD_ACTION_BLOCK, ID_ADD_DIVERGENCE, ID_ADD_JUMP,
             ] = [wx.NewId() for i in xrange(6)]
 
             # Create menu items
@@ -662,12 +704,12 @@ class Viewer(EditorPanel, DebugViewer):
 
     def _init_Editor(self, prnt):
         self.Editor = wx.ScrolledWindow(prnt, name="Viewer",
-            pos=wx.Point(0, 0), size=wx.Size(0, 0),
-            style=wx.HSCROLL | wx.VSCROLL)
+                                        pos=wx.Point(0, 0), size=wx.Size(0, 0),
+                                        style=wx.HSCROLL | wx.VSCROLL)
         self.Editor.ParentWindow = self
 
     # Create a new Viewer
-    def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
+    def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         self.VARIABLE_PANEL_TYPE = controler.GetPouType(tagname.split("::")[1])
 
         EditorPanel.__init__(self, parent, tagname, window, controler, debug)
@@ -675,7 +717,7 @@ class Viewer(EditorPanel, DebugViewer):
 
         # Adding a rubberband to Viewer
         self.rubberBand = RubberBand(viewer=self)
-        self.Editor.SetBackgroundColour(wx.Colour(255,255,255))
+        self.Editor.SetBackgroundColour(wx.Colour(255, 255, 255))
         self.Editor.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.ResetView()
         self.LastClientSize = None
@@ -722,17 +764,17 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList_lock = Lock()
 
         dc = wx.ClientDC(self.Editor)
-        font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["mono"])
+        font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
         dc.SetFont(font)
         width, height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         while width > 260:
             faces["size"] -= 1
-            font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["mono"])
+            font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
             dc.SetFont(font)
             width, height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         self.SetFont(font)
         self.MiniTextDC = wx.MemoryDC()
-        self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName = faces["helv"]))
+        self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
         self.CurrentScale = None
         self.SetScale(ZOOM_FACTORS.index(1.0), False)
@@ -776,7 +818,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetScrolledRect(self, rect):
         rect.x, rect.y = self.Editor.CalcScrolledPosition(int(rect.x * self.ViewScale[0]),
-                                                   int(rect.y * self.ViewScale[1]))
+                                                          int(rect.y * self.ViewScale[1]))
         rect.width = int(rect.width * self.ViewScale[0]) + 2
         rect.height = int(rect.height * self.ViewScale[1]) + 2
         return rect
@@ -899,9 +941,9 @@ class Viewer(EditorPanel, DebugViewer):
     def GetMiniFont(self):
         return self.MiniTextDC.GetFont()
 
-#-------------------------------------------------------------------------------
-#                         Element management functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Element management functions
+    # -------------------------------------------------------------------------------
 
     def AddBlock(self, block):
         self.Blocks[block.GetId()] = block
@@ -955,7 +997,7 @@ class Viewer(EditorPanel, DebugViewer):
                block.GetName() == name:
                 blocks.append(block)
         return blocks
-    
+
     def GetConnectorByName(self, name):
         for block in self.Blocks.itervalues():
             if isinstance(block, FBD_Connector) and\
@@ -964,7 +1006,7 @@ class Viewer(EditorPanel, DebugViewer):
                 return block
         return None
 
-    def RefreshVisibleElements(self, xp = None, yp = None):
+    def RefreshVisibleElements(self, xp=None, yp=None):
         x, y = self.Editor.CalcUnscrolledPosition(0, 0)
         if xp is not None:
             x = xp * self.Editor.GetScrollPixelsPerUnit()[0]
@@ -991,14 +1033,14 @@ class Viewer(EditorPanel, DebugViewer):
                 blockname = block.GetName()
                 connectorname = element.GetName()
                 if blockname != "":
-                    iec_path = "%s.%s.%s"%(instance_path, blockname, connectorname)
+                    iec_path = "%s.%s.%s" % (instance_path, blockname, connectorname)
                 else:
                     if connectorname == "":
-                        iec_path = "%s.%s%d"%(instance_path, block.GetType(), block.GetId())
+                        iec_path = "%s.%s%d" % (instance_path, block.GetType(), block.GetId())
                     else:
-                        iec_path = "%s.%s%d_%s"%(instance_path, block.GetType(), block.GetId(), connectorname)
+                        iec_path = "%s.%s%d_%s" % (instance_path, block.GetType(), block.GetId(), connectorname)
             elif isinstance(block, FBD_Variable):
-                iec_path = "%s.%s"%(instance_path, block.GetName())
+                iec_path = "%s.%s" % (instance_path, block.GetName())
             elif isinstance(block, FBD_Connector):
                 connection = self.GetConnectorByName(block.GetName())
                 if connection is not None:
@@ -1006,14 +1048,14 @@ class Viewer(EditorPanel, DebugViewer):
                     if len(connector.Wires) == 1:
                         iec_path = self.GetElementIECPath(connector.Wires[0][0])
         elif isinstance(element, LD_Contact):
-            iec_path = "%s.%s"%(instance_path, element.GetName())
+            iec_path = "%s.%s" % (instance_path, element.GetName())
         elif isinstance(element, SFC_Step):
-            iec_path = "%s.%s.X"%(instance_path, element.GetName())
+            iec_path = "%s.%s.X" % (instance_path, element.GetName())
         elif isinstance(element, SFC_Transition):
             connectors = element.GetConnectors()
             previous_steps = self.GetPreviousSteps(connectors["inputs"])
             next_steps = self.GetNextSteps(connectors["outputs"])
-            iec_path = "%s.%s->%s"%(instance_path, ",".join(previous_steps), ",".join(next_steps))
+            iec_path = "%s.%s->%s" % (instance_path, ",".join(previous_steps), ",".join(next_steps))
         return iec_path
 
     def GetWireModifier(self, wire):
@@ -1042,9 +1084,9 @@ class Viewer(EditorPanel, DebugViewer):
             element.SetSize(width, height)
             element.RefreshModel()
 
-#-------------------------------------------------------------------------------
-#                              Reset functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                              Reset functions
+    # -------------------------------------------------------------------------------
 
     # Resets Viewer lists
     def ResetView(self):
@@ -1162,11 +1204,9 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshVisibleElements()
             self.Editor.Refresh(False)
 
-
-#-------------------------------------------------------------------------------
-#                          Refresh functions
-#-------------------------------------------------------------------------------
-
+    # -------------------------------------------------------------------------------
+    #                          Refresh functions
+    # -------------------------------------------------------------------------------
 
     def ElementNeedRefresh(self, element):
         self.ElementRefreshList_lock.acquire()
@@ -1208,13 +1248,12 @@ class Viewer(EditorPanel, DebugViewer):
         self.ResetBuffer()
         instance = {}
         # List of ids of already loaded blocks
-        instances = self.Controler.GetEditedElementInstancesInfos(self.TagName, debug = self.Debug)
+        instances = self.Controler.GetEditedElementInstancesInfos(self.TagName, debug=self.Debug)
         # Load Blocks until they are all loaded
         while len(instances) > 0:
             self.loadInstance(instances.popitem(0)[1], instances, selection)
 
-        if (selection is not None and
-            isinstance(self.SelectedElement, Graphic_Group)):
+        if selection is not None and isinstance(self.SelectedElement, Graphic_Group):
             self.SelectedElement.RefreshWireExclusion()
             self.SelectedElement.RefreshBoundingBox()
 
@@ -1222,7 +1261,7 @@ class Viewer(EditorPanel, DebugViewer):
 
         if self.TagName.split("::")[0] == "A" and self.Debug:
             self.AddDataConsumer("%s.Q" % self.InstancePath.upper(), self.InstanceName)
-        
+
         for wire in self.Wires:
             if not wire.IsConnectedCompatible():
                 wire.SetValid(False)
@@ -1302,7 +1341,8 @@ class Viewer(EditorPanel, DebugViewer):
             maxy = max(maxy, extent.y + extent.height)
         maxx = int(maxx * self.ViewScale[0])
         maxy = int(maxy * self.ViewScale[1])
-        self.Editor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
+        self.Editor.SetScrollbars(
+            SCROLLBAR_UNIT, SCROLLBAR_UNIT,
             round(maxx / SCROLLBAR_UNIT) + width_incr, round(maxy / SCROLLBAR_UNIT) + height_incr,
             xstart, ystart, True)
 
@@ -1345,7 +1385,7 @@ class Viewer(EditorPanel, DebugViewer):
     def loadInstance(self, instance, remaining_instances, selection):
         self.current_id = max(self.current_id, instance.id)
         creation_function = ElementCreationFunctions.get(instance.type, None)
-        connectors = {"inputs" : [], "outputs" : []}
+        connectors = {"inputs": [], "outputs": []}
         specific_values = instance.specific_values
         if creation_function is not None:
             element = creation_function(self, instance.id, specific_values)
@@ -1384,10 +1424,11 @@ class Viewer(EditorPanel, DebugViewer):
                 connectors["outputs"].pop(0)
                 executionControl = True
             block_name = specific_values.name if specific_values.name is not None else ""
-            element = FBD_Block(self, instance.type, block_name,
-                      instance.id, len(connectors["inputs"]),
-                      connectors=connectors, executionControl=executionControl,
-                      executionOrder=specific_values.execution_order)
+            element = FBD_Block(
+                self, instance.type, block_name,
+                instance.id, len(connectors["inputs"]),
+                connectors=connectors, executionControl=executionControl,
+                executionOrder=specific_values.execution_order)
         if isinstance(element, Comment):
             self.AddComment(element)
         else:
@@ -1399,7 +1440,7 @@ class Viewer(EditorPanel, DebugViewer):
             connector_pos = wx.Point(*output_connector.position)
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
-                    output_name = output_connector.name)
+                                                 output_name=output_connector.name)
             elif i < len(connectors["outputs"]):
                 connector = connectors["outputs"][i]
             else:
@@ -1415,7 +1456,7 @@ class Viewer(EditorPanel, DebugViewer):
             connector_pos = wx.Point(*input_connector.position)
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
-                    input_name = input_connector.name)
+                                                 input_name=input_connector.name)
             elif i < len(connectors["inputs"]):
                 connector = connectors["inputs"][i]
             else:
@@ -1461,19 +1502,18 @@ class Viewer(EditorPanel, DebugViewer):
                     wire = Wire(self)
                     wire.SetPoints(points)
                 else:
-                    wire = Wire(self,
-                        [wx.Point(*start_connector.GetPosition()),
-                         start_connector.GetDirection()],
-                        [wx.Point(*end_connector.GetPosition()),
-                         end_connector.GetDirection()])
+                    wire = Wire(
+                        self,
+                        [wx.Point(*start_connector.GetPosition()), start_connector.GetDirection()],
+                        [wx.Point(*end_connector.GetPosition()),   end_connector.GetDirection()])
                 start_connector.Wires.append((wire, 0))
                 end_connector.Wires.append((wire, -1))
                 wire.StartConnected = start_connector
                 wire.EndConnected = end_connector
                 connected.RefreshConnectors()
                 self.AddWire(wire)
-                if selection is not None and (\
-                   selection[1].get((id, refLocalId), False) or \
+                if selection is not None and (
+                   selection[1].get((id, refLocalId), False) or
                    selection[1].get((refLocalId, id), False)):
                     self.SelectInGroup(wire)
             else:
@@ -1487,12 +1527,12 @@ class Viewer(EditorPanel, DebugViewer):
     def IsEndType(self, type):
         return self.Controler.IsEndType(type)
 
-    def GetBlockType(self, type, inputs = None):
+    def GetBlockType(self, type, inputs=None):
         return self.Controler.GetBlockType(type, inputs, self.Debug)
 
-#-------------------------------------------------------------------------------
-#                          Search Element functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Search Element functions
+    # -------------------------------------------------------------------------------
 
     def FindBlock(self, event):
         dc = self.GetLogicalDC()
@@ -1510,7 +1550,7 @@ class Viewer(EditorPanel, DebugViewer):
                 return wire
         return None
 
-    def FindElement(self, event, exclude_group = False, connectors = True):
+    def FindElement(self, event, exclude_group=False, connectors=True):
         dc = self.GetLogicalDC()
         pos = event.GetLogicalPosition(dc)
         if self.SelectedElement and not (exclude_group and isinstance(self.SelectedElement, Graphic_Group)):
@@ -1521,12 +1561,12 @@ class Viewer(EditorPanel, DebugViewer):
                 return element
         return None
 
-    def FindBlockConnector(self, pos, direction = None, exclude = None):
+    def FindBlockConnector(self, pos, direction=None, exclude=None):
         result, error = self.FindBlockConnectorWithError(pos, direction, exclude)
         return result
 
-    def FindBlockConnectorWithError(self, pos, direction = None, exclude = None):
-        error = False        
+    def FindBlockConnectorWithError(self, pos, direction=None, exclude=None):
+        error = False
         startblock = None
         for block in self.Blocks.itervalues():
             connector = block.TestConnector(pos, direction, exclude)
@@ -1539,7 +1579,7 @@ class Viewer(EditorPanel, DebugViewer):
                     error = True
                 return connector, error
         return None, error
-    
+
     def FindElementById(self, id):
         block = self.Blocks.get(id, None)
         if block is not None:
@@ -1563,12 +1603,13 @@ class Viewer(EditorPanel, DebugViewer):
         self.SelectedElement.SetElements(self.GetElements())
         self.SelectedElement.SetSelected(True)
 
-#-------------------------------------------------------------------------------
-#                           Popup menu functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                           Popup menu functions
+    # -------------------------------------------------------------------------------
 
     def GetForceVariableMenuFunction(self, iec_path, element):
         iec_type = self.GetDataType(iec_path)
+
         def ForceVariableFunction(event):
             if iec_type is not None:
                 dialog = ForceVariableDialog(self.ParentWindow, iec_type, str(element.GetValue()))
@@ -1611,7 +1652,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.Editor.PopupMenu(menu)
             menu.Destroy()
 
-    def PopupBlockMenu(self, connector = None):
+    def PopupBlockMenu(self, connector=None):
         menu = wx.Menu(title='')
         if connector is not None and connector.IsCompatible("BOOL"):
             self.AddBlockPinMenuItems(menu, connector)
@@ -1662,7 +1703,8 @@ class Viewer(EditorPanel, DebugViewer):
             if self.SelectedElement.GetStartConnected() in connected
             else self.SelectedElement.GetStartConnected())
 
-        self.AddWireMenuItems(menu, delete,
+        self.AddWireMenuItems(
+            menu, delete,
             start_connector.GetDirection() == EAST and
             not isinstance(start_connector.GetParentBlock(), SFC_Step))
 
@@ -1695,9 +1737,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.Editor.PopupMenu(menu)
         menu.Destroy()
 
-#-------------------------------------------------------------------------------
-#                            Menu items functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Menu items functions
+    # -------------------------------------------------------------------------------
 
     def OnAlignLeftMenu(self, event):
         if self.SelectedElement is not None and isinstance(self.SelectedElement, Graphic_Group):
@@ -1771,9 +1813,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnReplaceWireMenu(self, event):
         # Check that selected element is a wire before applying replace
-        if (self.SelectedElement is not None and
-            self.IsWire(self.SelectedElement)):
-
+        if self.SelectedElement is not None and self.IsWire(self.SelectedElement):
             # Get wire redraw bbox to erase it from screen
             wire = self.SelectedElement
             redraw_rect = wire.GetRedrawRect()
@@ -1844,8 +1884,8 @@ class Viewer(EditorPanel, DebugViewer):
 
             # Add Wire to Viewer and connect it to blocks
             new_wire = Wire(self,
-                [wx.Point(*start_point), connector.GetDirection()],
-                [wx.Point(*end_point), end_connector.GetDirection()])
+                            [wx.Point(*start_point), connector.GetDirection()],
+                            [wx.Point(*end_point), end_connector.GetDirection()])
             self.AddWire(new_wire)
             connector.Connect((new_wire, 0), False)
             end_connector.Connect((new_wire, -1), False)
@@ -1883,7 +1923,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnEditBlockMenu(self, event):
         if self.SelectedElement is not None:
-            self.ParentWindow.EditProjectElement(ITEM_POU, "P::%s"%self.SelectedElement.GetType())
+            self.ParentWindow.EditProjectElement(ITEM_POU, "P::%s" % self.SelectedElement.GetType())
 
     def OnAdjustBlockSizeMenu(self, event):
         if self.SelectedElement is not None:
@@ -1916,6 +1956,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetAddToWireMenuCallBack(self, func, *args):
         args += (self.SelectedElement,)
+
         def AddToWireMenuCallBack(event):
             func(wx.Rect(0, 0, 0, 0), *args)
         return AddToWireMenuCallBack
@@ -1925,16 +1966,16 @@ class Viewer(EditorPanel, DebugViewer):
             wx.CallAfter(func)
         return ClipboardCallback
 
-#-------------------------------------------------------------------------------
-#                          Mouse event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Mouse event functions
+    # -------------------------------------------------------------------------------
 
     def OnViewerMouseEvent(self, event):
         self.ResetBuffer()
         if event.Leaving() and self.ToolTipElement is not None:
             self.ToolTipElement.DestroyToolTip()
         elif (not event.Entering() and
-            gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
+              gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
             self.LastToolTipCheckTime = gettime()
             element = None
             if not event.Leaving() and not event.LeftUp() and not event.LeftDClick():
@@ -1991,7 +2032,7 @@ class Viewer(EditorPanel, DebugViewer):
                         if element is None or element.TestHandle(event) == (0, 0):
                             connector = self.FindBlockConnector(pos, self.SelectedElement.GetConnectionDirection())
                         if connector is not None:
-                            event.Dragging = lambda : True
+                            event.Dragging = lambda: True
                             self.SelectedElement.OnMotion(event, dc, self.Scaling)
                         if self.SelectedElement.EndConnected is not None:
                             self.SelectedElement.ResetPoints()
@@ -2130,8 +2171,8 @@ class Viewer(EditorPanel, DebugViewer):
                         # Popup contextual menu
                         menu = wx.Menu()
                         self.AddMenuItems(menu,
-                            [(wx.NewId(), wx.ITEM_NORMAL, text, '', callback)
-                             for text, callback in items])
+                                          [(wx.NewId(), wx.ITEM_NORMAL, text, '', callback)
+                                           for text, callback in items])
                         self.PopupMenu(menu)
 
                     self.SelectedElement.StartConnected.HighlightParentBlock(False)
@@ -2237,16 +2278,18 @@ class Viewer(EditorPanel, DebugViewer):
                             "functionBlock": ITEM_FUNCTIONBLOCK,
                         }.get(self.Controler.GetPouType(instance_type))
                         if pou_type is not None and instance_type in self.Controler.GetProjectPouNames(self.Debug):
-                            self.ParentWindow.OpenDebugViewer(pou_type,
-                                "%s.%s"%(self.GetInstancePath(True), self.SelectedElement.GetName()),
+                            self.ParentWindow.OpenDebugViewer(
+                                pou_type,
+                                "%s.%s" % (self.GetInstancePath(True), self.SelectedElement.GetName()),
                                 self.Controler.ComputePouName(instance_type))
                 else:
                     iec_path = self.GetElementIECPath(self.SelectedElement)
                     if iec_path is not None:
                         if isinstance(self.SelectedElement, Wire):
                             if self.SelectedElement.EndConnected is not None:
-                                self.ParentWindow.OpenDebugViewer(ITEM_VAR_LOCAL, iec_path,
-                                        self.SelectedElement.EndConnected.GetType())
+                                self.ParentWindow.OpenDebugViewer(
+                                    ITEM_VAR_LOCAL, iec_path,
+                                    self.SelectedElement.EndConnected.GetType())
                         else:
                             self.ParentWindow.OpenDebugViewer(ITEM_VAR_LOCAL, iec_path, "BOOL")
             elif event.ControlDown() and not event.ShiftDown():
@@ -2256,8 +2299,9 @@ class Viewer(EditorPanel, DebugViewer):
                     else:
                         instance_type = None
                     if instance_type in self.Controler.GetProjectPouNames(self.Debug):
-                        self.ParentWindow.EditProjectElement(ITEM_POU,
-                                self.Controler.ComputePouName(instance_type))
+                        self.ParentWindow.EditProjectElement(
+                            ITEM_POU,
+                            self.Controler.ComputePouName(instance_type))
                     else:
                         self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():
@@ -2290,8 +2334,7 @@ class Viewer(EditorPanel, DebugViewer):
                     self.RefreshScrollBars()
                 self.RefreshVisibleElements()
         else:
-            if (not event.Dragging() and
-                gettime() - self.LastHighlightCheckTime > REFRESH_PERIOD):
+            if not event.Dragging() and (gettime() - self.LastHighlightCheckTime) > REFRESH_PERIOD:
                 self.LastHighlightCheckTime = gettime()
                 highlighted = self.FindElement(event, connectors=False)
                 if self.HighlightedElement is not None and self.HighlightedElement != highlighted:
@@ -2308,8 +2351,8 @@ class Viewer(EditorPanel, DebugViewer):
             elif not self.Debug and self.Mode == MODE_SELECTION and self.SelectedElement is not None:
                 if self.DrawingWire:
                     connector, errorHighlight = self.FindBlockConnectorWithError(pos, self.SelectedElement.GetConnectionDirection(), self.SelectedElement.EndConnected)
-                    self.SelectedElement.ErrHighlight = errorHighlight;
-                    if not connector or self.SelectedElement.EndConnected == None:
+                    self.SelectedElement.ErrHighlight = errorHighlight
+                    if not connector or self.SelectedElement.EndConnected is None:
                         self.SelectedElement.ResetPoints()
                         movex, movey = self.SelectedElement.OnMotion(event, dc, self.Scaling)
                         self.SelectedElement.GeneratePoints()
@@ -2371,11 +2414,11 @@ class Viewer(EditorPanel, DebugViewer):
             elif position.y > window_size[1] - SCROLL_ZONE:
                 move_window.y = 1
             if move_window.x != 0 or move_window.y != 0:
-                self.RefreshVisibleElements(xp = xstart + move_window.x, yp = ystart + move_window.y)
+                self.RefreshVisibleElements(xp=xstart + move_window.x, yp=ystart + move_window.y)
                 self.Scroll(xstart + move_window.x, ystart + move_window.y)
                 self.RefreshScrollBars(move_window.x, move_window.y)
 
-    def BlockCompatibility(self, startblock=None, endblock=None, direction = None):
+    def BlockCompatibility(self, startblock=None, endblock=None, direction=None):
         return True
 
     def GetPopupMenuItems(self):
@@ -2423,9 +2466,9 @@ class Viewer(EditorPanel, DebugViewer):
                         (_(u'Variable'), self.GetAddToWireMenuCallBack(self.AddNewVariable, True)))
         return items
 
-#-------------------------------------------------------------------------------
-#                          Keyboard event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Keyboard event functions
+    # -------------------------------------------------------------------------------
 
     ARROW_KEY_MOVE = {
         wx.WXK_LEFT: (-1, 0),
@@ -2453,7 +2496,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshRect(self.GetScrolledRect(rect), False)
         elif not self.Debug and keycode == wx.WXK_RETURN and self.SelectedElement is not None:
             self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
-        elif self.ARROW_KEY_MOVE.has_key(keycode):
+        elif keycode in self.ARROW_KEY_MOVE:
             move = self.ARROW_KEY_MOVE[keycode]
             if event.ControlDown() and event.ShiftDown():
                 self.Scroll({-1: 0, 0: xpos, 1: xmax}[move[0]],
@@ -2501,9 +2544,9 @@ class Viewer(EditorPanel, DebugViewer):
         else:
             event.Skip()
 
-#-------------------------------------------------------------------------------
-#                  Model adding functions from Drop Target
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                  Model adding functions from Drop Target
+    # -------------------------------------------------------------------------------
 
     def AddVariableBlock(self, x, y, scaling, var_class, var_name, var_type):
         id = self.GetNewId()
@@ -2524,9 +2567,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.RefreshVisibleElements()
         self.Editor.Refresh(False)
 
-#-------------------------------------------------------------------------------
-#                          Model adding functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Model adding functions
+    # -------------------------------------------------------------------------------
 
     def GetScaledSize(self, width, height):
         if self.Scaling is not None:
@@ -2571,10 +2614,11 @@ class Viewer(EditorPanel, DebugViewer):
             id = self.GetNewId()
             values = dialog.GetValues()
             values.setdefault("name", "")
-            block = FBD_Block(self, values["type"], values["name"], id,
-                    values["extension"], values["inputs"],
-                    executionControl = values["executionControl"],
-                    executionOrder = values["executionOrder"])
+            block = FBD_Block(
+                self, values["type"], values["name"], id,
+                values["extension"], values["inputs"],
+                executionControl=values["executionControl"],
+                executionOrder=values["executionOrder"])
             self.Controler.AddEditedElementBlock(self.TagName, id, values["type"], values.get("name", None))
             connector = None
             if wire is not None:
@@ -2585,7 +2629,7 @@ class Viewer(EditorPanel, DebugViewer):
                         break
             self.AddNewElement(block, bbox, wire, connector)
             self.RefreshVariablePanel()
-            self.ParentWindow.RefreshPouInstanceVariablesPanel()                    
+            self.ParentWindow.RefreshPouInstanceVariablesPanel()
         dialog.Destroy()
 
     def AddNewVariable(self, bbox, exclude_input=False, wire=None):
@@ -2625,7 +2669,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = wx.TextEntryDialog(self.ParentWindow,
                                     _("Edit comment"),
                                     _("Please enter comment text"),
-                                    "", wx.OK|wx.CANCEL|wx.TE_MULTILINE)
+                                    "", wx.OK | wx.CANCEL | wx.TE_MULTILINE)
         dialog.SetClientSize(wx.Size(400, 200))
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
@@ -2633,7 +2677,7 @@ class Viewer(EditorPanel, DebugViewer):
             comment = Comment(self, value, id)
             comment.SetPosition(bbox.x, bbox.y)
             min_width, min_height = comment.GetMinSize()
-            comment.SetSize(*self.GetScaledSize(max(min_width,bbox.width),max(min_height,bbox.height)))
+            comment.SetSize(*self.GetScaledSize(max(min_width, bbox.width), max(min_height, bbox.height)))
             self.AddComment(comment)
             self.Controler.AddEditedElementComment(self.TagName, id)
             self.RefreshCommentModel(comment)
@@ -2689,11 +2733,11 @@ class Viewer(EditorPanel, DebugViewer):
     def AddNewStep(self, bbox, initial=False, wire=None):
         if wire is not None:
             values = {
-                "name": self.Controler.GenerateNewName(
-                    self.TagName, None, "Step%d", 0),
-                "input": True,
+                "name":   self.Controler.GenerateNewName(self.TagName, None, "Step%d", 0),
+                "input":  True,
                 "output": True,
-                "action":False}
+                "action": False
+            }
         else:
             dialog = SFCStepDialog(self.ParentWindow, self.Controler, self.TagName, initial)
             dialog.SetPreviewFont(self.GetFont())
@@ -2736,7 +2780,7 @@ class Viewer(EditorPanel, DebugViewer):
                 connector = transition.GetConnectors()["inputs"][0]
             self.AddNewElement(transition, bbox, wire, connector)
 
-    def AddNewDivergence(self, bbox, poss_div_types = None, wire=None):
+    def AddNewDivergence(self, bbox, poss_div_types=None, wire=None):
         dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler, self.TagName, poss_div_types)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize((bbox.width, bbox.height))
@@ -2754,8 +2798,10 @@ class Viewer(EditorPanel, DebugViewer):
             if isinstance(block, SFC_Step):
                 choices.append(block.GetName())
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
-              _("Add a new jump"), _("Please choose a target"),
-              choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                       _("Add a new jump"),
+                                       _("Please choose a target"),
+                                       choices,
+                                       wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
         if dialog.ShowModal() == wx.ID_OK:
             id = self.GetNewId()
             jump = SFC_Jump(self, dialog.GetStringSelection(), id)
@@ -2775,20 +2821,22 @@ class Viewer(EditorPanel, DebugViewer):
             self.AddNewElement(actionblock, bbox, wire)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
-#                          Edit element content functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Edit element content functions
+    # -------------------------------------------------------------------------------
 
     def EditBlockContent(self, block):
         dialog = FBDBlockDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(block.GetSize())
-        old_values = {"name" : block.GetName(),
-                      "type" : block.GetType(),
-                      "extension" : block.GetExtension(),
-                      "inputs" : block.GetInputTypes(),
-                      "executionControl" : block.GetExecutionControl(),
-                      "executionOrder" : block.GetExecutionOrder()}
+        old_values = {
+            "name":             block.GetName(),
+            "type":             block.GetType(),
+            "extension":        block.GetExtension(),
+            "inputs":           block.GetInputTypes(),
+            "executionControl": block.GetExecutionControl(),
+            "executionOrder":   block.GetExecutionOrder()
+        }
         dialog.SetValues(old_values)
         if dialog.ShowModal() == wx.ID_OK:
             new_values = dialog.GetValues()
@@ -2798,7 +2846,7 @@ class Viewer(EditorPanel, DebugViewer):
             else:
                 block.SetName("")
             block.SetSize(*self.GetScaledSize(new_values["width"], new_values["height"]))
-            block.SetType(new_values["type"], new_values["extension"], executionControl = new_values["executionControl"])
+            block.SetType(new_values["type"], new_values["extension"], executionControl=new_values["executionControl"])
             block.SetExecutionOrder(new_values["executionOrder"])
             rect = rect.Union(block.GetRedrawRect())
             self.RefreshBlockModel(block)
@@ -2817,8 +2865,11 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = FBDVariableDialog(self.ParentWindow, self.Controler, self.TagName)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(variable.GetSize())
-        old_values = {"expression" : variable.GetName(), "class" : variable.GetType(),
-                      "executionOrder" : variable.GetExecutionOrder()}
+        old_values = {
+            "expression":     variable.GetName(),
+            "class":          variable.GetType(),
+            "executionOrder": variable.GetExecutionOrder()
+        }
         dialog.SetValues(old_values)
         if dialog.ShowModal() == wx.ID_OK:
             new_values = dialog.GetValues()
@@ -2846,7 +2897,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = ConnectionDialog(self.ParentWindow, self.Controler, self.TagName, True)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(connection.GetSize())
-        values = {"name" : connection.GetName(), "type" : connection.GetType()}
+        values = {"name": connection.GetName(), "type": connection.GetType()}
         dialog.SetValues(values)
         result = dialog.ShowModal()
         dialog.Destroy()
@@ -2878,8 +2929,8 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "contact")
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(contact.GetSize())
-        dialog.SetValues({"variable" : contact.GetName(),
-                          "modifier" : contact.GetType()})
+        dialog.SetValues({"variable": contact.GetName(),
+                          "modifier": contact.GetType()})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = contact.GetRedrawRect(1, 1)
@@ -2898,8 +2949,8 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "coil")
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(coil.GetSize())
-        dialog.SetValues({"variable" : coil.GetName(),
-                          "modifier" : coil.GetType()})
+        dialog.SetValues({"variable": coil.GetName(),
+                          "modifier": coil.GetType()})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = coil.GetRedrawRect(1, 1)
@@ -2946,10 +2997,10 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.SetMinElementSize(step.GetSize())
         connectors = step.GetConnectors()
         dialog.SetValues({
-            "name" : step.GetName(),
+            "name": step.GetName(),
             "input": len(connectors["inputs"]) > 0,
             "output": len(connectors["outputs"]) > 0,
-            "action": step.GetActionConnector() != None})
+            "action": step.GetActionConnector() is not None})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = step.GetRedrawRect(1, 1)
@@ -2966,7 +3017,7 @@ class Viewer(EditorPanel, DebugViewer):
                                 rect = rect.Union(block.GetRedrawRect())
                                 block.Refresh(rect)
             step.SetName(new_name)
-            
+
             if values["input"]:
                 step.AddInput()
             else:
@@ -2991,11 +3042,15 @@ class Viewer(EditorPanel, DebugViewer):
         dialog = SFCTransitionDialog(self.ParentWindow, self.Controler, self.TagName, self.GetDrawingMode() == FREEDRAWING_MODE)
         dialog.SetPreviewFont(self.GetFont())
         dialog.SetMinElementSize(transition.GetSize())
-        dialog.SetValues({"type":transition.GetType(),"value":transition.GetCondition(), "priority":transition.GetPriority()})
+        dialog.SetValues({
+            "type":     transition.GetType(),
+            "value":    transition.GetCondition(),
+            "priority": transition.GetPriority()
+        })
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = transition.GetRedrawRect(1, 1)
-            transition.SetType(values["type"],values["value"])
+            transition.SetType(values["type"], values["value"])
             transition.SetPriority(values["priority"])
             rect = rect.Union(transition.GetRedrawRect())
             self.RefreshTransitionModel(transition)
@@ -3011,8 +3066,10 @@ class Viewer(EditorPanel, DebugViewer):
             if isinstance(block, SFC_Step):
                 choices.append(block.GetName())
         dialog = wx.SingleChoiceDialog(self.ParentWindow,
-              _("Edit jump target"), _("Please choose a target"),
-              choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                                       _("Edit jump target"),
+                                       _("Please choose a target"),
+                                       choices,
+                                       wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
         try:
             indx = choices.index(jump.GetTarget())
             dialog.SetSelection(indx)
@@ -3055,7 +3112,7 @@ class Viewer(EditorPanel, DebugViewer):
                                     _("Edit comment"),
                                     _("Please enter comment text"),
                                     comment.GetContent(),
-                                    wx.OK|wx.CANCEL|wx.TE_MULTILINE)
+                                    wx.OK | wx.CANCEL | wx.TE_MULTILINE)
         width, height = comment.GetSize()
         dialogSize = wx.Size(max(width + 30, 400), max(height + 60, 200))
         dialog.SetClientSize(dialogSize)
@@ -3072,9 +3129,9 @@ class Viewer(EditorPanel, DebugViewer):
             comment.Refresh(rect)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
-#                          Model update functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Model update functions
+    # -------------------------------------------------------------------------------
 
     def RefreshBlockModel(self, block):
         blockid = block.GetId()
@@ -3221,11 +3278,9 @@ class Viewer(EditorPanel, DebugViewer):
         infos["connector"] = actionblock.GetConnector()
         self.Controler.SetEditedElementActionBlockInfos(self.TagName, actionblockid, infos)
 
-
-#-------------------------------------------------------------------------------
-#                          Model delete functions
-#-------------------------------------------------------------------------------
-
+    # -------------------------------------------------------------------------------
+    #                          Model delete functions
+    # -------------------------------------------------------------------------------
 
     def DeleteBlock(self, block):
         elements = []
@@ -3372,10 +3427,9 @@ class Viewer(EditorPanel, DebugViewer):
         self.RemoveBlock(actionblock)
         self.Controler.RemoveEditedElementInstance(self.TagName, actionblock.GetId())
 
-
-#-------------------------------------------------------------------------------
-#                            Editing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Editing functions
+    # -------------------------------------------------------------------------------
 
     def Cut(self):
         if not self.Debug and (self.IsBlock(self.SelectedElement) or self.IsComment(self.SelectedElement) or isinstance(self.SelectedElement, Graphic_Group)):
@@ -3418,7 +3472,7 @@ class Viewer(EditorPanel, DebugViewer):
                 self.RefreshVariablePanel()
                 self.ParentWindow.RefreshPouInstanceVariablesPanel()
             else:
-                message = wx.MessageDialog(self.Editor, result, "Error", wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self.Editor, result, "Error", wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
 
@@ -3506,9 +3560,9 @@ class Viewer(EditorPanel, DebugViewer):
                 self.Controler.AddEditedElementActionBlock(self.TagName, block.GetId())
                 self.RefreshActionBlockModel(block)
 
-#-------------------------------------------------------------------------------
-#                         Find and Replace functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                         Find and Replace functions
+    # -------------------------------------------------------------------------------
 
     def Find(self, direction, search_params):
         if self.SearchParams != search_params:
@@ -3549,9 +3603,9 @@ class Viewer(EditorPanel, DebugViewer):
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.RefreshView()
@@ -3590,9 +3644,9 @@ class Viewer(EditorPanel, DebugViewer):
                 if block is not None:
                     block.AddHighlight(infos[2:], start, end, highlight_type)
 
-#-------------------------------------------------------------------------------
-#                            Drawing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            Drawing functions
+    # -------------------------------------------------------------------------------
 
     def OnScrollWindow(self, event):
         if self.Editor.HasCapture() and self.StartMousePos is not None:
@@ -3602,9 +3656,9 @@ class Viewer(EditorPanel, DebugViewer):
             self.Editor.Freeze()
             wx.CallAfter(self.Editor.Thaw)
         elif event.GetOrientation() == wx.HORIZONTAL:
-            self.RefreshVisibleElements(xp = event.GetPosition())
+            self.RefreshVisibleElements(xp=event.GetPosition())
         else:
-            self.RefreshVisibleElements(yp = event.GetPosition())
+            self.RefreshVisibleElements(yp=event.GetPosition())
 
         # Handle scroll in debug to fully redraw area and ensuring
         # instance path is fully draw without flickering
@@ -3627,16 +3681,16 @@ class Viewer(EditorPanel, DebugViewer):
             if event.ShiftDown():
                 x, y = self.GetViewStart()
                 xp = max(0, min(x - rotation * 3, self.Editor.GetVirtualSize()[0] / self.Editor.GetScrollPixelsPerUnit()[0]))
-                self.RefreshVisibleElements(xp = xp)
+                self.RefreshVisibleElements(xp=xp)
                 self.Scroll(xp, y)
             elif event.ControlDown():
                 dc = self.GetLogicalDC()
-                self.SetScale(self.CurrentScale + rotation, mouse_event = event)
+                self.SetScale(self.CurrentScale + rotation, mouse_event=event)
                 self.ParentWindow.RefreshDisplayMenu()
             else:
                 x, y = self.GetViewStart()
                 yp = max(0, min(y - rotation * 3, self.Editor.GetVirtualSize()[1] / self.Editor.GetScrollPixelsPerUnit()[1]))
-                self.RefreshVisibleElements(yp = yp)
+                self.RefreshVisibleElements(yp=yp)
                 self.Scroll(x, yp)
 
     def OnMoveWindow(self, event):
@@ -3647,7 +3701,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.RefreshVisibleElements()
         event.Skip()
 
-    def DoDrawing(self, dc, printing = False):
+    def DoDrawing(self, dc, printing=False):
         if printing:
             if getattr(dc, "printing", False):
                 font = wx.Font(self.GetFont().GetPointSize(), wx.MODERN, wx.NORMAL, wx.NORMAL)
@@ -3684,11 +3738,11 @@ class Viewer(EditorPanel, DebugViewer):
                 comment.Draw(dc)
         for wire in self.Wires.iterkeys():
             if wire != self.SelectedElement and (wire.IsVisible() or printing):
-                 if not self.Debug or wire.GetValue() != True:
+                if not self.Debug or not wire.GetValue():
                     wire.Draw(dc)
         if self.Debug:
             for wire in self.Wires.iterkeys():
-                if wire != self.SelectedElement and (wire.IsVisible() or printing) and wire.GetValue() == True:
+                if wire != self.SelectedElement and (wire.IsVisible() or printing) and wire.GetValue():
                     wire.Draw(dc)
         for block in self.Blocks.itervalues():
             if block != self.SelectedElement and (block.IsVisible() or printing):
@@ -3711,5 +3765,3 @@ class Viewer(EditorPanel, DebugViewer):
         if self.Debug:
             DebugViewer.RefreshNewData(self)
         event.Skip()
-
-

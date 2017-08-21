@@ -30,13 +30,15 @@ import traceback
 from time import sleep
 import copy
 import socket
-service_type = '_PYRO._tcp.local.'
 import os.path
+
+service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
 #
 # for connectors that do not support DNS-SD, this attribute can be omitted
 # or set to an empty list.
+
 
 def PYRO_connector_factory(uri, confnodesroot):
     """
@@ -62,6 +64,7 @@ def PYRO_connector_factory(uri, confnodesroot):
                                        % (Pyro.config.PYROSSL_CERTDIR))
         Pyro.config.PYROSSL_CERT = "client.crt"
         Pyro.config.PYROSSL_KEY = "client.key"
+
         # Ugly Monkey Patching
         def _gettimeout(self):
             return self.timeout
@@ -87,7 +90,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             ip = str(socket.inet_ntoa(i.getAddress()))
             port = str(i.getPort())
             newlocation = ip + ':' + port
-            confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1 = location, a2 = newlocation))
+            confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
             location = newlocation
             r.close()
         except Exception, msg:

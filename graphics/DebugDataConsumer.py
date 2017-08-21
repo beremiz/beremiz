@@ -24,9 +24,10 @@
 
 import datetime
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                        Date and Time conversion function
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 SECOND = 1000000      # Number of microseconds in one second
 MINUTE = 60 * SECOND  # Number of microseconds in one minute
@@ -36,6 +37,7 @@ DAY = 24 * HOUR       # Number of microseconds in one day
 # Date corresponding to Epoch (1970 January the first)
 DATE_ORIGIN = datetime.datetime(1970, 1, 1)
 
+
 def get_microseconds(value):
     """
     Function converting time duration expressed in day, second and microseconds
@@ -43,10 +45,11 @@ def get_microseconds(value):
     @param value: Time duration to convert
     @return: Time duration expressed in microsecond
     """
-    return float(value.days * DAY + \
-                 value.seconds * SECOND + \
+    return float(value.days * DAY +
+                 value.seconds * SECOND +
                  value.microseconds)
-    return 
+    return
+
 
 def generate_time(value):
     """
@@ -56,39 +59,40 @@ def generate_time(value):
     @return: IEC 61131 TIME literal
     """
     microseconds = get_microseconds(value)
-    
+
     # Get absolute microseconds value and save if it was negative
     negative = microseconds < 0
     microseconds = abs(microseconds)
-    
+
     # TIME literal prefix
     data = "T#"
     if negative:
         data += "-"
-    
+
     # In TIME literal format, it isn't mandatory to indicate null values
     # if no greater non-null values are available. This variable is used to
     # inhibit formatting until a non-null value is found
     not_null = False
-    
+
     for val, format in [
-            (int(microseconds) / DAY, "%dd"),                # Days
-            ((int(microseconds) % DAY) / HOUR, "%dh"),       # Hours
-            ((int(microseconds) % HOUR) / MINUTE, "%dm"),    # Minutes
-            ((int(microseconds) % MINUTE) / SECOND, "%ds")]: # Seconds
-        
-        # Add value to TIME literal if value is non-null or another non-null 
+            (int(microseconds) / DAY, "%dd"),                 # Days
+            ((int(microseconds) % DAY) / HOUR, "%dh"),        # Hours
+            ((int(microseconds) % HOUR) / MINUTE, "%dm"),     # Minutes
+            ((int(microseconds) % MINUTE) / SECOND, "%ds")]:  # Seconds
+
+        # Add value to TIME literal if value is non-null or another non-null
         # value have already be found
         if val > 0 or not_null:
             data += format % val
-            
+
             # Update non-null variable
             not_null = True
-    
-    # In any case microseconds have to be added to TIME literal 
+
+    # In any case microseconds have to be added to TIME literal
     data += "%gms" % (microseconds % SECOND / 1000.)
-    
+
     return data
+
 
 def generate_date(value):
     """
@@ -99,6 +103,7 @@ def generate_date(value):
     """
     return (DATE_ORIGIN + value).strftime("DATE#%Y-%m-%d")
 
+
 def generate_datetime(value):
     """
     Function converting time duration expressed in day, second and microseconds
@@ -108,6 +113,7 @@ def generate_datetime(value):
     """
     return (DATE_ORIGIN + value).strftime("DT#%Y-%m-%d-%H:%M:%S.%f")
 
+
 def generate_timeofday(value):
     """
     Function converting time duration expressed in day, second and microseconds
@@ -116,22 +122,23 @@ def generate_timeofday(value):
     @return: IEC 61131 TIME_OF_DAY literal
     """
     microseconds = get_microseconds(value)
-    
+
     # TIME_OF_DAY literal prefix
     data = "TOD#"
-    
+
     for val, format in [
             (int(microseconds) / HOUR, "%2.2d:"),               # Hours
             ((int(microseconds) % HOUR) / MINUTE, "%2.2d:"),    # Minutes
             ((int(microseconds) % MINUTE) / SECOND, "%2.2d."),  # Seconds
             (microseconds % SECOND, "%6.6d")]:                  # Microseconds
-        
+
         # Add value to TIME_OF_DAY literal
         data += format % val
-    
+
     return data
 
-# Dictionary of translation functions from value send by debugger to IEC 
+
+# Dictionary of translation functions from value send by debugger to IEC
 # literal stored by type
 TYPE_TRANSLATOR = {
     "TIME": generate_time,
@@ -143,18 +150,19 @@ TYPE_TRANSLATOR = {
     "REAL": lambda v: "%.6g" % v,
     "LREAL": lambda v: "%.6g" % v}
 
-#-------------------------------------------------------------------------------
-#                            Debug Data Consumer Class
-#-------------------------------------------------------------------------------
 
-"""
-Class that implements an element that consumes debug values
-Value update can be inhibited during the time the associated Debug Viewer is
-refreshing
-"""
+# -------------------------------------------------------------------------------
+#                            Debug Data Consumer Class
+# -------------------------------------------------------------------------------
+
 
 class DebugDataConsumer:
-    
+    """
+    Class that implements an element that consumes debug values
+    Value update can be inhibited during the time the associated Debug Viewer is
+    refreshing
+    """
+
     def __init__(self):
         """
         Constructor
@@ -162,17 +170,17 @@ class DebugDataConsumer:
         # Debug value and forced flag
         self.Value = None
         self.Forced = False
-        
+
         # Store debug value and forced flag when value update is inhibited
         self.LastValue = None
         self.LastForced = False
-        
+
         # Value IEC data type
         self.DataType = None
-        
+
         # Flag that value update is inhibited
         self.Inhibited = False
-    
+
     def Inhibit(self, inhibit):
         """
         Set flag to inhibit or activate value update
@@ -180,23 +188,23 @@ class DebugDataConsumer:
         """
         # Save inhibit flag
         self.Inhibited = inhibit
-        
+
         # When reactivated update value and forced flag with stored values
         if not inhibit and self.LastValue is not None:
             self.SetForced(self.LastForced)
             self.SetValue(self.LastValue)
-            
+
             # Reset stored values
             self.LastValue = None
             self.LastForced = False
-    
+
     def SetDataType(self, data_type):
         """
         Set value IEC data type
         @param data_type: Value IEC data type
         """
         self.DataType = data_type
-    
+
     def NewValues(self, tick, values, raw="BOOL"):
         """
         Function called by debug thread when a new debug value is available
@@ -206,21 +214,21 @@ class DebugDataConsumer:
         @param raw: Data type of values not translated (default: 'BOOL')
         """
         value, forced = values
-        
+
         # Translate value to IEC literal
         if self.DataType != raw:
             value = TYPE_TRANSLATOR.get(self.DataType, str)(value)
-        
+
         # Store value and forced flag when value update is inhibited
         if self.Inhibited:
             self.LastValue = value
             self.LastForced = forced
-        
+
         # Update value and forced flag in any other case
         else:
             self.SetForced(forced)
             self.SetValue(value)
-    
+
     def SetValue(self, value):
         """
         Update value.
@@ -228,14 +236,14 @@ class DebugDataConsumer:
         @param value: New value
         """
         self.Value = value
-    
+
     def GetValue(self):
         """
         Return current value
         @return: Current value
         """
         return self.Value
-    
+
     def SetForced(self, forced):
         """
         Update Forced flag.
@@ -243,7 +251,7 @@ class DebugDataConsumer:
         @param forced: New forced flag
         """
         self.Forced = forced
-    
+
     def IsForced(self):
         """
         Indicate if current value is forced

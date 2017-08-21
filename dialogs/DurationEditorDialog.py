@@ -27,9 +27,9 @@ import re
 
 import wx
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                                  Helpers
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 MICROSECONDS = 0.001
 MILLISECONDS = 1
@@ -49,51 +49,52 @@ CONTROLS = [
     ("Microseconds", _('Microseconds:')),
 ]
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Edit Duration Value Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 class DurationEditorDialog(wx.Dialog):
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Edit Duration'))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
-        
+
         controls_sizer = wx.FlexGridSizer(cols=len(CONTROLS), hgap=10, rows=2, vgap=10)
-        main_sizer.AddSizer(controls_sizer, border=20, 
-              flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
-        
+        main_sizer.AddSizer(controls_sizer, border=20,
+                            flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
+
         controls = []
         for i, (name, label) in enumerate(CONTROLS):
             controls_sizer.AddGrowableCol(i)
-            
+
             st = wx.StaticText(self, label=label)
             txtctrl = wx.TextCtrl(self, value='0', style=wx.TE_PROCESS_ENTER)
-            self.Bind(wx.EVT_TEXT_ENTER, 
-                      self.GetControlValueTestFunction(txtctrl), 
+            self.Bind(wx.EVT_TEXT_ENTER,
+                      self.GetControlValueTestFunction(txtctrl),
                       txtctrl)
             setattr(self, name, txtctrl)
-        
+
             controls.append((st, txtctrl))
-            
+
         for st, txtctrl in controls:
             controls_sizer.AddWindow(st, flag=wx.GROW)
-            
+
         for st, txtctrl in controls:
             controls_sizer.AddWindow(txtctrl, flag=wx.GROW)
-        
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
+        main_sizer.AddSizer(button_sizer, border=20,
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+
         self.SetSizer(main_sizer)
         self.Fit()
         self.Days.SetFocus()
-        
+
     def SetDuration(self, value):
         result = IEC_TIME_MODEL.match(value.upper())
         if result is not None:
@@ -112,13 +113,13 @@ class DurationEditorDialog(wx.Dialog):
             else:
                 self.Milliseconds.SetValue("0")
                 self.Microseconds.SetValue("0")
-        
+
     def GetControlValueTestFunction(self, control):
         def OnValueChanged(event):
             try:
                 value = float(control.GetValue())
             except ValueError, e:
-                message = wx.MessageDialog(self, _("Invalid value!\nYou must fill a numeric value."), _("Error"), wx.OK|wx.ICON_ERROR)
+                message = wx.MessageDialog(self, _("Invalid value!\nYou must fill a numeric value."), _("Error"), wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
             event.Skip()
@@ -130,29 +131,29 @@ class DurationEditorDialog(wx.Dialog):
         for control, factor in [(self.Days, DAY), (self.Hours, HOUR),
                                 (self.Minutes, MINUTE), (self.Seconds, SECOND),
                                 (self.Milliseconds, MILLISECONDS), (self.Microseconds, MICROSECONDS)]:
-            
+
             milliseconds += float(control.GetValue()) * factor
-        
+
         not_null = False
         duration = "T#"
-        for value, format in [(int(milliseconds) / DAY, "%dd"),
-                            ((int(milliseconds) % DAY) / HOUR, "%dh"),
-                            ((int(milliseconds) % HOUR) / MINUTE, "%dm"),
-                            ((int(milliseconds) % MINUTE) / SECOND, "%ds")]:
-            
+        for value, format in [((int(milliseconds) / DAY),             "%dd"),
+                              ((int(milliseconds) % DAY) / HOUR,      "%dh"),
+                              ((int(milliseconds) % HOUR) / MINUTE,   "%dm"),
+                              ((int(milliseconds) % MINUTE) / SECOND, "%ds")]:
+
             if value > 0 or not_null:
                 duration += format % value
                 not_null = True
-        
+
         duration += "%gms" % (milliseconds % SECOND)
         return duration
-    
+
     def OnOK(self, event):
         self.OnCloseDialog()
 
     def OnCloseDialog(self):
         errors = []
-        for control, name in [(self.Days, _("days")), (self.Hours, _("hours")), 
+        for control, name in [(self.Days, _("days")), (self.Hours, _("hours")),
                               (self.Minutes, _("minutes")), (self.Seconds, _("seconds")),
                               (self.Milliseconds, _("milliseconds"))]:
             try:
@@ -164,7 +165,7 @@ class DurationEditorDialog(wx.Dialog):
                 message = _("Field %s hasn't a valid value!") % errors[0]
             else:
                 message = _("Fields %s haven't a valid value!") % ",".join(errors)
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

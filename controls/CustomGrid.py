@@ -25,46 +25,47 @@
 import wx
 import wx.grid
 
+
 class CustomGrid(wx.grid.Grid):
-    
+
     def __init__(self, *args, **kwargs):
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        
+
         self.Editable = True
-        
+
         self.AddButton = None
         self.DeleteButton = None
         self.UpButton = None
         self.DownButton = None
-        
+
         self.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Sans'))
         self.SetLabelFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Sans'))
         self.SetSelectionBackground(wx.WHITE)
         self.SetSelectionForeground(wx.BLACK)
         self.DisableDragRowSize()
-        
+
         self.Bind(wx.grid.EVT_GRID_SELECT_CELL, self.OnSelectCell)
         self.Bind(wx.grid.EVT_GRID_EDITOR_HIDDEN, self.OnEditorHidden)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-    
+
     def SetFocus(self):
         if self:
             wx.grid.Grid.SetFocus(self)
-    
+
     def SetDefaultValue(self, default_value):
         self.DefaultValue = default_value
-    
+
     def SetEditable(self, editable=True):
         self.Editable = editable
         self.RefreshButtons()
-        
+
     def SetButtons(self, buttons):
         for name in ["Add", "Delete", "Up", "Down"]:
             button = buttons.get(name, None)
             setattr(self, "%sButton" % name, button)
             if button is not None:
                 button.Bind(wx.EVT_BUTTON, getattr(self, "On%sButton" % name))
-    
+
     def RefreshButtons(self):
         if self:
             rows = self.Table.GetNumberRows()
@@ -77,7 +78,7 @@ class CustomGrid(wx.grid.Grid):
                 self.UpButton.Enable(self.Editable and row > 0)
             if self.DownButton is not None:
                 self.DownButton.Enable(self.Editable and 0 <= row < rows - 1)
-    
+
     def CloseEditControl(self):
         row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
         if row != -1 and col != -1:
@@ -119,27 +120,27 @@ class CustomGrid(wx.grid.Grid):
                 self.Table.ResetView(self)
         if new_row != row:
             self.SetSelectedCell(new_row, col)
-    
+
     def SetSelectedCell(self, row, col):
         self.SetGridCursor(row, col)
         self.MakeCellVisible(row, col)
         self.RefreshButtons()
-        
+
     def OnAddButton(self, event):
         self.AddRow()
         self.SetFocus()
         event.Skip()
-        
+
     def OnDeleteButton(self, event):
         self.DeleteRow()
         self.SetFocus()
         event.Skip()
-        
+
     def OnUpButton(self, event):
         self.MoveRow(self.GetGridCursorRow(), -1)
         self.SetFocus()
         event.Skip()
-        
+
     def OnDownButton(self, event):
         self.MoveRow(self.GetGridCursorRow(), 1)
         self.SetFocus()

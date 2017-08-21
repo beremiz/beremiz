@@ -34,34 +34,36 @@ else:
     LISTBOX_BORDER_HEIGHT = 4
     LISTBOX_INTERVAL_HEIGHT = 6
 
+
 class PopupWithListbox(wx.PopupWindow):
-    
+
     def __init__(self, parent, choices=[]):
         wx.PopupWindow.__init__(self, parent, wx.BORDER_SIMPLE)
-        
-        self.ListBox = wx.ListBox(self, -1, style=wx.LB_HSCROLL|wx.LB_SINGLE|wx.LB_SORT)
-        
+
+        self.ListBox = wx.ListBox(self, -1, style=wx.LB_HSCROLL | wx.LB_SINGLE | wx.LB_SORT)
+
         self.SetChoices(choices)
-        
+
         self.ListBox.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.ListBox.Bind(wx.EVT_MOTION, self.OnMotion)
-    
+
     def SetChoices(self, choices):
         max_text_width = 0
         max_text_height = 0
-        
+
         self.ListBox.Clear()
         for choice in choices:
             self.ListBox.Append(choice)
             w, h = self.ListBox.GetTextExtent(choice)
             max_text_width = max(max_text_width, w)
             max_text_height = max(max_text_height, h)
-        
+
         itemcount = min(len(choices), MAX_ITEM_SHOWN)
         width = self.Parent.GetSize()[0]
-        height = max_text_height * itemcount + \
-                 LISTBOX_INTERVAL_HEIGHT * max(0, itemcount - 1) + \
-                 2 * LISTBOX_BORDER_HEIGHT
+        height = \
+            max_text_height * itemcount + \
+            LISTBOX_INTERVAL_HEIGHT * max(0, itemcount - 1) + \
+            2 * LISTBOX_BORDER_HEIGHT
         if max_text_width + 10 > width:
             height += 15
         size = wx.Size(width, height)
@@ -69,7 +71,7 @@ class PopupWithListbox(wx.PopupWindow):
             size.width -= 2
         self.ListBox.SetSize(size)
         self.SetClientSize(size)
-    
+
     def MoveSelection(self, direction):
         selected = self.ListBox.GetSelection()
         if selected == wx.NOT_FOUND:
@@ -82,10 +84,10 @@ class PopupWithListbox(wx.PopupWindow):
         if selected == self.ListBox.GetCount():
             selected = wx.NOT_FOUND
         self.ListBox.SetSelection(selected)
-    
+
     def GetSelection(self):
         return self.ListBox.GetStringSelection()
-    
+
     def OnLeftDown(self, event):
         selected = self.ListBox.HitTest(wx.Point(event.GetX(), event.GetY()))
         parent_size = self.Parent.GetSize()
@@ -99,16 +101,17 @@ class PopupWithListbox(wx.PopupWindow):
         else:
             wx.CallAfter(self.Parent.DismissListBox)
         event.Skip()
-    
+
     def OnMotion(self, event):
         self.ListBox.SetSelection(
             self.ListBox.HitTest(wx.Point(event.GetX(), event.GetY())))
         event.Skip()
-    
+
+
 class TextCtrlAutoComplete(wx.TextCtrl):
 
-    def __init__ (self, parent, choices=None, dropDownClick=True,
-                  element_path=None, **therest):
+    def __init__(self, parent, choices=None, dropDownClick=True,
+                 element_path=None, **therest):
         """
         Constructor works just like wx.TextCtrl except you can pass in a
         list of choices.  You can also change the choice list at any time
@@ -118,21 +121,21 @@ class TextCtrlAutoComplete(wx.TextCtrl):
         therest['style'] = wx.TE_PROCESS_ENTER | therest.get('style', 0)
 
         wx.TextCtrl.__init__(self, parent, **therest)
-        
-        #Some variables
+
+        # Some variables
         self._dropDownClick = dropDownClick
         self._lastinsertionpoint = None
         self._hasfocus = False
-        
+
         self._screenheight = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
         self.element_path = element_path
-        
+
         self.listbox = None
-        
+
         self.SetChoices(choices)
 
-        #gp = self
-        #while ( gp != None ) :
+        # gp = self
+        # while ( gp != None ) :
         #    gp.Bind ( wx.EVT_MOVE , self.onControlChanged, gp )
         #    gp.Bind ( wx.EVT_SIZE , self.onControlChanged, gp )
         #    gp = gp.GetParent()
@@ -142,7 +145,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
         self.Bind(wx.EVT_TEXT, self.OnEnteredText)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
-        #If need drop down on left click
+        # If need drop down on left click
         if dropDownClick:
             self.Bind(wx.EVT_LEFT_DOWN, self.OnClickToggleDown)
             self.Bind(wx.EVT_LEFT_UP, self.OnClickToggleUp)
@@ -201,14 +204,14 @@ class TextCtrlAutoComplete(wx.TextCtrl):
         self.DismissListBox()
         self._hasfocus = False
         event.Skip()
-    
+
     def SetChoices(self, choices):
         self._choices = choices
         self.RefreshListBoxChoices()
-        
+
     def GetChoices(self):
         return self._choices
-    
+
     def SetValueFromSelected(self, selected):
         """
         Sets the wx.TextCtrl value from the selected wx.ListCtrl item.
@@ -217,7 +220,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
         if selected != "":
             self.SetValue(selected)
         self.DismissListBox()
-    
+
     def RefreshListBoxChoices(self):
         if self.listbox is not None:
             text = self.GetValue()
@@ -227,7 +230,7 @@ class TextCtrlAutoComplete(wx.TextCtrl):
     def PopupListBox(self):
         if self.listbox is None:
             self.listbox = PopupWithListbox(self)
-            
+
             # Show the popup right below or above the button
             # depending on available screen space...
             pos = self.ClientToScreen((0, 0))
@@ -236,9 +239,9 @@ class TextCtrlAutoComplete(wx.TextCtrl):
                 pos.x -= 2
                 pos.y -= 2
             self.listbox.Position(pos, (0, sz[1]))
-            
+
             self.RefreshListBoxChoices()
-            
+
             self.listbox.Show()
 
     def DismissListBox(self):

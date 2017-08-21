@@ -32,13 +32,16 @@ svgfile = '%(svgfile)s'
 svguiWidgets = {}
 
 currentId = 0
+
+
 def getNewId():
     global currentId
     currentId += 1
     return currentId
 
+
 class SvguiWidget:
-    
+
     def __init__(self, classname, id, **kwargs):
         self.classname = classname
         self.id = id
@@ -50,9 +53,9 @@ class SvguiWidget:
 
     def setinput(self, attrname, value):
         self.inputs[attrname] = value
-        
+
     def getinput(self, attrname, default=None):
-        if not self.inputs.has_key(attrname):
+        if attrname not in self.inputs:
             self.inputs[attrname] = default
         return self.inputs[attrname]
 
@@ -61,14 +64,14 @@ class SvguiWidget:
             self.outputs[attrname] = value
             self.changed = True
             self.RefreshInterface()
-        
+
     def updateoutputs(self, **kwargs):
         for attrname, value in kwargs.iteritems():
             if self.outputs.get(attrname) != value:
                 self.outputs[attrname] = value
                 self.changed = True
         self.RefreshInterface()
-        
+
     def RefreshInterface(self):
         interface = website.getHMI()
         if isinstance(interface, SVGUI_HMI) and self.changed and not self.inhibit:
@@ -77,51 +80,57 @@ class SvguiWidget:
             if d is not None:
                 self.inhibit = True
                 d.addCallback(self.InterfaceRefreshed)
-    
+
     def InterfaceRefreshed(self, result):
         self.inhibit = False
         if self.changed:
             self.RefreshInterface()
 
+
 def get_object_init_state(obj):
     # Convert objects to a dictionary of their representation
     attrs = obj.attrs.copy()
     attrs.update(obj.inputs)
-    d = { '__class__': obj.classname,
-          'id': obj.id,
-          'kwargs': json.dumps(attrs),
-          }
+    d = {
+        '__class__': obj.classname,
+        'id': obj.id,
+        'kwargs': json.dumps(attrs),
+    }
     return d
+
 
 def get_object_current_state(obj):
     # Convert objects to a dictionary of their representation
-    d = { '__class__': obj.classname,
-          'id': obj.id,
-          'kwargs': json.dumps(obj.outputs),
-          }
+    d = {
+        '__class__': obj.classname,
+        'id': obj.id,
+        'kwargs': json.dumps(obj.outputs),
+    }
     return d
+
 
 class SVGUI_HMI(website.PLCHMI):
     jsClass = u"LiveSVGPage.LiveSVGWidget"
-    
-    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[                                    
+
+    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                          tags.xml(loaders.xmlfile(os.path.join(WorkingDir, svgfile))),
                                          ])
-    
+
     def HMIinitialisation(self):
         gadgets = []
         for gadget in svguiWidgets.values():
             gadgets.append(unicode(json.dumps(gadget, default=get_object_init_state, indent=2), 'ascii'))
         d = self.callRemote('init', gadgets)
         d.addCallback(self.HMIinitialised)
-    
-    def sendData(self,data):
+
+    def sendData(self, data):
         if self.initialised:
-            return self.callRemote('receiveData',unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
+            return self.callRemote('receiveData', unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
         return None
-        
+
     def setattr(self, id, attrname, value):
         svguiWidgets[id].setinput(attrname, value)
+
 
 def createSVGUIControl(*args, **kwargs):
     id = getNewId()
@@ -133,19 +142,21 @@ def createSVGUIControl(*args, **kwargs):
         interface.callRemote('init', gadget)
     return id
 
+
 def setAttr(id, attrname, value):
     gad = svguiWidgets.get(id, None)
     if gad is not None:
         gad.setoutput(attrname, value)
+
 
 def updateAttr(id, **kwargs):
     gad = svguiWidgets.get(id, None)
     if gad is not None:
         gad.updateoutput(**kwargs)
 
+
 def getAttr(id, attrname, default=None):
     gad = svguiWidgets.get(id, None)
     if gad is not None:
         return gad.getinput(attrname, default)
     return default
-

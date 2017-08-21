@@ -22,8 +22,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import sys, traceback, atexit
-#from twisted.python import log
+import sys
+import traceback
+import atexit
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
@@ -35,6 +36,7 @@ from threading import Thread, Event
 _WampSession = None
 _WampConnection = None
 _WampSessionEvent = Event()
+
 
 class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
@@ -49,10 +51,14 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print 'WAMP session left'
 
-PLCObjDefaults = { "StartPLC": False,
-                   "GetTraceVariables" : ("Broken",None),
-                   "GetPLCstatus" : ("Broken",None),
-                   "RemoteExec" : (-1, "RemoteExec script failed!")}
+
+PLCObjDefaults = {
+    "StartPLC":          False,
+    "GetTraceVariables": ("Broken", None),
+    "GetPLCstatus":      ("Broken", None),
+    "RemoteExec":        (-1, "RemoteExec script failed!")
+}
+
 
 def WAMP_connector_factory(uri, confnodesroot):
     """
@@ -61,37 +67,38 @@ def WAMP_connector_factory(uri, confnodesroot):
     """
     servicetype, location = uri.split("://")
     urlpath, realm, ID = location.split('#')
-    urlprefix = {"WAMP":"ws",
-                 "WAMPS":"wss"}[servicetype]
+    urlprefix = {"WAMP":  "ws",
+                 "WAMPS": "wss"}[servicetype]
     url = urlprefix+"://"+urlpath
 
     def RegisterWampClient():
 
-        ## start logging to console
+        # start logging to console
         # log.startLogging(sys.stdout)
 
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
-            realm = realm,
-            extra = {"ID":ID})
+            realm=realm,
+            extra={"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
-            config = component_config)
+            config=component_config)
         session_factory.session = WampSession
 
         # create a WAMP-over-WebSocket transport client factory
         transport_factory = WampWebSocketClientFactory(
             session_factory,
-            url = url,
-            serializers = [MsgPackSerializer()],
-            debug = False,
-            debug_wamp = False)
+            url=url,
+            serializers=[MsgPackSerializer()],
+            debug=False,
+            debug_wamp=False)
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory)
-        confnodesroot.logger.write(_("WAMP connecting to URL : %s\n")%url)
+        confnodesroot.logger.write(_("WAMP connecting to URL : %s\n") % url)
         return conn
 
     AddToDoBeforeQuit = confnodesroot.AppFrame.AddToDoBeforeQuit
+
     def ThreadProc():
         global _WampConnection
         _WampConnection = RegisterWampClient()
@@ -99,22 +106,23 @@ def WAMP_connector_factory(uri, confnodesroot):
         reactor.run(installSignalHandlers=False)
 
     def WampSessionProcMapper(funcname):
-        wampfuncname = '.'.join((ID,funcname))
-        def catcher_func(*args,**kwargs):
+        wampfuncname = '.'.join((ID, funcname))
+
+        def catcher_func(*args, **kwargs):
             global _WampSession
-            if _WampSession is not None :
+            if _WampSession is not None:
                 try:
                     return threads.blockingCallFromThread(
                         reactor, _WampSession.call, wampfuncname,
-                        *args,**kwargs)
+                        *args, **kwargs)
                 except TransportLost, e:
                     confnodesroot.logger.write_error(_("Connection lost!\n"))
                     confnodesroot._SetConnector(None)
-                except Exception,e:
+                except Exception, e:
                     errmess = traceback.format_exc()
                     confnodesroot.logger.write_error(errmess+"\n")
                     print errmess
-                    #confnodesroot._SetConnector(None)
+                    # confnodesroot._SetConnector(None)
             return PLCObjDefaults.get(funcname)
         return catcher_func
 
@@ -128,7 +136,7 @@ def WAMP_connector_factory(uri, confnodesroot):
                     reactor, RegisterWampClient)
             if not _WampSessionEvent.wait(5):
                 _WampConnection = stopConnecting()
-                raise Exception, _("WAMP connection timeout")
+                raise Exception(_("WAMP connection timeout"))
 
         def __del__(self):
             global _WampConnection
@@ -144,13 +152,9 @@ def WAMP_connector_factory(uri, confnodesroot):
             return member
 
     # Try to get the proxy object
-    try :
+    try:
         return WampPLCObjectProxy()
     except Exception, msg:
-        confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n")%location)
+        confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n") % location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None
-
-
-
-

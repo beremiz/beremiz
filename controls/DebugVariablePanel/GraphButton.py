@@ -26,16 +26,16 @@ import wx
 
 from util.BitmapLibrary import GetBitmap
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                        Custom button for Graphic Viewer Class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-"""
-Class that implements a custom button for graphic Viewer
-"""
 
 class GraphButton():
-    
+    """
+    Class that implements a custom button for graphic Viewer
+    """
+
     def __init__(self, x, y, bitmap, callback):
         """
         Constructor
@@ -48,21 +48,21 @@ class GraphButton():
         self.SetPosition(x, y)
         # Set button bitmap
         self.SetBitmap(bitmap)
-        
+
         # By default button is hide and enabled
         self.Shown = False
         self.Enabled = True
-        
+
         # Save reference to callback function
         self.Callback = callback
-    
+
     def __del__(self):
         """
         Destructor
         """
         # Remove reference to callback function
         self.callback = None
-    
+
     def SetBitmap(self, bitmap):
         """
         Set bitmap to use for button
@@ -70,7 +70,7 @@ class GraphButton():
         """
         # Get wx.Bitmap object corresponding to bitmap
         self.Bitmap = GetBitmap(bitmap)
-    
+
     def GetSize(self):
         """
         Return size of button
@@ -78,7 +78,7 @@ class GraphButton():
         """
         # Button size is size of bitmap
         return self.Bitmap.GetSize()
-    
+
     def SetPosition(self, x, y):
         """
         Set button position
@@ -86,7 +86,7 @@ class GraphButton():
         @param y: Y coordinate of Button in Graphic Viewer
         """
         self.Position = wx.Point(x, y)
-    
+
     def Show(self, show=True):
         """
         Mark if button to be displayed in Graphic Viewer
@@ -94,20 +94,20 @@ class GraphButton():
         (default True)
         """
         self.Shown = show
-        
+
     def Hide(self):
         """
         Hide button from Graphic Viewer
         """
         self.Show(False)
-    
+
     def IsShown(self):
         """
         Return if button is displayed in Graphic Viewer
         @return: True if button is displayed in Graphic Viewer
         """
         return self.Shown
-    
+
     def Enable(self, enable=True):
         """
         Mark if button is active in Graphic Viewer
@@ -115,44 +115,44 @@ class GraphButton():
         (default True)
         """
         self.Enabled = enable
-    
+
     def Disable(self):
         """
         Deactivate button in Graphic Viewer
         """
         self.Enabled = False
-    
+
     def IsEnabled(self):
         """
         Return if button is active in Graphic Viewer
         @return: True if button is active in Graphic Viewer
         """
         return self.Enabled
-    
+
     def HitTest(self, x, y):
         """
         Test if point is inside button
         @param x: X coordinate of point
         @param y: Y coordinate of point
         @return: True if button is active and displayed and point is inside
-        button 
+        button
         """
         # Return immediately if button is hidden or inactive
         if not (self.IsShown() and self.IsEnabled()):
             return False
-        
+
         # Test if point is inside button
         w, h = self.Bitmap.GetSize()
         rect = wx.Rect(self.Position.x, self.Position.y, w, h)
         return rect.InsideXY(x, y)
-    
+
     def ProcessCallback(self):
         """
         Call callback function if defined
         """
         if self.Callback is not None:
             self.Callback()
-    
+
     def Draw(self, dc):
         """
         Draw button in Graphic Viewer

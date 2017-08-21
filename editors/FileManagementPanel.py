@@ -34,39 +34,41 @@ from controls import FolderTree
 
 FILTER = _("All files (*.*)|*.*|CSV files (*.csv)|*.csv")
 
+
 class FileManagementPanel(EditorPanel):
-    
+
     def _init_Editor(self, parent):
         self.Editor = wx.Panel(parent)
-        
+
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         left_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(left_sizer, 1, border=5, flag=wx.GROW|wx.ALL)
-        
+        main_sizer.AddSizer(left_sizer, 1, border=5, flag=wx.GROW | wx.ALL)
+
         managed_dir_label = wx.StaticText(self.Editor, label=_(self.TagName) + ":")
-        left_sizer.AddWindow(managed_dir_label, border=5, flag=wx.GROW|wx.BOTTOM)
-        
+        left_sizer.AddWindow(managed_dir_label, border=5, flag=wx.GROW | wx.BOTTOM)
+
         self.ManagedDir = FolderTree(self.Editor, self.Folder, FILTER)
         left_sizer.AddWindow(self.ManagedDir, 1, flag=wx.GROW)
-        
+
         managed_treectrl = self.ManagedDir.GetTreeCtrl()
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemChanged, managed_treectrl)
         if self.EnableDragNDrop:
             self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.OnTreeBeginDrag, managed_treectrl)
-        
+
         button_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(button_sizer, border=5, 
-              flag=wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        
+        main_sizer.AddSizer(button_sizer, border=5,
+                            flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+
         for idx, (name, bitmap, help) in enumerate([
                 ("DeleteButton", "remove_element", _("Remove file from left folder")),
                 ("LeftCopyButton", "LeftCopy", _("Copy file from right folder to left")),
                 ("RightCopyButton", "RightCopy", _("Copy file from left folder to right")),
                 ("EditButton", "edit", _("Edit file"))]):
-            button = wx.lib.buttons.GenBitmapButton(self.Editor, 
-                  bitmap=GetBitmap(bitmap), 
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+            button = wx.lib.buttons.GenBitmapButton(
+                self.Editor,
+                bitmap=GetBitmap(bitmap),
+                size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             if idx > 0:
@@ -75,62 +77,62 @@ class FileManagementPanel(EditorPanel):
                 flag = 0
             self.Bind(wx.EVT_BUTTON, getattr(self, "On" + name), button)
             button_sizer.AddWindow(button, border=20, flag=flag)
-        
+
         right_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(right_sizer, 1, border=5, flag=wx.GROW|wx.ALL)
-        
+        main_sizer.AddSizer(right_sizer, 1, border=5, flag=wx.GROW | wx.ALL)
+
         if wx.Platform == '__WXMSW__':
             system_dir_label = wx.StaticText(self.Editor, label=_("My Computer:"))
         else:
             system_dir_label = wx.StaticText(self.Editor, label=_("Home Directory:"))
-        right_sizer.AddWindow(system_dir_label, border=5, flag=wx.GROW|wx.BOTTOM)
-        
+        right_sizer.AddWindow(system_dir_label, border=5, flag=wx.GROW | wx.BOTTOM)
+
         self.SystemDir = FolderTree(self.Editor, self.HomeDirectory, FILTER, False)
         right_sizer.AddWindow(self.SystemDir, 1, flag=wx.GROW)
-        
+
         system_treectrl = self.SystemDir.GetTreeCtrl()
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemChanged, system_treectrl)
-        
+
         self.Editor.SetSizer(main_sizer)
-        
+
     def __init__(self, parent, controler, name, folder, enable_dragndrop=False):
         self.Folder = os.path.realpath(folder)
         self.EnableDragNDrop = enable_dragndrop
-        
+
         if wx.Platform == '__WXMSW__':
             self.HomeDirectory = "/"
         else:
             self.HomeDirectory = os.path.expanduser("~")
-        
+
         EditorPanel.__init__(self, parent, name, None, None)
-        
+
         self.Controler = controler
-        
+
         self.EditableFileExtensions = []
         self.EditButton.Hide()
-        
+
         self.SetIcon(GetBitmap("FOLDER"))
-    
+
     def __del__(self):
         self.Controler.OnCloseEditor(self)
-    
+
     def GetTitle(self):
         return _(self.TagName)
-    
+
     def SetEditableFileExtensions(self, extensions):
         self.EditableFileExtensions = extensions
         if len(self.EditableFileExtensions) > 0:
             self.EditButton.Show()
-    
+
     def RefreshView(self):
         self.ManagedDir.RefreshTree()
         self.SystemDir.RefreshTree()
         self.RefreshButtonsState()
-    
+
     def RefreshButtonsState(self):
         managed_filepath = self.ManagedDir.GetPath()
         system_filepath = self.SystemDir.GetPath()
-        
+
         self.DeleteButton.Enable(os.path.isfile(managed_filepath))
         self.LeftCopyButton.Enable(os.path.isfile(system_filepath))
         self.RightCopyButton.Enable(os.path.isfile(managed_filepath))
@@ -138,22 +140,23 @@ class FileManagementPanel(EditorPanel):
             self.EditButton.Enable(
                 os.path.isfile(managed_filepath) and
                 os.path.splitext(managed_filepath)[1] in self.EditableFileExtensions)
-    
+
     def OnTreeItemChanged(self, event):
         self.RefreshButtonsState()
         event.Skip()
-        
+
     def OnDeleteButton(self, event):
         filepath = self.ManagedDir.GetPath()
         if os.path.isfile(filepath):
             folder, filename = os.path.split(filepath)
-            
-            dialog = wx.MessageDialog(self, 
-                  _("Do you really want to delete the file '%s'?") % filename, 
-                  _("Delete File"), wx.YES_NO|wx.ICON_QUESTION)
+
+            dialog = wx.MessageDialog(self,
+                                      _("Do you really want to delete the file '%s'?") % filename,
+                                      _("Delete File"),
+                                      wx.YES_NO | wx.ICON_QUESTION)
             remove = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
-            
+
             if remove:
                 os.remove(filepath)
                 self.ManagedDir.RefreshTree()
@@ -161,11 +164,11 @@ class FileManagementPanel(EditorPanel):
 
     def OnEditButton(self, event):
         filepath = self.ManagedDir.GetPath()
-        if (os.path.isfile(filepath) and 
-            os.path.splitext(filepath)[1] in self.EditableFileExtensions):
+        if os.path.isfile(filepath) and \
+           os.path.splitext(filepath)[1] in self.EditableFileExtensions:
             self.Controler._OpenView(filepath + "::")
         event.Skip()
-        
+
     def CopyFile(self, src, dst):
         if os.path.isfile(src):
             src_folder, src_filename = os.path.split(src)
@@ -173,17 +176,18 @@ class FileManagementPanel(EditorPanel):
                 dst_folder, dst_filename = os.path.split(dst)
             else:
                 dst_folder = dst
-            
+
             dst_filepath = os.path.join(dst_folder, src_filename)
             if os.path.isfile(dst_filepath):
-                dialog = wx.MessageDialog(self, 
-                      _("The file '%s' already exist.\nDo you want to replace it?") % src_filename, 
-                      _("Replace File"), wx.YES_NO|wx.ICON_QUESTION)
+                dialog = wx.MessageDialog(
+                    self,
+                    _("The file '%s' already exist.\nDo you want to replace it?") % src_filename,
+                    _("Replace File"), wx.YES_NO | wx.ICON_QUESTION)
                 copy = dialog.ShowModal() == wx.ID_YES
                 dialog.Destroy()
             else:
                 copy = True
-                
+
             if copy:
                 shutil.copyfile(src, dst_filepath)
                 return dst_filepath
@@ -202,7 +206,7 @@ class FileManagementPanel(EditorPanel):
             self.SystemDir.RefreshTree()
             self.SystemDir.SetPath(filepath)
         event.Skip()
-    
+
     def OnTreeBeginDrag(self, event):
         filepath = self.ManagedDir.GetPath()
         if os.path.isfile(filepath):
@@ -211,4 +215,3 @@ class FileManagementPanel(EditorPanel):
             dragSource = wx.DropSource(self)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
-        

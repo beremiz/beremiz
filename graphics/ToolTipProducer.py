@@ -25,39 +25,40 @@
 import wx
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
-    
-#-------------------------------------------------------------------------------
-#                           Tool Tip Producer class
-#-------------------------------------------------------------------------------
 
-"""
-Class that implements an element that generate Tool Tip
-"""
+
+# -------------------------------------------------------------------------------
+#                           Tool Tip Producer class
+# -------------------------------------------------------------------------------
+
 
 class ToolTipProducer:
-    
+    """
+    Class that implements an element that generate Tool Tip
+    """
+
     def __init__(self, parent):
         """
         Constructor
         @param parent: Parent Viewer
         """
         self.Parent = parent
-        
+
         self.ToolTip = None
         self.ToolTipPos = None
-        
+
         # Timer for firing Tool tip display
         self.ToolTipTimer = wx.Timer(self.Parent, -1)
-        self.Parent.Bind(wx.EVT_TIMER, 
-            self.OnToolTipTimer, 
-            self.ToolTipTimer)
-    
+        self.Parent.Bind(wx.EVT_TIMER,
+                         self.OnToolTipTimer,
+                         self.ToolTipTimer)
+
     def __del__(self):
         """
         Destructor
         """
         self.DestroyToolTip()
-    
+
     def OnToolTipTimer(self, event):
         """
         Callback for Tool Tip firing timer Event
@@ -65,21 +66,21 @@ class ToolTipProducer:
         """
         # Get Tool Tip text
         value = self.GetToolTipValue()
-        
+
         if value is not None and self.ToolTipPos is not None:
             # Create Tool Tip
             self.ToolTip = CustomToolTip(self.Parent, value)
             self.ToolTip.SetToolTipPosition(self.ToolTipPos)
             self.ToolTip.Show()
-    
+
     def GetToolTipValue(self):
         """
         Return tool tip text
-        Have to be overridden by inherited classes 
-        @return: Tool tip text (None if not overridden) 
+        Have to be overridden by inherited classes
+        @return: Tool tip text (None if not overridden)
         """
         return None
-    
+
     def DisplayToolTip(self, pos):
         """
         Display Tool tip
@@ -87,14 +88,14 @@ class ToolTipProducer:
         """
         # Destroy current displayed Tool tip
         self.DestroyToolTip()
-        
+
         # Save Tool Tip position
         self.ToolTipPos = pos
         # Start Tool tip firing timer
         self.ToolTipTimer.Start(
-            int(TOOLTIP_WAIT_PERIOD * 1000), 
+            int(TOOLTIP_WAIT_PERIOD * 1000),
             oneShot=True)
-    
+
     def SetToolTipText(self, text):
         """
         Set current Tool tip text
@@ -102,7 +103,7 @@ class ToolTipProducer:
         """
         if self.ToolTip is not None:
             self.ToolTip.SetTip(text)
-    
+
     def DestroyToolTip(self):
         """
         Destroy current displayed Tool Tip
@@ -110,7 +111,7 @@ class ToolTipProducer:
         # Stop Tool tip firing timer
         self.ToolTipTimer.Stop()
         self.ToolTipPos = None
-        
+
         # Destroy Tool Tip
         if self.ToolTip is not None:
             self.ToolTip.Destroy()

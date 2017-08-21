@@ -16,7 +16,7 @@
 #
 # For All Kind Of Problems, Requests Of Enhancements And Bug Reports, Please
 # Write To Me At:
-# 
+#
 #
 # andrea.gavana@agip.it
 # andrea_gavan@tin.it
@@ -47,7 +47,7 @@ What It Can Do:
      And Can Be ESB_EXACT_FIT, ESB_ALIGN_CENTER_VERTICAL, ESB_ALIGN_BOTTOM And
      ESB_ALIGN_LEFT;
 
-EnhancedStatusBar Is Freeware And Distributed Under The wxPython License. 
+EnhancedStatusBar Is Freeware And Distributed Under The wxPython License.
 
 Latest Revision: 21 September 2005, 19.57.20 GMT+2
 Latest Revision before Latest Revision: 21 September 2005, 18.29.35 GMT+2
@@ -78,7 +78,8 @@ ESB_EXACT_FIT = 20
 # ---------------------------------------------------------------
 class EnhancedStatusBarItem(object):
     def __init__(self, widget, pos, horizontalalignment=ESB_ALIGN_CENTER_HORIZONTAL, verticalalignment=ESB_ALIGN_CENTER_VERTICAL):
-        self.__dict__.update( locals() )
+        self.__dict__.update(locals())
+
 
 class EnhancedStatusBar(wx.StatusBar):
 
@@ -90,17 +91,16 @@ class EnhancedStatusBar(wx.StatusBar):
                                    style=wx.ST_SIZEGRIP,
                                    name="EnhancedStatusBar")
         """
-        
+
         wx.StatusBar.__init__(self, parent, id, style, name)
-        
+
         self._items = {}
         self._curPos = 0
         self._parent = parent
-        
-        wx.EVT_SIZE(self, self.OnSize) 
+
+        wx.EVT_SIZE(self, self.OnSize)
         wx.CallAfter(self.OnSize, None)
 
-            
     def OnSize(self, event):
         """Handles The wx.EVT_SIZE Events For The StatusBar.
 
@@ -109,15 +109,15 @@ class EnhancedStatusBar(wx.StatusBar):
 
         for pos, item in self._items.items():
             widget, horizontalalignment, verticalalignment = item.widget, item.horizontalalignment, item.verticalalignment
-           
+
             rect = self.GetFieldRect(pos)
             widgetpos = widget.GetPosition()
             widgetsize = widget.GetSize()
 
             rect = self.GetFieldRect(pos)
-            
+
             if horizontalalignment == ESB_EXACT_FIT:
-                
+
                 if verticalalignment == ESB_EXACT_FIT:
                     """ 1 September 2015 Fix fit align """
                     widget.SetSize((rect.width-4, rect.height-4))
@@ -138,7 +138,7 @@ class EnhancedStatusBar(wx.StatusBar):
                     widget.SetPosition((rect.x-1, rect.height-widgetsize[1]))
 
             elif horizontalalignment == ESB_ALIGN_LEFT:
-                
+
                 xpos = rect.x - 1
                 if verticalalignment == ESB_EXACT_FIT:
                     widget.SetSize((widgetsize[0], rect.height-2))
@@ -154,9 +154,9 @@ class EnhancedStatusBar(wx.StatusBar):
                     widget.SetPosition((xpos, rect.y))
                 elif verticalalignment == ESB_ALIGN_BOTTOM:
                     widget.SetPosition((xpos, rect.height-widgetsize[1]))
-                
+
             elif horizontalalignment == ESB_ALIGN_RIGHT:
-                
+
                 xpos = rect.x + rect.width - widgetsize[0] - 1
                 if verticalalignment == ESB_EXACT_FIT:
                     widget.SetSize((widgetsize[0], rect.height-2))
@@ -174,7 +174,7 @@ class EnhancedStatusBar(wx.StatusBar):
                     widget.SetPosition((xpos, rect.height-widgetsize[1]))
 
             elif horizontalalignment == ESB_ALIGN_CENTER_HORIZONTAL:
-                
+
                 xpos = rect.x + (rect.width - widgetsize[0])/2 - 1
                 if verticalalignment == ESB_EXACT_FIT:
                     widget.SetSize((widgetsize[0], rect.height))
@@ -191,13 +191,11 @@ class EnhancedStatusBar(wx.StatusBar):
                 elif verticalalignment == ESB_ALIGN_BOTTOM:
                     widget.SetPosition((xpos, rect.height-widgetsize[1]))
 
-                
         if event is not None:
             event.Skip()
-        
-        
+
     def AddWidget(self, widget, horizontalalignment=ESB_ALIGN_CENTER_HORIZONTAL,
-                  verticalalignment=ESB_ALIGN_CENTER_VERTICAL, pos = -1):
+                  verticalalignment=ESB_ALIGN_CENTER_VERTICAL, pos=-1):
         """Add A Widget To The EnhancedStatusBar.
 
         Parameters:
@@ -221,7 +219,7 @@ class EnhancedStatusBar(wx.StatusBar):
         if pos == -1:
             pos = self._curPos
             self._curPos += 1
-        
+
         if self.GetFieldsCount() <= pos:
             raise "\nERROR: EnhancedStatusBar has a max of %d items, you tried to set item #%d" % (self.GetFieldsCount(), pos)
 
@@ -236,13 +234,13 @@ class EnhancedStatusBar(wx.StatusBar):
             raise '\nERROR: Parameter "verticalalignment" Should Be One Of '\
                   '"ESB_ALIGN_CENTER_VERTICAL", "ESB_ALIGN_TOP", "ESB_ALIGN_BOTTOM"' \
                   '"ESB_EXACT_FIT"'
-        
 
         try:
             self.RemoveChild(self._items[pos].widget)
             self._items[pos].widget.Destroy()
-        except KeyError: pass
-        
+        except KeyError:
+            pass
+
         self._items[pos] = EnhancedStatusBarItem(widget, pos, horizontalalignment, verticalalignment)
-        
+
         wx.CallAfter(self.OnSize, None)

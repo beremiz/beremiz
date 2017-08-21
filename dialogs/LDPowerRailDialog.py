@@ -29,17 +29,16 @@ from graphics.GraphicCommons import LEFTRAIL, RIGHTRAIL, LD_LINE_SIZE
 from graphics.LD_Objects import LD_PowerRail
 from BlockPreviewDialog import BlockPreviewDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    Set Ladder Power Rail Parameters Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-"""
-Class that implements a dialog for defining parameters of a power rail graphic
-element
-"""
 
 class LDPowerRailDialog(BlockPreviewDialog):
-    
+    """
+    Class that implements a dialog for defining parameters of a power rail graphic
+    element
+    """
     def __init__(self, parent, controller, tagname):
         """
         Constructor
@@ -48,51 +47,52 @@ class LDPowerRailDialog(BlockPreviewDialog):
         @param tagname: Tagname of project POU edited
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
-              title=_('Power Rail Properties'))
-        
+                                    title=_('Power Rail Properties'))
+
         # Init common sizers
         self._init_sizers(2, 0, 5, None, 2, 1)
-        
+
         # Create label for connection type
         type_label = wx.StaticText(self, label=_('Type:'))
         self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
-        
+
         # Create radio buttons for selecting power rail type
         self.TypeRadioButtons = {}
         first = True
         for type, label in [(LEFTRAIL, _('Left PowerRail')),
                             (RIGHTRAIL, _('Right PowerRail'))]:
-            radio_button = wx.RadioButton(self, label=label, 
-                  style=(wx.RB_GROUP if first else 0))
+            radio_button = wx.RadioButton(self, label=label,
+                                          style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
             self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
             self.TypeRadioButtons[type] = radio_button
             first = False
-        
+
         # Create label for power rail pin number
         pin_number_label = wx.StaticText(self, label=_('Pin number:'))
         self.LeftGridSizer.AddWindow(pin_number_label, flag=wx.GROW)
-        
+
         # Create spin control for defining power rail pin number
         self.PinNumber = wx.SpinCtrl(self, min=1, max=50,
-              style=wx.SP_ARROW_KEYS)
+                                     style=wx.SP_ARROW_KEYS)
         self.PinNumber.SetValue(1)
         self.Bind(wx.EVT_SPINCTRL, self.OnPinNumberChanged, self.PinNumber)
         self.LeftGridSizer.AddWindow(self.PinNumber, flag=wx.GROW)
-        
+
         # Add preview panel and associated label to sizers
         self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
         self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
-        
+
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20, 
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
+        self.MainSizer.AddSizer(
+            self.ButtonSizer, border=20,
+            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
         self.Fit()
-        
+
         # Left Power Rail radio button is default control having keyboard focus
         self.TypeRadioButtons[LEFTRAIL].SetFocus()
-    
+
     def GetMinElementSize(self):
         """
         Get minimal graphic element size
@@ -100,7 +100,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         element defined
         """
         return self.Element.GetMinSize(True)
-    
+
     def GetPowerRailType(self):
         """
         Return type selected for power rail
@@ -109,7 +109,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         return (LEFTRAIL
                 if self.TypeRadioButtons[LEFTRAIL].GetValue()
                 else RIGHTRAIL)
-    
+
     def SetValues(self, values):
         """
         Set default power rail parameters
@@ -117,11 +117,11 @@ class LDPowerRailDialog(BlockPreviewDialog):
         """
         # For each parameters defined, set corresponding control value
         for name, value in values.items():
-            
+
             # Parameter is power rail type
             if name == "type":
                 self.TypeRadioButtons[value].SetValue(True)
-            
+
             # Parameter is power rail pin number
             elif name == "pin_number":
                 self.PinNumber.SetValue(value)
@@ -158,11 +158,11 @@ class LDPowerRailDialog(BlockPreviewDialog):
         Refresh preview panel of graphic element
         Override BlockPreviewDialog function
         """
-        
+
         # Set graphic element displayed, creating a power rail element
-        self.Element = LD_PowerRail(self.Preview, 
-                self.GetPowerRailType(), 
-                connectors = self.PinNumber.GetValue())
-        
+        self.Element = LD_PowerRail(self.Preview,
+                                    self.GetPowerRailType(),
+                                    connectors=self.PinNumber.GetValue())
+
         # Call BlockPreviewDialog function
         BlockPreviewDialog.RefreshPreview(self)

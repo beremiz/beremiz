@@ -30,44 +30,51 @@ from util.BitmapLibrary import GetBitmap
 # Customize CustomTreeItem for adding icon on item left
 CT.GenericTreeItem._ExtraImage = None
 
+
 def SetExtraImage(self, image):
     self._type = (1 if image is not None else 0)
     self._ExtraImage = image
 
+
 CT.GenericTreeItem.SetExtraImage = SetExtraImage
 
 _DefaultGetCurrentCheckedImage = CT.GenericTreeItem.GetCurrentCheckedImage
+
+
 def GetCurrentCheckedImage(self):
     if self._ExtraImage is not None:
         return self._ExtraImage
     return _DefaultGetCurrentCheckedImage(self)
+
+
 CT.GenericTreeItem.GetCurrentCheckedImage = GetCurrentCheckedImage
 
+
 class CustomTree(CT.CustomTreeCtrl):
-    
+
     def __init__(self, *args, **kwargs):
         CT.CustomTreeCtrl.__init__(self, *args, **kwargs)
-        
+
         self.BackgroundBitmap = None
-        self.BackgroundAlign = wx.ALIGN_LEFT|wx.ALIGN_TOP
-        
+        self.BackgroundAlign = wx.ALIGN_LEFT | wx.ALIGN_TOP
+
         self.AddMenu = None
         self.Enabled = False
-        
+
         self.Bind(wx.EVT_SCROLLWIN, self.OnScroll)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-    
+
     def SetBackgroundBitmap(self, bitmap, align):
         self.BackgroundBitmap = bitmap
         self.BackgroundAlign = align
-    
+
     def SetImageListCheck(self, sizex, sizey, imglist=None):
         CT.CustomTreeCtrl.SetImageListCheck(self, sizex, sizey, imglist=None)
-        
+
         self.ExtraImages = {}
         for image in ["function", "functionBlock", "program"]:
             self.ExtraImages[image] = self._imageListCheck.Add(GetBitmap(image.upper()))
-    
+
     def SetItemExtraImage(self, item, bitmap):
         dc = wx.ClientDC(self)
         image = self.ExtraImages.get(bitmap)
@@ -76,45 +83,45 @@ class CustomTree(CT.CustomTreeCtrl):
         else:
             item.SetExtraImage(None)
         self.CalculateSize(item, dc)
-        self.RefreshLine(item)   
-        
+        self.RefreshLine(item)
+
     def SetAddMenu(self, add_menu):
         self.AddMenu = add_menu
-    
+
     def Enable(self, enabled):
         self.Enabled = enabled
-    
+
     def GetBitmapRect(self):
         client_size = self.GetClientSize()
         bitmap_size = self.BackgroundBitmap.GetSize()
-        
+
         if self.BackgroundAlign & wx.ALIGN_RIGHT:
             x = client_size[0] - bitmap_size[0]
         elif self.BackgroundAlign & wx.ALIGN_CENTER_HORIZONTAL:
             x = (client_size[0] - bitmap_size[0]) / 2
         else:
             x = 0
-        
+
         if self.BackgroundAlign & wx.ALIGN_BOTTOM:
             y = client_size[1] - bitmap_size[1]
         elif self.BackgroundAlign & wx.ALIGN_CENTER_VERTICAL:
             y = (client_size[1] - bitmap_size[1]) / 2
         else:
             y = 0
-        
+
         return wx.Rect(x, y, bitmap_size[0], bitmap_size[1])
-    
+
     def OnLeftUp(self, event):
         if self.Enabled:
             pos = event.GetPosition()
             item, flags = self.HitTest(pos)
-            
+
             bitmap_rect = self.GetBitmapRect()
-            if (bitmap_rect.InsideXY(pos.x, pos.y) or 
-                flags & wx.TREE_HITTEST_NOWHERE) and self.AddMenu is not None:
+            if ((bitmap_rect.InsideXY(pos.x, pos.y) or
+                 flags & wx.TREE_HITTEST_NOWHERE) and self.AddMenu is not None):
                 wx.CallAfter(self.PopupMenuXY, self.AddMenu, pos.x, pos.y)
         event.Skip()
-    
+
     def OnEraseBackground(self, event):
         dc = event.GetDC()
 
@@ -122,12 +129,12 @@ class CustomTree(CT.CustomTreeCtrl):
             dc = wx.ClientDC(self)
             rect = self.GetUpdateRegion().GetBox()
             dc.SetClippingRect(rect)
-        
+
         dc.Clear()
-        
+
         bitmap_rect = self.GetBitmapRect()
         dc.DrawBitmap(self.BackgroundBitmap, bitmap_rect.x, bitmap_rect.y)
-    
+
     def OnScroll(self, event):
         wx.CallAfter(self.Refresh)
         event.Skip()
