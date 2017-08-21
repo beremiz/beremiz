@@ -32,15 +32,7 @@ import random
 import time
 import version
 
-import util.paths as paths
 from types import ListType
-
-beremiz_dir = paths.AbsDir(__file__)
-
-
-def Bpath(*args):
-    return os.path.join(beremiz_dir, *args)
-
 
 import wx.lib.buttons
 import wx.lib.statbmp
@@ -53,7 +45,11 @@ import platform
 import time
 import traceback
 import commands
+import threading
+from threading import Lock, Timer, currentThread
+from time import time as gettime
 
+import util.paths as paths
 from docutil import OpenHtmlFrame
 from editors.EditorPanel import EditorPanel
 from editors.Viewer import Viewer
@@ -67,11 +63,46 @@ from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
 from controls import EnhancedStatusBar as esb
 from dialogs.AboutDialog import ShowAboutDialog
 
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY, ITEM_PROJECT, ITEM_RESOURCE
+from PLCControler import \
+    LOCATION_CONFNODE, \
+    LOCATION_MODULE, \
+    LOCATION_GROUP, \
+    LOCATION_VAR_INPUT, \
+    LOCATION_VAR_OUTPUT, \
+    LOCATION_VAR_MEMORY, \
+    ITEM_PROJECT, \
+    ITEM_RESOURCE
+
 from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ITEM_CONFNODE
+
+from IDEFrame import \
+    TITLE,\
+    EDITORTOOLBAR,\
+    FILEMENU,\
+    EDITMENU,\
+    DISPLAYMENU,\
+    PROJECTTREE,\
+    POUINSTANCEVARIABLESPANEL,\
+    LIBRARYTREE,\
+    SCALING,\
+    PAGETITLES,\
+    IDEFrame, \
+    AppendMenu,\
+    EncodeFileSystemPath, \
+    DecodeFileSystemPath
+
+from util.BitmapLibrary import GetBitmap
+
+
+beremiz_dir = paths.AbsDir(__file__)
+
+
+def Bpath(*args):
+    return os.path.join(beremiz_dir, *args)
 
 
 MAX_RECENT_PROJECTS = 9
+
 
 if wx.Platform == '__WXMSW__':
     faces = {
@@ -84,10 +115,9 @@ else:
         'size': 10,
     }
 
-from threading import Lock, Timer, currentThread
+
 MainThread = currentThread().ident
 REFRESH_PERIOD = 0.1
-from time import time as gettime
 
 
 class LogPseudoFile:
@@ -202,20 +232,6 @@ class LogPseudoFile:
 
 
 ID_FILEMENURECENTPROJECTS = wx.NewId()
-
-from IDEFrame import TITLE,\
-                     EDITORTOOLBAR,\
-                     FILEMENU,\
-                     EDITMENU,\
-                     DISPLAYMENU,\
-                     PROJECTTREE,\
-                     POUINSTANCEVARIABLESPANEL,\
-                     LIBRARYTREE,\
-                     SCALING,\
-                     PAGETITLES,\
-                     IDEFrame, AppendMenu,\
-                     EncodeFileSystemPath, DecodeFileSystemPath
-from util.BitmapLibrary import GetBitmap
 
 
 class Beremiz(IDEFrame):
@@ -1095,8 +1111,6 @@ class Beremiz(IDEFrame):
 # -------------------------------------------------------------------------------
 #                               Exception Handler
 # -------------------------------------------------------------------------------
-import threading
-import traceback
 
 Max_Traceback_List_Size = 20
 

@@ -7,6 +7,7 @@ from copy import copy
 from os.path import join, dirname, basename, abspath, split, isfile, isdir
 from optparse import OptionParser
 import pyjs
+import time
 from cStringIO import StringIO
 try:
     # Python 2.5 and above
@@ -540,9 +541,6 @@ def subdeps(m):
     for i in range(0, len(m)):
         d.append('.'.join(m[:i+1]))
     return d
-
-
-import time
 
 
 def add_subdeps(deps, mod_name):

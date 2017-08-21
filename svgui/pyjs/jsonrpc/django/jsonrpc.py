@@ -1,9 +1,15 @@
 # jsonrpc.py
 #   original code: http://trac.pyworks.org/pyjamas/wiki/DjangoWithPyJamas
 #   also from: http://www.pimentech.fr/technologies/outils
+from datetime import date
+import datetime
+import sys
+
 from django.utils import simplejson
 from django.http import HttpResponse
-import sys
+from django import forms
+from django.core.serializers import serialize
+
 
 from pyjs.jsonrpc import JSONRPCServiceBase
 # JSONRPCService and jsonremote are used in combination to drastically
@@ -63,8 +69,6 @@ def jsonremote(service):
 # RPC functions.  dump "processor" into urlpatterns to make it
 # part of the app:
 #  (r'^formsservice/$', 'djangoapp.views.processor'),
-
-from django import forms
 
 
 def builderrors(form):
@@ -206,11 +210,6 @@ class FormProcessor(JSONRPCService):
 # dump jsonservice into urlpatterns to make the two RPC functions,
 # list_some_model and list_another_model part of the django app:
 #  (r'^service1/$', 'djangoapp.views.jsonservice'),
-
-
-from django.core.serializers import serialize
-import datetime
-from datetime import date
 
 
 def dict_datetimeflatten(item):

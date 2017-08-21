@@ -26,7 +26,14 @@
 import os
 import sys
 import getopt
+import threading
 from threading import Thread
+import traceback
+import __builtin__
+import Pyro.core as pyro
+
+from runtime import PLCObject, PLCprint, ServicePublisher
+import util.paths as paths
 
 
 def usage():
@@ -101,7 +108,7 @@ for o, a in opts:
         usage()
         sys.exit()
 
-import util.paths as paths
+
 beremiz_dir = paths.AbsDir(__file__)
 
 if len(argv) > 1:
@@ -114,7 +121,6 @@ elif len(argv) == 0:
     WorkingDir = os.getcwd()
     argv = [WorkingDir]
 
-import __builtin__
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
 
@@ -375,8 +381,6 @@ if enablewx:
                     currenticon = self.MakeIcon(defaulticon)
                 self.SetIcon(currenticon, "Beremiz Service")
 
-from runtime import PLCObject, PLCprint, ServicePublisher
-import Pyro.core as pyro
 
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
@@ -531,8 +535,6 @@ else:
 
 
 # Exception hooks s
-import threading
-import traceback
 
 
 def LogException(*exp):

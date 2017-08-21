@@ -26,35 +26,46 @@
 import os
 import sys
 import shutil
+import wx
+from gnosis.xml.pickle import *
+from gnosis.xml.pickle.util import setParanoia
 
 import util.paths as paths
+from util.TranslationCatalogs import AddCatalog
+from ConfigTreeNode import ConfigTreeNode
+from PLCControler import \
+    LOCATION_CONFNODE, \
+    LOCATION_MODULE, \
+    LOCATION_GROUP, \
+    LOCATION_VAR_INPUT, \
+    LOCATION_VAR_OUTPUT, \
+    LOCATION_VAR_MEMORY
 
-base_folder = paths.AbsParentDir(__file__, 2)
-CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
-sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
+try:
+    from nodelist import NodeList
+except ImportError:
+    base_folder = paths.AbsParentDir(__file__, 2)
+    CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
+    sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 
-import wx
+    from nodelist import NodeList
 
-from nodelist import NodeList
+
 from nodemanager import NodeManager
 import config_utils
 import gen_cfile
 import eds_utils
 import canfestival_config as local_canfestival_config
-from ConfigTreeNode import ConfigTreeNode
+
 from commondialogs import CreateNodeDialog
 from subindextable import IECTypeConversion, SizeConversion
-
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from SlaveEditor import SlaveEditor, MasterViewer
 from NetworkEditor import NetworkEditor
 
-from gnosis.xml.pickle import *
-from gnosis.xml.pickle.util import setParanoia
+
+AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))
 setParanoia(0)
 
-from util.TranslationCatalogs import AddCatalog
-AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))
 
 # --------------------------------------------------
 #              Location Tree Helper

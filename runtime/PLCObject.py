@@ -28,6 +28,7 @@ import os
 import commands
 import types
 import sys
+import traceback
 from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator, UnpackDebugBuffer
 from time import time
 
@@ -37,8 +38,6 @@ if os.name in ("nt", "ce"):
     from _ctypes import FreeLibrary as dlclose
 elif os.name == "posix":
     from _ctypes import dlopen, dlclose
-
-import traceback
 
 
 def get_last_traceback(tb):
