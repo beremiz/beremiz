@@ -26,14 +26,14 @@ import wx
 from math import *
 from types import *
 import datetime
-from threading import Lock,Timer
+from threading import Lock, Timer
 
 from graphics.ToolTipProducer import ToolTipProducer
 from graphics.DebugDataConsumer import DebugDataConsumer
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Common constants
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 """
 Definition of constants for dimensions of graphic elements
@@ -78,17 +78,17 @@ SFC_ACTION_MIN_SIZE = (100, 30)         # Minimum size of an action block line
 [HANDLE_MOVE, HANDLE_RESIZE, HANDLE_POINT, HANDLE_SEGMENT, HANDLE_CONNECTOR] = range(5)
 
 # List of value for resize handle that are valid
-VALID_HANDLES = [(1,1), (1,2), (1,3), (2,3), (3,3), (3,2), (3,1), (2,1)]
+VALID_HANDLES = [(1, 1), (1, 2), (1, 3), (2, 3), (3, 3), (3, 2), (3, 1), (2, 1)]
 
 # Contants for defining the direction of a connector
-[EAST, NORTH, WEST, SOUTH] = [(1,0), (0,-1), (-1,0), (0,1)]
+[EAST, NORTH, WEST, SOUTH] = [(1, 0), (0, -1), (-1, 0), (0, 1)]
 
-# Contants for defining which mode is selected for each view 
-[MODE_SELECTION, MODE_BLOCK, MODE_VARIABLE, MODE_CONNECTION, MODE_COMMENT, 
- MODE_COIL, MODE_CONTACT, MODE_POWERRAIL, MODE_INITIALSTEP, MODE_STEP, 
+# Contants for defining which mode is selected for each view
+[MODE_SELECTION, MODE_BLOCK, MODE_VARIABLE, MODE_CONNECTION, MODE_COMMENT,
+ MODE_COIL, MODE_CONTACT, MODE_POWERRAIL, MODE_INITIALSTEP, MODE_STEP,
  MODE_TRANSITION, MODE_DIVERGENCE, MODE_JUMP, MODE_ACTION, MODE_MOTION] = range(15)
 
-# Contants for defining alignment types for graphic group 
+# Contants for defining alignment types for graphic group
 [ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_TOP, ALIGN_MIDDLE, ALIGN_BOTTOM] = range(6)
 
 # Contants for defining which drawing mode is selected for app
@@ -105,15 +105,16 @@ SEARCH_RESULT_HIGHLIGHT = (wx.Colour(255, 165, 0), wx.WHITE)
 REFRESH_HIGHLIGHT_PERIOD = 0.1
 
 HANDLE_CURSORS = {
-    (1, 1) : 2,
-    (3, 3) : 2,
-    (1, 3) : 3,
-    (3, 1) : 3,
-    (1, 2) : 4,
-    (3, 2) : 4,
-    (2, 1) : 5,
-    (2, 3) : 5
+    (1, 1): 2,
+    (3, 3): 2,
+    (1, 3): 3,
+    (3, 1): 3,
+    (1, 2): 4,
+    (3, 2): 4,
+    (2, 1): 5,
+    (2, 3): 5
 }
+
 
 def round_scaling(x, n, constraint=0):
     fraction = float(x) / float(n)
@@ -122,26 +123,36 @@ def round_scaling(x, n, constraint=0):
     else:
         xround = round(fraction)
         if constraint == 1 and xround < fraction:
-            xround += 1 
+            xround += 1
     return int(xround * n)
+
 
 """
 Basic vector operations for calculate wire points
 """
 
-# Create a vector from two points and define if vector must be normal
-def vector(p1, p2, normal = True):
+
+def vector(p1, p2, normal=True):
+    """
+    Create a vector from two points and define if vector must be normal
+    """
     vector = (p2.x - p1.x, p2.y - p1.y)
     if normal:
         return normalize(vector)
     return vector
 
-# Calculate the norm of a given vector
+
 def norm(v):
+    """
+    Calculate the norm of a given vector
+    """
     return sqrt(v[0] * v[0] + v[1] * v[1])
 
-# Normalize a given vector
+
 def normalize(v):
+    """
+    Normalize a given vector
+    """
     v_norm = norm(v)
     # Verifie if it is not a null vector
     if v_norm > 0:
@@ -149,24 +160,32 @@ def normalize(v):
     else:
         return v
 
-# Calculate the scalar product of two vectors
+
 def is_null_vector(v):
+    """
+    Calculate the scalar product of two vectors
+    """
     return v == (0, 0)
 
-# Calculate the scalar product of two vectors
+
 def add_vectors(v1, v2):
+    """
+    Calculate the scalar product of two vectors
+    """
     return (v1[0] + v2[0], v1[1] + v2[1])
 
-# Calculate the scalar product of two vectors
+
 def product(v1, v2):
+    """
+    Calculate the scalar product of two vectors
+    """
     return v1[0] * v2[0] + v1[1] * v2[1]
 
 
-"""
-Function that calculates the nearest point of the grid defined by scaling for the given point
-"""
-
 def GetScaledEventPosition(event, dc, scaling):
+    """
+    Function that calculates the nearest point of the grid defined by scaling for the given point
+    """
     pos = event.GetLogicalPosition(dc)
     if scaling:
         pos.x = round(float(pos.x) / float(scaling[0])) * scaling[0]
@@ -174,11 +193,10 @@ def GetScaledEventPosition(event, dc, scaling):
     return pos
 
 
-"""
-Function that choose a direction during the wire points generation
-"""
-
 def DirectionChoice(v_base, v_target, dir_target):
+    """
+    Function that choose a direction during the wire points generation
+    """
     dir_product = product(v_base, v_target)
     if dir_product < 0:
         return (-v_base[0], -v_base[1])
@@ -186,19 +204,23 @@ def DirectionChoice(v_base, v_target, dir_target):
         return dir_target
     return v_base
 
+
 def MiterPen(colour, width=1, style=wx.SOLID):
     pen = wx.Pen(colour, width, style)
     pen.SetJoin(wx.JOIN_MITER)
     pen.SetCap(wx.CAP_PROJECTING)
     return pen
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 #                    Helpers for highlighting text
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 def AddHighlight(highlights, infos):
     RemoveHighlight(highlights, infos)
     highlights.append(infos)
+
 
 def RemoveHighlight(highlights, infos):
     if infos in highlights:
@@ -206,10 +228,12 @@ def RemoveHighlight(highlights, infos):
         return True
     return False
 
+
 def ClearHighlight(highlights, highlight_type=None):
     if highlight_type is not None:
         return [highlight for highlight in highlights if highlight[2] != highlight_type]
     return []
+
 
 def DrawHighlightedText(dc, text, highlights, x, y):
     current_pen = dc.GetPen()
@@ -224,26 +248,27 @@ def DrawHighlightedText(dc, text, highlights, x, y):
         dc.DrawText(part, x + offset_width, y)
     dc.SetPen(current_pen)
     dc.SetTextForeground(wx.BLACK)
-    
-#-------------------------------------------------------------------------------
-#                           Graphic element base class
-#-------------------------------------------------------------------------------
 
-"""
-Class that implements a generic graphic element
-"""
+
+# -------------------------------------------------------------------------------
+#                           Graphic element base class
+# -------------------------------------------------------------------------------
+
 
 class Graphic_Element(ToolTipProducer):
-    
+    """
+    Class that implements a generic graphic element
+    """
+
     # Create a new graphic element
-    def __init__(self, parent, id = None):
+    def __init__(self, parent, id=None):
         ToolTipProducer.__init__(self, parent)
         self.Parent = parent
         self.Id = id
         self.oldPos = None
         self.StartPos = None
         self.CurrentDrag = None
-        self.Handle = (None,None)
+        self.Handle = (None, None)
         self.Dragging = False
         self.Selected = False
         self.Highlighted = False
@@ -251,22 +276,22 @@ class Graphic_Element(ToolTipProducer):
         self.Size = wx.Size(0, 0)
         self.BoundingBox = wx.Rect(0, 0, 0, 0)
         self.Visible = False
-    
+
     def GetDefinition(self):
         return [self.Id], []
-    
+
     def TestVisible(self, screen):
         self.Visible = self.Selected or self.GetRedrawRect().Intersects(screen)
-    
+
     def IsVisible(self):
         return self.Visible
-    
+
     def SpreadCurrent(self):
         pass
-    
+
     def GetConnectorTranslation(self, element):
         return {}
-    
+
     def FindNearestConnector(self, position, connectors):
         distances = []
         for connector in connectors:
@@ -278,20 +303,20 @@ class Graphic_Element(ToolTipProducer):
         if len(distances) > 0:
             return distances[0][1]
         return None
-        
+
     def IsOfType(self, type, reference):
         return self.Parent.IsOfType(type, reference)
-    
+
     def IsEndType(self, type):
         return self.Parent.IsEndType(type)
-        
+
     def GetDragging(self):
         return self.Dragging
-    
+
     # Make a clone of this element
     def Clone(self, parent):
         return Graphic_Element(parent, self.Id)
-    
+
     # Changes the block position
     def SetPosition(self, x, y):
         self.Pos.x = x
@@ -302,7 +327,7 @@ class Graphic_Element(ToolTipProducer):
     # Returns the block position
     def GetPosition(self):
         return self.Pos.x, self.Pos.y
-    
+
     # Changes the element size
     def SetSize(self, width, height):
         self.Size.SetWidth(width)
@@ -313,11 +338,11 @@ class Graphic_Element(ToolTipProducer):
     # Returns the element size
     def GetSize(self):
         return self.Size.GetWidth(), self.Size.GetHeight()
-    
+
     # Returns the minimum element size
     def GetMinSize(self):
         return 0, 0
-    
+
     # Set size of the element to the minimum size
     def SetBestSize(self, scaling, x_factor=0.5, y_factor=0.5):
         width, height = self.GetSize()
@@ -336,31 +361,31 @@ class Graphic_Element(ToolTipProducer):
             height = round_scaling(height, scaling[1], 1)
         self.SetSize(width, height)
         return self.Pos.x - posx, self.Pos.y - posy
-    
+
     # Refresh the element Bounding Box
     def RefreshBoundingBox(self):
         self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0], self.Size[1])
-    
+
     # Refresh the element connectors position
     def RefreshConnectors(self):
         pass
-    
+
     # Refresh the position of wires connected to element inputs and outputs
     def RefreshConnected(self):
         pass
-    
+
     # Change the parent
     def SetParent(self, parent):
         self.Parent = parent
-    
+
     # Override this method for defining the method to call for deleting this element
     def Delete(self):
         pass
-    
+
     # Returns the Id
     def GetId(self):
         return self.Id
-    
+
     # Returns if the point given is in the bounding box
     def HitTest(self, pt, connectors=True):
         if connectors:
@@ -368,21 +393,21 @@ class Graphic_Element(ToolTipProducer):
         else:
             rect = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0], self.Size[1])
         return rect.InsideXY(pt.x, pt.y)
-    
+
     # Returns if the point given is in the bounding box
     def IsInSelection(self, rect):
         return rect.InsideXY(self.BoundingBox.x, self.BoundingBox.y) and rect.InsideXY(self.BoundingBox.x + self.BoundingBox.width, self.BoundingBox.y + self.BoundingBox.height)
-    
+
     # Override this method for refreshing the bounding box
     def RefreshBoundingBox(self):
         pass
-    
+
     # Returns the bounding box
     def GetBoundingBox(self):
         return self.BoundingBox
-    
+
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         scalex, scaley = self.Parent.GetViewScale()
         rect = wx.Rect()
         rect.x = self.BoundingBox.x - int(HANDLE_SIZE / scalex) - 3 - abs(movex)
@@ -390,42 +415,42 @@ class Graphic_Element(ToolTipProducer):
         rect.width = self.BoundingBox.width + 2 * (int(HANDLE_SIZE / scalex) + abs(movex) + 1) + 4
         rect.height = self.BoundingBox.height + 2 * (int(HANDLE_SIZE / scaley) + abs(movey) + 1) + 4
         return rect
-    
-    def Refresh(self, rect = None):
+
+    def Refresh(self, rect=None):
         if self.Visible:
             if rect is not None:
                 self.Parent.RefreshRect(self.Parent.GetScrolledRect(rect), False)
             else:
                 self.Parent.RefreshRect(self.Parent.GetScrolledRect(self.GetRedrawRect()), False)
-    
+
     # Change the variable that indicates if this element is selected
     def SetSelected(self, selected):
         self.Selected = selected
         self.Refresh()
-    
+
     # Change the variable that indicates if this element is highlighted
     def SetHighlighted(self, highlighted):
         self.Highlighted = highlighted
         self.Refresh()
-    
+
     # Test if the point is on a handle of this element
     def TestHandle(self, event):
         dc = self.Parent.GetLogicalDC()
         scalex, scaley = dc.GetUserScale()
         pos = event.GetPosition()
         pt = wx.Point(*self.Parent.CalcUnscrolledPosition(pos.x, pos.y))
-        
+
         left = (self.BoundingBox.x - 2) * scalex - HANDLE_SIZE
         center = (self.BoundingBox.x + self.BoundingBox.width / 2) * scalex - HANDLE_SIZE / 2
         right = (self.BoundingBox.x + self.BoundingBox.width + 2) * scalex
-        
+
         top = (self.BoundingBox.y - 2) * scaley - HANDLE_SIZE
         middle = (self.BoundingBox.y + self.BoundingBox.height / 2) * scaley - HANDLE_SIZE / 2
         bottom = (self.BoundingBox.y + self.BoundingBox.height + 2) * scaley
-        
+
         extern_rect = wx.Rect(left, top, right + HANDLE_SIZE - left, bottom + HANDLE_SIZE - top)
         intern_rect = wx.Rect(left + HANDLE_SIZE, top + HANDLE_SIZE, right - left - HANDLE_SIZE, bottom - top - HANDLE_SIZE)
-        
+
         # Verify that this element is selected
         if self.Selected and extern_rect.InsideXY(pt.x, pt.y) and not intern_rect.InsideXY(pt.x, pt.y):
             # Find if point is on a handle horizontally
@@ -450,7 +475,7 @@ class Graphic_Element(ToolTipProducer):
             if (handle_x, handle_y) in VALID_HANDLES:
                 return handle_x, handle_y
         return 0, 0
-    
+
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
         pos = event.GetLogicalPosition(dc)
@@ -469,7 +494,7 @@ class Graphic_Element(ToolTipProducer):
         self.oldPos = GetScaledEventPosition(event, dc, scaling)
         self.StartPos = wx.Point(self.Pos.x, self.Pos.y)
         self.CurrentDrag = wx.Point(0, 0)
-    
+
     # Method called when a LeftUp event have been generated
     def OnLeftUp(self, event, dc, scaling):
         # If a dragging have been initiated
@@ -498,7 +523,7 @@ class Graphic_Element(ToolTipProducer):
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
         pass
-    
+
     # Method called when a Motion event have been generated
     def OnMotion(self, event, dc, scaling):
         # If the cursor is dragging and the element have been clicked
@@ -532,19 +557,19 @@ class Graphic_Element(ToolTipProducer):
             return 0, 0
 
     # Moves the element
-    def Move(self, dx, dy, exclude = []):
+    def Move(self, dx, dy, exclude=[]):
         self.Pos.x += max(-self.BoundingBox.x, dx)
         self.Pos.y += max(-self.BoundingBox.y, dy)
         self.RefreshConnected(exclude)
         self.RefreshBoundingBox()
-    
+
     # Resizes the element from position and size given
     def Resize(self, x, y, width, height):
         self.Move(x, y)
         self.SetSize(width, height)
-    
+
     # Refreshes the element state according to move defined and handle selected
-    def ProcessDragging(self, movex, movey, event, scaling, width_fac = 1, height_fac = 1):
+    def ProcessDragging(self, movex, movey, event, scaling, width_fac=1, height_fac=1):
         handle_type, handle = self.Handle
         # If it is a resize handle, calculate the values from resizing
         if handle_type == HANDLE_RESIZE:
@@ -618,27 +643,27 @@ class Graphic_Element(ToolTipProducer):
                     movey = self.StartPos.y - self.Pos.y
                 else:
                     movex = self.StartPos.x - self.Pos.x
-                    movey = self.StartPos.y + self.CurrentDrag.y - self.Pos.y   
+                    movey = self.StartPos.y + self.CurrentDrag.y - self.Pos.y
             self.Move(movex, movey)
             return movex, movey
         return 0, 0
-    
+
     # Override this method for defining the method to call for adding an highlight to this element
     def AddHighlight(self, infos, start, end, highlight_type):
         pass
-    
+
     # Override this method for defining the method to call for removing an highlight from this element
     def RemoveHighlight(self, infos, start, end, highlight_type):
         pass
-    
+
     # Override this method for defining the method to call for removing all the highlights of one particular type from this element
     def ClearHighlight(self, highlight_type=None):
         pass
-    
+
     # Override this method for defining the method to call for refreshing the model of this element
     def RefreshModel(self, move=True):
         pass
-    
+
     # Draws the highlightment of this element if it is highlighted (can be overwritten)
     def DrawHighlightment(self, dc):
         scalex, scaley = dc.GetUserScale()
@@ -646,13 +671,13 @@ class Graphic_Element(ToolTipProducer):
         dc.SetPen(MiterPen(HIGHLIGHTCOLOR))
         dc.SetBrush(wx.Brush(HIGHLIGHTCOLOR))
         dc.SetLogicalFunction(wx.AND)
-        dc.DrawRectangle(int(round((self.Pos.x - 1) * scalex)) - 2, 
-                         int(round((self.Pos.y - 1) * scaley)) - 2, 
-                         int(round((self.Size.width + 3) * scalex)) + 5, 
+        dc.DrawRectangle(int(round((self.Pos.x - 1) * scalex)) - 2,
+                         int(round((self.Pos.y - 1) * scaley)) - 2,
+                         int(round((self.Size.width + 3) * scalex)) + 5,
                          int(round((self.Size.height + 3) * scaley)) + 5)
         dc.SetLogicalFunction(wx.COPY)
         dc.SetUserScale(scalex, scaley)
-    
+
     # Draws the handles of this element if it is selected
     def Draw(self, dc):
         if not getattr(dc, "printing", False):
@@ -663,55 +688,55 @@ class Graphic_Element(ToolTipProducer):
                 dc.SetUserScale(1, 1)
                 dc.SetPen(MiterPen(wx.BLACK))
                 dc.SetBrush(wx.BLACK_BRUSH)
-                
+
                 left = (self.BoundingBox.x - 2) * scalex - HANDLE_SIZE
                 center = (self.BoundingBox.x + self.BoundingBox.width / 2) * scalex - HANDLE_SIZE / 2
                 right = (self.BoundingBox.x + self.BoundingBox.width + 2) * scalex
-                
+
                 top = (self.BoundingBox.y - 2) * scaley - HANDLE_SIZE
                 middle = (self.BoundingBox.y + self.BoundingBox.height / 2) * scaley - HANDLE_SIZE / 2
                 bottom = (self.BoundingBox.y + self.BoundingBox.height + 2) * scaley
-                
+
                 for x, y in [(left, top), (center, top), (right, top),
                              (left, middle), (right, middle),
                              (left, bottom), (center, bottom), (right, bottom)]:
                     dc.DrawRectangle(x, y, HANDLE_SIZE, HANDLE_SIZE)
-                
+
                 dc.SetUserScale(scalex, scaley)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                           Group of graphic elements
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-"""
-Class that implements a group of graphic elements
-"""
 
 class Graphic_Group(Graphic_Element):
-    
+    """
+    Class that implements a group of graphic elements
+    """
+
     # Create a new group of graphic elements
     def __init__(self, parent):
         Graphic_Element.__init__(self, parent)
         self.Elements = []
         self.RefreshWireExclusion()
         self.RefreshBoundingBox()
-    
+
     # Destructor
     def __del__(self):
         self.Elements = []
-    
+
     def GetDefinition(self):
-        blocks = [] 
+        blocks = []
         wires = []
         for element in self.Elements:
             block, wire = element.GetDefinition()
             blocks.extend(block)
             wires.extend(wire)
         return blocks, wires
-    
+
     # Make a clone of this element
-    def Clone(self, parent, pos = None):
+    def Clone(self, parent, pos=None):
         group = Graphic_Group(parent)
         connectors = {}
         exclude_names = {}
@@ -729,9 +754,9 @@ class Graphic_Group(Graphic_Element):
                     if parent.IsNamedElement(element):
                         name = parent.GenerateNewName(element, exclude_names)
                         exclude_names[name.upper()] = True
-                        new_element = element.Clone(parent, newid, name, pos = new_pos)
+                        new_element = element.Clone(parent, newid, name, pos=new_pos)
                     else:
-                        new_element = element.Clone(parent, newid, pos = new_pos)
+                        new_element = element.Clone(parent, newid, pos=new_pos)
                     new_element.SetBestSize(parent.Scaling)
                 else:
                     new_element = element.Clone(parent)
@@ -751,20 +776,20 @@ class Graphic_Group(Graphic_Element):
                 if not isinstance(element, Wire):
                     parent.AddBlockInModel(element)
         return group
-    
+
     def CanAddBlocks(self, parent):
         valid = True
         for element in self.Elements:
             if not isinstance(element, Wire):
                 valid &= parent.CanAddElement(element)
         return valid
-    
+
     def IsVisible(self):
         for element in self.Elements:
             if element.IsVisible():
                 return True
         return False
-    
+
     # Refresh the list of wire excluded
     def RefreshWireExclusion(self):
         self.WireExcluded = []
@@ -774,9 +799,9 @@ class Graphic_Group(Graphic_Element):
                 endblock = element.EndConnected.GetParentBlock()
                 if startblock in self.Elements and endblock in self.Elements:
                     self.WireExcluded.append(element)
-    
+
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = None
         for element in self.Elements:
             if rect is None:
@@ -784,41 +809,41 @@ class Graphic_Group(Graphic_Element):
             else:
                 rect = rect.Union(element.GetRedrawRect(movex, movey))
         return rect
-    
+
     # Clean this group of elements
     def Clean(self):
         # Clean all the elements of the group
         for element in self.Elements:
             element.Clean()
-    
+
     # Delete this group of elements
     def Delete(self):
         # Delete all the elements of the group
         for element in self.Elements:
             element.Delete()
         self.WireExcluded = []
-    
+
     # Returns if the point given is in the bounding box of one of the elements of this group
     def HitTest(self, pt, connectors=True):
         result = False
         for element in self.Elements:
             result |= element.HitTest(pt, connectors)
         return result
-    
+
     # Returns if the element given is in this group
     def IsElementIn(self, element):
         return element in self.Elements
-    
+
     # Change the elements of the group
     def SetElements(self, elements):
         self.Elements = elements
         self.RefreshWireExclusion()
         self.RefreshBoundingBox()
-    
+
     # Returns the elements of the group
     def GetElements(self):
         return self.Elements
-    
+
     # Align the group elements
     def AlignElements(self, horizontally, vertically):
         minx = self.BoundingBox.x + self.BoundingBox.width
@@ -854,11 +879,11 @@ class Graphic_Group(Graphic_Element):
                     element.Move(movex, movey)
                     element.RefreshModel()
         self.RefreshBoundingBox()
-    
+
     # Add the given element to the group of elements
     def AddElement(self, element):
         self.Elements.append(element)
-        
+
     # Remove or select the given element if it is or not in the group
     def SelectElement(self, element):
         if element in self.Elements:
@@ -867,7 +892,7 @@ class Graphic_Group(Graphic_Element):
             self.Elements.append(element)
         self.RefreshWireExclusion()
         self.RefreshBoundingBox()
-    
+
     # Move this group of elements
     def Move(self, movex, movey):
         movex = max(-self.BoundingBox.x, movex)
@@ -879,7 +904,7 @@ class Graphic_Group(Graphic_Element):
             elif element in self.WireExcluded:
                 element.Move(movex, movey, True)
         self.RefreshBoundingBox()
-    
+
     # Refreshes the bounding box of this group of elements
     def RefreshBoundingBox(self):
         if len(self.Elements) > 0:
@@ -902,7 +927,7 @@ class Graphic_Group(Graphic_Element):
     # Forbids to change the group position
     def SetPosition(x, y):
         pass
-    
+
     # Returns the position of this group
     def GetPosition(self, exclude_wires=False):
         if exclude_wires:
@@ -919,15 +944,15 @@ class Graphic_Group(Graphic_Element):
                 return 0, 0
             return posx, posy
         return self.BoundingBox.x, self.BoundingBox.y
-    
+
     # Forbids to change the group size
     def SetSize(width, height):
         pass
-    
+
     # Returns the size of this group
     def GetSize(self):
         return self.BoundingBox.width, self.BoundingBox.height
-    
+
     # Set size of the group elements to their minimum size
     def SetBestSize(self, scaling):
         max_movex = max_movey = 0
@@ -936,7 +961,7 @@ class Graphic_Group(Graphic_Element):
             max_movex = max(max_movex, movex)
             max_movey = max(max_movey, movey)
         return max_movex, max_movey
-    
+
     # Refreshes the group elements to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
         handle_type, handle = self.Handle
@@ -960,17 +985,17 @@ class Graphic_Group(Graphic_Element):
             self.Move(movex, movey)
             return movex, movey
         return 0, 0
-    
+
     # Change the variable that indicates if this element is highlighted
     def SetHighlighted(self, highlighted):
         for element in self.Elements:
             element.SetHighlighted(highlighted)
-    
+
     def HighlightPoint(self, pos):
         for element in self.Elements:
             if isinstance(element, Wire):
                 element.HighlightPoint(pos)
-    
+
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
         Graphic_Element.OnLeftDown(self, event, dc, scaling)
@@ -998,18 +1023,19 @@ class Graphic_Group(Graphic_Element):
         for element in self.Elements:
             element.Draw(dc)
 
-#-------------------------------------------------------------------------------
-#                         Connector for all types of blocks
-#-------------------------------------------------------------------------------
 
-"""
-Class that implements a connector for any type of block
-"""
+# -------------------------------------------------------------------------------
+#                         Connector for all types of blocks
+# -------------------------------------------------------------------------------
+
 
 class Connector(DebugDataConsumer, ToolTipProducer):
-    
+    """
+    Class that implements a connector for any type of block
+    """
+
     # Create a new connector
-    def __init__(self, parent, name, type, position, direction, negated = False, edge = "none", onlyone = False):
+    def __init__(self, parent, name, type, position, direction, negated=False, edge="none", onlyone=False):
         DebugDataConsumer.__init__(self)
         ToolTipProducer.__init__(self, parent.Parent)
         self.ParentBlock = parent
@@ -1033,15 +1059,15 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         self.Selected = False
         self.Highlights = []
         self.RefreshNameSize()
-    
+
     def Flush(self):
         self.ParentBlock = None
         for wire, handle in self.Wires:
             wire.Flush()
         self.Wires = []
-    
+
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         parent_pos = self.ParentBlock.GetPosition()
         x = min(parent_pos[0] + self.Pos.x, parent_pos[0] + self.Pos.x + self.Direction[0] * CONNECTOR_SIZE)
         y = min(parent_pos[1] + self.Pos.y, parent_pos[1] + self.Pos.y + self.Direction[1] * CONNECTOR_SIZE)
@@ -1060,43 +1086,44 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             if self.Edge == "rising" and self.Direction[1] == 1:
                 y -= 5
                 height += 5
-        rect =  wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
+        rect = wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
         if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
-            rect = rect.Union(wx.Rect(
-                    parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] + \
-                                    width * (self.Direction[0] - 1) / 2,
-                    parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] + \
-                                    height * (self.Direction[1] - 1),
+            rect = rect.Union(
+                wx.Rect(
+                    parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
+                    width * (self.Direction[0] - 1) / 2,
+                    parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
+                    height * (self.Direction[1] - 1),
                     width, height))
         return rect
-    
+
     # Change the connector selection
     def SetSelected(self, selected):
         self.Selected = selected
-    
+
     # Make a clone of the connector
-    def Clone(self, parent = None):
+    def Clone(self, parent=None):
         if parent is None:
             parent = self.ParentBlock
         return Connector(parent, self.Name, self.Type, wx.Point(self.Pos[0], self.Pos[1]),
-                self.Direction, self.Negated)
-    
+                         self.Direction, self.Negated)
+
     # Returns the connector parent block
     def GetParentBlock(self):
         return self.ParentBlock
-    
+
     # Returns the connector type
-    def GetType(self, raw = False):
+    def GetType(self, raw=False):
         if self.ParentBlock.IsEndType(self.Type) or raw:
             return self.Type
         elif (self.Negated or self.Edge != "none") and self.ParentBlock.IsOfType("BOOL", self.Type):
             return "BOOL"
         else:
             return self.ParentBlock.GetConnectionResultType(self, self.Type)
-    
+
     # Returns the connector type
     def GetConnectedType(self):
         if self.ParentBlock.IsEndType(self.Type):
@@ -1104,7 +1131,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         elif len(self.Wires) == 1:
             return self.Wires[0][0].GetOtherConnectedType(self.Wires[0][1])
         return self.Type
-    
+
     # Returns the connector type
     def GetConnectedRedrawRect(self, movex, movey):
         rect = None
@@ -1114,22 +1141,22 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             else:
                 rect = rect.Union(wire.GetRedrawRect())
         return rect
-    
+
     # Returns if connector type is compatible with type given
     def IsCompatible(self, type):
         reference = self.GetType()
         return self.ParentBlock.IsOfType(type, reference) or self.ParentBlock.IsOfType(reference, type)
-    
+
     # Changes the connector name
     def SetType(self, type):
         self.Type = type
         for wire, handle in self.Wires:
             wire.SetValid(wire.IsConnectedCompatible())
-    
+
     # Returns the connector name
     def GetName(self):
         return self.Name
-    
+
     # Changes the connector name
     def SetName(self, name):
         self.Name = name
@@ -1140,15 +1167,15 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             self.Forced = forced
             if self.Visible:
                 self.Parent.ElementNeedRefresh(self)
-    
+
     def GetComputedValue(self):
         if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
             return self.Value
         return None
-    
+
     def GetToolTipValue(self):
         return self.GetComputedValue()
-    
+
     def SetValue(self, value):
         if self.Value != value:
             self.Value = value
@@ -1161,7 +1188,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             self.ValueSize = None
             if self.ParentBlock.Visible:
                 self.ParentBlock.Parent.ElementNeedRefresh(self)
-    
+
     def RefreshForced(self):
         self.Forced = False
         for wire, handle in self.Wires:
@@ -1169,12 +1196,12 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     def RefreshValue(self):
         self.Value = self.ReceivingCurrent()
-    
+
     def RefreshValid(self):
         self.Valid = True
         for wire, handle in self.Wires:
             self.Valid &= wire.GetValid()
-    
+
     def ReceivingCurrent(self):
         current = False
         for wire, handle in self.Wires:
@@ -1184,36 +1211,36 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             elif value == "undefined":
                 current = "undefined"
         return current
-    
+
     def SpreadCurrent(self, spreading):
         for wire, handle in self.Wires:
             wire.SetValue(spreading)
-    
+
     # Changes the connector name size
     def RefreshNameSize(self):
         if self.Name != "":
             self.NameSize = self.ParentBlock.Parent.GetTextExtent(self.Name)
         else:
             self.NameSize = 0, 0
-    
+
     # Returns the connector name size
     def GetNameSize(self):
         return self.NameSize
-    
+
     # Returns the wires connected to the connector
     def GetWires(self):
         return self.Wires
-    
+
     # Returns the parent block Id
     def GetBlockId(self):
         return self.ParentBlock.GetId()
-    
+
     # Returns the connector relative position
     def GetRelPosition(self):
         return self.Pos
-    
+
     # Returns the connector absolute position
-    def GetPosition(self, size = True):
+    def GetPosition(self, size=True):
         parent_pos = self.ParentBlock.GetPosition()
         # If the position of the end of the connector is asked
         if size:
@@ -1223,25 +1250,25 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             x = parent_pos[0] + self.Pos.x
             y = parent_pos[1] + self.Pos.y
         return wx.Point(x, y)
-    
+
     # Change the connector relative position
     def SetPosition(self, pos):
         self.Pos = pos
-    
+
     # Returns the connector direction
     def GetDirection(self):
         return self.Direction
-    
+
     # Change the connector direction
     def SetDirection(self, direction):
         self.Direction = direction
-    
+
     # Connect a wire to this connector at the last place
-    def Connect(self, wire, refresh = True):
+    def Connect(self, wire, refresh=True):
         self.InsertConnect(len(self.Wires), wire, refresh)
-    
+
     # Connect a wire to this connector at the place given
-    def InsertConnect(self, idx, wire, refresh = True):
+    def InsertConnect(self, idx, wire, refresh=True):
         if wire not in self.Wires:
             self.Wires.insert(idx, wire)
             if wire[1] == 0:
@@ -1250,16 +1277,16 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 wire[0].ConnectEndPoint(None, self)
             if refresh:
                 self.ParentBlock.RefreshModel(False)
-    
+
     # Returns the index of the wire given in the list of connected
     def GetWireIndex(self, wire):
         for i, (tmp_wire, handle) in enumerate(self.Wires):
             if tmp_wire == wire:
                 return i
         return None
-    
+
     # Unconnect a wire or all wires connected to the connector
-    def UnConnect(self, wire = None, unconnect = True, delete = False):
+    def UnConnect(self, wire=None, unconnect=True, delete=False):
         i = 0
         found = False
         while i < len(self.Wires) and not found:
@@ -1281,13 +1308,13 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if not delete:
             self.RefreshValid()
             self.ParentBlock.RefreshModel(False)
-    
+
     # Returns if connector has one or more wire connected
     def IsConnected(self):
         return len(self.Wires) > 0
-    
+
     # Move the wires connected
-    def MoveConnected(self, exclude = []):
+    def MoveConnected(self, exclude=[]):
         if len(self.Wires) > 0:
             # Calculate the new position of the end point
             parent_pos = self.ParentBlock.GetPosition()
@@ -1300,21 +1327,21 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                         wire.MoveStartPoint(wx.Point(x, y))
                     else:
                         wire.MoveEndPoint(wx.Point(x, y))
-    
+
     # Refreshes the model of all the wires connected
     def RefreshWires(self):
         for wire in self.Wires:
             wire[0].RefreshModel()
-    
+
     # Refreshes the parent block model
     def RefreshParentBlock(self):
         self.ParentBlock.RefreshModel(False)
-    
+
     # Highlight the parent block
     def HighlightParentBlock(self, highlight):
         self.ParentBlock.SetHighlighted(highlight)
         self.ParentBlock.Refresh()
-    
+
     # Returns all the blocks connected to this connector
     def GetConnectedBlocks(self):
         blocks = []
@@ -1330,44 +1357,44 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 if block not in blocks:
                     blocks.append(block)
         return blocks
-    
+
     # Returns the connector negated property
     def IsNegated(self):
         return self.Negated
-    
+
     # Changes the connector negated property
     def SetNegated(self, negated):
         if self.ParentBlock.IsOfType("BOOL", self.Type):
             self.Negated = negated
             self.Edge = "none"
-    
+
     # Returns the connector edge property
     def GetEdge(self):
         return self.Edge
-    
+
     # Changes the connector edge property
     def SetEdge(self, edge):
         if self.ParentBlock.IsOfType("BOOL", self.Type):
-            self.Edge = edge    
+            self.Edge = edge
             self.Negated = False
-    
+
     # assume that pointer is already inside of this connector
     def ConnectionAvailable(self, direction=None, exclude=True):
         wire_nums = len(self.Wires)
-        
-        connector_free = (wire_nums<= 0)
+
+        connector_free = (wire_nums <= 0)
         connector_max_used = ((wire_nums > 0) and self.OneConnected)
         if (self.Parent.CurrentLanguage in ["SFC", "LD"]) and (self.Type == "BOOL"):
-            connector_max_used = False;
+            connector_max_used = False
 
         # connector is available for new connection
-        connect  = connector_free or not connector_max_used
+        connect = connector_free or not connector_max_used
         return connect, connector_max_used
-                           
+
     # Tests if the point given is near from the end point of this connector
     def TestPoint(self, pt, direction=None, exclude=True):
-        inside = False;
-        check_point = (not exclude) and (direction is None or self.Direction == direction);
+        inside = False
+        check_point = (not exclude) and (direction is None or self.Direction == direction)
 
         if check_point:
             # Calculate a square around the end point of this connector
@@ -1377,10 +1404,10 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             width = ANCHOR_DISTANCE * 2 + abs(self.Direction[0]) * CONNECTOR_SIZE
             height = ANCHOR_DISTANCE * 2 + abs(self.Direction[1]) * CONNECTOR_SIZE
             rect = wx.Rect(x, y, width, height)
-            inside = rect.InsideXY(pt.x, pt.y);
-                           
+            inside = rect.InsideXY(pt.x, pt.y)
+
         return inside
-    
+
     # Draws the highlightment of this element if it is highlighted
     def DrawHighlightment(self, dc):
         scalex, scaley = dc.GetUserScale()
@@ -1393,7 +1420,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         parent_pos = self.ParentBlock.GetPosition()
         posx = parent_pos[0] + self.Pos.x
         posy = parent_pos[1] + self.Pos.y
-        xstart = parent_pos[0] + self.Pos.x 
+        xstart = parent_pos[0] + self.Pos.x
         ystart = parent_pos[1] + self.Pos.y
         if self.Direction[0] < 0:
             xstart += 1
@@ -1401,18 +1428,18 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             ystart += 1
         xend = xstart + CONNECTOR_SIZE * self.Direction[0]
         yend = ystart + CONNECTOR_SIZE * self.Direction[1]
-        dc.DrawLine(round((xstart + self.Direction[0]) * scalex), round((ystart + self.Direction[1]) * scaley), 
+        dc.DrawLine(round((xstart + self.Direction[0]) * scalex), round((ystart + self.Direction[1]) * scaley),
                     round(xend * scalex), round(yend * scaley))
         dc.SetLogicalFunction(wx.COPY)
         dc.SetUserScale(scalex, scaley)
-    
+
     # Adds an highlight to the connector
     def AddHighlight(self, infos, start, end, highlight_type):
         if highlight_type == ERROR_HIGHLIGHT:
             for wire, handle in self.Wires:
                 wire.SetValid(False)
         AddHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes an highlight from the connector
     def RemoveHighlight(self, infos, start, end, highlight_type):
         error = False
@@ -1425,7 +1452,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if not error:
             for wire, handle in self.Wires:
                 wire.SetValid(wire.IsConnectedCompatible())
-    
+
     # Removes all the highlights of one particular type from the connector
     def ClearHighlight(self, highlight_type=None):
         error = False
@@ -1441,13 +1468,13 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if not error:
             for wire, handle in self.Wires:
                 wire.SetValid(wire.IsConnectedCompatible())
-    
+
     # Draws the connector
     def Draw(self, dc):
         if self.Selected:
             dc.SetPen(MiterPen(wx.BLUE, 3))
             dc.SetBrush(wx.WHITE_BRUSH)
-        #elif len(self.Highlights) > 0:
+        # elif len(self.Highlights) > 0:
         #    dc.SetPen(MiterPen(self.Highlights[-1][1]))
         #    dc.SetBrush(wx.Brush(self.Highlights[-1][0]))
         else:
@@ -1466,19 +1493,19 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 dc.SetPen(MiterPen(wx.BLACK))
             dc.SetBrush(wx.WHITE_BRUSH)
         parent_pos = self.ParentBlock.GetPosition()
-        
+
         if getattr(dc, "printing", False):
             name_size = dc.GetTextExtent(self.Name)
         else:
             name_size = self.NameSize
-        
+
         if self.Negated:
             # If connector is negated, draw a circle
             xcenter = parent_pos[0] + self.Pos.x + (CONNECTOR_SIZE * self.Direction[0]) / 2
             ycenter = parent_pos[1] + self.Pos.y + (CONNECTOR_SIZE * self.Direction[1]) / 2
             dc.DrawCircle(xcenter, ycenter, CONNECTOR_SIZE / 2)
         else:
-            xstart = parent_pos[0] + self.Pos.x 
+            xstart = parent_pos[0] + self.Pos.x
             ystart = parent_pos[1] + self.Pos.y
             if self.Edge == "rising":
                 # If connector has a rising edge, draw a right arrow
@@ -1524,26 +1551,27 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize
-                dc.DrawText(self.ComputedValue, 
-                    parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] + \
-                                    width * (self.Direction[0] - 1) / 2,
-                    parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] + \
-                                    height * (self.Direction[1] - 1))
+                dc.DrawText(self.ComputedValue,
+                            parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
+                            width * (self.Direction[0] - 1) / 2,
+                            parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
+                            height * (self.Direction[1] - 1))
             dc.SetFont(self.ParentBlock.Parent.GetFont())
             dc.SetTextForeground(wx.BLACK)
 
-#-------------------------------------------------------------------------------
-#                           Common Wire Element
-#-------------------------------------------------------------------------------
 
-"""
-Class that implements a wire for connecting two blocks
-"""
+# -------------------------------------------------------------------------------
+#                           Common Wire Element
+# -------------------------------------------------------------------------------
+
 
 class Wire(Graphic_Element, DebugDataConsumer):
-    
+    """
+    Class that implements a wire for connecting two blocks
+    """
+
     # Create a new wire
-    def __init__(self, parent, start = None, end = None):
+    def __init__(self, parent, start=None, end=None):
         Graphic_Element.__init__(self, parent)
         DebugDataConsumer.__init__(self)
         self.StartPoint = start
@@ -1568,20 +1596,20 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.ComputingType = False
         self.Font = parent.GetMiniFont()
         self.ErrHighlight = False
-    
+
     def GetDefinition(self):
         if self.StartConnected is not None and self.EndConnected is not None:
             startblock = self.StartConnected.GetParentBlock()
             endblock = self.EndConnected.GetParentBlock()
             return [], [(startblock.GetId(), endblock.GetId())]
         return [], []
-    
+
     def Flush(self):
         self.StartConnected = None
         self.EndConnected = None
-    
+
     # Returns the RedrawRect
-    def GetRedrawRect(self, movex = 0, movey = 0):
+    def GetRedrawRect(self, movex=0, movey=0):
         rect = Graphic_Element.GetRedrawRect(self, movex, movey)
         if self.StartConnected:
             rect = rect.Union(self.StartConnected.GetRedrawRect(movex, movey))
@@ -1607,8 +1635,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     y = self.Points[middle].y - height
                 rect = rect.Union(wx.Rect(x, y, width, height))
         return rect
-    
-    def Clone(self, parent, connectors = {}, dx = 0, dy = 0):
+
+    def Clone(self, parent, connectors={}, dx=0, dy=0):
         start_connector = connectors.get(self.StartConnected, None)
         end_connector = connectors.get(self.EndConnected, None)
         if start_connector is not None and end_connector is not None:
@@ -1620,18 +1648,18 @@ class Wire(Graphic_Element, DebugDataConsumer):
             wire.ConnectEndPoint(end_connector.GetPosition(), end_connector)
             return wire
         return None
-    
+
     # Forbids to change the wire position
     def SetPosition(x, y):
         pass
-    
+
     # Forbids to change the wire size
     def SetSize(width, height):
         pass
-    
+
     # Forbids to et size of the group elements to their minimum size
         pass
-    
+
     # Moves and Resizes the element for fitting scaling
     def SetBestSize(self, scaling):
         if scaling is not None:
@@ -1664,11 +1692,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     point.y += movey
             return movex_max, movey_max
         return 0, 0
-    
+
     # Returns connector to which start point is connected
     def GetStartConnected(self):
         return self.StartConnected
-    
+
     # Returns connector to which start point is connected
     def GetStartConnectedType(self):
         if self.StartConnected and not self.ComputingType:
@@ -1677,11 +1705,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.ComputingType = False
             return computed_type
         return None
-    
+
     # Returns connector to which end point is connected
     def GetEndConnected(self):
         return self.EndConnected
-    
+
     # Returns connector to which end point is connected
     def GetEndConnectedType(self):
         if self.EndConnected and not self.ComputingType:
@@ -1690,7 +1718,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.ComputingType = False
             return computed_type
         return None
-    
+
     def GetConnectionDirection(self):
         if self.StartConnected is None and self.EndConnected is None:
             return None
@@ -1707,26 +1735,26 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 else:
                     return (-self.StartPoint[1][0], -self.StartPoint[1][1])
         return None
-    
+
     def GetOtherConnected(self, connector):
         if self.StartConnected == connector:
             return self.EndConnected
         else:
             return self.StartConnected
-    
+
     def GetOtherConnectedType(self, handle):
         if handle == 0:
             return self.GetEndConnectedType()
         else:
             return self.GetStartConnectedType()
-    
+
     def IsConnectedCompatible(self):
         if self.StartConnected:
             return self.StartConnected.IsCompatible(self.GetEndConnectedType())
         elif self.EndConnected:
             return True
         return False
-    
+
     def SetForced(self, forced):
         if self.Forced != forced:
             self.Forced = forced
@@ -1741,7 +1769,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
             return self.Value
         return None
-    
+
     def GetToolTipValue(self):
         return self.GetComputedValue()
 
@@ -1773,25 +1801,25 @@ class Wire(Graphic_Element, DebugDataConsumer):
             if isinstance(value, BooleanType) and self.StartConnected is not None:
                 block = self.StartConnected.GetParentBlock()
                 block.SpreadCurrent()
-    
+
     # Unconnect the start and end points
     def Clean(self):
         if self.StartConnected:
             self.UnConnectStartPoint()
         if self.EndConnected:
             self.UnConnectEndPoint()
-    
+
     # Delete this wire by calling the corresponding method
     def Delete(self):
         self.Parent.DeleteWire(self)
-    
+
     # Select a segment and not the whole wire. It's useful for Ladder Diagram
     def SetSelectedSegment(self, segment):
         # The last segment is indicated
         if segment == -1:
             segment = len(self.Segments) - 1
         # The selected segment is reinitialised
-        if segment == None:
+        if segment is None:
             if self.StartConnected:
                 self.StartConnected.SetSelected(False)
             if self.EndConnected:
@@ -1814,17 +1842,17 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.EndConnected.SetSelected(True)
         self.SelectedSegment = segment
         self.Refresh()
-    
+
     def SetValid(self, valid):
         self.Valid = valid
         if self.StartConnected:
             self.StartConnected.RefreshValid()
         if self.EndConnected:
             self.EndConnected.RefreshValid()
-    
+
     def GetValid(self):
         return self.Valid
-    
+
     # Reinitialize the wire points
     def ResetPoints(self):
         if self.StartPoint and self.EndPoint:
@@ -1833,7 +1861,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         else:
             self.Points = []
             self.Segments = []
-    
+
     # Refresh the wire bounding box
     def RefreshBoundingBox(self):
         if len(self.Points) > 0:
@@ -1862,7 +1890,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.Pos.x, self.Pos.y = minx, miny
             self.Size = wx.Size(maxx - minx, maxy - miny)
             self.BoundingBox = wx.Rect(minbbxx, minbbxy, maxbbxx - minbbxx + 1, maxbbxy - minbbxy + 1)
-    
+
     # Refresh the realpoints that permits to keep the proportionality in wire during resizing
     def RefreshRealPoints(self):
         if len(self.Points) > 0:
@@ -1870,8 +1898,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
             # Calculate float relative position of each point with the minimum point
             for point in self.Points:
                 self.RealPoints.append([float(point.x - self.Pos.x), float(point.y - self.Pos.y)])
-    
-    # Returns the wire minimum size 
+
+    # Returns the wire minimum size
     def GetMinSize(self):
         width = 1
         height = 1
@@ -1893,7 +1921,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             width = MIN_SEGMENT_SIZE
             height = MIN_SEGMENT_SIZE
         return width + 1, height + 1
-    
+
     # Returns if the point given is on one of the wire segments
     def HitTest(self, pt, connectors=True):
         test = False
@@ -1903,7 +1931,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 x1 = self.Points[i].x - self.Segments[0][0] * CONNECTOR_SIZE
                 y1 = self.Points[i].y - self.Segments[0][1] * CONNECTOR_SIZE
             else:
-                x1, y1 = self.Points[i].x, self.Points[i].y    
+                x1, y1 = self.Points[i].x, self.Points[i].y
             if i == len(self.Points) - 2 and self.EndConnected is not None:
                 x2 = self.Points[i + 1].x + self.Segments[-1][0] * CONNECTOR_SIZE
                 y2 = self.Points[i + 1].y + self.Segments[-1][1] * CONNECTOR_SIZE
@@ -1911,25 +1939,25 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 x2, y2 = self.Points[i + 1].x, self.Points[i + 1].y
             # Calculate a rectangle around the segment
             rect = wx.Rect(min(x1, x2) - ANCHOR_DISTANCE, min(y1, y2) - ANCHOR_DISTANCE,
-                abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
-            test |= rect.InsideXY(pt.x, pt.y) 
+                           abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
+            test |= rect.InsideXY(pt.x, pt.y)
         return test
-    
-    # Returns the wire start or end point if the point given is on one of them 
+
+    # Returns the wire start or end point if the point given is on one of them
     def TestPoint(self, pt):
         # Test the wire start point
         rect = wx.Rect(self.Points[0].x - ANCHOR_DISTANCE, self.Points[0].y - ANCHOR_DISTANCE,
-            2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
+                       2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
         if rect.InsideXY(pt.x, pt.y):
             return 0
         # Test the wire end point
         if len(self.Points) > 1:
             rect = wx.Rect(self.Points[-1].x - ANCHOR_DISTANCE, self.Points[-1].y - ANCHOR_DISTANCE,
-                2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
+                           2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
             if rect.InsideXY(pt.x, pt.y):
                 return -1
         return None
-    
+
     # Returns the wire segment if the point given is on it
     def TestSegment(self, pt, all=False):
         for i in xrange(len(self.Segments)):
@@ -1939,11 +1967,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 x2, y2 = self.Points[i + 1].x, self.Points[i + 1].y
                 # Calculate a rectangle around the segment
                 rect = wx.Rect(min(x1, x2) - ANCHOR_DISTANCE, min(y1, y2) - ANCHOR_DISTANCE,
-                    abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
+                               abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
                 if rect.InsideXY(pt.x, pt.y):
                     return i, self.Segments[i]
         return None
-    
+
     # Define the wire points
     def SetPoints(self, points, verify=True):
         if len(points) > 1:
@@ -1952,10 +1980,10 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.StartPoint = [None, vector(self.Points[0], self.Points[1])]
             self.EndPoint = [None, vector(self.Points[-1], self.Points[-2])]
             # Calculate the start and end points
-            self.StartPoint[0] = wx.Point(self.Points[0].x + CONNECTOR_SIZE * self.StartPoint[1][0], 
-                self.Points[0].y + CONNECTOR_SIZE * self.StartPoint[1][1])
-            self.EndPoint[0] = wx.Point(self.Points[-1].x + CONNECTOR_SIZE * self.EndPoint[1][0], 
-                self.Points[-1].y + CONNECTOR_SIZE * self.EndPoint[1][1])
+            self.StartPoint[0] = wx.Point(self.Points[0].x + CONNECTOR_SIZE * self.StartPoint[1][0],
+                                          self.Points[0].y + CONNECTOR_SIZE * self.StartPoint[1][1])
+            self.EndPoint[0] = wx.Point(self.Points[-1].x + CONNECTOR_SIZE * self.EndPoint[1][0],
+                                        self.Points[-1].y + CONNECTOR_SIZE * self.EndPoint[1][1])
             self.Points[0] = self.StartPoint[0]
             self.Points[-1] = self.EndPoint[0]
             # Calculate the segments directions
@@ -1979,37 +2007,37 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     i += 1
             self.RefreshBoundingBox()
             self.RefreshRealPoints()
-    
+
     # Returns the position of the point indicated
     def GetPoint(self, index):
         if index < len(self.Points):
             return self.Points[index].x, self.Points[index].y
         return None
-    
+
     # Returns a list of the position of all wire points
-    def GetPoints(self, invert = False):
+    def GetPoints(self, invert=False):
         points = self.VerifyPoints()
-        points[0] = wx.Point(points[0].x - CONNECTOR_SIZE * self.StartPoint[1][0], 
-                points[0].y - CONNECTOR_SIZE * self.StartPoint[1][1])
-        points[-1] = wx.Point(points[-1].x - CONNECTOR_SIZE * self.EndPoint[1][0], 
-                points[-1].y - CONNECTOR_SIZE * self.EndPoint[1][1])
+        points[0] = wx.Point(points[0].x - CONNECTOR_SIZE * self.StartPoint[1][0],
+                             points[0].y - CONNECTOR_SIZE * self.StartPoint[1][1])
+        points[-1] = wx.Point(points[-1].x - CONNECTOR_SIZE * self.EndPoint[1][0],
+                              points[-1].y - CONNECTOR_SIZE * self.EndPoint[1][1])
         # An inversion of the list is asked
         if invert:
             points.reverse()
         return points
-    
+
     # Returns the position of the two selected segment points
     def GetSelectedSegmentPoints(self):
-        if self.SelectedSegment != None and len(self.Points) > 1:
+        if self.SelectedSegment is not None and len(self.Points) > 1:
             return self.Points[self.SelectedSegment:self.SelectedSegment + 2]
         return []
-    
+
     # Returns if the selected segment is the first and/or the last of the wire
     def GetSelectedSegmentConnections(self):
-        if self.SelectedSegment != None and len(self.Points) > 1:
+        if self.SelectedSegment is not None and len(self.Points) > 1:
             return self.SelectedSegment == 0, self.SelectedSegment == len(self.Segments) - 1
         return (True, True)
-    
+
     # Returns the connectors on which the wire is connected
     def GetConnected(self):
         connected = []
@@ -2018,7 +2046,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if self.EndConnected and self.EndPoint[1] == WEST:
             connected.append(self.EndConnected)
         return connected
-    
+
     # Returns the id of the block connected to the first or the last wire point
     def GetConnectedInfos(self, index):
         if index == 0 and self.StartConnected:
@@ -2026,15 +2054,15 @@ class Wire(Graphic_Element, DebugDataConsumer):
         elif index == -1 and self.EndConnected:
             return self.EndConnected.GetBlockId(), self.EndConnected.GetName()
         return None
-    
+
     # Update the wire points position by keeping at most possible the current positions
-    def GeneratePoints(self, realpoints = True):
+    def GeneratePoints(self, realpoints=True):
         i = 0
         # Calculate the start enad end points with the minimum segment size in the right direction
         end = wx.Point(self.EndPoint[0].x + self.EndPoint[1][0] * MIN_SEGMENT_SIZE,
-            self.EndPoint[0].y + self.EndPoint[1][1] * MIN_SEGMENT_SIZE)
-        start = wx.Point(self.StartPoint[0].x + self.StartPoint[1][0] * MIN_SEGMENT_SIZE, 
-            self.StartPoint[0].y + self.StartPoint[1][1] * MIN_SEGMENT_SIZE)
+                       self.EndPoint[0].y + self.EndPoint[1][1] * MIN_SEGMENT_SIZE)
+        start = wx.Point(self.StartPoint[0].x + self.StartPoint[1][0] * MIN_SEGMENT_SIZE,
+                         self.StartPoint[0].y + self.StartPoint[1][1] * MIN_SEGMENT_SIZE)
         # Evaluate the point till it's the last
         while i < len(self.Points) - 1:
             # The next point is the last
@@ -2046,15 +2074,17 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     # If the end point is not in the start direction, a point is added
                     if v_end != self.Segments[0] or v_end == self.EndPoint[1]:
                         self.Points.insert(1, wx.Point(start.x, start.y))
-                        self.Segments.insert(1, DirectionChoice((self.Segments[0][1], 
-                            self.Segments[0][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(1, DirectionChoice(
+                            (self.Segments[0][1],
+                             self.Segments[0][0]), v_end, self.EndPoint[1]))
                 # The current point is the second
                 elif i == 1:
                     # The previous direction and the target direction are mainly opposed, a point is added
                     if product(v_end, self.Segments[0]) < 0:
                         self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
-                        self.Segments.insert(2, DirectionChoice((self.Segments[1][1], 
-                            self.Segments[1][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(2, DirectionChoice(
+                            (self.Segments[1][1],
+                             self.Segments[1][0]), v_end, self.EndPoint[1]))
                     # The previous direction and the end direction are the same or they are
                     # perpendiculars and the end direction points towards current segment
                     elif product(self.Segments[0], self.EndPoint[1]) >= 0 and product(self.Segments[1], self.EndPoint[1]) <= 0:
@@ -2066,8 +2096,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         # If the previous direction and the end direction are the same, a point is added
                         if product(self.Segments[0], self.EndPoint[1]) > 0:
                             self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
-                            self.Segments.insert(2, DirectionChoice((self.Segments[1][1], 
-                                self.Segments[1][0]), v_end, self.EndPoint[1]))
+                            self.Segments.insert(2, DirectionChoice(
+                                (self.Segments[1][1],
+                                 self.Segments[1][0]), v_end, self.EndPoint[1]))
                     else:
                         # Current point is positioned in the middle of start point
                         # and end point on the current direction and a point is added
@@ -2076,8 +2107,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         if self.Segments[0][1] != 0:
                             self.Points[1].y = (end.y + start.y) / 2
                         self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
-                        self.Segments.insert(2, DirectionChoice((self.Segments[1][1], 
-                            self.Segments[1][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(2, DirectionChoice(
+                            (self.Segments[1][1],
+                             self.Segments[1][0]), v_end, self.EndPoint[1]))
                 else:
                     # The previous direction and the end direction are perpendiculars
                     if product(self.Segments[i - 1], self.EndPoint[1]) == 0:
@@ -2093,7 +2125,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                                 self.Segments[i - 1] = (-self.Segments[i - 1][0], -self.Segments[i - 1][1])
                         else:
                             test = True
-                            # If the current point is the third, test if the second 
+                            # If the current point is the third, test if the second
                             # point can be aligned with the end point
                             if i == 2:
                                 test_point = wx.Point(self.Points[1].x, self.Points[1].y)
@@ -2119,8 +2151,12 @@ class Wire(Graphic_Element, DebugDataConsumer):
                                 if self.Segments[1][1] != 0:
                                     self.Points[2].y = (self.Points[1].y + end.y) / 2
                                 self.Points.insert(3, wx.Point(self.Points[2].x, self.Points[2].y))
-                                self.Segments.insert(3, DirectionChoice((self.Segments[2][1], 
-                                    self.Segments[2][0]), v_end, self.EndPoint[1]))
+                                self.Segments.insert(
+                                    3,
+                                    DirectionChoice((self.Segments[2][1],
+                                                     self.Segments[2][0]),
+                                                    v_end,
+                                                    self.EndPoint[1]))
                     else:
                         # Current point is aligned with end point
                         if self.Segments[i - 1][0] != 0:
@@ -2140,16 +2176,22 @@ class Wire(Graphic_Element, DebugDataConsumer):
                                 self.Points[i].y = (end.y + self.Points[i - 1].y) / 2
                         # A point is added
                         self.Points.insert(i + 1, wx.Point(self.Points[i].x, self.Points[i].y))
-                        self.Segments.insert(i + 1, DirectionChoice((self.Segments[i][1], 
-                                self.Segments[i][0]), v_end, self.EndPoint[1]))
+                        self.Segments.insert(
+                            i + 1,
+                            DirectionChoice((self.Segments[i][1],
+                                             self.Segments[i][0]), v_end, self.EndPoint[1]))
             else:
                 # Current point is the first, and second is not mainly in the first direction
                 if i == 0 and product(vector(start, self.Points[1]), self.Segments[0]) < 0:
-                    # If first and second directions aren't perpendiculars, a point is added 
+                    # If first and second directions aren't perpendiculars, a point is added
                     if product(self.Segments[0], self.Segments[1]) != 0:
                         self.Points.insert(1, wx.Point(start.x, start.y))
-                        self.Segments.insert(1, DirectionChoice((self.Segments[0][1], 
-                            self.Segments[0][0]), vector(start, self.Points[1]), self.Segments[1]))
+                        self.Segments.insert(
+                            1,
+                            DirectionChoice((self.Segments[0][1],
+                                             self.Segments[0][0]),
+                                            vector(start, self.Points[1]),
+                                            self.Segments[1]))
                     else:
                         self.Points[1].x, self.Points[1].y = start.x, start.y
                 else:
@@ -2165,7 +2207,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.RefreshBoundingBox()
         if realpoints:
             self.RefreshRealPoints()
-    
+
     # Verify that two consecutive points haven't the same position
     def VerifyPoints(self):
         points = [point for point in self.Points]
@@ -2185,9 +2227,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.RefreshBoundingBox()
             self.RefreshRealPoints()
         return points
-    
+
     # Moves all the wire points except the first and the last if they are connected
-    def Move(self, dx, dy, endpoints = False):
+    def Move(self, dx, dy, endpoints=False):
         for i, point in enumerate(self.Points):
             if endpoints or not (i == 0 and self.StartConnected) and not (i == len(self.Points) - 1 and self.EndConnected):
                 point.x += dx
@@ -2195,7 +2237,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.StartPoint[0] = self.Points[0]
         self.EndPoint[0] = self.Points[-1]
         self.GeneratePoints()
-    
+
     # Resize the wire from position and size given
     def Resize(self, x, y, width, height):
         if len(self.Points) > 1:
@@ -2212,9 +2254,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     else:
                         dir = (0, 0)
                     pointx = max(-dir[0] * MIN_SEGMENT_SIZE, min(int(round(point[0] * width / float(max(lastwidth, 1)))),
-                            width - dir[0] * MIN_SEGMENT_SIZE))
+                                                                 width - dir[0] * MIN_SEGMENT_SIZE))
                     pointy = max(-dir[1] * MIN_SEGMENT_SIZE, min(int(round(point[1] * height / float(max(lastheight, 1)))),
-                            height - dir[1] * MIN_SEGMENT_SIZE))
+                                                                 height - dir[1] * MIN_SEGMENT_SIZE))
                     self.Points[i] = wx.Point(minx + x + pointx, miny + y + pointy)
             self.StartPoint[0] = self.Points[0]
             self.EndPoint[0] = self.Points[-1]
@@ -2246,33 +2288,35 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         dir = self.EndPoint[1]
                     else:
                         dir = (0, 0)
-                    realpointx = max(-dir[0] * MIN_SEGMENT_SIZE, min(int(round(point[0])),
-                            width - dir[0] * MIN_SEGMENT_SIZE))
-                    realpointy = max(-dir[1] * MIN_SEGMENT_SIZE, min(int(round(point[1])),
-                            height - dir[1] * MIN_SEGMENT_SIZE))
+                    realpointx = max(-dir[0] * MIN_SEGMENT_SIZE,
+                                     min(int(round(point[0])),
+                                         width - dir[0] * MIN_SEGMENT_SIZE))
+                    realpointy = max(-dir[1] * MIN_SEGMENT_SIZE,
+                                     min(int(round(point[1])),
+                                         height - dir[1] * MIN_SEGMENT_SIZE))
                     self.Points[i] = wx.Point(minx + x + realpointx, miny + y + realpointy)
             self.StartPoint[0] = self.Points[0]
             self.EndPoint[0] = self.Points[-1]
             self.GeneratePoints(False)
-    
+
     # Moves the wire start point and update the wire points
     def MoveStartPoint(self, point):
         if len(self.Points) > 1:
             self.StartPoint[0] = point
             self.Points[0] = point
             self.GeneratePoints()
-    
+
     # Changes the wire start direction and update the wire points
     def SetStartPointDirection(self, dir):
         if len(self.Points) > 1:
             self.StartPoint[1] = dir
             self.Segments[0] = dir
             self.GeneratePoints()
-    
+
     # Rotates the wire start direction by an angle of 90 degrees anticlockwise
     def RotateStartPoint(self):
         self.SetStartPointDirection((self.StartPoint[1][1], -self.StartPoint[1][0]))
-    
+
     # Connects wire start point to the connector given and moves wire start point
     # to given point
     def ConnectStartPoint(self, point, connector):
@@ -2280,17 +2324,17 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.MoveStartPoint(point)
         self.StartConnected = connector
         self.RefreshBoundingBox()
-    
+
     # Unconnects wire start point
-    def UnConnectStartPoint(self, delete = False):
+    def UnConnectStartPoint(self, delete=False):
         if delete:
             self.StartConnected = None
             self.Delete()
         elif self.StartConnected:
-            self.StartConnected.UnConnect(self, unconnect = False)
+            self.StartConnected.UnConnect(self, unconnect=False)
             self.StartConnected = None
             self.RefreshBoundingBox()
-    
+
     # Moves the wire end point and update the wire points
     def MoveEndPoint(self, point):
         if len(self.Points) > 1:
@@ -2303,7 +2347,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if len(self.Points) > 1:
             self.EndPoint[1] = dir
             self.GeneratePoints()
-            
+
     # Rotates the wire end direction by an angle of 90 degrees anticlockwise
     def RotateEndPoint(self):
         self.SetEndPointDirection((self.EndPoint[1][1], -self.EndPoint[1][0]))
@@ -2315,17 +2359,17 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.MoveEndPoint(point)
         self.EndConnected = connector
         self.RefreshBoundingBox()
-    
+
     # Unconnects wire end point
-    def UnConnectEndPoint(self, delete = False):
+    def UnConnectEndPoint(self, delete=False):
         if delete:
             self.EndConnected = None
             self.Delete()
         elif self.EndConnected:
-            self.EndConnected.UnConnect(self, unconnect = False)
+            self.EndConnected.UnConnect(self, unconnect=False)
             self.EndConnected = None
             self.RefreshBoundingBox()
-    
+
     # Moves the wire segment given by its index
     def MoveSegment(self, idx, movex, movey, scaling):
         if 0 < idx < len(self.Segments) - 1:
@@ -2356,7 +2400,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 if start_y != self.Points[idx].y:
                     return 0, self.Points[idx].y - start_y
         return 0, 0
-    
+
     # Adds two points in the middle of the handled segment
     def AddSegment(self):
         handle_type, handle = self.Handle
@@ -2391,7 +2435,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.Points.insert(segment + 4, wx.Point(p2x, p2y))
                 self.Segments.insert(segment + 4, dir)
             self.GeneratePoints()
-    
+
     # Delete the handled segment by removing the two segment points
     def DeleteSegment(self):
         handle_type, handle = self.Handle
@@ -2402,19 +2446,19 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.Segments.pop(segment)
             self.GeneratePoints()
             self.RefreshModel()
-            
+
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
         pos = GetScaledEventPosition(event, dc, scaling)
         # Test if a point have been handled
-        #result = self.TestPoint(pos)
-        #if result != None:
+        # result = self.TestPoint(pos)
+        # if result != None:
         #    self.Handle = (HANDLE_POINT, result)
         #    wx.CallAfter(self.Parent.SetCurrentCursor, 1)
-        #else:
+        # else:
         # Test if a segment have been handled
         result = self.TestSegment(pos)
-        if result != None:
+        if result is not None:
             if result[1] in (NORTH, SOUTH):
                 wx.CallAfter(self.Parent.SetCurrentCursor, 4)
             elif result[1] in (EAST, WEST):
@@ -2424,20 +2468,20 @@ class Wire(Graphic_Element, DebugDataConsumer):
         else:
             Graphic_Element.OnLeftDown(self, event, dc, scaling)
         self.oldPos = pos
-    
+
     # Method called when a RightUp event has been generated
     def OnRightUp(self, event, dc, scaling):
         pos = GetScaledEventPosition(event, dc, scaling)
         # Test if a segment has been handled
         result = self.TestSegment(pos, True)
-        if result != None:
+        if result is not None:
             self.Handle = (HANDLE_SEGMENT, result)
             # Popup the menu with special items for a wire
             self.Parent.PopupWireMenu(0 < result[0] < len(self.Segments) - 1)
         else:
             # Execute the default method for a graphic element
             Graphic_Element.OnRightUp(self, event, dc, scaling)
-    
+
     # Method called when a LeftDClick event has been generated
     def OnLeftDClick(self, event, dc, scaling):
         rect = self.GetRedrawRect()
@@ -2492,7 +2536,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.Parent.RefreshBuffer()
         rect.Union(self.GetRedrawRect())
         self.Parent.RefreshRect(self.Parent.GetScrolledRect(rect), False)
-        
+
     # Method called when a Motion event has been generated
     def OnMotion(self, event, dc, scaling):
         pos = GetScaledEventPosition(event, dc, scaling)
@@ -2511,7 +2555,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         else:
             # Execute the default method for a graphic element
             return Graphic_Element.OnMotion(self, event, dc, scaling)
-    
+
     # Refreshes the wire state according to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
         handle_type, handle = self.Handle
@@ -2572,14 +2616,14 @@ class Wire(Graphic_Element, DebugDataConsumer):
         # Execute the default method for a graphic element
         else:
             return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling)
-    
+
     # Refreshes the wire model
     def RefreshModel(self, move=True):
         if self.StartConnected and self.StartPoint[1] in [WEST, NORTH]:
             self.StartConnected.RefreshParentBlock()
         if self.EndConnected and self.EndPoint[1] in [WEST, NORTH]:
             self.EndConnected.RefreshParentBlock()
-    
+
     # Change the variable that indicates if this element is highlighted
     def SetHighlighted(self, highlighted):
         self.Highlighted = highlighted
@@ -2587,7 +2631,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.OverStart = False
             self.OverEnd = False
         self.Refresh()
-    
+
     def HighlightPoint(self, pos):
         refresh = False
         start, end = self.OverStart, self.OverEnd
@@ -2595,20 +2639,20 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.OverEnd = False
         # Test if a point has been handled
         result = self.TestPoint(pos)
-        if result != None:
+        if result is not None:
             if result == 0 and self.StartConnected is not None:
                 self.OverStart = True
             elif result != 0 and self.EndConnected is not None:
                 self.OverEnd = True
         if start != self.OverStart or end != self.OverEnd:
             self.Refresh()
-    
+
     # Draws the highlightment of this element if it is highlighted
     def DrawHighlightment(self, dc):
         scalex, scaley = dc.GetUserScale()
         dc.SetUserScale(1, 1)
         # If user trying to connect wire with wrong input, highlight will become red.
-        if self.ErrHighlight == True and not (self.EndConnected):
+        if self.ErrHighlight and not (self.EndConnected):
             highlightcolor = wx.RED
         else:
             highlightcolor = HIGHLIGHTCOLOR
@@ -2617,31 +2661,31 @@ class Wire(Graphic_Element, DebugDataConsumer):
         dc.SetLogicalFunction(wx.AND)
         # Draw the start and end points if they are not connected or the mouse is over them
         if len(self.Points) > 0 and (not self.StartConnected or self.OverStart):
-            dc.DrawCircle(round(self.Points[0].x * scalex), 
-                          round(self.Points[0].y * scaley), 
+            dc.DrawCircle(round(self.Points[0].x * scalex),
+                          round(self.Points[0].y * scaley),
                           (POINT_RADIUS + 1) * scalex + 2)
         if len(self.Points) > 1 and (not self.EndConnected or self.OverEnd):
             dc.DrawCircle(self.Points[-1].x * scalex, self.Points[-1].y * scaley, (POINT_RADIUS + 1) * scalex + 2)
         # Draw the wire lines and the last point (it seems that DrawLines stop before the last point)
         if len(self.Points) > 1:
-            points = [wx.Point(round((self.Points[0].x - self.Segments[0][0]) * scalex), 
+            points = [wx.Point(round((self.Points[0].x - self.Segments[0][0]) * scalex),
                                round((self.Points[0].y - self.Segments[0][1]) * scaley))]
             points.extend([wx.Point(round(point.x * scalex), round(point.y * scaley)) for point in self.Points[1:-1]])
-            points.append(wx.Point(round((self.Points[-1].x + self.Segments[-1][0]) * scalex), 
+            points.append(wx.Point(round((self.Points[-1].x + self.Segments[-1][0]) * scalex),
                                    round((self.Points[-1].y + self.Segments[-1][1]) * scaley)))
         else:
             points = []
         dc.DrawLines(points)
         dc.SetLogicalFunction(wx.COPY)
         dc.SetUserScale(scalex, scaley)
-        
+
         if self.StartConnected is not None:
             self.StartConnected.DrawHighlightment(dc)
             self.StartConnected.Draw(dc)
         if self.EndConnected is not None:
             self.EndConnected.DrawHighlightment(dc)
             self.EndConnected.Draw(dc)
-    
+
     # Draws the wire lines and points
     def Draw(self, dc):
         Graphic_Element.Draw(self, dc)
@@ -2712,9 +2756,10 @@ class Wire(Graphic_Element, DebugDataConsumer):
             dc.SetTextForeground(wx.BLACK)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                           Graphic comment element
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 def FilterHighlightsByRow(highlights, row, length):
     _highlights = []
@@ -2727,6 +2772,7 @@ def FilterHighlightsByRow(highlights, row, length):
             _highlights.append((start, end, highlight_type))
     return _highlights
 
+
 def FilterHighlightsByColumn(highlights, start_col, end_col):
     _highlights = []
     for start, end, highlight_type in highlights:
@@ -2736,41 +2782,41 @@ def FilterHighlightsByColumn(highlights, start_col, end_col):
             _highlights.append((start, end, highlight_type))
     return _highlights
 
-"""
-Class that implements a comment
-"""
 
 class Comment(Graphic_Element):
+    """
+    Class that implements a comment
+    """
 
     # Create a new comment
-    def __init__(self, parent, content, id = None):
+    def __init__(self, parent, content, id=None):
         Graphic_Element.__init__(self, parent)
         self.Id = id
         self.Content = content
         self.Pos = wx.Point(0, 0)
         self.Size = wx.Size(0, 0)
         self.Highlights = []
-    
+
     # Make a clone of this comment
-    def Clone(self, parent, id = None, pos = None):
+    def Clone(self, parent, id=None, pos=None):
         comment = Comment(parent, self.Content, id)
         if pos is not None:
             comment.SetPosition(pos.x, pos.y)
         comment.SetSize(self.Size[0], self.Size[1])
         return comment
-    
+
     # Method for keeping compatibility with others
     def Clean(self):
         pass
-    
+
     # Delete this comment by calling the corresponding method
     def Delete(self):
         self.Parent.DeleteComment(self)
-    
+
     # Refresh the comment bounding box
     def RefreshBoundingBox(self):
         self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
-    
+
     # Changes the comment size
     def SetSize(self, width, height):
         self.Size.SetWidth(width)
@@ -2780,7 +2826,7 @@ class Comment(Graphic_Element):
     # Returns the comment size
     def GetSize(self):
         return self.Size.GetWidth(), self.Size.GetHeight()
-    
+
     # Returns the comment minimum size
     def GetMinSize(self):
         dc = wx.ClientDC(self.Parent)
@@ -2793,7 +2839,7 @@ class Comment(Graphic_Element):
                 min_width = max(min_width, wordwidth)
                 min_height = max(min_height, wordheight)
         return min_width + 20, min_height + 20
-    
+
     # Changes the comment position
     def SetPosition(self, x, y):
         self.Pos.x = x
@@ -2815,51 +2861,51 @@ class Comment(Graphic_Element):
     # Returns the comment position
     def GetPosition(self):
         return self.Pos.x, self.Pos.y
-    
+
     # Moves the comment
-    def Move(self, dx, dy, connected = True):
+    def Move(self, dx, dy, connected=True):
         self.Pos.x += dx
         self.Pos.y += dy
         self.RefreshBoundingBox()
-    
+
     # Resizes the comment with the position and the size given
     def Resize(self, x, y, width, height):
         self.Move(x, y)
         self.SetSize(width, height)
-    
+
     # Method called when a RightUp event have been generated
     def OnRightUp(self, event, dc, scaling):
         # Popup the default menu
         self.Parent.PopupDefaultMenu()
-    
+
     # Refreshes the wire state according to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
         if self.Parent.GetDrawingMode() != FREEDRAWING_MODE and self.Parent.CurrentLanguage == "LD":
             movex = movey = 0
         return Graphic_Element.ProcessDragging(self, movex, movey, event, scaling)
-        
+
     # Refreshes the comment model
     def RefreshModel(self, move=True):
         self.Parent.RefreshCommentModel(self)
-    
+
     # Method called when a LeftDClick event have been generated
     def OnLeftDClick(self, event, dc, scaling):
         # Edit the comment content
         self.Parent.EditCommentContent(self)
-    
+
     # Adds an highlight to the comment
     def AddHighlight(self, infos, start, end, highlight_type):
         if infos[0] == "content":
             AddHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes an highlight from the comment
     def RemoveHighlight(self, infos, start, end, highlight_type):
         RemoveHighlight(self.Highlights, (start, end, highlight_type))
-    
+
     # Removes all the highlights of one particular type from the comment
     def ClearHighlight(self, highlight_type=None):
         self.Highlights = ClearHighlights(self.Highlights, highlight_type)
-    
+
     # Draws the highlightment of this element if it is highlighted
     def DrawHighlightment(self, dc):
         scalex, scaley = dc.GetUserScale()
@@ -2867,29 +2913,29 @@ class Comment(Graphic_Element):
         dc.SetPen(MiterPen(HIGHLIGHTCOLOR))
         dc.SetBrush(wx.Brush(HIGHLIGHTCOLOR))
         dc.SetLogicalFunction(wx.AND)
-        
+
         left = (self.Pos.x - 1) * scalex - 2
         right = (self.Pos.x + self.Size[0] + 1) * scalex + 2
         top = (self.Pos.y - 1) * scaley - 2
         bottom = (self.Pos.y + self.Size[1] + 1) * scaley + 2
         angle_top = (self.Pos.x + self.Size[0] - 9) * scalex + 2
         angle_right = (self.Pos.y + 9) * scaley - 2
-        
+
         polygon = [wx.Point(left, top), wx.Point(angle_top, top),
                    wx.Point(right, angle_right), wx.Point(right, bottom),
                    wx.Point(left, bottom)]
         dc.DrawPolygon(polygon)
-        
+
         dc.SetLogicalFunction(wx.COPY)
         dc.SetUserScale(scalex, scaley)
-        
+
     # Draws the comment and its content
     def Draw(self, dc):
         Graphic_Element.Draw(self, dc)
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.WHITE_BRUSH)
         # Draws the comment shape
-        polygon = [wx.Point(self.Pos.x, self.Pos.y), 
+        polygon = [wx.Point(self.Pos.x, self.Pos.y),
                    wx.Point(self.Pos.x + self.Size[0] - 10, self.Pos.y),
                    wx.Point(self.Pos.x + self.Size[0], self.Pos.y + 10),
                    wx.Point(self.Pos.x + self.Size[0], self.Pos.y + self.Size[1]),
@@ -2951,4 +2997,3 @@ class Comment(Graphic_Element):
                     y += wordheight + 5
             if y + wordheight > self.Pos.y + self.Size[1] - 10:
                 break
-

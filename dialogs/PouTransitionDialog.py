@@ -26,57 +26,62 @@
 import wx
 
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS
+from util.TranslationCatalogs import NoTranslate
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                                POU Transition Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 def GetTransitionLanguages():
-    _ = lambda x : x
+    _ = NoTranslate
     return [_("IL"), _("ST"), _("LD"), _("FBD")]
+
+
 TRANSITION_LANGUAGES_DICT = dict([(_(language), language) for language in GetTransitionLanguages()])
 
+
 class PouTransitionDialog(wx.Dialog):
-    
+
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Create a new transition'))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
-        
+
         infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=10)
         infos_sizer.AddGrowableCol(1)
-        main_sizer.AddSizer(infos_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
-        transitionname_label = wx.StaticText(self, label=_('Transition Name:'))
-        infos_sizer.AddWindow(transitionname_label, border=4, 
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
+        main_sizer.AddSizer(infos_sizer, border=20,
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
-        self.TransitionName = wx.TextCtrl(self, size=wx.Size(180,-1))
+        transitionname_label = wx.StaticText(self, label=_('Transition Name:'))
+        infos_sizer.AddWindow(transitionname_label, border=4,
+                              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
+
+        self.TransitionName = wx.TextCtrl(self, size=wx.Size(180, -1))
         infos_sizer.AddWindow(self.TransitionName, flag=wx.GROW)
 
         language_label = wx.StaticText(self, label=_('Language:'))
-        infos_sizer.AddWindow(language_label, border=4, 
-              flag=wx.ALIGN_CENTER_VERTICAL|wx.TOP)
-        
+        infos_sizer.AddWindow(language_label, border=4,
+                              flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
+
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
         infos_sizer.AddWindow(self.Language, flag=wx.GROW)
 
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, flag=wx.ALIGN_RIGHT|wx.BOTTOM)
-        
+        main_sizer.AddSizer(button_sizer, border=20, flag=wx.ALIGN_RIGHT | wx.BOTTOM)
+
         self.SetSizer(main_sizer)
-        
+
         for language in GetTransitionLanguages():
             self.Language.Append(_(language))
-            
+
         self.Fit()
         self.PouNames = []
         self.PouElementNames = []
-        
+
     def OnOK(self, event):
         error = []
         transition_name = self.TransitionName.GetValue()
@@ -91,9 +96,9 @@ class PouTransitionDialog(wx.Dialog):
                 if i == 0:
                     text += item
                 elif i == len(error) - 1:
-                    text += _(" and %s")%item
+                    text += _(" and %s") % item
                 else:
-                    text += _(", %s")%item 
+                    text += _(", %s") % item
             message = _("Form isn't complete. %s must be filled!") % text
         elif not TestIdentifier(transition_name):
             message = _("\"%s\" is not a valid identifier!") % transition_name
@@ -104,25 +109,25 @@ class PouTransitionDialog(wx.Dialog):
         elif transition_name.upper() in self.PouElementNames:
             message = _("\"%s\" element for this pou already exists!") % transition_name
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:
             self.EndModal(wx.ID_OK)
-    
+
     def SetPouNames(self, pou_names):
         self.PouNames = [pou_name.upper() for pou_name in pou_names]
-    
+
     def SetPouElementNames(self, pou_names):
         self.PouElementNames = [pou_name.upper() for pou_name in pou_names]
-    
+
     def SetValues(self, values):
         for item, value in values.items():
             if item == "transitionName":
                 self.TransitionName.SetValue(value)
             elif item == "language":
                 self.Language.SetSelection(_(value))
-                
+
     def GetValues(self):
         values = {}
         values["transitionName"] = self.TransitionName.GetValue()

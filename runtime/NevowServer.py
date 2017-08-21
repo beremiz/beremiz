@@ -36,6 +36,7 @@ xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 
 WorkingDir = None
 
+
 class PLCHMI(athena.LiveElement):
 
     initialised = False
@@ -46,21 +47,24 @@ class PLCHMI(athena.LiveElement):
     def HMIinitialisation(self):
         self.HMIinitialised(None)
 
+
 class DefaultPLCStartedHMI(PLCHMI):
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                             tags.h1["PLC IS NOW STARTED"],
                                             ])
+
 
 class PLCStoppedHMI(PLCHMI):
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                             tags.h1["PLC IS STOPPED"],
                                             ])
 
+
 class MainPage(athena.LiveElement):
     jsClass = u"WebInterface.PLC"
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
                                                     tags.div(id='content')[
-                                                    tags.div(render = tags.directive('PLCElement')),
+                                                        tags.div(render=tags.directive('PLCElement')),
                                                     ]])
 
     def __init__(self, *a, **kw):
@@ -85,7 +89,7 @@ class MainPage(athena.LiveElement):
 
     def HMIexec(self, function, *args, **kwargs):
         if self.HMI is not None:
-            getattr(self.HMI, function, lambda:None)(*args, **kwargs)
+            getattr(self.HMI, function, lambda: None)(*args, **kwargs)
     athena.expose(HMIexec)
 
     def resetHMI(self):
@@ -110,15 +114,16 @@ class MainPage(athena.LiveElement):
         for child in self.liveFragmentChildren[:]:
             child.detach()
 
+
 class WebInterface(athena.LivePage):
 
     docFactory = loaders.stan([tags.raw(xhtml_header),
-                                tags.html(xmlns="http://www.w3.org/1999/xhtml")[
-                                    tags.head(render=tags.directive('liveglue')),
-                                    tags.body[
-                                        tags.div[
-                                                tags.div( render = tags.directive( "MainPage" ))
-                                                ]]]])
+                               tags.html(xmlns="http://www.w3.org/1999/xhtml")[
+                                   tags.head(render=tags.directive('liveglue')),
+                                   tags.body[
+                                       tags.div[
+                                           tags.div(render=tags.directive("MainPage"))
+                                       ]]]])
     MainPage = MainPage()
     PLCHMI = PLCHMI
 
@@ -170,8 +175,9 @@ class WebInterface(athena.LivePage):
 
     def disconnected(self, reason):
         self.MainPage.resetHMI()
-        #print reason
-        #print "We will be called back when the client disconnects"
+        # print reason
+        # print "We will be called back when the client disconnects"
+
 
 def RegisterWebsite(port):
     website = WebInterface()
@@ -182,6 +188,7 @@ def RegisterWebsite(port):
     print _("HTTP interface port :"), port
     return website
 
+
 class statuslistener:
     def __init__(self, site):
         self.oldstate = None
@@ -191,8 +198,10 @@ class statuslistener:
         if state != self.oldstate:
             action = {'Started': self.site.PLCStarted,
                       'Stopped': self.site.PLCStopped}.get(state, None)
-            if action is not None: action ()
+            if action is not None:
+                action()
             self.oldstate = state
+
 
 def website_statuslistener_factory(site):
     return statuslistener(site).listen

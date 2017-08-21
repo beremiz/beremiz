@@ -24,72 +24,75 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
-from plcopen.plcopen import *
 import wx
+from plcopen.plcopen import *
+from util.TranslationCatalogs import NoTranslate
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                          Search In Project Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 def GetElementsChoices():
-    _ = lambda x: x
-    return [("datatype", _("Data Type")), 
-            ("function", _("Function")), 
-            ("functionBlock", _("Function Block")), 
-            ("program", _("Program")), 
+    _ = NoTranslate
+    return [("datatype", _("Data Type")),
+            ("function", _("Function")),
+            ("functionBlock", _("Function Block")),
+            ("program", _("Program")),
             ("configuration", _("Configuration"))]
 
+
 class SearchInProjectDialog(wx.Dialog):
-    
+
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Search in Project'))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(1)
-        
+
         pattern_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=2, vgap=5)
         pattern_sizer.AddGrowableCol(0)
-        main_sizer.AddSizer(pattern_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
+        main_sizer.AddSizer(pattern_sizer, border=20,
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+
         pattern_label = wx.StaticText(self, label=_('Pattern to search:'))
         pattern_sizer.AddWindow(pattern_label, flag=wx.ALIGN_BOTTOM)
-        
+
         self.CaseSensitive = wx.CheckBox(self, label=_('Case sensitive'))
         pattern_sizer.AddWindow(self.CaseSensitive, flag=wx.GROW)
-        
-        self.Pattern = wx.TextCtrl(self, size=wx.Size(250,-1))
+
+        self.Pattern = wx.TextCtrl(self, size=wx.Size(250, -1))
         self.Bind(wx.EVT_TEXT, self.FindPatternChanged, self.Pattern)
         pattern_sizer.AddWindow(self.Pattern, flag=wx.GROW)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)
         self.RegularExpression = wx.CheckBox(self, label=_('Regular expression'))
         pattern_sizer.AddWindow(self.RegularExpression, flag=wx.GROW)
-        
+
         scope_staticbox = wx.StaticBox(self, label=_('Scope'))
         scope_sizer = wx.StaticBoxSizer(scope_staticbox, wx.HORIZONTAL)
-        main_sizer.AddSizer(scope_sizer, border=20, 
-              flag=wx.GROW|wx.LEFT|wx.RIGHT)
-        
+        main_sizer.AddSizer(scope_sizer, border=20,
+                            flag=wx.GROW | wx.LEFT | wx.RIGHT)
+
         scope_selection_sizer = wx.BoxSizer(wx.VERTICAL)
-        scope_sizer.AddSizer(scope_selection_sizer, 1, border=5, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.BOTTOM)
-        
+        scope_sizer.AddSizer(scope_selection_sizer, 1, border=5,
+                             flag=wx.GROW | wx.TOP | wx.LEFT | wx.BOTTOM)
+
         self.WholeProject = wx.RadioButton(self, label=_('Whole Project'), style=wx.RB_GROUP)
         self.WholeProject.SetValue(True)
         self.Bind(wx.EVT_RADIOBUTTON, self.OnScopeChanged, self.WholeProject)
-        scope_selection_sizer.AddWindow(self.WholeProject, border=5, 
-              flag=wx.GROW|wx.BOTTOM)
-        
+        scope_selection_sizer.AddWindow(self.WholeProject, border=5,
+                                        flag=wx.GROW | wx.BOTTOM)
+
         self.OnlyElements = wx.RadioButton(self, label=_('Only Elements'))
         self.Bind(wx.EVT_RADIOBUTTON, self.OnScopeChanged, self.OnlyElements)
         self.OnlyElements.SetValue(False)
         scope_selection_sizer.AddWindow(self.OnlyElements, flag=wx.GROW)
-        
+
         self.ElementsList = wx.CheckListBox(self)
         self.ElementsList.Enable(False)
-        scope_sizer.AddWindow(self.ElementsList, 1, border=5, 
-              flag=wx.GROW|wx.TOP|wx.RIGHT|wx.BOTTOM)
+        scope_sizer.AddWindow(self.ElementsList, 1, border=5,
+                              flag=wx.GROW | wx.TOP | wx.RIGHT | wx.BOTTOM)
 
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.AddSizer(buttons_sizer, border=20,
@@ -103,9 +106,9 @@ class SearchInProjectDialog(wx.Dialog):
         self.CloseButton = wx.Button(self, label=_("Close"))
         self.Bind(wx.EVT_BUTTON, self.OnCloseButton, self.CloseButton)
         buttons_sizer.AddWindow(self.CloseButton)
-        
+
         self.SetSizer(main_sizer)
-        
+
         for name, label in GetElementsChoices():
             self.ElementsList.Append(_(label))
 
@@ -139,7 +142,7 @@ class SearchInProjectDialog(wx.Dialog):
             self.OnCloseButton(event)
         else:
             event.Skip()
-    
+
     def OnFindButton(self, event):
         message = None
         infos = {
@@ -160,12 +163,12 @@ class SearchInProjectDialog(wx.Dialog):
                 self.criteria = infos
                 CompilePattern(self.criteria)
                 self.infosPrev = infos
-            except:
+            except Exception:
                 self.criteria.clear()
                 message = _("Syntax error in regular expression of pattern to search!")
-        
+
         if message is not None:
-            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:

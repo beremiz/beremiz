@@ -19,8 +19,9 @@ from __pyjamas__ import JS
 
 # must declare import _before_ importing sys
 
+
 def import_module(path, parent_module, module_name, dynamic=1, async=False):
-    """ 
+    """
     """
 
     JS("""
@@ -38,7 +39,7 @@ def import_module(path, parent_module, module_name, dynamic=1, async=False):
         }
 
         var override_name = sys.platform + "." + module_name;
-        if (((sys.overrides != null) && 
+        if (((sys.overrides != null) &&
              (sys.overrides.has_key(override_name))))
         {
             cache_file =  sys.overrides.__getitem__(override_name) ;
@@ -67,7 +68,7 @@ def import_module(path, parent_module, module_name, dynamic=1, async=False):
             module_load_request[module_name] = 1;
         }
 
-        /* following a load, this first executes the script 
+        /* following a load, this first executes the script
          * "preparation" function MODULENAME_loaded_fn()
          * and then sets up the loaded module in the namespace
          * of the parent.
@@ -104,6 +105,7 @@ def import_module(path, parent_module, module_name, dynamic=1, async=False):
         }
 
     """)
+
 
 JS("""
 function import_wait(proceed_fn, parent_mod, dynamic) {
@@ -184,10 +186,13 @@ function import_wait(proceed_fn, parent_mod, dynamic) {
 }
 """)
 
+
 class Object:
     pass
 
+
 object = Object
+
 
 class Modload:
 
@@ -196,15 +201,15 @@ class Modload:
         self.app_modlist = app_modlist
         self.app_imported_fn = app_imported_fn
         self.path = path
-        self.idx = 0;
+        self.idx = 0
         self.dynamic = dynamic
         self.parent_mod = parent_mod
 
     def next(self):
-        
+
         for i in range(len(self.app_modlist[self.idx])):
             app = self.app_modlist[self.idx][i]
-            import_module(self.path, self.parent_mod, app, self.dynamic, True);
+            import_module(self.path, self.parent_mod, app, self.dynamic, True)
         self.idx += 1
 
         if self.idx >= len(self.app_modlist):
@@ -212,10 +217,12 @@ class Modload:
         else:
             import_wait(getattr(self, "next"), self.parent_mod, self.dynamic)
 
+
 def get_module(module_name):
     ev = "__mod = %s;" % module_name
     JS("pyjs_eval(ev);")
     return __mod
+
 
 def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
                         parent_mod=None):
@@ -223,7 +230,11 @@ def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
     loader = Modload(path, app_modnames, app_imported_fn, dynamic, parent_mod)
     loader.next()
 
-import sys
+
+# as comment on line 20 says
+# import sys should be below
+import sys  # noqa
+
 
 class BaseException:
 
@@ -242,15 +253,18 @@ class BaseException:
     def toString(self):
         return str(self)
 
-class Exception(BaseException):
 
+class Exception(BaseException):
     name = "Exception"
+
 
 class TypeError(BaseException):
     name = "TypeError"
 
+
 class StandardError(Exception):
     name = "StandardError"
+
 
 class LookupError(StandardError):
     name = "LookupError"
@@ -258,15 +272,17 @@ class LookupError(StandardError):
     def toString(self):
         return self.name + ": " + self.args[0]
 
+
 class KeyError(LookupError):
     name = "KeyError"
 
-class AttributeError(StandardError):
 
+class AttributeError(StandardError):
     name = "AttributeError"
 
     def toString(self):
         return "AttributeError: %s of %s" % (self.args[1], self.args[0])
+
 
 JS("""
 pyjslib.StopIteration = function () { };
@@ -407,6 +423,7 @@ pyjslib.abs = Math.abs;
 
 """)
 
+
 class Class:
     def __init__(self, name):
         self.name = name
@@ -414,7 +431,8 @@ class Class:
     def __str___(self):
         return self.name
 
-def eq(a,b):
+
+def eq(a, b):
     JS("""
     if (pyjslib.hasattr(a, "__cmp__")) {
         return a.__cmp__(b) == 0;
@@ -424,7 +442,8 @@ def eq(a,b):
     return a == b;
     """)
 
-def cmp(a,b):
+
+def cmp(a, b):
     if hasattr(a, "__cmp__"):
         return a.__cmp__(b)
     elif hasattr(b, "__cmp__"):
@@ -435,6 +454,7 @@ def cmp(a,b):
         return -1
     else:
         return 0
+
 
 def bool(v):
     # this needs to stay in native code without any dependencies here,
@@ -455,6 +475,7 @@ def bool(v):
     }
     return Boolean(v);
     """)
+
 
 class List:
     def __init__(self, data=None):
@@ -511,7 +532,7 @@ class List:
     def insert(self, index, value):
         JS("""    var a = this.l; this.l=a.slice(0, index).concat(value, a.slice(index));""")
 
-    def pop(self, index = -1):
+    def pop(self, index=-1):
         JS("""
         if (index<0) index = this.l.length + index;
         var a = this.l[index];
@@ -580,15 +601,15 @@ class List:
             global cmp
             compareFunc = cmp
         if keyFunc and reverse:
-            def thisSort1(a,b):
+            def thisSort1(a, b):
                 return -compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort1)
         elif keyFunc:
-            def thisSort2(a,b):
+            def thisSort2(a, b):
                 return compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort2)
         elif reverse:
-            def thisSort3(a,b):
+            def thisSort3(a, b):
                 return -compareFunc(a, b)
             self.l.sort(thisSort3)
         else:
@@ -603,7 +624,9 @@ class List:
     def __str__(self):
         return repr(self)
 
+
 list = List
+
 
 class Tuple:
     def __init__(self, data=None):
@@ -660,7 +683,7 @@ class Tuple:
     def insert(self, index, value):
         JS("""    var a = this.l; this.l=a.slice(0, index).concat(value, a.slice(index));""")
 
-    def pop(self, index = -1):
+    def pop(self, index=-1):
         JS("""
         if (index<0) index = this.l.length + index;
         var a = this.l[index];
@@ -729,15 +752,15 @@ class Tuple:
             global cmp
             compareFunc = cmp
         if keyFunc and reverse:
-            def thisSort1(a,b):
+            def thisSort1(a, b):
                 return -compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort1)
         elif keyFunc:
-            def thisSort2(a,b):
+            def thisSort2(a, b):
                 return compareFunc(keyFunc(a), keyFunc(b))
             self.l.sort(thisSort2)
         elif reverse:
-            def thisSort3(a,b):
+            def thisSort3(a, b):
                 return -compareFunc(a, b)
             self.l.sort(thisSort3)
         else:
@@ -751,6 +774,7 @@ class Tuple:
 
     def __str__(self):
         return repr(self)
+
 
 tuple = Tuple
 
@@ -866,22 +890,22 @@ class Dict:
         return self.__iter__()
 
     def itervalues(self):
-        return self.values().__iter__();
+        return self.values().__iter__()
 
     def iteritems(self):
-        return self.items().__iter__();
+        return self.items().__iter__()
 
     def setdefault(self, key, default_value):
-        if not self.has_key(key):
+        if key not in self:
             self[key] = default_value
 
     def get(self, key, default_=None):
-        if not self.has_key(key):
+        if key not in self:
             return default_
         return self[key]
 
     def update(self, d):
-        for k,v in d.iteritems():
+        for k, v in d.iteritems():
             self[k] = v
 
     def getObject(self):
@@ -897,9 +921,12 @@ class Dict:
     def __str__(self):
         return repr(self)
 
+
 dict = Dict
 
 # taken from mochikit: range( [start,] stop[, step] )
+
+
 def range():
     JS("""
     var start = 0;
@@ -930,6 +957,7 @@ def range():
         }
     """)
 
+
 def slice(object, lower, upper):
     JS("""
     if (pyjslib.isString(object)) {
@@ -948,6 +976,7 @@ def slice(object, lower, upper):
     return null;
     """)
 
+
 def str(text):
     JS("""
     if (pyjslib.hasattr(text,"__str__")) {
@@ -955,6 +984,7 @@ def str(text):
     }
     return String(text);
     """)
+
 
 def ord(x):
     if(isString(x) and len(x) is 1):
@@ -967,10 +997,12 @@ def ord(x):
         """)
     return None
 
+
 def chr(x):
     JS("""
         return String.fromCharCode(x)
     """)
+
 
 def is_basetype(x):
     JS("""
@@ -983,6 +1015,7 @@ def is_basetype(x):
        ;
     """)
 
+
 def get_pyjs_classtype(x):
     JS("""
        if (pyjslib.hasattr(x, "__class__"))
@@ -991,6 +1024,7 @@ def get_pyjs_classtype(x):
                return src;
        return null;
     """)
+
 
 def repr(x):
     """ Return the string representation of 'x'.
@@ -1088,15 +1122,18 @@ def repr(x):
        return "<" + constructor + " object>";
     """)
 
+
 def float(text):
     JS("""
     return parseFloat(text);
     """)
 
+
 def int(text, radix=0):
     JS("""
     return parseInt(text, radix);
     """)
+
 
 def len(object):
     JS("""
@@ -1105,11 +1142,12 @@ def len(object):
     return object.length;
     """)
 
+
 def isinstance(object_, classinfo):
     if pyjslib.isUndefined(object_):
         return False
     if not pyjslib.isObject(object_):
-        
+
         return False
     if _isinstance(classinfo, Tuple):
         for ci in classinfo:
@@ -1118,6 +1156,7 @@ def isinstance(object_, classinfo):
         return False
     else:
         return _isinstance(object_, classinfo)
+
 
 def _isinstance(object_, classinfo):
     if not pyjslib.isObject(object_):
@@ -1129,6 +1168,7 @@ def _isinstance(object_, classinfo):
     }
     return false;
     """)
+
 
 def getattr(obj, name, default_):
     JS("""
@@ -1151,6 +1191,7 @@ def getattr(obj, name, default_):
     return fnwrap;
     """)
 
+
 def setattr(obj, name, value):
     JS("""
     if (!pyjslib.isObject(obj)) return null;
@@ -1158,6 +1199,7 @@ def setattr(obj, name, value):
     obj[name] = value;
 
     """)
+
 
 def hasattr(obj, name):
     JS("""
@@ -1167,12 +1209,14 @@ def hasattr(obj, name):
     return true;
     """)
 
+
 def dir(obj):
     JS("""
     var properties=new pyjslib.List();
     for (property in obj) properties.append(property);
     return properties;
     """)
+
 
 def filter(obj, method, sequence=None):
     # object context is LOST when a method is passed, hence object must be passed separately
@@ -1240,6 +1284,7 @@ def max(*sequence):
 
 next_hash_id = 0
 
+
 def hash(obj):
     JS("""
     if (obj == null) return null;
@@ -1259,40 +1304,48 @@ def isObject(a):
     return (a != null && (typeof a == 'object')) || pyjslib.isFunction(a);
     """)
 
+
 def isFunction(a):
     JS("""
     return typeof a == 'function';
     """)
+
 
 def isString(a):
     JS("""
     return typeof a == 'string';
     """)
 
+
 def isNull(a):
     JS("""
     return typeof a == 'object' && !a;
     """)
+
 
 def isArray(a):
     JS("""
     return pyjslib.isObject(a) && a.constructor == Array;
     """)
 
+
 def isUndefined(a):
     JS("""
     return typeof a == 'undefined';
     """)
+
 
 def isIteratable(a):
     JS("""
     return pyjslib.isString(a) || (pyjslib.isObject(a) && a.__iter__);
     """)
 
+
 def isNumber(a):
     JS("""
     return typeof a == 'number' && isFinite(a);
     """)
+
 
 def toJSObjects(x):
     """
@@ -1337,6 +1390,7 @@ def toJSObjects(x):
          """)
     return x
 
+
 def printFunc(objs):
     JS("""
     if ($wnd.console==undefined)  return;
@@ -1347,6 +1401,7 @@ def printFunc(objs):
     }
     console.debug(s)
     """)
+
 
 def type(clsname, bases=None, methods=None):
     """ creates a class, derived from bases, with methods and variables
@@ -1362,4 +1417,3 @@ def type(clsname, bases=None, methods=None):
     if bases:
         JS("bss = bases.l;")
     JS(" return pyjs_type(clsname, bss, mths); ")
-

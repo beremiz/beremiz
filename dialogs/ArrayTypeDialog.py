@@ -28,67 +28,68 @@ import wx
 
 from controls import CustomEditableListBox
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                                  Helpers
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                             Array Type Dialog
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 class ArrayTypeDialog(wx.Dialog):
-    
+
     def __init__(self, parent, datatypes, infos):
         wx.Dialog.__init__(self, parent, title=_('Edit array type properties'))
-        
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(1)
-        
+
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(top_sizer, border=20, 
-              flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        
+        main_sizer.AddSizer(top_sizer, border=20,
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+
         basetype_label = wx.StaticText(self, label=_('Base Type:'))
         top_sizer.AddWindow(basetype_label, 1, flag=wx.ALIGN_BOTTOM)
-        
+
         self.BaseType = wx.ComboBox(self, style=wx.CB_READONLY)
         top_sizer.AddWindow(self.BaseType, 1, flag=wx.GROW)
-        
-        self.Dimensions = CustomEditableListBox(self, label=_("Dimensions:"), 
-              style=wx.gizmos.EL_ALLOW_NEW|
-                    wx.gizmos.EL_ALLOW_EDIT|
-                    wx.gizmos.EL_ALLOW_DELETE)
-        for func in ["_OnLabelEndEdit", 
-                     "_OnAddButton", 
-                     "_OnDelButton", 
-                     "_OnUpButton", 
+
+        self.Dimensions = CustomEditableListBox(self, label=_("Dimensions:"),
+                                                style=(wx.gizmos.EL_ALLOW_NEW |
+                                                       wx.gizmos.EL_ALLOW_EDIT |
+                                                       wx.gizmos.EL_ALLOW_DELETE))
+        for func in ["_OnLabelEndEdit",
+                     "_OnAddButton",
+                     "_OnDelButton",
+                     "_OnUpButton",
                      "_OnDownButton"]:
             setattr(self.Dimensions, func, self.OnDimensionsChanged)
-        main_sizer.AddSizer(self.Dimensions, border=20, 
-              flag=wx.GROW|wx.LEFT|wx.RIGHT)
-        
-        button_sizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+        main_sizer.AddSizer(self.Dimensions, border=20,
+                            flag=wx.GROW | wx.LEFT | wx.RIGHT)
+
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, 
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
+        main_sizer.AddSizer(button_sizer, border=20,
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+
         self.SetSizer(main_sizer)
-        
+
         for datatype in datatypes:
             self.BaseType.Append(datatype)
-        
+
         if isinstance(infos, TupleType) and infos[0] == "array":
             self.BaseType.SetStringSelection(infos[1])
-            self.Dimensions.SetStrings(map(lambda x : "..".join(x), infos[2]))
+            self.Dimensions.SetStrings(map(lambda x: "..".join(x), infos[2]))
         elif infos in datatypes:
             self.BaseType.SetStringSelection(infos)
-        
+
         self.BaseType.SetFocus()
         self.Fit()
-        
+
     def GetDimensions(self):
         message = None
         dimensions_list = []
@@ -99,28 +100,28 @@ class ArrayTypeDialog(wx.Dialog):
         for dimensions in dimension_strings:
             result = DIMENSION_MODEL.match(dimensions)
             if result is None:
-                message = _("\"%s\" value isn't a valid array dimension!")%dimensions
+                message = _("\"%s\" value isn't a valid array dimension!") % dimensions
                 break
             bounds = result.groups()
             if int(bounds[0]) >= int(bounds[1]):
-                message = _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.")%dimensions
+                message = _("\"%s\" value isn't a valid array dimension!\nRight value must be greater than left value.") % dimensions
                 break
             dimensions_list.append(bounds)
 
         if message is not None:
-            dlg = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+            dlg = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
             return None
         return dimensions_list
-    
+
     def OnDimensionsChanged(self, event):
         wx.CallAfter(self.GetDimensions)
         event.Skip()
-    
+
     def OnOK(self, event):
         if self.GetDimensions() is not None:
             self.EndModal(wx.ID_OK)
-            
+
     def GetValue(self):
         return "array", self.BaseType.GetStringSelection(), self.GetDimensions()

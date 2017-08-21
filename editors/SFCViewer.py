@@ -35,7 +35,7 @@ SFC_Objects = (SFC_Step, SFC_ActionBlock, SFC_Transition, SFC_Divergence, SFC_Ju
 
 
 class SFC_Viewer(Viewer):
-    
+
     SFC_StandardRules = {
         # The key of this dict is a block that user try to connect,
         # and the value is a list of blocks, that can be connected with the current block
@@ -61,7 +61,7 @@ class SFC_Viewer(Viewer):
         SELECTION_DIVERGENCE: [("SFC_Transition", SOUTH)],
 
         SELECTION_CONVERGENCE: [("SFC_Step", SOUTH),
-                                  ("SFC_Jump", SOUTH)],
+                                ("SFC_Jump", SOUTH)],
 
         SIMULTANEOUS_DIVERGENCE: [("SFC_Step", SOUTH)],
 
@@ -82,10 +82,10 @@ class SFC_Viewer(Viewer):
         "LD_Coil": [("SFC_Transition", WEST)]
     }
 
-    def __init__(self, parent, tagname, window, controler, debug = False, instancepath = ""):
+    def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         Viewer.__init__(self, parent, tagname, window, controler, debug, instancepath)
         self.CurrentLanguage = "SFC"
-    
+
     def ConnectConnectors(self, start, end):
         startpoint = [start.GetPosition(False), start.GetDirection()]
         endpoint = [end.GetPosition(False), end.GetDirection()]
@@ -96,8 +96,8 @@ class SFC_Viewer(Viewer):
         wire.ConnectStartPoint(None, start)
         wire.ConnectEndPoint(None, end)
         return wire
-    
-    def CreateTransition(self, connector, next = None):
+
+    def CreateTransition(self, connector, next=None):
         previous = connector.GetParentBlock()
         id = self.GetNewId()
         transition = SFC_Transition(self, "reference", "", 0, id)
@@ -124,7 +124,7 @@ class SFC_Viewer(Viewer):
                 next_block.RefreshPosition()
             transition.RefreshOutputModel(True)
         return transition
-    
+
     def RemoveTransition(self, transition):
         connectors = transition.GetConnectors()
         input_wires = connectors["input"].GetWires()
@@ -146,8 +146,8 @@ class SFC_Viewer(Viewer):
         self.Controler.RemoveEditedElementInstance(self.TagName, transition.GetId())
         wire = self.ConnectConnectors(next, previous)
         return wire
-    
-    def CreateStep(self, name, connector, next = None):
+
+    def CreateStep(self, name, connector, next=None):
         previous = connector.GetParentBlock()
         id = self.GetNewId()
         step = SFC_Step(self, name, False, id)
@@ -213,9 +213,9 @@ class SFC_Viewer(Viewer):
         else:
             return None
 
-#-------------------------------------------------------------------------------
-#                          Mouse event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Mouse event functions
+    # -------------------------------------------------------------------------------
 
     def OnViewerLeftDown(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -289,7 +289,7 @@ class SFC_Viewer(Viewer):
             self.SelectedElement.RefreshModel()
             self.SelectedElement.SetSelected(True)
         event.Skip()
-    
+
     def OnViewerRightUp(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.OnViewerRightUp(self, event)
@@ -307,7 +307,7 @@ class SFC_Viewer(Viewer):
                     self.SelectedElement.Refresh()
                 wx.CallAfter(self.SetCurrentCursor, 0)
         event.Skip()
-    
+
     def OnViewerLeftDClick(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.OnViewerLeftDClick(self, event)
@@ -315,7 +315,7 @@ class SFC_Viewer(Viewer):
             self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             self.Refresh(False)
         event.Skip()
-    
+
     def OnViewerMotion(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.OnViewerMotion(self, event)
@@ -341,9 +341,9 @@ class SFC_Viewer(Viewer):
         return blockName
 
     # This method check the IEC 61131-3 compatibility between two SFC blocks
-    def BlockCompatibility(self,startblock = None, endblock = None, direction = None):
-        if startblock!= None and endblock != None and (isinstance(startblock,SFC_Objects)\
-                                                               or isinstance(endblock,SFC_Objects)):
+    def BlockCompatibility(self, startblock=None, endblock=None, direction=None):
+        if startblock is not None and endblock is not None and \
+           (isinstance(startblock, SFC_Objects) or isinstance(endblock, SFC_Objects)):
             # Full "SFC_StandardRules" table would be symmetrical and
             # to avoid duplicate records and minimize the table only upper part is defined.
             if (direction == SOUTH or direction == EAST):
@@ -356,9 +356,9 @@ class SFC_Viewer(Viewer):
             return False
         return True
 
-#-------------------------------------------------------------------------------
-#                          Keyboard event functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Keyboard event functions
+    # -------------------------------------------------------------------------------
 
     def OnChar(self, event):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -424,13 +424,13 @@ class SFC_Viewer(Viewer):
                     self.RefreshRect(self.GetScrolledRect(self.SelectedElement.GetRedrawRect(0, scaling[1])), False)
             else:
                 event.Skip()
-        
-#-------------------------------------------------------------------------------
-#                          Adding element functions
-#-------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------
+    #                          Adding element functions
+    # -------------------------------------------------------------------------------
 
     def AddInitialStep(self, pos):
-        dialog = SFCStepNameDialog(self.ParentWindow, _("Please enter step name"), _("Add a new initial step"), "", wx.OK|wx.CANCEL)
+        dialog = SFCStepNameDialog(self.ParentWindow, _("Please enter step name"), _("Add a new initial step"), "", wx.OK | wx.CANCEL)
         dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
         dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
         dialog.SetStepNames([block.GetName() for block in self.Blocks if isinstance(block, SFC_Step)])
@@ -452,7 +452,7 @@ class SFC_Viewer(Viewer):
 
     def AddStep(self):
         if self.SelectedElement in self.Wires or isinstance(self.SelectedElement, SFC_Step):
-            dialog = SFCStepNameDialog(self.ParentWindow, _("Add a new step"), _("Please enter step name"), "", wx.OK|wx.CANCEL)
+            dialog = SFCStepNameDialog(self.ParentWindow, _("Add a new step"), _("Please enter step name"), "", wx.OK | wx.CANCEL)
             dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
             dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
             dialog.SetStepNames([block.GetName() for block in self.Blocks if isinstance(block, SFC_Step)])
@@ -503,7 +503,7 @@ class SFC_Viewer(Viewer):
                 self.RefreshScrollBars()
                 self.Refresh(False)
             dialog.Destroy()
-    
+
     def AddStepAction(self):
         if isinstance(self.SelectedElement, SFC_Step):
             connectors = self.SelectedElement.GetConnectors()
@@ -532,9 +532,9 @@ class SFC_Viewer(Viewer):
                     self.RefreshScrollBars()
                     self.Refresh(False)
                 dialog.Destroy()
-    
+
     def AddDivergence(self):
-        if self.SelectedElement in self.Wires or isinstance(self.SelectedElement, Graphic_Group) or isinstance(self.SelectedElement, SFC_Step):        
+        if self.SelectedElement in self.Wires or isinstance(self.SelectedElement, Graphic_Group) or isinstance(self.SelectedElement, SFC_Step):
             dialog = SFCDivergenceDialog(self.ParentWindow)
             dialog.SetPreviewFont(self.GetFont())
             if dialog.ShowModal() == wx.ID_OK:
@@ -729,7 +729,7 @@ class SFC_Viewer(Viewer):
                 self.RefreshScrollBars()
                 self.Refresh(False)
             dialog.Destroy()
-    
+
     def AddDivergenceBranch(self, divergence):
         if isinstance(divergence, SFC_Divergence):
             if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -750,7 +750,7 @@ class SFC_Viewer(Viewer):
             self.RefreshBuffer()
             self.RefreshScrollBars()
             self.Refresh(False)
-    
+
     def RemoveDivergenceBranch(self, divergence):
         if isinstance(divergence, SFC_Divergence):
             if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -759,16 +759,18 @@ class SFC_Viewer(Viewer):
                 self.RefreshBuffer()
                 self.RefreshScrollBars()
                 self.Refresh(False)
-    
+
     def AddJump(self):
         if isinstance(self.SelectedElement, SFC_Step) and not self.SelectedElement.Output:
             choices = []
             for block in self.Blocks:
                 if isinstance(block, SFC_Step):
                     choices.append(block.GetName())
-            dialog = wx.SingleChoiceDialog(self.ParentWindow, 
-                  _("Add a new jump"), _("Please choose a target"), 
-                  choices, wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+            dialog = wx.SingleChoiceDialog(self.ParentWindow,
+                                           _("Add a new jump"),
+                                           _("Please choose a target"),
+                                           choices,
+                                           wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
             if dialog.ShowModal() == wx.ID_OK:
                 value = dialog.GetStringSelection()
                 self.SelectedElement.AddOutput()
@@ -796,7 +798,7 @@ class SFC_Viewer(Viewer):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.EditStepContent(self, step)
         else:
-            dialog = SFCStepNameDialog(self.ParentWindow, _("Edit step name"), _("Please enter step name"), step.GetName(), wx.OK|wx.CANCEL)
+            dialog = SFCStepNameDialog(self.ParentWindow, _("Edit step name"), _("Please enter step name"), step.GetName(), wx.OK | wx.CANCEL)
             dialog.SetPouNames(self.Controler.GetProjectPouNames(self.Debug))
             dialog.SetVariables(self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug))
             dialog.SetStepNames([block.GetName() for block in self.Blocks if isinstance(block, SFC_Step) and block.GetName() != step.GetName()])
@@ -812,9 +814,9 @@ class SFC_Viewer(Viewer):
                 self.Refresh(False)
             dialog.Destroy()
 
-#-------------------------------------------------------------------------------
-#                          Delete element functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Delete element functions
+    # -------------------------------------------------------------------------------
 
     def DeleteStep(self, step):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
@@ -884,7 +886,7 @@ class SFC_Viewer(Viewer):
                                 self.DeleteDivergence(previous_block)
                             else:
                                 self.RefreshDivergenceModel(previous_block)
-        
+
     def DeleteTransition(self, transition):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.DeleteTransition(self, transition)
@@ -919,7 +921,7 @@ class SFC_Viewer(Viewer):
                     self.DeleteDivergence(next_block)
                 else:
                     self.RefreshDivergenceModel(next_block)
-            
+
     def DeleteDivergence(self, divergence):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.DeleteDivergence(self, divergence)
@@ -979,8 +981,8 @@ class SFC_Viewer(Viewer):
                     next_pos = next.GetPosition(False)
                     wire_size = GetWireSize(previous_block)
                     previous_block.RefreshOutputPosition((0, previous_pos.y + wire_size - next_pos.y))
-                    wire.SetPoints([wx.Point(previous_pos.x, previous_pos.y + wire_size), 
-                        wx.Point(previous_pos.x, previous_pos.y)])
+                    wire.SetPoints([wx.Point(previous_pos.x, previous_pos.y + wire_size),
+                                    wx.Point(previous_pos.x, previous_pos.y)])
                     if isinstance(next_block, SFC_Divergence):
                         next_block.RefreshPosition()
                     previous_block.RefreshOutputModel(True)
@@ -1009,12 +1011,12 @@ class SFC_Viewer(Viewer):
                 next_pos = next.GetPosition(False)
                 wire_size = GetWireSize(previous_block)
                 previous_block.RefreshOutputPosition((previous_pos.x - next_pos.x, previous_pos.y + wire_size - next_pos.y))
-                wire.SetPoints([wx.Point(previous_pos.x, previous_pos.y + wire_size), 
-                    wx.Point(previous_pos.x, previous_pos.y)])
+                wire.SetPoints([wx.Point(previous_pos.x, previous_pos.y + wire_size),
+                                wx.Point(previous_pos.x, previous_pos.y)])
                 if isinstance(next_block, SFC_Divergence):
                     next_block.RefreshPosition()
                 previous_block.RefreshOutputModel(True)
-            
+
     def DeleteJump(self, jump):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.DeleteJump(self, jump)
@@ -1049,7 +1051,7 @@ class SFC_Viewer(Viewer):
                         self.DeleteDivergence(previous_block)
                     else:
                         previous_block.RefreshModel()
-            
+
     def DeleteActionBlock(self, actionblock):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.DeleteActionBlock(self, actionblock)
@@ -1069,14 +1071,14 @@ class SFC_Viewer(Viewer):
             self.RefreshStepModel(step)
             step.RefreshOutputPosition()
             step.RefreshOutputModel(True)
-            
+
     def DeleteWire(self, wire):
         if self.GetDrawingMode() == FREEDRAWING_MODE:
             Viewer.DeleteWire(self, wire)
 
-#-------------------------------------------------------------------------------
-#                          Model update functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                          Model update functions
+    # -------------------------------------------------------------------------------
 
     def RefreshBlockModel(self, block):
         blockid = block.GetId()
@@ -1087,4 +1089,3 @@ class SFC_Viewer(Viewer):
         infos["width"], infos["height"] = block.GetSize()
         infos["connectors"] = block.GetConnectors()
         self.Controler.SetEditedElementBlockInfos(self.TagName, blockid, infos)
-

@@ -26,19 +26,21 @@ import wx
 import wx.stc
 
 if wx.Platform == '__WXMSW__':
-    faces = { 'times': 'Times New Roman',
-              'mono' : 'Courier New',
-              'helv' : 'Arial',
-              'other': 'Comic Sans MS',
-              'size' : 10,
-             }
+    faces = {
+        'times': 'Times New Roman',
+        'mono':  'Courier New',
+        'helv':  'Arial',
+        'other': 'Comic Sans MS',
+        'size':  10,
+    }
 else:
-    faces = { 'times': 'Times',
-              'mono' : 'Courier',
-              'helv' : 'Helvetica',
-              'other': 'new century schoolbook',
-              'size' : 12,
-             }
+    faces = {
+        'times': 'Times',
+        'mono':  'Courier',
+        'helv':  'Helvetica',
+        'other': 'new century schoolbook',
+        'size':  12,
+    }
 
 NAVIGATION_KEYS = [
     wx.WXK_END,
@@ -57,6 +59,7 @@ NAVIGATION_KEYS = [
     wx.WXK_NUMPAD_PAGEUP,
     wx.WXK_NUMPAD_PAGEDOWN,
     wx.WXK_NUMPAD_END]
+
 
 def GetCursorPos(old, new):
     if old == "":
@@ -81,13 +84,14 @@ def GetCursorPos(old, new):
     else:
         return None
 
+
 class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
-    
+
     def __init__(self, *args, **kwargs):
         wx.stc.StyledTextCtrl.__init__(self, *args, **kwargs)
-        
+
         self.Bind(wx.EVT_MOTION, self.OnMotion)
-        
+
     def OnMotion(self, event):
         if wx.Platform == '__WXMSW__':
             if not event.Dragging():

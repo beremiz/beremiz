@@ -37,6 +37,7 @@ from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from controls.VariablePanel import VARIABLE_NAME_SUFFIX_MODEL
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
+from util.TranslationCatalogs import NoTranslate
 
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT,
  STC_CODE_SECTION] = range(15, 18)
@@ -48,6 +49,7 @@ HIGHLIGHT_TYPES = {
 
 EDGE_COLUMN = 80
 
+
 class CodeEditor(CustomStyledTextCtrl):
 
     KEYWORDS = []
@@ -55,14 +57,14 @@ class CodeEditor(CustomStyledTextCtrl):
 
     def __init__(self, parent, window, controler):
         CustomStyledTextCtrl.__init__(self, parent, -1, wx.DefaultPosition,
-                 wx.Size(-1, 300), 0)
+                                      wx.Size(-1, 300), 0)
 
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
         self.SetMarginWidth(1, 25)
 
         self.SetProperty("fold", "1")
         self.SetProperty("tab.timmy.whinge.level", "1")
-        self.SetMargins(0,0)
+        self.SetMargins(0, 0)
 
         self.SetViewWhiteSpace(False)
 
@@ -133,9 +135,10 @@ class CodeEditor(CustomStyledTextCtrl):
         for section in self.Controler.SECTIONS_NAMES:
             section_comment = " %s section " % (section)
             len_headers = EDGE_COLUMN - len(section_comment)
-            section_comment = self.COMMENT_HEADER * (len_headers / 2) + \
-                              section_comment + \
-                              self.COMMENT_HEADER * (len_headers - len_headers / 2)
+            section_comment = \
+                self.COMMENT_HEADER * (len_headers / 2) + \
+                section_comment + \
+                self.COMMENT_HEADER * (len_headers - len_headers / 2)
 
             self.SectionsComments[section] = {
                  "comment": section_comment,
@@ -152,7 +155,7 @@ class CodeEditor(CustomStyledTextCtrl):
                 section_infos["comment"] + "(.*)" +
                 section_end, re.DOTALL)
 
-        self.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT|wx.stc.STC_MOD_BEFOREDELETE)
+        self.SetModEventMask(wx.stc.STC_MOD_BEFOREINSERT | wx.stc.STC_MOD_BEFOREDELETE)
 
         self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop)
         self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
@@ -170,17 +173,17 @@ class CodeEditor(CustomStyledTextCtrl):
     def OnModification(self, event):
         if not self.DisableEvents:
             mod_type = event.GetModificationType()
-            if not (mod_type&wx.stc.STC_PERFORMED_UNDO or mod_type&wx.stc.STC_PERFORMED_REDO):
-                if mod_type&wx.stc.STC_MOD_BEFOREINSERT:
-                    if self.CurrentAction == None:
+            if not (mod_type & wx.stc.STC_PERFORMED_UNDO or mod_type & wx.stc.STC_PERFORMED_REDO):
+                if mod_type & wx.stc.STC_MOD_BEFOREINSERT:
+                    if self.CurrentAction is None:
                         self.StartBuffering()
                     elif self.CurrentAction[0] != "Add" or self.CurrentAction[1] != event.GetPosition() - 1:
                         self.Controler.EndBuffering()
                         self.StartBuffering()
                     self.CurrentAction = ("Add", event.GetPosition())
                     wx.CallAfter(self.RefreshModel)
-                elif mod_type&wx.stc.STC_MOD_BEFOREDELETE:
-                    if self.CurrentAction == None:
+                elif mod_type & wx.stc.STC_MOD_BEFOREDELETE:
+                    if self.CurrentAction is None:
                         self.StartBuffering()
                     elif self.CurrentAction[0] != "Delete" or self.CurrentAction[1] != event.GetPosition() + 1:
                         self.Controler.EndBuffering()
@@ -193,7 +196,7 @@ class CodeEditor(CustomStyledTextCtrl):
     def OnDoDrop(self, event):
         try:
             values = eval(event.GetDragText())
-        except:
+        except Exception:
             values = event.GetDragText()
         if isinstance(values, tuple):
             message = None
@@ -226,7 +229,7 @@ class CodeEditor(CustomStyledTextCtrl):
             self.ParentWindow.RefreshPageTitles()
 
     def ResetBuffer(self):
-        if self.CurrentAction != None:
+        if self.CurrentAction is not None:
             self.Controler.EndBuffering()
             self.CurrentAction = None
 
@@ -258,7 +261,7 @@ class CodeEditor(CustomStyledTextCtrl):
             self.SetText(new_text)
             new_cursor_pos = GetCursorPos(old_text, new_text)
             self.LineScroll(column, line)
-            if new_cursor_pos != None:
+            if new_cursor_pos is not None:
                 self.GotoPos(new_cursor_pos)
             else:
                 self.GotoPos(old_cursor_pos)
@@ -381,7 +384,7 @@ class CodeEditor(CustomStyledTextCtrl):
         if braceAtCaret >= 0:
             braceOpposite = self.BraceMatch(braceAtCaret)
 
-        if braceAtCaret != -1  and braceOpposite == -1:
+        if braceAtCaret != -1 and braceOpposite == -1:
             self.BraceBadLight(braceAtCaret)
         else:
             self.BraceHighlight(braceAtCaret, braceOpposite)
@@ -442,8 +445,6 @@ class CodeEditor(CustomStyledTextCtrl):
                         self.HideLines(lineNum+1, lastChild)
 
             lineNum = lineNum + 1
-
-
 
     def Expand(self, line, doExpand, force=False, visLevels=0, level=-1):
         lastChild = self.GetLastChild(line, level)
@@ -548,9 +549,9 @@ class CodeEditor(CustomStyledTextCtrl):
                 self.RemoveHighlight(*self.CurrentFindHighlight)
             self.CurrentFindHighlight = None
 
-#-------------------------------------------------------------------------------
-#                        Highlights showing functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                        Highlights showing functions
+    # -------------------------------------------------------------------------------
 
     def OnRefreshHighlightsTimer(self, event):
         self.RefreshView(True)
@@ -575,8 +576,8 @@ class CodeEditor(CustomStyledTextCtrl):
 
     def RemoveHighlight(self, start, end, highlight_type):
         highlight_type = HIGHLIGHT_TYPES.get(highlight_type, None)
-        if (highlight_type is not None and
-            (start, end, highlight_type) in self.Highlights):
+        if highlight_type is not None and \
+           (start, end, highlight_type) in self.Highlights:
             self.Highlights.remove((start, end, highlight_type))
             self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
 
@@ -596,9 +597,9 @@ class CodeEditor(CustomStyledTextCtrl):
             self.SetStyling(len(self.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         Helper for VariablesGrid values
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class VariablesTable(CustomTable):
 
@@ -660,7 +661,7 @@ class VariablesEditor(wx.Panel):
                 ("UpVariableButton", "up", _("Move variable up")),
                 ("DownVariableButton", "down", _("Move variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             controls_sizer.AddWindow(button, border=5, flag=wx.BOTTOM)
@@ -676,8 +677,14 @@ class VariablesEditor(wx.Panel):
         self.ParentWindow = window
         self.Controler = controler
 
-        self.VariablesDefaultValue = {"Name" : "", "Type" : DefaultType, "Initial": "",
-                                      "Description":"", "OnChange":"", "Options":""}
+        self.VariablesDefaultValue = {
+            "Name":        "",
+            "Type":        DefaultType,
+            "Initial":     "",
+            "Description": "",
+            "OnChange":    "",
+            "Options":     ""
+        }
         self.Table = VariablesTable(self, [], self.GetVariableTableColnames())
         self.ColAlignements = [wx.ALIGN_RIGHT] +  \
                               [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
@@ -735,8 +742,14 @@ class VariablesEditor(wx.Panel):
         self.Table.ResetView(self.VariablesGrid)
 
     def GetVariableTableColnames(self):
-        _ = lambda x : x
-    	return ["#", _("Name"),_("Type"), _("Initial"), _("Description"), _("OnChange"), _("Options")]
+        _ = NoTranslate
+        return ["#",
+                _("Name"),
+                _("Type"),
+                _("Initial"),
+                _("Description"),
+                _("OnChange"),
+                _("Options")]
 
     def RefreshModel(self):
         self.Controler.SetVariables(self.Table.GetData())
@@ -759,7 +772,7 @@ class VariablesEditor(wx.Panel):
         return self.ParentWindow.GetPanelBestSize()
 
     def ShowErrorMessage(self, message):
-        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK|wx.ICON_ERROR)
+        dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
         dialog.ShowModal()
         dialog.Destroy()
 
@@ -831,7 +844,7 @@ class VariablesEditor(wx.Panel):
             data_type = self.Table.GetValueByName(row, "Type")
             var_name = self.Table.GetValueByName(row, "Name")
             data = wx.TextDataObject(str((var_name, "Global", data_type,
-                    self.Controler.GetCurrentLocation())))
+                                          self.Controler.GetCurrentLocation())))
             dragSource = wx.DropSource(self.VariablesGrid)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
@@ -839,9 +852,9 @@ class VariablesEditor(wx.Panel):
         event.Skip()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                          CodeFileEditor Main Frame Class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class CodeFileEditor(ConfTreeNodeEditor):
 
@@ -853,14 +866,15 @@ class CodeFileEditor(ConfTreeNodeEditor):
         self.CodeEditorPanel.SetMinimumPaneSize(1)
 
         self.VariablesPanel = VariablesEditor(self.CodeEditorPanel,
-                self.ParentWindow, self.Controler)
+                                              self.ParentWindow,
+                                              self.Controler)
 
         if self.CODE_EDITOR is not None:
             self.CodeEditor = self.CODE_EDITOR(self.CodeEditorPanel,
-                        self.ParentWindow, self.Controler)
+                                               self.ParentWindow, self.Controler)
 
             self.CodeEditorPanel.SplitHorizontally(self.VariablesPanel,
-                    self.CodeEditor, 150)
+                                                   self.CodeEditor, 150)
         else:
             self.CodeEditorPanel.Initialize(self.VariablesPanel)
 
@@ -890,4 +904,3 @@ class CodeFileEditor(ConfTreeNodeEditor):
 
     def Find(self, direction, search_params):
         self.CodeEditor.Find(direction, search_params)
-

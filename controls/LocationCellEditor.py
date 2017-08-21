@@ -26,32 +26,33 @@ import wx
 
 from dialogs.BrowseLocationsDialog import BrowseLocationsDialog
 
+
 class LocationCellControl(wx.PyControl):
-    
+
     '''
     Custom cell editor control with a text box and a button that launches
     the BrowseLocationsDialog.
     '''
     def __init__(self, parent):
         wx.Control.__init__(self, parent)
-        
+
         main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
-        
+
         # create location text control
-        self.Location = wx.TextCtrl(self, size=wx.Size(0, -1), 
-              style=wx.TE_PROCESS_ENTER)
+        self.Location = wx.TextCtrl(self, size=wx.Size(0, -1),
+                                    style=wx.TE_PROCESS_ENTER)
         self.Location.Bind(wx.EVT_KEY_DOWN, self.OnLocationChar)
         main_sizer.AddWindow(self.Location, flag=wx.GROW)
-        
+
         # create browse button
         self.BrowseButton = wx.Button(self, label='...', size=wx.Size(30, -1))
         self.BrowseButton.Bind(wx.EVT_BUTTON, self.OnBrowseButtonClick)
         main_sizer.AddWindow(self.BrowseButton, flag=wx.GROW)
-        
+
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        
+
         self.SetSizer(main_sizer)
 
         self.Controller = None
@@ -73,7 +74,7 @@ class LocationCellControl(wx.PyControl):
     def SetValue(self, value):
         self.Default = value
         self.Location.SetValue(value)
-    
+
     def GetValue(self):
         return self.Location.GetValue()
 
@@ -88,15 +89,17 @@ class LocationCellControl(wx.PyControl):
         else:
             infos = None
         dialog.Destroy()
-        
+
         if infos is not None:
             location = infos["location"]
             # set the location
             if not infos["location"].startswith("%"):
-                dialog = wx.SingleChoiceDialog(self, 
-                      _("Select a variable class:"), _("Variable class"), 
-                      [_("Input"), _("Output"), _("Memory")], 
-                      wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.CANCEL)
+                dialog = wx.SingleChoiceDialog(
+                    self,
+                    _("Select a variable class:"),
+                    _("Variable class"),
+                    [_("Input"), _("Output"), _("Memory")],
+                    wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.CANCEL)
                 if dialog.ShowModal() == wx.ID_OK:
                     selected = dialog.GetSelection()
                 else:
@@ -111,7 +114,7 @@ class LocationCellControl(wx.PyControl):
                     location = "%Q" + location
                 else:
                     location = "%M" + location
-            
+
             self.Location.SetValue(location)
             self.VarType = infos["IEC_type"]
 
@@ -129,9 +132,10 @@ class LocationCellControl(wx.PyControl):
 
     def SetInsertionPoint(self, i):
         self.Location.SetInsertionPoint(i)
-    
+
     def SetFocus(self):
         self.Location.SetFocus()
+
 
 class LocationCellEditor(wx.grid.PyGridCellEditor):
     '''
@@ -139,14 +143,14 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
     '''
     def __init__(self, table, controller):
         wx.grid.PyGridCellEditor.__init__(self)
-        
+
         self.Table = table
         self.Controller = controller
 
     def __del__(self):
         self.CellControl = None
         self.Controller = None
-    
+
     def Create(self, parent, id, evt_handler):
         self.CellControl = LocationCellControl(parent)
         self.SetControl(self.CellControl)
@@ -169,20 +173,19 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
             self.Table.SetValueByName(row, 'Type', self.CellControl.GetVarType())
         self.CellControl.Disable()
         return changed
-        
+
     if wx.VERSION >= (3, 0, 0):
         def EndEdit(self, row, col, grid, oldval):
             return self.EndEditInternal(row, col, grid, oldval)
     else:
         def EndEdit(self, row, col, grid):
-            old_loc = self.Table.GetValueByName(row, 'Location')            
+            old_loc = self.Table.GetValueByName(row, 'Location')
             return self.EndEditInternal(row, col, grid, old_loc)
-    
+
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,
-                                        rect.width, rect.height,
-                                        wx.SIZE_ALLOW_MINUS_ONE)
+                                       rect.width, rect.height,
+                                       wx.SIZE_ALLOW_MINUS_ONE)
 
     def Clone(self):
         return LocationCellEditor(self.Table, self.Controller)
-

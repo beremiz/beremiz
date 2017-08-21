@@ -22,7 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os 
+import os
 
 import wx
 
@@ -31,6 +31,7 @@ langid = wx.LANGUAGE_DEFAULT
 
 # Define locale for wx
 locale = wx.Locale(langid)
+
 
 def GetDomain(path):
     for name in os.listdir(path):
@@ -44,9 +45,14 @@ def GetDomain(path):
             return basename
     return None
 
+
 def AddCatalog(locale_dir):
     if os.path.exists(locale_dir) and os.path.isdir(locale_dir):
         domain = GetDomain(locale_dir)
         if domain is not None:
             locale.AddCatalogLookupPathPrefix(locale_dir)
             locale.AddCatalog(domain)
+
+
+def NoTranslate(x):
+        return x

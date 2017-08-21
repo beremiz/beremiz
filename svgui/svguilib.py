@@ -22,8 +22,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
 class button:
-    
+
     def __init__(self, parent, id, args):
         self.parent = parent
         self.id = id
@@ -40,19 +41,19 @@ class button:
             self.up = not self.state
         else:
             self.up = True
-        
+
         # Add event on each element of the button
         if self.active:
             self.back_elt.addEventListener("mouseup", self, False)
             self.back_elt.addEventListener("mousedown", self, False)
             self.back_elt.addEventListener("mouseover", self, False)
             self.back_elt.addEventListener("mouseout", self, False)
-            
+
             self.sele_elt.addEventListener("mouseup", self, False)
             self.sele_elt.addEventListener("mousedown", self, False)
             self.sele_elt.addEventListener("mouseover", self, False)
             self.sele_elt.addEventListener("mouseout", self, False)
-        
+
         blockSVGElementDrag(self.back_elt)
         blockSVGElementDrag(self.sele_elt)
 
@@ -66,7 +67,7 @@ class button:
         else:
             self.sele_elt.removeAttribute("display")
             self.back_elt.setAttribute("display", "none")
-            
+
     def updateValues(self, values):
         if values.state != self.state:
             self.state = values.state
@@ -80,9 +81,9 @@ class button:
         if evt.type == "mousedown":
             evt.stopPropagation()
             setCurrentObject(self)
-            
+
             self.dragging = True
-            
+
             if self.toggle:
                 self.up = self.state
             else:
@@ -90,18 +91,18 @@ class button:
                 self.state = True
                 updateAttr(self.id, 'state', self.state)
             self.updateElements()
-        
+
         if isCurrentObject(self) and self.dragging:
             # Quand le bouton est survole
             if evt.type == "mouseover" and self.toggle:
                 self.up = self.state
                 self.updateElements()
-            
+
             # Quand le curseur quitte la zone du bouton
-            elif evt.type == "mouseout" and self.toggle:       
+            elif evt.type == "mouseout" and self.toggle:
                 self.up = not self.state
                 self.updateElements()
-            
+
             # Quand le bouton de la souris est relache
             elif evt.type == "mouseup":
                 evt.stopPropagation()
@@ -115,8 +116,9 @@ class button:
                     self.updateElements()
                 self.dragging = False
 
+
 class textControl:
-    
+
     def __init__(self, parent, id, args):
         self.parent = parent
         self.id = id
@@ -126,17 +128,15 @@ class textControl:
         else:
             self.text = ""
         self.updateElements()
-    
+
     def updateValues(self, values):
         if values.text != self.value:
             self.text = values.text
             updateAttr(self.id, 'text', self.text)
             self.updateElements()
-    
+
     def updateElements(self):
         self.back_elt.firstChild.firstChild.textContent = self.text
-    
+
     def handleEvent(self, evt):
         pass
-    
-

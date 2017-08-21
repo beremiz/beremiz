@@ -29,38 +29,38 @@ import wx
 class BrowseValuesLibraryDialog(wx.Dialog):
     """
     Modal dialog that helps in selecting predefined XML attributes sets out of hierarchically organized list
-    """    
+    """
 
     def __init__(self, parent, name, library, default=None):
         wx.Dialog.__init__(self,
-              name='BrowseValueDialog', parent=parent,
-              style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-              title=_('Browse %s values library') % name)
+                           name='BrowseValueDialog', parent=parent,
+                           style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+                           title=_('Browse %s values library') % name)
 
         self.staticText1 = wx.StaticText(
               label=_('Choose a value for %s:') % name, name='staticText1', parent=self,
               pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        
+
         self.ValuesLibrary = wx.TreeCtrl(
               name='ValuesLibrary', parent=self, pos=wx.Point(0, 0),
-              size=wx.Size(400, 200), style=wx.TR_HAS_BUTTONS|wx.TR_SINGLE|wx.SUNKEN_BORDER|wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT)
-        
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
+              size=wx.Size(400, 200), style=wx.TR_HAS_BUTTONS | wx.TR_SINGLE | wx.SUNKEN_BORDER | wx.TR_HIDE_ROOT | wx.TR_LINES_AT_ROOT)
+
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
 
         self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.ButtonSizer.GetAffirmativeButton().GetId())
-        
+
         self.flexGridSizer1 = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
-        
-        self.flexGridSizer1.AddWindow(self.staticText1, 0, border=20, flag=wx.GROW|wx.TOP|wx.LEFT|wx.RIGHT)
-        self.flexGridSizer1.AddWindow(self.ValuesLibrary, 0, border=20, flag=wx.GROW|wx.LEFT|wx.RIGHT)
-        self.flexGridSizer1.AddSizer(self.ButtonSizer, 0, border=20, flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-    
+
+        self.flexGridSizer1.AddWindow(self.staticText1,   0, border=20, flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+        self.flexGridSizer1.AddWindow(self.ValuesLibrary, 0, border=20, flag=wx.GROW | wx.LEFT | wx.RIGHT)
+        self.flexGridSizer1.AddSizer(self.ButtonSizer,    0, border=20, flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+
         self.flexGridSizer1.AddGrowableCol(0)
         self.flexGridSizer1.AddGrowableRow(1)
-        
+
         self.SetSizer(self.flexGridSizer1)
         self.Fit()
-        
+
         root = self.ValuesLibrary.AddRoot("")
         self.GenerateValuesLibraryBranch(root, library, default)
 
@@ -80,9 +80,8 @@ class BrowseValuesLibraryDialog(wx.Dialog):
     def OnOK(self, event):
         selected = self.ValuesLibrary.GetSelection()
         if not selected.IsOk() or self.ValuesLibrary.GetPyData(selected) is None:
-            message = wx.MessageDialog(self, _("No valid value selected!"), _("Error"), wx.OK|wx.ICON_ERROR)
+            message = wx.MessageDialog(self, _("No valid value selected!"), _("Error"), wx.OK | wx.ICON_ERROR)
             message.ShowModal()
             message.Destroy()
         else:
             self.EndModal(wx.ID_OK)
-

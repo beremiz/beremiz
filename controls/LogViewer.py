@@ -37,6 +37,7 @@ from weakref import proxy
 
 THUMB_SIZE_RATIO = 1. / 8.
 
+
 def ArrowPoints(direction, width, height, xoffset, yoffset):
     if direction == wx.TOP:
         return [wx.Point(xoffset + 1, yoffset + height - 2),
@@ -46,6 +47,7 @@ def ArrowPoints(direction, width, height, xoffset, yoffset):
         return [wx.Point(xoffset + 1, yoffset - height + 1),
                 wx.Point(xoffset + width / 2, yoffset - 2),
                 wx.Point(xoffset + width - 1, yoffset - height + 1)]
+
 
 class LogScrollBar(wx.Panel):
 
@@ -58,7 +60,7 @@ class LogScrollBar(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnResize)
 
-        self.ThumbPosition = 0. # -1 <= ThumbPosition <= 1
+        self.ThumbPosition = 0.  # -1 <= ThumbPosition <= 1
         self.ThumbScrollingStartPos = None
 
     def GetRangeRect(self):
@@ -177,7 +179,9 @@ class LogScrollBar(wx.Panel):
         dc.EndDrawing()
         event.Skip()
 
+
 BUTTON_SIZE = (70, 15)
+
 
 class LogButton():
 
@@ -217,11 +221,13 @@ class LogButton():
 
         w, h = dc.GetTextExtent(self.Label)
         dc.DrawText(self.Label,
-            self.Position.x + (self.Size.width - w) / 2,
-            self.Position.y + (self.Size.height - h) / 2)
+                    self.Position.x + (self.Size.width - w) / 2,
+                    self.Position.y + (self.Size.height - h) / 2)
+
 
 DATE_INFO_SIZE = 10
 MESSAGE_INFO_SIZE = 18
+
 
 class LogMessage:
 
@@ -271,6 +277,7 @@ class LogMessage:
             return DATE_INFO_SIZE + MESSAGE_INFO_SIZE
         return MESSAGE_INFO_SIZE
 
+
 SECOND = 1
 MINUTE = 60 * SECOND
 HOUR = 60 * MINUTE
@@ -281,10 +288,11 @@ CHANGE_TIMESTAMP_BUTTONS = [(_("1d"), DAY),
                             (_("1m"), MINUTE),
                             (_("1s"), SECOND)]
 
+
 class LogViewer(DebugViewer, wx.Panel):
 
     def __init__(self, parent, window):
-        wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
+        wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER)
         DebugViewer.__init__(self, None, False, False)
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
@@ -292,7 +300,7 @@ class LogViewer(DebugViewer, wx.Panel):
         main_sizer.AddGrowableRow(1)
 
         filter_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_sizer.AddSizer(filter_sizer, border=5, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.GROW)
+        main_sizer.AddSizer(filter_sizer, border=5, flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
         self.MessageFilter = wx.ComboBox(self, style=wx.CB_READONLY)
         self.MessageFilter.Append(_("All"))
@@ -301,20 +309,20 @@ class LogViewer(DebugViewer, wx.Panel):
         for level in levels:
             self.MessageFilter.Append(_(level))
         self.Bind(wx.EVT_COMBOBOX, self.OnMessageFilterChanged, self.MessageFilter)
-        filter_sizer.AddWindow(self.MessageFilter, 1, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+        filter_sizer.AddWindow(self.MessageFilter, 1, border=5, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
 
         self.SearchMessage = wx.SearchCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.SearchMessage.ShowSearchButton(True)
         self.SearchMessage.ShowCancelButton(True)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnSearchMessageChanged, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN,
-              self.OnSearchMessageSearchButtonClick, self.SearchMessage)
+                  self.OnSearchMessageSearchButtonClick, self.SearchMessage)
         self.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN,
-              self.OnSearchMessageCancelButtonClick, self.SearchMessage)
-        filter_sizer.AddWindow(self.SearchMessage, 3, border=5, flag=wx.RIGHT|wx.ALIGN_CENTER_VERTICAL)
+                  self.OnSearchMessageCancelButtonClick, self.SearchMessage)
+        filter_sizer.AddWindow(self.SearchMessage, 3, border=5, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
 
         self.CleanButton = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap("Clean"),
-              size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                          size=wx.Size(28, 28), style=wx.NO_BORDER)
         self.CleanButton.SetToolTipString(_("Clean log messages"))
         self.Bind(wx.EVT_BUTTON, self.OnCleanButton, self.CleanButton)
         filter_sizer.AddWindow(self.CleanButton)
@@ -322,7 +330,7 @@ class LogViewer(DebugViewer, wx.Panel):
         message_panel_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
         message_panel_sizer.AddGrowableCol(0)
         message_panel_sizer.AddGrowableRow(0)
-        main_sizer.AddSizer(message_panel_sizer, border=5, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.GROW)
+        main_sizer.AddSizer(message_panel_sizer, border=5, flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
 
         self.MessagePanel = wx.Panel(self)
         if wx.Platform == '__WXMSW__':
@@ -403,7 +411,7 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def ResetLogCounters(self):
         self.previous_log_count = [None]*LogLevelsCount
-    
+
     def SetLogCounters(self, log_count):
         new_messages = []
         for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
@@ -413,7 +421,7 @@ class LogViewer(DebugViewer, wx.Panel):
                     oldest_message = (-1, None)
                 else:
                     dump_end = prev - 1
-                for msgidx in xrange(count-1, dump_end,-1):
+                for msgidx in xrange(count-1, dump_end, -1):
                     new_message = self.GetLogMessageFromSource(msgidx, level)
                     if new_message is None:
                         if prev is None:
@@ -553,13 +561,13 @@ class LogViewer(DebugViewer, wx.Panel):
         self.MessageScrollBar.RefreshThumbPosition()
 
     def IsPLCLogEmpty(self):
-        empty=True
+        empty = True
         for level, prev in zip(xrange(LogLevelsCount), self.previous_log_count):
             if prev is not None:
-                empty=False
+                empty = False
                 break
         return empty
-        
+
     def IsMessagePanelTop(self, message_idx=None):
         if message_idx is None:
             message_idx = self.CurrentMessage

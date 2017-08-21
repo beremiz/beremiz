@@ -27,30 +27,33 @@ import wx
 
 from controls.ProjectPropertiesPanel import ProjectPropertiesPanel
 
+
 class ProjectDialog(wx.Dialog):
-    
+
     def __init__(self, parent, enable_required=True):
-        wx.Dialog.__init__(self, parent, title=_('Project properties'), 
-              style=wx.DEFAULT_DIALOG_STYLE)
-        
+        wx.Dialog.__init__(self, parent, title=_('Project properties'),
+                           style=wx.DEFAULT_DIALOG_STYLE)
+
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
-        
-        self.ProjectProperties = ProjectPropertiesPanel(self, 
-              enable_required=enable_required)
+
+        self.ProjectProperties = ProjectPropertiesPanel(
+            self,
+            enable_required=enable_required)
+
         main_sizer.AddWindow(self.ProjectProperties, flag=wx.GROW)
-        
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, 
+
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
+        self.Bind(wx.EVT_BUTTON, self.OnOK,
                   self.ButtonSizer.GetAffirmativeButton())
-        main_sizer.AddSizer(self.ButtonSizer, border=20, 
-              flag=wx.ALIGN_RIGHT|wx.BOTTOM|wx.LEFT|wx.RIGHT)
-        
+        main_sizer.AddSizer(self.ButtonSizer, border=20,
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+
         self.SetSizer(main_sizer)
         self.ProjectProperties.Fit()
         self.Fit()
-        
+
     def OnOK(self, event):
         values = self.ProjectProperties.GetValues()
         error = []
@@ -66,12 +69,13 @@ class ProjectDialog(wx.Dialog):
                 if i == 0:
                     text += item
                 elif i == len(error) - 1:
-                    text += _(" and %s")%item
+                    text += _(" and %s") % item
                 else:
-                    text += ", %s"%item
-            dialog = wx.MessageDialog(self, 
-                _("Form isn't complete. %s must be filled!") % text, 
-                _("Error"), wx.OK|wx.ICON_ERROR)
+                    text += ", %s" % item
+            dialog = wx.MessageDialog(
+                self,
+                _("Form isn't complete. %s must be filled!") % text,
+                _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
         else:
@@ -79,6 +83,6 @@ class ProjectDialog(wx.Dialog):
 
     def SetValues(self, values):
         self.ProjectProperties.SetValues(values)
-        
+
     def GetValues(self):
         return self.ProjectProperties.GetValues()

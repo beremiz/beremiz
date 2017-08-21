@@ -24,9 +24,34 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import wx
-import os, sys, platform, time, traceback, getopt
+import os
+import sys
+import platform
+import time
+import traceback
+import getopt
 import version
 import util.paths as paths
+
+from docutil import *
+from IDEFrame import IDEFrame, AppendMenu
+from IDEFrame import \
+    TITLE, \
+    EDITORTOOLBAR, \
+    FILEMENU, \
+    EDITMENU, \
+    DISPLAYMENU, \
+    PROJECTTREE, \
+    POUINSTANCEVARIABLESPANEL, \
+    LIBRARYTREE, \
+    PAGETITLES
+
+from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
+from editors.Viewer import Viewer
+from PLCControler import PLCControler
+from dialogs import ProjectDialog
+from dialogs.AboutDialog import ShowAboutDialog
+
 
 beremiz_dir = paths.AbsDir(__file__)
 
@@ -37,7 +62,7 @@ if __name__ == '__main__':
     # command line
     def usage():
         print "\nUsage of PLCOpenEditor.py :"
-        print "\n   %s [Filepath]\n"%sys.argv[0]
+        print "\n   %s [Filepath]\n" % sys.argv[0]
 
     # Parse options given to PLCOpenEditor in command line
     try:
@@ -68,32 +93,25 @@ if __name__ == '__main__':
     else:
         app = wx.PySimpleApp()
 
-
     from util.misc import InstallLocalRessources
     InstallLocalRessources(beremiz_dir)
 
-from docutil import *
-from IDEFrame import IDEFrame, AppendMenu
-from IDEFrame import TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE, PAGETITLES
-from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
-from editors.Viewer import Viewer
-from PLCControler import PLCControler
-from dialogs import ProjectDialog
-from dialogs.AboutDialog import ShowAboutDialog
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                            PLCOpenEditor Main Class
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 # Define PLCOpenEditor FileMenu extra items id
-[ID_PLCOPENEDITORFILEMENUGENERATE,
+[
+    ID_PLCOPENEDITORFILEMENUGENERATE,
 ] = [wx.NewId() for _init_coll_FileMenu_Items in range(1)]
+
 
 class PLCOpenEditor(IDEFrame):
 
     # Compatibility function for wx versions < 2.6
     if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id = None):
+        def Bind(self, event, function, id=None):
             if id is not None:
                 event(self, id, function)
             else:
@@ -101,33 +119,33 @@ class PLCOpenEditor(IDEFrame):
 
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
-              kind=wx.ITEM_NORMAL, text=_(u'New') +'\tCTRL+N')
+                   kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
-              kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
+                   kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
+                   kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
-              kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
+                   kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
-              kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
+                   kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
-              kind=wx.ITEM_NORMAL, text=_(u'Save As...') + '\tCTRL+SHIFT+S')
+                   kind=wx.ITEM_NORMAL, text=_(u'Save As...') + '\tCTRL+SHIFT+S')
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORFILEMENUGENERATE,
-              kind=wx.ITEM_NORMAL, text=_(u'Generate Program') + '\tCTRL+G')
+                   kind=wx.ITEM_NORMAL, text=_(u'Generate Program') + '\tCTRL+G')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
-              kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
+                   kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
         AppendMenu(parent, help='', id=wx.ID_PREVIEW,
-              kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
+                   kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
         AppendMenu(parent, help='', id=wx.ID_PRINT,
-              kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
+                   kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PROPERTIES,
-              kind=wx.ITEM_NORMAL, text=_(u'&Properties'))
+                   kind=wx.ITEM_NORMAL, text=_(u'&Properties'))
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
-              kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
+                   kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
 
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
@@ -136,7 +154,7 @@ class PLCOpenEditor(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnSaveProjectMenu, id=wx.ID_SAVE)
         self.Bind(wx.EVT_MENU, self.OnSaveProjectAsMenu, id=wx.ID_SAVEAS)
         self.Bind(wx.EVT_MENU, self.OnGenerateProgramMenu,
-              id=ID_PLCOPENEDITORFILEMENUGENERATE)
+                  id=ID_PLCOPENEDITORFILEMENUGENERATE)
         self.Bind(wx.EVT_MENU, self.OnPageSetupMenu, id=wx.ID_PAGE_SETUP)
         self.Bind(wx.EVT_MENU, self.OnPreviewMenu, id=wx.ID_PREVIEW)
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
@@ -151,31 +169,34 @@ class PLCOpenEditor(IDEFrame):
 
     def _init_coll_HelpMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_HELP,
-            kind=wx.ITEM_NORMAL, text=_(u'PLCOpenEditor') + '\tF1')
-        #AppendMenu(parent, help='', id=wx.ID_HELP_CONTENTS,
+                   kind=wx.ITEM_NORMAL, text=_(u'PLCOpenEditor') + '\tF1')
+        # AppendMenu(parent, help='', id=wx.ID_HELP_CONTENTS,
         #      kind=wx.ITEM_NORMAL, text=u'PLCOpen\tF2')
-        #AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
+        # AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
         #      kind=wx.ITEM_NORMAL, text=u'IEC 61131-3\tF3')
-        
-        handler=lambda event: {
-            wx.MessageBox(version.GetCommunityHelpMsg(), _(u'Community support'), wx.OK | wx.ICON_INFORMATION)
-        }
+
+        def handler(event):
+            return wx.MessageBox(
+                version.GetCommunityHelpMsg(),
+                _(u'Community support'),
+                wx.OK | wx.ICON_INFORMATION)
+
         id = wx.NewId()
-        parent.Append(help='', id=id, kind=wx.ITEM_NORMAL, text=_(u'Community support'))        
+        parent.Append(help='', id=id, kind=wx.ITEM_NORMAL, text=_(u'Community support'))
         self.Bind(wx.EVT_MENU, handler, id=id)
-        
+
         AppendMenu(parent, help='', id=wx.ID_ABOUT,
-            kind=wx.ITEM_NORMAL, text=_(u'About'))
+                   kind=wx.ITEM_NORMAL, text=_(u'About'))
         self.Bind(wx.EVT_MENU, self.OnPLCOpenEditorMenu, id=wx.ID_HELP)
-        #self.Bind(wx.EVT_MENU, self.OnPLCOpenMenu, id=wx.ID_HELP_CONTENTS)
+        # self.Bind(wx.EVT_MENU, self.OnPLCOpenMenu, id=wx.ID_HELP_CONTENTS)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
-    ## Constructor of the PLCOpenEditor class.
-    #  @param parent The parent window.
-    #  @param controler The controler been used by PLCOpenEditor (default: None).
-    #  @param fileOpen The filepath to open if no controler defined (default: None).
-    #  @param debug The filepath to open if no controler defined (default: False).
-    def __init__(self, parent, fileOpen = None):
+    def __init__(self, parent, fileOpen=None):
+        """ Constructor of the PLCOpenEditor class.
+
+        :param parent: The parent window.
+        :param fileOpen: The filepath to open if no controler defined (default: None).
+        """
         self.icon = wx.Icon(os.path.join(beremiz_dir, "images", "poe.ico"), wx.BITMAP_TYPE_ICO)
         IDEFrame.__init__(self, parent)
 
@@ -203,7 +224,7 @@ class PLCOpenEditor(IDEFrame):
 
         if result is not None:
             (num, line) = result
-            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1=num, a2=line))
 
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
@@ -218,13 +239,13 @@ class PLCOpenEditor(IDEFrame):
     def RefreshTitle(self):
         name = _("PLCOpenEditor")
         if self.Controler is not None:
-            self.SetTitle("%s - %s"%(name, self.Controler.GetFilename()))
+            self.SetTitle("%s - %s" % (name, self.Controler.GetFilename()))
         else:
             self.SetTitle(name)
 
-#-------------------------------------------------------------------------------
-#                            File Menu Functions
-#-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
+    #                            File Menu Functions
+    # -------------------------------------------------------------------------------
 
     def RefreshFileMenu(self):
         MenuToolBar = self.Panes["MenuToolBar"]
@@ -316,7 +337,7 @@ class PLCOpenEditor(IDEFrame):
 
         if result is not None:
             (num, line) = result
-            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1 = num, a2 = line))
+            self.ShowErrorMessage(_("PLC syntax error at line {a1}:\n{a2}").format(a1=num, a2=line))
 
     def OnCloseProjectMenu(self, event):
         if not self.CheckSaveBeforeClosing():
@@ -331,7 +352,7 @@ class PLCOpenEditor(IDEFrame):
         self.SaveProjectAs()
 
     def OnGenerateProgramMenu(self, event):
-        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), self.Controler.GetProgramFilePath(),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE|wx.CHANGE_DIR)
+        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), self.Controler.GetProgramFilePath(),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE | wx.CHANGE_DIR)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             message_text = ""
@@ -341,14 +362,14 @@ class PLCOpenEditor(IDEFrame):
                 message_text += "".join([_("warning: %s\n") % warning for warning in warnings])
                 if len(errors) > 0:
                     message_text += "".join([_("error: %s\n") % error for error in errors])
-                    message_text += _("Can't generate program to file %s!")%filepath
+                    message_text += _("Can't generate program to file %s!") % filepath
                     header, icon = _("Error"), wx.ICON_ERROR
                 else:
                     message_text += _("Program was successfully generated!")
             else:
-                message_text += _("\"%s\" is not a valid folder!")%os.path.dirname(filepath)
+                message_text += _("\"%s\" is not a valid folder!") % os.path.dirname(filepath)
                 header, icon = _("Error"), wx.ICON_ERROR
-            message = wx.MessageDialog(self, message_text, header, wx.OK|icon)
+            message = wx.MessageDialog(self, message_text, header, wx.OK | icon)
             message.ShowModal()
             message.Destroy()
         dialog.Destroy()
@@ -379,28 +400,30 @@ class PLCOpenEditor(IDEFrame):
         if filepath != "":
             directory, filename = os.path.split(filepath)
         else:
-            directory, filename = os.getcwd(), "%(projectName)s.xml"%self.Controler.GetProjectProperties()
-        dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.SAVE|wx.OVERWRITE_PROMPT)
+            directory, filename = os.getcwd(), "%(projectName)s.xml" % self.Controler.GetProjectProperties()
+        dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.SAVE | wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             if os.path.isdir(os.path.dirname(filepath)):
                 result = self.Controler.SaveXMLFile(filepath)
                 if not result:
-                    self.ShowErrorMessage(_("Can't save project to file %s!")%filepath)
+                    self.ShowErrorMessage(_("Can't save project to file %s!") % filepath)
             else:
-                self.ShowErrorMessage(_("\"%s\" is not a valid folder!")%os.path.dirname(filepath))
+                self.ShowErrorMessage(_("\"%s\" is not a valid folder!") % os.path.dirname(filepath))
             self._Refresh(TITLE, FILEMENU, PAGETITLES)
         dialog.Destroy()
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                               Exception Handler
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
 
 Max_Traceback_List_Size = 20
 
-def Display_Exception_Dialog(e_type,e_value,e_tb):
+
+def Display_Exception_Dialog(e_type, e_value, e_tb):
     trcbck_lst = []
-    for i,line in enumerate(traceback.extract_tb(e_tb)):
+    for i, line in enumerate(traceback.extract_tb(e_tb)):
         trcbck = " " + str(i+1) + _(". ")
         if line[0].find(os.getcwd()) == -1:
             trcbck += _("file : ") + str(line[0]) + _(",   ")
@@ -414,7 +437,8 @@ def Display_Exception_Dialog(e_type,e_value,e_tb):
     if cap:
         cap.ReleaseMouse()
 
-    dlg = wx.SingleChoiceDialog(None,
+    dlg = wx.SingleChoiceDialog(
+        None,
         _("""
 An unhandled exception (bug) occured. Bug report saved at :
 (%s)
@@ -436,10 +460,12 @@ Traceback:
 
     return res
 
+
 def Display_Error_Dialog(e_value):
-    message = wx.MessageDialog(None, str(e_value), _("Error"), wx.OK|wx.ICON_ERROR)
+    message = wx.MessageDialog(None, str(e_value), _("Error"), wx.OK | wx.ICON_ERROR)
     message.ShowModal()
     message.Destroy()
+
 
 def get_last_traceback(tb):
     while tb.tb_next:
@@ -451,48 +477,50 @@ def format_namespace(d, indent='    '):
     return '\n'.join(['%s%s: %s' % (indent, k, repr(v)[:10000]) for k, v in d.iteritems()])
 
 
-ignored_exceptions = [] # a problem with a line in a module is only reported once per session
+ignored_exceptions = []  # a problem with a line in a module is only reported once per session
 
-def AddExceptHook(path, app_version='[No version]'):#, ignored_exceptions=[]):
+
+def AddExceptHook(path, app_version='[No version]'):
 
     def handle_exception(e_type, e_value, e_traceback):
-        traceback.print_exception(e_type, e_value, e_traceback) # this is very helpful when there's an exception in the rest of this func
+        traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
         if str(e_value).startswith("!!!"):
             Display_Error_Dialog(e_value)
         elif ex not in ignored_exceptions:
-            result = Display_Exception_Dialog(e_type,e_value,e_traceback)
+            result = Display_Exception_Dialog(e_type, e_value, e_traceback)
             if result:
                 ignored_exceptions.append(ex)
                 info = {
-                    'app-title' : wx.GetApp().GetAppName(), # app_title
-                    'app-version' : app_version,
-                    'wx-version' : wx.VERSION_STRING,
-                    'wx-platform' : wx.Platform,
-                    'python-version' : platform.python_version(), #sys.version.split()[0],
-                    'platform' : platform.platform(),
-                    'e-type' : e_type,
-                    'e-value' : e_value,
-                    'date' : time.ctime(),
-                    'cwd' : os.getcwd(),
+                    'app-title': wx.GetApp().GetAppName(),
+                    'app-version': app_version,
+                    'wx-version': wx.VERSION_STRING,
+                    'wx-platform': wx.Platform,
+                    'python-version': platform.python_version(),
+                    'platform': platform.platform(),
+                    'e-type': e_type,
+                    'e-value': e_value,
+                    'date': time.ctime(),
+                    'cwd': os.getcwd(),
                     }
                 if e_traceback:
                     info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
                     last_tb = get_last_traceback(e_traceback)
-                    exception_locals = last_tb.tb_frame.f_locals # the locals at the level of the stack trace where the exception actually occurred
+                    exception_locals = last_tb.tb_frame.f_locals  # the locals at the level of the stack trace where the exception actually occurred
                     info['locals'] = format_namespace(exception_locals)
                     if 'self' in exception_locals:
                         info['self'] = format_namespace(exception_locals['self'].__dict__)
 
-                output = open(path+os.sep+"bug_report_"+time.strftime("%Y_%m_%d__%H-%M-%S")+".txt",'w')
+                output = open(path+os.sep+"bug_report_"+time.strftime("%Y_%m_%d__%H-%M-%S")+".txt", 'w')
                 lst = info.keys()
                 lst.sort()
                 for a in lst:
                     output.write(a+":\n"+str(info[a])+"\n\n")
 
-    #sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
+    # sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
+
 
 if __name__ == '__main__':
     if wx.VERSION < (3, 0, 0):
@@ -505,4 +533,3 @@ if __name__ == '__main__':
 
     frame.Show()
     app.MainLoop()
-

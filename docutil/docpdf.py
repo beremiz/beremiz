@@ -22,10 +22,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import wx, os
+import os
+import wx
+
 
 readerexepath = None
-    
+
+
 def get_acroversion():
     " Return version of Adobe Acrobat executable or None"
     import _winreg
@@ -39,38 +42,41 @@ def get_acroversion():
                 try:
                     res = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE, 'Software\\Adobe\\%s\\%s\\InstallPath' % (key, numver))
                     return res
-                except:
+                except Exception:
                     pass
     return None
 
-def open_win_pdf(readerexepath, pdffile, pagenum = None):
-    if pagenum != None :
-        os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", "/A", "page=%d=OpenActions" % pagenum, '"%s"'%pdffile)
-    else:
-        os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", '"%s"'%pdffile)
 
-def open_lin_pdf(readerexepath, pdffile, pagenum = None):
-    if pagenum == None :
-        os.system("%s -remote DS301 %s &"%(readerexepath, pdffile))
+def open_win_pdf(readerexepath, pdffile, pagenum=None):
+    if pagenum is not None:
+        os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", "/A", "page=%d=OpenActions" % pagenum, '"%s"' % pdffile)
     else:
-        print "Open pdf %s at page %d"%(pdffile, pagenum)
-        os.system("%s -remote DS301 %s %d &"%(readerexepath, pdffile, pagenum))
+        os.spawnl(os.P_DETACH, readerexepath, "AcroRd32.exe", '"%s"' % pdffile)
 
-def open_pdf(pdffile, pagenum = None):
-    if wx.Platform == '__WXMSW__' :
+
+def open_lin_pdf(readerexepath, pdffile, pagenum=None):
+    if pagenum is None:
+        os.system("%s -remote DS301 %s &" % (readerexepath, pdffile))
+    else:
+        print "Open pdf %s at page %d" % (pdffile, pagenum)
+        os.system("%s -remote DS301 %s %d &" % (readerexepath, pdffile, pagenum))
+
+
+def open_pdf(pdffile, pagenum=None):
+    if wx.Platform == '__WXMSW__':
         try:
             readerpath = get_acroversion()
-        except:
+        except Exception:
             wx.MessageBox("Acrobat Reader is not found or installed !")
             return None
-        
+
         readerexepath = os.path.join(readerpath, "AcroRd32.exe")
         if(os.path.isfile(readerexepath)):
             open_win_pdf(readerexepath, pdffile, pagenum)
         else:
             return None
     else:
-        readerexepath = os.path.join("/usr/bin","xpdf")
+        readerexepath = os.path.join("/usr/bin", "xpdf")
         if(os.path.isfile(readerexepath)):
             open_lin_pdf(readerexepath, pdffile, pagenum)
         else:

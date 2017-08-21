@@ -23,8 +23,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os, sys, getopt
+import os
+import sys
+import getopt
+import threading
 from threading import Thread
+import traceback
+import __builtin__
+import Pyro.core as pyro
+
+from runtime import PLCObject, PLCprint, ServicePublisher
+import util.paths as paths
+
 
 def usage():
     print """
@@ -42,13 +52,14 @@ Usage of Beremiz PLC execution service :\n
            -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
-"""%sys.argv[0]
+""" % sys.argv[0]
+
 
 try:
     opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
 except getopt.GetoptError, err:
     # print help information and exit:
-    print str(err) # will print something like "option -a not recognized"
+    print str(err)  # will print something like "option -a not recognized"
     usage()
     sys.exit(2)
 
@@ -64,7 +75,7 @@ havewx = False
 enabletwisted = True
 havetwisted = False
 
-extensions=[]
+extensions = []
 
 for o, a in opts:
     if o == "-h":
@@ -97,7 +108,7 @@ for o, a in opts:
         usage()
         sys.exit()
 
-import util.paths as paths
+
 beremiz_dir = paths.AbsDir(__file__)
 
 if len(argv) > 1:
@@ -108,21 +119,22 @@ elif len(argv) == 1:
     os.chdir(WorkingDir)
 elif len(argv) == 0:
     WorkingDir = os.getcwd()
-    argv=[WorkingDir]
+    argv = [WorkingDir]
 
-import __builtin__
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
 
+
 def Bpath(*args):
-    return os.path.join(beremiz_dir,*args)
+    return os.path.join(beremiz_dir, *args)
+
 
 def SetupI18n():
     # Import module for internationalization
     import gettext
 
     # Get folder containing translation files
-    localedir = os.path.join(beremiz_dir,"locale")
+    localedir = os.path.join(beremiz_dir, "locale")
     # Get the default language
     langid = wx.LANGUAGE_DEFAULT
     # Define translation domain (name of translation files)
@@ -138,11 +150,9 @@ def SetupI18n():
     # Define locale domain
     loc.AddCatalog(domain)
 
-
     import locale
     global default_locale
     default_locale = locale.getdefaultlocale()[1]
-
 
     # sys.stdout.encoding = default_locale
     # if Beremiz_service is started from Beremiz IDE
@@ -156,13 +166,14 @@ def SetupI18n():
         __builtin__.__dict__['_'] = unicode_translation
         # __builtin__.__dict__['_'] = wx.GetTranslation
 
+
 if enablewx:
     try:
         import wxversion
         wxversion.select(['2.8', '3.0'])
         import wx
         havewx = True
-    except:
+    except ImportError:
         print "Wx unavailable !"
         havewx = False
 
@@ -186,15 +197,14 @@ if enablewx:
 
         class ParamsEntryDialog(wx.TextEntryDialog):
             if wx.VERSION < (2, 6, 0):
-                def Bind(self, event, function, id = None):
+                def Bind(self, event, function, id=None):
                     if id is not None:
                         event(self, id, function)
                     else:
                         event(self, function)
 
-
-            def __init__(self, parent, message, caption = _("Please enter text"), defaultValue = "",
-                               style = wx.OK|wx.CANCEL|wx.CENTRE, pos = wx.DefaultPosition):
+            def __init__(self, parent, message, caption=_("Please enter text"), defaultValue="",
+                         style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
                 self.Tests = []
@@ -207,10 +217,10 @@ if enablewx:
 
             def OnOK(self, event):
                 value = self.GetValue()
-                texts = {"value" : value}
+                texts = {"value": value}
                 for function, message in self.Tests:
                     if not function(value):
-                        message = wx.MessageDialog(self, message%texts, _("Error"), wx.OK|wx.ICON_ERROR)
+                        message = wx.MessageDialog(self, message % texts, _("Error"), wx.OK | wx.ICON_ERROR)
                         message.ShowModal()
                         message.Destroy()
                         return
@@ -262,7 +272,7 @@ if enablewx:
                 menu = wx.Menu()
                 menu.Append(self.TBMENU_START, _("Start PLC"))
                 menu.Append(self.TBMENU_STOP, _("Stop PLC"))
-                if self.level==1:
+                if self.level == 1:
                     menu.AppendSeparator()
                     menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
                     menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
@@ -285,13 +295,13 @@ if enablewx:
                 elif "wxGTK" in wx.PlatformInfo:
                     img = img.Scale(22, 22)
                 # wxMac can be any size upto 128x128, so leave the source img alone....
-                icon = wx.IconFromBitmap(img.ConvertToBitmap() )
+                icon = wx.IconFromBitmap(img.ConvertToBitmap())
                 return icon
 
             def OnTaskBarStartPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
                     plcstatus = self.pyroserver.plcobj.GetPLCstatus()[0]
-                    if  plcstatus is "Stopped":
+                    if plcstatus is "Stopped":
                         self.pyroserver.plcobj.StartPLC()
                     else:
                         print _("PLC is empty or already started.")
@@ -306,17 +316,17 @@ if enablewx:
             def OnTaskBarChangeInterface(self, evt):
                 ip_addr = self.pyroserver.ip_addr
                 ip_addr = '' if ip_addr is None else ip_addr
-                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)                
+                dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)
                 dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
-                               ( lambda x :len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4, _("IP is not valid!"))
-                               ])
+                              (lambda x:len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4,
+                               _("IP is not valid!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip_addr = dlg.GetValue()
                     self.pyroserver.Stop()
 
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
-                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port : 0 <= int(port) <= 65535 , _("Port number must be 0 <= port <= 65535!"))])
+                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Stop()
@@ -331,14 +341,14 @@ if enablewx:
                 servicename = self.pyroserver.servicename
                 servicename = '' if servicename is None else servicename
                 dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=servicename)
-                dlg.SetTests([(lambda name : len(name) is not 0 , _("Name must not be null!"))])
+                dlg.SetTests([(lambda name: len(name) is not 0, _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.servicename = dlg.GetValue()
                     self.pyroserver.Restart()
 
             def _LiveShellLocals(self):
                 if self.pyroserver.plcobj is not None:
-                    return {"locals":self.pyroserver.plcobj.python_runtime_vars}
+                    return {"locals": self.pyroserver.plcobj.python_runtime_vars}
                 else:
                     return {}
 
@@ -363,7 +373,7 @@ if enablewx:
                 wx.CallAfter(wx.GetApp().ExitMainLoop)
 
             def UpdateIcon(self, plcstatus):
-                if plcstatus is "Started" :
+                if plcstatus is "Started":
                     currenticon = self.MakeIcon(starticon)
                 elif plcstatus is "Stopped":
                     currenticon = self.MakeIcon(stopicon)
@@ -371,18 +381,18 @@ if enablewx:
                     currenticon = self.MakeIcon(defaulticon)
                 self.SetIcon(currenticon, "Beremiz Service")
 
-from runtime import PLCObject, PLCprint, ServicePublisher
-import Pyro.core as pyro
 
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
 
+
 def default_evaluator(tocall, *args, **kwargs):
     try:
-        res=(tocall(*args,**kwargs), None)
+        res = (tocall(*args, **kwargs), None)
     except Exception:
-        res=(None, sys.exc_info())
+        res = (None, sys.exc_info())
     return res
+
 
 class Server():
     def __init__(self, servicename, ip_addr, port,
@@ -419,11 +429,11 @@ class Server():
 
     def Start(self):
         pyro.initServer()
-        self.daemon=pyro.Daemon(host=self.ip_addr, port=self.port)
+        self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
                                 self.statuschange, self.evaluator,
                                 self.pyruntimevars)
-        uri = self.daemon.connect(self.plcobj,"PLCObject")
+        uri = self.daemon.connect(self.plcobj, "PLCObject")
 
         print _("Pyro port :"), self.port
         print _("Pyro object's uri :"), uri
@@ -435,17 +445,17 @@ class Server():
 
         # Configure and publish service
         # Not publish service if localhost in address params
-        if (self.servicename is not None and
-            self.ip_addr is not None and
-            self.ip_addr != "localhost" and
-            self.ip_addr != "127.0.0.1"):
+        if self.servicename is not None and \
+           self.ip_addr is not None and \
+           self.ip_addr != "localhost" and \
+           self.ip_addr != "127.0.0.1":
             print _("Publishing service on local network")
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
         self.plcobj.AutoLoad()
         if self.plcobj.GetPLCstatus()[0] != "Empty":
-            if self.autostart :
+            if self.autostart:
                 self.plcobj.StartPLC()
         self.plcobj.StatusChange()
 
@@ -462,6 +472,7 @@ class Server():
             self.servicepublisher = None
         self.daemon.shutdown(True)
 
+
 if enabletwisted:
     import warnings
     with warnings.catch_warnings():
@@ -474,7 +485,7 @@ if enabletwisted:
             from twisted.internet import reactor
 
             havetwisted = True
-        except:
+        except ImportError:
             print _("Twisted unavailable.")
             havetwisted = False
 
@@ -492,12 +503,12 @@ if havewx:
     main_thread = currentThread()
 
     def statuschangeTskBar(status):
-        wx.CallAfter(taskbar_instance.UpdateIcon,status)
+        wx.CallAfter(taskbar_instance.UpdateIcon, status)
 
     statuschange.append(statuschangeTskBar)
 
     def wx_evaluator(obj, *args, **kwargs):
-        tocall,args,kwargs = obj.call
+        tocall, args, kwargs = obj.call
         obj.res = default_evaluator(tocall, *args, **kwargs)
         wx_eval_lock.release()
 
@@ -507,8 +518,8 @@ if havewx:
             # avoid dead lock if called from the wx mainloop
             return default_evaluator(tocall, *args, **kwargs)
         else:
-            o=type('',(object,),dict(call=(tocall, args, kwargs), res=None))
-            wx.CallAfter(wx_evaluator,o)
+            o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
+            wx.CallAfter(wx_evaluator, o)
             wx_eval_lock.acquire()
             return o.res
 
@@ -524,32 +535,40 @@ else:
 
 
 # Exception hooks s
-import threading, traceback
+
+
 def LogException(*exp):
     if pyroserver.plcobj is not None:
-        pyroserver.plcobj.LogMessage(0,'\n'.join(traceback.format_exception(*exp)))
+        pyroserver.plcobj.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
     else:
         traceback.print_exception(*exp)
 
+
 sys.excepthook = LogException
+
+
 def installThreadExcepthook():
     init_old = threading.Thread.__init__
+
     def init(self, *args, **kwargs):
         init_old(self, *args, **kwargs)
         run_old = self.run
+
         def run_with_except_hook(*args, **kw):
             try:
                 run_old(*args, **kw)
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except:
+            except Exception:
                 sys.excepthook(*sys.exc_info())
         self.run = run_with_except_hook
     threading.Thread.__init__ = init
+
+
 installThreadExcepthook()
 
 if havetwisted:
-    if webport is not None :
+    if webport is not None:
         try:
             import runtime.NevowServer as NS
         except Exception, e:
@@ -557,7 +576,7 @@ if havetwisted:
             webport = None
         NS.WorkingDir = WorkingDir
 
-    if wampconf is not None :
+    if wampconf is not None:
         try:
             import runtime.WampClient as WC
         except Exception, e:
@@ -571,7 +590,7 @@ for extfilename in extensions:
     execfile(extfilename, locals())
 
 if havetwisted:
-    if webport is not None :
+    if webport is not None:
         try:
             website = NS.RegisterWebsite(webport)
             pyruntimevars["website"] = website
@@ -579,7 +598,7 @@ if havetwisted:
         except Exception, e:
             print _("Nevow Web service failed. "), e
 
-    if wampconf is not None :
+    if wampconf is not None:
         try:
             WC.RegisterWampClient(wampconf)
             pyruntimevars["wampsession"] = WC.GetSession
@@ -589,7 +608,7 @@ if havetwisted:
 
 
 if havetwisted or havewx:
-    pyro_thread=Thread(target=pyroserver.Loop)
+    pyro_thread = Thread(target=pyroserver.Loop)
     pyro_thread.start()
 
     if havetwisted:
@@ -597,9 +616,9 @@ if havetwisted or havewx:
     elif havewx:
         app.MainLoop()
 else:
-    try :
+    try:
         pyroserver.Loop()
-    except KeyboardInterrupt,e:
+    except KeyboardInterrupt, e:
         pass
 pyroserver.Quit()
 sys.exit(0)

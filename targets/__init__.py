@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # Package initialisation
-#import targets
+
 
 """
 Beremiz Targets
@@ -38,52 +38,58 @@ from os import listdir, path
 import util.paths as paths
 
 _base_path = paths.AbsDir(__file__)
-def _GetLocalTargetClassFactory(name):
-    return lambda:getattr(__import__(name,globals(),locals()), name+"_target")
 
-targets = dict([(name, {"xsd":path.join(_base_path, name, "XSD"), 
-                        "class":_GetLocalTargetClassFactory(name),
-                        "code": { fname: path.join(_base_path, name, fname) 
-                           for fname in listdir(path.join(_base_path, name))
-                             if fname.startswith("plc_%s_main"%name) and
-                               fname.endswith(".c")}})
-                for name in listdir(_base_path) 
-                    if path.isdir(path.join(_base_path, name)) 
-                       and not name.startswith("__")])
+
+def _GetLocalTargetClassFactory(name):
+    return lambda: getattr(__import__(name, globals(), locals()), name+"_target")
+
+
+targets = dict([(name, {"xsd":   path.join(_base_path, name, "XSD"),
+                        "class": _GetLocalTargetClassFactory(name),
+                        "code":  {fname: path.join(_base_path, name, fname)
+                                  for fname in listdir(path.join(_base_path, name))
+                                  if (fname.startswith("plc_%s_main" % name) and
+                                      fname.endswith(".c"))}})
+                for name in listdir(_base_path)
+                if (path.isdir(path.join(_base_path, name))
+                    and not name.startswith("__"))])
 
 toolchains = {"gcc":  path.join(_base_path, "XSD_toolchain_gcc"),
               "makefile":  path.join(_base_path, "XSD_toolchain_makefile")}
 
+
 def GetBuilder(targetname):
     return targets[targetname]["class"]()
+
 
 def GetTargetChoices():
     DictXSD_toolchain = {}
     targetchoices = ""
 
     # Get all xsd toolchains
-    for toolchainname,xsdfilename in toolchains.iteritems() :
-         if path.isfile(xsdfilename):
-             DictXSD_toolchain["toolchain_"+toolchainname] = \
-                open(xsdfilename).read()
+    for toolchainname, xsdfilename in toolchains.iteritems():
+        if path.isfile(xsdfilename):
+            DictXSD_toolchain["toolchain_"+toolchainname] = open(xsdfilename).read()
 
-    # Get all xsd targets 
-    for targetname,nfo in targets.iteritems():
+    # Get all xsd targets
+    for targetname, nfo in targets.iteritems():
         xsd_string = open(nfo["xsd"]).read()
-        targetchoices +=  xsd_string%DictXSD_toolchain
+        targetchoices += xsd_string % DictXSD_toolchain
 
     return targetchoices
+
 
 def GetTargetCode(targetname):
     codedesc = targets[targetname]["code"]
     code = "\n".join([open(fpath).read() for fname, fpath in sorted(codedesc.items())])
     return code
 
+
 def GetHeader():
-    filename = paths.AbsNeighbourFile(__file__,"beremiz.h")
+    filename = paths.AbsNeighbourFile(__file__, "beremiz.h")
     return open(filename).read()
+
 
 def GetCode(name):
-    filename = paths.AbsNeighbourFile(__file__,name)
+    filename = paths.AbsNeighbourFile(__file__, name)
     return open(filename).read()
-
