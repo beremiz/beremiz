@@ -1,0 +1,22 @@
+image: python:2.7
+
+pipelines:
+  custom: # Pipelines that are triggered manually
+    checks: # The name that is displayed in the list in the Bitbucket Cloud GUI
+        - step:
+            caches:
+                - pip
+            script: # Modify the commands below to build your repository.
+              - pip install pycodestyle
+              - python --version
+              - ./tests/tools/check_source.sh
+
+
+  default:
+    - step:
+        caches:
+          - pip
+        script: # Modify the commands below to build your repository.
+          - pip install pycodestyle
+          - python --version
+          - ./tests/tools/check_source.sh
