@@ -51,8 +51,8 @@ targets = dict([(name, {"xsd":   path.join(_base_path, name, "XSD"),
                                   if (fname.startswith("plc_%s_main" % name) and
                                       fname.endswith(".c"))}})
                 for name in listdir(_base_path)
-                if (path.isdir(path.join(_base_path, name))
-                    and not name.startswith("__"))])
+                if (path.isdir(path.join(_base_path, name)) and
+                    not name.startswith("__"))])
 
 toolchains = {"gcc":  path.join(_base_path, "XSD_toolchain_gcc"),
               "makefile":  path.join(_base_path, "XSD_toolchain_makefile")}

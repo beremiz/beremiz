@@ -1088,8 +1088,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # matplotlib coordinate
         canvas_ratio = 1. / height  # Divide by canvas height in pixel
         graph_ratio = 1. / (
-            (1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio)
-            * height)             # Divide by figure height in pixel
+            (1.0 - (CANVAS_BORDER[0] + CANVAS_BORDER[1]) * canvas_ratio) *
+            height)             # Divide by figure height in pixel
 
         # Update position of figure (keeping up and bottom border the same
         # size)

@@ -1738,9 +1738,8 @@ class PLCControler:
             datatypes.extend([
                 datatype.getname()
                 for datatype in project.getdataTypes(name)
-                if ((not only_locatables or self.IsLocatableDataType(datatype, debug))
-                    and (name is None or
-                         len(self.GetInstanceList(datatype, name, debug)) == 0))])
+                if ((not only_locatables or self.IsLocatableDataType(datatype, debug)) and
+                    (name is None or len(self.GetInstanceList(datatype, name, debug)) == 0))])
         if confnodetypes:
             for category in self.GetConfNodeDataTypes(name, only_locatables):
                 datatypes.extend(category["list"])

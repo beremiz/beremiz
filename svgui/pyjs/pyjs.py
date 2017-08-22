@@ -546,11 +546,11 @@ class Translator:
                 call_this, method_name = call_name.rsplit(".", 1)
             except ValueError:
                 # Must be a function call ...
-                return ("pyjs_kwargs_function_call("+call_name+", "
-                        + star_arg_name + ", ["+fn_args+"]" + ")")
+                return ("pyjs_kwargs_function_call("+call_name+", " +
+                        star_arg_name + ", ["+fn_args+"]" + ")")
             else:
-                return ("pyjs_kwargs_method_call("+call_this+", '"+method_name+"', "
-                        + star_arg_name + ", ["+fn_args+"]" + ")")
+                return ("pyjs_kwargs_method_call("+call_this+", '"+method_name+"', " +
+                        star_arg_name + ", ["+fn_args+"]" + ")")
         else:
             return call_name + "(" + ", ".join(call_args) + ")"
 
@@ -1016,9 +1016,9 @@ class Translator:
                 '          throw __err;',
                 '      } else {',
                 '          st = sys.printstack() + ' + '"%s"' % lt + "+ '\\n' ;"
-                '          alert("' + 'Error in ' + lt + '"'
-                + '+"\\n"+__err.name+": "+__err.message'
-                + '+"\\n\\nStack trace:\\n"' + '+st' + ');',
+                '          alert("' + 'Error in ' + lt + '"' +
+                '+"\\n"+__err.name+": "+__err.message' +
+                '+"\\n\\nStack trace:\\n"' + '+st' + ');',
                 '          debugger;',
                 '          throw new ' + self.module_prefix + 'HaltException();',
                 '      }',
