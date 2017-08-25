@@ -169,8 +169,6 @@ def SetupI18n():
 
 if enablewx:
     try:
-        import wxversion
-        wxversion.select(['2.8', '3.0'])
         import wx
         havewx = True
     except ImportError:
