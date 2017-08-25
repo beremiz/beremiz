@@ -131,10 +131,13 @@ class Iec2CSettings():
 
     def findLibCPath(self):
         path = None
-        paths = [
-            os.path.join(self.ieclib_path, "C"),
-            self.ieclib_path]
-        path = self.findObject(paths, lambda p: os.path.isfile(os.path.join(p, "iec_types.h")))
+        if self.ieclib_path is not None:
+            paths = [
+                os.path.join(self.ieclib_path, "C"),
+                self.ieclib_path]
+            path = self.findObject(
+                paths,
+                lambda p: os.path.isfile(os.path.join(p, "iec_types.h")))
         return path
 
     def findSupportedOptions(self):
@@ -172,9 +175,6 @@ class Iec2CSettings():
         if self.ieclib_c_path is None:
             self.ieclib_c_path = self.findLibCPath()
         return self.ieclib_c_path
-
-
-iec2c_cfg = Iec2CSettings()
 
 
 class ProjectController(ConfigTreeNode, PLCControler):
@@ -220,9 +220,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
     </xsd:schema>
     """
     EditorType = ProjectNodeEditor
+    iec2c_cfg = None
 
     def __init__(self, frame, logger):
         PLCControler.__init__(self)
+
+        if ProjectController.iec2c_cfg is None:
+            ProjectController.iec2c_cfg = Iec2CSettings()
 
         self.MandatoryParams = None
         self._builder = None
@@ -319,10 +323,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self
 
     def GetIECLibPath(self):
-        return iec2c_cfg.getLibCPath()
+        return self.iec2c_cfg.getLibCPath()
 
     def GetIEC2cPath(self):
-        return iec2c_cfg.getCmd()
+        return self.iec2c_cfg.getCmd()
 
     def GetCurrentLocation(self):
         return ()
@@ -742,12 +746,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return True
 
     def _Compile_ST_to_SoftPLC(self):
+        iec2c_libpath = self.iec2c_cfg.getLibPath()
+        if iec2c_libpath is None:
+            self.logger.write_error(_("matiec installation is not found\n"))
+            return False
+
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
         buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\"" % (
-                         iec2c_cfg.getCmd(),
-                         iec2c_cfg.getOptions(),
-                         iec2c_cfg.getLibPath(),
+                         self.iec2c_cfg.getCmd(),
+                         self.iec2c_cfg.getOptions(),
+                         iec2c_libpath,
                          buildpath,
                          self._getIECcodepath())
 
@@ -818,7 +827,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % iec2c_cfg.getLibCPath()
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % self.iec2c_cfg.getLibCPath()
         return True
 
     def GetBuilder(self):
