@@ -112,9 +112,7 @@ class BeremizIDELauncher:
         else:
             __builtin__.__dict__["BMZ_DBG"] = False
 
-        global wxversion, wx
-        import wxversion
-        wxversion.select(['2.8', '3.0'])
+        global wx
         import wx
 
         if wx.VERSION >= (3, 0, 0):
