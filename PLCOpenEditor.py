@@ -26,17 +26,15 @@
 import wx
 import os
 import sys
-import platform
-import time
-import traceback
 import getopt
+
 import version
 import util.paths as paths
+import util.ExceptionHandler
 
 
 beremiz_dir = paths.AbsDir(__file__)
 
-__version__ = "$Revision: 1.130 $"
 
 if __name__ == '__main__':
     # Usage message displayed when help request or when error detected in
@@ -79,7 +77,7 @@ if __name__ == '__main__':
 
     # these imports require wx.GetApp to return
     # a valid application instance
-    from docutil import *
+
     from IDEFrame import IDEFrame, AppendMenu
     from IDEFrame import \
         TITLE, \
@@ -415,121 +413,13 @@ class PLCOpenEditor(IDEFrame):
             self._Refresh(TITLE, FILEMENU, PAGETITLES)
         dialog.Destroy()
 
-# -------------------------------------------------------------------------------
-#                               Exception Handler
-# -------------------------------------------------------------------------------
-
-
-Max_Traceback_List_Size = 20
-
-
-def Display_Exception_Dialog(e_type, e_value, e_tb):
-    trcbck_lst = []
-    for i, line in enumerate(traceback.extract_tb(e_tb)):
-        trcbck = " " + str(i+1) + _(". ")
-        if line[0].find(os.getcwd()) == -1:
-            trcbck += _("file : ") + str(line[0]) + _(",   ")
-        else:
-            trcbck += _("file : ") + str(line[0][len(os.getcwd()):]) + _(",   ")
-        trcbck += _("line : ") + str(line[1]) + _(",   ") + _("function : ") + str(line[2])
-        trcbck_lst.append(trcbck)
-
-    # Allow clicking....
-    cap = wx.Window_GetCapture()
-    if cap:
-        cap.ReleaseMouse()
-
-    dlg = wx.SingleChoiceDialog(
-        None,
-        _("""
-An unhandled exception (bug) occured. Bug report saved at :
-(%s)
-
-Please be kind enough to send this file to:
-beremiz-devel@lists.sourceforge.net
-
-You should now restart program.
-
-Traceback:
-""") % bug_report_path +
-        repr(e_type) + " : " + repr(e_value),
-        _("Error"),
-        trcbck_lst)
-    try:
-        res = (dlg.ShowModal() == wx.ID_OK)
-    finally:
-        dlg.Destroy()
-
-    return res
-
-
-def Display_Error_Dialog(e_value):
-    message = wx.MessageDialog(None, str(e_value), _("Error"), wx.OK | wx.ICON_ERROR)
-    message.ShowModal()
-    message.Destroy()
-
-
-def get_last_traceback(tb):
-    while tb.tb_next:
-        tb = tb.tb_next
-    return tb
-
-
-def format_namespace(d, indent='    '):
-    return '\n'.join(['%s%s: %s' % (indent, k, repr(v)[:10000]) for k, v in d.iteritems()])
-
-
-ignored_exceptions = []  # a problem with a line in a module is only reported once per session
-
-
-def AddExceptHook(path, app_version='[No version]'):
-
-    def handle_exception(e_type, e_value, e_traceback):
-        traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
-        last_tb = get_last_traceback(e_traceback)
-        ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
-        if str(e_value).startswith("!!!"):
-            Display_Error_Dialog(e_value)
-        elif ex not in ignored_exceptions:
-            result = Display_Exception_Dialog(e_type, e_value, e_traceback)
-            if result:
-                ignored_exceptions.append(ex)
-                info = {
-                    'app-title': wx.GetApp().GetAppName(),
-                    'app-version': app_version,
-                    'wx-version': wx.VERSION_STRING,
-                    'wx-platform': wx.Platform,
-                    'python-version': platform.python_version(),
-                    'platform': platform.platform(),
-                    'e-type': e_type,
-                    'e-value': e_value,
-                    'date': time.ctime(),
-                    'cwd': os.getcwd(),
-                    }
-                if e_traceback:
-                    info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
-                    last_tb = get_last_traceback(e_traceback)
-                    exception_locals = last_tb.tb_frame.f_locals  # the locals at the level of the stack trace where the exception actually occurred
-                    info['locals'] = format_namespace(exception_locals)
-                    if 'self' in exception_locals:
-                        info['self'] = format_namespace(exception_locals['self'].__dict__)
-
-                output = open(path+os.sep+"bug_report_"+time.strftime("%Y_%m_%d__%H-%M-%S")+".txt", 'w')
-                lst = info.keys()
-                lst.sort()
-                for a in lst:
-                    output.write(a+":\n"+str(info[a])+"\n\n")
-
-    # sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
-    sys.excepthook = handle_exception
-
 
 if __name__ == '__main__':
     if wx.VERSION < (3, 0, 0):
         wx.InitAllImageHandlers()
 
     # Install a exception handle for bug reports
-    AddExceptHook(os.getcwd(), version.app_version)
+    util.ExceptionHandler.AddExceptHook(version.app_version)
 
     frame = PLCOpenEditor(None, fileOpen=fileOpen)
 
