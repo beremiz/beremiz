@@ -175,9 +175,8 @@ class BeremizIDELauncher:
 
     def InstallExceptionHandler(self):
         import version
-        import tempfile
-        logpath = tempfile.gettempdir()+os.sep+'Beremiz'
-        BeremizIDE.AddExceptHook(logpath, version.app_version)
+        import util.ExceptionHandler
+        util.ExceptionHandler.AddExceptHook(version.app_version)
 
     def ShowUI(self):
         self.frame = BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
