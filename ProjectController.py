@@ -307,7 +307,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.AppFrame.Unbind(wx.EVT_TIMER, self.StatusTimer)
             self.StatusTimer = None
             self.AppFrame = None
-
+            self.KillDebugThread()
         self.logger = logger
 
     def CTNName(self):
