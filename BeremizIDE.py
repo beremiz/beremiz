@@ -163,9 +163,11 @@ class LogPseudoFile:
             self.TimerAccessLock.release()
 
     def _should_write(self):
-        wx.CallAfter(self._write)
+        app = wx.GetApp()
+        if app is not None:
+            wx.CallAfter(self._write)
+
         if MainThread == currentThread().ident:
-            app = wx.GetApp()
             if app is not None:
                 if self.YieldLock.acquire(0):
                     app.Yield()
