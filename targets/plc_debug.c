@@ -10,6 +10,16 @@
  *  
  * 
  * */
+
+#ifdef TARGET_DEBUG_DISABLE
+
+void __init_debug    (void){}
+void __cleanup_debug (void){}
+void __retrieve_debug(void){}
+void __publish_debug (void){}
+
+#else
+
 #include "iec_types_all.h"
 #include "POUS.h"
 /*for memcpy*/
@@ -327,4 +337,6 @@ int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     }
     return wait_error;
 }
+
+#endif
 
