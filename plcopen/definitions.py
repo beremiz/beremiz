@@ -117,8 +117,8 @@ DataTypeRange_list = [
     ("LINT",  (-2**31, 2**31 - 1)),
     ("USINT", (0,      2**8 - 1)),
     ("UINT",  (0,      2**16 - 1)),
-    ("UDINT", (0,      2**31 - 1)),
-    ("ULINT", (0,      2**31 - 1))
+    ("UDINT", (0,      2**32 - 1)),
+    ("ULINT", (0,      2**32 - 1))
 ]
 
 ANY_TO_ANY_FILTERS = {
