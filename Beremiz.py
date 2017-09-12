@@ -33,6 +33,8 @@ import util.paths as paths
 
 class BeremizIDELauncher:
     def __init__(self):
+        self.app = None
+        self.frame = None
         self.updateinfo_url = None
         self.extensions = []
         self.app_dir = paths.AbsDir(__file__)
@@ -126,7 +128,6 @@ class BeremizIDELauncher:
 
         self.ShowSplashScreen()
         self.BackgroundInitialization()
-        self.app.MainLoop()
 
     def BackgroundInitialization(self):
         self.InitI18n()
@@ -184,9 +185,16 @@ class BeremizIDELauncher:
             self.splash.Close()
         self.frame.Show()
 
-    def Start(self):
+    def PreStart(self):
         self.ProcessCommandLineArgs()
         self.CreateApplication()
+
+    def MainLoop(self):
+        self.app.MainLoop()
+
+    def Start(self):
+        self.PreStart()
+        self.MainLoop()
 
 
 if __name__ == '__main__':
