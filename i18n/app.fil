@@ -104,6 +104,7 @@
 ../POULibrary.py
 ../util/MiniTextControler.py
 ../util/Zeroconf.py
+../util/ExceptionHandler.py
 ../util/misc.py
 ../util/ProcessLogger.py
 ../features.py
