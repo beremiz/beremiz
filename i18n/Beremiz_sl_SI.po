@@ -1,16 +1,18 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# English translations for Beremiz package.
+# Copyright (C) 2017 THE Beremiz'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Beremiz package.
+# Automatically generated, 2017.
 # 
-#, fuzzy
+# Translators:
+# Janez Pregelj <janezpregelj@gmail.com>, 2017
+# Smarteh Smarteh <andraz.gregorcic@smarteh.si>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-09 15:28+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Janez Pregelj, 2017\n"
+"POT-Creation-Date: 2017-07-05 13:02+0300\n"
+"PO-Revision-Date: 2017-07-05 13:02+0300\n"
+"Last-Translator: Smarteh Smarteh <andraz.gregorcic@smarteh.si>, 2017\n"
 "Language-Team: Slovenian (Slovenia) (https://www.transifex.com/beremiz/teams/75746/sl_SI/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,7 +20,7 @@ msgstr ""
 "Language: sl_SI\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);\n"
 
-#: ../PLCOpenEditor.py:408 ../Beremiz.py:1191
+#: ../BeremizIDE.py:1095 ../PLCOpenEditor.py:418
 #, python-format
 msgid ""
 "\n"
@@ -32,255 +34,267 @@ msgid ""
 "\n"
 "Traceback:\n"
 msgstr ""
+"\n"
+"Nepredvidena izjema se je zgodila v programu( bug). Poročilo je shranjeno na:\n"
+"(%s)\n"
+"\n"
+"Prosim pošljite to datoteko na naslov :\n"
+"beremiz-devel@lists.sourceforge.net\n"
+"\n"
+"Potrebno je na novo zagnati program.\n"
+"\n"
+"Izvor:\n"
 
 #: ../controls/VariablePanel.py:72
 msgid "   External"
-msgstr ""
+msgstr "Zunanji"
 
 #: ../controls/VariablePanel.py:71
 msgid "   InOut"
-msgstr ""
+msgstr "Vhod-Izhod"
 
 #: ../controls/VariablePanel.py:71
 msgid "   Input"
-msgstr ""
+msgstr "Vhod"
 
 #: ../controls/VariablePanel.py:72
 msgid "   Local"
-msgstr ""
+msgstr "Lokalni"
 
 #: ../controls/VariablePanel.py:71
 msgid "   Output"
-msgstr ""
+msgstr "Izhod"
 
 #: ../controls/VariablePanel.py:73
 msgid "   Temp"
-msgstr ""
+msgstr "Začasni"
 
-#: ../dialogs/PouTransitionDialog.py:99 ../dialogs/ProjectDialog.py:66
-#: ../dialogs/PouActionDialog.py:91 ../dialogs/PouDialog.py:113
+#: ../dialogs/PouTransitionDialog.py:94 ../dialogs/ProjectDialog.py:69
+#: ../dialogs/PouActionDialog.py:92 ../dialogs/PouDialog.py:114
 #, python-format
 msgid " and %s"
-msgstr ""
+msgstr " in %s"
 
-#: ../ProjectController.py:1110
+#: ../ProjectController.py:1151
 msgid " generation failed !\n"
-msgstr ""
+msgstr "ustvarjanje prekinjeno !\n"
 
-#: ../plcopen/plcopen.py:881
+#: ../plcopen/plcopen.py:886
 #, python-format
 msgid "\"%s\" Data Type doesn't exist !!!"
-msgstr ""
+msgstr "Podatkovni tip \"%s\" ne obstaja !!!"
 
-#: ../plcopen/plcopen.py:899
+#: ../plcopen/plcopen.py:904
 #, python-format
 msgid "\"%s\" POU already exists !!!"
-msgstr ""
+msgstr "POU \"%s\" že obstaja !!!"
 
-#: ../plcopen/plcopen.py:920
+#: ../plcopen/plcopen.py:925
 #, python-format
 msgid "\"%s\" POU doesn't exist !!!"
-msgstr ""
+msgstr "POU \"%s\" ne obstaja!!!"
 
-#: ../editors/Viewer.py:246
+#: ../editors/Viewer.py:247
 #, python-format
 msgid "\"%s\" can't use itself!"
-msgstr ""
+msgstr "\"%s\" ne morem uporabiti sebe!"
 
-#: ../IDEFrame.py:1651 ../IDEFrame.py:1670
+#: ../IDEFrame.py:1655 ../IDEFrame.py:1674
 #, python-format
 msgid "\"%s\" config already exists!"
-msgstr ""
+msgstr "\"%s\" konfiguracija že obstaja !"
 
-#: ../plcopen/plcopen.py:467
+#: ../plcopen/plcopen.py:472
 #, python-format
 msgid "\"%s\" configuration already exists !!!"
-msgstr ""
+msgstr "\"%s\" konfiguracija že obstaja !!!"
 
-#: ../IDEFrame.py:1601
+#: ../IDEFrame.py:1605
 #, python-format
 msgid "\"%s\" data type already exists!"
-msgstr ""
+msgstr "Podatkovni tip \"%s\" že obstaja!"
 
-#: ../dialogs/PouTransitionDialog.py:110 ../dialogs/BlockPreviewDialog.py:219
-#: ../dialogs/PouActionDialog.py:102 ../editors/Viewer.py:262
-#: ../editors/Viewer.py:330 ../editors/Viewer.py:354 ../editors/Viewer.py:374
+#: ../dialogs/PouTransitionDialog.py:105 ../dialogs/BlockPreviewDialog.py:220
+#: ../dialogs/PouActionDialog.py:103 ../editors/Viewer.py:263
+#: ../editors/Viewer.py:331 ../editors/Viewer.py:355 ../editors/Viewer.py:375
 #: ../editors/TextViewer.py:272 ../editors/TextViewer.py:301
 #: ../controls/VariablePanel.py:396
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
-msgstr ""
+msgstr "Element \"%s\" tega POU že obstaja!"
 
-#: ../Beremiz.py:994
+#: ../BeremizIDE.py:897
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
-msgstr ""
+msgstr "Mapa \"%s\" ni veljaven Beremiz projekt\n"
 
-#: ../dialogs/SFCStepNameDialog.py:52 ../dialogs/PouTransitionDialog.py:106
-#: ../dialogs/BlockPreviewDialog.py:207 ../dialogs/PouNameDialog.py:50
-#: ../dialogs/PouActionDialog.py:98 ../dialogs/PouDialog.py:120
+#: ../dialogs/SFCStepNameDialog.py:52 ../dialogs/PouTransitionDialog.py:101
+#: ../dialogs/BlockPreviewDialog.py:208 ../dialogs/PouNameDialog.py:50
+#: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:121
 #: ../editors/ResourceEditor.py:449 ../editors/ResourceEditor.py:484
-#: ../editors/DataTypeEditor.py:555 ../editors/DataTypeEditor.py:584
-#: ../editors/CodeFileEditor.py:770 ../controls/VariablePanel.py:763
-#: ../IDEFrame.py:1592
+#: ../editors/DataTypeEditor.py:555 ../editors/DataTypeEditor.py:587
+#: ../editors/CodeFileEditor.py:776 ../controls/VariablePanel.py:773
+#: ../IDEFrame.py:1596
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
-msgstr ""
+msgstr "Beseda \"%s\" je rezervirana beseda in se ne more uporabit!"
 
-#: ../plcopen/plcopen.py:2412
+#: ../plcopen/plcopen.py:2417
 #, python-format
 msgid "\"%s\" is an invalid value!"
-msgstr ""
+msgstr "\"%s\" je neveljavna vrednost!"
 
-#: ../PLCOpenEditor.py:339 ../PLCOpenEditor.py:381
+#: ../PLCOpenEditor.py:349 ../PLCOpenEditor.py:391
 #, python-format
 msgid "\"%s\" is not a valid folder!"
-msgstr ""
+msgstr "\"%s\" ni veljavna mapa!"
 
-#: ../dialogs/SFCStepNameDialog.py:50 ../dialogs/PouTransitionDialog.py:104
-#: ../dialogs/BlockPreviewDialog.py:203 ../dialogs/PouNameDialog.py:48
-#: ../dialogs/PouActionDialog.py:96 ../dialogs/PouDialog.py:118
+#: ../dialogs/SFCStepNameDialog.py:50 ../dialogs/PouTransitionDialog.py:99
+#: ../dialogs/BlockPreviewDialog.py:204 ../dialogs/PouNameDialog.py:48
+#: ../dialogs/PouActionDialog.py:97 ../dialogs/PouDialog.py:119
 #: ../editors/ResourceEditor.py:447 ../editors/ResourceEditor.py:482
-#: ../editors/DataTypeEditor.py:579 ../editors/CodeFileEditor.py:768
-#: ../controls/VariablePanel.py:761 ../IDEFrame.py:1590
+#: ../editors/DataTypeEditor.py:585 ../editors/CodeFileEditor.py:774
+#: ../controls/VariablePanel.py:771 ../IDEFrame.py:1594
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
-msgstr ""
+msgstr "\"%s\" ni veljavena označba!"
 
-#: ../IDEFrame.py:2395
+#: ../IDEFrame.py:2410
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
-msgstr ""
+msgstr "\"%s\" je uporabljen v ene ali več POU. Želiš nadaljevati?"
 
-#: ../dialogs/BlockPreviewDialog.py:211 ../dialogs/PouDialog.py:122
-#: ../editors/Viewer.py:260 ../editors/Viewer.py:315 ../editors/Viewer.py:345
-#: ../editors/Viewer.py:367 ../editors/TextViewer.py:270
+#: ../dialogs/BlockPreviewDialog.py:212 ../dialogs/PouDialog.py:123
+#: ../editors/Viewer.py:261 ../editors/Viewer.py:316 ../editors/Viewer.py:346
+#: ../editors/Viewer.py:368 ../editors/TextViewer.py:270
 #: ../editors/TextViewer.py:299 ../editors/TextViewer.py:350
 #: ../editors/TextViewer.py:373 ../controls/VariablePanel.py:338
-#: ../IDEFrame.py:1610
+#: ../IDEFrame.py:1614
 #, python-format
 msgid "\"%s\" pou already exists!"
-msgstr ""
+msgstr "POU \"%s\" že obstaja!"
 
 #: ../dialogs/SFCStepNameDialog.py:58
 #, python-format
 msgid "\"%s\" step already exists!"
-msgstr ""
+msgstr "Korak \"%s\" že obstaja!"
 
 #: ../editors/DataTypeEditor.py:550
 #, python-format
 msgid "\"%s\" value already defined!"
-msgstr ""
+msgstr "Vrednost \"%s\" je že definirana!"
 
-#: ../dialogs/ArrayTypeDialog.py:97 ../editors/DataTypeEditor.py:745
+#: ../dialogs/ArrayTypeDialog.py:97 ../editors/DataTypeEditor.py:743
 #, python-format
 msgid "\"%s\" value isn't a valid array dimension!"
-msgstr ""
+msgstr "\"%s\" vrednost ni veljavna dimenzija tabele!"
 
-#: ../dialogs/ArrayTypeDialog.py:103 ../editors/DataTypeEditor.py:752
+#: ../dialogs/ArrayTypeDialog.py:103 ../editors/DataTypeEditor.py:750
 #, python-format
 msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
 msgstr ""
+"\"%s\" vrednost ni veljavna dimenzija tabele!\n"
+"Desna vrednost mora biti večja od leve vrednosti."
 
 #: ../PLCGenerator.py:1101
 #, python-brace-format
 msgid "\"{a1}\" function cancelled in \"{a2}\" POU: No input connected"
-msgstr ""
+msgstr "Funkcija \"{a1}\" je bila preklicana v POU \"{a2}\": Nobeden vhod ni povezan"
 
-#: ../editors/Viewer.py:250
+#: ../editors/Viewer.py:251
 #, python-brace-format
 msgid "\"{a1}\" is already used by \"{a2}\"!"
-msgstr ""
+msgstr "\"{a1}\" je že uporabljen v \"{a2}\"!"
 
-#: ../plcopen/plcopen.py:491
+#: ../plcopen/plcopen.py:496
 #, python-brace-format
 msgid "\"{a1}\" resource already exists in \"{a2}\" configuration !!!"
-msgstr ""
+msgstr "Vir \"{a1}\" že obstaja v konfiguraciji \"{a2}\"  !!!"
 
-#: ../plcopen/plcopen.py:509
+#: ../plcopen/plcopen.py:514
 #, python-brace-format
 msgid "\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!"
-msgstr ""
+msgstr "Vir \"{a1}\" ne obstaja v konfiguraciji \"{a2}\" !!!"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:578
 #, python-format
 msgid "%03gms"
-msgstr ""
+msgstr "%03gms"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:569
 #, python-format
 msgid "%dd"
-msgstr ""
+msgstr "%dd"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:56
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:570
 #, python-format
 msgid "%dh"
-msgstr ""
+msgstr "%dh"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:55
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:571
 #, python-format
 msgid "%dm"
-msgstr ""
+msgstr "%dm"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:53
 #, python-format
 msgid "%dms"
-msgstr ""
+msgstr "%dms"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:54
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:572
 #, python-format
 msgid "%ds"
-msgstr ""
+msgstr "%ds"
 
-#: ../PLCControler.py:1531
+#: ../PLCControler.py:1533
 #, python-format
 msgid "%s Data Types"
-msgstr ""
+msgstr "Podatkovni tipi %s "
 
-#: ../PLCControler.py:1514
+#: ../PLCControler.py:1516
 #, python-format
 msgid "%s POUs"
-msgstr ""
+msgstr "%s POU-ji"
 
 #: ../canfestival/SlaveEditor.py:69 ../canfestival/NetworkEditor.py:90
 #, python-format
 msgid "%s Profile"
-msgstr ""
+msgstr "%s profil"
 
-#: ../plcopen/plcopen.py:1645 ../plcopen/plcopen.py:1652
-#: ../plcopen/plcopen.py:1664 ../plcopen/plcopen.py:1672
-#: ../plcopen/plcopen.py:1682
+#: ../plcopen/plcopen.py:1650 ../plcopen/plcopen.py:1657
+#: ../plcopen/plcopen.py:1669 ../plcopen/plcopen.py:1677
+#: ../plcopen/plcopen.py:1687
 #, python-format
 msgid "%s body don't have instances!"
-msgstr ""
+msgstr "Telo %s nima Primerkov!"
 
-#: ../plcopen/plcopen.py:1700 ../plcopen/plcopen.py:1707
-#: ../plcopen/plcopen.py:1714
+#: ../plcopen/plcopen.py:1705 ../plcopen/plcopen.py:1712
+#: ../plcopen/plcopen.py:1719
 #, python-format
 msgid "%s body don't have text!"
-msgstr ""
+msgstr "%s telo nima besedila!"
 
 #: ../IDEFrame.py:386
 msgid "&Add Element"
-msgstr ""
+msgstr "&Dodaj Element"
 
 #: ../dialogs/AboutDialog.py:73 ../dialogs/AboutDialog.py:121
 #: ../dialogs/AboutDialog.py:158
 msgid "&Close"
-msgstr ""
+msgstr "&Zapri"
 
 #: ../IDEFrame.py:356
 msgid "&Configuration"
-msgstr ""
+msgstr "%Konfiguracija"
 
 #: ../IDEFrame.py:345
 msgid "&Data Type"
-msgstr ""
+msgstr "&Podatkovni tip"
 
 #: ../IDEFrame.py:390
 msgid "&Delete"
@@ -312,204 +326,206 @@ msgstr "&Licenca"
 
 #: ../IDEFrame.py:351
 msgid "&Program"
-msgstr ""
+msgstr "&Program"
 
-#: ../PLCOpenEditor.py:125
+#: ../PLCOpenEditor.py:127
 msgid "&Properties"
 msgstr "&Lastnosti"
 
-#: ../Beremiz.py:324
+#: ../BeremizIDE.py:219
 msgid "&Recent Projects"
-msgstr ""
+msgstr "&Nedavni Projekti"
 
 #: ../IDEFrame.py:353
 msgid "&Resource"
-msgstr ""
+msgstr "&Vir"
 
 #: ../controls/SearchResultPanel.py:239
 #, python-brace-format
 msgid "'{a1}' - {a2} match in project"
-msgstr ""
+msgstr "'{a1}' - {a2} ujema v Projektu"
 
 #: ../controls/SearchResultPanel.py:241
 #, python-brace-format
 msgid "'{a1}' - {a2} matches in project"
-msgstr ""
+msgstr "'{a1}' - {a2} ujema v Projektu"
 
 #: ../connectors/PYRO/__init__.py:90
 #, python-brace-format
 msgid "'{a1}' is located at {a2}\n"
-msgstr ""
+msgstr "'{a1}' je najden v  {a2}\n"
 
 #: ../controls/SearchResultPanel.py:291
 #, python-format
 msgid "(%d matches)"
-msgstr ""
+msgstr "(%d ujemanj)"
 
-#: ../PLCOpenEditor.py:396 ../PLCOpenEditor.py:398 ../PLCOpenEditor.py:399
+#: ../PLCOpenEditor.py:406 ../PLCOpenEditor.py:408 ../PLCOpenEditor.py:409
 msgid ",   "
-msgstr ""
+msgstr ","
 
-#: ../dialogs/PouTransitionDialog.py:101 ../dialogs/PouActionDialog.py:93
-#: ../dialogs/PouDialog.py:115
+#: ../dialogs/PouTransitionDialog.py:96 ../dialogs/PouActionDialog.py:94
+#: ../dialogs/PouDialog.py:116
 #, python-format
 msgid ", %s"
-msgstr ""
+msgstr ", %s"
 
-#: ../PLCOpenEditor.py:394
+#: ../PLCOpenEditor.py:404
 msgid ". "
-msgstr ""
+msgstr "."
 
 #: ../controls/LogViewer.py:279
 msgid "1d"
-msgstr ""
+msgstr "1d"
 
 #: ../controls/LogViewer.py:280
 msgid "1h"
-msgstr ""
+msgstr "1h"
 
 #: ../controls/LogViewer.py:281
 msgid "1m"
-msgstr ""
+msgstr "1m"
 
 #: ../controls/LogViewer.py:282
 msgid "1s"
-msgstr ""
+msgstr "1s"
 
-#: ../dialogs/PouDialog.py:124 ../IDEFrame.py:1613 ../IDEFrame.py:1659
-#: ../IDEFrame.py:1678
+#: ../dialogs/PouDialog.py:125 ../IDEFrame.py:1617 ../IDEFrame.py:1663
+#: ../IDEFrame.py:1682
 #, python-format
 msgid ""
 "A POU has an element named \"%s\". This could cause a conflict. Do you wish "
 "to continue?"
 msgstr ""
+"POU že ima element poimenovan \"%s\". To lahko povzroči težave. Ali želiš "
+"nadaljevati?"
 
-#: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:108
-#: ../dialogs/PouNameDialog.py:52 ../dialogs/PouActionDialog.py:100
-#: ../controls/VariablePanel.py:765 ../IDEFrame.py:1627 ../IDEFrame.py:1640
+#: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:103
+#: ../dialogs/PouNameDialog.py:52 ../dialogs/PouActionDialog.py:101
+#: ../controls/VariablePanel.py:775 ../IDEFrame.py:1631 ../IDEFrame.py:1644
 #, python-format
 msgid "A POU named \"%s\" already exists!"
-msgstr ""
+msgstr "POU z imenom \"%s\" že obstaja!"
 
 #: ../ConfigTreeNode.py:424
 #, python-brace-format
 msgid "A child named \"{a1}\" already exists -> \"{a2}\"\n"
-msgstr ""
+msgstr "Otrok z imenom \"{a1}\" že obstaja -> \"{a2}\"\n"
 
-#: ../dialogs/BrowseLocationsDialog.py:216
+#: ../dialogs/BrowseLocationsDialog.py:218
 msgid "A location must be selected!"
-msgstr ""
+msgstr "Lokacija mora biti izbrana!"
 
 #: ../editors/ResourceEditor.py:451
 msgid "A task with the same name already exists!"
-msgstr ""
+msgstr "Opravilo z enakim imenom že obstaja!"
 
-#: ../dialogs/SFCStepNameDialog.py:56 ../controls/VariablePanel.py:767
-#: ../IDEFrame.py:1629 ../IDEFrame.py:1642
+#: ../dialogs/SFCStepNameDialog.py:56 ../controls/VariablePanel.py:777
+#: ../IDEFrame.py:1633 ../IDEFrame.py:1646
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
-msgstr ""
+msgstr "Spremenljivka z imenom \"%s\" že obstaja v tem POU!"
 
-#: ../editors/CodeFileEditor.py:774
+#: ../editors/CodeFileEditor.py:780
 #, python-format
 msgid "A variable with \"%s\" as name already exists!"
-msgstr ""
+msgstr "Spremenljivka z imenom \"%s\" že obstaja!"
 
-#: ../dialogs/AboutDialog.py:48 ../PLCOpenEditor.py:158 ../Beremiz.py:381
+#: ../BeremizIDE.py:283 ../dialogs/AboutDialog.py:48 ../PLCOpenEditor.py:168
 msgid "About"
 msgstr "O programu"
 
 #: ../plcopen/iec_std.csv:22
 msgid "Absolute number"
-msgstr ""
+msgstr "Absolutna številka"
 
-#: ../dialogs/SFCStepDialog.py:72 ../dialogs/ActionBlockDialog.py:42
+#: ../dialogs/SFCStepDialog.py:73 ../dialogs/ActionBlockDialog.py:43
 msgid "Action"
-msgstr ""
+msgstr "Akcija"
 
-#: ../editors/Viewer.py:555 ../editors/Viewer.py:2356
+#: ../editors/Viewer.py:614 ../editors/Viewer.py:2394
 msgid "Action Block"
-msgstr ""
+msgstr "Akcijski blok"
 
-#: ../dialogs/PouActionDialog.py:81
+#: ../dialogs/PouActionDialog.py:82
 msgid "Action Name"
-msgstr ""
+msgstr "Ime Akcije"
 
 #: ../dialogs/PouActionDialog.py:49
 msgid "Action Name:"
-msgstr ""
+msgstr "Ime Akcije:"
 
-#: ../plcopen/plcopen.py:1359
+#: ../plcopen/plcopen.py:1364
 #, python-format
 msgid "Action with name %s doesn't exist!"
-msgstr ""
+msgstr "Akcija z imenom %s ne obstaja!"
 
-#: ../PLCControler.py:96
+#: ../PLCControler.py:98
 msgid "Actions"
-msgstr ""
+msgstr "Akcije"
 
 #: ../dialogs/ActionBlockDialog.py:133
 msgid "Actions:"
-msgstr ""
+msgstr "Akcije:"
 
-#: ../editors/Viewer.py:1110
+#: ../editors/Viewer.py:431
 msgid "Active"
-msgstr ""
+msgstr "Aktiven"
 
 #: ../canfestival/SlaveEditor.py:80 ../canfestival/NetworkEditor.py:101
-#: ../editors/Viewer.py:588 ../Beremiz.py:1060
+#: ../BeremizIDE.py:965 ../editors/Viewer.py:647
 msgid "Add"
 msgstr "Dodaj"
 
-#: ../IDEFrame.py:1889 ../IDEFrame.py:1924
+#: ../IDEFrame.py:1893 ../IDEFrame.py:1928
 msgid "Add Action"
-msgstr ""
+msgstr "Dodaj Akcijo"
 
 #: ../features.py:32
 msgid "Add C code accessing located variables synchronously"
-msgstr ""
+msgstr "Dodaj C programsko kodo z sočasnim dostopom do lokalnih spremenljivk"
 
-#: ../IDEFrame.py:1872
+#: ../IDEFrame.py:1876
 msgid "Add Configuration"
-msgstr ""
+msgstr "Dodaj Konfiguracijo"
 
-#: ../IDEFrame.py:1852
+#: ../IDEFrame.py:1856
 msgid "Add DataType"
-msgstr ""
+msgstr "Dodaj Podatkovni tip"
 
-#: ../editors/Viewer.py:513
+#: ../editors/Viewer.py:572
 msgid "Add Divergence Branch"
-msgstr ""
+msgstr "Dodaj Razhajališče"
 
-#: ../dialogs/DiscoveryDialog.py:116
+#: ../dialogs/DiscoveryDialog.py:117
 msgid "Add IP"
 msgstr "Dodaj IP"
 
-#: ../IDEFrame.py:1860
+#: ../IDEFrame.py:1864
 msgid "Add POU"
-msgstr ""
+msgstr "Dodaj POU"
 
 #: ../features.py:33
 msgid "Add Python code executed asynchronously"
-msgstr ""
+msgstr "Dodaj Python programsko koda, ki se izvaja asinhrono"
 
-#: ../IDEFrame.py:1900 ../IDEFrame.py:1950
+#: ../IDEFrame.py:1904 ../IDEFrame.py:1954
 msgid "Add Resource"
-msgstr ""
+msgstr "Dodaj Vir"
 
-#: ../IDEFrame.py:1878 ../IDEFrame.py:1921
+#: ../IDEFrame.py:1882 ../IDEFrame.py:1925
 msgid "Add Transition"
-msgstr ""
+msgstr "Dodaj Prehod"
 
-#: ../editors/Viewer.py:500
+#: ../editors/Viewer.py:559
 msgid "Add Wire Segment"
-msgstr ""
+msgstr "Dodaj odsek žice"
 
 #: ../editors/SFCViewer.py:433
 msgid "Add a new initial step"
 msgstr "Dodaj začetni skok"
 
-#: ../editors/Viewer.py:2717 ../editors/SFCViewer.py:770
+#: ../editors/Viewer.py:2757 ../editors/SFCViewer.py:770
 msgid "Add a new jump"
 msgstr "Dodaj nov skok"
 
@@ -519,155 +535,155 @@ msgstr "Dodaj nov korak"
 
 #: ../features.py:34
 msgid "Add a simple WxGlade based GUI."
-msgstr ""
+msgstr "Dodaj enostaven WxGlade GUI."
 
 #: ../dialogs/ActionBlockDialog.py:137
 msgid "Add action"
-msgstr ""
+msgstr "Dodaj Akcijo"
 
 #: ../editors/DataTypeEditor.py:352
 msgid "Add element"
-msgstr ""
+msgstr "Dodaj ELEMENT"
 
 #: ../editors/ResourceEditor.py:268
 msgid "Add instance"
-msgstr ""
+msgstr "Dodaj Primerek"
 
 #: ../canfestival/NetworkEditor.py:103
 msgid "Add slave"
-msgstr ""
+msgstr "Dodaj podrejeno napravo"
 
 #: ../editors/ResourceEditor.py:239
 msgid "Add task"
-msgstr ""
+msgstr "Dodaj Opravilo"
 
 #: ../editors/CodeFileEditor.py:658 ../controls/VariablePanel.py:450
 msgid "Add variable"
-msgstr ""
+msgstr "Dodaj spremenljivko!"
 
 #: ../plcopen/iec_std.csv:33
 msgid "Addition"
-msgstr ""
+msgstr "Dodajanje"
 
-#: ../plcopen/definitions.py:47
+#: ../plcopen/definitions.py:49
 msgid "Additional function blocks"
-msgstr ""
+msgstr "Dodatni funkcijski bloki"
 
-#: ../editors/Viewer.py:571
+#: ../editors/Viewer.py:630
 msgid "Adjust Block Size"
-msgstr ""
+msgstr "Nastavi velikost bloka"
 
-#: ../editors/Viewer.py:1648
+#: ../editors/Viewer.py:1686
 msgid "Alignment"
-msgstr ""
+msgstr "Poravnava"
 
-#: ../dialogs/BrowseLocationsDialog.py:39
-#: ../dialogs/BrowseLocationsDialog.py:47
-#: ../dialogs/BrowseLocationsDialog.py:140
-#: ../dialogs/BrowseLocationsDialog.py:143 ../controls/LogViewer.py:298
+#: ../dialogs/BrowseLocationsDialog.py:40
+#: ../dialogs/BrowseLocationsDialog.py:48
+#: ../dialogs/BrowseLocationsDialog.py:141
+#: ../dialogs/BrowseLocationsDialog.py:144 ../controls/LogViewer.py:298
 #: ../controls/VariablePanel.py:70
 msgid "All"
-msgstr ""
+msgstr "Vse"
 
 #: ../editors/FileManagementPanel.py:35
 msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
-msgstr ""
+msgstr "Vse datoteke (*.*)|*.*|CSV datoteke (*.csv)|*.csv"
 
-#: ../ProjectController.py:1644
+#: ../ProjectController.py:1685
 msgid "Already connected. Please disconnect\n"
-msgstr ""
+msgstr "Že povezan. Prosim najprej prekini\n"
 
-#: ../editors/DataTypeEditor.py:594
+#: ../editors/DataTypeEditor.py:591
 #, python-format
 msgid "An element named \"%s\" already exists in this structure!"
-msgstr ""
+msgstr "Element z imenom \"%s\" že obstaja v tej strukturi!"
 
 #: ../editors/ResourceEditor.py:486
 msgid "An instance with the same name already exists!"
-msgstr ""
+msgstr "Primerek z enakim imenom že obstaja"
 
-#: ../dialogs/ConnectionDialog.py:96
+#: ../dialogs/ConnectionDialog.py:100
 msgid "Apply name modification to all continuations with the same name"
-msgstr ""
+msgstr "Uveljavi spremembo imena za vse nadaljnje objekte z enakim imenom"
 
 #: ../plcopen/iec_std.csv:31
 msgid "Arc cosine"
-msgstr ""
+msgstr "Arkus kosinus"
 
 #: ../plcopen/iec_std.csv:30
 msgid "Arc sine"
-msgstr ""
+msgstr "Arkus sinus"
 
 #: ../plcopen/iec_std.csv:32
 msgid "Arc tangent"
-msgstr ""
+msgstr "Arkus tangens"
 
 #: ../plcopen/iec_std.csv:33
 msgid "Arithmetic"
-msgstr ""
+msgstr "Aritmetičen"
 
-#: ../editors/DataTypeEditor.py:54 ../editors/DataTypeEditor.py:635
-#: ../controls/VariablePanel.py:841
+#: ../editors/DataTypeEditor.py:54 ../editors/DataTypeEditor.py:633
+#: ../controls/VariablePanel.py:858
 msgid "Array"
-msgstr ""
+msgstr "Tabela"
 
 #: ../plcopen/iec_std.csv:39
 msgid "Assignment"
-msgstr ""
+msgstr "Prireditev"
 
-#: ../dialogs/FBDVariableDialog.py:217
+#: ../dialogs/FBDVariableDialog.py:222
 msgid "At least a variable or an expression must be selected!"
-msgstr ""
+msgstr "Vsaj ena spremenljivka ali logični izraz mora biti izbran!"
 
-#: ../controls/ProjectPropertiesPanel.py:99
+#: ../controls/ProjectPropertiesPanel.py:100
 msgid "Author"
 msgstr "Avtor"
 
-#: ../controls/ProjectPropertiesPanel.py:96
+#: ../controls/ProjectPropertiesPanel.py:97
 msgid "Author Name (optional):"
-msgstr "Avtorjevo ime (opcija)"
+msgstr "Avtorjevo ime (ni obvezno):"
 
-#: ../dialogs/FindInPouDialog.py:79
+#: ../dialogs/FindInPouDialog.py:77
 msgid "Backward"
-msgstr ""
+msgstr "Nazaj"
 
 #: ../util/Zeroconf.py:599
 msgid "Bad domain name (circular) at "
-msgstr ""
+msgstr "Napačno domensko ime (krožno) na "
 
 #: ../util/Zeroconf.py:602
 msgid "Bad domain name at "
-msgstr ""
+msgstr "Napačno domensko ime na "
 
 #: ../canfestival/config_utils.py:342 ../canfestival/config_utils.py:630
 #, python-format
 msgid "Bad location size : %s"
-msgstr ""
+msgstr "Nepravilna velikost lokacije : %s"
 
-#: ../dialogs/ArrayTypeDialog.py:55 ../editors/DataTypeEditor.py:175
+#: ../dialogs/ArrayTypeDialog.py:54 ../editors/DataTypeEditor.py:175
 #: ../editors/DataTypeEditor.py:205 ../editors/DataTypeEditor.py:297
 msgid "Base Type:"
-msgstr ""
+msgstr "Osnovni Tip:"
 
-#: ../editors/DataTypeEditor.py:625 ../controls/VariablePanel.py:799
+#: ../editors/DataTypeEditor.py:623 ../controls/VariablePanel.py:816
 msgid "Base Types"
-msgstr ""
+msgstr "Osnovni Tipi"
 
-#: ../Beremiz.py:553
+#: ../BeremizIDE.py:455
 msgid "Beremiz"
-msgstr ""
+msgstr "Beremiz"
 
 #: ../plcopen/iec_std.csv:70
 msgid "Binary selection (1 of 2)"
-msgstr ""
+msgstr "Bitna izbira (1 od 2)"
 
 #: ../plcopen/iec_std.csv:62
 msgid "Bit-shift"
-msgstr ""
+msgstr "Bitno premikanje"
 
 #: ../plcopen/iec_std.csv:66
 msgid "Bitwise"
-msgstr ""
+msgstr "Bitna operacija"
 
 #: ../plcopen/iec_std.csv:66
 msgid "Bitwise AND"
@@ -679,17 +695,17 @@ msgstr "Bitna operacija ALI"
 
 #: ../plcopen/iec_std.csv:68
 msgid "Bitwise XOR"
-msgstr ""
+msgstr "Bitni XOR"
 
 #: ../plcopen/iec_std.csv:69
 msgid "Bitwise inverting"
-msgstr ""
+msgstr "Bitni invertiranje"
 
-#: ../editors/Viewer.py:525 ../editors/Viewer.py:2369
+#: ../editors/Viewer.py:584 ../editors/Viewer.py:2407
 msgid "Block"
 msgstr "Blok"
 
-#: ../dialogs/FBDBlockDialog.py:59
+#: ../dialogs/FBDBlockDialog.py:60
 msgid "Block Properties"
 msgstr "Lastnosti bloka"
 
@@ -697,124 +713,124 @@ msgstr "Lastnosti bloka"
 msgid "Block name"
 msgstr "Ime bloka"
 
-#: ../editors/Viewer.py:491
+#: ../editors/Viewer.py:550
 msgid "Bottom"
-msgstr ""
+msgstr "Spodaj"
 
-#: ../ProjectController.py:1322
+#: ../ProjectController.py:1363
 msgid "Broken"
 msgstr "Prekinjen"
 
-#: ../dialogs/BrowseValuesLibraryDialog.py:37
+#: ../dialogs/BrowseValuesLibraryDialog.py:38
 #, python-format
 msgid "Browse %s values library"
-msgstr ""
+msgstr "Razišči %s vrednosti v knjižnici"
 
 #: ../dialogs/BrowseLocationsDialog.py:65
 msgid "Browse Locations"
-msgstr ""
+msgstr "Razišči lokacije"
 
-#: ../ProjectController.py:1790
+#: ../ProjectController.py:1832
 msgid "Build"
-msgstr ""
+msgstr "Gradnja"
 
-#: ../ProjectController.py:1256
+#: ../ProjectController.py:1297
 msgid "Build directory already clean\n"
-msgstr ""
+msgstr "Projektna mapa - gradnje je že bila očiščena\n"
 
-#: ../ProjectController.py:1791
+#: ../ProjectController.py:1833
 msgid "Build project into build folder"
-msgstr ""
+msgstr "Gradnja projekta v mapo projekta - gradnje"
 
-#: ../ProjectController.py:1039
+#: ../ProjectController.py:1080
 msgid "C Build crashed !\n"
-msgstr ""
+msgstr "Gradnja C programske kode ni uspela !\n"
 
-#: ../ProjectController.py:1036
+#: ../ProjectController.py:1077
 msgid "C Build failed.\n"
-msgstr ""
+msgstr "Gradnja C programske kode neuspešna.\n"
 
 #: ../c_ext/CFileEditor.py:63
 msgid "C code"
-msgstr ""
+msgstr "C programska koda"
 
-#: ../ProjectController.py:1114
+#: ../ProjectController.py:1155
 msgid "C code generated successfully.\n"
-msgstr ""
+msgstr "C programska koda uspešno ustvarjena.\n"
 
 #: ../targets/toolchain_makefile.py:122
 msgid "C compilation failed.\n"
-msgstr ""
+msgstr "Generiranje C programske kode ni uspelo.\n"
 
-#: ../targets/toolchain_gcc.py:156
+#: ../targets/toolchain_gcc.py:192
 #, python-format
 msgid "C compilation of %s failed.\n"
-msgstr ""
+msgstr "Generiranje C programske kode %s ni uspelo.\n"
 
 #: ../features.py:32
 msgid "C extension"
-msgstr ""
+msgstr "C razširitev"
 
 #: ../dialogs/AboutDialog.py:71
 msgid "C&redits"
-msgstr ""
+msgstr "Zasluge C&"
 
 #: ../canfestival/NetworkEditor.py:52
 msgid "CANOpen network"
-msgstr ""
+msgstr "CANOpen mreža"
 
 #: ../canfestival/SlaveEditor.py:44
 msgid "CANOpen slave"
-msgstr ""
+msgstr "CANOpen podrejena naprava"
 
 #: ../features.py:31
 msgid "CANopen support"
-msgstr ""
+msgstr "CANopen podpora"
 
-#: ../plcopen/plcopen.py:1584 ../plcopen/plcopen.py:1598
-#: ../plcopen/plcopen.py:1622 ../plcopen/plcopen.py:1638
+#: ../plcopen/plcopen.py:1589 ../plcopen/plcopen.py:1603
+#: ../plcopen/plcopen.py:1627 ../plcopen/plcopen.py:1643
 msgid "Can only generate execution order on FBD networks!"
-msgstr ""
+msgstr "Lahko ustvarim vrstni red izvajanja le za FBD stavke!"
 
 #: ../controls/VariablePanel.py:267
 msgid "Can only give a location to local or global variables"
-msgstr ""
+msgstr "Lokacijo lahko določiš le lokalni ali globalni spremenljivki."
 
-#: ../PLCOpenEditor.py:334
+#: ../PLCOpenEditor.py:344
 #, python-format
 msgid "Can't generate program to file %s!"
-msgstr ""
+msgstr "Ne morem ustvariti programa v datoteko %s!"
 
 #: ../controls/VariablePanel.py:265
 msgid "Can't give a location to a function block instance"
-msgstr ""
+msgstr "Ne morem dodeliti lokacije Primerku funkcijskega bloka"
 
-#: ../PLCOpenEditor.py:379
+#: ../PLCOpenEditor.py:389
 #, python-format
 msgid "Can't save project to file %s!"
-msgstr ""
+msgstr "Ne morem shraniti projekt v datoteko %s!"
 
 #: ../controls/VariablePanel.py:313
 msgid "Can't set an initial value to a function block instance"
-msgstr ""
+msgstr "Ne morem dodeliti začetne vrednosti Primerku funkcijskega bloka"
 
 #: ../ConfigTreeNode.py:529
 #, python-brace-format
 msgid "Cannot create child {a1} of type {a2} "
-msgstr ""
+msgstr "Ne morem ustvariti otroka {a1} tipa {a2} "
 
 #: ../ConfigTreeNode.py:454
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
-msgstr ""
+msgstr "Ne morem najti nižjega IEC kanala kot je %d\n"
 
 #: ../connectors/PYRO/__init__.py:131
 msgid "Cannot get PLC status - connection failed.\n"
-msgstr ""
+msgstr "Ne morem pridobiti status krmilnika - povezava prekinjena.\n"
 
-#: ../ProjectController.py:902
+#: ../ProjectController.py:943
 msgid "Cannot open/parse VARIABLES.csv!\n"
-msgstr ""
+msgstr "Ne morem odpreti/razvozlati VARIABLES.csv!\n"
 
 #: ../canfestival/config_utils.py:374
 #, python-brace-format
@@ -822,86 +838,88 @@ msgid ""
 "Cannot set bit offset for non bool '{a1}' variable "
 "(ID:{a2},Idx:{a3},sIdx:{a4}))"
 msgstr ""
+"Ne morem nastaviti bit offset za nebitno '{a1}' spremenljivko "
+"(ID:{a2},Idx:{a3},sIdx:{a4}))"
 
-#: ../dialogs/SearchInProjectDialog.py:59 ../dialogs/FindInPouDialog.py:88
+#: ../dialogs/SearchInProjectDialog.py:59 ../dialogs/FindInPouDialog.py:86
 msgid "Case sensitive"
-msgstr ""
+msgstr "Razlikovanje velikih in malih črk"
 
-#: ../editors/Viewer.py:486
+#: ../editors/Viewer.py:545
 msgid "Center"
 msgstr "Sredinsko"
 
-#: ../Beremiz_service.py:266
+#: ../Beremiz_service.py:268
 msgid "Change IP of interface to bind"
-msgstr ""
+msgstr "Spremeni IP vmesnika za povezavo"
 
-#: ../Beremiz_service.py:265
+#: ../Beremiz_service.py:267
 msgid "Change Name"
 msgstr "Spremeni ime"
 
-#: ../IDEFrame.py:1942
+#: ../IDEFrame.py:1946
 msgid "Change POU Type To"
-msgstr ""
+msgstr "Spremeni tip POU v"
 
-#: ../Beremiz_service.py:267
+#: ../Beremiz_service.py:269
 msgid "Change Port Number"
-msgstr ""
+msgstr "Spremeni številko vrat"
 
-#: ../Beremiz_service.py:268
+#: ../Beremiz_service.py:270
 msgid "Change working directory"
 msgstr "Spremeni delovno mapo"
 
 #: ../plcopen/iec_std.csv:81
 msgid "Character string"
-msgstr ""
+msgstr "Niz znakov"
 
-#: ../svgui/svgui.py:125
+#: ../svgui/svgui.py:128
 msgid "Choose a SVG file"
 msgstr "Izberi SVG datoteko"
 
-#: ../ProjectController.py:501
+#: ../ProjectController.py:542
 msgid "Choose a directory to save project"
 msgstr "Izberi mapo za shranjevanje projekta"
 
-#: ../canfestival/canfestival.py:160 ../PLCOpenEditor.py:292
-#: ../PLCOpenEditor.py:324 ../PLCOpenEditor.py:373
+#: ../canfestival/canfestival.py:162 ../PLCOpenEditor.py:302
+#: ../PLCOpenEditor.py:334 ../PLCOpenEditor.py:383
 msgid "Choose a file"
 msgstr "Izberi datoteko"
 
-#: ../Beremiz.py:931 ../Beremiz.py:966
+#: ../BeremizIDE.py:833 ../BeremizIDE.py:869
 msgid "Choose a project"
 msgstr "Izberi projekt"
 
-#: ../dialogs/BrowseValuesLibraryDialog.py:42
+#: ../dialogs/BrowseValuesLibraryDialog.py:41
 #, python-format
 msgid "Choose a value for %s:"
-msgstr ""
+msgstr "Izberi vrednost za %s:"
 
-#: ../Beremiz_service.py:323
+#: ../Beremiz_service.py:325
 msgid "Choose a working directory "
 msgstr "Izberi delovno mapo"
 
-#: ../ProjectController.py:408
+#: ../ProjectController.py:449
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
-msgstr ""
+msgstr "Izbrana mapa ne vsebuje programa. Ni veljaven projekt!"
 
-#: ../ProjectController.py:375
+#: ../ProjectController.py:416
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
-msgstr ""
+msgstr "Mapa ni prazna. Ne morem uporabiti za nov projekt!"
 
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Class"
-msgstr ""
+msgstr "Razred"
 
 #: ../controls/VariablePanel.py:441
 msgid "Class Filter:"
-msgstr ""
+msgstr "Filter Razreda:"
 
-#: ../dialogs/FBDVariableDialog.py:69
+#: ../dialogs/FBDVariableDialog.py:70
 msgid "Class:"
-msgstr ""
+msgstr "Razred:"
 
-#: ../ProjectController.py:1794
+#: ../ProjectController.py:1836
 msgid "Clean"
 msgstr "Počisti"
 
@@ -909,160 +927,165 @@ msgstr "Počisti"
 msgid "Clean log messages"
 msgstr "Počisti dnevniška sporočila"
 
-#: ../ProjectController.py:1796
+#: ../ProjectController.py:1838
 msgid "Clean project build folder"
-msgstr ""
+msgstr "Počisti projektno mapo - gradnje"
 
-#: ../ProjectController.py:1253
+#: ../ProjectController.py:1294
 msgid "Cleaning the build directory\n"
-msgstr ""
+msgstr "Čistim projektno mapo - gradnje\n"
 
 #: ../IDEFrame.py:435
 msgid "Clear Errors"
 msgstr "Počisti napake"
 
-#: ../editors/Viewer.py:582
+#: ../editors/Viewer.py:641
 msgid "Clear Execution Order"
-msgstr ""
+msgstr "Počisti vrstni red izvajanja"
 
-#: ../dialogs/SearchInProjectDialog.py:105 ../dialogs/FindInPouDialog.py:111
+#: ../dialogs/SearchInProjectDialog.py:103 ../dialogs/FindInPouDialog.py:109
 msgid "Close"
 msgstr "Zapri"
 
-#: ../PLCOpenEditor.py:199 ../Beremiz.py:693
+#: ../BeremizIDE.py:595 ../PLCOpenEditor.py:209
 msgid "Close Application"
 msgstr "Zapri program"
 
-#: ../PLCOpenEditor.py:108 ../Beremiz.py:333 ../Beremiz.py:637
-#: ../IDEFrame.py:1009
+#: ../BeremizIDE.py:228 ../BeremizIDE.py:539 ../PLCOpenEditor.py:110
+#: ../IDEFrame.py:1013
 msgid "Close Project"
 msgstr "Zapri projekt"
 
-#: ../PLCOpenEditor.py:106 ../Beremiz.py:331
+#: ../BeremizIDE.py:226 ../PLCOpenEditor.py:108
 msgid "Close Tab"
 msgstr "Zapri zavihek"
 
-#: ../editors/Viewer.py:541 ../editors/Viewer.py:2377
+#: ../editors/Viewer.py:600 ../editors/Viewer.py:2415
 msgid "Coil"
-msgstr ""
+msgstr "Tuljava"
 
-#: ../editors/Viewer.py:561 ../editors/LDViewer.py:506
+#: ../editors/Viewer.py:620 ../editors/LDViewer.py:506
 msgid "Comment"
 msgstr "Komentar"
 
-#: ../dialogs/ProjectDialog.py:57
+#: ../BeremizIDE.py:276 ../BeremizIDE.py:279 ../PLCOpenEditor.py:161
+#: ../PLCOpenEditor.py:164
+msgid "Community support"
+msgstr "Podpora skupnosti"
+
+#: ../dialogs/ProjectDialog.py:60
 msgid "Company Name"
 msgstr "Ime podjetja"
 
-#: ../controls/ProjectPropertiesPanel.py:94
+#: ../controls/ProjectPropertiesPanel.py:95
 msgid "Company Name (required):"
 msgstr "Ime podjetja (obvezno)"
 
-#: ../controls/ProjectPropertiesPanel.py:95
+#: ../controls/ProjectPropertiesPanel.py:96
 msgid "Company URL (optional):"
-msgstr ""
+msgstr "Spletn stran podjetja (ni obvezno):"
 
 #: ../plcopen/iec_std.csv:75
 msgid "Comparison"
 msgstr "Primerjava"
 
-#: ../ProjectController.py:693
+#: ../ProjectController.py:734
 msgid "Compiling IEC Program into C code...\n"
-msgstr ""
+msgstr "Prevajam IEC program v C programsko kodo...\n"
 
 #: ../plcopen/iec_std.csv:85
 msgid "Concatenation"
-msgstr ""
+msgstr "Združevanje"
 
-#: ../editors/ConfTreeNodeEditor.py:229
+#: ../editors/ConfTreeNodeEditor.py:230
 msgid "Config"
-msgstr ""
+msgstr "Konfiguracija"
 
 #: ../editors/ProjectNodeEditor.py:36
 msgid "Config variables"
-msgstr ""
+msgstr "Konfiguracijske spremenljivke"
 
-#: ../dialogs/SearchInProjectDialog.py:39
+#: ../dialogs/SearchInProjectDialog.py:40
 msgid "Configuration"
 msgstr "Konfiguracija"
 
-#: ../PLCControler.py:97
+#: ../PLCControler.py:99
 msgid "Configurations"
 msgstr "Konfiguracije"
 
-#: ../editors/Viewer.py:307 ../editors/Viewer.py:337 ../editors/Viewer.py:359
+#: ../editors/Viewer.py:308 ../editors/Viewer.py:338 ../editors/Viewer.py:360
 #: ../editors/TextViewer.py:291 ../editors/TextViewer.py:342
 #: ../editors/TextViewer.py:365 ../controls/VariablePanel.py:328
 msgid "Confirm or change variable name"
 msgstr "Potrdi ali spremeni ime spremenljivke"
 
-#: ../ProjectController.py:1809
+#: ../ProjectController.py:1851
 msgid "Connect"
 msgstr "Poveži"
 
-#: ../ProjectController.py:1810
+#: ../ProjectController.py:1852
 msgid "Connect to the target PLC"
 msgstr "Poveži na krmilnik"
 
-#: ../ProjectController.py:1313
+#: ../ProjectController.py:1354
 #, python-format
 msgid "Connected to URI: %s"
-msgstr ""
+msgstr "Povezan na URI: %s"
 
-#: ../dialogs/SFCTransitionDialog.py:76 ../editors/Viewer.py:527
-#: ../editors/Viewer.py:2370
+#: ../dialogs/SFCTransitionDialog.py:77 ../editors/Viewer.py:586
+#: ../editors/Viewer.py:2408
 msgid "Connection"
 msgstr "Povezava"
 
-#: ../dialogs/ConnectionDialog.py:52
+#: ../dialogs/ConnectionDialog.py:53
 msgid "Connection Properties"
 msgstr "Lastnosti povezave"
 
-#: ../ProjectController.py:1668
+#: ../ProjectController.py:1709
 msgid "Connection canceled!\n"
-msgstr ""
+msgstr "Povezava prekinjena!\n"
 
-#: ../ProjectController.py:1693
+#: ../ProjectController.py:1734
 #, python-format
 msgid "Connection failed to %s!\n"
-msgstr ""
+msgstr "Povezava do %s prekinjena!\n"
 
 #: ../connectors/PYRO/__init__.py:115 ../connectors/WAMP/__init__.py:111
 msgid "Connection lost!\n"
-msgstr ""
+msgstr "Povezava prekinjena!\n"
 
 #: ../connectors/PYRO/__init__.py:102
 #, python-format
 msgid "Connection to '%s' failed.\n"
-msgstr ""
+msgstr "Povezava na %s' ni bila uspešna.\n"
 
-#: ../dialogs/ConnectionDialog.py:64 ../editors/Viewer.py:1605
+#: ../dialogs/ConnectionDialog.py:65 ../editors/Viewer.py:1643
 msgid "Connector"
-msgstr ""
+msgstr "Konektor-vhod"
 
-#: ../dialogs/SFCStepDialog.py:65
+#: ../dialogs/SFCStepDialog.py:66
 msgid "Connectors:"
-msgstr ""
+msgstr "Konektor-vhodi:"
 
-#: ../Beremiz.py:448
+#: ../BeremizIDE.py:350
 msgid "Console"
-msgstr ""
+msgstr "Konzola"
 
 #: ../controls/VariablePanel.py:60
 msgid "Constant"
 msgstr "Konstanta"
 
-#: ../editors/Viewer.py:537 ../editors/Viewer.py:2373
+#: ../editors/Viewer.py:596 ../editors/Viewer.py:2411
 msgid "Contact"
 msgstr "Kontakt"
 
-#: ../controls/ProjectPropertiesPanel.py:197
+#: ../controls/ProjectPropertiesPanel.py:198
 msgid "Content Description (optional):"
-msgstr ""
+msgstr "Opis vsebine (ni obvezno):"
 
-#: ../dialogs/ConnectionDialog.py:65 ../editors/Viewer.py:1606
+#: ../dialogs/ConnectionDialog.py:66 ../editors/Viewer.py:1644
 msgid "Continuation"
-msgstr ""
+msgstr "Nadaljevanje"
 
 #: ../plcopen/iec_std.csv:18
 msgid "Conversion from BCD"
@@ -1074,32 +1097,32 @@ msgstr "Pretvorba v BCD"
 
 #: ../plcopen/iec_std.csv:21
 msgid "Conversion to date"
-msgstr ""
+msgstr "Pretvorba v datum"
 
 #: ../plcopen/iec_std.csv:20
 msgid "Conversion to time-of-day"
-msgstr ""
+msgstr "Pretvorba v čas-dneva"
 
-#: ../editors/Viewer.py:597 ../controls/LogViewer.py:693 ../IDEFrame.py:370
+#: ../editors/Viewer.py:656 ../controls/LogViewer.py:704 ../IDEFrame.py:370
 #: ../IDEFrame.py:425
 msgid "Copy"
 msgstr "Kopiraj"
 
-#: ../IDEFrame.py:1929
+#: ../IDEFrame.py:1933
 msgid "Copy POU"
-msgstr ""
+msgstr "Kopiraj POU"
 
 #: ../editors/FileManagementPanel.py:65
 msgid "Copy file from left folder to right"
-msgstr ""
+msgstr "Kopiraj datoteko iz leve mape v desno"
 
 #: ../editors/FileManagementPanel.py:64
 msgid "Copy file from right folder to left"
-msgstr ""
+msgstr "Kopiraj datoteko iz desne mape v levo"
 
 #: ../plcopen/iec_std.csv:28
 msgid "Cosine"
-msgstr ""
+msgstr "Kosinus"
 
 #: ../ConfigTreeNode.py:656
 #, python-brace-format
@@ -1107,11 +1130,13 @@ msgid ""
 "Could not add child \"{a1}\", type {a2} :\n"
 "{a3}\n"
 msgstr ""
+"Ne morem dodati otroka  \"{a1}\", tip {a2} :\n"
+"{a3}\n"
 
-#: ../py_ext/PythonFileCTNMixin.py:77
+#: ../py_ext/PythonFileCTNMixin.py:78
 #, python-format
 msgid "Couldn't import old %s file."
-msgstr ""
+msgstr "Ne morem uvoziti staro datoteko %s ."
 
 #: ../ConfigTreeNode.py:626
 #, python-brace-format
@@ -1119,6 +1144,8 @@ msgid ""
 "Couldn't load confnode base parameters {a1} :\n"
 " {a2}"
 msgstr ""
+"Ne morem naložiti confnode osnovne parametre {a1} :\n"
+" {a2}"
 
 #: ../ConfigTreeNode.py:643 ../CodeFileTreeNode.py:124
 #, python-brace-format
@@ -1126,114 +1153,116 @@ msgid ""
 "Couldn't load confnode parameters {a1} :\n"
 " {a2}"
 msgstr ""
+"Ne moreme naložiti confnode parametre {a1} :\n"
+" {a2}"
 
-#: ../PLCControler.py:946
+#: ../PLCControler.py:948
 msgid "Couldn't paste non-POU object."
-msgstr ""
+msgstr "Prilepim lahko samo objekte tipa POU."
 
-#: ../ProjectController.py:1610
+#: ../ProjectController.py:1651
 msgid "Couldn't start PLC !\n"
-msgstr ""
+msgstr "Ne morem zagnati krmilnik !\n"
 
-#: ../ProjectController.py:1618
+#: ../ProjectController.py:1659
 msgid "Couldn't stop PLC !\n"
-msgstr ""
+msgstr "Ne morem ustaviti krmilnika !\n"
 
-#: ../ProjectController.py:1582
+#: ../ProjectController.py:1623
 msgid "Couldn't stop debugger.\n"
-msgstr ""
+msgstr "Ne morem ustaviti razhroščevalnik.\n"
 
-#: ../svgui/svgui.py:47
+#: ../svgui/svgui.py:49
 msgid "Create HMI"
-msgstr ""
+msgstr "Kreiraj HMI"
 
-#: ../dialogs/PouDialog.py:45
+#: ../dialogs/PouDialog.py:46
 msgid "Create a new POU"
-msgstr ""
+msgstr "Ustvari nov POU"
 
 #: ../dialogs/PouActionDialog.py:38
 msgid "Create a new action"
-msgstr ""
+msgstr "Ustvari novo Akcijo"
 
 #: ../IDEFrame.py:159
 msgid "Create a new action block"
-msgstr ""
+msgstr "Ustvari nov Akcijski blok"
 
 #: ../IDEFrame.py:108 ../IDEFrame.py:138 ../IDEFrame.py:171
 msgid "Create a new block"
-msgstr ""
+msgstr "Ustvari nov blok"
 
 #: ../IDEFrame.py:132
 msgid "Create a new branch"
-msgstr ""
+msgstr "Ustvari nov skok"
 
 #: ../IDEFrame.py:126
 msgid "Create a new coil"
-msgstr ""
+msgstr "Ustvari novo tuljavo"
 
 #: ../IDEFrame.py:102 ../IDEFrame.py:117 ../IDEFrame.py:147
 msgid "Create a new comment"
-msgstr ""
+msgstr "Ustvari nov komentar"
 
 #: ../IDEFrame.py:111 ../IDEFrame.py:141 ../IDEFrame.py:174
 msgid "Create a new connection"
-msgstr ""
+msgstr "Ustvari novo povezavo"
 
 #: ../IDEFrame.py:129 ../IDEFrame.py:180
 msgid "Create a new contact"
-msgstr ""
+msgstr "Ustvari nov kontakt"
 
 #: ../IDEFrame.py:162
 msgid "Create a new divergence"
-msgstr ""
+msgstr "Ustvari novo Razhajališče"
 
 #: ../dialogs/SFCDivergenceDialog.py:53
 msgid "Create a new divergence or convergence"
-msgstr ""
+msgstr "Ustvari novo Razhajališče ali Stekališče"
 
 #: ../IDEFrame.py:150
 msgid "Create a new initial step"
-msgstr ""
+msgstr "Ustvari nov začetni korak"
 
 #: ../IDEFrame.py:165
 msgid "Create a new jump"
-msgstr ""
+msgstr "Ustvari nov skok"
 
 #: ../IDEFrame.py:120 ../IDEFrame.py:177
 msgid "Create a new power rail"
-msgstr ""
+msgstr "Ustvari nov napajalni vodnik"
 
 #: ../IDEFrame.py:123
 msgid "Create a new rung"
-msgstr ""
+msgstr "Ustvari novo prečko"
 
 #: ../IDEFrame.py:153
 msgid "Create a new step"
-msgstr ""
+msgstr "Ustvari nov Korak"
 
-#: ../dialogs/PouTransitionDialog.py:47 ../IDEFrame.py:156
+#: ../dialogs/PouTransitionDialog.py:42 ../IDEFrame.py:156
 msgid "Create a new transition"
-msgstr ""
+msgstr "Ustvari nov prehod"
 
 #: ../IDEFrame.py:105 ../IDEFrame.py:135 ../IDEFrame.py:168
 msgid "Create a new variable"
-msgstr ""
+msgstr "Ustvari novo spremenljivko"
 
 #: ../dialogs/AboutDialog.py:113
 msgid "Credits"
-msgstr ""
+msgstr "Zasluge"
 
-#: ../Beremiz_service.py:432
+#: ../Beremiz_service.py:434
 msgid "Current working directory :"
-msgstr ""
+msgstr "Trenutna delovna mapa :"
 
-#: ../editors/Viewer.py:596 ../IDEFrame.py:368 ../IDEFrame.py:424
+#: ../editors/Viewer.py:655 ../IDEFrame.py:368 ../IDEFrame.py:424
 msgid "Cut"
 msgstr "Izreži"
 
 #: ../editors/ResourceEditor.py:72
 msgid "Cyclic"
-msgstr ""
+msgstr "Cikličen"
 
 #: ../plcopen/iec_std.csv:42 ../plcopen/iec_std.csv:44
 #: ../plcopen/iec_std.csv:46 ../plcopen/iec_std.csv:50
@@ -1241,206 +1270,212 @@ msgstr ""
 #: ../plcopen/iec_std.csv:56 ../plcopen/iec_std.csv:58
 #: ../plcopen/iec_std.csv:60
 msgid "DEPRECATED"
-msgstr ""
+msgstr "OPUŠČENO"
 
 #: ../canfestival/SlaveEditor.py:76 ../canfestival/NetworkEditor.py:97
 msgid "DS-301 Profile"
-msgstr ""
+msgstr "DS-301 Profile"
 
 #: ../canfestival/SlaveEditor.py:77 ../canfestival/NetworkEditor.py:98
 msgid "DS-302 Profile"
-msgstr ""
+msgstr "DS-302 Profile"
 
-#: ../dialogs/SearchInProjectDialog.py:35
+#: ../dialogs/SearchInProjectDialog.py:36
 msgid "Data Type"
-msgstr ""
+msgstr "Podatkovni tip"
 
-#: ../PLCControler.py:96
+#: ../PLCControler.py:98
 msgid "Data Types"
-msgstr ""
+msgstr "Podatkovni tipi"
 
 #: ../plcopen/iec_std.csv:16
 msgid "Data type conversion"
-msgstr ""
+msgstr "Pretvorba podatkovnega tipa"
 
 #: ../plcopen/iec_std.csv:44 ../plcopen/iec_std.csv:45
 msgid "Date addition"
-msgstr ""
+msgstr "Dodajanje datuma"
 
 #: ../plcopen/iec_std.csv:56 ../plcopen/iec_std.csv:57
 #: ../plcopen/iec_std.csv:58 ../plcopen/iec_std.csv:59
 msgid "Date and time subtraction"
-msgstr ""
+msgstr "Odštevanje Datum in ure"
 
 #: ../plcopen/iec_std.csv:50 ../plcopen/iec_std.csv:51
 msgid "Date subtraction"
-msgstr ""
+msgstr "Odštevanje Datuma"
 
-#: ../dialogs/DurationEditorDialog.py:43
+#: ../dialogs/DurationEditorDialog.py:44
 msgid "Days:"
-msgstr ""
+msgstr "Dnevi:"
 
-#: ../ProjectController.py:1715
+#: ../ProjectController.py:1756
 msgid "Debug does not match PLC - stop/transfert/start to re-enable\n"
 msgstr ""
+"Razhroščevalnik in krmilnik nimata enakega programa - Izvedi "
+"Ustavi/Prenos/Zaženi za ponovno omogočanje razhroščevalnika\n"
 
 #: ../controls/PouInstanceVariablesPanel.py:134
 msgid "Debug instance"
-msgstr ""
+msgstr "Razhroščevalnik Primerka"
 
-#: ../editors/Viewer.py:1127 ../editors/Viewer.py:3664
+#: ../editors/Viewer.py:448
 #, python-format
 msgid "Debug: %s"
-msgstr ""
+msgstr "Razhroščevalnik: %s"
 
-#: ../ProjectController.py:1371
+#: ../ProjectController.py:1412
 #, python-format
 msgid "Debug: Unknown variable '%s'\n"
-msgstr ""
+msgstr "Razhroščevalnik: Neznana spremenljivka '%s'\n"
 
-#: ../ProjectController.py:1369
+#: ../ProjectController.py:1410
 #, python-format
 msgid "Debug: Unsupported type to debug '%s'\n"
-msgstr ""
+msgstr "Razhroščevalnik: Nepodprti podatkovni tip '%s'\n"
 
 #: ../IDEFrame.py:639
 msgid "Debugger"
-msgstr ""
+msgstr "Razhroščevalnik"
 
-#: ../ProjectController.py:1551
+#: ../ProjectController.py:1592
 msgid "Debugger disabled\n"
-msgstr ""
+msgstr "Razhroščevalnik onemogočen\n"
 
-#: ../ProjectController.py:1712
+#: ../ProjectController.py:1753
 msgid "Debugger ready\n"
-msgstr ""
+msgstr "Razhroščevalnik pripravljen\n"
 
-#: ../ProjectController.py:1584
+#: ../ProjectController.py:1625
 msgid "Debugger stopped.\n"
-msgstr ""
+msgstr "Razhroščevalnik ustavljen..\n"
 
-#: ../editors/Viewer.py:572 ../Beremiz.py:1064 ../IDEFrame.py:1958
+#: ../BeremizIDE.py:968 ../editors/Viewer.py:631 ../IDEFrame.py:1962
 msgid "Delete"
 msgstr "Izbriši"
 
-#: ../editors/Viewer.py:514
+#: ../editors/Viewer.py:573
 msgid "Delete Divergence Branch"
-msgstr ""
+msgstr "Izbriši Razhajališče"
 
 #: ../editors/FileManagementPanel.py:153
 msgid "Delete File"
 msgstr "Izbriši datoteko"
 
-#: ../editors/Viewer.py:501
+#: ../editors/Viewer.py:560
 msgid "Delete Wire Segment"
-msgstr ""
+msgstr "Pobriši odsek žice"
 
 #: ../controls/CustomEditableListBox.py:41
 msgid "Delete item"
-msgstr ""
+msgstr "Izbriši element"
 
 #: ../plcopen/iec_std.csv:88
 msgid "Deletion (within)"
-msgstr ""
+msgstr "Izbriši (znotraj)"
 
 #: ../editors/DataTypeEditor.py:153
 msgid "Derivation Type:"
-msgstr ""
+msgstr "Izpeljani podatkovni tip:"
+
+#: ../editors/CodeFileEditor.py:739
+msgid "Description"
+msgstr "Opis"
 
 #: ../controls/VariablePanel.py:432
 msgid "Description:"
 msgstr "Opis:"
 
-#: ../dialogs/ArrayTypeDialog.py:61 ../editors/DataTypeEditor.py:321
+#: ../dialogs/ArrayTypeDialog.py:60 ../editors/DataTypeEditor.py:321
 msgid "Dimensions:"
 msgstr "Dimenzije:"
 
-#: ../dialogs/FindInPouDialog.py:68
+#: ../dialogs/FindInPouDialog.py:66
 msgid "Direction"
-msgstr ""
+msgstr "Smer"
 
-#: ../dialogs/BrowseLocationsDialog.py:90
+#: ../dialogs/BrowseLocationsDialog.py:91
 msgid "Direction:"
-msgstr ""
+msgstr "Smer:"
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Directly"
-msgstr ""
+msgstr "Direkten"
 
-#: ../ProjectController.py:1818
+#: ../ProjectController.py:1860
 msgid "Disconnect"
-msgstr ""
+msgstr "Prekini"
 
-#: ../ProjectController.py:1820
+#: ../ProjectController.py:1862
 msgid "Disconnect from PLC"
-msgstr ""
+msgstr "Prekini povezavo do krmilnika"
 
-#: ../ProjectController.py:1323
+#: ../ProjectController.py:1364
 msgid "Disconnected"
-msgstr ""
+msgstr "Prekinjen"
 
-#: ../editors/Viewer.py:556 ../editors/Viewer.py:2365
+#: ../editors/Viewer.py:615 ../editors/Viewer.py:2403
 msgid "Divergence"
-msgstr ""
+msgstr "Razhajališče"
 
 #: ../plcopen/iec_std.csv:36
 msgid "Division"
-msgstr ""
+msgstr "Deljenje"
 
 #: ../editors/FileManagementPanel.py:152
 #, python-format
 msgid "Do you really want to delete the file '%s'?"
-msgstr ""
+msgstr "Ali res želiš izbrisati datoteko '%s'?"
 
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Documentation"
 msgstr "Dokumentacija"
 
-#: ../PLCOpenEditor.py:328
+#: ../PLCOpenEditor.py:338
 msgid "Done"
 msgstr "Končano"
 
-#: ../dialogs/ActionBlockDialog.py:38
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Duration"
 msgstr "Čas trajanja"
 
-#: ../canfestival/canfestival.py:163
+#: ../canfestival/canfestival.py:165
 msgid "EDS files (*.eds)|*.eds|All files|*.*"
-msgstr ""
+msgstr "EDS datoteke (*.eds)|*.eds|Vse datoteke|*.*"
 
-#: ../editors/Viewer.py:570
+#: ../editors/Viewer.py:629
 msgid "Edit Block"
-msgstr ""
+msgstr "Uredi Blok"
 
 #: ../dialogs/LDElementDialog.py:56
 msgid "Edit Coil Values"
-msgstr ""
+msgstr "Uredi vrednost Tuljave"
 
 #: ../dialogs/LDElementDialog.py:54
 msgid "Edit Contact Values"
-msgstr ""
+msgstr "Uredi vrednost Kontakta"
 
 #: ../dialogs/DurationEditorDialog.py:59
 msgid "Edit Duration"
 msgstr "Uredi čas trajanja"
 
-#: ../dialogs/SFCStepDialog.py:50
+#: ../dialogs/SFCStepDialog.py:51
 msgid "Edit Step"
 msgstr "Uredi Korak"
 
-#: ../wxglade_hmi/wxglade_hmi.py:36
+#: ../wxglade_hmi/wxglade_hmi.py:38
 msgid "Edit a WxWidgets GUI with WXGlade"
-msgstr ""
+msgstr "Uredi WxWidgets GUI z WXGlade"
 
 #: ../dialogs/ActionBlockDialog.py:121
 msgid "Edit action block properties"
-msgstr ""
+msgstr "Uredi lastnosti Akcijskega bloka"
 
-#: ../dialogs/ArrayTypeDialog.py:45
+#: ../dialogs/ArrayTypeDialog.py:44
 msgid "Edit array type properties"
-msgstr ""
+msgstr "Uredi lastnosti tipa tabele"
 
-#: ../editors/Viewer.py:2586 ../editors/Viewer.py:3015
+#: ../editors/Viewer.py:2626 ../editors/Viewer.py:3055
 msgid "Edit comment"
 msgstr "Uredi komentar"
 
@@ -1450,218 +1485,220 @@ msgstr "Uredi datoteko"
 
 #: ../controls/CustomEditableListBox.py:39
 msgid "Edit item"
-msgstr ""
+msgstr "Uredi element"
 
-#: ../editors/Viewer.py:2974
+#: ../editors/Viewer.py:3014
 msgid "Edit jump target"
-msgstr ""
+msgstr "Nastavi Skok na kateri Korak"
 
-#: ../ProjectController.py:1832
+#: ../ProjectController.py:1874
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
-msgstr ""
+msgstr "Urejanje čiste IEC programske kode je bilo dodano PLCGenerator-ju"
 
 #: ../editors/SFCViewer.py:799
 msgid "Edit step name"
 msgstr "Uredi ime koroka"
 
-#: ../dialogs/SFCTransitionDialog.py:51
+#: ../dialogs/SFCTransitionDialog.py:52
 msgid "Edit transition"
 msgstr "Uredi ime prehoda"
 
 #: ../IDEFrame.py:611
 msgid "Editor ToolBar"
-msgstr ""
+msgstr "Urejevalnik orodne vrrstice"
 
-#: ../ProjectController.py:1216
+#: ../ProjectController.py:1257
 msgid "Editor selection"
-msgstr ""
+msgstr "Izbira urejevalnika"
 
 #: ../editors/DataTypeEditor.py:348
 msgid "Elements :"
-msgstr ""
+msgstr "Elementi :"
 
-#: ../ProjectController.py:1321
+#: ../ProjectController.py:1362
 msgid "Empty"
 msgstr "Prazen"
 
 #: ../IDEFrame.py:365
 msgid "Enable Undo/Redo"
-msgstr ""
+msgstr "Omogoči Razveljavi/Ponovi"
 
-#: ../Beremiz_service.py:331
+#: ../Beremiz_service.py:333
 msgid "Enter a name "
 msgstr "Vstavi ime"
 
-#: ../Beremiz_service.py:316
+#: ../Beremiz_service.py:318
 msgid "Enter a port number "
-msgstr ""
+msgstr "Vnesi števiko vrat"
 
-#: ../Beremiz_service.py:307
+#: ../Beremiz_service.py:309
 msgid "Enter the IP of the interface to bind"
-msgstr ""
+msgstr "Vnesi IP vmesnika za povezavo"
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Enumerated"
-msgstr ""
+msgstr "Naštevni"
 
 #: ../plcopen/iec_std.csv:77
 msgid "Equal to"
 msgstr "Enak"
 
-#: ../dialogs/ForceVariableDialog.py:179
+#: ../BeremizIDE.py:1107 ../dialogs/ForceVariableDialog.py:197
 #: ../dialogs/SearchInProjectDialog.py:168 ../dialogs/SFCStepNameDialog.py:60
 #: ../dialogs/DurationEditorDialog.py:121
-#: ../dialogs/DurationEditorDialog.py:163
-#: ../dialogs/PouTransitionDialog.py:112 ../dialogs/BlockPreviewDialog.py:236
-#: ../dialogs/ProjectDialog.py:71 ../dialogs/ArrayTypeDialog.py:97
+#: ../dialogs/DurationEditorDialog.py:167
+#: ../dialogs/PouTransitionDialog.py:107 ../dialogs/BlockPreviewDialog.py:237
+#: ../dialogs/ProjectDialog.py:74 ../dialogs/ArrayTypeDialog.py:97
 #: ../dialogs/ArrayTypeDialog.py:103 ../dialogs/PouNameDialog.py:54
-#: ../dialogs/BrowseLocationsDialog.py:216
+#: ../dialogs/BrowseLocationsDialog.py:218
 #: ../dialogs/BrowseValuesLibraryDialog.py:83
-#: ../dialogs/PouActionDialog.py:104 ../dialogs/PouDialog.py:134
-#: ../PLCOpenEditor.py:335 ../PLCOpenEditor.py:340 ../PLCOpenEditor.py:420
-#: ../PLCOpenEditor.py:430 ../editors/ResourceEditor.py:436
-#: ../editors/Viewer.py:423 ../editors/LDViewer.py:666
+#: ../dialogs/PouActionDialog.py:105 ../dialogs/PouDialog.py:135
+#: ../PLCOpenEditor.py:345 ../PLCOpenEditor.py:350 ../PLCOpenEditor.py:430
+#: ../PLCOpenEditor.py:440 ../editors/ResourceEditor.py:436
+#: ../editors/Viewer.py:424 ../editors/LDViewer.py:666
 #: ../editors/LDViewer.py:882 ../editors/LDViewer.py:886
 #: ../editors/DataTypeEditor.py:550 ../editors/DataTypeEditor.py:555
-#: ../editors/DataTypeEditor.py:579 ../editors/DataTypeEditor.py:584
-#: ../editors/DataTypeEditor.py:594 ../editors/DataTypeEditor.py:745
-#: ../editors/DataTypeEditor.py:752 ../editors/TextViewer.py:389
-#: ../editors/CodeFileEditor.py:783 ../ProjectController.py:343
-#: ../ProjectController.py:471 ../ProjectController.py:478
+#: ../editors/DataTypeEditor.py:574 ../editors/DataTypeEditor.py:743
+#: ../editors/DataTypeEditor.py:750 ../editors/TextViewer.py:389
+#: ../editors/CodeFileEditor.py:762 ../ProjectController.py:372
+#: ../ProjectController.py:512 ../ProjectController.py:519
 #: ../controls/FolderTree.py:217
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:166
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:137
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:231
-#: ../controls/VariablePanel.py:402 ../controls/VariablePanel.py:784
-#: ../Beremiz.py:1203 ../IDEFrame.py:1003 ../IDEFrame.py:1613
-#: ../IDEFrame.py:1654 ../IDEFrame.py:1659 ../IDEFrame.py:1673
-#: ../IDEFrame.py:1678 ../Beremiz_service.py:211
+#: ../controls/VariablePanel.py:402 ../controls/VariablePanel.py:759
+#: ../IDEFrame.py:1007 ../IDEFrame.py:1617 ../IDEFrame.py:1658
+#: ../IDEFrame.py:1663 ../IDEFrame.py:1677 ../IDEFrame.py:1682
+#: ../Beremiz_service.py:213
 msgid "Error"
 msgstr "Napaka"
 
-#: ../ProjectController.py:748
+#: ../ProjectController.py:789
 msgid ""
 "Error : At least one configuration and one resource must be declared in PLC "
 "!\n"
 msgstr ""
+"Napaka: V krmilniku mora biti definirana vsaj ena Konfiguracija in Vir!\n"
 
-#: ../ProjectController.py:740
+#: ../ProjectController.py:781
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
-msgstr ""
+msgstr "Napaka: Prevajalnik IEC v C programsko kodo je vrnil napako %d\n"
 
-#: ../ProjectController.py:671
+#: ../ProjectController.py:712
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
 "%s\n"
 msgstr ""
+"Napaka v ST/IL/SFC ustvarjalniku programske kode :\n"
+"%s\n"
 
 #: ../ConfigTreeNode.py:216
 #, python-format
 msgid "Error while saving \"%s\"\n"
-msgstr ""
+msgstr "Napaka pri shranjevanju \"%s\"\n"
 
-#: ../canfestival/canfestival.py:168
+#: ../canfestival/canfestival.py:170
 msgid "Error: Export slave failed\n"
-msgstr ""
+msgstr "Napaka: Izvoz podrejene naprave ni uspešen\n"
 
-#: ../canfestival/canfestival.py:369
+#: ../canfestival/canfestival.py:371
 msgid "Error: No Master generated\n"
-msgstr ""
+msgstr "Napaka: Ni bil ustvarjena nadrejena naprava\n"
 
-#: ../canfestival/canfestival.py:364
+#: ../canfestival/canfestival.py:366
 msgid "Error: No PLC built\n"
-msgstr ""
+msgstr "Napaka: Program za krmilnik ni bil generiran\n"
 
-#: ../ProjectController.py:1687
+#: ../ProjectController.py:1728
 #, python-format
 msgid "Exception while connecting %s!\n"
-msgstr ""
+msgstr "Izjemna napaka pri povezovanju na %s!\n"
 
-#: ../dialogs/FBDBlockDialog.py:117
+#: ../dialogs/FBDBlockDialog.py:120
 msgid "Execution Control:"
-msgstr ""
+msgstr "Nadzor izvajanja:"
 
-#: ../dialogs/FBDVariableDialog.py:79 ../dialogs/FBDBlockDialog.py:105
+#: ../dialogs/FBDVariableDialog.py:80 ../dialogs/FBDBlockDialog.py:108
 msgid "Execution Order:"
-msgstr ""
+msgstr "Vrstni red izvajanja:"
 
 #: ../features.py:35
 msgid "Experimental web based HMI"
-msgstr ""
+msgstr "Preizkusni spletni HMI"
 
 #: ../plcopen/iec_std.csv:38
 msgid "Exponent"
-msgstr ""
+msgstr "Eksponent"
 
 #: ../plcopen/iec_std.csv:26
 msgid "Exponentiation"
-msgstr ""
+msgstr "Potenciranje"
 
-#: ../canfestival/canfestival.py:174
+#: ../canfestival/canfestival.py:176
 msgid "Export CanOpen slave to EDS file"
-msgstr ""
+msgstr "Izvoz CanOpen podrejene naprave v EDS datoteko"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:243
 msgid "Export graph values to clipboard"
-msgstr ""
+msgstr "Izvozi vrednosti grafa v Odlagališče"
 
-#: ../canfestival/canfestival.py:173
+#: ../canfestival/canfestival.py:175
 msgid "Export slave"
-msgstr ""
+msgstr "Izvozi podrejeno napravo"
 
-#: ../dialogs/FBDVariableDialog.py:89
+#: ../dialogs/FBDVariableDialog.py:90
 msgid "Expression:"
-msgstr ""
+msgstr "Logičen izraz:"
 
 #: ../controls/VariablePanel.py:72
 msgid "External"
-msgstr ""
+msgstr "Zunanji"
 
-#: ../ProjectController.py:761
+#: ../ProjectController.py:802
 msgid "Extracting Located Variables...\n"
-msgstr ""
+msgstr "Povzemam locirane spremenjljivke...\n"
 
-#: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36 ../controls/ProjectPropertiesPanel.py:143
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "FBD"
-msgstr ""
+msgstr "FBD"
 
-#: ../ProjectController.py:1750
+#: ../ProjectController.py:1791
 msgid "Failed : Must build before transfer.\n"
-msgstr ""
+msgstr "Nauspešno: Potrebno zfraditi programsko kodo pred prenosom.\n"
 
-#: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:462
+#: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:521
 msgid "Falling Edge"
-msgstr ""
+msgstr "Negativna fronta"
 
-#: ../ProjectController.py:1029
+#: ../ProjectController.py:1070
 msgid "Fatal : cannot get builder.\n"
-msgstr ""
+msgstr "Usodna napaka: ne morem najti programa za izgradnjo.\n"
 
-#: ../Beremiz.py:118
+#: ../Beremiz.py:156
 #, python-format
 msgid "Fetching %s"
-msgstr ""
+msgstr "Prejemam %s"
 
-#: ../dialogs/DurationEditorDialog.py:160
+#: ../dialogs/DurationEditorDialog.py:164
 #, python-format
 msgid "Field %s hasn't a valid value!"
-msgstr ""
+msgstr "Polje %s nima veljavne vrednosti!"
 
-#: ../dialogs/DurationEditorDialog.py:162
+#: ../dialogs/DurationEditorDialog.py:166
 #, python-format
 msgid "Fields %s haven't a valid value!"
-msgstr ""
+msgstr "Polja %s nimajo veljavne vrednosti!"
 
 #: ../controls/FolderTree.py:216
 #, python-format
 msgid "File '%s' already exists!"
-msgstr ""
+msgstr "Datoteka '%s' že obstaja!"
 
-#: ../dialogs/SearchInProjectDialog.py:100 ../dialogs/FindInPouDialog.py:36
-#: ../dialogs/FindInPouDialog.py:106 ../IDEFrame.py:375
+#: ../dialogs/SearchInProjectDialog.py:98 ../dialogs/FindInPouDialog.py:37
+#: ../dialogs/FindInPouDialog.py:104 ../IDEFrame.py:375
 msgid "Find"
 msgstr "Išči"
 
@@ -1677,95 +1714,95 @@ msgstr "Išči prejšnjega"
 msgid "Find position"
 msgstr "Išči pozicijo"
 
-#: ../dialogs/FindInPouDialog.py:57
+#: ../dialogs/FindInPouDialog.py:55
 msgid "Find:"
 msgstr "Išči:"
 
 #: ../connectors/PYRO/__init__.py:163
 msgid "Force runtime reload\n"
-msgstr ""
+msgstr "Ponovno naloži izvajanje kode\n"
 
-#: ../editors/Viewer.py:1564
+#: ../editors/Viewer.py:1600
 msgid "Force value"
-msgstr ""
+msgstr "Vsili vrednost"
 
 #: ../dialogs/ForceVariableDialog.py:162
 msgid "Forcing Variable Value"
-msgstr ""
+msgstr "Vsili vrednost spremenljivke"
 
-#: ../dialogs/SFCTransitionDialog.py:179 ../dialogs/PouTransitionDialog.py:102
-#: ../dialogs/ProjectDialog.py:70 ../dialogs/PouActionDialog.py:94
-#: ../dialogs/PouDialog.py:116
+#: ../dialogs/SFCTransitionDialog.py:182 ../dialogs/PouTransitionDialog.py:97
+#: ../dialogs/ProjectDialog.py:73 ../dialogs/PouActionDialog.py:95
+#: ../dialogs/PouDialog.py:117
 #, python-format
 msgid "Form isn't complete. %s must be filled!"
-msgstr ""
+msgstr "Obrazec ni dokončan! . %s mora biti vpisano!"
 
-#: ../dialogs/SFCStepDialog.py:144 ../dialogs/FBDBlockDialog.py:232
-#: ../dialogs/ConnectionDialog.py:160
+#: ../dialogs/SFCStepDialog.py:147 ../dialogs/FBDBlockDialog.py:236
+#: ../dialogs/ConnectionDialog.py:163
 msgid "Form isn't complete. Name must be filled!"
-msgstr ""
+msgstr "Obrazec ni dokončan! Ime mora biti vpisano!"
 
-#: ../dialogs/FBDBlockDialog.py:228
+#: ../dialogs/FBDBlockDialog.py:232
 msgid "Form isn't complete. Valid block type must be selected!"
-msgstr ""
+msgstr "Obrazec ni dokončan! Izbran mora biti veljaven Tip bloka!"
 
-#: ../dialogs/FindInPouDialog.py:74
+#: ../dialogs/FindInPouDialog.py:72
 msgid "Forward"
 msgstr "Naprej"
 
-#: ../dialogs/SearchInProjectDialog.py:36 ../IDEFrame.py:1745
+#: ../dialogs/SearchInProjectDialog.py:37 ../IDEFrame.py:1749
 msgid "Function"
 msgstr "Funkcija"
 
 #: ../IDEFrame.py:349
 msgid "Function &Block"
-msgstr ""
+msgstr "Funkcijski &Blok"
 
-#: ../dialogs/SearchInProjectDialog.py:37 ../IDEFrame.py:1744
-#: ../IDEFrame.py:1937
+#: ../dialogs/SearchInProjectDialog.py:38 ../IDEFrame.py:1748
+#: ../IDEFrame.py:1941
 msgid "Function Block"
-msgstr ""
+msgstr "Funkcijski blok"
 
-#: ../controls/VariablePanel.py:837
+#: ../controls/VariablePanel.py:854
 msgid "Function Block Types"
-msgstr ""
+msgstr "Tipi funkcijskih blokov"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:97
 msgid "Function Blocks"
-msgstr ""
+msgstr "Funkcijski bloki"
 
-#: ../editors/Viewer.py:248
+#: ../editors/Viewer.py:249
 msgid "Function Blocks can't be used in Functions!"
-msgstr ""
+msgstr "Funkcijski blok ne more biti uporabljen v funkcijah"
 
-#: ../PLCControler.py:2337
+#: ../PLCControler.py:2343
 #, python-format
 msgid "FunctionBlock \"%s\" can't be pasted in a Function!!!"
-msgstr ""
+msgstr "Funkcijski blok \"%s\" ne more biti prilepljen v Funkcijo!!!"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:97
 msgid "Functions"
 msgstr "Funkcije"
 
-#: ../PLCOpenEditor.py:115
+#: ../PLCOpenEditor.py:117
 msgid "Generate Program"
-msgstr ""
+msgstr "Ustvari Program"
 
-#: ../ProjectController.py:662
+#: ../ProjectController.py:703
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
-msgstr ""
+msgstr "Generiram SoftPLC IEC-61131 ST/IL/SFC programsko kodo...\n"
 
 #: ../controls/VariablePanel.py:73
 msgid "Global"
-msgstr ""
+msgstr "Globalen"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:242
 msgid "Go to current value"
-msgstr ""
+msgstr "Pojdi na trenutno vrednost"
 
-#: ../controls/ProjectPropertiesPanel.py:173
+#: ../controls/ProjectPropertiesPanel.py:174
 msgid "Graphics"
-msgstr ""
+msgstr "Grafika"
 
 #: ../plcopen/iec_std.csv:75
 msgid "Greater than"
@@ -1775,75 +1812,80 @@ msgstr "Večji kot"
 msgid "Greater than or equal to"
 msgstr "Večji kot ali enak"
 
-#: ../controls/ProjectPropertiesPanel.py:134
+#: ../controls/ProjectPropertiesPanel.py:135
 msgid "Grid Resolution:"
-msgstr ""
+msgstr "Resolucija mreže:"
 
-#: ../runtime/NevowServer.py:181
+#: ../runtime/NevowServer.py:182
 msgid "HTTP interface port :"
-msgstr ""
+msgstr "HTTP  vmesnik - številka vrat :"
 
-#: ../controls/ProjectPropertiesPanel.py:120
+#: ../controls/ProjectPropertiesPanel.py:121
 msgid "Height:"
 msgstr "Višina:"
 
 #: ../editors/FileManagementPanel.py:85
 msgid "Home Directory:"
-msgstr ""
+msgstr "Domači direktorij:"
 
-#: ../controls/ProjectPropertiesPanel.py:150
+#: ../controls/ProjectPropertiesPanel.py:151
 msgid "Horizontal:"
 msgstr "Horizontalno:"
 
-#: ../dialogs/DurationEditorDialog.py:44
+#: ../dialogs/DurationEditorDialog.py:45
 msgid "Hours:"
 msgstr "Ure:"
 
-#: ../dialogs/PouActionDialog.py:31 ../dialogs/PouDialog.py:36
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37
 msgid "IL"
-msgstr ""
+msgstr "IL"
 
 #: ../dialogs/DiscoveryDialog.py:94
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
-#: ../Beremiz_service.py:308 ../Beremiz_service.py:309
+#: ../Beremiz_service.py:310 ../Beremiz_service.py:311
 msgid "IP is not valid!"
-msgstr ""
+msgstr "IP naslov ni veljaven!"
 
-#: ../svgui/svgui.py:42 ../svgui/svgui.py:43
+#: ../svgui/svgui.py:44 ../svgui/svgui.py:45
 msgid "Import SVG"
-msgstr ""
+msgstr "Uvoz SVG"
 
-#: ../dialogs/FBDVariableDialog.py:38 ../editors/Viewer.py:1591
+#: ../dialogs/FBDVariableDialog.py:39 ../editors/Viewer.py:1629
 #: ../controls/VariablePanel.py:71
 msgid "InOut"
-msgstr ""
+msgstr "Vhod-Izhod"
 
-#: ../editors/Viewer.py:1110
+#: ../editors/Viewer.py:431
 msgid "Inactive"
-msgstr ""
+msgstr "Neaktiven"
 
 #: ../controls/VariablePanel.py:276
 #, python-brace-format
 msgid "Incompatible data types between \"{a1}\" and \"{a2}\""
-msgstr ""
+msgstr "Podatkovna tipa \"{a1}\" in \"{a2}\" sta med seboj nezdružljiva"
 
 #: ../controls/VariablePanel.py:282
 #, python-format
 msgid "Incompatible size of data between \"%s\" and \"BOOL\""
-msgstr ""
+msgstr "Neprimerljiva velikost podatkov med  \"%s\" and \"BOOL\""
 
 #: ../controls/VariablePanel.py:286
 #, python-brace-format
 msgid "Incompatible size of data between \"{a1}\" and \"{a2}\""
-msgstr ""
+msgstr "Neprimerljiva velikost podatkov med \"{a1}\" in \"{a2}\""
 
-#: ../dialogs/ActionBlockDialog.py:38
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Indicator"
-msgstr ""
+msgstr "Indikator"
 
-#: ../editors/Viewer.py:552
+#: ../editors/CodeFileEditor.py:739
+msgid "Initial"
+msgstr "Začetni"
+
+#: ../editors/Viewer.py:611
 msgid "Initial Step"
 msgstr "Začetni korak"
 
@@ -1857,140 +1899,144 @@ msgstr "Začetna vrednost"
 msgid "Initial Value:"
 msgstr "Začetna vrednost:"
 
-#: ../svgui/svgui.py:46
+#: ../svgui/svgui.py:48
 msgid "Inkscape"
-msgstr ""
+msgstr "Inkscape"
 
-#: ../dialogs/SFCTransitionDialog.py:75 ../dialogs/ActionBlockDialog.py:42
+#: ../dialogs/SFCTransitionDialog.py:76 ../dialogs/ActionBlockDialog.py:43
 msgid "Inline"
-msgstr ""
+msgstr "Vstavljen"
 
-#: ../dialogs/SFCStepDialog.py:70 ../dialogs/FBDVariableDialog.py:37
-#: ../dialogs/BrowseLocationsDialog.py:40 ../editors/Viewer.py:289
-#: ../editors/Viewer.py:1589 ../editors/TextViewer.py:307
+#: ../dialogs/SFCStepDialog.py:71 ../dialogs/FBDVariableDialog.py:38
+#: ../dialogs/BrowseLocationsDialog.py:41 ../editors/Viewer.py:290
+#: ../editors/Viewer.py:1627 ../editors/TextViewer.py:307
 #: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Input"
-msgstr ""
+msgstr "Vhod"
 
-#: ../dialogs/FBDBlockDialog.py:93
+#: ../dialogs/FBDBlockDialog.py:96
 msgid "Inputs:"
-msgstr ""
+msgstr "Vhodi:"
 
 #: ../plcopen/iec_std.csv:87
 msgid "Insertion (into)"
-msgstr ""
+msgstr "Vstavljanje ( v ) "
 
-#: ../plcopen/plcopen.py:1691
+#: ../plcopen/plcopen.py:1696
 #, python-format
 msgid "Instance with id %d doesn't exist!"
-msgstr ""
+msgstr "Primerek z oznako %d ne obstaja!"
 
 #: ../editors/ResourceEditor.py:264
 msgid "Instances:"
-msgstr ""
+msgstr "Primerki:"
 
 #: ../controls/VariablePanel.py:70
 msgid "Interface"
-msgstr ""
+msgstr "Vmesnik"
 
 #: ../editors/ResourceEditor.py:72
 msgid "Interrupt"
-msgstr ""
+msgstr "Prekinitev"
 
 #: ../editors/ResourceEditor.py:68
 msgid "Interval"
-msgstr ""
+msgstr "Interval"
 
-#: ../PLCControler.py:2325
+#: ../PLCControler.py:2331
 msgid "Invalid plcopen element(s)!!!"
-msgstr ""
+msgstr "Neveljavni plcopen element(-i)!!!"
 
 #: ../canfestival/config_utils.py:381
 #, python-brace-format
 msgid "Invalid type \"{a1}\"-> {a2} != {a3}  for location\"{a4}\""
-msgstr ""
+msgstr "Neveljavni Tip \"{a1}\"-> {a2} != {a3}  za lokacijo \"{a4}\""
 
 #: ../canfestival/config_utils.py:645
 #, python-brace-format
 msgid "Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\""
-msgstr ""
+msgstr "Neveljavni Tip \"{a1}\"-> {a2} != {a3} za lokacijo \"{a4}\""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:132
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:92
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:166
 #, python-format
 msgid "Invalid value \"%s\" for debug variable"
-msgstr ""
+msgstr "Neveljavna vrednost \"%s\" za razhroščevalno spremenljivko"
 
 #: ../controls/VariablePanel.py:255 ../controls/VariablePanel.py:258
 #, python-format
 msgid "Invalid value \"%s\" for variable grid element"
-msgstr ""
+msgstr "Neveljavna vrednost \"%s\" za element liste spremenljivk"
 
-#: ../editors/Viewer.py:233 ../editors/Viewer.py:236
+#: ../editors/Viewer.py:234 ../editors/Viewer.py:237
 #, python-format
 msgid "Invalid value \"%s\" for viewer block"
-msgstr ""
+msgstr "Neveljavna vrednost \"%s\" za pogled bloka"
 
-#: ../dialogs/ForceVariableDialog.py:177
+#: ../dialogs/ForceVariableDialog.py:195
 #, python-brace-format
 msgid "Invalid value \"{a1}\" for \"{a2}\" variable!"
-msgstr ""
+msgstr "Neveljavna vrednost \"{a1}\" za spremenljivko \"{a2}\" !"
 
 #: ../dialogs/DurationEditorDialog.py:121
 msgid ""
 "Invalid value!\n"
 "You must fill a numeric value."
 msgstr ""
+"Neveljavna vrednost!\n"
+"Vnesti moraš numerično vrednost."
 
-#: ../editors/Viewer.py:557 ../editors/Viewer.py:2354
+#: ../editors/Viewer.py:616 ../editors/Viewer.py:2392
 msgid "Jump"
-msgstr ""
+msgstr "Skok"
 
-#: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36 ../controls/ProjectPropertiesPanel.py:143
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "LD"
-msgstr ""
+msgstr "LD"
 
 #: ../editors/LDViewer.py:215 ../editors/LDViewer.py:231
 #, python-format
 msgid "Ladder element with id %d is on more than one rung."
-msgstr ""
+msgstr "Lestvični element z oznako %d je uporabljen več kot v eni prečki."
 
-#: ../dialogs/PouTransitionDialog.py:91 ../dialogs/PouActionDialog.py:83
-#: ../dialogs/PouDialog.py:104
+#: ../dialogs/PouTransitionDialog.py:86 ../dialogs/PouActionDialog.py:84
+#: ../dialogs/PouDialog.py:105
 msgid "Language"
 msgstr "Jezik"
 
-#: ../controls/ProjectPropertiesPanel.py:186
+#: ../controls/ProjectPropertiesPanel.py:187
 msgid "Language (optional):"
 msgstr "Jezik (ni obvezno):"
 
-#: ../dialogs/PouTransitionDialog.py:65 ../dialogs/PouActionDialog.py:56
+#: ../dialogs/PouTransitionDialog.py:60 ../dialogs/PouActionDialog.py:56
 #: ../dialogs/PouDialog.py:73
 msgid "Language:"
 msgstr "Jezik:"
 
-#: ../ProjectController.py:1756
+#: ../ProjectController.py:1797
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr ""
+"Zadnji gradnja projekta že ustreza izbranemu krmilniku. Izvajam ponovno "
+"prenašanje...\n"
 
-#: ../Beremiz_service.py:271
+#: ../Beremiz_service.py:273
 msgid "Launch WX GUI inspector"
-msgstr ""
+msgstr "Odpri WX GUI nadzor izvajanja"
 
-#: ../Beremiz_service.py:270
+#: ../Beremiz_service.py:272
 msgid "Launch a live Python shell"
-msgstr ""
+msgstr "Odpri Python lupino"
 
-#: ../editors/Viewer.py:485
+#: ../editors/Viewer.py:544
 msgid "Left"
 msgstr "Levo"
 
-#: ../dialogs/LDPowerRailDialog.py:62
+#: ../dialogs/LDPowerRailDialog.py:63
 msgid "Left PowerRail"
-msgstr ""
+msgstr "Levi napajalni vodnik"
 
 #: ../plcopen/iec_std.csv:81
 msgid "Length of string"
@@ -2016,21 +2062,21 @@ msgstr "Licenca"
 msgid "Limitation"
 msgstr "Omejitve"
 
-#: ../targets/toolchain_gcc.py:166
+#: ../targets/toolchain_gcc.py:202
 msgid "Linking :\n"
-msgstr ""
+msgstr "Povezovanje :\n"
 
-#: ../dialogs/DiscoveryDialog.py:111 ../controls/VariablePanel.py:72
+#: ../dialogs/DiscoveryDialog.py:112 ../controls/VariablePanel.py:72
 msgid "Local"
 msgstr "Lokalni"
 
-#: ../canfestival/canfestival.py:346
+#: ../canfestival/canfestival.py:348
 msgid "Local entries"
-msgstr ""
+msgstr "Lokalni vpisi"
 
-#: ../ProjectController.py:1662
+#: ../ProjectController.py:1703
 msgid "Local service discovery failed!\n"
-msgstr ""
+msgstr "Pregled lokalnih storitev ni uspelo!\n"
 
 #: ../controls/VariablePanel.py:53
 msgid "Location"
@@ -2038,43 +2084,43 @@ msgstr "Lokacija"
 
 #: ../dialogs/BrowseLocationsDialog.py:72
 msgid "Locations available:"
-msgstr ""
+msgstr "Razpoložljive lokacije:"
 
 #: ../plcopen/iec_std.csv:25
 msgid "Logarithm to base 10"
-msgstr ""
+msgstr "Logaritem osnova 10"
 
 #: ../connectors/PYRO/__init__.py:94
 #, python-format
 msgid "MDNS resolution failure for '%s'\n"
-msgstr ""
+msgstr "Napaka MDNS razpoznave za '%s'\n"
 
 #: ../canfestival/SlaveEditor.py:64 ../canfestival/NetworkEditor.py:85
 msgid "Map Variable"
-msgstr ""
+msgstr "Preslikava spremenljivke"
 
 #: ../features.py:31
 msgid "Map located variables over CANopen"
-msgstr ""
+msgstr "Preslikaj najdeno spremenljivko na CANopen"
 
 #: ../canfestival/NetworkEditor.py:106
 msgid "Master"
-msgstr ""
+msgstr "Nadrejena naprava"
 
 #: ../ConfigTreeNode.py:539
 #, python-brace-format
 msgid "Max count ({a1}) reached for this confnode of type {a2} "
-msgstr ""
+msgstr "Maksimalno število ({a1}) doseženo za confnode tipa {a2} "
 
 #: ../plcopen/iec_std.csv:71
 msgid "Maximum"
-msgstr ""
+msgstr "Maksimum"
 
 #: ../editors/DataTypeEditor.py:239
 msgid "Maximum:"
-msgstr ""
+msgstr "Maksimum"
 
-#: ../dialogs/BrowseLocationsDialog.py:42 ../editors/Viewer.py:289
+#: ../dialogs/BrowseLocationsDialog.py:43 ../editors/Viewer.py:290
 #: ../editors/TextViewer.py:307 ../controls/LocationCellEditor.py:98
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Memory"
@@ -2082,39 +2128,39 @@ msgstr "Spomin"
 
 #: ../IDEFrame.py:599
 msgid "Menu ToolBar"
-msgstr ""
+msgstr "Meni orodna vrstica"
 
-#: ../dialogs/DurationEditorDialog.py:48
+#: ../dialogs/DurationEditorDialog.py:49
 msgid "Microseconds:"
 msgstr "Mikrosekunde:"
 
-#: ../editors/Viewer.py:490
+#: ../editors/Viewer.py:549
 msgid "Middle"
 msgstr "Sredina"
 
-#: ../dialogs/DurationEditorDialog.py:47
+#: ../dialogs/DurationEditorDialog.py:48
 msgid "Milliseconds:"
 msgstr "Milisekunde:"
 
 #: ../plcopen/iec_std.csv:72
 msgid "Minimum"
-msgstr ""
+msgstr "Minimum"
 
 #: ../editors/DataTypeEditor.py:226
 msgid "Minimum:"
-msgstr ""
+msgstr "Minimum:"
 
-#: ../dialogs/DurationEditorDialog.py:45
+#: ../dialogs/DurationEditorDialog.py:46
 msgid "Minutes:"
 msgstr "Minute:"
 
-#: ../controls/ProjectPropertiesPanel.py:210
+#: ../controls/ProjectPropertiesPanel.py:211
 msgid "Miscellaneous"
-msgstr ""
+msgstr "Razno"
 
 #: ../dialogs/LDElementDialog.py:63
 msgid "Modifier:"
-msgstr ""
+msgstr "Modifikator:"
 
 #: ../PLCGenerator.py:786 ../PLCGenerator.py:1230
 #, python-brace-format
@@ -2122,14 +2168,16 @@ msgid ""
 "More than one connector found corresponding to \"{a1}\" continuation in "
 "\"{a2}\" POU"
 msgstr ""
+"Najden več kot en Konektor-vhod, ki ustreza \"{a1}\"  Konektor-izhodu v "
+"\"{a2}\" POU"
 
 #: ../dialogs/ActionBlockDialog.py:140
 msgid "Move action down"
-msgstr ""
+msgstr "Premakni Akcijo navzdol"
 
 #: ../dialogs/ActionBlockDialog.py:139
 msgid "Move action up"
-msgstr ""
+msgstr "Premakni Akcijo navzgor"
 
 #: ../controls/CustomEditableListBox.py:43
 msgid "Move down"
@@ -2145,23 +2193,23 @@ msgstr "Premakni element navzgor"
 
 #: ../editors/ResourceEditor.py:271
 msgid "Move instance down"
-msgstr ""
+msgstr "Premakni Primerek navzdol"
 
 #: ../editors/ResourceEditor.py:270
 msgid "Move instance up"
-msgstr ""
+msgstr "Premakni Primerek navzgor"
 
 #: ../editors/ResourceEditor.py:242
 msgid "Move task down"
-msgstr ""
+msgstr "Premakni Opravilo navzdol"
 
 #: ../editors/ResourceEditor.py:241
 msgid "Move task up"
-msgstr ""
+msgstr "Premakni Opravilo navzgor"
 
 #: ../IDEFrame.py:99 ../IDEFrame.py:114 ../IDEFrame.py:144 ../IDEFrame.py:185
 msgid "Move the view"
-msgstr ""
+msgstr "Premakni pogled"
 
 #: ../controls/CustomEditableListBox.py:42
 msgid "Move up"
@@ -2177,11 +2225,11 @@ msgstr "Premakni spremenljivko navzgor"
 
 #: ../plcopen/iec_std.csv:74
 msgid "Multiplexer (select 1 of N)"
-msgstr ""
+msgstr "Multiplekser (izbira 1 od N)"
 
 #: ../plcopen/iec_std.csv:34
 msgid "Multiplication"
-msgstr ""
+msgstr "Množenje"
 
 #: ../editors/FileManagementPanel.py:83
 msgid "My Computer:"
@@ -2189,76 +2237,80 @@ msgstr "Moj računalnik:"
 
 #: ../dialogs/DiscoveryDialog.py:92
 msgid "NAME"
-msgstr ""
+msgstr "NAME"
 
 #: ../editors/ResourceEditor.py:68 ../editors/ResourceEditor.py:83
-#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
-#: ../controls/VariablePanel.py:54
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:739
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Name"
 msgstr "Ime"
 
-#: ../Beremiz_service.py:332
+#: ../Beremiz_service.py:334
 msgid "Name must not be null!"
 msgstr "Ime ne sme biti prazno!"
 
-#: ../dialogs/SFCStepDialog.py:56 ../dialogs/FBDBlockDialog.py:83
-#: ../dialogs/ConnectionDialog.py:75
+#: ../dialogs/SFCStepDialog.py:57 ../dialogs/FBDBlockDialog.py:86
+#: ../dialogs/ConnectionDialog.py:76
 msgid "Name:"
 msgstr "Ime:"
 
 #: ../plcopen/iec_std.csv:24
 msgid "Natural logarithm"
-msgstr ""
+msgstr "Naravni logaritem"
 
-#: ../dialogs/LDElementDialog.py:75 ../editors/Viewer.py:460
+#: ../dialogs/LDElementDialog.py:75 ../editors/Viewer.py:519
 msgid "Negated"
-msgstr ""
+msgstr "Negiran"
 
-#: ../Beremiz_service.py:578
+#: ../Beremiz_service.py:580
 msgid "Nevow Web service failed. "
-msgstr ""
+msgstr "Storitev Nevow Web ni uspešna. "
 
-#: ../Beremiz_service.py:554
+#: ../Beremiz_service.py:556
 msgid "Nevow/Athena import failed :"
-msgstr ""
+msgstr "Uvoz Nevow/Athena ni uspešen :"
 
-#: ../PLCOpenEditor.py:102 ../PLCOpenEditor.py:144 ../Beremiz.py:321
-#: ../Beremiz.py:356
+#: ../BeremizIDE.py:216 ../BeremizIDE.py:251 ../PLCOpenEditor.py:104
+#: ../PLCOpenEditor.py:146
 msgid "New"
 msgstr "Nov"
 
 #: ../controls/CustomEditableListBox.py:40
 msgid "New item"
-msgstr ""
+msgstr "Nov element"
 
-#: ../editors/Viewer.py:459
+#: ../editors/Viewer.py:518
 msgid "No Modifier"
-msgstr ""
+msgstr "Ni modifikator"
 
-#: ../ProjectController.py:1784
+#: ../ProjectController.py:1826
 msgid "No PLC to transfer (did build succeed ?)\n"
-msgstr ""
+msgstr "Ni programa za prenos na krmilnik (je bila gradnja projekta uspešna?)\n"
 
 #: ../PLCGenerator.py:1631
 #, python-format
 msgid "No body defined in \"%s\" POU"
-msgstr ""
+msgstr "Ni definirana vsebina POU \"%s\""
 
 #: ../PLCGenerator.py:806 ../PLCGenerator.py:1241
 #, python-brace-format
 msgid "No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU"
 msgstr ""
+"Ni bil najden Konektor-vhod, ki ustreza  \"{a1}\" Konektor-izhodu \"{a2}\" "
+"POU"
 
-#: ../PLCOpenEditor.py:347
+#: ../PLCOpenEditor.py:357
 msgid ""
 "No documentation available.\n"
 "Coming soon."
 msgstr ""
+"Dokumentacija ni na voljo.\n"
+"Pride kmalu."
 
 #: ../PLCGenerator.py:829
 #, python-format
 msgid "No informations found for \"%s\" block"
-msgstr ""
+msgstr "Ni informacij za \"%s\" blok"
 
 #: ../PLCGenerator.py:1194
 #, python-brace-format
@@ -2266,25 +2318,29 @@ msgid ""
 "No output {a1} variable found in block {a2} in POU {a3}. Connection must be "
 "broken"
 msgstr ""
+"Nisem našel izhodne  spremenljivke {a1} v bloku {a2} znotraj POU {a3}. "
+"Povezava mora biti prekinjena"
 
 #: ../controls/SearchResultPanel.py:169
 msgid "No search results available."
 msgstr "Ni rezultata iskanja."
 
-#: ../svgui/svgui.py:131
+#: ../svgui/svgui.py:134
 #, python-format
 msgid "No such SVG file: %s\n"
-msgstr ""
+msgstr "Ni take SVG datoteke: %s\n"
 
 #: ../canfestival/config_utils.py:639
 #, python-brace-format
 msgid "No such index/subindex ({a1},{a2}) (variable {a3})"
-msgstr ""
+msgstr "Ni take kombinacije index/subindex ({a1},{a2}) (spremenljivka {a3})"
 
 #: ../canfestival/config_utils.py:362
 #, python-brace-format
 msgid "No such index/subindex ({a1},{a2}) in ID : {a3} (variable {a4})"
 msgstr ""
+"Ni takege kombinacije index/subindex ({a1},{a2}) in ID : {a3} (spremenljivka"
+" {a4})"
 
 #: ../dialogs/BrowseValuesLibraryDialog.py:83
 msgid "No valid value selected!"
@@ -2293,62 +2349,69 @@ msgstr "Izbrana napačna vrednost!"
 #: ../PLCGenerator.py:1629
 #, python-format
 msgid "No variable defined in \"%s\" POU"
-msgstr ""
+msgstr "Ni definiranih spremenljivk v POU \"%s\""
 
 #: ../canfestival/config_utils.py:355
 #, python-brace-format
 msgid "Non existing node ID : {a1} (variable {a2})"
-msgstr ""
+msgstr "Ne obstaja element z oznako : {a1} (spremenljivka {a2})"
 
 #: ../controls/VariablePanel.py:64
 msgid "Non-Retain"
-msgstr ""
+msgstr "Ne-obdrži v spominu"
 
 #: ../dialogs/LDElementDialog.py:75
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: ../canfestival/config_utils.py:389
 #, python-brace-format
 msgid "Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
 msgstr ""
+"Ni PDO preslikana spremnenljivka : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
 
 #: ../plcopen/iec_std.csv:80
 msgid "Not equal to"
-msgstr ""
+msgstr "Ni enako "
 
 #: ../dialogs/SFCDivergenceDialog.py:89
 msgid "Number of sequences:"
-msgstr ""
+msgstr "Število sekvenc:"
 
 #: ../plcopen/iec_std.csv:22
 msgid "Numerical"
-msgstr ""
+msgstr "Numeričen"
 
-#: ../dialogs/SearchInProjectDialog.py:86
+#: ../editors/CodeFileEditor.py:739
+msgid "OnChange"
+msgstr "Na spremembo"
+
+#: ../dialogs/SearchInProjectDialog.py:84
 msgid "Only Elements"
-msgstr ""
+msgstr "Samo Elementi"
 
-#: ../PLCOpenEditor.py:104 ../PLCOpenEditor.py:145 ../Beremiz.py:323
-#: ../Beremiz.py:357
+#: ../BeremizIDE.py:218 ../BeremizIDE.py:252 ../PLCOpenEditor.py:106
+#: ../PLCOpenEditor.py:147
 msgid "Open"
 msgstr "Odpri"
 
-#: ../svgui/svgui.py:140
+#: ../svgui/svgui.py:143
 msgid "Open Inkscape"
 msgstr "Odpri Inkscape"
 
-#: ../version.py:66
+#: ../version.py:77
 msgid ""
 "Open Source framework for automation, implemented IEC 61131 IDE with "
 "constantly growing set of extensions and flexible PLC runtime."
 msgstr ""
+"Odprtokodno ogrodje za avtomatizacijo, povzeto po standardu  IEC 61131 z "
+"nepretrgano rastjo razširitev na prilagodljivo izvajalno kodo za krmilnike."
 
-#: ../ProjectController.py:1836
+#: ../ProjectController.py:1878
 msgid "Open a file explorer to manage project files"
-msgstr ""
+msgstr "Odpri Urejevalnik datotek za upravljanje z projektnimi datotekami"
 
-#: ../wxglade_hmi/wxglade_hmi.py:138
+#: ../wxglade_hmi/wxglade_hmi.py:155
 msgid "Open wxGlade"
 msgstr "Odpri wxGlade"
 
@@ -2356,21 +2419,21 @@ msgstr "Odpri wxGlade"
 msgid "Option"
 msgstr "Nastavitev"
 
-#: ../dialogs/FindInPouDialog.py:83
+#: ../dialogs/FindInPouDialog.py:81 ../editors/CodeFileEditor.py:739
 msgid "Options"
 msgstr "Nastavitve"
 
-#: ../controls/ProjectPropertiesPanel.py:97
+#: ../controls/ProjectPropertiesPanel.py:98
 msgid "Organization (optional):"
-msgstr ""
+msgstr "Organizacija (ni obvezno):"
 
 #: ../canfestival/SlaveEditor.py:74 ../canfestival/NetworkEditor.py:95
 msgid "Other Profile"
-msgstr ""
+msgstr "Drugi Profil"
 
-#: ../dialogs/SFCStepDialog.py:71 ../dialogs/FBDVariableDialog.py:39
-#: ../dialogs/BrowseLocationsDialog.py:41 ../editors/Viewer.py:289
-#: ../editors/Viewer.py:1590 ../editors/TextViewer.py:307
+#: ../dialogs/SFCStepDialog.py:72 ../dialogs/FBDVariableDialog.py:40
+#: ../dialogs/BrowseLocationsDialog.py:42 ../editors/Viewer.py:290
+#: ../editors/Viewer.py:1628 ../editors/TextViewer.py:307
 #: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Output"
@@ -2378,127 +2441,132 @@ msgstr "Izhod"
 
 #: ../canfestival/SlaveEditor.py:63 ../canfestival/NetworkEditor.py:84
 msgid "PDO Receive"
-msgstr ""
+msgstr "PDO Sprejem"
 
 #: ../canfestival/SlaveEditor.py:62 ../canfestival/NetworkEditor.py:83
 msgid "PDO Transmit"
-msgstr ""
+msgstr "PDO oddaja"
 
-#: ../targets/toolchain_gcc.py:131
+#: ../targets/toolchain_gcc.py:167
 msgid "PLC :\n"
-msgstr ""
+msgstr "Krmilnik :\n"
 
-#: ../Beremiz.py:453
+#: ../BeremizIDE.py:355
 msgid "PLC Log"
-msgstr ""
+msgstr "Dnevnik krmilnika"
 
-#: ../ProjectController.py:1013
+#: ../ProjectController.py:1054
 msgid "PLC code generation failed !\n"
-msgstr ""
+msgstr "Ustvarjanje kode krmilnika neuspešno !\n"
 
-#: ../Beremiz_service.py:295
+#: ../Beremiz_service.py:297
 msgid "PLC is empty or already started."
-msgstr ""
+msgstr "Krmilnik je prazen ali že deluje."
 
-#: ../Beremiz_service.py:302
+#: ../Beremiz_service.py:304
 msgid "PLC is not started."
-msgstr ""
+msgstr "Krmilnik ni zagnan."
 
-#: ../PLCOpenEditor.py:196 ../PLCOpenEditor.py:309
+#: ../PLCOpenEditor.py:206 ../PLCOpenEditor.py:319
 #, python-brace-format
 msgid ""
 "PLC syntax error at line {a1}:\n"
 "{a2}"
 msgstr ""
+"Krmilniška sintaktična napaka v vrstici {a1}:\n"
+"{a2}"
 
-#: ../PLCOpenEditor.py:292 ../PLCOpenEditor.py:373
+#: ../PLCOpenEditor.py:302 ../PLCOpenEditor.py:383
 msgid "PLCOpen files (*.xml)|*.xml|All files|*.*"
-msgstr ""
+msgstr "PLCOpen datoteke (*.xml)|*.xml|Vse datoteke|*.*"
 
-#: ../PLCOpenEditor.py:152 ../PLCOpenEditor.py:209
+#: ../PLCOpenEditor.py:154 ../PLCOpenEditor.py:219
 msgid "PLCOpenEditor"
-msgstr ""
+msgstr "PLCOpenEditor"
 
-#: ../PLCOpenEditor.py:355
+#: ../PLCOpenEditor.py:365
 msgid ""
 "PLCOpenEditor is part of Beremiz project.\n"
 "\n"
 "Beremiz is an "
 msgstr ""
+"PLCOpenEditor je del Beremiz projekta.\n"
+"\n"
+"Beremiz je "
 
 #: ../dialogs/DiscoveryDialog.py:95
 msgid "PORT"
-msgstr ""
+msgstr "VRATA"
 
-#: ../dialogs/PouDialog.py:100
+#: ../dialogs/PouDialog.py:101
 msgid "POU Name"
-msgstr ""
+msgstr "Ime POU"
 
 #: ../dialogs/PouDialog.py:58
 msgid "POU Name:"
-msgstr ""
+msgstr "Ime POU:"
 
-#: ../dialogs/PouDialog.py:102
+#: ../dialogs/PouDialog.py:103
 msgid "POU Type"
-msgstr ""
+msgstr "Tip POU"
 
 #: ../dialogs/PouDialog.py:65
 msgid "POU Type:"
-msgstr ""
+msgstr "Tip POU:"
 
 #: ../connectors/PYRO/__init__.py:45
 #, python-format
 msgid "PYRO connecting to URI : %s\n"
-msgstr ""
+msgstr "PYRO povezuje na URI : %s\n"
 
 #: ../connectors/PYRO/__init__.py:61
 #, python-format
 msgid "PYRO using certificates in '%s' \n"
-msgstr ""
+msgstr "PYRO uporablja certifikate v  '%s' \n"
 
-#: ../PLCOpenEditor.py:118 ../Beremiz.py:336
+#: ../BeremizIDE.py:231 ../PLCOpenEditor.py:120
 msgid "Page Setup"
 msgstr "Nastavitev strani"
 
-#: ../controls/ProjectPropertiesPanel.py:110
+#: ../controls/ProjectPropertiesPanel.py:111
 msgid "Page Size (optional):"
-msgstr "Velikost strani (neobvezno):"
+msgstr "Velikost strani (ni obvezno):"
 
-#: ../IDEFrame.py:2598
+#: ../IDEFrame.py:2613
 #, python-format
 msgid "Page: %d"
-msgstr ""
+msgstr "Stran: %d"
 
 #: ../controls/PouInstanceVariablesPanel.py:124
 msgid "Parent instance"
-msgstr ""
+msgstr "Starš Primerka"
 
-#: ../editors/Viewer.py:598 ../IDEFrame.py:372 ../IDEFrame.py:426
+#: ../editors/Viewer.py:657 ../IDEFrame.py:372 ../IDEFrame.py:426
 msgid "Paste"
-msgstr ""
+msgstr "Prilepi"
 
-#: ../IDEFrame.py:1864
+#: ../IDEFrame.py:1868
 msgid "Paste POU"
-msgstr ""
+msgstr "Prilepi POU"
 
 #: ../dialogs/SearchInProjectDialog.py:56
 msgid "Pattern to search:"
-msgstr ""
+msgstr "Vzorec za iskanje:"
 
-#: ../dialogs/LDPowerRailDialog.py:73
+#: ../dialogs/LDPowerRailDialog.py:74
 msgid "Pin number:"
-msgstr ""
+msgstr "Številka prečke:"
 
-#: ../editors/Viewer.py:2717 ../editors/Viewer.py:2974
+#: ../editors/Viewer.py:2757 ../editors/Viewer.py:3014
 #: ../editors/SFCViewer.py:770
 msgid "Please choose a target"
-msgstr ""
+msgstr "Prosim izberi ciljni krmilnik"
 
 #: ../editors/TextViewer.py:262
 msgid "Please enter a block name"
 msgstr "Prosim vnesi ime bloka"
 
-#: ../editors/Viewer.py:2587 ../editors/Viewer.py:3016
+#: ../editors/Viewer.py:2627 ../editors/Viewer.py:3056
 msgid "Please enter comment text"
 msgstr "Prosim vnesi komentar"
 
@@ -2507,32 +2575,32 @@ msgstr "Prosim vnesi komentar"
 msgid "Please enter step name"
 msgstr "Prosim vnesi ime koraka"
 
-#: ../Beremiz_service.py:194
+#: ../Beremiz_service.py:196
 msgid "Please enter text"
 msgstr "Prosim vnesi besedilo"
 
 #: ../dialogs/ForceVariableDialog.py:163
 #, python-format
 msgid "Please enter value for a \"%s\" variable:"
-msgstr ""
+msgstr "Prosim vnesi vrednost za spremenljivko \"%s\" :"
 
-#: ../Beremiz_service.py:317
+#: ../Beremiz_service.py:319
 msgid "Port number must be 0 <= port <= 65535!"
-msgstr ""
+msgstr "Številka vrat mora biti med 0 <= številka vrat <= 65535!"
 
-#: ../Beremiz_service.py:317
+#: ../Beremiz_service.py:319
 msgid "Port number must be an integer!"
-msgstr ""
+msgstr "Številka vrat mora biti celoštevilčna!"
 
-#: ../editors/Viewer.py:536 ../editors/Viewer.py:2378
+#: ../editors/Viewer.py:595 ../editors/Viewer.py:2416
 msgid "Power Rail"
-msgstr ""
+msgstr "Napajalni vodnik"
 
-#: ../dialogs/LDPowerRailDialog.py:50
+#: ../dialogs/LDPowerRailDialog.py:51
 msgid "Power Rail Properties"
-msgstr ""
+msgstr "Lastnosti napajalnega vodnika"
 
-#: ../PLCOpenEditor.py:120 ../Beremiz.py:338
+#: ../BeremizIDE.py:233 ../PLCOpenEditor.py:122
 msgid "Preview"
 msgstr "Predogled"
 
@@ -2540,12 +2608,12 @@ msgstr "Predogled"
 msgid "Preview:"
 msgstr "Predogled:"
 
-#: ../PLCOpenEditor.py:122 ../PLCOpenEditor.py:148 ../Beremiz.py:340
-#: ../Beremiz.py:360
+#: ../BeremizIDE.py:235 ../BeremizIDE.py:255 ../PLCOpenEditor.py:124
+#: ../PLCOpenEditor.py:150
 msgid "Print"
 msgstr "Natisni"
 
-#: ../IDEFrame.py:1075
+#: ../IDEFrame.py:1079
 msgid "Print preview"
 msgstr "Predogled tiskanja"
 
@@ -2553,190 +2621,192 @@ msgstr "Predogled tiskanja"
 msgid "Priority"
 msgstr "Prioriteta"
 
-#: ../dialogs/SFCTransitionDialog.py:89
+#: ../dialogs/SFCTransitionDialog.py:90
 msgid "Priority:"
 msgstr "Prioriteta:"
 
-#: ../runtime/PLCObject.py:370
+#: ../runtime/PLCObject.py:369
 #, python-format
 msgid "Problem starting PLC : error %d"
-msgstr ""
+msgstr "Napaka pri zagonu krmilnika: %d"
 
-#: ../dialogs/ProjectDialog.py:55
+#: ../dialogs/ProjectDialog.py:58
 msgid "Product Name"
-msgstr ""
-
-#: ../controls/ProjectPropertiesPanel.py:80
-msgid "Product Name (required):"
-msgstr ""
-
-#: ../controls/ProjectPropertiesPanel.py:82
-msgid "Product Release (optional):"
-msgstr ""
-
-#: ../dialogs/ProjectDialog.py:56
-msgid "Product Version"
-msgstr ""
+msgstr "Ime Produkta"
 
 #: ../controls/ProjectPropertiesPanel.py:81
+msgid "Product Name (required):"
+msgstr "Ime Produkta (obvezno)"
+
+#: ../controls/ProjectPropertiesPanel.py:83
+msgid "Product Release (optional):"
+msgstr "Izdaja Produkta (ni obvezno):"
+
+#: ../dialogs/ProjectDialog.py:59
+msgid "Product Version"
+msgstr "Verzija Produkta"
+
+#: ../controls/ProjectPropertiesPanel.py:82
 msgid "Product Version (required):"
-msgstr ""
+msgstr "Verzija produkta (obvezno)"
 
-#: ../dialogs/SearchInProjectDialog.py:38 ../IDEFrame.py:1743
-#: ../IDEFrame.py:1940
+#: ../dialogs/SearchInProjectDialog.py:39 ../IDEFrame.py:1747
+#: ../IDEFrame.py:1944
 msgid "Program"
-msgstr ""
+msgstr "Program"
 
-#: ../PLCOpenEditor.py:337
+#: ../PLCOpenEditor.py:347
 msgid "Program was successfully generated!"
-msgstr ""
+msgstr "Program je bil uspešno ustvarjen!"
 
-#: ../PLCControler.py:96
+#: ../PLCControler.py:98
 msgid "Programs"
-msgstr ""
+msgstr "Programi"
 
-#: ../editors/Viewer.py:242
+#: ../editors/Viewer.py:243
 msgid "Programs can't be used by other POUs!"
-msgstr ""
+msgstr "Programi ne morejo biti uporabljeni v drugih POU!"
 
-#: ../controls/ProjectPropertiesPanel.py:84 ../IDEFrame.py:584
+#: ../controls/ProjectPropertiesPanel.py:85 ../IDEFrame.py:584
 msgid "Project"
-msgstr ""
+msgstr "Projekt"
 
 #: ../controls/SearchResultPanel.py:173
 #, python-format
 msgid "Project '%s':"
-msgstr ""
+msgstr "Projekt '%s':"
 
-#: ../ProjectController.py:1835
+#: ../ProjectController.py:1877
 msgid "Project Files"
-msgstr ""
+msgstr "Projektne datoteke"
 
-#: ../dialogs/ProjectDialog.py:54
+#: ../dialogs/ProjectDialog.py:57
 msgid "Project Name"
-msgstr ""
+msgstr "Ime projekta"
 
-#: ../controls/ProjectPropertiesPanel.py:78
+#: ../controls/ProjectPropertiesPanel.py:79
 msgid "Project Name (required):"
 msgstr "Ime projekta (obvezno):"
 
-#: ../controls/ProjectPropertiesPanel.py:79
+#: ../controls/ProjectPropertiesPanel.py:80
 msgid "Project Version (optional):"
-msgstr "Verzija projekta (neobvezno):"
+msgstr "Verzija projekta (ni obvezno):"
 
-#: ../PLCControler.py:3158
+#: ../PLCControler.py:3164
 msgid ""
 "Project file syntax error:\n"
 "\n"
 msgstr ""
+"Sintaktična napaka v imenu Projektne datoteke:\n"
+"\n"
 
-#: ../dialogs/ProjectDialog.py:32 ../editors/ProjectNodeEditor.py:37
+#: ../dialogs/ProjectDialog.py:33 ../editors/ProjectNodeEditor.py:37
 msgid "Project properties"
-msgstr ""
+msgstr "Lastnosti Projekta"
 
 #: ../ConfigTreeNode.py:566
 #, python-brace-format
 msgid "Project tree layout do not match confnode.xml {a1}!={a2} "
-msgstr ""
+msgstr "Drevesna struktura Projekta ne ustreza confnode.xml {a1}!={a2} "
 
-#: ../dialogs/ConnectionDialog.py:94
+#: ../dialogs/ConnectionDialog.py:98
 msgid "Propagate Name"
-msgstr ""
+msgstr "Razmnoži ime"
 
-#: ../PLCControler.py:97
+#: ../PLCControler.py:99
 msgid "Properties"
 msgstr "Lastnosti"
 
-#: ../Beremiz_service.py:440
+#: ../Beremiz_service.py:442
 msgid "Publishing service on local network"
-msgstr ""
+msgstr "Objava storitve na lokalnem omrežju"
 
 #: ../connectors/PYRO/__init__.py:118
 #, python-format
 msgid "Pyro exception: %s\n"
-msgstr ""
+msgstr "Pyro izjema: %s\n"
 
-#: ../Beremiz_service.py:427
+#: ../Beremiz_service.py:429
 msgid "Pyro object's uri :"
-msgstr ""
+msgstr "Pyro objekten uri :"
 
-#: ../Beremiz_service.py:426
+#: ../Beremiz_service.py:428
 msgid "Pyro port :"
-msgstr ""
+msgstr "Pyro številka vrat :"
 
 #: ../py_ext/PythonEditor.py:81
 msgid "Python code"
-msgstr ""
+msgstr "Python programska koda"
 
 #: ../features.py:33
 msgid "Python file"
-msgstr ""
+msgstr "Python datoteka"
 
-#: ../dialogs/ActionBlockDialog.py:38
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Qualifier"
-msgstr ""
+msgstr "Kvalifikator"
 
-#: ../PLCOpenEditor.py:128 ../Beremiz.py:343 ../Beremiz_service.py:273
+#: ../BeremizIDE.py:238 ../PLCOpenEditor.py:130 ../Beremiz_service.py:275
 msgid "Quit"
 msgstr "Izhod"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:225
 msgid "Range:"
-msgstr ""
+msgstr "Obseg:"
 
-#: ../ProjectController.py:1831
+#: ../ProjectController.py:1873
 msgid "Raw IEC code"
-msgstr ""
+msgstr "IEC programska koda"
 
-#: ../Beremiz.py:1143
+#: ../BeremizIDE.py:1047
 #, python-format
 msgid "Really delete node '%s'?"
-msgstr ""
+msgstr "Ali želiš izbrisati element '%s'?"
 
 #: ../IDEFrame.py:362 ../IDEFrame.py:422
 msgid "Redo"
-msgstr ""
+msgstr "Ponovi"
 
-#: ../dialogs/SFCTransitionDialog.py:74
+#: ../dialogs/SFCTransitionDialog.py:75
 msgid "Reference"
-msgstr ""
+msgstr "Reference"
 
-#: ../dialogs/DiscoveryDialog.py:106 ../IDEFrame.py:432
+#: ../dialogs/DiscoveryDialog.py:107 ../IDEFrame.py:432
 msgid "Refresh"
-msgstr ""
+msgstr "Osveži"
 
 #: ../dialogs/SearchInProjectDialog.py:66
 msgid "Regular expression"
-msgstr ""
+msgstr "Regularni izraz"
 
-#: ../dialogs/FindInPouDialog.py:98
+#: ../dialogs/FindInPouDialog.py:96
 msgid "Regular expressions"
-msgstr ""
+msgstr "Regularni izrazi"
 
-#: ../editors/Viewer.py:1567
+#: ../editors/Viewer.py:1603
 msgid "Release value"
-msgstr ""
+msgstr "Prenehaj vsiljevati vrednost"
 
 #: ../plcopen/iec_std.csv:37
 msgid "Remainder (modulo)"
-msgstr ""
+msgstr "Ostanek (modulo)"
 
-#: ../Beremiz.py:1144
+#: ../BeremizIDE.py:1048
 #, python-format
 msgid "Remove %s node"
-msgstr ""
+msgstr "Odstrani element %s"
 
-#: ../IDEFrame.py:2404
+#: ../IDEFrame.py:2419
 msgid "Remove Datatype"
-msgstr ""
+msgstr "Odstrani Podatkovni tip"
 
-#: ../IDEFrame.py:2409
+#: ../IDEFrame.py:2424
 msgid "Remove Pou"
-msgstr ""
+msgstr "Odstrani POU"
 
 #: ../dialogs/ActionBlockDialog.py:138
 msgid "Remove action"
-msgstr ""
+msgstr "Odstrani Akcijo"
 
 #: ../editors/DataTypeEditor.py:353
 msgid "Remove element"
@@ -2744,25 +2814,25 @@ msgstr "Odstrani element"
 
 #: ../editors/FileManagementPanel.py:63
 msgid "Remove file from left folder"
-msgstr ""
+msgstr "Odstrani datoteko iz leve mape"
 
 #: ../editors/ResourceEditor.py:269
 msgid "Remove instance"
-msgstr ""
+msgstr "Odstrani Primerek"
 
 #: ../canfestival/NetworkEditor.py:104
 msgid "Remove slave"
-msgstr ""
+msgstr "Odstrani podrejeno napravo"
 
 #: ../editors/ResourceEditor.py:240
 msgid "Remove task"
-msgstr ""
+msgstr "Odstrani Opravilo"
 
 #: ../editors/CodeFileEditor.py:659 ../controls/VariablePanel.py:451
 msgid "Remove variable"
-msgstr ""
+msgstr "Odstrani spremenljivko"
 
-#: ../IDEFrame.py:1944
+#: ../IDEFrame.py:1948
 msgid "Rename"
 msgstr "Preimenuj"
 
@@ -2770,176 +2840,176 @@ msgstr "Preimenuj"
 msgid "Replace File"
 msgstr "Zamenjaj datoteko"
 
-#: ../editors/Viewer.py:502
+#: ../editors/Viewer.py:561
 msgid "Replace Wire by connections"
-msgstr ""
+msgstr "Zamenjaj žico z Konektorjema."
 
 #: ../plcopen/iec_std.csv:89
 msgid "Replacement (within)"
-msgstr ""
+msgstr "Zamenjaj (znotraj)"
 
 #: ../dialogs/LDElementDialog.py:76
 msgid "Reset"
-msgstr ""
+msgstr "Nastavi na 0"
 
-#: ../editors/Viewer.py:583
+#: ../editors/Viewer.py:642
 msgid "Reset Execution Order"
-msgstr ""
+msgstr "Ponastavi vrstni red izvajanja"
 
 #: ../IDEFrame.py:451
 msgid "Reset Perspective"
-msgstr ""
+msgstr "Ponastavi pogled"
 
 #: ../controls/SearchResultPanel.py:105
 msgid "Reset search result"
-msgstr ""
+msgstr "Počisti rezultate iskanja"
 
-#: ../PLCControler.py:97 ../Beremiz.py:1075
+#: ../BeremizIDE.py:979 ../PLCControler.py:99
 msgid "Resources"
-msgstr ""
+msgstr "Viri"
 
 #: ../controls/VariablePanel.py:62
 msgid "Retain"
-msgstr ""
+msgstr "Obdrži v spominu"
 
 #: ../controls/VariablePanel.py:424
 msgid "Return Type:"
-msgstr ""
+msgstr "Tip rezultata:"
 
-#: ../editors/Viewer.py:487
+#: ../editors/Viewer.py:546
 msgid "Right"
 msgstr "Desno"
 
-#: ../dialogs/LDPowerRailDialog.py:63
+#: ../dialogs/LDPowerRailDialog.py:64
 msgid "Right PowerRail"
-msgstr ""
+msgstr "Desni napajalni vodnik"
 
-#: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:461
+#: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:520
 msgid "Rising Edge"
-msgstr ""
+msgstr "Pozitivna fronta"
 
 #: ../plcopen/iec_std.csv:65
 msgid "Rotate left"
-msgstr ""
+msgstr "Rotiraj na levo"
 
 #: ../plcopen/iec_std.csv:64
 msgid "Rotate right"
-msgstr ""
+msgstr "Rotiraj na desno"
 
 #: ../plcopen/iec_std.csv:17
 msgid "Rounding up/down"
-msgstr ""
+msgstr "Zaokroževanje navzgor/navzdol"
 
-#: ../ProjectController.py:1799
+#: ../ProjectController.py:1841
 msgid "Run"
-msgstr ""
+msgstr "Delovanje"
 
-#: ../ProjectController.py:1058
+#: ../ProjectController.py:1099
 msgid "Runtime IO extensions C code generation failed !\n"
-msgstr ""
+msgstr "Neuspešno generiranje C programske kode za I/O knjižnice!\n"
 
-#: ../ProjectController.py:1067
+#: ../ProjectController.py:1108
 msgid "Runtime library extensions C code generation failed !\n"
-msgstr ""
+msgstr "Neuspešno generiranje C programske kode za izvajalne knjižnice!\n"
 
 #: ../canfestival/SlaveEditor.py:61 ../canfestival/NetworkEditor.py:82
 msgid "SDO Client"
-msgstr ""
+msgstr "SDO Odjemalec"
 
 #: ../canfestival/SlaveEditor.py:60 ../canfestival/NetworkEditor.py:81
 msgid "SDO Server"
-msgstr ""
+msgstr "SDO Strežnik"
 
-#: ../dialogs/PouDialog.py:36 ../controls/ProjectPropertiesPanel.py:143
+#: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "SFC"
-msgstr ""
+msgstr "SFC"
 
 #: ../PLCGenerator.py:1392
 #, python-brace-format
 msgid "SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\""
-msgstr ""
+msgstr "SFC skok v POU \"{a1}\" se sklicuje na neobstoječi SFC skok \"{a2}\""
 
 #: ../PLCGenerator.py:773
 #, python-format
 msgid "SFC transition in POU \"%s\" must be connected."
-msgstr ""
+msgstr "SFC prehod v POU \"%s\" mora biti povezan."
 
-#: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37
 msgid "ST"
-msgstr ""
+msgstr "ST"
 
-#: ../PLCOpenEditor.py:324
+#: ../PLCOpenEditor.py:334
 msgid "ST files (*.st)|*.st|All files|*.*"
-msgstr ""
+msgstr "ST datoteke (*.st)|*.st|Vse datoteke|*.*"
 
-#: ../svgui/svgui.py:125
+#: ../svgui/svgui.py:128
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
-msgstr ""
+msgstr "SVG datoteke (*.svg)|*.svg|Vse datoteke|*.*"
 
 #: ../features.py:35
 msgid "SVGUI"
-msgstr ""
+msgstr "SVGUI"
 
-#: ../PLCOpenEditor.py:111 ../PLCOpenEditor.py:146 ../Beremiz.py:327
-#: ../Beremiz.py:358
+#: ../BeremizIDE.py:222 ../BeremizIDE.py:253 ../PLCOpenEditor.py:113
+#: ../PLCOpenEditor.py:148
 msgid "Save"
 msgstr "Shrani"
 
-#: ../PLCOpenEditor.py:113 ../PLCOpenEditor.py:147 ../Beremiz.py:359
+#: ../BeremizIDE.py:254 ../PLCOpenEditor.py:115 ../PLCOpenEditor.py:149
 msgid "Save As..."
 msgstr "Shrani kot..."
 
-#: ../Beremiz.py:329
+#: ../BeremizIDE.py:224
 msgid "Save as"
 msgstr "Shrani kot"
 
-#: ../ProjectController.py:470
+#: ../ProjectController.py:511
 msgid "Save path is the same as path of a project! \n"
-msgstr ""
+msgstr "Pot za shranjevanje je enaka kot pot za shranjevanje projekta!! \n"
 
 #: ../dialogs/SearchInProjectDialog.py:69
 msgid "Scope"
-msgstr ""
+msgstr "Obseg iskanja"
 
 #: ../IDEFrame.py:623
 msgid "Search"
 msgstr "Išči"
 
-#: ../dialogs/SearchInProjectDialog.py:44 ../IDEFrame.py:382
+#: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:382
 #: ../IDEFrame.py:428
 msgid "Search in Project"
 msgstr "Išči v projektu"
 
-#: ../dialogs/DurationEditorDialog.py:46
+#: ../dialogs/DurationEditorDialog.py:47
 msgid "Seconds:"
-msgstr ""
+msgstr "Sekunde:"
 
 #: ../IDEFrame.py:388
 msgid "Select All"
 msgstr "Izberi vse"
 
-#: ../editors/Viewer.py:288 ../editors/TextViewer.py:306
+#: ../editors/Viewer.py:289 ../editors/TextViewer.py:306
 #: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:290
 #: ../controls/VariablePanel.py:350
 msgid "Select a variable class:"
-msgstr ""
+msgstr "Izberi Razred spremenljivke"
 
-#: ../ProjectController.py:1216
+#: ../ProjectController.py:1257
 msgid "Select an editor:"
-msgstr ""
+msgstr "Izberi urejevalnik:"
 
-#: ../controls/PouInstanceVariablesPanel.py:276
+#: ../controls/PouInstanceVariablesPanel.py:281
 msgid "Select an instance"
-msgstr ""
+msgstr "Izberi Primerek"
 
 #: ../IDEFrame.py:607
 msgid "Select an object"
-msgstr ""
+msgstr "Izberi Objekt"
 
-#: ../ProjectController.py:477
+#: ../ProjectController.py:518
 msgid "Selected directory already contains another project. Overwrite? \n"
-msgstr ""
+msgstr "Izbrana mapa že vsebuje drugi Projekt. Prepišem? \n"
 
 #: ../plcopen/iec_std.csv:70
 msgid "Selection"
@@ -2947,55 +3017,55 @@ msgstr "Izbira"
 
 #: ../dialogs/SFCDivergenceDialog.py:65
 msgid "Selection Convergence"
-msgstr ""
+msgstr "Izbira Stekališče"
 
 #: ../dialogs/SFCDivergenceDialog.py:64
 msgid "Selection Divergence"
-msgstr ""
+msgstr "Izbira Razhajališče"
 
 #: ../dialogs/DiscoveryDialog.py:82
 msgid "Service Discovery"
-msgstr ""
+msgstr "Pregled storitev na voljo:"
 
 #: ../dialogs/DiscoveryDialog.py:85
 msgid "Services available:"
-msgstr ""
+msgstr "Storitve na voljo:"
 
 #: ../dialogs/LDElementDialog.py:76
 msgid "Set"
-msgstr ""
+msgstr "Nastavi na 1"
 
 #: ../plcopen/iec_std.csv:62
 msgid "Shift left"
-msgstr ""
+msgstr "Pomakni v levo"
 
 #: ../plcopen/iec_std.csv:63
 msgid "Shift right"
-msgstr ""
+msgstr "Pomakni v desno"
 
-#: ../ProjectController.py:1825
+#: ../ProjectController.py:1867
 msgid "Show IEC code generated by PLCGenerator"
-msgstr ""
+msgstr "Prikaži IEC kodo, ki jo je ustvaril PLCGenerator"
 
-#: ../canfestival/canfestival.py:387
+#: ../canfestival/canfestival.py:389
 msgid "Show Master"
-msgstr ""
+msgstr "Prikaži nadrejeno napravo"
 
-#: ../canfestival/canfestival.py:388
+#: ../canfestival/canfestival.py:390
 msgid "Show Master generated by config_utils"
-msgstr ""
+msgstr "Prikaži nadrejeno napravo, izdelano z config_utils"
 
-#: ../ProjectController.py:1823
+#: ../ProjectController.py:1865
 msgid "Show code"
 msgstr "Prikaži programsko kodo"
 
 #: ../dialogs/SFCDivergenceDialog.py:67
 msgid "Simultaneous Convergence"
-msgstr ""
+msgstr "Simultano Steklališče"
 
 #: ../dialogs/SFCDivergenceDialog.py:66
 msgid "Simultaneous Divergence"
-msgstr ""
+msgstr "Simultano Razhajališče"
 
 #: ../plcopen/iec_std.csv:27
 msgid "Sine"
@@ -3003,11 +3073,11 @@ msgstr "Sinus"
 
 #: ../editors/ResourceEditor.py:68
 msgid "Single"
-msgstr ""
+msgstr "Posamičen"
 
 #: ../targets/toolchain_makefile.py:126
 msgid "Source didn't change, no build.\n"
-msgstr ""
+msgstr "Izvorna koda se ni spremenila, ne bo nove gradnje projekta.\n"
 
 #: ../PLCGenerator.py:397
 #, python-brace-format
@@ -3015,59 +3085,61 @@ msgid ""
 "Source signal has to be defined for single task '{a1}' in resource "
 "'{a2}.{a3}'."
 msgstr ""
+"Izvorni signal mora biti definiran za eno Opravilo '{a1}' v Konfiguraciji "
+"'{a2}.{a3}'."
 
 #: ../plcopen/iec_std.csv:23
 msgid "Square root (base 2)"
-msgstr ""
+msgstr "Kvadratni koren (base 2)"
 
-#: ../plcopen/definitions.py:46
+#: ../plcopen/definitions.py:48
 msgid "Standard function blocks"
 msgstr "Standardni funkcijski bloki"
 
-#: ../ProjectController.py:1801 ../Beremiz_service.py:261
+#: ../ProjectController.py:1843 ../Beremiz_service.py:263
 msgid "Start PLC"
 msgstr "Zaženi krmilnik"
 
-#: ../ProjectController.py:1005
+#: ../ProjectController.py:1046
 #, python-format
 msgid "Start build in %s\n"
-msgstr ""
+msgstr "Začni izvajati gradnjo projekta v %s\n"
 
-#: ../ProjectController.py:1319
+#: ../ProjectController.py:1360
 msgid "Started"
 msgstr "Zagnan"
 
-#: ../ProjectController.py:1607
+#: ../ProjectController.py:1648
 msgid "Starting PLC\n"
-msgstr ""
+msgstr "Krmilnik se zaganja\n"
 
-#: ../Beremiz.py:463
+#: ../BeremizIDE.py:365
 msgid "Status ToolBar"
-msgstr ""
+msgstr "Statusna vrstica"
 
-#: ../editors/Viewer.py:553 ../editors/Viewer.py:2353
+#: ../editors/Viewer.py:612 ../editors/Viewer.py:2391
 msgid "Step"
 msgstr "Korak"
 
-#: ../ProjectController.py:1804
+#: ../ProjectController.py:1846
 msgid "Stop"
 msgstr "Ustavi"
 
-#: ../Beremiz_service.py:262
+#: ../Beremiz_service.py:264
 msgid "Stop PLC"
 msgstr "Ustavi krmilnik"
 
-#: ../ProjectController.py:1806
+#: ../ProjectController.py:1848
 msgid "Stop Running PLC"
 msgstr "Ustavi delujoč krmilnik"
 
-#: ../ProjectController.py:1320
+#: ../ProjectController.py:1361
 msgid "Stopped"
 msgstr "Ustavljen"
 
-#: ../ProjectController.py:1579
+#: ../ProjectController.py:1620
 msgid "Stopping debugger...\n"
-msgstr ""
+msgstr "Ustavljam razhroščevalnik...\n"
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Structure"
@@ -3075,43 +3147,63 @@ msgstr "Struktura"
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Subrange"
-msgstr ""
+msgstr "Intervalni"
 
 #: ../plcopen/iec_std.csv:35
 msgid "Subtraction"
 msgstr "Odštevanje"
 
-#: ../ProjectController.py:1044
+#: ../ProjectController.py:1085
 msgid "Successfully built.\n"
-msgstr ""
+msgstr "Uspešno izgrajeno.\n"
 
 #: ../IDEFrame.py:447
 msgid "Switch perspective"
-msgstr ""
+msgstr "Zamenjaj pogled"
 
-#: ../dialogs/SearchInProjectDialog.py:165 ../dialogs/FindInPouDialog.py:172
+#: ../dialogs/SearchInProjectDialog.py:165 ../dialogs/FindInPouDialog.py:115
 msgid "Syntax error in regular expression of pattern to search!"
-msgstr ""
+msgstr "Sintaktična napaka v izrazu vzorca za iskanje!"
 
 #: ../dialogs/DiscoveryDialog.py:93
 msgid "TYPE"
-msgstr ""
+msgstr "TYPE"
 
 #: ../plcopen/iec_std.csv:29
 msgid "Tangent"
-msgstr ""
+msgstr "Tangens"
 
 #: ../editors/ResourceEditor.py:83
 msgid "Task"
-msgstr ""
+msgstr "Opravilo"
 
 #: ../editors/ResourceEditor.py:235
 msgid "Tasks:"
-msgstr ""
+msgstr "Opravila:"
 
 #: ../controls/VariablePanel.py:73
 msgid "Temp"
+msgstr "Začasno"
+
+#: ../version.py:30
+msgid ""
+"The best place to ask questions about Beremiz/PLCOpenEditor\n"
+"is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
+"\n"
+"This is the main community support channel.\n"
+"For posting it is required to be subscribed to the mailing list.\n"
+"\n"
+"You can subscribe to the list here:\n"
+"https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
 msgstr ""
+"Vsa vprašanja o Beremiz/PLCOpenEditor projektu lahko postavite\n"
+"v projektni poštni seznam: beremiz-devel@lists.sourceforge.net\n"
+"\n"
+"To je glavni podporni kanal skupnosti.\n"
+"Potrebna je prijava na poštni seznam pred objavo vprašanja.\n"
+"\n"
+"Naročilo na poštni seznam skleneš na naslovu:\n"
+"https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
 
 #: ../editors/FileManagementPanel.py:180
 #, python-format
@@ -3119,23 +3211,27 @@ msgid ""
 "The file '%s' already exist.\n"
 "Do you want to replace it?"
 msgstr ""
+"Datoteka '%s' že obstaja.\n"
+"Ali jo želiš zamenjati?"
 
 #: ../editors/LDViewer.py:882
 msgid "The group of block must be coherent!"
-msgstr ""
+msgstr "Skupina blokov mora biti skladna!"
 
-#: ../Beremiz.py:640 ../IDEFrame.py:1011
+#: ../BeremizIDE.py:542 ../IDEFrame.py:1015
 msgid "There are changes, do you want to save?"
 msgstr "Narejene so bile spremembe, želiš shraniti?"
 
-#: ../IDEFrame.py:1654 ../IDEFrame.py:1673
+#: ../IDEFrame.py:1658 ../IDEFrame.py:1677
 #, python-format
 msgid ""
 "There is a POU named \"%s\". This could cause a conflict. Do you wish to "
 "continue?"
 msgstr ""
+"POU z imenom \"%s\" že obstaja. To lahko povzroči težave. Ali želiš "
+"nadaljevati?"
 
-#: ../IDEFrame.py:1098
+#: ../IDEFrame.py:1102
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
@@ -3148,63 +3244,67 @@ msgstr "Ta opcija še ni na voljo!"
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:565
 #, python-format
 msgid "Tick: %d"
-msgstr ""
+msgstr "Tik-tak: %d"
 
 #: ../plcopen/iec_std.csv:40
 msgid "Time"
-msgstr ""
+msgstr "Ura"
 
 #: ../plcopen/iec_std.csv:40 ../plcopen/iec_std.csv:41
 msgid "Time addition"
-msgstr ""
+msgstr "Dodajanje ure"
 
 #: ../plcopen/iec_std.csv:86
 msgid "Time concatenation"
-msgstr ""
+msgstr "Ura združevanje"
 
 #: ../plcopen/iec_std.csv:60 ../plcopen/iec_std.csv:61
 msgid "Time division"
-msgstr ""
+msgstr "Ura deljenje"
 
 #: ../plcopen/iec_std.csv:46 ../plcopen/iec_std.csv:47
 msgid "Time multiplication"
-msgstr ""
+msgstr "Ura množenje"
 
 #: ../plcopen/iec_std.csv:48 ../plcopen/iec_std.csv:49
 msgid "Time subtraction"
-msgstr ""
+msgstr "Odštevanje časa"
 
 #: ../plcopen/iec_std.csv:42 ../plcopen/iec_std.csv:43
 msgid "Time-of-day addition"
-msgstr ""
+msgstr "Dodajanje današnje ure"
 
 #: ../plcopen/iec_std.csv:52 ../plcopen/iec_std.csv:53
 #: ../plcopen/iec_std.csv:54 ../plcopen/iec_std.csv:55
 msgid "Time-of-day subtraction"
-msgstr ""
+msgstr "Odštevanje dejanskega časa"
 
-#: ../editors/Viewer.py:489
+#: ../dialogs/ForceVariableDialog.py:172
+msgid "Toggle value"
+msgstr "Spremeni vrednost"
+
+#: ../editors/Viewer.py:548
 msgid "Top"
 msgstr "Zgoraj"
 
-#: ../ProjectController.py:1813
+#: ../ProjectController.py:1855
 msgid "Transfer"
 msgstr "Prenesi"
 
-#: ../ProjectController.py:1815
+#: ../ProjectController.py:1857
 msgid "Transfer PLC"
-msgstr ""
+msgstr "Prenesi na krmilnik"
 
-#: ../ProjectController.py:1779
+#: ../ProjectController.py:1820
 msgid "Transfer completed successfully.\n"
-msgstr ""
+msgstr "Uspešno zaključen prenos.\n"
 
-#: ../ProjectController.py:1781
+#: ../ProjectController.py:1823
 msgid "Transfer failed\n"
-msgstr ""
+msgstr "Prenos ni uspešen\n"
 
-#: ../editors/Viewer.py:554 ../editors/Viewer.py:2355
-#: ../editors/Viewer.py:2382
+#: ../editors/Viewer.py:613 ../editors/Viewer.py:2393
+#: ../editors/Viewer.py:2420
 msgid "Transition"
 msgstr "Prehod"
 
@@ -3214,33 +3314,35 @@ msgid ""
 "Transition \"%s\" body must contain an output variable or coil referring to "
 "its name"
 msgstr ""
+"Telo Prehoda \"%s\" mora vsebovati izhodno spremenljivko ali Tuljavo, "
+"referencirano po njenem imenu"
 
-#: ../dialogs/PouTransitionDialog.py:89
+#: ../dialogs/PouTransitionDialog.py:84
 msgid "Transition Name"
 msgstr "Ime prehoda"
 
-#: ../dialogs/PouTransitionDialog.py:58
+#: ../dialogs/PouTransitionDialog.py:53
 msgid "Transition Name:"
 msgstr "Ime prehoda:"
 
 #: ../PLCGenerator.py:1609
 #, python-brace-format
 msgid "Transition with content \"{a1}\" not connected to a next step in \"{a2}\" POU"
-msgstr ""
+msgstr "Prehod z vsebino \"{a1}\" ni povezan z naslednjim Korakom v POU \"{a2}\""
 
 #: ../PLCGenerator.py:1598
 #, python-brace-format
 msgid ""
 "Transition with content \"{a1}\" not connected to a previous step in "
 "\"{a2}\" POU"
-msgstr ""
+msgstr "Prehod z vsebino \"{a1}\" ni povezan z prejšnjim Korakom v POU \"{a2}\""
 
-#: ../plcopen/plcopen.py:1318
+#: ../plcopen/plcopen.py:1323
 #, python-format
 msgid "Transition with name %s doesn't exist!"
-msgstr ""
+msgstr "Prehod z imenom %s ne obstaja!"
 
-#: ../PLCControler.py:96
+#: ../PLCControler.py:98
 msgid "Transitions"
 msgstr "Prehodi"
 
@@ -3250,105 +3352,105 @@ msgstr "Prevedel"
 
 #: ../editors/ResourceEditor.py:68
 msgid "Triggering"
-msgstr ""
+msgstr "Proženje"
 
-#: ../Beremiz_service.py:476
+#: ../Beremiz_service.py:478
 msgid "Twisted unavailable."
-msgstr ""
+msgstr "Twisted programski paket ni na voljo."
 
-#: ../dialogs/ActionBlockDialog.py:38 ../editors/ResourceEditor.py:83
-#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
-#: ../controls/VariablePanel.py:54
+#: ../dialogs/ActionBlockDialog.py:39 ../editors/ResourceEditor.py:83
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:739
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Type"
 msgstr "Tip"
 
-#: ../dialogs/BrowseLocationsDialog.py:48
+#: ../dialogs/BrowseLocationsDialog.py:49
 msgid "Type and derivated"
-msgstr ""
+msgstr "Enak tip in izpeljanke"
 
 #: ../canfestival/config_utils.py:336 ../canfestival/config_utils.py:624
 #, python-format
 msgid "Type conflict for location \"%s\""
-msgstr ""
+msgstr "Neustrezen Tip za lokacijo \"%s\""
 
 #: ../plcopen/iec_std.csv:16
 msgid "Type conversion"
-msgstr ""
+msgstr "Sprememba podatkovnega tipa"
 
 #: ../editors/DataTypeEditor.py:162
 msgid "Type infos:"
-msgstr ""
+msgstr "Detajlne informacije o podatkovnem tipu:"
 
-#: ../dialogs/BrowseLocationsDialog.py:49
+#: ../dialogs/BrowseLocationsDialog.py:50
 msgid "Type strict"
-msgstr ""
+msgstr "Enak Tip"
 
-#: ../dialogs/SFCDivergenceDialog.py:59 ../dialogs/SFCTransitionDialog.py:57
-#: ../dialogs/LDPowerRailDialog.py:56 ../dialogs/BrowseLocationsDialog.py:99
-#: ../dialogs/FBDBlockDialog.py:65 ../dialogs/ConnectionDialog.py:58
+#: ../dialogs/SFCDivergenceDialog.py:59 ../dialogs/SFCTransitionDialog.py:58
+#: ../dialogs/LDPowerRailDialog.py:57 ../dialogs/BrowseLocationsDialog.py:100
+#: ../dialogs/FBDBlockDialog.py:66 ../dialogs/ConnectionDialog.py:59
 msgid "Type:"
-msgstr ""
+msgstr "Tip:"
 
 #: ../canfestival/config_utils.py:462 ../canfestival/config_utils.py:476
 #, python-format
 msgid "Unable to define PDO mapping for node %02x"
-msgstr ""
+msgstr "Nisem uspel ustvariti PDO preslikave za elemnent %02x"
 
 #: ../targets/Xenomai/__init__.py:39
 #, python-format
 msgid "Unable to get Xenomai's %s \n"
-msgstr ""
+msgstr "Nisem uspel dobiti Xenomai's %s \n"
 
 #: ../PLCGenerator.py:961 ../PLCGenerator.py:1214
 #, python-brace-format
 msgid "Undefined block type \"{a1}\" in \"{a2}\" POU"
-msgstr ""
+msgstr "Nedefiniran tip bloka \"{a1}\" v POU \"{a2}\""
 
 #: ../PLCGenerator.py:254
 #, python-format
 msgid "Undefined pou type \"%s\""
-msgstr ""
+msgstr "Nedefiniran tip POU \"%s\""
 
 #: ../IDEFrame.py:360 ../IDEFrame.py:421
 msgid "Undo"
-msgstr ""
+msgstr "Razveljavi"
 
-#: ../ProjectController.py:382
+#: ../ProjectController.py:423
 msgid "Unknown"
 msgstr "Neznano"
 
-#: ../editors/Viewer.py:393
+#: ../editors/Viewer.py:394
 #, python-format
 msgid "Unknown variable \"%s\" for this POU!"
-msgstr ""
+msgstr "Neznana spremenljivka \"%s\" za ta POU!"
 
-#: ../ProjectController.py:379 ../ProjectController.py:380
+#: ../ProjectController.py:420 ../ProjectController.py:421
 msgid "Unnamed"
-msgstr ""
+msgstr "Neimenovan"
 
-#: ../PLCControler.py:636
+#: ../PLCControler.py:638
 #, python-format
 msgid "Unnamed%d"
-msgstr ""
+msgstr "Neimenovan%d"
 
 #: ../controls/VariablePanel.py:284
 #, python-format
 msgid "Unrecognized data size \"%s\""
-msgstr ""
+msgstr "Nerazpoznavna velikost podatkovnega tipa \"%s\""
 
-#: ../editors/DataTypeEditor.py:632 ../controls/VariablePanel.py:810
+#: ../editors/DataTypeEditor.py:630 ../controls/VariablePanel.py:827
 msgid "User Data Types"
-msgstr ""
+msgstr "Uporabniški Podatkovni tipi"
 
 #: ../canfestival/SlaveEditor.py:65 ../canfestival/NetworkEditor.py:86
 msgid "User Type"
-msgstr ""
+msgstr "Uporabniški podatkovni tip"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:97
 msgid "User-defined POUs"
-msgstr ""
+msgstr "Uporabniški POU-ji"
 
-#: ../dialogs/ActionBlockDialog.py:38
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Value"
 msgstr "Vrednost"
 
@@ -3356,30 +3458,30 @@ msgstr "Vrednost"
 msgid "Values:"
 msgstr "Vrednosti:"
 
-#: ../dialogs/ActionBlockDialog.py:42 ../editors/Viewer.py:526
-#: ../editors/Viewer.py:2385
+#: ../dialogs/ActionBlockDialog.py:43 ../editors/Viewer.py:585
+#: ../editors/Viewer.py:2423
 msgid "Variable"
-msgstr ""
+msgstr "Spremenljivka"
 
-#: ../editors/Viewer.py:308 ../editors/Viewer.py:338 ../editors/Viewer.py:360
+#: ../editors/Viewer.py:309 ../editors/Viewer.py:339 ../editors/Viewer.py:361
 #: ../editors/TextViewer.py:292 ../editors/TextViewer.py:343
 #: ../editors/TextViewer.py:366 ../controls/VariablePanel.py:329
 msgid "Variable Drop"
-msgstr ""
+msgstr "Spusti spremenljivko"
 
-#: ../dialogs/FBDVariableDialog.py:63
+#: ../dialogs/FBDVariableDialog.py:64
 msgid "Variable Properties"
-msgstr ""
+msgstr "Lastnosti spremenljivke"
 
-#: ../editors/Viewer.py:288 ../editors/TextViewer.py:306
+#: ../editors/Viewer.py:289 ../editors/TextViewer.py:306
 #: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:290
 #: ../controls/VariablePanel.py:350
 msgid "Variable class"
-msgstr ""
+msgstr "Spremenljivka Razreda"
 
-#: ../editors/Viewer.py:395 ../editors/TextViewer.py:387
+#: ../editors/Viewer.py:396 ../editors/TextViewer.py:387
 msgid "Variable don't belong to this POU!"
-msgstr ""
+msgstr "Spremenljivka ne pripadata temu POU!"
 
 #: ../dialogs/LDElementDialog.py:89
 msgid "Variable:"
@@ -3389,55 +3491,55 @@ msgstr "Spremenljivka:"
 msgid "Variables"
 msgstr "Spremenljivke"
 
-#: ../controls/ProjectPropertiesPanel.py:151
+#: ../controls/ProjectPropertiesPanel.py:152
 msgid "Vertical:"
 msgstr "Vertikalno:"
 
-#: ../Beremiz_service.py:586
+#: ../Beremiz_service.py:588
 msgid "WAMP client startup failed. "
-msgstr ""
+msgstr "WAMP podrejena naprava - napaka v zagonu. "
 
 #: ../connectors/WAMP/__init__.py:91
 #, python-format
 msgid "WAMP connecting to URL : %s\n"
-msgstr ""
+msgstr "WAMP povezuje na URL : %s\n"
 
 #: ../connectors/WAMP/__init__.py:131
 msgid "WAMP connection timeout"
-msgstr ""
+msgstr "WAMP potekel čas za vzpostavitev"
 
 #: ../connectors/WAMP/__init__.py:150
 #, python-format
 msgid "WAMP connection to '%s' failed.\n"
-msgstr ""
+msgstr "WAMP povezava na '%s' ni bila uspešna.\n"
 
-#: ../Beremiz_service.py:562
+#: ../Beremiz_service.py:564
 msgid "WAMP import failed :"
-msgstr ""
+msgstr "WAMP uvoz - napaka :"
 
-#: ../wxglade_hmi/wxglade_hmi.py:35
+#: ../wxglade_hmi/wxglade_hmi.py:37
 msgid "WXGLADE GUI"
-msgstr ""
+msgstr "WXGLADE GUI"
 
-#: ../dialogs/PouDialog.py:128 ../editors/LDViewer.py:891
+#: ../dialogs/PouDialog.py:129 ../editors/LDViewer.py:891
 msgid "Warning"
 msgstr "Opozorila"
 
-#: ../ProjectController.py:666
+#: ../ProjectController.py:707
 msgid "Warnings in ST/IL/SFC code generator :\n"
-msgstr ""
+msgstr "Opozorila v ST/IL/SFC ustvarjalniku programske kode :\n"
 
 #: ../dialogs/SearchInProjectDialog.py:78
 msgid "Whole Project"
 msgstr "Celoten projekt"
 
-#: ../controls/ProjectPropertiesPanel.py:119
+#: ../controls/ProjectPropertiesPanel.py:120
 msgid "Width:"
 msgstr "Širina:"
 
-#: ../dialogs/FindInPouDialog.py:93
+#: ../dialogs/FindInPouDialog.py:91
 msgid "Wrap search"
-msgstr ""
+msgstr "Iskanje po celotnem dokumentu"
 
 #: ../dialogs/AboutDialog.py:130
 msgid "Written by"
@@ -3445,101 +3547,107 @@ msgstr "Napisal"
 
 #: ../features.py:34
 msgid "WxGlade GUI"
-msgstr ""
+msgstr "WxGlade GUI"
 
-#: ../svgui/svgui.py:139
+#: ../svgui/svgui.py:142
 msgid ""
 "You don't have write permissions.\n"
 "Open Inkscape anyway ?"
 msgstr ""
+"Nimaš dovoljenja za pisanje.\n"
+"Vseeno odprem Inkscape ?"
 
-#: ../wxglade_hmi/wxglade_hmi.py:137
+#: ../wxglade_hmi/wxglade_hmi.py:154
 msgid ""
 "You don't have write permissions.\n"
 "Open wxGlade anyway ?"
 msgstr ""
+"Nimaš dovoljenja za pisanje.\n"
+"Vseeno odprem wxGlade ?"
 
-#: ../ProjectController.py:342
+#: ../ProjectController.py:371
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
 msgstr ""
+"Potrebuješ pravice dostopa za delo na Projektu\n"
+"Nadaljuj delo na kopiji Projekta ?"
 
 #: ../editors/LDViewer.py:886
 msgid ""
 "You must select the block or group of blocks around which a branch should be"
 " added!"
-msgstr ""
+msgstr "Moraš izbrati blok ali skupino blokov, kjer želiš dodati Skok!"
 
 #: ../editors/LDViewer.py:666
 msgid "You must select the wire where a contact should be added!"
-msgstr ""
+msgstr "Moraš izbrati Žico, na katero želiš dodati Kontakt!"
 
 #: ../dialogs/SFCStepNameDialog.py:48 ../dialogs/PouNameDialog.py:46
 msgid "You must type a name!"
 msgstr "Prosim vnesi ime!"
 
-#: ../dialogs/ForceVariableDialog.py:175
+#: ../dialogs/ForceVariableDialog.py:193
 msgid "You must type a value!"
 msgstr "Prosim vnesi vrednost!"
 
 #: ../IDEFrame.py:438
 msgid "Zoom"
-msgstr ""
+msgstr "Povečaj"
 
-#: ../dialogs/DurationEditorDialog.py:151
+#: ../dialogs/DurationEditorDialog.py:155
 msgid "days"
-msgstr ""
+msgstr "dnevi"
 
-#: ../PLCOpenEditor.py:333
+#: ../PLCOpenEditor.py:343
 #, python-format
 msgid "error: %s\n"
-msgstr ""
+msgstr "napaka: %s\n"
 
 #: ../util/ProcessLogger.py:169
 #, python-brace-format
 msgid "exited with status {a1} (pid {a2})\n"
-msgstr ""
+msgstr "končal z statusom {a1} (pid {a2})\n"
 
-#: ../PLCOpenEditor.py:396 ../PLCOpenEditor.py:398
+#: ../PLCOpenEditor.py:406 ../PLCOpenEditor.py:408
 msgid "file : "
-msgstr ""
+msgstr "datoteka : "
 
-#: ../dialogs/PouDialog.py:31
+#: ../dialogs/PouDialog.py:32
 msgid "function"
-msgstr ""
+msgstr "funkcija"
 
-#: ../PLCOpenEditor.py:399
+#: ../PLCOpenEditor.py:409
 msgid "function : "
-msgstr ""
+msgstr "funkcija : "
 
-#: ../dialogs/PouDialog.py:31
+#: ../dialogs/PouDialog.py:32
 msgid "functionBlock"
-msgstr ""
+msgstr "Funkcijski blok"
 
-#: ../dialogs/DurationEditorDialog.py:151
+#: ../dialogs/DurationEditorDialog.py:155
 msgid "hours"
-msgstr ""
+msgstr "ure"
 
-#: ../PLCOpenEditor.py:399
+#: ../PLCOpenEditor.py:409
 msgid "line : "
-msgstr ""
+msgstr "vrstica :"
 
-#: ../dialogs/DurationEditorDialog.py:153
+#: ../dialogs/DurationEditorDialog.py:157
 msgid "milliseconds"
-msgstr ""
+msgstr "milisekunde"
 
-#: ../dialogs/DurationEditorDialog.py:152
+#: ../dialogs/DurationEditorDialog.py:156
 msgid "minutes"
-msgstr ""
+msgstr "minute"
 
-#: ../dialogs/PouDialog.py:31
+#: ../dialogs/PouDialog.py:32
 msgid "program"
-msgstr ""
+msgstr "program"
 
-#: ../dialogs/DurationEditorDialog.py:152
+#: ../dialogs/DurationEditorDialog.py:156
 msgid "seconds"
-msgstr ""
+msgstr "sekunde"
 
 #: ../plcopen/iec_std.csv:84
 msgid "string from the middle"
@@ -3553,19 +3661,19 @@ msgstr "Leva stran niza od"
 msgid "string right of"
 msgstr "Desna stran niza od"
 
-#: ../Beremiz.py:126
+#: ../Beremiz.py:164
 msgid "update info unavailable."
-msgstr ""
+msgstr "ni posodobljenih informacij."
 
-#: ../PLCOpenEditor.py:331
+#: ../PLCOpenEditor.py:341
 #, python-format
 msgid "warning: %s\n"
-msgstr ""
+msgstr "opozorilo: %s\n"
 
-#: ../PLCControler.py:970
+#: ../PLCControler.py:972
 #, python-brace-format
 msgid "{a1} \"{a2}\" can't be pasted as a {a3}."
-msgstr ""
+msgstr "{a1} \"{a2}\" ne more biti prilepljeno kot {a3}."
 
 #: ../ConfigTreeNode.py:56
 #, python-brace-format
@@ -3573,295 +3681,324 @@ msgid ""
 "{a1} XML file doesn't follow XSD schema at line %{a2}:\n"
 "{a3}"
 msgstr ""
+"{a1} XML datoteka ni zgrajena po XSD shemi v vrstici %{a2}:\n"
+"{a3}"
 
 #: Extra XSD strings
 msgid "CanFestivalSlaveNode"
-msgstr ""
+msgstr "CanFestivalSlaveNode"
 
 msgid "CAN_Device"
-msgstr ""
+msgstr "CAN_Device"
 
 msgid "CAN_Baudrate"
-msgstr ""
+msgstr "CAN_Baudrate"
 
 msgid "NodeId"
-msgstr ""
+msgstr "NodeId"
 
 msgid "Sync_Align"
-msgstr ""
+msgstr "Sync_Align"
 
 msgid "Sync_Align_Ratio"
-msgstr ""
+msgstr "Sync_Align_Ratio"
 
 msgid "CanFestivalNode"
-msgstr ""
+msgstr "CanFestivalNode"
 
 msgid "Sync_TPDOs"
-msgstr ""
+msgstr "Sync_TPDOs"
 
 msgid "CanFestivalInstance"
-msgstr ""
+msgstr "CanFestival Primerek"
 
 msgid "CAN_Driver"
-msgstr ""
+msgstr "CAN_Driver"
 
 msgid "Generic"
-msgstr ""
+msgstr "Splošen"
 
 msgid "Command"
-msgstr ""
+msgstr "Ukaz"
 
 msgid "Xenomai"
-msgstr ""
+msgstr "Xenomai"
 
 msgid "XenoConfig"
-msgstr ""
+msgstr "XenoConfig"
 
 msgid "Compiler"
-msgstr ""
+msgstr "Prevajalnik"
 
 msgid "CFLAGS"
-msgstr ""
+msgstr "CFLAGS"
 
 msgid "Linker"
-msgstr ""
+msgstr "Povezovalnik"
 
 msgid "LDFLAGS"
-msgstr ""
-
-msgid "PLC"
-msgstr ""
+msgstr "LDFLAGS"
 
 msgid "Linux"
-msgstr ""
+msgstr "Linux"
 
 msgid "Win32"
-msgstr ""
+msgstr "Win32"
 
 msgid "BaseParams"
-msgstr ""
+msgstr "BaseParams"
 
 msgid "IEC_Channel"
-msgstr ""
+msgstr "IEC_Channel"
 
 msgid "Enabled"
-msgstr ""
+msgstr "Omogočen"
 
 msgid "BeremizRoot"
-msgstr ""
+msgstr "BeremizRoot"
 
 msgid "TargetType"
-msgstr ""
+msgstr "TargetType"
 
 msgid "Libraries"
-msgstr ""
+msgstr "Knjižnice"
 
 msgid "URI_location"
-msgstr ""
+msgstr "URI_location"
 
 msgid "Disable_Extensions"
-msgstr ""
+msgstr "Disable_Extensions"
 
 msgid "%(codefile_name)s"
-msgstr ""
+msgstr "%(codefile_name)s"
 
 msgid "variables"
-msgstr ""
+msgstr "spremenljivke"
 
 msgid "variable"
-msgstr ""
+msgstr "spremenljivka"
 
 msgid "name"
 msgstr "ime"
 
 msgid "type"
-msgstr ""
+msgstr "type"
 
 msgid "class"
-msgstr ""
+msgstr "Razred"
 
 msgid "initial"
-msgstr ""
+msgstr "začetna"
 
 msgid "desc"
-msgstr ""
+msgstr "opis"
 
 msgid "onchange"
-msgstr ""
+msgstr "onchange"
 
 msgid "opts"
-msgstr ""
+msgstr "opts"
 
 #: Extra TC6 documentation strings
 msgid "0 - current time, 1 - load time from PDT"
-msgstr ""
+msgstr "0 - trenutni čas, 1 - naložen iz PDT"
 
 msgid "Preset datetime"
-msgstr ""
+msgstr "Trenutni datetime"
 
 msgid "Copy of IN"
-msgstr ""
+msgstr "Copy of IN"
 
 msgid "Datetime, current or relative to PDT"
-msgstr ""
+msgstr "Datetime, trenuten ali relativen trenutnemu DT"
 
 msgid ""
 "The real time clock has many uses including time stamping, setting dates and"
 " times of day in batch reports, in alarm messages and so on."
 msgstr ""
+"Ura realnega časa se uporablja na več načinov, kot označevanje z časovno "
+"značko, nastavljanje datuma in časa v poročilih, alarmna sporočila, itd."
 
 msgid "1 = integrate, 0 = hold"
-msgstr ""
+msgstr "1 = integriraj, 0 = ustavi"
 
 msgid "Overriding reset"
-msgstr ""
+msgstr "Blokira ponastavitev"
 
 msgid "Input variable"
-msgstr ""
+msgstr "Vhodna spremenljivka"
 
 msgid "Initial value"
-msgstr ""
+msgstr "Začetna vrednost"
 
 msgid "Sampling period"
-msgstr ""
+msgstr "Perioda vzorčenja"
 
 msgid "NOT R1"
-msgstr ""
+msgstr "Integrator deluje"
 
 msgid "Integrated output"
-msgstr ""
+msgstr "Integracijski izhod"
 
 msgid ""
 "The integral function block integrates the value of input XIN over time."
-msgstr ""
+msgstr "Integracijska funkcija integrira vrednost vhoda XIN skozi čas."
 
 msgid "0 = reset"
-msgstr ""
+msgstr "0 = ponastavi"
 
 msgid "Input to be differentiated"
-msgstr ""
+msgstr "Vhod v diferencialno funkcijo"
 
 msgid "Differentiated output"
-msgstr ""
+msgstr "Diferenciran izhod"
 
 msgid ""
 "The derivative function block produces an output XOUT proportional to the "
 "rate of change of the input XIN."
 msgstr ""
+"Diferencialna funkcija generira izhod XOUT proporcionalno časovni spremembi "
+"vrednosti vhoda XIN."
 
 msgid "0 - manual , 1 - automatic"
-msgstr ""
+msgstr "0 - ročni , 1 - avtomatski"
 
 msgid "Process variable"
-msgstr ""
+msgstr "Procesna spremenljivka"
 
 msgid "Set point"
-msgstr ""
+msgstr "Nastavitvena točka"
 
 msgid "Manual output adjustment - Typically from transfer station"
-msgstr ""
+msgstr "Ročna nastavitev izhoda"
 
 msgid "Proportionality constant"
-msgstr ""
+msgstr "Proporcionalno ojačenje "
 
 msgid "Reset time"
-msgstr ""
+msgstr "Ponastavi čas"
 
 msgid "Derivative time constant"
-msgstr ""
+msgstr "Diferencialna časovna konstanta"
 
 msgid "PV - SP"
-msgstr ""
+msgstr "PV - SP"
 
 msgid "FB for integral term"
-msgstr ""
+msgstr "Funkcijski bloki za integral"
 
 msgid "FB for derivative term"
-msgstr ""
+msgstr "Funkcijski bloki za diferencial"
 
 msgid ""
 "The PID (proportional, Integral, Derivative) function block provides the "
 "classical three term controller for closed loop control."
 msgstr ""
+"Funkcijski blok PID (proportional, Integral, Derivative) ponuja standardno 3"
+" parametersko izvedbo regulatorja za zaprtozančne procese."
 
 msgid "0 - track X0, 1 - ramp to/track X1"
-msgstr ""
+msgstr "0 - sledi X0, 1 - rampa do X1 in nato sledenje X1"
 
 msgid "Ramp duration"
-msgstr ""
+msgstr "Trajanje rampe"
 
 msgid "BUSY = 1 during ramping period"
-msgstr ""
+msgstr "BUSY = 1 med trajanjem časa rampe"
 
 msgid "Elapsed time of ramp"
-msgstr ""
+msgstr "Čas delovanja rampe"
 
 msgid "The RAMP function block is modelled on example given in the standard."
 msgstr ""
+"Funkcija RAMP generira rampo na izhod XOUT-REAL glede na vhodni parameter RUN\n"
+"RUN=0 - Izhod sledi vhodu X0. \n"
+"RUN=1 - Izhod gre po rampi do X1 v času TR, v  tem času je BUSY=1. Ko izhod doseže X1 ostane na tej vrednosti, BUSY gre na 0."
 
 msgid ""
 "The hysteresis function block provides a hysteresis boolean output driven by"
 " the difference of two floating point (REAL) inputs XIN1 and XIN2."
 msgstr ""
+"Funkcijski blok Histereza aktivira binarni izhod,  ko je vhod XIN1(REAL) "
+"večji kot XIN2+EPS, in deaktivira binarni izhod, ko je vhod manjši od "
+"XIN2-EPS."
 
 msgid "The SR bistable is a latch where the Set dominates."
-msgstr ""
+msgstr "Bistabilno vezje SR, kjer ima SET prioriteto."
 
 msgid "The RS bistable is a latch where the Reset dominates."
-msgstr ""
+msgstr "Bistabilno vezje RS, kjer ima RESET prioriteto."
 
 msgid ""
 "The semaphore provides a mechanism to allow software elements mutually "
 "exclusive access to certain ressources."
 msgstr ""
+"Funkcijski blok Semafor omogoča izvedbo mehanizma, kjer je dovoljen dostop "
+"do posameznega vira samo enemu programskemu elementu naenkrat."
 
 msgid "The output produces a single pulse when a rising edge is detected."
-msgstr ""
+msgstr "Izhod je aktiven za en cikel, ko detektira pozitivno fronto vhoda."
 
 msgid "The output produces a single pulse when a falling edge is detected."
-msgstr ""
+msgstr "Izhod je aktiven za en cikel, ko detektira negativno fronto vhoda."
 
 msgid ""
 "The up-counter can be used to signal when a count has reached a maximum "
 "value."
 msgstr ""
+"CTU - Števec navzgor šteje vsako pozitivno fronto CU in jo prepiše na izhod "
+"CV-INT. Ko pride doseže željeno vrednosti PV-INT, aktivira izhod Q dokler se"
+" ne ponastavi števec z vhodom R=1."
 
 msgid ""
 "The down-counter can be used to signal when a count has reached zero, on "
 "counting down from a preset value."
 msgstr ""
+"CTD - Števec navzdol šteje vsako pozitivno fronto CD in jo prepiše na izhod "
+"CV-INT. Ko CV doseže vrednost 0, aktivira izhod Q dokler se ne ponastavi "
+"števec z vhodom LD=1, ki ponastavi vrednost števca na vrednost vhoda PV."
 
 msgid ""
 "The up-down counter has two inputs CU and CD. It can be used to both count "
 "up on one input and down on the other."
 msgstr ""
+"CTUD - Števec navzgor in navzdol lahko sočasno šteje navzgor-CU ali navzdol "
+"- CD. Začetna vrednost CV se nastavi z R=1 ->CV:=0; ali LD=1 ->CV:=PV. Izhod"
+" QU je aktiven ko je CV>=PV. Izhod QD je aktiven ko je CV<=0."
 
 msgid "first input parameter"
-msgstr ""
+msgstr "prvi vhodni parameter"
 
 msgid "second input parameter"
-msgstr ""
+msgstr "drugi vhodni parameter"
 
 msgid "first output parameter"
-msgstr ""
+msgstr "prvi izhodni parameter"
 
 msgid "second output parameter"
-msgstr ""
+msgstr "drugi izhodni parameter"
 
 msgid "internal state: 0-reset, 1-counting, 2-set"
-msgstr ""
+msgstr "notranja stanja: 0-reset, 1-šteje, 2-set"
 
 msgid ""
 "The pulse timer can be used to generate output pulses of a given time "
 "duration."
 msgstr ""
+"Pulzni časovnik se lahko uporabi za ustvarjanje izhodnih pulzov določene "
+"časovne dolžine."
 
 msgid ""
 "The on-delay timer can be used to delay setting an output true, for fixed "
 "period after an input becomes true."
 msgstr ""
+"Časovnik zakasnjenega vklopa se uporablja  za zakasnjeno aktiviranje izhoda,"
+" ko je vhod aktiven aktiven vsaj toliko časa kot je nastavitvena vrednost."
 
 msgid ""
 "The off-delay timer can be used to delay setting an output false, for fixed "
 "period after input goes false."
 msgstr ""
+"Časovnik zakasnjenega izklopa se uporablja za zakasnjeno deaktiviranje  "
+"izhoda, ko je izhod aktiven aktiven še za nastavitveno vrednost časa po "
+"deaktiviranem vhodu."
